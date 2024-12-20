@@ -1,29 +1,22 @@
-import { useState } from 'react'
-import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
-import './App.css'
+import { useState } from 'react';
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
+import Login from './pages/login';
+import Header from './components/molecule/header';
+import { Box } from '@mui/material';
+import './App.css';
 
 function App() {
-  const [count, setCount] = useState(0)
-
   return (
-    <div className="h-screen">
-     <BrowserRouter>
-  
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-      </BrowserRouter>
-    </div>
-  )
+    <BrowserRouter>
+      <Header />
+      <Routes>
+        {/* Public Routes */}
+        <Route path="/login" element={<Login />} />
+        {/* <Route path="/otp-login" element={<SendOTP />} />
+          <Route path="/otp-login/otp" element={<VerifyOTP />} /> */}
+      </Routes>
+    </BrowserRouter>
+  );
 }
 
-export default App
+export default App;

@@ -1,7 +1,6 @@
-import { ReactNode } from "react";
-import AuthProvider from "./AuthContext";
-import GeneralProvider from "./GeneralContext";
-import ExpandScreenProvider from "./ExpandScreenContext";
+import { ReactNode } from 'react';
+import AuthProvider from './AuthContext';
+import GeneralProvider from './GeneralContext';
 
 interface MainProviderProps {
   children: ReactNode;
@@ -10,9 +9,7 @@ interface MainProviderProps {
 const MainProvider = ({ children }: MainProviderProps) => {
   return (
     <AuthProvider>
-      <GeneralProvider>
-          <ExpandScreenProvider>{children}</ExpandScreenProvider>
-      </GeneralProvider>
+      <GeneralProvider>{children}</GeneralProvider>
     </AuthProvider>
   );
 };
