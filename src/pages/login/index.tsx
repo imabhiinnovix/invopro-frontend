@@ -20,6 +20,7 @@ import { roleId } from '../../utils/constants';
 import { AuthContext, AuthContextType } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import usePost from '../../hooks/usePost';
+import ProgressBar from '../../components/molecule/progressBar';
 
 interface getLoginPayload {
   email: string;
@@ -140,16 +141,20 @@ function Login() {
           sx={{ mb: 3 }}
         />
 
-        <LoadingButton
-          fullWidth
-          size="large"
-          type="submit"
-          color="primary"
-          variant="contained"
-          sx={{ fontWeight: 'bold' }}
-        >
-          Sign in
-        </LoadingButton>
+        {!getLogin.isPending && !getLogin.isSuccess ? (
+          <LoadingButton
+            fullWidth
+            size="large"
+            type="submit"
+            color="primary"
+            variant="contained"
+            sx={{ fontWeight: 'bold' }}
+          >
+            Sign in
+          </LoadingButton>
+        ) : (
+          <ProgressBar />
+        )}
       </Box>
     </form>
   );
