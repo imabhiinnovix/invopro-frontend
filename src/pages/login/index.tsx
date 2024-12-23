@@ -140,7 +140,14 @@ function Login() {
           sx={{ mb: 3 }}
         />
 
-        <LoadingButton fullWidth size="large" type="submit" color="primary" variant="contained">
+        <LoadingButton
+          fullWidth
+          size="large"
+          type="submit"
+          color="primary"
+          variant="contained"
+          sx={{ fontWeight: 'bold' }}
+        >
           Sign in
         </LoadingButton>
       </Box>
@@ -166,7 +173,7 @@ function Login() {
         </Divider>
         <Typography variant="h6">
           Login with
-          <Link href="/otp-login" variant="h5" sx={{ ml: 0.5, cursor: 'pointer' }}>
+          <Link href="/otp-login" variant="h5" sx={{ ml: 0.5, cursor: 'pointer', fontWeight: 'bold' }}>
             OTP!
           </Link>
         </Typography>
