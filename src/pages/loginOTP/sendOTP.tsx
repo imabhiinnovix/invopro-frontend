@@ -14,6 +14,7 @@ import { POST } from '../../services/apiRoutes';
 import { useNavigate } from 'react-router-dom';
 import usePost from '../../hooks/usePost';
 import { sendOTPPayload, sendOTPResponse } from './types';
+import ProgressBar from '../../components/molecule/progressBar';
 
 function SendOTP() {
   const navigate = useNavigate();
@@ -22,6 +23,7 @@ function SendOTP() {
     [''],
     () => {
       const email = getValues('email');
+      console.log(email);
       setTimeout(() => {
         if (email) {
           navigate('/otp-login/otp', { state: { email: email } });
@@ -67,17 +69,20 @@ function SendOTP() {
           {...register('email')}
           sx={{ mb: 3 }}
         />
-
-        <LoadingButton
-          fullWidth
-          size="large"
-          type="submit"
-          color="primary"
-          variant="contained"
-          sx={{ fontWeight: 'bold' }}
-        >
-          Login with OTP
-        </LoadingButton>
+        {!sendOTP?.isPending && !sendOTP.isSuccess ? (
+          <LoadingButton
+            fullWidth
+            size="large"
+            type="submit"
+            color="primary"
+            variant="contained"
+            sx={{ fontWeight: 'bold' }}
+          >
+            Login with OTP
+          </LoadingButton>
+        ) : (
+          <ProgressBar />
+        )}
       </Box>
     </form>
   );

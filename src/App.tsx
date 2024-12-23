@@ -5,6 +5,7 @@ import './App.css';
 import SendOTP from './pages/loginOTP/sendOTP';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import VerifyOTP from './pages/loginOTP/verifyOTP';
 
 function App() {
   return (
@@ -16,7 +17,7 @@ function App() {
           {/* Public Routes */}
           <Route path="/login" element={<Login />} />
           <Route path="/otp-login" element={<SendOTP />} />
-          {/* <Route path="/otp-login/otp" element={<VerifyOTP />} /> */}
+          <Route path="/otp-login/otp" element={<VerifyOTP />} />
         </Routes>
       </BrowserRouter>
       <ToastContainer />
