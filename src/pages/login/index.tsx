@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useContext } from 'react';
+import { useState, useCallback, useEffect, useContext, useLayoutEffect } from 'react';
 
 import Box from '@mui/material/Box';
 import Link from '@mui/material/Link';
@@ -71,7 +71,7 @@ function Login() {
     true,
   );
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     clearLocalStorage();
   }, []);
 

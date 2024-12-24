@@ -3,6 +3,7 @@ import { Menu as MenuIcon } from '@mui/icons-material';
 import { useLocation } from 'react-router-dom';
 
 import logo from '../../../assets/Searchivix-Logo-TRANS-V1.png';
+import { AccountPopover } from '../../atom/accountPopover/accountPopover';
 
 const Header = () => {
   const { pathname } = useLocation();
@@ -20,20 +21,23 @@ const Header = () => {
           <Box
             component="a"
             href="/"
+            gap={1}
             sx={{
               display: 'flex',
               alignContent: 'center',
-              gap: '16px', // Add some gap between logo and icon
-              justifyContent: isSmallScreen ? 'space-between' : 'flex-start', // Adjust layout based on screen size
+              justifyContent: 'space-between', // Adjust layout based on screen size
               width: '100%', // Ensure Box takes up full width
             }}
           >
-            <img src={logo} alt="Logo" style={{ height: '40px', transform: 'rotate(-1deg)' }} />
-            {!['/login', '/otp-login'].includes(pathname) && (
-              <IconButton edge="start" color="inherit" aria-label="menu">
-                <MenuIcon />
-              </IconButton>
-            )}
+            <Box gap={2} display="flex" alignItems="center">
+              <img src={logo} alt="Logo" style={{ height: '40px', transform: 'rotate(-1deg)' }} />
+              {!['/login', '/otp-login', '/otp-login/otp'].includes(pathname) && (
+                <IconButton edge="start" color="inherit" aria-label="menu">
+                  <MenuIcon />
+                </IconButton>
+              )}
+            </Box>
+            <Box>{!['/login', '/otp-login', '/otp-login/otp'].includes(pathname) && <AccountPopover />}</Box>
           </Box>
         </Toolbar>
       </AppBar>

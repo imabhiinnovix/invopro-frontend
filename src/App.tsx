@@ -6,6 +6,9 @@ import SendOTP from './pages/loginOTP/sendOTP';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import VerifyOTP from './pages/loginOTP/verifyOTP';
+import AuthProtect from './Auth/AuthProtect';
+import SuperAdminProtect from './Auth/SuperAdminProtect';
+import Dashboard from './pages/dashboard';
 
 function App() {
   return (
@@ -18,6 +21,14 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/otp-login" element={<SendOTP />} />
           <Route path="/otp-login/otp" element={<VerifyOTP />} />
+          {/* User Protected Routes */}
+          <Route element={<AuthProtect />}>
+            <Route path="/dashboard" element={<Dashboard />} />
+          </Route>
+          {/* Super Admin Protected Routes */}
+          <Route element={<SuperAdminProtect />}>
+            <Route path="/superadmin/dashboard" element={<Dashboard />} />
+          </Route>
         </Routes>
       </BrowserRouter>
       <ToastContainer />

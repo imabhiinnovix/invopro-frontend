@@ -1,7 +1,7 @@
 import { Box } from '@mui/material';
 
-function Dashboard() {
+function SuperAdmin() {
   return <Box>test</Box>;
 }
 
-export default Dashboard;
+export default SuperAdmin;
