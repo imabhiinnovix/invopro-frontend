@@ -1,6 +1,6 @@
-import { Navigate, Outlet } from "react-router-dom";
-import { roleId } from "../utils/constants";
-import { getAuthToken, getRoleId } from "../utils/handleLocalStorage";
+import { Navigate, Outlet } from 'react-router-dom';
+import { roleId } from '../utils/constants';
+import { getAuthToken, getRoleId } from '../utils/handleLocalStorage';
 
 const SuperAdminProtect = () => {
   const token = getAuthToken();
@@ -10,9 +10,9 @@ const SuperAdminProtect = () => {
     return <Navigate to="/login" />;
   }
 
-  if (Number(currentRoleId) !== roleId?.SUPER_ADMIN) {
-    return <Navigate to="/dashboard" />;
-  }
+  // if (Number(currentRoleId) !== roleId?.SUPER_ADMIN) {
+  //   return <Navigate to="/dashboard" />;
+  // }
 
   return <Outlet />;
 };

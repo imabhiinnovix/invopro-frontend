@@ -10,6 +10,7 @@ import AuthProtect from './Auth/AuthProtect';
 import SuperAdminProtect from './Auth/SuperAdminProtect';
 import Dashboard from './pages/dashboard';
 import CommonLayout from './components/molecule/layout/commonLayout';
+import Entity from './pages/entity';
 
 function App() {
   return (
@@ -26,12 +27,14 @@ function App() {
           <Route element={<AuthProtect />}>
             <Route element={<CommonLayout /> }> 
               <Route path="/dashboard" element={<Dashboard />} />
+              <Route path='/entity' element={<Entity />}/>
             </Route>
           </Route>
 
           {/* Super Admin Protected Routes */}
           <Route element={<SuperAdminProtect />}>
             <Route element={<CommonLayout />}>
+              {/* <Route path='/entity' element={<Entity />}/> */}
               <Route path="/superadmin/dashboard" element={<Dashboard />} />
             </Route> 
           </Route>

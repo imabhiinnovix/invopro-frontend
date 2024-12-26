@@ -4,7 +4,7 @@ import SideNav from '../../atom/sideNav/sideNav';
 
 const CommonLayout = () => {
   return (
-    <Box display="flex" gap={1}>
+    <Box display="flex" gap={1} sx={{ width: '1' }}>
       <SideNav />
       <Outlet />
     </Box>
