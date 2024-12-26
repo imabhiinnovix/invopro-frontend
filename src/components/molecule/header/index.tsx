@@ -1,14 +1,19 @@
 import { AppBar, Toolbar, IconButton, Box, useMediaQuery, useTheme } from '@mui/material';
-import { Menu as MenuIcon } from '@mui/icons-material';
+
 import { useLocation } from 'react-router-dom';
 
 import logo from '../../../assets/Searchivix-Logo-TRANS-V1.png';
 import { AccountPopover } from '../../atom/accountPopover/accountPopover';
+import { Menu as MenuIcon } from '@mui/icons-material';
+import { useNav } from '../../../context/NavContext';
 
 const Header = () => {
   const { pathname } = useLocation();
-  const theme = useTheme();
-  const isSmallScreen = useMediaQuery(theme.breakpoints.down('sm')); // Check if screen size is small (e.g., xs, sm)
+  const { openNav, setOpenNav } = useNav();
+  const handleClick = () => {
+    // Use the functional update form correctly
+    setOpenNav(!openNav); // This toggles the value of `openNav`
+  };
 
   return (
     <>
@@ -16,11 +21,12 @@ const Header = () => {
         position="sticky"
         color="transparent"
         elevation={2} // Disable default elevation shadow
+        sx={{ height: 70 }}
       >
         <Toolbar>
           <Box
             component="a"
-            href="/"
+            // href="/"
             gap={1}
             sx={{
               display: 'flex',
@@ -29,13 +35,21 @@ const Header = () => {
               width: '100%', // Ensure Box takes up full width
             }}
           >
-            <Box gap={2} display="flex" alignItems="center">
-              <img src={logo} alt="Logo" style={{ height: '40px', transform: 'rotate(-1deg)' }} />
+            <Box gap={0} display="flex" alignItems="center">
               {!['/login', '/otp-login', '/otp-login/otp'].includes(pathname) && (
-                <IconButton edge="start" color="inherit" aria-label="menu">
+                <IconButton
+                  edge="start"
+                  color="inherit"
+                  aria-label="menu"
+                  onClick={(event) => {
+                    event.preventDefault(); // Prevents any default behavior (like page reload)
+                    handleClick(); // Toggles the nav state
+                  }}
+                >
                   <MenuIcon />
                 </IconButton>
               )}
+              <img src={logo} alt="Logo" style={{ height: '40px', transform: 'rotate(-1deg)' }} />
             </Box>
             <Box>{!['/login', '/otp-login', '/otp-login/otp'].includes(pathname) && <AccountPopover />}</Box>
           </Box>

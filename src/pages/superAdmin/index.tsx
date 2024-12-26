@@ -1,7 +1,7 @@
 import { Box } from '@mui/material';
 
 function SuperAdmin() {
-  return <Box>test</Box>;
+  return <Box>{/* <TemporaryDrawer /> */}</Box>;
 }
 
 export default SuperAdmin;

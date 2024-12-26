@@ -9,25 +9,31 @@ import VerifyOTP from './pages/loginOTP/verifyOTP';
 import AuthProtect from './Auth/AuthProtect';
 import SuperAdminProtect from './Auth/SuperAdminProtect';
 import Dashboard from './pages/dashboard';
+import CommonLayout from './components/molecule/layout/commonLayout';
 
 function App() {
   return (
     <>
       <BrowserRouter>
         <Header />
-
         <Routes>
           {/* Public Routes */}
           <Route path="/login" element={<Login />} />
           <Route path="/otp-login" element={<SendOTP />} />
           <Route path="/otp-login/otp" element={<VerifyOTP />} />
+
           {/* User Protected Routes */}
           <Route element={<AuthProtect />}>
-            <Route path="/dashboard" element={<Dashboard />} />
+            <Route element={<CommonLayout /> }> 
+              <Route path="/dashboard" element={<Dashboard />} />
+            </Route>
           </Route>
+
           {/* Super Admin Protected Routes */}
           <Route element={<SuperAdminProtect />}>
-            <Route path="/superadmin/dashboard" element={<Dashboard />} />
+            <Route element={<CommonLayout />}>
+              <Route path="/superadmin/dashboard" element={<Dashboard />} />
+            </Route> 
           </Route>
         </Routes>
       </BrowserRouter>
