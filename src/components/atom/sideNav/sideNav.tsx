@@ -120,11 +120,7 @@ export default function SideNav() {
 
   return (
     <Box sx={{ display: 'flex' }}>
-      <Drawer
-        variant="permanent"
-        open={openNav}
-        sx={{ width: drawerWidth, flexShrink: 0, boxSizing: 'border-box', height: 'calc(100vh - 70px)' }}
-      >
+      <Drawer variant="permanent" open={openNav} sx={{ height: 'calc(100vh - 70px)' }}>
         <List>
           {navItems.map((item) => (
             <React.Fragment key={item.name}>
