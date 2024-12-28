@@ -1,18 +1,48 @@
 import * as React from 'react';
 import { styled } from '@mui/material/styles';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell, { tableCellClasses } from '@mui/material/TableCell';
-import TableContainer from '@mui/material/TableContainer';
-import TableHead from '@mui/material/TableHead';
-import TableRow from '@mui/material/TableRow';
-import Paper from '@mui/material/Paper';
-import Collapse from '@mui/material/Collapse';
-import Box from '@mui/material/Box';
-import IconButton from '@mui/material/IconButton';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  Collapse,
+  Box,
+  IconButton,
+  Button,
+  Switch,
+  Skeleton,
+  Typography,
+  tableCellClasses,
+} from '@mui/material';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
-import { Button, Switch, Typography } from '@mui/material';
+import useGet from '../../../hooks/useGet';
+import { GET } from '../../../services/apiRoutes';
+import CreateEntity from './createEntity';
+
+type Attribute = {
+  name: string;
+  type: string;
+  validation?: string[];
+  transformations?: string[];
+  cleaner?: string[];
+  optionAttributeId?: string;
+};
+
+type Entity = {
+  _id: string;
+  name: string;
+  description: string;
+  attributes: Attribute[];
+  organizationId: string;
+  createdBy: string;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+};
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
   [`&.${tableCellClasses.head}`]: {
@@ -28,512 +58,19 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
   backgroundColor: theme.palette.action.hover,
 }));
 
-const EntityTable = () => {
+const EntityTable: React.FC = () => {
   const [expandedRows, setExpandedRows] = React.useState<{ [key: number]: boolean }>({});
 
   const toggleRow = (index: number) => {
     setExpandedRows((prev) => ({ ...prev, [index]: !prev[index] }));
   };
 
-  const entityData = [
-    {
-      _id: '676a6c53715a96cf1d7f7692',
-      name: 'Disclosure',
-      description: 'This entity represents a product in the system.',
-      attributes: [
-        {
-          name: 'Disclosure Number',
-          type: 'text',
-          validation: ['required', 'minLength:5'],
-          transformations: ['trimSpace', 'makeAllCapital'],
-          cleaner: [],
-        },
-        {
-          name: 'SBU',
-          type: 'multioption',
-          validation: ['required', 'minLength:2'],
-          transformations: [],
-          optionAttributeId: '12345789101112',
-          cleaner: ['trimSpace'],
-        },
-      ],
-      organizationId: '66de96d3548d06560e2931cb',
-      createdBy: '66b34cbbd40e24fca2e3e312',
-      isActive: true,
-      createdAt: '2024-12-24T08:09:55.279Z',
-      updatedAt: '2024-12-24T08:09:55.279Z',
-      __v: 0,
-    },
-    {
-      _id: '676a6b4c758e6afd6bb1de3c',
-      name: 'Disclosure',
-      description: 'This entity represents a product in the system.',
-      attributes: [
-        {
-          name: 'Disclosure Number',
-          type: 'text',
-          validation: ['required', 'minLength:5'],
-          transformations: ['trimSpace', 'makeAllCapital'],
-          cleaner: [],
-        },
-        {
-          name: 'SBU',
-          type: 'multioption',
-          validation: ['required', 'minLength:2'],
-          transformations: [],
-          optionAttributeId: '12345789101112',
-          cleaner: ['trimSpace'],
-        },
-      ],
-      organizationId: '66de96d3548d06560e2931cb',
-      createdBy: '66b34cbbd40e24fca2e3e312',
-      createdAt: '2024-12-24T08:05:32.592Z',
-      updatedAt: '2024-12-24T08:05:32.592Z',
-      __v: 0,
-    },
-    {
-      _id: '676a6c53715a96cf1d7f7692',
-      name: 'Disclosure',
-      description: 'This entity represents a product in the system.',
-      attributes: [
-        {
-          name: 'Disclosure Number',
-          type: 'text',
-          validation: ['required', 'minLength:5'],
-          transformations: ['trimSpace', 'makeAllCapital'],
-          cleaner: [],
-        },
-        {
-          name: 'SBU',
-          type: 'multioption',
-          validation: ['required', 'minLength:2'],
-          transformations: [],
-          optionAttributeId: '12345789101112',
-          cleaner: ['trimSpace'],
-        },
-      ],
-      organizationId: '66de96d3548d06560e2931cb',
-      createdBy: '66b34cbbd40e24fca2e3e312',
-      isActive: true,
-      createdAt: '2024-12-24T08:09:55.279Z',
-      updatedAt: '2024-12-24T08:09:55.279Z',
-      __v: 0,
-    },
-    {
-      _id: '676a6b4c758e6afd6bb1de3c',
-      name: 'Disclosure',
-      description: 'This entity represents a product in the system.',
-      attributes: [
-        {
-          name: 'Disclosure Number',
-          type: 'text',
-          validation: ['required', 'minLength:5'],
-          transformations: ['trimSpace', 'makeAllCapital'],
-          cleaner: [],
-        },
-        {
-          name: 'SBU',
-          type: 'multioption',
-          validation: ['required', 'minLength:2'],
-          transformations: [],
-          optionAttributeId: '12345789101112',
-          cleaner: ['trimSpace'],
-        },
-      ],
-      organizationId: '66de96d3548d06560e2931cb',
-      createdBy: '66b34cbbd40e24fca2e3e312',
-      createdAt: '2024-12-24T08:05:32.592Z',
-      updatedAt: '2024-12-24T08:05:32.592Z',
-      __v: 0,
-    },
-    {
-      _id: '676a6c53715a96cf1d7f7692',
-      name: 'Disclosure',
-      description: 'This entity represents a product in the system.',
-      attributes: [
-        {
-          name: 'Disclosure Number',
-          type: 'text',
-          validation: ['required', 'minLength:5'],
-          transformations: ['trimSpace', 'makeAllCapital'],
-          cleaner: [],
-        },
-        {
-          name: 'SBU',
-          type: 'multioption',
-          validation: ['required', 'minLength:2'],
-          transformations: [],
-          optionAttributeId: '12345789101112',
-          cleaner: ['trimSpace'],
-        },
-      ],
-      organizationId: '66de96d3548d06560e2931cb',
-      createdBy: '66b34cbbd40e24fca2e3e312',
-      isActive: true,
-      createdAt: '2024-12-24T08:09:55.279Z',
-      updatedAt: '2024-12-24T08:09:55.279Z',
-      __v: 0,
-    },
-    {
-      _id: '676a6b4c758e6afd6bb1de3c',
-      name: 'Disclosure',
-      description: 'This entity represents a product in the system.',
-      attributes: [
-        {
-          name: 'Disclosure Number',
-          type: 'text',
-          validation: ['required', 'minLength:5'],
-          transformations: ['trimSpace', 'makeAllCapital'],
-          cleaner: [],
-        },
-        {
-          name: 'SBU',
-          type: 'multioption',
-          validation: ['required', 'minLength:2'],
-          transformations: [],
-          optionAttributeId: '12345789101112',
-          cleaner: ['trimSpace'],
-        },
-      ],
-      organizationId: '66de96d3548d06560e2931cb',
-      createdBy: '66b34cbbd40e24fca2e3e312',
-      createdAt: '2024-12-24T08:05:32.592Z',
-      updatedAt: '2024-12-24T08:05:32.592Z',
-      __v: 0,
-    },
-    {
-      _id: '676a6c53715a96cf1d7f7692',
-      name: 'Disclosure',
-      description: 'This entity represents a product in the system.',
-      attributes: [
-        {
-          name: 'Disclosure Number',
-          type: 'text',
-          validation: ['required', 'minLength:5'],
-          transformations: ['trimSpace', 'makeAllCapital'],
-          cleaner: [],
-        },
-        {
-          name: 'SBU',
-          type: 'multioption',
-          validation: ['required', 'minLength:2'],
-          transformations: [],
-          optionAttributeId: '12345789101112',
-          cleaner: ['trimSpace'],
-        },
-      ],
-      organizationId: '66de96d3548d06560e2931cb',
-      createdBy: '66b34cbbd40e24fca2e3e312',
-      isActive: true,
-      createdAt: '2024-12-24T08:09:55.279Z',
-      updatedAt: '2024-12-24T08:09:55.279Z',
-      __v: 0,
-    },
-    {
-      _id: '676a6b4c758e6afd6bb1de3c',
-      name: 'Disclosure',
-      description: 'This entity represents a product in the system.',
-      attributes: [
-        {
-          name: 'Disclosure Number',
-          type: 'text',
-          validation: ['required', 'minLength:5'],
-          transformations: ['trimSpace', 'makeAllCapital'],
-          cleaner: [],
-        },
-        {
-          name: 'SBU',
-          type: 'multioption',
-          validation: ['required', 'minLength:2'],
-          transformations: [],
-          optionAttributeId: '12345789101112',
-          cleaner: ['trimSpace'],
-        },
-      ],
-      organizationId: '66de96d3548d06560e2931cb',
-      createdBy: '66b34cbbd40e24fca2e3e312',
-      createdAt: '2024-12-24T08:05:32.592Z',
-      updatedAt: '2024-12-24T08:05:32.592Z',
-      __v: 0,
-    },
-    {
-      _id: '676a6c53715a96cf1d7f7692',
-      name: 'Disclosure',
-      description: 'This entity represents a product in the system.',
-      attributes: [
-        {
-          name: 'Disclosure Number',
-          type: 'text',
-          validation: ['required', 'minLength:5'],
-          transformations: ['trimSpace', 'makeAllCapital'],
-          cleaner: [],
-        },
-        {
-          name: 'SBU',
-          type: 'multioption',
-          validation: ['required', 'minLength:2'],
-          transformations: [],
-          optionAttributeId: '12345789101112',
-          cleaner: ['trimSpace'],
-        },
-      ],
-      organizationId: '66de96d3548d06560e2931cb',
-      createdBy: '66b34cbbd40e24fca2e3e312',
-      isActive: true,
-      createdAt: '2024-12-24T08:09:55.279Z',
-      updatedAt: '2024-12-24T08:09:55.279Z',
-      __v: 0,
-    },
-    {
-      _id: '676a6b4c758e6afd6bb1de3c',
-      name: 'Disclosure',
-      description: 'This entity represents a product in the system.',
-      attributes: [
-        {
-          name: 'Disclosure Number',
-          type: 'text',
-          validation: ['required', 'minLength:5'],
-          transformations: ['trimSpace', 'makeAllCapital'],
-          cleaner: [],
-        },
-        {
-          name: 'SBU',
-          type: 'multioption',
-          validation: ['required', 'minLength:2'],
-          transformations: [],
-          optionAttributeId: '12345789101112',
-          cleaner: ['trimSpace'],
-        },
-      ],
-      organizationId: '66de96d3548d06560e2931cb',
-      createdBy: '66b34cbbd40e24fca2e3e312',
-      createdAt: '2024-12-24T08:05:32.592Z',
-      updatedAt: '2024-12-24T08:05:32.592Z',
-      __v: 0,
-    },
-    {
-      _id: '676a6c53715a96cf1d7f7692',
-      name: 'Disclosure',
-      description: 'This entity represents a product in the system.',
-      attributes: [
-        {
-          name: 'Disclosure Number',
-          type: 'text',
-          validation: ['required', 'minLength:5'],
-          transformations: ['trimSpace', 'makeAllCapital'],
-          cleaner: [],
-        },
-        {
-          name: 'SBU',
-          type: 'multioption',
-          validation: ['required', 'minLength:2'],
-          transformations: [],
-          optionAttributeId: '12345789101112',
-          cleaner: ['trimSpace'],
-        },
-      ],
-      organizationId: '66de96d3548d06560e2931cb',
-      createdBy: '66b34cbbd40e24fca2e3e312',
-      isActive: true,
-      createdAt: '2024-12-24T08:09:55.279Z',
-      updatedAt: '2024-12-24T08:09:55.279Z',
-      __v: 0,
-    },
-    {
-      _id: '676a6b4c758e6afd6bb1de3c',
-      name: 'Disclosure',
-      description: 'This entity represents a product in the system.',
-      attributes: [
-        {
-          name: 'Disclosure Number',
-          type: 'text',
-          validation: ['required', 'minLength:5'],
-          transformations: ['trimSpace', 'makeAllCapital'],
-          cleaner: [],
-        },
-        {
-          name: 'SBU',
-          type: 'multioption',
-          validation: ['required', 'minLength:2'],
-          transformations: [],
-          optionAttributeId: '12345789101112',
-          cleaner: ['trimSpace'],
-        },
-      ],
-      organizationId: '66de96d3548d06560e2931cb',
-      createdBy: '66b34cbbd40e24fca2e3e312',
-      createdAt: '2024-12-24T08:05:32.592Z',
-      updatedAt: '2024-12-24T08:05:32.592Z',
-      __v: 0,
-    },
-    {
-      _id: '676a6c53715a96cf1d7f7692',
-      name: 'Disclosure',
-      description: 'This entity represents a product in the system.',
-      attributes: [
-        {
-          name: 'Disclosure Number',
-          type: 'text',
-          validation: ['required', 'minLength:5'],
-          transformations: ['trimSpace', 'makeAllCapital'],
-          cleaner: [],
-        },
-        {
-          name: 'SBU',
-          type: 'multioption',
-          validation: ['required', 'minLength:2'],
-          transformations: [],
-          optionAttributeId: '12345789101112',
-          cleaner: ['trimSpace'],
-        },
-      ],
-      organizationId: '66de96d3548d06560e2931cb',
-      createdBy: '66b34cbbd40e24fca2e3e312',
-      isActive: true,
-      createdAt: '2024-12-24T08:09:55.279Z',
-      updatedAt: '2024-12-24T08:09:55.279Z',
-      __v: 0,
-    },
-    {
-      _id: '676a6b4c758e6afd6bb1de3c',
-      name: 'Disclosure',
-      description: 'This entity represents a product in the system.',
-      attributes: [
-        {
-          name: 'Disclosure Number',
-          type: 'text',
-          validation: ['required', 'minLength:5'],
-          transformations: ['trimSpace', 'makeAllCapital'],
-          cleaner: [],
-        },
-        {
-          name: 'SBU',
-          type: 'multioption',
-          validation: ['required', 'minLength:2'],
-          transformations: [],
-          optionAttributeId: '12345789101112',
-          cleaner: ['trimSpace'],
-        },
-      ],
-      organizationId: '66de96d3548d06560e2931cb',
-      createdBy: '66b34cbbd40e24fca2e3e312',
-      createdAt: '2024-12-24T08:05:32.592Z',
-      updatedAt: '2024-12-24T08:05:32.592Z',
-      __v: 0,
-    },
-    {
-      _id: '676a6c53715a96cf1d7f7692',
-      name: 'Disclosure',
-      description: 'This entity represents a product in the system.',
-      attributes: [
-        {
-          name: 'Disclosure Number',
-          type: 'text',
-          validation: ['required', 'minLength:5'],
-          transformations: ['trimSpace', 'makeAllCapital'],
-          cleaner: [],
-        },
-        {
-          name: 'SBU',
-          type: 'multioption',
-          validation: ['required', 'minLength:2'],
-          transformations: [],
-          optionAttributeId: '12345789101112',
-          cleaner: ['trimSpace'],
-        },
-      ],
-      organizationId: '66de96d3548d06560e2931cb',
-      createdBy: '66b34cbbd40e24fca2e3e312',
-      isActive: true,
-      createdAt: '2024-12-24T08:09:55.279Z',
-      updatedAt: '2024-12-24T08:09:55.279Z',
-      __v: 0,
-    },
-    {
-      _id: '676a6b4c758e6afd6bb1de3c',
-      name: 'Disclosure',
-      description: 'This entity represents a product in the system.',
-      attributes: [
-        {
-          name: 'Disclosure Number',
-          type: 'text',
-          validation: ['required', 'minLength:5'],
-          transformations: ['trimSpace', 'makeAllCapital'],
-          cleaner: [],
-        },
-        {
-          name: 'SBU',
-          type: 'multioption',
-          validation: ['required', 'minLength:2'],
-          transformations: [],
-          optionAttributeId: '12345789101112',
-          cleaner: ['trimSpace'],
-        },
-      ],
-      organizationId: '66de96d3548d06560e2931cb',
-      createdBy: '66b34cbbd40e24fca2e3e312',
-      createdAt: '2024-12-24T08:05:32.592Z',
-      updatedAt: '2024-12-24T08:05:32.592Z',
-      __v: 0,
-    },
-    {
-      _id: '676a6c53715a96cf1d7f7692',
-      name: 'Disclosure',
-      description: 'This entity represents a product in the system.',
-      attributes: [
-        {
-          name: 'Disclosure Number',
-          type: 'text',
-          validation: ['required', 'minLength:5'],
-          transformations: ['trimSpace', 'makeAllCapital'],
-          cleaner: [],
-        },
-        {
-          name: 'SBU',
-          type: 'multioption',
-          validation: ['required', 'minLength:2'],
-          transformations: [],
-          optionAttributeId: '12345789101112',
-          cleaner: ['trimSpace'],
-        },
-      ],
-      organizationId: '66de96d3548d06560e2931cb',
-      createdBy: '66b34cbbd40e24fca2e3e312',
-      isActive: true,
-      createdAt: '2024-12-24T08:09:55.279Z',
-      updatedAt: '2024-12-24T08:09:55.279Z',
-      __v: 0,
-    },
-    {
-      _id: '676a6b4c758e6afd6bb1de3c',
-      name: 'Disclosure',
-      description: 'This entity represents a product in the system.',
-      attributes: [
-        {
-          name: 'Disclosure Number',
-          type: 'text',
-          validation: ['required', 'minLength:5'],
-          transformations: ['trimSpace', 'makeAllCapital'],
-          cleaner: [],
-        },
-        {
-          name: 'SBU',
-          type: 'multioption',
-          validation: ['required', 'minLength:2'],
-          transformations: [],
-          optionAttributeId: '12345789101112',
-          cleaner: ['trimSpace'],
-        },
-      ],
-      organizationId: '66de96d3548d06560e2931cb',
-      createdBy: '66b34cbbd40e24fca2e3e312',
-      createdAt: '2024-12-24T08:05:32.592Z',
-      updatedAt: '2024-12-24T08:05:32.592Z',
-      __v: 0,
-    },
-  ];
+  const { data: entityData, isLoading } = useGet<{ success: boolean; data: Entity[]; totalCount: number }>(
+    ['entityList'],
+    GET?.Entity_List,
+  );
 
-  const renderAttributes = (attributes: any[]) => (
+  const renderAttributes = (attributes: Attribute[] = []) => (
     <Box sx={{ margin: 1 }}>
       <Table size="small" aria-label="attributes">
         <TableHead>
@@ -548,23 +85,65 @@ const EntityTable = () => {
         <TableBody>
           {attributes.map((attr, index) => (
             <StyledTableRow key={index}>
-              <StyledTableCell>{attr.name ? attr.name : '-'}</StyledTableCell>
-              <StyledTableCell>{attr.type ? attr.type : '-'}</StyledTableCell>
-              <StyledTableCell>
-                {attr.validation && attr.validation.length > 0 ? attr.validation.join(', ') : '-'}
-              </StyledTableCell>
-              <StyledTableCell>
-                {attr.transformations && attr.transformations.length > 0 ? attr.transformations.join(', ') : '-'}
-              </StyledTableCell>
-              <StyledTableCell>
-                {attr.cleaner && attr.cleaner.length > 0 ? attr.cleaner.join(', ') : '-'}
-              </StyledTableCell>
+              <StyledTableCell>{attr.name || '-'}</StyledTableCell>
+              <StyledTableCell>{attr.type || '-'}</StyledTableCell>
+              <StyledTableCell>{attr.validation?.length ? attr.validation.join(', ') : '-'}</StyledTableCell>
+              <StyledTableCell>{attr.transformations?.length ? attr.transformations.join(', ') : '-'}</StyledTableCell>
+              <StyledTableCell>{attr.cleaner?.length ? attr.cleaner.join(', ') : '-'}</StyledTableCell>
             </StyledTableRow>
           ))}
         </TableBody>
       </Table>
     </Box>
   );
+
+  if (isLoading) {
+    return (
+      <TableContainer component={Paper}>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <StyledTableCell>NAME</StyledTableCell>
+              <StyledTableCell>DESCRIPTION</StyledTableCell>
+              <StyledTableCell>ATTRIBUTES</StyledTableCell>
+              <StyledTableCell>STATUS</StyledTableCell>
+              <StyledTableCell>ACTION</StyledTableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {[...Array(5)].map((_, index) => (
+              <StyledTableRow key={index}>
+                {[...Array(5)].map((_, colIndex) => (
+                  <StyledTableCell key={colIndex}>
+                    <Skeleton height={40} />
+                  </StyledTableCell>
+                ))}
+              </StyledTableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+    );
+  }
+
+  if (!entityData?.data.length) {
+    return (
+      <Box
+        display="flex"
+        flexDirection="column"
+        sx={{ textAlign: 'center', marginTop: 10 }}
+        alignContent="center"
+        alignItems="center"
+      >
+        <Typography variant="h4" fontWeight="bold" gutterBottom>
+          No entities have been created yet. Please create an entity to display it here.
+        </Typography>
+        <Box maxWidth="600px">
+          <CreateEntity />
+        </Box>
+      </Box>
+    );
+  }
 
   return (
     <TableContainer component={Paper}>
@@ -579,13 +158,13 @@ const EntityTable = () => {
           </TableRow>
         </TableHead>
         <TableBody>
-          {entityData.map((data, dataIndex) => (
-            <React.Fragment key={dataIndex}>
+          {entityData?.data.map((data, dataIndex) => (
+            <React.Fragment key={data._id}>
               <StyledTableRow>
-                <StyledTableCell>{data.name ? data.name : '-'}</StyledTableCell>
-                <StyledTableCell>{data.description ? data.description : '-'}</StyledTableCell>
+                <StyledTableCell>{data.name || '-'}</StyledTableCell>
+                <StyledTableCell>{data.description || '-'}</StyledTableCell>
                 <StyledTableCell>
-                  {data.attributes && data.attributes.length > 0 ? (
+                  {data.attributes?.length ? (
                     <IconButton aria-label="expand row" size="small" onClick={() => toggleRow(dataIndex)}>
                       {expandedRows[dataIndex] ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
                     </IconButton>
@@ -593,18 +172,22 @@ const EntityTable = () => {
                     '-'
                   )}
                 </StyledTableCell>
-                <StyledTableCell>{data.isActive ? <Switch defaultChecked /> : <Switch />}</StyledTableCell>
+                <StyledTableCell>
+                  <Switch checked={data.isActive} />
+                </StyledTableCell>
                 <StyledTableCell>
                   <Button>Edit</Button>
                 </StyledTableCell>
               </StyledTableRow>
-              <StyledTableRow>
-                <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={5}>
-                  <Collapse in={expandedRows[dataIndex]} timeout="auto" unmountOnExit>
-                    {renderAttributes(data.attributes)}
-                  </Collapse>
-                </TableCell>
-              </StyledTableRow>
+              {data.attributes?.length > 0 && (
+                <StyledTableRow>
+                  <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={5}>
+                    <Collapse in={expandedRows[dataIndex]} timeout="auto" unmountOnExit>
+                      {renderAttributes(data.attributes)}
+                    </Collapse>
+                  </TableCell>
+                </StyledTableRow>
+              )}
             </React.Fragment>
           ))}
         </TableBody>
