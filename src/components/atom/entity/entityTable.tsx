@@ -1,4 +1,4 @@
-import * as React from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { styled } from '@mui/material/styles';
 import {
   Table,
@@ -59,18 +59,59 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
 }));
 
 const EntityTable: React.FC = () => {
-  const [expandedRows, setExpandedRows] = React.useState<{ [key: number]: boolean }>({});
+  const [entities, setEntities] = useState<Entity[]>([]);
+  const [currentPage, setCurrentPage] = useState<number>(1);
 
-  const toggleRow = (index: number) => {
+  const [expandedRows, setExpandedRows] = useState<{ [key: number]: boolean }>({});
+
+  const toggleRow = (index: number): void => {
     setExpandedRows((prev) => ({ ...prev, [index]: !prev[index] }));
   };
 
-  const { data: entityData, isLoading } = useGet<{ success: boolean; data: Entity[]; totalCount: number }>(
-    ['entityList'],
-    GET?.Entity_List,
+  const perPageItem = 10;
+  const entitiesList = useGet<{ success: boolean; data: Entity[]; totalCount: number }>(
+    [`entityList`, String(currentPage)],
+    GET?.Entity_List + `?page=${currentPage}&limit=${perPageItem}`,
+    !!currentPage,
   );
 
-  const renderAttributes = (attributes: Attribute[] = []) => (
+  useEffect(() => {
+    if (entitiesList?.data?.data) {
+      setEntities((prev) => [...prev, ...entitiesList?.data?.data]);
+    }
+  }, [entitiesList?.data?.data]);
+
+  useEffect(() => {
+    setCurrentPage(currentPage);
+  }, [currentPage]);
+
+  const lastRowRef = useRef<IntersectionObserver | null>(null);
+
+  const lastElementRef = useCallback(
+    (node: HTMLTableRowElement | null) => {
+      if (entitiesList.isLoading || entities.length >= entitiesList?.data?.totalCount!) return;
+
+      // Disconnect the previous observer if it exists
+      if (lastRowRef.current) {
+        lastRowRef.current.disconnect();
+      }
+
+      // Create a new IntersectionObserver
+      lastRowRef.current = new IntersectionObserver((entries) => {
+        if (entries[0].isIntersecting) {
+          setCurrentPage((prevPage) => prevPage + 1);
+        }
+      });
+
+      // Observe the new node if it exists
+      if (node) {
+        lastRowRef.current.observe(node);
+      }
+    },
+    [entitiesList.isLoading], // Add the correct dependency
+  );
+
+  const renderAttributes = (attributes: Attribute[] = []): JSX.Element => (
     <Box sx={{ margin: 1 }}>
       <Table size="small" aria-label="attributes">
         <TableHead>
@@ -97,36 +138,7 @@ const EntityTable: React.FC = () => {
     </Box>
   );
 
-  if (isLoading) {
-    return (
-      <TableContainer component={Paper}>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <StyledTableCell>NAME</StyledTableCell>
-              <StyledTableCell>DESCRIPTION</StyledTableCell>
-              <StyledTableCell>ATTRIBUTES</StyledTableCell>
-              <StyledTableCell>STATUS</StyledTableCell>
-              <StyledTableCell>ACTION</StyledTableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {[...Array(5)].map((_, index) => (
-              <StyledTableRow key={index}>
-                {[...Array(5)].map((_, colIndex) => (
-                  <StyledTableCell key={colIndex}>
-                    <Skeleton height={40} />
-                  </StyledTableCell>
-                ))}
-              </StyledTableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
-    );
-  }
-
-  if (!entityData?.data.length) {
+  if (!entitiesList.isLoading && !entities.length) {
     return (
       <Box
         display="flex"
@@ -158,9 +170,9 @@ const EntityTable: React.FC = () => {
           </TableRow>
         </TableHead>
         <TableBody>
-          {entityData?.data.map((data, dataIndex) => (
+          {entities.map((data, dataIndex) => (
             <React.Fragment key={data._id}>
-              <StyledTableRow>
+              <StyledTableRow ref={entities.length === dataIndex + 1 ? lastElementRef : null}>
                 <StyledTableCell>{data.name || '-'}</StyledTableCell>
                 <StyledTableCell>{data.description || '-'}</StyledTableCell>
                 <StyledTableCell>
@@ -190,6 +202,15 @@ const EntityTable: React.FC = () => {
               )}
             </React.Fragment>
           ))}
+
+          {entitiesList.isLoading &&
+            Array.from({ length: 7 }, (_, index) => (
+              <StyledTableRow key={index}>
+                <StyledTableCell colSpan={5}>
+                  <Skeleton height={40} />
+                </StyledTableCell>
+              </StyledTableRow>
+            ))}
         </TableBody>
       </Table>
     </TableContainer>
