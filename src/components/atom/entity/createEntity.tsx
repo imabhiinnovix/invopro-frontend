@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useForm, useFieldArray } from 'react-hook-form';
+import { useForm, useFieldArray, Controller } from 'react-hook-form';
 import {
   Box,
   Button,
@@ -13,13 +13,17 @@ import {
   IconButton,
   Divider,
   Stack,
+  FormControl,
+  InputLabel,
+  Select,
+  FormHelperText,
 } from '@mui/material';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutline';
 import FileUploadButton from '../file/fileUploadButton';
 import useFilePostData from '../../../hooks/usePostMultipart';
-
 import { POST } from '../../../services/apiRoutes';
+import ProgressBar from '../../molecule/progressBar';
 
 type Attribute = {
   name: string;
@@ -41,6 +45,49 @@ const CreateEntity: React.FC = () => {
   const [file, setFile] = useState<File | null>(null);
   const [fileName, setFileName] = useState<string | null>(null);
 
+  const {
+    control,
+    handleSubmit,
+    register,
+    reset,
+    formState: { errors },
+  } = useForm<FormValues>({
+    defaultValues: {
+      entityName: '',
+      entityDescription: '',
+      attributes: [{ name: '', attributeType: '', options: [], validation: [], transformations: [], cleaner: [] }],
+    },
+  });
+
+  const { fields, append, remove, replace } = useFieldArray({
+    control,
+    name: 'attributes',
+  });
+  console.log('fields', fields);
+
+  const { mutate, isPending } = useFilePostData<{ files: File; operation: string }, { message: string; data?: any }>(
+    ['uploadedFiles'],
+    (data) => {
+      console.log('Upload successful, response:', data);
+      if (data?.data) {
+        const newAttributes = data.data.map((attr: any) => ({
+          name: attr.name || '',
+          attributeType: attr.attributeType || '',
+          options: attr.options || [],
+          validation: attr.validation || [],
+          transformations: attr.transformations || [],
+          cleaner: attr.cleaner || [],
+        }));
+
+        replace(newAttributes);
+      }
+    },
+    {
+      showToast: true,
+      customToastMessage: 'Attribute Retrieved Successfully',
+    },
+  );
+
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files?.[0]) {
       const selectedFile = event.target.files[0];
@@ -49,18 +96,6 @@ const CreateEntity: React.FC = () => {
     }
   };
 
-  const { mutate } = useFilePostData<
-    { files: File; organizationId: string; operation: string },
-    { message: string; details?: any }
-  >(
-    ['uploadedFiles'],
-    (data) => {
-      console.log('Upload successful, response:', data);
-    },
-    {
-      showToast: false,
-    },
-  );
   const handleFileUpload = () => {
     if (!file) {
       console.error('No file selected for upload');
@@ -71,31 +106,10 @@ const CreateEntity: React.FC = () => {
       url: `${POST.FILE_UPLOAD}`,
       payload: {
         files: file,
-        organizationId: '66de96d3548d06560e2931cb',
         operation: 'getAttributesFromXlsxOrCsvHeaders',
       },
     });
   };
-
-  const {
-    control,
-    handleSubmit,
-    register,
-    reset,
-    setValue,
-    formState: { errors },
-  } = useForm<FormValues>({
-    defaultValues: {
-      entityName: '',
-      entityDescription: '',
-      attributes: [{ name: '', attributeType: '', options: [], validation: [], transformations: [], cleaner: [] }],
-    },
-  });
-
-  const { fields, append, remove } = useFieldArray({
-    control,
-    name: 'attributes',
-  });
 
   const onSubmit = (data: FormValues) => {
     console.log('Form Data:', data);
@@ -104,6 +118,8 @@ const CreateEntity: React.FC = () => {
   };
 
   const handleCancel = () => {
+    setFile(null);
+    setFileName(null);
     setOpen(false);
     reset(); // Reset form on cancel
   };
@@ -178,20 +194,31 @@ const CreateEntity: React.FC = () => {
 
               {/* File Upload */}
               <FileUploadButton fileName={fileName} onFileChange={handleFileChange} />
-              <Button
-                variant={file ? 'contained' : 'outlined'}
-                onClick={handleFileUpload}
-                disabled={!file}
-                sx={{ mt: 2 }}
-              >
-                Upload File
-              </Button>
+              {!isPending ? (
+                <Button
+                  variant={file ? 'contained' : 'outlined'}
+                  onClick={handleFileUpload}
+                  disabled={!file}
+                  sx={{ mt: 2 }}
+                >
+                  Upload File
+                </Button>
+              ) : (
+                <ProgressBar />
+              )}
 
               <Divider sx={{ my: 3 }} />
 
               {/* Attributes Section */}
               {fields.map((attribute, index) => (
-                <Box key={attribute.id} sx={{ mb: 3 }}>
+                <Box
+                  key={attribute.id}
+                  sx={{
+                    mb: 3,
+                    pointerEvents: isPending ? 'none' : 'auto', // Disable interactions when isPending is true
+                    opacity: isPending ? 0.5 : 1,
+                  }}
+                >
                   <Typography variant="h6" mb={2}>
                     Attribute {index + 1}
                   </Typography>
@@ -202,35 +229,42 @@ const CreateEntity: React.FC = () => {
                       fullWidth
                       {...register(`attributes.${index}.name`, {
                         required: 'Attribute Name is required',
-                        pattern: {
-                          value: /^[A-Za-z\s]+$/,
-                          message: 'Attribute Name must contain only letters',
-                        },
                       })}
                       error={!!errors.attributes?.[index]?.name}
                       helperText={errors.attributes?.[index]?.name?.message}
                     />
 
-                    {/* Attribute Type */}
-                    <TextField
-                      select
-                      label="Attribute Type"
-                      fullWidth
-                      defaultValue={attribute.attributeType || ''}
-                      {...register(`attributes.${index}.attributeType`, {
-                        required: 'Attribute Type is required',
-                      })}
-                      error={!!errors.attributes?.[index]?.attributeType}
-                      helperText={errors.attributes?.[index]?.attributeType?.message}
-                    >
-                      {['number', 'text', 'date', 'boolean', 'richtext', 'url', 'option', 'multioption', 'user'].map(
-                        (attributeType) => (
-                          <MenuItem key={attributeType} value={attributeType}>
-                            {attributeType}
-                          </MenuItem>
-                        ),
-                      )}
-                    </TextField>
+                    <FormControl fullWidth error={!!errors.attributes?.[index]?.attributeType}>
+                      <InputLabel id={`attributeType-${index}`}>Attribute Type</InputLabel>
+                      <Controller
+                        name={`attributes.${index}.attributeType`}
+                        control={control}
+                        defaultValue={attribute.attributeType || ''}
+                        rules={{ required: 'Attribute Type is required' }}
+                        render={({ field }) => (
+                          <Select {...field} labelId={`attributeType-${index}`} label="Attribute Type">
+                            {[
+                              'number',
+                              'text',
+                              'date',
+                              'boolean',
+                              'richtext',
+                              'url',
+                              'option',
+                              'multioption',
+                              'user',
+                            ].map((attributeType) => (
+                              <MenuItem key={attributeType} value={attributeType}>
+                                {attributeType}
+                              </MenuItem>
+                            ))}
+                          </Select>
+                        )}
+                      />
+                      <FormHelperText>
+                        {attribute.attributeType.length === 0 && errors.attributes?.[index]?.attributeType?.message}
+                      </FormHelperText>
+                    </FormControl>
                   </Stack>
 
                   {/* Remove Attribute Button */}
@@ -258,10 +292,16 @@ const CreateEntity: React.FC = () => {
           </Box>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCancel} color="error">
+          <Button onClick={handleCancel} color="error" sx={{ fontSize: 18, fontWeight: 'bold', p: 1, pl: 2, pr: 2 }}>
             Cancel
           </Button>
-          <Button type="submit" onClick={handleSubmit(onSubmit)} variant="contained" color="primary">
+          <Button
+            type="submit"
+            onClick={handleSubmit(onSubmit)}
+            variant="contained"
+            color="primary"
+            sx={{ fontSize: 18, fontWeight: 'bold', p: 1, pl: 2, pr: 2 }}
+          >
             Save Entity
           </Button>
         </DialogActions>
