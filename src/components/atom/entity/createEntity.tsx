@@ -63,12 +63,10 @@ const CreateEntity: React.FC = () => {
     control,
     name: 'attributes',
   });
-  console.log('fields', fields);
 
   const { mutate, isPending } = useFilePostData<{ files: File; operation: string }, { message: string; data?: any }>(
     ['uploadedFiles'],
     (data) => {
-      console.log('Upload successful, response:', data);
       if (data?.data) {
         const newAttributes = data.data.map((attr: any) => ({
           name: attr.name || '',
@@ -98,7 +96,6 @@ const CreateEntity: React.FC = () => {
 
   const handleFileUpload = () => {
     if (!file) {
-      console.error('No file selected for upload');
       return;
     }
 
