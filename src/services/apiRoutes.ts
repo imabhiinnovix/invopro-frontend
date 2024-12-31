@@ -16,6 +16,7 @@ export const POST = {
 
   ORGANIZATION_ACTIVE: '/organizations/updateStatus/',
   USER_ACTIVE: '/users/updateStatus/',
+  FILE_UPLOAD: '/files/upload',
 };
 
 export const GET = {

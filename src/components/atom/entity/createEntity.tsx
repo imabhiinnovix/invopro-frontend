@@ -1,5 +1,5 @@
-import * as React from 'react';
-import { useForm, useFieldArray, Controller } from 'react-hook-form';
+import React, { useState } from 'react';
+import { useForm, useFieldArray } from 'react-hook-form';
 import {
   Box,
   Button,
@@ -13,14 +13,13 @@ import {
   IconButton,
   Divider,
   Stack,
-  Checkbox,
-  FormControlLabel,
-  Select,
-  InputLabel,
-  FormControl,
 } from '@mui/material';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutline';
+import FileUploadButton from '../file/fileUploadButton';
+import useFilePostData from '../../../hooks/usePostMultipart';
+
+import { POST } from '../../../services/apiRoutes';
 
 type Attribute = {
   name: string;
@@ -38,13 +37,46 @@ type FormValues = {
 };
 
 const CreateEntity: React.FC = () => {
-  const [open, setOpen] = React.useState(false);
+  const [open, setOpen] = useState(false);
+  const [file, setFile] = useState<File | null>(null);
+  const [fileName, setFileName] = useState<string | null>(null);
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.files?.[0]) {
+      const selectedFile = event.target.files[0];
+      setFile(selectedFile);
+      setFileName(selectedFile.name);
+    }
+  };
+
+  const { mutate } = useFilePostData<{ files: File; organizationId: string; operation: string }, { message: string }>(
+    ['uploadedFiles'],
+    () => console.log('File uploaded successfully'),
+    true,
+  );
+
+  const handleFileUpload = () => {
+    if (!file) {
+      console.error('No file selected for upload');
+      return;
+    }
+
+    mutate({
+      url: `${POST.FILE_UPLOAD}`,
+      payload: {
+        files: file,
+        organizationId: '66de96d3548d06560e2931cb',
+        operation: 'getAttributesFromXlsxOrCsvHeaders',
+      },
+    });
+  };
 
   const {
     control,
     handleSubmit,
     register,
     reset,
+    setValue,
     formState: { errors },
   } = useForm<FormValues>({
     defaultValues: {
@@ -106,7 +138,9 @@ const CreateEntity: React.FC = () => {
       </Button>
 
       <Dialog fullWidth maxWidth="lg" open={open} onClose={handleCancel}>
-        <DialogTitle>Create New Entity</DialogTitle>
+        <DialogTitle fontWeight="bold" fontSize={20}>
+          Create New Entity
+        </DialogTitle>
         <DialogContent dividers>
           <Box component="form" onSubmit={handleSubmit(onSubmit)} noValidate>
             <Stack spacing={3}>
@@ -117,7 +151,7 @@ const CreateEntity: React.FC = () => {
                 {...register('entityName', {
                   required: 'Entity Name is required',
                   pattern: {
-                    value: /^[A-Za-z\s]+$/, // Regular expression for letters and spaces only
+                    value: /^[A-Za-z\s]+$/,
                     message: 'Entity Name must contain only letters',
                   },
                 })}
@@ -136,6 +170,17 @@ const CreateEntity: React.FC = () => {
                 helperText={errors.entityDescription?.message}
               />
 
+              {/* File Upload */}
+              <FileUploadButton fileName={fileName} onFileChange={handleFileChange} />
+              <Button
+                variant={file ? 'contained' : 'outlined'}
+                onClick={handleFileUpload}
+                disabled={!file}
+                sx={{ mt: 2 }}
+              >
+                Upload File
+              </Button>
+
               <Divider sx={{ my: 3 }} />
 
               {/* Attributes Section */}
@@ -152,7 +197,7 @@ const CreateEntity: React.FC = () => {
                       {...register(`attributes.${index}.name`, {
                         required: 'Attribute Name is required',
                         pattern: {
-                          value: /^[A-Za-z\s]+$/, // Regular expression for letters and spaces only
+                          value: /^[A-Za-z\s]+$/,
                           message: 'Attribute Name must contain only letters',
                         },
                       })}
@@ -180,93 +225,6 @@ const CreateEntity: React.FC = () => {
                         ),
                       )}
                     </TextField>
-
-                    {/* Options (Visible only for "option" or "multioption") */}
-                    {(attribute.attributeType === 'option' || attribute.attributeType === 'multioption') && (
-                      <TextField
-                        label="Attribute Options (Comma Separated)"
-                        fullWidth
-                        {...register(`attributes.${index}.options`)}
-                      />
-                    )}
-
-                    {/* Validation */}
-                    <FormControl fullWidth>
-                      <InputLabel>Validation</InputLabel>
-                      <Controller
-                        name={`attributes.${index}.validation`}
-                        control={control}
-                        render={({ field }) => (
-                          <Select
-                            multiple
-                            label="Validation"
-                            value={field.value || []}
-                            onChange={field.onChange}
-                            renderValue={(selected) => selected.join(', ')}
-                            error={!!errors.attributes?.[index]?.validation}
-                          >
-                            {['required', 'minLength:5', 'maxLength:10'].map((validation) => (
-                              <MenuItem key={validation} value={validation}>
-                                <Checkbox checked={field.value?.includes(validation)} />
-                                {validation}
-                              </MenuItem>
-                            ))}
-                          </Select>
-                        )}
-                      />
-                    </FormControl>
-
-                    {/* Transformations */}
-                    <FormControl fullWidth>
-                      <InputLabel>Transformations</InputLabel>
-                      <Controller
-                        name={`attributes.${index}.transformations`}
-                        control={control}
-                        render={({ field }) => (
-                          <Select
-                            multiple
-                            label="Transformations"
-                            value={field.value || []}
-                            onChange={field.onChange}
-                            renderValue={(selected) => selected.join(', ')}
-                            error={!!errors.attributes?.[index]?.transformations}
-                          >
-                            {['trimSpace', 'makeAllCapital', 'lowerCase'].map((transformation) => (
-                              <MenuItem key={transformation} value={transformation}>
-                                <Checkbox checked={field.value?.includes(transformation)} />
-                                {transformation}
-                              </MenuItem>
-                            ))}
-                          </Select>
-                        )}
-                      />
-                    </FormControl>
-
-                    {/* Cleaner */}
-                    <FormControl fullWidth>
-                      <InputLabel>Cleaner</InputLabel>
-                      <Controller
-                        name={`attributes.${index}.cleaner`}
-                        control={control}
-                        render={({ field }) => (
-                          <Select
-                            multiple
-                            label="Cleaner"
-                            value={field.value || []}
-                            onChange={field.onChange}
-                            renderValue={(selected) => selected.join(', ')}
-                            error={!!errors.attributes?.[index]?.cleaner}
-                          >
-                            {['removeSpecialChars', 'removeNumbers'].map((cleaner) => (
-                              <MenuItem key={cleaner} value={cleaner}>
-                                <Checkbox checked={field.value?.includes(cleaner)} />
-                                {cleaner}
-                              </MenuItem>
-                            ))}
-                          </Select>
-                        )}
-                      />
-                    </FormControl>
                   </Stack>
 
                   {/* Remove Attribute Button */}

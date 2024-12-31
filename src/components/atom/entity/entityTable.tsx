@@ -187,7 +187,7 @@ const EntityTable: React.FC = () => {
                 <StyledTableCell>
                   <Switch checked={data.isActive} />
                 </StyledTableCell>
-                <StyledTableCell>
+                <StyledTableCell title="Edit Entity">
                   <Button>Edit</Button>
                 </StyledTableCell>
               </StyledTableRow>
@@ -204,7 +204,7 @@ const EntityTable: React.FC = () => {
           ))}
 
           {entitiesList.isLoading &&
-            Array.from({ length: 7 }, (_, index) => (
+            Array.from({ length: 1 }, (_, index) => (
               <StyledTableRow key={index}>
                 <StyledTableCell colSpan={5}>
                   <Skeleton height={40} />
