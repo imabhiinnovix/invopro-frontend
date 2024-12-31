@@ -49,12 +49,18 @@ const CreateEntity: React.FC = () => {
     }
   };
 
-  const { mutate } = useFilePostData<{ files: File; organizationId: string; operation: string }, { message: string }>(
+  const { mutate } = useFilePostData<
+    { files: File; organizationId: string; operation: string },
+    { message: string; details?: any }
+  >(
     ['uploadedFiles'],
-    () => console.log('File uploaded successfully'),
-    true,
+    (data) => {
+      console.log('Upload successful, response:', data);
+    },
+    {
+      showToast: false,
+    },
   );
-
   const handleFileUpload = () => {
     if (!file) {
       console.error('No file selected for upload');

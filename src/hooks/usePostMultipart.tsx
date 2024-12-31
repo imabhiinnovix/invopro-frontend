@@ -37,19 +37,28 @@ const filePostFetcher = async <
 
 const useFilePostData = <TRequest extends Record<string, string | Blob | File | File[] | null | undefined>, TResponse>(
   key: string[],
-  onSuccess?: onSuccess,
-  showToast: boolean = false,
+  onSuccess?: (data: TResponse) => void,
+  options: { showToast?: boolean; customToastMessage?: string } = {},
 ) => {
   const queryClient = useQueryClient();
+
   return useMutation<TResponse, unknown, { url: string; payload: TRequest }>({
     mutationFn: ({ url, payload }) => filePostFetcher<TRequest, TResponse>(url, payload),
     onSuccess: (data) => {
+      // Invalidate queries
       queryClient.invalidateQueries({ queryKey: key });
-      const successMessage = (data as { message: string }).message;
+
+      // Toast messages
+      const { showToast, customToastMessage } = options;
+      const successMessage = customToastMessage || (data as { message: string }).message;
       if (showToast) {
         toast.success(successMessage);
       }
-      onSuccess && onSuccess();
+
+      // Call user-provided onSuccess
+      if (onSuccess) {
+        onSuccess(data);
+      }
     },
     onError: (error) => {
       if (axios.isAxiosError(error) && error.response) {
