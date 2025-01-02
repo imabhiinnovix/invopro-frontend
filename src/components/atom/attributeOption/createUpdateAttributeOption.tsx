@@ -9,6 +9,7 @@ import {
   Chip,
   Box,
   IconButton,
+  InputAdornment,
 } from '@mui/material';
 import { useForm, Controller } from 'react-hook-form';
 import { AttributeOptionRequestPayload } from './types';
@@ -85,37 +86,11 @@ const CreateUpdateAttributeOption: React.FC<CreateUpdateAttributeOptionProps> = 
             />
           </Box>
 
-          {/* <Box mt={2}>
-            <Controller
-              name="attributeValue"
-              control={control}
-              render={() => (
-                <Box>
-                  <TextField
-                    label="Add Attribute Value"
-                    fullWidth
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        e.preventDefault();
-                        const value = (e.target as HTMLInputElement).value.trim();
-                        handleAddValue(value);
-                        (e.target as HTMLInputElement).value = '';
-                      }
-                    }}
-                  />
-                  <Box mt={1} display="flex" flexWrap="wrap" gap={1}>
-                    {attributeValue.map((value, index) => (
-                      <Chip key={index} label={value} onDelete={() => handleDeleteValue(value)} />
-                    ))}
-                  </Box>
-                </Box>
-              )}
-            />
-          </Box> */}
           <Box mt={2}>
             <Controller
               name="attributeValue"
               control={control}
+              rules={{ required: 'Attribute value is required' }}
               render={() => (
                 <Box>
                   <Box display="flex" alignItems="center">
@@ -126,25 +101,38 @@ const CreateUpdateAttributeOption: React.FC<CreateUpdateAttributeOptionProps> = 
                         if (e.key === 'Enter') {
                           e.preventDefault();
                           const value = (e.target as HTMLInputElement).value.trim();
-                          handleAddValue(value);
-                          (e.target as HTMLInputElement).value = '';
+                          if (value) {
+                            handleAddValue(value);
+                            (e.target as HTMLInputElement).value = '';
+                          }
                         }
+                      }}
+                      slotProps={{
+                        input: {
+                          name: 'attributeValue',
+                          endAdornment: (
+                            <InputAdornment position="end">
+                              <IconButton
+                                onClick={() => {
+                                  const input = document.querySelector(
+                                    'input[name="attributeValue"]',
+                                  ) as HTMLInputElement;
+                                  const value = input?.value.trim();
+                                  if (value) {
+                                    handleAddValue(value);
+                                    input.value = '';
+                                  }
+                                }}
+                                color="primary"
+                                aria-label="add value"
+                              >
+                                <AddIcon />
+                              </IconButton>
+                            </InputAdornment>
+                          ),
+                        },
                       }}
                     />
-                    <IconButton
-                      onClick={() => {
-                        const input = document.querySelector('input[name="attributeValue"]') as HTMLInputElement;
-                        const value = input?.value.trim();
-                        if (value) {
-                          handleAddValue(value);
-                          input.value = '';
-                        }
-                      }}
-                      color="primary"
-                      aria-label="add value"
-                    >
-                      <AddIcon />
-                    </IconButton>
                   </Box>
                   <Box mt={1} display="flex" flexWrap="wrap" gap={1}>
                     {attributeValue.map((value, index) => (
