@@ -226,14 +226,7 @@ const EntityTable: React.FC<EntityTableProps> = ({ reloadEntity, setReloadEntity
                     )}
                   </Typography>
                 </StyledTableCell>
-                <StyledTableCell title="Edit Entity">
-                  <CreateUpdateEntity
-                    setReloadEntity={setReloadEntity}
-                    title="Update Entity"
-                    CustomButton={<Button>Edit</Button>}
-                    data={data}
-                  />
-                </StyledTableCell>
+
                 <StyledTableCell>
                   {data.createdBy ? `${data.createdBy.firstName} ${data.createdBy.lastName}` : '-'}
                 </StyledTableCell>
@@ -247,7 +240,16 @@ const EntityTable: React.FC<EntityTableProps> = ({ reloadEntity, setReloadEntity
                 <StyledTableCell>
                   {data.updatedBy && data.updatedAt ? new Date(data.updatedAt).toLocaleString() : '-'}
                 </StyledTableCell>
+                <StyledTableCell title="Edit Entity">
+                  <CreateUpdateEntity
+                    setReloadEntity={setReloadEntity}
+                    title="Update Entity"
+                    CustomButton={<Button>Edit</Button>}
+                    data={data}
+                  />
+                </StyledTableCell>
               </StyledTableRow>
+
               {data && data.attributes && data.attributes?.length > 0 && (
                 <StyledTableRow>
                   <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={9}>
