@@ -1,13 +1,11 @@
-import * as React from 'react';
-import Popover from '@mui/material/Popover';
-import Typography from '@mui/material/Typography';
-import Button from '@mui/material/Button';
+// import Typography from '@mui/material/Typography';
 import { Box } from '@mui/material';
-import CustomizedTables from '../../components/atom/table/customizedTable';
 import CreateEntity from '../../components/atom/entity/createEntity';
 import EntityTable from '../../components/atom/entity/entityTable';
+import { useState } from 'react';
 
 export default function Entity() {
+  const [reloadEntity, setReloadEntity] = useState(false);
   return (
     <>
       <Box
@@ -27,18 +25,18 @@ export default function Entity() {
       >
         <Box
           display="flex"
-          justifyContent="space-between"
+          justifyContent="flex-end"
           alignItems="center"
           sx={{
-            flexWrap: 'wrap-reverse',
+            // flexWrap: 'wrap-reverse',
             gap: 2,
           }}
         >
           <Box>
-            <CreateEntity />
+            <CreateEntity setReloadEntity={setReloadEntity} />
           </Box>
 
-          <Box display="flex" gap={3} flexWrap="wrap" justifyContent="center">
+          {/* <Box display="flex" gap={3} flexWrap="wrap" justifyContent="center">
             <Box
               sx={{
                 borderRadius: 2,
@@ -89,11 +87,11 @@ export default function Entity() {
                 2
               </Typography>
             </Box>
-          </Box>
+          </Box> */}
         </Box>
 
         <Box mt={4} sx={{ overflowX: 'auto', flexGrow: 1 }}>
-          <EntityTable />
+          <EntityTable reloadEntity={reloadEntity} setReloadEntity={setReloadEntity} />
         </Box>
       </Box>
     </>

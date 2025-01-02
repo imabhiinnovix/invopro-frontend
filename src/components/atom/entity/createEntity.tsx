@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useForm, useFieldArray, Controller } from 'react-hook-form';
+import { useForm, useFieldArray, Controller, FieldError } from 'react-hook-form';
 import {
   Box,
   Button,
@@ -24,23 +24,13 @@ import FileUploadButton from '../file/fileUploadButton';
 import useFilePostData from '../../../hooks/usePostMultipart';
 import { POST } from '../../../services/apiRoutes';
 import ProgressBar from '../../molecule/progressBar';
+import usePost from '../../../hooks/usePost';
+import { EntityRequestPayload, EntityResponse } from './types';
 
-type Attribute = {
-  name: string;
-  attributeType: string;
-  options?: string[];
-  validation?: string[];
-  transformations?: string[];
-  cleaner?: string[];
-};
-
-type FormValues = {
-  entityName: string;
-  entityDescription: string;
-  attributes: Attribute[];
-};
-
-const CreateEntity: React.FC = () => {
+interface CreateEntityProps {
+  setReloadEntity: React.Dispatch<React.SetStateAction<boolean>>;
+}
+const CreateEntity: React.FC<CreateEntityProps> = ({ setReloadEntity }) => {
   const [open, setOpen] = useState(false);
   const [file, setFile] = useState<File | null>(null);
   const [fileName, setFileName] = useState<string | null>(null);
@@ -51,11 +41,11 @@ const CreateEntity: React.FC = () => {
     register,
     reset,
     formState: { errors },
-  } = useForm<FormValues>({
+  } = useForm<EntityRequestPayload>({
     defaultValues: {
-      entityName: '',
-      entityDescription: '',
-      attributes: [{ name: '', attributeType: '', options: [], validation: [], transformations: [], cleaner: [] }],
+      name: '',
+      description: '',
+      attributes: [{ name: '', type: '', optionAttributeId: '', validation: [], transformations: [], cleaner: [] }],
     },
   });
 
@@ -70,8 +60,8 @@ const CreateEntity: React.FC = () => {
       if (data?.data) {
         const newAttributes = data.data.map((attr: any) => ({
           name: attr.name || '',
-          attributeType: attr.attributeType || '',
-          options: attr.options || [],
+          type: attr.type || '',
+          optionAttributeId: attr.optionAttributeId || '',
           validation: attr.validation || [],
           transformations: attr.transformations || [],
           cleaner: attr.cleaner || [],
@@ -108,8 +98,19 @@ const CreateEntity: React.FC = () => {
     });
   };
 
-  const onSubmit = (data: FormValues) => {
-    console.log('Form Data:', data);
+  const createEntity = usePost<EntityRequestPayload, EntityResponse>(
+    ['createEntity'],
+    (data) => {
+      if (data?.success) {
+        setReloadEntity((prev) => !prev);
+      }
+    },
+    true,
+  );
+  const onSubmit = (data: EntityRequestPayload) => {
+    createEntity.mutate({ url: POST.CREATE_ENTITY, payload: data });
+    setFile(null);
+    setFileName(null);
     setOpen(false);
     reset(); // Reset form after submission
   };
@@ -167,15 +168,15 @@ const CreateEntity: React.FC = () => {
               <TextField
                 label="Entity Name*"
                 fullWidth
-                {...register('entityName', {
+                {...register('name', {
                   required: 'Entity Name is required',
                   pattern: {
                     value: /^[A-Za-z\s]+$/,
                     message: 'Entity Name must contain only letters',
                   },
                 })}
-                error={!!errors.entityName}
-                helperText={errors.entityName?.message}
+                error={!!errors.name}
+                helperText={errors.name?.message}
               />
 
               {/* Entity Description */}
@@ -184,9 +185,9 @@ const CreateEntity: React.FC = () => {
                 fullWidth
                 multiline
                 rows={4}
-                {...register('entityDescription')}
-                error={!!errors.entityDescription}
-                helperText={errors.entityDescription?.message}
+                {...register('description')}
+                error={!!errors.description}
+                helperText={errors.description?.message}
               />
 
               {/* File Upload */}
@@ -231,15 +232,15 @@ const CreateEntity: React.FC = () => {
                       helperText={errors.attributes?.[index]?.name?.message}
                     />
 
-                    <FormControl fullWidth error={!!errors.attributes?.[index]?.attributeType}>
-                      <InputLabel id={`attributeType-${index}`}>Attribute Type</InputLabel>
+                    <FormControl fullWidth error={!!errors.attributes?.[index]?.type}>
+                      <InputLabel id={`type-${index}`}>Attribute Type</InputLabel>
                       <Controller
-                        name={`attributes.${index}.attributeType`}
+                        name={`attributes.${index}.type`}
                         control={control}
-                        defaultValue={attribute.attributeType || ''}
+                        defaultValue={attribute.type || ''}
                         rules={{ required: 'Attribute Type is required' }}
                         render={({ field }) => (
-                          <Select {...field} labelId={`attributeType-${index}`} label="Attribute Type">
+                          <Select {...field} labelId={`type-${index}`} label="Attribute Type">
                             {[
                               'number',
                               'text',
@@ -250,16 +251,16 @@ const CreateEntity: React.FC = () => {
                               'option',
                               'multioption',
                               'user',
-                            ].map((attributeType) => (
-                              <MenuItem key={attributeType} value={attributeType}>
-                                {attributeType}
+                            ].map((type) => (
+                              <MenuItem key={type} value={type}>
+                                {type}
                               </MenuItem>
                             ))}
                           </Select>
                         )}
                       />
                       <FormHelperText>
-                        {attribute.attributeType.length === 0 && errors.attributes?.[index]?.attributeType?.message}
+                        {attribute.type.length === 0 && (errors.attributes?.[index]?.type as FieldError)?.message}
                       </FormHelperText>
                     </FormControl>
                   </Stack>
@@ -280,7 +281,14 @@ const CreateEntity: React.FC = () => {
                 variant="contained"
                 startIcon={<AddCircleOutlineIcon />}
                 onClick={() =>
-                  append({ name: '', attributeType: '', options: [], validation: [], transformations: [], cleaner: [] })
+                  append({
+                    name: '',
+                    type: '',
+                    optionAttributeId: '',
+                    validation: [],
+                    transformations: [],
+                    cleaner: [],
+                  })
                 }
               >
                 Add Attribute
@@ -289,18 +297,29 @@ const CreateEntity: React.FC = () => {
           </Box>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCancel} color="error" sx={{ fontSize: 18, fontWeight: 'bold', p: 1, pl: 2, pr: 2 }}>
-            Cancel
-          </Button>
-          <Button
-            type="submit"
-            onClick={handleSubmit(onSubmit)}
-            variant="contained"
-            color="primary"
-            sx={{ fontSize: 18, fontWeight: 'bold', p: 1, pl: 2, pr: 2 }}
-          >
-            Save Entity
-          </Button>
+          {createEntity.isPending ? (
+            <ProgressBar />
+          ) : (
+            <>
+              {' '}
+              <Button
+                onClick={handleCancel}
+                color="error"
+                sx={{ fontSize: 18, fontWeight: 'bold', p: 1, pl: 2, pr: 2 }}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                onClick={handleSubmit(onSubmit)}
+                variant="contained"
+                color="primary"
+                sx={{ fontSize: 18, fontWeight: 'bold', p: 1, pl: 2, pr: 2 }}
+              >
+                Save Entity
+              </Button>
+            </>
+          )}
         </DialogActions>
       </Dialog>
     </Box>

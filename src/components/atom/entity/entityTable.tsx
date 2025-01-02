@@ -58,7 +58,12 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
   backgroundColor: theme.palette.action.hover,
 }));
 
-const EntityTable: React.FC = () => {
+interface EntityTableProps {
+  reloadEntity: boolean; // reloadEntity is now a boolean
+  setReloadEntity: React.Dispatch<React.SetStateAction<boolean>>;
+}
+
+const EntityTable: React.FC<EntityTableProps> = ({ reloadEntity, setReloadEntity }) => {
   const [entities, setEntities] = useState<Entity[]>([]);
   const [currentPage, setCurrentPage] = useState<number>(1);
 
@@ -69,6 +74,7 @@ const EntityTable: React.FC = () => {
   };
 
   const perPageItem = 10;
+
   const entitiesList = useGet<{ success: boolean; data: Entity[]; totalCount: number }>(
     [`entityList`, String(currentPage)],
     GET?.Entity_List + `?page=${currentPage}&limit=${perPageItem}`,
@@ -76,8 +82,23 @@ const EntityTable: React.FC = () => {
   );
 
   useEffect(() => {
+    setCurrentPage(1); // This will trigger a state update
+  }, [reloadEntity]);
+
+  useEffect(() => {
+    if (currentPage === 1 && reloadEntity) {
+      setEntities([]); // Clear entities
+      entitiesList.refetch(); // Now safely refetch
+    }
+  }, [currentPage, reloadEntity]);
+
+  useEffect(() => {
     if (entitiesList?.data?.data) {
-      setEntities((prev) => [...prev, ...entitiesList?.data?.data]);
+      if (currentPage === 1) {
+        setEntities([...entitiesList?.data?.data]);
+      } else {
+        setEntities((prev) => [...prev, ...entitiesList?.data?.data]);
+      }
     }
   }, [entitiesList?.data?.data]);
 
@@ -89,7 +110,7 @@ const EntityTable: React.FC = () => {
 
   const lastElementRef = useCallback(
     (node: HTMLTableRowElement | null) => {
-      if (entitiesList.isLoading || entities.length >= entitiesList?.data?.totalCount!) return;
+      if (entitiesList.isFetching || entities.length >= entitiesList?.data?.totalCount!) return;
 
       // Disconnect the previous observer if it exists
       if (lastRowRef.current) {
@@ -108,7 +129,7 @@ const EntityTable: React.FC = () => {
         lastRowRef.current.observe(node);
       }
     },
-    [entitiesList.isLoading], // Add the correct dependency
+    [entitiesList.isFetching], // Add the correct dependency
   );
 
   const renderAttributes = (attributes: Attribute[] = []): JSX.Element => (
@@ -138,7 +159,7 @@ const EntityTable: React.FC = () => {
     </Box>
   );
 
-  if (!entitiesList.isLoading && !entities.length) {
+  if (!entitiesList.isFetching && !entities.length) {
     return (
       <Box
         display="flex"
@@ -151,7 +172,7 @@ const EntityTable: React.FC = () => {
           No entities have been created yet. Please create an entity to display it here.
         </Typography>
         <Box maxWidth="600px">
-          <CreateEntity />
+          <CreateEntity setReloadEntity={setReloadEntity} />
         </Box>
       </Box>
     );
@@ -203,7 +224,7 @@ const EntityTable: React.FC = () => {
             </React.Fragment>
           ))}
 
-          {entitiesList.isLoading &&
+          {entitiesList.isFetching &&
             Array.from({ length: 1 }, (_, index) => (
               <StyledTableRow key={index}>
                 <StyledTableCell colSpan={5}>
