@@ -28,4 +28,5 @@ export const GET = {
   GET_USER: '/users/',
   GET_ORGANIZATION: '/organizations/',
   Entity_List: '/entities/list',
+  Attribute_Option_List: 'attributeOptions/list',
 };

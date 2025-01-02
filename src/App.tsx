@@ -11,6 +11,7 @@ import SuperAdminProtect from './Auth/SuperAdminProtect';
 import Dashboard from './pages/dashboard';
 import CommonLayout from './components/molecule/layout/commonLayout';
 import Entity from './pages/entity';
+import AttributeOption from './pages/attributeOption';
 
 function App() {
   return (
@@ -25,9 +26,10 @@ function App() {
 
           {/* User Protected Routes */}
           <Route element={<AuthProtect />}>
-            <Route element={<CommonLayout /> }> 
+            <Route element={<CommonLayout />}>
               <Route path="/dashboard" element={<Dashboard />} />
-              <Route path='/entity' element={<Entity />}/>
+              <Route path="/entity" element={<Entity />} />
+              <Route path="/attribute-option" element={<AttributeOption />} />
             </Route>
           </Route>
 
@@ -36,7 +38,8 @@ function App() {
             <Route element={<CommonLayout />}>
               {/* <Route path='/entity' element={<Entity />}/> */}
               <Route path="/superadmin/dashboard" element={<Dashboard />} />
-            </Route> 
+              <Route path="/attribute-option" element={<AttributeOption />} />
+            </Route>
           </Route>
         </Routes>
       </BrowserRouter>

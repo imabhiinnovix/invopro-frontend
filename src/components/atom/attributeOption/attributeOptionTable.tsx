@@ -21,8 +21,8 @@ import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import useGet from '../../../hooks/useGet';
 import { GET } from '../../../services/apiRoutes';
-import CreateUpdateEntity from './createUpdateEntity';
-import { Attribute, EntityRequestPayload } from './types';
+import { AttributeOptionRequestPayload } from './types';
+import CreateUpdateAttributeOption from './createUpdateAttributeOption';
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
   [`&.${tableCellClasses.head}`]: {
@@ -38,13 +38,16 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
   backgroundColor: theme.palette.action.hover,
 }));
 
-interface EntityTableProps {
-  reloadEntity: boolean; // reloadEntity is now a boolean
-  setReloadEntity: React.Dispatch<React.SetStateAction<boolean>>;
+interface AttributeOptionTableProps {
+  attributeOptionReload: boolean; // attributeOptionReload is now a boolean
+  setAttributeOptionReload: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-const EntityTable: React.FC<EntityTableProps> = ({ reloadEntity, setReloadEntity }) => {
-  const [entities, setEntities] = useState<EntityRequestPayload[]>([]);
+const AttributeOptionTable: React.FC<AttributeOptionTableProps> = ({
+  attributeOptionReload,
+  setAttributeOptionReload,
+}) => {
+  const [attributes, setAttributes] = useState<AttributeOptionRequestPayload[]>([]);
   const [currentPage, setCurrentPage] = useState<number>(1);
 
   const [expandedRows, setExpandedRows] = useState<{ [key: number]: boolean }>({});
@@ -55,32 +58,32 @@ const EntityTable: React.FC<EntityTableProps> = ({ reloadEntity, setReloadEntity
 
   const perPageItem = 10;
 
-  const entitiesList = useGet<{ success: boolean; data: EntityRequestPayload[]; totalCount: number }>(
-    [`entityList`, String(currentPage)],
-    GET?.Entity_List + `?page=${currentPage}&limit=${perPageItem}`,
+  const attributeList = useGet<{ success: boolean; data: AttributeOptionRequestPayload[]; totalCount: number }>(
+    [`attributeList`, String(currentPage)],
+    GET?.Attribute_Option_List + `?page=${currentPage}&limit=${perPageItem}`,
     !!currentPage,
   );
 
   useEffect(() => {
     setCurrentPage(1); // This will trigger a state update
-  }, [reloadEntity]);
+  }, [attributeOptionReload]);
 
   useEffect(() => {
-    if (currentPage === 1 && reloadEntity) {
-      setEntities([]); // Clear entities
-      entitiesList.refetch(); // Now safely refetch
+    if (currentPage === 1 && attributeOptionReload) {
+      setAttributes([]); // Clear attributes
+      attributeList.refetch(); // Now safely refetch
     }
-  }, [currentPage, reloadEntity]);
+  }, [currentPage, attributeOptionReload]);
 
   useEffect(() => {
-    if (entitiesList?.data?.data) {
+    if (attributeList?.data?.data) {
       if (currentPage === 1) {
-        setEntities([...entitiesList?.data?.data]);
+        setAttributes([...attributeList?.data?.data]);
       } else {
-        setEntities((prev) => [...prev, ...entitiesList?.data?.data]);
+        setAttributes((prev) => [...prev, ...attributeList?.data?.data]);
       }
     }
-  }, [entitiesList?.data?.data]);
+  }, [attributeList?.data?.data]);
 
   useEffect(() => {
     setCurrentPage(currentPage);
@@ -90,7 +93,7 @@ const EntityTable: React.FC<EntityTableProps> = ({ reloadEntity, setReloadEntity
 
   const lastElementRef = useCallback(
     (node: HTMLTableRowElement | null) => {
-      if (entitiesList.isFetching || entities.length >= entitiesList?.data?.totalCount!) return;
+      if (attributeList.isFetching || attributes.length >= attributeList?.data?.totalCount!) return;
 
       // Disconnect the previous observer if it exists
       if (lastRowRef.current) {
@@ -109,29 +112,21 @@ const EntityTable: React.FC<EntityTableProps> = ({ reloadEntity, setReloadEntity
         lastRowRef.current.observe(node);
       }
     },
-    [entitiesList.isFetching], // Add the correct dependency
+    [attributeList.isFetching], // Add the correct dependency
   );
 
-  const renderAttributes = (attributes: Attribute[] = []): JSX.Element => (
+  const renderAttributes = (attributes: string[] = []): JSX.Element => (
     <Box sx={{ margin: 1 }}>
       <Table size="small" aria-label="attributes">
         <TableHead>
           <TableRow>
-            <StyledTableCell>ATTRIBUTE NAME</StyledTableCell>
-            <StyledTableCell>ATTRIBUTE TYPE</StyledTableCell>
-            <StyledTableCell>ATTRIBUTE VALIDATION</StyledTableCell>
-            <StyledTableCell>ATTRIBUTE TRANSFORMATIONS</StyledTableCell>
-            <StyledTableCell>ATTRIBUTE CLEANER</StyledTableCell>
+            <StyledTableCell>ATTRIBUTE OPTIONS</StyledTableCell>
           </TableRow>
         </TableHead>
         <TableBody>
           {attributes.map((attr, index) => (
             <StyledTableRow key={index}>
-              <StyledTableCell>{attr.name || '-'}</StyledTableCell>
-              <StyledTableCell>{attr.type || '-'}</StyledTableCell>
-              <StyledTableCell>{attr.validation?.length ? attr.validation.join(', ') : '-'}</StyledTableCell>
-              <StyledTableCell>{attr.transformations?.length ? attr.transformations.join(', ') : '-'}</StyledTableCell>
-              <StyledTableCell>{attr.cleaner?.length ? attr.cleaner.join(', ') : '-'}</StyledTableCell>
+              <StyledTableCell>{attr || '-'}</StyledTableCell>
             </StyledTableRow>
           ))}
         </TableBody>
@@ -139,7 +134,7 @@ const EntityTable: React.FC<EntityTableProps> = ({ reloadEntity, setReloadEntity
     </Box>
   );
 
-  if (!entitiesList.isFetching && !entities.length) {
+  if (!attributeList.isFetching && !attributes.length) {
     return (
       <Box
         display="flex"
@@ -149,11 +144,11 @@ const EntityTable: React.FC<EntityTableProps> = ({ reloadEntity, setReloadEntity
         alignItems="center"
       >
         <Typography variant="h4" fontWeight="bold" gutterBottom>
-          No entities have been created yet. Please create an entity to display it here.
+          No attributes have been created yet. Please create an entity to display it here.
         </Typography>
         <Box maxWidth="600px">
-          <CreateUpdateEntity
-            setReloadEntity={setReloadEntity}
+          <CreateUpdateAttributeOption
+            setAttributeOptionReload={setAttributeOptionReload}
             title="Create New Entity"
             CustomButton={
               <Button
@@ -183,28 +178,26 @@ const EntityTable: React.FC<EntityTableProps> = ({ reloadEntity, setReloadEntity
 
   return (
     <TableContainer component={Paper}>
-      <Table sx={{ width: '100%' }} aria-label="customized table">
+      <Table sx={{ width: '100%' }} aria-label="attribute-option-table">
         <TableHead>
           <TableRow>
             <StyledTableCell>NAME</StyledTableCell>
-            <StyledTableCell>DESCRIPTION</StyledTableCell>
-            <StyledTableCell>ATTRIBUTES</StyledTableCell>
+            <StyledTableCell>ATTRIBUTE OPTION</StyledTableCell>
             <StyledTableCell>STATUS</StyledTableCell>
-            <StyledTableCell>ACTION</StyledTableCell>
             <StyledTableCell>CREATED BY</StyledTableCell>
             <StyledTableCell>UPDATED BY</StyledTableCell>
             <StyledTableCell>CREATED AT</StyledTableCell>
             <StyledTableCell>UPDATED AT</StyledTableCell>
+            <StyledTableCell>ACTION</StyledTableCell>
           </TableRow>
         </TableHead>
         <TableBody>
-          {entities.map((data, dataIndex) => (
+          {attributes.map((data, dataIndex) => (
             <React.Fragment key={data._id}>
-              <StyledTableRow ref={entities.length === dataIndex + 1 ? lastElementRef : null}>
-                <StyledTableCell>{data.name || '-'}</StyledTableCell>
-                <StyledTableCell>{data.description || '-'}</StyledTableCell>
+              <StyledTableRow ref={attributes.length === dataIndex + 1 ? lastElementRef : null}>
+                <StyledTableCell>{data.attributeName || '-'}</StyledTableCell>
                 <StyledTableCell>
-                  {data.attributes?.length ? (
+                  {data.attributeValue?.length ? (
                     <IconButton aria-label="expand row" size="small" onClick={() => toggleRow(dataIndex)}>
                       {expandedRows[dataIndex] ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
                     </IconButton>
@@ -240,21 +233,21 @@ const EntityTable: React.FC<EntityTableProps> = ({ reloadEntity, setReloadEntity
                 <StyledTableCell>
                   {data.updatedBy && data.updatedAt ? new Date(data.updatedAt).toLocaleString() : '-'}
                 </StyledTableCell>
-                <StyledTableCell title="Edit Entity">
-                  <CreateUpdateEntity
-                    setReloadEntity={setReloadEntity}
-                    title="Update Entity"
+                <StyledTableCell title="Edit Attribute Option">
+                  <CreateUpdateAttributeOption
+                    setAttributeOptionReload={setAttributeOptionReload}
+                    title="Update Attribute Option"
                     CustomButton={<Button>Edit</Button>}
                     data={data}
                   />
                 </StyledTableCell>
               </StyledTableRow>
 
-              {data && data.attributes && data.attributes?.length > 0 && (
+              {data && data.attributeValue && data.attributeValue?.length > 0 && (
                 <StyledTableRow>
                   <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={9}>
                     <Collapse in={expandedRows[dataIndex]} timeout="auto" unmountOnExit>
-                      {renderAttributes(data.attributes)}
+                      {renderAttributes(data.attributeValue)}
                     </Collapse>
                   </TableCell>
                 </StyledTableRow>
@@ -262,7 +255,7 @@ const EntityTable: React.FC<EntityTableProps> = ({ reloadEntity, setReloadEntity
             </React.Fragment>
           ))}
 
-          {entitiesList.isFetching &&
+          {attributeList.isFetching &&
             Array.from({ length: 1 }, (_, index) => (
               <StyledTableRow key={index}>
                 <StyledTableCell colSpan={9}>
@@ -276,4 +269,4 @@ const EntityTable: React.FC<EntityTableProps> = ({ reloadEntity, setReloadEntity
   );
 };
 
-export default EntityTable;
+export default AttributeOptionTable;
