@@ -18,6 +18,7 @@ export const POST = {
   USER_ACTIVE: '/users/updateStatus/',
   FILE_UPLOAD: '/files/upload',
   CREATE_ENTITY: '/entities/create',
+  UPDATE_ENTITY: 'entities/update',
 };
 
 export const GET = {

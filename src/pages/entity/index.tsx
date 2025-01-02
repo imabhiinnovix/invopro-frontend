@@ -1,6 +1,6 @@
 // import Typography from '@mui/material/Typography';
-import { Box } from '@mui/material';
-import CreateEntity from '../../components/atom/entity/createEntity';
+import { Box, Button } from '@mui/material';
+import CreateUpdateEntity from '../../components/atom/entity/createUpdateEntity';
 import EntityTable from '../../components/atom/entity/entityTable';
 import { useState } from 'react';
 
@@ -33,7 +33,30 @@ export default function Entity() {
           }}
         >
           <Box>
-            <CreateEntity setReloadEntity={setReloadEntity} />
+            <CreateUpdateEntity
+              setReloadEntity={setReloadEntity}
+              title="Create New Entity"
+              CustomButton={
+                <Button
+                  variant="contained"
+                  size="large"
+                  sx={{
+                    fontWeight: 'bold',
+                    fontSize: '1.2rem',
+                    padding: '15px 30px',
+                    bgcolor: '#007bff',
+                    color: '#fff',
+                    '&:hover': { bgcolor: '#0056b3' },
+                    '@media (max-width: 600px)': {
+                      fontSize: '1rem',
+                      padding: '10px 20px',
+                    },
+                  }}
+                >
+                  Create New Entity
+                </Button>
+              }
+            />
           </Box>
 
           {/* <Box display="flex" gap={3} flexWrap="wrap" justifyContent="center">

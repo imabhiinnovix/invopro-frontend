@@ -27,10 +27,13 @@ import ProgressBar from '../../molecule/progressBar';
 import usePost from '../../../hooks/usePost';
 import { EntityRequestPayload, EntityResponse } from './types';
 
-interface CreateEntityProps {
+interface CreateUpdateEntityProps {
   setReloadEntity: React.Dispatch<React.SetStateAction<boolean>>;
+  CustomButton: React.ReactElement;
+  title: string;
+  data?: EntityRequestPayload;
 }
-const CreateEntity: React.FC<CreateEntityProps> = ({ setReloadEntity }) => {
+const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({ setReloadEntity, CustomButton, title, data }) => {
   const [open, setOpen] = useState(false);
   const [file, setFile] = useState<File | null>(null);
   const [fileName, setFileName] = useState<string | null>(null);
@@ -43,9 +46,18 @@ const CreateEntity: React.FC<CreateEntityProps> = ({ setReloadEntity }) => {
     formState: { errors },
   } = useForm<EntityRequestPayload>({
     defaultValues: {
-      name: '',
-      description: '',
-      attributes: [{ name: '', type: '', optionAttributeId: '', validation: [], transformations: [], cleaner: [] }],
+      name: data?.name ?? '',
+      description: data?.description ?? '',
+      attributes: data?.attributes ?? [
+        {
+          name: '',
+          type: '',
+          optionAttributeId: '',
+          validation: [],
+          transformations: [],
+          cleaner: [],
+        },
+      ],
     },
   });
 
@@ -72,7 +84,6 @@ const CreateEntity: React.FC<CreateEntityProps> = ({ setReloadEntity }) => {
     },
     {
       showToast: true,
-      customToastMessage: 'Attribute Retrieved Successfully',
     },
   );
 
@@ -103,16 +114,20 @@ const CreateEntity: React.FC<CreateEntityProps> = ({ setReloadEntity }) => {
     (data) => {
       if (data?.success) {
         setReloadEntity((prev) => !prev);
+        setFile(null);
+        setFileName(null);
+        setOpen(false);
+        reset();
       }
     },
     true,
   );
-  const onSubmit = (data: EntityRequestPayload) => {
-    createEntity.mutate({ url: POST.CREATE_ENTITY, payload: data });
-    setFile(null);
-    setFileName(null);
-    setOpen(false);
-    reset(); // Reset form after submission
+  const onSubmit = (formData: EntityRequestPayload) => {
+    if (data && data._id) {
+      createEntity.mutate({ url: `${POST.UPDATE_ENTITY}/${data._id}`, payload: formData });
+    } else {
+      createEntity.mutate({ url: POST.CREATE_ENTITY, payload: formData });
+    }
   };
 
   const handleCancel = () => {
@@ -123,43 +138,12 @@ const CreateEntity: React.FC<CreateEntityProps> = ({ setReloadEntity }) => {
   };
 
   return (
-    <Box
-      display="flex"
-      flexDirection="column"
-      p={3}
-      gap={4}
-      width="100%"
-      bgcolor="#f9f9f9"
-      sx={{
-        '@media (max-width: 600px)': {
-          p: 2,
-          gap: 2,
-        },
-      }}
-    >
-      <Button
-        variant="contained"
-        size="large"
-        sx={{
-          fontWeight: 'bold',
-          fontSize: '1.2rem',
-          padding: '15px 30px',
-          bgcolor: '#007bff',
-          color: '#fff',
-          '&:hover': { bgcolor: '#0056b3' },
-          '@media (max-width: 600px)': {
-            fontSize: '1rem',
-            padding: '10px 20px',
-          },
-        }}
-        onClick={() => setOpen(true)}
-      >
-        Create New Entity
-      </Button>
+    <>
+      <Box onClick={() => setOpen(true)}>{CustomButton}</Box>
 
       <Dialog fullWidth maxWidth="lg" open={open} onClose={handleCancel}>
         <DialogTitle fontWeight="bold" fontSize={20}>
-          Create New Entity
+          {title}
         </DialogTitle>
         <DialogContent dividers>
           <Box component="form" onSubmit={handleSubmit(onSubmit)} noValidate>
@@ -322,8 +306,8 @@ const CreateEntity: React.FC<CreateEntityProps> = ({ setReloadEntity }) => {
           )}
         </DialogActions>
       </Dialog>
-    </Box>
+    </>
   );
 };
 
-export default CreateEntity;
+export default CreateUpdateEntity;

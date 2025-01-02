@@ -21,28 +21,8 @@ import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import useGet from '../../../hooks/useGet';
 import { GET } from '../../../services/apiRoutes';
-import CreateEntity from './createEntity';
-
-type Attribute = {
-  name: string;
-  type: string;
-  validation?: string[];
-  transformations?: string[];
-  cleaner?: string[];
-  optionAttributeId?: string;
-};
-
-type Entity = {
-  _id: string;
-  name: string;
-  description: string;
-  attributes: Attribute[];
-  organizationId: string;
-  createdBy: string;
-  isActive: boolean;
-  createdAt: string;
-  updatedAt: string;
-};
+import CreateUpdateEntity from './createUpdateEntity';
+import { Attribute, EntityRequestPayload } from './types';
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
   [`&.${tableCellClasses.head}`]: {
@@ -64,7 +44,7 @@ interface EntityTableProps {
 }
 
 const EntityTable: React.FC<EntityTableProps> = ({ reloadEntity, setReloadEntity }) => {
-  const [entities, setEntities] = useState<Entity[]>([]);
+  const [entities, setEntities] = useState<EntityRequestPayload[]>([]);
   const [currentPage, setCurrentPage] = useState<number>(1);
 
   const [expandedRows, setExpandedRows] = useState<{ [key: number]: boolean }>({});
@@ -75,7 +55,7 @@ const EntityTable: React.FC<EntityTableProps> = ({ reloadEntity, setReloadEntity
 
   const perPageItem = 10;
 
-  const entitiesList = useGet<{ success: boolean; data: Entity[]; totalCount: number }>(
+  const entitiesList = useGet<{ success: boolean; data: EntityRequestPayload[]; totalCount: number }>(
     [`entityList`, String(currentPage)],
     GET?.Entity_List + `?page=${currentPage}&limit=${perPageItem}`,
     !!currentPage,
@@ -172,7 +152,30 @@ const EntityTable: React.FC<EntityTableProps> = ({ reloadEntity, setReloadEntity
           No entities have been created yet. Please create an entity to display it here.
         </Typography>
         <Box maxWidth="600px">
-          <CreateEntity setReloadEntity={setReloadEntity} />
+          <CreateUpdateEntity
+            setReloadEntity={setReloadEntity}
+            title="Create New Entity"
+            CustomButton={
+              <Button
+                variant="contained"
+                size="large"
+                sx={{
+                  fontWeight: 'bold',
+                  fontSize: '1.2rem',
+                  padding: '15px 30px',
+                  bgcolor: '#007bff',
+                  color: '#fff',
+                  '&:hover': { bgcolor: '#0056b3' },
+                  '@media (max-width: 600px)': {
+                    fontSize: '1rem',
+                    padding: '10px 20px',
+                  },
+                }}
+              >
+                Create New Entity
+              </Button>
+            }
+          />
         </Box>
       </Box>
     );
@@ -188,6 +191,10 @@ const EntityTable: React.FC<EntityTableProps> = ({ reloadEntity, setReloadEntity
             <StyledTableCell>ATTRIBUTES</StyledTableCell>
             <StyledTableCell>STATUS</StyledTableCell>
             <StyledTableCell>ACTION</StyledTableCell>
+            <StyledTableCell>CREATED BY</StyledTableCell>
+            <StyledTableCell>UPDATED BY</StyledTableCell>
+            <StyledTableCell>CREATED AT</StyledTableCell>
+            <StyledTableCell>UPDATED AT</StyledTableCell>
           </TableRow>
         </TableHead>
         <TableBody>
@@ -206,15 +213,44 @@ const EntityTable: React.FC<EntityTableProps> = ({ reloadEntity, setReloadEntity
                   )}
                 </StyledTableCell>
                 <StyledTableCell>
-                  <Switch checked={data.isActive} />
+                  {/* <Switch checked={data.isActive} /> */}
+                  <Typography>
+                    {data.isActive ? (
+                      <Typography color="success" fontSize={14}>
+                        ACTIVE
+                      </Typography>
+                    ) : (
+                      <Typography color="error" fontSize={14}>
+                        INACTIVE
+                      </Typography>
+                    )}
+                  </Typography>
                 </StyledTableCell>
                 <StyledTableCell title="Edit Entity">
-                  <Button>Edit</Button>
+                  <CreateUpdateEntity
+                    setReloadEntity={setReloadEntity}
+                    title="Update Entity"
+                    CustomButton={<Button>Edit</Button>}
+                    data={data}
+                  />
+                </StyledTableCell>
+                <StyledTableCell>
+                  {data.createdBy ? `${data.createdBy.firstName} ${data.createdBy.lastName}` : '-'}
+                </StyledTableCell>
+
+                <StyledTableCell>
+                  {data.updatedBy ? `${data.updatedBy.firstName} ${data.updatedBy.lastName}` : '-'}
+                </StyledTableCell>
+
+                <StyledTableCell>{data.createdAt ? new Date(data.createdAt).toLocaleString() : '-'}</StyledTableCell>
+
+                <StyledTableCell>
+                  {data.updatedBy && data.updatedAt ? new Date(data.updatedAt).toLocaleString() : '-'}
                 </StyledTableCell>
               </StyledTableRow>
-              {data.attributes?.length > 0 && (
+              {data && data.attributes && data.attributes?.length > 0 && (
                 <StyledTableRow>
-                  <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={5}>
+                  <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={9}>
                     <Collapse in={expandedRows[dataIndex]} timeout="auto" unmountOnExit>
                       {renderAttributes(data.attributes)}
                     </Collapse>
@@ -227,7 +263,7 @@ const EntityTable: React.FC<EntityTableProps> = ({ reloadEntity, setReloadEntity
           {entitiesList.isFetching &&
             Array.from({ length: 1 }, (_, index) => (
               <StyledTableRow key={index}>
-                <StyledTableCell colSpan={5}>
+                <StyledTableCell colSpan={9}>
                   <Skeleton height={40} />
                 </StyledTableCell>
               </StyledTableRow>
