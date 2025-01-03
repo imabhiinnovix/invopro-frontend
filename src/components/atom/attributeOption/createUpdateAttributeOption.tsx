@@ -58,10 +58,10 @@ const CreateUpdateAttributeOption: React.FC<CreateUpdateAttributeOptionProps> = 
   };
 
   const createUpdateAttributeOptions = usePost<AttributeOptionRequestPayload, AttributeOptionResponse>(
-    ['createUpdateEntity'],
+    ['createUpdateAttributeOptions'],
     (data) => {
       if (data?.success) {
-        setAttributeOptionReload((prev) => !prev);
+        setAttributeOptionReload(true);
         handleFormClose();
       }
     },

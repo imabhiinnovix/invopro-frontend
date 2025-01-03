@@ -113,7 +113,7 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({ setReloadEntity
     ['createEntity'],
     (data) => {
       if (data?.success) {
-        setReloadEntity((prev) => !prev);
+        setReloadEntity(true);
         setFile(null);
         setFileName(null);
         setOpen(false);

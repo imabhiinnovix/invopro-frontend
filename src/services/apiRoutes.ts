@@ -20,7 +20,7 @@ export const POST = {
   CREATE_ENTITY: '/entities/create',
   UPDATE_ENTITY: '/entities/update',
   CREATE_ATTRIBUTE_OPTION: '/attributeOptions/create',
-  UPDATE_ATTRIBUTE_OPTION: '/attributeOptions/create',
+  UPDATE_ATTRIBUTE_OPTION: '/attributeOptions/update',
 };
 
 export const GET = {

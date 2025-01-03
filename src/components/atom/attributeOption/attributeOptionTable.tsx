@@ -65,13 +65,13 @@ const AttributeOptionTable: React.FC<AttributeOptionTableProps> = ({
   );
 
   useEffect(() => {
-    setCurrentPage(1); // This will trigger a state update
+    setCurrentPage(1);
   }, [attributeOptionReload]);
 
   useEffect(() => {
     if (currentPage === 1 && attributeOptionReload) {
-      setAttributes([]); // Clear attributes
-      attributeList.refetch(); // Now safely refetch
+      attributeList.refetch();
+      setAttributeOptionReload(false);
     }
   }, [currentPage, attributeOptionReload]);
 

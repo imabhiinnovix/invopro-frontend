@@ -67,8 +67,8 @@ const EntityTable: React.FC<EntityTableProps> = ({ reloadEntity, setReloadEntity
 
   useEffect(() => {
     if (currentPage === 1 && reloadEntity) {
-      setEntities([]); // Clear entities
       entitiesList.refetch(); // Now safely refetch
+      setReloadEntity(false);
     }
   }, [currentPage, reloadEntity]);
 
