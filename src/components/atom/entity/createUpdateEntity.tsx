@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useForm, useFieldArray, Controller, FieldError } from 'react-hook-form';
 import {
   Box,
@@ -60,6 +60,23 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({ setReloadEntity
       ],
     },
   });
+
+  useEffect(() => {
+    reset({
+      name: data?.name ?? '',
+      description: data?.description ?? '',
+      attributes: data?.attributes ?? [
+        {
+          name: '',
+          type: '',
+          optionAttributeId: '',
+          validation: [],
+          transformations: [],
+          cleaner: [],
+        },
+      ],
+    });
+  }, [data, reset]);
 
   const { fields, append, remove, replace } = useFieldArray({
     control,

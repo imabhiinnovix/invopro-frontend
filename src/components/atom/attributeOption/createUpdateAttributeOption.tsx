@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Dialog,
   DialogTitle,
@@ -37,6 +37,13 @@ const CreateUpdateAttributeOption: React.FC<CreateUpdateAttributeOptionProps> = 
   });
 
   const attributeValue = watch('attributeValue');
+
+  useEffect(() => {
+    reset({
+      attributeName: data?.attributeName ?? '',
+      attributeValue: data?.attributeValue ?? [],
+    });
+  }, [data, reset]);
 
   const handleFormClose = () => {
     reset();
