@@ -12,12 +12,11 @@ import {
   InputAdornment,
 } from '@mui/material';
 import { useForm, Controller } from 'react-hook-form';
-import { AttributeOptionRequestPayload } from './types';
+import { AttributeOptionRequestPayload, AttributeOptionResponse } from './types';
 import AddIcon from '@mui/icons-material/Add';
-interface Payload {
-  attributeName: string;
-  attributeValue: string[];
-}
+import usePost from '../../../hooks/usePost';
+import { POST } from '../../../services/apiRoutes';
+import ProgressBar from '../../molecule/progressBar';
 
 interface CreateUpdateAttributeOptionProps {
   setAttributeOptionReload: React.Dispatch<React.SetStateAction<boolean>>;
@@ -33,15 +32,21 @@ const CreateUpdateAttributeOption: React.FC<CreateUpdateAttributeOptionProps> = 
   data,
 }) => {
   const [open, setOpen] = useState(false);
-  const { control, handleSubmit, setValue, watch, reset } = useForm<Payload>({
-    defaultValues: { attributeName: '', attributeValue: [] },
+  const { control, handleSubmit, setValue, watch, reset, clearErrors } = useForm<AttributeOptionRequestPayload>({
+    defaultValues: { attributeName: data?.attributeName ?? '', attributeValue: data?.attributeValue ?? [] },
   });
 
   const attributeValue = watch('attributeValue');
 
+  const handleFormClose = () => {
+    reset();
+    setOpen(false);
+  };
+
   const handleAddValue = (value: string) => {
     if (value && !attributeValue.includes(value)) {
       setValue('attributeValue', [...attributeValue, value]);
+      clearErrors('attributeValue');
     }
   };
 
@@ -52,19 +57,28 @@ const CreateUpdateAttributeOption: React.FC<CreateUpdateAttributeOptionProps> = 
     );
   };
 
-  const handleFormClose = () => {
-    reset();
-    setOpen(false);
-  };
+  const createUpdateAttributeOptions = usePost<AttributeOptionRequestPayload, AttributeOptionResponse>(
+    ['createUpdateEntity'],
+    (data) => {
+      if (data?.success) {
+        setAttributeOptionReload((prev) => !prev);
+        handleFormClose();
+      }
+    },
+    true,
+  );
 
-  const onSubmitHandler = (data: Payload) => {
-    console.log('Submitted data:', data);
-    handleFormClose();
+  const onSubmitHandler = (formData: AttributeOptionRequestPayload) => {
+    if (data && data._id) {
+      createUpdateAttributeOptions.mutate({ url: `${POST.UPDATE_ATTRIBUTE_OPTION}/${data._id}`, payload: formData });
+    } else {
+      createUpdateAttributeOptions.mutate({ url: POST.CREATE_ATTRIBUTE_OPTION, payload: formData });
+    }
   };
 
   return (
     <>
-      <Button onClick={() => setOpen(true)}>{CustomButton}</Button>
+      <Box onClick={() => setOpen(true)}>{CustomButton}</Box>
 
       <Dialog open={open} onClose={handleFormClose} fullWidth maxWidth="sm">
         <DialogTitle>{title}</DialogTitle>
@@ -91,7 +105,7 @@ const CreateUpdateAttributeOption: React.FC<CreateUpdateAttributeOptionProps> = 
               name="attributeValue"
               control={control}
               rules={{ required: 'Attribute value is required' }}
-              render={() => (
+              render={({ formState }) => (
                 <Box>
                   <Box display="flex" alignItems="center">
                     <TextField
@@ -107,6 +121,8 @@ const CreateUpdateAttributeOption: React.FC<CreateUpdateAttributeOptionProps> = 
                           }
                         }
                       }}
+                      error={!!formState.errors.attributeValue}
+                      helperText={formState?.errors?.attributeValue?.message}
                       slotProps={{
                         input: {
                           name: 'attributeValue',
@@ -135,9 +151,10 @@ const CreateUpdateAttributeOption: React.FC<CreateUpdateAttributeOptionProps> = 
                     />
                   </Box>
                   <Box mt={1} display="flex" flexWrap="wrap" gap={1}>
-                    {attributeValue.map((value, index) => (
-                      <Chip key={index} label={value} onDelete={() => handleDeleteValue(value)} />
-                    ))}
+                    {attributeValue &&
+                      attributeValue.map((value, index) => (
+                        <Chip key={index} label={value} onDelete={() => handleDeleteValue(value)} />
+                      ))}
                   </Box>
                 </Box>
               )}
@@ -146,12 +163,18 @@ const CreateUpdateAttributeOption: React.FC<CreateUpdateAttributeOptionProps> = 
         </DialogContent>
 
         <DialogActions>
-          <Button onClick={handleFormClose} color="secondary">
-            Cancel
-          </Button>
-          <Button onClick={handleSubmit(onSubmitHandler)} color="primary">
-            Submit
-          </Button>
+          {createUpdateAttributeOptions.isPending ? (
+            <ProgressBar />
+          ) : (
+            <>
+              <Button onClick={handleFormClose} color="secondary">
+                Cancel
+              </Button>
+              <Button onClick={handleSubmit(onSubmitHandler)} color="primary">
+                Submit
+              </Button>
+            </>
+          )}
         </DialogActions>
       </Dialog>
     </>

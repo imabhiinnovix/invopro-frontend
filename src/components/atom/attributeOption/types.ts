@@ -10,6 +10,11 @@ interface UpdatedBy {
   lastName: string;
 }
 
+export interface AttributeOptionResponse {
+  message: string;
+  success: boolean;
+}
+
 export interface AttributeOptionRequestPayload {
   attributeName: string;
   attributeValue: string[];

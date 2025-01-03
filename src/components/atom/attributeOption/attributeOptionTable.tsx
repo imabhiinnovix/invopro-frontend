@@ -207,17 +207,16 @@ const AttributeOptionTable: React.FC<AttributeOptionTableProps> = ({
                 </StyledTableCell>
                 <StyledTableCell>
                   {/* <Switch checked={data.isActive} /> */}
-                  <Typography>
-                    {data.isActive ? (
-                      <Typography color="success" fontSize={14}>
-                        ACTIVE
-                      </Typography>
-                    ) : (
-                      <Typography color="error" fontSize={14}>
-                        INACTIVE
-                      </Typography>
-                    )}
-                  </Typography>
+
+                  {data.isActive ? (
+                    <Typography color="success" fontSize={14} component="span">
+                      ACTIVE
+                    </Typography>
+                  ) : (
+                    <Typography color="error" fontSize={14} component="span">
+                      INACTIVE
+                    </Typography>
+                  )}
                 </StyledTableCell>
 
                 <StyledTableCell>

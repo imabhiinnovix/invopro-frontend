@@ -18,7 +18,9 @@ export const POST = {
   USER_ACTIVE: '/users/updateStatus/',
   FILE_UPLOAD: '/files/upload',
   CREATE_ENTITY: '/entities/create',
-  UPDATE_ENTITY: 'entities/update',
+  UPDATE_ENTITY: '/entities/update',
+  CREATE_ATTRIBUTE_OPTION: '/attributeOptions/create',
+  UPDATE_ATTRIBUTE_OPTION: '/attributeOptions/create',
 };
 
 export const GET = {

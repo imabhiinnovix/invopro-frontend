@@ -31,7 +31,7 @@ export default function AttributeOption() {
       >
         <CreateUpdateAttributeOption
           setAttributeOptionReload={setAttributeOptionReload}
-          title="Create New Entity"
+          title="Create New Attribute Option"
           CustomButton={
             <Button
               variant="contained"
