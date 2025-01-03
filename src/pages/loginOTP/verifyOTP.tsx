@@ -51,7 +51,7 @@ const VerifyOTP = () => {
         setIsAuthUser(true);
       }
     },
-    true,
+    true
   );
 
   const sendOTP = usePost<sendOTPPayload, sendOTPResponse>([''], () => {}, true);

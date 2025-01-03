@@ -30,7 +30,7 @@ function SendOTP() {
         }
       }, 10);
     },
-    true,
+    true
   );
 
   const LoginSchema = yup.object().shape({

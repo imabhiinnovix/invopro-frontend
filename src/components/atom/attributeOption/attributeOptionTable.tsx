@@ -61,7 +61,7 @@ const AttributeOptionTable: React.FC<AttributeOptionTableProps> = ({
   const attributeList = useGet<{ success: boolean; data: AttributeOptionRequestPayload[]; totalCount: number }>(
     [`attributeList`, String(currentPage)],
     GET?.Attribute_Option_List + `?page=${currentPage}&limit=${perPageItem}`,
-    !!currentPage,
+    !!currentPage
   );
 
   useEffect(() => {
@@ -112,7 +112,7 @@ const AttributeOptionTable: React.FC<AttributeOptionTableProps> = ({
         lastRowRef.current.observe(node);
       }
     },
-    [attributeList.isFetching], // Add the correct dependency
+    [attributeList.isFetching] // Add the correct dependency
   );
 
   const renderAttributes = (attributes: string[] = []): JSX.Element => (

@@ -84,7 +84,7 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({ setReloadEntity
     },
     {
       showToast: true,
-    },
+    }
   );
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -120,7 +120,7 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({ setReloadEntity
         reset();
       }
     },
-    true,
+    true
   );
   const onSubmit = (formData: EntityRequestPayload) => {
     if (data && data._id) {

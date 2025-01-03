@@ -58,7 +58,7 @@ const EntityTable: React.FC<EntityTableProps> = ({ reloadEntity, setReloadEntity
   const entitiesList = useGet<{ success: boolean; data: EntityRequestPayload[]; totalCount: number }>(
     [`entityList`, String(currentPage)],
     GET?.Entity_List + `?page=${currentPage}&limit=${perPageItem}`,
-    !!currentPage,
+    !!currentPage
   );
 
   useEffect(() => {
@@ -109,7 +109,7 @@ const EntityTable: React.FC<EntityTableProps> = ({ reloadEntity, setReloadEntity
         lastRowRef.current.observe(node);
       }
     },
-    [entitiesList.isFetching], // Add the correct dependency
+    [entitiesList.isFetching] // Add the correct dependency
   );
 
   const renderAttributes = (attributes: Attribute[] = []): JSX.Element => (

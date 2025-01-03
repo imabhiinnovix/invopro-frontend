@@ -1,14 +1,7 @@
-import {
-  createContext,
-  Dispatch,
-  ReactNode,
-  SetStateAction,
-  useEffect,
-  useState,
-} from "react";
-import useGet from "../hooks/useGet";
-import { GET } from "../services/apiRoutes";
-import { queryClient } from "../main";
+import { createContext, Dispatch, ReactNode, SetStateAction, useEffect, useState } from 'react';
+import useGet from '../hooks/useGet';
+import { GET } from '../services/apiRoutes';
+import { queryClient } from '../main';
 
 interface AuthProviderProps {
   children: ReactNode;
@@ -17,7 +10,7 @@ interface AuthProviderProps {
 type searchTerms = {
   query: string;
   colorCode?: string;
-  matchType: "partial" | "exact";
+  matchType: 'partial' | 'exact';
   count?: number;
   proximity: boolean;
   proximityInfo: { type: string; value: string };
@@ -49,7 +42,7 @@ type UserResponse = {
     role: string;
     roleId: number;
     settings: {
-      RPPos: "left" | "right" | "bottom" | "top";
+      RPPos: 'left' | 'right' | 'bottom' | 'top';
       showOccurrenceCount: boolean;
       showOccurrenceCountTerm: boolean;
       RPDimensions: {
@@ -107,15 +100,9 @@ export const AuthContext = createContext<AuthContextType | null>(null);
 
 const AuthProvider = ({ children }: AuthProviderProps) => {
   const [isAuthUser, setIsAuthUser] = useState(false);
-  const [userDetails, setUserDetails] = useState<UserResponse | undefined>(
-    undefined
-  );
+  const [userDetails, setUserDetails] = useState<UserResponse | undefined>(undefined);
 
-  const userDetailsAPI = useGet<UserResponse>(
-    ["userDetails"],
-    GET.USER_DETAILS,
-    !!isAuthUser
-  );
+  const userDetailsAPI = useGet<UserResponse>(['userDetails'], GET.USER_DETAILS, !!isAuthUser);
 
   useEffect(() => {
     if (userDetailsAPI.isSuccess && userDetailsAPI.data && isAuthUser) {

@@ -53,7 +53,7 @@ const CreateUpdateAttributeOption: React.FC<CreateUpdateAttributeOptionProps> = 
   const handleDeleteValue = (value: string) => {
     setValue(
       'attributeValue',
-      attributeValue.filter((v) => v !== value),
+      attributeValue.filter((v) => v !== value)
     );
   };
 
@@ -65,7 +65,7 @@ const CreateUpdateAttributeOption: React.FC<CreateUpdateAttributeOptionProps> = 
         handleFormClose();
       }
     },
-    true,
+    true
   );
 
   const onSubmitHandler = (formData: AttributeOptionRequestPayload) => {
@@ -131,7 +131,7 @@ const CreateUpdateAttributeOption: React.FC<CreateUpdateAttributeOptionProps> = 
                               <IconButton
                                 onClick={() => {
                                   const input = document.querySelector(
-                                    'input[name="attributeValue"]',
+                                    'input[name="attributeValue"]'
                                   ) as HTMLInputElement;
                                   const value = input?.value.trim();
                                   if (value) {

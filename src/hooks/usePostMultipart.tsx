@@ -8,10 +8,10 @@ type onSuccess = () => void;
 
 const filePostFetcher = async <
   TRequest extends Record<string, string | Blob | File | File[] | null | undefined>,
-  TResponse,
+  TResponse
 >(
   url: string,
-  payload: TRequest,
+  payload: TRequest
 ): Promise<TResponse> => {
   const formData = new FormData();
   Object.entries(payload).forEach(([key, value]) => {
@@ -38,7 +38,7 @@ const filePostFetcher = async <
 const useFilePostData = <TRequest extends Record<string, string | Blob | File | File[] | null | undefined>, TResponse>(
   key: string[],
   onSuccess?: (data: TResponse) => void,
-  options: { showToast?: boolean; customToastMessage?: string } = {},
+  options: { showToast?: boolean; customToastMessage?: string } = {}
 ) => {
   const queryClient = useQueryClient();
 

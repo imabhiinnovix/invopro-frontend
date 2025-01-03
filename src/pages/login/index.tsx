@@ -68,7 +68,7 @@ function Login() {
         setIsAuthUser(true);
       }
     },
-    true,
+    true
   );
 
   useLayoutEffect(() => {

@@ -16,7 +16,7 @@ const usePost = <TRequest, TResponse>(
   key: string[],
   onSuccess?: onSuccess<TResponse>,
   showToast: boolean = false,
-  onError?: onError,
+  onError?: onError
 ) => {
   const queryClient = useQueryClient();
 

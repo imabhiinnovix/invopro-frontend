@@ -1,6 +1,6 @@
-import { Navigate, Outlet } from "react-router-dom";
-import { roleId } from "../utils/constants";
-import { getAuthToken, getRoleId } from "../utils/handleLocalStorage";
+import { Navigate, Outlet } from 'react-router-dom';
+import { roleId } from '../utils/constants';
+import { getAuthToken, getRoleId } from '../utils/handleLocalStorage';
 
 const AdminProtect = () => {
   const token = getAuthToken();
