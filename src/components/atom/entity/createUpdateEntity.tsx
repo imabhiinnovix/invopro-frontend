@@ -9,23 +9,20 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  MenuItem,
   IconButton,
   Divider,
   Stack,
-  FormControl,
-  InputLabel,
-  Select,
-  FormHelperText,
 } from '@mui/material';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutline';
 import FileUploadButton from '../file/fileUploadButton';
 import useFilePostData from '../../../hooks/usePostMultipart';
-import { POST } from '../../../services/apiRoutes';
+import { GET, POST } from '../../../services/apiRoutes';
 import ProgressBar from '../../molecule/progressBar';
 import usePost from '../../../hooks/usePost';
 import { EntityRequestPayload, EntityResponse } from './types';
+import CommonSelect from '../../common/dropdown/commonSelect';
+import CommonDropdownSearch from '../../common/dropdown/searchableDropdown';
 
 interface CreateUpdateEntityProps {
   setReloadEntity: React.Dispatch<React.SetStateAction<boolean>>;
@@ -140,11 +137,12 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({ setReloadEntity
     true
   );
   const onSubmit = (formData: EntityRequestPayload) => {
-    if (data && data._id) {
-      createEntity.mutate({ url: `${POST.UPDATE_ENTITY}/${data._id}`, payload: formData });
-    } else {
-      createEntity.mutate({ url: POST.CREATE_ENTITY, payload: formData });
-    }
+    console.log(formData);
+    // if (data && data._id) {
+    //   createEntity.mutate({ url: `${POST.UPDATE_ENTITY}/${data._id}`, payload: formData });
+    // } else {
+    //   createEntity.mutate({ url: POST.CREATE_ENTITY, payload: formData });
+    // }
   };
 
   const handleCancel = () => {
@@ -233,37 +231,40 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({ setReloadEntity
                       helperText={errors.attributes?.[index]?.name?.message}
                     />
 
-                    <FormControl fullWidth error={!!errors.attributes?.[index]?.type}>
-                      <InputLabel id={`type-${index}`}>Attribute Type</InputLabel>
-                      <Controller
-                        name={`attributes.${index}.type`}
-                        control={control}
-                        defaultValue={attribute.type || ''}
-                        rules={{ required: 'Attribute Type is required' }}
-                        render={({ field }) => (
-                          <Select {...field} labelId={`type-${index}`} label="Attribute Type">
-                            {[
-                              'number',
-                              'text',
-                              'date',
-                              'boolean',
-                              'richtext',
-                              'url',
-                              'option',
-                              'multioption',
-                              'user',
-                            ].map((type) => (
-                              <MenuItem key={type} value={type}>
-                                {type}
-                              </MenuItem>
-                            ))}
-                          </Select>
-                        )}
-                      />
-                      <FormHelperText>
-                        {attribute.type.length === 0 && (errors.attributes?.[index]?.type as FieldError)?.message}
-                      </FormHelperText>
-                    </FormControl>
+                    <CommonSelect
+                      control={control}
+                      name={`attributes.${index}.type`}
+                      label="Attribute Type"
+                      options={[
+                        'number',
+                        'text',
+                        'date',
+                        'boolean',
+                        'richtext',
+                        'url',
+                        'option',
+                        'multioption',
+                        'user',
+                      ]}
+                      defaultValue={attribute.type || ''}
+                      rules={{ required: 'Attribute Type is required' }}
+                      error={!!errors.attributes?.[index]?.type}
+                      errorMessage={(errors.attributes?.[index]?.type as FieldError)?.message}
+                    />
+
+                    <CommonDropdownSearch
+                      control={control}
+                      name={`attributes.${index}.optionAttributeId`}
+                      label="Attribute Options"
+                      apiUrl={`${GET.Attribute_Option_List}`}
+                      labelName="attributeName"
+                      labelValue="_id"
+                      defaultValue={attribute.type || ''}
+                      rules={{ required: 'Attribute Option is required' }}
+                      error={!!errors.attributes?.[index]?.type}
+                      errorMessage={(errors.attributes?.[index]?.optionAttributeId as FieldError)?.message}
+                      apiName="attributeOption"
+                    />
                   </Stack>
 
                   {/* Remove Attribute Button */}
