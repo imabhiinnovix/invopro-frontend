@@ -16,6 +16,7 @@ interface CommonDropdownSearchProps {
   error?: boolean; // Error state
   errorMessage?: string; // Error message
   apiName: string;
+  defaultDataUrl: string;
 }
 
 interface Option {
@@ -31,6 +32,7 @@ const CommonDropdownSearch: React.FC<CommonDropdownSearchProps> = ({
   labelName,
   labelValue,
   defaultValue = null,
+  defaultDataUrl,
   rules = {},
   error = false,
   errorMessage = '',
@@ -44,25 +46,23 @@ const CommonDropdownSearch: React.FC<CommonDropdownSearchProps> = ({
   const [searchAllData, setSearchAllData] = useState<Option[]>([]);
   const [searchExhausted, setSearchExhausted] = useState(false);
 
+  const defaultDataDetails = useGet<{ success: boolean; data: any; totalCount: number }>(
+    [apiName, `default`],
+    `${defaultDataUrl}/${defaultValue}`
+  );
+
   const { data, isFetching } = useGet<{ success: boolean; data: any[]; totalCount: number }>(
     [apiName, `${currentPage}`],
     `${apiUrl}?page=${currentPage}&limit=10`,
-    !!currentPage && searchTerm.length === 0
+    !!currentPage && searchTerm.length === 0 && defaultDataDetails.isFetched
   );
 
   const searchData = useGet<{ success: boolean; data: any[]; totalCount: number }>(
     [apiName, `${currentSearchPage}`, `${searchTerm}`],
     `${apiUrl}?page=${currentSearchPage}&limit=10&search=${searchTerm}`,
-    !!currentSearchPage && !!searchTerm.length && !searchExhausted
+    !!currentSearchPage && !!searchTerm.length && !searchExhausted && defaultDataDetails.isFetched
   );
-  console.log(searchExhausted, currentSearchPage);
-  // console.log(currentPage);
-  // console.log(
-  //   !!currentSearchPage,
-  //   searchTerm.length,
-  //   !searchExhausted,
-  //   !!currentSearchPage && !!searchTerm.length && !searchExhausted
-  // );
+
   useEffect(() => {
     if (data?.data) {
       const formattedOptions = data.data.map((item) => ({
@@ -70,7 +70,18 @@ const CommonDropdownSearch: React.FC<CommonDropdownSearchProps> = ({
         value: item[labelValue],
       }));
       if (currentPage === 1) {
-        setAllData(formattedOptions);
+        if (defaultDataDetails.data?.data) {
+          setAllData((_) => {
+            const updatedData = [
+              { label: defaultDataDetails.data.data[labelName], value: defaultDataDetails.data.data[labelValue] },
+              ...formattedOptions,
+            ];
+            const uniqueData = Array.from(new Map(updatedData.map((item) => [item.label, item])).values());
+            return uniqueData;
+          });
+        } else {
+          setAllData(formattedOptions);
+        }
       } else {
         setAllData((prev) => {
           const updatedData = [...prev, ...formattedOptions];
@@ -79,7 +90,7 @@ const CommonDropdownSearch: React.FC<CommonDropdownSearchProps> = ({
         });
       }
     }
-  }, [data]);
+  }, [data, defaultDataDetails.data]);
 
   useEffect(() => {
     if (searchData?.data?.data) {
@@ -88,7 +99,18 @@ const CommonDropdownSearch: React.FC<CommonDropdownSearchProps> = ({
         value: item[labelValue],
       }));
       if (currentSearchPage === 1) {
-        setSearchAllData(formattedOptions);
+        if (defaultDataDetails.data?.data) {
+          setSearchAllData((_) => {
+            const updatedData = [
+              { label: defaultDataDetails.data.data[labelName], value: defaultDataDetails.data.data[labelValue] },
+              ...formattedOptions,
+            ];
+            const uniqueData = Array.from(new Map(updatedData.map((item) => [item.label, item])).values());
+            return uniqueData;
+          });
+        } else {
+          setSearchAllData(formattedOptions);
+        }
       } else {
         setSearchAllData((prev) => {
           const updatedData = [...prev, ...formattedOptions];
@@ -97,13 +119,12 @@ const CommonDropdownSearch: React.FC<CommonDropdownSearchProps> = ({
         });
       }
       if (searchData && searchData.data && searchData.data.data && searchData.data.data.length === 0) {
-        console.log(searchData, 'searchData');
         setSearchExhausted(true);
       } else {
         setSearchExhausted(false);
       }
     }
-  }, [searchData.data]);
+  }, [searchData.data, defaultDataDetails.data]);
 
   useEffect(() => {
     if (searchTerm.length > 0) {
@@ -160,12 +181,14 @@ const CommonDropdownSearch: React.FC<CommonDropdownSearchProps> = ({
               value={selectedOption} // Use the matched option as the value
               options={options}
               onInputChange={(_, value, reason) => {
+                console.log(reason);
                 if (reason === 'input') {
+                  field.onChange(null);
                   setSearchTerm(value);
                   setCurrentSearchPage(1);
                   setCurrentPage(1);
                   setSearchExhausted(false);
-                } else {
+                } else if (reason != 'selectOption' && reason != 'reset') {
                   setSearchTerm('');
                   setCurrentSearchPage(1);
                   setCurrentPage(1);

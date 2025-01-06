@@ -282,6 +282,7 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({ setReloadEntity
                             error={!!errors.attributes?.[index]?.optionAttributeId}
                             errorMessage={(errors.attributes?.[index]?.optionAttributeId as FieldError)?.message}
                             apiName="attributeOption"
+                            defaultDataUrl={`${GET.Attribute_Option_Get}`}
                           />
                         )}
                     </Stack>

@@ -31,4 +31,5 @@ export const GET = {
   GET_ORGANIZATION: '/organizations/',
   Entity_List: '/entities/list',
   Attribute_Option_List: 'attributeOptions/list',
+  Attribute_Option_Get: 'attributeOptions/get',
 };
