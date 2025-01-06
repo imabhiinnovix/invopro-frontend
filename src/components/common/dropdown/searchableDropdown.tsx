@@ -42,17 +42,18 @@ const CommonDropdownSearch: React.FC<CommonDropdownSearchProps> = ({
   const [currentSearchPage, setCurrentSearchPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState('');
   const [searchAllData, setSearchAllData] = useState<Option[]>([]);
+  const [searchExhausted, setSearchExhausted] = useState(false);
 
   const { data, isFetching } = useGet<{ success: boolean; data: any[]; totalCount: number }>(
     [apiName, `${currentPage}`],
     `${apiUrl}?page=${currentPage}&limit=10`,
-    !!currentPage
+    !!currentPage && searchTerm.length === 0
   );
 
   const searchData = useGet<{ success: boolean; data: any[]; totalCount: number }>(
     [apiName, `${currentSearchPage}`],
     `${apiUrl}?page=${currentSearchPage}&limit=10&search=${searchTerm}`,
-    !!currentSearchPage && searchTerm.length > 0
+    !!currentSearchPage && searchTerm.length > 0 && !searchExhausted
   );
 
   useEffect(() => {
@@ -80,6 +81,12 @@ const CommonDropdownSearch: React.FC<CommonDropdownSearchProps> = ({
       } else {
         setSearchAllData((prev) => [...prev, ...formattedOptions]);
       }
+
+      if (searchData?.data?.data.length === 0) {
+        setSearchExhausted(true);
+      }
+    } else {
+      setSearchExhausted(true);
     }
   }, [searchData.data]);
 
@@ -95,7 +102,7 @@ const CommonDropdownSearch: React.FC<CommonDropdownSearchProps> = ({
 
   const lastElementRef = useCallback(
     (node: HTMLLIElement | null) => {
-      if (isFetching || searchData.isFetching || options.length >= data?.totalCount!) return;
+      if (isFetching || searchData.isFetching || options.length >= data?.totalCount! || searchExhausted) return;
 
       // Disconnect the previous observer if it exists
       if (lastRowRef.current) {
@@ -140,8 +147,14 @@ const CommonDropdownSearch: React.FC<CommonDropdownSearchProps> = ({
               onInputChange={(_, value, reason) => {
                 if (reason === 'input') {
                   setSearchTerm(value);
+                  setCurrentSearchPage(1);
+                  setCurrentPage(1);
+                  setSearchExhausted(false);
                 } else {
                   setSearchTerm('');
+                  setCurrentSearchPage(1);
+                  setCurrentPage(1);
+                  setSearchExhausted(false);
                 }
               }}
               getOptionLabel={(option) => option?.label || ''} // Ensure it handles empty values gracefully
