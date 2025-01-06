@@ -38,13 +38,21 @@ const CommonDropdownSearch: React.FC<CommonDropdownSearchProps> = ({
 }) => {
   const [options, setOptions] = useState<Option[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
+  const [allData, setAllData] = useState<Option[]>([]);
   const [currentSearchPage, setCurrentSearchPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState('');
+  const [searchAllData, setSearchAllData] = useState<Option[]>([]);
 
   const { data, isFetching } = useGet<{ success: boolean; data: any[]; totalCount: number }>(
     [apiName, `${currentPage}`],
-    `${apiUrl}?page=${currentPage}&limit=4`,
+    `${apiUrl}?page=${currentPage}&limit=10`,
     !!currentPage
+  );
+
+  const searchData = useGet<{ success: boolean; data: any[]; totalCount: number }>(
+    [apiName, `${currentSearchPage}`],
+    `${apiUrl}?page=${currentSearchPage}&limit=10&search=${searchTerm}`,
+    !!currentSearchPage && searchTerm.length > 0
   );
 
   useEffect(() => {
@@ -54,18 +62,40 @@ const CommonDropdownSearch: React.FC<CommonDropdownSearchProps> = ({
         value: item[labelValue],
       }));
       if (currentPage === 1) {
-        setOptions(formattedOptions);
+        setAllData(formattedOptions);
       } else {
-        setOptions((prev) => [...prev, ...formattedOptions]);
+        setAllData((prev) => [...prev, ...formattedOptions]);
       }
     }
   }, [data]);
+
+  useEffect(() => {
+    if (searchData?.data?.data) {
+      const formattedOptions = searchData?.data?.data.map((item) => ({
+        label: item[labelName],
+        value: item[labelValue],
+      }));
+      if (currentSearchPage === 1) {
+        setSearchAllData(formattedOptions);
+      } else {
+        setSearchAllData((prev) => [...prev, ...formattedOptions]);
+      }
+    }
+  }, [searchData.data]);
+
+  useEffect(() => {
+    if (searchTerm.length > 0) {
+      setOptions(searchAllData);
+    } else {
+      setOptions(allData);
+    }
+  }, [allData, searchAllData, searchTerm]);
 
   const lastRowRef = useRef<IntersectionObserver | null>(null);
 
   const lastElementRef = useCallback(
     (node: HTMLLIElement | null) => {
-      if (isFetching || options.length >= data?.totalCount!) return;
+      if (isFetching || searchData.isFetching || options.length >= data?.totalCount!) return;
 
       // Disconnect the previous observer if it exists
       if (lastRowRef.current) {
@@ -75,7 +105,11 @@ const CommonDropdownSearch: React.FC<CommonDropdownSearchProps> = ({
       // Create a new IntersectionObserver
       lastRowRef.current = new IntersectionObserver((entries) => {
         if (entries[0].isIntersecting) {
-          setCurrentPage((prevPage) => prevPage + 1);
+          if (searchTerm.length > 0) {
+            setCurrentSearchPage((prevPage) => prevPage + 1);
+          } else {
+            setCurrentPage((prevPage) => prevPage + 1);
+          }
         }
       });
 
@@ -84,7 +118,7 @@ const CommonDropdownSearch: React.FC<CommonDropdownSearchProps> = ({
         lastRowRef.current.observe(node);
       }
     },
-    [isFetching, options.length, data?.totalCount]
+    [isFetching, options.length, searchTerm, data?.totalCount]
   );
 
   return (
@@ -103,6 +137,13 @@ const CommonDropdownSearch: React.FC<CommonDropdownSearchProps> = ({
               {...field}
               value={selectedOption} // Use the matched option as the value
               options={options}
+              onInputChange={(_, value, reason) => {
+                if (reason === 'input') {
+                  setSearchTerm(value);
+                } else {
+                  setSearchTerm('');
+                }
+              }}
               getOptionLabel={(option) => option?.label || ''} // Ensure it handles empty values gracefully
               onChange={(_, selectedOption) => field.onChange(selectedOption?.value || null)} // Update only the value
               renderInput={(params) => <TextField {...params} label={label} error={error} />}
