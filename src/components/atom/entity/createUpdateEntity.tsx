@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useForm, useFieldArray, Controller, FieldError } from 'react-hook-form';
+import { useForm, useFieldArray, Controller, FieldError, useWatch } from 'react-hook-form';
 import {
   Box,
   Button,
@@ -40,6 +40,8 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({ setReloadEntity
     handleSubmit,
     register,
     reset,
+    watch,
+    setValue,
     formState: { errors },
   } = useForm<EntityRequestPayload>({
     defaultValues: {
@@ -136,13 +138,26 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({ setReloadEntity
     },
     true
   );
+
   const onSubmit = (formData: EntityRequestPayload) => {
-    console.log(formData);
-    // if (data && data._id) {
-    //   createEntity.mutate({ url: `${POST.UPDATE_ENTITY}/${data._id}`, payload: formData });
-    // } else {
-    //   createEntity.mutate({ url: POST.CREATE_ENTITY, payload: formData });
-    // }
+    const newAttributes = formData.attributes?.map((data) => {
+      if (!['option', 'multioption'].includes(data.type)) {
+        return {
+          ...data, // Corrected spread operator
+          optionAttributeId: '', // Adding the optionAttributeId property
+        };
+      } else {
+        return data;
+      }
+    });
+
+    const newFormData = { ...formData, attributes: newAttributes };
+
+    if (data && data._id) {
+      createEntity.mutate({ url: `${POST.UPDATE_ENTITY}/${data._id}`, payload: newFormData });
+    } else {
+      createEntity.mutate({ url: POST.CREATE_ENTITY, payload: newFormData });
+    }
   };
 
   const handleCancel = () => {
@@ -207,76 +222,81 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({ setReloadEntity
               <Divider sx={{ my: 3 }} />
 
               {/* Attributes Section */}
-              {fields.map((attribute, index) => (
-                <Box
-                  key={attribute.id}
-                  sx={{
-                    mb: 3,
-                    pointerEvents: isPending ? 'none' : 'auto', // Disable interactions when isPending is true
-                    opacity: isPending ? 0.5 : 1,
-                  }}
-                >
-                  <Typography variant="h6" mb={2}>
-                    Attribute {index + 1}
-                  </Typography>
-                  <Stack spacing={2}>
-                    {/* Attribute Name */}
-                    <TextField
-                      label="Attribute Name"
-                      fullWidth
-                      {...register(`attributes.${index}.name`, {
-                        required: 'Attribute Name is required',
-                      })}
-                      error={!!errors.attributes?.[index]?.name}
-                      helperText={errors.attributes?.[index]?.name?.message}
-                    />
-
-                    <CommonSelect
-                      control={control}
-                      name={`attributes.${index}.type`}
-                      label="Attribute Type"
-                      options={[
-                        'number',
-                        'text',
-                        'date',
-                        'boolean',
-                        'richtext',
-                        'url',
-                        'option',
-                        'multioption',
-                        'user',
-                      ]}
-                      defaultValue={attribute.type || ''}
-                      rules={{ required: 'Attribute Type is required' }}
-                      error={!!errors.attributes?.[index]?.type}
-                      errorMessage={(errors.attributes?.[index]?.type as FieldError)?.message}
-                    />
-
-                    <CommonDropdownSearch
-                      control={control}
-                      name={`attributes.${index}.optionAttributeId`}
-                      label="Attribute Options"
-                      apiUrl={`${GET.Attribute_Option_List}`}
-                      labelName="attributeName"
-                      labelValue="_id"
-                      defaultValue={attribute.type || ''}
-                      rules={{ required: 'Attribute Option is required' }}
-                      error={!!errors.attributes?.[index]?.type}
-                      errorMessage={(errors.attributes?.[index]?.optionAttributeId as FieldError)?.message}
-                      apiName="attributeOption"
-                    />
-                  </Stack>
-
-                  {/* Remove Attribute Button */}
-                  <IconButton
-                    color="error"
-                    onClick={() => remove(index)}
-                    sx={{ mt: 2, display: 'flex', alignSelf: 'flex-start' }}
+              {fields.map((attribute, index) => {
+                return (
+                  <Box
+                    key={attribute.id}
+                    sx={{
+                      mb: 3,
+                      pointerEvents: isPending ? 'none' : 'auto', // Disable interactions when isPending is true
+                      opacity: isPending ? 0.5 : 1,
+                    }}
                   >
-                    <RemoveCircleOutlineIcon />
-                  </IconButton>
-                </Box>
-              ))}
+                    <Typography variant="h6" mb={2}>
+                      Attribute {index + 1}
+                    </Typography>
+                    <Stack spacing={2}>
+                      {/* Attribute Name */}
+                      <TextField
+                        label="Attribute Name"
+                        fullWidth
+                        {...register(`attributes.${index}.name`, {
+                          required: 'Attribute Name is required',
+                        })}
+                        error={!!errors.attributes?.[index]?.name}
+                        helperText={errors.attributes?.[index]?.name?.message}
+                      />
+
+                      <CommonSelect
+                        control={control}
+                        name={`attributes.${index}.type`}
+                        label="Attribute Type"
+                        options={[
+                          'number',
+                          'text',
+                          'date',
+                          'boolean',
+                          'richtext',
+                          'url',
+                          'option',
+                          'multioption',
+                          'user',
+                        ]}
+                        defaultValue={attribute.type || ''}
+                        rules={{ required: 'Attribute Type is required' }}
+                        error={!!errors.attributes?.[index]?.type}
+                        errorMessage={(errors.attributes?.[index]?.type as FieldError)?.message}
+                      />
+
+                      {watch('attributes') &&
+                        ['option', 'multioption'].includes(watch('attributes')?.[index]?.type!) && (
+                          <CommonDropdownSearch
+                            control={control}
+                            name={`attributes.${index}.optionAttributeId`}
+                            label="Attribute Options"
+                            apiUrl={`${GET.Attribute_Option_List}`}
+                            labelName="attributeName"
+                            labelValue="_id"
+                            defaultValue={attribute.optionAttributeId || ''}
+                            rules={{ required: 'Attribute Option is required' }}
+                            error={!!errors.attributes?.[index]?.optionAttributeId}
+                            errorMessage={(errors.attributes?.[index]?.optionAttributeId as FieldError)?.message}
+                            apiName="attributeOption"
+                          />
+                        )}
+                    </Stack>
+
+                    {/* Remove Attribute Button */}
+                    <IconButton
+                      color="error"
+                      onClick={() => remove(index)}
+                      sx={{ mt: 2, display: 'flex', alignSelf: 'flex-start' }}
+                    >
+                      <RemoveCircleOutlineIcon />
+                    </IconButton>
+                  </Box>
+                );
+              })}
 
               {/* Add Attribute Button */}
               <Button

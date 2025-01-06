@@ -38,6 +38,8 @@ const CommonDropdownSearch: React.FC<CommonDropdownSearchProps> = ({
 }) => {
   const [options, setOptions] = useState<Option[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
+  const [currentSearchPage, setCurrentSearchPage] = useState(1);
+  const [searchTerm, setSearchTerm] = useState('');
 
   const { data, isFetching } = useGet<{ success: boolean; data: any[]; totalCount: number }>(
     [apiName, `${currentPage}`],
@@ -51,7 +53,11 @@ const CommonDropdownSearch: React.FC<CommonDropdownSearchProps> = ({
         label: item[labelName],
         value: item[labelValue],
       }));
-      setOptions((prev) => [...prev, ...formattedOptions]);
+      if (currentPage === 1) {
+        setOptions(formattedOptions);
+      } else {
+        setOptions((prev) => [...prev, ...formattedOptions]);
+      }
     }
   }, [data]);
 
@@ -88,31 +94,30 @@ const CommonDropdownSearch: React.FC<CommonDropdownSearchProps> = ({
         control={control}
         defaultValue={defaultValue}
         rules={rules}
-        render={({ field }) => (
-          <Autocomplete
-            {...field}
-            options={options}
-            getOptionLabel={(option) => option.label || ''}
-            onChange={(_, selectedOption) => field.onChange(selectedOption?.value || null)}
-            slotProps={{
-              listbox: {
-                style: { maxHeight: '300px', overflow: 'auto' }, // Apply slotProps.listbox here
-              },
-            }}
-            renderInput={(params) => <TextField {...params} label={label} error={error} />}
-            renderOption={(props, option, state) => {
-              const isLast = options.length - 1 === state.index;
-              return (
-                <li
-                  {...props}
-                  ref={isLast ? lastElementRef : null} // Attach observer to the last item
-                >
-                  {option.label}
-                </li>
-              );
-            }}
-          />
-        )}
+        render={({ field }) => {
+          // Match the selected value to the options array
+          const selectedOption = options.find((option) => option.value === field.value) || null;
+
+          return (
+            <Autocomplete
+              {...field}
+              value={selectedOption} // Use the matched option as the value
+              options={options}
+              getOptionLabel={(option) => option?.label || ''} // Ensure it handles empty values gracefully
+              onChange={(_, selectedOption) => field.onChange(selectedOption?.value || null)} // Update only the value
+              renderInput={(params) => <TextField {...params} label={label} error={error} />}
+              renderOption={(props, option, state) => {
+                const isLast = options.length - 1 === state.index;
+                const { key, ...restProps } = props;
+                return (
+                  <li key={key} {...restProps} ref={isLast ? lastElementRef : null}>
+                    {option.label}
+                  </li>
+                );
+              }}
+            />
+          );
+        }}
       />
       <FormHelperText>{errorMessage}</FormHelperText>
     </FormControl>
