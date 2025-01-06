@@ -51,11 +51,18 @@ const CommonDropdownSearch: React.FC<CommonDropdownSearchProps> = ({
   );
 
   const searchData = useGet<{ success: boolean; data: any[]; totalCount: number }>(
-    [apiName, `${currentSearchPage}`],
+    [apiName, `${currentSearchPage}`, `${searchTerm}`],
     `${apiUrl}?page=${currentSearchPage}&limit=10&search=${searchTerm}`,
-    !!currentSearchPage && searchTerm.length > 0 && !searchExhausted
+    !!currentSearchPage && !!searchTerm.length && !searchExhausted
   );
-
+  console.log(searchExhausted, currentSearchPage);
+  // console.log(currentPage);
+  // console.log(
+  //   !!currentSearchPage,
+  //   searchTerm.length,
+  //   !searchExhausted,
+  //   !!currentSearchPage && !!searchTerm.length && !searchExhausted
+  // );
   useEffect(() => {
     if (data?.data) {
       const formattedOptions = data.data.map((item) => ({
@@ -65,7 +72,11 @@ const CommonDropdownSearch: React.FC<CommonDropdownSearchProps> = ({
       if (currentPage === 1) {
         setAllData(formattedOptions);
       } else {
-        setAllData((prev) => [...prev, ...formattedOptions]);
+        setAllData((prev) => {
+          const updatedData = [...prev, ...formattedOptions];
+          const uniqueData = Array.from(new Map(updatedData.map((item) => [item.label, item])).values());
+          return uniqueData;
+        });
       }
     }
   }, [data]);
@@ -79,14 +90,18 @@ const CommonDropdownSearch: React.FC<CommonDropdownSearchProps> = ({
       if (currentSearchPage === 1) {
         setSearchAllData(formattedOptions);
       } else {
-        setSearchAllData((prev) => [...prev, ...formattedOptions]);
+        setSearchAllData((prev) => {
+          const updatedData = [...prev, ...formattedOptions];
+          const uniqueData = Array.from(new Map(updatedData.map((item) => [item.label, item])).values());
+          return uniqueData;
+        });
       }
-
-      if (searchData?.data?.data.length === 0) {
+      if (searchData && searchData.data && searchData.data.data && searchData.data.data.length === 0) {
+        console.log(searchData, 'searchData');
         setSearchExhausted(true);
+      } else {
+        setSearchExhausted(false);
       }
-    } else {
-      setSearchExhausted(true);
     }
   }, [searchData.data]);
 
@@ -125,7 +140,7 @@ const CommonDropdownSearch: React.FC<CommonDropdownSearchProps> = ({
         lastRowRef.current.observe(node);
       }
     },
-    [isFetching, options.length, searchTerm, data?.totalCount]
+    [isFetching, options.length, searchTerm, data?.totalCount, searchData.isFetching]
   );
 
   return (
