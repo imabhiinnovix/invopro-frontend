@@ -1,8 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { FormControl, TextField, FormHelperText, CircularProgress } from '@mui/material';
 import { Controller } from 'react-hook-form';
 import Autocomplete from '@mui/material/Autocomplete';
-import axios from 'axios';
 import useGet from '../../../hooks/useGet';
 
 interface CommonDropdownSearchProps {
@@ -19,6 +18,11 @@ interface CommonDropdownSearchProps {
   apiName: string;
 }
 
+interface Option {
+  label: string;
+  value: any;
+}
+
 const CommonDropdownSearch: React.FC<CommonDropdownSearchProps> = ({
   control,
   name,
@@ -32,28 +36,50 @@ const CommonDropdownSearch: React.FC<CommonDropdownSearchProps> = ({
   errorMessage = '',
   apiName,
 }) => {
-  const [options, setOptions] = useState<{ label: string; value: any }[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [options, setOptions] = useState<Option[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
 
-  const perPageItem = 10;
-
-  const itemList = useGet<{ success: boolean; data: any; totalCount: number }>(
-    [apiName, String(currentPage)],
-    apiUrl + `?page=${currentPage}&limit=${perPageItem}`,
+  const { data, isFetching } = useGet<{ success: boolean; data: any[]; totalCount: number }>(
+    [apiName, `${currentPage}`],
+    `${apiUrl}?page=${currentPage}&limit=4`,
     !!currentPage
   );
 
   useEffect(() => {
-    if (itemList?.data?.data) {
-      if (currentPage === 1) {
-        setOptions([...itemList?.data?.data]);
-      } else {
-        setOptions((prev) => [...prev, ...itemList?.data?.data]);
-      }
+    if (data?.data) {
+      const formattedOptions = data.data.map((item) => ({
+        label: item[labelName],
+        value: item[labelValue],
+      }));
+      setOptions((prev) => [...prev, ...formattedOptions]);
     }
-  }, [itemList?.data?.data]);
+  }, [data]);
+
+  const lastRowRef = useRef<IntersectionObserver | null>(null);
+
+  const lastElementRef = useCallback(
+    (node: HTMLLIElement | null) => {
+      if (isFetching || options.length >= data?.totalCount!) return;
+
+      // Disconnect the previous observer if it exists
+      if (lastRowRef.current) {
+        lastRowRef.current.disconnect();
+      }
+
+      // Create a new IntersectionObserver
+      lastRowRef.current = new IntersectionObserver((entries) => {
+        if (entries[0].isIntersecting) {
+          setCurrentPage((prevPage) => prevPage + 1);
+        }
+      });
+
+      // Observe the new node if it exists
+      if (node) {
+        lastRowRef.current.observe(node);
+      }
+    },
+    [isFetching, options.length, data?.totalCount]
+  );
 
   return (
     <FormControl fullWidth error={error}>
@@ -66,11 +92,24 @@ const CommonDropdownSearch: React.FC<CommonDropdownSearchProps> = ({
           <Autocomplete
             {...field}
             options={options}
-            getOptionLabel={(option) => option[labelName]! || ''}
-            onInputChange={(_, value) => setSearchTerm(value)}
-            onChange={(_, value) => field.onChange(value?.value?.[labelValue])}
-            renderInput={(params) => {
-              itemList.isFetching ? <Skeleton height={40} /> : <TextField {...params} label={label} />;
+            getOptionLabel={(option) => option.label || ''}
+            onChange={(_, selectedOption) => field.onChange(selectedOption?.value || null)}
+            slotProps={{
+              listbox: {
+                style: { maxHeight: '300px', overflow: 'auto' }, // Apply slotProps.listbox here
+              },
+            }}
+            renderInput={(params) => <TextField {...params} label={label} error={error} />}
+            renderOption={(props, option, state) => {
+              const isLast = options.length - 1 === state.index;
+              return (
+                <li
+                  {...props}
+                  ref={isLast ? lastElementRef : null} // Attach observer to the last item
+                >
+                  {option.label}
+                </li>
+              );
             }}
           />
         )}
