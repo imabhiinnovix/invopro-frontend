@@ -47,20 +47,21 @@ const CommonDropdownSearch: React.FC<CommonDropdownSearchProps> = ({
   const [searchExhausted, setSearchExhausted] = useState(false);
 
   const defaultDataDetails = useGet<{ success: boolean; data: any; totalCount: number }>(
-    [apiName, `default`],
-    `${defaultDataUrl}/${defaultValue}`
+    [apiName, `${defaultValue}`],
+    `${defaultDataUrl}/${defaultValue}`,
+    !!defaultValue
   );
 
   const { data, isFetching } = useGet<{ success: boolean; data: any[]; totalCount: number }>(
     [apiName, `${currentPage}`],
     `${apiUrl}?page=${currentPage}&limit=10`,
-    !!currentPage && searchTerm.length === 0 && defaultDataDetails.isFetched
+    !!currentPage && searchTerm.length === 0 && (defaultDataDetails.isFetched || !defaultValue)
   );
 
   const searchData = useGet<{ success: boolean; data: any[]; totalCount: number }>(
     [apiName, `${currentSearchPage}`, `${searchTerm}`],
     `${apiUrl}?page=${currentSearchPage}&limit=10&search=${searchTerm}`,
-    !!currentSearchPage && !!searchTerm.length && !searchExhausted && defaultDataDetails.isFetched
+    !!currentSearchPage && !!searchTerm.length && !searchExhausted && (defaultDataDetails.isFetched || !defaultValue)
   );
 
   useEffect(() => {
