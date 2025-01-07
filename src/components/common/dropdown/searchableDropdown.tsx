@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
-import { FormControl, TextField, FormHelperText, CircularProgress } from '@mui/material';
+import { FormControl, TextField, FormHelperText } from '@mui/material';
 import { Controller } from 'react-hook-form';
 import Autocomplete from '@mui/material/Autocomplete';
 import useGet from '../../../hooks/useGet';
