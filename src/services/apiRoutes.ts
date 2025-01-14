@@ -21,6 +21,8 @@ export const POST = {
   UPDATE_ENTITY: '/entities/update',
   CREATE_ATTRIBUTE_OPTION: '/attributeOptions/create',
   UPDATE_ATTRIBUTE_OPTION: '/attributeOptions/update',
+  CREATE_DATA_SOURCE: '/dataSource/create',
+  UPDATE_DATA_SOURCE: '/dataSource/update',
 };
 
 export const GET = {
@@ -32,4 +34,5 @@ export const GET = {
   Entity_List: '/entities/list',
   Attribute_Option_List: 'attributeOptions/list',
   Attribute_Option_Get: 'attributeOptions/get',
+  Data_Source_List: '/dataSource/list',
 };

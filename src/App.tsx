@@ -12,6 +12,7 @@ import Dashboard from './pages/dashboard';
 import CommonLayout from './components/molecule/layout/commonLayout';
 import Entity from './pages/entity';
 import AttributeOption from './pages/attributeOption';
+import DataSource from './pages/dataSource';
 
 function App() {
   return (
@@ -30,6 +31,7 @@ function App() {
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/entity" element={<Entity />} />
               <Route path="/attribute-option" element={<AttributeOption />} />
+              <Route path="/data-source" element={<DataSource />} />
             </Route>
           </Route>
 

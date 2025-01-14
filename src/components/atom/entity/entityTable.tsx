@@ -189,12 +189,12 @@ const EntityTable: React.FC<EntityTableProps> = ({ reloadEntity, setReloadEntity
             <StyledTableCell>NAME</StyledTableCell>
             <StyledTableCell>DESCRIPTION</StyledTableCell>
             <StyledTableCell>ATTRIBUTES</StyledTableCell>
-            <StyledTableCell>STATUS</StyledTableCell>
-            <StyledTableCell>ACTION</StyledTableCell>
             <StyledTableCell>CREATED BY</StyledTableCell>
             <StyledTableCell>UPDATED BY</StyledTableCell>
             <StyledTableCell>CREATED AT</StyledTableCell>
             <StyledTableCell>UPDATED AT</StyledTableCell>
+            <StyledTableCell>STATUS</StyledTableCell>
+            <StyledTableCell>ACTION</StyledTableCell>
           </TableRow>
         </TableHead>
         <TableBody>
@@ -212,19 +212,6 @@ const EntityTable: React.FC<EntityTableProps> = ({ reloadEntity, setReloadEntity
                     '-'
                   )}
                 </StyledTableCell>
-                <StyledTableCell>
-                  {/* <Switch checked={data.isActive} /> */}
-
-                  {data.isActive ? (
-                    <Typography color="success" fontSize={14} component="span">
-                      ACTIVE
-                    </Typography>
-                  ) : (
-                    <Typography color="error" fontSize={14} component="span">
-                      INACTIVE
-                    </Typography>
-                  )}
-                </StyledTableCell>
 
                 <StyledTableCell>
                   {data.createdBy ? `${data.createdBy.firstName} ${data.createdBy.lastName}` : '-'}
@@ -238,6 +225,19 @@ const EntityTable: React.FC<EntityTableProps> = ({ reloadEntity, setReloadEntity
 
                 <StyledTableCell>
                   {data.updatedBy && data.updatedAt ? new Date(data.updatedAt).toLocaleString() : '-'}
+                </StyledTableCell>
+                <StyledTableCell>
+                  {/* <Switch checked={data.isActive} /> */}
+
+                  {data.isActive ? (
+                    <Typography color="success" fontSize={14} component="span">
+                      ACTIVE
+                    </Typography>
+                  ) : (
+                    <Typography color="error" fontSize={14} component="span">
+                      INACTIVE
+                    </Typography>
+                  )}
                 </StyledTableCell>
                 <StyledTableCell title="Edit Entity">
                   <CreateUpdateEntity

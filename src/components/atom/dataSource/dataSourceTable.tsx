@@ -8,21 +8,17 @@ import {
   TableHead,
   TableRow,
   Paper,
-  Collapse,
   Box,
-  IconButton,
   Button,
-  // Switch,
   Skeleton,
   Typography,
   tableCellClasses,
 } from '@mui/material';
-import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
-import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
+
 import useGet from '../../../hooks/useGet';
 import { GET } from '../../../services/apiRoutes';
-import { AttributeOptionRequestPayload } from './types';
-import CreateUpdateAttributeOption from './createUpdateAttributeOption';
+import { DataSourceType } from './types';
+import CreateUpdateDataSource from './createUpdateDataSource';
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
   [`&.${tableCellClasses.head}`]: {
@@ -39,51 +35,42 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
 }));
 
 interface AttributeOptionTableProps {
-  attributeOptionReload: boolean; // attributeOptionReload is now a boolean
-  setAttributeOptionReload: React.Dispatch<React.SetStateAction<boolean>>;
+  reload: boolean; // reload is now a boolean
+  setReload: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-const AttributeOptionTable: React.FC<AttributeOptionTableProps> = ({
-  attributeOptionReload,
-  setAttributeOptionReload,
-}) => {
-  const [attributes, setAttributes] = useState<AttributeOptionRequestPayload[]>([]);
+const DataSourceTable: React.FC<AttributeOptionTableProps> = ({ reload, setReload }) => {
+  const [dataSource, setDataSource] = useState<DataSourceType[]>([]);
   const [currentPage, setCurrentPage] = useState<number>(1);
-
-  const [expandedRows, setExpandedRows] = useState<{ [key: number]: boolean }>({});
-
-  const toggleRow = (index: number): void => {
-    setExpandedRows((prev) => ({ ...prev, [index]: !prev[index] }));
-  };
 
   const perPageItem = 10;
 
-  const attributeList = useGet<{ success: boolean; data: AttributeOptionRequestPayload[]; totalCount: number }>(
-    [`attributeList`, String(currentPage)],
-    GET?.Attribute_Option_List + `?page=${currentPage}&limit=${perPageItem}`,
+  const dataSourceList = useGet<{ success: boolean; data: DataSourceType[]; totalCount: number }>(
+    [`dataSourceList`, String(currentPage)],
+    GET?.Data_Source_List + `?page=${currentPage}&limit=${perPageItem}`,
     !!currentPage
   );
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [attributeOptionReload]);
+  }, [reload]);
 
   useEffect(() => {
-    if (currentPage === 1 && attributeOptionReload) {
-      attributeList.refetch();
-      setAttributeOptionReload(false);
+    if (currentPage === 1 && reload) {
+      dataSourceList.refetch();
+      setReload(false);
     }
-  }, [currentPage, attributeOptionReload]);
+  }, [currentPage, reload]);
 
   useEffect(() => {
-    if (attributeList?.data?.data) {
+    if (dataSourceList?.data?.data) {
       if (currentPage === 1) {
-        setAttributes([...attributeList?.data?.data]);
+        setDataSource([...dataSourceList?.data?.data]);
       } else {
-        setAttributes((prev) => [...prev, ...attributeList?.data?.data]);
+        setDataSource((prev) => [...prev, ...dataSourceList?.data?.data]);
       }
     }
-  }, [attributeList?.data?.data]);
+  }, [dataSourceList?.data?.data]);
 
   useEffect(() => {
     setCurrentPage(currentPage);
@@ -93,7 +80,7 @@ const AttributeOptionTable: React.FC<AttributeOptionTableProps> = ({
 
   const lastElementRef = useCallback(
     (node: HTMLTableRowElement | null) => {
-      if (attributeList.isFetching || attributes.length >= attributeList?.data?.totalCount!) return;
+      if (dataSourceList.isFetching || dataSource.length >= dataSourceList?.data?.totalCount!) return;
 
       // Disconnect the previous observer if it exists
       if (lastRowRef.current) {
@@ -112,29 +99,10 @@ const AttributeOptionTable: React.FC<AttributeOptionTableProps> = ({
         lastRowRef.current.observe(node);
       }
     },
-    [attributeList.isFetching] // Add the correct dependency
+    [dataSourceList.isFetching] // Add the correct dependency
   );
 
-  const renderAttributes = (attributes: string[] = []): JSX.Element => (
-    <Box sx={{ margin: 1 }}>
-      <Table size="small" aria-label="attributes">
-        <TableHead>
-          <TableRow>
-            <StyledTableCell>ATTRIBUTE OPTIONS</StyledTableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {attributes.map((attr, index) => (
-            <StyledTableRow key={index}>
-              <StyledTableCell>{attr || '-'}</StyledTableCell>
-            </StyledTableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </Box>
-  );
-
-  if (!attributeList.isFetching && !attributes.length) {
+  if (!dataSourceList.isFetching && !dataSource.length) {
     return (
       <Box
         display="flex"
@@ -144,12 +112,12 @@ const AttributeOptionTable: React.FC<AttributeOptionTableProps> = ({
         alignItems="center"
       >
         <Typography variant="h4" fontWeight="bold" gutterBottom>
-          No attributes option have been created yet. Please create an an attribute option to display it here.
+          No data source have been created yet. Please create a data source to display it here.
         </Typography>
         <Box maxWidth="600px">
-          <CreateUpdateAttributeOption
-            setAttributeOptionReload={setAttributeOptionReload}
-            title="Create New Attribute Option"
+          <CreateUpdateDataSource
+            setReload={setReload}
+            title="Create New Data Source"
             CustomButton={
               <Button
                 variant="contained"
@@ -167,7 +135,7 @@ const AttributeOptionTable: React.FC<AttributeOptionTableProps> = ({
                   },
                 }}
               >
-                Create New Attribute Option
+                Create New Data Source
               </Button>
             }
           />
@@ -182,7 +150,9 @@ const AttributeOptionTable: React.FC<AttributeOptionTableProps> = ({
         <TableHead>
           <TableRow>
             <StyledTableCell>NAME</StyledTableCell>
-            <StyledTableCell>ATTRIBUTE OPTION</StyledTableCell>
+            <StyledTableCell>CODE</StyledTableCell>
+            <StyledTableCell>VERSION TYPE</StyledTableCell>
+            <StyledTableCell>ENTITY NAME</StyledTableCell>
             <StyledTableCell>CREATED BY</StyledTableCell>
             <StyledTableCell>UPDATED BY</StyledTableCell>
             <StyledTableCell>CREATED AT</StyledTableCell>
@@ -192,19 +162,13 @@ const AttributeOptionTable: React.FC<AttributeOptionTableProps> = ({
           </TableRow>
         </TableHead>
         <TableBody>
-          {attributes.map((data, dataIndex) => (
+          {dataSource.map((data, dataIndex) => (
             <React.Fragment key={data._id}>
-              <StyledTableRow ref={attributes.length === dataIndex + 1 ? lastElementRef : null}>
-                <StyledTableCell>{data.attributeName || '-'}</StyledTableCell>
-                <StyledTableCell>
-                  {data.attributeValue?.length ? (
-                    <IconButton aria-label="expand row" size="small" onClick={() => toggleRow(dataIndex)}>
-                      {expandedRows[dataIndex] ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
-                    </IconButton>
-                  ) : (
-                    '-'
-                  )}
-                </StyledTableCell>
+              <StyledTableRow ref={dataSource.length === dataIndex + 1 ? lastElementRef : null}>
+                <StyledTableCell>{data.name || '-'}</StyledTableCell>
+                <StyledTableCell>{data.code || '-'}</StyledTableCell>
+                <StyledTableCell>{data.versionType || '-'}</StyledTableCell>
+                <StyledTableCell>{data.entityId?.name! || '-'}</StyledTableCell>
 
                 <StyledTableCell>
                   {data.createdBy ? `${data.createdBy.firstName} ${data.createdBy.lastName}` : '-'}
@@ -233,28 +197,18 @@ const AttributeOptionTable: React.FC<AttributeOptionTableProps> = ({
                   )}
                 </StyledTableCell>
                 <StyledTableCell title="Edit Attribute Option">
-                  <CreateUpdateAttributeOption
-                    setAttributeOptionReload={setAttributeOptionReload}
+                  <CreateUpdateDataSource
+                    setReload={setReload}
                     title="Update Attribute Option"
                     CustomButton={<Button>Edit</Button>}
                     data={data}
                   />
                 </StyledTableCell>
               </StyledTableRow>
-
-              {data && data.attributeValue && data.attributeValue?.length > 0 && (
-                <StyledTableRow>
-                  <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={9}>
-                    <Collapse in={expandedRows[dataIndex]} timeout="auto" unmountOnExit>
-                      {renderAttributes(data.attributeValue)}
-                    </Collapse>
-                  </TableCell>
-                </StyledTableRow>
-              )}
             </React.Fragment>
           ))}
 
-          {attributeList.isFetching &&
+          {dataSourceList.isFetching &&
             Array.from({ length: 1 }, (_, index) => (
               <StyledTableRow key={index}>
                 <StyledTableCell colSpan={9}>
@@ -268,4 +222,4 @@ const AttributeOptionTable: React.FC<AttributeOptionTableProps> = ({
   );
 };
 
-export default AttributeOptionTable;
+export default DataSourceTable;
