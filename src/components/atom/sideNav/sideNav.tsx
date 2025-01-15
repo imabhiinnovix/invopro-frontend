@@ -1,26 +1,22 @@
 import { styled, Theme, CSSObject } from '@mui/material/styles';
 import Box from '@mui/material/Box';
 import MuiDrawer from '@mui/material/Drawer';
-
 import List from '@mui/material/List';
-
 import ListItem from '@mui/material/ListItem';
 import ListItemButton from '@mui/material/ListItemButton';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-
 import { useNav } from '../../../context/NavContext';
-
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import ReportIcon from '@mui/icons-material/Report';
 import SettingsIcon from '@mui/icons-material/Settings';
 import React from 'react';
 import { Collapse } from '@mui/material';
-
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import ManageAccountsIcon from '@mui/icons-material/ManageAccounts';
 import StyleIcon from '@mui/icons-material/Style';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 const drawerWidth = 240;
 
@@ -74,10 +70,12 @@ const Drawer = styled(MuiDrawer, { shouldForwardProp: (prop) => prop !== 'open' 
 interface SubNavItem {
   name: string;
   icon: React.ReactNode;
+  route: string;
 }
 interface NavItem {
   name: string;
   icon: React.ReactNode;
+  route: string;
   subItems?: SubNavItem[];
 }
 
@@ -85,22 +83,27 @@ const navItems: NavItem[] = [
   {
     name: 'Dashboard',
     icon: <DashboardIcon sx={{ fontSize: '3rem', color: 'black' }} />,
+    route: '/dashboard',
   },
-  {
-    name: 'Reports',
-    icon: <ReportIcon sx={{ fontSize: '3rem', color: 'black' }} />,
-  },
+  // {
+  //   name: 'Reports',
+  //   icon: <ReportIcon sx={{ fontSize: '3rem', color: 'black' }} />,
+  //   route: '/reports',
+  // },
   {
     name: 'Settings',
     icon: <SettingsIcon sx={{ fontSize: '3rem', color: 'black' }} />,
+    route: '',
     subItems: [
       {
-        name: 'Entitites',
+        name: 'Entities',
         icon: <ManageAccountsIcon sx={{ fontSize: '3rem', color: 'black' }} />,
+        route: '/settings/entity',
       },
       {
         name: 'Attribute Options',
         icon: <StyleIcon sx={{ fontSize: '3rem', color: 'black' }} />,
+        route: '/settings/attribute-option',
       },
     ],
   },
@@ -108,13 +111,15 @@ const navItems: NavItem[] = [
 
 export default function SideNav() {
   const { openNav } = useNav();
-  const [openSettings, setOpenSettings] = React.useState(false); // State to manage the opening of Settings
-  const [selected, setSelected] = React.useState<string>(''); // Track the selected item
+  const [openSettings, setOpenSettings] = React.useState(false);
+  const navigate = useNavigate();
+  const location = useLocation();
 
-  const handleItemClick = (item: string) => {
-    setSelected(item);
-    if (item === 'Settings') {
-      setOpenSettings((prev) => !prev); // Toggle the settings dropdown
+  const handleItemClick = (route: string, hasSubItems: boolean) => {
+    if (hasSubItems) {
+      setOpenSettings((prev) => !prev);
+    } else {
+      navigate(route); // Navigate to the route
     }
   };
 
@@ -124,14 +129,15 @@ export default function SideNav() {
         <List>
           {navItems.map((item) => (
             <React.Fragment key={item.name}>
-              {/* Main Navigation Item */}
               <ListItem disablePadding sx={{ display: 'block' }}>
                 <ListItemButton
-                  onClick={() => handleItemClick(item.name)}
+                  onClick={() => handleItemClick(item.route, !!item.subItems)}
                   sx={{
                     height: 90,
                     px: 2.5,
                     justifyContent: openNav ? 'initial' : 'center',
+                    backgroundColor: location.pathname === item.route ? '#f0f0f0' : 'transparent',
+                    '&:hover': { backgroundColor: '#e0e0e0' },
                   }}
                 >
                   <ListItemIcon
@@ -145,12 +151,6 @@ export default function SideNav() {
                   </ListItemIcon>
                   <ListItemText
                     primary={item.name}
-                    slotProps={{
-                      primary: {
-                        fontSize: '18px',
-                        fontWeight: 'bold',
-                      },
-                    }}
                     sx={{
                       opacity: openNav ? 1 : 0,
                     }}
@@ -159,16 +159,18 @@ export default function SideNav() {
                 </ListItemButton>
               </ListItem>
 
-              {/* Nested Items for Settings */}
               {item.subItems && (
                 <Collapse in={openSettings} timeout="auto" unmountOnExit>
                   <List component="div" disablePadding>
                     {item.subItems.map((subItem) => (
                       <ListItem key={subItem.name} disablePadding sx={{ display: 'block' }}>
                         <ListItemButton
+                          onClick={() => navigate(subItem.route)}
                           sx={{
-                            pl: 4, // Indentation for nested items
+                            pl: 4,
                             justifyContent: openNav ? 'initial' : 'center',
+                            backgroundColor: location.pathname === subItem.route ? '#f0f0f0' : 'transparent',
+                            '&:hover': { backgroundColor: '#e0e0e0' },
                           }}
                         >
                           <ListItemIcon

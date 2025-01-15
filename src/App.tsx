@@ -29,9 +29,9 @@ function App() {
           <Route element={<AuthProtect />}>
             <Route element={<CommonLayout />}>
               <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/entity" element={<Entity />} />
-              <Route path="/attribute-option" element={<AttributeOption />} />
-              <Route path="/data-source" element={<DataSource />} />
+              <Route path="/settings/entity" element={<Entity />} />
+              <Route path="/settings/attribute-option" element={<AttributeOption />} />
+              <Route path="/settings/data-source" element={<DataSource />} />
             </Route>
           </Route>
 
