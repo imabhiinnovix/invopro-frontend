@@ -1,6 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { Box, Button, TextField, Dialog, DialogTitle, DialogContent, DialogActions, Stack } from '@mui/material';
+import {
+  Box,
+  Button,
+  TextField,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Stack,
+  Typography,
+} from '@mui/material';
 
 import { GET, POST } from '../../../services/apiRoutes';
 import ProgressBar from '../../molecule/progressBar';
@@ -8,6 +18,7 @@ import usePost from '../../../hooks/usePost';
 import { DataSourceRequestPayload, DataSourceResponse } from './types';
 import CommonSelect from '../../common/dropdown/commonSelect';
 import CommonDropdownSearch from '../../common/dropdown/searchableDropdown';
+import useGet from '../../../hooks/useGet';
 
 interface CreateUpdateDataSourceProps {
   setReload: React.Dispatch<React.SetStateAction<boolean>>;
@@ -18,6 +29,7 @@ interface CreateUpdateDataSourceProps {
 const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({ setReload, CustomButton, title, data }) => {
   const [open, setOpen] = useState(false);
 
+  const [code, setCode] = useState('');
   const {
     control,
     handleSubmit,
@@ -41,6 +53,12 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({ setRelo
       entityId: data?._id ?? '',
     });
   }, [data, reset]);
+
+  const codeAvailability = useGet<{ success: boolean; available: boolean; message: string }>(
+    [`codeAvailability`, code],
+    GET?.Data_Source_Code + `/${code}`,
+    !!code
+  );
 
   const createDataSource = usePost<DataSourceRequestPayload, DataSourceResponse>(
     ['createDataSource'],
@@ -124,8 +142,22 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({ setRelo
                       'Data source code should not contain special characters, null characters, or restricted prefixes (e.g., "system." or ".system.")',
                   },
                 })}
+                onChange={(event) => {
+                  setCode(event.target.value);
+                }}
                 error={!!errors.code}
-                helperText={errors.code?.message}
+                helperText={
+                  errors.code?.message ||
+                  (codeAvailability.isFetched ? (
+                    codeAvailability.data?.available ? (
+                      <Typography color="success">Code is available</Typography>
+                    ) : (
+                      <Typography color="error">Code is not available</Typography>
+                    )
+                  ) : (
+                    ''
+                  ))
+                }
               />
 
               <CommonSelect
