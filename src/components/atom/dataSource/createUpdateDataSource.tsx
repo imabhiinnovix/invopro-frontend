@@ -12,13 +12,14 @@ import {
   Typography,
 } from '@mui/material';
 
-import { GET, POST } from '../../../services/apiRoutes';
+import { GET, POST, PUT } from '../../../services/apiRoutes';
 import ProgressBar from '../../molecule/progressBar';
 import usePost from '../../../hooks/usePost';
 import { DataSourceRequestPayload, DataSourceResponse } from './types';
 import CommonSelect from '../../common/dropdown/commonSelect';
 import CommonDropdownSearch from '../../common/dropdown/searchableDropdown';
 import useGet from '../../../hooks/useGet';
+import usePut from '../../../hooks/usePut';
 
 interface CreateUpdateDataSourceProps {
   setReload: React.Dispatch<React.SetStateAction<boolean>>;
@@ -47,9 +48,9 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({ setRelo
 
   useEffect(() => {
     reset({
+      versionType: data?.versionType ?? '',
       name: data?.name ?? '',
       description: data?.description ?? '',
-      _id: data?._id ?? '',
       entityId: data?._id ?? '',
     });
   }, [data, reset]);
@@ -64,6 +65,20 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({ setRelo
     ['createDataSource'],
     (data) => {
       if (data?.success) {
+        setCode('');
+        setReload(true);
+        setOpen(false);
+        reset();
+      }
+    },
+    true
+  );
+
+  const updateDataSource = usePut<DataSourceRequestPayload, DataSourceResponse>(
+    ['updateDataSource'],
+    (data) => {
+      if (data?.success) {
+        setCode('');
         setReload(true);
         setOpen(false);
         reset();
@@ -74,7 +89,7 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({ setRelo
 
   const onSubmit = (formData: DataSourceRequestPayload) => {
     if (data && data._id) {
-      createDataSource.mutate({ url: `${POST.UPDATE_DATA_SOURCE}/${data._id}`, payload: formData });
+      updateDataSource.mutate({ url: `${PUT.UPDATE_DATA_SOURCE}/${data._id}`, payload: formData });
     } else {
       createDataSource.mutate({ url: POST.CREATE_DATA_SOURCE, payload: formData });
     }
@@ -82,6 +97,7 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({ setRelo
 
   const handleCancel = () => {
     setOpen(false);
+    setCode('');
     reset(); // Reset form on cancel
   };
 
@@ -116,49 +132,53 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({ setRelo
                 helperText={errors.description?.message}
               />
 
-              <CommonDropdownSearch
-                control={control}
-                name={`entityId`}
-                label="Select Enitity* "
-                apiUrl={`${GET.Entity_List}`}
-                labelName="name"
-                labelValue="_id"
-                defaultValue={''}
-                rules={{ required: 'Entity is required' }}
-                error={!!errors.entityId}
-                errorMessage={errors.entityId?.message}
-                apiName="entityList"
-                defaultDataUrl={`${GET.Entity_List}`}
-              />
+              {!data?._id && (
+                <CommonDropdownSearch
+                  control={control}
+                  name={`entityId`}
+                  label="Select Enitity* "
+                  apiUrl={`${GET.Entity_List}`}
+                  labelName="name"
+                  labelValue="_id"
+                  defaultValue={''}
+                  rules={{ required: 'Entity is required' }}
+                  error={!!errors.entityId}
+                  errorMessage={errors.entityId?.message}
+                  apiName="entityList"
+                  defaultDataUrl={`${GET.Entity_List}`}
+                />
+              )}
 
-              <TextField
-                label="Data Source Code(Unique Code)*"
-                fullWidth
-                {...register('code', {
-                  required: 'Data source code is required',
-                  pattern: {
-                    value: /^(?!.*(\$|\0|^system\.|\.system\.))[\w\s]+$/,
-                    message:
-                      'Data source code should not contain special characters, null characters, or restricted prefixes (e.g., "system." or ".system.")',
-                  },
-                })}
-                onChange={(event) => {
-                  setCode(event.target.value);
-                }}
-                error={!!errors.code}
-                helperText={
-                  errors.code?.message ||
-                  (codeAvailability.isFetched ? (
-                    codeAvailability.data?.available ? (
-                      <Typography color="success">Code is available</Typography>
+              {!data?._id && (
+                <TextField
+                  label="Data Source Code(Unique Code)*"
+                  fullWidth
+                  {...register('code', {
+                    required: 'Data source code is required',
+                    pattern: {
+                      value: /^(?!.*(\$|\0|^system\.|\.system\.))[\w\s]+$/,
+                      message:
+                        'Data source code should not contain special characters, null characters, or restricted prefixes (e.g., "system." or ".system.")',
+                    },
+                  })}
+                  onChange={(event) => {
+                    setCode(event.target.value);
+                  }}
+                  error={!!errors.code}
+                  helperText={
+                    errors.code?.message ||
+                    (codeAvailability.isFetched && code.length > 0 ? (
+                      codeAvailability.data?.available ? (
+                        <Typography color="success">Code is available</Typography>
+                      ) : (
+                        <Typography color="error">Code is not available</Typography>
+                      )
                     ) : (
-                      <Typography color="error">Code is not available</Typography>
-                    )
-                  ) : (
-                    ''
-                  ))
-                }
-              />
+                      ''
+                    ))
+                  }
+                />
+              )}
 
               <CommonSelect
                 control={control}
@@ -174,7 +194,7 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({ setRelo
           </Box>
         </DialogContent>
         <DialogActions>
-          {createDataSource.isPending ? (
+          {createDataSource.isPending || updateDataSource.isPending ? (
             <ProgressBar />
           ) : (
             <>

@@ -15,8 +15,9 @@ import { useForm, Controller } from 'react-hook-form';
 import { AttributeOptionRequestPayload, AttributeOptionResponse } from './types';
 import AddIcon from '@mui/icons-material/Add';
 import usePost from '../../../hooks/usePost';
-import { POST } from '../../../services/apiRoutes';
+import { POST, PUT } from '../../../services/apiRoutes';
 import ProgressBar from '../../molecule/progressBar';
+import usePut from '../../../hooks/usePut';
 
 interface CreateUpdateAttributeOptionProps {
   setAttributeOptionReload: React.Dispatch<React.SetStateAction<boolean>>;
@@ -64,8 +65,18 @@ const CreateUpdateAttributeOption: React.FC<CreateUpdateAttributeOptionProps> = 
     );
   };
 
-  const createUpdateAttributeOptions = usePost<AttributeOptionRequestPayload, AttributeOptionResponse>(
+  const createAttributeOptions = usePost<AttributeOptionRequestPayload, AttributeOptionResponse>(
     ['createUpdateAttributeOptions'],
+    (data) => {
+      if (data?.success) {
+        setAttributeOptionReload(true);
+        handleFormClose();
+      }
+    },
+    true
+  );
+  const updateAttributeOptions = usePut<AttributeOptionRequestPayload, AttributeOptionResponse>(
+    ['updateAttributeOptions'],
     (data) => {
       if (data?.success) {
         setAttributeOptionReload(true);
@@ -77,9 +88,9 @@ const CreateUpdateAttributeOption: React.FC<CreateUpdateAttributeOptionProps> = 
 
   const onSubmitHandler = (formData: AttributeOptionRequestPayload) => {
     if (data && data._id) {
-      createUpdateAttributeOptions.mutate({ url: `${POST.UPDATE_ATTRIBUTE_OPTION}/${data._id}`, payload: formData });
+      updateAttributeOptions.mutate({ url: `${PUT.UPDATE_ATTRIBUTE_OPTION}/${data._id}`, payload: formData });
     } else {
-      createUpdateAttributeOptions.mutate({ url: POST.CREATE_ATTRIBUTE_OPTION, payload: formData });
+      createAttributeOptions.mutate({ url: POST.CREATE_ATTRIBUTE_OPTION, payload: formData });
     }
   };
 
@@ -170,7 +181,7 @@ const CreateUpdateAttributeOption: React.FC<CreateUpdateAttributeOptionProps> = 
         </DialogContent>
 
         <DialogActions>
-          {createUpdateAttributeOptions.isPending ? (
+          {createAttributeOptions.isPending || updateAttributeOptions.isPending ? (
             <ProgressBar />
           ) : (
             <>

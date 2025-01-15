@@ -23,6 +23,7 @@ import usePost from '../../../hooks/usePost';
 import { EntityRequestPayload, EntityResponse } from './types';
 import CommonSelect from '../../common/dropdown/commonSelect';
 import CommonDropdownSearch from '../../common/dropdown/searchableDropdown';
+import usePut from '../../../hooks/usePut';
 
 interface CreateUpdateEntityProps {
   setReloadEntity: React.Dispatch<React.SetStateAction<boolean>>;
@@ -41,7 +42,6 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({ setReloadEntity
     register,
     reset,
     watch,
-    setValue,
     formState: { errors },
   } = useForm<EntityRequestPayload>({
     defaultValues: {
@@ -139,6 +139,20 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({ setReloadEntity
     true
   );
 
+  const updateEntity = usePut<EntityRequestPayload, EntityResponse>(
+    ['updateEntity'],
+    (data) => {
+      if (data?.success) {
+        setReloadEntity(true);
+        setFile(null);
+        setFileName(null);
+        setOpen(false);
+        reset();
+      }
+    },
+    true
+  );
+
   const onSubmit = (formData: EntityRequestPayload) => {
     const newAttributes = formData.attributes?.map((data) => {
       if (!['option', 'multioption'].includes(data.type)) {
@@ -154,7 +168,7 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({ setReloadEntity
     const newFormData = { ...formData, attributes: newAttributes };
 
     if (data && data._id) {
-      createEntity.mutate({ url: `${POST.UPDATE_ENTITY}/${data._id}`, payload: newFormData });
+      updateEntity.mutate({ url: `${POST.UPDATE_ENTITY}/${data._id}`, payload: newFormData });
     } else {
       createEntity.mutate({ url: POST.CREATE_ENTITY, payload: newFormData });
     }
@@ -320,7 +334,7 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({ setReloadEntity
           </Box>
         </DialogContent>
         <DialogActions>
-          {createEntity.isPending ? (
+          {createEntity.isPending || updateEntity.isPending ? (
             <ProgressBar />
           ) : (
             <>

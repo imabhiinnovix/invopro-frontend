@@ -150,6 +150,7 @@ const DataSourceTable: React.FC<AttributeOptionTableProps> = ({ reload, setReloa
         <TableHead>
           <TableRow>
             <StyledTableCell>NAME</StyledTableCell>
+            <StyledTableCell>DESCRIPTION</StyledTableCell>
             <StyledTableCell>CODE</StyledTableCell>
             <StyledTableCell>VERSION TYPE</StyledTableCell>
             <StyledTableCell>ENTITY NAME</StyledTableCell>
@@ -166,6 +167,7 @@ const DataSourceTable: React.FC<AttributeOptionTableProps> = ({ reload, setReloa
             <React.Fragment key={data._id}>
               <StyledTableRow ref={dataSource.length === dataIndex + 1 ? lastElementRef : null}>
                 <StyledTableCell>{data.name || '-'}</StyledTableCell>
+                <StyledTableCell>{data.description || '-'}</StyledTableCell>
                 <StyledTableCell>{data.code || '-'}</StyledTableCell>
                 <StyledTableCell>{data.versionType || '-'}</StyledTableCell>
                 <StyledTableCell>{data.entityId?.name! || '-'}</StyledTableCell>
