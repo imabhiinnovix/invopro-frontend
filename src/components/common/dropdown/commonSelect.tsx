@@ -11,6 +11,7 @@ interface CommonSelectProps {
   rules?: any; // Validation rules
   error?: boolean; // Error state
   errorMessage?: string; // Error message
+  disabled?: boolean;
 }
 
 const CommonSelect: React.FC<CommonSelectProps> = ({
@@ -22,9 +23,11 @@ const CommonSelect: React.FC<CommonSelectProps> = ({
   rules = {},
   error = false,
   errorMessage = '',
+  disabled = false,
 }) => {
+  console.log(defaultValue);
   return (
-    <FormControl fullWidth error={error}>
+    <FormControl fullWidth error={error} disabled={disabled}>
       <InputLabel id={`${name}-label`}>{label}</InputLabel>
       <Controller
         name={name}

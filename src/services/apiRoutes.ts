@@ -33,6 +33,7 @@ export const GET = {
   GET_USER: '/users/',
   GET_ORGANIZATION: '/organizations/',
   Entity_List: '/entities/list',
+  Get_Entity: '/entities',
   Attribute_Option_List: 'attributeOptions/list',
   Attribute_Option_Get: 'attributeOptions/get',
   Data_Source_List: '/dataSource/list',

@@ -101,6 +101,7 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({ setRelo
     reset(); // Reset form on cancel
   };
 
+  console.log(data);
   return (
     <>
       <Box onClick={() => setOpen(true)}>{CustomButton}</Box>
@@ -131,7 +132,6 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({ setRelo
                 error={!!errors.description}
                 helperText={errors.description?.message}
               />
-
               {!data?._id && (
                 <CommonDropdownSearch
                   control={control}
@@ -143,42 +143,56 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({ setRelo
                   defaultValue={''}
                   rules={{ required: 'Entity is required' }}
                   error={!!errors.entityId}
-                  errorMessage={errors.entityId?.message}
+                  errorMessage={errors.entityId?.message as string}
                   apiName="entityList"
-                  defaultDataUrl={`${GET.Entity_List}`}
+                  defaultDataUrl={''}
                 />
               )}
 
-              {!data?._id && (
-                <TextField
-                  label="Data Source Code(Unique Code)*"
-                  fullWidth
-                  {...register('code', {
-                    required: 'Data source code is required',
-                    pattern: {
-                      value: /^(?!.*(\$|\0|^system\.|\.system\.))[\w\s]+$/,
-                      message:
-                        'Data source code should not contain special characters, null characters, or restricted prefixes (e.g., "system." or ".system.")',
-                    },
-                  })}
-                  onChange={(event) => {
-                    setCode(event.target.value);
-                  }}
-                  error={!!errors.code}
-                  helperText={
-                    errors.code?.message ||
-                    (codeAvailability.isFetched && code.length > 0 ? (
-                      codeAvailability.data?.available ? (
-                        <Typography color="success">Code is available</Typography>
-                      ) : (
-                        <Typography color="error">Code is not available</Typography>
-                      )
-                    ) : (
-                      ''
-                    ))
-                  }
+              {!!data?._id && (
+                <CommonSelect
+                  control={control}
+                  name={`entityType`}
+                  label="Select Enitity*"
+                  options={[data.entityId.name]}
+                  defaultValue={data.entityId.name}
+                  rules={{ required: '' }}
+                  error={false}
+                  errorMessage={''}
+                  disabled={true}
                 />
               )}
+
+              <TextField
+                label="Data Source Code(Unique Code)*"
+                fullWidth
+                {...register('code', {
+                  required: 'Data source code is required',
+                  pattern: {
+                    value: /^(?!.*(\$|\0|^system\.|\.system\.))[\w\s]+$/,
+                    message:
+                      'Data source code should not contain special characters, null characters, or restricted prefixes (e.g., "system." or ".system.")',
+                  },
+                })}
+                onChange={(event) => {
+                  setCode(event.target.value);
+                }}
+                error={!!errors.code}
+                defaultValue={data?.code ? data.code : ''}
+                disabled={data?.code ? true : false}
+                helperText={
+                  errors.code?.message ||
+                  (codeAvailability.isFetched && code.length > 0 ? (
+                    codeAvailability.data?.available ? (
+                      <Typography color="success">Code is available</Typography>
+                    ) : (
+                      <Typography color="error">Code is not available</Typography>
+                    )
+                  ) : (
+                    ''
+                  ))
+                }
+              />
 
               <CommonSelect
                 control={control}

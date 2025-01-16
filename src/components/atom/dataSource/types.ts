@@ -22,7 +22,7 @@ interface UpdatedBy {
 export interface DataSourceRequestPayload {
   _id?: string;
   name: string;
-  entityId?: string;
+  entityId?: any;
   code?: string;
   description?: string;
   isActive?: boolean;
