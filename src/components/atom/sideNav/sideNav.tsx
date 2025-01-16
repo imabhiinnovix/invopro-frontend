@@ -17,6 +17,7 @@ import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import ManageAccountsIcon from '@mui/icons-material/ManageAccounts';
 import StyleIcon from '@mui/icons-material/Style';
 import { useNavigate, useLocation } from 'react-router-dom';
+import SourceIcon from '@mui/icons-material/Source';
 
 const drawerWidth = 240;
 
@@ -96,14 +97,19 @@ const navItems: NavItem[] = [
     route: '',
     subItems: [
       {
+        name: 'Attribute Options',
+        icon: <StyleIcon sx={{ fontSize: '3rem', color: 'black' }} />,
+        route: '/settings/attribute-option',
+      },
+      {
         name: 'Entities',
         icon: <ManageAccountsIcon sx={{ fontSize: '3rem', color: 'black' }} />,
         route: '/settings/entity',
       },
       {
-        name: 'Attribute Options',
-        icon: <StyleIcon sx={{ fontSize: '3rem', color: 'black' }} />,
-        route: '/settings/attribute-option',
+        name: 'Data Source',
+        icon: <SourceIcon sx={{ fontSize: '3rem', color: 'black' }} />,
+        route: '/settings/data-source',
       },
     ],
   },

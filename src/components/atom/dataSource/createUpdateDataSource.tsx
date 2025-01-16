@@ -42,7 +42,7 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({ setRelo
       name: data?.name ?? '',
       description: data?.description ?? '',
       versionType: data?.versionType ?? '',
-      entityId: data?._id ?? '',
+      // entityId: data?._id ?? '',
     },
   });
 
@@ -51,7 +51,7 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({ setRelo
       versionType: data?.versionType ?? '',
       name: data?.name ?? '',
       description: data?.description ?? '',
-      entityId: data?._id ?? '',
+      entityId: '',
     });
   }, [data, reset]);
 
