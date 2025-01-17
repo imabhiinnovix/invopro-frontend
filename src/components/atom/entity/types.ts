@@ -5,6 +5,7 @@ export interface Attribute {
   transformations?: string[];
   optionAttributeId?: string;
   cleaner?: string[];
+  required: string | boolean;
 }
 
 interface CreatedBy {

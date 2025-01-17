@@ -25,7 +25,6 @@ const CommonSelect: React.FC<CommonSelectProps> = ({
   errorMessage = '',
   disabled = false,
 }) => {
-  console.log(defaultValue);
   return (
     <FormControl fullWidth error={error} disabled={disabled}>
       <InputLabel id={`${name}-label`}>{label}</InputLabel>

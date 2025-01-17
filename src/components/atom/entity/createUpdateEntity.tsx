@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useForm, useFieldArray, Controller, FieldError, useWatch } from 'react-hook-form';
+import { useForm, useFieldArray, FieldError } from 'react-hook-form';
 import {
   Box,
   Button,
@@ -51,6 +51,7 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({ setReloadEntity
         {
           name: '',
           type: '',
+          required: '', // Default to empty string for consistency
           optionAttributeId: '',
           validation: [],
           transformations: [],
@@ -68,6 +69,7 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({ setReloadEntity
         {
           name: '',
           type: '',
+          required: '',
           optionAttributeId: '',
           validation: [],
           transformations: [],
@@ -93,6 +95,7 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({ setReloadEntity
           validation: attr.validation || [],
           transformations: attr.transformations || [],
           cleaner: attr.cleaner || [],
+          required: 'Mandatory',
         }));
 
         replace(newAttributes);
@@ -159,9 +162,10 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({ setReloadEntity
         return {
           ...data, // Corrected spread operator
           optionAttributeId: '', // Adding the optionAttributeId property
+          required: data.required === 'Mandatory' ? true : false,
         };
       } else {
-        return data;
+        return { ...data, required: data.required === 'Mandatory' ? true : false };
       }
     });
 
@@ -299,6 +303,17 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({ setReloadEntity
                             defaultDataUrl={`${GET.Attribute_Option_Get}`}
                           />
                         )}
+
+                      <CommonSelect
+                        control={control}
+                        name={`attributes.${index}.required`}
+                        label="Attribute Validation"
+                        options={['Mandatory', 'Not Mandatory']}
+                        defaultValue={'Mandatory'}
+                        rules={{ required: 'Attribute Validation is required' }}
+                        error={!!errors.attributes?.[index]?.required}
+                        errorMessage={(errors.attributes?.[index]?.required as FieldError)?.message}
+                      />
                     </Stack>
 
                     {/* Remove Attribute Button */}
@@ -321,6 +336,7 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({ setReloadEntity
                   append({
                     name: '',
                     type: '',
+                    required: '',
                     optionAttributeId: '',
                     validation: [],
                     transformations: [],

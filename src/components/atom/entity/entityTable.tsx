@@ -129,7 +129,7 @@ const EntityTable: React.FC<EntityTableProps> = ({ reloadEntity, setReloadEntity
             <StyledTableRow key={index}>
               <StyledTableCell>{attr.name || '-'}</StyledTableCell>
               <StyledTableCell>{attr.type || '-'}</StyledTableCell>
-              <StyledTableCell>{attr.validation?.length ? attr.validation.join(', ') : '-'}</StyledTableCell>
+              <StyledTableCell>{attr.required}</StyledTableCell>
               <StyledTableCell>{attr.transformations?.length ? attr.transformations.join(', ') : '-'}</StyledTableCell>
               <StyledTableCell>{attr.cleaner?.length ? attr.cleaner.join(', ') : '-'}</StyledTableCell>
             </StyledTableRow>
