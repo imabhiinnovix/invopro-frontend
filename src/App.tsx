@@ -14,6 +14,8 @@ import Entity from './pages/entity';
 import AttributeOption from './pages/attributeOption';
 import DataSource from './pages/dataSource';
 
+import DataSourceVersion from './pages/dataSourceVersion';
+
 function App() {
   return (
     <>
@@ -32,6 +34,7 @@ function App() {
               <Route path="/settings/entity" element={<Entity />} />
               <Route path="/settings/attribute-option" element={<AttributeOption />} />
               <Route path="/settings/data-source" element={<DataSource />} />
+              <Route path="/settings/data-source-version" element={<DataSourceVersion />} />
             </Route>
           </Route>
 

@@ -5,9 +5,10 @@ import UploadFileIcon from '@mui/icons-material/UploadFile';
 interface FileUploadButtonProps {
   fileName: string | null; // Controlled file name state
   onFileChange: (event: React.ChangeEvent<HTMLInputElement>) => void; // File input change handler
+  buttonName: string;
 }
 
-const FileUploadButton: React.FC<FileUploadButtonProps> = ({ fileName, onFileChange }) => {
+const FileUploadButton: React.FC<FileUploadButtonProps> = ({ fileName, onFileChange, buttonName }) => {
   return (
     <Box display="flex" alignItems="center" gap={2}>
       <Button
@@ -23,7 +24,7 @@ const FileUploadButton: React.FC<FileUploadButtonProps> = ({ fileName, onFileCha
       >
         <Box gap={1} display="flex" justifyContent="center">
           <UploadFileIcon />
-          Select XLSX File to Extract Attributes From Its Header
+          {buttonName}
         </Box>
 
         <input type="file" hidden onChange={onFileChange} />

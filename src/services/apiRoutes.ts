@@ -38,4 +38,6 @@ export const GET = {
   Attribute_Option_Get: 'attributeOptions/get',
   Data_Source_List: '/dataSource/list',
   Data_Source_Code: '/dataSource/code',
+  Data_Source_Version_Name: '/dataSourceVersion',
+  Data_Source: '/dataSource/dataSourceId',
 };

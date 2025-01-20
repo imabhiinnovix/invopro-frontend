@@ -182,7 +182,6 @@ const CommonDropdownSearch: React.FC<CommonDropdownSearchProps> = ({
               value={selectedOption} // Use the matched option as the value
               options={options}
               onInputChange={(_, value, reason) => {
-                console.log(reason);
                 if (reason === 'input') {
                   field.onChange(null);
                   setSearchTerm(value);

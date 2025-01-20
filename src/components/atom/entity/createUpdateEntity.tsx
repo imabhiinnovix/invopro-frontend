@@ -223,7 +223,11 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({ setReloadEntity
               />
 
               {/* File Upload */}
-              <FileUploadButton fileName={fileName} onFileChange={handleFileChange} />
+              <FileUploadButton
+                fileName={fileName}
+                onFileChange={handleFileChange}
+                buttonName={'Select XLSX File to Extract Attributes From Its Header'}
+              />
               {!isPending ? (
                 <Button
                   variant={file ? 'contained' : 'outlined'}
