@@ -51,9 +51,6 @@ const CreateDataSourceVersion: React.FC<CreateDataSourceVersionProps> = ({ setRe
   const [settingAttribute, setSettingAttribute] = useState<Record<any, any>[]>([]);
   const [settingAttributeOption, setSettingAttributeOption] = useState<string[]>([]);
 
-  console.log(file);
-  console.log(setReload);
-
   const {
     control,
     handleSubmit,
@@ -82,6 +79,15 @@ const CreateDataSourceVersion: React.FC<CreateDataSourceVersionProps> = ({ setRe
     reset(); // Reset form on cancel
   };
 
+  useEffect(() => {
+    reset(
+      {
+        mappings: {},
+      },
+      { keepValues: true }
+    );
+  }, [reset, settingAttribute]);
+
   const versionNameAvailability = useGet<{ success: boolean; available: boolean; message: string }>(
     [`codeAvailability`, versionName],
     GET?.Data_Source_Version_Name +
@@ -97,29 +103,24 @@ const CreateDataSourceVersion: React.FC<CreateDataSourceVersionProps> = ({ setRe
     !!watch('dataSourceId')
   );
 
-  console.log(dataSourceDetails);
   useEffect(() => {
-    if (dataSourceDetails.isFetched) {
+    if (!dataSourceDetails.isFetching && dataSourceDetails.isSuccess) {
       setSettingAttribute(dataSourceDetails.data?.data?.entityId.attributes);
       setSettingAttributeOption([
         ...dataSourceDetails.data?.data?.entityId.attributes.map((data: any) => data.name),
         'Extra-Save As It',
         'Extra-Skip Data',
       ]);
-      reset(
-        {
-          mappings: {},
-        },
-        { keepValues: true }
-      );
     }
-  }, [dataSourceDetails.isFetched]);
+  }, [dataSourceDetails.isFetching]);
 
   const handleFormClose = () => {
     reset();
     setOpen(false);
   };
   const onSubmit = (formData: any) => {
+    console.log(formData);
+
     const reverseMap: Record<string, string[]> = {};
     Object.entries(formData.mappings).forEach(([key, value]) => {
       if (!reverseMap[value as string]) {
@@ -279,38 +280,41 @@ const CreateDataSourceVersion: React.FC<CreateDataSourceVersionProps> = ({ setRe
                 <FileUploadButton fileName={fileName} onFileChange={handleFileChange} buttonName={'Upload File'} />
               )}
 
-              {fileHeader.length > 0 && settingAttribute.length > 0 && settingAttributeOption.length > 0 && (
-                <Table>
-                  <TableHead>
-                    <TableRow>
-                      <TableCell>{fileName?.split('.')[0]} Attribute</TableCell>
-                      <TableCell>Entity Setting Attribute</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {fileHeader.map((header, index) => (
-                      <TableRow key={index}>
-                        <TableCell>{header}</TableCell>
-                        <TableCell>
-                          <CommonSelect
-                            control={control}
-                            name={`mappings.${header}`}
-                            label={'Map To'}
-                            options={settingAttributeOption}
-                            defaultValue={settingAttributeOption.includes(header) ? header : ''}
-                            rules={{
-                              required:
-                                'Choose how to handle extra fields: either save the data or skip saving for this column.',
-                            }}
-                            error={!!errors.mappings?.[header]}
-                            errorMessage={errors.mappings?.[header]?.message}
-                          />
-                        </TableCell>
+              {fileHeader.length > 0 &&
+                settingAttribute.length > 0 &&
+                settingAttributeOption.length > 0 &&
+                !dataSourceDetails.isFetching && (
+                  <Table>
+                    <TableHead>
+                      <TableRow>
+                        <TableCell>{fileName?.split('.')[0]} Attribute</TableCell>
+                        <TableCell>Entity Setting Attribute</TableCell>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              )}
+                    </TableHead>
+                    <TableBody>
+                      {fileHeader.map((header, index) => (
+                        <TableRow key={index}>
+                          <TableCell>{header}</TableCell>
+                          <TableCell>
+                            <CommonSelect
+                              control={control}
+                              name={`mappings.${header}`}
+                              label={'Map To'}
+                              options={settingAttributeOption}
+                              defaultValue={settingAttributeOption.includes(header) ? header : ''}
+                              rules={{
+                                required:
+                                  'Choose how to handle extra fields: either save the data or skip saving for this column.',
+                              }}
+                              error={!!errors.mappings?.[header]}
+                              errorMessage={errors.mappings?.[header]?.message}
+                            />
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                )}
             </Stack>
           </Box>
         </DialogContent>

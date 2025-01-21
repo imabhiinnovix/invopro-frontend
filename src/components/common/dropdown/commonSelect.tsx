@@ -34,7 +34,7 @@ const CommonSelect: React.FC<CommonSelectProps> = ({
         defaultValue={defaultValue}
         rules={rules}
         render={({ field }) => (
-          <Select {...field} labelId={`${name}-label`} label={label}>
+          <Select {...field} labelId={`${name}-label`} label={label} value={field.value || defaultValue}>
             {options.map((option) => (
               <MenuItem key={option} value={option}>
                 {option}
