@@ -40,4 +40,5 @@ export const GET = {
   Data_Source_Code: '/dataSource/code',
   Data_Source_Version_Name: '/dataSourceVersion',
   Data_Source: '/dataSource/dataSourceId',
+  Data_Source_Name: '/dataSource/name',
 };

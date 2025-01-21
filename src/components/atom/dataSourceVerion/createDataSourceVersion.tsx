@@ -56,8 +56,6 @@ const CreateDataSourceVersion: React.FC<CreateDataSourceVersionProps> = ({ setRe
     control,
     handleSubmit,
     register,
-    setValue,
-    getValues,
     watch,
     reset,
     formState: { errors },
@@ -69,6 +67,18 @@ const CreateDataSourceVersion: React.FC<CreateDataSourceVersionProps> = ({ setRe
       mappings: {},
     },
   });
+
+  const handleCancel = () => {
+    setFile(null);
+    setFileName(null);
+    setOpen(false);
+    setVersionName('');
+    setFileHeader([]);
+    setFileUploadLoader(false);
+    setSettingAttribute([]);
+    setSettingAttributeOption([]);
+    reset(); // Reset form on cancel
+  };
 
   const versionNameAvailability = useGet<{ success: boolean; available: boolean; message: string }>(
     [`codeAvailability`, versionName],
@@ -302,7 +312,7 @@ const CreateDataSourceVersion: React.FC<CreateDataSourceVersionProps> = ({ setRe
             <>
               {' '}
               <Button
-                // onClick={handleCancel}
+                onClick={handleCancel}
                 color="error"
                 sx={{ fontSize: 18, fontWeight: 'bold', p: 1, pl: 2, pr: 2 }}
               >

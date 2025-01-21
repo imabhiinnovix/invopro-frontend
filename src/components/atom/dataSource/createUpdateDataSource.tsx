@@ -31,15 +31,18 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({ setRelo
   const [open, setOpen] = useState(false);
 
   const [code, setCode] = useState('');
+  const [name, setName] = useState('');
   const {
     control,
     handleSubmit,
     register,
     reset,
+    setValue,
     formState: { errors },
   } = useForm<DataSourceRequestPayload>({
     defaultValues: {
       name: data?.name ?? '',
+      code: data?.code ?? '',
       description: data?.description ?? '',
       versionType: data?.versionType ?? '',
       // entityId: data?._id ?? '',
@@ -50,6 +53,7 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({ setRelo
     reset({
       versionType: data?.versionType ?? '',
       name: data?.name ?? '',
+      code: data?.code ?? '',
       description: data?.description ?? '',
       entityId: '',
     });
@@ -61,11 +65,18 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({ setRelo
     !!code
   );
 
+  const nameAvailability = useGet<{ success: boolean; available: boolean; message: string }>(
+    [`nameAvailability`, name],
+    GET?.Data_Source_Name + `/${name}`,
+    !!name
+  );
+
   const createDataSource = usePost<DataSourceRequestPayload, DataSourceResponse>(
     ['createDataSource'],
     (data) => {
       if (data?.success) {
         setCode('');
+        setName('');
         setReload(true);
         setOpen(false);
         reset();
@@ -79,6 +90,7 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({ setRelo
     (data) => {
       if (data?.success) {
         setCode('');
+        setName('');
         setReload(true);
         setOpen(false);
         reset();
@@ -98,6 +110,7 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({ setRelo
   const handleCancel = () => {
     setOpen(false);
     setCode('');
+    setName('');
     reset(); // Reset form on cancel
   };
 
@@ -118,8 +131,29 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({ setRelo
                 {...register('name', {
                   required: 'Data source name is required',
                 })}
+                onChange={(event) => {
+                  setName(event.target.value);
+                  setValue('name', event.target.value);
+                }}
+                onBlur={(event) => {
+                  const sanitizedCode = event.target.value.toLowerCase().replace(/[^a-zA-Z0-9_]/g, '');
+                  setCode(sanitizedCode);
+                  setValue('code', sanitizedCode);
+                }}
                 error={!!errors.name}
-                helperText={errors.name?.message}
+                defaultValue={data?.name ? data.name : ''}
+                helperText={
+                  errors.name?.message ||
+                  (nameAvailability.isFetched && name.length > 0 ? (
+                    nameAvailability.data?.available ? (
+                      <Typography color="success">Name is available</Typography>
+                    ) : (
+                      <Typography color="error">Name is not available</Typography>
+                    )
+                  ) : (
+                    ''
+                  ))
+                }
               />
 
               <TextField
@@ -168,16 +202,19 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({ setRelo
                 {...register('code', {
                   required: 'Data source code is required',
                   pattern: {
-                    value: /^(?!.*(\$|\0|^system\.|\.system\.))[\w\s]+$/,
+                    value: /^(?!.*(\$|\0|^system\.|\.system\.))[\w]+$/,
                     message:
-                      'Data source code should not contain special characters, null characters, or restricted prefixes (e.g., "system." or ".system.")',
+                      'Data source code should not contain special characters, null characters,space or restricted prefixes (e.g., "system." or ".system.")',
                   },
                 })}
                 onChange={(event) => {
-                  setCode(event.target.value);
+                  // Automatically update the code state by sanitizing input
+                  const sanitizedCode = event.target.value.toLowerCase().replace(/[^a-zA-Z0-9_]/g, '');
+                  setCode(sanitizedCode); // This will update the code state
+                  setValue('code', sanitizedCode);
                 }}
                 error={!!errors.code}
-                defaultValue={data?.code ? data.code : ''}
+                value={code || (data?.code ? data.code : (name?.toLowerCase() || '').replace(/[^a-zA-Z0-9_]/g, ''))}
                 disabled={data?.code ? true : false}
                 helperText={
                   errors.code?.message ||
