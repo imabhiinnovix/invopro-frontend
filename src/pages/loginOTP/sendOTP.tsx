@@ -23,7 +23,7 @@ function SendOTP() {
     [''],
     () => {
       const email = getValues('email');
-      console.log(email);
+
       setTimeout(() => {
         if (email) {
           navigate('/otp-login/otp', { state: { email: email } });

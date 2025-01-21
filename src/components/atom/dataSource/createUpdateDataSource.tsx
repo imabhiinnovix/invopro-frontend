@@ -101,7 +101,6 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({ setRelo
     reset(); // Reset form on cancel
   };
 
-  console.log(data);
   return (
     <>
       <Box onClick={() => setOpen(true)}>{CustomButton}</Box>

@@ -1,32 +1,23 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Button,
-  Popover,
   TextField,
   Box,
   Typography,
-  Grid,
   Table,
   TableBody,
   TableCell,
   TableHead,
   TableRow,
-  Select,
-  MenuItem,
-  InputLabel,
-  FormControl,
-  FormHelperText,
   Dialog,
   DialogTitle,
   DialogContent,
   Stack,
   DialogActions,
 } from '@mui/material';
-import { useForm, Controller } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import CommonDropdownSearch from '../../common/dropdown/searchableDropdown';
 import { GET } from '../../../services/apiRoutes';
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-import { WidthFull } from '@mui/icons-material';
 import CommonDatePicker from '../../common/datePicker/datePicker';
 import ProgressBar from '../../molecule/progressBar';
 import useGet from '../../../hooks/useGet';
@@ -34,10 +25,7 @@ import { DateTime } from 'luxon';
 import FileUploadButton from '../file/fileUploadButton';
 import ExcelJS from 'exceljs';
 import { toast } from 'react-toastify';
-interface AttributeMapping {
-  newAttribute: { id: number; name: string; type: string };
-  entitySettingAttribute: { name: string; type: string; required: string };
-}
+import CommonSelect from '../../common/dropdown/commonSelect';
 
 interface CreateDataSourceVersionProps {
   setReload: React.Dispatch<React.SetStateAction<boolean>>;
@@ -54,36 +42,15 @@ interface FormValues {
   mappings: { [key: string]: string };
 }
 
-const sampleResponse = {
-  mappedAttributes: {
-    matchedAttributes: [
-      {
-        newAttribute: { id: 1, name: 'DisclosureNumber', type: 'text' },
-        enttitySettingAttribute: { name: 'DisclosureNumber', type: 'text', required: 'Not Mandatory' },
-      },
-      {
-        newAttribute: { id: 2, name: 'SBU', type: 'text' },
-        enttitySettingAttribute: { name: 'SBU', type: 'text', required: 'Not Mandatory' },
-      },
-    ],
-    unmatchedNewAttributes: [
-      { id: 14, name: 'Accolad', type: 'text' },
-      { id: 17, name: 'ResponsibleSTCName', type: 'text' },
-    ],
-    unmatchedEntitySettingAttributes: {
-      required: [{ name: 'ResponsibleSTCName1', type: 'text', required: 'Mandatory' }],
-    },
-  },
-};
-
 const CreateDataSourceVersion: React.FC<CreateDataSourceVersionProps> = ({ setReload, CustomButton, title, data }) => {
   const [open, setOpen] = useState(false);
   const [versionName, setVersionName] = useState('');
   const [file, setFile] = useState<File | null>(null);
   const [fileName, setFileName] = useState<string | null>(null);
-  const [fileHeader, setFileHeader] = useState<string[] | null>(null);
-
-  const { mappedAttributes } = sampleResponse;
+  const [fileHeader, setFileHeader] = useState<string[]>([]);
+  const [fileUploadLoader, setFileUploadLoader] = useState(false);
+  const [settingAttribute, setSettingAttribute] = useState<Record<any, any>[]>([]);
+  const [settingAttributeOption, setSettingAttributeOption] = useState<string[]>([]);
 
   const {
     control,
@@ -117,12 +84,58 @@ const CreateDataSourceVersion: React.FC<CreateDataSourceVersionProps> = ({ setRe
     GET?.Data_Source + `/${watch('dataSourceId')}`,
     !!watch('dataSourceId')
   );
+
+  useEffect(() => {
+    if (dataSourceDetails.isFetched) {
+      setSettingAttribute(dataSourceDetails.data?.data?.entityId.attributes);
+      setSettingAttributeOption([
+        ...dataSourceDetails.data?.data?.entityId.attributes.map((data: any) => data.name),
+        'Extra-Save As It',
+        'Extra-Skip Data',
+      ]);
+    }
+  }, [dataSourceDetails.isFetched]);
+
   const handleFormClose = () => {
     reset();
     setOpen(false);
   };
   const onSubmit = (formData: any) => {
-    console.log(formData);
+    const reverseMap: Record<string, string[]> = {};
+    Object.entries(formData.mappings).forEach(([key, value]) => {
+      if (!reverseMap[value as string]) {
+        reverseMap[value as string] = [];
+      }
+
+      if (!['Extra-Save As It', 'Extra-Skip Data'].includes(value as string)) reverseMap[value as string].push(key);
+    });
+
+    const duplicateEntries = Object.entries(reverseMap)
+      .filter(([, keys]) => keys.length > 1)
+      .map(([value, keys]) => `Value "${value}" is duplicated for file attributes: ${keys.join(', ')}`);
+
+    const mandatoryAttributes = settingAttribute
+      .filter((attr) => attr.required === 'Mandatory')
+      .map((attr) => attr.name);
+
+    const missingMandatoryAttributes = mandatoryAttributes.filter(
+      (attr) => !Object.values(formData.mappings).includes(attr)
+    );
+
+    if (duplicateEntries.length > 0) {
+      duplicateEntries.forEach((message) => {
+        toast.error(message);
+      });
+    }
+    if (missingMandatoryAttributes.length > 0) {
+      missingMandatoryAttributes.forEach((attr) => {
+        toast.error(`Mandatory attribute missing in mappings: ${attr}`);
+      });
+    }
+
+    if (missingMandatoryAttributes.length === 0 && duplicateEntries.length === 0) {
+      console.log(formData);
+    }
   };
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -131,6 +144,7 @@ const CreateDataSourceVersion: React.FC<CreateDataSourceVersionProps> = ({ setRe
       setFile(selectedFile);
       setFileName(selectedFile.name);
       const reader = new FileReader();
+      setFileUploadLoader(true);
       reader.onload = async (e) => {
         try {
           const arrayBuffer = e.target?.result as ArrayBuffer;
@@ -149,10 +163,36 @@ const CreateDataSourceVersion: React.FC<CreateDataSourceVersionProps> = ({ setRe
           });
 
           if (headers.length > 0) {
-            setFileHeader(headers);
+            const headerCounts: Record<string, number> = headers.reduce(
+              (acc: Record<string, number>, header: string) => {
+                acc[header] = (acc[header] || 0) + 1;
+                return acc;
+              },
+              {}
+            );
+
+            const duplicates = Object.entries(headerCounts).filter(([, count]) => count > 1);
+            if (duplicates.length > 0) {
+              duplicates.forEach(([header, count]) => {
+                toast.error(`The header '${header}' is duplicated ${count} times.`);
+              });
+
+              setFileName(null);
+              setFile(null);
+            } else {
+              setFileHeader(headers);
+            }
+          } else {
+            toast.error(`Headers not found.`);
+            setFileName(null);
+            setFile(null);
           }
+          setFileUploadLoader(false);
         } catch (e) {
           toast.error('Something went wrong while processing the file. Please try again.');
+          setFileName(null);
+          setFile(null);
+          setFileUploadLoader(false);
         }
       };
       reader.readAsArrayBuffer(selectedFile);
@@ -214,7 +254,44 @@ const CreateDataSourceVersion: React.FC<CreateDataSourceVersionProps> = ({ setRe
                 }
               />
 
-              <FileUploadButton fileName={fileName} onFileChange={handleFileChange} buttonName={'Upload File'} />
+              {fileUploadLoader ? (
+                <ProgressBar />
+              ) : (
+                <FileUploadButton fileName={fileName} onFileChange={handleFileChange} buttonName={'Upload File'} />
+              )}
+
+              {fileHeader.length > 0 && settingAttribute.length > 0 && settingAttributeOption.length > 0 && (
+                <Table>
+                  <TableHead>
+                    <TableRow>
+                      <TableCell>{fileName?.split('.')[0]} Attribute</TableCell>
+                      <TableCell>Entity Setting Attribute</TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {fileHeader.map((header, index) => (
+                      <TableRow key={index}>
+                        <TableCell>{header}</TableCell>
+                        <TableCell>
+                          <CommonSelect
+                            control={control}
+                            name={`mappings.${header}`}
+                            label={'Map To'}
+                            options={settingAttributeOption}
+                            defaultValue={settingAttributeOption.includes(header) ? header : ''}
+                            rules={{
+                              required:
+                                'Choose how to handle extra fields: either save the data or skip saving for this column.',
+                            }}
+                            error={!!errors.mappings?.[header]}
+                            errorMessage={errors.mappings?.[header]?.message}
+                          />
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              )}
             </Stack>
           </Box>
         </DialogContent>
