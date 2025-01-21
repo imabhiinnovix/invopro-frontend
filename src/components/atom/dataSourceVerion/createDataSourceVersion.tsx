@@ -31,7 +31,6 @@ interface CreateDataSourceVersionProps {
   setReload: React.Dispatch<React.SetStateAction<boolean>>;
   CustomButton: React.ReactElement;
   title: string;
-  data?: any;
 }
 
 interface FormValues {
@@ -42,7 +41,7 @@ interface FormValues {
   mappings: { [key: string]: string };
 }
 
-const CreateDataSourceVersion: React.FC<CreateDataSourceVersionProps> = ({ setReload, CustomButton, title, data }) => {
+const CreateDataSourceVersion: React.FC<CreateDataSourceVersionProps> = ({ setReload, CustomButton, title }) => {
   const [open, setOpen] = useState(false);
   const [versionName, setVersionName] = useState('');
   const [file, setFile] = useState<File | null>(null);
@@ -51,6 +50,9 @@ const CreateDataSourceVersion: React.FC<CreateDataSourceVersionProps> = ({ setRe
   const [fileUploadLoader, setFileUploadLoader] = useState(false);
   const [settingAttribute, setSettingAttribute] = useState<Record<any, any>[]>([]);
   const [settingAttributeOption, setSettingAttributeOption] = useState<string[]>([]);
+
+  console.log(file);
+  console.log(setReload);
 
   const {
     control,
