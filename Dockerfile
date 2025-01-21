@@ -11,11 +11,8 @@ RUN npm install
 # Expose the application port.
 EXPOSE 5173
 
-# CMD ["tail", "-f", "/dev/null"]
-CMD ["npm", "run", "start"]
-
-# CMD ["vite", "--port", "3000"]
-# CMD ["tail",  "-f", "/dev/null"]
+# CMD ["npm", "run", "start"]
+CMD ["/app/scripts/start.sh"]
 
 ##############################
 # Build Stage for Production
