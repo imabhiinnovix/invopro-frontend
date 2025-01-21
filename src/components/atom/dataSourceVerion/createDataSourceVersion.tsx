@@ -95,6 +95,7 @@ const CreateDataSourceVersion: React.FC<CreateDataSourceVersionProps> = ({ setRe
     !!watch('dataSourceId')
   );
 
+  console.log(dataSourceDetails);
   useEffect(() => {
     if (dataSourceDetails.isFetched) {
       setSettingAttribute(dataSourceDetails.data?.data?.entityId.attributes);
@@ -103,6 +104,12 @@ const CreateDataSourceVersion: React.FC<CreateDataSourceVersionProps> = ({ setRe
         'Extra-Save As It',
         'Extra-Skip Data',
       ]);
+      reset(
+        {
+          mappings: {},
+        },
+        { keepValues: true }
+      );
     }
   }, [dataSourceDetails.isFetched]);
 
