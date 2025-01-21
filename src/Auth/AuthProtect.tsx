@@ -1,10 +1,10 @@
 import { Navigate, Outlet } from 'react-router-dom';
-import { roleId } from '../utils/constants';
-import { getAuthToken, getRoleId } from '../utils/handleLocalStorage';
+// import { roleId } from '../utils/constants';
+import { getAuthToken } from '../utils/handleLocalStorage';
 
 const AuthProtect = () => {
   const token = getAuthToken();
-  const currentRoleId = getRoleId();
+  // const currentRoleId = getRoleId();
 
   if (!token) {
     return <Navigate to="/login" />;

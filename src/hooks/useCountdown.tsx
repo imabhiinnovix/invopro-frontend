@@ -5,7 +5,7 @@ const useCountdown = (initialTime: number) => {
   const [isButtonDisabled, setIsButtonDisabled] = useState(true);
 
   useEffect(() => {
-    let timer: number | undefined;
+    let timer: number | undefined | any;
 
     if (countdown > 0) {
       timer = setInterval(() => {

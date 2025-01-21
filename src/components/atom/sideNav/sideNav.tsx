@@ -8,7 +8,6 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import { useNav } from '../../../context/NavContext';
 import DashboardIcon from '@mui/icons-material/Dashboard';
-import ReportIcon from '@mui/icons-material/Report';
 import SettingsIcon from '@mui/icons-material/Settings';
 import React from 'react';
 import { Collapse } from '@mui/material';

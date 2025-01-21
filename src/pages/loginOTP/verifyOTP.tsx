@@ -69,7 +69,7 @@ const VerifyOTP = () => {
   const {
     handleSubmit,
     control,
-    formState: { errors },
+    // formState: { errors },
   } = useForm<{ otp: string }>({
     mode: 'all',
     reValidateMode: 'onChange',

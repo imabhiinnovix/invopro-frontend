@@ -4,8 +4,6 @@ import axiosInstance from '../services/axiosInstance';
 import { toast } from 'react-toastify';
 import axios from 'axios';
 
-type onSuccess = () => void;
-
 const filePostFetcher = async <
   TRequest extends Record<string, string | Blob | File | File[] | null | undefined>,
   TResponse

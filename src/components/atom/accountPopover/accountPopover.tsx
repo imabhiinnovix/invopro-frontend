@@ -1,5 +1,3 @@
-import type { IconButtonProps } from '@mui/material/IconButton';
-
 import { useState, useCallback, useContext, useEffect } from 'react';
 
 import Box from '@mui/material/Box';
@@ -12,7 +10,7 @@ import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
 import MenuItem, { menuItemClasses } from '@mui/material/MenuItem';
 import { AuthContext, AuthContextType } from '../../../context/AuthContext';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { clearLocalStorage } from '../../../utils/handleLocalStorage';
 
 export function AccountPopover() {
@@ -25,8 +23,7 @@ export function AccountPopover() {
   }, [initialization]);
 
   const navigate = useNavigate();
-  const location = useLocation();
-  const { pathname } = location;
+
   const [openPopover, setOpenPopover] = useState<HTMLButtonElement | null>(null);
 
   const handleOpenPopover = useCallback((event: React.MouseEvent<HTMLButtonElement>) => {

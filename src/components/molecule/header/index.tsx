@@ -1,4 +1,4 @@
-import { AppBar, Toolbar, IconButton, Box, useMediaQuery, useTheme } from '@mui/material';
+import { AppBar, Toolbar, IconButton, Box } from '@mui/material';
 
 import { useLocation } from 'react-router-dom';
 
