@@ -99,8 +99,9 @@ const CreateDataSourceVersion: React.FC<CreateDataSourceVersionProps> = ({ setRe
   const { mutate, isPending } = useFilePostData<{ files: File; operation: string }, { message: string; data?: any }>(
     ['uploadedFiles'],
     (data) => {
-      console.log(data);
-    }
+      handleCancel();
+    },
+    { showToast: true }
   );
 
   useEffect(() => {
@@ -334,11 +335,10 @@ const CreateDataSourceVersion: React.FC<CreateDataSourceVersionProps> = ({ setRe
           </Box>
         </DialogContent>
         <DialogActions>
-          {false ? (
+          {isPending ? (
             <ProgressBar />
           ) : (
-            <>
-              {' '}
+            <Box>
               <Button
                 onClick={handleCancel}
                 color="error"
@@ -351,11 +351,12 @@ const CreateDataSourceVersion: React.FC<CreateDataSourceVersionProps> = ({ setRe
                 onClick={handleSubmit(onSubmit)}
                 variant="contained"
                 color="primary"
+                disabled={!!file && !fileUploadLoader ? false : true}
                 sx={{ fontSize: 18, fontWeight: 'bold', p: 1, pl: 2, pr: 2 }}
               >
                 Save Data Source
               </Button>
-            </>
+            </Box>
           )}
         </DialogActions>
       </Dialog>

@@ -95,7 +95,7 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({ setReloadEntity
           validation: attr.validation || [],
           transformations: attr.transformations || [],
           cleaner: attr.cleaner || [],
-          required: 'Mandatory',
+          required: 'Not Mandatory',
         }));
 
         replace(newAttributes);

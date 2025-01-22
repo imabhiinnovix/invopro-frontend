@@ -37,7 +37,7 @@ export default function DataSourceVersion() {
           <Box>
             <CreateDataSourceVersion
               setReload={setReload}
-              title="Create New Data Source"
+              title="Create New Data Source Version"
               CustomButton={
                 <Button
                   variant="contained"
@@ -55,7 +55,7 @@ export default function DataSourceVersion() {
                     },
                   }}
                 >
-                  Create New Data Source
+                  Create New Data Source Version
                 </Button>
               }
             />

@@ -110,6 +110,11 @@ const navItems: NavItem[] = [
         icon: <SourceIcon sx={{ fontSize: '3rem', color: 'black' }} />,
         route: '/settings/data-source',
       },
+      {
+        name: 'Data Source Version',
+        icon: <SourceIcon sx={{ fontSize: '3rem', color: 'black' }} />,
+        route: '/settings/data-source-version',
+      },
     ],
   },
 ];
