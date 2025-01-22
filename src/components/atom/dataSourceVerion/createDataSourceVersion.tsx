@@ -17,7 +17,7 @@ import {
 } from '@mui/material';
 import { useForm } from 'react-hook-form';
 import CommonDropdownSearch from '../../common/dropdown/searchableDropdown';
-import { GET } from '../../../services/apiRoutes';
+import { GET, POST } from '../../../services/apiRoutes';
 import CommonDatePicker from '../../common/datePicker/datePicker';
 import ProgressBar from '../../molecule/progressBar';
 import useGet from '../../../hooks/useGet';
@@ -26,6 +26,7 @@ import FileUploadButton from '../file/fileUploadButton';
 import ExcelJS from 'exceljs';
 import { toast } from 'react-toastify';
 import CommonSelect from '../../common/dropdown/commonSelect';
+import useFilePostData from '../../../hooks/usePostMultipart';
 
 interface CreateDataSourceVersionProps {
   setReload: React.Dispatch<React.SetStateAction<boolean>>;
@@ -57,6 +58,7 @@ const CreateDataSourceVersion: React.FC<CreateDataSourceVersionProps> = ({ setRe
     register,
     watch,
     reset,
+    setValue,
     formState: { errors },
   } = useForm<FormValues>({
     defaultValues: {
@@ -79,15 +81,6 @@ const CreateDataSourceVersion: React.FC<CreateDataSourceVersionProps> = ({ setRe
     reset(); // Reset form on cancel
   };
 
-  useEffect(() => {
-    reset(
-      {
-        mappings: {},
-      },
-      { keepValues: true }
-    );
-  }, [reset, settingAttribute]);
-
   const versionNameAvailability = useGet<{ success: boolean; available: boolean; message: string }>(
     [`codeAvailability`, versionName],
     GET?.Data_Source_Version_Name +
@@ -103,12 +96,18 @@ const CreateDataSourceVersion: React.FC<CreateDataSourceVersionProps> = ({ setRe
     !!watch('dataSourceId')
   );
 
+  const { mutate, isPending } = useFilePostData<{ files: File; operation: string }, { message: string; data?: any }>(
+    ['uploadedFiles'],
+    (data) => {
+      console.log(data);
+    }
+  );
+
   useEffect(() => {
     if (!dataSourceDetails.isFetching && dataSourceDetails.isSuccess) {
       setSettingAttribute(dataSourceDetails.data?.data?.entityId.attributes);
       setSettingAttributeOption([
         ...dataSourceDetails.data?.data?.entityId.attributes.map((data: any) => data.name),
-        'Extra-Save As It',
         'Extra-Skip Data',
       ]);
     }
@@ -120,14 +119,13 @@ const CreateDataSourceVersion: React.FC<CreateDataSourceVersionProps> = ({ setRe
   };
   const onSubmit = (formData: any) => {
     console.log(formData);
-
     const reverseMap: Record<string, string[]> = {};
     Object.entries(formData.mappings).forEach(([key, value]) => {
       if (!reverseMap[value as string]) {
         reverseMap[value as string] = [];
       }
 
-      if (!['Extra-Save As It', 'Extra-Skip Data'].includes(value as string)) reverseMap[value as string].push(key);
+      if (!['Extra-Skip Data'].includes(value as string)) reverseMap[value as string].push(key);
     });
 
     const duplicateEntries = Object.entries(reverseMap)
@@ -154,7 +152,19 @@ const CreateDataSourceVersion: React.FC<CreateDataSourceVersionProps> = ({ setRe
     }
 
     if (missingMandatoryAttributes.length === 0 && duplicateEntries.length === 0) {
-      console.log(formData);
+      if (!file) {
+        return;
+      }
+
+      mutate({
+        url: `${POST.FILE_UPLOAD}`,
+        payload: {
+          files: file,
+          operation: 'dataSourceVersion',
+          ...formData,
+          mappings: JSON.stringify(formData.mappings),
+        },
+      });
     }
   };
 
@@ -264,9 +274,13 @@ const CreateDataSourceVersion: React.FC<CreateDataSourceVersionProps> = ({ setRe
                   errors.versionName?.message ||
                   (versionNameAvailability.isFetched && versionName.length > 0 ? (
                     versionNameAvailability.data?.available ? (
-                      <Typography color="success">Version name is available</Typography>
+                      <Typography variant="subtitle2" color="success">
+                        Version name is available
+                      </Typography>
                     ) : (
-                      <Typography color="error">version name is not available</Typography>
+                      <Typography variant="subtitle2" color="error">
+                        version name is not available
+                      </Typography>
                     )
                   ) : (
                     ''
@@ -308,6 +322,7 @@ const CreateDataSourceVersion: React.FC<CreateDataSourceVersionProps> = ({ setRe
                               }}
                               error={!!errors.mappings?.[header]}
                               errorMessage={errors.mappings?.[header]?.message}
+                              setValue={setValue}
                             />
                           </TableCell>
                         </TableRow>

@@ -2,7 +2,7 @@ import { AppBar, Toolbar, IconButton, Box } from '@mui/material';
 
 import { useLocation } from 'react-router-dom';
 
-import logo from '../../../assets/Searchivix-Logo-TRANS-V1.png';
+import logo from '../../../assets/ReportiVix-logo.png';
 import { AccountPopover } from '../../atom/accountPopover/accountPopover';
 import { Menu as MenuIcon } from '@mui/icons-material';
 import { useNav } from '../../../context/NavContext';
