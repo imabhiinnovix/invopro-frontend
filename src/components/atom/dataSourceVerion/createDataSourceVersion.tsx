@@ -40,6 +40,7 @@ interface FormValues {
   versionName: string;
   file: FileList | null;
   mappings: { [key: string]: string };
+  separator: { [key: string]: string };
 }
 
 const CreateDataSourceVersion: React.FC<CreateDataSourceVersionProps> = ({ setReload, CustomButton, title }) => {
@@ -66,6 +67,7 @@ const CreateDataSourceVersion: React.FC<CreateDataSourceVersionProps> = ({ setRe
       versionName: '',
       file: null,
       mappings: {},
+      separator: {},
     },
   });
 
@@ -119,7 +121,6 @@ const CreateDataSourceVersion: React.FC<CreateDataSourceVersionProps> = ({ setRe
     setOpen(false);
   };
   const onSubmit = (formData: any) => {
-    console.log(formData);
     const reverseMap: Record<string, string[]> = {};
     Object.entries(formData.mappings).forEach(([key, value]) => {
       if (!reverseMap[value as string]) {
@@ -157,6 +158,8 @@ const CreateDataSourceVersion: React.FC<CreateDataSourceVersionProps> = ({ setRe
         return;
       }
 
+      const versionValue = watch('versionValue');
+      const formattedVersion = DateTime.fromISO(versionValue).toFormat('yyyy-LL');
       mutate({
         url: `${POST.FILE_UPLOAD}`,
         payload: {
@@ -164,6 +167,8 @@ const CreateDataSourceVersion: React.FC<CreateDataSourceVersionProps> = ({ setRe
           operation: 'dataSourceVersion',
           ...formData,
           mappings: JSON.stringify(formData.mappings),
+          separator: JSON.stringify(formData.separator),
+          versionValue: formattedVersion,
         },
       });
     }
@@ -325,6 +330,20 @@ const CreateDataSourceVersion: React.FC<CreateDataSourceVersionProps> = ({ setRe
                               errorMessage={errors.mappings?.[header]?.message}
                               setValue={setValue}
                             />
+                            {!!watch(`mappings.${header}`) &&
+                              settingAttribute.some(
+                                (attr) => attr.name === watch(`mappings.${header}`) && attr.type === 'multioption'
+                              ) && (
+                                <TextField
+                                  label="Seprate Multioption*"
+                                  fullWidth
+                                  {...register(`separator.${header}`, {
+                                    required: 'Separator is required',
+                                  })}
+                                  error={!!errors.separator?.[header]}
+                                  helperText={errors.separator?.[header]?.message}
+                                />
+                              )}
                           </TableCell>
                         </TableRow>
                       ))}

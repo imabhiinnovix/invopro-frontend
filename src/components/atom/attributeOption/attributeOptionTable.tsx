@@ -146,32 +146,6 @@ const AttributeOptionTable: React.FC<AttributeOptionTableProps> = ({
         <Typography variant="h4" fontWeight="bold" gutterBottom>
           No attributes option have been created yet. Please create an an attribute option to display it here.
         </Typography>
-        <Box maxWidth="600px">
-          <CreateUpdateAttributeOption
-            setAttributeOptionReload={setAttributeOptionReload}
-            title="Create New Attribute Option"
-            CustomButton={
-              <Button
-                variant="contained"
-                size="large"
-                sx={{
-                  fontWeight: 'bold',
-                  fontSize: '1.2rem',
-                  padding: '15px 30px',
-                  bgcolor: '#007bff',
-                  color: '#fff',
-                  '&:hover': { bgcolor: '#0056b3' },
-                  '@media (max-width: 600px)': {
-                    fontSize: '1rem',
-                    padding: '10px 20px',
-                  },
-                }}
-              >
-                Create New Attribute Option
-              </Button>
-            }
-          />
-        </Box>
       </Box>
     );
   }

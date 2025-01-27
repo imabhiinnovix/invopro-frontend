@@ -151,32 +151,6 @@ const EntityTable: React.FC<EntityTableProps> = ({ reloadEntity, setReloadEntity
         <Typography variant="h4" fontWeight="bold" gutterBottom>
           No entities have been created yet. Please create an entity to display it here.
         </Typography>
-        <Box maxWidth="600px">
-          <CreateUpdateEntity
-            setReloadEntity={setReloadEntity}
-            title="Create New Entity"
-            CustomButton={
-              <Button
-                variant="contained"
-                size="large"
-                sx={{
-                  fontWeight: 'bold',
-                  fontSize: '1.2rem',
-                  padding: '15px 30px',
-                  bgcolor: '#007bff',
-                  color: '#fff',
-                  '&:hover': { bgcolor: '#0056b3' },
-                  '@media (max-width: 600px)': {
-                    fontSize: '1rem',
-                    padding: '10px 20px',
-                  },
-                }}
-              >
-                Create New Entity
-              </Button>
-            }
-          />
-        </Box>
       </Box>
     );
   }

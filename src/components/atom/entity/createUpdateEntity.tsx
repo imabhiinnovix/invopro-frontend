@@ -282,7 +282,8 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({ setReloadEntity
                           'url',
                           'option',
                           'multioption',
-                          'user',
+                          'email',
+                          // 'user',
                         ]}
                         defaultValue={attribute.type || ''}
                         rules={{ required: 'Attribute Type is required' }}
