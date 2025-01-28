@@ -85,7 +85,7 @@ const CreateDataSourceVersion: React.FC<CreateDataSourceVersionProps> = ({ setRe
 
   const versionNameAvailability = useGet<{ success: boolean; available: boolean; message: string }>(
     [`codeAvailability`, versionName],
-    GET?.Data_Source_Version_Name +
+    GET?.Data_Source_Version +
       `/dataSourceId/${watch('dataSourceId')}/versionValue/${DateTime.fromISO(watch('versionValue')).toFormat(
         'yyyy-LL'
       )}/versionName/${versionName}`,
@@ -101,6 +101,7 @@ const CreateDataSourceVersion: React.FC<CreateDataSourceVersionProps> = ({ setRe
   const { mutate, isPending } = useFilePostData<{ files: File; operation: string }, { message: string; data?: any }>(
     ['uploadedFiles'],
     (data) => {
+      setReload(true);
       handleCancel();
     },
     { showToast: true }

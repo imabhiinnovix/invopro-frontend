@@ -1,9 +1,7 @@
-// import Typography from '@mui/material/Typography';
 import { Box, Button } from '@mui/material';
 import { useState } from 'react';
-// import CreateUpdateDataSource from '../../components/atom/dataSource/createUpdateDataSource';
-// import DataSourceTable from '../../components/atom/dataSource/dataSourceTable';
 import CreateDataSourceVersion from '../../components/atom/dataSourceVerion/createDataSourceVersion';
+import DataSourceVersionTable from '../../components/atom/dataSourceVerion/dataSourceVersionTable';
 
 export default function DataSourceVersion() {
   const [reload, setReload] = useState(false);
@@ -55,16 +53,16 @@ export default function DataSourceVersion() {
                     },
                   }}
                 >
-                  Create New Data Source Version
+                  Create Data Source Version
                 </Button>
               }
             />
           </Box>
         </Box>
 
-        {/* <Box mt={4} sx={{ overflowX: 'auto', flexGrow: 1 }}>
-          <DataSourceTable reload={reload} setReload={setReload} />
-        </Box> */}
+        <Box mt={4} sx={{ overflowX: 'auto', flexGrow: 1 }}>
+          <DataSourceVersionTable reload={reload} setReload={setReload} />
+        </Box>
       </Box>
     </>
   );
