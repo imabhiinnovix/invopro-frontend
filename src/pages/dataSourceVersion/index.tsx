@@ -5,7 +5,7 @@ import DataSourceVersionTable from '../../components/atom/dataSourceVerion/dataS
 
 export default function DataSourceVersion() {
   const [reload, setReload] = useState(false);
-  console.log(reload);
+
   return (
     <>
       <Box

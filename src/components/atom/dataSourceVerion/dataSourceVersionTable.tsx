@@ -14,13 +14,13 @@ import {
   tableCellClasses,
   Collapse,
   IconButton,
-  Button,
 } from '@mui/material';
 
 import useGet from '../../../hooks/useGet';
 import { GET } from '../../../services/apiRoutes';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
+import ErrorDialog from './showError';
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
   [`&.${tableCellClasses.head}`]: {
@@ -170,7 +170,7 @@ const DataSourceVersionTable: React.FC<AttributeOptionTableProps> = ({ reload, s
         alignItems="center"
       >
         <Typography variant="h4" fontWeight="bold" gutterBottom>
-          No data source version have been created yet. Please create a data source to display it here.
+          No data source version have been created yet. Please create a data source version to display it here.
         </Typography>
       </Box>
     );
@@ -230,13 +230,7 @@ const DataSourceVersionTable: React.FC<AttributeOptionTableProps> = ({ reload, s
                 <StyledTableCell>{data.status || '-'}</StyledTableCell>
 
                 <StyledTableCell>
-                  {data.status === 'failed' ? (
-                    <Button variant="text" color="error">
-                      Show Error
-                    </Button>
-                  ) : (
-                    '-'
-                  )}
+                  {data.status === 'failed' ? <ErrorDialog dataSourceVersionId={data._id} /> : '-'}
                 </StyledTableCell>
               </StyledTableRow>
               {data && data.mappings && (
