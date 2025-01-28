@@ -14,6 +14,7 @@ import {
   tableCellClasses,
   Collapse,
   IconButton,
+  Button,
 } from '@mui/material';
 
 import useGet from '../../../hooks/useGet';
@@ -189,7 +190,7 @@ const DataSourceVersionTable: React.FC<AttributeOptionTableProps> = ({ reload, s
             <StyledTableCell>CREATED BY</StyledTableCell>
             <StyledTableCell>CREATED AT</StyledTableCell>
             <StyledTableCell>STATUS</StyledTableCell>
-            <StyledTableCell>Error</StyledTableCell>
+            <StyledTableCell>ERROR</StyledTableCell>
           </TableRow>
         </TableHead>
         <TableBody>
@@ -228,7 +229,15 @@ const DataSourceVersionTable: React.FC<AttributeOptionTableProps> = ({ reload, s
 
                 <StyledTableCell>{data.status || '-'}</StyledTableCell>
 
-                <StyledTableCell>{data.status === 'failed' ? 'Check Error' : '-'}</StyledTableCell>
+                <StyledTableCell>
+                  {data.status === 'failed' ? (
+                    <Button variant="text" color="error">
+                      Show Error
+                    </Button>
+                  ) : (
+                    '-'
+                  )}
+                </StyledTableCell>
               </StyledTableRow>
               {data && data.mappings && (
                 <StyledTableRow>
