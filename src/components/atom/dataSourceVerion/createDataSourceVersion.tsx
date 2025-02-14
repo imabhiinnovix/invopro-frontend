@@ -180,20 +180,42 @@ const CreateDataSourceVersion: React.FC<CreateDataSourceVersionProps> = ({ setRe
       const selectedFile = event.target.files[0];
       setFile(selectedFile);
       setFileName(selectedFile.name);
+
+      if (!selectedFile.name.endsWith('.xlsx') && !selectedFile.name.endsWith('.xls')) {
+        toast.error('Please upload a valid Excel file.');
+        setFileName(null);
+        setFile(null);
+        setFileUploadLoader(false);
+        return;
+      }
+
       const reader = new FileReader();
       setFileUploadLoader(true);
+
       reader.onload = async (e) => {
         try {
           const arrayBuffer = e.target?.result as ArrayBuffer;
 
-          // Load the Excel workbook
           const workbook = new ExcelJS.Workbook();
-          await workbook.xlsx.load(arrayBuffer);
+          try {
+            await workbook.xlsx.load(arrayBuffer);
+          } catch (error) {
+            toast.error('Failed to load the Excel file. Ensure the file is valid.');
+            setFileName(null);
+            setFile(null);
+            setFileUploadLoader(false);
+            return;
+          }
 
-          // Get the first worksheet
+          if (!workbook.worksheets || workbook.worksheets.length === 0) {
+            toast.error('No sheets found in the Excel file.');
+            setFileName(null);
+            setFile(null);
+            setFileUploadLoader(false);
+            return;
+          }
+
           const worksheet = workbook.worksheets[0];
-
-          // Get the headers from the first row
           const headers: string[] = [];
           worksheet.getRow(1).eachCell((cell) => {
             headers.push(cell.value?.toString() || '');
@@ -220,7 +242,7 @@ const CreateDataSourceVersion: React.FC<CreateDataSourceVersionProps> = ({ setRe
               setFileHeader(headers);
             }
           } else {
-            toast.error(`Headers not found.`);
+            toast.error('Headers not found.');
             setFileName(null);
             setFile(null);
           }
@@ -232,9 +254,11 @@ const CreateDataSourceVersion: React.FC<CreateDataSourceVersionProps> = ({ setRe
           setFileUploadLoader(false);
         }
       };
+
       reader.readAsArrayBuffer(selectedFile);
     }
   };
+
   return (
     <div>
       <Box onClick={() => setOpen(true)}>{CustomButton}</Box>
@@ -281,11 +305,11 @@ const CreateDataSourceVersion: React.FC<CreateDataSourceVersionProps> = ({ setRe
                   errors.versionName?.message ||
                   (versionNameAvailability.isFetched && versionName.length > 0 ? (
                     versionNameAvailability.data?.available ? (
-                      <Typography variant="subtitle2" color="success">
+                      <Typography variant="subtitle2" color="success" component={'span'}>
                         Version name is available
                       </Typography>
                     ) : (
-                      <Typography variant="subtitle2" color="error">
+                      <Typography variant="subtitle2" color="error" component={'span'}>
                         version name is not available
                       </Typography>
                     )
