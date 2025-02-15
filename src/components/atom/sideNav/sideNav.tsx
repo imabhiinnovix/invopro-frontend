@@ -17,6 +17,7 @@ import ManageAccountsIcon from '@mui/icons-material/ManageAccounts';
 import StyleIcon from '@mui/icons-material/Style';
 import { useNavigate, useLocation } from 'react-router-dom';
 import SourceIcon from '@mui/icons-material/Source';
+import AssessmentIcon from '@mui/icons-material/Assessment';
 
 const drawerWidth = 240;
 
@@ -85,11 +86,11 @@ const navItems: NavItem[] = [
     icon: <DashboardIcon sx={{ fontSize: '3rem', color: 'black' }} />,
     route: '/dashboard',
   },
-  // {
-  //   name: 'Reports',
-  //   icon: <ReportIcon sx={{ fontSize: '3rem', color: 'black' }} />,
-  //   route: '/reports',
-  // },
+  {
+    name: 'Reports',
+    icon: <AssessmentIcon sx={{ fontSize: '3rem', color: 'black' }} />,
+    route: '/reports',
+  },
   {
     name: 'Settings',
     icon: <SettingsIcon sx={{ fontSize: '3rem', color: 'black' }} />,

@@ -15,6 +15,7 @@ import AttributeOption from './pages/attributeOption';
 import DataSource from './pages/dataSource';
 
 import DataSourceVersion from './pages/dataSourceVersion';
+import Report from './pages/report';
 
 function App() {
   return (
@@ -31,6 +32,7 @@ function App() {
           <Route element={<AuthProtect />}>
             <Route element={<CommonLayout />}>
               <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/reports" element={<Report />} />
               <Route path="/settings/entity" element={<Entity />} />
               <Route path="/settings/attribute-option" element={<AttributeOption />} />
               <Route path="/settings/data-source" element={<DataSource />} />

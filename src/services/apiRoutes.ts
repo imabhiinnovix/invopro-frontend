@@ -21,6 +21,7 @@ export const POST = {
   UPDATE_ENTITY: '/entities/update',
   CREATE_ATTRIBUTE_OPTION: '/attributeOptions/create',
   CREATE_DATA_SOURCE: '/dataSource/create',
+  Custom_Report: '/customReports',
 };
 export const PUT = {
   UPDATE_DATA_SOURCE: '/dataSource/update',
@@ -41,4 +42,5 @@ export const GET = {
   Data_Source_Version: '/dataSourceVersion',
   Data_Source: '/dataSource/dataSourceId',
   Data_Source_Name: '/dataSource/name',
+  Custom_Report: '/customReports',
 };
