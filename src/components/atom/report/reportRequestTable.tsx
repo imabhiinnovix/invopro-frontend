@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, version } from 'react';
 import { styled } from '@mui/material/styles';
 import {
   Table,
@@ -18,6 +18,7 @@ import {
 import useGet from '../../../hooks/useGet';
 import { GET } from '../../../services/apiRoutes';
 import { ReportRequestResponse } from './types';
+import useFileDownload from '../../../hooks/useFiledownload';
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
   [`&.${tableCellClasses.head}`]: {
@@ -41,6 +42,28 @@ interface AttributeOptionTableProps {
 const ReportRequestTable: React.FC<AttributeOptionTableProps> = ({ reload, setReload }) => {
   const [reportRequests, setReportRequests] = useState<ReportRequestResponse[]>([]);
   const [currentPage, setCurrentPage] = useState<number>(1);
+  const [downloadFileName, setDownLoadFileName] = useState('');
+
+  const exportFile = useFileDownload<Blob>((data) => {
+    const blob = new Blob([data], { type: 'application/octet-stream' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.href = url;
+    link.download = downloadFileName;
+
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    URL.revokeObjectURL(url);
+  });
+
+  const downloadFile = (fileName: string, fileId: string) => {
+    setDownLoadFileName(fileName);
+    exportFile.mutate({
+      url: `${GET?.Custom_Report}/download/${fileId}`,
+    });
+  };
 
   const perPageItem = 10;
 
@@ -138,7 +161,17 @@ const ReportRequestTable: React.FC<AttributeOptionTableProps> = ({ reload, setRe
                 <StyledTableCell>{data?.status || '-'}</StyledTableCell>
                 <StyledTableCell>{data.createdAt ? new Date(data.createdAt).toLocaleString() : '-'}</StyledTableCell>
                 <StyledTableCell>
-                  {data?.status && data.status === 'processed' ? <Button>Download</Button> : '-'}
+                  {data?.status && data.status === 'processed' ? (
+                    <Button
+                      onClick={() => {
+                        downloadFile(`${data?.customReportId?.reportName}-${data?.versionValue}.xlsx`, data._id);
+                      }}
+                    >
+                      Download
+                    </Button>
+                  ) : (
+                    '-'
+                  )}
                 </StyledTableCell>
               </StyledTableRow>
             </React.Fragment>
