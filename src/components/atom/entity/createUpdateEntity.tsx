@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useForm, useFieldArray, FieldError } from 'react-hook-form';
+import ExcelJS from 'exceljs';
 import {
   Box,
   Button,
@@ -16,7 +17,6 @@ import {
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutline';
 import FileUploadButton from '../file/fileUploadButton';
-import useFilePostData from '../../../hooks/usePostMultipart';
 import { GET, POST } from '../../../services/apiRoutes';
 import ProgressBar from '../../molecule/progressBar';
 import usePost from '../../../hooks/usePost';
@@ -24,6 +24,7 @@ import { EntityRequestPayload, EntityResponse } from './types';
 import CommonSelect from '../../common/dropdown/commonSelect';
 import CommonDropdownSearch from '../../common/dropdown/searchableDropdown';
 import usePut from '../../../hooks/usePut';
+import { toast } from 'react-toastify';
 
 interface CreateUpdateEntityProps {
   setReloadEntity: React.Dispatch<React.SetStateAction<boolean>>;
@@ -35,6 +36,7 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({ setReloadEntity
   const [open, setOpen] = useState(false);
   const [file, setFile] = useState<File | null>(null);
   const [fileName, setFileName] = useState<string | null>(null);
+  const [fileUploadLoader, setFileUploadLoader] = useState(false);
 
   const {
     control,
@@ -84,48 +86,110 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({ setReloadEntity
     name: 'attributes',
   });
 
-  const { mutate, isPending } = useFilePostData<{ files: File; operation: string }, { message: string; data?: any }>(
-    ['uploadedFiles'],
-    (data) => {
-      if (data?.data) {
-        const newAttributes = data.data.map((attr: any) => ({
-          name: attr.name || '',
-          type: attr.type || '',
-          optionAttributeId: attr.optionAttributeId || '',
-          validation: attr.validation || [],
-          transformations: attr.transformations || [],
-          cleaner: attr.cleaner || [],
-          required: 'Not Mandatory',
-        }));
-
-        replace(newAttributes);
-      }
-    },
-    {
-      showToast: true,
-    }
-  );
-
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files?.[0]) {
       const selectedFile = event.target.files[0];
       setFile(selectedFile);
       setFileName(selectedFile.name);
-    }
-  };
 
-  const handleFileUpload = () => {
-    if (!file) {
-      return;
-    }
+      if (!selectedFile.name.endsWith('.xlsx') && !selectedFile.name.endsWith('.xls')) {
+        toast.error('Please upload a valid Excel file.');
+        setFileName(null);
+        setFile(null);
+        setFileUploadLoader(false);
+        return;
+      }
 
-    mutate({
-      url: `${POST.FILE_UPLOAD}`,
-      payload: {
-        files: file,
-        operation: 'getAttributesFromXlsxOrCsvHeaders',
-      },
-    });
+      const reader = new FileReader();
+      setFileUploadLoader(true);
+
+      reader.onload = async (e) => {
+        try {
+          const arrayBuffer = e.target?.result as ArrayBuffer;
+
+          const workbook = new ExcelJS.Workbook();
+          try {
+            await workbook.xlsx.load(arrayBuffer);
+          } catch (error) {
+            toast.error('Failed to load the Excel file. Ensure the file is valid.');
+            setFileName(null);
+            setFile(null);
+            setFileUploadLoader(false);
+            return;
+          }
+
+          if (!workbook.worksheets || workbook.worksheets.length === 0) {
+            toast.error('No sheets found in the Excel file.');
+            setFileName(null);
+            setFile(null);
+            setFileUploadLoader(false);
+            return;
+          }
+
+          const worksheet = workbook.worksheets[0];
+          const headers: any[] = [];
+          const uniqueNames = new Set<string>(); // Track unique names
+
+          // Read the first row (headers) and remove duplicates
+          worksheet.getRow(1).eachCell((cell, colNumber) => {
+            if (cell.value) {
+              let cleanedName = cell.value
+                .toString()
+                .replace(/[^a-zA-Z0-9/]/g, '') // Remove special characters except '/'
+                .replace(/\//g, ' or ') // Replace '/' with ' or '
+                .replace(/\s+/g, ' ') // Normalize multiple spaces
+                .trim();
+
+              if (!uniqueNames.has(cleanedName)) {
+                uniqueNames.add(cleanedName);
+                headers.push({
+                  name: cleanedName,
+                  type: 'text',
+                  optionAttributeId: '',
+                  validation: [],
+                  transformations: [],
+                  cleaner: [],
+                  required: 'Not Mandatory',
+                });
+              }
+            }
+          });
+
+          // Read the second row (for type inference)
+          worksheet.getRow(2).eachCell((cell, colNumber) => {
+            console.log(colNumber, cell.value, headers[colNumber - 1]);
+            if (headers[colNumber - 1] != undefined) {
+              const firstValue = cell.value;
+
+              let type = 'text';
+              if (typeof firstValue === 'number') {
+                type = 'number';
+              } else if (firstValue instanceof Date) {
+                type = 'date';
+              }
+
+              headers[colNumber - 1].type = type;
+            }
+          });
+
+          if (headers.length > 0) {
+            replace(headers);
+          } else {
+            toast.error('Headers not found.');
+            setFileName(null);
+            setFile(null);
+          }
+          setFileUploadLoader(false);
+        } catch (e) {
+          toast.error('Something went wrong while processing the file. Please try again.');
+          setFileName(null);
+          setFile(null);
+          setFileUploadLoader(false);
+        }
+      };
+
+      reader.readAsArrayBuffer(selectedFile);
+    }
   };
 
   const createEntity = usePost<EntityRequestPayload, EntityResponse>(
@@ -182,6 +246,7 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({ setReloadEntity
     setFile(null);
     setFileName(null);
     setOpen(false);
+    setFileUploadLoader(false);
     reset(); // Reset form on cancel
   };
 
@@ -222,23 +287,10 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({ setReloadEntity
                 helperText={errors.description?.message}
               />
 
-              {/* File Upload */}
-              <FileUploadButton
-                fileName={fileName}
-                onFileChange={handleFileChange}
-                buttonName={'Select XLSX File to Extract Attributes From Its Header'}
-              />
-              {!isPending ? (
-                <Button
-                  variant={file ? 'contained' : 'outlined'}
-                  onClick={handleFileUpload}
-                  disabled={!file}
-                  sx={{ mt: 2 }}
-                >
-                  Upload File
-                </Button>
-              ) : (
+              {fileUploadLoader ? (
                 <ProgressBar />
+              ) : (
+                <FileUploadButton fileName={fileName} onFileChange={handleFileChange} buttonName={'Upload File'} />
               )}
 
               <Divider sx={{ my: 3 }} />
@@ -250,8 +302,8 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({ setReloadEntity
                     key={attribute.id}
                     sx={{
                       mb: 3,
-                      pointerEvents: isPending ? 'none' : 'auto', // Disable interactions when isPending is true
-                      opacity: isPending ? 0.5 : 1,
+                      pointerEvents: fileUploadLoader ? 'none' : 'auto', // Disable interactions when isPending is true
+                      opacity: fileUploadLoader ? 0.5 : 1,
                     }}
                   >
                     <Typography variant="h6" mb={2}>
