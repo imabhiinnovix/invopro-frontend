@@ -48,7 +48,38 @@ const ViewMapping: React.FC<CreateDataSourceVersionProps> = ({
     settingAttributeOption.forEach((option) => {
       setValue(
         `mappings.${fileName}.${option.name}`,
-        fileHeaders.includes(option.mappingName) ? option.mappingName : ''
+
+        fileHeaders.find(
+          (name) =>
+            name
+              .replace(/[^a-zA-Z0-9/]/g, '')
+              .replace(/\//g, ' or ')
+              .replace(/\s+/g, '')
+              .trim()
+              .toLowerCase() ===
+            option.mappingName
+              .replace(/[^a-zA-Z0-9/]/g, '')
+              .replace(/\//g, ' or ')
+              .replace(/\s+/g, '')
+              .trim()
+              .toLowerCase()
+        )
+          ? fileHeaders.find(
+              (name) =>
+                name
+                  .replace(/[^a-zA-Z0-9/]/g, '')
+                  .replace(/\//g, ' or ')
+                  .replace(/\s+/g, '')
+                  .trim()
+                  .toLowerCase() ===
+                option.mappingName
+                  .replace(/[^a-zA-Z0-9/]/g, '')
+                  .replace(/\//g, ' or ')
+                  .replace(/\s+/g, '')
+                  .trim()
+                  .toLowerCase()
+            )
+          : ''
       );
     });
   }, [fileHeaders, setValue, settingAttributeOption, fileName]);
