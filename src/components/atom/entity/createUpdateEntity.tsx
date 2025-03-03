@@ -52,6 +52,7 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({ setReloadEntity
       attributes: data?.attributes ?? [
         {
           name: '',
+          mappingName: '',
           type: '',
           required: '', // Default to empty string for consistency
           optionAttributeId: '',
@@ -70,6 +71,7 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({ setReloadEntity
       attributes: data?.attributes ?? [
         {
           name: '',
+          mappingName: '',
           type: '',
           required: '',
           optionAttributeId: '',
@@ -133,6 +135,7 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({ setReloadEntity
           // Read the first row (headers) and remove duplicates
           worksheet.getRow(1).eachCell((cell, colNumber) => {
             if (cell.value) {
+              let actualHeaderName = cell.value.toString().trim();
               let cleanedName = cell.value
                 .toString()
                 .replace(/[^a-zA-Z0-9/]/g, '') // Remove special characters except '/'
@@ -144,6 +147,7 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({ setReloadEntity
                 uniqueNames.add(cleanedName);
                 headers.push({
                   name: cleanedName,
+                  mappingName: actualHeaderName,
                   type: 'text',
                   optionAttributeId: '',
                   validation: [],
@@ -320,6 +324,15 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({ setReloadEntity
                         error={!!errors.attributes?.[index]?.name}
                         helperText={errors.attributes?.[index]?.name?.message}
                       />
+                      <TextField
+                        label="File Attribute Name"
+                        fullWidth
+                        {...register(`attributes.${index}.mappingName`, {
+                          required: 'File Attribute Name is required',
+                        })}
+                        error={!!errors.attributes?.[index]?.mappingName}
+                        helperText={errors.attributes?.[index]?.mappingName?.message}
+                      />
 
                       <CommonSelect
                         control={control}
@@ -392,6 +405,7 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({ setReloadEntity
                 onClick={() =>
                   append({
                     name: '',
+                    mappingName: '',
                     type: '',
                     required: '',
                     optionAttributeId: '',

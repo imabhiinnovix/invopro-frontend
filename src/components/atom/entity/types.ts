@@ -1,5 +1,6 @@
 export interface Attribute {
   name: string;
+  mappingName: string;
   type: 'number' | 'text' | 'date' | 'boolean' | 'richtext' | 'url' | 'option' | 'multioption' | 'user' | '';
   validation?: string[];
   transformations?: string[];
@@ -23,6 +24,7 @@ interface UpdatedBy {
 export interface EntityRequestPayload {
   _id?: string;
   name: string;
+
   isActive?: boolean;
   description?: string;
   attributes?: Attribute[]; // Optional array of attributes

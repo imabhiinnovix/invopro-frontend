@@ -7,7 +7,9 @@ import CommonDatePicker from '../../common/datePicker/datePicker';
 import usePost from '../../../hooks/usePost';
 import ProgressBar from '../../molecule/progressBar';
 import { DateTime } from 'luxon';
-import React from 'react';
+import React, { useState } from 'react';
+import UploadMultipleFiles from '../dataSourceVerion/uploadMultipleVersionValue';
+import useGet from '../../../hooks/useGet';
 
 interface GenerateReporteProps {
   setReload: React.Dispatch<React.SetStateAction<boolean>>;
@@ -19,6 +21,9 @@ export default function GenerateReport({ setReload }: GenerateReporteProps) {
     reset,
     formState: { errors },
   } = useForm<CustomReportRequestPayload>({});
+
+  const [versionValue, setVersionValue] = useState('');
+  const [reportId, setReportId] = useState('');
 
   const generateReport = usePost<CustomReportRequestPayload, CustomReportRequestResponse>(
     ['generateReport'],
@@ -32,10 +37,8 @@ export default function GenerateReport({ setReload }: GenerateReporteProps) {
   );
 
   const onSubmit = (formData: CustomReportRequestPayload) => {
-    generateReport.mutate({
-      url: `${POST.Custom_Report}/generate`,
-      payload: { ...formData, versionValue: DateTime.fromISO(formData.versionValue).toFormat('yyyy-LL') },
-    });
+    setReportId(formData.customReportId);
+    setVersionValue(DateTime.fromISO(formData.versionValue).toFormat('yyyy-LL'));
   };
 
   return (
@@ -72,7 +75,7 @@ export default function GenerateReport({ setReload }: GenerateReporteProps) {
             <ProgressBar />
           ) : (
             <Button
-              variant="contained"
+              variant="text"
               size="large"
               type="submit"
               sx={{
@@ -88,7 +91,7 @@ export default function GenerateReport({ setReload }: GenerateReporteProps) {
               }}
               onClick={handleSubmit(onSubmit)}
             >
-              Generate Report
+              <UploadMultipleFiles reportId={reportId} versionValue={versionValue} />
             </Button>
           )}
         </Box>
