@@ -49,7 +49,8 @@ const Header = () => {
                   <MenuIcon />
                 </IconButton>
               )}
-              <img src={logo} alt="Logo" style={{ height: '40px', transform: 'rotate(-1deg)' }} />
+              <Box component="img" src={logo} alt="Logo" sx={{ width: 150, height: 'auto' }} />
+              {/* <img src={logo} alt="Logo" /> */}
             </Box>
             <Box>{!['/login', '/otp-login', '/otp-login/otp'].includes(pathname) && <AccountPopover />}</Box>
           </Box>

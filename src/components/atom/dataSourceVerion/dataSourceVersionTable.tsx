@@ -123,8 +123,8 @@ const DataSourceVersionTable: React.FC<AttributeOptionTableProps> = ({ reload, s
       <Table size="small" aria-label="attributes">
         <TableHead>
           <TableRow>
-            <StyledTableCell>FILE ATTRIBUTES</StyledTableCell>
-            <StyledTableCell>MAPPED SETTING ATTRIBUTES</StyledTableCell>
+            <StyledTableCell>SETTING ATTRIBUTES</StyledTableCell>
+            <StyledTableCell>MAPPED FILE ATTRIBUTES</StyledTableCell>
           </TableRow>
         </TableHead>
         <TableBody>
@@ -144,7 +144,7 @@ const DataSourceVersionTable: React.FC<AttributeOptionTableProps> = ({ reload, s
       <Table size="small" aria-label="attributes">
         <TableHead>
           <TableRow>
-            <StyledTableCell>FILE ATTRIBUTES</StyledTableCell>
+            <StyledTableCell>SETTING ATTRIBUTES</StyledTableCell>
             <StyledTableCell>SEPARATOR</StyledTableCell>
           </TableRow>
         </TableHead>

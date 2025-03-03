@@ -110,10 +110,7 @@ const CreateDataSourceVersion: React.FC<CreateDataSourceVersionProps> = ({ setRe
   useEffect(() => {
     if (!dataSourceDetails.isFetching && dataSourceDetails.isSuccess) {
       setSettingAttribute(dataSourceDetails.data?.data?.entityId.attributes);
-      setSettingAttributeOption([
-        ...dataSourceDetails.data?.data?.entityId.attributes.map((data: any) => data.name),
-        'Extra-Skip Data',
-      ]);
+      setSettingAttributeOption([...dataSourceDetails.data?.data?.entityId.attributes.map((data: any) => data.name)]);
     }
   }, [dataSourceDetails.isFetching]);
 
@@ -121,6 +118,7 @@ const CreateDataSourceVersion: React.FC<CreateDataSourceVersionProps> = ({ setRe
     reset();
     setOpen(false);
   };
+
   const onSubmit = (formData: any) => {
     const reverseMap: Record<string, string[]> = {};
     Object.entries(formData.mappings).forEach(([key, value]) => {
@@ -128,19 +126,19 @@ const CreateDataSourceVersion: React.FC<CreateDataSourceVersionProps> = ({ setRe
         reverseMap[value as string] = [];
       }
 
-      if (!['Extra-Skip Data'].includes(value as string)) reverseMap[value as string].push(key);
+      if (!['Extra-Attribute-Ignore'].includes(value as string)) reverseMap[value as string].push(key);
     });
 
     const duplicateEntries = Object.entries(reverseMap)
       .filter(([, keys]) => keys.length > 1)
-      .map(([value, keys]) => `Value "${value}" is duplicated for file attributes: ${keys.join(', ')}`);
+      .map(([value, keys]) => `Value "${value}" is duplicated for setting attributes: ${keys.join(', ')}`);
 
     const mandatoryAttributes = settingAttribute
       .filter((attr) => attr.required === 'Mandatory')
       .map((attr) => attr.name);
 
     const missingMandatoryAttributes = mandatoryAttributes.filter(
-      (attr) => !Object.values(formData.mappings).includes(attr)
+      (attr) => formData.mappings[attr] === 'Extra-Attribute-Ignore'
     );
 
     if (duplicateEntries.length > 0) {
@@ -150,7 +148,7 @@ const CreateDataSourceVersion: React.FC<CreateDataSourceVersionProps> = ({ setRe
     }
     if (missingMandatoryAttributes.length > 0) {
       missingMandatoryAttributes.forEach((attr) => {
-        toast.error(`Mandatory attribute missing in mappings: ${attr}`);
+        toast.error(`Mandatory attribute are marked as Extra-Attribute-Ignore : ${attr}`);
       });
     }
 
@@ -175,25 +173,102 @@ const CreateDataSourceVersion: React.FC<CreateDataSourceVersionProps> = ({ setRe
     }
   };
 
+  //initial onsubmit
+  // const onSubmit = (formData: any) => {
+  //   const reverseMap: Record<string, string[]> = {};
+  //   Object.entries(formData.mappings).forEach(([key, value]) => {
+  //     if (!reverseMap[value as string]) {
+  //       reverseMap[value as string] = [];
+  //     }
+
+  //     if (!['Extra-Skip Data'].includes(value as string)) reverseMap[value as string].push(key);
+  //   });
+
+  //   const duplicateEntries = Object.entries(reverseMap)
+  //     .filter(([, keys]) => keys.length > 1)
+  //     .map(([value, keys]) => `Value "${value}" is duplicated for file attributes: ${keys.join(', ')}`);
+
+  //   const mandatoryAttributes = settingAttribute
+  //     .filter((attr) => attr.required === 'Mandatory')
+  //     .map((attr) => attr.name);
+
+  //   const missingMandatoryAttributes = mandatoryAttributes.filter(
+  //     (attr) => !Object.values(formData.mappings).includes(attr)
+  //   );
+
+  //   if (duplicateEntries.length > 0) {
+  //     duplicateEntries.forEach((message) => {
+  //       toast.error(message);
+  //     });
+  //   }
+  //   if (missingMandatoryAttributes.length > 0) {
+  //     missingMandatoryAttributes.forEach((attr) => {
+  //       toast.error(`Mandatory attribute missing in mappings: ${attr}`);
+  //     });
+  //   }
+
+  //   if (missingMandatoryAttributes.length === 0 && duplicateEntries.length === 0) {
+  //     if (!file) {
+  //       return;
+  //     }
+
+  //     const versionValue = watch('versionValue');
+  //     const formattedVersion = DateTime.fromISO(versionValue).toFormat('yyyy-LL');
+  //     mutate({
+  //       url: `${POST.FILE_UPLOAD}`,
+  //       payload: {
+  //         files: file,
+  //         operation: 'dataSourceVersion',
+  //         ...formData,
+  //         mappings: JSON.stringify(formData.mappings),
+  //         separator: JSON.stringify(formData.separator),
+  //         versionValue: formattedVersion,
+  //       },
+  //     });
+  //   }
+  // };
+
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files?.[0]) {
       const selectedFile = event.target.files[0];
       setFile(selectedFile);
       setFileName(selectedFile.name);
+
+      if (!selectedFile.name.endsWith('.xlsx') && !selectedFile.name.endsWith('.xls')) {
+        toast.error('Please upload a valid Excel file.');
+        setFileName(null);
+        setFile(null);
+        setFileUploadLoader(false);
+        return;
+      }
+
       const reader = new FileReader();
       setFileUploadLoader(true);
+
       reader.onload = async (e) => {
         try {
           const arrayBuffer = e.target?.result as ArrayBuffer;
 
-          // Load the Excel workbook
           const workbook = new ExcelJS.Workbook();
-          await workbook.xlsx.load(arrayBuffer);
+          try {
+            await workbook.xlsx.load(arrayBuffer);
+          } catch (error) {
+            toast.error('Failed to load the Excel file. Ensure the file is valid.');
+            setFileName(null);
+            setFile(null);
+            setFileUploadLoader(false);
+            return;
+          }
 
-          // Get the first worksheet
+          if (!workbook.worksheets || workbook.worksheets.length === 0) {
+            toast.error('No sheets found in the Excel file.');
+            setFileName(null);
+            setFile(null);
+            setFileUploadLoader(false);
+            return;
+          }
+
           const worksheet = workbook.worksheets[0];
-
-          // Get the headers from the first row
           const headers: string[] = [];
           worksheet.getRow(1).eachCell((cell) => {
             headers.push(cell.value?.toString() || '');
@@ -217,10 +292,10 @@ const CreateDataSourceVersion: React.FC<CreateDataSourceVersionProps> = ({ setRe
               setFileName(null);
               setFile(null);
             } else {
-              setFileHeader(headers);
+              setFileHeader([...headers, 'Extra-Attribute-Ignore']);
             }
           } else {
-            toast.error(`Headers not found.`);
+            toast.error('Headers not found.');
             setFileName(null);
             setFile(null);
           }
@@ -232,9 +307,11 @@ const CreateDataSourceVersion: React.FC<CreateDataSourceVersionProps> = ({ setRe
           setFileUploadLoader(false);
         }
       };
+
       reader.readAsArrayBuffer(selectedFile);
     }
   };
+
   return (
     <div>
       <Box onClick={() => setOpen(true)}>{CustomButton}</Box>
@@ -281,11 +358,11 @@ const CreateDataSourceVersion: React.FC<CreateDataSourceVersionProps> = ({ setRe
                   errors.versionName?.message ||
                   (versionNameAvailability.isFetched && versionName.length > 0 ? (
                     versionNameAvailability.data?.available ? (
-                      <Typography variant="subtitle2" color="success">
+                      <Typography variant="subtitle2" color="success" component={'span'}>
                         Version name is available
                       </Typography>
                     ) : (
-                      <Typography variant="subtitle2" color="error">
+                      <Typography variant="subtitle2" color="error" component={'span'}>
                         version name is not available
                       </Typography>
                     )
@@ -308,12 +385,48 @@ const CreateDataSourceVersion: React.FC<CreateDataSourceVersionProps> = ({ setRe
                   <Table>
                     <TableHead>
                       <TableRow>
-                        <TableCell>{fileName?.split('.')[0]} Attribute</TableCell>
+                        {/* <TableCell>{fileName?.split('.')[0]} Attribute</TableCell>
+                        <TableCell>Entity Setting Attribute</TableCell> */}
                         <TableCell>Entity Setting Attribute</TableCell>
+                        <TableCell>{fileName?.split('.')[0]} Attribute</TableCell>
                       </TableRow>
                     </TableHead>
                     <TableBody>
-                      {fileHeader.map((header, index) => (
+                      {settingAttributeOption.map((option, index) => (
+                        <TableRow key={index}>
+                          <TableCell>{option}</TableCell>
+                          <TableCell>
+                            <CommonSelect
+                              control={control}
+                              name={`mappings.${option}`}
+                              label={'Map To'}
+                              options={fileHeader}
+                              defaultValue={fileHeader.includes(option) ? option : ''}
+                              rules={{
+                                required: 'Choose how to handle extra fields:skip saving for this column.',
+                              }}
+                              error={!!errors.mappings?.[option]}
+                              errorMessage={errors.mappings?.[option]?.message}
+                              setValue={setValue}
+                            />
+                            {!!watch(`mappings.${option}`) &&
+                              settingAttribute.some(
+                                (attr) => attr.name === watch(`mappings.${option}`) && attr.type === 'multioption'
+                              ) && (
+                                <TextField
+                                  label="Seprate Multioption*"
+                                  fullWidth
+                                  {...register(`separator.${option}`, {
+                                    required: 'Separator is required',
+                                  })}
+                                  error={!!errors.separator?.[option]}
+                                  helperText={errors.separator?.[option]?.message}
+                                />
+                              )}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                      {/* {fileHeader.map((header, index) => (
                         <TableRow key={index}>
                           <TableCell>{header}</TableCell>
                           <TableCell>
@@ -347,7 +460,7 @@ const CreateDataSourceVersion: React.FC<CreateDataSourceVersionProps> = ({ setRe
                               )}
                           </TableCell>
                         </TableRow>
-                      ))}
+                      ))} */}
                     </TableBody>
                   </Table>
                 )}
