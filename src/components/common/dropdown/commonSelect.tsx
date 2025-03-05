@@ -1,6 +1,12 @@
-import React, { useEffect, useLayoutEffect } from 'react';
-import { FormControl, InputLabel, Select, MenuItem, FormHelperText } from '@mui/material';
-import { Controller } from 'react-hook-form';
+import React, { useEffect, useLayoutEffect } from "react";
+import {
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  FormHelperText,
+} from "@mui/material";
+import { Controller } from "react-hook-form";
 
 interface CommonSelectProps {
   control: any; // React Hook Form control
@@ -21,18 +27,13 @@ const CommonSelect: React.FC<CommonSelectProps> = ({
   name,
   label,
   options,
-  defaultValue = '',
+  defaultValue = "",
   rules = {},
   error = false,
-  errorMessage = '',
+  errorMessage = "",
   disabled = false,
   setValue,
 }) => {
-  useLayoutEffect(() => {
-    if (defaultValue !== undefined && setValue) {
-      setValue(name, defaultValue);
-    }
-  }, [defaultValue, name, setValue]);
   return (
     <FormControl fullWidth error={error} disabled={disabled}>
       <InputLabel id={`${name}-label`}>{label}</InputLabel>
@@ -42,7 +43,7 @@ const CommonSelect: React.FC<CommonSelectProps> = ({
         defaultValue={defaultValue}
         rules={rules}
         render={({ field }) => (
-          <Select {...field} labelId={`${name}-label`} label={label}>
+          <Select {...field} labelId={`${name}-label`} label={label} id={name}>
             {options.map((option) => (
               <MenuItem key={option} value={option}>
                 {option}

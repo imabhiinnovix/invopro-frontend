@@ -12,8 +12,14 @@ import {
   DialogContent,
   DialogActions,
 } from "@mui/material";
-import { useForm } from "react-hook-form";
+import {
+  Control,
+  FieldErrors,
+  UseFormReset,
+  UseFormSetValue,
+} from "react-hook-form";
 import CommonSelect from "../../common/dropdown/commonSelect";
+import { CustomReportData } from "../dataSourceVerion/uploadMultipleVersionValue";
 
 interface CreateDataSourceVersionProps {
   fileName: {
@@ -27,12 +33,11 @@ interface CreateDataSourceVersionProps {
     mappingName: string;
   }[];
   fileHeaders: string[];
-  control: any;
-  reset: any;
-  errors: any;
-  setValue: any;
+  control: Control<CustomReportData, unknown>;
+  reset: UseFormReset<CustomReportData>;
+  errors: FieldErrors<CustomReportData>;
+  setValue: UseFormSetValue<CustomReportData>;
   index: number;
-  getValues: any;
 }
 
 const ViewMapping: React.FC<CreateDataSourceVersionProps> = ({
@@ -43,91 +48,41 @@ const ViewMapping: React.FC<CreateDataSourceVersionProps> = ({
   fileHeaders,
   control,
   reset,
-  errors,
+  // errors,
   setValue,
   index,
-  getValues,
+  // getValues,
 }) => {
-  console.log("🚀 ~ fileName̥:", fileName);
-  console.log("🚀 ~ fileHeaders:", fileHeaders);
-  console.log("🚀 ~ settingAttributeOption:", settingAttributeOption);
-  console.log("🚀 ~ getValues:", getValues());
   const [open, setOpen] = useState(-1);
 
   // Initialize mappings when the component mounts
   useEffect(() => {
-    settingAttributeOption.forEach((option) => {
-      setValue(
-        `mappings.${fileName?.name}.${option.name}`,
+    if (open === -1) return;
 
+    settingAttributeOption.forEach((option) => {
+      const matchedHeader =
         fileHeaders.find(
           (name) =>
             name
-              .replace(/[^a-zA-Z0-9/]/g, "")
+              ?.replace(/[^a-zA-Z0-9/]/g, "")
               .replace(/\//g, " or ")
               .replace(/\s+/g, "")
               .trim()
               .toLowerCase() ===
             option.mappingName
-              .replace(/[^a-zA-Z0-9/]/g, "")
+              ?.replace(/[^a-zA-Z0-9/]/g, "")
               .replace(/\//g, " or ")
               .replace(/\s+/g, "")
               .trim()
               .toLowerCase()
-        )
-          ? fileHeaders.find(
-              (name) =>
-                name
-                  .replace(/[^a-zA-Z0-9/]/g, "")
-                  .replace(/\//g, " or ")
-                  .replace(/\s+/g, "")
-                  .trim()
-                  .toLowerCase() ===
-                option.mappingName
-                  .replace(/[^a-zA-Z0-9/]/g, "")
-                  .replace(/\//g, " or ")
-                  .replace(/\s+/g, "")
-                  .trim()
-                  .toLowerCase()
-            )
-          : ""
-      );
-      console.log(
-        "XXXXX_XXXXXX_XXXXX",
-        fileHeaders.find(
-          (name) =>
-            name
-              .replace(/[^a-zA-Z0-9/]/g, "")
-              .replace(/\//g, " or ")
-              .replace(/\s+/g, "")
-              .trim()
-              .toLowerCase() ===
-            option.mappingName
-              .replace(/[^a-zA-Z0-9/]/g, "")
-              .replace(/\//g, " or ")
-              .replace(/\s+/g, "")
-              .trim()
-              .toLowerCase()
-        )
-          ? fileHeaders.find(
-              (name) =>
-                name
-                  .replace(/[^a-zA-Z0-9/]/g, "")
-                  .replace(/\//g, " or ")
-                  .replace(/\s+/g, "")
-                  .trim()
-                  .toLowerCase() ===
-                option.mappingName
-                  .replace(/[^a-zA-Z0-9/]/g, "")
-                  .replace(/\//g, " or ")
-                  .replace(/\s+/g, "")
-                  .trim()
-                  .toLowerCase()
-            )
-          : ""
+        ) || null; // ✅ Convert undefined to null
+
+      setValue(
+        `mappings.${fileName?.name ?? ""}.${option.name ?? ""}`,
+        matchedHeader
       );
     });
-  }, [fileHeaders, setValue, settingAttributeOption, fileName]);
+  }, [fileHeaders, setValue, settingAttributeOption, fileName, open]);
 
   const handleCancel = () => {
     reset();
@@ -166,32 +121,12 @@ const ViewMapping: React.FC<CreateDataSourceVersionProps> = ({
                       <TableCell>
                         <CommonSelect
                           control={control}
-                          name={`mappings.${fileName}.${option.name}`}
+                          name={`mappings.${fileName.name}.${option.name}`}
                           label={"Map To"}
                           options={fileHeaders}
-                          error={
-                            !!errors.mappings?.[fileName.name]?.[option.name]
-                          }
-                          errorMessage={
-                            errors.mappings?.[fileName.name]?.[option.name]
-                              ?.message
-                          }
+                          error={false}
+                          errorMessage={""}
                           setValue={setValue}
-                          // defaultValue={fileHeaders.find(
-                          //   (name) =>
-                          //     name
-                          //       .replace(/[^a-zA-Z0-9/]/g, "")
-                          //       .replace(/\//g, " or ")
-                          //       .replace(/\s+/g, "")
-                          //       .trim()
-                          //       .toLowerCase() ===
-                          //     option.mappingName
-                          //       .replace(/[^a-zA-Z0-9/]/g, "")
-                          //       .replace(/\//g, " or ")
-                          //       .replace(/\s+/g, "")
-                          //       .trim()
-                          //       .toLowerCase()
-                          // )}
                         />
                       </TableCell>
                     </TableRow>

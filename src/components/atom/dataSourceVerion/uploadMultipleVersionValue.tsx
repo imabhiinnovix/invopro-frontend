@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { useForm } from "react-hook-form";
+import React, { Dispatch, SetStateAction, useState } from "react";
+import { FieldValues, useForm } from "react-hook-form";
 import ExcelJS from "exceljs";
 import {
   Box,
@@ -17,21 +17,31 @@ import {
   tableCellClasses,
   TableCell,
   Paper,
-  IconButton,
   Typography,
 } from "@mui/material";
 import UploadFileIcon from "@mui/icons-material/UploadFile";
-import DeleteIcon from "@mui/icons-material/Delete";
 import useGet from "../../../hooks/useGet";
 import { GET } from "../../../services/apiRoutes";
 import { toast } from "react-toastify";
 import ViewMapping from "../report/viewMapping";
+import * as Yup from "yup";
+import { yupResolver } from "@hookform/resolvers/yup";
+import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
 
 interface UploadMultipleFilesProps {
   reportId: string;
   versionValue: string;
   open: boolean;
-  setOpen: any;
+  setOpen: Dispatch<SetStateAction<boolean>>;
+}
+
+export interface CustomReportData {
+  mappings: {
+    [key: string]: Record<string, null> | Record<string, string>;
+  };
+  customReportId: string;
+  versionValue: string;
+  files?: File[]; // Optional files tracking
 }
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
@@ -60,31 +70,139 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
   const [fileHeader, setFileHeader] = useState<Record<string, string[] | null>>(
     {}
   );
+  // const [customReportData, setCustomReportData] = useState<CustomReportData>({
+  //   operation: "",
+  //   customReportId: "",
+  //   versionValue: "",
+  //   mappings: {},
+  //   files: [],
+  // });
+
+  // const validationSchema = Yup.object().shape({
+  //   files: Yup.array()
+  //     .of(
+  //       Yup.mixed().test(
+  //         "file-required",
+  //         "All required files must be uploaded.",
+  //         (value) => !!value
+  //       )
+  //     )
+  //     .test("all-files-present", "Please upload all required files.", (files) =>
+  //       files?.every((file) => file !== null && file !== undefined)
+  //     ),
+  //   mappings: Yup.object().test(
+  //     "all-files-mapped",
+  //     "Each uploaded file must have a complete mapping.",
+  //     (mappings: Record<string, Record<string, string | null>>, context) => {
+  //       const { files } = context.parent;
+  //       if (!files || !Array.isArray(files)) return false;
+  //       if (!mappings || typeof mappings !== "object") return false;
+
+  //       return files.every((file) => {
+  //         if (!file) return false; // Ensure file exists
+
+  //         const fileName = removeExtension(file.name); // Normalize file name
+  //         const fileMapping = mappings?.[fileName];
+
+  //         if (!fileMapping) return false; // Ensure file has a mapping
+
+  //         return Object.values(fileMapping).every(
+  //           (value) => value !== null && value !== undefined
+  //         );
+  //       });
+  //     }
+  //   ),
+  //   customReportId: Yup.string().required(),
+  //   versionValue: Yup.string().required(),
+  // }) as Yup.ObjectSchema<CustomReportData>;
+
+  const validationSchema = Yup.object({
+    files: Yup.array()
+      .of(
+        Yup.mixed<File>().test(
+          "file-required",
+          "All required files must be uploaded.",
+          (value) => !!value
+        )
+      )
+      .test("all-files-present", "Please upload all required files.", (files) =>
+        files?.every((file) => file !== null && file !== undefined)
+      ),
+
+    mappings: Yup.object().test(
+      "all-files-mapped",
+      "Each uploaded file must have a complete mapping.",
+      (mappings: Record<string, Record<string, string | null>>, context) => {
+        if (!mappings || typeof mappings !== "object") return false;
+
+        const errors: Record<string, { isError: boolean; msg: string }> = {};
+        let hasErrors = false;
+
+        Object.keys(mappings).forEach((fileName) => {
+          const fileMapping = mappings[fileName];
+
+          if (!fileMapping) {
+            // Case: Mapping object is missing
+            errors[fileName] = {
+              isError: true,
+              msg: `No mapping found for ${fileName}`,
+            };
+            hasErrors = true;
+          } else if (
+            Object.values(fileMapping).some(
+              (value) => value === null || value === undefined
+            )
+          ) {
+            // Case: Mapping has incomplete values
+            errors[fileName] = {
+              isError: true,
+              msg: `Mapping incomplete for ${fileName}`,
+            };
+            hasErrors = true;
+          }
+        });
+
+        if (hasErrors) {
+          return context.createError({
+            path: "mappings",
+            message: errors,
+          });
+        }
+
+        return true;
+      }
+    ),
+
+    customReportId: Yup.string().required(),
+    versionValue: Yup.string().required(),
+  }) as Yup.ObjectSchema<CustomReportData>;
+
   const {
     control,
     handleSubmit,
-    register,
-    watch,
     reset,
     setValue,
-    formState: { errors },
     getValues,
-  } = useForm<any>({
+    watch,
+    formState: { errors },
+  } = useForm<CustomReportData>({
+    resolver: yupResolver(validationSchema),
     defaultValues: {
-      dataSourceId: "",
-      versionName: "",
-      file: null,
+      customReportId: reportId,
+      versionValue: versionValue,
+      files: [],
       mappings: {},
-      separator: {},
     },
   });
-
   console.log("getValues", getValues());
-
   // Fetch required files from API
   const requiredVersionValues = useGet<{
     success: boolean;
-    versionValueDetails: any[];
+    versionValueDetails: {
+      _id: string;
+      requiredFiles: { name: string; _id: string }[];
+      entityId: { attributes: { name: string; mappingName: string }[] };
+    }[];
   }>(
     [`versionValue`, String(reportId), String(versionValue)],
     GET?.Custom_Report +
@@ -92,13 +210,26 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
     !!reportId && !!versionValue
   );
 
+  const removeExtension = (filename: string) => {
+    return filename.replace(/\.[^/.]+$/, "");
+  };
+
   const handleFileChange = (
     event: React.ChangeEvent<HTMLInputElement>,
-    fileName: string
+    fileName?: string
   ) => {
-    if (event.target.files?.[0]) {
-      const selectedFile = event.target.files[0];
+    if (!event.target.files?.length) return;
 
+    const selectedFiles = Array.from(event.target.files);
+    const requiredFiles =
+      requiredVersionValues?.data?.versionValueDetails?.flatMap(
+        (data) => data.requiredFiles
+      ) || [];
+
+    const currentFiles =
+      watch("files") || Array(requiredFiles.length).fill(null);
+
+    selectedFiles.forEach((selectedFile) => {
       if (
         !selectedFile.name.endsWith(".xlsx") &&
         !selectedFile.name.endsWith(".xls")
@@ -107,185 +238,126 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
         return;
       }
 
-      const reader = new FileReader();
+      const fileIndex = requiredFiles.findIndex(
+        (reqFile) => reqFile.name === removeExtension(selectedFile.name)
+      );
 
-      reader.onload = async (e) => {
-        try {
-          const arrayBuffer = e.target?.result as ArrayBuffer;
+      if (fileIndex === -1) return; // Skip if file isn't required
 
-          const workbook = new ExcelJS.Workbook();
-          try {
-            await workbook.xlsx.load(arrayBuffer);
-          } catch (error) {
-            toast.error(
-              "Failed to load the Excel file. Ensure the file is valid."
-            );
-            return;
-          }
+      currentFiles[fileIndex] = selectedFile;
 
-          if (!workbook.worksheets || workbook.worksheets.length === 0) {
-            toast.error("No sheets found in the Excel file.");
-            return;
-          }
+      // setValue(`mappings.${selectedFile?.name}.${option.name}`);
+      console.log("emptyMappingData");
+      processExcelFile(selectedFile, fileName);
+    });
 
-          const worksheet = workbook.worksheets[0];
-          const headers: string[] = [];
-          worksheet.getRow(1).eachCell((cell) => {
-            headers.push(cell.value?.toString() || "");
-          });
-
-          if (headers.length > 0) {
-            const headerCounts: Record<string, number> = headers.reduce(
-              (acc: Record<string, number>, header: string) => {
-                acc[header] = (acc[header] || 0) + 1;
-                return acc;
-              },
-              {}
-            );
-
-            const duplicates = Object.entries(headerCounts).filter(
-              ([, count]) => count > 1
-            );
-            if (duplicates.length > 0) {
-              duplicates.forEach(([header, count]) => {
-                toast.error(
-                  `The header '${header}' is duplicated ${count} times.`
-                );
-              });
-            } else {
-              setFileHeader((prev) => ({
-                ...prev,
-                [fileName]: [...headers, "Extra-Attribute-Ignore"],
-              }));
-              setFileUploads((prev) => ({
-                ...prev,
-                [fileName]: selectedFile,
-              }));
-            }
-          } else {
-            toast.error("Headers not found.");
-          }
-        } catch (e) {
-          toast.error(
-            "Something went wrong while processing the file. Please try again."
-          );
-        }
-      };
-
-      reader.readAsArrayBuffer(selectedFile);
-    }
+    setValue("files", [...currentFiles], { shouldValidate: false });
   };
 
-  const handleMultiFileChange = (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    if (event.target.files?.length) {
-      Array.from(event.target.files).forEach((selectedFile) => {
-        console.log("selectedFileselectedFileselectedFile", selectedFile);
-        if (
-          !selectedFile.name.endsWith(".xlsx") &&
-          !selectedFile.name.endsWith(".xls")
-        ) {
-          toast.error("Please upload a valid Excel file.");
+  // ✅ Helper function to process Excel file
+  const processExcelFile = async (file: File, fileName?: string) => {
+    const reader = new FileReader();
+
+    reader.onload = async (e) => {
+      try {
+        const arrayBuffer = e.target?.result as ArrayBuffer;
+        const workbook = new ExcelJS.Workbook();
+
+        try {
+          await workbook.xlsx.load(arrayBuffer);
+        } catch {
+          toast.error(
+            "Failed to load the Excel file. Ensure the file is valid."
+          );
           return;
         }
 
-        const reader = new FileReader();
+        if (!workbook.worksheets?.length) {
+          toast.error("No sheets found in the Excel file.");
+          return;
+        }
 
-        reader.onload = async (e) => {
-          try {
-            const arrayBuffer = e.target?.result as ArrayBuffer;
+        const worksheet = workbook.worksheets[0];
+        const headers = extractHeaders(worksheet);
 
-            const workbook = new ExcelJS.Workbook();
-            try {
-              await workbook.xlsx.load(arrayBuffer);
-            } catch (error) {
-              toast.error(
-                "Failed to load the Excel file. Ensure the file is valid."
-              );
-              return;
-            }
+        if (!headers.length) {
+          toast.error("Headers not found.");
+          return;
+        }
 
-            if (!workbook.worksheets || workbook.worksheets.length === 0) {
-              toast.error("No sheets found in the Excel file.");
-              return;
-            }
+        if (hasDuplicateHeaders(headers)) return;
 
-            const worksheet = workbook.worksheets[0];
-            const headers: string[] = [];
-            worksheet.getRow(1).eachCell((cell) => {
-              headers.push(cell.value?.toString() || "");
-            });
+        const keyName = fileName ?? removeExtension(file.name);
 
-            if (headers.length > 0) {
-              const headerCounts: Record<string, number> = headers.reduce(
-                (acc: Record<string, number>, header: string) => {
-                  acc[header] = (acc[header] || 0) + 1;
-                  return acc;
-                },
-                {}
-              );
+        setFileHeader((prev) => ({
+          ...prev,
+          [keyName]: [...headers, "Extra-Attribute-Ignore"],
+        }));
 
-              const duplicates = Object.entries(headerCounts).filter(
-                ([, count]) => count > 1
-              );
-              if (duplicates.length > 0) {
-                duplicates.forEach(([header, count]) => {
-                  toast.error(
-                    `The header '${header}' is duplicated ${count} times.`
-                  );
-                });
-              } else {
-                // Remove the file extension from the file name
-                const keyName = selectedFile.name.replace(/\.[^/.]+$/, "");
-                setFileHeader((prev) => ({
-                  ...prev,
-                  [keyName]: [...headers, "Extra-Attribute-Ignore"],
-                }));
-                setFileUploads((prev) => ({
-                  ...prev,
-                  [keyName]: selectedFile,
-                }));
-              }
-            } else {
-              toast.error("Headers not found.");
-            }
-          } catch (e) {
-            toast.error(
-              "Something went wrong while processing the file. Please try again."
-            );
-          }
-        };
+        setFileUploads((prev) => ({
+          ...prev,
+          [keyName]: file,
+        }));
+      } catch {
+        toast.error(
+          "Something went wrong while processing the file. Please try again."
+        );
+      }
+    };
 
-        reader.readAsArrayBuffer(selectedFile);
+    reader.readAsArrayBuffer(file);
+  };
+
+  // Extract headers from Excel worksheet
+  const extractHeaders = (worksheet: ExcelJS.Worksheet): string[] => {
+    const headers: string[] = [];
+    worksheet.getRow(1).eachCell((cell) => {
+      headers.push(cell.value?.toString() || "");
+    });
+    return headers;
+  };
+
+  // Check for duplicate headers
+  const hasDuplicateHeaders = (headers: string[]): boolean => {
+    const headerCounts: Record<string, number> = headers.reduce(
+      (acc, header) => {
+        acc[header] = (acc[header] || 0) + 1;
+        return acc;
+      },
+      {} as Record<string, number>
+    );
+
+    const duplicates = Object.entries(headerCounts).filter(
+      ([, count]) => count > 1
+    );
+
+    if (duplicates.length) {
+      duplicates.forEach(([header, count]) => {
+        toast.error(`The header '${header}' is duplicated ${count} times.`);
       });
+      return true;
     }
+
+    return false;
   };
 
   // Upload handler
-  const onSubmit = (formData: any) => {
+  const onSubmit = (formData: FieldValues) => {
     console.log("Uploading files:", formData);
     setOpen(false);
   };
 
-  // Ensure all required files are uploaded before enabling the Upload button
-  const allFilesUploaded =
-    requiredVersionValues.data?.versionValueDetails?.every((data) =>
-      data?.requiredFiles?.every(
-        (fileName: string) =>
-          fileUploads[fileName] !== null && fileUploads[fileName] !== undefined
-      )
-    ) ?? false;
+  // // Ensure all required files are uploaded before enabling the Upload button
+  // const allFilesUploaded =
+  //   requiredVersionValues.data?.versionValueDetails?.every((data) =>
+  //     data?.requiredFiles?.every(
+  //       (fileName: string) =>
+  //         fileUploads[fileName] !== null && fileUploads[fileName] !== undefined
+  //     )
+  //   ) ?? false;
 
   return (
     <>
-      <Button
-        variant="text"
-        size="large"
-        type="submit"
-        onClick={() => setOpen(true)}
-      ></Button>
-
       <Dialog
         open={open}
         onClose={() => setOpen(false)}
@@ -319,9 +391,12 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
               type="file"
               hidden
               multiple
-              onChange={(e) => handleMultiFileChange(e)}
+              onChange={(e) => handleFileChange(e)}
             />
           </Button>
+          {errors.files && (
+            <p className="error">{String(errors.files.message)}</p>
+          )}
         </DialogTitle>
 
         <DialogContent>
@@ -390,11 +465,19 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
                               reset={reset}
                               errors={errors}
                               index={index}
-                              getValues={getValues}
                             />
                           ) : (
                             "-"
                           )}
+                          {(
+                            errors?.mappings?.root
+                              ?.message as unknown as Record<
+                              string,
+                              { isError: boolean; msg: string }
+                            >
+                          )?.[fileName?.name]?.isError ? (
+                            <ErrorOutlineIcon />
+                          ) : null}
                         </StyledTableCell>
                       </StyledTableRow>
                     )

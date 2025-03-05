@@ -1,8 +1,8 @@
-import React, { useEffect, useState, useRef, useCallback } from 'react';
-import { FormControl, TextField, FormHelperText } from '@mui/material';
-import { Controller } from 'react-hook-form';
-import Autocomplete from '@mui/material/Autocomplete';
-import useGet from '../../../hooks/useGet';
+import React, { useEffect, useState, useRef, useCallback } from "react";
+import { FormControl, TextField, FormHelperText } from "@mui/material";
+import { Controller } from "react-hook-form";
+import Autocomplete from "@mui/material/Autocomplete";
+import useGet from "../../../hooks/useGet";
 
 interface CommonDropdownSearchProps {
   control: any; // React Hook Form control
@@ -35,33 +35,50 @@ const CommonDropdownSearch: React.FC<CommonDropdownSearchProps> = ({
   defaultDataUrl,
   rules = {},
   error = false,
-  errorMessage = '',
+  errorMessage = "",
   apiName,
 }) => {
   const [options, setOptions] = useState<Option[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [allData, setAllData] = useState<Option[]>([]);
   const [currentSearchPage, setCurrentSearchPage] = useState(1);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
   const [searchAllData, setSearchAllData] = useState<Option[]>([]);
   const [searchExhausted, setSearchExhausted] = useState(false);
 
-  const defaultDataDetails = useGet<{ success: boolean; data: any; totalCount: number }>(
+  const defaultDataDetails = useGet<{
+    success: boolean;
+    data: any;
+    totalCount: number;
+  }>(
     [apiName, `${defaultValue}`],
     `${defaultDataUrl}/${defaultValue}`,
     !!defaultValue
   );
 
-  const { data, isFetching } = useGet<{ success: boolean; data: any[]; totalCount: number }>(
+  const { data, isFetching } = useGet<{
+    success: boolean;
+    data: any[];
+    totalCount: number;
+  }>(
     [apiName, `${currentPage}`],
     `${apiUrl}?page=${currentPage}&limit=10`,
-    !!currentPage && searchTerm.length === 0 && (defaultDataDetails.isFetched || !defaultValue)
+    !!currentPage &&
+      searchTerm.length === 0 &&
+      (defaultDataDetails.isFetched || !defaultValue)
   );
 
-  const searchData = useGet<{ success: boolean; data: any[]; totalCount: number }>(
+  const searchData = useGet<{
+    success: boolean;
+    data: any[];
+    totalCount: number;
+  }>(
     [apiName, `${currentSearchPage}`, `${searchTerm}`],
     `${apiUrl}?page=${currentSearchPage}&limit=10&search=${searchTerm}`,
-    !!currentSearchPage && !!searchTerm.length && !searchExhausted && (defaultDataDetails.isFetched || !defaultValue)
+    !!currentSearchPage &&
+      !!searchTerm.length &&
+      !searchExhausted &&
+      (defaultDataDetails.isFetched || !defaultValue)
   );
 
   useEffect(() => {
@@ -74,10 +91,15 @@ const CommonDropdownSearch: React.FC<CommonDropdownSearchProps> = ({
         if (defaultDataDetails.data?.data) {
           setAllData((_) => {
             const updatedData = [
-              { label: defaultDataDetails.data.data[labelName], value: defaultDataDetails.data.data[labelValue] },
+              {
+                label: defaultDataDetails.data.data[labelName],
+                value: defaultDataDetails.data.data[labelValue],
+              },
               ...formattedOptions,
             ];
-            const uniqueData = Array.from(new Map(updatedData.map((item) => [item.label, item])).values());
+            const uniqueData = Array.from(
+              new Map(updatedData.map((item) => [item.label, item])).values()
+            );
             return uniqueData;
           });
         } else {
@@ -86,7 +108,9 @@ const CommonDropdownSearch: React.FC<CommonDropdownSearchProps> = ({
       } else {
         setAllData((prev) => {
           const updatedData = [...prev, ...formattedOptions];
-          const uniqueData = Array.from(new Map(updatedData.map((item) => [item.label, item])).values());
+          const uniqueData = Array.from(
+            new Map(updatedData.map((item) => [item.label, item])).values()
+          );
           return uniqueData;
         });
       }
@@ -103,10 +127,15 @@ const CommonDropdownSearch: React.FC<CommonDropdownSearchProps> = ({
         if (defaultDataDetails.data?.data) {
           setSearchAllData((_) => {
             const updatedData = [
-              { label: defaultDataDetails.data.data[labelName], value: defaultDataDetails.data.data[labelValue] },
+              {
+                label: defaultDataDetails.data.data[labelName],
+                value: defaultDataDetails.data.data[labelValue],
+              },
               ...formattedOptions,
             ];
-            const uniqueData = Array.from(new Map(updatedData.map((item) => [item.label, item])).values());
+            const uniqueData = Array.from(
+              new Map(updatedData.map((item) => [item.label, item])).values()
+            );
             return uniqueData;
           });
         } else {
@@ -115,11 +144,18 @@ const CommonDropdownSearch: React.FC<CommonDropdownSearchProps> = ({
       } else {
         setSearchAllData((prev) => {
           const updatedData = [...prev, ...formattedOptions];
-          const uniqueData = Array.from(new Map(updatedData.map((item) => [item.label, item])).values());
+          const uniqueData = Array.from(
+            new Map(updatedData.map((item) => [item.label, item])).values()
+          );
           return uniqueData;
         });
       }
-      if (searchData && searchData.data && searchData.data.data && searchData.data.data.length === 0) {
+      if (
+        searchData &&
+        searchData.data &&
+        searchData.data.data &&
+        searchData.data.data.length === 0
+      ) {
         setSearchExhausted(true);
       } else {
         setSearchExhausted(false);
@@ -139,7 +175,13 @@ const CommonDropdownSearch: React.FC<CommonDropdownSearchProps> = ({
 
   const lastElementRef = useCallback(
     (node: HTMLLIElement | null) => {
-      if (isFetching || searchData.isFetching || options.length >= data?.totalCount! || searchExhausted) return;
+      if (
+        isFetching ||
+        searchData.isFetching ||
+        options.length >= data?.totalCount! ||
+        searchExhausted
+      )
+        return;
 
       // Disconnect the previous observer if it exists
       if (lastRowRef.current) {
@@ -162,7 +204,13 @@ const CommonDropdownSearch: React.FC<CommonDropdownSearchProps> = ({
         lastRowRef.current.observe(node);
       }
     },
-    [isFetching, options.length, searchTerm, data?.totalCount, searchData.isFetching]
+    [
+      isFetching,
+      options.length,
+      searchTerm,
+      data?.totalCount,
+      searchData.isFetching,
+    ]
   );
 
   return (
@@ -174,7 +222,8 @@ const CommonDropdownSearch: React.FC<CommonDropdownSearchProps> = ({
         rules={rules}
         render={({ field }) => {
           // Match the selected value to the options array
-          const selectedOption = options.find((option) => option.value === field.value) || null;
+          const selectedOption =
+            options.find((option) => option.value === field.value) || null;
 
           return (
             <Autocomplete
@@ -182,27 +231,35 @@ const CommonDropdownSearch: React.FC<CommonDropdownSearchProps> = ({
               value={selectedOption} // Use the matched option as the value
               options={options}
               onInputChange={(_, value, reason) => {
-                if (reason === 'input') {
+                if (reason === "input") {
                   field.onChange(null);
                   setSearchTerm(value);
                   setCurrentSearchPage(1);
                   setCurrentPage(1);
                   setSearchExhausted(false);
-                } else if (reason != 'selectOption' && reason != 'reset') {
-                  setSearchTerm('');
+                } else if (reason != "selectOption" && reason != "reset") {
+                  setSearchTerm("");
                   setCurrentSearchPage(1);
                   setCurrentPage(1);
                   setSearchExhausted(false);
                 }
               }}
-              getOptionLabel={(option) => option?.label || ''} // Ensure it handles empty values gracefully
-              onChange={(_, selectedOption) => field.onChange(selectedOption?.value || null)} // Update only the value
-              renderInput={(params) => <TextField {...params} label={label} error={error} />}
+              getOptionLabel={(option) => option?.label || ""} // Ensure it handles empty values gracefully
+              onChange={(_, selectedOption) =>
+                field.onChange(selectedOption?.value || null)
+              } // Update only the value
+              renderInput={(params) => (
+                <TextField {...params} label={label} error={error} />
+              )}
               renderOption={(props, option, state) => {
                 const isLast = options.length - 1 === state.index;
                 const { key, ...restProps } = props;
                 return (
-                  <li key={key} {...restProps} ref={isLast ? lastElementRef : null}>
+                  <li
+                    key={key}
+                    {...restProps}
+                    ref={isLast ? lastElementRef : null}
+                  >
                     {option.label}
                   </li>
                 );
