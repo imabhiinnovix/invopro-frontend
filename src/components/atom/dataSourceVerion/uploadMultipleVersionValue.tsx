@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
-import { useForm } from 'react-hook-form';
-import ExcelJS from 'exceljs';
+import React, { useState } from "react";
+import { useForm } from "react-hook-form";
+import ExcelJS from "exceljs";
 import {
   Box,
   Button,
@@ -19,13 +19,13 @@ import {
   Paper,
   IconButton,
   Typography,
-} from '@mui/material';
-import UploadFileIcon from '@mui/icons-material/UploadFile';
-import DeleteIcon from '@mui/icons-material/Delete';
-import useGet from '../../../hooks/useGet';
-import { GET } from '../../../services/apiRoutes';
-import { toast } from 'react-toastify';
-import ViewMapping from '../report/viewMapping';
+} from "@mui/material";
+import UploadFileIcon from "@mui/icons-material/UploadFile";
+import DeleteIcon from "@mui/icons-material/Delete";
+import useGet from "../../../hooks/useGet";
+import { GET } from "../../../services/apiRoutes";
+import { toast } from "react-toastify";
+import ViewMapping from "../report/viewMapping";
 
 interface UploadMultipleFilesProps {
   reportId: string;
@@ -48,9 +48,18 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
   backgroundColor: theme.palette.action.hover,
 }));
 
-const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({ open, setOpen, reportId, versionValue }) => {
-  const [fileUploads, setFileUploads] = useState<Record<string, File | null>>({});
-  const [fileHeader, setFileHeader] = useState<Record<string, string[] | null>>({});
+const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
+  open,
+  setOpen,
+  reportId,
+  versionValue,
+}) => {
+  const [fileUploads, setFileUploads] = useState<Record<string, File | null>>(
+    {}
+  );
+  const [fileHeader, setFileHeader] = useState<Record<string, string[] | null>>(
+    {}
+  );
   const {
     control,
     handleSubmit,
@@ -59,29 +68,42 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({ open, setOpen
     reset,
     setValue,
     formState: { errors },
+    getValues,
   } = useForm<any>({
     defaultValues: {
-      dataSourceId: '',
-      versionName: '',
+      dataSourceId: "",
+      versionName: "",
       file: null,
       mappings: {},
       separator: {},
     },
   });
 
+  console.log("getValues", getValues());
+
   // Fetch required files from API
-  const requiredVersionValues = useGet<{ success: boolean; versionValueDetails: any[] }>(
+  const requiredVersionValues = useGet<{
+    success: boolean;
+    versionValueDetails: any[];
+  }>(
     [`versionValue`, String(reportId), String(versionValue)],
-    GET?.Custom_Report + `/getVersionValue/?reportRequestId=${reportId}&versionValue=${versionValue}`,
+    GET?.Custom_Report +
+      `/getVersionValue/?reportRequestId=${reportId}&versionValue=${versionValue}`,
     !!reportId && !!versionValue
   );
 
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>, fileName: string) => {
+  const handleFileChange = (
+    event: React.ChangeEvent<HTMLInputElement>,
+    fileName: string
+  ) => {
     if (event.target.files?.[0]) {
       const selectedFile = event.target.files[0];
 
-      if (!selectedFile.name.endsWith('.xlsx') && !selectedFile.name.endsWith('.xls')) {
-        toast.error('Please upload a valid Excel file.');
+      if (
+        !selectedFile.name.endsWith(".xlsx") &&
+        !selectedFile.name.endsWith(".xls")
+      ) {
+        toast.error("Please upload a valid Excel file.");
         return;
       }
 
@@ -95,19 +117,21 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({ open, setOpen
           try {
             await workbook.xlsx.load(arrayBuffer);
           } catch (error) {
-            toast.error('Failed to load the Excel file. Ensure the file is valid.');
+            toast.error(
+              "Failed to load the Excel file. Ensure the file is valid."
+            );
             return;
           }
 
           if (!workbook.worksheets || workbook.worksheets.length === 0) {
-            toast.error('No sheets found in the Excel file.');
+            toast.error("No sheets found in the Excel file.");
             return;
           }
 
           const worksheet = workbook.worksheets[0];
           const headers: string[] = [];
           worksheet.getRow(1).eachCell((cell) => {
-            headers.push(cell.value?.toString() || '');
+            headers.push(cell.value?.toString() || "");
           });
 
           if (headers.length > 0) {
@@ -119,15 +143,19 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({ open, setOpen
               {}
             );
 
-            const duplicates = Object.entries(headerCounts).filter(([, count]) => count > 1);
+            const duplicates = Object.entries(headerCounts).filter(
+              ([, count]) => count > 1
+            );
             if (duplicates.length > 0) {
               duplicates.forEach(([header, count]) => {
-                toast.error(`The header '${header}' is duplicated ${count} times.`);
+                toast.error(
+                  `The header '${header}' is duplicated ${count} times.`
+                );
               });
             } else {
               setFileHeader((prev) => ({
                 ...prev,
-                [fileName]: [...headers, 'Extra-Attribute-Ignore'],
+                [fileName]: [...headers, "Extra-Attribute-Ignore"],
               }));
               setFileUploads((prev) => ({
                 ...prev,
@@ -135,10 +163,12 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({ open, setOpen
               }));
             }
           } else {
-            toast.error('Headers not found.');
+            toast.error("Headers not found.");
           }
         } catch (e) {
-          toast.error('Something went wrong while processing the file. Please try again.');
+          toast.error(
+            "Something went wrong while processing the file. Please try again."
+          );
         }
       };
 
@@ -146,9 +176,95 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({ open, setOpen
     }
   };
 
+  const handleMultiFileChange = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    if (event.target.files?.length) {
+      Array.from(event.target.files).forEach((selectedFile) => {
+        console.log("selectedFileselectedFileselectedFile", selectedFile);
+        if (
+          !selectedFile.name.endsWith(".xlsx") &&
+          !selectedFile.name.endsWith(".xls")
+        ) {
+          toast.error("Please upload a valid Excel file.");
+          return;
+        }
+
+        const reader = new FileReader();
+
+        reader.onload = async (e) => {
+          try {
+            const arrayBuffer = e.target?.result as ArrayBuffer;
+
+            const workbook = new ExcelJS.Workbook();
+            try {
+              await workbook.xlsx.load(arrayBuffer);
+            } catch (error) {
+              toast.error(
+                "Failed to load the Excel file. Ensure the file is valid."
+              );
+              return;
+            }
+
+            if (!workbook.worksheets || workbook.worksheets.length === 0) {
+              toast.error("No sheets found in the Excel file.");
+              return;
+            }
+
+            const worksheet = workbook.worksheets[0];
+            const headers: string[] = [];
+            worksheet.getRow(1).eachCell((cell) => {
+              headers.push(cell.value?.toString() || "");
+            });
+
+            if (headers.length > 0) {
+              const headerCounts: Record<string, number> = headers.reduce(
+                (acc: Record<string, number>, header: string) => {
+                  acc[header] = (acc[header] || 0) + 1;
+                  return acc;
+                },
+                {}
+              );
+
+              const duplicates = Object.entries(headerCounts).filter(
+                ([, count]) => count > 1
+              );
+              if (duplicates.length > 0) {
+                duplicates.forEach(([header, count]) => {
+                  toast.error(
+                    `The header '${header}' is duplicated ${count} times.`
+                  );
+                });
+              } else {
+                // Remove the file extension from the file name
+                const keyName = selectedFile.name.replace(/\.[^/.]+$/, "");
+                setFileHeader((prev) => ({
+                  ...prev,
+                  [keyName]: [...headers, "Extra-Attribute-Ignore"],
+                }));
+                setFileUploads((prev) => ({
+                  ...prev,
+                  [keyName]: selectedFile,
+                }));
+              }
+            } else {
+              toast.error("Headers not found.");
+            }
+          } catch (e) {
+            toast.error(
+              "Something went wrong while processing the file. Please try again."
+            );
+          }
+        };
+
+        reader.readAsArrayBuffer(selectedFile);
+      });
+    }
+  };
+
   // Upload handler
   const onSubmit = (formData: any) => {
-    console.log('Uploading files:', formData);
+    console.log("Uploading files:", formData);
     setOpen(false);
   };
 
@@ -156,20 +272,61 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({ open, setOpen
   const allFilesUploaded =
     requiredVersionValues.data?.versionValueDetails?.every((data) =>
       data?.requiredFiles?.every(
-        (fileName: string) => fileUploads[fileName] !== null && fileUploads[fileName] !== undefined
+        (fileName: string) =>
+          fileUploads[fileName] !== null && fileUploads[fileName] !== undefined
       )
     ) ?? false;
 
   return (
     <>
-      <Button variant="text" size="large" type="submit" onClick={() => setOpen(true)}></Button>
+      <Button
+        variant="text"
+        size="large"
+        type="submit"
+        onClick={() => setOpen(true)}
+      ></Button>
 
-      <Dialog open={open} onClose={() => setOpen(false)} fullWidth maxWidth="sm">
+      <Dialog
+        open={open}
+        onClose={() => setOpen(false)}
+        fullWidth
+        maxWidth="sm"
+      >
         <DialogTitle>Requested Report:</DialogTitle>
-        <DialogTitle>Version Value: {versionValue}</DialogTitle>
+        <DialogTitle
+          display="flex"
+          justifyContent="space-between"
+          alignItems={"center"}
+        >
+          <Typography> Version Value: {versionValue} </Typography>
+          <Button
+            variant="contained"
+            component="label"
+            sx={{
+              fontWeight: "bold",
+              bgcolor: "#007bff",
+              color: "#fff",
+              "&:hover": { bgcolor: "#0056b3" },
+              padding: 2,
+            }}
+          >
+            <Box gap={1} display="flex" justifyContent="center">
+              <UploadFileIcon />
+              Upload Files
+            </Box>
+
+            <input
+              type="file"
+              hidden
+              multiple
+              onChange={(e) => handleMultiFileChange(e)}
+            />
+          </Button>
+        </DialogTitle>
+
         <DialogContent>
           <TableContainer component={Paper}>
-            <Table sx={{ width: '100%' }} aria-label="customized table">
+            <Table sx={{ width: "100%" }} aria-label="customized table">
               <TableHead>
                 <TableRow>
                   <StyledTableCell>FILE NAME</StyledTableCell>
@@ -179,50 +336,69 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({ open, setOpen
               </TableHead>
               <TableBody>
                 {requiredVersionValues.data?.versionValueDetails?.map((data) =>
-                  data?.requiredFiles?.map((fileName: string) => (
-                    <StyledTableRow key={`${data._id}-${fileName}`}>
-                      <StyledTableCell>{data.name || '-'}</StyledTableCell>
-                      <StyledTableCell>
-                        <Box display="flex" alignItems="center" gap={2}>
-                          <Button
-                            variant="contained"
-                            component="label"
-                            sx={{
-                              fontWeight: 'bold',
-                              bgcolor: '#007bff',
-                              color: '#fff',
-                              '&:hover': { bgcolor: '#0056b3' },
-                              padding: 2,
-                            }}
-                          >
-                            <Box gap={1} display="flex" justifyContent="center">
-                              <UploadFileIcon />
-                              Upload File
-                            </Box>
+                  data?.requiredFiles?.map(
+                    (
+                      fileName: { name: string; _id: string },
+                      index: number
+                    ) => (
+                      <StyledTableRow key={`${data._id}-${fileName._id}`}>
+                        <StyledTableCell>
+                          {fileName?.name || "-"}
+                        </StyledTableCell>
+                        <StyledTableCell>
+                          <Box display="flex" alignItems="center" gap={2}>
+                            <Button
+                              variant="contained"
+                              component="label"
+                              sx={{
+                                fontWeight: "bold",
+                                bgcolor: "#007bff",
+                                color: "#fff",
+                                "&:hover": { bgcolor: "#0056b3" },
+                                padding: 2,
+                              }}
+                            >
+                              <Box
+                                gap={1}
+                                display="flex"
+                                justifyContent="center"
+                              >
+                                <UploadFileIcon />
+                                Upload File
+                              </Box>
 
-                            <input type="file" hidden onChange={(e) => handleFileChange(e, fileName)} />
-                          </Button>
-                        </Box>
-                      </StyledTableCell>
-                      <StyledTableCell>
-                        {fileHeader[fileName] ? (
-                          <ViewMapping
-                            fileName={fileName}
-                            CustomButton={<Button>View Mappings</Button>}
-                            title={'Mappings'}
-                            settingAttributeOption={data.entityId.attributes}
-                            fileHeaders={fileHeader[fileName]!}
-                            control={control}
-                            setValue={setValue}
-                            reset={reset}
-                            errors={errors}
-                          />
-                        ) : (
-                          '-'
-                        )}
-                      </StyledTableCell>
-                    </StyledTableRow>
-                  ))
+                              <input
+                                type="file"
+                                hidden
+                                onChange={(e) =>
+                                  handleFileChange(e, fileName.name)
+                                }
+                              />
+                            </Button>
+                          </Box>
+                        </StyledTableCell>
+                        <StyledTableCell>
+                          {fileHeader[fileName.name] ? (
+                            <ViewMapping
+                              fileName={fileName}
+                              CustomButton={<Button>View Mappings</Button>}
+                              title={"Mappings"}
+                              settingAttributeOption={data.entityId.attributes}
+                              fileHeaders={fileHeader[fileName.name]!}
+                              control={control}
+                              setValue={setValue}
+                              reset={reset}
+                              errors={errors}
+                              index={index}
+                              getValues={getValues}
+                            />
+                          ) : (
+                            "-"
+                          )}
+                        </StyledTableCell>
+                      </StyledTableRow>
+                    )
+                  )
                 )}
               </TableBody>
             </Table>
@@ -233,7 +409,11 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({ open, setOpen
           <Button onClick={() => setOpen(false)} color="error">
             Cancel
           </Button>
-          <Button onClick={handleSubmit(onSubmit)} variant="contained" color="primary">
+          <Button
+            onClick={handleSubmit(onSubmit)}
+            variant="contained"
+            color="primary"
+          >
             Submit
           </Button>
         </DialogActions>
