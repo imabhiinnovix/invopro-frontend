@@ -142,7 +142,6 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
           const fileMapping = mappings[fileName];
 
           if (!fileMapping) {
-            // Case: Mapping object is missing
             errors[fileName] = {
               isError: true,
               msg: `No mapping found for ${fileName}`,
@@ -153,7 +152,6 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
               (value) => value === null || value === undefined
             )
           ) {
-            // Case: Mapping has incomplete values
             errors[fileName] = {
               isError: true,
               msg: `Mapping incomplete for ${fileName}`,
@@ -165,7 +163,7 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
         if (hasErrors) {
           return context.createError({
             path: "mappings",
-            message: errors,
+            message: errors, // ✅ Return errors directly, no extra wrapping
           });
         }
 
@@ -246,9 +244,82 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
 
       currentFiles[fileIndex] = selectedFile;
 
-      // setValue(`mappings.${selectedFile?.name}.${option.name}`);
-      console.log("emptyMappingData");
-      processExcelFile(selectedFile, fileName);
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        try {
+          const arrayBuffer = e.target?.result as ArrayBuffer;
+          const workbook = new ExcelJS.Workbook();
+
+          try {
+            await workbook.xlsx.load(arrayBuffer);
+          } catch {
+            toast.error(
+              "Failed to load the Excel file. Ensure the file is valid."
+            );
+            return;
+          }
+
+          if (!workbook.worksheets?.length) {
+            toast.error("No sheets found in the Excel file.");
+            return;
+          }
+
+          const worksheet = workbook.worksheets[0];
+          const headers = extractHeaders(worksheet); // ✅ Moved inside `reader.onload`
+
+          if (!headers.length) {
+            toast.error("Headers not found.");
+            return;
+          }
+
+          if (hasDuplicateHeaders(headers)) return;
+
+          const keyName = fileName ?? removeExtension(selectedFile.name);
+
+          setFileHeader((prev) => ({
+            ...prev,
+            [keyName]: [...headers, "Extra-Attribute-Ignore"],
+          }));
+
+          setFileUploads((prev) => ({
+            ...prev,
+            [keyName]: selectedFile,
+          }));
+
+          // ✅ Only access `headers` AFTER it's initialized
+          const emptyMappingData =
+            requiredVersionValues?.data?.versionValueDetails.find((data) =>
+              data?.requiredFiles.some((file) => file.name === keyName)
+            )?.entityId?.attributes;
+
+          emptyMappingData?.forEach((option) => {
+            const matchedHeader =
+              headers.find(
+                (name) =>
+                  name
+                    ?.replace(/[^a-zA-Z0-9/]/g, "")
+                    .replace(/\//g, " or ")
+                    .replace(/\s+/g, "")
+                    .trim()
+                    .toLowerCase() ===
+                  option.mappingName
+                    ?.replace(/[^a-zA-Z0-9/]/g, "")
+                    .replace(/\//g, " or ")
+                    .replace(/\s+/g, "")
+                    .trim()
+                    .toLowerCase()
+              ) || null;
+
+            setValue(`mappings.${keyName}.${option.name ?? ""}`, matchedHeader);
+          });
+        } catch {
+          toast.error(
+            "Something went wrong while processing the file. Please try again."
+          );
+        }
+      };
+
+      reader.readAsArrayBuffer(selectedFile);
     });
 
     setValue("files", [...currentFiles], { shouldValidate: false });
@@ -469,9 +540,9 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
                           ) : (
                             "-"
                           )}
+                          {console.log("errors", errors)}
                           {(
-                            errors?.mappings?.root
-                              ?.message as unknown as Record<
+                            errors?.mappings?.message as unknown as Record<
                               string,
                               { isError: boolean; msg: string }
                             >

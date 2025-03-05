@@ -56,33 +56,33 @@ const ViewMapping: React.FC<CreateDataSourceVersionProps> = ({
   const [open, setOpen] = useState(-1);
 
   // Initialize mappings when the component mounts
-  useEffect(() => {
-    if (open === -1) return;
+  // useEffect(() => {
+  //   if (open === -1) return;
 
-    settingAttributeOption.forEach((option) => {
-      const matchedHeader =
-        fileHeaders.find(
-          (name) =>
-            name
-              ?.replace(/[^a-zA-Z0-9/]/g, "")
-              .replace(/\//g, " or ")
-              .replace(/\s+/g, "")
-              .trim()
-              .toLowerCase() ===
-            option.mappingName
-              ?.replace(/[^a-zA-Z0-9/]/g, "")
-              .replace(/\//g, " or ")
-              .replace(/\s+/g, "")
-              .trim()
-              .toLowerCase()
-        ) || null; // ✅ Convert undefined to null
+  //   settingAttributeOption.forEach((option) => {
+  //     const matchedHeader =
+  //       fileHeaders.find(
+  //         (name) =>
+  //           name
+  //             ?.replace(/[^a-zA-Z0-9/]/g, "")
+  //             .replace(/\//g, " or ")
+  //             .replace(/\s+/g, "")
+  //             .trim()
+  //             .toLowerCase() ===
+  //           option.mappingName
+  //             ?.replace(/[^a-zA-Z0-9/]/g, "")
+  //             .replace(/\//g, " or ")
+  //             .replace(/\s+/g, "")
+  //             .trim()
+  //             .toLowerCase()
+  //       ) || null; // ✅ Convert undefined to null
 
-      setValue(
-        `mappings.${fileName?.name ?? ""}.${option.name ?? ""}`,
-        matchedHeader
-      );
-    });
-  }, [fileHeaders, setValue, settingAttributeOption, fileName, open]);
+  //     setValue(
+  //       `mappings.${fileName?.name ?? ""}.${option.name ?? ""}`,
+  //       matchedHeader
+  //     );
+  //   });
+  // }, [fileHeaders, setValue, settingAttributeOption, fileName, open]);
 
   const handleCancel = () => {
     reset();
