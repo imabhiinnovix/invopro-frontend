@@ -1,20 +1,27 @@
-export function objectToFormData(obj, formData = new FormData(), parentKey = '') {
-    for (let key in obj) {
-      if (!obj.hasOwnProperty(key)) continue;
+type Primitive = string | number | boolean | File | Blob | null | undefined;
+type FormDataConvertible = { [key: string]: Primitive | FormDataConvertible };
+
+export function objectToFormData<T extends FormDataConvertible>(
+  obj: T,
+  formData: FormData = new FormData(),
+  parentKey: string = ''
+): FormData {
+  for (const key in obj) {
+    if (Object.prototype.hasOwnProperty.call(obj, key)) {
       const value = obj[key];
-      // Construct the form key (e.g., "mappings[AnnuitiesDueList_CPi][Docket Number]")
       const formKey = parentKey ? `${parentKey}[${key}]` : key;
+
       if (
-        value &&
+        value !== null &&
         typeof value === 'object' &&
-        !(value instanceof File) && 
+        !(value instanceof File) &&
         !(value instanceof Blob)
       ) {
-        // Recursively process nested objects (or arrays)
-        objectToFormData(value, formData, formKey);
+        objectToFormData(value as FormDataConvertible, formData, formKey);
       } else {
-        formData.append(formKey, value);
+        formData.append(formKey, value !== undefined ? String(value) : '');
       }
     }
-    return formData;
   }
+  return formData;
+}
