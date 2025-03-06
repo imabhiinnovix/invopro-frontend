@@ -539,6 +539,7 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
                                 setOpen={setOpenMappingModal}
                                 open={openMappingModal}
                                 trigger={trigger}
+                                watch={watch}
                               />
                               {(
                                 (errors?.mappings?.message ||

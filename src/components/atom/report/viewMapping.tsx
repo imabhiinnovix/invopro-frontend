@@ -41,6 +41,7 @@ interface CreateDataSourceVersionProps {
   open: number;
   setOpen: React.Dispatch<React.SetStateAction<number>>;
   trigger: () => void;
+  watch: () => void;
 }
 
 const ViewMapping: React.FC<CreateDataSourceVersionProps> = ({
@@ -58,7 +59,9 @@ const ViewMapping: React.FC<CreateDataSourceVersionProps> = ({
   open,
   setOpen,
   trigger,
+  watch,
 }) => {
+  const watchMapping = watch(`mappings.${fileName.name}`);
   const handleCancel = () => {
     trigger();
     setOpen(-1);
@@ -128,8 +131,31 @@ const ViewMapping: React.FC<CreateDataSourceVersionProps> = ({
                           name={`mappings.${fileName.name}.${option.name}`}
                           label={"Map To"}
                           options={fileHeaders}
-                          error={false}
-                          errorMessage={""}
+                          error={
+                            watchMapping?.[option?.name] === "" ||
+                            watchMapping?.[option?.name] === undefined ||
+                            watchMapping?.[option?.name] === null ||
+                            Object.values(watchMapping).filter(
+                              (val) =>
+                                val === watchMapping?.[option.name] &&
+                                watchMapping?.[option.name] !==
+                                  "Extra-Attribute-Ignore"
+                            ).length > 1
+                          }
+                          errorMessage={
+                            watchMapping?.[option?.name] === "" ||
+                            watchMapping?.[option?.name] === undefined ||
+                            watchMapping?.[option?.name] === null
+                              ? "This field is required"
+                              : Object.values(watchMapping).filter(
+                                  (val) =>
+                                    val === watchMapping?.[option.name] &&
+                                    watchMapping?.[option.name] !==
+                                      "Extra-Attribute-Ignore"
+                                ).length > 1
+                              ? "Duplicate value"
+                              : ""
+                          }
                           setValue={setValue}
                         />
                       </TableCell>
