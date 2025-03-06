@@ -26,7 +26,7 @@ import {
   Typography,
   Stack,
   Backdrop,
-  CircularProgress,
+  LinearProgress,
 } from "@mui/material";
 import UploadFileIcon from "@mui/icons-material/UploadFile";
 import useGet from "../../../hooks/useGet";
@@ -77,7 +77,7 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
   versionValue,
 }) => {
   const [openMappingModal, setOpenMappingModal] = useState(-1);
-
+  const [processingCount, setProcessingCount] = useState(0);
   const [fileUploads, setFileUploads] = useState<Record<string, File | null>>(
     {}
   );
@@ -164,7 +164,7 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
         if (hasErrors) {
           return context.createError({
             path: "mappings",
-            message: errors, // ✅ Return errors directly, no extra wrapping
+            message: errors,
           });
         }
 
@@ -201,7 +201,6 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
 
   const watchFiles̥ = watch("files");
   console.log("🚀 ~ watchFiles̥:", watchFiles̥);
-  // Fetch required files from API
 
   const removeExtension = (filename: string) => {
     return filename.replace(/\.[^/.]+$/, "");
@@ -212,11 +211,9 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
     fileName?: string,
     index: number = -1
   ) => {
-    console.log("indexindexindexindexfileNamefileName", index, fileName);
     if (!event.target.files?.length) return;
 
     const selectedFiles = Array.from(event.target.files);
-
     const currentFiles =
       watch("files")?.length === 0
         ? Array(requiredFiles.length).fill(null)
@@ -231,12 +228,12 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
         return;
       }
 
+      // Increase processing counter for each file
+      setProcessingCount((prev) => prev + 1);
+
       const fileIndex = requiredFiles.findIndex(
         (reqFile) => reqFile.name === removeExtension(selectedFile.name)
       );
-      console.log("index", index, fileIndex);
-      // if (fileIndex === -1 && index === -1) return; // Skip if file isn't required
-
       currentFiles[index !== -1 ? index : fileIndex] = selectedFile;
 
       const reader = new FileReader();
@@ -260,7 +257,7 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
           }
 
           const worksheet = workbook.worksheets[0];
-          const headers = extractHeaders(worksheet); // ✅ Moved inside `reader.onload`
+          const headers = extractHeaders(worksheet);
 
           if (!headers.length) {
             toast.error("Headers not found.");
@@ -281,7 +278,6 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
             [keyName]: selectedFile,
           }));
 
-          // ✅ Only access `headers` AFTER it's initialized
           const emptyMappingData =
             requiredVersionValues?.data?.versionValueDetails.find((data) =>
               data?.requiredFiles.some((file) => file.name === keyName)
@@ -316,6 +312,9 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
           toast.error(
             "Something went wrong while processing the file. Please try again."
           );
+        } finally {
+          // Decrement processing counter when done
+          setProcessingCount((prev) => prev - 1);
         }
       };
 
@@ -326,61 +325,7 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
     trigger();
   };
 
-  // ✅ Helper function to process Excel file
-  const processExcelFile = async (file: File, fileName?: string) => {
-    const reader = new FileReader();
-
-    reader.onload = async (e) => {
-      try {
-        const arrayBuffer = e.target?.result as ArrayBuffer;
-        const workbook = new ExcelJS.Workbook();
-
-        try {
-          await workbook.xlsx.load(arrayBuffer);
-        } catch {
-          toast.error(
-            "Failed to load the Excel file. Ensure the file is valid."
-          );
-          return;
-        }
-
-        if (!workbook.worksheets?.length) {
-          toast.error("No sheets found in the Excel file.");
-          return;
-        }
-
-        const worksheet = workbook.worksheets[0];
-        const headers = extractHeaders(worksheet);
-
-        if (!headers.length) {
-          toast.error("Headers not found.");
-          return;
-        }
-
-        if (hasDuplicateHeaders(headers)) return;
-
-        const keyName = fileName ?? removeExtension(file.name);
-
-        setFileHeader((prev) => ({
-          ...prev,
-          [keyName]: [...headers, "Extra-Attribute-Ignore"],
-        }));
-
-        setFileUploads((prev) => ({
-          ...prev,
-          [keyName]: file,
-        }));
-      } catch {
-        toast.error(
-          "Something went wrong while processing the file. Please try again."
-        );
-      }
-    };
-
-    reader.readAsArrayBuffer(file);
-  };
-
-  // Extract headers from Excel worksheet
+  // Helper function to extract headers
   const extractHeaders = (worksheet: ExcelJS.Worksheet): string[] => {
     const headers: string[] = [];
     worksheet.getRow(1).eachCell((cell) => {
@@ -416,37 +361,34 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
   const { mutate: mutateReportUpload, isPending: isLoadingReportUpload } =
     useUploadCustomReportFile();
 
-  // Upload handler
   const onSubmit = (data: FieldValues) => {
-    const tempData = { ...data, mappings: JSON.stringify(data?.mappings), operation: 'customreport' };
+    const tempData = {
+      ...data,
+      mappings: JSON.stringify(data?.mappings),
+      operation: "customreport",
+    };
     console.log("Uploading files:", objectToFormData(tempData));
     const formData = objectToFormData(tempData);
     mutateReportUpload(formData);
-    // setOpen(false);
   };
 
-  // Manually trigger validation on mount
   useEffect(() => {
     trigger();
   }, [trigger]);
 
-  // // Ensure all required files are uploaded before enabling the Upload button
-  // const allFilesUploaded =
-  //   requiredVersionValues.data?.versionValueDetails?.every((data) =>
-  //     data?.requiredFiles?.every(
-  //       (fileName: string) =>
-  //         fileUploads[fileName] !== null && fileUploads[fileName] !== undefined
-  //     )
-  //   ) ?? false;
-
   return (
     <>
-      {isLoadingReportUpload && (
+      {(isLoadingReportUpload || processingCount > 0) && (
         <Backdrop
           sx={(theme) => ({ color: "#fff", zIndex: theme.zIndex.modal + 1 })}
-          open={open}
+          open={true}
         >
-          <CircularProgress color="inherit" />
+          <Box sx={{ width: "80%", textAlign: "center" }}>
+            <Typography variant="h6" mb={2}>
+              Uploading ...
+            </Typography>
+            <LinearProgress />
+          </Box>
         </Backdrop>
       )}
       <Dialog
@@ -478,7 +420,6 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
                 <UploadFileIcon />
                 Upload Files
               </Box>
-
               <input
                 type="file"
                 hidden
