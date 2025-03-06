@@ -132,7 +132,7 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
 
     mappings: Yup.object().test(
       "all-files-mapped",
-      "Each uploaded file must have a complete mapping.",
+      "Each uploaded file must have a complete mapping with unique values.",
       (mappings: Record<string, Record<string, string | null>>, context) => {
         if (!mappings || typeof mappings !== "object") return false;
 
@@ -148,16 +148,32 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
               msg: `No mapping found for ${fileName}`,
             };
             hasErrors = true;
-          } else if (
-            Object.values(fileMapping).some(
-              (value) => value === null || value === undefined
-            )
-          ) {
-            errors[fileName] = {
-              isError: true,
-              msg: `Mapping incomplete for ${fileName}`,
-            };
-            hasErrors = true;
+          } else {
+            const localValueOccurrences = new Set<string>(); // Tracks values within the same file
+
+            Object.entries(fileMapping).forEach(([, value]) => {
+              if (value === null || value === undefined) {
+                errors[fileName] = {
+                  isError: true,
+                  msg: `Mapping incomplete for ${fileName}`,
+                };
+                hasErrors = true;
+              } else {
+                // Check for duplicate values within the same file
+
+                if (value !== "Extra-Attribute-Ignore") {
+                  if (localValueOccurrences.has(value)) {
+                    errors[fileName] = {
+                      isError: true,
+                      msg: `Duplicate mapping within ${fileName} for value "${value}"`,
+                    };
+                    hasErrors = true;
+                  } else {
+                    localValueOccurrences.add(value);
+                  }
+                }
+              }
+            });
           }
         });
 
@@ -369,7 +385,7 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
     };
     console.log("Uploading files:", objectToFormData(tempData));
     const formData = objectToFormData(tempData);
-    mutateReportUpload(formData);
+    mutateReportUpload(tempData);
   };
 
   useEffect(() => {
