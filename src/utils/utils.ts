@@ -1,20 +1,23 @@
 export function objectToFormData(obj, formData = new FormData(), parentKey = '') {
-    for (let key in obj) {
+  for (let key in obj) {
       if (!obj.hasOwnProperty(key)) continue;
       const value = obj[key];
-      // Construct the form key (e.g., "mappings[AnnuitiesDueList_CPi][Docket Number]")
       const formKey = parentKey ? `${parentKey}[${key}]` : key;
-      if (
-        value &&
-        typeof value === 'object' &&
-        !(value instanceof File) && 
-        !(value instanceof Blob)
-      ) {
-        // Recursively process nested objects (or arrays)
-        objectToFormData(value, formData, formKey);
+
+      if (Array.isArray(value)) {
+          // If the value is an array and contains files, append all files with the same key
+          value.forEach((item) => {
+              if (item instanceof File || item instanceof Blob) {
+                  formData.append(parentKey || key, item);
+              } else {
+                  objectToFormData(item, formData, formKey);
+              }
+          });
+      } else if (value && typeof value === 'object' && !(value instanceof File) && !(value instanceof Blob)) {
+          objectToFormData(value, formData, formKey);
       } else {
-        formData.append(formKey, value);
+          formData.append(formKey, value);
       }
-    }
-    return formData;
   }
+  return formData;
+}
