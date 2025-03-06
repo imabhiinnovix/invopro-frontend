@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   Button,
   Box,
@@ -50,6 +50,7 @@ const ViewMapping: React.FC<CreateDataSourceVersionProps> = ({
   settingAttributeOption,
   fileHeaders,
   control,
+  reset,
   // errors,
   setValue,
   index,

@@ -1,3 +1,4 @@
+import React, { useEffect, useLayoutEffect } from "react";
 import {
   FormControl,
   InputLabel,
@@ -5,48 +6,41 @@ import {
   MenuItem,
   FormHelperText,
 } from "@mui/material";
-import {
-  Control,
-  Controller,
-  FieldValues,
-  Path,
-  PathValue,
-  UseFormSetValue,
-} from "react-hook-form";
-import { CustomReportData } from "../../atom/dataSourceVerion/uploadMultipleVersionValue";
+import { Controller } from "react-hook-form";
 
-interface CommonSelectProps<T extends FieldValues> {
-  control: Control<T>; 
-  name: Path<T>;
-  label: string;
-  options: string[];
-  defaultValue?: PathValue<T, Path<T>>;
-  rules?: Record<string, unknown>;
-  error?: boolean; 
-  errorMessage?: string;
+interface CommonSelectProps {
+  control: any; // React Hook Form control
+  name: string; // Field name
+  label: string; // Label for the select
+  options: string[]; // List of options
+  defaultValue?: string; // Default value for the select
+  rules?: any; // Validation rules
+  error?: boolean; // Error state
+  errorMessage?: string; // Error message
   disabled?: boolean;
   value?: string;
-  setValue?: UseFormSetValue<CustomReportData>;
+  setValue?: any;
 }
 
-const CommonSelect = <T extends FieldValues>({
+const CommonSelect: React.FC<CommonSelectProps> = ({
   control,
   name,
   label,
   options,
-  defaultValue,
+  defaultValue = "",
   rules = {},
   error = false,
   errorMessage = "",
   disabled = false,
-}: CommonSelectProps<T>): JSX.Element => {
+  setValue,
+}) => {
   return (
     <FormControl fullWidth error={error} disabled={disabled}>
       <InputLabel id={`${name}-label`}>{label}</InputLabel>
       <Controller
         name={name}
         control={control}
-        defaultValue={defaultValue as PathValue<T, Path<T>>}
+        defaultValue={defaultValue}
         rules={rules}
         render={({ field }) => (
           <Select {...field} labelId={`${name}-label`} label={label} id={name}>

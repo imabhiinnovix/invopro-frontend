@@ -78,6 +78,9 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
 }) => {
   const [openMappingModal, setOpenMappingModal] = useState(-1);
   const [processingCount, setProcessingCount] = useState(0);
+  const [fileUploads, setFileUploads] = useState<Record<string, File | null>>(
+    {}
+  );
   const [fileHeader, setFileHeader] = useState<Record<string, string[] | null>>(
     {}
   );
@@ -268,6 +271,11 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
           setFileHeader((prev) => ({
             ...prev,
             [keyName]: [...headers, "Extra-Attribute-Ignore"],
+          }));
+
+          setFileUploads((prev) => ({
+            ...prev,
+            [keyName]: selectedFile,
           }));
 
           const emptyMappingData =
@@ -504,7 +512,7 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
                               <ViewMapping
                                 fileName={fileName}
                                 CustomButton={<Button>View Mappings</Button>}
-                                title={`Mappings for ${fileName.name}`}
+                                title={"Mappings"}
                                 settingAttributeOption={fileName.attributes}
                                 fileHeaders={fileHeader[fileName.name]!}
                                 control={control}
