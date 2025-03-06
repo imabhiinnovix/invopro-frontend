@@ -38,6 +38,9 @@ interface CreateDataSourceVersionProps {
   errors: FieldErrors<CustomReportData>;
   setValue: UseFormSetValue<CustomReportData>;
   index: number;
+  open: number;
+  setOpen: React.Dispatch<React.SetStateAction<number>>;
+  trigger: () => void;
 }
 
 const ViewMapping: React.FC<CreateDataSourceVersionProps> = ({
@@ -52,9 +55,14 @@ const ViewMapping: React.FC<CreateDataSourceVersionProps> = ({
   setValue,
   index,
   // getValues,
+  open,
+  setOpen,
+  trigger,
 }) => {
-  const [open, setOpen] = useState(-1);
-
+  const handleCancel = () => {
+    trigger();
+    setOpen(-1);
+  };
   // Initialize mappings when the component mounts
   // useEffect(() => {
   //   if (open === -1) return;
@@ -84,13 +92,9 @@ const ViewMapping: React.FC<CreateDataSourceVersionProps> = ({
   //   });
   // }, [fileHeaders, setValue, settingAttributeOption, fileName, open]);
 
-  const handleCancel = () => {
-    reset();
-    setOpen(-1);
-  };
-
   // Directly get form values and save
   const handleSave = () => {
+    trigger();
     setOpen(-1);
   };
 

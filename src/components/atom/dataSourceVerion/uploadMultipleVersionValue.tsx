@@ -1,4 +1,10 @@
-import React, { Dispatch, SetStateAction, useState } from "react";
+import React, {
+  Dispatch,
+  SetStateAction,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import { FieldValues, useForm } from "react-hook-form";
 import ExcelJS from "exceljs";
 import {
@@ -18,6 +24,9 @@ import {
   TableCell,
   Paper,
   Typography,
+  Stack,
+  Backdrop,
+  CircularProgress,
 } from "@mui/material";
 import UploadFileIcon from "@mui/icons-material/UploadFile";
 import useGet from "../../../hooks/useGet";
@@ -27,6 +36,9 @@ import ViewMapping from "../report/viewMapping";
 import * as Yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import { useUploadCustomReportFile } from "../../../hooks/useFileUpalod";
+import { objectToFormData } from "../../../utils/utils";
 
 interface UploadMultipleFilesProps {
   reportId: string;
@@ -41,7 +53,7 @@ export interface CustomReportData {
   };
   customReportId: string;
   versionValue: string;
-  files?: File[]; // Optional files tracking
+  files?: (File | null)[];
 }
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
@@ -64,57 +76,46 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
   reportId,
   versionValue,
 }) => {
+  const [openMappingModal, setOpenMappingModal] = useState(-1);
+
   const [fileUploads, setFileUploads] = useState<Record<string, File | null>>(
     {}
   );
   const [fileHeader, setFileHeader] = useState<Record<string, string[] | null>>(
     {}
   );
-  // const [customReportData, setCustomReportData] = useState<CustomReportData>({
-  //   operation: "",
-  //   customReportId: "",
-  //   versionValue: "",
-  //   mappings: {},
-  //   files: [],
-  // });
 
-  // const validationSchema = Yup.object().shape({
-  //   files: Yup.array()
-  //     .of(
-  //       Yup.mixed().test(
-  //         "file-required",
-  //         "All required files must be uploaded.",
-  //         (value) => !!value
-  //       )
-  //     )
-  //     .test("all-files-present", "Please upload all required files.", (files) =>
-  //       files?.every((file) => file !== null && file !== undefined)
-  //     ),
-  //   mappings: Yup.object().test(
-  //     "all-files-mapped",
-  //     "Each uploaded file must have a complete mapping.",
-  //     (mappings: Record<string, Record<string, string | null>>, context) => {
-  //       const { files } = context.parent;
-  //       if (!files || !Array.isArray(files)) return false;
-  //       if (!mappings || typeof mappings !== "object") return false;
+  const requiredVersionValues = useGet<{
+    success: boolean;
+    versionValueDetails: {
+      _id: string;
+      requiredFiles: { name: string; _id: string }[];
+      entityId: { attributes: { name: string; mappingName: string }[] };
+    }[];
+  }>(
+    [`versionValue`, String(reportId), String(versionValue)],
+    GET?.Custom_Report +
+      `/getVersionValue/?reportRequestId=${reportId}&versionValue=${versionValue}`,
+    !!reportId && !!versionValue
+  );
 
-  //       return files.every((file) => {
-  //         if (!file) return false; // Ensure file exists
+  const requiredFiles = useMemo(() => {
+    return (
+      requiredVersionValues?.data?.versionValueDetails?.flatMap(
+        (data) => data.requiredFiles
+      ) ?? []
+    );
+  }, [requiredVersionValues?.data]);
 
-  //         const fileName = removeExtension(file.name); // Normalize file name
-  //         const fileMapping = mappings?.[fileName];
-
-  //         if (!fileMapping) return false; // Ensure file has a mapping
-
-  //         return Object.values(fileMapping).every(
-  //           (value) => value !== null && value !== undefined
-  //         );
-  //       });
-  //     }
-  //   ),
-  //   customReportId: Yup.string().required(),
-  //   versionValue: Yup.string().required(),
-  // }) as Yup.ObjectSchema<CustomReportData>;
+  useEffect(() => {
+    reset({
+      customReportId: reportId,
+      versionValue: versionValue,
+      files: requiredFiles?.map(() => null),
+      mappings: {},
+    });
+    trigger();
+  }, [requiredVersionValues?.data]);
 
   const validationSchema = Yup.object({
     files: Yup.array()
@@ -183,30 +184,24 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
     getValues,
     watch,
     formState: { errors },
+    trigger,
   } = useForm<CustomReportData>({
     resolver: yupResolver(validationSchema),
+    mode: "onChange",
     defaultValues: {
       customReportId: reportId,
       versionValue: versionValue,
-      files: [],
+      files: requiredFiles?.map(() => null),
       mappings: {},
     },
   });
+
   console.log("getValues", getValues());
+  console.log("errorserrors", errors);
+
+  const watchFiles̥ = watch("files");
+  console.log("🚀 ~ watchFiles̥:", watchFiles̥);
   // Fetch required files from API
-  const requiredVersionValues = useGet<{
-    success: boolean;
-    versionValueDetails: {
-      _id: string;
-      requiredFiles: { name: string; _id: string }[];
-      entityId: { attributes: { name: string; mappingName: string }[] };
-    }[];
-  }>(
-    [`versionValue`, String(reportId), String(versionValue)],
-    GET?.Custom_Report +
-      `/getVersionValue/?reportRequestId=${reportId}&versionValue=${versionValue}`,
-    !!reportId && !!versionValue
-  );
 
   const removeExtension = (filename: string) => {
     return filename.replace(/\.[^/.]+$/, "");
@@ -214,18 +209,18 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
 
   const handleFileChange = (
     event: React.ChangeEvent<HTMLInputElement>,
-    fileName?: string
+    fileName?: string,
+    index: number = -1
   ) => {
+    console.log("indexindexindexindexfileNamefileName", index, fileName);
     if (!event.target.files?.length) return;
 
     const selectedFiles = Array.from(event.target.files);
-    const requiredFiles =
-      requiredVersionValues?.data?.versionValueDetails?.flatMap(
-        (data) => data.requiredFiles
-      ) || [];
 
     const currentFiles =
-      watch("files") || Array(requiredFiles.length).fill(null);
+      watch("files")?.length === 0
+        ? Array(requiredFiles.length).fill(null)
+        : watch("files") ?? [];
 
     selectedFiles.forEach((selectedFile) => {
       if (
@@ -239,10 +234,10 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
       const fileIndex = requiredFiles.findIndex(
         (reqFile) => reqFile.name === removeExtension(selectedFile.name)
       );
+      console.log("index", index, fileIndex);
+      // if (fileIndex === -1 && index === -1) return; // Skip if file isn't required
 
-      if (fileIndex === -1) return; // Skip if file isn't required
-
-      currentFiles[fileIndex] = selectedFile;
+      currentFiles[index !== -1 ? index : fileIndex] = selectedFile;
 
       const reader = new FileReader();
       reader.onload = async (e) => {
@@ -310,7 +305,12 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
                     .toLowerCase()
               ) || null;
 
-            setValue(`mappings.${keyName}.${option.name ?? ""}`, matchedHeader);
+            setValue(
+              `mappings.${keyName}.${option.name ?? ""}`,
+              matchedHeader,
+              { shouldValidate: true }
+            );
+            trigger();
           });
         } catch {
           toast.error(
@@ -322,7 +322,8 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
       reader.readAsArrayBuffer(selectedFile);
     });
 
-    setValue("files", [...currentFiles], { shouldValidate: false });
+    setValue("files", [...currentFiles], { shouldValidate: true });
+    trigger();
   };
 
   // ✅ Helper function to process Excel file
@@ -412,11 +413,22 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
     return false;
   };
 
+  const { mutate: mutateReportUpload, isPending: isLoadingReportUpload } =
+    useUploadCustomReportFile();
+
   // Upload handler
-  const onSubmit = (formData: FieldValues) => {
-    console.log("Uploading files:", formData);
-    setOpen(false);
+  const onSubmit = (data: FieldValues) => {
+    const tempData = { ...data, mappings: JSON.stringify(data?.mappings), operation: 'customreport' };
+    console.log("Uploading files:", objectToFormData(tempData));
+    const formData = objectToFormData(tempData);
+    mutateReportUpload(formData);
+    // setOpen(false);
   };
+
+  // Manually trigger validation on mount
+  useEffect(() => {
+    trigger();
+  }, [trigger]);
 
   // // Ensure all required files are uploaded before enabling the Upload button
   // const allFilesUploaded =
@@ -429,6 +441,14 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
 
   return (
     <>
+      {isLoadingReportUpload && (
+        <Backdrop
+          sx={(theme) => ({ color: "#fff", zIndex: theme.zIndex.modal + 1 })}
+          open={open}
+        >
+          <CircularProgress color="inherit" />
+        </Backdrop>
+      )}
       <Dialog
         open={open}
         onClose={() => setOpen(false)}
@@ -442,32 +462,36 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
           alignItems={"center"}
         >
           <Typography> Version Value: {versionValue} </Typography>
-          <Button
-            variant="contained"
-            component="label"
-            sx={{
-              fontWeight: "bold",
-              bgcolor: "#007bff",
-              color: "#fff",
-              "&:hover": { bgcolor: "#0056b3" },
-              padding: 2,
-            }}
-          >
-            <Box gap={1} display="flex" justifyContent="center">
-              <UploadFileIcon />
-              Upload Files
-            </Box>
+          <Stack>
+            <Button
+              variant="contained"
+              component="label"
+              sx={{
+                fontWeight: "bold",
+                bgcolor: "#007bff",
+                color: "#fff",
+                "&:hover": { bgcolor: "#0056b3" },
+                padding: 2,
+              }}
+            >
+              <Box gap={1} display="flex" justifyContent="center">
+                <UploadFileIcon />
+                Upload Files
+              </Box>
 
-            <input
-              type="file"
-              hidden
-              multiple
-              onChange={(e) => handleFileChange(e)}
-            />
-          </Button>
-          {errors.files && (
-            <p className="error">{String(errors.files.message)}</p>
-          )}
+              <input
+                type="file"
+                hidden
+                multiple
+                onChange={(e) => handleFileChange(e)}
+              />
+            </Button>
+            {errors.files && (
+              <Typography variant="caption" color="error">
+                {String(errors.files.message)}
+              </Typography>
+            )}
+          </Stack>
         </DialogTitle>
 
         <DialogContent>
@@ -481,13 +505,27 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
                 </TableRow>
               </TableHead>
               <TableBody>
-                {requiredVersionValues.data?.versionValueDetails?.map((data) =>
-                  data?.requiredFiles?.map(
+                {requiredVersionValues?.data?.versionValueDetails
+                  ?.flatMap((data) =>
+                    data.requiredFiles.map((file, index) => ({
+                      ...file,
+                      detailId: data._id,
+                      attributes: data.entityId.attributes,
+                      fileIndex: index,
+                    }))
+                  )
+                  .map(
                     (
-                      fileName: { name: string; _id: string },
+                      fileName: {
+                        name: string;
+                        _id: string;
+                        detailId: string;
+                        attributes: { name: string; mappingName: string }[];
+                        fileIndex: number;
+                      },
                       index: number
                     ) => (
-                      <StyledTableRow key={`${data._id}-${fileName._id}`}>
+                      <StyledTableRow key={`${fileName._id}`}>
                         <StyledTableCell>
                           {fileName?.name || "-"}
                         </StyledTableCell>
@@ -512,12 +550,11 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
                                 <UploadFileIcon />
                                 Upload File
                               </Box>
-
                               <input
                                 type="file"
                                 hidden
                                 onChange={(e) =>
-                                  handleFileChange(e, fileName.name)
+                                  handleFileChange(e, fileName.name, index)
                                 }
                               />
                             </Button>
@@ -525,35 +562,47 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
                         </StyledTableCell>
                         <StyledTableCell>
                           {fileHeader[fileName.name] ? (
-                            <ViewMapping
-                              fileName={fileName}
-                              CustomButton={<Button>View Mappings</Button>}
-                              title={"Mappings"}
-                              settingAttributeOption={data.entityId.attributes}
-                              fileHeaders={fileHeader[fileName.name]!}
-                              control={control}
-                              setValue={setValue}
-                              reset={reset}
-                              errors={errors}
-                              index={index}
-                            />
+                            <Stack
+                              direction="row"
+                              gap={1}
+                              alignItems="center"
+                              justifyContent="center"
+                            >
+                              <ViewMapping
+                                fileName={fileName}
+                                CustomButton={<Button>View Mappings</Button>}
+                                title={"Mappings"}
+                                settingAttributeOption={fileName.attributes}
+                                fileHeaders={fileHeader[fileName.name]!}
+                                control={control}
+                                setValue={setValue}
+                                reset={reset}
+                                errors={errors}
+                                index={index}
+                                setOpen={setOpenMappingModal}
+                                open={openMappingModal}
+                                trigger={trigger}
+                              />
+                              {(
+                                (errors?.mappings?.message ||
+                                  errors?.mappings?.root
+                                    ?.message) as unknown as Record<
+                                  string,
+                                  { isError: boolean; msg: string }
+                                >
+                              )?.[fileName?.name]?.isError ? (
+                                <ErrorOutlineIcon color="error" />
+                              ) : (
+                                <CheckCircleIcon color="success" />
+                              )}
+                            </Stack>
                           ) : (
                             "-"
                           )}
-                          {console.log("errors", errors)}
-                          {(
-                            errors?.mappings?.message as unknown as Record<
-                              string,
-                              { isError: boolean; msg: string }
-                            >
-                          )?.[fileName?.name]?.isError ? (
-                            <ErrorOutlineIcon />
-                          ) : null}
                         </StyledTableCell>
                       </StyledTableRow>
                     )
-                  )
-                )}
+                  )}
               </TableBody>
             </Table>
           </TableContainer>
@@ -567,6 +616,7 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
             onClick={handleSubmit(onSubmit)}
             variant="contained"
             color="primary"
+            disabled={isLoadingReportUpload}
           >
             Submit
           </Button>
