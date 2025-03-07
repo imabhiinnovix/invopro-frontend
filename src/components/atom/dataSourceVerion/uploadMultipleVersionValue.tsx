@@ -5,7 +5,7 @@ import React, {
   useMemo,
   useState,
 } from "react";
-import { FieldValues, useForm } from "react-hook-form";
+import { FieldErrors, FieldValues, useForm } from "react-hook-form";
 import ExcelJS from "exceljs";
 import {
   Box,
@@ -80,9 +80,7 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
 }) => {
   const [openMappingModal, setOpenMappingModal] = useState(-1);
   const [processingCount, setProcessingCount] = useState(0);
-  const [, setFileUploads] = useState<Record<string, File | null>>(
-    {}
-  );
+  const [, setFileUploads] = useState<Record<string, File | null>>({});
   const [fileHeader, setFileHeader] = useState<Record<string, string[] | null>>(
     {}
   );
@@ -199,7 +197,6 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
     handleSubmit,
     reset,
     setValue,
-    getValues,
     watch,
     formState: { errors },
     trigger,
@@ -213,12 +210,6 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
       mappings: {},
     },
   });
-
-  console.log("getValues", getValues());
-  console.log("errorserrors", errors);
-
-  const watchFiles̥ = watch("files");
-  console.log("🚀 ~ watchFiles̥:", watchFiles̥);
 
   const removeExtension = (filename: string) => {
     return filename.replace(/\.[^/.]+$/, "");
@@ -385,7 +376,6 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
       mappings: JSON.stringify(data?.mappings),
       operation: "customreport",
     };
-    console.log("Uploading files:", objectToFormData(tempData));
     const formData = objectToFormData(tempData);
     mutateReportUpload(formData, {
       onSuccess: () => {
@@ -393,6 +383,36 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
         setReload(true);
       },
     });
+  };
+
+  const onError = (
+    errors: FieldErrors<{
+      files?: { message?: string };
+      mappings?: {
+        message?: Record<string, { isError: boolean; msg: string }>;
+      };
+    }>
+  ) => {
+    const filesError =
+      typeof errors.files?.message === "string"
+        ? errors.files.message
+        : undefined;
+
+    const mappingMessage = errors.mappings?.message;
+
+    if (typeof mappingMessage !== "object" || mappingMessage === null) {
+      toast.error(filesError);
+      return;
+    }
+
+    const firstKey = Object.keys(mappingMessage)[0];
+
+    const errorMessage =
+      mappingMessage[firstKey]?.msg && typeof mappingMessage[firstKey]?.isError
+        ? "Please Map all files."
+        : undefined;
+
+    toast.error(filesError || errorMessage);
   };
 
   useEffect(() => {
@@ -408,7 +428,7 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
         >
           <Box sx={{ width: "80%", textAlign: "center" }}>
             <Typography variant="h6" mb={2}>
-              {processingCount > 0 ? `Validating ...` :`Uploading ...`}
+              {processingCount > 0 ? `Validating ...` : `Uploading ...`}
             </Typography>
             <LinearProgress />
           </Box>
@@ -535,7 +555,7 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
                               <ViewMapping
                                 fileName={fileName}
                                 CustomButton={<Button>View Mappings</Button>}
-                                title={ `Mapping for ${fileName.name}`}
+                                title={`Mapping for ${fileName.name}`}
                                 settingAttributeOption={fileName.attributes}
                                 fileHeaders={fileHeader[fileName.name]!}
                                 control={control}
@@ -578,7 +598,7 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
             Cancel
           </Button>
           <Button
-            onClick={handleSubmit(onSubmit)}
+            onClick={handleSubmit(onSubmit, onError)}
             variant="contained"
             color="primary"
             disabled={isLoadingReportUpload}
