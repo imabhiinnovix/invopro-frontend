@@ -161,7 +161,7 @@ const ReportRequestTable: React.FC<AttributeOptionTableProps> = ({ reload, setRe
                 <StyledTableCell>{data?.status || '-'}</StyledTableCell>
                 <StyledTableCell>{data.createdAt ? new Date(data.createdAt).toLocaleString() : '-'}</StyledTableCell>
                 <StyledTableCell>
-                  {data?.status && data.status === 'processed' ? (
+                  {data?.status && data.status === 'completed' ? (
                     <Button
                       onClick={() => {
                         downloadFile(`${data?.customReportId?.reportName}-${data?.versionValue}.xlsx`, data._id);

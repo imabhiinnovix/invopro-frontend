@@ -385,7 +385,7 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
     };
     console.log("Uploading files:", objectToFormData(tempData));
     const formData = objectToFormData(tempData);
-    mutateReportUpload(tempData);
+    mutateReportUpload(formData);
   };
 
   useEffect(() => {
@@ -528,7 +528,7 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
                               <ViewMapping
                                 fileName={fileName}
                                 CustomButton={<Button>View Mappings</Button>}
-                                title={"Mappings"}
+                                title={ `Mapping for ${fileName.name}`}
                                 settingAttributeOption={fileName.attributes}
                                 fileHeaders={fileHeader[fileName.name]!}
                                 control={control}
