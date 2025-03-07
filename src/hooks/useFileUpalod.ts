@@ -1,3 +1,4 @@
+import { queryClient } from './../main';
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import axiosInstance from "../services/axiosInstance";
 import { toast } from "react-toastify";
@@ -13,10 +14,12 @@ export const uploadCustomReportFile = async (formData) => {
 };
 
 export const useUploadCustomReportFile = () => {
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (formData) => uploadCustomReportFile(formData),
     onSuccess: () => {
       toast.success("File uploaded successfully!");
+      queryClient.invalidateQueries("reportRequestList");
     },
     onError: (error) => {
       toast.error(` ${error.response?.data?.message || error.message}`);

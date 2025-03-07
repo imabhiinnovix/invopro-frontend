@@ -75,6 +75,7 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
   setOpen,
   reportId,
   versionValue,
+  setReload,
 }) => {
   const [openMappingModal, setOpenMappingModal] = useState(-1);
   const [processingCount, setProcessingCount] = useState(0);
@@ -385,7 +386,12 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
     };
     console.log("Uploading files:", objectToFormData(tempData));
     const formData = objectToFormData(tempData);
-    mutateReportUpload(formData);
+    mutateReportUpload(formData, {
+      onSuccess: () => {
+        setOpen(false);
+        setReload(true);
+      },
+    });
   };
 
   useEffect(() => {
@@ -413,7 +419,7 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
         fullWidth
         maxWidth="sm"
       >
-        <DialogTitle>Requested Report:</DialogTitle>
+        <DialogTitle>Generate Report</DialogTitle>
         <DialogTitle
           display="flex"
           justifyContent="space-between"

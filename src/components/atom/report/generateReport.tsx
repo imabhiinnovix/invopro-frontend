@@ -35,10 +35,10 @@ export default function GenerateReport({ setReload }: GenerateReportProps) {
   >(
     ["generateReport"],
     (data) => {
-      if (data?.success) {
-        reset();
-      }
-      setReload(true);
+      // if (data?.success) {
+      //   reset();
+      // }
+      // setReload(true);
     },
     true
   );
@@ -119,6 +119,7 @@ export default function GenerateReport({ setReload }: GenerateReportProps) {
           setOpen={setOpen}
           reportId={reportId}
           versionValue={versionValue}
+          setReload={setReload}
         />
       )}
     </>
