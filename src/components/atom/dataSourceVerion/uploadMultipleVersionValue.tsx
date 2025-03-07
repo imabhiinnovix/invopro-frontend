@@ -45,6 +45,7 @@ interface UploadMultipleFilesProps {
   versionValue: string;
   open: boolean;
   setOpen: Dispatch<SetStateAction<boolean>>;
+  setReload: Dispatch<SetStateAction<boolean>>;
 }
 
 export interface CustomReportData {
@@ -79,7 +80,7 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
 }) => {
   const [openMappingModal, setOpenMappingModal] = useState(-1);
   const [processingCount, setProcessingCount] = useState(0);
-  const [fileUploads, setFileUploads] = useState<Record<string, File | null>>(
+  const [, setFileUploads] = useState<Record<string, File | null>>(
     {}
   );
   const [fileHeader, setFileHeader] = useState<Record<string, string[] | null>>(
@@ -407,7 +408,7 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
         >
           <Box sx={{ width: "80%", textAlign: "center" }}>
             <Typography variant="h6" mb={2}>
-              Uploading ...
+              {processingCount > 0 ? `Validating ...` :`Uploading ...`}
             </Typography>
             <LinearProgress />
           </Box>
