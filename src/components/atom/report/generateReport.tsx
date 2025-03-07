@@ -1,14 +1,17 @@
-import { Box, Button } from '@mui/material';
-import { useForm } from 'react-hook-form';
-import CommonDropdownSearch from '../../common/dropdown/searchableDropdown';
-import { CustomReportRequestPayload, CustomReportRequestResponse } from './types';
-import { GET } from '../../../services/apiRoutes';
-import CommonDatePicker from '../../common/datePicker/datePicker';
-import usePost from '../../../hooks/usePost';
-import ProgressBar from '../../molecule/progressBar';
-import { DateTime } from 'luxon';
-import React, { useState } from 'react';
-import UploadMultipleFiles from '../dataSourceVerion/uploadMultipleVersionValue';
+import { Box, Button } from "@mui/material";
+import { useForm } from "react-hook-form";
+import CommonDropdownSearch from "../../common/dropdown/searchableDropdown";
+import {
+  CustomReportRequestPayload,
+  CustomReportRequestResponse,
+} from "./types";
+import { GET } from "../../../services/apiRoutes";
+import CommonDatePicker from "../../common/datePicker/datePicker";
+import usePost from "../../../hooks/usePost";
+import ProgressBar from "../../molecule/progressBar";
+import { DateTime } from "luxon";
+import React, { useState } from "react";
+import UploadMultipleFiles from "../dataSourceVerion/uploadMultipleVersionValue";
 
 interface GenerateReportProps {
   setReload: React.Dispatch<React.SetStateAction<boolean>>;
@@ -22,17 +25,20 @@ export default function GenerateReport({ setReload }: GenerateReportProps) {
     formState: { errors },
   } = useForm<CustomReportRequestPayload>({});
 
-  const [versionValue, setVersionValue] = useState('');
-  const [reportId, setReportId] = useState('');
+  const [versionValue, setVersionValue] = useState("");
+  const [reportId, setReportId] = useState("");
   const [open, setOpen] = useState(false); // 🔹 Track dialog state
 
-  const generateReport = usePost<CustomReportRequestPayload, CustomReportRequestResponse>(
-    ['generateReport'],
+  const generateReport = usePost<
+    CustomReportRequestPayload,
+    CustomReportRequestResponse
+  >(
+    ["generateReport"],
     (data) => {
-      if (data?.success) {
-        reset();
-      }
-      setReload(true);
+      // if (data?.success) {
+      //   reset();
+      // }
+      // setReload(true);
     },
     true
   );
@@ -40,7 +46,9 @@ export default function GenerateReport({ setReload }: GenerateReportProps) {
   const onSubmit = (formData: CustomReportRequestPayload) => {
     console.log(formData);
     setReportId(formData.customReportId);
-    setVersionValue(DateTime.fromISO(formData.versionValue).toFormat('yyyy-LL'));
+    setVersionValue(
+      DateTime.fromISO(formData.versionValue).toFormat("yyyy-LL")
+    );
 
     // Ensure we open dialog only if we have required values
     if (formData.customReportId && formData.versionValue) {
@@ -59,7 +67,7 @@ export default function GenerateReport({ setReload }: GenerateReportProps) {
             apiUrl={`${GET.Custom_Report}/list`}
             labelName="reportName"
             labelValue="_id"
-            rules={{ required: 'Report selection is required' }}
+            rules={{ required: "Report selection is required" }}
             error={!!errors.customReportId}
             errorMessage={errors.customReportId?.message}
             apiName="customReport"
@@ -71,9 +79,9 @@ export default function GenerateReport({ setReload }: GenerateReportProps) {
           <CommonDatePicker
             name="versionValue"
             control={control}
-            views={['year', 'month']}
+            views={["year", "month"]}
             label="Version Value*"
-            rules={{ required: 'Version Value is required' }}
+            rules={{ required: "Version Value is required" }}
           />
         </Box>
 
@@ -87,14 +95,14 @@ export default function GenerateReport({ setReload }: GenerateReportProps) {
               type="submit"
               onClick={handleSubmit(onSubmit)}
               sx={{
-                fontWeight: 'bold',
-                fontSize: '1.2rem',
-                width: '100%',
-                bgcolor: '#007bff',
-                color: '#fff',
-                '&:hover': { bgcolor: '#0056b3' },
-                '@media (max-width: 600px)': {
-                  fontSize: '1rem',
+                fontWeight: "bold",
+                fontSize: "1.2rem",
+                width: "100%",
+                bgcolor: "#007bff",
+                color: "#fff",
+                "&:hover": { bgcolor: "#0056b3" },
+                "@media (max-width: 600px)": {
+                  fontSize: "1rem",
                 },
               }}
             >
@@ -106,7 +114,13 @@ export default function GenerateReport({ setReload }: GenerateReportProps) {
 
       {/* Only render UploadMultipleFiles when reportId & versionValue exist */}
       {open && reportId && versionValue && (
-        <UploadMultipleFiles open={open} setOpen={setOpen} reportId={reportId} versionValue={versionValue} />
+        <UploadMultipleFiles
+          open={open}
+          setOpen={setOpen}
+          reportId={reportId}
+          versionValue={versionValue}
+          setReload={setReload}
+        />
       )}
     </>
   );

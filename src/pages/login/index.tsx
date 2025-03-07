@@ -48,11 +48,14 @@ function Login() {
     const token = getAuthToken();
     if (token) {
       if (userDetails?.data?.roleId === roleId?.SUPER_ADMIN) {
-        navigate('/superadmin/dashboard');
+        // navigate('/superadmin/dashboard');
+        navigate('/reports');
       } else if (userDetails?.data?.roleId === roleId?.ADMIN) {
-        navigate('/admin/dashboard');
+        // navigate('/admin/dashboard');
+        navigate('/reports');
       } else {
-        navigate('/dashboard');
+        // navigate('/dashboard');
+        navigate('/reports');
       }
       setRoleId(String(userDetails?.data?.roleId));
     }

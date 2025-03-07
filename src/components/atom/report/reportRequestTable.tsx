@@ -158,10 +158,24 @@ const ReportRequestTable: React.FC<AttributeOptionTableProps> = ({ reload, setRe
               <StyledTableRow ref={reportRequests.length === dataIndex + 1 ? lastElementRef : null}>
                 <StyledTableCell>{data?.customReportId?.reportName || '-'}</StyledTableCell>
                 <StyledTableCell>{data?.versionValue || '-'}</StyledTableCell>
-                <StyledTableCell>{data?.status || '-'}</StyledTableCell>
+                <StyledTableCell
+                  sx={{
+                    color:
+                      data?.status === 'completed'
+                        ? 'green'
+                        : data?.status === 'processing'
+                        ? 'orange'
+                        : data?.status === 'failed'
+                        ? 'red'
+                        : 'black',
+                    fontWeight: 'bold',
+                  }}
+                >
+                  {data?.status || '-'}
+                </StyledTableCell>
                 <StyledTableCell>{data.createdAt ? new Date(data.createdAt).toLocaleString() : '-'}</StyledTableCell>
                 <StyledTableCell>
-                  {data?.status && data.status === 'processed' ? (
+                  {data?.status && data.status === 'completed' ? (
                     <Button
                       onClick={() => {
                         downloadFile(`${data?.customReportId?.reportName}-${data?.versionValue}.xlsx`, data._id);

@@ -81,43 +81,43 @@ interface NavItem {
 }
 
 const navItems: NavItem[] = [
-  {
-    name: 'Dashboard',
-    icon: <DashboardIcon sx={{ fontSize: '3rem', color: 'black' }} />,
-    route: '/dashboard',
-  },
+  // {
+  //   name: 'Dashboard',
+  //   icon: <DashboardIcon sx={{ fontSize: '3rem', color: 'black' }} />,
+  //   route: '/dashboard',
+  // },
   {
     name: 'Reports',
     icon: <AssessmentIcon sx={{ fontSize: '3rem', color: 'black' }} />,
     route: '/reports',
   },
-  {
-    name: 'Settings',
-    icon: <SettingsIcon sx={{ fontSize: '3rem', color: 'black' }} />,
-    route: '',
-    subItems: [
-      {
-        name: 'Attribute Options',
-        icon: <StyleIcon sx={{ fontSize: '3rem', color: 'black' }} />,
-        route: '/settings/attribute-option',
-      },
-      {
-        name: 'Entities',
-        icon: <ManageAccountsIcon sx={{ fontSize: '3rem', color: 'black' }} />,
-        route: '/settings/entity',
-      },
-      {
-        name: 'Data Source',
-        icon: <SourceIcon sx={{ fontSize: '3rem', color: 'black' }} />,
-        route: '/settings/data-source',
-      },
-      {
-        name: 'Data Source Version',
-        icon: <SourceIcon sx={{ fontSize: '3rem', color: 'black' }} />,
-        route: '/settings/data-source-version',
-      },
-    ],
-  },
+  // {
+  //   name: 'Settings',
+  //   icon: <SettingsIcon sx={{ fontSize: '3rem', color: 'black' }} />,
+  //   route: '',
+  //   subItems: [
+  //     {
+  //       name: 'Attribute Options',
+  //       icon: <StyleIcon sx={{ fontSize: '3rem', color: 'black' }} />,
+  //       route: '/settings/attribute-option',
+  //     },
+  //     {
+  //       name: 'Entities',
+  //       icon: <ManageAccountsIcon sx={{ fontSize: '3rem', color: 'black' }} />,
+  //       route: '/settings/entity',
+  //     },
+  //     {
+  //       name: 'Data Source',
+  //       icon: <SourceIcon sx={{ fontSize: '3rem', color: 'black' }} />,
+  //       route: '/settings/data-source',
+  //     },
+  //     {
+  //       name: 'Data Source Version',
+  //       icon: <SourceIcon sx={{ fontSize: '3rem', color: 'black' }} />,
+  //       route: '/settings/data-source-version',
+  //     },
+  //   ],
+  // },
 ];
 
 export default function SideNav() {
