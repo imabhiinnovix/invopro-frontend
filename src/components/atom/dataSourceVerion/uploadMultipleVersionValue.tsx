@@ -80,9 +80,7 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
 }) => {
   const [openMappingModal, setOpenMappingModal] = useState(-1);
   const [processingCount, setProcessingCount] = useState(0);
-  const [, setFileUploads] = useState<Record<string, File | null>>(
-    {}
-  );
+  const [, setFileUploads] = useState<Record<string, File | null>>({});
   const [fileHeader, setFileHeader] = useState<Record<string, string[] | null>>(
     {}
   );
@@ -91,7 +89,7 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
     success: boolean;
     versionValueDetails: {
       _id: string;
-      requiredFiles: { name: string; _id: string }[];
+      requiredFiles: { name: string; _id: string; sheetName: string }[];
       entityId: { attributes: { name: string; mappingName: string }[] };
     }[];
   }>(
@@ -199,7 +197,6 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
     handleSubmit,
     reset,
     setValue,
-    getValues,
     watch,
     formState: { errors },
     trigger,
@@ -213,12 +210,6 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
       mappings: {},
     },
   });
-
-  console.log("getValues", getValues());
-  console.log("errorserrors", errors);
-
-  const watchFiles̥ = watch("files");
-  console.log("🚀 ~ watchFiles̥:", watchFiles̥);
 
   const removeExtension = (filename: string) => {
     return filename.replace(/\.[^/.]+$/, "");
@@ -285,15 +276,21 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
           if (hasDuplicateHeaders(headers)) return;
 
           const keyName = fileName ?? removeExtension(selectedFile.name);
+          const sheetName = requiredFiles?.find(
+            (file) => file.name === keyName
+          )?.sheetName;
+          const extededName = sheetName
+            ? `${fileName ?? removeExtension(selectedFile.name)}_${sheetName}`
+            : `${fileName ?? removeExtension(selectedFile.name)}`;
 
           setFileHeader((prev) => ({
             ...prev,
-            [keyName]: [...headers, "Extra-Attribute-Ignore"],
+            [extededName]: [...headers, "Extra-Attribute-Ignore"],
           }));
 
           setFileUploads((prev) => ({
             ...prev,
-            [keyName]: selectedFile,
+            [extededName]: selectedFile,
           }));
 
           const emptyMappingData =
@@ -318,9 +315,8 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
                     .trim()
                     .toLowerCase()
               ) || null;
-
             setValue(
-              `mappings.${keyName}.${option.name ?? ""}`,
+              `mappings.${extededName}.${option.name ?? ""}`,
               matchedHeader,
               { shouldValidate: true }
             );
@@ -385,7 +381,6 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
       mappings: JSON.stringify(data?.mappings),
       operation: "customreport",
     };
-    console.log("Uploading files:", objectToFormData(tempData));
     const formData = objectToFormData(tempData);
     mutateReportUpload(formData, {
       onSuccess: () => {
@@ -408,7 +403,7 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
         >
           <Box sx={{ width: "80%", textAlign: "center" }}>
             <Typography variant="h6" mb={2}>
-              {processingCount > 0 ? `Validating ...` :`Uploading ...`}
+              {processingCount > 0 ? `Validating ...` : `Uploading ...`}
             </Typography>
             <LinearProgress />
           </Box>
@@ -473,6 +468,9 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
                   ?.flatMap((data) =>
                     data.requiredFiles.map((file, index) => ({
                       ...file,
+                      extededName:
+                        file.name +
+                        (file.sheetName ? `_${file.sheetName}` : ""),
                       detailId: data._id,
                       attributes: data.entityId.attributes,
                       fileIndex: index,
@@ -483,6 +481,7 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
                       fileName: {
                         name: string;
                         _id: string;
+                        extededName: string;
                         detailId: string;
                         attributes: { name: string; mappingName: string }[];
                         fileIndex: number;
@@ -491,7 +490,7 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
                     ) => (
                       <StyledTableRow key={`${fileName._id}`}>
                         <StyledTableCell>
-                          {fileName?.name || "-"}
+                          {fileName?.extededName || "-"}
                         </StyledTableCell>
                         <StyledTableCell>
                           <Box display="flex" alignItems="center" gap={2}>
@@ -525,7 +524,7 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
                           </Box>
                         </StyledTableCell>
                         <StyledTableCell>
-                          {fileHeader[fileName.name] ? (
+                          {fileHeader[fileName.extededName] ? (
                             <Stack
                               direction="row"
                               gap={1}
@@ -535,13 +534,11 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
                               <ViewMapping
                                 fileName={fileName}
                                 CustomButton={<Button>View Mappings</Button>}
-                                title={ `Mapping for ${fileName.name}`}
+                                title={`Mapping for ${fileName.name}`}
                                 settingAttributeOption={fileName.attributes}
-                                fileHeaders={fileHeader[fileName.name]!}
+                                fileHeaders={fileHeader[fileName.extededName]!}
                                 control={control}
                                 setValue={setValue}
-                                reset={reset}
-                                errors={errors}
                                 index={index}
                                 setOpen={setOpenMappingModal}
                                 open={openMappingModal}
@@ -555,7 +552,7 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
                                   string,
                                   { isError: boolean; msg: string }
                                 >
-                              )?.[fileName?.name]?.isError ? (
+                              )?.[fileName?.extededName]?.isError ? (
                                 <ErrorOutlineIcon color="error" />
                               ) : (
                                 <CheckCircleIcon color="success" />
