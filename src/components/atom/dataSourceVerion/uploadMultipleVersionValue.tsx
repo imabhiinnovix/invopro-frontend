@@ -276,9 +276,11 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
           if (hasDuplicateHeaders(headers)) return;
 
           const keyName = fileName ?? removeExtension(selectedFile.name);
+
           const sheetName = requiredFiles?.find(
-            (file) => file.name === keyName
+            (_, ind) => ind === index
           )?.sheetName;
+
           const extededName = sheetName
             ? `${fileName ?? removeExtension(selectedFile.name)}_${sheetName}`
             : `${fileName ?? removeExtension(selectedFile.name)}`;
