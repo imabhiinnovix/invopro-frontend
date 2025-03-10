@@ -6,7 +6,6 @@ import React, {
   useState,
 } from "react";
 import { FieldValues, useForm } from "react-hook-form";
-import ExcelJS from "exceljs";
 import {
   Box,
   Button,
@@ -39,6 +38,7 @@ import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import { useUploadCustomReportFile } from "../../../hooks/useFileUpalod";
 import { objectToFormData } from "../../../utils/utils";
+import * as XLSX from "xlsx";
 
 interface UploadMultipleFilesProps {
   reportId: string;
@@ -255,29 +255,32 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
       currentFiles[index !== -1 ? index : fileIndex] = selectedFile;
 
       const reader = new FileReader();
+
       reader.onload = async (e) => {
         try {
           const arrayBuffer = e.target?.result as ArrayBuffer;
-          const workbook = new ExcelJS.Workbook();
 
-          try {
-            await workbook.xlsx.load(arrayBuffer);
-          } catch {
-            toast.error(
-              "Failed to load the Excel file. Ensure the file is valid."
-            );
+          if (!arrayBuffer || arrayBuffer.byteLength === 0) {
+            toast.error("File is empty or unreadable. Please re-upload.");
             return;
           }
 
-          if (!workbook.worksheets?.length) {
+          // Convert ArrayBuffer to a readable format
+          const workbook = XLSX.read(arrayBuffer, { type: "array" });
+
+          if (!workbook.SheetNames?.length) {
             toast.error("No sheets found in the Excel file.");
             return;
           }
 
-          const worksheet = workbook.worksheets[0];
-          const headers = extractHeaders(worksheet);
+          const sheet = workbook.SheetNames[0];
+          const worksheet = workbook.Sheets[sheet];
 
-          if (!headers.length) {
+          const headers = XLSX.utils.sheet_to_json(worksheet, {
+            header: 1,
+          })[0] as string[];
+
+          if (!headers || headers.length === 0) {
             toast.error("Headers not found.");
             return;
           }
@@ -341,15 +344,6 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
 
     setValue("files", [...currentFiles], { shouldValidate: true });
     trigger();
-  };
-
-  // Helper function to extract headers
-  const extractHeaders = (worksheet: ExcelJS.Worksheet): string[] => {
-    const headers: string[] = [];
-    worksheet.getRow(1).eachCell((cell) => {
-      headers.push(cell.value?.toString() || "");
-    });
-    return headers;
   };
 
   // Check for duplicate headers
