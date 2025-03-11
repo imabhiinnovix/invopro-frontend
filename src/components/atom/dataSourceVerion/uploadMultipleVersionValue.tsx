@@ -89,8 +89,14 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
     success: boolean;
     versionValueDetails: {
       _id: string;
-      requiredFiles: { name: string; _id: string; sheetName: string }[];
+      requiredFiles: {
+        name: string;
+        _id: string;
+        sheetName: string;
+        isRequired: string;
+      }[];
       entityId: { attributes: { name: string; mappingName: string }[] };
+      versions: [];
     }[];
   }>(
     [`versionValue`, String(reportId), String(versionValue)],
@@ -101,8 +107,15 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
 
   const requiredFiles = useMemo(() => {
     return (
-      requiredVersionValues?.data?.versionValueDetails?.flatMap(
-        (data) => data.requiredFiles
+      requiredVersionValues?.data?.versionValueDetails?.flatMap((data) =>
+        data.requiredFiles.map((file, index) => ({
+          ...file,
+          isVersionAvailable: (data.versions?.length ?? 0) > 0,
+          extededName: file.name + (file.sheetName ? `_${file.sheetName}` : ""),
+          detailId: data._id,
+          attributes: data.entityId.attributes,
+          fileIndex: index,
+        }))
       ) ?? []
     );
   }, [requiredVersionValues?.data]);
@@ -119,15 +132,30 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
 
   const validationSchema = Yup.object({
     files: Yup.array()
-      .of(
-        Yup.mixed<File>().test(
-          "file-required",
-          "All required files must be uploaded.",
-          (value) => !!value
-        )
-      )
-      .test("all-files-present", "Please upload all required files.", (files) =>
-        files?.every((file) => file !== null && file !== undefined)
+      .of(Yup.mixed<File>().nullable())
+      .test(
+        "all-required-files-present",
+        "Please upload all required files.",
+        (files, context) => {
+          const missingFiles = requiredFiles.filter((file, index) => {
+            const { isVersionAvailable, isRequired } = file;
+
+            if (isVersionAvailable) return false;
+
+            const required = isRequired === undefined ? true : isRequired;
+
+            return required && !files?.[index];
+          });
+
+          if (missingFiles.length > 0) {
+            return context.createError({
+              path: "files",
+              message: "Please upload all required files.",
+            });
+          }
+
+          return true;
+        }
       ),
 
     mappings: Yup.object().test(
@@ -149,7 +177,7 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
             };
             hasErrors = true;
           } else {
-            const localValueOccurrences = new Set<string>(); // Tracks values within the same file
+            const localValueOccurrences = new Set<string>();
 
             Object.entries(fileMapping).forEach(([, value]) => {
               if (value === null || value === undefined) {
@@ -415,7 +443,7 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
         open={open}
         onClose={() => setOpen(false)}
         fullWidth
-        maxWidth="sm"
+        maxWidth="md"
       >
         <DialogTitle>Generate Report</DialogTitle>
         <DialogTitle
@@ -462,111 +490,123 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
                 <TableRow>
                   <StyledTableCell>FILE NAME</StyledTableCell>
                   <StyledTableCell>UPLOAD FILE</StyledTableCell>
-                  <StyledTableCell>MAPPINGS</StyledTableCell>
+                  <StyledTableCell align="center">MAPPINGS</StyledTableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
-                {requiredVersionValues?.data?.versionValueDetails
-                  ?.flatMap((data) =>
-                    data.requiredFiles.map((file, index) => ({
-                      ...file,
-                      extededName:
-                        file.name +
-                        (file.sheetName ? `_${file.sheetName}` : ""),
-                      detailId: data._id,
-                      attributes: data.entityId.attributes,
-                      fileIndex: index,
-                    }))
-                  )
-                  .map(
-                    (
-                      fileName: {
-                        name: string;
-                        _id: string;
-                        extededName: string;
-                        detailId: string;
-                        attributes: { name: string; mappingName: string }[];
-                        fileIndex: number;
-                      },
-                      index: number
-                    ) => (
-                      <StyledTableRow key={`${fileName._id}`}>
-                        <StyledTableCell>
-                          {fileName?.extededName || "-"}
-                        </StyledTableCell>
-                        <StyledTableCell>
-                          <Box display="flex" alignItems="center" gap={2}>
-                            <Button
-                              variant="contained"
-                              component="label"
-                              sx={{
-                                fontWeight: "bold",
-                                bgcolor: "#007bff",
-                                color: "#fff",
-                                "&:hover": { bgcolor: "#0056b3" },
-                                padding: 2,
-                              }}
+                {requiredFiles?.map((fileName, index) => (
+                  <StyledTableRow key={`${fileName._id}`}>
+                    <StyledTableCell>
+                      {fileName?.extededName || "-"}
+                    </StyledTableCell>
+                    <StyledTableCell>
+                      <Box>
+                        <Button
+                          variant="contained"
+                          component="label"
+                          sx={{
+                            fontWeight: "bold",
+                            bgcolor: "#007bff",
+                            color: "#fff",
+                            "&:hover": { bgcolor: "#0056b3" },
+                            padding: 1,
+                            marginBottom: 1,
+                            position: "relative",
+                          }}
+                        >
+                          <Stack
+                            gap={1}
+                            direction="row"
+                            justifyContent="center"
+                            alignContent="center"
+                            sx={{ fontSize: "0.8rem" }}
+                          >
+                            <UploadFileIcon sx={{ fontSize: "1.5rem" }} />
+                            <Typography
+                              component="span"
+                              variant="button"
+                              fontWeight={600}
                             >
-                              <Box
-                                gap={1}
-                                display="flex"
-                                justifyContent="center"
+                              {fileName?.isVersionAvailable
+                                ? "Reupload File"
+                                : "Upload File"}
+                            </Typography>
+                          </Stack>
+                          <input
+                            type="file"
+                            hidden
+                            onChange={(e) =>
+                              handleFileChange(e, fileName.name, index)
+                            }
+                          />
+                          {fileName?.isRequired !== "false" &&
+                            !fileName?.isVersionAvailable && (
+                              <Typography
+                                component="span"
+                                color="error"
+                                sx={{
+                                  fontSize: 35,
+                                  position: "absolute",
+                                  top: -16,
+                                  right: -5,
+                                }}
                               >
-                                <UploadFileIcon />
-                                Upload File
-                              </Box>
-                              <input
-                                type="file"
-                                hidden
-                                onChange={(e) =>
-                                  handleFileChange(e, fileName.name, index)
-                                }
-                              />
-                            </Button>
-                          </Box>
-                        </StyledTableCell>
-                        <StyledTableCell>
-                          {fileHeader[fileName.extededName] ? (
-                            <Stack
-                              direction="row"
-                              gap={1}
-                              alignItems="center"
-                              justifyContent="center"
+                                *
+                              </Typography>
+                            )}
+                        </Button>
+                        {fileName?.isVersionAvailable ? (
+                          <Typography
+                            component="div"
+                            variant="caption"
+                            color="info"
+                          >
+                            Already One Verison Is Available
+                          </Typography>
+                        ) : null}
+                      </Box>
+                    </StyledTableCell>
+                    <StyledTableCell align="center">
+                      {fileHeader[fileName.extededName] ? (
+                        <Stack
+                          direction="row"
+                          gap={1}
+                          alignItems="center"
+                          justifyContent="center"
+                        >
+                          <ViewMapping
+                            fileName={fileName}
+                            CustomButton={<Button>View Mappings</Button>}
+                            title={`Mapping for ${fileName.name}`}
+                            settingAttributeOption={fileName.attributes}
+                            fileHeaders={fileHeader[fileName.extededName]!}
+                            control={control}
+                            setValue={setValue}
+                            index={index}
+                            setOpen={setOpenMappingModal}
+                            open={openMappingModal}
+                            trigger={trigger}
+                            watch={watch}
+                          />
+                          {(
+                            (errors?.mappings?.message ||
+                              errors?.mappings?.root
+                                ?.message) as unknown as Record<
+                              string,
+                              { isError: boolean; msg: string }
                             >
-                              <ViewMapping
-                                fileName={fileName}
-                                CustomButton={<Button>View Mappings</Button>}
-                                title={`Mapping for ${fileName.name}`}
-                                settingAttributeOption={fileName.attributes}
-                                fileHeaders={fileHeader[fileName.extededName]!}
-                                control={control}
-                                setValue={setValue}
-                                index={index}
-                                setOpen={setOpenMappingModal}
-                                open={openMappingModal}
-                                trigger={trigger}
-                                watch={watch}
-                              />
-                              {(
-                                (errors?.mappings?.message ||
-                                  errors?.mappings?.root
-                                    ?.message) as unknown as Record<
-                                  string,
-                                  { isError: boolean; msg: string }
-                                >
-                              )?.[fileName?.extededName]?.isError ? (
-                                <ErrorOutlineIcon color="error" />
-                              ) : (
-                                <CheckCircleIcon color="success" />
-                              )}
-                            </Stack>
+                          )?.[fileName?.extededName]?.isError ? (
+                            <ErrorOutlineIcon color="error" />
                           ) : (
-                            "-"
+                            <CheckCircleIcon color="success" />
                           )}
-                        </StyledTableCell>
-                      </StyledTableRow>
-                    )
-                  )}
+                        </Stack>
+                      ) : (
+                        "-"
+                      )}
+                    </StyledTableCell>
+                  </StyledTableRow>
+                ))}
               </TableBody>
             </Table>
           </TableContainer>
@@ -580,7 +620,7 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
             onClick={handleSubmit(onSubmit)}
             variant="contained"
             color="primary"
-            disabled={isLoadingReportUpload}
+            disabled={isLoadingReportUpload || !errors.files}
           >
             Submit
           </Button>
