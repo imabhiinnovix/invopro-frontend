@@ -526,7 +526,8 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
                               variant="button"
                               fontWeight={600}
                             >
-                              {fileName?.isVersionAvailable
+                              {fileName?.isVersionAvailable ||
+                              watch("files")?.[index]
                                 ? "Reupload File"
                                 : "Upload File"}
                             </Typography>
@@ -538,21 +539,20 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
                               handleFileChange(e, fileName.name, index)
                             }
                           />
-                          {fileName?.isRequired !== "false" &&
-                            !fileName?.isVersionAvailable && (
-                              <Typography
-                                component="span"
-                                color="error"
-                                sx={{
-                                  fontSize: 35,
-                                  position: "absolute",
-                                  top: -16,
-                                  right: -5,
-                                }}
-                              >
-                                *
-                              </Typography>
-                            )}
+                          {fileName?.isRequired !== "false" && (
+                            <Typography
+                              component="span"
+                              color="error"
+                              sx={{
+                                fontSize: 35,
+                                position: "absolute",
+                                top: -23,
+                                right: -8,
+                              }}
+                            >
+                              *
+                            </Typography>
+                          )}
                         </Button>
                         {fileName?.isVersionAvailable ? (
                           <Typography
