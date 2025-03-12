@@ -482,7 +482,6 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
             )}
           </Stack>
         </DialogTitle>
-
         <DialogContent>
           <TableContainer component={Paper}>
             <Table sx={{ width: "100%" }} aria-label="customized table">
@@ -611,7 +610,6 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
             </Table>
           </TableContainer>
         </DialogContent>
-
         <DialogActions>
           <Button onClick={() => setOpen(false)} color="error">
             Cancel
@@ -620,7 +618,7 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
             onClick={handleSubmit(onSubmit)}
             variant="contained"
             color="primary"
-            disabled={isLoadingReportUpload || !errors.files}
+            disabled={isLoadingReportUpload || !!errors.files}
           >
             Submit
           </Button>
