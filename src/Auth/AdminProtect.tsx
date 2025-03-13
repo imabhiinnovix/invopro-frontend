@@ -11,7 +11,8 @@ const AdminProtect = () => {
   }
 
   if (Number(currentRoleId) !== roleId?.ADMIN) {
-    return <Navigate to="/dashboard" />;
+    // return <Navigate to="/dashboard" />;
+    return <Navigate to="/reports" />;
   }
 
   return <Outlet />;

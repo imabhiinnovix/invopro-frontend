@@ -31,12 +31,12 @@ function App() {
           {/* User Protected Routes */}
           <Route element={<AuthProtect />}>
             <Route element={<CommonLayout />}>
-              <Route path="/dashboard" element={<Dashboard />} />
+              {/* <Route path="/dashboard" element={<Dashboard />} /> */}
               <Route path="/reports" element={<Report />} />
-              <Route path="/settings/entity" element={<Entity />} />
+              {/* <Route path="/settings/entity" element={<Entity />} />
               <Route path="/settings/attribute-option" element={<AttributeOption />} />
               <Route path="/settings/data-source" element={<DataSource />} />
-              <Route path="/settings/data-source-version" element={<DataSourceVersion />} />
+              <Route path="/settings/data-source-version" element={<DataSourceVersion />} /> */}
             </Route>
           </Route>
 

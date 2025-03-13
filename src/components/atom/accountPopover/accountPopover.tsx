@@ -13,8 +13,12 @@ import { AuthContext, AuthContextType } from '../../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { clearLocalStorage } from '../../../utils/handleLocalStorage';
 
+interface MenuItem {
+  label: string;
+}
 export function AccountPopover() {
-  const menuData = [{ label: 'My Profile' }, { label: 'Dashboard' }];
+  // const menuData = [{ label: 'My Profile' }, { label: 'Dashboard' }];
+  const menuData: MenuItem[] = [];
 
   const { userDetails, initialization, clearAuthContext } = useContext(AuthContext) as AuthContextType;
 
@@ -110,7 +114,7 @@ export function AccountPopover() {
             },
           }}
         >
-          {menuData.map((option) => (
+          {menuData?.map((option) => (
             <MenuItem
               key={option.label}
               // selected={option.href === pathname}
@@ -122,7 +126,7 @@ export function AccountPopover() {
           ))}
         </MenuList>
 
-        <Divider sx={{ borderStyle: 'dashed' }} />
+        {/* <Divider sx={{ borderStyle: 'dashed' }} /> */}
 
         <Box sx={{ p: 1 }}>
           <Button fullWidth color="error" size="medium" variant="text" onClick={logout}>
