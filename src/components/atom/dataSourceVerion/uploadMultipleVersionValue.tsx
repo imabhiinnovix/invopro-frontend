@@ -5,7 +5,7 @@ import React, {
   useMemo,
   useState,
 } from "react";
-import { FieldValues, useForm } from "react-hook-form";
+import { FieldErrors, FieldValues, useForm } from "react-hook-form";
 import ExcelJS from "exceljs";
 import {
   Box,
