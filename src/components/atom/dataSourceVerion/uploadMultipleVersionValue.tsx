@@ -142,9 +142,7 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
 
             if (isVersionAvailable) return false;
 
-            const required = isRequired === undefined ? true : isRequired;
-
-            return required && !files?.[index];
+            return isRequired && !files?.[index];
           });
 
           if (missingFiles.length > 0) {
@@ -420,6 +418,40 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
     });
   };
 
+  const onError = (
+    errors: FieldErrors<{
+      files?: { message?: string };
+      mappings?: {
+        message?: Record<string, { isError: boolean; msg: string }>;
+      };
+    }>
+  ) => {
+    const filesError =
+      typeof errors.files?.message === "string"
+        ? errors.files.message
+        : undefined;
+
+    // Ensure mappings.message exists and is an object
+    const mappingMessage = errors.mappings?.message;
+
+    if (typeof mappingMessage !== "object" || mappingMessage === null) {
+      toast.error(filesError);
+      return;
+    }
+
+    // Extract the first key dynamically
+    const firstKey = Object.keys(mappingMessage)[0];
+
+    // Ensure errorMessage is extracted safely
+    const errorMessage =
+      mappingMessage[firstKey]?.msg && typeof mappingMessage[firstKey]?.isError
+        ? "Please Map all files."
+        : undefined;
+
+    // Show the error message
+    toast.error(filesError || errorMessage);
+  };
+
   useEffect(() => {
     trigger();
   }, [trigger]);
@@ -539,7 +571,7 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
                               handleFileChange(e, fileName.name, index)
                             }
                           />
-                          {fileName?.isRequired !== "false" && (
+                          {fileName?.isRequired && (
                             <Typography
                               component="span"
                               color="error"
@@ -560,7 +592,7 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
                             variant="caption"
                             color="info"
                           >
-                            Already One Verison Is Available
+                            Data Available
                           </Typography>
                         ) : null}
                       </Box>
@@ -600,6 +632,8 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
                             <CheckCircleIcon color="success" />
                           )}
                         </Stack>
+                      ) : fileName?.isVersionAvailable ? (
+                        <CheckCircleIcon color="success" />
                       ) : (
                         "-"
                       )}
@@ -615,7 +649,7 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
             Cancel
           </Button>
           <Button
-            onClick={handleSubmit(onSubmit)}
+            onClick={handleSubmit(onSubmit, onError)}
             variant="contained"
             color="primary"
             disabled={isLoadingReportUpload || !!errors.files}
