@@ -111,7 +111,8 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
         data.requiredFiles.map((file, index) => ({
           ...file,
           isVersionAvailable: (data.versions?.length ?? 0) > 0,
-          extededName: file.name + (file.sheetName ? `_${file.sheetName}` : ""),
+          extededName:
+            file.name + (file.sheetName ? `__${file.sheetName}` : ""),
           detailId: data._id,
           attributes: data.entityId.attributes,
           fileIndex: index,
@@ -266,10 +267,15 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
       // Increase processing counter for each file
       setProcessingCount((prev) => prev + 1);
 
-      const fileIndex = requiredFiles.findIndex(
-        (reqFile) => reqFile.name === removeExtension(selectedFile.name)
-      );
-      currentFiles[index !== -1 ? index : fileIndex] = selectedFile;
+      const fileIndexes = requiredFiles
+        .map((reqFile, index) =>
+          reqFile.name === removeExtension(selectedFile.name) ? index : -1
+        )
+        .filter((index) => index !== -1);
+
+      fileIndexes.forEach((i) => {
+        currentFiles[index !== -1 ? index : i] = selectedFile;
+      });
 
       const reader = new FileReader();
       reader.onload = async (e) => {
@@ -303,23 +309,38 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
 
           const keyName = fileName ?? removeExtension(selectedFile.name);
 
-          const sheetName = requiredFiles?.find(
-            (_, ind) => ind === index
-          )?.sheetName;
+          const sheetNames = requiredFiles
+            ?.filter((_, ind) =>
+              index !== -1 ? index : fileIndexes.includes(ind)
+            )
+            ?.map((file) => file.sheetName);
 
-          const extededName = sheetName
-            ? `${fileName ?? removeExtension(selectedFile.name)}_${sheetName}`
-            : `${fileName ?? removeExtension(selectedFile.name)}`;
+          const extendedNames =
+            sheetNames.length > 0
+              ? sheetNames.map((name) =>
+                  name
+                    ? `${
+                        fileName ?? removeExtension(selectedFile.name)
+                      }__${name}`
+                    : `${fileName ?? removeExtension(selectedFile.name)}`
+                )
+              : [`${fileName ?? removeExtension(selectedFile.name)}`];
 
-          setFileHeader((prev) => ({
-            ...prev,
-            [extededName]: [...headers, "Extra-Attribute-Ignore"],
-          }));
+          setFileHeader((prev) => {
+            const updatedHeaders = { ...prev };
+            extendedNames.forEach((name) => {
+              updatedHeaders[name] = [...headers, "Extra-Attribute-Ignore"];
+            });
+            return updatedHeaders;
+          });
 
-          setFileUploads((prev) => ({
-            ...prev,
-            [extededName]: selectedFile,
-          }));
+          setFileUploads((prev) => {
+            const updatedUploads = { ...prev };
+            extendedNames.forEach((name) => {
+              updatedUploads[name] = selectedFile;
+            });
+            return updatedUploads;
+          });
 
           const emptyMappingData =
             requiredVersionValues?.data?.versionValueDetails.find((data) =>
@@ -343,11 +364,12 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
                     .trim()
                     .toLowerCase()
               ) || null;
-            setValue(
-              `mappings.${extededName}.${option.name ?? ""}`,
-              matchedHeader,
-              { shouldValidate: true }
-            );
+            extendedNames.forEach((name) => {
+              setValue(`mappings.${name}.${option.name ?? ""}`, matchedHeader, {
+                shouldValidate: true,
+              });
+            });
+
             trigger();
           });
         } catch {
