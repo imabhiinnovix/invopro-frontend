@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import {
   Button,
   Box,
@@ -12,12 +12,7 @@ import {
   DialogContent,
   DialogActions,
 } from "@mui/material";
-import {
-  Control,
-  FieldErrors,
-  UseFormReset,
-  UseFormSetValue,
-} from "react-hook-form";
+import { Control, UseFormSetValue, UseFormWatch } from "react-hook-form";
 import CommonSelect from "../../common/dropdown/commonSelect";
 import { CustomReportData } from "../dataSourceVerion/uploadMultipleVersionValue";
 
@@ -25,6 +20,7 @@ interface CreateDataSourceVersionProps {
   fileName: {
     name: string;
     _id: string;
+    extededName: string;
   };
   CustomButton: React.ReactElement;
   title: string;
@@ -34,14 +30,12 @@ interface CreateDataSourceVersionProps {
   }[];
   fileHeaders: string[];
   control: Control<CustomReportData, unknown>;
-  reset: UseFormReset<CustomReportData>;
-  errors: FieldErrors<CustomReportData>;
   setValue: UseFormSetValue<CustomReportData>;
   index: number;
   open: number;
   setOpen: React.Dispatch<React.SetStateAction<number>>;
   trigger: () => void;
-  watch: () => void;
+  watch: UseFormWatch<CustomReportData>;
 }
 
 const ViewMapping: React.FC<CreateDataSourceVersionProps> = ({
@@ -51,17 +45,14 @@ const ViewMapping: React.FC<CreateDataSourceVersionProps> = ({
   settingAttributeOption,
   fileHeaders,
   control,
-  reset,
-  // errors,
   setValue,
   index,
-  // getValues,
   open,
   setOpen,
   trigger,
   watch,
 }) => {
-  const watchMapping = watch(`mappings.${fileName.name}`);
+  const watchMapping = watch(`mappings.${fileName.extededName}`);
   const handleCancel = () => {
     trigger();
     setOpen(-1);
@@ -118,7 +109,7 @@ const ViewMapping: React.FC<CreateDataSourceVersionProps> = ({
                 <TableHead>
                   <TableRow>
                     <TableCell>Entity Setting Attribute</TableCell>
-                    <TableCell>{fileName.name} Attribute</TableCell>
+                    <TableCell>{fileName.extededName} Attribute</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -128,7 +119,7 @@ const ViewMapping: React.FC<CreateDataSourceVersionProps> = ({
                       <TableCell>
                         <CommonSelect
                           control={control}
-                          name={`mappings.${fileName.name}.${option.name}`}
+                          name={`mappings.${fileName.extededName}.${option.name}`}
                           label={"Map To"}
                           options={fileHeaders}
                           error={
