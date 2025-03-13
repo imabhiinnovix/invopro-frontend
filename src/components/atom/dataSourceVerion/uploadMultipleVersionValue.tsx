@@ -309,11 +309,10 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
 
           const keyName = fileName ?? removeExtension(selectedFile.name);
 
-          const sheetNames = requiredFiles
-            ?.filter((_, ind) =>
-              index !== -1 ? index : fileIndexes.includes(ind)
-            )
-            ?.map((file) => file.sheetName);
+          const sheets = requiredFiles?.filter((_, ind) =>
+            index !== -1 ? index : fileIndexes.includes(ind)
+          );
+          const sheetNames = sheets?.map((file) => file.sheetName);
 
           const extendedNames =
             sheetNames.length > 0
@@ -343,31 +342,42 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
           });
 
           const emptyMappingData =
-            requiredVersionValues?.data?.versionValueDetails.find((data) =>
-              data?.requiredFiles.some((file) => file.name === keyName)
-            )?.entityId?.attributes;
+            requiredVersionValues?.data?.versionValueDetails
+              .filter((data) =>
+                data?.requiredFiles.some((file) => file.name === keyName)
+              )
+              ?.map((data) => data?.entityId?.attributes);
 
-          emptyMappingData?.forEach((option) => {
-            const matchedHeader =
-              headers.find(
-                (name) =>
-                  name
-                    ?.replace(/[^a-zA-Z0-9/]/g, "")
-                    .replace(/\//g, " or ")
-                    .replace(/\s+/g, "")
-                    .trim()
-                    .toLowerCase() ===
-                  option.mappingName
-                    ?.replace(/[^a-zA-Z0-9/]/g, "")
-                    .replace(/\//g, " or ")
-                    .replace(/\s+/g, "")
-                    .trim()
-                    .toLowerCase()
-              ) || null;
-            extendedNames.forEach((name) => {
-              setValue(`mappings.${name}.${option.name ?? ""}`, matchedHeader, {
-                shouldValidate: true,
-              });
+          emptyMappingData?.forEach((attributeSet, index) => {
+            if (!attributeSet) return;
+
+            const sheetName = extendedNames[index];
+
+            attributeSet.forEach((option) => {
+              const matchedHeader =
+                headers.find(
+                  (name) =>
+                    name
+                      ?.replace(/[^a-zA-Z0-9/]/g, "")
+                      .replace(/\//g, " or ")
+                      .replace(/\s+/g, "")
+                      .trim()
+                      .toLowerCase() ===
+                    option.mappingName
+                      ?.replace(/[^a-zA-Z0-9/]/g, "")
+                      .replace(/\//g, " or ")
+                      .replace(/\s+/g, "")
+                      .trim()
+                      .toLowerCase()
+                ) || null;
+
+              setValue(
+                `mappings.${sheetName}.${option.name ?? ""}`,
+                matchedHeader,
+                {
+                  shouldValidate: true,
+                }
+              );
             });
 
             trigger();
@@ -388,6 +398,8 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
     setValue("files", [...currentFiles], { shouldValidate: true });
     trigger();
   };
+
+  console.log("wac()", watch());
 
   // Helper function to extract headers
   const extractHeaders = (worksheet: ExcelJS.Worksheet): string[] => {
