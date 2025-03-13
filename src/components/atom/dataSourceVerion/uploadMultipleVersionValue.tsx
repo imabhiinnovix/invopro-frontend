@@ -278,7 +278,9 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
         fileIndexes.forEach((i) => {
           currentFiles[i] = new File(
             [selectedFile],
-            (requiredFiles[index]?.name + splitedFile?.[splitedFile?.length - 1]) || selectedFile.name,
+            requiredFiles[index]?.name +
+              "." +
+              splitedFile?.[splitedFile?.length - 1] || selectedFile.name,
             {
               type: selectedFile.type,
               lastModified: selectedFile.lastModified,
@@ -288,7 +290,9 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
       } else {
         currentFiles[index] = new File(
           [selectedFile],
-          (requiredFiles[index]?.name + splitedFile?.[splitedFile?.length - 1]) || selectedFile.name,
+          requiredFiles[index]?.name +
+            "." +
+            splitedFile?.[splitedFile?.length - 1] || selectedFile.name,
           {
             type: selectedFile.type,
             lastModified: selectedFile.lastModified,
@@ -357,7 +361,9 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
             extendedNames.forEach((name) => {
               updatedUploads[name] = new File(
                 [selectedFile],
-                (requiredFiles[index]?.name + splitedFile?.[splitedFile?.length - 1]) || selectedFile.name,
+                requiredFiles[index]?.name +
+                  "." +
+                  splitedFile?.[splitedFile?.length - 1] || selectedFile.name,
                 {
                   type: selectedFile.type,
                   lastModified: selectedFile.lastModified,
