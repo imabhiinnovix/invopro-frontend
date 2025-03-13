@@ -273,9 +273,27 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
         )
         .filter((index) => index !== -1);
 
-      fileIndexes.forEach((i) => {
-        currentFiles[index !== -1 ? index : i] = selectedFile;
-      });
+      if (fileIndexes.length > 0) {
+        fileIndexes.forEach((i) => {
+          currentFiles[i] = new File(
+            [selectedFile],
+            requiredFiles[index]?.name ?? selectedFile.name,
+            {
+              type: selectedFile.type,
+              lastModified: selectedFile.lastModified,
+            }
+          );
+        });
+      } else {
+        currentFiles[index] = new File(
+          [selectedFile],
+          requiredFiles[index]?.name ?? selectedFile.name,
+          {
+            type: selectedFile.type,
+            lastModified: selectedFile.lastModified,
+          }
+        );
+      }
 
       const reader = new FileReader();
       reader.onload = async (e) => {
@@ -336,7 +354,14 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
           setFileUploads((prev) => {
             const updatedUploads = { ...prev };
             extendedNames.forEach((name) => {
-              updatedUploads[name] = selectedFile;
+              updatedUploads[name] = new File(
+                [selectedFile],
+                requiredFiles[index]?.name ?? selectedFile.name,
+                {
+                  type: selectedFile.type,
+                  lastModified: selectedFile.lastModified,
+                }
+              );
             });
             return updatedUploads;
           });
@@ -398,8 +423,6 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
     setValue("files", [...currentFiles], { shouldValidate: true });
     trigger();
   };
-
-  console.log("wac()", watch());
 
   // Helper function to extract headers
   const extractHeaders = (worksheet: ExcelJS.Worksheet): string[] => {
