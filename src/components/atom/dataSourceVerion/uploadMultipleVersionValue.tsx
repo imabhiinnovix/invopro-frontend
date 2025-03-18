@@ -242,6 +242,14 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
     return filename.replace(/\.[^/.]+$/, "");
   };
 
+  const createFileInstance = (selectedFile: File, i: number) => {
+    const ext = selectedFile.name.split(".").pop();
+    return new File([selectedFile], `${requiredFiles[i]?.name}.${ext}`, {
+      type: selectedFile.type,
+      lastModified: selectedFile.lastModified,
+    });
+  };
+
   const handleFileChange = (
     event: React.ChangeEvent<HTMLInputElement>,
     fileName?: string,
@@ -264,41 +272,20 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
         return;
       }
 
-      const splitedFile = selectedFile.name?.split(".");
       // Increase processing counter for each file
       setProcessingCount((prev) => prev + 1);
 
-      const fileIndexes = requiredFiles
-        .map((reqFile, index) =>
-          reqFile.name === removeExtension(selectedFile.name) ? index : -1
+      const matchedFileIndexes = requiredFiles
+        .map((reqFile, i) =>
+          reqFile.name === removeExtension(selectedFile.name) ? i : -1
         )
-        .filter((index) => index !== -1);
+        .filter((i) => i !== -1);
 
-      if (fileIndexes.length > 0) {
-        fileIndexes.forEach((i) => {
-          currentFiles[i] = new File(
-            [selectedFile],
-            requiredFiles[i]?.name +
-              "." +
-              splitedFile?.[splitedFile?.length - 1] || selectedFile.name,
-            {
-              type: selectedFile.type,
-              lastModified: selectedFile.lastModified,
-            }
-          );
-        });
-      } else {
-        currentFiles[index] = new File(
-          [selectedFile],
-          requiredFiles[index]?.name +
-            "." +
-            splitedFile?.[splitedFile?.length - 1] || selectedFile.name,
-          {
-            type: selectedFile.type,
-            lastModified: selectedFile.lastModified,
-          }
-        );
-      }
+      const targetIndexes = index === -1 ? matchedFileIndexes : [index];
+
+      targetIndexes.forEach((i) => {
+        currentFiles[i] = createFileInstance(selectedFile, i);
+      });
 
       const reader = new FileReader();
 
@@ -322,37 +309,36 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
           const keyName = fileName ?? removeExtension(selectedFile.name);
 
           const sheets = requiredFiles?.filter((_, ind) =>
-            index !== -1 ? index === ind : fileIndexes.includes(ind)
+            index !== -1 ? index === ind : matchedFileIndexes.includes(ind)
           );
 
           // Process each required sheet
           sheets.forEach((requiredFile) => {
             let headers: string[] = [];
-            // let sheetFound = false;
 
-            // If sheet name is specified, look for that specific sheet
             if (requiredFile.sheetName) {
               const sheetIndex = workbook.SheetNames.findIndex(
-                (name) => name.toLowerCase() === requiredFile.sheetName.toLowerCase()
+                (name) =>
+                  name.toLowerCase() === requiredFile.sheetName.toLowerCase()
               );
-              
+
               if (sheetIndex !== -1) {
-                const worksheet = workbook.Sheets[workbook.SheetNames[sheetIndex]];
+                const worksheet =
+                  workbook.Sheets[workbook.SheetNames[sheetIndex]];
                 headers = XLSX.utils.sheet_to_json(worksheet, {
                   header: 1,
                 })[0] as string[];
-                // sheetFound = true;
               } else {
-                toast.error(`Sheet "${requiredFile.sheetName}" not found in the uploaded file.`);
+                toast.error(
+                  `Sheet "${requiredFile.sheetName}" not found in the uploaded file.`
+                );
                 return;
               }
             } else {
-              // If no sheet name specified, use the first sheet
               const worksheet = workbook.Sheets[workbook.SheetNames[0]];
               headers = XLSX.utils.sheet_to_json(worksheet, {
                 header: 1,
               })[0] as string[];
-              // sheetFound = true;
             }
 
             if (!headers || headers.length === 0) {
@@ -373,29 +359,20 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
 
             setFileUploads((prev) => ({
               ...prev,
-              [extendedName]: new File(
-                [selectedFile],
-                requiredFiles[index]?.name +
-                  "." +
-                  splitedFile?.[splitedFile?.length - 1] || selectedFile.name,
-                {
-                  type: selectedFile.type,
-                  lastModified: selectedFile.lastModified,
-                }
-              ),
+              [extendedName]: createFileInstance(selectedFile, index),
             }));
 
             // Get mapping data for this file
-            const mappingData = requiredVersionValues?.data?.versionValueDetails
-              .find((data) =>
+            const mappingData =
+              requiredVersionValues?.data?.versionValueDetails.find((data) =>
                 data?.requiredFiles.some(
                   (file) =>
                     file.name === keyName &&
                     (!file.sheetName ||
-                      file.sheetName.toLowerCase() === requiredFile.sheetName?.toLowerCase())
+                      file.sheetName.toLowerCase() ===
+                        requiredFile.sheetName?.toLowerCase())
                 )
-              )
-              ?.entityId?.attributes;
+              )?.entityId?.attributes;
 
             if (mappingData) {
               mappingData.forEach((option) => {
