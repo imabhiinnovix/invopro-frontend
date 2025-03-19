@@ -44,4 +44,5 @@ export const GET = {
   Data_Source_Name: '/dataSource/name',
   Data_Import_Error: 'dataImportError',
   Custom_Report: '/customReports',
+  DATA_SOURCE_LIST:"/dataSource/list"
 };
