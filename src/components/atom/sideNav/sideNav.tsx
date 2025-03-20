@@ -10,7 +10,7 @@ import { useNav } from "../../../context/NavContext";
 // import DashboardIcon from '@mui/icons-material/Dashboard';
 // import SettingsIcon from '@mui/icons-material/Settings';
 import React, { useEffect, useMemo } from "react";
-import { Collapse } from "@mui/material";
+import { Collapse, Divider } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 // import ManageAccountsIcon from '@mui/icons-material/ManageAccounts';
@@ -234,42 +234,50 @@ export default function SideNav() {
 
               {item.subItems && (
                 <Collapse in={openSettings} timeout="auto" unmountOnExit>
-                  <List component="div" disablePadding>
+                  <List
+                    component="div"
+                    disablePadding
+                    style={{ overflowY: "auto", height: "300px" }}
+                  >
                     {item.subItems.map((subItem) => (
-                      <ListItem
-                        key={subItem.name}
-                        disablePadding
-                        sx={{ display: "block" }}
-                      >
-                        <ListItemButton
-                          onClick={() => navigate(subItem.route)}
-                          sx={{
-                            pl: 4,
-                            justifyContent: openNav ? "initial" : "center",
-                            backgroundColor:
-                              location.pathname === subItem.route
-                                ? "#f0f0f0"
-                                : "transparent",
-                            "&:hover": { backgroundColor: "#e0e0e0" },
-                          }}
+                      <>
+                        {" "}
+                        <ListItem
+                          key={subItem.name}
+                          disablePadding
+                          sx={{ display: "block" }}
                         >
-                          <ListItemIcon
+                          <ListItemButton
+                            onClick={() => navigate(subItem.route)}
                             sx={{
-                              minWidth: 0,
-                              justifyContent: "center",
-                              mr: openNav ? 3 : "auto",
+                              pl: 4,
+                              justifyContent: openNav ? "initial" : "center",
+                              backgroundColor:
+                                location.pathname === subItem.route
+                                  ? "#f0f0f0"
+                                  : "transparent",
+                              "&:hover": { backgroundColor: "#e0e0e0" },
                             }}
                           >
-                            {subItem.icon}
-                          </ListItemIcon>
-                          <ListItemText
-                            primary={subItem.name}
-                            sx={{
-                              opacity: openNav ? 1 : 0,
-                            }}
-                          />
-                        </ListItemButton>
-                      </ListItem>
+                            <ListItemIcon
+                              sx={{
+                                minWidth: 0,
+                                justifyContent: "center",
+                                mr: openNav ? 3 : "auto",
+                              }}
+                            >
+                              {subItem.icon}
+                            </ListItemIcon>
+                            <ListItemText
+                              primary={subItem.name}
+                              sx={{
+                                opacity: openNav ? 1 : 0,
+                              }}
+                            />
+                          </ListItemButton>
+                        </ListItem>
+                        <Divider />
+                      </>
                     ))}
                   </List>
                 </Collapse>

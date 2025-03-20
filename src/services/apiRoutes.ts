@@ -22,6 +22,7 @@ export const POST = {
   CREATE_ATTRIBUTE_OPTION: "/attributeOptions/create",
   CREATE_DATA_SOURCE: "/dataSource/create",
   Custom_Report: "/customReports",
+  DATA_SOURCE_VERSION_CREATE: "/dataSourceVersion/create",
 };
 export const PUT = {
   UPDATE_DATA_SOURCE: "/dataSource/update",

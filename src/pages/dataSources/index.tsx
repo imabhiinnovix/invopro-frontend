@@ -11,13 +11,14 @@ import {
   Button,
   Container,
   Box,
+  Stack,
 } from "@mui/material";
 import { Add } from "@mui/icons-material";
 import { useForm } from "react-hook-form";
 import CommonDatePicker from "../../components/common/datePicker/datePicker";
 import { useAppSelector } from "../../storeHooks";
 import { useParams } from "react-router-dom";
-import { GET } from "../../services/apiRoutes";
+import { GET, POST } from "../../services/apiRoutes";
 import {
   OptionsAttributesValueResponce,
   SourceValueData,
@@ -26,6 +27,8 @@ import {
 import useGet from "../../hooks/useGet";
 import { useInfiniteScroll } from "../../hooks/useInfiniteScroll";
 import { DateTime } from "luxon";
+import ContainedButton from "../../components/molecule/containedButton";
+import usePost from "../../hooks/usePost";
 
 const DataSources = () => {
   const [rows, setRows] = useState<{ [x: string]: string }[]>([]);
@@ -74,6 +77,8 @@ const DataSources = () => {
     "get",
     !!optionsAttributes?.optionAttributeId && !!versionDate
   );
+
+  const dataSourceCreate = usePost([""], () => {}, true);
 
   const sourceMap = useMemo(() => {
     return (
@@ -177,9 +182,29 @@ const DataSources = () => {
     setRows((prevRows) => [...prevRows, newRow]);
   };
 
+  const handleSave = () => {
+    if (versionDate && id) {
+      const payload = {
+        dataSourceId: id,
+        versionValue: versionDate,
+        versionData: rows,
+      };
+
+      dataSourceCreate?.mutate({
+        url: POST?.DATA_SOURCE_VERSION_CREATE,
+        payload,
+      });
+    }
+  };
+
   return (
     <Container style={{ margin: "4rem 0 0 0" }}>
-      <Box component="div" style={{ marginBottom: "2rem" }}>
+      <Stack
+        component="div"
+        style={{ marginBottom: "2rem" }}
+        direction="row"
+        justifyContent="space-between"
+      >
         <CommonDatePicker
           name="versionValue"
           control={control}
@@ -187,17 +212,31 @@ const DataSources = () => {
           label="Version Value*"
           rules={{ required: "Version Value is required" }}
         />
-      </Box>
+        <ContainedButton
+          disabled={dataSourceCreate?.isPending}
+          loading={dataSourceCreate?.isPending}
+          text="Save"
+          handleClick={handleSave}
+        />
+      </Stack>
       <TableContainer
         component={Paper}
         sx={{
           maxWidth: "fit-content",
-          maxHeight: "fit-content",
+          maxHeight: "calc(100vh - 250px)",
           backgroundColor: "#F5F5F5",
+          overflowY: "auto",
         }}
       >
         <Table>
-          <TableHead>
+          <TableHead
+            sx={{
+              position: "sticky",
+              top: 0,
+              zIndex: 1,
+              backgroundColor: "#F5F5F5",
+            }}
+          >
             <TableRow>
               <TableCell style={{ fontWeight: "600", fontSize: "1rem" }}>
                 {optionsAttributes?.name ?? "Default Name"}
