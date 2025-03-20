@@ -9,7 +9,7 @@ import ListItemText from "@mui/material/ListItemText";
 import { useNav } from "../../../context/NavContext";
 // import DashboardIcon from '@mui/icons-material/Dashboard';
 // import SettingsIcon from '@mui/icons-material/Settings';
-import React, { useMemo } from "react";
+import React, { useEffect, useMemo } from "react";
 import { Collapse } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
@@ -21,8 +21,10 @@ import AssessmentIcon from "@mui/icons-material/Assessment";
 import { useInfiniteScroll } from "../../../hooks/useInfiniteScroll";
 import { GET } from "../../../services/apiRoutes";
 import { DataSourceListData, DataSourceListPayload } from "./types";
+import { setDataSourceList } from "../../../pages/dataSources/dataSourceActions";
+import { useAppDispatch } from "../../../storeHooks";
 
-const drawerWidth = 240;
+const drawerWidth = 280;
 
 const openedMixin = (theme: Theme): CSSObject => ({
   width: drawerWidth,
@@ -90,6 +92,7 @@ export default function SideNav() {
   const [openSettings, setOpenSettings] = React.useState(false);
   const navigate = useNavigate();
   const location = useLocation();
+  const dispatch = useAppDispatch();
 
   const handleItemClick = (route: string, hasSubItems: boolean) => {
     if (hasSubItems) {
@@ -109,9 +112,12 @@ export default function SideNav() {
     );
 
   const dataSourceList = useMemo(() => {
-    return dataSourceListAPI?.data?.pages?.flatMap((page) => page?.data);
+    return dataSourceListAPI?.data?.pages?.flatMap((page) => page?.data) || [];
   }, [dataSourceListAPI?.data?.pages]);
-  console.log("dataSourceList", dataSourceList);
+
+  useEffect(() => {
+    if (dataSourceList.length > 0) dispatch(setDataSourceList(dataSourceList));
+  }, [dataSourceList, dispatch]);
 
   const navItems: NavItem[] = useMemo(
     () => [
@@ -129,11 +135,27 @@ export default function SideNav() {
         name: "Data Source",
         icon: <SourceIcon sx={{ fontSize: "3rem", color: "black" }} />,
         route: "/data-source",
-        subItems: dataSourceList?.map((item) => ({
-          name: item?.name ?? "",
-          icon: <></>,
-          route: `/data-source/${item?._id}`,
-        })),
+        subItems: [
+          ...(dataSourceList?.map((item) => ({
+            name: item?.name ?? "",
+            icon: <></>,
+            route: `/data-source/${item?._id}`,
+          })) || []),
+
+          ...(dataSourceListAPI?.hasNextPage
+            ? [
+                {
+                  name: "",
+                  icon: (
+                    <div ref={lastElementRef} style={{ paddingLeft: "1.5rem" }}>
+                      Loading...
+                    </div>
+                  ),
+                  route: "#",
+                },
+              ]
+            : []),
+        ],
       },
       // {
       //   name: 'Settings',
@@ -163,8 +185,9 @@ export default function SideNav() {
       //   ],
       // },
     ],
-    [dataSourceList]
+    [dataSourceList, dataSourceListAPI?.hasNextPage, lastElementRef]
   );
+
   return (
     <Box sx={{ display: "flex" }}>
       <Drawer

@@ -1,4 +1,4 @@
-export interface DataSourceListPayload {}
+export type DataSourceListPayload = object;
 
 export interface DataSourceListResponse {
   message: string;
@@ -28,12 +28,14 @@ export interface DataSourceListData {
   createdAt: string;
   updatedAt: string;
   __v: 0;
+  canEditInline: true;
+  uniqueAttributeName: string[];
 }
 
 export interface DataSourceListAttributes {
   name: string;
   mappingName: string;
-  type: string;
+  type: "option" | "text";
   required: boolean;
   validation: [];
   transformations: [];
