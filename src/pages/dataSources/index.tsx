@@ -12,8 +12,10 @@ import {
   Container,
   Box,
   Stack,
+  Divider,
+  IconButton,
 } from "@mui/material";
-import { Add } from "@mui/icons-material";
+import { Add, Delete } from "@mui/icons-material";
 import { useForm } from "react-hook-form";
 import CommonDatePicker from "../../components/common/datePicker/datePicker";
 import { useAppSelector } from "../../storeHooks";
@@ -197,14 +199,14 @@ const DataSources = () => {
     }
   };
 
+  const handleDeleteRow = (index: number) => {
+    const updatedRows = rows.filter((_, i) => i !== index);
+    setRows(updatedRows);
+  };
+
   return (
-    <Container style={{ margin: "4rem 0 0 0" }}>
-      <Stack
-        component="div"
-        style={{ marginBottom: "2rem" }}
-        direction="row"
-        justifyContent="space-between"
-      >
+    <Container style={{ margin: "4rem 0 0 0", width: "calc(100vw - 288px)" }}>
+      <Stack component="div" direction="row" justifyContent="space-between">
         <CommonDatePicker
           name="versionValue"
           control={control}
@@ -219,6 +221,7 @@ const DataSources = () => {
           handleClick={handleSave}
         />
       </Stack>
+      <Divider style={{ margin: "1.5rem 0" }} />
       <TableContainer
         component={Paper}
         sx={{
@@ -249,6 +252,7 @@ const DataSources = () => {
                   {textAttr?.name}
                 </TableCell>
               ))}
+              <TableCell style={{ fontWeight: "600", fontSize: "1rem" }} />
             </TableRow>
           </TableHead>
           <TableBody>
@@ -280,6 +284,14 @@ const DataSources = () => {
                     />
                   </TableCell>
                 ))}
+                <TableCell>
+                  <IconButton
+                    onClick={() => handleDeleteRow(rowIndex)}
+                    color="primary"
+                  >
+                    <Delete />
+                  </IconButton>
+                </TableCell>
               </TableRow>
             ))}
             {sourceData?.hasNextPage && (

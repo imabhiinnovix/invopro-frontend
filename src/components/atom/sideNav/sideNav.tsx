@@ -196,8 +196,8 @@ export default function SideNav() {
         sx={{ height: "calc(100vh - 70px)" }}
       >
         <List>
-          {navItems.map((item) => (
-            <React.Fragment key={item.name}>
+          {navItems.map((item, i) => (
+            <React.Fragment key={i}>
               <ListItem disablePadding sx={{ display: "block" }}>
                 <ListItemButton
                   onClick={() => handleItemClick(item.route, !!item.subItems)}
@@ -239,14 +239,9 @@ export default function SideNav() {
                     disablePadding
                     style={{ overflowY: "auto", height: "300px" }}
                   >
-                    {item.subItems.map((subItem) => (
-                      <>
-                        {" "}
-                        <ListItem
-                          key={subItem.name}
-                          disablePadding
-                          sx={{ display: "block" }}
-                        >
+                    {item.subItems.map((subItem, i) => (
+                      <React.Fragment key={i}>
+                        <ListItem disablePadding sx={{ display: "block" }}>
                           <ListItemButton
                             onClick={() => navigate(subItem.route)}
                             sx={{
@@ -277,7 +272,7 @@ export default function SideNav() {
                           </ListItemButton>
                         </ListItem>
                         <Divider />
-                      </>
+                      </React.Fragment>
                     ))}
                   </List>
                 </Collapse>
