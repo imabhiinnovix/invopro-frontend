@@ -90,16 +90,11 @@ const DataSources = () => {
     );
   }, [sourceData?.data?.pages]);
 
-  // const sourceMap = [
-  //   {
-  //     SBU: "Corp T&I",
-  //     Estimates: 10,
-  //   },
-  //   {
-  //     SBU: "Metals",
-  //     Estimates: 20,
-  //   },
-  // ];
+  useEffect(() => {
+    if (versionDate && id) {
+      sourceData?.refetch();
+    }
+  }, [versionDate, id]);
 
   useEffect(() => {
     if (
@@ -258,15 +253,21 @@ const DataSources = () => {
           <TableBody>
             {rows.map((row, rowIndex) => (
               <TableRow key={rowIndex}>
-                {header?.map((field) => (
+                {header?.map((field, headIndex) => (
                   <TableCell key={field?.optionAttributeId}>
                     <TextField
                       value={row[field?.name as keyof typeof row]}
+                      disabled={headIndex === 0}
                       onChange={(e) =>
                         handleEdit(rowIndex, field?.name, e.target.value)
                       }
                       variant="outlined"
                       size="small"
+                      type={
+                        textAttributes?.find((attr) => {
+                          return attr?.name === field?.name;
+                        })?.type ?? "text"
+                      }
                       fullWidth
                       slotProps={{
                         input: {
@@ -283,7 +284,7 @@ const DataSources = () => {
                     />
                   </TableCell>
                 ))}
-                <TableCell>
+                {/* <TableCell>
                   <IconButton
                     onClick={() => handleDeleteRow(rowIndex)}
                     color="primary"
@@ -291,7 +292,7 @@ const DataSources = () => {
                   >
                     <Delete />
                   </IconButton>
-                </TableCell>
+                </TableCell> */}
               </TableRow>
             ))}
             {sourceData?.hasNextPage && (
@@ -299,7 +300,7 @@ const DataSources = () => {
                 Loading...
               </Box>
             )}
-            <TableRow>
+            {/* <TableRow>
               <TableCell colSpan={4} align="center">
                 <Button
                   onClick={handleAddRow}
@@ -310,7 +311,7 @@ const DataSources = () => {
                   Add Row
                 </Button>
               </TableCell>
-            </TableRow>
+            </TableRow> */}
           </TableBody>
         </Table>
       </TableContainer>
