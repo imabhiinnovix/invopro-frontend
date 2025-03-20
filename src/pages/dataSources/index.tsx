@@ -215,7 +215,7 @@ const DataSources = () => {
           rules={{ required: "Version Value is required" }}
         />
         <ContainedButton
-          disabled={dataSourceCreate?.isPending}
+          disabled={dataSourceCreate?.isPending || !(versionDate && id)}
           loading={dataSourceCreate?.isPending}
           text="Save"
           handleClick={handleSave}
@@ -265,7 +265,7 @@ const DataSources = () => {
                       onChange={(e) =>
                         handleEdit(rowIndex, field?.name, e.target.value)
                       }
-                      variant="standard"
+                      variant="outlined"
                       size="small"
                       fullWidth
                       slotProps={{
@@ -273,11 +273,10 @@ const DataSources = () => {
                           disableUnderline: true,
                           sx: {
                             fontSize: "1rem",
-                            padding: "4px 0",
+                            padding: "4px 8px",
                             border: "none",
-                            backgroundColor: "transparent",
-                            "&:hover": { backgroundColor: "#f5f5f5" },
-                            "&:focus": { backgroundColor: "#fff" },
+                            backgroundColor: "#fff",
+                            borderRadius: "8px",
                           },
                         },
                       }}
@@ -288,6 +287,7 @@ const DataSources = () => {
                   <IconButton
                     onClick={() => handleDeleteRow(rowIndex)}
                     color="primary"
+                    disabled={!(versionDate && id)}
                   >
                     <Delete />
                   </IconButton>

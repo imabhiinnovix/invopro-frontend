@@ -105,7 +105,7 @@ export default function SideNav() {
   const { infiniteQuery: dataSourceListAPI, lastElementRef } =
     useInfiniteScroll<DataSourceListPayload, DataSourceListData>(
       ["dataSourceList"],
-      GET?.DATA_SOURCE_LIST,
+      GET?.DATA_SOURCE_LIST + `?canEditInline=true`,
       10,
       "get",
       true

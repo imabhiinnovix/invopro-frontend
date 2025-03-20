@@ -491,14 +491,15 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
               <TableBody>
                 {requiredVersionValues?.data?.versionValueDetails
                   ?.flatMap((data) =>
-                    data.requiredFiles.map((file, index) => ({
+                    (data.requiredFiles ?? [])?.map((file, index) => ({
                       ...file,
                       detailId: data._id,
-                      attributes: data.entityId.attributes,
+                      attributes: data.entityId?.attributes ?? [],
                       fileIndex: index,
                     }))
                   )
-                  .map(
+                  ?.filter(Boolean)
+                  ?.map(
                     (
                       fileName: {
                         name: string;
