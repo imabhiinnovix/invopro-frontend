@@ -59,7 +59,7 @@ const CommonDatePicker = <T extends FieldValues>(
               disabled={disabled}
               closeOnSelect={false}
               onAccept={() => onChange(tempDate?.toISO())}
-              onClose={() => setTempDate(currentValue)}
+              onClose={() => setTempDate(null)}
               slotProps={{
                 textField: {
                   error: !!error,
