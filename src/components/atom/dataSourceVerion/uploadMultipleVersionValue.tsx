@@ -26,6 +26,10 @@ import {
   Stack,
   Backdrop,
   LinearProgress,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
 } from "@mui/material";
 import UploadFileIcon from "@mui/icons-material/UploadFile";
 import useGet from "../../../hooks/useGet";
@@ -80,10 +84,10 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
 }) => {
   const [openMappingModal, setOpenMappingModal] = useState(-1);
   const [processingCount, setProcessingCount] = useState(0);
-  const [, setFileUploads] = useState<Record<string, File | null>>({});
-  const [fileHeader, setFileHeader] = useState<Record<string, string[] | null>>(
-    {}
-  );
+  const [fileUploads, setFileUploads] = useState<Record<string, File | null>>({});
+  const [fileHeader, setFileHeader] = useState<Record<string, string[] | null>>({});
+  const [unmappedFiles, setUnmappedFiles] = useState<File[]>([]);
+  const [fileSelections, setFileSelections] = useState<Record<string, string>>({});
 
   const requiredVersionValues = useGet<{
     success: boolean;
@@ -269,6 +273,7 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
         !selectedFile.name.endsWith(".xls")
       ) {
         toast.error("Please upload a valid Excel file.");
+        setProcessingCount((prev) => prev - 1);
         return;
       }
 
@@ -281,10 +286,18 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
         )
         .filter((i) => i !== -1);
 
+      // Add to unmapped files regardless of match
+      setUnmappedFiles((prev) => [...prev, selectedFile]);
+
       const targetIndexes = index === -1 ? matchedFileIndexes : [index];
 
       targetIndexes.forEach((i) => {
         currentFiles[i] = createFileInstance(selectedFile, i);
+        // Set the file selection for this mapping
+        setFileSelections(prev => ({
+          ...prev,
+          [requiredFiles[i].extededName]: selectedFile.name
+        }));
       });
 
       const reader = new FileReader();
@@ -295,6 +308,7 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
 
           if (!arrayBuffer || arrayBuffer.byteLength === 0) {
             toast.error("File is empty or unreadable. Please re-upload.");
+            setProcessingCount((prev) => prev - 1);
             return;
           }
 
@@ -303,6 +317,7 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
 
           if (!workbook.SheetNames?.length) {
             toast.error("No sheets found in the Excel file.");
+            setProcessingCount((prev) => prev - 1);
             return;
           }
 
@@ -332,6 +347,7 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
                 toast.error(
                   `Sheet "${requiredFile.sheetName}" not found in the uploaded file.`
                 );
+                setProcessingCount((prev) => prev - 1);
                 return;
               }
             } else {
@@ -343,10 +359,14 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
 
             if (!headers || headers.length === 0) {
               toast.error("Headers not found in the sheet.");
+              setProcessingCount((prev) => prev - 1);
               return;
             }
 
-            if (hasDuplicateHeaders(headers)) return;
+            if (hasDuplicateHeaders(headers)) {
+              setProcessingCount((prev) => prev - 1);
+              return;
+            }
 
             const extendedName = requiredFile.sheetName
               ? `${keyName}__${requiredFile.sheetName}`
@@ -416,11 +436,135 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
         }
       };
 
+      reader.onerror = () => {
+        toast.error("Error reading file. Please try again.");
+        setProcessingCount((prev) => prev - 1);
+      };
+
       reader.readAsArrayBuffer(selectedFile);
     });
 
     setValue("files", [...currentFiles], { shouldValidate: true });
     trigger();
+  };
+
+  const handleFileSelection = (file: File, requiredFileName: string) => {
+    const currentFiles = watch("files") ?? [];
+    const fileIndex = requiredFiles.findIndex(f => f.extededName === requiredFileName);
+    
+    if (fileIndex !== -1) {
+      setProcessingCount((prev) => prev + 1);
+      currentFiles[fileIndex] = createFileInstance(file, fileIndex);
+      setValue("files", [...currentFiles], { shouldValidate: true });
+      setFileSelections(prev => ({ ...prev, [requiredFileName]: file.name }));
+      
+      // Process the file for headers and mappings
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        try {
+          const arrayBuffer = e.target?.result as ArrayBuffer;
+          if (!arrayBuffer || arrayBuffer.byteLength === 0) {
+            toast.error("File is empty or unreadable. Please re-upload.");
+            setProcessingCount((prev) => prev - 1);
+            return;
+          }
+
+          const workbook = XLSX.read(arrayBuffer, { type: "array" });
+          if (!workbook.SheetNames?.length) {
+            toast.error("No sheets found in the Excel file.");
+            setProcessingCount((prev) => prev - 1);
+            return;
+          }
+
+          const requiredFile = requiredFiles[fileIndex];
+          let headers: string[] = [];
+
+          if (requiredFile.sheetName) {
+            const sheetIndex = workbook.SheetNames.findIndex(
+              (name) => name.toLowerCase() === requiredFile.sheetName.toLowerCase()
+            );
+
+            if (sheetIndex !== -1) {
+              const worksheet = workbook.Sheets[workbook.SheetNames[sheetIndex]];
+              headers = XLSX.utils.sheet_to_json(worksheet, { header: 1 })[0] as string[];
+            } else {
+              toast.error(`Sheet "${requiredFile.sheetName}" not found in the uploaded file.`);
+              setProcessingCount((prev) => prev - 1);
+              return;
+            }
+          } else {
+            const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+            headers = XLSX.utils.sheet_to_json(worksheet, { header: 1 })[0] as string[];
+          }
+
+          if (!headers || headers.length === 0) {
+            toast.error("Headers not found in the sheet.");
+            setProcessingCount((prev) => prev - 1);
+            return;
+          }
+
+          if (hasDuplicateHeaders(headers)) {
+            setProcessingCount((prev) => prev - 1);
+            return;
+          }
+
+          setFileHeader(prev => ({
+            ...prev,
+            [requiredFile.extededName]: [...headers, "Extra-Attribute-Ignore"],
+          }));
+
+          // Get mapping data for this file
+          const mappingData = requiredVersionValues?.data?.versionValueDetails.find((data) =>
+            data?.requiredFiles.some(
+              (file) =>
+                file.name === requiredFile.name &&
+                (!file.sheetName ||
+                  file.sheetName.toLowerCase() === requiredFile.sheetName?.toLowerCase())
+            )
+          )?.entityId?.attributes;
+
+          if (mappingData) {
+            mappingData.forEach((option) => {
+              const matchedHeader = headers.find(
+                (name) =>
+                  name
+                    ?.replace(/[^a-zA-Z0-9/]/g, "")
+                    .replace(/\//g, " or ")
+                    .replace(/\s+/g, "")
+                    .trim()
+                    .toLowerCase() ===
+                  option.mappingName
+                    ?.replace(/[^a-zA-Z0-9/]/g, "")
+                    .replace(/\//g, " or ")
+                    .replace(/\s+/g, "")
+                    .trim()
+                    .toLowerCase()
+              ) || null;
+
+              setValue(
+                `mappings.${requiredFile.extededName}.${option.name ?? ""}`,
+                matchedHeader,
+                { shouldValidate: true }
+              );
+            });
+          }
+
+          trigger();
+        } catch (error) {
+          console.error("File processing error:", error);
+          toast.error("Something went wrong while processing the file. Please try again.");
+        } finally {
+          setProcessingCount((prev) => prev - 1);
+        }
+      };
+
+      reader.onerror = () => {
+        toast.error("Error reading file. Please try again.");
+        setProcessingCount((prev) => prev - 1);
+      };
+
+      reader.readAsArrayBuffer(file);
+    }
   };
 
   // Check for duplicate headers
@@ -568,6 +712,7 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
                 <TableRow>
                   <StyledTableCell>FILE NAME</StyledTableCell>
                   <StyledTableCell>UPLOAD FILE</StyledTableCell>
+                  <StyledTableCell>SELECT FILE</StyledTableCell>
                   <StyledTableCell align="center">MAPPINGS</StyledTableCell>
                 </TableRow>
               </TableHead>
@@ -643,6 +788,31 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
                           </Typography>
                         ) : null}
                       </Box>
+                    </StyledTableCell>
+                    <StyledTableCell>
+                      {!fileName?.isVersionAvailable && (
+                        <FormControl fullWidth>
+                          <InputLabel>Select File</InputLabel>
+                          <Select
+                            value={fileSelections[fileName.extededName] || ""}
+                            onChange={(e) => {
+                              const selectedFile = [...unmappedFiles, ...(watch("files") || [])].find(f => f?.name === e.target.value);
+                              if (selectedFile) {
+                                handleFileSelection(selectedFile, fileName.extededName);
+                              }
+                            }}
+                            label="Select File"
+                          >
+                            {[...unmappedFiles, ...(watch("files") || [])].map((file) => (
+                              file && (
+                                <MenuItem key={file.name} value={file.name}>
+                                  {file.name}
+                                </MenuItem>
+                              )
+                            ))}
+                          </Select>
+                        </FormControl>
+                      )}
                     </StyledTableCell>
                     <StyledTableCell align="center">
                       {fileHeader[fileName.extededName] ? (
