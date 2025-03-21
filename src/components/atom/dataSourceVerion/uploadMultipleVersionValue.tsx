@@ -6,7 +6,6 @@ import React, {
   useState,
 } from "react";
 import { FieldErrors, FieldValues, useForm } from "react-hook-form";
-import ExcelJS from "exceljs";
 import {
   Box,
   Button,
@@ -39,6 +38,7 @@ import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import { useUploadCustomReportFile } from "../../../hooks/useFileUpalod";
 import { objectToFormData } from "../../../utils/utils";
+import * as XLSX from "xlsx";
 
 interface UploadMultipleFilesProps {
   reportId: string;
@@ -89,8 +89,14 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
     success: boolean;
     versionValueDetails: {
       _id: string;
-      requiredFiles: { name: string; _id: string }[];
+      requiredFiles: {
+        name: string;
+        _id: string;
+        sheetName: string;
+        isRequired: string;
+      }[];
       entityId: { attributes: { name: string; mappingName: string }[] };
+      versions: [];
     }[];
   }>(
     [`versionValue`, String(reportId), String(versionValue)],
@@ -102,7 +108,18 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
   const requiredFiles = useMemo(() => {
     return (
       requiredVersionValues?.data?.versionValueDetails
-        ?.flatMap((data) => data.requiredFiles || [])
+        ?.flatMap(
+          (data) =>
+            data?.requiredFiles?.map((file, index) => ({
+              ...file,
+              isVersionAvailable: (data?.versions?.length ?? 0) > 0,
+              extededName:
+                file?.name + (file?.sheetName ? `__${file?.sheetName}` : ""),
+              detailId: data?._id,
+              attributes: data?.entityId?.attributes,
+              fileIndex: index,
+            })) || []
+        )
         ?.filter(Boolean) || []
     );
   }, [requiredVersionValues?.data]);
@@ -119,15 +136,28 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
 
   const validationSchema = Yup.object({
     files: Yup.array()
-      .of(
-        Yup.mixed<File>().test(
-          "file-required",
-          "All required files must be uploaded.",
-          (value) => !!value
-        )
-      )
-      .test("all-files-present", "Please upload all required files.", (files) =>
-        files?.every((file) => file !== null && file !== undefined)
+      .of(Yup.mixed<File>().nullable())
+      .test(
+        "all-required-files-present",
+        "Please upload all required files.",
+        (files, context) => {
+          const missingFiles = requiredFiles.filter((file, index) => {
+            const { isVersionAvailable, isRequired } = file;
+
+            if (isVersionAvailable) return false;
+
+            return isRequired && !files?.[index];
+          });
+
+          if (missingFiles.length > 0) {
+            return context.createError({
+              path: "files",
+              message: "Please upload all required files.",
+            });
+          }
+
+          return true;
+        }
       ),
 
     mappings: Yup.object().test(
@@ -149,7 +179,7 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
             };
             hasErrors = true;
           } else {
-            const localValueOccurrences = new Set<string>(); // Tracks values within the same file
+            const localValueOccurrences = new Set<string>();
 
             Object.entries(fileMapping).forEach(([, value]) => {
               if (value === null || value === undefined) {
@@ -215,6 +245,14 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
     return filename.replace(/\.[^/.]+$/, "");
   };
 
+  const createFileInstance = (selectedFile: File, i: number) => {
+    const ext = selectedFile.name.split(".").pop();
+    return new File([selectedFile], `${requiredFiles[i]?.name}.${ext}`, {
+      type: selectedFile.type,
+      lastModified: selectedFile.lastModified,
+    });
+  };
+
   const handleFileChange = (
     event: React.ChangeEvent<HTMLInputElement>,
     fileName?: string,
@@ -230,8 +268,8 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
 
     selectedFiles?.forEach((selectedFile) => {
       if (
-        !selectedFile?.name.endsWith(".xlsx") &&
-        !selectedFile?.name.endsWith(".xls")
+        !selectedFile?.name?.endsWith(".xlsx") &&
+        !selectedFile?.name?.endsWith(".xls")
       ) {
         toast.error("Please upload a valid Excel file.");
         return;
@@ -240,84 +278,132 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
       // Increase processing counter for each file
       setProcessingCount((prev) => prev + 1);
 
-      const fileIndex = requiredFiles?.findIndex(
-        (reqFile) => reqFile?.name === removeExtension(selectedFile?.name)
-      );
-      currentFiles[index !== -1 ? index : fileIndex] = selectedFile;
+      const matchedFileIndexes = requiredFiles
+        ?.map((reqFile, i) =>
+          reqFile?.name === removeExtension(selectedFile?.name) ? i : -1
+        )
+        .filter((i) => i !== -1);
+
+      const targetIndexes = index === -1 ? matchedFileIndexes : [index];
+
+      targetIndexes?.forEach((i) => {
+        currentFiles[i] = createFileInstance(selectedFile, i);
+      });
 
       const reader = new FileReader();
+
       reader.onload = async (e) => {
         try {
           const arrayBuffer = e?.target?.result as ArrayBuffer;
-          const workbook = new ExcelJS.Workbook();
 
-          try {
-            await workbook?.xlsx?.load(arrayBuffer);
-          } catch {
-            toast.error(
-              "Failed to load the Excel file. Ensure the file is valid."
-            );
+          if (!arrayBuffer || arrayBuffer?.byteLength === 0) {
+            toast.error("File is empty or unreadable. Please re-upload.");
             return;
           }
 
-          if (!workbook?.worksheets?.length) {
+          // Convert ArrayBuffer to a readable format
+          const workbook = XLSX?.read(arrayBuffer, { type: "array" });
+
+          if (!workbook?.SheetNames?.length) {
             toast.error("No sheets found in the Excel file.");
             return;
           }
 
-          const worksheet = workbook?.worksheets[0];
-          const headers = extractHeaders(worksheet);
-
-          if (!headers?.length) {
-            toast.error("Headers not found.");
-            return;
-          }
-
-          if (hasDuplicateHeaders(headers)) return;
-
           const keyName = fileName ?? removeExtension(selectedFile?.name);
 
-          setFileHeader((prev) => ({
-            ...prev,
-            [keyName]: [...headers, "Extra-Attribute-Ignore"],
-          }));
+          const sheets = requiredFiles?.filter((_, ind) =>
+            index !== -1 ? index === ind : matchedFileIndexes?.includes(ind)
+          );
 
-          setFileUploads((prev) => ({
-            ...prev,
-            [keyName]: selectedFile,
-          }));
-
-          const emptyMappingData =
-            requiredVersionValues?.data?.versionValueDetails?.find((data) =>
-              data?.requiredFiles?.some((file) => file?.name === keyName)
-            )?.entityId?.attributes;
-
-          emptyMappingData?.forEach((option) => {
-            const matchedHeader =
-              headers?.find(
+          // Process each required sheet
+          sheets?.forEach((requiredFile) => {
+            const sheetNames = workbook?.SheetNames;
+            let worksheet;
+            if (requiredFile?.sheetName) {
+              const sheetIndex = sheetNames?.findIndex(
                 (name) =>
-                  name
-                    ?.replace(/[^a-zA-Z0-9/]/g, "")
-                    ?.replace(/\//g, " or ")
-                    ?.replace(/\s+/g, "")
-                    ?.trim()
-                    ?.toLowerCase() ===
-                  option?.mappingName
-                    ?.replace(/[^a-zA-Z0-9/]/g, "")
-                    ?.replace(/\//g, " or ")
-                    ?.replace(/\s+/g, "")
-                    ?.trim()
-                    ?.toLowerCase()
-              ) || null;
+                  name?.toLowerCase() === requiredFile?.sheetName?.toLowerCase()
+              );
 
-            setValue(
-              `mappings.${keyName}.${option?.name ?? ""}`,
-              matchedHeader,
-              { shouldValidate: true }
-            );
-            trigger();
+              worksheet =
+                sheetIndex !== -1
+                  ? workbook?.Sheets?.[sheetNames[sheetIndex]]
+                  : workbook?.Sheets?.[sheetNames[0]];
+            } else {
+              worksheet = workbook?.Sheets?.[sheetNames[0]];
+            }
+
+            const headers =
+              (XLSX?.utils?.sheet_to_json(worksheet, {
+                header: 1,
+              })[0] as string[]) || [];
+
+            if (!headers || headers?.length === 0) {
+              toast.error("Headers not found in the sheet.");
+              return;
+            }
+
+            if (hasDuplicateHeaders(headers)) return;
+
+            const extendedName = requiredFile?.sheetName
+              ? `${keyName}__${requiredFile?.sheetName}`
+              : keyName;
+
+            setFileHeader((prev) => ({
+              ...prev,
+              [extendedName]: [...headers, "Extra-Attribute-Ignore"],
+            }));
+
+            setFileUploads((prev) => ({
+              ...prev,
+              [extendedName]: createFileInstance(selectedFile, index),
+            }));
+
+            // Get mapping data for this file
+            const mappingData =
+              requiredVersionValues?.data?.versionValueDetails?.find((data) =>
+                data?.requiredFiles?.some(
+                  (file) =>
+                    file?.name === keyName &&
+                    (!file?.sheetName ||
+                      file?.sheetName?.toLowerCase() ===
+                        requiredFile?.sheetName?.toLowerCase())
+                )
+              )?.entityId?.attributes;
+
+            if (mappingData) {
+              mappingData?.forEach((option) => {
+                const matchedHeader =
+                  headers?.find(
+                    (name) =>
+                      name
+                        ?.replace(/[^a-zA-Z0-9/]/g, "")
+                        ?.replace(/\//g, " or ")
+                        ?.replace(/\s+/g, "")
+                        ?.trim()
+                        ?.toLowerCase() ===
+                      option.mappingName
+                        ?.replace(/[^a-zA-Z0-9/]/g, "")
+                        ?.replace(/\//g, " or ")
+                        ?.replace(/\s+/g, "")
+                        ?.trim()
+                        ?.toLowerCase()
+                  ) || null;
+
+                setValue(
+                  `mappings.${extendedName}.${option?.name ?? ""}`,
+                  matchedHeader,
+                  {
+                    shouldValidate: true,
+                  }
+                );
+              });
+            }
           });
-        } catch {
+
+          trigger();
+        } catch (error) {
+          console.error("File processing error:", error);
           toast.error(
             "Something went wrong while processing the file. Please try again."
           );
@@ -332,15 +418,6 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
 
     setValue("files", [...currentFiles], { shouldValidate: true });
     trigger();
-  };
-
-  // Helper function to extract headers
-  const extractHeaders = (worksheet: ExcelJS.Worksheet): string[] => {
-    const headers: string[] = [];
-    worksheet.getRow(1).eachCell((cell) => {
-      headers.push(cell.value?.toString() || "");
-    });
-    return headers;
   };
 
   // Check for duplicate headers
@@ -398,6 +475,7 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
         ? errors.files.message
         : undefined;
 
+    // Ensure mappings.message exists and is an object
     const mappingMessage = errors.mappings?.message;
 
     if (typeof mappingMessage !== "object" || mappingMessage === null) {
@@ -405,13 +483,16 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
       return;
     }
 
+    // Extract the first key dynamically
     const firstKey = Object.keys(mappingMessage)[0];
 
+    // Ensure errorMessage is extracted safely
     const errorMessage =
       mappingMessage[firstKey]?.msg && typeof mappingMessage[firstKey]?.isError
         ? "Please Map all files."
         : undefined;
 
+    // Show the error message
     toast.error(filesError || errorMessage);
   };
 
@@ -438,7 +519,7 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
         open={open}
         onClose={() => setOpen(false)}
         fullWidth
-        maxWidth="sm"
+        maxWidth="md"
       >
         <DialogTitle>Generate Report</DialogTitle>
         <DialogTitle
@@ -477,7 +558,6 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
             )}
           </Stack>
         </DialogTitle>
-
         <DialogContent>
           <TableContainer component={Paper}>
             <Table sx={{ width: "100%" }} aria-label="customized table">
@@ -485,115 +565,129 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
                 <TableRow>
                   <StyledTableCell>FILE NAME</StyledTableCell>
                   <StyledTableCell>UPLOAD FILE</StyledTableCell>
-                  <StyledTableCell>MAPPINGS</StyledTableCell>
+                  <StyledTableCell align="center">MAPPINGS</StyledTableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
-                {requiredVersionValues?.data?.versionValueDetails
-                  ?.flatMap((data) =>
-                    (data.requiredFiles ?? [])?.map((file, index) => ({
-                      ...file,
-                      detailId: data._id,
-                      attributes: data.entityId?.attributes ?? [],
-                      fileIndex: index,
-                    }))
-                  )
-                  ?.filter(Boolean)
-                  ?.map(
-                    (
-                      fileName: {
-                        name: string;
-                        _id: string;
-                        detailId: string;
-                        attributes: { name: string; mappingName: string }[];
-                        fileIndex: number;
-                      },
-                      index: number
-                    ) => (
-                      <StyledTableRow key={`${fileName._id}`}>
-                        <StyledTableCell>
-                          {fileName?.name || "-"}
-                        </StyledTableCell>
-                        <StyledTableCell>
-                          <Box display="flex" alignItems="center" gap={2}>
-                            <Button
-                              variant="contained"
-                              component="label"
+                {requiredFiles?.map((fileName, index) => (
+                  <StyledTableRow key={`${fileName._id}`}>
+                    <StyledTableCell>
+                      {fileName?.extededName || "-"}
+                    </StyledTableCell>
+                    <StyledTableCell>
+                      <Box>
+                        <Button
+                          variant="contained"
+                          component="label"
+                          sx={{
+                            fontWeight: "bold",
+                            bgcolor: "#007bff",
+                            color: "#fff",
+                            "&:hover": { bgcolor: "#0056b3" },
+                            padding: 1,
+                            marginBottom: 1,
+                            position: "relative",
+                          }}
+                        >
+                          <Stack
+                            gap={1}
+                            direction="row"
+                            justifyContent="center"
+                            alignContent="center"
+                            sx={{ fontSize: "0.8rem" }}
+                          >
+                            <UploadFileIcon sx={{ fontSize: "1.5rem" }} />
+                            <Typography
+                              component="span"
+                              variant="button"
+                              fontWeight={600}
+                            >
+                              {fileName?.isVersionAvailable ||
+                              watch("files")?.[index]
+                                ? "Reupload File"
+                                : "Upload File"}
+                            </Typography>
+                          </Stack>
+                          <input
+                            type="file"
+                            hidden
+                            onChange={(e) =>
+                              handleFileChange(e, fileName.name, index)
+                            }
+                          />
+                          {fileName?.isRequired && (
+                            <Typography
+                              component="span"
+                              color="error"
                               sx={{
-                                fontWeight: "bold",
-                                bgcolor: "#007bff",
-                                color: "#fff",
-                                "&:hover": { bgcolor: "#0056b3" },
-                                padding: 2,
+                                fontSize: 35,
+                                position: "absolute",
+                                top: -23,
+                                right: -8,
                               }}
                             >
-                              <Box
-                                gap={1}
-                                display="flex"
-                                justifyContent="center"
-                              >
-                                <UploadFileIcon />
-                                Upload File
-                              </Box>
-                              <input
-                                type="file"
-                                hidden
-                                onChange={(e) =>
-                                  handleFileChange(e, fileName.name, index)
-                                }
-                              />
-                            </Button>
-                          </Box>
-                        </StyledTableCell>
-                        <StyledTableCell>
-                          {fileHeader[fileName.name] ? (
-                            <Stack
-                              direction="row"
-                              gap={1}
-                              alignItems="center"
-                              justifyContent="center"
-                            >
-                              <ViewMapping
-                                fileName={fileName}
-                                CustomButton={<Button>View Mappings</Button>}
-                                title={`Mapping for ${fileName.name}`}
-                                settingAttributeOption={fileName.attributes}
-                                fileHeaders={fileHeader[fileName.name]!}
-                                control={control}
-                                setValue={setValue}
-                                reset={reset}
-                                errors={errors}
-                                index={index}
-                                setOpen={setOpenMappingModal}
-                                open={openMappingModal}
-                                trigger={trigger}
-                                watch={watch}
-                              />
-                              {(
-                                (errors?.mappings?.message ||
-                                  errors?.mappings?.root
-                                    ?.message) as unknown as Record<
-                                  string,
-                                  { isError: boolean; msg: string }
-                                >
-                              )?.[fileName?.name]?.isError ? (
-                                <ErrorOutlineIcon color="error" />
-                              ) : (
-                                <CheckCircleIcon color="success" />
-                              )}
-                            </Stack>
-                          ) : (
-                            "-"
+                              *
+                            </Typography>
                           )}
-                        </StyledTableCell>
-                      </StyledTableRow>
-                    )
-                  )}
+                        </Button>
+                        {fileName?.isVersionAvailable ? (
+                          <Typography
+                            component="div"
+                            variant="caption"
+                            color="info"
+                          >
+                            Data Available
+                          </Typography>
+                        ) : null}
+                      </Box>
+                    </StyledTableCell>
+                    <StyledTableCell align="center">
+                      {fileHeader[fileName.extededName] ? (
+                        <Stack
+                          direction="row"
+                          gap={1}
+                          alignItems="center"
+                          justifyContent="center"
+                        >
+                          <ViewMapping
+                            fileName={fileName}
+                            CustomButton={<Button>View Mappings</Button>}
+                            title={`Mapping for ${fileName.name}`}
+                            settingAttributeOption={fileName.attributes}
+                            fileHeaders={fileHeader[fileName.extededName]!}
+                            control={control}
+                            setValue={setValue}
+                            index={index}
+                            setOpen={setOpenMappingModal}
+                            open={openMappingModal}
+                            trigger={trigger}
+                            watch={watch}
+                          />
+                          {(
+                            (errors?.mappings?.message ||
+                              errors?.mappings?.root
+                                ?.message) as unknown as Record<
+                              string,
+                              { isError: boolean; msg: string }
+                            >
+                          )?.[fileName?.extededName]?.isError ? (
+                            <ErrorOutlineIcon color="error" />
+                          ) : (
+                            <CheckCircleIcon color="success" />
+                          )}
+                        </Stack>
+                      ) : fileName?.isVersionAvailable ? (
+                        <CheckCircleIcon color="success" />
+                      ) : (
+                        "-"
+                      )}
+                    </StyledTableCell>
+                  </StyledTableRow>
+                ))}
               </TableBody>
             </Table>
           </TableContainer>
         </DialogContent>
-
         <DialogActions>
           <Button onClick={() => setOpen(false)} color="error">
             Cancel
@@ -602,7 +696,7 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
             onClick={handleSubmit(onSubmit, onError)}
             variant="contained"
             color="primary"
-            disabled={isLoadingReportUpload}
+            disabled={isLoadingReportUpload || !!errors.files}
           >
             Submit
           </Button>
