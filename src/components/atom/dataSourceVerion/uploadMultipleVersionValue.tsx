@@ -242,6 +242,14 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
     return filename.replace(/\.[^/.]+$/, "");
   };
 
+  const createFileInstance = (selectedFile: File, i: number) => {
+    const ext = selectedFile.name.split(".").pop();
+    return new File([selectedFile], `${requiredFiles[i]?.name}.${ext}`, {
+      type: selectedFile.type,
+      lastModified: selectedFile.lastModified,
+    });
+  };
+
   const handleFileChange = (
     event: React.ChangeEvent<HTMLInputElement>,
     fileName?: string,
@@ -264,41 +272,20 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
         return;
       }
 
-      const splitedFile = selectedFile.name?.split(".");
       // Increase processing counter for each file
       setProcessingCount((prev) => prev + 1);
 
-      const fileIndexes = requiredFiles
-        .map((reqFile, index) =>
-          reqFile.name === removeExtension(selectedFile.name) ? index : -1
+      const matchedFileIndexes = requiredFiles
+        .map((reqFile, i) =>
+          reqFile.name === removeExtension(selectedFile.name) ? i : -1
         )
-        .filter((index) => index !== -1);
+        .filter((i) => i !== -1);
 
-      if (fileIndexes.length > 0) {
-        fileIndexes.forEach((i) => {
-          currentFiles[i] = new File(
-            [selectedFile],
-            requiredFiles[index]?.name +
-              "." +
-              splitedFile?.[splitedFile?.length - 1] || selectedFile.name,
-            {
-              type: selectedFile.type,
-              lastModified: selectedFile.lastModified,
-            }
-          );
-        });
-      } else {
-        currentFiles[index] = new File(
-          [selectedFile],
-          requiredFiles[index]?.name +
-            "." +
-            splitedFile?.[splitedFile?.length - 1] || selectedFile.name,
-          {
-            type: selectedFile.type,
-            lastModified: selectedFile.lastModified,
-          }
-        );
-      }
+      const targetIndexes = index === -1 ? matchedFileIndexes : [index];
+
+      targetIndexes.forEach((i) => {
+        currentFiles[i] = createFileInstance(selectedFile, i);
+      });
 
       const reader = new FileReader();
 
@@ -319,105 +306,107 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
             return;
           }
 
-          const sheet = workbook.SheetNames[0];
-          const worksheet = workbook.Sheets[sheet];
-
-          const headers = XLSX.utils.sheet_to_json(worksheet, {
-            header: 1,
-          })[0] as string[];
-
-          if (!headers || headers.length === 0) {
-            toast.error("Headers not found.");
-            return;
-          }
-
-          if (hasDuplicateHeaders(headers)) return;
-
           const keyName = fileName ?? removeExtension(selectedFile.name);
 
           const sheets = requiredFiles?.filter((_, ind) =>
-            index !== -1 ? index : fileIndexes.includes(ind)
+            index !== -1 ? index === ind : matchedFileIndexes.includes(ind)
           );
-          const sheetNames = sheets?.map((file) => file.sheetName);
 
-          const extendedNames =
-            sheetNames.length > 0
-              ? sheetNames.map((name) =>
-                  name
-                    ? `${
-                        fileName ?? removeExtension(selectedFile.name)
-                      }__${name}`
-                    : `${fileName ?? removeExtension(selectedFile.name)}`
+          // Process each required sheet
+          sheets.forEach((requiredFile) => {
+            let headers: string[] = [];
+
+            if (requiredFile.sheetName) {
+              const sheetIndex = workbook.SheetNames.findIndex(
+                (name) =>
+                  name.toLowerCase() === requiredFile.sheetName.toLowerCase()
+              );
+
+              if (sheetIndex !== -1) {
+                const worksheet =
+                  workbook.Sheets[workbook.SheetNames[sheetIndex]];
+                headers = XLSX.utils.sheet_to_json(worksheet, {
+                  header: 1,
+                })[0] as string[];
+              } else {
+                toast.error(
+                  `Sheet "${requiredFile.sheetName}" not found in the uploaded file.`
+                );
+                return;
+              }
+            } else {
+              const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+              headers = XLSX.utils.sheet_to_json(worksheet, {
+                header: 1,
+              })[0] as string[];
+            }
+
+            if (!headers || headers.length === 0) {
+              toast.error("Headers not found in the sheet.");
+              return;
+            }
+
+            if (hasDuplicateHeaders(headers)) return;
+
+            const extendedName = requiredFile.sheetName
+              ? `${keyName}__${requiredFile.sheetName}`
+              : keyName;
+
+            setFileHeader((prev) => ({
+              ...prev,
+              [extendedName]: [...headers, "Extra-Attribute-Ignore"],
+            }));
+
+            setFileUploads((prev) => ({
+              ...prev,
+              [extendedName]: createFileInstance(selectedFile, index),
+            }));
+
+            // Get mapping data for this file
+            const mappingData =
+              requiredVersionValues?.data?.versionValueDetails.find((data) =>
+                data?.requiredFiles.some(
+                  (file) =>
+                    file.name === keyName &&
+                    (!file.sheetName ||
+                      file.sheetName.toLowerCase() ===
+                        requiredFile.sheetName?.toLowerCase())
                 )
-              : [`${fileName ?? removeExtension(selectedFile.name)}`];
+              )?.entityId?.attributes;
 
-          setFileHeader((prev) => {
-            const updatedHeaders = { ...prev };
-            extendedNames.forEach((name) => {
-              updatedHeaders[name] = [...headers, "Extra-Attribute-Ignore"];
-            });
-            return updatedHeaders;
+            if (mappingData) {
+              mappingData.forEach((option) => {
+                const matchedHeader =
+                  headers.find(
+                    (name) =>
+                      name
+                        ?.replace(/[^a-zA-Z0-9/]/g, "")
+                        .replace(/\//g, " or ")
+                        .replace(/\s+/g, "")
+                        .trim()
+                        .toLowerCase() ===
+                      option.mappingName
+                        ?.replace(/[^a-zA-Z0-9/]/g, "")
+                        .replace(/\//g, " or ")
+                        .replace(/\s+/g, "")
+                        .trim()
+                        .toLowerCase()
+                  ) || null;
+
+                setValue(
+                  `mappings.${extendedName}.${option.name ?? ""}`,
+                  matchedHeader,
+                  {
+                    shouldValidate: true,
+                  }
+                );
+              });
+            }
           });
 
-          setFileUploads((prev) => {
-            const updatedUploads = { ...prev };
-            extendedNames.forEach((name) => {
-              updatedUploads[name] = new File(
-                [selectedFile],
-                requiredFiles[index]?.name +
-                  "." +
-                  splitedFile?.[splitedFile?.length - 1] || selectedFile.name,
-                {
-                  type: selectedFile.type,
-                  lastModified: selectedFile.lastModified,
-                }
-              );
-            });
-            return updatedUploads;
-          });
-
-          const emptyMappingData =
-            requiredVersionValues?.data?.versionValueDetails
-              .filter((data) =>
-                data?.requiredFiles.some((file) => file.name === keyName)
-              )
-              ?.map((data) => data?.entityId?.attributes);
-
-          emptyMappingData?.forEach((attributeSet, index) => {
-            if (!attributeSet) return;
-
-            const sheetName = extendedNames[index];
-
-            attributeSet.forEach((option) => {
-              const matchedHeader =
-                headers.find(
-                  (name) =>
-                    name
-                      ?.replace(/[^a-zA-Z0-9/]/g, "")
-                      .replace(/\//g, " or ")
-                      .replace(/\s+/g, "")
-                      .trim()
-                      .toLowerCase() ===
-                    option.mappingName
-                      ?.replace(/[^a-zA-Z0-9/]/g, "")
-                      .replace(/\//g, " or ")
-                      .replace(/\s+/g, "")
-                      .trim()
-                      .toLowerCase()
-                ) || null;
-
-              setValue(
-                `mappings.${sheetName}.${option.name ?? ""}`,
-                matchedHeader,
-                {
-                  shouldValidate: true,
-                }
-              );
-            });
-
-            trigger();
-          });
-        } catch {
+          trigger();
+        } catch (error) {
+          console.error("File processing error:", error);
           toast.error(
             "Something went wrong while processing the file. Please try again."
           );
