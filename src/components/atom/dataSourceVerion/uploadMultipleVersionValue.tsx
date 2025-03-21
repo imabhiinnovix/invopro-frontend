@@ -107,17 +107,20 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
 
   const requiredFiles = useMemo(() => {
     return (
-      requiredVersionValues?.data?.versionValueDetails?.flatMap((data) =>
-        data.requiredFiles.map((file, index) => ({
-          ...file,
-          isVersionAvailable: (data.versions?.length ?? 0) > 0,
-          extededName:
-            file.name + (file.sheetName ? `__${file.sheetName}` : ""),
-          detailId: data._id,
-          attributes: data.entityId.attributes,
-          fileIndex: index,
-        }))
-      ) ?? []
+      requiredVersionValues?.data?.versionValueDetails
+        ?.flatMap(
+          (data) =>
+            data?.requiredFiles?.map((file, index) => ({
+              ...file,
+              isVersionAvailable: (data?.versions?.length ?? 0) > 0,
+              extededName:
+                file?.name + (file?.sheetName ? `__${file?.sheetName}` : ""),
+              detailId: data?._id,
+              attributes: data?.entityId?.attributes,
+              fileIndex: index,
+            })) || []
+        )
+        ?.filter(Boolean) || []
     );
   }, [requiredVersionValues?.data]);
 
@@ -257,16 +260,16 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
   ) => {
     if (!event.target.files?.length) return;
 
-    const selectedFiles = Array.from(event.target.files);
+    const selectedFiles = Array?.from(event.target.files);
     const currentFiles =
       watch("files")?.length === 0
-        ? Array(requiredFiles.length).fill(null)
+        ? Array(requiredFiles?.length)?.fill(null)
         : watch("files") ?? [];
 
-    selectedFiles.forEach((selectedFile) => {
+    selectedFiles?.forEach((selectedFile) => {
       if (
-        !selectedFile.name.endsWith(".xlsx") &&
-        !selectedFile.name.endsWith(".xls")
+        !selectedFile?.name?.endsWith(".xlsx") &&
+        !selectedFile?.name?.endsWith(".xls")
       ) {
         toast.error("Please upload a valid Excel file.");
         return;
@@ -276,14 +279,14 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
       setProcessingCount((prev) => prev + 1);
 
       const matchedFileIndexes = requiredFiles
-        .map((reqFile, i) =>
-          reqFile.name === removeExtension(selectedFile.name) ? i : -1
+        ?.map((reqFile, i) =>
+          reqFile?.name === removeExtension(selectedFile?.name) ? i : -1
         )
         .filter((i) => i !== -1);
 
       const targetIndexes = index === -1 ? matchedFileIndexes : [index];
 
-      targetIndexes.forEach((i) => {
+      targetIndexes?.forEach((i) => {
         currentFiles[i] = createFileInstance(selectedFile, i);
       });
 
@@ -291,65 +294,59 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
 
       reader.onload = async (e) => {
         try {
-          const arrayBuffer = e.target?.result as ArrayBuffer;
+          const arrayBuffer = e?.target?.result as ArrayBuffer;
 
-          if (!arrayBuffer || arrayBuffer.byteLength === 0) {
+          if (!arrayBuffer || arrayBuffer?.byteLength === 0) {
             toast.error("File is empty or unreadable. Please re-upload.");
             return;
           }
 
           // Convert ArrayBuffer to a readable format
-          const workbook = XLSX.read(arrayBuffer, { type: "array" });
+          const workbook = XLSX?.read(arrayBuffer, { type: "array" });
 
-          if (!workbook.SheetNames?.length) {
+          if (!workbook?.SheetNames?.length) {
             toast.error("No sheets found in the Excel file.");
             return;
           }
 
-          const keyName = fileName ?? removeExtension(selectedFile.name);
+          const keyName = fileName ?? removeExtension(selectedFile?.name);
 
           const sheets = requiredFiles?.filter((_, ind) =>
-            index !== -1 ? index === ind : matchedFileIndexes.includes(ind)
+            index !== -1 ? index === ind : matchedFileIndexes?.includes(ind)
           );
 
           // Process each required sheet
-          sheets.forEach((requiredFile) => {
-            let headers: string[] = [];
-
-            if (requiredFile.sheetName) {
-              const sheetIndex = workbook.SheetNames.findIndex(
+          sheets?.forEach((requiredFile) => {
+            const sheetNames = workbook?.SheetNames;
+            let worksheet;
+            if (requiredFile?.sheetName) {
+              const sheetIndex = sheetNames?.findIndex(
                 (name) =>
-                  name.toLowerCase() === requiredFile.sheetName.toLowerCase()
+                  name?.toLowerCase() === requiredFile?.sheetName?.toLowerCase()
               );
 
-              if (sheetIndex !== -1) {
-                const worksheet =
-                  workbook.Sheets[workbook.SheetNames[sheetIndex]];
-                headers = XLSX.utils.sheet_to_json(worksheet, {
-                  header: 1,
-                })[0] as string[];
-              } else {
-                toast.error(
-                  `Sheet "${requiredFile.sheetName}" not found in the uploaded file.`
-                );
-                return;
-              }
+              worksheet =
+                sheetIndex !== -1
+                  ? workbook?.Sheets?.[sheetNames[sheetIndex]]
+                  : workbook?.Sheets?.[sheetNames[0]];
             } else {
-              const worksheet = workbook.Sheets[workbook.SheetNames[0]];
-              headers = XLSX.utils.sheet_to_json(worksheet, {
-                header: 1,
-              })[0] as string[];
+              worksheet = workbook?.Sheets?.[sheetNames[0]];
             }
 
-            if (!headers || headers.length === 0) {
+            const headers =
+              (XLSX?.utils?.sheet_to_json(worksheet, {
+                header: 1,
+              })[0] as string[]) || [];
+
+            if (!headers || headers?.length === 0) {
               toast.error("Headers not found in the sheet.");
               return;
             }
 
             if (hasDuplicateHeaders(headers)) return;
 
-            const extendedName = requiredFile.sheetName
-              ? `${keyName}__${requiredFile.sheetName}`
+            const extendedName = requiredFile?.sheetName
+              ? `${keyName}__${requiredFile?.sheetName}`
               : keyName;
 
             setFileHeader((prev) => ({
@@ -364,37 +361,37 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
 
             // Get mapping data for this file
             const mappingData =
-              requiredVersionValues?.data?.versionValueDetails.find((data) =>
-                data?.requiredFiles.some(
+              requiredVersionValues?.data?.versionValueDetails?.find((data) =>
+                data?.requiredFiles?.some(
                   (file) =>
-                    file.name === keyName &&
-                    (!file.sheetName ||
-                      file.sheetName.toLowerCase() ===
-                        requiredFile.sheetName?.toLowerCase())
+                    file?.name === keyName &&
+                    (!file?.sheetName ||
+                      file?.sheetName?.toLowerCase() ===
+                        requiredFile?.sheetName?.toLowerCase())
                 )
               )?.entityId?.attributes;
 
             if (mappingData) {
-              mappingData.forEach((option) => {
+              mappingData?.forEach((option) => {
                 const matchedHeader =
-                  headers.find(
+                  headers?.find(
                     (name) =>
                       name
                         ?.replace(/[^a-zA-Z0-9/]/g, "")
-                        .replace(/\//g, " or ")
-                        .replace(/\s+/g, "")
-                        .trim()
-                        .toLowerCase() ===
+                        ?.replace(/\//g, " or ")
+                        ?.replace(/\s+/g, "")
+                        ?.trim()
+                        ?.toLowerCase() ===
                       option.mappingName
                         ?.replace(/[^a-zA-Z0-9/]/g, "")
-                        .replace(/\//g, " or ")
-                        .replace(/\s+/g, "")
-                        .trim()
-                        .toLowerCase()
+                        ?.replace(/\//g, " or ")
+                        ?.replace(/\s+/g, "")
+                        ?.trim()
+                        ?.toLowerCase()
                   ) || null;
 
                 setValue(
-                  `mappings.${extendedName}.${option.name ?? ""}`,
+                  `mappings.${extendedName}.${option?.name ?? ""}`,
                   matchedHeader,
                   {
                     shouldValidate: true,
