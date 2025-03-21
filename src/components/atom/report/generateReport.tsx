@@ -44,7 +44,6 @@ export default function GenerateReport({ setReload }: GenerateReportProps) {
   );
 
   const onSubmit = (formData: CustomReportRequestPayload) => {
-    console.log(formData);
     setReportId(formData.customReportId);
     setVersionValue(
       DateTime.fromISO(formData.versionValue).toFormat("yyyy-LL")

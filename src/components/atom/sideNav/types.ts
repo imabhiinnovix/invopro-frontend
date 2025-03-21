@@ -35,7 +35,7 @@ export interface DataSourceListData {
 export interface DataSourceListAttributes {
   name: string;
   mappingName: string;
-  type: "option" | "text";
+  type: "option" | "text" | "number" | "boolean";
   required: boolean;
   validation: [];
   transformations: [];

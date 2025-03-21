@@ -8,14 +8,11 @@ import {
   TableRow,
   Paper,
   TextField,
-  Button,
   Container,
   Box,
   Stack,
   Divider,
-  IconButton,
 } from "@mui/material";
-import { Add, Delete } from "@mui/icons-material";
 import { useForm } from "react-hook-form";
 import CommonDatePicker from "../../components/common/datePicker/datePicker";
 import { useAppSelector } from "../../storeHooks";
@@ -33,7 +30,9 @@ import ContainedButton from "../../components/molecule/containedButton";
 import usePost from "../../hooks/usePost";
 
 const DataSources = () => {
-  const [rows, setRows] = useState<{ [x: string]: string }[]>([]);
+  const [rows, setRows] = useState<
+    { [x: string]: string | number | boolean }[]
+  >([]);
 
   const { id } = useParams();
 
@@ -115,10 +114,17 @@ const DataSources = () => {
             ]?.toLowerCase() === val?.toLowerCase()
         );
 
-        // Dynamically map text attributes
+        // Dynamically map text attributes with proper default values
         const rowData = textAttributes.reduce(
-          (acc: { [key: string]: string }, attr) => {
-            acc[attr?.name] = matchingRow ? matchingRow[attr?.name] || "" : "";
+          (acc: Record<string, string | number>, attr) => {
+            const value = matchingRow ? matchingRow[attr?.name] : null;
+
+            if (attr.type === "number") {
+              acc[attr?.name] = value != null ? Number(value) : 0;
+            } else {
+              acc[attr?.name] = value != null ? value : "";
+            }
+
             return acc;
           },
           {}
@@ -133,7 +139,7 @@ const DataSources = () => {
 
     setRows(newRows);
   }, [
-    OptionsAttributesValue?.data?.data.attributeValue,
+    OptionsAttributesValue?.data?.data?.attributeValue,
     optionsAttributes?.name,
     textAttributes,
     sourceMap,
@@ -167,24 +173,45 @@ const DataSources = () => {
     setRows(updatedRows);
   };
 
-  const handleAddRow = () => {
-    const newRow =
-      textAttributes?.reduce((acc: { [key: string]: string }, attr) => {
-        acc[attr?.name] = "";
-        return acc;
-      }, {} as { [key: string]: string }) || {};
+  // const handleAddRow = () => {
+  //   const newRow =
+  //     textAttributes?.reduce((acc: { [key: string]: string }, attr) => {
+  //       acc[attr?.name] = "";
+  //       return acc;
+  //     }, {} as { [key: string]: string }) || {};
 
-    newRow[optionsAttributes?.name ?? "defaultName"] = "";
+  //   newRow[optionsAttributes?.name ?? "defaultName"] = "";
 
-    setRows((prevRows) => [...prevRows, newRow]);
-  };
+  //   setRows((prevRows) => [...prevRows, newRow]);
+  // };
 
   const handleSave = () => {
     if (versionDate && id) {
+      // Map and transform rows based on textAttributes
+      const transformedRows = rows.map((row) => {
+        const transformedRow = { ...row };
+
+        textAttributes?.forEach((attr) => {
+          const value = row[attr.name];
+
+          if (attr.type === "number") {
+            transformedRow[attr.name] = value
+              ? parseFloat(value?.toString())
+              : 0;
+          } else if (attr.type === "boolean") {
+            transformedRow[attr.name] = value === "true";
+          } else {
+            transformedRow[attr.name] = value || "";
+          }
+        });
+
+        return transformedRow;
+      });
+
       const payload = {
         dataSourceId: id,
         versionValue: versionDate,
-        versionData: rows,
+        versionData: transformedRows,
       };
 
       dataSourceCreate?.mutate({
@@ -194,10 +221,10 @@ const DataSources = () => {
     }
   };
 
-  const handleDeleteRow = (index: number) => {
-    const updatedRows = rows.filter((_, i) => i !== index);
-    setRows(updatedRows);
-  };
+  // const handleDeleteRow = (index: number) => {
+  //   const updatedRows = rows.filter((_, i) => i !== index);
+  //   setRows(updatedRows);
+  // };
 
   return (
     <Container style={{ margin: "4rem 0 0 0", width: "calc(100vw - 288px)" }}>
@@ -271,7 +298,22 @@ const DataSources = () => {
                       fullWidth
                       slotProps={{
                         input: {
-                          disableUnderline: true,
+                          onWheel: (e) => {
+                            if (
+                              (e.target as HTMLInputElement)?.type === "number"
+                            ) {
+                              (e.target as HTMLInputElement)?.blur();
+                            }
+                          },
+                          onKeyDown: (e) => {
+                            if (
+                              (e.currentTarget as HTMLInputElement).type ===
+                                "number" &&
+                              ["e", "E", "+", "-"].includes(e.key)
+                            ) {
+                              e.preventDefault();
+                            }
+                          },
                           sx: {
                             fontSize: "1rem",
                             padding: "4px 8px",

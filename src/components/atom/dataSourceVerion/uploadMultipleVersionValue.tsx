@@ -101,9 +101,9 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
 
   const requiredFiles = useMemo(() => {
     return (
-      requiredVersionValues?.data?.versionValueDetails?.flatMap(
-        (data) => data.requiredFiles
-      ) ?? []
+      requiredVersionValues?.data?.versionValueDetails
+        ?.flatMap((data) => data.requiredFiles || [])
+        ?.filter(Boolean) || []
     );
   }, [requiredVersionValues?.data]);
 
@@ -222,16 +222,16 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
   ) => {
     if (!event.target.files?.length) return;
 
-    const selectedFiles = Array.from(event.target.files);
+    const selectedFiles = Array?.from(event.target.files);
     const currentFiles =
       watch("files")?.length === 0
-        ? Array(requiredFiles.length).fill(null)
+        ? Array(requiredFiles?.length)?.fill(null)
         : watch("files") ?? [];
 
-    selectedFiles.forEach((selectedFile) => {
+    selectedFiles?.forEach((selectedFile) => {
       if (
-        !selectedFile.name.endsWith(".xlsx") &&
-        !selectedFile.name.endsWith(".xls")
+        !selectedFile?.name.endsWith(".xlsx") &&
+        !selectedFile?.name.endsWith(".xls")
       ) {
         toast.error("Please upload a valid Excel file.");
         return;
@@ -240,19 +240,19 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
       // Increase processing counter for each file
       setProcessingCount((prev) => prev + 1);
 
-      const fileIndex = requiredFiles.findIndex(
-        (reqFile) => reqFile.name === removeExtension(selectedFile.name)
+      const fileIndex = requiredFiles?.findIndex(
+        (reqFile) => reqFile?.name === removeExtension(selectedFile?.name)
       );
       currentFiles[index !== -1 ? index : fileIndex] = selectedFile;
 
       const reader = new FileReader();
       reader.onload = async (e) => {
         try {
-          const arrayBuffer = e.target?.result as ArrayBuffer;
+          const arrayBuffer = e?.target?.result as ArrayBuffer;
           const workbook = new ExcelJS.Workbook();
 
           try {
-            await workbook.xlsx.load(arrayBuffer);
+            await workbook?.xlsx?.load(arrayBuffer);
           } catch {
             toast.error(
               "Failed to load the Excel file. Ensure the file is valid."
@@ -260,22 +260,22 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
             return;
           }
 
-          if (!workbook.worksheets?.length) {
+          if (!workbook?.worksheets?.length) {
             toast.error("No sheets found in the Excel file.");
             return;
           }
 
-          const worksheet = workbook.worksheets[0];
+          const worksheet = workbook?.worksheets[0];
           const headers = extractHeaders(worksheet);
 
-          if (!headers.length) {
+          if (!headers?.length) {
             toast.error("Headers not found.");
             return;
           }
 
           if (hasDuplicateHeaders(headers)) return;
 
-          const keyName = fileName ?? removeExtension(selectedFile.name);
+          const keyName = fileName ?? removeExtension(selectedFile?.name);
 
           setFileHeader((prev) => ({
             ...prev,
@@ -288,30 +288,30 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
           }));
 
           const emptyMappingData =
-            requiredVersionValues?.data?.versionValueDetails.find((data) =>
-              data?.requiredFiles.some((file) => file.name === keyName)
+            requiredVersionValues?.data?.versionValueDetails?.find((data) =>
+              data?.requiredFiles?.some((file) => file?.name === keyName)
             )?.entityId?.attributes;
 
           emptyMappingData?.forEach((option) => {
             const matchedHeader =
-              headers.find(
+              headers?.find(
                 (name) =>
                   name
                     ?.replace(/[^a-zA-Z0-9/]/g, "")
-                    .replace(/\//g, " or ")
-                    .replace(/\s+/g, "")
-                    .trim()
-                    .toLowerCase() ===
-                  option.mappingName
+                    ?.replace(/\//g, " or ")
+                    ?.replace(/\s+/g, "")
+                    ?.trim()
+                    ?.toLowerCase() ===
+                  option?.mappingName
                     ?.replace(/[^a-zA-Z0-9/]/g, "")
-                    .replace(/\//g, " or ")
-                    .replace(/\s+/g, "")
-                    .trim()
-                    .toLowerCase()
+                    ?.replace(/\//g, " or ")
+                    ?.replace(/\s+/g, "")
+                    ?.trim()
+                    ?.toLowerCase()
               ) || null;
 
             setValue(
-              `mappings.${keyName}.${option.name ?? ""}`,
+              `mappings.${keyName}.${option?.name ?? ""}`,
               matchedHeader,
               { shouldValidate: true }
             );
@@ -327,7 +327,7 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
         }
       };
 
-      reader.readAsArrayBuffer(selectedFile);
+      reader?.readAsArrayBuffer(selectedFile);
     });
 
     setValue("files", [...currentFiles], { shouldValidate: true });
