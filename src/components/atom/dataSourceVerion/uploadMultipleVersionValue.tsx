@@ -567,6 +567,39 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
     }
   };
 
+  const handleRemoveFile = (requiredFileName: string) => {
+    const currentFiles = watch("files") ?? [];
+    const fileIndex = requiredFiles.findIndex(f => f.extededName === requiredFileName);
+    
+    if (fileIndex !== -1) {
+      // Clear the file from current files
+      currentFiles[fileIndex] = null;
+      setValue("files", [...currentFiles], { shouldValidate: true });
+      
+      // Clear the file selection
+      setFileSelections(prev => {
+        const newSelections = { ...prev };
+        delete newSelections[requiredFileName];
+        return newSelections;
+      });
+      
+      // Clear the file header
+      setFileHeader(prev => {
+        const newHeaders = { ...prev };
+        delete newHeaders[requiredFileName];
+        return newHeaders;
+      });
+      
+      // Clear the mappings for this file
+      const mappings = watch("mappings") || {};
+      const newMappings = { ...mappings };
+      delete newMappings[requiredFileName];
+      setValue("mappings", newMappings, { shouldValidate: true });
+      
+      trigger();
+    }
+  };
+
   // Check for duplicate headers
   const hasDuplicateHeaders = (headers: string[]): boolean => {
     const headerCounts: Record<string, number> = headers.reduce(
@@ -790,7 +823,7 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
                       </Box>
                     </StyledTableCell>
                     <StyledTableCell>
-                      {!fileName?.isVersionAvailable && (
+                      <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
                         <FormControl fullWidth>
                           <InputLabel>Select File</InputLabel>
                           <Select
@@ -812,7 +845,16 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
                             ))}
                           </Select>
                         </FormControl>
-                      )}
+                        {fileSelections[fileName.extededName] && (
+                          <Button
+                            color="error"
+                            onClick={() => handleRemoveFile(fileName.extededName)}
+                            sx={{ minWidth: 'auto', p: 1 }}
+                          >
+                            <Typography component="span" sx={{ fontSize: '1.5rem' }}>×</Typography>
+                          </Button>
+                        )}
+                      </Box>
                     </StyledTableCell>
                     <StyledTableCell align="center">
                       {fileHeader[fileName.extededName] ? (
