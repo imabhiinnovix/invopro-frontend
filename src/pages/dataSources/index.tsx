@@ -71,7 +71,7 @@ const DataSources = () => {
     SourceValuePayload,
     SourceValueData
   >(
-    ["sourceData"],
+    ["sourceData", versionDate ?? ""],
     GET?.SOURCE_VERSION_DATA +
       `?dataSourceId=${id}&versionValue=${versionDate}`,
     10,
