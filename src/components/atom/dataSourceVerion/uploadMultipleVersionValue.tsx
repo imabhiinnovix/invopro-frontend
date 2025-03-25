@@ -527,37 +527,45 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
           }));
 
           // Get mapping data for this file
-          const mappingData =
-            requiredVersionValues?.data?.versionValueDetails.find((data) =>
-              data?.requiredFiles.some(
-                (file) =>
-                  file.name === requiredFile.name &&
-                  (!file.sheetName ||
-                    file.sheetName.toLowerCase() ===
-                      requiredFile.sheetName?.toLowerCase())
-              )
-            )?.entityId?.attributes;
+          const mappingData = (() => {
+            if (!requiredVersionValues?.data?.versionValueDetails?.length) {
+              return null;
+            }
+
+            const versionDetail = requiredVersionValues.data.versionValueDetails.find(data => {
+              if (!data?.requiredFiles?.length) {
+                return false;
+              }
+              return data.requiredFiles.some(
+                file =>
+                  file?.name === requiredFile.name &&
+                  (!file?.sheetName ||
+                    file.sheetName.toLowerCase() === requiredFile.sheetName?.toLowerCase())
+              );
+            });
+
+            return versionDetail?.entityId?.attributes;
+          })();
 
           if (mappingData) {
             mappingData.forEach((option) => {
               if (!option?.name || !option?.mappingName) return;
-
-              const matchedHeader =
-                headers.find(
-                  (name) =>
-                    name
-                      ?.replace(/[^a-zA-Z0-9/]/g, "")
-                      .replace(/\//g, " or ")
-                      .replace(/\s+/g, "")
-                      .trim()
-                      .toLowerCase() ===
-                    option.mappingName
-                      ?.replace(/[^a-zA-Z0-9/]/g, "")
-                      .replace(/\//g, " or ")
-                      .replace(/\s+/g, "")
-                      .trim()
-                      .toLowerCase()
-                ) || null;
+              
+              const matchedHeader = headers.find(
+                (name) =>
+                  name
+                    ?.replace(/[^a-zA-Z0-9/]/g, "")
+                    .replace(/\//g, " or ")
+                    .replace(/\s+/g, "")
+                    .trim()
+                    .toLowerCase() ===
+                  option.mappingName
+                    ?.replace(/[^a-zA-Z0-9/]/g, "")
+                    .replace(/\//g, " or ")
+                    .replace(/\s+/g, "")
+                    .trim()
+                    .toLowerCase()
+              );
 
               setValue(
                 `mappings.${requiredFile.extededName}.${option.name}`,
