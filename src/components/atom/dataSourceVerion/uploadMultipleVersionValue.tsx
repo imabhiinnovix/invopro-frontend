@@ -84,10 +84,16 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
 }) => {
   const [openMappingModal, setOpenMappingModal] = useState(-1);
   const [processingCount, setProcessingCount] = useState(0);
-  const [fileUploads, setFileUploads] = useState<Record<string, File | null>>({});
-  const [fileHeader, setFileHeader] = useState<Record<string, string[] | null>>({});
+  const [fileUploads, setFileUploads] = useState<Record<string, File | null>>(
+    {}
+  );
+  const [fileHeader, setFileHeader] = useState<Record<string, string[] | null>>(
+    {}
+  );
   const [unmappedFiles, setUnmappedFiles] = useState<File[]>([]);
-  const [fileSelections, setFileSelections] = useState<Record<string, string>>({});
+  const [fileSelections, setFileSelections] = useState<Record<string, string>>(
+    {}
+  );
 
   const requiredVersionValues = useGet<{
     success: boolean;
@@ -111,17 +117,20 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
 
   const requiredFiles = useMemo(() => {
     return (
-      requiredVersionValues?.data?.versionValueDetails?.flatMap((data) =>
-        data.requiredFiles.map((file, index) => ({
-          ...file,
-          isVersionAvailable: (data.versions?.length ?? 0) > 0,
-          extededName:
-            file.name + (file.sheetName ? `__${file.sheetName}` : ""),
-          detailId: data._id,
-          attributes: data.entityId.attributes,
-          fileIndex: index,
-        }))
-      ) ?? []
+      requiredVersionValues?.data?.versionValueDetails
+        ?.flatMap(
+          (data) =>
+            data?.requiredFiles?.map((file, index) => ({
+              ...file,
+              isVersionAvailable: (data?.versions?.length ?? 0) > 0,
+              extededName:
+                file?.name + (file?.sheetName ? `__${file?.sheetName}` : ""),
+              detailId: data?._id,
+              attributes: data?.entityId?.attributes,
+              fileIndex: index,
+            })) || []
+        )
+        ?.filter(Boolean) || []
     );
   }, [requiredVersionValues?.data]);
 
@@ -261,16 +270,16 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
   ) => {
     if (!event.target.files?.length) return;
 
-    const selectedFiles = Array.from(event.target.files);
+    const selectedFiles = Array?.from(event.target.files);
     const currentFiles =
       watch("files")?.length === 0
-        ? Array(requiredFiles.length).fill(null)
+        ? Array(requiredFiles?.length)?.fill(null)
         : watch("files") ?? [];
 
-    selectedFiles.forEach((selectedFile) => {
+    selectedFiles?.forEach((selectedFile) => {
       if (
-        !selectedFile.name.endsWith(".xlsx") &&
-        !selectedFile.name.endsWith(".xls")
+        !selectedFile?.name?.endsWith(".xlsx") &&
+        !selectedFile?.name?.endsWith(".xls")
       ) {
         toast.error("Please upload a valid Excel file.");
         setProcessingCount((prev) => prev - 1);
@@ -281,8 +290,8 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
       setProcessingCount((prev) => prev + 1);
 
       const matchedFileIndexes = requiredFiles
-        .map((reqFile, i) =>
-          reqFile.name === removeExtension(selectedFile.name) ? i : -1
+        ?.map((reqFile, i) =>
+          reqFile?.name === removeExtension(selectedFile?.name) ? i : -1
         )
         .filter((i) => i !== -1);
 
@@ -291,12 +300,12 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
 
       const targetIndexes = index === -1 ? matchedFileIndexes : [index];
 
-      targetIndexes.forEach((i) => {
+      targetIndexes?.forEach((i) => {
         currentFiles[i] = createFileInstance(selectedFile, i);
         // Set the file selection for this mapping
-        setFileSelections(prev => ({
+        setFileSelections((prev) => ({
           ...prev,
-          [requiredFiles[i].extededName]: selectedFile.name
+          [requiredFiles[i].extededName]: selectedFile.name,
         }));
       });
 
@@ -304,60 +313,53 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
 
       reader.onload = async (e) => {
         try {
-          const arrayBuffer = e.target?.result as ArrayBuffer;
+          const arrayBuffer = e?.target?.result as ArrayBuffer;
 
-          if (!arrayBuffer || arrayBuffer.byteLength === 0) {
+          if (!arrayBuffer || arrayBuffer?.byteLength === 0) {
             toast.error("File is empty or unreadable. Please re-upload.");
             setProcessingCount((prev) => prev - 1);
             return;
           }
 
           // Convert ArrayBuffer to a readable format
-          const workbook = XLSX.read(arrayBuffer, { type: "array" });
+          const workbook = XLSX?.read(arrayBuffer, { type: "array" });
 
-          if (!workbook.SheetNames?.length) {
+          if (!workbook?.SheetNames?.length) {
             toast.error("No sheets found in the Excel file.");
             setProcessingCount((prev) => prev - 1);
             return;
           }
 
-          const keyName = fileName ?? removeExtension(selectedFile.name);
+          const keyName = fileName ?? removeExtension(selectedFile?.name);
 
           const sheets = requiredFiles?.filter((_, ind) =>
-            index !== -1 ? index === ind : matchedFileIndexes.includes(ind)
+            index !== -1 ? index === ind : matchedFileIndexes?.includes(ind)
           );
 
           // Process each required sheet
-          sheets.forEach((requiredFile) => {
-            let headers: string[] = [];
-
-            if (requiredFile.sheetName) {
-              const sheetIndex = workbook.SheetNames.findIndex(
+          sheets?.forEach((requiredFile) => {
+            const sheetNames = workbook?.SheetNames;
+            let worksheet;
+            if (requiredFile?.sheetName) {
+              const sheetIndex = sheetNames?.findIndex(
                 (name) =>
-                  name.toLowerCase() === requiredFile.sheetName.toLowerCase()
+                  name?.toLowerCase() === requiredFile?.sheetName?.toLowerCase()
               );
 
-              if (sheetIndex !== -1) {
-                const worksheet =
-                  workbook.Sheets[workbook.SheetNames[sheetIndex]];
-                headers = XLSX.utils.sheet_to_json(worksheet, {
-                  header: 1,
-                })[0] as string[];
-              } else {
-                toast.error(
-                  `Sheet "${requiredFile.sheetName}" not found in the uploaded file.`
-                );
-                setProcessingCount((prev) => prev - 1);
-                return;
-              }
+              worksheet =
+                sheetIndex !== -1
+                  ? workbook?.Sheets?.[sheetNames[sheetIndex]]
+                  : workbook?.Sheets?.[sheetNames[0]];
             } else {
-              const worksheet = workbook.Sheets[workbook.SheetNames[0]];
-              headers = XLSX.utils.sheet_to_json(worksheet, {
-                header: 1,
-              })[0] as string[];
+              worksheet = workbook?.Sheets?.[sheetNames[0]];
             }
 
-            if (!headers || headers.length === 0) {
+            const headers =
+              (XLSX?.utils?.sheet_to_json(worksheet, {
+                header: 1,
+              })[0] as string[]) || [];
+
+            if (!headers || headers?.length === 0) {
               toast.error("Headers not found in the sheet.");
               setProcessingCount((prev) => prev - 1);
               return;
@@ -368,8 +370,8 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
               return;
             }
 
-            const extendedName = requiredFile.sheetName
-              ? `${keyName}__${requiredFile.sheetName}`
+            const extendedName = requiredFile?.sheetName
+              ? `${keyName}__${requiredFile?.sheetName}`
               : keyName;
 
             setFileHeader((prev) => ({
@@ -384,37 +386,37 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
 
             // Get mapping data for this file
             const mappingData =
-              requiredVersionValues?.data?.versionValueDetails.find((data) =>
-                data?.requiredFiles.some(
+              requiredVersionValues?.data?.versionValueDetails?.find((data) =>
+                data?.requiredFiles?.some(
                   (file) =>
-                    file.name === keyName &&
-                    (!file.sheetName ||
-                      file.sheetName.toLowerCase() ===
-                        requiredFile.sheetName?.toLowerCase())
+                    file?.name === keyName &&
+                    (!file?.sheetName ||
+                      file?.sheetName?.toLowerCase() ===
+                        requiredFile?.sheetName?.toLowerCase())
                 )
               )?.entityId?.attributes;
 
             if (mappingData) {
-              mappingData.forEach((option) => {
+              mappingData?.forEach((option) => {
                 const matchedHeader =
-                  headers.find(
+                  headers?.find(
                     (name) =>
                       name
                         ?.replace(/[^a-zA-Z0-9/]/g, "")
-                        .replace(/\//g, " or ")
-                        .replace(/\s+/g, "")
-                        .trim()
-                        .toLowerCase() ===
+                        ?.replace(/\//g, " or ")
+                        ?.replace(/\s+/g, "")
+                        ?.trim()
+                        ?.toLowerCase() ===
                       option.mappingName
                         ?.replace(/[^a-zA-Z0-9/]/g, "")
-                        .replace(/\//g, " or ")
-                        .replace(/\s+/g, "")
-                        .trim()
-                        .toLowerCase()
+                        ?.replace(/\//g, " or ")
+                        ?.replace(/\s+/g, "")
+                        ?.trim()
+                        ?.toLowerCase()
                   ) || null;
 
                 setValue(
-                  `mappings.${extendedName}.${option.name ?? ""}`,
+                  `mappings.${extendedName}.${option?.name ?? ""}`,
                   matchedHeader,
                   {
                     shouldValidate: true,
@@ -450,14 +452,16 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
 
   const handleFileSelection = (file: File, requiredFileName: string) => {
     const currentFiles = watch("files") ?? [];
-    const fileIndex = requiredFiles.findIndex(f => f.extededName === requiredFileName);
-    
+    const fileIndex = requiredFiles.findIndex(
+      (f) => f.extededName === requiredFileName
+    );
+
     if (fileIndex !== -1) {
       setProcessingCount((prev) => prev + 1);
       currentFiles[fileIndex] = createFileInstance(file, fileIndex);
       setValue("files", [...currentFiles], { shouldValidate: true });
-      setFileSelections(prev => ({ ...prev, [requiredFileName]: file.name }));
-      
+      setFileSelections((prev) => ({ ...prev, [requiredFileName]: file.name }));
+
       // Process the file for headers and mappings
       const reader = new FileReader();
       reader.onload = async (e) => {
@@ -481,20 +485,28 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
 
           if (requiredFile.sheetName) {
             const sheetIndex = workbook.SheetNames.findIndex(
-              (name) => name.toLowerCase() === requiredFile.sheetName.toLowerCase()
+              (name) =>
+                name.toLowerCase() === requiredFile.sheetName.toLowerCase()
             );
 
             if (sheetIndex !== -1) {
-              const worksheet = workbook.Sheets[workbook.SheetNames[sheetIndex]];
-              headers = XLSX.utils.sheet_to_json(worksheet, { header: 1 })[0] as string[];
+              const worksheet =
+                workbook.Sheets[workbook.SheetNames[sheetIndex]];
+              headers = XLSX.utils.sheet_to_json(worksheet, {
+                header: 1,
+              })[0] as string[];
             } else {
-              toast.error(`Sheet "${requiredFile.sheetName}" not found in the uploaded file.`);
+              toast.error(
+                `Sheet "${requiredFile.sheetName}" not found in the uploaded file.`
+              );
               setProcessingCount((prev) => prev - 1);
               return;
             }
           } else {
             const worksheet = workbook.Sheets[workbook.SheetNames[0]];
-            headers = XLSX.utils.sheet_to_json(worksheet, { header: 1 })[0] as string[];
+            headers = XLSX.utils.sheet_to_json(worksheet, {
+              header: 1,
+            })[0] as string[];
           }
 
           if (!headers || headers.length === 0) {
@@ -508,38 +520,41 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
             return;
           }
 
-          setFileHeader(prev => ({
+          setFileHeader((prev) => ({
             ...prev,
             [requiredFile.extededName]: [...headers, "Extra-Attribute-Ignore"],
           }));
 
           // Get mapping data for this file
-          const mappingData = requiredVersionValues?.data?.versionValueDetails.find((data) =>
-            data?.requiredFiles.some(
-              (file) =>
-                file.name === requiredFile.name &&
-                (!file.sheetName ||
-                  file.sheetName.toLowerCase() === requiredFile.sheetName?.toLowerCase())
-            )
-          )?.entityId?.attributes;
+          const mappingData =
+            requiredVersionValues?.data?.versionValueDetails.find((data) =>
+              data?.requiredFiles.some(
+                (file) =>
+                  file.name === requiredFile.name &&
+                  (!file.sheetName ||
+                    file.sheetName.toLowerCase() ===
+                      requiredFile.sheetName?.toLowerCase())
+              )
+            )?.entityId?.attributes;
 
           if (mappingData) {
             mappingData.forEach((option) => {
-              const matchedHeader = headers.find(
-                (name) =>
-                  name
-                    ?.replace(/[^a-zA-Z0-9/]/g, "")
-                    .replace(/\//g, " or ")
-                    .replace(/\s+/g, "")
-                    .trim()
-                    .toLowerCase() ===
-                  option.mappingName
-                    ?.replace(/[^a-zA-Z0-9/]/g, "")
-                    .replace(/\//g, " or ")
-                    .replace(/\s+/g, "")
-                    .trim()
-                    .toLowerCase()
-              ) || null;
+              const matchedHeader =
+                headers.find(
+                  (name) =>
+                    name
+                      ?.replace(/[^a-zA-Z0-9/]/g, "")
+                      .replace(/\//g, " or ")
+                      .replace(/\s+/g, "")
+                      .trim()
+                      .toLowerCase() ===
+                    option.mappingName
+                      ?.replace(/[^a-zA-Z0-9/]/g, "")
+                      .replace(/\//g, " or ")
+                      .replace(/\s+/g, "")
+                      .trim()
+                      .toLowerCase()
+                ) || null;
 
               setValue(
                 `mappings.${requiredFile.extededName}.${option.name ?? ""}`,
@@ -552,7 +567,9 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
           trigger();
         } catch (error) {
           console.error("File processing error:", error);
-          toast.error("Something went wrong while processing the file. Please try again.");
+          toast.error(
+            "Something went wrong while processing the file. Please try again."
+          );
         } finally {
           setProcessingCount((prev) => prev - 1);
         }
@@ -569,33 +586,35 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
 
   const handleRemoveFile = (requiredFileName: string) => {
     const currentFiles = watch("files") ?? [];
-    const fileIndex = requiredFiles.findIndex(f => f.extededName === requiredFileName);
-    
+    const fileIndex = requiredFiles.findIndex(
+      (f) => f.extededName === requiredFileName
+    );
+
     if (fileIndex !== -1) {
       // Clear the file from current files
       currentFiles[fileIndex] = null;
       setValue("files", [...currentFiles], { shouldValidate: true });
-      
+
       // Clear the file selection
-      setFileSelections(prev => {
+      setFileSelections((prev) => {
         const newSelections = { ...prev };
         delete newSelections[requiredFileName];
         return newSelections;
       });
-      
+
       // Clear the file header
-      setFileHeader(prev => {
+      setFileHeader((prev) => {
         const newHeaders = { ...prev };
         delete newHeaders[requiredFileName];
         return newHeaders;
       });
-      
+
       // Clear the mappings for this file
       const mappings = watch("mappings") || {};
       const newMappings = { ...mappings };
       delete newMappings[requiredFileName];
       setValue("mappings", newMappings, { shouldValidate: true });
-      
+
       trigger();
     }
   };
@@ -823,35 +842,51 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
                       </Box>
                     </StyledTableCell>
                     <StyledTableCell>
-                      <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                      <Box
+                        sx={{ display: "flex", gap: 1, alignItems: "center" }}
+                      >
                         <FormControl fullWidth>
                           <InputLabel>Select File</InputLabel>
                           <Select
                             value={fileSelections[fileName.extededName] || ""}
                             onChange={(e) => {
-                              const selectedFile = [...unmappedFiles, ...(watch("files") || [])].find(f => f?.name === e.target.value);
+                              const selectedFile = [
+                                ...unmappedFiles,
+                                ...(watch("files") || []),
+                              ].find((f) => f?.name === e.target.value);
                               if (selectedFile) {
-                                handleFileSelection(selectedFile, fileName.extededName);
+                                handleFileSelection(
+                                  selectedFile,
+                                  fileName.extededName
+                                );
                               }
                             }}
                             label="Select File"
                           >
-                            {[...unmappedFiles, ...(watch("files") || [])].map((file) => (
-                              file && (
-                                <MenuItem key={file.name} value={file.name}>
-                                  {file.name}
-                                </MenuItem>
-                              )
-                            ))}
+                            {[...unmappedFiles, ...(watch("files") || [])].map(
+                              (file) =>
+                                file && (
+                                  <MenuItem key={file.name} value={file.name}>
+                                    {file.name}
+                                  </MenuItem>
+                                )
+                            )}
                           </Select>
                         </FormControl>
                         {fileSelections[fileName.extededName] && (
                           <Button
                             color="error"
-                            onClick={() => handleRemoveFile(fileName.extededName)}
-                            sx={{ minWidth: 'auto', p: 1 }}
+                            onClick={() =>
+                              handleRemoveFile(fileName.extededName)
+                            }
+                            sx={{ minWidth: "auto", p: 1 }}
                           >
-                            <Typography component="span" sx={{ fontSize: '1.5rem' }}>×</Typography>
+                            <Typography
+                              component="span"
+                              sx={{ fontSize: "1.5rem" }}
+                            >
+                              ×
+                            </Typography>
                           </Button>
                         )}
                       </Box>

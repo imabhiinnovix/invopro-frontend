@@ -1,11 +1,11 @@
-import { AppBar, Toolbar, IconButton, Box } from '@mui/material';
+import { AppBar, Toolbar, IconButton, Box } from "@mui/material";
 
-import { useLocation } from 'react-router-dom';
+import { useLocation } from "react-router-dom";
 
-import logo from '../../../assets/ReportiVix-logo.png';
-import { AccountPopover } from '../../atom/accountPopover/accountPopover';
-import { Menu as MenuIcon } from '@mui/icons-material';
-import { useNav } from '../../../context/NavContext';
+import logo from "../../../assets/ReportiVix-logo.png";
+import { AccountPopover } from "../../atom/accountPopover/accountPopover";
+import { Menu as MenuIcon } from "@mui/icons-material";
+import { useNav } from "../../../context/NavContext";
 
 const Header = () => {
   const { pathname } = useLocation();
@@ -19,8 +19,8 @@ const Header = () => {
     <>
       <AppBar
         position="sticky"
-        color="transparent"
-        elevation={2} // Disable default elevation shadow
+        color="inherit"
+        elevation={2}
         sx={{ height: 70 }}
       >
         <Toolbar>
@@ -29,14 +29,16 @@ const Header = () => {
             // href="/"
             gap={1}
             sx={{
-              display: 'flex',
-              alignContent: 'center',
-              justifyContent: 'space-between', // Adjust layout based on screen size
-              width: '100%', // Ensure Box takes up full width
+              display: "flex",
+              alignContent: "center",
+              justifyContent: "space-between", // Adjust layout based on screen size
+              width: "100%", // Ensure Box takes up full width
             }}
           >
             <Box gap={0} display="flex" alignItems="center">
-              {!['/login', '/otp-login', '/otp-login/otp'].includes(pathname) && (
+              {!["/login", "/otp-login", "/otp-login/otp"].includes(
+                pathname
+              ) && (
                 <IconButton
                   edge="start"
                   color="inherit"
@@ -49,11 +51,18 @@ const Header = () => {
                   <MenuIcon />
                 </IconButton>
               )}
-              <Box component="img" src={logo} alt="Logo" sx={{ width: 150, height: 'auto' }} />
+              <Box
+                component="img"
+                src={logo}
+                alt="Logo"
+                sx={{ width: 150, height: "auto" }}
+              />
               {/* <img src={logo} alt="Logo" /> */}
             </Box>
             <Box display="flex" alignItems="center" justifyContent="center">
-              {!['/login', '/otp-login', '/otp-login/otp'].includes(pathname) && <AccountPopover />}
+              {!["/login", "/otp-login", "/otp-login/otp"].includes(
+                pathname
+              ) && <AccountPopover />}
             </Box>
           </Box>
         </Toolbar>

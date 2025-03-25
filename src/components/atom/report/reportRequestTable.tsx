@@ -19,6 +19,7 @@ import useGet from '../../../hooks/useGet';
 import { GET } from '../../../services/apiRoutes';
 import { ReportRequestResponse } from './types';
 import useFileDownload from '../../../hooks/useFiledownload';
+import { DateTime } from 'luxon';
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
   [`&.${tableCellClasses.head}`]: {
@@ -43,6 +44,8 @@ const ReportRequestTable: React.FC<AttributeOptionTableProps> = ({ reload, setRe
   const [reportRequests, setReportRequests] = useState<ReportRequestResponse[]>([]);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [downloadFileName, setDownLoadFileName] = useState('');
+  const [processingRequestDataAvailable, setProcessingRequestDataAvailable] = useState(false);
+  const [processingRequestCount, setProcessingRequestCount] = useState(0);
 
   const exportFile = useFileDownload<Blob>((data) => {
     const blob = new Blob([data], { type: 'application/octet-stream' });
@@ -72,6 +75,66 @@ const ReportRequestTable: React.FC<AttributeOptionTableProps> = ({ reload, setRe
     GET?.Custom_Report + '/listReportRequest' + `?page=${currentPage}&limit=${perPageItem}`,
     !!currentPage
   );
+
+  const notProcessingReportRequestDetails: any = useGet<{
+    success: boolean;
+    data: ReportRequestResponse[];
+    totalCount: number;
+  }>(
+    [`notprocesssingReportRequestList`, String(processingRequestCount)],
+    GET?.Custom_Report + `/listReportRequest?page=1&limit=10&status=notprocessing`,
+    !!processingRequestCount
+  );
+
+  useEffect(() => {
+    const processingReports = reportRequests.filter((data) => {
+      const createdAt = DateTime.fromISO(data.createdAt);
+      const now = DateTime.utc();
+      const diff = now.diff(createdAt, ['hours']).toObject();
+      return data.status === 'processing' && diff.hours! <= 1;
+    });
+
+    setProcessingRequestDataAvailable(processingReports.length > 0);
+  }, [reportRequests]);
+
+  useEffect(() => {
+    if (processingRequestDataAvailable) {
+      const intervalId = setInterval(() => {
+        setProcessingRequestCount((prevCount) => prevCount + 1);
+      }, 60000);
+
+      return () => clearInterval(intervalId);
+    } else {
+      setProcessingRequestCount(0);
+    }
+  }, [processingRequestDataAvailable]);
+
+  useEffect(() => {
+    if (!notProcessingReportRequestDetails?.data?.data) return;
+
+    const dataMap: Map<string, string> = new Map(
+      notProcessingReportRequestDetails.data.data.map((item: any) => [item._id, item.status])
+    );
+
+    setReportRequests((prevRequests) =>
+      prevRequests.map((data) => (dataMap.has(data._id) ? { ...data, status: dataMap.get(data._id)! } : data))
+    );
+  }, [notProcessingReportRequestDetails]);
+
+  useEffect(() => {
+    if (notProcessingReportRequestDetails?.data?.data) {
+      const dataMap: Map<string, string> = new Map(
+        notProcessingReportRequestDetails?.data?.data.map((item: any) => [item._id, item.status])
+      );
+      const updatedReportRequest = reportRequests.map((data) => {
+        if (dataMap.has(data._id)) {
+          return { ...data, status: dataMap.get(data._id)! };
+        }
+        return data;
+      });
+      setReportRequests(updatedReportRequest);
+    }
+  }, [notProcessingReportRequestDetails]);
 
   useEffect(() => {
     setCurrentPage(1);
