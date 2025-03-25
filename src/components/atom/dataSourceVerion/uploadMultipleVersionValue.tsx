@@ -863,14 +863,25 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
                             }}
                             label="Select File"
                           >
-                            {[...unmappedFiles, ...(watch("files") || [])].map(
-                              (file) =>
-                                file && (
-                                  <MenuItem key={file.name} value={file.name}>
-                                    {file.name}
-                                  </MenuItem>
-                                )
-                            )}
+                            {(() => {
+                              // Get all files
+                              const allFiles = [...unmappedFiles, ...(watch("files") || [])].filter(Boolean);
+                              
+                              // Create a Map using file names as keys to ensure uniqueness
+                              const uniqueFiles = new Map();
+                              
+                              allFiles.forEach(file => {
+                                if (file && !uniqueFiles.has(file.name)) {
+                                  uniqueFiles.set(file.name, file);
+                                }
+                              });
+                              
+                              return Array.from(uniqueFiles.values()).map(file => (
+                                <MenuItem key={file.name} value={file.name}>
+                                  {file.name}
+                                </MenuItem>
+                              ));
+                            })()}
                           </Select>
                         </FormControl>
                         {fileSelections[fileName.extededName] && (
