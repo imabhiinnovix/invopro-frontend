@@ -386,18 +386,21 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
 
             // Get mapping data for this file
             const mappingData =
-              requiredVersionValues?.data?.versionValueDetails?.find((data) =>
-                data?.requiredFiles?.some(
-                  (file) =>
-                    file?.name === keyName &&
-                    (!file?.sheetName ||
-                      file?.sheetName?.toLowerCase() ===
-                        requiredFile?.sheetName?.toLowerCase())
-                )
-              )?.entityId?.attributes;
+              requiredVersionValues?.data?.versionValueDetails
+                ?.find((data) =>
+                  data?.requiredFiles?.some(
+                    (file) =>
+                      file?.name === keyName &&
+                      (!file?.sheetName ||
+                        file?.sheetName?.toLowerCase() ===
+                          requiredFile?.sheetName?.toLowerCase())
+                  )
+                )?.entityId?.attributes;
 
             if (mappingData) {
               mappingData?.forEach((option) => {
+                if (!option?.name || !option?.mappingName) return;
+
                 const matchedHeader =
                   headers?.find(
                     (name) =>
@@ -416,11 +419,9 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
                   ) || null;
 
                 setValue(
-                  `mappings.${extendedName}.${option?.name ?? ""}`,
+                  `mappings.${extendedName}.${option.name}`,
                   matchedHeader,
-                  {
-                    shouldValidate: true,
-                  }
+                  { shouldValidate: true }
                 );
               });
             }
@@ -539,6 +540,8 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
 
           if (mappingData) {
             mappingData.forEach((option) => {
+              if (!option?.name || !option?.mappingName) return;
+
               const matchedHeader =
                 headers.find(
                   (name) =>
@@ -557,7 +560,7 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
                 ) || null;
 
               setValue(
-                `mappings.${requiredFile.extededName}.${option.name ?? ""}`,
+                `mappings.${requiredFile.extededName}.${option.name}`,
                 matchedHeader,
                 { shouldValidate: true }
               );
