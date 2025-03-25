@@ -1,52 +1,75 @@
-import React from 'react';
-import { Controller } from 'react-hook-form';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { AdapterLuxon } from '@mui/x-date-pickers/AdapterLuxon';
-import { DateView } from '@mui/x-date-pickers/models';
-import { MobileDatePicker } from '@mui/x-date-pickers/MobileDatePicker';
+import { useState } from "react";
+import {
+  Controller,
+  Control,
+  FieldValues,
+  Path,
+  PathValue,
+  RegisterOptions,
+} from "react-hook-form";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import { AdapterLuxon } from "@mui/x-date-pickers/AdapterLuxon";
+import { MobileDatePicker } from "@mui/x-date-pickers/MobileDatePicker";
+import { DateView } from "@mui/x-date-pickers/models";
+import { DateTime } from "luxon";
 
-interface CommonDatePickerProps {
-  control: any; // React Hook Form control
-  name: string; // Field name
-  label: string; // Label for the date picker
-  views: readonly DateView[]; // List of views (e.g., year, month, date)
-  defaultValue?: string | null; // Default value for the date picker
-  rules?: any; // Validation rules for React Hook Form
-  disabled?: boolean; // Disable the date picker
+interface CommonDatePickerProps<T extends FieldValues> {
+  control: Control<T>;
+  name: Path<T>;
+  label: string;
+  views: readonly DateView[];
+  defaultValue?: PathValue<T, Path<T>>;
+  rules?: RegisterOptions<T>;
+  disabled?: boolean;
 }
 
-const CommonDatePicker: React.FC<CommonDatePickerProps> = ({
-  control,
-  name,
-  label,
-  views,
-  defaultValue = null,
-  rules = {},
-  disabled = false,
-}) => {
+const CommonDatePicker = <T extends FieldValues>(
+  props: CommonDatePickerProps<T>
+) => {
+  const {
+    control,
+    name,
+    label,
+    views,
+    defaultValue = null,
+    rules = {},
+    disabled = false,
+  } = props;
+
+  const [tempDate, setTempDate] = useState<DateTime | null>(
+    defaultValue ? DateTime.fromISO(defaultValue as string) : null
+  );
+
   return (
     <Controller
       name={name}
       control={control}
-      defaultValue={defaultValue}
+      defaultValue={(defaultValue as PathValue<T, Path<T>>) || undefined}
       rules={rules}
-      render={({ field: { onChange, value }, fieldState: { error } }) => (
-        <LocalizationProvider dateAdapter={AdapterLuxon}>
-          <MobileDatePicker
-            label={label}
-            views={views}
-            value={value || null}
-            onChange={(date) => onChange(date)}
-            disabled={disabled}
-            slotProps={{
-              textField: {
-                error: !!error,
-                helperText: error?.message,
-              },
-            }}
-          />
-        </LocalizationProvider>
-      )}
+      render={({ field: { onChange, value }, fieldState: { error } }) => {
+        const currentValue = value ? DateTime.fromISO(value as string) : null;
+
+        return (
+          <LocalizationProvider dateAdapter={AdapterLuxon}>
+            <MobileDatePicker
+              label={label}
+              views={views}
+              value={tempDate || currentValue || null}
+              onChange={(date) => setTempDate(date)}
+              disabled={disabled}
+              closeOnSelect={false}
+              onAccept={() => onChange(tempDate?.toISO())}
+              onClose={() => setTempDate(null)}
+              slotProps={{
+                textField: {
+                  error: !!error,
+                  helperText: error?.message,
+                },
+              }}
+            />
+          </LocalizationProvider>
+        );
+      }}
     />
   );
 };

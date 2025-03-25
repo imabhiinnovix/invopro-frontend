@@ -1,68 +1,75 @@
-import { styled, Theme, CSSObject } from '@mui/material/styles';
-import Box from '@mui/material/Box';
-import MuiDrawer from '@mui/material/Drawer';
-import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
-import ListItemButton from '@mui/material/ListItemButton';
-import ListItemIcon from '@mui/material/ListItemIcon';
-import ListItemText from '@mui/material/ListItemText';
-import { useNav } from '../../../context/NavContext';
-import DashboardIcon from '@mui/icons-material/Dashboard';
-import SettingsIcon from '@mui/icons-material/Settings';
-import React from 'react';
-import { Collapse } from '@mui/material';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import ExpandLessIcon from '@mui/icons-material/ExpandLess';
-import ManageAccountsIcon from '@mui/icons-material/ManageAccounts';
-import StyleIcon from '@mui/icons-material/Style';
-import { useNavigate, useLocation } from 'react-router-dom';
-import SourceIcon from '@mui/icons-material/Source';
-import AssessmentIcon from '@mui/icons-material/Assessment';
+import { styled, Theme, CSSObject } from "@mui/material/styles";
+import Box from "@mui/material/Box";
+import MuiDrawer from "@mui/material/Drawer";
+import List from "@mui/material/List";
+import ListItem from "@mui/material/ListItem";
+import ListItemButton from "@mui/material/ListItemButton";
+import ListItemIcon from "@mui/material/ListItemIcon";
+import ListItemText from "@mui/material/ListItemText";
+import { useNav } from "../../../context/NavContext";
+// import DashboardIcon from '@mui/icons-material/Dashboard';
+// import SettingsIcon from '@mui/icons-material/Settings';
+import React, { useEffect, useMemo } from "react";
+import { Collapse, Divider } from "@mui/material";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import ExpandLessIcon from "@mui/icons-material/ExpandLess";
+// import ManageAccountsIcon from '@mui/icons-material/ManageAccounts';
+// import StyleIcon from '@mui/icons-material/Style';
+import { useNavigate, useLocation } from "react-router-dom";
+import SourceIcon from "@mui/icons-material/Source";
+import AssessmentIcon from "@mui/icons-material/Assessment";
+import { useInfiniteScroll } from "../../../hooks/useInfiniteScroll";
+import { GET } from "../../../services/apiRoutes";
+import { DataSourceListData, DataSourceListPayload } from "./types";
+import { setDataSourceList } from "../../../pages/dataSources/dataSourceActions";
+import { useAppDispatch } from "../../../storeHooks";
 
-const drawerWidth = 240;
+const drawerWidth = 280;
 
 const openedMixin = (theme: Theme): CSSObject => ({
   width: drawerWidth,
-  position: 'static',
-  transition: theme.transitions.create('width', {
+  position: "static",
+  transition: theme.transitions.create("width", {
     easing: theme.transitions.easing.sharp,
     duration: theme.transitions.duration.enteringScreen,
   }),
-  overflowX: 'hidden',
+  overflowX: "hidden",
 });
 
 const closedMixin = (theme: Theme): CSSObject => ({
-  position: 'static',
-  transition: theme.transitions.create('width', {
+  position: "static",
+  transition: theme.transitions.create("width", {
     easing: theme.transitions.easing.sharp,
     duration: theme.transitions.duration.leavingScreen,
   }),
-  overflowX: 'hidden',
+  overflowX: "hidden",
   width: `calc(${theme.spacing(9)} + 1px)`,
-  [theme.breakpoints.up('sm')]: {
+  [theme.breakpoints.up("sm")]: {
     width: `calc(${theme.spacing(13)} + 1px)`,
   },
 });
 
-const Drawer = styled(MuiDrawer, { shouldForwardProp: (prop) => prop !== 'open' })(({ theme }) => ({
+const Drawer = styled(MuiDrawer, {
+  shouldForwardProp: (prop) => prop !== "open",
+})(({ theme }) => ({
   width: drawerWidth,
   flexShrink: 0,
-  whiteSpace: 'nowrap',
-  boxSizing: 'border-box',
-  position: 'static',
+  whiteSpace: "nowrap",
+  boxSizing: "border-box",
+  position: "static",
   variants: [
     {
       props: ({ open }) => open,
       style: {
         ...openedMixin(theme),
-        '& .MuiDrawer-paper': openedMixin(theme),
+        "& .MuiDrawer-paper": openedMixin(theme),
       },
     },
     {
       props: ({ open }) => !open,
       style: {
         ...closedMixin(theme),
-        '& .MuiDrawer-paper': closedMixin(theme),
+        "& .MuiDrawer-paper": closedMixin(theme),
       },
     },
   ],
@@ -80,51 +87,12 @@ interface NavItem {
   subItems?: SubNavItem[];
 }
 
-const navItems: NavItem[] = [
-  // {
-  //   name: 'Dashboard',
-  //   icon: <DashboardIcon sx={{ fontSize: '3rem', color: 'black' }} />,
-  //   route: '/dashboard',
-  // },
-  {
-    name: 'Reports',
-    icon: <AssessmentIcon sx={{ fontSize: '3rem', color: 'black' }} />,
-    route: '/reports',
-  },
-  // {
-  //   name: 'Settings',
-  //   icon: <SettingsIcon sx={{ fontSize: '3rem', color: 'black' }} />,
-  //   route: '',
-  //   subItems: [
-  //     {
-  //       name: 'Attribute Options',
-  //       icon: <StyleIcon sx={{ fontSize: '3rem', color: 'black' }} />,
-  //       route: '/settings/attribute-option',
-  //     },
-  //     {
-  //       name: 'Entities',
-  //       icon: <ManageAccountsIcon sx={{ fontSize: '3rem', color: 'black' }} />,
-  //       route: '/settings/entity',
-  //     },
-  //     {
-  //       name: 'Data Source',
-  //       icon: <SourceIcon sx={{ fontSize: '3rem', color: 'black' }} />,
-  //       route: '/settings/data-source',
-  //     },
-  //     {
-  //       name: 'Data Source Version',
-  //       icon: <SourceIcon sx={{ fontSize: '3rem', color: 'black' }} />,
-  //       route: '/settings/data-source-version',
-  //     },
-  //   ],
-  // },
-];
-
 export default function SideNav() {
   const { openNav } = useNav();
   const [openSettings, setOpenSettings] = React.useState(false);
   const navigate = useNavigate();
   const location = useLocation();
+  const dispatch = useAppDispatch();
 
   const handleItemClick = (route: string, hasSubItems: boolean) => {
     if (hasSubItems) {
@@ -134,28 +102,121 @@ export default function SideNav() {
     }
   };
 
+  const { infiniteQuery: dataSourceListAPI, lastElementRef } =
+    useInfiniteScroll<DataSourceListPayload, DataSourceListData>(
+      ["dataSourceList"],
+      GET?.DATA_SOURCE_LIST + `?canEditInline=true`,
+      10,
+      "get",
+      true
+    );
+
+  const dataSourceList = useMemo(() => {
+    return dataSourceListAPI?.data?.pages?.flatMap((page) => page?.data) || [];
+  }, [dataSourceListAPI?.data?.pages]);
+
+  useEffect(() => {
+    if (dataSourceList.length > 0) dispatch(setDataSourceList(dataSourceList));
+  }, [dataSourceList, dispatch]);
+
+  const navItems: NavItem[] = useMemo(
+    () => [
+      // {
+      //   name: 'Dashboard',
+      //   icon: <DashboardIcon sx={{ fontSize: '3rem', color: 'black' }} />,
+      //   route: '/dashboard',
+      // },
+      {
+        name: "Reports",
+        icon: <AssessmentIcon sx={{ fontSize: "3rem", color: "black" }} />,
+        route: "/reports",
+      },
+      {
+        name: "Data Source",
+        icon: <SourceIcon sx={{ fontSize: "3rem", color: "black" }} />,
+        route: "/data-source",
+        subItems: [
+          ...(dataSourceList?.map((item) => ({
+            name: item?.name ?? "",
+            icon: <></>,
+            route: `/data-source/${item?._id}`,
+          })) || []),
+
+          ...(dataSourceListAPI?.hasNextPage
+            ? [
+                {
+                  name: "",
+                  icon: (
+                    <div ref={lastElementRef} style={{ paddingLeft: "1.5rem" }}>
+                      Loading...
+                    </div>
+                  ),
+                  route: "#",
+                },
+              ]
+            : []),
+        ],
+      },
+      // {
+      //   name: 'Settings',
+      //   icon: <SettingsIcon sx={{ fontSize: '3rem', color: 'black' }} />,
+      //   route: '',
+      //   subItems: [
+      //     {
+      //       name: 'Attribute Options',
+      //       icon: <StyleIcon sx={{ fontSize: '3rem', color: 'black' }} />,
+      //       route: '/settings/attribute-option',
+      //     },
+      //     {
+      //       name: 'Entities',
+      //       icon: <ManageAccountsIcon sx={{ fontSize: '3rem', color: 'black' }} />,
+      //       route: '/settings/entity',
+      //     },
+      //     {
+      //       name: 'Data Source',
+      //       icon: <SourceIcon sx={{ fontSize: '3rem', color: 'black' }} />,
+      //       route: '/settings/data-source',
+      //     },
+      //     {
+      //       name: 'Data Source Version',
+      //       icon: <SourceIcon sx={{ fontSize: '3rem', color: 'black' }} />,
+      //       route: '/settings/data-source-version',
+      //     },
+      //   ],
+      // },
+    ],
+    [dataSourceList, dataSourceListAPI?.hasNextPage, lastElementRef]
+  );
+
   return (
-    <Box sx={{ display: 'flex' }}>
-      <Drawer variant="permanent" open={openNav} sx={{ height: 'calc(100vh - 70px)' }}>
+    <Box sx={{ display: "flex" }}>
+      <Drawer
+        variant="permanent"
+        open={openNav}
+        sx={{ height: "calc(100vh - 70px)" }}
+      >
         <List>
-          {navItems.map((item) => (
-            <React.Fragment key={item.name}>
-              <ListItem disablePadding sx={{ display: 'block' }}>
+          {navItems.map((item, i) => (
+            <React.Fragment key={i}>
+              <ListItem disablePadding sx={{ display: "block" }}>
                 <ListItemButton
                   onClick={() => handleItemClick(item.route, !!item.subItems)}
                   sx={{
                     height: 90,
                     px: 2.5,
-                    justifyContent: openNav ? 'initial' : 'center',
-                    backgroundColor: location.pathname === item.route ? '#f0f0f0' : 'transparent',
-                    '&:hover': { backgroundColor: '#e0e0e0' },
+                    justifyContent: openNav ? "initial" : "center",
+                    backgroundColor:
+                      location.pathname === item.route
+                        ? "#f0f0f0"
+                        : "transparent",
+                    "&:hover": { backgroundColor: "#e0e0e0" },
                   }}
                 >
                   <ListItemIcon
                     sx={{
                       minWidth: 0,
-                      justifyContent: 'center',
-                      mr: openNav ? 3 : 'auto',
+                      justifyContent: "center",
+                      mr: openNav ? 3 : "auto",
                     }}
                   >
                     {item.icon}
@@ -166,41 +227,52 @@ export default function SideNav() {
                       opacity: openNav ? 1 : 0,
                     }}
                   />
-                  {item.subItems && (openSettings ? <ExpandLessIcon /> : <ExpandMoreIcon />)}
+                  {item.subItems &&
+                    (openSettings ? <ExpandLessIcon /> : <ExpandMoreIcon />)}
                 </ListItemButton>
               </ListItem>
 
               {item.subItems && (
                 <Collapse in={openSettings} timeout="auto" unmountOnExit>
-                  <List component="div" disablePadding>
-                    {item.subItems.map((subItem) => (
-                      <ListItem key={subItem.name} disablePadding sx={{ display: 'block' }}>
-                        <ListItemButton
-                          onClick={() => navigate(subItem.route)}
-                          sx={{
-                            pl: 4,
-                            justifyContent: openNav ? 'initial' : 'center',
-                            backgroundColor: location.pathname === subItem.route ? '#f0f0f0' : 'transparent',
-                            '&:hover': { backgroundColor: '#e0e0e0' },
-                          }}
-                        >
-                          <ListItemIcon
+                  <List
+                    component="div"
+                    disablePadding
+                    style={{ overflowY: "auto", height: "300px" }}
+                  >
+                    {item.subItems.map((subItem, i) => (
+                      <React.Fragment key={i}>
+                        <ListItem disablePadding sx={{ display: "block" }}>
+                          <ListItemButton
+                            onClick={() => navigate(subItem.route)}
                             sx={{
-                              minWidth: 0,
-                              justifyContent: 'center',
-                              mr: openNav ? 3 : 'auto',
+                              pl: 4,
+                              justifyContent: openNav ? "initial" : "center",
+                              backgroundColor:
+                                location.pathname === subItem.route
+                                  ? "#f0f0f0"
+                                  : "transparent",
+                              "&:hover": { backgroundColor: "#e0e0e0" },
                             }}
                           >
-                            {subItem.icon}
-                          </ListItemIcon>
-                          <ListItemText
-                            primary={subItem.name}
-                            sx={{
-                              opacity: openNav ? 1 : 0,
-                            }}
-                          />
-                        </ListItemButton>
-                      </ListItem>
+                            <ListItemIcon
+                              sx={{
+                                minWidth: 0,
+                                justifyContent: "center",
+                                mr: openNav ? 3 : "auto",
+                              }}
+                            >
+                              {subItem.icon}
+                            </ListItemIcon>
+                            <ListItemText
+                              primary={subItem.name}
+                              sx={{
+                                opacity: openNav ? 1 : 0,
+                              }}
+                            />
+                          </ListItemButton>
+                        </ListItem>
+                        <Divider />
+                      </React.Fragment>
                     ))}
                   </List>
                 </Collapse>

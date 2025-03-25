@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
-import { useForm, useFieldArray, FieldError } from 'react-hook-form';
-import ExcelJS from 'exceljs';
+import React, { useEffect, useState } from "react";
+import { useForm, useFieldArray, FieldError } from "react-hook-form";
+import ExcelJS from "exceljs";
 import {
   Box,
   Button,
@@ -13,18 +13,18 @@ import {
   IconButton,
   Divider,
   Stack,
-} from '@mui/material';
-import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
-import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutline';
-import FileUploadButton from '../file/fileUploadButton';
-import { GET, POST } from '../../../services/apiRoutes';
-import ProgressBar from '../../molecule/progressBar';
-import usePost from '../../../hooks/usePost';
-import { EntityRequestPayload, EntityResponse } from './types';
-import CommonSelect from '../../common/dropdown/commonSelect';
-import CommonDropdownSearch from '../../common/dropdown/searchableDropdown';
-import usePut from '../../../hooks/usePut';
-import { toast } from 'react-toastify';
+} from "@mui/material";
+import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
+import RemoveCircleOutlineIcon from "@mui/icons-material/RemoveCircleOutline";
+import FileUploadButton from "../file/fileUploadButton";
+import { GET, POST } from "../../../services/apiRoutes";
+import ProgressBar from "../../molecule/progressBar";
+import usePost from "../../../hooks/usePost";
+import { EntityRequestPayload, EntityResponse } from "./types";
+import CommonSelect from "../../common/dropdown/commonSelect";
+import CommonDropdownSearch from "../../common/dropdown/searchableDropdown";
+import usePut from "../../../hooks/usePut";
+import { toast } from "react-toastify";
 
 interface CreateUpdateEntityProps {
   setReloadEntity: React.Dispatch<React.SetStateAction<boolean>>;
@@ -32,7 +32,12 @@ interface CreateUpdateEntityProps {
   title: string;
   data?: EntityRequestPayload;
 }
-const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({ setReloadEntity, CustomButton, title, data }) => {
+const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
+  setReloadEntity,
+  CustomButton,
+  title,
+  data,
+}) => {
   const [open, setOpen] = useState(false);
   const [file, setFile] = useState<File | null>(null);
   const [fileName, setFileName] = useState<string | null>(null);
@@ -47,15 +52,15 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({ setReloadEntity
     formState: { errors },
   } = useForm<EntityRequestPayload>({
     defaultValues: {
-      name: data?.name ?? '',
-      description: data?.description ?? '',
+      name: data?.name ?? "",
+      description: data?.description ?? "",
       attributes: data?.attributes ?? [
         {
-          name: '',
-          mappingName: '',
-          type: '',
-          required: '', // Default to empty string for consistency
-          optionAttributeId: '',
+          name: "",
+          mappingName: "",
+          type: "",
+          required: "", // Default to empty string for consistency
+          optionAttributeId: "",
           validation: [],
           transformations: [],
           cleaner: [],
@@ -66,15 +71,15 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({ setReloadEntity
 
   useEffect(() => {
     reset({
-      name: data?.name ?? '',
-      description: data?.description ?? '',
+      name: data?.name ?? "",
+      description: data?.description ?? "",
       attributes: data?.attributes ?? [
         {
-          name: '',
-          mappingName: '',
-          type: '',
-          required: '',
-          optionAttributeId: '',
+          name: "",
+          mappingName: "",
+          type: "",
+          required: "",
+          optionAttributeId: "",
           validation: [],
           transformations: [],
           cleaner: [],
@@ -85,7 +90,7 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({ setReloadEntity
 
   const { fields, append, remove, replace } = useFieldArray({
     control,
-    name: 'attributes',
+    name: "attributes",
   });
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -94,8 +99,11 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({ setReloadEntity
       setFile(selectedFile);
       setFileName(selectedFile.name);
 
-      if (!selectedFile.name.endsWith('.xlsx') && !selectedFile.name.endsWith('.xls')) {
-        toast.error('Please upload a valid Excel file.');
+      if (
+        !selectedFile.name.endsWith(".xlsx") &&
+        !selectedFile.name.endsWith(".xls")
+      ) {
+        toast.error("Please upload a valid Excel file.");
         setFileName(null);
         setFile(null);
         setFileUploadLoader(false);
@@ -113,7 +121,9 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({ setReloadEntity
           try {
             await workbook.xlsx.load(arrayBuffer);
           } catch (error) {
-            toast.error('Failed to load the Excel file. Ensure the file is valid.');
+            toast.error(
+              "Failed to load the Excel file. Ensure the file is valid."
+            );
             setFileName(null);
             setFile(null);
             setFileUploadLoader(false);
@@ -121,7 +131,7 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({ setReloadEntity
           }
 
           if (!workbook.worksheets || workbook.worksheets.length === 0) {
-            toast.error('No sheets found in the Excel file.');
+            toast.error("No sheets found in the Excel file.");
             setFileName(null);
             setFile(null);
             setFileUploadLoader(false);
@@ -138,9 +148,9 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({ setReloadEntity
               let actualHeaderName = cell.value.toString().trim();
               let cleanedName = cell.value
                 .toString()
-                .replace(/[^a-zA-Z0-9/]/g, '') // Remove special characters except '/'
-                .replace(/\//g, ' or ') // Replace '/' with ' or '
-                .replace(/\s+/g, ' ') // Normalize multiple spaces
+                .replace(/[^a-zA-Z0-9/]/g, "") // Remove special characters except '/'
+                .replace(/\//g, " or ") // Replace '/' with ' or '
+                .replace(/\s+/g, " ") // Normalize multiple spaces
                 .trim();
 
               if (!uniqueNames.has(cleanedName)) {
@@ -148,12 +158,12 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({ setReloadEntity
                 headers.push({
                   name: cleanedName,
                   mappingName: actualHeaderName,
-                  type: 'text',
-                  optionAttributeId: '',
+                  type: "text",
+                  optionAttributeId: "",
                   validation: [],
                   transformations: [],
                   cleaner: [],
-                  required: 'Not Mandatory',
+                  required: "Not Mandatory",
                 });
               }
             }
@@ -161,15 +171,14 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({ setReloadEntity
 
           // Read the second row (for type inference)
           worksheet.getRow(2).eachCell((cell, colNumber) => {
-            console.log(colNumber, cell.value, headers[colNumber - 1]);
             if (headers[colNumber - 1] != undefined) {
               const firstValue = cell.value;
 
-              let type = 'text';
-              if (typeof firstValue === 'number') {
-                type = 'number';
+              let type = "text";
+              if (typeof firstValue === "number") {
+                type = "number";
               } else if (firstValue instanceof Date) {
-                type = 'date';
+                type = "date";
               }
 
               headers[colNumber - 1].type = type;
@@ -179,13 +188,15 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({ setReloadEntity
           if (headers.length > 0) {
             replace(headers);
           } else {
-            toast.error('Headers not found.');
+            toast.error("Headers not found.");
             setFileName(null);
             setFile(null);
           }
           setFileUploadLoader(false);
         } catch (e) {
-          toast.error('Something went wrong while processing the file. Please try again.');
+          toast.error(
+            "Something went wrong while processing the file. Please try again."
+          );
           setFileName(null);
           setFile(null);
           setFileUploadLoader(false);
@@ -197,7 +208,7 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({ setReloadEntity
   };
 
   const createEntity = usePost<EntityRequestPayload, EntityResponse>(
-    ['createEntity'],
+    ["createEntity"],
     (data) => {
       if (data?.success) {
         setReloadEntity(true);
@@ -211,7 +222,7 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({ setReloadEntity
   );
 
   const updateEntity = usePut<EntityRequestPayload, EntityResponse>(
-    ['updateEntity'],
+    ["updateEntity"],
     (data) => {
       if (data?.success) {
         setReloadEntity(true);
@@ -226,21 +237,27 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({ setReloadEntity
 
   const onSubmit = (formData: EntityRequestPayload) => {
     const newAttributes = formData.attributes?.map((data) => {
-      if (!['option', 'multioption'].includes(data.type)) {
+      if (!["option", "multioption"].includes(data.type)) {
         return {
           ...data, // Corrected spread operator
-          optionAttributeId: '', // Adding the optionAttributeId property
-          required: data.required === 'Mandatory' ? true : false,
+          optionAttributeId: "", // Adding the optionAttributeId property
+          required: data.required === "Mandatory" ? true : false,
         };
       } else {
-        return { ...data, required: data.required === 'Mandatory' ? true : false };
+        return {
+          ...data,
+          required: data.required === "Mandatory" ? true : false,
+        };
       }
     });
 
     const newFormData = { ...formData, attributes: newAttributes };
 
     if (data && data._id) {
-      updateEntity.mutate({ url: `${POST.UPDATE_ENTITY}/${data._id}`, payload: newFormData });
+      updateEntity.mutate({
+        url: `${POST.UPDATE_ENTITY}/${data._id}`,
+        payload: newFormData,
+      });
     } else {
       createEntity.mutate({ url: POST.CREATE_ENTITY, payload: newFormData });
     }
@@ -269,11 +286,11 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({ setReloadEntity
               <TextField
                 label="Entity Name*"
                 fullWidth
-                {...register('name', {
-                  required: 'Entity Name is required',
+                {...register("name", {
+                  required: "Entity Name is required",
                   pattern: {
                     value: /^[A-Za-z\s]+$/,
-                    message: 'Entity Name must contain only letters',
+                    message: "Entity Name must contain only letters",
                   },
                 })}
                 error={!!errors.name}
@@ -286,7 +303,7 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({ setReloadEntity
                 fullWidth
                 multiline
                 rows={4}
-                {...register('description')}
+                {...register("description")}
                 error={!!errors.description}
                 helperText={errors.description?.message}
               />
@@ -294,7 +311,11 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({ setReloadEntity
               {fileUploadLoader ? (
                 <ProgressBar />
               ) : (
-                <FileUploadButton fileName={fileName} onFileChange={handleFileChange} buttonName={'Upload File'} />
+                <FileUploadButton
+                  fileName={fileName}
+                  onFileChange={handleFileChange}
+                  buttonName={"Upload File"}
+                />
               )}
 
               <Divider sx={{ my: 3 }} />
@@ -306,7 +327,7 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({ setReloadEntity
                     key={attribute.id}
                     sx={{
                       mb: 3,
-                      pointerEvents: fileUploadLoader ? 'none' : 'auto', // Disable interactions when isPending is true
+                      pointerEvents: fileUploadLoader ? "none" : "auto", // Disable interactions when isPending is true
                       opacity: fileUploadLoader ? 0.5 : 1,
                     }}
                   >
@@ -319,7 +340,7 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({ setReloadEntity
                         label="Attribute Name"
                         fullWidth
                         {...register(`attributes.${index}.name`, {
-                          required: 'Attribute Name is required',
+                          required: "Attribute Name is required",
                         })}
                         error={!!errors.attributes?.[index]?.name}
                         helperText={errors.attributes?.[index]?.name?.message}
@@ -328,10 +349,12 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({ setReloadEntity
                         label="File Attribute Name"
                         fullWidth
                         {...register(`attributes.${index}.mappingName`, {
-                          required: 'File Attribute Name is required',
+                          required: "File Attribute Name is required",
                         })}
                         error={!!errors.attributes?.[index]?.mappingName}
-                        helperText={errors.attributes?.[index]?.mappingName?.message}
+                        helperText={
+                          errors.attributes?.[index]?.mappingName?.message
+                        }
                       />
 
                       <CommonSelect
@@ -339,25 +362,30 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({ setReloadEntity
                         name={`attributes.${index}.type`}
                         label="Attribute Type"
                         options={[
-                          'number',
-                          'text',
-                          'date',
-                          'boolean',
-                          'richtext',
-                          'url',
-                          'option',
-                          'multioption',
-                          'email',
+                          "number",
+                          "text",
+                          "date",
+                          "boolean",
+                          "richtext",
+                          "url",
+                          "option",
+                          "multioption",
+                          "email",
                           // 'user',
                         ]}
-                        defaultValue={attribute.type || ''}
-                        rules={{ required: 'Attribute Type is required' }}
+                        defaultValue={attribute.type || ""}
+                        rules={{ required: "Attribute Type is required" }}
                         error={!!errors.attributes?.[index]?.type}
-                        errorMessage={(errors.attributes?.[index]?.type as FieldError)?.message}
+                        errorMessage={
+                          (errors.attributes?.[index]?.type as FieldError)
+                            ?.message
+                        }
                       />
 
-                      {watch('attributes') &&
-                        ['option', 'multioption'].includes(watch('attributes')?.[index]?.type!) && (
+                      {watch("attributes") &&
+                        ["option", "multioption"].includes(
+                          watch("attributes")?.[index]?.type!
+                        ) && (
                           <CommonDropdownSearch
                             control={control}
                             name={`attributes.${index}.optionAttributeId`}
@@ -365,10 +393,17 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({ setReloadEntity
                             apiUrl={`${GET.Attribute_Option_List}`}
                             labelName="attributeName"
                             labelValue="_id"
-                            defaultValue={attribute.optionAttributeId || ''}
-                            rules={{ required: 'Attribute Option is required' }}
-                            error={!!errors.attributes?.[index]?.optionAttributeId}
-                            errorMessage={(errors.attributes?.[index]?.optionAttributeId as FieldError)?.message}
+                            defaultValue={attribute.optionAttributeId || ""}
+                            rules={{ required: "Attribute Option is required" }}
+                            error={
+                              !!errors.attributes?.[index]?.optionAttributeId
+                            }
+                            errorMessage={
+                              (
+                                errors.attributes?.[index]
+                                  ?.optionAttributeId as FieldError
+                              )?.message
+                            }
                             apiName="attributeOption"
                             defaultDataUrl={`${GET.Attribute_Option_Get}`}
                           />
@@ -378,11 +413,14 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({ setReloadEntity
                         control={control}
                         name={`attributes.${index}.required`}
                         label="Attribute Validation"
-                        options={['Mandatory', 'Not Mandatory']}
-                        defaultValue={'Mandatory'}
-                        rules={{ required: 'Attribute Validation is required' }}
+                        options={["Mandatory", "Not Mandatory"]}
+                        defaultValue={"Mandatory"}
+                        rules={{ required: "Attribute Validation is required" }}
                         error={!!errors.attributes?.[index]?.required}
-                        errorMessage={(errors.attributes?.[index]?.required as FieldError)?.message}
+                        errorMessage={
+                          (errors.attributes?.[index]?.required as FieldError)
+                            ?.message
+                        }
                       />
                     </Stack>
 
@@ -390,7 +428,7 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({ setReloadEntity
                     <IconButton
                       color="error"
                       onClick={() => remove(index)}
-                      sx={{ mt: 2, display: 'flex', alignSelf: 'flex-start' }}
+                      sx={{ mt: 2, display: "flex", alignSelf: "flex-start" }}
                     >
                       <RemoveCircleOutlineIcon />
                     </IconButton>
@@ -404,11 +442,11 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({ setReloadEntity
                 startIcon={<AddCircleOutlineIcon />}
                 onClick={() =>
                   append({
-                    name: '',
-                    mappingName: '',
-                    type: '',
-                    required: '',
-                    optionAttributeId: '',
+                    name: "",
+                    mappingName: "",
+                    type: "",
+                    required: "",
+                    optionAttributeId: "",
                     validation: [],
                     transformations: [],
                     cleaner: [],
@@ -425,11 +463,11 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({ setReloadEntity
             <ProgressBar />
           ) : (
             <>
-              {' '}
+              {" "}
               <Button
                 onClick={handleCancel}
                 color="error"
-                sx={{ fontSize: 18, fontWeight: 'bold', p: 1, pl: 2, pr: 2 }}
+                sx={{ fontSize: 18, fontWeight: "bold", p: 1, pl: 2, pr: 2 }}
               >
                 Cancel
               </Button>
@@ -438,7 +476,7 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({ setReloadEntity
                 onClick={handleSubmit(onSubmit)}
                 variant="contained"
                 color="primary"
-                sx={{ fontSize: 18, fontWeight: 'bold', p: 1, pl: 2, pr: 2 }}
+                sx={{ fontSize: 18, fontWeight: "bold", p: 1, pl: 2, pr: 2 }}
               >
                 Save Entity
               </Button>
