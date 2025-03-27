@@ -7,14 +7,12 @@ import ListItemButton from "@mui/material/ListItemButton";
 import ListItemIcon from "@mui/material/ListItemIcon";
 import ListItemText from "@mui/material/ListItemText";
 import { useNav } from "../../../context/NavContext";
-// import DashboardIcon from '@mui/icons-material/Dashboard';
-// import SettingsIcon from '@mui/icons-material/Settings';
+import DashboardIcon from "@mui/icons-material/Dashboard";
+import AddIcon from "@mui/icons-material/Add";
 import React, { useEffect, useMemo } from "react";
-import { Collapse, Divider } from "@mui/material";
+import { Collapse } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
-// import ManageAccountsIcon from '@mui/icons-material/ManageAccounts';
-// import StyleIcon from '@mui/icons-material/Style';
 import { useNavigate, useLocation } from "react-router-dom";
 import SourceIcon from "@mui/icons-material/Source";
 import AssessmentIcon from "@mui/icons-material/Assessment";
@@ -22,7 +20,19 @@ import { useInfiniteScroll } from "../../../hooks/useInfiniteScroll";
 import { GET } from "../../../services/apiRoutes";
 import { DataSourceListData, DataSourceListPayload } from "./types";
 import { setDataSourceList } from "../../../pages/dataSources/dataSourceActions";
-import { useAppDispatch } from "../../../storeHooks";
+import { useAppDispatch, useAppSelector } from "../../../storeHooks";
+import { fetchDashboardList, createDashboard, deleteDashboard } from "../../../pages/dashboard/dashboardActions";
+import { Dashboard as DashboardType } from "../../../pages/dashboard/types";
+import { toast } from "react-toastify";
+import { DeleteConfirmationModal } from "./components/DeleteConfirmationModal";
+import { DashboardCreationForm } from "./components/DashboardCreationForm";
+import { SubItemsList } from "./components/SubItemsList";
+
+interface ErrorResponse {
+  success: boolean;
+  message: string;
+  error: Record<string, unknown>;
+}
 
 const drawerWidth = 280;
 
@@ -79,7 +89,9 @@ interface SubNavItem {
   name: string;
   icon: React.ReactNode;
   route: string;
+  isCreateButton?: boolean;
 }
+
 interface NavItem {
   name: string;
   icon: React.ReactNode;
@@ -90,16 +102,63 @@ interface NavItem {
 export default function SideNav() {
   const { openNav } = useNav();
   const [openSettings, setOpenSettings] = React.useState(false);
+  const [openDashboard, setOpenDashboard] = React.useState(false);
+  const [isCreating, setIsCreating] = React.useState(false);
+  const [newDashboardName, setNewDashboardName] = React.useState("");
+  const [isCreatingLoading, setIsCreatingLoading] = React.useState(false);
+  const [deleteModalOpen, setDeleteModalOpen] = React.useState(false);
+  const [dashboardToDelete, setDashboardToDelete] = React.useState<DashboardType | null>(null);
+  const [isDeleting, setIsDeleting] = React.useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const dispatch = useAppDispatch();
+  const { dashboards, loading } = useAppSelector((state) => state.dashboard);
 
-  const handleItemClick = (route: string, hasSubItems: boolean) => {
+  useEffect(() => {
+    dispatch(fetchDashboardList());
+  }, [dispatch]);
+
+  const handleItemClick = (
+    route: string,
+    hasSubItems: boolean,
+    itemName: string
+  ) => {
     if (hasSubItems) {
-      setOpenSettings((prev) => !prev);
+      if (itemName === "Dashboard") {
+        setOpenDashboard((prev) => !prev);
+        if (!openDashboard) {
+          setOpenDashboard(true);
+        }
+      } else {
+        setOpenSettings((prev) => !prev);
+      }
     } else {
-      navigate(route); // Navigate to the route
+      navigate(route);
     }
+  };
+
+  const handleCreateDashboard = async () => {
+    if (newDashboardName.trim()) {
+      try {
+        setIsCreatingLoading(true);
+        const response = await dispatch(createDashboard(newDashboardName.trim())).unwrap();
+        dispatch(fetchDashboardList());
+        setIsCreating(false);
+        setNewDashboardName("");
+        toast.success(response.message || "Dashboard created successfully!");
+      } catch (error) {
+        console.error("Failed to create dashboard:", error);
+        const errorResponse = error as ErrorResponse;
+        toast.error(errorResponse.message || "Failed to create dashboard. Please try again.");
+      } finally {
+        setIsCreatingLoading(false);
+      }
+    }
+  };
+
+  const handleCancelCreate = () => {
+    setIsCreating(false);
+    setNewDashboardName("");
   };
 
   const { infiniteQuery: dataSourceListAPI, lastElementRef } =
@@ -119,13 +178,64 @@ export default function SideNav() {
     if (dataSourceList.length > 0) dispatch(setDataSourceList(dataSourceList));
   }, [dataSourceList, dispatch]);
 
+  const handleDeleteClick = (e: React.MouseEvent, dashboard: DashboardType) => {
+    e.stopPropagation();
+    setDashboardToDelete(dashboard);
+    setDeleteModalOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (dashboardToDelete) {
+      try {
+        setIsDeleting(true);
+        await dispatch(deleteDashboard(dashboardToDelete._id)).unwrap();
+        dispatch(fetchDashboardList());
+        toast.success("Dashboard deleted successfully!");
+        setDeleteModalOpen(false);
+        setDashboardToDelete(null);
+      } catch (error) {
+        console.error("Failed to delete dashboard:", error);
+        const errorResponse = error as ErrorResponse;
+        toast.error(errorResponse.message || "Failed to delete dashboard. Please try again.");
+      } finally {
+        setIsDeleting(false);
+      }
+    }
+  };
+
+  const handleDeleteCancel = () => {
+    setDeleteModalOpen(false);
+    setDashboardToDelete(null);
+  };
+
   const navItems: NavItem[] = useMemo(
     () => [
-      // {
-      //   name: 'Dashboard',
-      //   icon: <DashboardIcon sx={{ fontSize: '3rem', color: 'black' }} />,
-      //   route: '/dashboard',
-      // },
+      {
+        name: "Dashboard",
+        icon: <DashboardIcon sx={{ fontSize: "3rem", color: "black" }} />,
+        route: "/dashboard",
+        subItems: [
+          {
+            name: "Create New Dashboard",
+            icon: <AddIcon sx={{ fontSize: "1.5rem", color: "black" }} />,
+            route: "#",
+            isCreateButton: true,
+          },
+          ...(loading
+            ? [
+                {
+                  name: "Loading...",
+                  icon: <></>,
+                  route: "#",
+                },
+              ]
+            : dashboards.map((dashboard: DashboardType) => ({
+                name: dashboard.name,
+                icon: <></>,
+                route: `/dashboard/${dashboard._id}`,
+              }))),
+        ],
+      },
       {
         name: "Reports",
         icon: <AssessmentIcon sx={{ fontSize: "3rem", color: "black" }} />,
@@ -157,36 +267,19 @@ export default function SideNav() {
             : []),
         ],
       },
-      // {
-      //   name: 'Settings',
-      //   icon: <SettingsIcon sx={{ fontSize: '3rem', color: 'black' }} />,
-      //   route: '',
-      //   subItems: [
-      //     {
-      //       name: 'Attribute Options',
-      //       icon: <StyleIcon sx={{ fontSize: '3rem', color: 'black' }} />,
-      //       route: '/settings/attribute-option',
-      //     },
-      //     {
-      //       name: 'Entities',
-      //       icon: <ManageAccountsIcon sx={{ fontSize: '3rem', color: 'black' }} />,
-      //       route: '/settings/entity',
-      //     },
-      //     {
-      //       name: 'Data Source',
-      //       icon: <SourceIcon sx={{ fontSize: '3rem', color: 'black' }} />,
-      //       route: '/settings/data-source',
-      //     },
-      //     {
-      //       name: 'Data Source Version',
-      //       icon: <SourceIcon sx={{ fontSize: '3rem', color: 'black' }} />,
-      //       route: '/settings/data-source-version',
-      //     },
-      //   ],
-      // },
     ],
-    [dataSourceList, dataSourceListAPI?.hasNextPage, lastElementRef]
+    [
+      dataSourceList,
+      dataSourceListAPI?.hasNextPage,
+      lastElementRef,
+      dashboards,
+      loading,
+    ]
   );
+
+  const isDashboardActive = () => {
+    return location.pathname.startsWith("/dashboard");
+  };
 
   return (
     <Box sx={{ display: "flex" }}>
@@ -200,15 +293,12 @@ export default function SideNav() {
             <React.Fragment key={i}>
               <ListItem disablePadding sx={{ display: "block" }}>
                 <ListItemButton
-                  onClick={() => handleItemClick(item.route, !!item.subItems)}
+                  onClick={() => handleItemClick(item.route, !!item.subItems, item.name)}
                   sx={{
                     height: 90,
                     px: 2.5,
                     justifyContent: openNav ? "initial" : "center",
-                    backgroundColor:
-                      location.pathname === item.route
-                        ? "#f0f0f0"
-                        : "transparent",
+                    backgroundColor: isDashboardActive() ? "#f0f0f0" : "transparent",
                     "&:hover": { backgroundColor: "#e0e0e0" },
                   }}
                 >
@@ -228,59 +318,80 @@ export default function SideNav() {
                     }}
                   />
                   {item.subItems &&
-                    (openSettings ? <ExpandLessIcon /> : <ExpandMoreIcon />)}
+                    ((item.name === "Dashboard" && openDashboard) ||
+                    (item.name !== "Dashboard" && openSettings) ? (
+                      <ExpandLessIcon />
+                    ) : (
+                      <ExpandMoreIcon />
+                    ))}
                 </ListItemButton>
               </ListItem>
 
               {item.subItems && (
-                <Collapse in={openSettings} timeout="auto" unmountOnExit>
-                  <List
-                    component="div"
-                    disablePadding
-                    style={{ overflowY: "auto", height: "300px" }}
-                  >
-                    {item.subItems.map((subItem, i) => (
-                      <React.Fragment key={i}>
-                        <ListItem disablePadding sx={{ display: "block" }}>
-                          <ListItemButton
-                            onClick={() => navigate(subItem.route)}
-                            sx={{
-                              pl: 4,
-                              justifyContent: openNav ? "initial" : "center",
-                              backgroundColor:
-                                location.pathname === subItem.route
-                                  ? "#f0f0f0"
-                                  : "transparent",
-                              "&:hover": { backgroundColor: "#e0e0e0" },
-                            }}
-                          >
-                            <ListItemIcon
-                              sx={{
-                                minWidth: 0,
-                                justifyContent: "center",
-                                mr: openNav ? 3 : "auto",
-                              }}
-                            >
-                              {subItem.icon}
-                            </ListItemIcon>
-                            <ListItemText
-                              primary={subItem.name}
-                              sx={{
-                                opacity: openNav ? 1 : 0,
-                              }}
-                            />
-                          </ListItemButton>
-                        </ListItem>
-                        <Divider />
-                      </React.Fragment>
-                    ))}
-                  </List>
+                <Collapse
+                  in={item.name === "Dashboard" ? openDashboard : openSettings}
+                  timeout="auto"
+                  unmountOnExit
+                >
+                  {item.name === "Dashboard" && (
+                    <ListItem disablePadding sx={{ display: "block" }}>
+                      <ListItemButton
+                        onClick={() => setIsCreating(true)}
+                        sx={{
+                          pl: 4,
+                          justifyContent: openNav ? "initial" : "center",
+                          "&:hover": { backgroundColor: "#e0e0e0" },
+                        }}
+                      >
+                        <ListItemIcon
+                          sx={{
+                            minWidth: 0,
+                            justifyContent: "center",
+                            mr: openNav ? 3 : "auto",
+                          }}
+                        >
+                          <AddIcon sx={{ fontSize: "1.5rem", color: "black" }} />
+                        </ListItemIcon>
+                        <ListItemText
+                          primary="Create New Dashboard"
+                          sx={{
+                            opacity: openNav ? 1 : 0,
+                          }}
+                        />
+                      </ListItemButton>
+                    </ListItem>
+                  )}
+                  {isCreating && item.name === "Dashboard" && (
+                    <DashboardCreationForm
+                      newDashboardName={newDashboardName}
+                      onNameChange={(e) => setNewDashboardName(e.target.value)}
+                      onCreate={handleCreateDashboard}
+                      onCancel={handleCancelCreate}
+                      isCreatingLoading={isCreatingLoading}
+                    />
+                  )}
+                  <SubItemsList
+                    subItems={item.subItems.filter(subItem => !subItem.isCreateButton)}
+                    openNav={openNav}
+                    parentName={item.name}
+                    dashboards={dashboards}
+                    onDeleteClick={handleDeleteClick}
+                    onCreateClick={() => setIsCreating(true)}
+                  />
                 </Collapse>
               )}
             </React.Fragment>
           ))}
         </List>
       </Drawer>
+
+      <DeleteConfirmationModal
+        open={deleteModalOpen}
+        dashboard={dashboardToDelete}
+        onConfirm={handleDeleteConfirm}
+        onCancel={handleDeleteCancel}
+        isDeleting={isDeleting}
+      />
     </Box>
   );
 }

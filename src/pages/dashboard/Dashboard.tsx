@@ -7,7 +7,7 @@ import { toast } from 'react-toastify';
 import axiosInstance from '../../services/axiosInstance';
 import { POST } from '../../services/apiRoutes';
 
-const Dashboard = () => {
+export const Dashboard = () => {
   const { id } = useParams();
   const dispatch = useAppDispatch();
   const dashboards = useAppSelector((state) => state.dashboard.dashboards);
@@ -46,6 +46,4 @@ const Dashboard = () => {
       onCreateWidget={handleCreateWidget}
     />
   );
-};
-
-export default Dashboard;
+}; 

@@ -17,6 +17,8 @@ import AttributeOption from "./pages/attributeOption";
 // import DataSourceVersion from "./pages/dataSourceVersion";
 import Report from "./pages/report";
 import DataSources from "./pages/dataSources";
+import DashboardOverview from "./pages/dashboard/overview";
+import DashboardAnalytics from "./pages/dashboard/analytics";
 
 function App() {
   return (
@@ -32,12 +34,11 @@ function App() {
           {/* User Protected Routes */}
           <Route element={<AuthProtect />}>
             <Route element={<CommonLayout />}>
-              {/* <Route path="/dashboard" element={<Dashboard />} /> */}
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/dashboard/overview" element={<DashboardOverview />} />
+              <Route path="/dashboard/analytics" element={<DashboardAnalytics />} />
+              <Route path="/dashboard/:id" element={<Dashboard />} />
               <Route path="/reports" element={<Report />} />
-              {/* <Route path="/settings/entity" element={<Entity />} />
-              <Route path="/settings/attribute-option" element={<AttributeOption />} />
-              <Route path="/settings/data-source" element={<DataSource />} />
-              <Route path="/settings/data-source-version" element={<DataSourceVersion />} /> */}
               <Route path="/data-source/:id" element={<DataSources />} />
             </Route>
           </Route>

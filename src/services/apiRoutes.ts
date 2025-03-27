@@ -5,6 +5,10 @@ export const POST = {
   CHANGE_PASSWORD: "/users/change-password",
   SEND_OTP: "auth/send-otp",
   VERIFY_OTP: "auth/verify-otp",
+  CREATE_DASHBOARD: "/dashboard/create",
+  UPDATE_DASHBOARD: "/dashboard/update",
+  DELETE_DASHBOARD: "/dashboard/delete",
+  CREATE_WIDGET: "/dashboard/create-widget",
 
   CREATE_USER: "auth/create-user",
   UPDATE_USER: "/users/update/",
@@ -48,4 +52,6 @@ export const GET = {
   DATA_SOURCE_LIST: "/dataSource/list",
   ATTRIBUTE_OPTIONS_LIST: "/attributeOptions/get/",
   SOURCE_VERSION_DATA: "/dataSourceVersion/versionData",
+  DASHBOARD_LIST: "/dashboard/list",
+  WIDGET_TYPE_LIST: "/widgetType/list",
 };
