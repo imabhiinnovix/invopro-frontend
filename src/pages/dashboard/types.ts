@@ -88,6 +88,9 @@ export interface DataSourceResponse {
 }
 
 export interface DashboardSliceState {
+  dashboards: Dashboard[];
+  loading: boolean;
+  error: string | null;
   widgetTypes: WidgetTypeResponse[];
   dataSources: DataSourceResponse[];
   widgetTypesLoading: boolean;

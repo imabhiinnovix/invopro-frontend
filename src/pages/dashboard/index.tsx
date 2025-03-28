@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../../storeHooks';
-import { fetchDashboardList } from './dashboardActions';
+import { fetchDashboardList, fetchChartData } from './dashboardActions';
 import { DashboardView } from './components/DashboardView';
 import { toast } from 'react-toastify';
 import axiosInstance from '../../services/axiosInstance';
@@ -31,8 +31,9 @@ const Dashboard = () => {
   };
 
   const handleCreateWidget = () => {
-    // TODO: Implement widget creation
-    toast.info('Widget creation coming soon!');
+    if (id) {
+      dispatch(fetchChartData(id));
+    }
   };
 
   if (!currentDashboard) {

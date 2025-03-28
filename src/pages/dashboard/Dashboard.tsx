@@ -1,17 +1,20 @@
 import React, { useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../../storeHooks';
-import { fetchDashboardList } from './dashboardActions';
+import { fetchDashboardList, fetchChartData } from './dashboardActions';
 import { DashboardView } from './components/DashboardView';
 import { toast } from 'react-toastify';
 import axiosInstance from '../../services/axiosInstance';
 import { POST } from '../../services/apiRoutes';
+import { Dashboard as DashboardType } from './types';
 
 export const Dashboard = () => {
   const { id } = useParams();
   const dispatch = useAppDispatch();
-  const dashboards = useAppSelector((state) => state.dashboard.dashboards);
-  const currentDashboard = dashboards.find((d) => d._id === id);
+  const { dashboards } = useAppSelector((state) => ({
+    dashboards: state.dashboard.dashboards || [],
+  }));
+  const currentDashboard = dashboards.find((d: DashboardType) => d._id === id);
 
   useEffect(() => {
     if (!dashboards.length) {
@@ -31,8 +34,9 @@ export const Dashboard = () => {
   };
 
   const handleCreateWidget = () => {
-    // TODO: Implement widget creation
-    toast.info('Widget creation coming soon!');
+    if (id) {
+      dispatch(fetchChartData(id));
+    }
   };
 
   if (!currentDashboard) {
