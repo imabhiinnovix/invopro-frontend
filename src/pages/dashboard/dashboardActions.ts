@@ -1,6 +1,6 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { GET, POST } from '../../services/apiRoutes';
-import { DashboardListResponse } from './types';
+import { DashboardListResponse, WidgetTypeResponse, DataSourceResponse } from './types';
 import axiosInstance from '../../services/axiosInstance';
 import axios from 'axios';
 
@@ -50,14 +50,56 @@ export const setDashboardList = (dashboards: DashboardListResponse['data']) => (
 });
 
 interface CreateWidgetPayload {
-  dashboardId: string;
+  name: string;
+  dimensions: string;
+  groupBy: string;
+  aggregation: {
+    type: string;
+    attributeName: string;
+  };
+  position: {
+    x: number;
+    y: number;
+    index: number;
+  };
+  conditions: {
+    field: string;
+    operator: string;
+    value: string;
+  }[];
+  dataSourceId: string;
   widgetTypeId: string;
+  dashboardId: string;
 }
 
 interface CreateWidgetResponse {
   success: boolean;
   message: string;
-  data: any; // You can type this based on the actual response
+  data: {
+    _id: string;
+    name: string;
+    dimensions: string;
+    groupBy: string;
+    aggregation: {
+      type: string;
+      attributeName: string;
+    };
+    position: {
+      x: number;
+      y: number;
+      index: number;
+    };
+    conditions: {
+      field: string;
+      operator: string;
+      value: string;
+    }[];
+    dataSourceId: string;
+    widgetTypeId: string;
+    dashboardId: string;
+    createdAt: string;
+    updatedAt: string;
+  };
 }
 
 export const createWidget = createAsyncThunk(
@@ -78,5 +120,23 @@ export const createWidget = createAsyncThunk(
       }
       return rejectWithValue({ message: 'Failed to create widget. Please try again.' });
     }
+  }
+);
+
+export const fetchWidgetTypes = createAsyncThunk(
+  'dashboard/fetchWidgetTypes',
+  async () => {
+    const { data } = await axiosInstance.get<WidgetTypeResponse>(GET.WIDGET_TYPE_LIST);
+    return data;
+  }
+);
+
+export const fetchDataSources = createAsyncThunk(
+  'dashboard/fetchDataSources',
+  async () => {
+    const { data } = await axiosInstance.get<DataSourceResponse>(
+      `${GET.DATA_SOURCE_LIST}?paginate=true&page=1&limit=10`
+    );
+    return data;
   }
 ); 

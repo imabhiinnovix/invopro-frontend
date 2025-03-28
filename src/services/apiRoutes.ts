@@ -8,7 +8,7 @@ export const POST = {
   CREATE_DASHBOARD: "/dashboard/create",
   UPDATE_DASHBOARD: "/dashboard/update",
   DELETE_DASHBOARD: "/dashboard/delete",
-  CREATE_WIDGET: "/dashboard/create-widget",
+  CREATE_WIDGET: "/dashboard/widget/create",
 
   CREATE_USER: "auth/create-user",
   UPDATE_USER: "/users/update/",

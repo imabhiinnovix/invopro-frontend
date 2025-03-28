@@ -2,10 +2,11 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Box, Typography, TextField, Button } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import AddIcon from '@mui/icons-material/Add';
-import { AddChartModal, WidgetType } from './AddChartModal';
+import { AddChartModal, ChartFormData } from './AddChartModal';
 import { toast } from 'react-toastify';
 import { useAppDispatch } from '../../../storeHooks';
 import { createWidget } from '../dashboardActions';
+import { useParams } from 'react-router-dom';
 
 const StyledBox = styled(Box)(({ theme }) => ({
   padding: theme.spacing(3),
@@ -42,15 +43,16 @@ const AddChartButton = styled(Button)({
 interface DashboardViewProps {
   title: string;
   onTitleChange: (newTitle: string) => void;
-  dashboardId: string;
+  onCreateWidget: () => void;
 }
 
 export const DashboardView: React.FC<DashboardViewProps> = ({
   title,
   onTitleChange,
-  dashboardId,
+  onCreateWidget,
 }) => {
   const dispatch = useAppDispatch();
+  const { id: dashboardId } = useParams();
   const [isEditing, setIsEditing] = useState(false);
   const [editedTitle, setEditedTitle] = useState(title);
   const [isAddChartModalOpen, setIsAddChartModalOpen] = useState(false);
@@ -88,17 +90,18 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     }
   };
 
-  const handleAddChart = async (widgetType: WidgetType) => {
+  const handleAddChart = async (formData: ChartFormData) => {
     try {
       setIsCreatingWidget(true);
       const result = await dispatch(createWidget({
-        dashboardId,
-        widgetTypeId: widgetType._id
+        ...formData,
+        dashboardId: dashboardId || '',
       })).unwrap();
       
       if (result.success) {
         toast.success('Chart added successfully!');
         setIsAddChartModalOpen(false);
+        onCreateWidget();
       } else {
         toast.error(result.message || 'Failed to add chart');
       }
@@ -158,6 +161,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         onClose={() => !isCreatingWidget && setIsAddChartModalOpen(false)}
         onSubmit={handleAddChart}
         isSubmitting={isCreatingWidget}
+        dashboardId={dashboardId || ''}
       />
     </StyledBox>
   );
