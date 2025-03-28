@@ -21,7 +21,7 @@ import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
 import ClearIcon from '@mui/icons-material/Clear';
 import { useAppDispatch, useAppSelector } from '../../../storeHooks';
-import { fetchWidgetTypes, fetchDataSources } from '../dashboardActions';
+import { fetchWidgetTypes, fetchDataSources, loadMoreDataSources } from '../dashboardActions';
 import { DataSource, DataSourceAttribute } from '../types';
 
 interface Condition {
@@ -145,7 +145,15 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
 }) => {
   console.log("🚀 ~ dashboardId̥:", dashboardId)
   const dispatch = useAppDispatch();
-  const { widgetTypes, dataSources, widgetTypesLoading, dataSourcesLoading } = useAppSelector((state) => state.dashboard);
+  const { 
+    widgetTypes, 
+    dataSources, 
+    widgetTypesLoading, 
+    dataSourcesLoading,
+    dataSourcesHasMore,
+    dataSourcesPage,
+    dataSourcesTotalCount
+  } = useAppSelector((state) => state.dashboard);
 
   const [formData, setFormData] = useState<ChartFormData>({
     name: '',
@@ -202,7 +210,7 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
   useEffect(() => {
     if (open) {
       dispatch(fetchWidgetTypes());
-      dispatch(fetchDataSources());
+      dispatch(fetchDataSources(1));
     }
   }, [dispatch, open]);
 
@@ -352,6 +360,18 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
     handleChange('groupBy', '');
   };
 
+  const handleDataSourceScroll = (event: React.UIEvent<HTMLDivElement>) => {
+    const target = event.target as HTMLDivElement;
+    if (
+      target.scrollHeight - target.scrollTop === target.clientHeight &&
+      !dataSourcesLoading &&
+      dataSourcesHasMore &&
+      dataSources.length < dataSourcesTotalCount
+    ) {
+      dispatch(loadMoreDataSources(dataSourcesPage + 1));
+    }
+  };
+
   return (
     <StyledDialog open={open} onClose={onClose} maxWidth="md" fullWidth>
       <StyledDialogTitle>Add Chart</StyledDialogTitle>
@@ -392,12 +412,27 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
                 label="Data Source"
                 onChange={handleDataSourceChange}
                 disabled={isSubmitting || dataSourcesLoading}
+                MenuProps={{
+                  PaperProps: {
+                    sx: {
+                      maxHeight: 300,
+                    },
+                    onScroll: handleDataSourceScroll,
+                  },
+                }}
               >
                 {dataSources.map((source) => (
                   <MenuItem key={source._id} value={source._id}>
                     {source.name}
                   </MenuItem>
                 ))}
+                {dataSourcesLoading && (
+                  <MenuItem disabled>
+                    <Box sx={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
+                      Loading...
+                    </Box>
+                  </MenuItem>
+                )}
               </StyledSelect>
             </FormControl>
           </FormRow>
@@ -488,9 +523,9 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
                     onChange={handleAggregationTypeChange}
                     disabled={isSubmitting}
                   >
-                    <MenuItem value="count">Count</MenuItem>
-                    <MenuItem value="sum">Sum</MenuItem>
-                    <MenuItem value="average">Average</MenuItem>
+                    <MenuItem value="Count">Count</MenuItem>
+                    <MenuItem value="Sum">Sum</MenuItem>
+                    <MenuItem value="Average">Average</MenuItem>
                   </StyledSelect>
                 </FormControl>
 

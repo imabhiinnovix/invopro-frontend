@@ -94,4 +94,7 @@ export interface DashboardSliceState extends DashboardState {
   dataSourcesLoading: boolean;
   widgetTypesError: string | null;
   dataSourcesError: string | null;
+  dataSourcesPage: number;
+  dataSourcesHasMore: boolean;
+  dataSourcesTotalCount: number;
 } 

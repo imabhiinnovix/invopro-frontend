@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { DashboardListResponse, WidgetTypeResponse, DataSourceResponse, DashboardSliceState } from './types';
-import { fetchDashboardList, fetchWidgetTypes, fetchDataSources } from './dashboardActions';
+import { fetchDashboardList, fetchWidgetTypes, fetchDataSources, loadMoreDataSources } from './dashboardActions';
 
 const initialState: DashboardSliceState = {
   dashboards: [],
@@ -12,6 +12,9 @@ const initialState: DashboardSliceState = {
   dataSourcesLoading: false,
   widgetTypesError: null,
   dataSourcesError: null,
+  dataSourcesPage: 1,
+  dataSourcesHasMore: true,
+  dataSourcesTotalCount: 0,
 };
 
 const dashboardSlice = createSlice({
@@ -54,10 +57,28 @@ const dashboardSlice = createSlice({
       .addCase(fetchDataSources.fulfilled, (state, action: PayloadAction<DataSourceResponse>) => {
         state.dataSourcesLoading = false;
         state.dataSources = action.payload.data;
+        state.dataSourcesTotalCount = action.payload.totalCount;
+        state.dataSourcesHasMore = action.payload.data.length === 10;
       })
       .addCase(fetchDataSources.rejected, (state, action) => {
         state.dataSourcesLoading = false;
         state.dataSourcesError = action.error.message || 'Failed to fetch data sources';
+      })
+      // Load more data sources
+      .addCase(loadMoreDataSources.pending, (state) => {
+        state.dataSourcesLoading = true;
+        state.dataSourcesError = null;
+      })
+      .addCase(loadMoreDataSources.fulfilled, (state, action: PayloadAction<DataSourceResponse>) => {
+        state.dataSourcesLoading = false;
+        state.dataSources = [...state.dataSources, ...action.payload.data];
+        state.dataSourcesTotalCount = action.payload.totalCount;
+        state.dataSourcesHasMore = action.payload.data.length === 10;
+        state.dataSourcesPage += 1;
+      })
+      .addCase(loadMoreDataSources.rejected, (state, action) => {
+        state.dataSourcesLoading = false;
+        state.dataSourcesError = action.error.message || 'Failed to load more data sources';
       });
   },
 });

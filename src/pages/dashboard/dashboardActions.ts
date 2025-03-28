@@ -133,10 +133,34 @@ export const fetchWidgetTypes = createAsyncThunk(
 
 export const fetchDataSources = createAsyncThunk(
   'dashboard/fetchDataSources',
-  async () => {
-    const { data } = await axiosInstance.get<DataSourceResponse>(
-      `${GET.DATA_SOURCE_LIST}?paginate=true&page=1&limit=10`
-    );
-    return data;
+  async (page: number = 1, { rejectWithValue }) => {
+    try {
+      const { data } = await axiosInstance.get<DataSourceResponse>(
+        `${GET.DATA_SOURCE_LIST}?paginate=true&page=${page}&limit=10`
+      );
+      return data;
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response?.data) {
+        return rejectWithValue(error.response.data);
+      }
+      return rejectWithValue({ message: 'Failed to fetch data sources' });
+    }
+  }
+);
+
+export const loadMoreDataSources = createAsyncThunk(
+  'dashboard/loadMoreDataSources',
+  async (page: number, { rejectWithValue }) => {
+    try {
+      const { data } = await axiosInstance.get<DataSourceResponse>(
+        `${GET.DATA_SOURCE_LIST}?paginate=true&page=${page}&limit=10`
+      );
+      return data;
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response?.data) {
+        return rejectWithValue(error.response.data);
+      }
+      return rejectWithValue({ message: 'Failed to load more data sources' });
+    }
   }
 ); 
