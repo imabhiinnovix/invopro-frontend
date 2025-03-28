@@ -96,7 +96,15 @@ export interface AuthContextType {
   clearAuthContext: () => void;
 }
 
-export const AuthContext = createContext<AuthContextType | null>(null);
+const defaultAuthContext: AuthContextType = {
+  initialization: () => {},
+  userDetails: undefined,
+  setIsAuthUser: () => {},
+  isAuthUser: false,
+  clearAuthContext: () => {},
+};
+
+export const AuthContext = createContext<AuthContextType>(defaultAuthContext);
 
 const AuthProvider = ({ children }: AuthProviderProps) => {
   const [isAuthUser, setIsAuthUser] = useState(false);

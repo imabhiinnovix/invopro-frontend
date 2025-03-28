@@ -1,6 +1,6 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { GET, POST } from '../../services/apiRoutes';
-import { DashboardListResponse, WidgetTypeResponse, DataSourceResponse } from './types';
+import { DashboardListResponse, WidgetTypeResponse, DataSourceResponse, ChartDataResponse } from './types';
 import axiosInstance from '../../services/axiosInstance';
 import axios from 'axios';
 
@@ -162,5 +162,15 @@ export const loadMoreDataSources = createAsyncThunk(
       }
       return rejectWithValue({ message: 'Failed to load more data sources' });
     }
+  }
+);
+
+export const fetchChartData = createAsyncThunk(
+  'dashboard/fetchChartData',
+  async (dashboardId: string) => {
+    const response = await axiosInstance.get<ChartDataResponse>(
+      `${GET.DASHBOARD_WIDGET_GET_CHART_DATA}/${dashboardId}`
+    );
+    return response.data;
   }
 ); 

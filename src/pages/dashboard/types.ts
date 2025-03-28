@@ -87,14 +87,90 @@ export interface DataSourceResponse {
   totalCount: number;
 }
 
-export interface DashboardSliceState extends DashboardState {
-  widgetTypes: WidgetType[];
-  dataSources: DataSource[];
+export interface DashboardSliceState {
+  widgetTypes: WidgetTypeResponse[];
+  dataSources: DataSourceResponse[];
   widgetTypesLoading: boolean;
   dataSourcesLoading: boolean;
-  widgetTypesError: string | null;
-  dataSourcesError: string | null;
-  dataSourcesPage: number;
   dataSourcesHasMore: boolean;
+  dataSourcesPage: number;
   dataSourcesTotalCount: number;
+  charts: ChartResponse[];
+  chartsLoading: boolean;
+  chartsError: string | null;
+}
+
+export interface ChartData {
+  name: string;
+  [key: string]: string | number;
+  data: number;
+}
+
+export interface WidgetDetails {
+  _id: string;
+  name: string;
+  description: string;
+  chartType: string;
+  code: string;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+  __v: number;
+}
+
+export interface DataSourceDetails {
+  _id: string;
+  organizationId: string;
+  entityId: string;
+  name: string;
+  description: string;
+  code: string;
+  versionType: string;
+  isActive: boolean;
+  createdBy: string;
+  createdAt: string;
+  updatedAt: string;
+  __v: number;
+  canEditInline: boolean;
+  uniqueAttributeName: string[];
+}
+
+export interface ChartResponse {
+  _id: string;
+  createdBy: string;
+  dashboardId: string;
+  organizationId: string;
+  widgetTypeId: string;
+  name: string;
+  position: {
+    x: number;
+    y: number;
+    index: number;
+  };
+  dataSourceId: string;
+  dimensions: string[];
+  groupBy: string[];
+  aggregation: {
+    type: string;
+    attributeName: string;
+  };
+  conditions: {
+    field: string;
+    operator: string;
+    value: string;
+    _id: string;
+  }[];
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+  __v: number;
+  widgetDetails: WidgetDetails;
+  dataSourceDetails: DataSourceDetails;
+  data: ChartData[];
+}
+
+export interface ChartDataResponse {
+  success: boolean;
+  message: string;
+  data: ChartResponse[];
 } 

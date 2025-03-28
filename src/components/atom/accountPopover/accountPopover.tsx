@@ -9,26 +9,19 @@ import MenuList from '@mui/material/MenuList';
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
 import MenuItem, { menuItemClasses } from '@mui/material/MenuItem';
-import { AuthContext, AuthContextType } from '../../../context/AuthContext';
+import { AuthContext } from '../../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { clearLocalStorage } from '../../../utils/handleLocalStorage';
 
 interface MenuItem {
   label: string;
 }
+
 export function AccountPopover() {
-  // const menuData = [{ label: 'My Profile' }, { label: 'Dashboard' }];
   const menuData: MenuItem[] = [];
-
-  const { userDetails, initialization, clearAuthContext } = useContext(AuthContext) as AuthContextType;
-
-  useEffect(() => {
-    initialization();
-  }, [initialization]);
-
   const navigate = useNavigate();
-
   const [openPopover, setOpenPopover] = useState<HTMLButtonElement | null>(null);
+  const { userDetails, initialization, clearAuthContext, isAuthUser } = useContext(AuthContext);
 
   const handleOpenPopover = useCallback((event: React.MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
@@ -39,20 +32,22 @@ export function AccountPopover() {
     setOpenPopover(null);
   }, []);
 
-  // const handleClickItem = useCallback(
-  //   (path: string) => {
-  //     handleClosePopover();
-  //     router.push(path);
-  //   },
-  //   [handleClosePopover, router],
-  // );
-
-  const logout = () => {
+  const logout = useCallback(() => {
     clearAuthContext();
     clearLocalStorage();
     handleClosePopover();
     navigate('/login');
-  };
+  }, [clearAuthContext, handleClosePopover, navigate]);
+
+  useEffect(() => {
+    if (!isAuthUser) {
+      initialization();
+    }
+  }, [initialization, isAuthUser]);
+
+  if (!isAuthUser) {
+    return null;
+  }
 
   return (
     <>

@@ -7,6 +7,7 @@ import { toast } from 'react-toastify';
 import { useAppDispatch } from '../../../storeHooks';
 import { createWidget } from '../dashboardActions';
 import { useParams } from 'react-router-dom';
+import { ChartGrid } from './ChartGrid';
 
 const StyledBox = styled(Box)(({ theme }) => ({
   padding: theme.spacing(3),
@@ -15,6 +16,7 @@ const StyledBox = styled(Box)(({ theme }) => ({
   display: 'flex',
   flexDirection: 'column',
   backgroundColor: '#fff',
+  overflow: 'hidden',
 }));
 
 const HeaderBox = styled(Box)({
@@ -38,6 +40,19 @@ const AddChartButton = styled(Button)({
   padding: '6px 16px',
   textTransform: 'none',
   fontWeight: 500,
+});
+
+const ChartGridContainer = styled(Box)({
+  flexGrow: 1,
+  overflowY: 'auto',
+  overflowX: 'hidden',
+  '&::-webkit-scrollbar': {
+    width: '8px',
+  },
+  '&::-webkit-scrollbar-thumb': {
+    backgroundColor: 'rgba(0, 0, 0, 0.1)',
+    borderRadius: '4px',
+  },
 });
 
 interface DashboardViewProps {
@@ -153,8 +168,9 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         </AddChartButton>
       </HeaderBox>
 
-      {/* Content area will be added later */}
-      <Box sx={{ flexGrow: 1 }} />
+      <ChartGridContainer>
+        {dashboardId && <ChartGrid dashboardId={dashboardId} />}
+      </ChartGridContainer>
 
       <AddChartModal
         open={isAddChartModalOpen}

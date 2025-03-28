@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { DashboardListResponse, WidgetTypeResponse, DataSourceResponse, DashboardSliceState } from './types';
-import { fetchDashboardList, fetchWidgetTypes, fetchDataSources, loadMoreDataSources } from './dashboardActions';
+import { DashboardListResponse, WidgetTypeResponse, DataSourceResponse, DashboardSliceState, ChartResponse } from './types';
+import { fetchDashboardList, fetchWidgetTypes, fetchDataSources, loadMoreDataSources, fetchChartData } from './dashboardActions';
 
 const initialState: DashboardSliceState = {
   dashboards: [],
@@ -15,6 +15,9 @@ const initialState: DashboardSliceState = {
   dataSourcesPage: 1,
   dataSourcesHasMore: true,
   dataSourcesTotalCount: 0,
+  charts: [],
+  chartsLoading: false,
+  chartsError: null,
 };
 
 const dashboardSlice = createSlice({
@@ -79,6 +82,19 @@ const dashboardSlice = createSlice({
       .addCase(loadMoreDataSources.rejected, (state, action) => {
         state.dataSourcesLoading = false;
         state.dataSourcesError = action.error.message || 'Failed to load more data sources';
+      })
+      // Chart Data
+      .addCase(fetchChartData.pending, (state) => {
+        state.chartsLoading = true;
+        state.chartsError = null;
+      })
+      .addCase(fetchChartData.fulfilled, (state, action) => {
+        state.chartsLoading = false;
+        state.charts = action.payload.data;
+      })
+      .addCase(fetchChartData.rejected, (state, action) => {
+        state.chartsLoading = false;
+        state.chartsError = action.error.message || 'Failed to fetch chart data';
       });
   },
 });
