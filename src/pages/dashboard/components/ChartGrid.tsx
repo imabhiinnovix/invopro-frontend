@@ -9,6 +9,8 @@ import { styled } from '@mui/material/styles';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
+import FullscreenIcon from '@mui/icons-material/Fullscreen';
+import CloseIcon from '@mui/icons-material/Close';
 import { toast } from 'react-toastify';
 
 // Register ChartJS components
@@ -122,6 +124,29 @@ const EmptyContainer = styled(Box)(({ theme }) => ({
   border: `1px solid ${theme.palette.divider}`,
 }));
 
+const FullScreenModal = styled(Dialog)(({ theme }) => ({
+  '& .MuiDialog-paper': {
+    margin: theme.spacing(2),
+    width: 'calc(100% - 32px)',
+    height: 'calc(100% - 32px)',
+    maxWidth: 'calc(100% - 32px)',
+    maxHeight: 'calc(100% - 32px)',
+    borderRadius: '12px',
+  },
+}));
+
+const FullScreenChartContainer = styled(Box)(({ theme }) => ({
+  height: '100%',
+  padding: theme.spacing(3),
+  backgroundColor: '#f8f9fa',
+  display: 'flex',
+  flexDirection: 'column',
+  '& canvas': {
+    flexGrow: 1,
+    padding: theme.spacing(1),
+  },
+}));
+
 export const ChartGrid: React.FC<ChartGridProps> = ({ dashboardId, isEditMode }) => {
   const dispatch = useAppDispatch();
   const theme = useTheme();
@@ -130,6 +155,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({ dashboardId, isEditMode })
   const [selectedChart, setSelectedChart] = useState<ChartResponse | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [fullViewOpen, setFullViewOpen] = useState(false);
 
   useEffect(() => {
     if (dashboardId) {
@@ -185,6 +211,16 @@ export const ChartGrid: React.FC<ChartGridProps> = ({ dashboardId, isEditMode })
   const handleEditClick = () => {
     // TODO: Implement edit functionality
     handleMenuClose();
+  };
+
+  const handleFullViewClick = (chart: ChartResponse) => {
+    setSelectedChart(chart);
+    setFullViewOpen(true);
+  };
+
+  const handleFullViewClose = () => {
+    setFullViewOpen(false);
+    setSelectedChart(null);
   };
 
   if (chartsLoading) {
@@ -392,18 +428,30 @@ export const ChartGrid: React.FC<ChartGridProps> = ({ dashboardId, isEditMode })
                   <ChartTitleText>
                     {chart.name}
                   </ChartTitleText>
-                  {isEditMode && (
+                  <Box sx={{ display: 'flex', gap: 1 }}>
                     <IconButton
                       size="small"
-                      onClick={(e) => handleMenuClick(e, chart)}
+                      onClick={() => handleFullViewClick(chart)}
                       sx={{ 
                         opacity: 0.7,
                         '&:hover': { opacity: 1 }
                       }}
                     >
-                      <MoreVertIcon />
+                      <FullscreenIcon />
                     </IconButton>
-                  )}
+                    {isEditMode && (
+                      <IconButton
+                        size="small"
+                        onClick={(e) => handleMenuClick(e, chart)}
+                        sx={{ 
+                          opacity: 0.7,
+                          '&:hover': { opacity: 1 }
+                        }}
+                      >
+                        <MoreVertIcon />
+                      </IconButton>
+                    )}
+                  </Box>
                 </ChartTitle>
                 <ChartContainer 
                   className={chart.widgetDetails.chartType === 'pie' ? 'pie-chart' : 'line-chart'}
@@ -456,6 +504,38 @@ export const ChartGrid: React.FC<ChartGridProps> = ({ dashboardId, isEditMode })
           </Button>
         </DialogActions>
       </Dialog>
+
+      <FullScreenModal
+        open={fullViewOpen}
+        onClose={handleFullViewClose}
+        fullScreen
+      >
+        <DialogTitle sx={{ 
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          alignItems: 'center',
+          borderBottom: `1px solid ${theme.palette.divider}`,
+          p: 2
+        }}>
+          <Typography variant="h6">{selectedChart?.name}</Typography>
+          <IconButton 
+            onClick={handleFullViewClose} 
+            size="small"
+            sx={{
+              color: theme.palette.text.secondary,
+              '&:hover': {
+                color: theme.palette.text.primary,
+                backgroundColor: theme.palette.action.hover
+              }
+            }}
+          >
+            <CloseIcon />
+          </IconButton>
+        </DialogTitle>
+        <FullScreenChartContainer>
+          {selectedChart && renderChart(selectedChart)}
+        </FullScreenChartContainer>
+      </FullScreenModal>
     </>
   );
 }; 
