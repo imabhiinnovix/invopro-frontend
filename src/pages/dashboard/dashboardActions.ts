@@ -173,4 +173,19 @@ export const fetchChartData = createAsyncThunk(
     );
     return response.data;
   }
+);
+
+export const deleteWidget = createAsyncThunk(
+  'dashboard/deleteWidget',
+  async (widgetId: string, { rejectWithValue }) => {
+    try {
+      const { data } = await axiosInstance.post(`${POST.DELETE_WIDGET}/${widgetId}`, {});
+      return data;
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response?.data) {
+        return rejectWithValue(error.response.data);
+      }
+      return rejectWithValue({ message: 'Failed to delete widget. Please try again.' });
+    }
+  }
 ); 

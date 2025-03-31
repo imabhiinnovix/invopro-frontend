@@ -142,10 +142,18 @@ export default function SideNav() {
       try {
         setIsCreatingLoading(true);
         const response = await dispatch(createDashboard(newDashboardName.trim())).unwrap();
-        dispatch(fetchDashboardList());
+        await dispatch(fetchDashboardList());
         setIsCreating(false);
         setNewDashboardName("");
         toast.success(response.message || "Dashboard created successfully!");
+        
+        // Find the newly created dashboard and navigate to it
+        const newDashboard = response.data; // Get first dashboard from array
+        if (newDashboard) {
+          navigate(`/dashboard/${newDashboard._id}`, { 
+            state: { enableEditMode: true }
+          });
+        }
       } catch (error) {
         console.error("Failed to create dashboard:", error);
         const errorResponse = error as ErrorResponse;

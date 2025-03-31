@@ -1,11 +1,15 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useAppDispatch, useAppSelector } from '../../../storeHooks';
-import { fetchChartData } from '../dashboardActions';
-import { Grid, Card, CardContent, Typography, Box, CircularProgress, useTheme } from '@mui/material';
+import { fetchChartData, deleteWidget } from '../dashboardActions';
+import { Grid, Card, CardContent, Typography, Box, CircularProgress, useTheme, IconButton, Menu, MenuItem, Dialog, DialogTitle, DialogContent, DialogActions, Button } from '@mui/material';
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, ArcElement } from 'chart.js';
 import { Line, Pie } from 'react-chartjs-2';
 import { ChartResponse, ChartData } from '../types';
 import { styled } from '@mui/material/styles';
+import MoreVertIcon from '@mui/icons-material/MoreVert';
+import DeleteIcon from '@mui/icons-material/Delete';
+import EditIcon from '@mui/icons-material/Edit';
+import { toast } from 'react-toastify';
 
 // Register ChartJS components
 ChartJS.register(
@@ -21,6 +25,7 @@ ChartJS.register(
 
 interface ChartGridProps {
   dashboardId: string;
+  isEditMode: boolean;
 }
 
 const StyledCard = styled(Card)(({ theme }) => ({
@@ -45,8 +50,13 @@ const ChartTitle = styled(Typography)(({ theme }) => ({
   marginBottom: theme.spacing(2),
   display: 'flex',
   alignItems: 'center',
+  justifyContent: 'space-between',
   gap: theme.spacing(1),
 }));
+
+const ChartTitleText = styled(Typography)({
+  flexGrow: 1,
+});
 
 const ChartContainer = styled(Box)(({ theme }) => ({
   height: 300,
@@ -112,16 +122,70 @@ const EmptyContainer = styled(Box)(({ theme }) => ({
   border: `1px solid ${theme.palette.divider}`,
 }));
 
-export const ChartGrid: React.FC<ChartGridProps> = ({ dashboardId }) => {
+export const ChartGrid: React.FC<ChartGridProps> = ({ dashboardId, isEditMode }) => {
   const dispatch = useAppDispatch();
   const theme = useTheme();
   const { charts, chartsLoading, chartsError } = useAppSelector((state) => state.dashboard);
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [selectedChart, setSelectedChart] = useState<ChartResponse | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     if (dashboardId) {
       dispatch(fetchChartData(dashboardId));
     }
   }, [dispatch, dashboardId]);
+
+  const handleMenuClick = (event: React.MouseEvent<HTMLElement>, chart: ChartResponse) => {
+    event.stopPropagation();
+    setAnchorEl(event.currentTarget);
+    setSelectedChart(chart);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+    setSelectedChart(null);
+  };
+
+  const handleDeleteClick = () => {
+    setDeleteDialogOpen(true);
+    handleMenuClose();
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!selectedChart) return;
+    
+    try {
+      setIsDeleting(true);
+      const result = await dispatch(deleteWidget(selectedChart._id)).unwrap();
+      
+      if (result.success) {
+        toast.success('Chart deleted successfully!');
+        dispatch(fetchChartData(dashboardId));
+      } else {
+        toast.error(result.message || 'Failed to delete chart');
+      }
+    } catch (error) {
+      if (typeof error === 'object' && error !== null && 'message' in error) {
+        toast.error(error.message as string);
+      } else {
+        toast.error('Failed to delete chart');
+      }
+    } finally {
+      setIsDeleting(false);
+      setDeleteDialogOpen(false);
+    }
+  };
+
+  const handleDeleteCancel = () => {
+    setDeleteDialogOpen(false);
+  };
+
+  const handleEditClick = () => {
+    // TODO: Implement edit functionality
+    handleMenuClose();
+  };
 
   if (chartsLoading) {
     return (
@@ -318,24 +382,80 @@ export const ChartGrid: React.FC<ChartGridProps> = ({ dashboardId }) => {
   };
 
   return (
-    <Grid container spacing={3} sx={{ mt: 2, p: 2 }}>
-      {charts.map((chart) => (
-        <Grid item xs={12} md={6} key={chart._id}>
-          <StyledCard>
-            <CardContent sx={{ flexGrow: 1, p: 3 }}>
-              <ChartTitle>
-                {chart.name}
-              </ChartTitle>
-              <ChartContainer 
-                className={chart.widgetDetails.chartType === 'pie' ? 'pie-chart' : 'line-chart'}
-                onWheel={handleWheel}
-              >
-                {renderChart(chart)}
-              </ChartContainer>
-            </CardContent>
-          </StyledCard>
-        </Grid>
-      ))}
-    </Grid>
+    <>
+      <Grid container spacing={3} sx={{ mt: 2, p: 2 }}>
+        {charts.map((chart) => (
+          <Grid item xs={12} md={6} key={chart._id}>
+            <StyledCard>
+              <CardContent sx={{ flexGrow: 1, p: 3 }}>
+                <ChartTitle>
+                  <ChartTitleText>
+                    {chart.name}
+                  </ChartTitleText>
+                  {isEditMode && (
+                    <IconButton
+                      size="small"
+                      onClick={(e) => handleMenuClick(e, chart)}
+                      sx={{ 
+                        opacity: 0.7,
+                        '&:hover': { opacity: 1 }
+                      }}
+                    >
+                      <MoreVertIcon />
+                    </IconButton>
+                  )}
+                </ChartTitle>
+                <ChartContainer 
+                  className={chart.widgetDetails.chartType === 'pie' ? 'pie-chart' : 'line-chart'}
+                  onWheel={handleWheel}
+                >
+                  {renderChart(chart)}
+                </ChartContainer>
+              </CardContent>
+            </StyledCard>
+          </Grid>
+        ))}
+      </Grid>
+
+      <Menu
+        anchorEl={anchorEl}
+        open={Boolean(anchorEl)}
+        onClose={handleMenuClose}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <MenuItem onClick={handleEditClick}>
+          <EditIcon sx={{ mr: 1, fontSize: 20 }} />
+          Edit
+        </MenuItem>
+        <MenuItem onClick={handleDeleteClick} sx={{ color: 'error.main' }}>
+          <DeleteIcon sx={{ mr: 1, fontSize: 20 }} />
+          Delete
+        </MenuItem>
+      </Menu>
+
+      <Dialog
+        open={deleteDialogOpen}
+        onClose={handleDeleteCancel}
+        aria-labelledby="delete-dialog-title"
+      >
+        <DialogTitle id="delete-dialog-title">Delete Chart</DialogTitle>
+        <DialogContent>
+          <Typography>
+            Are you sure you want to delete this chart? This action cannot be undone.
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleDeleteCancel}>Cancel</Button>
+          <Button 
+            onClick={handleDeleteConfirm} 
+            color="error" 
+            variant="contained"
+            disabled={isDeleting}
+          >
+            {isDeleting ? 'Deleting...' : 'Delete'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </>
   );
 }; 

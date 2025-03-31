@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { DashboardListResponse, WidgetTypeResponse, DataSourceResponse, DashboardSliceState, ChartResponse } from './types';
-import { fetchDashboardList, fetchWidgetTypes, fetchDataSources, loadMoreDataSources, fetchChartData } from './dashboardActions';
+import { DashboardListResponse, WidgetTypeResponse, DataSourceResponse, DashboardSliceState, ChartResponse, ChartDataResponse } from './types';
+import { fetchDashboardList, fetchWidgetTypes, fetchDataSources, loadMoreDataSources, fetchChartData, deleteWidget } from './dashboardActions';
 
 const initialState: DashboardSliceState = {
   dashboards: [],
@@ -83,18 +83,33 @@ const dashboardSlice = createSlice({
         state.dataSourcesLoading = false;
         state.dataSourcesError = action.error.message || 'Failed to load more data sources';
       })
-      // Chart Data
+      // Chart data actions
       .addCase(fetchChartData.pending, (state) => {
         state.chartsLoading = true;
         state.chartsError = null;
       })
-      .addCase(fetchChartData.fulfilled, (state, action) => {
+      .addCase(fetchChartData.fulfilled, (state, action: PayloadAction<ChartDataResponse>) => {
         state.chartsLoading = false;
         state.charts = action.payload.data;
       })
       .addCase(fetchChartData.rejected, (state, action) => {
         state.chartsLoading = false;
         state.chartsError = action.error.message || 'Failed to fetch chart data';
+      })
+      // Delete widget actions
+      .addCase(deleteWidget.pending, (state) => {
+        state.chartsLoading = true;
+        state.chartsError = null;
+      })
+      .addCase(deleteWidget.fulfilled, (state, action) => {
+        state.chartsLoading = false;
+        if (action.payload.success) {
+          state.charts = state.charts.filter(chart => chart._id !== action.meta.arg);
+        }
+      })
+      .addCase(deleteWidget.rejected, (state, action) => {
+        state.chartsLoading = false;
+        state.chartsError = action.error.message || 'Failed to delete widget';
       });
   },
 });

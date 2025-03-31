@@ -91,10 +91,12 @@ export interface DashboardSliceState {
   dashboards: Dashboard[];
   loading: boolean;
   error: string | null;
-  widgetTypes: WidgetTypeResponse[];
-  dataSources: DataSourceResponse[];
+  widgetTypes: WidgetType[];
+  dataSources: DataSource[];
   widgetTypesLoading: boolean;
   dataSourcesLoading: boolean;
+  widgetTypesError: string | null;
+  dataSourcesError: string | null;
   dataSourcesHasMore: boolean;
   dataSourcesPage: number;
   dataSourcesTotalCount: number;
@@ -176,4 +178,5 @@ export interface ChartDataResponse {
   success: boolean;
   message: string;
   data: ChartResponse[];
+  totalCount: number;
 } 

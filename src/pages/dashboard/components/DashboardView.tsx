@@ -1,12 +1,14 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Box, Typography, TextField, Button } from '@mui/material';
+import { Box, Typography, TextField, Button, IconButton } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import AddIcon from '@mui/icons-material/Add';
+import EditIcon from '@mui/icons-material/Edit';
+import DoneIcon from '@mui/icons-material/Done';
 import { AddChartModal, ChartFormData } from './AddChartModal';
 import { toast } from 'react-toastify';
 import { useAppDispatch } from '../../../storeHooks';
 import { createWidget } from '../dashboardActions';
-import { useParams } from 'react-router-dom';
+import { useParams, useLocation } from 'react-router-dom';
 import { ChartGrid } from './ChartGrid';
 
 const StyledBox = styled(Box)(({ theme }) => ({
@@ -68,11 +70,19 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 }) => {
   const dispatch = useAppDispatch();
   const { id: dashboardId } = useParams();
+  const location = useLocation();
   const [isEditing, setIsEditing] = useState(false);
   const [editedTitle, setEditedTitle] = useState(title);
   const [isAddChartModalOpen, setIsAddChartModalOpen] = useState(false);
   const [isCreatingWidget, setIsCreatingWidget] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (location.state?.enableEditMode) {
+      setIsEditMode(true);
+    }
+  }, [location.state]);
 
   useEffect(() => {
     if (isEditing && inputRef.current) {
@@ -131,6 +141,10 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     }
   };
 
+  const handleEditModeToggle = () => {
+    setIsEditMode(!isEditMode);
+  };
+
   return (
     <StyledBox>
       <HeaderBox>
@@ -158,18 +172,51 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           </TitleWrapper>
         )}
         
-        <AddChartButton
-          variant="contained"
-          color="primary"
-          startIcon={<AddIcon />}
-          onClick={() => setIsAddChartModalOpen(true)}
-        >
-          Add Chart
-        </AddChartButton>
+        <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+          {isEditMode ? (
+            <>
+              <AddChartButton
+                variant="contained"
+                color="primary"
+                startIcon={<AddIcon />}
+                onClick={() => setIsAddChartModalOpen(true)}
+              >
+                Add Chart
+              </AddChartButton>
+              <IconButton
+                onClick={handleEditModeToggle}
+                color="primary"
+                sx={{ 
+                  backgroundColor: 'primary.main',
+                  color: 'white',
+                  '&:hover': {
+                    backgroundColor: 'primary.dark',
+                  }
+                }}
+              >
+                <DoneIcon />
+              </IconButton>
+            </>
+          ) : (
+            <IconButton
+              onClick={handleEditModeToggle}
+              color="primary"
+              sx={{ 
+                backgroundColor: 'primary.main',
+                color: 'white',
+                '&:hover': {
+                  backgroundColor: 'primary.dark',
+                }
+              }}
+            >
+              <EditIcon />
+            </IconButton>
+          )}
+        </Box>
       </HeaderBox>
 
       <ChartGridContainer>
-        {dashboardId && <ChartGrid dashboardId={dashboardId} />}
+        {dashboardId && <ChartGrid dashboardId={dashboardId} isEditMode={isEditMode} />}
       </ChartGridContainer>
 
       <AddChartModal
