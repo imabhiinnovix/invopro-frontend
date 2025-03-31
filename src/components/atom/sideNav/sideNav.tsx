@@ -129,6 +129,7 @@ export default function SideNav() {
         if (!openDashboard) {
           setOpenDashboard(true);
         }
+        navigate(route);
       } else {
         setOpenSettings((prev) => !prev);
       }
@@ -237,11 +238,19 @@ export default function SideNav() {
                   route: "#",
                 },
               ]
-            : dashboards.map((dashboard: DashboardType) => ({
-                name: dashboard.name,
-                icon: <></>,
-                route: `/dashboard/${dashboard._id}`,
-              }))),
+            : [
+                ...dashboards.slice(0, 5).map((dashboard: DashboardType) => ({
+                  name: dashboard.name,
+                  icon: <></>,
+                  route: `/dashboard/${dashboard._id}`,
+                })),
+                ...(dashboards.length > 5 ? [{
+                  name: "More Dashboards...",
+                  icon: <></>,
+                  route: "/dashboard",
+                  isMoreLink: true
+                }] : [])
+              ]),
         ],
       },
       {
