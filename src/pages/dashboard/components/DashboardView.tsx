@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Box, Typography, TextField, Button, IconButton } from '@mui/material';
+import { Box, Typography, TextField, Button } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
@@ -71,7 +71,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   const dispatch = useAppDispatch();
   const { id: dashboardId } = useParams();
   const location = useLocation();
-  const [isEditing, setIsEditing] = useState(false);
   const [editedTitle, setEditedTitle] = useState(title);
   const [isAddChartModalOpen, setIsAddChartModalOpen] = useState(false);
   const [isCreatingWidget, setIsCreatingWidget] = useState(false);
@@ -85,34 +84,27 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   }, [location.state]);
 
   useEffect(() => {
-    if (isEditing && inputRef.current) {
+    if (isEditMode && inputRef.current) {
       inputRef.current.focus();
       inputRef.current.select();
     }
-  }, [isEditing]);
+  }, [isEditMode]);
 
-  const handleDoubleClick = () => {
-    setIsEditing(true);
-  };
-
-  const handleBlur = () => {
-    setIsEditing(false);
-    if (editedTitle.trim() !== title) {
-      onTitleChange(editedTitle.trim());
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Escape') {
+      setEditedTitle(title);
     }
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      setIsEditing(false);
+  const handleEditModeToggle = () => {
+    if (isEditMode) {
       if (editedTitle.trim() !== title) {
         onTitleChange(editedTitle.trim());
       }
-    }
-    if (e.key === 'Escape') {
-      setIsEditing(false);
+    } else {
       setEditedTitle(title);
     }
+    setIsEditMode(!isEditMode);
   };
 
   const handleAddChart = async (formData: ChartFormData) => {
@@ -141,19 +133,14 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     }
   };
 
-  const handleEditModeToggle = () => {
-    setIsEditMode(!isEditMode);
-  };
-
   return (
     <StyledBox>
       <HeaderBox>
-        {isEditing ? (
+        {isEditMode ? (
           <TextField
             inputRef={inputRef}
             value={editedTitle}
             onChange={(e) => setEditedTitle(e.target.value)}
-            onBlur={handleBlur}
             onKeyDown={handleKeyPress}
             size="small"
             sx={{ 
@@ -165,8 +152,12 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             }}
           />
         ) : (
-          <TitleWrapper onDoubleClick={handleDoubleClick}>
-            <Typography variant="h5" component="h1" fontWeight={500}>
+          <TitleWrapper>
+            <Typography 
+              variant="h5" 
+              component="h1" 
+              fontWeight={500}
+            >
               {title}
             </Typography>
           </TitleWrapper>
@@ -183,34 +174,32 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               >
                 Add Chart
               </AddChartButton>
-              <IconButton
+              <Button
                 onClick={handleEditModeToggle}
-                color="primary"
+                color="success"
+                variant="contained"
+                startIcon={<DoneIcon />}
                 sx={{ 
-                  backgroundColor: 'primary.main',
-                  color: 'white',
-                  '&:hover': {
-                    backgroundColor: 'primary.dark',
-                  }
+                  textTransform: 'none',
+                  fontWeight: 500,
                 }}
               >
-                <DoneIcon />
-              </IconButton>
+                Save
+              </Button>
             </>
           ) : (
-            <IconButton
+            <Button
               onClick={handleEditModeToggle}
               color="primary"
+              variant="contained"
+              startIcon={<EditIcon />}
               sx={{ 
-                backgroundColor: 'primary.main',
-                color: 'white',
-                '&:hover': {
-                  backgroundColor: 'primary.dark',
-                }
+                textTransform: 'none',
+                fontWeight: 500,
               }}
             >
-              <EditIcon />
-            </IconButton>
+              Edit
+            </Button>
           )}
         </Box>
       </HeaderBox>
