@@ -27,11 +27,9 @@ import {
   DialogContent,
   DialogActions,
   TextField,
-  Chip,
   Tooltip,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
-import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { format } from "date-fns";
 import { DeleteConfirmationModal } from "../../components/atom/sideNav/components/DeleteConfirmationModal";
@@ -218,6 +216,7 @@ const Dashboard = () => {
               {dashboards.map((dashboard) => (
                 <TableRow
                   key={dashboard._id}
+                  onClick={() => handleEdit(dashboard._id)}
                   sx={{
                     "&:hover": {
                       backgroundColor: "#f8f9fa",
@@ -258,20 +257,6 @@ const Dashboard = () => {
                   </TableCell>
                   <TableCell>
                     <Box sx={{ display: "flex", gap: 1 }}>
-                      <Tooltip title="Edit Dashboard">
-                        <IconButton
-                          color="primary"
-                          onClick={() => handleEdit(dashboard._id)}
-                          size="small"
-                          sx={{
-                            "&:hover": {
-                              backgroundColor: "rgba(25, 118, 210, 0.1)",
-                            },
-                          }}
-                        >
-                          <EditIcon />
-                        </IconButton>
-                      </Tooltip>
                       <Tooltip title="Delete Dashboard">
                         <IconButton
                           color="error"

@@ -33,7 +33,7 @@ export const SubItemsList: React.FC<SubItemsListProps> = ({
   const location = useLocation();
 
   return (
-    <List component="div" disablePadding style={{ overflowY: 'auto', height: '300px' }}>
+    <List component="div" disablePadding>
       {subItems.map((subItem, i) => (
         <React.Fragment key={i}>
           <ListItem disablePadding sx={{ display: 'block' }}>

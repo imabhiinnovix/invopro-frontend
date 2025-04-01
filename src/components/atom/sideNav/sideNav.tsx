@@ -124,7 +124,7 @@ export default function SideNav() {
     itemName: string
   ) => {
     if (hasSubItems) {
-      if (itemName === "Dashboard") {
+      if (itemName === "Dashboards") {
         setOpenDashboard((prev) => !prev);
         if (!openDashboard) {
           setOpenDashboard(true);
@@ -220,7 +220,7 @@ export default function SideNav() {
   const navItems: NavItem[] = useMemo(
     () => [
       {
-        name: "Dashboard",
+        name: "Dashboards",
         icon: <DashboardIcon sx={{ fontSize: "3rem", color: "black" }} />,
         route: "/dashboard",
         subItems: [
@@ -244,12 +244,12 @@ export default function SideNav() {
                   icon: <></>,
                   route: `/dashboard/${dashboard._id}`,
                 })),
-                ...(dashboards.length > 5 ? [{
-                  name: "More Dashboards...",
+                {
+                  name: "All Dashboards",
                   icon: <></>,
                   route: "/dashboard",
                   isMoreLink: true
-                }] : [])
+                }
               ]),
         ],
       },
@@ -259,7 +259,7 @@ export default function SideNav() {
         route: "/reports",
       },
       {
-        name: "Data Source",
+        name: "Data Sources",
         icon: <SourceIcon sx={{ fontSize: "3rem", color: "black" }} />,
         route: "/data-source",
         subItems: [
@@ -335,8 +335,8 @@ export default function SideNav() {
                     }}
                   />
                   {item.subItems &&
-                    ((item.name === "Dashboard" && openDashboard) ||
-                    (item.name !== "Dashboard" && openSettings) ? (
+                    ((item.name === "Dashboards" && openDashboard) ||
+                    (item.name !== "Dashboards" && openSettings) ? (
                       <ExpandLessIcon />
                     ) : (
                       <ExpandMoreIcon />
@@ -346,12 +346,13 @@ export default function SideNav() {
 
               {item.subItems && (
                 <Collapse
-                  in={item.name === "Dashboard" ? openDashboard : openSettings}
+                  in={item.name === "Dashboards" ? openDashboard : openSettings}
                   timeout="auto"
                   unmountOnExit
+                  sx={{ mt: 0 }}
                 >
-                  {item.name === "Dashboard" && (
-                    <ListItem disablePadding sx={{ display: "block" }}>
+                  {item.name === "Dashboards" && (
+                    <ListItem disablePadding sx={{ display: "block", mt: 0 }}>
                       <ListItemButton
                         onClick={() => setIsCreating(true)}
                         sx={{
@@ -378,7 +379,7 @@ export default function SideNav() {
                       </ListItemButton>
                     </ListItem>
                   )}
-                  {isCreating && item.name === "Dashboard" && (
+                  {isCreating && item.name === "Dashboards" && (
                     <DashboardCreationForm
                       newDashboardName={newDashboardName}
                       onNameChange={(e) => setNewDashboardName(e.target.value)}
