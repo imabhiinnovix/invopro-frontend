@@ -144,6 +144,13 @@ const StyledButton = styled(Button)(({ theme }) => ({
   },
 }));
 
+const ConditionsSection = styled(FormSection)(({ theme }) => ({
+  border: `1px solid ${theme.palette.divider}`,
+  borderRadius: "8px",
+  padding: theme.spacing(2),
+  backgroundColor: theme.palette.background.default,
+}));
+
 export const AddChartModal: React.FC<AddChartModalProps> = ({
   open,
   onClose,
@@ -648,6 +655,38 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
             </FormSection>
 
             <FormSection>
+              <SectionTitle>Position</SectionTitle>
+              <FormRow>
+                <StyledTextField
+                  label="X"
+                  type="number"
+                  value={formData.position.x}
+                  onChange={(e) => handlePositionChange("x", e.target.value)}
+                  disabled={isSubmitting}
+                  size="small"
+                />
+                <StyledTextField
+                  label="Y"
+                  type="number"
+                  value={formData.position.y}
+                  onChange={(e) => handlePositionChange("y", e.target.value)}
+                  disabled={isSubmitting}
+                  size="small"
+                />
+                <StyledTextField
+                  label="Index"
+                  type="number"
+                  value={formData.position.index}
+                  onChange={(e) =>
+                    handlePositionChange("index", e.target.value)
+                  }
+                  disabled={isSubmitting}
+                  size="small"
+                />
+              </FormRow>
+            </FormSection>
+
+            <ConditionsSection>
               <Box
                 sx={{
                   display: "flex",
@@ -717,39 +756,7 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
                   </IconButton>
                 </FormRow>
               ))}
-            </FormSection>
-
-            <FormSection>
-              <SectionTitle>Position</SectionTitle>
-              <FormRow>
-                <StyledTextField
-                  label="X"
-                  type="number"
-                  value={formData.position.x}
-                  onChange={(e) => handlePositionChange("x", e.target.value)}
-                  disabled={isSubmitting}
-                  size="small"
-                />
-                <StyledTextField
-                  label="Y"
-                  type="number"
-                  value={formData.position.y}
-                  onChange={(e) => handlePositionChange("y", e.target.value)}
-                  disabled={isSubmitting}
-                  size="small"
-                />
-                <StyledTextField
-                  label="Index"
-                  type="number"
-                  value={formData.position.index}
-                  onChange={(e) =>
-                    handlePositionChange("index", e.target.value)
-                  }
-                  disabled={isSubmitting}
-                  size="small"
-                />
-              </FormRow>
-            </FormSection>
+            </ConditionsSection>
           </>
         )}
       </StyledDialogContent>
