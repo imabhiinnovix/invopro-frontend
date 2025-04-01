@@ -77,6 +77,10 @@ interface CreateWidgetResponse {
   message: string;
   data: {
     _id: string;
+    createdBy: string;
+    dashboardId: string;
+    organizationId: string;
+    widgetTypeId: string;
     name: string;
     dimensions: string;
     groupBy: string;
@@ -93,10 +97,10 @@ interface CreateWidgetResponse {
       field: string;
       operator: string;
       value: string;
+      _id: string;
     }[];
     dataSourceId: string;
-    widgetTypeId: string;
-    dashboardId: string;
+    isActive: boolean;
     createdAt: string;
     updatedAt: string;
   };
@@ -186,6 +190,37 @@ export const deleteWidget = createAsyncThunk(
         return rejectWithValue(error.response.data);
       }
       return rejectWithValue({ message: 'Failed to delete widget. Please try again.' });
+    }
+  }
+);
+
+interface UpdateWidgetPayload extends CreateWidgetPayload {
+  _id: string;
+}
+
+interface UpdateWidgetResponse {
+  success: boolean;
+  message: string;
+  data: CreateWidgetResponse['data'];
+}
+
+export const updateWidget = createAsyncThunk(
+  'dashboard/updateWidget',
+  async (payload: UpdateWidgetPayload, { rejectWithValue }) => {
+    try {
+      const { data } = await axiosInstance.post<UpdateWidgetResponse>(
+        `${POST.UPDATE_WIDGET}/${payload._id}`,
+        payload
+      );
+      if (data.success) {
+        return data;
+      }
+      return rejectWithValue(data);
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response?.data) {
+        return rejectWithValue(error.response.data);
+      }
+      return rejectWithValue({ message: 'Failed to update widget. Please try again.' });
     }
   }
 ); 

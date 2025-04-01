@@ -9,6 +9,7 @@ export const POST = {
   UPDATE_DASHBOARD: "/dashboard/update",
   DELETE_DASHBOARD: "/dashboard/delete",
   CREATE_WIDGET: "/dashboard/widget/create",
+  UPDATE_WIDGET: "/dashboard/widget/update",
   DELETE_WIDGET: "/dashboard/widget/delete",
 
   CREATE_USER: "auth/create-user",

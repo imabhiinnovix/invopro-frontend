@@ -1,6 +1,13 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { DashboardListResponse, WidgetTypeResponse, DataSourceResponse, DashboardSliceState, ChartResponse, ChartDataResponse } from './types';
-import { fetchDashboardList, fetchWidgetTypes, fetchDataSources, loadMoreDataSources, fetchChartData, deleteWidget } from './dashboardActions';
+import { DashboardListResponse, WidgetTypeResponse, DataSourceResponse, DashboardSliceState, ChartDataResponse, ChartResponse } from './types';
+import { fetchDashboardList, fetchWidgetTypes, fetchDataSources, loadMoreDataSources, fetchChartData, deleteWidget, updateWidget, createWidget } from './dashboardActions';
+
+interface Condition {
+  field: string;
+  operator: string;
+  value: string;
+  _id?: string;
+}
 
 const initialState: DashboardSliceState = {
   dashboards: [],
@@ -110,6 +117,70 @@ const dashboardSlice = createSlice({
       .addCase(deleteWidget.rejected, (state, action) => {
         state.chartsLoading = false;
         state.chartsError = action.error.message || 'Failed to delete widget';
+      })
+      // Create widget actions
+      .addCase(createWidget.pending, (state) => {
+        state.chartsLoading = true;
+        state.chartsError = null;
+      })
+      .addCase(createWidget.fulfilled, (state, action) => {
+        state.chartsLoading = false;
+        if (action.payload.success) {
+          const chartData = {
+            ...action.payload.data,
+            dimensions: Array.isArray(action.payload.data.dimensions) 
+              ? action.payload.data.dimensions 
+              : [action.payload.data.dimensions],
+            groupBy: Array.isArray(action.payload.data.groupBy) 
+              ? action.payload.data.groupBy 
+              : [action.payload.data.groupBy],
+            conditions: action.payload.data.conditions.map((condition: Condition) => ({
+              ...condition,
+              _id: condition._id || ''
+            }))
+          };
+          state.charts = [...state.charts, chartData];
+        }
+      })
+      .addCase(createWidget.rejected, (state, action) => {
+        state.chartsLoading = false;
+        state.chartsError = action.error.message || 'Failed to create widget';
+      })
+      // Update widget actions
+      .addCase(updateWidget.pending, (state) => {
+        state.chartsLoading = true;
+        state.chartsError = null;
+      })
+      .addCase(updateWidget.fulfilled, (state, action) => {
+        state.chartsLoading = false;
+        if (action.payload.success) {
+          const updatedWidget = action.meta.arg;
+          state.charts = state.charts.map(chart => 
+            chart._id === updatedWidget._id ? {
+              ...chart,
+              name: updatedWidget.name,
+              dimensions: Array.isArray(updatedWidget.dimensions) ? updatedWidget.dimensions : [updatedWidget.dimensions],
+              groupBy: Array.isArray(updatedWidget.groupBy) ? updatedWidget.groupBy : [updatedWidget.groupBy],
+              aggregation: updatedWidget.aggregation,
+              position: updatedWidget.position,
+              conditions: updatedWidget.conditions.map((condition: Condition) => {
+                const existingCondition = chart.conditions.find(c => c.field === condition.field);
+                return {
+                  field: condition.field,
+                  operator: condition.operator,
+                  value: condition.value,
+                  _id: existingCondition?._id || condition._id || ''
+                };
+              }),
+              dataSourceId: updatedWidget.dataSourceId,
+              widgetTypeId: updatedWidget.widgetTypeId,
+            } : chart
+          );
+        }
+      })
+      .addCase(updateWidget.rejected, (state, action) => {
+        state.chartsLoading = false;
+        state.chartsError = action.error.message || 'Failed to update widget';
       });
   },
 });

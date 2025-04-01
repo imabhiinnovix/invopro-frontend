@@ -25,8 +25,12 @@ import {
   fetchWidgetTypes,
   fetchDataSources,
   loadMoreDataSources,
+  updateWidget,
+  createWidget,
+  fetchChartData,
 } from "../dashboardActions";
 import { DataSource, DataSourceAttribute, ChartResponse } from "../types";
+import { toast } from "react-toastify";
 
 interface Condition {
   field: string;
@@ -60,8 +64,7 @@ export interface ChartFormData {
 interface AddChartModalProps {
   open: boolean;
   onClose: () => void;
-  onSubmit: (formData: ChartFormData) => Promise<void>;
-  isSubmitting?: boolean;
+  isSubmitting: boolean;
   dashboardId: string;
   initialData?: ChartResponse;
 }
@@ -144,8 +147,7 @@ const StyledButton = styled(Button)(({ theme }) => ({
 export const AddChartModal: React.FC<AddChartModalProps> = ({
   open,
   onClose,
-  onSubmit,
-  isSubmitting = false,
+  isSubmitting,
   dashboardId,
   initialData,
 }) => {
@@ -392,15 +394,49 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
   };
 
   const handleSubmit = async () => {
-    if (formData.widgetTypeId) {
-      await onSubmit({
+    if (!formData.widgetTypeId) return;
+
+    try {
+      const payload = {
         ...formData,
         position: {
           x: Number(formData.position.x),
           y: Number(formData.position.y),
           index: Number(formData.position.index),
         },
-      });
+      };
+
+      if (initialData) {
+        // Update existing widget
+        const result = await dispatch(updateWidget({
+          ...payload,
+          _id: initialData._id,
+        })).unwrap();
+        
+        if (result.success) {
+          // Fetch updated chart data
+          await dispatch(fetchChartData(payload.dashboardId));
+          toast.success('Chart updated successfully!');
+          onClose();
+        } else {
+          toast.error(result.message || 'Failed to update chart');
+        }
+      } else {
+        // Create new widget
+        const result = await dispatch(createWidget(payload)).unwrap();
+        
+        if (result.success) {
+          // Fetch updated chart data
+          await dispatch(fetchChartData(payload.dashboardId));
+          toast.success('Chart created successfully!');
+          onClose();
+        } else {
+          toast.error(result.message || 'Failed to create chart');
+        }
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      toast.error('An error occurred. Please try again.');
     }
   };
 

@@ -168,10 +168,10 @@ export interface ChartResponse {
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
-  __v: number;
-  widgetDetails: WidgetDetails;
-  dataSourceDetails: DataSourceDetails;
-  data: ChartData[];
+  __v?: number;
+  widgetDetails?: WidgetDetails;
+  dataSourceDetails?: DataSourceDetails;
+  data?: ChartData[];
 }
 
 export interface ChartDataResponse {

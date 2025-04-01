@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useAppDispatch, useAppSelector } from '../../../storeHooks';
-import { fetchChartData, deleteWidget } from '../dashboardActions';
+import { fetchChartData, deleteWidget, updateWidget } from '../dashboardActions';
 import { Grid, Card, CardContent, Typography, Box, CircularProgress, useTheme, IconButton, Menu, MenuItem, Dialog, DialogTitle, DialogContent, DialogActions, Button } from '@mui/material';
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, ArcElement } from 'chart.js';
 import { Line, Pie } from 'react-chartjs-2';
@@ -222,13 +222,23 @@ export const ChartGrid: React.FC<ChartGridProps> = ({ dashboardId, isEditMode })
   };
 
   const handleEditSubmit = async (formData: ChartFormData) => {
+    if (!selectedChart) return;
+    
     try {
       setIsSubmitting(true);
-      console.log('Submitting form data:', formData);
-      // TODO: Implement update functionality
-      toast.success('Chart updated successfully!');
-      dispatch(fetchChartData(dashboardId));
-      handleEditModalClose();
+      const result = await dispatch(updateWidget({
+        ...formData,
+        _id: selectedChart._id,
+        dashboardId,
+      })).unwrap();
+      
+      if (result.success) {
+        toast.success('Chart updated successfully!');
+        await dispatch(fetchChartData(dashboardId));
+        handleEditModalClose();
+      } else {
+        toast.error(result.message || 'Failed to update chart');
+      }
     } catch (error) {
       if (typeof error === 'object' && error !== null && 'message' in error) {
         toast.error(error.message as string);
@@ -297,8 +307,9 @@ export const ChartGrid: React.FC<ChartGridProps> = ({ dashboardId, isEditMode })
 
     const labels = chart.data.map((item: ChartData) => item.name);
     const values = chart.data.map((item: ChartData) => item.data);
+    const chartType = chart.widgetDetails?.chartType || 'line';
 
-    if (chart.widgetDetails.chartType === 'pie') {
+    if (chartType === 'pie') {
       return {
         labels,
         datasets: [
@@ -432,10 +443,11 @@ export const ChartGrid: React.FC<ChartGridProps> = ({ dashboardId, isEditMode })
 
   const renderChart = (chart: ChartResponse) => {
     const chartData = getChartData(chart);
-    const options = getChartOptions(chart.widgetDetails.chartType);
+    const chartType = chart.widgetDetails?.chartType || 'line';
+    const options = getChartOptions(chartType);
     const chartId = `chart-${chart._id}`;
 
-    switch (chart.widgetDetails.chartType) {
+    switch (chartType) {
       case 'pie':
         return <Pie id={chartId} data={chartData} options={options} />;
       case 'line':
@@ -481,7 +493,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({ dashboardId, isEditMode })
                   </Box>
                 </ChartTitle>
                 <ChartContainer 
-                  className={chart.widgetDetails.chartType === 'pie' ? 'pie-chart' : 'line-chart'}
+                  className={(chart.widgetDetails?.chartType || 'line') === 'pie' ? 'pie-chart' : 'line-chart'}
                   onWheel={handleWheel}
                 >
                   {renderChart(chart)}
