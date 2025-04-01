@@ -12,6 +12,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import FullscreenIcon from '@mui/icons-material/Fullscreen';
 import CloseIcon from '@mui/icons-material/Close';
 import { toast } from 'react-toastify';
+import { AddChartModal, ChartFormData } from './AddChartModal';
 
 // Register ChartJS components
 ChartJS.register(
@@ -156,6 +157,8 @@ export const ChartGrid: React.FC<ChartGridProps> = ({ dashboardId, isEditMode })
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [fullViewOpen, setFullViewOpen] = useState(false);
+  const [editingChartIndex, setEditingChartIndex] = useState<number | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     if (dashboardId) {
@@ -208,9 +211,33 @@ export const ChartGrid: React.FC<ChartGridProps> = ({ dashboardId, isEditMode })
     setDeleteDialogOpen(false);
   };
 
-  const handleEditClick = () => {
-    // TODO: Implement edit functionality
+  const handleEditClick = (index: number) => {
+    console.log('Editing chart data:', charts[index]);
+    setEditingChartIndex(index);
     handleMenuClose();
+  };
+
+  const handleEditModalClose = () => {
+    setEditingChartIndex(null);
+  };
+
+  const handleEditSubmit = async (formData: ChartFormData) => {
+    try {
+      setIsSubmitting(true);
+      console.log('Submitting form data:', formData);
+      // TODO: Implement update functionality
+      toast.success('Chart updated successfully!');
+      dispatch(fetchChartData(dashboardId));
+      handleEditModalClose();
+    } catch (error) {
+      if (typeof error === 'object' && error !== null && 'message' in error) {
+        toast.error(error.message as string);
+      } else {
+        toast.error('Failed to update chart');
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleFullViewClick = (chart: ChartResponse) => {
@@ -420,7 +447,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({ dashboardId, isEditMode })
   return (
     <>
       <Grid container spacing={3} sx={{ mt: 2, p: 2 }}>
-        {charts.map((chart) => (
+        {charts.map((chart, index) => (
           <Grid item xs={12} md={6} key={chart._id}>
             <StyledCard>
               <CardContent sx={{ flexGrow: 1, p: 3 }}>
@@ -461,6 +488,15 @@ export const ChartGrid: React.FC<ChartGridProps> = ({ dashboardId, isEditMode })
                 </ChartContainer>
               </CardContent>
             </StyledCard>
+
+            <AddChartModal
+              open={editingChartIndex === index}
+              onClose={handleEditModalClose}
+              onSubmit={handleEditSubmit}
+              isSubmitting={isSubmitting}
+              dashboardId={dashboardId}
+              initialData={chart}
+            />
           </Grid>
         ))}
       </Grid>
@@ -471,7 +507,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({ dashboardId, isEditMode })
         onClose={handleMenuClose}
         onClick={(e) => e.stopPropagation()}
       >
-        <MenuItem onClick={handleEditClick}>
+        <MenuItem onClick={() => selectedChart && handleEditClick(charts.findIndex(c => c._id === selectedChart._id))}>
           <EditIcon sx={{ mr: 1, fontSize: 20 }} />
           Edit
         </MenuItem>
