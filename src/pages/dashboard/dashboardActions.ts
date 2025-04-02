@@ -152,6 +152,56 @@ export const fetchDataSources = createAsyncThunk(
   }
 );
 
+export const fetchAllDataSources = createAsyncThunk(
+  'dashboard/fetchAllDataSources',
+  async (_, { rejectWithValue }) => {
+    try {
+      // First fetch the first page to get total count
+      const firstPageResponse = await axiosInstance.get<DataSourceResponse>(
+        `${GET.DATA_SOURCE_LIST}?paginate=true&page=1&limit=10`
+      );
+      
+      const { data: firstPageData, totalCount } = firstPageResponse.data;
+      let allDataSources = [...firstPageData];
+      
+      // Calculate how many additional pages we need to fetch
+      const totalPages = Math.ceil(totalCount / 10);
+      
+      // If there are more pages, fetch them
+      if (totalPages > 1) {
+        const additionalPagePromises = [];
+        
+        for (let page = 2; page <= totalPages; page++) {
+          additionalPagePromises.push(
+            axiosInstance.get<DataSourceResponse>(
+              `${GET.DATA_SOURCE_LIST}?paginate=true&page=${page}&limit=10`
+            )
+          );
+        }
+        
+        const additionalResponses = await Promise.all(additionalPagePromises);
+        
+        // Combine all data sources
+        additionalResponses.forEach(response => {
+          allDataSources = [...allDataSources, ...response.data.data];
+        });
+      }
+      
+      return {
+        success: true,
+        message: "All data sources fetched successfully",
+        data: allDataSources,
+        totalCount
+      };
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response?.data) {
+        return rejectWithValue(error.response.data);
+      }
+      return rejectWithValue({ message: 'Failed to fetch all data sources' });
+    }
+  }
+);
+
 export const loadMoreDataSources = createAsyncThunk(
   'dashboard/loadMoreDataSources',
   async (page: number, { rejectWithValue }) => {

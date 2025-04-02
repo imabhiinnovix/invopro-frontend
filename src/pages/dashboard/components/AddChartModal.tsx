@@ -23,11 +23,11 @@ import ClearIcon from "@mui/icons-material/Clear";
 import { useAppDispatch, useAppSelector } from "../../../storeHooks";
 import {
   fetchWidgetTypes,
-  fetchDataSources,
-  loadMoreDataSources,
+  fetchAllDataSources,
   updateWidget,
   createWidget,
   fetchChartData,
+  loadMoreDataSources,
 } from "../dashboardActions";
 import { DataSource, DataSourceAttribute, ChartResponse } from "../types";
 import { toast } from "react-toastify";
@@ -165,8 +165,6 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
     widgetTypesLoading,
     dataSourcesLoading,
     dataSourcesHasMore,
-    dataSourcesPage,
-    dataSourcesTotalCount,
   } = useAppSelector((state) => state.dashboard);
 
   const [formData, setFormData] = useState<ChartFormData>({
@@ -249,7 +247,7 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
   useEffect(() => {
     if (open) {
       dispatch(fetchWidgetTypes());
-      dispatch(fetchDataSources(1));
+      dispatch(fetchAllDataSources());
     }
   }, [dispatch, open]);
 
@@ -347,24 +345,29 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
   };
 
   const handleDataSourceChange = (event: SelectChangeEvent<unknown>) => {
-    const newDataSourceId = event.target.value as string;
-    setFormData((prev) => ({
-      ...prev,
-      dataSourceId: newDataSourceId,
-      dimensions: "",
-      groupBy: "",
-      aggregation: {
-        ...prev.aggregation,
-        attributeName: "",
-      },
-      conditions: [
-        {
-          field: "",
-          operator: "equals",
-          value: "",
+    const selectedDs = dataSources.find(
+      (ds) => ds._id === event.target.value
+    );
+    if (selectedDs) {
+      setSelectedDataSource(selectedDs);
+      setFormData((prev) => ({
+        ...prev,
+        dataSourceId: event.target.value as string,
+        dimensions: "",
+        groupBy: "",
+        aggregation: {
+          ...prev.aggregation,
+          attributeName: "",
         },
-      ],
-    }));
+        conditions: [
+          {
+            field: "",
+            operator: "equals",
+            value: "",
+          },
+        ],
+      }));
+    }
   };
 
   const handleAggregationTypeChange = (event: SelectChangeEvent<unknown>) => {
@@ -459,22 +462,36 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
     handleChange("groupBy", "");
   };
 
-  const handleDataSourceScroll = (event: React.UIEvent<HTMLDivElement>) => {
-    const target = event.target as HTMLDivElement;
-    if (
-      target.scrollHeight - target.scrollTop === target.clientHeight &&
-      !dataSourcesLoading &&
-      dataSourcesHasMore &&
-      dataSources.length < dataSourcesTotalCount
-    ) {
-      dispatch(loadMoreDataSources(dataSourcesPage + 1));
+  const handleAttributeChange = (event: SelectChangeEvent<unknown>) => {
+    const selectedDs = dataSources.find(
+      (ds) => ds._id === event.target.value
+    );
+    if (selectedDs) {
+      setSelectedDataSource(selectedDs);
+      setFormData((prev) => ({
+        ...prev,
+        dataSourceId: event.target.value as string,
+        dimensions: "",
+        groupBy: "",
+        aggregation: {
+          ...prev.aggregation,
+          attributeName: "",
+        },
+        conditions: [
+          {
+            field: "",
+            operator: "equals",
+            value: "",
+          },
+        ],
+      }));
     }
   };
 
   return (
     <StyledDialog open={open} onClose={onClose} maxWidth="md" fullWidth>
       <StyledDialogTitle>
-        {initialData ? "Edit Chart" : "Add Chart"}
+        {initialData ? "Edit Chart" : "Add New Chart"}
       </StyledDialogTitle>
       <StyledDialogContent>
         <FirstFormSection>
@@ -507,20 +524,13 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
             </FormControl>
 
             <FormControl fullWidth size="small">
-              <InputLabel>Data Source</InputLabel>
+              <InputLabel id="data-source-label">Data Source</InputLabel>
               <StyledSelect
+                labelId="data-source-label"
                 value={formData.dataSourceId}
-                label="Data Source"
                 onChange={handleDataSourceChange}
-                disabled={isSubmitting || dataSourcesLoading}
-                MenuProps={{
-                  PaperProps: {
-                    sx: {
-                      maxHeight: 300,
-                    },
-                    onScroll: handleDataSourceScroll,
-                  },
-                }}
+                label="Data Source"
+                disabled={dataSourcesLoading}
               >
                 {dataSources.map((source) => (
                   <MenuItem key={source._id} value={source._id}>

@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { DashboardListResponse, WidgetTypeResponse, DataSourceResponse, DashboardSliceState, ChartDataResponse, ChartResponse } from './types';
-import { fetchDashboardList, fetchWidgetTypes, fetchDataSources, loadMoreDataSources, fetchChartData, deleteWidget, updateWidget, createWidget } from './dashboardActions';
+import { fetchDashboardList, fetchWidgetTypes, fetchDataSources, loadMoreDataSources, fetchChartData, deleteWidget, updateWidget, createWidget, fetchAllDataSources } from './dashboardActions';
 
 interface Condition {
   field: string;
@@ -73,6 +73,22 @@ const dashboardSlice = createSlice({
       .addCase(fetchDataSources.rejected, (state, action) => {
         state.dataSourcesLoading = false;
         state.dataSourcesError = action.error.message || 'Failed to fetch data sources';
+      })
+      // Fetch all data sources
+      .addCase(fetchAllDataSources.pending, (state) => {
+        state.dataSourcesLoading = true;
+        state.dataSourcesError = null;
+      })
+      .addCase(fetchAllDataSources.fulfilled, (state, action: PayloadAction<DataSourceResponse>) => {
+        state.dataSourcesLoading = false;
+        state.dataSources = action.payload.data;
+        state.dataSourcesTotalCount = action.payload.totalCount;
+        state.dataSourcesHasMore = false;
+        state.dataSourcesPage = 1;
+      })
+      .addCase(fetchAllDataSources.rejected, (state, action) => {
+        state.dataSourcesLoading = false;
+        state.dataSourcesError = action.error.message || 'Failed to fetch all data sources';
       })
       // Load more data sources
       .addCase(loadMoreDataSources.pending, (state) => {
