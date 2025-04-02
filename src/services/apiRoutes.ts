@@ -57,4 +57,5 @@ export const GET = {
   DASHBOARD_LIST: "/dashboard/list",
   WIDGET_TYPE_LIST: "/widgetType/list",
   DASHBOARD_WIDGET_GET_CHART_DATA: "/dashboard/widget/getChartData",
+  DASHBOARD_WIDGET: "/dashboard/widget",
 };

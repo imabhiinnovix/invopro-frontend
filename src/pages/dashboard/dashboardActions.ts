@@ -1,6 +1,6 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { GET, POST } from '../../services/apiRoutes';
-import { DashboardListResponse, WidgetTypeResponse, DataSourceResponse, ChartDataResponse } from './types';
+import { DashboardListResponse, WidgetTypeResponse, DataSourceResponse, ChartDataResponse, WidgetResponse } from './types';
 import axiosInstance from '../../services/axiosInstance';
 import axios from 'axios';
 
@@ -219,12 +219,36 @@ export const loadMoreDataSources = createAsyncThunk(
   }
 );
 
+export const storeWidgetData = (payload: { widgetId: string; data: WidgetResponse['data'] }) => ({
+  type: 'dashboard/storeWidgetData',
+  payload
+});
+
 export const fetchChartData = createAsyncThunk(
   'dashboard/fetchChartData',
-  async (dashboardId: string) => {
+  async (dashboardId: string, { dispatch }) => {
     const response = await axiosInstance.get<ChartDataResponse>(
       `${GET.DASHBOARD_WIDGET_GET_CHART_DATA}/${dashboardId}`
     );
+    
+    // Make additional API calls for each chart
+    if (response.data.success && response.data.data) {
+      await Promise.all(
+        response.data.data.map(async (chart) => {
+          try {
+            const widgetResponse = await axiosInstance.get<WidgetResponse>(
+              `${GET.DASHBOARD_WIDGET}/${chart._id}`
+            );
+            if (widgetResponse.data.success) {
+              dispatch(storeWidgetData({ widgetId: chart._id, data: widgetResponse.data.data }));
+            }
+          } catch (error) {
+            console.error(`Failed to fetch widget data for chart ${chart._id}:`, error);
+          }
+        })
+      );
+    }
+    
     return response.data;
   }
 );

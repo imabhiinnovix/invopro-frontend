@@ -161,7 +161,12 @@ const FullScreenChartContainer = styled(Box)(({ theme }) => ({
 export const ChartGrid: React.FC<ChartGridProps> = ({ dashboardId, isEditMode }) => {
   const dispatch = useAppDispatch();
   const theme = useTheme();
-  const { charts, chartsLoading, chartsError } = useAppSelector((state) => state.dashboard);
+  const { charts, chartsLoading, chartsError, widgetData } = useAppSelector((state) => ({
+    charts: state.dashboard.charts,
+    chartsLoading: state.dashboard.chartsLoading,
+    chartsError: state.dashboard.chartsError,
+    widgetData: state.dashboard.widgetData
+  }));
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [selectedChart, setSelectedChart] = useState<ChartResponse | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -308,16 +313,18 @@ export const ChartGrid: React.FC<ChartGridProps> = ({ dashboardId, isEditMode })
       fill: true,
     });
 
-    if (!chart.data?.length) {
+    // Get widget data from the store
+    const chartData = widgetData[chart._id]?.data || chart.data || [];
+
+    if (!chartData.length) {
       return {
         labels: [],
         datasets: [createDefaultDataset()],
       };
     }
 
-    const chartType = chart.widgetDetails?.chartType || 'line';
+    const chartType = chart.widgetTypeId?.chartType || 'line';
     const groupBy = chart.groupBy || [];
-    const chartData = chart.data;
 
     // Handle grouped line chart
     if (chartType === 'line' && groupBy.length > 0) {
@@ -487,7 +494,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({ dashboardId, isEditMode })
 
   const renderChart = (chart: ChartResponse) => {
     const chartData = getChartData(chart);
-    const chartType = chart.widgetDetails?.chartType || 'line';
+    const chartType = chart.widgetTypeId?.chartType || 'line';
     const options = getChartOptions(chartType, chart);
     const chartId = `chart-${chart._id}`;
 
@@ -537,7 +544,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({ dashboardId, isEditMode })
                   </Box>
                 </ChartTitle>
                 <ChartContainer 
-                  className={(chart.widgetDetails?.chartType || 'line') === 'pie' ? 'pie-chart' : 'line-chart'}
+                  className={(chart.widgetTypeId?.chartType || 'line') === 'pie' ? 'pie-chart' : 'line-chart'}
                   onWheel={handleWheel}
                 >
                   {renderChart(chart)}

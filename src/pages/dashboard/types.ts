@@ -103,6 +103,7 @@ export interface DashboardSliceState {
   charts: ChartResponse[];
   chartsLoading: boolean;
   chartsError: string | null;
+  widgetData: Record<string, WidgetResponse['data']>;
 }
 
 export interface ChartData {
@@ -145,14 +146,12 @@ export interface ChartResponse {
   createdBy: string;
   dashboardId: string;
   organizationId: string;
-  widgetTypeId: string;
   name: string;
   position: {
     x: number;
     y: number;
     index: number;
   };
-  dataSourceId: string;
   dimensions: string[];
   groupBy: string[];
   aggregation: {
@@ -169,8 +168,8 @@ export interface ChartResponse {
   createdAt: string;
   updatedAt: string;
   __v?: number;
-  widgetDetails?: WidgetDetails;
-  dataSourceDetails?: DataSourceDetails;
+  widgetTypeId?: WidgetDetails;
+  dataSourceId?: DataSourceDetails;
   data?: ChartData[];
 }
 
@@ -179,4 +178,40 @@ export interface ChartDataResponse {
   message: string;
   data: ChartResponse[];
   totalCount: number;
+}
+
+export interface WidgetResponse {
+  success: boolean;
+  message: string;
+  data: {
+    position: {
+      x: number;
+      y: number;
+      index: number;
+    };
+    aggregation: {
+      type: string;
+      attributeName: string;
+    };
+    _id: string;
+    createdBy: string;
+    dashboardId: string;
+    organizationId: string;
+    widgetTypeId: WidgetDetails;
+    name: string;
+    dataSourceId: DataSourceDetails;
+    dimensions: string[];
+    groupBy: string[];
+    conditions: {
+      field: string;
+      operator: string;
+      value: string;
+      _id: string;
+    }[];
+    isActive: boolean;
+    createdAt: string;
+    updatedAt: string;
+    __v: number;
+    data: ChartData[];
+  };
 } 

@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { DashboardListResponse, WidgetTypeResponse, DataSourceResponse, DashboardSliceState, ChartDataResponse, ChartResponse } from './types';
+import { DashboardListResponse, WidgetTypeResponse, DataSourceResponse, DashboardSliceState, ChartDataResponse, ChartResponse, WidgetResponse } from './types';
 import { fetchDashboardList, fetchWidgetTypes, fetchDataSources, loadMoreDataSources, fetchChartData, deleteWidget, updateWidget, createWidget, fetchAllDataSources } from './dashboardActions';
 
 interface Condition {
@@ -25,12 +25,17 @@ const initialState: DashboardSliceState = {
   charts: [],
   chartsLoading: false,
   chartsError: null,
+  widgetData: {},
 };
 
 const dashboardSlice = createSlice({
   name: 'dashboard',
   initialState,
-  reducers: {},
+  reducers: {
+    storeWidgetData: (state, action: PayloadAction<{ widgetId: string; data: WidgetResponse['data'] }>) => {
+      state.widgetData[action.payload.widgetId] = action.payload.data;
+    }
+  },
   extraReducers: (builder) => {
     builder
       // Dashboard list actions
