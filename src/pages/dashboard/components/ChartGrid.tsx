@@ -63,7 +63,7 @@ const ChartTitleText = styled(Typography)({
 
 const ChartContainer = styled(Box)(({ theme }) => ({
   height: 300,
-  padding: theme.spacing(1),
+  padding: theme.spacing(2),
   backgroundColor: '#f8f9fa',
   borderRadius: '8px',
   '& canvas': {
@@ -73,13 +73,23 @@ const ChartContainer = styled(Box)(({ theme }) => ({
     height: 400,
     display: 'flex',
     alignItems: 'center',
-    overflowX: 'auto',
+    justifyContent: 'center',
+    position: 'relative',
+    '& canvas': {
+      maxWidth: '100%',
+      maxHeight: '100%',
+    }
   },
   '&.line-chart': {
     height: 350,
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
+    position: 'relative',
+    '& canvas': {
+      maxWidth: '100%',
+      maxHeight: '100%',
+    }
   },
   '&:hover': {
     overflowY: 'auto',
@@ -289,40 +299,75 @@ export const ChartGrid: React.FC<ChartGridProps> = ({ dashboardId, isEditMode })
   }
 
   const getChartData = (chart: ChartResponse) => {
-    if (!chart.data || chart.data.length === 0) {
+    const createDefaultDataset = (data: number[] = []) => ({
+      label: chart.name,
+      data,
+      borderColor: theme.palette.primary.main,
+      backgroundColor: theme.palette.primary.light,
+      tension: 0.1,
+      fill: true,
+    });
+
+    if (!chart.data?.length) {
       return {
         labels: [],
-        datasets: [
-          {
-            label: chart.name,
-            data: [],
-            borderColor: theme.palette.primary.main,
-            backgroundColor: theme.palette.primary.light,
-            tension: 0.1,
-            fill: true,
-          },
-        ],
+        datasets: [createDefaultDataset()],
       };
     }
 
-    const labels = chart.data.map((item: ChartData) => item.name);
-    const values = chart.data.map((item: ChartData) => item.data);
     const chartType = chart.widgetDetails?.chartType || 'line';
+    const groupBy = chart.groupBy || [];
+    const chartData = chart.data;
 
+    // Handle grouped line chart
+    if (chartType === 'line' && groupBy.length > 0) {
+      const groupByField = groupBy[0]; // Take the first groupBy field
+      const uniqueGroups = Array.from(new Set(chartData.map(item => item[groupByField] as string)));
+      const uniqueNames = Array.from(new Set(chartData.map(item => item.name)));
+
+      // Generate colors for each group
+      const colors = [
+        '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40',
+        '#FF99E6', '#99FF99', '#FF9999', '#99CCFF', '#FF99CC', '#99FFCC'
+      ];
+
+      // Create a dataset for each unique group
+      const datasets = uniqueGroups.map((group, index) => {
+        const groupData = uniqueNames.map(name => {
+          const dataPoint = chartData.find(item => 
+            item.name === name && item[groupByField] === group
+          );
+          return dataPoint ? dataPoint.data : 0;
+        });
+
+        return {
+          label: group,
+          data: groupData,
+          borderColor: colors[index % colors.length],
+          backgroundColor: `${colors[index % colors.length]}20`,
+          tension: 0.1,
+          fill: true,
+        };
+      });
+
+      return {
+        labels: uniqueNames,
+        datasets,
+      };
+    }
+
+    // Handle pie chart
     if (chartType === 'pie') {
+      const labels = chartData.map((item: ChartData) => item.name);
+      const values = chartData.map((item: ChartData) => item.data);
+      
       return {
         labels,
         datasets: [
           {
             data: values,
             backgroundColor: [
-              '#FF6384',
-              '#36A2EB',
-              '#FFCE56',
-              '#4BC0C0',
-              '#9966FF',
-              '#FF9F40',
-              // Add more colors as needed
+              '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40',
             ],
             borderColor: 'white',
             borderWidth: 2,
@@ -331,37 +376,34 @@ export const ChartGrid: React.FC<ChartGridProps> = ({ dashboardId, isEditMode })
       };
     }
 
-    // Default line chart data
+    // Default single line chart (no grouping)
+    const labels = chartData.map((item: ChartData) => item.name);
+    const values = chartData.map((item: ChartData) => item.data);
+
     return {
       labels,
-      datasets: [
-        {
-          label: chart.name,
-          data: values,
-          borderColor: theme.palette.primary.main,
-          backgroundColor: theme.palette.primary.light,
-          tension: 0.1,
-          fill: true,
-        },
-      ],
+      datasets: [createDefaultDataset(values)],
     };
   };
 
-  const getChartOptions = (chartType: string) => {
+  const getChartOptions = (chartType: string, chart: ChartResponse) => {
     const baseOptions = {
       responsive: true,
       maintainAspectRatio: false,
       plugins: {
         legend: {
-          position: 'right' as const,
+          position: 'bottom' as const,
           labels: {
             usePointStyle: true,
-            padding: 4,
+            padding: 15,
             font: {
-              size: 11,
+              size: 12,
             },
-            boxWidth: 15,
+            boxWidth: 10,
+            boxHeight: 10,
           },
+          maxHeight: 100,
+          display: true,
         },
         tooltip: {
           backgroundColor: theme.palette.background.paper,
@@ -371,6 +413,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({ dashboardId, isEditMode })
           borderWidth: 1,
           padding: 12,
           usePointStyle: true,
+          displayColors: true,
         },
       },
     };
@@ -382,16 +425,12 @@ export const ChartGrid: React.FC<ChartGridProps> = ({ dashboardId, isEditMode })
           ...baseOptions.plugins,
           legend: {
             ...baseOptions.plugins.legend,
-            position: 'right' as const,
-            align: 'start' as const,
-            maxWidth: 200,
-            maxHeight: 250,
-            overflow: 'auto',
+            position: 'bottom' as const,
           },
         },
         layout: {
           padding: {
-            right: 100,
+            bottom: 10,
           },
         },
       };
@@ -403,7 +442,8 @@ export const ChartGrid: React.FC<ChartGridProps> = ({ dashboardId, isEditMode })
         plugins: {
           ...baseOptions.plugins,
           legend: {
-            display: false, // Hide legend for line chart
+            ...baseOptions.plugins.legend,
+            position: 'bottom' as const,
           },
         },
         scales: {
@@ -431,6 +471,10 @@ export const ChartGrid: React.FC<ChartGridProps> = ({ dashboardId, isEditMode })
             },
           },
         },
+        interaction: {
+          mode: 'index' as const,
+          intersect: false,
+        },
       };
     }
 
@@ -444,7 +488,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({ dashboardId, isEditMode })
   const renderChart = (chart: ChartResponse) => {
     const chartData = getChartData(chart);
     const chartType = chart.widgetDetails?.chartType || 'line';
-    const options = getChartOptions(chartType);
+    const options = getChartOptions(chartType, chart);
     const chartId = `chart-${chart._id}`;
 
     switch (chartType) {
