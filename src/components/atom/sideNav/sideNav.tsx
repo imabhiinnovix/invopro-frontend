@@ -9,7 +9,7 @@ import ListItemText from "@mui/material/ListItemText";
 import { useNav } from "../../../context/NavContext";
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import AddIcon from "@mui/icons-material/Add";
-import React, { useEffect, useMemo } from "react";
+import React, { useEffect, useMemo, useContext } from "react";
 import { Collapse } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
@@ -21,12 +21,20 @@ import { GET } from "../../../services/apiRoutes";
 import { DataSourceListData, DataSourceListPayload } from "./types";
 import { setDataSourceList } from "../../../pages/dataSources/dataSourceActions";
 import { useAppDispatch, useAppSelector } from "../../../storeHooks";
-import { fetchDashboardList, createDashboard, deleteDashboard } from "../../../pages/dashboard/dashboardActions";
+import {
+  fetchDashboardList,
+  createDashboard,
+  deleteDashboard,
+} from "../../../pages/dashboard/dashboardActions";
 import { Dashboard as DashboardType } from "../../../pages/dashboard/types";
 import { toast } from "react-toastify";
 import { DeleteConfirmationModal } from "./components/DeleteConfirmationModal";
 import { DashboardCreationForm } from "./components/DashboardCreationForm";
 import { SubItemsList } from "./components/SubItemsList";
+import LogoutIcon from "@mui/icons-material/Logout";
+import logo from "../../../assets/ReportiVix-logo.png";
+import { AuthContext } from "../../../context/AuthContext";
+import { clearLocalStorage } from "../../../utils/handleLocalStorage";
 
 interface ErrorResponse {
   success: boolean;
@@ -34,7 +42,7 @@ interface ErrorResponse {
   error: Record<string, unknown>;
 }
 
-const drawerWidth = 280;
+const drawerWidth = 225;
 
 const openedMixin = (theme: Theme): CSSObject => ({
   width: drawerWidth,
@@ -53,9 +61,9 @@ const closedMixin = (theme: Theme): CSSObject => ({
     duration: theme.transitions.duration.leavingScreen,
   }),
   overflowX: "hidden",
-  width: `calc(${theme.spacing(9)} + 1px)`,
+  width: `calc(${theme.spacing(6)} + 1px)`,
   [theme.breakpoints.up("sm")]: {
-    width: `calc(${theme.spacing(13)} + 1px)`,
+    width: `calc(${theme.spacing(8)} + 1px)`,
   },
 });
 
@@ -66,7 +74,32 @@ const Drawer = styled(MuiDrawer, {
   flexShrink: 0,
   whiteSpace: "nowrap",
   boxSizing: "border-box",
+  height: "100vh",
   position: "static",
+  backgroundColor: "#ffffff",
+  "& .MuiPaper-root": {
+    backgroundColor: "#ffffff",
+    border: "none",
+    height: "100%",
+    position: "static",
+    overflow: "hidden"
+  },
+  "& .MuiDrawer-paper": {
+    position: "static",
+    overflow: "hidden"
+  },
+  "& .MuiList-root": {
+    height: "100%",
+    overflow: "hidden"
+  },
+  "& .MuiListItemButton-root": {
+    "&.Mui-selected, &.Mui-selected:hover": {
+      backgroundColor: "#f1f5f9",
+    },
+    "&:hover": {
+      backgroundColor: "#f1f5f9",
+    },
+  },
   variants: [
     {
       props: ({ open }) => open,
@@ -107,12 +140,14 @@ export default function SideNav() {
   const [newDashboardName, setNewDashboardName] = React.useState("");
   const [isCreatingLoading, setIsCreatingLoading] = React.useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = React.useState(false);
-  const [dashboardToDelete, setDashboardToDelete] = React.useState<DashboardType | null>(null);
+  const [dashboardToDelete, setDashboardToDelete] =
+    React.useState<DashboardType | null>(null);
   const [isDeleting, setIsDeleting] = React.useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const dispatch = useAppDispatch();
   const { dashboards, loading } = useAppSelector((state) => state.dashboard);
+  const { clearAuthContext } = useContext(AuthContext);
 
   useEffect(() => {
     dispatch(fetchDashboardList());
@@ -142,23 +177,28 @@ export default function SideNav() {
     if (newDashboardName.trim()) {
       try {
         setIsCreatingLoading(true);
-        const response = await dispatch(createDashboard(newDashboardName.trim())).unwrap();
+        const response = await dispatch(
+          createDashboard(newDashboardName.trim())
+        ).unwrap();
         await dispatch(fetchDashboardList());
         setIsCreating(false);
         setNewDashboardName("");
         toast.success(response.message || "Dashboard created successfully!");
-        
+
         // Find the newly created dashboard and navigate to it
-        const newDashboard = response.data; // Get first dashboard from array
+        const newDashboard = response.data[0] as DashboardType; // Get first dashboard from array
         if (newDashboard) {
-          navigate(`/dashboard/${newDashboard._id}`, { 
-            state: { enableEditMode: true }
+          navigate(`/dashboard/${newDashboard._id}`, {
+            state: { enableEditMode: true },
           });
         }
       } catch (error) {
         console.error("Failed to create dashboard:", error);
         const errorResponse = error as ErrorResponse;
-        toast.error(errorResponse.message || "Failed to create dashboard. Please try again.");
+        toast.error(
+          errorResponse.message ||
+            "Failed to create dashboard. Please try again."
+        );
       } finally {
         setIsCreatingLoading(false);
       }
@@ -205,7 +245,10 @@ export default function SideNav() {
       } catch (error) {
         console.error("Failed to delete dashboard:", error);
         const errorResponse = error as ErrorResponse;
-        toast.error(errorResponse.message || "Failed to delete dashboard. Please try again.");
+        toast.error(
+          errorResponse.message ||
+            "Failed to delete dashboard. Please try again."
+        );
       } finally {
         setIsDeleting(false);
       }
@@ -217,16 +260,22 @@ export default function SideNav() {
     setDashboardToDelete(null);
   };
 
+  const handleLogout = () => {
+    clearAuthContext();
+    clearLocalStorage();
+    navigate("/login");
+  };
+
   const navItems: NavItem[] = useMemo(
     () => [
       {
         name: "Dashboards",
-        icon: <DashboardIcon sx={{ fontSize: "3rem", color: "black" }} />,
+        icon: <DashboardIcon sx={{ fontSize: "1.1rem" }} />,
         route: "/dashboard",
         subItems: [
           {
             name: "Create New Dashboard",
-            icon: <AddIcon sx={{ fontSize: "1.5rem", color: "black" }} />,
+            icon: <AddIcon sx={{ fontSize: "0.9rem" }} />,
             route: "#",
             isCreateButton: true,
           },
@@ -248,19 +297,19 @@ export default function SideNav() {
                   name: "All Dashboards",
                   icon: <></>,
                   route: "/dashboard",
-                  isMoreLink: true
-                }
+                  isMoreLink: true,
+                },
               ]),
         ],
       },
       {
         name: "Reports",
-        icon: <AssessmentIcon sx={{ fontSize: "3rem", color: "black" }} />,
+        icon: <AssessmentIcon sx={{ fontSize: "1.1rem" }} />,
         route: "/reports",
       },
       {
         name: "Data Sources",
-        icon: <SourceIcon sx={{ fontSize: "3rem", color: "black" }} />,
+        icon: <SourceIcon sx={{ fontSize: "1.1rem" }} />,
         route: "/data-source",
         subItems: [
           ...(dataSourceList?.map((item) => ({
@@ -285,122 +334,227 @@ export default function SideNav() {
         ],
       },
     ],
-    [
-      dataSourceList,
-      dataSourceListAPI?.hasNextPage,
-      lastElementRef,
-      dashboards,
-      loading,
-    ]
+    [dataSourceList, dataSourceListAPI?.hasNextPage, dashboards, loading]
   );
 
-  const isDashboardActive = () => {
-    return location.pathname.startsWith("/dashboard");
+  const isRouteActive = (route: string) => {
+    return location.pathname.startsWith(route);
   };
 
   return (
-    <Box sx={{ display: "flex" }}>
-      <Drawer
-        variant="permanent"
-        open={openNav}
-        sx={{ height: "calc(100vh - 70px)" }}
-      >
-        <List>
-          {navItems.map((item, i) => (
-            <React.Fragment key={i}>
-              <ListItem disablePadding sx={{ display: "block" }}>
-                <ListItemButton
-                  onClick={() => handleItemClick(item.route, !!item.subItems, item.name)}
-                  sx={{
-                    height: 90,
-                    px: 2.5,
-                    justifyContent: openNav ? "initial" : "center",
-                    backgroundColor: isDashboardActive() ? "#f0f0f0" : "transparent",
-                    "&:hover": { backgroundColor: "#e0e0e0" },
+    <Box sx={{ display: "flex", height: "100%" }}>
+      <Drawer variant="permanent" open={openNav} sx={{ p: 0 }}>
+        <Box 
+          sx={{ 
+            display: "flex", 
+            flexDirection: "column", 
+            height: "100%",
+            // py: 2
+          }}
+        >
+          <Box
+            sx={{
+              px: 2,
+              mb: 2,
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              height: "50px",
+              borderBottom: "1px solid #e0e0e0",
+            }}
+          >
+            <Box
+              component="img"
+              src={logo}
+              alt="Logo"
+              sx={{
+                width: openNav ? 120 : 40,
+                height: "auto",
+                transition: "width 0.2s ease-in-out",
+              }}
+            />
+          </Box>
+
+          <List sx={{ flex: 1, py: 0 }}>
+            {navItems.map((item, i) => (
+              <React.Fragment key={i}>
+                <ListItem 
+                  disablePadding 
+                  sx={{ 
+                    display: "block",
+                    mb: 0.5,
                   }}
                 >
-                  <ListItemIcon
+                  <ListItemButton
+                    onClick={() =>
+                      handleItemClick(item.route, !!item.subItems, item.name)
+                    }
                     sx={{
-                      minWidth: 0,
-                      justifyContent: "center",
-                      mr: openNav ? 3 : "auto",
+                      minHeight: 42,
+                      mx: 1.5,
+                      px: 2,
+                      borderRadius: '8px',
+                      justifyContent: openNav ? "initial" : "center",
+                      backgroundColor: isRouteActive(item.route)
+                        ? "#f1f5f9"
+                        : "transparent",
+                      color: isRouteActive(item.route) ? "#a136a1" : "inherit",
+                      "& .MuiListItemIcon-root": {
+                        color: isRouteActive(item.route) ? "#a136a1" : "inherit",
+                      },
+                      "&:hover": { 
+                        backgroundColor: "#f1f5f9",
+                        borderRadius: '8px',
+                      },
                     }}
                   >
-                    {item.icon}
-                  </ListItemIcon>
-                  <ListItemText
-                    primary={item.name}
-                    sx={{
-                      opacity: openNav ? 1 : 0,
-                    }}
-                  />
-                  {item.subItems &&
-                    ((item.name === "Dashboards" && openDashboard) ||
-                    (item.name !== "Dashboards" && openSettings) ? (
-                      <ExpandLessIcon />
-                    ) : (
-                      <ExpandMoreIcon />
-                    ))}
-                </ListItemButton>
-              </ListItem>
-
-              {item.subItems && (
-                <Collapse
-                  in={item.name === "Dashboards" ? openDashboard : openSettings}
-                  timeout="auto"
-                  unmountOnExit
-                  sx={{ mt: 0 }}
-                >
-                  {item.name === "Dashboards" && (
-                    <ListItem disablePadding sx={{ display: "block", mt: 0 }}>
-                      <ListItemButton
-                        onClick={() => setIsCreating(true)}
-                        sx={{
-                          pl: 4,
-                          justifyContent: openNav ? "initial" : "center",
-                          "&:hover": { backgroundColor: "#e0e0e0" },
-                        }}
-                      >
-                        <ListItemIcon
-                          sx={{
-                            minWidth: 0,
-                            justifyContent: "center",
-                            mr: openNav ? 3 : "auto",
-                          }}
-                        >
-                          <AddIcon sx={{ fontSize: "1.5rem", color: "black" }} />
-                        </ListItemIcon>
-                        <ListItemText
-                          primary="Create New Dashboard"
-                          sx={{
-                            opacity: openNav ? 1 : 0,
-                          }}
-                        />
-                      </ListItemButton>
-                    </ListItem>
-                  )}
-                  {isCreating && item.name === "Dashboards" && (
-                    <DashboardCreationForm
-                      newDashboardName={newDashboardName}
-                      onNameChange={(e) => setNewDashboardName(e.target.value)}
-                      onCreate={handleCreateDashboard}
-                      onCancel={handleCancelCreate}
-                      isCreatingLoading={isCreatingLoading}
+                    <ListItemIcon
+                      sx={{
+                        minWidth: 0,
+                        mr: openNav ? 2 : "auto",
+                        justifyContent: "center",
+                      }}
+                    >
+                      {item.icon}
+                    </ListItemIcon>
+                    <ListItemText
+                      primary={item.name}
+                      sx={{
+                        opacity: openNav ? 1 : 0,
+                        m: 0,
+                        "& .MuiListItemText-primary": {
+                          fontSize: "0.95rem",
+                          fontWeight: 500,
+                          color: isRouteActive(item.route) ? "#a136a1" : "inherit",
+                        },
+                      }}
                     />
-                  )}
-                  <SubItemsList
-                    subItems={item.subItems.filter(subItem => !subItem.isCreateButton)}
-                    openNav={openNav}
-                    parentName={item.name}
-                    dashboards={dashboards}
-                    onDeleteClick={handleDeleteClick}
-                    onCreateClick={() => setIsCreating(true)}
-                  />
-                </Collapse>
-              )}
-            </React.Fragment>
-          ))}
-        </List>
+                    {item.subItems && openNav && (
+                      item.name === "Dashboards" && openDashboard ||
+                      item.name !== "Dashboards" && openSettings ? (
+                        <ExpandLessIcon sx={{ 
+                          fontSize: "1.1rem",
+                          color: isRouteActive(item.route) ? "#a136a1" : "inherit"
+                        }} />
+                      ) : (
+                        <ExpandMoreIcon sx={{ 
+                          fontSize: "1.1rem",
+                          color: isRouteActive(item.route) ? "#a136a1" : "inherit"
+                        }} />
+                      )
+                    )}
+                  </ListItemButton>
+                </ListItem>
+
+                {item.subItems && openNav && (
+                  <Collapse
+                    in={item.name === "Dashboards" ? openDashboard : openSettings}
+                    timeout="auto"
+                    unmountOnExit
+                  >
+                    <List component="div" disablePadding>
+                      {item.name === "Dashboards" && (
+                        <ListItem
+                          disablePadding
+                          sx={{ display: "block", mb: 0.5 }}
+                        >
+                          <ListItemButton
+                            onClick={() => setIsCreating(true)}
+                            sx={{
+                              minHeight: 36,
+                              px: 2,
+                              pl: 4,
+                              borderRadius: '8px',
+                              mx: 1.5,
+                              "&:hover": {
+                                backgroundColor: "#f1f5f9",
+                              },
+                            }}
+                          >
+                            <ListItemIcon
+                              sx={{
+                                minWidth: 0,
+                                mr: 2,
+                                justifyContent: "center",
+                              }}
+                            >
+                              <AddIcon sx={{ fontSize: "0.9rem" }} />
+                            </ListItemIcon>
+                            <ListItemText
+                              primary="Create New Dashboard"
+                              sx={{
+                                m: 0,
+                                "& .MuiListItemText-primary": {
+                                  fontSize: "0.875rem",
+                                },
+                              }}
+                            />
+                          </ListItemButton>
+                        </ListItem>
+                      )}
+                      
+                      {isCreating && item.name === "Dashboards" && (
+                        <DashboardCreationForm
+                          newDashboardName={newDashboardName}
+                          onNameChange={(e) => setNewDashboardName(e.target.value)}
+                          onCreate={handleCreateDashboard}
+                          onCancel={handleCancelCreate}
+                          isCreatingLoading={isCreatingLoading}
+                        />
+                      )}
+
+                      <SubItemsList
+                        subItems={item.subItems.filter(
+                          (subItem) => !subItem.isCreateButton
+                        )}
+                        openNav={openNav}
+                        parentName={item.name}
+                        dashboards={dashboards}
+                        onDeleteClick={handleDeleteClick}
+                        onCreateClick={() => setIsCreating(true)}
+                      />
+                    </List>
+                  </Collapse>
+                )}
+              </React.Fragment>
+            ))}
+          </List>
+
+          <Box sx={{ mt: 'auto', px: 1.5 }}>
+            <ListItemButton
+              onClick={handleLogout}
+              sx={{
+                minHeight: 42,
+                px: 2,
+                borderRadius: '8px',
+                justifyContent: openNav ? "initial" : "center",
+                "&:hover": { 
+                  backgroundColor: "#f1f5f9",
+                },
+              }}
+            >
+              <ListItemIcon
+                sx={{
+                  minWidth: 0,
+                  mr: openNav ? 2 : "auto",
+                  justifyContent: "center",
+                }}
+              >
+                <LogoutIcon sx={{ fontSize: "1.1rem" }} />
+              </ListItemIcon>
+              <ListItemText
+                primary="Logout"
+                sx={{
+                  opacity: openNav ? 1 : 0,
+                  m: 0,
+                  "& .MuiListItemText-primary": {
+                    fontSize: "0.95rem",
+                  },
+                }}
+              />
+            </ListItemButton>
+          </Box>
+        </Box>
       </Drawer>
 
       <DeleteConfirmationModal

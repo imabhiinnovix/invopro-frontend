@@ -1,5 +1,5 @@
 import React from 'react';
-import { List, ListItem, ListItemButton, ListItemIcon, ListItemText, Divider, IconButton } from '@mui/material';
+import { List, ListItem, ListItemButton, ListItemIcon, ListItemText, IconButton } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Dashboard } from '../../../../pages/dashboard/types';
@@ -17,8 +17,8 @@ interface SubItemsListProps {
   openNav: boolean;
   parentName: string;
   dashboards: Dashboard[];
-  onDeleteClick: (e: React.MouseEvent, dashboard: Dashboard) => void;
-  onCreateClick: () => void;
+  onDeleteClick?: (e: React.MouseEvent, dashboard: Dashboard) => void;
+  onCreateClick?: () => void;
 }
 
 export const SubItemsList: React.FC<SubItemsListProps> = ({
@@ -41,48 +41,26 @@ export const SubItemsList: React.FC<SubItemsListProps> = ({
               <ListItemButton
                 onClick={onCreateClick}
                 sx={{
-                  pl: 4,
+                  pl: 3,
+                  py: 0.5,
+                  height: 40,
+                  minHeight: 40,
                   justifyContent: openNav ? 'initial' : 'center',
                   '&:hover': { backgroundColor: '#e0e0e0' },
+                  '& .MuiListItemButton-root': {
+                    minHeight: 40,
+                  },
                 }}
               >
                 <ListItemIcon
                   sx={{
                     minWidth: 0,
                     justifyContent: 'center',
-                    mr: openNav ? 3 : 'auto',
-                  }}
-                >
-                  {subItem.icon}
-                </ListItemIcon>
-                <ListItemText
-                  primary={subItem.name}
-                  sx={{
-                    opacity: openNav ? 1 : 0,
-                    '& .MuiListItemText-primary': {
-                      whiteSpace: 'nowrap',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
+                    mr: openNav ? 2 : 'auto',
+                    '& .MuiSvgIcon-root': {
+                      fontSize: '0.9rem',
                     },
                   }}
-                />
-              </ListItemButton>
-            ) : subItem.isMoreLink ? (
-              <ListItemButton
-                onClick={() => navigate(subItem.route)}
-                sx={{
-                  pl: 4,
-                  justifyContent: openNav ? 'initial' : 'center',
-                  '&:hover': { backgroundColor: '#e0e0e0' },
-                  backgroundColor: location.pathname === subItem.route ? '#f0f0f0' : 'transparent',
-                }}
-              >
-                <ListItemIcon
-                  sx={{
-                    minWidth: 0,
-                    justifyContent: 'center',
-                    mr: openNav ? 3 : 'auto',
-                  }}
                 >
                   {subItem.icon}
                 </ListItemIcon>
@@ -91,11 +69,11 @@ export const SubItemsList: React.FC<SubItemsListProps> = ({
                   sx={{
                     opacity: openNav ? 1 : 0,
                     '& .MuiListItemText-primary': {
+                      fontSize: '0.8rem',
                       whiteSpace: 'nowrap',
                       overflow: 'hidden',
                       textOverflow: 'ellipsis',
-                      color: '#1a237e',
-                      fontWeight: 500,
+                      lineHeight: 1.2,
                     },
                   }}
                 />
@@ -103,25 +81,34 @@ export const SubItemsList: React.FC<SubItemsListProps> = ({
             ) : (
               <ListItemButton
                 onClick={() => {
-                  if (parentName === "Dashboard") {
+                  if (parentName === "Dashboards") {
                     navigate(subItem.route);
                   } else {
                     navigate(subItem.route);
                   }
                 }}
                 sx={{
-                  pl: 4,
+                  pl: 3,
+                  py: 0.5,
+                  height: 40,
+                  minHeight: 40,
                   justifyContent: openNav ? 'initial' : 'center',
                   '&:hover': { backgroundColor: '#e0e0e0' },
                   position: 'relative',
                   backgroundColor: location.pathname === subItem.route ? '#f0f0f0' : 'transparent',
+                  '& .MuiListItemButton-root': {
+                    minHeight: 40,
+                  },
                 }}
               >
                 <ListItemIcon
                   sx={{
                     minWidth: 0,
                     justifyContent: 'center',
-                    mr: openNav ? 3 : 'auto',
+                    mr: openNav ? 2 : 'auto',
+                    '& .MuiSvgIcon-root': {
+                      fontSize: '0.9rem',
+                    },
                   }}
                 >
                   {subItem.icon}
@@ -131,35 +118,46 @@ export const SubItemsList: React.FC<SubItemsListProps> = ({
                   sx={{
                     opacity: openNav ? 1 : 0,
                     '& .MuiListItemText-primary': {
+                      fontSize: '0.8rem',
                       whiteSpace: 'nowrap',
                       overflow: 'hidden',
                       textOverflow: 'ellipsis',
+                      lineHeight: 1.2,
                     },
                   }}
                 />
-                <IconButton
-                  size="small"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onDeleteClick(e, dashboards.find(d => d._id === subItem.route.split('/')[2]) || dashboards[0]);
-                  }}
-                  sx={{
-                    opacity: 0,
-                    position: 'absolute',
-                    right: 8,
-                    '&:hover': { opacity: 1 },
-                    transition: 'opacity 0.2s',
-                    '.MuiListItemButton-root:hover &': {
-                      opacity: 1,
-                    },
-                  }}
-                >
-                  <DeleteIcon sx={{ fontSize: '1.2rem', color: 'red' }} />
-                </IconButton>
+                {parentName === "Dashboards" && !subItem.isMoreLink && (
+                  <IconButton
+                    size="small"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      const dashboard = dashboards.find(d => d._id === subItem.route.split('/').pop());
+                      if (dashboard) {
+                        onDeleteClick?.(e, dashboard);
+                      }
+                    }}
+                    sx={{
+                      opacity: 0,
+                      position: 'absolute',
+                      right: 8,
+                      padding: '4px',
+                      transition: 'opacity 0.2s',
+                      '&:hover': { opacity: 1 },
+                      '.MuiListItemButton-root:hover &': {
+                        opacity: 1,
+                      },
+                      '& .MuiSvgIcon-root': {
+                        fontSize: '0.9rem',
+                        color: 'red',
+                      },
+                    }}
+                  >
+                    <DeleteIcon />
+                  </IconButton>
+                )}
               </ListItemButton>
             )}
           </ListItem>
-          {i < subItems.length - 1 && <Divider />}
         </React.Fragment>
       ))}
     </List>

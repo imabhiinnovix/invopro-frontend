@@ -67,6 +67,7 @@ interface AddChartModalProps {
   isSubmitting: boolean;
   dashboardId: string;
   initialData?: ChartResponse;
+  onSave?: (formData: ChartFormData) => Promise<void>;
 }
 
 const StyledDialog = styled(Dialog)({
@@ -157,6 +158,7 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
   isSubmitting,
   dashboardId,
   initialData,
+  onSave
 }) => {
   const dispatch = useAppDispatch();
   const {
@@ -403,50 +405,32 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
     handleConditionChange(index, "field", event.target.value as string);
   };
 
-  const handleSubmit = async () => {
-    if (!formData.widgetTypeId) return;
-
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
     try {
-      const payload = {
-        ...formData,
-        position: {
-          x: Number(formData.position.x),
-          y: Number(formData.position.y),
-          index: Number(formData.position.index),
-        },
-      };
-
-      if (initialData) {
-        // Update existing widget
-        const result = await dispatch(updateWidget({
-          ...payload,
-          _id: initialData._id,
+      if (onSave) {
+        await onSave(formData);
+      } else {
+        const result = await dispatch(createWidget({
+          ...formData,
+          dashboardId,
         })).unwrap();
         
         if (result.success) {
-          // Fetch updated chart data
-          await dispatch(fetchChartData(payload.dashboardId));
-          toast.success('Chart updated successfully!');
-          onClose();
-        } else {
-          toast.error(result.message || 'Failed to update chart');
-        }
-      } else {
-        // Create new widget
-        const result = await dispatch(createWidget(payload)).unwrap();
-        
-        if (result.success) {
-          // Fetch updated chart data
-          await dispatch(fetchChartData(payload.dashboardId));
           toast.success('Chart created successfully!');
+          await dispatch(fetchChartData(dashboardId));
           onClose();
         } else {
           toast.error(result.message || 'Failed to create chart');
         }
       }
     } catch (error) {
-      console.error('Error:', error);
-      toast.error('An error occurred. Please try again.');
+      if (typeof error === 'object' && error !== null && 'message' in error) {
+        toast.error(error.message as string);
+      } else {
+        toast.error('Failed to create/update chart');
+      }
     }
   };
 
