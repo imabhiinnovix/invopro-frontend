@@ -263,7 +263,7 @@ const Dashboard = () => {
                     <TableCell sx={{ fontWeight: 500 }}>
                       {dashboard.name}
                     </TableCell>
-                    <TableCell>{dashboard.createdBy}</TableCell>
+                    <TableCell>{dashboard?.createdBy?.firstName} {dashboard?.createdBy?.lastName}</TableCell>
                     <TableCell>
                       {format(new Date(dashboard.createdAt), "MMM dd, yyyy HH:mm")}
                     </TableCell>

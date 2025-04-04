@@ -1,6 +1,10 @@
 export interface Dashboard {
   _id: string;
-  createdBy: string;
+  createdBy: {
+    _id: string;
+    firstName: string;
+    lastName: string;
+  };
   organizationId: string;
   name: string;
   description: string;
