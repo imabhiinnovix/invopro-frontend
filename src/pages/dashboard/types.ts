@@ -214,4 +214,50 @@ export interface WidgetResponse {
     __v: number;
     data: ChartData[];
   };
+}
+
+export interface WidgetDataResponse {
+  success: boolean;
+  message: string;
+  data: Array<{
+    name: string;
+    Estimates: number;
+    data: number;
+  }>;
+}
+
+export interface CombinedWidgetData {
+  _id: string;
+  createdBy: string;
+  dashboardId: string;
+  organizationId: string;
+  name: string;
+  position: {
+    x: number;
+    y: number;
+    index: number;
+  };
+  dimensions: string[];
+  groupBy: string[];
+  aggregation: {
+    type: string;
+    attributeName: string;
+  };
+  conditions: {
+    field: string;
+    operator: string;
+    value: string;
+    _id: string;
+  }[];
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+  __v?: number;
+  widgetTypeId?: WidgetDetails;
+  dataSourceId?: DataSourceDetails;
+  data: Array<{
+    name: string;
+    Estimates: number;
+    data: number;
+  }>;
 } 

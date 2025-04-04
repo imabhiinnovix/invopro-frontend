@@ -34,11 +34,9 @@ const VerifyOTP = () => {
     if (token) {
       setTimeout(() => {
         if (userDetails?.data?.roleId === roleId?.SUPER_ADMIN) {
-          // navigate('/superadmin/dashboard');
-          navigate('/reports');
+          navigate('/superadmin/dashboard');
         } else {
-          // navigate('/dashboard');
-          navigate('/reports');
+          navigate('/dashboard');
         }
       }, 10);
       setRoleId(String(userDetails?.data?.roleId));

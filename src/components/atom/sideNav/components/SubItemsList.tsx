@@ -96,6 +96,11 @@ export const SubItemsList: React.FC<SubItemsListProps> = ({
                   '&:hover': { backgroundColor: '#e0e0e0' },
                   position: 'relative',
                   backgroundColor: location.pathname === subItem.route ? '#f0f0f0' : 'transparent',
+                  ...(subItem.isMoreLink && {
+                    '&:hover': { 
+                      backgroundColor: 'rgba(25, 118, 210, 0.08)', // Light blue background on hover
+                    },
+                  }),
                   '& .MuiListItemButton-root': {
                     minHeight: 40,
                   },
@@ -123,6 +128,14 @@ export const SubItemsList: React.FC<SubItemsListProps> = ({
                       overflow: 'hidden',
                       textOverflow: 'ellipsis',
                       lineHeight: 1.2,
+                      ...(subItem.isMoreLink && {
+                        textDecoration: 'underline',
+                        color: '#1976d2', // MUI primary blue color
+                        fontWeight: 500,
+                        '&:hover': {
+                          color: '#1565c0', // Darker blue on hover
+                        }
+                      }),
                     },
                   }}
                 />

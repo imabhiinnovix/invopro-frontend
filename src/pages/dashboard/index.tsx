@@ -272,7 +272,7 @@ const Dashboard = () => {
                     </TableCell>
                     <TableCell>
                       <Box sx={{ display: "flex", gap: 1 }}>
-                        <Tooltip title="Edit Dashboard">
+                        {/* <Tooltip title="Edit Dashboard">
                           <IconButton
                             color="secondary"
                             onClick={(e) => {
@@ -289,7 +289,7 @@ const Dashboard = () => {
                           >
                             <EditIcon fontSize="small" />
                           </IconButton>
-                        </Tooltip>
+                        </Tooltip> */}
                         <Tooltip title="Delete Dashboard">
                           <IconButton
                             onClick={(e) => handleDeleteClick(e, dashboard)}

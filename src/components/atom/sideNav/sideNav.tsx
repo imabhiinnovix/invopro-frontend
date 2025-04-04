@@ -463,7 +463,7 @@ export default function SideNav() {
                             sx={{
                               minHeight: 36,
                               px: 2,
-                              pl: 4,
+                              pl: 2,
                               borderRadius: '8px',
                               mx: 1.5,
                               "&:hover": {
@@ -474,7 +474,7 @@ export default function SideNav() {
                             <ListItemIcon
                               sx={{
                                 minWidth: 0,
-                                mr: 2,
+                                mr: 1,
                                 justifyContent: "center",
                               }}
                             >
@@ -485,7 +485,7 @@ export default function SideNav() {
                               sx={{
                                 m: 0,
                                 "& .MuiListItemText-primary": {
-                                  fontSize: "0.875rem",
+                                  fontSize: "0.8rem",
                                 },
                               }}
                             />

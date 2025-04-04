@@ -1,6 +1,6 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { GET, POST } from '../../services/apiRoutes';
-import { DashboardListResponse, WidgetTypeResponse, DataSourceResponse, ChartDataResponse, WidgetResponse } from './types';
+import { DashboardListResponse, WidgetTypeResponse, DataSourceResponse, ChartDataResponse, WidgetDataResponse, CombinedWidgetData } from './types';
 import axiosInstance from '../../services/axiosInstance';
 import axios from 'axios';
 
@@ -219,7 +219,7 @@ export const loadMoreDataSources = createAsyncThunk(
   }
 );
 
-export const storeWidgetData = (payload: { widgetId: string; data: WidgetResponse['data'] }) => ({
+export const storeWidgetData = (payload: { widgetId: string; data: CombinedWidgetData }) => ({
   type: 'dashboard/storeWidgetData',
   payload
 });
@@ -236,11 +236,24 @@ export const fetchChartData = createAsyncThunk(
       await Promise.all(
         response.data.data.map(async (chart) => {
           try {
-            const widgetResponse = await axiosInstance.get<WidgetResponse>(
-              `${GET.DASHBOARD_WIDGET}/${chart._id}`
+            const widgetResponse = await axiosInstance.post<WidgetDataResponse>(
+              GET.DASHBOARD_WIDGET_DATA,
+              {
+                dataSourceId: chart.dataSourceId?._id,
+                entityId: chart.dataSourceId?.entityId,
+                dimensions: chart.dimensions,
+                groupBy: chart.groupBy,
+                conditions: chart.conditions,
+                aggregation: chart.aggregation
+              }
             );
             if (widgetResponse.data.success) {
-              dispatch(storeWidgetData({ widgetId: chart._id, data: widgetResponse.data.data }));
+              // Combine the chart metadata with the new data
+              const combinedData = {
+                ...chart,
+                data: widgetResponse.data.data
+              };
+              dispatch(storeWidgetData({ widgetId: chart._id, data: combinedData }));
             }
           } catch (error) {
             console.error(`Failed to fetch widget data for chart ${chart._id}:`, error);

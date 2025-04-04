@@ -29,11 +29,13 @@ ChartJS.register(
 interface ChartGridProps {
   dashboardId: string;
   isEditMode: boolean;
+  onEditChart: (chart: ChartResponse) => void;
 }
 
 const StyledCard = styled(Card)(({ theme }) => ({
   height: '100%',
   minHeight: 400,
+  maxHeight: 500,
   display: 'flex',
   flexDirection: 'column',
   borderRadius: theme.shape.borderRadius,
@@ -65,13 +67,16 @@ const ChartTitleText = styled(Typography)({
 const ChartContainer = styled(Box)(({ theme }) => ({
   flex: 1,
   minHeight: 300,
+  maxHeight: 400,
+  height: '400px',
   padding: theme.spacing(2),
-  backgroundColor: theme.palette.background.default,
+  backgroundColor: '#ffffff',
   borderRadius: theme.shape.borderRadius,
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
   position: 'relative',
+  overflow: 'hidden',
   '& canvas': {
     maxWidth: '100% !important',
     maxHeight: '100% !important',
@@ -81,13 +86,16 @@ const ChartContainer = styled(Box)(({ theme }) => ({
   },
   '&.pie-chart': {
     minHeight: 350,
+    maxHeight: 450,
+    height: '450px',
   },
   '&.line-chart': {
     minHeight: 350,
+    maxHeight: 450,
+    height: '450px',
   },
   '&:hover': {
-    overflowY: 'auto',
-    isolation: 'isolate',
+    overflow: 'hidden',
   },
   '&::-webkit-scrollbar': {
     width: '8px',
@@ -152,7 +160,7 @@ const FullScreenChartContainer = styled(Box)(({ theme }) => ({
   },
 }));
 
-export const ChartGrid: React.FC<ChartGridProps> = ({ dashboardId, isEditMode }) => {
+export const ChartGrid: React.FC<ChartGridProps> = ({ dashboardId, isEditMode, onEditChart }) => {
   const dispatch = useAppDispatch();
   const theme = useTheme();
   const { charts, chartsLoading, chartsError, widgetData } = useAppSelector((state) => ({
@@ -166,8 +174,6 @@ export const ChartGrid: React.FC<ChartGridProps> = ({ dashboardId, isEditMode })
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [fullViewOpen, setFullViewOpen] = useState(false);
-  const [editModalOpen, setEditModalOpen] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     if (dashboardId) {
@@ -221,46 +227,10 @@ export const ChartGrid: React.FC<ChartGridProps> = ({ dashboardId, isEditMode })
   };
 
   const handleEditClick = () => {
-    setEditModalOpen(true);
-    handleMenuClose();
-  };
-
-  const handleEditModalClose = () => {
-    setEditModalOpen(false);
-    setSelectedChart(null);
-  };
-
-  const handleUpdateChart = async (formData: ChartFormData) => {
-    if (!selectedChart) return;
-    
-    try {
-      setIsSubmitting(true);
-      const result = await dispatch(updateWidget({
-        ...formData,
-        _id: selectedChart._id,
-        position: {
-          x: Number(formData.position.x),
-          y: Number(formData.position.y),
-          index: Number(formData.position.index),
-        },
-      })).unwrap();
-      
-      if (result.success) {
-        toast.success('Chart updated successfully!');
-        await dispatch(fetchChartData(dashboardId));
-        handleEditModalClose();
-      } else {
-        toast.error(result.message || 'Failed to update chart');
-      }
-    } catch (error) {
-      if (typeof error === 'object' && error !== null && 'message' in error) {
-        toast.error(error.message as string);
-      } else {
-        toast.error('Failed to update chart');
-      }
-    } finally {
-      setIsSubmitting(false);
+    if (selectedChart) {
+      onEditChart(selectedChart);
     }
+    handleMenuClose();
   };
 
   const handleFullViewClick = (chart: ChartResponse) => {
@@ -507,11 +477,41 @@ export const ChartGrid: React.FC<ChartGridProps> = ({ dashboardId, isEditMode })
 
   return (
     <>
-      <Grid container spacing={3} sx={{ mt: 2, p: 2 }}>
+      <Grid 
+        container 
+        spacing={3} 
+        sx={{ 
+          mt: 2, 
+          p: 2,
+          height: '100%',
+          alignContent: 'flex-start',
+          '& > .MuiGrid-item': {
+            display: 'flex',
+            flexDirection: 'column',
+            height: 'fit-content'
+          }
+        }}
+      >
         {charts.map((chart) => (
-          <Grid item xs={12} md={6} key={chart._id}>
+          <Grid 
+            item 
+            xs={12} 
+            md={6} 
+            key={chart._id}
+            sx={{
+              display: 'flex',
+              flexDirection: 'column',
+              height: 'fit-content'
+            }}
+          >
             <StyledCard>
-              <CardContent sx={{ flexGrow: 1, p: 3 }}>
+              <CardContent sx={{ 
+                flexGrow: 1, 
+                p: 3, 
+                display: 'flex', 
+                flexDirection: 'column',
+                height: '100%'
+              }}>
                 <ChartTitle>
                   <ChartTitleText>
                     {chart.name}
@@ -568,17 +568,6 @@ export const ChartGrid: React.FC<ChartGridProps> = ({ dashboardId, isEditMode })
           Delete
         </MenuItem>
       </Menu>
-
-      {selectedChart && (
-        <AddChartModal
-          open={editModalOpen}
-          onClose={handleEditModalClose}
-          isSubmitting={isSubmitting}
-          dashboardId={dashboardId}
-          initialData={selectedChart}
-          onSave={handleUpdateChart}
-        />
-      )}
 
       <Dialog
         open={deleteDialogOpen}

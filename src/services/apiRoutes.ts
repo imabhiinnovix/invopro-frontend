@@ -56,6 +56,7 @@ export const GET = {
   SOURCE_VERSION_DATA: "/dataSourceVersion/versionData",
   DASHBOARD_LIST: "/dashboard/list",
   WIDGET_TYPE_LIST: "/widgetType/list",
-  DASHBOARD_WIDGET_GET_CHART_DATA: "/dashboard/widget/getChartData",
+  DASHBOARD_WIDGET_GET_CHART_DATA: "/dashboard/widget/getWidgets",
   DASHBOARD_WIDGET: "/dashboard/widget",
+  DASHBOARD_WIDGET_DATA: "/dashboard/widget/getWidgetData",
 };

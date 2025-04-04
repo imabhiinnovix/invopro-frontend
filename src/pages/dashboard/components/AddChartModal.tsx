@@ -1,9 +1,5 @@
 import React, { useEffect, useState } from "react";
 import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
   Button,
   FormControl,
   InputLabel,
@@ -24,10 +20,8 @@ import { useAppDispatch, useAppSelector } from "../../../storeHooks";
 import {
   fetchWidgetTypes,
   fetchAllDataSources,
-  updateWidget,
   createWidget,
   fetchChartData,
-  loadMoreDataSources,
 } from "../dashboardActions";
 import { DataSource, DataSourceAttribute, ChartResponse } from "../types";
 import { toast } from "react-toastify";
@@ -69,32 +63,6 @@ interface AddChartModalProps {
   initialData?: ChartResponse;
   onSave?: (formData: ChartFormData) => Promise<void>;
 }
-
-const StyledDialog = styled(Dialog)({
-  "& .MuiDialog-paper": {
-    maxWidth: "800px",
-    width: "100%",
-    borderRadius: "12px",
-  },
-});
-
-const StyledDialogTitle = styled(DialogTitle)(({ theme }) => ({
-  padding: theme.spacing(2, 3),
-  borderBottom: `1px solid ${theme.palette.divider}`,
-  "& .MuiTypography-root": {
-    fontSize: "1.25rem",
-    fontWeight: 600,
-  },
-}));
-
-const StyledDialogContent = styled(DialogContent)(({ theme }) => ({
-  padding: theme.spacing(3),
-}));
-
-const StyledDialogActions = styled(DialogActions)(({ theme }) => ({
-  padding: theme.spacing(2, 3),
-  borderTop: `1px solid ${theme.palette.divider}`,
-}));
 
 const FormSection = styled(Box)(({ theme }) => ({
   marginBottom: theme.spacing(2),
@@ -152,6 +120,42 @@ const ConditionsSection = styled(FormSection)(({ theme }) => ({
   backgroundColor: theme.palette.background.default,
 }));
 
+const ConfigurationPanel = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  flexDirection: 'column',
+  height: '100%',
+  backgroundColor: theme.palette.background.paper,
+}));
+
+const ConfigurationHeader = styled(Box)(({ theme }) => ({
+  padding: theme.spacing(2, 3),
+  borderBottom: `1px solid ${theme.palette.divider}`,
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  backgroundColor: theme.palette.background.paper,
+  zIndex: 1,
+}));
+
+const ConfigurationContent = styled(Box)(({ theme }) => ({
+  padding: theme.spacing(3),
+  overflowY: 'auto',
+  flex: 1,
+  display: 'flex',
+  flexDirection: 'column',
+  gap: theme.spacing(3),
+}));
+
+const ConfigurationFooter = styled(Box)(({ theme }) => ({
+  padding: theme.spacing(2, 3),
+  borderTop: `1px solid ${theme.palette.divider}`,
+  backgroundColor: theme.palette.background.paper,
+  zIndex: 1,
+  display: 'flex',
+  justifyContent: 'flex-end',
+  gap: theme.spacing(2),
+}));
+
 export const AddChartModal: React.FC<AddChartModalProps> = ({
   open,
   onClose,
@@ -166,7 +170,6 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
     dataSources,
     widgetTypesLoading,
     dataSourcesLoading,
-    dataSourcesHasMore,
   } = useAppSelector((state) => state.dashboard);
 
   const [formData, setFormData] = useState<ChartFormData>({
@@ -193,8 +196,12 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
         value: "",
       },
     ],
-    dataSourceId: initialData?.dataSourceId || "",
-    widgetTypeId: initialData?.widgetTypeId || "",
+    dataSourceId: initialData?.dataSourceId && typeof initialData.dataSourceId === 'string' 
+      ? initialData.dataSourceId 
+      : "",
+    widgetTypeId: initialData?.widgetTypeId && typeof initialData.widgetTypeId === 'string'
+      ? initialData.widgetTypeId
+      : "",
     dashboardId,
   });
 
@@ -214,8 +221,12 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
         aggregation: initialData.aggregation,
         position: initialData.position,
         conditions: initialData.conditions,
-        dataSourceId: initialData.dataSourceId,
-        widgetTypeId: initialData.widgetTypeId,
+        dataSourceId: initialData.dataSourceId && typeof initialData.dataSourceId === 'string'
+          ? initialData.dataSourceId
+          : "",
+        widgetTypeId: initialData.widgetTypeId && typeof initialData.widgetTypeId === 'string'
+          ? initialData.widgetTypeId
+          : "",
         dashboardId,
       });
     } else if (!open) {
@@ -446,38 +457,20 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
     handleChange("groupBy", "");
   };
 
-  const handleAttributeChange = (event: SelectChangeEvent<unknown>) => {
-    const selectedDs = dataSources.find(
-      (ds) => ds._id === event.target.value
-    );
-    if (selectedDs) {
-      setSelectedDataSource(selectedDs);
-      setFormData((prev) => ({
-        ...prev,
-        dataSourceId: event.target.value as string,
-        dimensions: "",
-        groupBy: "",
-        aggregation: {
-          ...prev.aggregation,
-          attributeName: "",
-        },
-        conditions: [
-          {
-            field: "",
-            operator: "equals",
-            value: "",
-          },
-        ],
-      }));
-    }
-  };
+  if (!open) return null;
 
   return (
-    <StyledDialog open={open} onClose={onClose} maxWidth="md" fullWidth>
-      <StyledDialogTitle>
-        {initialData ? "Edit Chart" : "Add New Chart"}
-      </StyledDialogTitle>
-      <StyledDialogContent>
+    <ConfigurationPanel>
+      <ConfigurationHeader>
+        <Typography variant="h6" fontWeight={600}>
+          {initialData ? "Edit Chart" : "Add New Chart"}
+        </Typography>
+        <IconButton onClick={onClose} size="small">
+          <ClearIcon />
+        </IconButton>
+      </ConfigurationHeader>
+
+      <ConfigurationContent>
         <FirstFormSection>
           <StyledTextField
             fullWidth
@@ -753,9 +746,9 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
             </ConditionsSection>
           </>
         )}
-      </StyledDialogContent>
+      </ConfigurationContent>
 
-      <StyledDialogActions>
+      <ConfigurationFooter>
         <StyledButton onClick={onClose} disabled={isSubmitting}>
           Cancel
         </StyledButton>
@@ -775,7 +768,7 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
             ? "Update"
             : "Create"}
         </StyledButton>
-      </StyledDialogActions>
-    </StyledDialog>
+      </ConfigurationFooter>
+    </ConfigurationPanel>
   );
 };

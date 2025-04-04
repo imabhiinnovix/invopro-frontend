@@ -19,6 +19,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   const [isEditMode, setIsEditMode] = useState(false);
   const [editedTitle, setEditedTitle] = useState(title);
   const [isAddChartModalOpen, setIsAddChartModalOpen] = useState(false);
+  const [isEditChartModalOpen, setIsEditChartModalOpen] = useState(false);
+  const [selectedChart, setSelectedChart] = useState<ChartResponse | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const { id: dashboardId } = useParams();
   const location = useLocation();
@@ -51,6 +53,16 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
   const handleCloseModal = () => {
     setIsAddChartModalOpen(false);
+  };
+
+  const handleEditChart = (chart: ChartResponse) => {
+    setSelectedChart(chart);
+    setIsEditChartModalOpen(true);
+  };
+
+  const handleCloseEditModal = () => {
+    setIsEditChartModalOpen(false);
+    setSelectedChart(null);
   };
 
   return (
@@ -131,42 +143,91 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         </Box>
       </Box>
 
-      <Box 
-        component={Paper}
-        sx={{ 
-          p: 3,
-          flex: 1,
-          overflow: 'auto',
-          display: 'grid',
-          gridTemplateColumns: {
-            xs: '1fr',
-            sm: 'repeat(auto-fit, minmax(400px, 1fr))',
-            md: 'repeat(auto-fit, minmax(450px, 1fr))',
-            lg: 'repeat(auto-fit, minmax(500px, 1fr))'
-          },
-          gap: 3,
-          '&::-webkit-scrollbar': {
-            width: '8px',
-            height: '8px'
-          },
-          '&::-webkit-scrollbar-thumb': {
-            backgroundColor: 'rgba(0, 0, 0, 0.1)',
-            borderRadius: '4px'
-          },
-          '&::-webkit-scrollbar-track': {
-            backgroundColor: 'transparent'
-          }
-        }}
-      >
-        {dashboardId && <ChartGrid dashboardId={dashboardId} isEditMode={isEditMode} />}
-      </Box>
+      <Box sx={{ 
+        display: 'flex', 
+        flex: 1,
+        overflow: 'hidden',
+        gap: 3,
+        height: 'calc(100% - 100px)'
+      }}>
+        <Box 
+          component={Paper}
+          sx={{ 
+            flex: 1,
+            overflow: 'auto',
+            display: 'grid',
+            gridTemplateColumns: {
+              xs: '1fr',
+              sm: 'repeat(auto-fit, minmax(400px, 1fr))',
+              md: 'repeat(auto-fit, minmax(450px, 1fr))',
+              lg: 'repeat(auto-fit, minmax(500px, 1fr))'
+            },
+            gap: 3,
+            p: 3,
+            transition: 'all 0.3s ease',
+            ...((isAddChartModalOpen || isEditChartModalOpen) && {
+              flex: '1 1 70%',
+            }),
+            '&::-webkit-scrollbar': {
+              width: '8px',
+              height: '8px'
+            },
+            '&::-webkit-scrollbar-thumb': {
+              backgroundColor: 'rgba(0, 0, 0, 0.1)',
+              borderRadius: '4px'
+            },
+            '&::-webkit-scrollbar-track': {
+              backgroundColor: 'transparent'
+            }
+          }}
+        >
+          {dashboardId && (
+            <ChartGrid 
+              dashboardId={dashboardId} 
+              isEditMode={isEditMode} 
+              onEditChart={handleEditChart}
+            />
+          )}
+        </Box>
 
-      <AddChartModal
-        open={isAddChartModalOpen}
-        onClose={handleCloseModal}
-        isSubmitting={false}
-        dashboardId={dashboardId || ''}
-      />
+        {(isAddChartModalOpen || isEditChartModalOpen) && (
+          <Box
+            component={Paper}
+            sx={{
+              width: '400px',
+              flexShrink: 0,
+              display: 'flex',
+              flexDirection: 'column',
+              borderLeft: '1px solid',
+              borderColor: 'divider',
+              overflow: 'hidden',
+              height: '100%'
+            }}
+          >
+            {isAddChartModalOpen && (
+              <AddChartModal
+                open={isAddChartModalOpen}
+                onClose={handleCloseModal}
+                isSubmitting={false}
+                dashboardId={dashboardId || ''}
+              />
+            )}
+            {isEditChartModalOpen && selectedChart && (
+              <AddChartModal
+                open={isEditChartModalOpen}
+                onClose={handleCloseEditModal}
+                isSubmitting={false}
+                dashboardId={dashboardId || ''}
+                initialData={selectedChart}
+                onSave={(formData) => {
+                  // Handle chart update
+                  handleCloseEditModal();
+                }}
+              />
+            )}
+          </Box>
+        )}
+      </Box>
     </Box>
   );
 }; 
