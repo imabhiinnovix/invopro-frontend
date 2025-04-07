@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useAppDispatch, useAppSelector } from '../../../storeHooks';
-import { fetchChartData, deleteWidget, updateWidget } from '../dashboardActions';
+import { fetchChartData, deleteWidget } from '../dashboardActions';
 import { Grid, Card, CardContent, Typography, Box, CircularProgress, useTheme, IconButton, Menu, MenuItem, Dialog, DialogTitle, DialogContent, DialogActions, Button } from '@mui/material';
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, ArcElement } from 'chart.js';
 import { Line, Pie } from 'react-chartjs-2';
@@ -163,8 +163,9 @@ const FullScreenChartContainer = styled(Box)(({ theme }) => ({
 export const ChartGrid: React.FC<ChartGridProps> = ({ dashboardId, isEditMode, onEditChart }) => {
   const dispatch = useAppDispatch();
   const theme = useTheme();
-  const { charts, chartsLoading, chartsError, widgetData } = useAppSelector((state) => ({
+  const { charts, temporaryCharts, chartsLoading, chartsError, widgetData } = useAppSelector((state) => ({
     charts: state.dashboard.charts,
+    temporaryCharts: state.dashboard.temporaryCharts,
     chartsLoading: state.dashboard.chartsLoading,
     chartsError: state.dashboard.chartsError,
     widgetData: state.dashboard.widgetData
@@ -174,6 +175,9 @@ export const ChartGrid: React.FC<ChartGridProps> = ({ dashboardId, isEditMode, o
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [fullViewOpen, setFullViewOpen] = useState(false);
+
+  // Combine permanent and temporary charts
+  const allCharts = [...charts, ...temporaryCharts];
 
   useEffect(() => {
     if (dashboardId) {
@@ -261,7 +265,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({ dashboardId, isEditMode, o
     );
   }
 
-  if (!charts || charts.length === 0) {
+  if (!allCharts || allCharts.length === 0) {
     return (
       <EmptyContainer>
         <Typography color="text.secondary" variant="h6">
@@ -492,7 +496,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({ dashboardId, isEditMode, o
           }
         }}
       >
-        {charts.map((chart) => (
+        {allCharts.map((chart) => (
           <Grid 
             item 
             xs={12} 

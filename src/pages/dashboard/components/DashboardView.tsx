@@ -6,10 +6,10 @@ import DoneIcon from '@mui/icons-material/Done';
 import { useParams, useLocation } from 'react-router-dom';
 import { ChartGrid } from './ChartGrid';
 import { AddChartModal, ChartFormData } from './AddChartModal';
-import { useAppDispatch } from '../../../storeHooks';
-import { updateWidget } from '../dashboardActions';
+import { useAppDispatch, useAppSelector } from '../../../storeHooks';
+import { updateWidget, saveWidgets } from '../dashboardActions';
 import { toast } from 'react-toastify';
-import { ChartResponse } from '../types';
+import { ChartResponse, TemporaryChart } from '../types';
 
 interface DashboardViewProps {
   title: string;
@@ -29,6 +29,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   const { id: dashboardId } = useParams();
   const location = useLocation();
   const dispatch = useAppDispatch();
+  const temporaryCharts = useAppSelector((state) => state.dashboard.temporaryCharts);
 
   useEffect(() => {
     if (location.state?.enableEditMode) {
@@ -42,11 +43,41 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     }
   }, [isEditMode]);
 
-  const handleEditModeToggle = () => {
+  const handleEditModeToggle = async () => {
     if (isEditMode) {
-      onTitleChange(editedTitle);
+      // Save temporary charts
+      try {
+        const result = await dispatch(saveWidgets({
+          widgets: temporaryCharts.map((chart: TemporaryChart) => ({
+            dashboardId: chart.dashboardId,
+            widgetTypeId: chart.widgetTypeId?._id || '',
+            name: chart.name,
+            dimensions: chart.dimensions.join(','),
+            groupBy: chart.groupBy,
+            aggregation: chart.aggregation,
+            position: chart.position,
+            conditions: chart.conditions,
+            dataSourceId: chart.dataSourceId?._id || ''
+          }))
+        })).unwrap();
+
+        if (result.success) {
+          toast.success('Charts saved successfully!');
+          onTitleChange(editedTitle);
+          setIsEditMode(false);
+        } else {
+          toast.error(result.message || 'Failed to save charts');
+        }
+      } catch (error) {
+        if (typeof error === 'object' && error !== null && 'message' in error) {
+          toast.error(error.message as string);
+        } else {
+          toast.error('Failed to save charts');
+        }
+      }
+    } else {
+      setIsEditMode(!isEditMode);
     }
-    setIsEditMode(!isEditMode);
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {

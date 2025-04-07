@@ -310,4 +310,40 @@ export const updateWidget = createAsyncThunk(
       return rejectWithValue({ message: 'Failed to update widget. Please try again.' });
     }
   }
+);
+
+interface SaveWidgetsPayload {
+  widgets: {
+    dashboardId: string;
+    widgetTypeId: string;
+    name: string;
+    dimensions: string;
+    groupBy: string[];
+    aggregation: {
+      type: string;
+      attributeName: string;
+    };
+    position: {
+      x: number;
+      y: number;
+      index: number;
+    };
+    conditions: {
+      field: string;
+      operator: string;
+      value: string;
+    }[];
+    dataSourceId: string;
+  }[];
+}
+
+export const saveWidgets = createAsyncThunk(
+  'dashboard/saveWidgets',
+  async (payload: SaveWidgetsPayload) => {
+    const { data } = await axiosInstance.post<CreateWidgetResponse>(
+      POST.SAVE_WIDGETS,
+      payload
+    );
+    return data;
+  }
 ); 

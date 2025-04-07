@@ -1,12 +1,33 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { DashboardListResponse, WidgetTypeResponse, DataSourceResponse, DashboardSliceState, ChartDataResponse, ChartResponse, WidgetResponse } from './types';
-import { fetchDashboardList, fetchWidgetTypes, fetchDataSources, loadMoreDataSources, fetchChartData, deleteWidget, updateWidget, createWidget, fetchAllDataSources } from './dashboardActions';
+import { DashboardListResponse, WidgetTypeResponse, DataSourceResponse, ChartDataResponse, ChartResponse, WidgetResponse, TemporaryChart, Dashboard, WidgetType, DataSource } from './types';
+import { fetchDashboardList, fetchWidgetTypes, fetchDataSources, loadMoreDataSources, fetchChartData, deleteWidget, updateWidget, createWidget, fetchAllDataSources, saveWidgets } from './dashboardActions';
+import { WritableDraft } from 'immer';
 
 interface Condition {
   field: string;
   operator: string;
   value: string;
   _id?: string;
+}
+
+interface DashboardSliceState {
+  dashboards: Dashboard[];
+  loading: boolean;
+  error: string | null;
+  widgetTypes: WidgetType[];
+  dataSources: DataSource[];
+  widgetTypesLoading: boolean;
+  dataSourcesLoading: boolean;
+  widgetTypesError: string | null;
+  dataSourcesError: string | null;
+  dataSourcesHasMore: boolean;
+  dataSourcesPage: number;
+  dataSourcesTotalCount: number;
+  charts: ChartResponse[];
+  temporaryCharts: TemporaryChart[];
+  chartsLoading: boolean;
+  chartsError: string | null;
+  widgetData: Record<string, WidgetResponse['data']>;
 }
 
 const initialState: DashboardSliceState = {
@@ -23,6 +44,7 @@ const initialState: DashboardSliceState = {
   dataSourcesHasMore: true,
   dataSourcesTotalCount: 0,
   charts: [],
+  temporaryCharts: [],
   chartsLoading: false,
   chartsError: null,
   widgetData: {},
@@ -34,6 +56,21 @@ const dashboardSlice = createSlice({
   reducers: {
     storeWidgetData: (state, action: PayloadAction<{ widgetId: string; data: WidgetResponse['data'] }>) => {
       state.widgetData[action.payload.widgetId] = action.payload.data;
+    },
+    addTemporaryChart: (state, action: PayloadAction<TemporaryChart>) => {
+      state.temporaryCharts.push(action.payload);
+    },
+    updateTemporaryChart: (state, action: PayloadAction<{ id: string; chart: TemporaryChart }>) => {
+      const index = state.temporaryCharts.findIndex(chart => chart._id === action.payload.id);
+      if (index !== -1) {
+        state.temporaryCharts[index] = action.payload.chart;
+      }
+    },
+    removeTemporaryChart: (state, action: PayloadAction<string>) => {
+      state.temporaryCharts = state.temporaryCharts.filter(chart => chart._id !== action.payload);
+    },
+    clearTemporaryCharts: (state) => {
+      state.temporaryCharts = [];
     }
   },
   extraReducers: (builder) => {
@@ -202,8 +239,48 @@ const dashboardSlice = createSlice({
       .addCase(updateWidget.rejected, (state, action) => {
         state.chartsLoading = false;
         state.chartsError = action.error.message || 'Failed to update widget';
+      })
+      .addCase(saveWidgets.pending, (state) => {
+        state.chartsLoading = true;
+        state.chartsError = null;
+      })
+      .addCase(saveWidgets.fulfilled, (state) => {
+        state.chartsLoading = false;
+        // Convert temporary charts to permanent charts
+        const convertedCharts: WritableDraft<ChartResponse>[] = state.temporaryCharts.map(chart => ({
+          _id: chart._id,
+          createdBy: chart.createdBy,
+          dashboardId: chart.dashboardId,
+          name: chart.name,
+          dimensions: chart.dimensions,
+          groupBy: chart.groupBy,
+          aggregation: chart.aggregation,
+          position: chart.position,
+          conditions: chart.conditions,
+          dataSourceId: chart.dataSourceId,
+          widgetTypeId: chart.widgetTypeId,
+          organizationId: chart.dataSourceId.organizationId,
+          isActive: true,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          data: chart.data || [],
+        }));
+        state.charts = [...state.charts, ...convertedCharts];
+        state.temporaryCharts = [];
+      })
+      .addCase(saveWidgets.rejected, (state, action) => {
+        state.chartsLoading = false;
+        state.chartsError = action.error.message || 'Failed to save widgets';
       });
   },
 });
+
+export const { 
+  storeWidgetData, 
+  addTemporaryChart, 
+  updateTemporaryChart, 
+  removeTemporaryChart,
+  clearTemporaryCharts 
+} = dashboardSlice.actions;
 
 export default dashboardSlice.reducer; 

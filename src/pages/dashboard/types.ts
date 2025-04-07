@@ -91,6 +91,44 @@ export interface DataSourceResponse {
   totalCount: number;
 }
 
+export interface ChartData {
+  name: string;
+  data: number;
+  [key: string]: string | number;
+}
+
+export interface TemporaryChart {
+  _id: string;
+  createdBy: string;
+  dashboardId: string;
+  organizationId: string;
+  name: string;
+  position: {
+    x: number;
+    y: number;
+    index: number;
+  };
+  dimensions: string[];
+  groupBy: string[];
+  aggregation: {
+    type: string;
+    attributeName: string;
+  };
+  conditions: {
+    field: string;
+    operator: string;
+    value: string;
+    _id: string;
+  }[];
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+  __v?: number;
+  widgetTypeId?: WidgetDetails;
+  dataSourceId?: DataSourceDetails;
+  data?: ChartData[];
+}
+
 export interface DashboardSliceState {
   dashboards: Dashboard[];
   loading: boolean;
@@ -105,15 +143,10 @@ export interface DashboardSliceState {
   dataSourcesPage: number;
   dataSourcesTotalCount: number;
   charts: ChartResponse[];
+  temporaryCharts: TemporaryChart[];
   chartsLoading: boolean;
   chartsError: string | null;
   widgetData: Record<string, WidgetResponse['data']>;
-}
-
-export interface ChartData {
-  name: string;
-  [key: string]: string | number;
-  data: number;
 }
 
 export interface WidgetDetails {

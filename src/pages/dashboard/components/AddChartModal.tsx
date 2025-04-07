@@ -17,19 +17,19 @@ import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
 import ClearIcon from "@mui/icons-material/Clear";
 import { useAppDispatch, useAppSelector } from "../../../storeHooks";
-import {
-  fetchWidgetTypes,
-  fetchAllDataSources,
-  createWidget,
-  fetchChartData,
-} from "../dashboardActions";
-import { DataSource, DataSourceAttribute, ChartResponse } from "../types";
+import { fetchWidgetTypes, fetchAllDataSources } from "../dashboardActions";
+import { DataSource, DataSourceAttribute, ChartResponse, TemporaryChart, WidgetDataResponse } from "../types";
 import { toast } from "react-toastify";
+import axiosInstance from "../../../services/axiosInstance";
+import { GET } from "../../../services/apiRoutes";
+import { v4 as uuidv4 } from "uuid";
+import { addTemporaryChart } from "../dashboardReducer";
 
 interface Condition {
   field: string;
   operator: string;
   value: string;
+  _id?: string;
 }
 
 interface Position {
@@ -424,24 +424,84 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
       if (onSave) {
         await onSave(formData);
       } else {
-        const result = await dispatch(createWidget({
-          ...formData,
-          dashboardId,
-        })).unwrap();
-        
-        if (result.success) {
-          toast.success('Chart created successfully!');
-          await dispatch(fetchChartData(dashboardId));
+        // Get widget data using getWidgetData API
+        const widgetResponse = await axiosInstance.post<WidgetDataResponse>(
+          GET.DASHBOARD_WIDGET_DATA,
+          {
+            dataSourceId: formData.dataSourceId,
+            entityId: selectedDataSource?.entityId._id,
+            dimensions: formData.dimensions.split(',').map(d => d.trim()),
+            groupBy: formData.groupBy.split(',').map(g => g.trim()),
+            conditions: formData.conditions.map(condition => ({
+              ...condition,
+              _id: condition._id || uuidv4()
+            })),
+            aggregation: formData.aggregation
+          }
+        );
+
+        if (widgetResponse.data.success) {
+          // Create a temporary chart with the widget data
+          const temporaryChart: TemporaryChart = {
+            _id: uuidv4(), // Generate a unique ID
+            createdBy: '', // Will be set by backend
+            dashboardId: dashboardId,
+            organizationId: selectedDataSource?.organizationId || '',
+            name: formData.name,
+            dimensions: formData.dimensions.split(',').map(d => d.trim()),
+            groupBy: formData.groupBy.split(',').map(g => g.trim()),
+            aggregation: formData.aggregation,
+            position: formData.position,
+            conditions: formData.conditions.map(condition => ({
+              ...condition,
+              _id: condition._id || uuidv4()
+            })),
+            dataSourceId: selectedDataSource ? {
+              _id: selectedDataSource._id,
+              organizationId: selectedDataSource.organizationId,
+              entityId: selectedDataSource.entityId._id,
+              name: selectedDataSource.name,
+              description: selectedDataSource.description,
+              code: selectedDataSource.code,
+              versionType: selectedDataSource.versionType,
+              isActive: selectedDataSource.isActive,
+              createdBy: selectedDataSource.createdBy._id,
+              createdAt: selectedDataSource.createdAt,
+              updatedAt: selectedDataSource.updatedAt,
+              __v: selectedDataSource.__v,
+              canEditInline: selectedDataSource.canEditInline,
+              uniqueAttributeName: selectedDataSource.uniqueAttributeName
+            } : undefined,
+            widgetTypeId: widgetTypes.find(wt => wt._id === formData.widgetTypeId) ? {
+              _id: formData.widgetTypeId,
+              name: widgetTypes.find(wt => wt._id === formData.widgetTypeId)?.name || '',
+              description: widgetTypes.find(wt => wt._id === formData.widgetTypeId)?.description || '',
+              chartType: widgetTypes.find(wt => wt._id === formData.widgetTypeId)?.chartType || '',
+              code: widgetTypes.find(wt => wt._id === formData.widgetTypeId)?.code || '',
+              isActive: true,
+              createdAt: new Date().toISOString(),
+              updatedAt: new Date().toISOString(),
+              __v: 0
+            } : undefined,
+            data: widgetResponse.data.data,
+            isActive: true,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
+          };
+
+          // Add the temporary chart to the store
+          dispatch(addTemporaryChart(temporaryChart));
+          toast.success('Chart added successfully!');
           onClose();
         } else {
-          toast.error(result.message || 'Failed to create chart');
+          toast.error(widgetResponse.data.message || 'Failed to add chart');
         }
       }
     } catch (error) {
       if (typeof error === 'object' && error !== null && 'message' in error) {
         toast.error(error.message as string);
       } else {
-        toast.error('Failed to create/update chart');
+        toast.error('Failed to add chart');
       }
     }
   };
