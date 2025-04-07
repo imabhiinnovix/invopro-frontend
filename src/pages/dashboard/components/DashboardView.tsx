@@ -5,7 +5,11 @@ import EditIcon from '@mui/icons-material/Edit';
 import DoneIcon from '@mui/icons-material/Done';
 import { useParams, useLocation } from 'react-router-dom';
 import { ChartGrid } from './ChartGrid';
-import { AddChartModal } from './AddChartModal';
+import { AddChartModal, ChartFormData } from './AddChartModal';
+import { useAppDispatch } from '../../../storeHooks';
+import { updateWidget } from '../dashboardActions';
+import { toast } from 'react-toastify';
+import { ChartResponse } from '../types';
 
 interface DashboardViewProps {
   title: string;
@@ -24,6 +28,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   const inputRef = useRef<HTMLInputElement>(null);
   const { id: dashboardId } = useParams();
   const location = useLocation();
+  const dispatch = useAppDispatch();
 
   useEffect(() => {
     if (location.state?.enableEditMode) {
@@ -63,6 +68,31 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   const handleCloseEditModal = () => {
     setIsEditChartModalOpen(false);
     setSelectedChart(null);
+  };
+
+  const handleChartUpdate = async (formData: ChartFormData) => {
+    if (!selectedChart) return;
+    
+    try {
+      const result = await dispatch(updateWidget({
+        ...formData,
+        _id: selectedChart._id,
+        dashboardId: dashboardId || ''
+      })).unwrap();
+      
+      if (result.success) {
+        toast.success('Chart updated successfully!');
+        handleCloseEditModal();
+      } else {
+        toast.error(result.message || 'Failed to update chart');
+      }
+    } catch (error) {
+      if (typeof error === 'object' && error !== null && 'message' in error) {
+        toast.error(error.message as string);
+      } else {
+        toast.error('Failed to update chart');
+      }
+    }
   };
 
   return (
@@ -219,10 +249,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 isSubmitting={false}
                 dashboardId={dashboardId || ''}
                 initialData={selectedChart}
-                onSave={(formData) => {
-                  // Handle chart update
-                  handleCloseEditModal();
-                }}
+                onSave={handleChartUpdate}
               />
             )}
           </Box>

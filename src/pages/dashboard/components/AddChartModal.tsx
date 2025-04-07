@@ -196,12 +196,8 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
         value: "",
       },
     ],
-    dataSourceId: initialData?.dataSourceId && typeof initialData.dataSourceId === 'string' 
-      ? initialData.dataSourceId 
-      : "",
-    widgetTypeId: initialData?.widgetTypeId && typeof initialData.widgetTypeId === 'string'
-      ? initialData.widgetTypeId
-      : "",
+    dataSourceId: initialData?.dataSourceId?._id || "",
+    widgetTypeId: initialData?.widgetTypeId?._id || "",
     dashboardId,
   });
 
@@ -221,14 +217,19 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
         aggregation: initialData.aggregation,
         position: initialData.position,
         conditions: initialData.conditions,
-        dataSourceId: initialData.dataSourceId && typeof initialData.dataSourceId === 'string'
-          ? initialData.dataSourceId
-          : "",
-        widgetTypeId: initialData.widgetTypeId && typeof initialData.widgetTypeId === 'string'
-          ? initialData.widgetTypeId
-          : "",
+        dataSourceId: initialData.dataSourceId?._id || "",
+        widgetTypeId: initialData.widgetTypeId?._id || "",
         dashboardId,
       });
+
+      if (initialData.dataSourceId?._id) {
+        dispatch(fetchAllDataSources()).then(() => {
+          const dataSource = dataSources.find(ds => ds._id === initialData.dataSourceId?._id);
+          if (dataSource) {
+            setSelectedDataSource(dataSource);
+          }
+        });
+      }
     } else if (!open) {
       setFormData({
         name: "",
@@ -255,7 +256,7 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
         dashboardId,
       });
     }
-  }, [open, initialData, dashboardId]);
+  }, [open, initialData, dashboardId, dispatch, dataSources]);
 
   useEffect(() => {
     if (open) {
