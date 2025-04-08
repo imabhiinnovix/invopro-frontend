@@ -57,7 +57,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             aggregation: chart.aggregation,
             position: chart.position,
             conditions: chart.conditions,
-            dataSourceId: chart.dataSourceId?._id || ''
+            dataSourceId: chart.dataSourceId?._id || '',
+            entityId: chart.dataSourceId?.entityId || ''
           }))
         })).unwrap();
 
