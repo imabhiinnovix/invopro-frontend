@@ -244,7 +244,8 @@ export const fetchChartData = createAsyncThunk(
                 dimensions: chart.dimensions,
                 groupBy: chart.groupBy,
                 conditions: chart.conditions,
-                aggregation: chart.aggregation
+                aggregation: chart.aggregation,
+                widgetType: chart.widgetTypeId?.chartType
               }
             );
             if (widgetResponse.data.success) {

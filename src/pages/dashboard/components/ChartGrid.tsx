@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useAppDispatch, useAppSelector } from '../../../storeHooks';
 import { fetchChartData, deleteWidget } from '../dashboardActions';
 import { Grid, Card, CardContent, Typography, Box, CircularProgress, useTheme, IconButton, Menu, MenuItem, Dialog, DialogTitle, DialogContent, DialogActions, Button } from '@mui/material';
-import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, ArcElement } from 'chart.js';
+import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, ArcElement, Filler } from 'chart.js';
 import { Line, Pie } from 'react-chartjs-2';
 import { ChartResponse, ChartData } from '../types';
 import { styled } from '@mui/material/styles';
@@ -21,6 +21,7 @@ ChartJS.register(
   PointElement,
   LineElement,
   ArcElement,
+  Filler,
   Title,
   Tooltip,
   Legend
@@ -282,7 +283,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({ dashboardId, isEditMode, o
       borderColor: theme.palette.primary.main,
       backgroundColor: theme.palette.primary.light,
       tension: 0.1,
-      fill: true,
+      fill: chart.widgetTypeId?.chartType === 'area' ? 'start' : false,
     });
 
     // Get widget data from the store
@@ -298,8 +299,8 @@ export const ChartGrid: React.FC<ChartGridProps> = ({ dashboardId, isEditMode, o
     const chartType = chart.widgetTypeId?.chartType || 'line';
     const groupBy = chart.groupBy || [];
 
-    // Handle grouped line chart
-    if (chartType === 'line' && groupBy.length > 0) {
+    // Handle grouped line/area chart
+    if ((chartType === 'line' || chartType === 'area') && groupBy.length > 0) {
       const groupByField = groupBy[0]; // Take the first groupBy field
       const uniqueGroups = Array.from(new Set(chartData.map(item => item[groupByField] as string)));
       const uniqueNames = Array.from(new Set(chartData.map(item => item.name)));
@@ -325,7 +326,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({ dashboardId, isEditMode, o
           borderColor: colors[index % colors.length],
           backgroundColor: `${colors[index % colors.length]}20`,
           tension: 0.1,
-          fill: true,
+          fill: chartType === 'area' ? 'start' : false,
         };
       });
 
@@ -355,7 +356,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({ dashboardId, isEditMode, o
       };
     }
 
-    // Default single line chart (no grouping)
+    // Default single line/area chart (no grouping)
     const labels = chartData.map((item: ChartData) => item.name);
     const values = chartData.map((item: ChartData) => item.data);
 
@@ -473,6 +474,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({ dashboardId, isEditMode, o
     switch (chartType) {
       case 'pie':
         return <Pie id={chartId} data={chartData} options={options} />;
+      case 'area':
       case 'line':
       default:
         return <Line id={chartId} data={chartData} options={options} />;

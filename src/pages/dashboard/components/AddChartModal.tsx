@@ -189,13 +189,7 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
       y: 0,
       index: 0,
     },
-    conditions: initialData?.conditions || [
-      {
-        field: "",
-        operator: "equals",
-        value: "",
-      },
-    ],
+    conditions: initialData?.conditions || [],
     dataSourceId: initialData?.dataSourceId?._id || "",
     widgetTypeId: initialData?.widgetTypeId?._id || "",
     dashboardId,
@@ -244,13 +238,7 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
           y: 0,
           index: 0,
         },
-        conditions: [
-          {
-            field: "",
-            operator: "equals",
-            value: "",
-          },
-        ],
+        conditions: [],
         dataSourceId: "",
         widgetTypeId: "",
         dashboardId,
@@ -373,13 +361,7 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
           ...prev.aggregation,
           attributeName: "",
         },
-        conditions: [
-          {
-            field: "",
-            operator: "equals",
-            value: "",
-          },
-        ],
+        conditions: [],
       }));
     }
   };
@@ -436,7 +418,8 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
               ...condition,
               _id: condition._id || uuidv4()
             })),
-            aggregation: formData.aggregation
+            aggregation: formData.aggregation,
+            widgetType: widgetTypes.find(wt => wt._id === formData.widgetTypeId)?.name || ''
           }
         );
 
