@@ -246,11 +246,11 @@ const ReportRequestTable: React.FC<AttributeOptionTableProps> = ({ reload, setRe
       <Table stickyHeader aria-label="report-request-table">
         <TableHead>
           <TableRow>
-            <StyledTableCell>REPORT TYPE</StyledTableCell>
-            <StyledTableCell>VERSION VALUE</StyledTableCell>
-            <StyledTableCell>STATUS</StyledTableCell>
-            <StyledTableCell>CREATED AT</StyledTableCell>
-            <StyledTableCell align="right">ACTION</StyledTableCell>
+            <StyledTableCell>Report Name</StyledTableCell>
+            <StyledTableCell>Period</StyledTableCell>
+            <StyledTableCell>Status</StyledTableCell>
+            <StyledTableCell>Prepared on</StyledTableCell>
+            <StyledTableCell align="right">Action</StyledTableCell>
           </TableRow>
         </TableHead>
         <TableBody>
