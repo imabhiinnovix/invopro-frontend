@@ -45,37 +45,44 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
   const handleEditModeToggle = async () => {
     if (isEditMode) {
-      // Save temporary charts
-      try {
-        const result = await dispatch(saveWidgets({
-          widgets: temporaryCharts.map((chart: TemporaryChart) => ({
-            dashboardId: chart.dashboardId,
-            widgetTypeId: chart.widgetTypeId?._id || '',
-            name: chart.name,
-            dimensions: chart.dimensions.join(','),
-            groupBy: chart.groupBy,
-            aggregation: chart.aggregation,
-            position: chart.position,
-            conditions: chart.conditions,
-            dataSourceId: chart.dataSourceId?._id || '',
-            entityId: chart.dataSourceId?.entityId || ''
-          }))
-        })).unwrap();
+      // Save title first if it has changed
+      if (editedTitle !== title) {
+        onTitleChange(editedTitle);
+      }
+      
+      // Save temporary charts only if there are any
+      if (temporaryCharts.length > 0) {
+        try {
+          const result = await dispatch(saveWidgets({
+            widgets: temporaryCharts.map((chart: TemporaryChart) => ({
+              dashboardId: chart.dashboardId,
+              widgetTypeId: chart.widgetTypeId?._id || '',
+              name: chart.name,
+              dimensions: chart.dimensions.join(','),
+              groupBy: chart.groupBy,
+              aggregation: chart.aggregation,
+              position: chart.position,
+              conditions: chart.conditions,
+              dataSourceId: chart.dataSourceId?._id || '',
+              entityId: chart.dataSourceId?.entityId || ''
+            }))
+          })).unwrap();
 
-        if (result.success) {
-          toast.success('Charts saved successfully!');
-          onTitleChange(editedTitle);
-          setIsEditMode(false);
-        } else {
-          toast.error(result.message || 'Failed to save charts');
-        }
-      } catch (error) {
-        if (typeof error === 'object' && error !== null && 'message' in error) {
-          toast.error(error.message as string);
-        } else {
-          toast.error('Failed to save charts');
+          if (result.success) {
+            toast.success('Charts saved successfully!');
+          } else {
+            toast.error(result.message || 'Failed to save charts');
+          }
+        } catch (error) {
+          if (typeof error === 'object' && error !== null && 'message' in error) {
+            toast.error(error.message as string);
+          } else {
+            toast.error('Failed to save charts');
+          }
         }
       }
+      
+      setIsEditMode(false);
     } else {
       setIsEditMode(!isEditMode);
     }
