@@ -20,6 +20,8 @@ import { GET } from '../../../services/apiRoutes';
 import { ReportRequestResponse } from './types';
 import useFileDownload from '../../../hooks/useFiledownload';
 import { DateTime } from 'luxon';
+import DownloadForOfflineIcon from '@mui/icons-material/DownloadForOffline';
+import VisibilityIcon from '@mui/icons-material/Visibility';
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
   [`&.${tableCellClasses.head}`]: {
@@ -47,8 +49,9 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
 
 const StyledButton = styled(Button)(({ theme }) => ({
   textTransform: 'none',
-  borderRadius: 1,
-  padding: '6px 12px',
+  borderRadius: 10,
+  // padding: '6px 12px',
+  // marginRight: '2',
   fontSize: '0.813rem',
   fontWeight: 500,
   minWidth: '80px',
@@ -227,7 +230,7 @@ const ReportRequestTable: React.FC<AttributeOptionTableProps> = ({ reload, setRe
   }
 
   return (
-    <TableContainer 
+    <TableContainer
       component={Paper}
       sx={{
         borderRadius: 'inherit',
@@ -272,13 +275,23 @@ const ReportRequestTable: React.FC<AttributeOptionTableProps> = ({ reload, setRe
               <StyledTableCell>{data.createdAt ? new Date(data.createdAt).toLocaleString() : '-'}</StyledTableCell>
               <StyledTableCell align="right">
                 {data.status === 'completed' ? (
-                  <StyledButton
-                    onClick={() => {
-                      downloadFile(`${data.customReportId?.reportName}-${data.versionValue}.xlsx`, data._id);
-                    }}
-                  >
-                    Download
-                  </StyledButton>
+                  <Box>
+                    <StyledButton
+                      onClick={() => {
+                        downloadFile(`${data.customReportId?.reportName}-${data.versionValue}.xlsx`, data._id);
+                      }}
+                      sx={{ mr: 1 }}
+                    >
+                      <DownloadForOfflineIcon />
+                    </StyledButton>
+                    <StyledButton
+                      onClick={() => {
+                        downloadFile(`${data.customReportId?.reportName}-${data.versionValue}.xlsx`, data._id);
+                      }}
+                    >
+                      <VisibilityIcon />
+                    </StyledButton>
+                  </Box>
                 ) : (
                   '-'
                 )}
