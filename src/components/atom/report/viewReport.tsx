@@ -89,7 +89,7 @@ const ViewReport: React.FC<ViewReportProps> = ({ setViewReportRequestId, viewRep
     !!viewReportRequestId
   );
   return (
-    <Box sx={{ width: '100%' }}>
+    <Box sx={{ width: '100%', marginBottom: 5 }}>
       <StyledTableContainer>
         <Table size="small" aria-label="patent portfolio table">
           <TableHead></TableHead>
