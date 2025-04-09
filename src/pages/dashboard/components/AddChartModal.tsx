@@ -413,7 +413,7 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
             dataSourceId: formData.dataSourceId,
             entityId: selectedDataSource?.entityId._id,
             dimensions: formData.dimensions.split(',').map(d => d.trim()),
-            groupBy: formData.groupBy.split(',').map(g => g.trim()),
+            groupBy: formData.groupBy ? formData.groupBy.split(',').map(g => g.trim()) : [],
             conditions: formData.conditions.map(condition => ({
               ...condition,
               _id: condition._id || uuidv4()
@@ -432,7 +432,7 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
             organizationId: selectedDataSource?.organizationId || '',
             name: formData.name,
             dimensions: formData.dimensions.split(',').map(d => d.trim()),
-            groupBy: formData.groupBy.split(',').map(g => g.trim()),
+            groupBy: formData.groupBy ? formData.groupBy.split(',').map(g => g.trim()) : [],
             aggregation: formData.aggregation,
             position: formData.position,
             conditions: formData.conditions.map(condition => ({

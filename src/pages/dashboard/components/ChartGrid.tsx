@@ -12,7 +12,6 @@ import EditIcon from '@mui/icons-material/Edit';
 import FullscreenIcon from '@mui/icons-material/Fullscreen';
 import CloseIcon from '@mui/icons-material/Close';
 import { toast } from 'react-toastify';
-import { AddChartModal, ChartFormData } from './AddChartModal';
 
 // Register ChartJS components
 ChartJS.register(
@@ -95,6 +94,16 @@ const ChartContainer = styled(Box)(({ theme }) => ({
     maxHeight: 450,
     height: '450px',
   },
+  '&.number-chart': {
+    minHeight: 200,
+    maxHeight: 250,
+    height: '250px',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: theme.spacing(2),
+  },
   '&:hover': {
     overflow: 'hidden',
   },
@@ -159,6 +168,27 @@ const FullScreenChartContainer = styled(Box)(({ theme }) => ({
     flexGrow: 1,
     padding: theme.spacing(1),
   },
+}));
+
+const NumberDisplay = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  justifyContent: 'center',
+  gap: theme.spacing(1),
+}));
+
+const NumberValue = styled(Typography)(({ theme }) => ({
+  fontSize: '3.5rem',
+  fontWeight: 600,
+  color: theme.palette.primary.main,
+  lineHeight: 1.2,
+}));
+
+const NumberLabel = styled(Typography)(({ theme }) => ({
+  fontSize: '1rem',
+  color: theme.palette.text.secondary,
+  textAlign: 'center',
 }));
 
 export const ChartGrid: React.FC<ChartGridProps> = ({ dashboardId, isEditMode, onEditChart }) => {
@@ -470,8 +500,16 @@ export const ChartGrid: React.FC<ChartGridProps> = ({ dashboardId, isEditMode, o
     const chartType = chart.widgetTypeId?.chartType || 'line';
     const options = getChartOptions(chartType, chart);
     const chartId = `chart-${chart._id}`;
+    const numberValue = chartData.datasets[0]?.data[0] || 0;
 
     switch (chartType) {
+      case 'number':
+        return (
+          <NumberDisplay>
+            <NumberValue>{numberValue.toLocaleString()}</NumberValue>
+            <NumberLabel>{chart.name}</NumberLabel>
+          </NumberDisplay>
+        );
       case 'pie':
         return <Pie id={chartId} data={chartData} options={options} />;
       case 'area':
@@ -548,7 +586,13 @@ export const ChartGrid: React.FC<ChartGridProps> = ({ dashboardId, isEditMode, o
                   </Box>
                 </ChartTitle>
                 <ChartContainer 
-                  className={(chart.widgetTypeId?.chartType || 'line') === 'pie' ? 'pie-chart' : 'line-chart'}
+                  className={
+                    (chart.widgetTypeId?.chartType || 'line') === 'pie' 
+                      ? 'pie-chart' 
+                      : (chart.widgetTypeId?.chartType || 'line') === 'number'
+                      ? 'number-chart'
+                      : 'line-chart'
+                  }
                   onWheel={handleWheel}
                 >
                   {renderChart(chart)}
