@@ -65,6 +65,7 @@ const StyledButton = styled(Button)(({ theme }) => ({
 interface AttributeOptionTableProps {
   reload: boolean; // reload is now a boolean
   setReload: React.Dispatch<React.SetStateAction<boolean>>;
+  setViewReportRequestId: React.Dispatch<React.SetStateAction<string>>;
 }
 
 interface ReportRequestData {
@@ -73,7 +74,7 @@ interface ReportRequestData {
   totalCount: number;
 }
 
-const ReportRequestTable: React.FC<AttributeOptionTableProps> = ({ reload, setReload }) => {
+const ReportRequestTable: React.FC<AttributeOptionTableProps> = ({ reload, setReload, setViewReportRequestId }) => {
   const [reportRequests, setReportRequests] = useState<ReportRequestResponse[]>([]);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [downloadFileName, setDownLoadFileName] = useState('');
@@ -286,7 +287,7 @@ const ReportRequestTable: React.FC<AttributeOptionTableProps> = ({ reload, setRe
                     </StyledButton>
                     <StyledButton
                       onClick={() => {
-                        downloadFile(`${data.customReportId?.reportName}-${data.versionValue}.xlsx`, data._id);
+                        setViewReportRequestId(data._id);
                       }}
                     >
                       <VisibilityIcon />
