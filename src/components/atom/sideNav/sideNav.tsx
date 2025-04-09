@@ -26,7 +26,7 @@ import {
   createDashboard,
   deleteDashboard,
 } from "../../../pages/dashboard/dashboardActions";
-import { Dashboard as DashboardType } from "../../../pages/dashboard/types";
+import { Dashboard as DashboardType, DashboardListResponse } from "../../../pages/dashboard/types";
 import { toast } from "react-toastify";
 import { DeleteConfirmationModal } from "./components/DeleteConfirmationModal";
 import { DashboardCreationForm } from "./components/DashboardCreationForm";
@@ -179,26 +179,24 @@ export default function SideNav() {
         setIsCreatingLoading(true);
         const response = await dispatch(
           createDashboard(newDashboardName.trim())
-        ).unwrap();
+        ).unwrap() as DashboardListResponse;
         await dispatch(fetchDashboardList());
         setIsCreating(false);
         setNewDashboardName("");
         toast.success(response.message || "Dashboard created successfully!");
 
-        // Find the newly created dashboard and navigate to it
-        const newDashboard = response.data[0] as DashboardType; // Get first dashboard from array
+        // Navigate to the newly created dashboard
+        const newDashboard = response.data  ; // Get the first dashboard from the array
+      
         if (newDashboard) {
           navigate(`/dashboard/${newDashboard._id}`, {
             state: { enableEditMode: true },
           });
         }
-      } catch (error) {
+      } catch (error: { payload?: { message: string }; message?: string }) {
         console.error("Failed to create dashboard:", error);
-        const errorResponse = error as ErrorResponse;
-        toast.error(
-          errorResponse.message ||
-            "Failed to create dashboard. Please try again."
-        );
+        const errorMessage = error?.payload?.message || error?.message || "Failed to create dashboard. Please try again.";
+        toast.error(errorMessage);
       } finally {
         setIsCreatingLoading(false);
       }

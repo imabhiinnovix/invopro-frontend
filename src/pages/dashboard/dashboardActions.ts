@@ -19,6 +19,9 @@ export const createDashboard = createAsyncThunk(
       const { data } = await axiosInstance.post<DashboardListResponse>(POST.CREATE_DASHBOARD, {
         name,
       });
+      if (!data.success) {
+        return rejectWithValue({ message: data.message || 'Failed to create dashboard' });
+      }
       return data;
     } catch (error) {
       if (axios.isAxiosError(error) && error.response?.data) {

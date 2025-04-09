@@ -685,6 +685,7 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
               </FormRow>
             </FormSection>
 
+            {/* Position section commented out
             <FormSection>
               <SectionTitle>Position</SectionTitle>
               <FormRow>
@@ -716,6 +717,7 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
                 />
               </FormRow>
             </FormSection>
+            */}
 
             <ConditionsSection>
               <Box
@@ -726,14 +728,14 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
                   mb: 2,
                 }}
               >
-                <SectionTitle>Conditions</SectionTitle>
+                <SectionTitle>Filters</SectionTitle>
                 <StyledButton
                   startIcon={<AddIcon />}
                   onClick={addCondition}
                   disabled={isSubmitting}
                   size="small"
                 >
-                  Add Condition
+                  Add Filters
                 </StyledButton>
               </Box>
 
