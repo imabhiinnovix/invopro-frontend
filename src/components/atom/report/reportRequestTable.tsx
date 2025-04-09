@@ -66,6 +66,7 @@ interface AttributeOptionTableProps {
   reload: boolean; // reload is now a boolean
   setReload: React.Dispatch<React.SetStateAction<boolean>>;
   setViewReportRequestId: React.Dispatch<React.SetStateAction<string>>;
+  setViewReportNameWithVersionValue: React.Dispatch<React.SetStateAction<string>>;
 }
 
 interface ReportRequestData {
@@ -74,7 +75,12 @@ interface ReportRequestData {
   totalCount: number;
 }
 
-const ReportRequestTable: React.FC<AttributeOptionTableProps> = ({ reload, setReload, setViewReportRequestId }) => {
+const ReportRequestTable: React.FC<AttributeOptionTableProps> = ({
+  reload,
+  setReload,
+  setViewReportRequestId,
+  setViewReportNameWithVersionValue,
+}) => {
   const [reportRequests, setReportRequests] = useState<ReportRequestResponse[]>([]);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [downloadFileName, setDownLoadFileName] = useState('');
@@ -288,6 +294,7 @@ const ReportRequestTable: React.FC<AttributeOptionTableProps> = ({ reload, setRe
                     <StyledButton
                       onClick={() => {
                         setViewReportRequestId(data._id);
+                        setViewReportNameWithVersionValue(`${data.customReportId?.reportName}-${data.versionValue}`);
                       }}
                     >
                       <VisibilityIcon />

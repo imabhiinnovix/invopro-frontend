@@ -9,7 +9,8 @@ import { usePDF } from 'react-to-pdf';
 export default function Report() {
   const [reload, setReload] = useState(false);
   const [viewReportRequestId, setViewReportRequestId] = useState('');
-  const { toPDF, targetRef } = usePDF({ filename: 'page.pdf' });
+  const [viewReportNameWithVersionValue, setViewReportNameWithVersionValue] = useState('');
+  const { toPDF, targetRef } = usePDF({ filename: `${viewReportNameWithVersionValue}.pdf` });
 
   return (
     <Box
@@ -71,7 +72,11 @@ export default function Report() {
               </Typography>
             </Box>
 
-            <Button variant="contained" onClick={() => toPDF()}>
+            <Button
+              disabled={!(viewReportNameWithVersionValue && viewReportNameWithVersionValue.length > 0)}
+              variant="contained"
+              onClick={() => toPDF()}
+            >
               Download PDF
             </Button>
           </Box>
@@ -122,7 +127,12 @@ export default function Report() {
               overflow: 'hidden',
             }}
           >
-            <ReportRequestTable setReload={setReload} reload={reload} setViewReportRequestId={setViewReportRequestId} />
+            <ReportRequestTable
+              setReload={setReload}
+              reload={reload}
+              setViewReportRequestId={setViewReportRequestId}
+              setViewReportNameWithVersionValue={setViewReportNameWithVersionValue}
+            />
           </Box>
         </Box>
       )}
