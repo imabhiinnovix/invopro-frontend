@@ -249,7 +249,7 @@ const ReportRequestTable: React.FC<AttributeOptionTableProps> = ({ reload, setRe
             <StyledTableCell>Report Name</StyledTableCell>
             <StyledTableCell>Period</StyledTableCell>
             <StyledTableCell>Status</StyledTableCell>
-            <StyledTableCell>Prepared on</StyledTableCell>
+            <StyledTableCell>Prepared On</StyledTableCell>
             <StyledTableCell align="right">Action</StyledTableCell>
           </TableRow>
         </TableHead>
