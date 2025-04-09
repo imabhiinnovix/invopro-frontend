@@ -51,6 +51,7 @@ const formatValue = ({ value, type }: { value: any; type: string }) => {
 interface ViewReportProps {
   setViewReportRequestId: React.Dispatch<React.SetStateAction<string>>;
   viewReportRequestId: string;
+  targetRef: any;
 }
 
 type Alignment = 'left' | 'center' | 'right';
@@ -82,14 +83,14 @@ interface ReportRequestData {
   data: Record<string, any>[];
   sections: Section[];
 }
-const ViewReport: React.FC<ViewReportProps> = ({ setViewReportRequestId, viewReportRequestId }) => {
+const ViewReport: React.FC<ViewReportProps> = ({ setViewReportRequestId, viewReportRequestId, targetRef }) => {
   const allReportData = useGet<ReportRequestData>(
     [`allReportData`, String(viewReportRequestId)],
     GET?.Custom_Report + `/view/${viewReportRequestId}`,
     !!viewReportRequestId
   );
   return (
-    <Box sx={{ width: '100%', marginBottom: 5 }}>
+    <Box sx={{ width: '100%', marginBottom: 5 }} ref={targetRef}>
       <StyledTableContainer>
         <Table size="small" aria-label="patent portfolio table">
           <TableHead></TableHead>

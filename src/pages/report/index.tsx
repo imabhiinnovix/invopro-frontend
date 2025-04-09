@@ -1,13 +1,16 @@
-import { Box, Typography } from '@mui/material';
+import { Box, Button, Typography } from '@mui/material';
 import GenerateReport from '../../components/atom/report/generateReport';
 import { useState } from 'react';
 import ReportRequestTable from '../../components/atom/report/reportRequestTable';
 import ViewReport from '../../components/atom/report/viewReport';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import { usePDF } from 'react-to-pdf';
 
 export default function Report() {
   const [reload, setReload] = useState(false);
   const [viewReportRequestId, setViewReportRequestId] = useState('');
+  const { toPDF, targetRef } = usePDF({ filename: 'page.pdf' });
+
   return (
     <Box
       sx={{
@@ -32,17 +35,45 @@ export default function Report() {
             sx={{
               display: 'flex',
               alignItems: 'center',
-              cursor: 'pointer',
-              transition: 'transform 0.2s ease-in-out',
-              '&:hover': {
-                transform: 'scale(1.2)',
-              },
-            }}
-            onClick={() => {
-              setViewReportRequestId('');
+              justifyContent: 'space-between',
+              width: '100%',
             }}
           >
-            <ArrowBackIcon fontSize="medium" />
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 1,
+              }}
+            >
+              <Box
+                sx={{
+                  cursor: 'pointer',
+                  transition: 'transform 0.2s ease-in-out',
+                  '&:hover': {
+                    transform: 'scale(1.2)',
+                  },
+                }}
+                onClick={() => {
+                  setViewReportRequestId('');
+                }}
+              >
+                <ArrowBackIcon fontSize="medium" />
+              </Box>
+              <Typography
+                variant="h6"
+                sx={{
+                  fontWeight: 500,
+                  color: 'text.primary',
+                }}
+              >
+                Report View
+              </Typography>
+            </Box>
+
+            <Button variant="contained" onClick={() => toPDF()}>
+              Download PDF
+            </Button>
           </Box>
         ) : (
           <Typography
@@ -58,7 +89,11 @@ export default function Report() {
       </Box>
 
       {viewReportRequestId && viewReportRequestId.length > 0 ? (
-        <ViewReport setViewReportRequestId={setViewReportRequestId} viewReportRequestId={viewReportRequestId} />
+        <ViewReport
+          targetRef={targetRef}
+          setViewReportRequestId={setViewReportRequestId}
+          viewReportRequestId={viewReportRequestId}
+        />
       ) : (
         <Box
           sx={{
