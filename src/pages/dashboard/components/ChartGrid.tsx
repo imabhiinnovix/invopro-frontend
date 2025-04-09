@@ -229,10 +229,11 @@ export const ChartGrid: React.FC<ChartGridProps> = ({ dashboardId, isEditMode, o
 
   const handleDeleteClick = () => {
     setDeleteDialogOpen(true);
-    handleMenuClose();
+    setAnchorEl(null);
   };
 
   const handleDeleteConfirm = async () => {
+    console.log("🚀 ~ handleDeleteConfirm ~ selectedChart:", selectedChart)
     if (!selectedChart) return;
     
     try {
@@ -619,7 +620,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({ dashboardId, isEditMode, o
         </MenuItem>
       </Menu>
 
-      <Dialog
+      {deleteDialogOpen && <Dialog
         open={deleteDialogOpen}
         onClose={handleDeleteCancel}
         aria-labelledby="delete-dialog-title"
@@ -641,7 +642,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({ dashboardId, isEditMode, o
             {isDeleting ? 'Deleting...' : 'Delete'}
           </Button>
         </DialogActions>
-      </Dialog>
+      </Dialog>}
 
       <FullScreenModal
         open={fullViewOpen}
