@@ -200,29 +200,32 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
 
   useEffect(() => {
     if (open && initialData) {
-      setFormData({
-        name: initialData.name,
-        dimensions: Array.isArray(initialData.dimensions)
-          ? initialData.dimensions.join(", ")
-          : "",
-        groupBy: Array.isArray(initialData.groupBy)
-          ? initialData.groupBy.join(", ")
-          : "",
-        aggregation: initialData.aggregation,
-        position: initialData.position,
-        conditions: initialData.conditions,
-        dataSourceId: initialData.dataSourceId?._id || "",
-        widgetTypeId: initialData.widgetTypeId?._id || "",
-        dashboardId,
-      });
-
-      if (initialData.dataSourceId?._id) {
-        dispatch(fetchAllDataSources()).then(() => {
-          const dataSource = dataSources.find(ds => ds._id === initialData.dataSourceId?._id);
-          if (dataSource) {
-            setSelectedDataSource(dataSource);
-          }
+      // Only set initial data if formData is empty (first load)
+      if (!formData.name && !formData.dimensions && !formData.groupBy) {
+        setFormData({
+          name: initialData.name,
+          dimensions: Array.isArray(initialData.dimensions)
+            ? initialData.dimensions.join(", ")
+            : "",
+          groupBy: Array.isArray(initialData.groupBy)
+            ? initialData.groupBy.join(", ")
+            : "",
+          aggregation: initialData.aggregation,
+          position: initialData.position,
+          conditions: initialData.conditions,
+          dataSourceId: initialData.dataSourceId?._id || "",
+          widgetTypeId: initialData.widgetTypeId?._id || "",
+          dashboardId,
         });
+
+        if (initialData.dataSourceId?._id) {
+          dispatch(fetchAllDataSources()).then(() => {
+            const dataSource = dataSources.find(ds => ds._id === initialData.dataSourceId?._id);
+            if (dataSource) {
+              setSelectedDataSource(dataSource);
+            }
+          });
+        }
       }
     } else if (!open) {
       setFormData({
@@ -378,17 +381,11 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
 
   const handleDimensionChange = (event: SelectChangeEvent<unknown>) => {
     const newDimension = event.target.value as string;
-    if (newDimension === formData.groupBy) {
-      return;
-    }
     handleChange("dimensions", newDimension);
   };
 
   const handleGroupByChange = (event: SelectChangeEvent<unknown>) => {
     const newGroupBy = event.target.value as string;
-    if (newGroupBy === formData.dimensions) {
-      return;
-    }
     handleChange("groupBy", newGroupBy);
   };
 
