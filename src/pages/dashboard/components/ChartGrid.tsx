@@ -2,8 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { useAppDispatch, useAppSelector } from '../../../storeHooks';
 import { fetchChartData, deleteWidget } from '../dashboardActions';
 import { Grid, Card, CardContent, Typography, Box, CircularProgress, useTheme, IconButton, Menu, MenuItem, Dialog, DialogTitle, DialogContent, DialogActions, Button } from '@mui/material';
-import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, ArcElement, Filler, BarElement } from 'chart.js';
-import { Line, Pie, Bar, Doughnut } from 'react-chartjs-2';
+import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, ArcElement, Filler, BarElement, RadialLinearScale } from 'chart.js';
+import { Line, Pie, Bar, Doughnut, Radar } from 'react-chartjs-2';
 import { ChartResponse, ChartData } from '../types';
 import { styled } from '@mui/material/styles';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
@@ -22,6 +22,7 @@ ChartJS.register(
   ArcElement,
   Filler,
   BarElement,
+  RadialLinearScale,
   Title,
   Tooltip,
   Legend
@@ -515,6 +516,67 @@ export const ChartGrid: React.FC<ChartGridProps> = ({ dashboardId, isEditMode, o
       };
     }
 
+    // Handle radar chart
+    if (chartType === 'radar') {
+      const labels = chartData.map((item: ChartData) => item.name);
+      
+      if (groupBy.length > 0) {
+        const groupByField = groupBy[0]; // Take the first groupBy field
+        const uniqueGroups = Array.from(new Set(chartData.map(item => item[groupByField] as string)));
+        const uniqueNames = Array.from(new Set(chartData.map(item => item.name)));
+
+        // Generate colors for each group
+        const colors = [
+          '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40',
+          '#FF99E6', '#99FF99', '#FF9999', '#99CCFF', '#FF99CC', '#99FFCC'
+        ];
+
+        // Create a dataset for each unique group
+        const datasets = uniqueGroups.map((group, index) => {
+          const groupData = uniqueNames.map(name => {
+            const dataPoint = chartData.find(item => 
+              item.name === name && item[groupByField] === group
+            );
+            return dataPoint ? dataPoint.data : 0;
+          });
+
+          return {
+            label: group,
+            data: groupData,
+            borderColor: colors[index % colors.length],
+            backgroundColor: `${colors[index % colors.length]}40`,
+            pointBackgroundColor: colors[index % colors.length],
+            pointBorderColor: '#fff',
+            pointHoverBackgroundColor: '#fff',
+            pointHoverBorderColor: colors[index % colors.length],
+            tension: 0.1,
+          };
+        });
+
+        return {
+          labels: uniqueNames,
+          datasets,
+        };
+      }
+
+      // Handle non-grouped data
+      const values = chartData.map((item: ChartData) => item.data);
+      return {
+        labels,
+        datasets: [{
+          label: chart.name,
+          data: values,
+          borderColor: theme.palette.primary.main,
+          backgroundColor: `${theme.palette.primary.main}40`,
+          pointBackgroundColor: theme.palette.primary.main,
+          pointBorderColor: '#fff',
+          pointHoverBackgroundColor: '#fff',
+          pointHoverBorderColor: theme.palette.primary.main,
+          tension: 0.1,
+        }],
+      };
+    }
+
     // Handle grouped line/area chart
     if ((chartType === 'line' || chartType === 'area') && groupBy.length > 0) {
       const groupByField = groupBy[0]; // Take the first groupBy field
@@ -715,6 +777,30 @@ export const ChartGrid: React.FC<ChartGridProps> = ({ dashboardId, isEditMode, o
       };
     }
 
+    if (chartType === 'radar') {
+      return {
+        ...baseOptions,
+        scales: {
+          r: {
+            beginAtZero: true,
+            grid: {
+              color: theme.palette.divider,
+            },
+            angleLines: {
+              color: theme.palette.divider,
+            },
+            pointLabels: {
+              color: theme.palette.text.secondary,
+            },
+            ticks: {
+              color: theme.palette.text.secondary,
+              backdropColor: 'transparent',
+            },
+          },
+        },
+      };
+    }
+
     return baseOptions;
   };
 
@@ -744,6 +830,8 @@ export const ChartGrid: React.FC<ChartGridProps> = ({ dashboardId, isEditMode, o
       case 'horizontalBar':
       case 'verticalBar':
         return <Bar id={chartId} data={chartData} options={options} />;
+      case 'radar':
+        return <Radar id={chartId} data={chartData} options={options} />;
       case 'area':
       case 'line':
       default:
