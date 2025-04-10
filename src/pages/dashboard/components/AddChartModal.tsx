@@ -814,7 +814,7 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
                   />
                   <IconButton
                     onClick={() => removeCondition(index)}
-                    disabled={isSubmitting || formData.conditions.length === 1}
+                    disabled={isSubmitting}
                     size="small"
                   >
                     <DeleteIcon />
