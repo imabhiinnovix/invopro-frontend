@@ -3,7 +3,7 @@ import { useAppDispatch, useAppSelector } from '../../../storeHooks';
 import { fetchChartData, deleteWidget } from '../dashboardActions';
 import { Grid, Card, CardContent, Typography, Box, CircularProgress, useTheme, IconButton, Menu, MenuItem, Dialog, DialogTitle, DialogContent, DialogActions, Button } from '@mui/material';
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, ArcElement, Filler, BarElement } from 'chart.js';
-import { Line, Pie, Bar } from 'react-chartjs-2';
+import { Line, Pie, Bar, Doughnut } from 'react-chartjs-2';
 import { ChartResponse, ChartData } from '../types';
 import { styled } from '@mui/material/styles';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
@@ -438,18 +438,75 @@ export const ChartGrid: React.FC<ChartGridProps> = ({ dashboardId, isEditMode, o
       };
     }
 
-    // Handle pie chart
-    if (chartType === 'pie') {
+    // Handle pie chart or doughnut chart
+    if (chartType === 'pie' || chartType === 'doughnut') {
       const labels = chartData.map((item: ChartData) => item.name);
       const values = chartData.map((item: ChartData) => item.data);
       
+      // Handle grouped data
+      if (groupBy.length > 0) {
+        const groupByField = groupBy[0]; // Take the first groupBy field
+        const uniqueGroups = Array.from(new Set(chartData.map(item => item[groupByField] as string)));
+        const uniqueNames = Array.from(new Set(chartData.map(item => item.name)));
+
+        const colors = [
+          '#FF6384', // Pink
+          '#36A2EB', // Blue
+          '#FFCE56', // Yellow
+          '#4BC0C0', // Teal
+          '#9966FF', // Purple
+          '#FF9F40', // Orange
+          '#FF99E6', // Light Pink
+          '#99FF99', // Light Green
+          '#FF9999', // Light Red
+          '#99CCFF', // Light Blue
+          '#FF99CC', // Rose
+          '#99FFCC', // Mint
+        ];
+
+        // Create datasets for each group
+        const datasets = uniqueGroups.map((group, index) => {
+          const groupData = uniqueNames.map(name => {
+            const dataPoint = chartData.find(item => 
+              item.name === name && item[groupByField] === group
+            );
+            return dataPoint ? dataPoint.data : 0;
+          });
+
+          return {
+            label: group,
+            data: groupData,
+            backgroundColor: colors[index % colors.length],
+            borderColor: 'white',
+            borderWidth: 2,
+          };
+        });
+
+        return {
+          labels: uniqueNames,
+          datasets,
+        };
+      }
+
+      // Handle non-grouped data
       return {
         labels,
         datasets: [
           {
             data: values,
             backgroundColor: [
-              '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40',
+              '#FF6384', // Pink
+              '#36A2EB', // Blue
+              '#FFCE56', // Yellow
+              '#4BC0C0', // Teal
+              '#9966FF', // Purple
+              '#FF9F40', // Orange
+              '#FF99E6', // Light Pink
+              '#99FF99', // Light Green
+              '#FF9999', // Light Red
+              '#99CCFF', // Light Blue
+              '#FF99CC', // Rose
+              '#99FFCC', // Mint
             ],
             borderColor: 'white',
             borderWidth: 2,
@@ -537,7 +594,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({ dashboardId, isEditMode, o
       },
     };
 
-    if (chartType === 'pie') {
+    if (chartType === 'pie' || chartType === 'doughnut') {
       return {
         ...baseOptions,
         plugins: {
@@ -682,6 +739,8 @@ export const ChartGrid: React.FC<ChartGridProps> = ({ dashboardId, isEditMode, o
         );
       case 'pie':
         return <Pie id={chartId} data={chartData} options={options} />;
+      case 'doughnut':
+        return <Doughnut id={chartId} data={chartData} options={options} />;
       case 'horizontalBar':
       case 'verticalBar':
         return <Bar id={chartId} data={chartData} options={options} />;
