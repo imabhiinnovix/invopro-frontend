@@ -1,9 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useAppDispatch, useAppSelector } from '../../../storeHooks';
 import { fetchChartData, deleteWidget } from '../dashboardActions';
 import { Grid, Card, CardContent, Typography, Box, CircularProgress, useTheme, IconButton, Menu, MenuItem, Dialog, DialogTitle, DialogContent, DialogActions, Button } from '@mui/material';
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, ArcElement, Filler, BarElement, RadialLinearScale } from 'chart.js';
-import { Line, Pie, Bar, Doughnut, Radar, PolarArea } from 'react-chartjs-2';
+import { Line, Pie, Bar, Doughnut, Radar, PolarArea, ChartProps } from 'react-chartjs-2';
 import { ChartResponse, ChartData } from '../types';
 import { styled } from '@mui/material/styles';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
@@ -11,7 +11,12 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import FullscreenIcon from '@mui/icons-material/Fullscreen';
 import CloseIcon from '@mui/icons-material/Close';
+import ImageIcon from '@mui/icons-material/Image';
+import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
+import DownloadIcon from '@mui/icons-material/Download';
+import TableChartIcon from '@mui/icons-material/TableChart';
 import { toast } from 'react-toastify';
+import jsPDF from 'jspdf';
 
 // Register ChartJS components
 ChartJS.register(
@@ -203,6 +208,7 @@ const NumberLabel = styled(Typography)(({ theme }) => ({
 export const ChartGrid: React.FC<ChartGridProps> = ({ dashboardId, isEditMode, onEditChart, isAddChartModalOpen, isEditChartModalOpen }) => {
   const dispatch = useAppDispatch();
   const theme = useTheme();
+  const chartRefs = useRef<{ [key: string]: ChartJS | null }>({});
   const { charts, temporaryCharts, chartsLoading, chartsError, widgetData } = useAppSelector((state) => ({
     charts: state.dashboard.charts,
     temporaryCharts: state.dashboard.temporaryCharts,
@@ -215,6 +221,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({ dashboardId, isEditMode, o
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [fullViewOpen, setFullViewOpen] = useState(false);
+  const [exportMenuAnchorEl, setExportMenuAnchorEl] = useState<null | HTMLElement>(null);
 
   // Combine permanent and temporary charts
   const allCharts = [...charts, ...temporaryCharts];
@@ -285,6 +292,106 @@ export const ChartGrid: React.FC<ChartGridProps> = ({ dashboardId, isEditMode, o
 
   const handleFullViewClose = () => {
     setFullViewOpen(false);
+    setSelectedChart(null);
+  };
+
+  const handleExportImage = async (format: 'png' | 'jpg') => {
+    if (!selectedChart) return;
+
+    try {
+      const chartId = `chart-${selectedChart._id}`;
+      const chartInstance = chartRefs.current[chartId];
+      
+      if (!chartInstance) {
+        toast.error('Chart instance not found');
+        return;
+      }
+
+      const dataUrl = chartInstance.toBase64Image();
+      const link = document.createElement('a');
+      link.download = `${selectedChart.name}.${format}`;
+      link.href = dataUrl;
+      link.click();
+
+      toast.success(`Chart exported as ${format.toUpperCase()} successfully!`);
+    } catch (error) {
+      toast.error('Failed to export chart');
+      console.error('Export error:', error);
+    }
+  };
+
+  const handleExportPDF = async () => {
+    if (!selectedChart) return;
+
+    try {
+      const chartId = `chart-${selectedChart._id}`;
+      const chartInstance = chartRefs.current[chartId];
+      
+      if (!chartInstance) {
+        toast.error('Chart instance not found');
+        return;
+      }
+
+      const imgData = chartInstance.toBase64Image();
+      const pdf = new jsPDF('landscape');
+      const imgProps = pdf.getImageProperties(imgData);
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+      
+      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+      pdf.save(`${selectedChart.name}.pdf`);
+
+      toast.success('Chart exported as PDF successfully!');
+    } catch (error) {
+      toast.error('Failed to export chart as PDF');
+      console.error('PDF export error:', error);
+    }
+  };
+
+  const handleExportData = () => {
+    if (!selectedChart) return;
+
+    try {
+      const chartData = getChartData(selectedChart);
+      const { labels, datasets } = chartData;
+      
+      // Create CSV content
+      let csvContent = "data:text/csv;charset=utf-8,";
+      
+      // Add header row
+      const headers = ["Category", ...datasets.map(dataset => dataset.label)];
+      csvContent += headers.join(",") + "\n";
+      
+      // Add data rows
+      labels.forEach((label, index) => {
+        const row = [label, ...datasets.map(dataset => dataset.data[index])];
+        csvContent += row.join(",") + "\n";
+      });
+      
+      // Create download link
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", `${selectedChart.name}_data.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      toast.success('Chart data exported successfully!');
+    } catch (error) {
+      console.error('Error exporting data:', error);
+      toast.error('Failed to export chart data');
+    }
+  };
+
+  const handleExportMenuClick = (event: React.MouseEvent<HTMLElement>, chart: ChartResponse) => {
+    event.stopPropagation();
+    setExportMenuAnchorEl(event.currentTarget);
+    setSelectedChart(chart);
+  };
+
+  const handleExportMenuClose = () => {
+    setExportMenuAnchorEl(null);
     setSelectedChart(null);
   };
 
@@ -890,6 +997,15 @@ export const ChartGrid: React.FC<ChartGridProps> = ({ dashboardId, isEditMode, o
     const chartId = `chart-${chart._id}`;
     const numberValue = chartData.datasets[0]?.data[0] || 0;
 
+    const chartProps: ChartProps = {
+      id: chartId,
+      data: chartData,
+      options: options,
+      ref: (ref: ChartJS | null) => {
+        chartRefs.current[chartId] = ref;
+      }
+    };
+
     switch (chartType) {
       case 'number':
         return (
@@ -899,20 +1015,20 @@ export const ChartGrid: React.FC<ChartGridProps> = ({ dashboardId, isEditMode, o
           </NumberDisplay>
         );
       case 'pie':
-        return <Pie id={chartId} data={chartData} options={options} />;
+        return <Pie {...chartProps} />;
       case 'doughnut':
-        return <Doughnut id={chartId} data={chartData} options={options} />;
+        return <Doughnut {...chartProps} />;
       case 'horizontalBar':
       case 'verticalBar':
-        return <Bar id={chartId} data={chartData} options={options} />;
+        return <Bar {...chartProps} />;
       case 'radar':
-        return <Radar id={chartId} data={chartData} options={options} />;
+        return <Radar {...chartProps} />;
       case 'polarArea':
-        return <PolarArea id={chartId} data={chartData} options={options} />;
+        return <PolarArea {...chartProps} />;
       case 'area':
       case 'line':
       default:
-        return <Line id={chartId} data={chartData} options={options} />;
+        return <Line {...chartProps} />;
     }
   };
 
@@ -968,6 +1084,16 @@ export const ChartGrid: React.FC<ChartGridProps> = ({ dashboardId, isEditMode, o
                     >
                       <FullscreenIcon />
                     </IconButton>
+                    <IconButton
+                      size="small"
+                      onClick={(e) => handleExportMenuClick(e, chart)}
+                      sx={{ 
+                        opacity: 0.7,
+                        '&:hover': { opacity: 1 }
+                      }}
+                    >
+                      <DownloadIcon />
+                    </IconButton>
                     {isEditMode && (
                       <IconButton
                         size="small"
@@ -1015,6 +1141,30 @@ export const ChartGrid: React.FC<ChartGridProps> = ({ dashboardId, isEditMode, o
         <MenuItem onClick={handleDeleteClick} sx={{ color: 'error.main' }}>
           <DeleteIcon sx={{ mr: 1, fontSize: 20 }} />
           Delete
+        </MenuItem>
+      </Menu>
+
+      <Menu
+        anchorEl={exportMenuAnchorEl}
+        open={Boolean(exportMenuAnchorEl)}
+        onClose={handleExportMenuClose}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <MenuItem onClick={() => handleExportImage('png')}>
+          <ImageIcon sx={{ mr: 1, fontSize: 20 }} />
+          Export as PNG
+        </MenuItem>
+        <MenuItem onClick={() => handleExportImage('jpg')}>
+          <ImageIcon sx={{ mr: 1, fontSize: 20 }} />
+          Export as JPG
+        </MenuItem>
+        <MenuItem onClick={handleExportPDF}>
+          <PictureAsPdfIcon sx={{ mr: 1, fontSize: 20 }} />
+          Export as PDF
+        </MenuItem>
+        <MenuItem onClick={handleExportData}>
+          <TableChartIcon sx={{ mr: 1, fontSize: 20 }} />
+          Export Data (CSV)
         </MenuItem>
       </Menu>
 
