@@ -391,6 +391,53 @@ export const ChartGrid: React.FC<ChartGridProps> = ({ dashboardId, isEditMode, o
       };
     }
 
+    // Handle vertical bar chart (both grouped and non-grouped)
+    if (chartType === 'verticalBar') {
+      const labels = chartData.map((item: ChartData) => item.name);
+      
+      if (groupBy.length > 0) {
+        const groupByField = groupBy[0];
+        const uniqueGroups = Array.from(new Set(chartData.map(item => item[groupByField] as string)));
+        
+        const colors = [
+          '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40',
+          '#FF99E6', '#99FF99', '#FF9999', '#99CCFF', '#FF99CC', '#99FFCC'
+        ];
+
+        const datasets = uniqueGroups.map((group, index) => {
+          const groupData = labels.map(name => {
+            const dataPoint = chartData.find(item => 
+              item.name === name && item[groupByField] === group
+            );
+            return dataPoint ? dataPoint.data : 0;
+          });
+
+          return {
+            label: group,
+            data: groupData,
+            backgroundColor: colors[index % colors.length],
+            borderColor: colors[index % colors.length],
+            borderWidth: 1,
+          };
+        });
+
+        return { labels, datasets };
+      }
+
+      // Handle non-grouped data
+      const values = chartData.map((item: ChartData) => item.data);
+      return {
+        labels,
+        datasets: [{
+          label: chart.name,
+          data: values,
+          backgroundColor: theme.palette.primary.main,
+          borderColor: theme.palette.primary.main,
+          borderWidth: 1,
+        }],
+      };
+    }
+
     // Handle pie chart
     if (chartType === 'pie') {
       const labels = chartData.map((item: ChartData) => item.name);
@@ -580,6 +627,37 @@ export const ChartGrid: React.FC<ChartGridProps> = ({ dashboardId, isEditMode, o
       };
     }
 
+    if (chartType === 'verticalBar') {
+      return {
+        ...baseOptions,
+        scales: {
+          y: {
+            beginAtZero: true,
+            grid: {
+              color: theme.palette.divider,
+              drawBorder: false,
+            },
+            ticks: {
+              color: theme.palette.text.secondary,
+              padding: 8,
+            },
+          },
+          x: {
+            grid: {
+              display: false,
+              drawBorder: false,
+            },
+            ticks: {
+              color: theme.palette.text.secondary,
+              padding: 8,
+              maxRotation: 45,
+              minRotation: 45,
+            },
+          },
+        },
+      };
+    }
+
     return baseOptions;
   };
 
@@ -605,6 +683,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({ dashboardId, isEditMode, o
       case 'pie':
         return <Pie id={chartId} data={chartData} options={options} />;
       case 'horizontalBar':
+      case 'verticalBar':
         return <Bar id={chartId} data={chartData} options={options} />;
       case 'area':
       case 'line':
