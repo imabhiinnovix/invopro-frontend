@@ -2,8 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { useAppDispatch, useAppSelector } from '../../../storeHooks';
 import { fetchChartData, deleteWidget } from '../dashboardActions';
 import { Grid, Card, CardContent, Typography, Box, CircularProgress, useTheme, IconButton, Menu, MenuItem, Dialog, DialogTitle, DialogContent, DialogActions, Button } from '@mui/material';
-import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, ArcElement, Filler } from 'chart.js';
-import { Line, Pie } from 'react-chartjs-2';
+import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, ArcElement, Filler, BarElement } from 'chart.js';
+import { Line, Pie, Bar } from 'react-chartjs-2';
 import { ChartResponse, ChartData } from '../types';
 import { styled } from '@mui/material/styles';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
@@ -21,6 +21,7 @@ ChartJS.register(
   LineElement,
   ArcElement,
   Filler,
+  BarElement,
   Title,
   Tooltip,
   Legend
@@ -92,6 +93,11 @@ const ChartContainer = styled(Box)(({ theme }) => ({
     height: '450px',
   },
   '&.line-chart': {
+    minHeight: 350,
+    maxHeight: 450,
+    height: '450px',
+  },
+  '&.horizontal-bar-chart': {
     minHeight: 350,
     maxHeight: 450,
     height: '450px',
@@ -332,6 +338,79 @@ export const ChartGrid: React.FC<ChartGridProps> = ({ dashboardId, isEditMode, o
     const chartType = chart.widgetTypeId?.chartType || 'line';
     const groupBy = chart.groupBy || [];
 
+    // Handle grouped horizontal bar chart
+    if (chartType === 'horizontalBar' && groupBy.length > 0) {
+      const groupByField = groupBy[0]; // Take the first groupBy field
+      const uniqueGroups = Array.from(new Set(chartData.map(item => item[groupByField] as string)));
+      const uniqueNames = Array.from(new Set(chartData.map(item => item.name)));
+
+      // Generate colors for each group
+      const colors = [
+        '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40',
+        '#FF99E6', '#99FF99', '#FF9999', '#99CCFF', '#FF99CC', '#99FFCC'
+      ];
+
+      // Create a dataset for each unique group
+      const datasets = uniqueGroups.map((group, index) => {
+        const groupData = uniqueNames.map(name => {
+          const dataPoint = chartData.find(item => 
+            item.name === name && item[groupByField] === group
+          );
+          return dataPoint ? dataPoint.data : 0;
+        });
+
+        return {
+          label: group,
+          data: groupData,
+          backgroundColor: colors[index % colors.length],
+          borderColor: colors[index % colors.length],
+          borderWidth: 1,
+        };
+      });
+
+      return {
+        labels: uniqueNames,
+        datasets,
+      };
+    }
+
+    // Handle non-grouped horizontal bar chart
+    if (chartType === 'horizontalBar') {
+      const labels = chartData.map((item: ChartData) => item.name);
+      const values = chartData.map((item: ChartData) => item.data);
+
+      return {
+        labels,
+        datasets: [{
+          label: chart.name,
+          data: values,
+          backgroundColor: theme.palette.primary.main,
+          borderColor: theme.palette.primary.main,
+          borderWidth: 1,
+        }],
+      };
+    }
+
+    // Handle pie chart
+    if (chartType === 'pie') {
+      const labels = chartData.map((item: ChartData) => item.name);
+      const values = chartData.map((item: ChartData) => item.data);
+      
+      return {
+        labels,
+        datasets: [
+          {
+            data: values,
+            backgroundColor: [
+              '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40',
+            ],
+            borderColor: 'white',
+            borderWidth: 2,
+          },
+        ],
+      };
+    }
+
     // Handle grouped line/area chart
     if ((chartType === 'line' || chartType === 'area') && groupBy.length > 0) {
       const groupByField = groupBy[0]; // Take the first groupBy field
@@ -366,26 +445,6 @@ export const ChartGrid: React.FC<ChartGridProps> = ({ dashboardId, isEditMode, o
       return {
         labels: uniqueNames,
         datasets,
-      };
-    }
-
-    // Handle pie chart
-    if (chartType === 'pie') {
-      const labels = chartData.map((item: ChartData) => item.name);
-      const values = chartData.map((item: ChartData) => item.data);
-      
-      return {
-        labels,
-        datasets: [
-          {
-            data: values,
-            backgroundColor: [
-              '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40',
-            ],
-            borderColor: 'white',
-            borderWidth: 2,
-          },
-        ],
       };
     }
 
@@ -491,6 +550,36 @@ export const ChartGrid: React.FC<ChartGridProps> = ({ dashboardId, isEditMode, o
       };
     }
 
+    if (chartType === 'horizontalBar') {
+      return {
+        ...baseOptions,
+        indexAxis: 'y' as const,
+        scales: {
+          x: {
+            beginAtZero: true,
+            grid: {
+              color: theme.palette.divider,
+              drawBorder: false,
+            },
+            ticks: {
+              color: theme.palette.text.secondary,
+              padding: 8,
+            },
+          },
+          y: {
+            grid: {
+              display: false,
+              drawBorder: false,
+            },
+            ticks: {
+              color: theme.palette.text.secondary,
+              padding: 8,
+            },
+          },
+        },
+      };
+    }
+
     return baseOptions;
   };
 
@@ -515,6 +604,8 @@ export const ChartGrid: React.FC<ChartGridProps> = ({ dashboardId, isEditMode, o
         );
       case 'pie':
         return <Pie id={chartId} data={chartData} options={options} />;
+      case 'horizontalBar':
+        return <Bar id={chartId} data={chartData} options={options} />;
       case 'area':
       case 'line':
       default:
@@ -594,6 +685,8 @@ export const ChartGrid: React.FC<ChartGridProps> = ({ dashboardId, isEditMode, o
                       ? 'pie-chart' 
                       : (chart.widgetTypeId?.chartType || 'line') === 'number'
                       ? 'number-chart'
+                      : (chart.widgetTypeId?.chartType || 'line') === 'horizontalBar'
+                      ? 'horizontal-bar-chart'
                       : 'line-chart'
                   }
                   onWheel={handleWheel}
