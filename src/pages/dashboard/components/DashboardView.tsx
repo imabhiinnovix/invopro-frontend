@@ -255,6 +255,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               dashboardId={dashboardId} 
               isEditMode={isEditMode} 
               onEditChart={handleEditChart}
+              isAddChartModalOpen={isAddChartModalOpen}
+              isEditChartModalOpen={isEditChartModalOpen}
             />
           )}
         </Box>
@@ -263,7 +265,12 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           <Box
             component={Paper}
             sx={{
-              width: '400px',
+              width: {
+                xs: '100%',
+                sm: '400px',
+                md: '450px',
+                lg: '500px'
+              },
               flexShrink: 0,
               display: 'flex',
               flexDirection: 'column',

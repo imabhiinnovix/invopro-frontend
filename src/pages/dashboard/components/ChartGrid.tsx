@@ -30,6 +30,8 @@ interface ChartGridProps {
   dashboardId: string;
   isEditMode: boolean;
   onEditChart: (chart: ChartResponse) => void;
+  isAddChartModalOpen: boolean;
+  isEditChartModalOpen: boolean;
 }
 
 const StyledCard = styled(Card)(({ theme }) => ({
@@ -191,7 +193,7 @@ const NumberLabel = styled(Typography)(({ theme }) => ({
   textAlign: 'center',
 }));
 
-export const ChartGrid: React.FC<ChartGridProps> = ({ dashboardId, isEditMode, onEditChart }) => {
+export const ChartGrid: React.FC<ChartGridProps> = ({ dashboardId, isEditMode, onEditChart, isAddChartModalOpen, isEditChartModalOpen }) => {
   const dispatch = useAppDispatch();
   const theme = useTheme();
   const { charts, temporaryCharts, chartsLoading, chartsError, widgetData } = useAppSelector((state) => ({
@@ -541,7 +543,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({ dashboardId, isEditMode, o
           <Grid 
             item 
             xs={12} 
-            md={6} 
+            md={(isAddChartModalOpen || isEditChartModalOpen) ? 12 : 6} 
             key={chart._id}
             sx={{
               display: 'flex',
