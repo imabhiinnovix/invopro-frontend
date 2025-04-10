@@ -3,7 +3,7 @@ import { useAppDispatch, useAppSelector } from '../../../storeHooks';
 import { fetchChartData, deleteWidget } from '../dashboardActions';
 import { Grid, Card, CardContent, Typography, Box, CircularProgress, useTheme, IconButton, Menu, MenuItem, Dialog, DialogTitle, DialogContent, DialogActions, Button } from '@mui/material';
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, ArcElement, Filler, BarElement, RadialLinearScale } from 'chart.js';
-import { Line, Pie, Bar, Doughnut, Radar } from 'react-chartjs-2';
+import { Line, Pie, Bar, Doughnut, Radar, PolarArea } from 'react-chartjs-2';
 import { ChartResponse, ChartData } from '../types';
 import { styled } from '@mui/material/styles';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
@@ -339,6 +339,81 @@ export const ChartGrid: React.FC<ChartGridProps> = ({ dashboardId, isEditMode, o
     const chartType = chart.widgetTypeId?.chartType || 'line';
     const groupBy = chart.groupBy || [];
 
+    // Handle polar area chart with grouping
+    if (chartType === 'polarArea' && groupBy.length > 0) {
+      const groupByField = groupBy[0]; // Take the first groupBy field
+      const uniqueGroups = Array.from(new Set(chartData.map(item => item[groupByField] as string)));
+      const uniqueNames = Array.from(new Set(chartData.map(item => item.name)));
+
+      // Generate vibrant colors with transparency
+      const colors = [
+        '#FF149330', // Deep Pink
+        '#00BFFF30', // Deep Sky Blue
+        '#FFD70030', // Gold
+        '#00FF7F30', // Spring Green
+        '#9370DB30', // Medium Purple
+        '#FF450030', // Orange Red
+        '#FF69B430', // Hot Pink
+        '#32CD3230', // Lime Green
+        '#FF634730', // Tomato
+        '#1E90FF30', // Dodger Blue
+        '#FF8C0030', // Dark Orange
+        '#20B2AA30'  // Light Sea Green
+      ];
+
+      // Create a dataset for each unique group
+      const datasets = uniqueGroups.map((group, index) => {
+        const groupData = uniqueNames.map(name => {
+          const dataPoint = chartData.find(item => 
+            item.name === name && item[groupByField] === group
+          );
+          return dataPoint ? dataPoint.data : 0;
+        });
+
+        return {
+          label: group,
+          data: groupData,
+          backgroundColor: colors[index % colors.length],
+          borderColor: 'white',
+          borderWidth: 2,
+        };
+      });
+
+      return {
+        labels: uniqueNames,
+        datasets,
+      };
+    }
+
+    // Handle non-grouped polar area chart
+    if (chartType === 'polarArea') {
+      const labels = chartData.map((item: ChartData) => item.name);
+      const values = chartData.map((item: ChartData) => item.data);
+      
+      return {
+        labels,
+        datasets: [{
+          data: values,
+          backgroundColor: [
+            '#FF149330', // Deep Pink
+            '#00BFFF30', // Deep Sky Blue
+            '#FFD70030', // Gold
+            '#00FF7F30', // Spring Green
+            '#9370DB30', // Medium Purple
+            '#FF450030', // Orange Red
+            '#FF69B430', // Hot Pink
+            '#32CD3230', // Lime Green
+            '#FF634730', // Tomato
+            '#1E90FF30', // Dodger Blue
+            '#FF8C0030', // Dark Orange
+            '#20B2AA30'  // Light Sea Green
+          ],
+          borderColor: 'white',
+          borderWidth: 2,
+        }],
+      };
+    }
+
     // Handle grouped horizontal bar chart
     if (chartType === 'horizontalBar' && groupBy.length > 0) {
       const groupByField = groupBy[0]; // Take the first groupBy field
@@ -656,7 +731,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({ dashboardId, isEditMode, o
       },
     };
 
-    if (chartType === 'pie' || chartType === 'doughnut') {
+    if (chartType === 'pie' || chartType === 'doughnut' || chartType === 'polarArea') {
       return {
         ...baseOptions,
         plugins: {
@@ -832,6 +907,8 @@ export const ChartGrid: React.FC<ChartGridProps> = ({ dashboardId, isEditMode, o
         return <Bar id={chartId} data={chartData} options={options} />;
       case 'radar':
         return <Radar id={chartId} data={chartData} options={options} />;
+      case 'polarArea':
+        return <PolarArea id={chartId} data={chartData} options={options} />;
       case 'area':
       case 'line':
       default:
