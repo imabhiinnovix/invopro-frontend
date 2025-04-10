@@ -18,7 +18,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import ClearIcon from "@mui/icons-material/Clear";
 import { useAppDispatch, useAppSelector } from "../../../storeHooks";
 import { fetchWidgetTypes, fetchAllDataSources } from "../dashboardActions";
-import { DataSource, DataSourceAttribute, ChartResponse, TemporaryChart, WidgetDataResponse } from "../types";
+import { DataSource, DataSourceAttribute, ChartResponse, TemporaryChart, WidgetDataResponse, Operator, OperatorType, OperatorListResponse } from "../types";
 import { toast } from "react-toastify";
 import axiosInstance from "../../../services/axiosInstance";
 import { GET } from "../../../services/apiRoutes";
@@ -198,6 +198,9 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
   const [selectedDataSource, setSelectedDataSource] =
     useState<DataSource | null>(null);
 
+  const [operators, setOperators] = useState<OperatorType[]>([]);
+  const [selectedFieldType, setSelectedFieldType] = useState<string>("");
+
   useEffect(() => {
     if (open && initialData) {
       // Only set initial data if formData is empty (first load)
@@ -253,6 +256,7 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
     if (open) {
       dispatch(fetchWidgetTypes());
       dispatch(fetchAllDataSources());
+      fetchOperators();
     }
   }, [dispatch, open]);
 
@@ -393,7 +397,16 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
     index: number,
     event: SelectChangeEvent<unknown>
   ) => {
-    handleConditionChange(index, "field", event.target.value as string);
+    const fieldName = event.target.value as string;
+    const attribute = selectedDataSource?.entityId.attributes.find(attr => attr.name === fieldName);
+    
+    if (attribute) {
+      setSelectedFieldType(attribute.type);
+    }
+    
+    handleConditionChange(index, "field", fieldName);
+    handleConditionChange(index, "operator", "");
+    handleConditionChange(index, "value", "");
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -496,6 +509,29 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
 
   const handleClearGroupBy = () => {
     handleChange("groupBy", "");
+  };
+
+  const fetchOperators = async () => {
+    try {
+      const response = await axiosInstance.post<OperatorListResponse>(GET.OPERATOR_LIST, {
+        fieldType: "all"
+      });
+      if (response.data.success) {
+        setOperators(response.data.data);
+      }
+    } catch (error) {
+      console.error("Failed to fetch operators:", error);
+    }
+  };
+
+  const getOperatorsForField = (fieldName: string): Operator[] => {
+    const attribute = selectedDataSource?.entityId.attributes.find(attr => attr.name === fieldName);
+    console.log("🚀 ~ attribute̥:", operators)
+    if (!attribute) return [];
+    
+    const fieldType = attribute.type;
+    const operatorType = operators.find(op => op.fieldType === fieldType);
+    return operatorType?.operators || [];
   };
 
   if (!open) return null;
@@ -758,22 +794,21 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
                     <StyledSelect
                       value={condition.operator}
                       label="Operator"
-                      onChange={(e) =>
-                        handleConditionSelectChange(index, "operator", e)
-                      }
-                      disabled={isSubmitting}
+                      onChange={(e) => handleConditionSelectChange(index, "operator", e)}
+                      disabled={isSubmitting || !condition.field}
                     >
-                      <MenuItem value="equals">Equals</MenuItem>
-                      <MenuItem value="contains">Contains</MenuItem>
-                      <MenuItem value="startsWith">Starts With</MenuItem>
-                      <MenuItem value="endsWith">Ends With</MenuItem>
+                      {getOperatorsForField(condition.field).map((operator) => (
+                        <MenuItem key={operator._id} value={operator.operatorKey}>
+                          {operator.operatorName}
+                        </MenuItem>
+                      ))}
                     </StyledSelect>
                   </FormControl>
                   <StyledTextField
                     label="Value"
                     value={condition.value}
                     onChange={(e) => handleConditionValueInputChange(index, e)}
-                    disabled={isSubmitting}
+                    disabled={isSubmitting || !condition.operator || !getOperatorsForField(condition.field).find(op => op.operatorKey === condition.operator)?.valueRequired}
                     size="small"
                     fullWidth
                   />

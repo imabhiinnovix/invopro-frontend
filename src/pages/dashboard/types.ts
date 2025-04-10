@@ -297,4 +297,25 @@ export interface CombinedWidgetData {
     Estimates: number;
     data: number;
   }>;
+}
+
+export interface Operator {
+  _id: string;
+  operatorKey: string;
+  operatorName: string;
+  valueRequired: boolean;
+  order: number;
+}
+
+export interface OperatorType {
+  _id: string;
+  fieldType: string;
+  operators: Operator[];
+}
+
+export interface OperatorListResponse {
+  success: boolean;
+  message: string;
+  data: OperatorType[];
+  totalCount: number;
 } 
