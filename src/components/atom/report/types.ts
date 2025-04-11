@@ -14,4 +14,9 @@ export interface ReportRequestResponse {
   versionValue: string;
   status: string;
   createdAt: string;
+  dataSourceVersion?: {
+    name: string;
+    dataSourceVersionId: string;
+    versionCode: string;
+  }[];
 }
