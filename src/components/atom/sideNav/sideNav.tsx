@@ -16,6 +16,7 @@ import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import { useNavigate, useLocation } from "react-router-dom";
 import SourceIcon from "@mui/icons-material/Source";
 import AssessmentIcon from "@mui/icons-material/Assessment";
+import PaletteIcon from "@mui/icons-material/Palette";
 import { useInfiniteScroll } from "../../../hooks/useInfiniteScroll";
 import { GET } from "../../../services/apiRoutes";
 import { DataSourceListData, DataSourceListPayload } from "./types";
@@ -330,6 +331,11 @@ export default function SideNav() {
               ]
             : []),
         ],
+      },
+      {
+        name: "Create Theme",
+        icon: <PaletteIcon sx={{ fontSize: "1.1rem" }} />,
+        route: "/create-theme",
       },
     ],
     [dataSourceList, dataSourceListAPI?.hasNextPage, dashboards, loading]

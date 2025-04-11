@@ -4,6 +4,7 @@ import SendOTP from "./pages/loginOTP/sendOTP";
 import VerifyOTP from "./pages/loginOTP/verifyOTP";
 import AuthProtect from "./Auth/AuthProtect";
 import SuperAdminProtect from "./Auth/SuperAdminProtect";
+import AdminSuperAdminProtect from "./Auth/AdminSuperAdminProtect";
 import Dashboard from "./pages/dashboard";
 import CommonLayout from "./components/molecule/layout/commonLayout";
 import AttributeOption from "./pages/attributeOption";
@@ -11,6 +12,7 @@ import Report from "./pages/report";
 import DataSources from "./pages/dataSources";
 import DashboardOverview from "./pages/dashboard/overview";
 import DashboardAnalytics from "./pages/dashboard/analytics";
+import CreateTheme from "./pages/createTheme";
 import { getAuthToken } from "./utils/handleLocalStorage";
 
 const AppRoutes = () => {
@@ -43,6 +45,13 @@ const AppRoutes = () => {
         <Route element={<CommonLayout />}>
           <Route path="/superadmin/dashboard" element={<Dashboard />} />
           <Route path="/attribute-option" element={<AttributeOption />} />
+        </Route>
+      </Route>
+
+      {/* Admin and Super Admin Protected Routes */}
+      <Route element={<AdminSuperAdminProtect />}>
+        <Route element={<CommonLayout />}>
+          <Route path="/create-theme" element={<CreateTheme />} />
         </Route>
       </Route>
     </Routes>
