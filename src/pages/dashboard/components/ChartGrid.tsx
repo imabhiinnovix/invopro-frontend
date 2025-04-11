@@ -2,9 +2,9 @@ import React, { useEffect, useState, useRef } from 'react';
 import { useAppDispatch, useAppSelector } from '../../../storeHooks';
 import { fetchChartData, deleteWidget } from '../dashboardActions';
 import { Grid, Card, CardContent, Typography, Box, CircularProgress, useTheme, IconButton, Menu, MenuItem, Dialog, DialogTitle, DialogContent, DialogActions, Button } from '@mui/material';
-import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, ArcElement, Filler, BarElement, RadialLinearScale } from 'chart.js';
-import { Line, Pie, Bar, Doughnut, Radar, PolarArea, ChartProps } from 'react-chartjs-2';
-import { ChartResponse, ChartData } from '../types';
+import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, ArcElement, Filler, BarElement, RadialLinearScale, ChartType, ChartData } from 'chart.js';
+import { Line, Pie, Bar, Doughnut, Radar, PolarArea } from 'react-chartjs-2';
+import { ChartResponse } from '../types';
 import { styled } from '@mui/material/styles';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -999,9 +999,9 @@ export const ChartGrid: React.FC<ChartGridProps> = ({ dashboardId, isEditMode, o
     const chartId = `chart-${chart._id}`;
     const numberValue = chartData.datasets[0]?.data[0] || 0;
 
-    const chartProps: ChartProps = {
+    const chartProps = {
       id: chartId,
-      data: chartData,
+      data: chartData as ChartData<ChartType>,
       options: options,
       ref: (ref: ChartJS | null) => {
         chartRefs.current[chartId] = ref;
@@ -1020,6 +1020,8 @@ export const ChartGrid: React.FC<ChartGridProps> = ({ dashboardId, isEditMode, o
         return <Pie {...chartProps} />;
       case 'doughnut':
         return <Doughnut {...chartProps} />;
+      case 'multiSeriesPie':
+        return <Pie {...chartProps} />;
       case 'horizontalBar':
       case 'verticalBar':
       case 'stackedBar':
@@ -1120,6 +1122,8 @@ export const ChartGrid: React.FC<ChartGridProps> = ({ dashboardId, isEditMode, o
                       ? 'number-chart'
                       : (chart.widgetTypeId?.chartType || 'line') === 'horizontalBar'
                       ? 'horizontal-bar-chart'
+                      : (chart.widgetTypeId?.chartType || 'line') === 'multiSeriesPie'
+                      ? 'pie-chart'
                       : 'line-chart'
                   }
                   onWheel={handleWheel}
