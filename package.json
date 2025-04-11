@@ -26,6 +26,7 @@
     "date-fns": "^4.1.0",
     "exceljs": "^4.4.0",
     "install": "^0.13.0",
+    "jspdf": "^3.0.1",
     "luxon": "^3.5.0",
     "mui-one-time-password-input": "^3.0.2",
     "npm": "^11.0.0",

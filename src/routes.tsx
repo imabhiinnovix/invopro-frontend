@@ -1,4 +1,4 @@
-import { Route, Routes } from "react-router-dom";
+import { Route, Routes, Navigate } from "react-router-dom";
 import Login from "./pages/login";
 import SendOTP from "./pages/loginOTP/sendOTP";
 import VerifyOTP from "./pages/loginOTP/verifyOTP";
@@ -11,10 +11,16 @@ import Report from "./pages/report";
 import DataSources from "./pages/dataSources";
 import DashboardOverview from "./pages/dashboard/overview";
 import DashboardAnalytics from "./pages/dashboard/analytics";
+import { getAuthToken } from "./utils/handleLocalStorage";
 
 const AppRoutes = () => {
+  const token = getAuthToken();
+
   return (
     <Routes>
+      {/* Root Route */}
+      <Route path="/" element={<Navigate to={token ? "/dashboard" : "/login"} replace />} />
+
       {/* Public Routes */}
       <Route path="/login" element={<Login />} />
       <Route path="/otp-login" element={<SendOTP />} />
