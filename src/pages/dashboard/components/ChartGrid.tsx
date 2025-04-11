@@ -575,7 +575,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({ dashboardId, isEditMode, o
     }
 
     // Handle vertical bar chart (both grouped and non-grouped)
-    if (chartType === 'verticalBar' || chartType === 'stackedBar') {
+    if (chartType === 'verticalBar' || chartType === 'stackedBar' || chartType === 'multiSeriesBar') {
       const labels = chartData.map((item: ChartData) => item.name);
       
       if (groupBy.length > 0) {
@@ -928,7 +928,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({ dashboardId, isEditMode, o
       };
     }
 
-    if (chartType === 'verticalBar' || chartType === 'stackedBar') {
+    if (chartType === 'verticalBar' || chartType === 'stackedBar' || chartType === 'multiSeriesBar') {
       return {
         ...baseOptions,
         scales: {
@@ -1023,6 +1023,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({ dashboardId, isEditMode, o
       case 'horizontalBar':
       case 'verticalBar':
       case 'stackedBar':
+      case 'multiSeriesBar':
         return <Bar {...chartProps} />;
       case 'radar':
         return <Radar {...chartProps} />;
