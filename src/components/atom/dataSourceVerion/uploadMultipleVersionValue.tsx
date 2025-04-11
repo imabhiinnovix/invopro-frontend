@@ -61,6 +61,10 @@ export interface CustomReportData {
   files?: (File | null)[];
 }
 
+interface ExtendedFile extends File {
+  requiredName?: string;
+}
+
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
   [`&.${tableCellClasses.head}`]: {
     backgroundColor: theme.palette.common.black,
@@ -256,11 +260,14 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
   };
 
   const createFileInstance = (selectedFile: File, i: number) => {
-    const ext = selectedFile.name.split(".").pop();
-    return new File([selectedFile], `${requiredFiles[i]?.name}.${ext}`, {
+    // Keep the original file name but store the required name in a custom property
+    const fileWithMetadata = new File([selectedFile], selectedFile.name, {
       type: selectedFile.type,
       lastModified: selectedFile.lastModified,
-    });
+    }) as ExtendedFile;
+    // Add the required name as a custom property
+    fileWithMetadata.requiredName = requiredFiles[i]?.name;
+    return fileWithMetadata;
   };
 
   const handleFileChange = (
@@ -662,6 +669,17 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
       ...data,
       mappings: JSON.stringify(data?.mappings),
       operation: "customreport",
+      // Rename files to their required names before sending to backend
+      files: data.files?.map((file: ExtendedFile) => {
+        if (file && file.requiredName) {
+          const ext = file.name.split('.').pop();
+          return new File([file], `${file.requiredName}.${ext}`, {
+            type: file.type,
+            lastModified: file.lastModified,
+          });
+        }
+        return file;
+      }),
     };
     const formData = objectToFormData(tempData);
     mutateReportUpload(formData, {
