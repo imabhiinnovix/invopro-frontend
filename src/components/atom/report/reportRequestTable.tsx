@@ -68,7 +68,7 @@ interface AttributeOptionTableProps {
   setViewReportRequestId: React.Dispatch<React.SetStateAction<string>>;
   setViewReportNameWithVersionValue: React.Dispatch<React.SetStateAction<string>>;
   setAllDetailData: React.Dispatch<React.SetStateAction<ReportRequestResponse | null>>;
-  setReportDetailData:React.Dispatch<React.SetStateAction<string>>;
+  setReportDetailData: React.Dispatch<React.SetStateAction<string>>;
 }
 
 interface ReportRequestData {
@@ -258,6 +258,7 @@ const ReportRequestTable: React.FC<AttributeOptionTableProps> = ({
             <StyledTableCell>Report Name</StyledTableCell>
             <StyledTableCell>Period</StyledTableCell>
             <StyledTableCell>Status</StyledTableCell>
+            <StyledTableCell>Prepared By</StyledTableCell>
             <StyledTableCell>Prepared On</StyledTableCell>
             <StyledTableCell align="right">Action</StyledTableCell>
           </TableRow>
@@ -282,6 +283,9 @@ const ReportRequestTable: React.FC<AttributeOptionTableProps> = ({
               >
                 {data.status || '-'}
               </StyledTableCell>
+              <StyledTableCell>
+                {`${data?.createdBy?.firstName || ''}${data?.createdBy?.lastName ? ' ' + data.createdBy.lastName : ''}`}
+              </StyledTableCell>
               <StyledTableCell>{data.createdAt ? new Date(data.createdAt).toLocaleString() : '-'}</StyledTableCell>
               <StyledTableCell align="right">
                 {data.status === 'completed' ? (
@@ -296,7 +300,7 @@ const ReportRequestTable: React.FC<AttributeOptionTableProps> = ({
                     </StyledButton>
                     <StyledButton
                       onClick={() => {
-                        setAllDetailData(data)
+                        setAllDetailData(data);
                         const versionId = data?.dataSourceVersion?.[0]?.dataSourceVersionId;
                         if (versionId) {
                           setReportDetailData(versionId);
