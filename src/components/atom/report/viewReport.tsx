@@ -91,12 +91,12 @@ const ViewReport: React.FC<ViewReportProps> = ({
   targetRef,
 }) => {
   const allReportData = useGet<ReportRequestData>(
-    [`allReportData`, String(viewReportRequestId)],
+    [`allReportData`, String(viewReportRequestId), String(reportDetailData)],
     GET?.Custom_Report + `/view/${viewReportRequestId}/${reportDetailData}`,
     !!viewReportRequestId
   );
   return (
-    <Box sx={{ width: '100%', marginBottom: 5 }} ref={targetRef}>
+    <Box sx={{ width: '100%', marginBottom: 5 }}>
       <StyledTableContainer>
         <Table size="small" aria-label="dynamic report table">
           <TableBody>

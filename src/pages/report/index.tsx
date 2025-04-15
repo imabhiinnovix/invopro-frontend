@@ -4,7 +4,7 @@ import { useState } from 'react';
 import ReportRequestTable from '../../components/atom/report/reportRequestTable';
 import ViewReport from '../../components/atom/report/viewReport';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import { usePDF } from 'react-to-pdf';
+import { usePDF, Margin } from 'react-to-pdf';
 import { ReportRequestResponse } from '../../components/atom/report/types';
 
 export default function Report() {
@@ -18,8 +18,8 @@ export default function Report() {
 
   const [viewReportNameWithVersionValue, setViewReportNameWithVersionValue] = useState('');
   const { toPDF, targetRef } = usePDF({
-    filename: `${viewReportNameWithVersionValue}-${activeTabName}.pdf`,
-    page: { orientation: 'landscape' },
+    filename: `${viewReportNameWithVersionValue}.pdf`,
+    page: { orientation: 'landscape', margin: Margin.SMALL },
   });
 
   const tabStyle = (index: number) => ({
@@ -153,13 +153,59 @@ export default function Report() {
               activeTab === index && (
                 <ViewReport
                   key={index}
-                  targetRef={targetRef}
+                  targetRef={''}
                   reportDetailData={item.dataSourceVersionId}
                   setViewReportRequestId={setViewReportRequestId}
                   viewReportRequestId={viewReportRequestId}
                 />
               )
           )}
+
+          {/* To download pdf */}
+          <Box
+            sx={{ position: 'absolute', top: '-9999px', left: '-9999px', width: '100%', marginBottom: 5 }}
+            ref={targetRef}
+          >
+            {allDetailData?.dataSourceVersion?.map((item, index) => (
+              <Box>
+                <Typography
+                  variant="h6"
+                  sx={{
+                    fontWeight: 500,
+                    color: 'text.primary',
+                  }}
+                >
+                  <Box component="span" sx={{ fontWeight: 400, mx: 1, color: 'text.primary' }}>
+                    Report Name:
+                  </Box>
+                  <Box component="span" sx={{ fontWeight: 500 }}>
+                    {`${allDetailData?.customReportId?.reportName}-${item?.name}`}
+                  </Box>
+                  <Box component="span" sx={{ fontWeight: 400, mx: 1, color: 'text.primary' }}>
+                    | Period:
+                  </Box>
+                  <Box component="span" sx={{ fontWeight: 500 }}>
+                    {allDetailData?.versionValue}
+                  </Box>
+                  <Box component="span" sx={{ fontWeight: 400, mx: 1, color: 'text.primary' }}>
+                    | Created By:
+                  </Box>
+                  <Box component="span" sx={{ fontWeight: 500 }}>
+                    {`${allDetailData?.createdBy?.firstName || ''}${
+                      allDetailData?.createdBy?.lastName ? ' ' + allDetailData.createdBy.lastName : ''
+                    }`}
+                  </Box>
+                </Typography>
+                <ViewReport
+                  key={index}
+                  targetRef={''}
+                  reportDetailData={item.dataSourceVersionId}
+                  setViewReportRequestId={setViewReportRequestId}
+                  viewReportRequestId={viewReportRequestId}
+                />
+              </Box>
+            ))}
+          </Box>
         </Box>
       ) : (
         <Box
