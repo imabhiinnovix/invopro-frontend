@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Box, Typography, TextField, Button, Paper } from '@mui/material';
+import { Box, Typography, TextField, Button } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import DoneIcon from '@mui/icons-material/Done';
@@ -17,11 +17,12 @@ interface DashboardViewProps {
 }
 
 export const DashboardView: React.FC<DashboardViewProps> = ({
-  title,
+  title: initialTitle,
   onTitleChange,
 }) => {
   const [isEditMode, setIsEditMode] = useState(false);
-  const [editedTitle, setEditedTitle] = useState(title);
+  const [editedTitle, setEditedTitle] = useState(initialTitle);
+  const [title, setTitle] = useState(initialTitle);
   const [isAddChartModalOpen, setIsAddChartModalOpen] = useState(false);
   const [isEditChartModalOpen, setIsEditChartModalOpen] = useState(false);
   const [selectedChart, setSelectedChart] = useState<ChartResponse | null>(null);
@@ -32,6 +33,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   const temporaryCharts = useAppSelector((state) => state.dashboard.temporaryCharts);
 
   useEffect(() => {
+    setIsEditMode(true);
     if (location.state?.enableEditMode) {
       setIsEditMode(true);
     }
@@ -43,11 +45,17 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     }
   }, [isEditMode]);
 
+  useEffect(() => {
+    setEditedTitle(initialTitle);
+    setTitle(initialTitle);
+  }, [initialTitle]);
+
   const handleEditModeToggle = async () => {
     if (isEditMode) {
       // Save title first if it has changed
       if (editedTitle !== title) {
         onTitleChange(editedTitle);
+        setTitle(editedTitle);
       }
       
       // Save temporary charts only if there are any
@@ -142,10 +150,10 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
       overflow: 'hidden'
     }}>
       <Box 
-        component={Paper} 
         sx={{ 
           p: 3,
-          mb: 3,
+          pb: 0,
+          // mb: 3,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
@@ -220,7 +228,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         height: 'calc(100% - 100px)'
       }}>
         <Box 
-          component={Paper}
           sx={{ 
             flex: 1,
             overflow: 'auto',
@@ -263,7 +270,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
         {(isAddChartModalOpen || isEditChartModalOpen) && (
           <Box
-            component={Paper}
             sx={{
               width: {
                 xs: '100%',

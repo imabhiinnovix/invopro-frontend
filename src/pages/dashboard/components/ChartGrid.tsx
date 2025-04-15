@@ -1044,8 +1044,9 @@ export const ChartGrid: React.FC<ChartGridProps> = ({ dashboardId, isEditMode, o
         container 
         spacing={3} 
         sx={{ 
-          mt: 2, 
-          p: 2,
+          // mt: 2, 
+          // p: 2,
+          // pt: 0,
           height: '100%',
           alignContent: 'flex-start',
           '& > .MuiGrid-item': {

@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../../storeHooks';
-import { fetchDashboardList, fetchChartData } from './dashboardActions';
+import { fetchDashboardList } from './dashboardActions';
 import { DashboardView } from './components/DashboardView';
 import { toast } from 'react-toastify';
 import axiosInstance from '../../services/axiosInstance';
@@ -25,17 +25,15 @@ export const Dashboard = () => {
   const handleTitleChange = async (newTitle: string) => {
     try {
       await axiosInstance.post(`${POST.UPDATE_DASHBOARD}/${id}`, { name: newTitle });
-      dispatch(fetchDashboardList());
-      toast.success('Dashboard name updated successfully!');
+      const result = await dispatch(fetchDashboardList()).unwrap();
+      if (result.success) {
+        toast.success('Dashboard name updated successfully!');
+      } else {
+        toast.error(result.message || 'Failed to update dashboard name');
+      }
     } catch (error) {
       console.error('Failed to update dashboard name:', error);
       toast.error('Failed to update dashboard name. Please try again.');
-    }
-  };
-
-  const handleCreateWidget = () => {
-    if (id) {
-      dispatch(fetchChartData(id));
     }
   };
 
@@ -47,7 +45,6 @@ export const Dashboard = () => {
     <DashboardView
       title={currentDashboard.name}
       onTitleChange={handleTitleChange}
-      onCreateWidget={handleCreateWidget}
     />
   );
 }; 
