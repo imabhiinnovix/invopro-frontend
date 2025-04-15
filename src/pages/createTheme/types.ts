@@ -128,4 +128,117 @@ export interface ThemeListResponse {
   message: string;
   data: Theme[];
   totalCount: number;
-} 
+}
+
+export interface TitleSettings {
+  show: boolean;
+  color: string;
+  font: {
+    size: number;
+    family: string;
+    weight: string;
+  };
+  align: string;
+  position: string;
+}
+
+export interface SubtitleSettings {
+  show: boolean;
+  color: string;
+  font: {
+    size: number;
+    family: string;
+    weight: string;
+  };
+  align: string;
+  position: string;
+}
+
+export interface ThemeData {
+  name: string;
+  title: TitleSettings;
+  subtitle: SubtitleSettings;
+  legend: {
+    display: boolean;
+    position: string;
+    labels: {
+      color: string;
+      font: {
+        size: number;
+        family: string;
+      };
+      padding: number;
+      boxWidth: number;
+      boxHeight: number;
+    };
+  };
+  tooltip: {
+    display: boolean;
+    backgroundColor: string;
+    titleColor: string;
+    borderColor: string;
+    borderWidth: number;
+    padding: number;
+  };
+  scales: {
+    y: {
+      display: boolean;
+      beginAtZero: boolean;
+      grid: {
+        color: string;
+        drawBorder: boolean;
+      };
+      title: {
+        display: boolean;
+        text: string;
+        color: string;
+        font: {
+          size: number;
+        };
+      };
+    };
+    x: {
+      display: boolean;
+      grid: {
+        display: boolean;
+      };
+      ticks: {
+        color: string;
+        padding: number;
+      };
+    };
+  };
+  interaction: {
+    mode: string;
+    intersect: boolean;
+  };
+  layout: {
+    padding: {
+      top: number;
+      bottom: number;
+    };
+  };
+  fill: {
+    enabled: boolean;
+    type: string;
+    color: string;
+    opacity: number;
+  };
+  responsive: boolean;
+  maintainAspectRatio: boolean;
+  chartType: string;
+  colors: string[];
+  borderColor: string[];
+  backgroundColor: string[];
+}
+
+export interface CreateThemeDialogProps {
+  open: boolean;
+  onClose: () => void;
+}
+
+export interface createThemeResponse {
+  success: boolean;
+  message: string;
+  data: ThemeData;
+}

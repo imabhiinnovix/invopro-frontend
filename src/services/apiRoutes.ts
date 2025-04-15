@@ -30,6 +30,7 @@ export const POST = {
   CREATE_DATA_SOURCE: "/dataSource/create",
   Custom_Report: "/customReports",
   DATA_SOURCE_VERSION_CREATE: "/dataSourceVersion/create",
+  CREATE_THEME: "/widgetTheme/create",
 };
 export const PUT = {
   UPDATE_DATA_SOURCE: "/dataSource/update",
