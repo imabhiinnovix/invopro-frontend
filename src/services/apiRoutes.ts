@@ -5,6 +5,13 @@ export const POST = {
   CHANGE_PASSWORD: "/users/change-password",
   SEND_OTP: "auth/send-otp",
   VERIFY_OTP: "auth/verify-otp",
+  CREATE_DASHBOARD: "/dashboard/create",
+  UPDATE_DASHBOARD: "/dashboard/update",
+  DELETE_DASHBOARD: "/dashboard/delete",
+  CREATE_WIDGET: "/dashboard/widget/create",
+  UPDATE_WIDGET: "/dashboard/widget/update",
+  DELETE_WIDGET: "/dashboard/widget/delete",
+  SAVE_WIDGETS: "/dashboard/widget/save",
 
   CREATE_USER: "auth/create-user",
   UPDATE_USER: "/users/update/",
@@ -23,6 +30,7 @@ export const POST = {
   CREATE_DATA_SOURCE: "/dataSource/create",
   Custom_Report: "/customReports",
   DATA_SOURCE_VERSION_CREATE: "/dataSourceVersion/create",
+  CREATE_THEME: "/widgetTheme/create",
 };
 export const PUT = {
   UPDATE_DATA_SOURCE: "/dataSource/update",
@@ -48,4 +56,10 @@ export const GET = {
   DATA_SOURCE_LIST: "/dataSource/list",
   ATTRIBUTE_OPTIONS_LIST: "/attributeOptions/get/",
   SOURCE_VERSION_DATA: "/dataSourceVersion/versionData",
+  DASHBOARD_LIST: "/dashboard/list",
+  WIDGET_TYPE_LIST: "/widgetType/list",
+  DASHBOARD_WIDGET_GET_CHART_DATA: "/dashboard/widget/getWidgets",
+  DASHBOARD_WIDGET: "/dashboard/widget",
+  DASHBOARD_WIDGET_DATA: "/dashboard/widget/getWidgetData",
+  OPERATOR_LIST: "/operator/list",
 };
