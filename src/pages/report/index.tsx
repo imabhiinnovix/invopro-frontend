@@ -14,10 +14,12 @@ export default function Report() {
 
   const [allDetailData, setAllDetailData] = useState<ReportRequestResponse | null>(null);
   const [activeTab, setActiveTab] = useState(0);
+  const [activeTabName, setActiveTabName] = useState('');
 
   const [viewReportNameWithVersionValue, setViewReportNameWithVersionValue] = useState('');
   const { toPDF, targetRef } = usePDF({
-    filename: `${viewReportNameWithVersionValue}.pdf`,
+    filename: `${viewReportNameWithVersionValue}-${activeTabName}.pdf`,
+    page: { orientation: 'landscape' },
   });
 
   const tabStyle = (index: number) => ({
@@ -137,6 +139,7 @@ export default function Report() {
                 style={tabStyle(index)}
                 onClick={() => {
                   setActiveTab(index);
+                  setActiveTabName(item.name);
                   setViewReportRequestId(viewReportRequestId);
                   setReportDetailData(item.dataSourceVersionId);
                 }}
