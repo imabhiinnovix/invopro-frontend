@@ -429,7 +429,7 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
               _id: condition._id || uuidv4()
             })),
             aggregation: formData.aggregation,
-            widgetType: widgetTypes.find(wt => wt._id === formData.widgetTypeId)?.name || ''
+            widgetType: widgetTypes.find(wt => wt._id === formData.widgetTypeId)?.chartType || ''
           }
         );
 
