@@ -42,8 +42,9 @@ export default function Report() {
         sx={{
           display: 'flex',
           alignItems: 'center',
-          height: '56px',
+          // height: '56px',
           px: 3,
+          py: 1,
           backgroundColor: 'white',
           borderBottom: '1px solid',
           borderColor: 'divider',
