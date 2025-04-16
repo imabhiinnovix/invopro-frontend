@@ -6,6 +6,7 @@ import ViewReport from '../../components/atom/report/viewReport';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { usePDF, Margin } from 'react-to-pdf';
 import { ReportRequestResponse } from '../../components/atom/report/types';
+import { DateTime } from 'luxon';
 
 export default function Report() {
   const [reload, setReload] = useState(false);
@@ -85,27 +86,17 @@ export default function Report() {
                   color: 'text.primary',
                 }}
               >
-                Report View
-                <Box component="span" sx={{ fontWeight: 400, mx: 1, color: 'text.secondary' }}>
-                  Report Name:
-                </Box>
-                <Box component="span" sx={{ fontWeight: 500 }}>
-                  {allDetailData?.customReportId?.reportName}
-                </Box>
-                <Box component="span" sx={{ fontWeight: 400, mx: 1, color: 'text.secondary' }}>
-                  | Period:
-                </Box>
-                <Box component="span" sx={{ fontWeight: 500 }}>
-                  {allDetailData?.versionValue}
-                </Box>
-                <Box component="span" sx={{ fontWeight: 400, mx: 1, color: 'text.secondary' }}>
-                  | Created By:
-                </Box>
-                <Box component="span" sx={{ fontWeight: 500 }}>
-                  {`${allDetailData?.createdBy?.firstName || ''}${
-                    allDetailData?.createdBy?.lastName ? ' ' + allDetailData.createdBy.lastName : ''
-                  }`}
-                </Box>
+                {`${allDetailData?.customReportId?.reportName || ''} Report for the period ${
+                  allDetailData?.versionValue
+                    ? DateTime.fromFormat(allDetailData.versionValue, 'yyyy-MM').toFormat('LLLL yyyy')
+                    : ''
+                } created by ${`${allDetailData?.createdBy?.firstName || ''}${
+                  allDetailData?.createdBy?.lastName ? ' ' + allDetailData.createdBy.lastName : ''
+                }`} at ${
+                  allDetailData?.createdAt
+                    ? DateTime.fromISO(allDetailData.createdAt).toFormat('dd LLL yyyy hh:mm a')
+                    : ''
+                }`}
               </Typography>
             </Box>
 
