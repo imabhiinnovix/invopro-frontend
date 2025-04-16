@@ -338,6 +338,7 @@ interface SaveWidgetsPayload {
       value: string;
     }[];
     dataSourceId: string;
+    entityId: string;
   }[];
 }
 
