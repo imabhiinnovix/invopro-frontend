@@ -1,6 +1,7 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { GET, POST } from '../../services/apiRoutes';
 import { DashboardListResponse, WidgetTypeResponse, DataSourceResponse, ChartDataResponse, WidgetDataResponse, CombinedWidgetData } from './types';
+import { Theme } from '../createTheme/types';
 import axiosInstance from '../../services/axiosInstance';
 import axios from 'axios';
 
@@ -348,6 +349,53 @@ export const saveWidgets = createAsyncThunk(
     const { data } = await axiosInstance.post<CreateWidgetResponse>(
       POST.SAVE_WIDGETS,
       payload
+    );
+    return data;
+  }
+);
+
+export const fetchDashboardShareUsers = createAsyncThunk(
+  'dashboard/fetchShareUsers',
+  async (dashboardId: string) => {
+    const { data } = await axiosInstance.get<{ success: boolean; message: string; data: string[] }>(
+      `/dashboardShare/list/${dashboardId}`
+    );
+    return data;
+  }
+);
+
+interface ShareDashboardPayload {
+  receiverEmails: string[];
+  dashboardId: string;
+  isShareble: boolean;
+}
+
+export const shareDashboard = createAsyncThunk(
+  'dashboard/share',
+  async (payload: ShareDashboardPayload, { rejectWithValue }) => {
+    try {
+      const { data } = await axiosInstance.post<{ success: boolean; message: string }>(
+        '/dashboardShare/create',
+        payload
+      );
+      if (!data.success) {
+        return rejectWithValue({ message: data.message || 'Failed to share dashboard' });
+      }
+      return data;
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response?.data) {
+        return rejectWithValue(error.response.data);
+      }
+      return rejectWithValue({ message: 'Failed to share dashboard. Please try again.' });
+    }
+  }
+);
+
+export const fetchWidgetTheme = createAsyncThunk(
+  'dashboard/fetchWidgetTheme',
+  async (dashboardWidgetThemeId: string) => {
+    const { data } = await axiosInstance.get<{ success: boolean; message: string; data: Theme }>(
+      `${GET.WIDGET_THEME}/${dashboardWidgetThemeId}`
     );
     return data;
   }

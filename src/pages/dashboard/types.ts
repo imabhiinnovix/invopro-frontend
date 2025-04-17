@@ -13,6 +13,7 @@ export interface Dashboard {
   createdAt: string;
   updatedAt: string;
   __v: number;
+  widgetThemeId?: string;
 }
 
 export interface DashboardListResponse {

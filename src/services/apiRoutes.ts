@@ -62,4 +62,5 @@ export const GET = {
   DASHBOARD_WIDGET: "/dashboard/widget",
   DASHBOARD_WIDGET_DATA: "/dashboard/widget/getWidgetData",
   OPERATOR_LIST: "/operator/list",
+  WIDGET_THEME: "/widgetTheme",
 };

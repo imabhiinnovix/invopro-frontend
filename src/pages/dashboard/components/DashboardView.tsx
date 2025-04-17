@@ -7,7 +7,7 @@ import { useParams, useLocation } from 'react-router-dom';
 import { ChartGrid } from './ChartGrid';
 import { AddChartModal, ChartFormData } from './AddChartModal';
 import { useAppDispatch, useAppSelector } from '../../../storeHooks';
-import { updateWidget, saveWidgets } from '../dashboardActions';
+import { updateWidget, saveWidgets, fetchWidgetTheme } from '../dashboardActions';
 import { toast } from 'react-toastify';
 import { ChartResponse, TemporaryChart } from '../types';
 
@@ -31,6 +31,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   const location = useLocation();
   const dispatch = useAppDispatch();
   const temporaryCharts = useAppSelector((state) => state.dashboard.temporaryCharts);
+  const dashboards = useAppSelector((state) => state.dashboard.dashboards);
+  const currentDashboard = dashboards.find((d) => d._id === dashboardId);
 
   useEffect(() => {
     setIsEditMode(true);
@@ -49,6 +51,12 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     setEditedTitle(initialTitle);
     setTitle(initialTitle);
   }, [initialTitle]);
+
+  useEffect(() => {
+    if (currentDashboard?.widgetThemeId) {
+      dispatch(fetchWidgetTheme(currentDashboard.widgetThemeId));
+    }
+  }, [currentDashboard?.widgetThemeId, dispatch]);
 
   const handleEditModeToggle = async () => {
     if (isEditMode) {

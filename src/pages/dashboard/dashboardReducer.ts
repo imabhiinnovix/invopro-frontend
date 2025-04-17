@@ -1,6 +1,7 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { DashboardListResponse, WidgetTypeResponse, DataSourceResponse, ChartDataResponse, ChartResponse, WidgetResponse, TemporaryChart, Dashboard, WidgetType, DataSource } from './types';
-import { fetchDashboardList, fetchWidgetTypes, fetchDataSources, loadMoreDataSources, fetchChartData, deleteWidget, updateWidget, createWidget, fetchAllDataSources, saveWidgets } from './dashboardActions';
+import { Theme } from '../createTheme/types';
+import { fetchDashboardList, fetchWidgetTypes, fetchDataSources, loadMoreDataSources, fetchChartData, deleteWidget, updateWidget, createWidget, fetchAllDataSources, saveWidgets, fetchDashboardShareUsers, fetchWidgetTheme } from './dashboardActions';
 import { WritableDraft } from 'immer';
 
 interface Condition {
@@ -28,6 +29,12 @@ interface DashboardSliceState {
   chartsLoading: boolean;
   chartsError: string | null;
   widgetData: Record<string, WidgetResponse['data']>;
+  shareUsers: string[];
+  shareUsersLoading: boolean;
+  shareUsersError: string | null;
+  widgetTheme: Theme | null;
+  widgetThemeLoading: boolean;
+  widgetThemeError: string | null;
 }
 
 const initialState: DashboardSliceState = {
@@ -48,6 +55,12 @@ const initialState: DashboardSliceState = {
   chartsLoading: false,
   chartsError: null,
   widgetData: {},
+  shareUsers: [],
+  shareUsersLoading: false,
+  shareUsersError: null,
+  widgetTheme: null,
+  widgetThemeLoading: false,
+  widgetThemeError: null,
 };
 
 const dashboardSlice = createSlice({
@@ -271,6 +284,31 @@ const dashboardSlice = createSlice({
       .addCase(saveWidgets.rejected, (state, action) => {
         state.chartsLoading = false;
         state.chartsError = action.error.message || 'Failed to save widgets';
+      })
+      // Share users actions
+      .addCase(fetchDashboardShareUsers.pending, (state) => {
+        state.shareUsersLoading = true;
+        state.shareUsersError = null;
+      })
+      .addCase(fetchDashboardShareUsers.fulfilled, (state, action) => {
+        state.shareUsersLoading = false;
+        state.shareUsers = action.payload.data;
+      })
+      .addCase(fetchDashboardShareUsers.rejected, (state, action) => {
+        state.shareUsersLoading = false;
+        state.shareUsersError = action.error.message || 'Failed to fetch share users';
+      })
+      .addCase(fetchWidgetTheme.pending, (state) => {
+        state.widgetThemeLoading = true;
+        state.widgetThemeError = null;
+      })
+      .addCase(fetchWidgetTheme.fulfilled, (state, action) => {
+        state.widgetThemeLoading = false;
+        state.widgetTheme = action.payload.data;
+      })
+      .addCase(fetchWidgetTheme.rejected, (state, action) => {
+        state.widgetThemeLoading = false;
+        state.widgetThemeError = action.error.message || 'Failed to fetch widget theme';
       });
   },
 });
