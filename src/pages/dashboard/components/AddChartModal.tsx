@@ -198,7 +198,7 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
     useState<DataSource | null>(null);
 
   const [operators, setOperators] = useState<OperatorType[]>([]);
-  const [selectedFieldType, setSelectedFieldType] = useState<string>("");
+  const [fieldTypes, setFieldTypes] = useState<{ [key: string]: string }>({});
 
   useEffect(() => {
     if (open && initialData) {
@@ -345,11 +345,52 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
     handleConditionChange(index, field, event.target.value as string);
   };
 
+  const handleConditionFieldChange = (
+    index: number,
+    event: SelectChangeEvent<unknown>
+  ) => {
+    const fieldName = event.target.value as string;
+    const attribute = selectedDataSource?.entityId.attributes.find(attr => attr.name === fieldName);
+    
+    if (attribute) {
+      setFieldTypes(prev => ({
+        ...prev,
+        [index]: attribute.type
+      }));
+    }
+    
+    handleConditionChange(index, "field", fieldName);
+    handleConditionChange(index, "operator", "");
+    handleConditionChange(index, "value", "");
+  };
+
   const handleConditionValueInputChange = (
     index: number,
     event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
-    handleConditionChange(index, "value", event.target.value);
+    const value = event.target.value;
+    const fieldType = fieldTypes[index];
+    
+    if (fieldType === 'date') {
+      // Format date to YYYY-MM-DD
+      const formattedDate = formatDateToYYYYMMDD(value);
+      handleConditionChange(index, "value", formattedDate);
+    } else {
+      handleConditionChange(index, "value", value);
+    }
+  };
+
+  const formatDateToYYYYMMDD = (dateString: string): string => {
+    if (!dateString) return '';
+    
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return dateString;
+    
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    
+    return `${year}-${month}-${day}`;
   };
 
   const handleDataSourceChange = (event: SelectChangeEvent<unknown>) => {
@@ -390,22 +431,6 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
   const handleGroupByChange = (event: SelectChangeEvent<unknown>) => {
     const newGroupBy = event.target.value as string;
     handleChange("groupBy", newGroupBy);
-  };
-
-  const handleConditionFieldChange = (
-    index: number,
-    event: SelectChangeEvent<unknown>
-  ) => {
-    const fieldName = event.target.value as string;
-    const attribute = selectedDataSource?.entityId.attributes.find(attr => attr.name === fieldName);
-    
-    if (attribute) {
-      setSelectedFieldType(attribute.type);
-    }
-    
-    handleConditionChange(index, "field", fieldName);
-    handleConditionChange(index, "operator", "");
-    handleConditionChange(index, "value", "");
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -779,14 +804,29 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
                       ))}
                     </StyledSelect>
                   </FormControl>
-                  <StyledTextField
-                    label="Value"
-                    value={condition.value}
-                    onChange={(e) => handleConditionValueInputChange(index, e)}
-                    disabled={isSubmitting || !condition.operator || !getOperatorsForField(condition.field).find(op => op.operatorKey === condition.operator)?.valueRequired}
-                    size="small"
-                    fullWidth
-                  />
+                  {fieldTypes[index] === 'date' ? (
+                    <StyledTextField
+                      label="Value"
+                      type="date"
+                      value={condition.value}
+                      onChange={(e) => handleConditionValueInputChange(index, e)}
+                      disabled={isSubmitting || !condition.operator || !getOperatorsForField(condition.field).find(op => op.operatorKey === condition.operator)?.valueRequired}
+                      size="small"
+                      fullWidth
+                      InputLabelProps={{
+                        shrink: true,
+                      }}
+                    />
+                  ) : (
+                    <StyledTextField
+                      label="Value"
+                      value={condition.value}
+                      onChange={(e) => handleConditionValueInputChange(index, e)}
+                      disabled={isSubmitting || !condition.operator || !getOperatorsForField(condition.field).find(op => op.operatorKey === condition.operator)?.valueRequired}
+                      size="small"
+                      fullWidth
+                    />
+                  )}
                   <IconButton
                     onClick={() => removeCondition(index)}
                     disabled={isSubmitting}
