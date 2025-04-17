@@ -16,6 +16,7 @@ export default function Report() {
 
   const headerRef = useRef<HTMLDivElement>(null);
   const tabRef = useRef<HTMLDivElement>(null);
+  const viewPdfRef = useRef<HTMLDivElement>(null);
 
   const [allDetailData, setAllDetailData] = useState<ReportRequestResponse | null>(null);
   const [activeTab, setActiveTab] = useState(0);
@@ -176,11 +177,21 @@ export default function Report() {
           {/* To download pdf */}
 
           <Box
-            sx={{ position: 'absolute', top: '-9999px', left: '-9999px', width: '100%', marginBottom: 5 }}
+            sx={{
+              // position: 'absolute',
+              top: '-9999px',
+              left: '-9999px',
+              width: '100%',
+              marginBottom: 5,
+            }}
             ref={targetRef}
           >
             {allDetailData?.dataSourceVersion?.map((item, index) => (
-              <Box>
+              <Box
+                key={index}
+                ref={viewPdfRef}
+                marginTop={index === 0 ? '0px' : `${794 - (viewPdfRef?.current?.clientHeight || 0)}px`}
+              >
                 {index === 0 && (
                   <Table
                     size="small"
@@ -222,26 +233,18 @@ export default function Report() {
                   </Table>
                 )}
 
-                <Box
-                  sx={{
-                    mt: 3,
-                    display: 'flex',
-                    pageBreakBefore: 'always',
-                  }}
-                >
-                  <Box>
-                    <Typography sx={{ display: 'flex' }}>
-                      <Box sx={{ fontWeight: 600 }}>Sheet Name:</Box>
-                      <Box>{item.name}</Box>
-                    </Typography>
-                    <ViewReport
-                      key={index}
-                      targetRef={''}
-                      reportDetailData={item.dataSourceVersionId}
-                      setViewReportRequestId={setViewReportRequestId}
-                      viewReportRequestId={viewReportRequestId}
-                    />
-                  </Box>
+                <Box>
+                  <Typography sx={{ display: 'flex' }}>
+                    <Box sx={{ fontWeight: 600 }}>Sheet Name:</Box>
+                    <Box>{item.name}</Box>
+                  </Typography>
+                  <ViewReport
+                    key={index}
+                    targetRef={''}
+                    reportDetailData={item.dataSourceVersionId}
+                    setViewReportRequestId={setViewReportRequestId}
+                    viewReportRequestId={viewReportRequestId}
+                  />
                 </Box>
               </Box>
             ))}
