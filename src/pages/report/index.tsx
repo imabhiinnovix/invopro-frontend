@@ -1,6 +1,6 @@
-import { Box, Button, Typography } from '@mui/material';
+import { Box, Button, Table, TableBody, TableCell, TableRow, Typography } from '@mui/material';
 import GenerateReport from '../../components/atom/report/generateReport';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import ReportRequestTable from '../../components/atom/report/reportRequestTable';
 import ViewReport from '../../components/atom/report/viewReport';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
@@ -12,6 +12,10 @@ export default function Report() {
   const [reload, setReload] = useState(false);
   const [viewReportRequestId, setViewReportRequestId] = useState('');
   const [reportDetailData, setReportDetailData] = useState('');
+  const [maxHeight, setMaxHeight] = useState<number>(0);
+
+  const headerRef = useRef<HTMLDivElement>(null);
+  const tabRef = useRef<HTMLDivElement>(null);
 
   const [allDetailData, setAllDetailData] = useState<ReportRequestResponse | null>(null);
   const [activeTab, setActiveTab] = useState(0);
@@ -30,6 +34,19 @@ export default function Report() {
     fontWeight: activeTab === index ? 'bold' : 'normal',
     backgroundColor: activeTab === index ? '#f0f0f0' : '#fff',
   });
+
+  useEffect(() => {
+    if (headerRef.current && tabRef.current && window.innerHeight) {
+      const headerHeight = headerRef.current?.clientHeight || 0;
+      const tabHeight = tabRef.current?.clientHeight || 0;
+      const total = headerHeight + tabHeight;
+      const leftHeight = window.innerHeight ? window.innerHeight : 0 - total - 30;
+      if (leftHeight > 0) {
+        setMaxHeight(leftHeight);
+      }
+    }
+  }, [headerRef.current, tabRef.current, window.innerHeight]);
+
   return (
     <Box
       sx={{
@@ -39,6 +56,7 @@ export default function Report() {
       }}
     >
       <Box
+        ref={headerRef}
         sx={{
           display: 'flex',
           alignItems: 'center',
@@ -123,7 +141,7 @@ export default function Report() {
       </Box>
 
       {viewReportRequestId && viewReportRequestId.length > 0 ? (
-        <Box>
+        <Box ref={tabRef}>
           <Box display="flex" borderBottom="1px solid #ccc" mb={2}>
             {allDetailData?.dataSourceVersion?.map((item, index) => (
               <div
@@ -149,52 +167,82 @@ export default function Report() {
                   reportDetailData={item.dataSourceVersionId}
                   setViewReportRequestId={setViewReportRequestId}
                   viewReportRequestId={viewReportRequestId}
+                  maxHeight={maxHeight}
+                  isZoom={true}
                 />
               )
           )}
 
           {/* To download pdf */}
+
           <Box
             sx={{ position: 'absolute', top: '-9999px', left: '-9999px', width: '100%', marginBottom: 5 }}
             ref={targetRef}
           >
             {allDetailData?.dataSourceVersion?.map((item, index) => (
               <Box>
-                <Typography
-                  variant="h6"
+                {index === 0 && (
+                  <Table
+                    size="small"
+                    sx={{
+                      width: 'auto',
+                      mb: 2,
+                      ml: 0,
+                      pl: 0,
+                    }}
+                  >
+                    <TableBody>
+                      <TableRow>
+                        <TableCell sx={{ fontWeight: 600, borderBottom: 'none', pr: 1, whiteSpace: 'nowrap' }}>
+                          Report Name:
+                        </TableCell>
+                        <TableCell sx={{ fontWeight: 500, borderBottom: 'none' }}>
+                          {allDetailData?.customReportId?.reportName}
+                        </TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell sx={{ fontWeight: 600, borderBottom: 'none', pr: 1, whiteSpace: 'nowrap' }}>
+                          Period:
+                        </TableCell>
+                        <TableCell sx={{ fontWeight: 500, borderBottom: 'none' }}>
+                          {allDetailData?.versionValue}
+                        </TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell sx={{ fontWeight: 600, borderBottom: 'none', pr: 1, whiteSpace: 'nowrap' }}>
+                          Created By:
+                        </TableCell>
+                        <TableCell sx={{ fontWeight: 500, borderBottom: 'none' }}>
+                          {`${allDetailData?.createdBy?.firstName || ''}${
+                            allDetailData?.createdBy?.lastName ? ' ' + allDetailData.createdBy.lastName : ''
+                          }`}
+                        </TableCell>
+                      </TableRow>
+                    </TableBody>
+                  </Table>
+                )}
+
+                <Box
                   sx={{
-                    fontWeight: 500,
-                    color: 'text.primary',
+                    mt: 3,
+                    display: 'flex',
+                    pageBreakBefore: 'always',
                   }}
                 >
-                  <Box component="span" sx={{ fontWeight: 400, mx: 1, color: 'text.primary' }}>
-                    Report Name:
+                  <Box>
+                    <Typography sx={{ display: 'flex' }}>
+                      <Box sx={{ fontWeight: 600 }}>Sheet Name:</Box>
+                      <Box>{item.name}</Box>
+                    </Typography>
+                    <ViewReport
+                      key={index}
+                      targetRef={''}
+                      reportDetailData={item.dataSourceVersionId}
+                      setViewReportRequestId={setViewReportRequestId}
+                      viewReportRequestId={viewReportRequestId}
+                    />
                   </Box>
-                  <Box component="span" sx={{ fontWeight: 500 }}>
-                    {`${allDetailData?.customReportId?.reportName}-${item?.name}`}
-                  </Box>
-                  <Box component="span" sx={{ fontWeight: 400, mx: 1, color: 'text.primary' }}>
-                    | Period:
-                  </Box>
-                  <Box component="span" sx={{ fontWeight: 500 }}>
-                    {allDetailData?.versionValue}
-                  </Box>
-                  <Box component="span" sx={{ fontWeight: 400, mx: 1, color: 'text.primary' }}>
-                    | Created By:
-                  </Box>
-                  <Box component="span" sx={{ fontWeight: 500 }}>
-                    {`${allDetailData?.createdBy?.firstName || ''}${
-                      allDetailData?.createdBy?.lastName ? ' ' + allDetailData.createdBy.lastName : ''
-                    }`}
-                  </Box>
-                </Typography>
-                <ViewReport
-                  key={index}
-                  targetRef={''}
-                  reportDetailData={item.dataSourceVersionId}
-                  setViewReportRequestId={setViewReportRequestId}
-                  viewReportRequestId={viewReportRequestId}
-                />
+                </Box>
               </Box>
             ))}
           </Box>
