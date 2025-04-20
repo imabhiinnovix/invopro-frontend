@@ -178,7 +178,7 @@ export default function Report() {
 
           <Box
             sx={{
-              // position: 'absolute',
+              position: 'absolute',
               top: '-9999px',
               left: '-9999px',
               width: '100%',
