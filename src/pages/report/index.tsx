@@ -4,9 +4,9 @@ import { useEffect, useRef, useState } from 'react';
 import ReportRequestTable from '../../components/atom/report/reportRequestTable';
 import ViewReport from '../../components/atom/report/viewReport';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import { usePDF, Margin } from 'react-to-pdf';
 import { ReportRequestResponse } from '../../components/atom/report/types';
 import { DateTime } from 'luxon';
+import html2pdf from 'html2pdf.js';
 
 export default function Report() {
   const [reload, setReload] = useState(false);
@@ -16,17 +16,13 @@ export default function Report() {
 
   const headerRef = useRef<HTMLDivElement>(null);
   const tabRef = useRef<HTMLDivElement>(null);
-  const viewPdfRef = useRef<HTMLDivElement>(null);
+  const targetRef = useRef<HTMLDivElement>(null);
 
   const [allDetailData, setAllDetailData] = useState<ReportRequestResponse | null>(null);
   const [activeTab, setActiveTab] = useState(0);
   const [activeTabName, setActiveTabName] = useState('');
 
   const [viewReportNameWithVersionValue, setViewReportNameWithVersionValue] = useState('');
-  const { toPDF, targetRef } = usePDF({
-    filename: `${viewReportNameWithVersionValue}.pdf`,
-    page: { orientation: 'landscape', margin: Margin.SMALL },
-  });
 
   const tabStyle = (index: number) => ({
     padding: '10px 20px',
@@ -48,6 +44,19 @@ export default function Report() {
     }
   }, [headerRef.current, tabRef.current, window.innerHeight]);
 
+  const handleDownloadPdf = () => {
+    if (!targetRef.current || !viewReportNameWithVersionValue) return;
+
+    const opt = {
+      margin: 0.5,
+      filename: `${viewReportNameWithVersionValue}.pdf`,
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { scale: 2 },
+      jsPDF: { unit: 'in', format: 'a4', orientation: 'landscape' },
+    };
+
+    html2pdf().set(opt).from(targetRef.current.innerHTML).save();
+  };
   return (
     <Box
       sx={{
@@ -123,7 +132,7 @@ export default function Report() {
             <Button
               disabled={!(viewReportNameWithVersionValue && viewReportNameWithVersionValue.length > 0)}
               variant="contained"
-              onClick={() => toPDF()}
+              onClick={handleDownloadPdf}
             >
               Download PDF
             </Button>
@@ -178,20 +187,13 @@ export default function Report() {
 
           <Box
             sx={{
-              position: 'absolute',
-              top: '-9999px',
-              left: '-9999px',
-              width: '100%',
+              display: 'none',
               marginBottom: 5,
             }}
             ref={targetRef}
           >
             {allDetailData?.dataSourceVersion?.map((item, index) => (
-              <Box
-                key={index}
-                ref={viewPdfRef}
-                marginTop={index === 0 ? '0px' : `${794 - (viewPdfRef?.current?.clientHeight || 0)}px`}
-              >
+              <Box key={index}>
                 {index === 0 && (
                   <Table
                     size="small"
@@ -234,10 +236,10 @@ export default function Report() {
                 )}
 
                 <Box>
-                  <Typography sx={{ display: 'flex' }}>
-                    <Box sx={{ fontWeight: 600 }}>Sheet Name:</Box>
+                  <Box sx={{ display: 'flex' }}>
+                    <Box sx={{ fontWeight: 600 }}>Sheet Name: </Box>
                     <Box>{item.name}</Box>
-                  </Typography>
+                  </Box>
                   <ViewReport
                     key={index}
                     targetRef={''}
@@ -246,6 +248,8 @@ export default function Report() {
                     viewReportRequestId={viewReportRequestId}
                   />
                 </Box>
+
+                <Box className="html2pdf__page-break" />
               </Box>
             ))}
           </Box>
