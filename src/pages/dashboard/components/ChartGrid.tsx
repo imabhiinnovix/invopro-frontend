@@ -24,6 +24,7 @@ import {
   TableHead,
   TableRow,
   Paper,
+  Pagination,
 } from "@mui/material";
 import {
   Chart as ChartJS,
@@ -291,6 +292,11 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
   const [drillDownOpen, setDrillDownOpen] = useState(false);
   const [drillDownData, setDrillDownData] = useState<ChartDataItem[]>([]);
   const [drillDownTitle, setDrillDownTitle] = useState<string>("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalRecords, setTotalRecords] = useState(0);
+  const [isDrillDownLoading, setIsDrillDownLoading] = useState(false);
+  const itemsPerPage = 10;
 
   // Combine permanent and temporary charts
   const allCharts = [...charts, ...temporaryCharts];
@@ -487,6 +493,12 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
     });
 
     if (clickedData) {
+      // Open modal immediately
+      setDrillDownTitle(`${chart.name} - ${clickedData.name}`);
+      setDrillDownOpen(true);
+      setCurrentPage(1);
+      setIsDrillDownLoading(true);
+
       try {
         // Prepare the request payload
         const dimensions = chart.dimensions 
@@ -497,7 +509,10 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
 
         const groupBy = chart.groupBy
           ? Array.isArray(chart.groupBy)
-            ? chart.groupBy.map(group => ({ [group]: clickedData.name }))
+            ? chart.groupBy.map(group => {
+            
+            console.log("🚀 ~ handleChartClick ~ group̥:", group)
+            return{ [group]: clickedData.name }})
             : [{ [chart.groupBy]: clickedData.name }]
           : [];
         
@@ -508,7 +523,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
           dimensions,
           groupBy,
           page: 1,
-          limit: 40
+          limit: itemsPerPage
         };
 
         // Make the API call
@@ -516,14 +531,16 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
         
         if (response.data.success) {
           setDrillDownData(response.data.data);
-          setDrillDownTitle(`${chart.name} - ${clickedData.name}`);
-          setDrillDownOpen(true);
+          setTotalPages(response.data.pagination.totalPages);
+          setTotalRecords(response.data.pagination.totalRecords);
         } else {
           toast.error(response.data.message || 'Failed to fetch detailed data');
         }
       } catch (error) {
         console.error('Error fetching detailed data:', error);
         toast.error('Failed to fetch detailed data');
+      } finally {
+        setIsDrillDownLoading(false);
       }
     }
   };
@@ -532,6 +549,49 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
     setDrillDownOpen(false);
     setDrillDownData([]);
     setDrillDownTitle("");
+  };
+
+  const handlePageChange = async (event: React.ChangeEvent<unknown>, value: number) => {
+    if (!selectedChart) return;
+    
+    try {
+      const clickedData = drillDownData[0]; // Get the first item to maintain the filter
+      const dimensions = selectedChart.dimensions 
+        ? Array.isArray(selectedChart.dimensions) 
+          ? selectedChart.dimensions.map(dim => ({ [dim]: clickedData.name }))
+          : [{ [selectedChart.dimensions]: clickedData.name }]
+        : [];
+
+      const groupBy = selectedChart.groupBy
+        ? Array.isArray(selectedChart.groupBy)
+          ? selectedChart.groupBy.map(group => ({ [group]: clickedData.name }))
+          : [{ [selectedChart.groupBy]: clickedData.name }]
+        : [];
+      
+      const payload = {
+        dataSourceId: selectedChart.dataSourceId?._id,
+        entityId: selectedChart.dataSourceId?.entityId,
+        conditions: selectedChart.conditions || [],
+        dimensions,
+        groupBy,
+        page: value,
+        limit: itemsPerPage
+      };
+
+      const response = await axiosInstance.post('/dataSource/getWidgetDataByFilter', payload);
+      
+      if (response.data.success) {
+        setDrillDownData(response.data.data);
+        setTotalPages(response.data.pagination.totalPages);
+        setTotalRecords(response.data.pagination.totalRecords);
+        setCurrentPage(value);
+      } else {
+        toast.error(response.data.message || 'Failed to fetch detailed data');
+      }
+    } catch (error) {
+      console.error('Error fetching detailed data:', error);
+      toast.error('Failed to fetch detailed data');
+    }
   };
 
   if (chartsLoading) {
@@ -1320,9 +1380,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
   };
 
   const renderDrillDownDialog = () => {
-    if (!drillDownData.length) return null;
-
-    const columns = Object.keys(drillDownData[0]).filter(key => key !== '_id');
+    const columns = drillDownData.length > 0 ? Object.keys(drillDownData[0]).filter(key => key !== '_id') : [];
 
     return (
       <DrillDownDialog
@@ -1346,20 +1404,49 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
                 </TableRow>
               </TableHead>
               <TableBody>
-                {drillDownData.map((row, index) => (
-                  <TableRow key={index}>
-                    {columns.map((column) => (
-                      <TableCell key={column}>
-                        {typeof row[column] === 'number' 
-                          ? row[column].toLocaleString() 
-                          : row[column]}
-                      </TableCell>
-                    ))}
+                {isDrillDownLoading ? (
+                  // Skeleton loading rows
+                  Array.from({ length: 5 }).map((_, index) => (
+                    <TableRow key={index}>
+                      {columns.map((column) => (
+                        <TableCell key={column}>
+                          <Box sx={{ width: '100%', height: 20, bgcolor: 'grey.200', borderRadius: 1 }} />
+                        </TableCell>
+                      ))}
+                    </TableRow>
+                  ))
+                ) : drillDownData.length > 0 ? (
+                  drillDownData.map((row, index) => (
+                    <TableRow key={index}>
+                      {columns.map((column) => (
+                        <TableCell key={column}>
+                          {typeof row[column] === 'number' 
+                            ? row[column].toLocaleString() 
+                            : row[column]}
+                        </TableCell>
+                      ))}
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={columns.length} align="center">
+                      No data available
+                    </TableCell>
                   </TableRow>
-                ))}
+                )}
               </TableBody>
             </DrillDownTable>
           </TableContainer>
+          {!isDrillDownLoading && drillDownData.length > 0 && (
+            <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
+              <Pagination 
+                count={totalPages} 
+                page={currentPage}
+                onChange={handlePageChange}
+                color="primary"
+              />
+            </Box>
+          )}
         </DialogContent>
         <DialogActions>
           <Button onClick={handleDrillDownClose}>Close</Button>
