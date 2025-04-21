@@ -20,7 +20,6 @@ import {
   Table,
   TableBody,
   TableCell,
-  TableContainer,
   TableHead,
   TableRow,
   Paper,
@@ -253,16 +252,48 @@ const NumberLabel = styled(Typography)(({ theme }) => ({
 // Add new styled components for drill-down dialog
 const DrillDownDialog = styled(Dialog)({
   "& .MuiDialog-paper": {
-    minWidth: "60%",
-    maxWidth: "90%",
-    maxHeight: "80vh",
+    width: "calc(100% - 32px)",
+    height: "calc(100% - 32px)",
+    margin: 16,
+    maxWidth: "calc(100% - 32px)",
+    maxHeight: "calc(100% - 32px)",
   },
 });
 
 const DrillDownTable = styled(Table)(({ theme }) => ({
   "& .MuiTableCell-root": {
-    padding: theme.spacing(1),
+    padding: theme.spacing(1.5),
+    fontSize: '0.875rem',
   },
+  "& .MuiTableHead-root": {
+    backgroundColor: theme.palette.background.default,
+    "& .MuiTableCell-root": {
+      fontWeight: 600,
+      color: theme.palette.text.primary,
+      borderBottom: `2px solid ${theme.palette.divider}`,
+    },
+  },
+  "& .MuiTableBody-root": {
+    "& .MuiTableRow-root": {
+      transition: 'background-color 0.2s',
+      '&:hover': {
+        backgroundColor: theme.palette.action.hover,
+      },
+      '&:last-child td': {
+        borderBottom: 0,
+      },
+    },
+    "& .MuiTableCell-root": {
+      color: theme.palette.text.secondary,
+      borderBottom: `1px solid ${theme.palette.divider}`,
+    },
+  },
+}));
+
+const StyledTableContainer = styled(Paper)(({ theme }) => ({
+  borderRadius: theme.shape.borderRadius,
+  boxShadow: theme.shadows[1],
+  overflow: 'hidden',
 }));
 
 export const ChartGrid: React.FC<ChartGridProps> = ({
@@ -1388,11 +1419,24 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
         onClose={handleDrillDownClose}
         aria-labelledby="drill-down-dialog-title"
       >
-        <DialogTitle id="drill-down-dialog-title">
-          {drillDownTitle}
+        <DialogTitle id="drill-down-dialog-title" sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: `1px solid ${theme.palette.divider}`, p: 2 }}>
+          <Typography variant="h6">{drillDownTitle}</Typography>
+          <IconButton
+            onClick={handleDrillDownClose}
+            size="small"
+            sx={{
+              color: theme.palette.text.secondary,
+              '&:hover': {
+                color: theme.palette.text.primary,
+                backgroundColor: theme.palette.action.hover,
+              },
+            }}
+          >
+            <CloseIcon />
+          </IconButton>
         </DialogTitle>
-        <DialogContent>
-          <TableContainer component={Paper}>
+        <DialogContent sx={{ p: 3, display: 'flex', flexDirection: 'column', height: '100%' }}>
+          <StyledTableContainer sx={{ flex: 1, overflow: 'auto' }}>
             <DrillDownTable>
               <TableHead>
                 <TableRow>
@@ -1436,9 +1480,16 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
                 )}
               </TableBody>
             </DrillDownTable>
-          </TableContainer>
+          </StyledTableContainer>
           {!isDrillDownLoading && drillDownData.length > 0 && (
-            <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
+            <Box sx={{ 
+              display: 'flex', 
+              justifyContent: 'center', 
+              mt: 'auto',
+              pt: 3,
+              pb: 2,
+              borderTop: `1px solid ${theme.palette.divider}`
+            }}>
               <Pagination 
                 count={totalPages} 
                 page={currentPage}
