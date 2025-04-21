@@ -56,13 +56,13 @@ const fontWeightOptions = [
   "bolder",
   "100",
   "200",
-  "300", // light
-  "400", // normal
-  "500", // medium
-  "600", // semibold
-  "700", // bold
-  "800", // extrabold
-  "900", // black
+  "300",
+  "400",
+  "500",
+  "600",
+  "700",
+  "800",
+  "900",
 ];
 
 const StyledButton = styled(Button)(({ theme }) => ({
@@ -77,8 +77,36 @@ const StyledButton = styled(Button)(({ theme }) => ({
   },
 }));
 
+const numberInputStyles = {
+  inputProps: {
+    style: {
+      MozAppearance: "textfield" as const,
+      WebkitAppearance: "none" as const,
+      margin: 0,
+    },
+    onKeyDown: (e: React.KeyboardEvent) => {
+      if (e.key === "ArrowUp" || e.key === "ArrowDown") {
+        e.preventDefault();
+      }
+    },
+  },
+  sx: {
+    "& input[type=number]": {
+      MozAppearance: "textfield" as const,
+    },
+    "& input[type=number]::-webkit-outer-spin-button": {
+      WebkitAppearance: "none" as const,
+      margin: 0,
+    },
+    "& input[type=number]::-webkit-inner-spin-button": {
+      WebkitAppearance: "none" as const,
+      margin: 0,
+    },
+  },
+};
+
 const CreateThemeDialog = ({ open, onClose }: CreateThemeDialogProps) => {
-  const [themeState, setThemeState] = React.useState<ThemeData>({
+  const [themeState, setThemeState] = useState<ThemeData>({
     name: "",
     title: {
       show: true,
@@ -477,31 +505,7 @@ const CreateThemeDialog = ({ open, onClose }: CreateThemeDialogProps) => {
                     },
                   })
                 }
-                inputProps={{
-                  style: {
-                    MozAppearance: "textfield",
-                    WebkitAppearance: "none",
-                    margin: 0,
-                  },
-                  onKeyDown: (e) => {
-                    if (e.key === "ArrowUp" || e.key === "ArrowDown") {
-                      e.preventDefault();
-                    }
-                  },
-                }}
-                sx={{
-                  "& input[type=number]": {
-                    MozAppearance: "textfield",
-                  },
-                  "& input[type=number]::-webkit-outer-spin-button": {
-                    WebkitAppearance: "none",
-                    margin: 0,
-                  },
-                  "& input[type=number]::-webkit-inner-spin-button": {
-                    WebkitAppearance: "none",
-                    margin: 0,
-                  },
-                }}
+                {...numberInputStyles}
               />
             </Grid>
 
@@ -764,31 +768,7 @@ const CreateThemeDialog = ({ open, onClose }: CreateThemeDialogProps) => {
                     },
                   })
                 }
-                inputProps={{
-                  style: {
-                    MozAppearance: "textfield",
-                    WebkitAppearance: "none",
-                    margin: 0,
-                  },
-                  onKeyDown: (e) => {
-                    if (e.key === "ArrowUp" || e.key === "ArrowDown") {
-                      e.preventDefault();
-                    }
-                  },
-                }}
-                sx={{
-                  "& input[type=number]": {
-                    MozAppearance: "textfield",
-                  },
-                  "& input[type=number]::-webkit-outer-spin-button": {
-                    WebkitAppearance: "none",
-                    margin: 0,
-                  },
-                  "& input[type=number]::-webkit-inner-spin-button": {
-                    WebkitAppearance: "none",
-                    margin: 0,
-                  },
-                }}
+                {...numberInputStyles}
               />
             </Grid>
             <Grid size={{ xs: 12, sm: 4 }} component="div">
@@ -971,10 +951,7 @@ const CreateThemeDialog = ({ open, onClose }: CreateThemeDialogProps) => {
                     },
                   })
                 }
-                inputProps={{
-                  min: 0,
-                  style: { textAlign: "left" },
-                }}
+                {...numberInputStyles}
               />
             </Grid>
 
@@ -1143,10 +1120,7 @@ const CreateThemeDialog = ({ open, onClose }: CreateThemeDialogProps) => {
                     },
                   })
                 }
-                inputProps={{
-                  min: 1,
-                  style: { textAlign: "left" },
-                }}
+                {...numberInputStyles}
               />
             </Grid>
 
@@ -1170,10 +1144,7 @@ const CreateThemeDialog = ({ open, onClose }: CreateThemeDialogProps) => {
                     },
                   })
                 }
-                inputProps={{
-                  min: 1,
-                  style: { textAlign: "left" },
-                }}
+                {...numberInputStyles}
               />
             </Grid>
             <Grid size={{ xs: 12, sm: 6 }} component="div">
@@ -1196,10 +1167,7 @@ const CreateThemeDialog = ({ open, onClose }: CreateThemeDialogProps) => {
                     },
                   })
                 }
-                inputProps={{
-                  min: 1,
-                  style: { textAlign: "left" },
-                }}
+                {...numberInputStyles}
               />
             </Grid>
           </Grid>
@@ -1358,10 +1326,7 @@ const CreateThemeDialog = ({ open, onClose }: CreateThemeDialogProps) => {
                     },
                   })
                 }
-                inputProps={{
-                  min: 0,
-                  style: { textAlign: "left" },
-                }}
+                {...numberInputStyles}
               />
             </Grid>
 
@@ -1490,10 +1455,7 @@ const CreateThemeDialog = ({ open, onClose }: CreateThemeDialogProps) => {
                     },
                   })
                 }
-                inputProps={{
-                  min: 0,
-                  style: { textAlign: "left" },
-                }}
+                {...numberInputStyles}
               />
             </Grid>
 
@@ -1692,96 +1654,118 @@ const CreateThemeDialog = ({ open, onClose }: CreateThemeDialogProps) => {
               </FormControl>
             </Grid>
             <Grid size={{ xs: 12, sm: 6 }} component="div">
-              <Button
-                variant="outlined"
-                size="small"
-                onClick={() =>
-                  setShowYScaleGridColorPicker(!showYScaleGridColorPicker)
-                }
+              <Box
                 sx={{
-                  backgroundColor: themeState.scales.y.grid.color,
-                  color:
-                    themeState.scales.y.grid.color === "#000000"
-                      ? "white"
-                      : "rgba(0, 0, 0, 0.6)",
-                  width: "100%",
-                  minHeight: "36px",
-                  borderColor: "rgba(0, 0, 0, 0.12)",
-                  "&:hover": {
-                    backgroundColor: themeState.scales.y.grid.color,
-                    borderColor: "rgba(0, 0, 0, 0.12)",
-                  },
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 1,
+                  mt: 1,
+                  position: "relative",
                 }}
               >
-                Grid Color
-              </Button>
-              {showYScaleGridColorPicker && (
-                <Portal>
-                  <Box
+                <Typography
+                  variant="body2"
+                  sx={{ color: "rgba(0, 0, 0, 0.6)" }}
+                >
+                  Grid Color
+                </Typography>
+                <Box
+                  ref={(el) => {
+                    if (el) buttonRefs.set("y-scale-grid", el);
+                  }}
+                  sx={{ flex: 1 }}
+                >
+                  {" "}
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    onClick={() =>
+                      setShowYScaleGridColorPicker(!showYScaleGridColorPicker)
+                    }
                     sx={{
-                      position: "fixed",
-                      top: 0,
-                      right: 0,
-                      bottom: 0,
-                      left: 0,
-                      zIndex: 9998,
-                      bgcolor: "rgba(0, 0, 0, 0.1)",
+                      backgroundColor: themeState.scales.y.grid.color,
+                      color:
+                        themeState.scales.y.grid.color === "#000000"
+                          ? "white"
+                          : "rgba(0, 0, 0, 0.6)",
+                      width: "100%",
+                      minHeight: "36px",
+                      borderColor: "rgba(0, 0, 0, 0.12)",
+                      "&:hover": {
+                        backgroundColor: themeState.scales.y.grid.color,
+                        borderColor: "rgba(0, 0, 0, 0.12)",
+                      },
                     }}
-                    onClick={() => setShowYScaleGridColorPicker(false)}
-                  />
-                  <Box
-                    sx={{
-                      position: "absolute",
-                      zIndex: 9999,
-                      ...(() => {
-                        const buttonEl = buttonRefs.get("y-scale-grid");
-                        if (!buttonEl) return {};
-                        const rect = buttonEl.getBoundingClientRect();
-                        const pickerHeight = 300;
-                        const viewportHeight = window.innerHeight;
+                  ></Button>
+                  {showYScaleGridColorPicker && (
+                    <Portal>
+                      <Box
+                        sx={{
+                          position: "fixed",
+                          top: 0,
+                          right: 0,
+                          bottom: 0,
+                          left: 0,
+                          zIndex: 9998,
+                          bgcolor: "rgba(0, 0, 0, 0.1)",
+                        }}
+                        onClick={() => setShowYScaleGridColorPicker(false)}
+                      />
+                      <Box
+                        sx={{
+                          position: "absolute",
+                          zIndex: 9999,
+                          ...(() => {
+                            const buttonEl = buttonRefs.get("y-scale-grid");
+                            if (!buttonEl) return {};
+                            const rect = buttonEl.getBoundingClientRect();
+                            const pickerHeight = 300;
+                            const viewportHeight = window.innerHeight;
 
-                        const wouldOverflowBottom =
-                          rect.bottom + pickerHeight + 5 > viewportHeight;
+                            const wouldOverflowBottom =
+                              rect.bottom + pickerHeight + 5 > viewportHeight;
 
-                        if (wouldOverflowBottom) {
-                          return {
-                            bottom:
-                              window.innerHeight -
-                              rect.top +
-                              window.scrollY +
-                              5,
-                            left: rect.left + window.scrollX,
-                          };
-                        } else {
-                          return {
-                            top: rect.bottom + window.scrollY + 5,
-                            left: rect.left + window.scrollX,
-                          };
-                        }
-                      })(),
-                    }}
-                  >
-                    <SketchPicker
-                      color={themeState.scales.y.grid.color}
-                      onChange={(color: ColorResult) =>
-                        setThemeState({
-                          ...themeState,
-                          scales: {
-                            ...themeState.scales,
-                            y: {
-                              ...themeState.scales.y,
-                              grid: {
-                                ...themeState.scales.y.grid,
-                                color: color.hex,
+                            if (wouldOverflowBottom) {
+                              return {
+                                bottom:
+                                  window.innerHeight -
+                                  rect.top +
+                                  window.scrollY +
+                                  5,
+                                left: rect.left + window.scrollX,
+                              };
+                            } else {
+                              return {
+                                top: rect.bottom + window.scrollY + 5,
+                                left: rect.left + window.scrollX,
+                              };
+                            }
+                          })(),
+                        }}
+                      >
+                        <SketchPicker
+                          color={themeState.scales.y.grid.color}
+                          onChange={(color: ColorResult) =>
+                            setThemeState({
+                              ...themeState,
+                              scales: {
+                                ...themeState.scales,
+                                y: {
+                                  ...themeState.scales.y,
+                                  grid: {
+                                    ...themeState.scales.y.grid,
+                                    color: color.hex,
+                                  },
+                                },
                               },
-                            },
-                          },
-                        })
-                      }
-                    />
-                  </Box>
-                </Portal>
-              )}
+                            })
+                          }
+                        />
+                      </Box>
+                    </Portal>
+                  )}
+                </Box>
+              </Box>
             </Grid>
             <Grid size={{ xs: 12, sm: 6 }} component="div">
               <FormControl fullWidth size="small" margin="dense">
@@ -1860,10 +1844,7 @@ const CreateThemeDialog = ({ open, onClose }: CreateThemeDialogProps) => {
                     },
                   })
                 }
-                inputProps={{
-                  min: 1,
-                  style: { textAlign: "left" },
-                }}
+                {...numberInputStyles}
               />
             </Grid>
             <Grid size={{ xs: 12, sm: 6 }} component="div">
@@ -2065,10 +2046,7 @@ const CreateThemeDialog = ({ open, onClose }: CreateThemeDialogProps) => {
                     },
                   })
                 }
-                inputProps={{
-                  min: 0,
-                  style: { textAlign: "left" },
-                }}
+                {...numberInputStyles}
               />
             </Grid>
             <Grid size={{ xs: 12, sm: 6 }} component="div">
@@ -2273,10 +2251,7 @@ const CreateThemeDialog = ({ open, onClose }: CreateThemeDialogProps) => {
                     },
                   })
                 }
-                inputProps={{
-                  min: 0,
-                  style: { textAlign: "left" },
-                }}
+                {...numberInputStyles}
               />
             </Grid>
             <Grid size={{ xs: 12, sm: 6 }} component="div">
@@ -2299,10 +2274,7 @@ const CreateThemeDialog = ({ open, onClose }: CreateThemeDialogProps) => {
                     },
                   })
                 }
-                inputProps={{
-                  min: 0,
-                  style: { textAlign: "left" },
-                }}
+                {...numberInputStyles}
               />
             </Grid>
           </Grid>
@@ -2377,12 +2349,7 @@ const CreateThemeDialog = ({ open, onClose }: CreateThemeDialogProps) => {
                     },
                   })
                 }
-                inputProps={{
-                  min: 0,
-                  max: 1,
-                  step: 0.1,
-                  style: { textAlign: "left" },
-                }}
+                {...numberInputStyles}
               />
             </Grid>
             <Grid size={{ xs: 12, sm: 6 }} component="div">

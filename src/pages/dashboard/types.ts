@@ -10,6 +10,9 @@ export interface Dashboard {
   description: string;
   isDeleted: boolean;
   isActive: boolean;
+  settings: {
+    gridColumns: number;
+  };
   createdAt: string;
   updatedAt: string;
   __v: number;
