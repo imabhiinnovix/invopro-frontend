@@ -512,7 +512,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
         };
 
         // Make the API call
-        const response = await axiosInstance.post('/dataSource/detailedData', payload);
+        const response = await axiosInstance.post('/dataSource/getWidgetDataByFilter', payload);
         
         if (response.data.success) {
           setDrillDownData(response.data.data);
