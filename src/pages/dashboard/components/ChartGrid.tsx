@@ -492,6 +492,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
       return false;
     });
 
+
     if (clickedData) {
       // Open modal immediately
       setDrillDownTitle(`${chart.name} - ${clickedData.name}`);
@@ -510,9 +511,8 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
         const groupBy = chart.groupBy
           ? Array.isArray(chart.groupBy)
             ? chart.groupBy.map(group => {
-            
-            console.log("🚀 ~ handleChartClick ~ group̥:", group)
-            return{ [group]: clickedData.name }})
+              console.log("🚀 ~ handleChartClick ~ group:", group, clickedData, clickedData[group])
+              return{ [group]: clickedData[group] }})
             : [{ [chart.groupBy]: clickedData.name }]
           : [];
         
