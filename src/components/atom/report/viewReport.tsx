@@ -1,23 +1,14 @@
 'use client';
-import React, { useEffect, useMemo, useRef, useState } from 'react';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Paper,
-  Box,
-  Tooltip,
-  IconButton,
-} from '@mui/material';
+import React, { useEffect, useRef, useState } from 'react';
+import { Table, TableBody, TableCell, TableContainer, TableRow, Box, Tooltip, IconButton } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import useGet from '../../../hooks/useGet';
 import { GET } from '../../../services/apiRoutes';
 import ZoomInIcon from '@mui/icons-material/ZoomIn';
 import ZoomOutIcon from '@mui/icons-material/ZoomOut';
 import RestartAltIcon from '@mui/icons-material/RestartAlt';
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
+import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 
 // Styled components for custom table styling
 const StyledTableContainer = styled(TableContainer)({
@@ -80,12 +71,10 @@ const formatValue = ({ value, type }: { value: any; type: string }) => {
 };
 
 interface ViewReportProps {
-  setViewReportRequestId: React.Dispatch<React.SetStateAction<string>>;
   viewReportRequestId: string;
   reportDetailData: string;
-  targetRef: any;
   maxHeight?: number;
-  isZoom?: boolean;
+  isView?: boolean;
 }
 
 type Alignment = 'left' | 'center' | 'right';
@@ -100,6 +89,8 @@ interface SubSection {
   verticalAlignment: Alignment;
   type: HeaderType;
   spanColumns: boolean;
+  view: string;
+  lastCellBackGroundColor: string;
 }
 
 interface Section {
@@ -110,6 +101,7 @@ interface Section {
   sectionVerticalAlignment: Alignment;
   spanColumns: boolean;
   subSections: SubSection[];
+  view: string;
 }
 
 interface ReportRequestData {
@@ -117,14 +109,14 @@ interface ReportRequestData {
   data: Record<string, any>[];
   sections: Section[];
 }
-const ViewReport: React.FC<ViewReportProps> = ({
-  setViewReportRequestId,
-  reportDetailData,
-  viewReportRequestId,
-  targetRef,
-  maxHeight,
-  isZoom,
-}) => {
+const ViewReport: React.FC<ViewReportProps> = ({ reportDetailData, viewReportRequestId, maxHeight, isView }) => {
+  const [collapsedSections, setCollapsedSections] = useState<Record<number, boolean>>({});
+  const toggleSection = (index: number) => {
+    setCollapsedSections((prev) => ({
+      ...prev,
+      [index]: !prev[index],
+    }));
+  };
   const [zoomScale, setZoomScale] = useState(1);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const allReportData = useGet<ReportRequestData>(
@@ -172,7 +164,7 @@ const ViewReport: React.FC<ViewReportProps> = ({
 
   return (
     <Box sx={{ width: '100%', marginBottom: 5 }}>
-      {isZoom && (
+      {isView && (
         <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 1 }}>
           <Tooltip title="Zoom Out (Ctrl+-)">
             <IconButton onClick={handleZoomOut} disabled={zoomScale <= 0.5}>
@@ -212,12 +204,27 @@ const ViewReport: React.FC<ViewReportProps> = ({
                             bgColor={formatColor(section.sectionBackGroundColor)}
                             textColor={formatColor(section.sectionColor)}
                             fontWeight="bold"
+                            onClick={() => toggleSection(sectionIndex)}
                           >
-                            {section.sectionName}
+                            <Box
+                              sx={{
+                                cursor: 'pointer',
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                alignItems: 'center',
+                              }}
+                            >
+                              {' '}
+                              <Box sx={{ flex: 1 }}>{section.sectionName}</Box>
+                              <Box sx={{ pr: 1 }}>
+                                {collapsedSections[sectionIndex] ? <KeyboardArrowDownIcon /> : <KeyboardArrowUpIcon />}
+                              </Box>
+                            </Box>
                           </DynamicCell>
                         </TableRow>
                       )}
-                      {isRowView &&
+                      {!collapsedSections[sectionIndex] &&
+                        isRowView &&
                         subSections.map((subSection, subIndex) => (
                           <TableRow key={`subrow-${subIndex}`}>
                             <DynamicCell
@@ -246,7 +253,7 @@ const ViewReport: React.FC<ViewReportProps> = ({
                           </TableRow>
                         ))}
 
-                      {isColumnView && (
+                      {!collapsedSections[sectionIndex] && isColumnView && (
                         <>
                           <TableRow>
                             {subSections.map((subSection, subIndex) => (

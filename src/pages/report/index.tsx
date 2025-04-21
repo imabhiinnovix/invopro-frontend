@@ -70,7 +70,6 @@ export default function Report() {
         sx={{
           display: 'flex',
           alignItems: 'center',
-          // height: '56px',
           px: 3,
           py: 1,
           backgroundColor: 'white',
@@ -173,12 +172,10 @@ export default function Report() {
               activeTab === index && (
                 <ViewReport
                   key={index}
-                  targetRef={''}
                   reportDetailData={item.dataSourceVersionId}
-                  setViewReportRequestId={setViewReportRequestId}
                   viewReportRequestId={viewReportRequestId}
                   maxHeight={maxHeight}
-                  isZoom={true}
+                  isView={true}
                 />
               )
           )}
@@ -242,9 +239,7 @@ export default function Report() {
                   </Box>
                   <ViewReport
                     key={index}
-                    targetRef={''}
                     reportDetailData={item.dataSourceVersionId}
-                    setViewReportRequestId={setViewReportRequestId}
                     viewReportRequestId={viewReportRequestId}
                   />
                 </Box>
