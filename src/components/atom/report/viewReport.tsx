@@ -166,14 +166,14 @@ const ViewReport: React.FC<ViewReportProps> = ({ reportDetailData, viewReportReq
     <Box sx={{ width: '100%', marginBottom: 5 }}>
       {isView && (
         <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 1 }}>
-          <Tooltip title="Zoom Out (Ctrl+-)">
-            <IconButton onClick={handleZoomOut} disabled={zoomScale <= 0.5}>
-              <ZoomOutIcon />
-            </IconButton>
-          </Tooltip>
           <Tooltip title="Reset Zoom (Ctrl+0)">
             <IconButton onClick={handleResetZoom} disabled={zoomScale === 1}>
               <RestartAltIcon />
+            </IconButton>
+          </Tooltip>
+          <Tooltip title="Zoom Out (Ctrl+-)">
+            <IconButton onClick={handleZoomOut} disabled={zoomScale <= 0.5}>
+              <ZoomOutIcon />
             </IconButton>
           </Tooltip>
           <Tooltip title="Zoom In (Ctrl++)">
