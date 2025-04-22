@@ -68,7 +68,6 @@ interface AttributeOptionTableProps {
   setViewReportRequestId: React.Dispatch<React.SetStateAction<string>>;
   setViewReportNameWithVersionValue: React.Dispatch<React.SetStateAction<string>>;
   setAllDetailData: React.Dispatch<React.SetStateAction<ReportRequestResponse | null>>;
-  setReportDetailData: React.Dispatch<React.SetStateAction<string>>;
 }
 
 interface ReportRequestData {
@@ -83,7 +82,6 @@ const ReportRequestTable: React.FC<AttributeOptionTableProps> = ({
   setViewReportRequestId,
   setViewReportNameWithVersionValue,
   setAllDetailData,
-  setReportDetailData,
 }) => {
   const [reportRequests, setReportRequests] = useState<ReportRequestResponse[]>([]);
   const [currentPage, setCurrentPage] = useState<number>(1);
@@ -301,10 +299,6 @@ const ReportRequestTable: React.FC<AttributeOptionTableProps> = ({
                     <StyledButton
                       onClick={() => {
                         setAllDetailData(data);
-                        const versionId = data?.dataSourceVersion?.[0]?.dataSourceVersionId;
-                        if (versionId) {
-                          setReportDetailData(versionId);
-                        }
                         setViewReportRequestId(data._id);
                         setViewReportNameWithVersionValue(`${data.customReportId?.reportName}-${data.versionValue}`);
                       }}

@@ -4,14 +4,16 @@ import { useEffect, useRef, useState } from 'react';
 import ReportRequestTable from '../../components/atom/report/reportRequestTable';
 import ViewReport from '../../components/atom/report/viewReport';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import { ReportRequestResponse } from '../../components/atom/report/types';
+import type { ReportRequestResponse } from '../../components/atom/report/types';
 import { DateTime } from 'luxon';
 import html2pdf from 'html2pdf.js';
+import ReportSelection from '../../components/atom/report/changeReportFromViewReport';
+import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 
 export default function Report() {
   const [reload, setReload] = useState(false);
   const [viewReportRequestId, setViewReportRequestId] = useState('');
-  const [reportDetailData, setReportDetailData] = useState('');
+
   const [maxHeight, setMaxHeight] = useState<number>(0);
 
   const headerRef = useRef<HTMLDivElement>(null);
@@ -20,7 +22,6 @@ export default function Report() {
 
   const [allDetailData, setAllDetailData] = useState<ReportRequestResponse | null>(null);
   const [activeTab, setActiveTab] = useState(0);
-  const [activeTabName, setActiveTabName] = useState('');
 
   const [viewReportNameWithVersionValue, setViewReportNameWithVersionValue] = useState('');
 
@@ -57,6 +58,7 @@ export default function Report() {
 
     html2pdf().set(opt).from(targetRef.current.innerHTML).save();
   };
+
   return (
     <Box
       sx={{
@@ -65,77 +67,78 @@ export default function Report() {
         minHeight: 'calc(100vh - 64px)',
       }}
     >
-      <Box
-        ref={headerRef}
-        sx={{
-          display: 'flex',
-          alignItems: 'center',
-          px: 3,
-          py: 1,
-          backgroundColor: 'white',
-          borderBottom: '1px solid',
-          borderColor: 'divider',
-        }}
-      >
+      <Box ref={headerRef}>
         {viewReportRequestId && viewReportRequestId.length > 0 ? (
-          <Box
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              width: '100%',
-            }}
-          >
+          <>
+            <Box
+              sx={{
+                cursor: 'pointer',
+                transition: 'transform 0.2s ease-in-out',
+                '&:hover': {
+                  transform: 'scale(1.2)',
+                },
+              }}
+              onClick={() => {
+                setViewReportRequestId('');
+              }}
+            >
+              <ArrowBackIcon fontSize="medium" />
+            </Box>
+            <ReportSelection
+              defaultReport={{
+                _id: allDetailData?.customReportId?._id || '',
+                reportName: allDetailData?.customReportId?.reportName || '',
+              }}
+              defaultVersion={{ _id: allDetailData?._id || '', versionValue: allDetailData?.versionValue || '' }}
+              setViewReportRequestId={setViewReportRequestId}
+              setAllDetailData={setAllDetailData}
+              setViewReportNameWithVersionValue={setViewReportNameWithVersionValue}
+            />
             <Box
               sx={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: 1,
+                justifyContent: 'space-between',
+                p: 2,
               }}
             >
               <Box
                 sx={{
-                  cursor: 'pointer',
-                  transition: 'transform 0.2s ease-in-out',
-                  '&:hover': {
-                    transform: 'scale(1.2)',
-                  },
-                }}
-                onClick={() => {
-                  setViewReportRequestId('');
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 1,
                 }}
               >
-                <ArrowBackIcon fontSize="medium" />
+                <Typography
+                  variant="h6"
+                  sx={{
+                    fontWeight: 500,
+                    color: 'text.primary',
+                  }}
+                >
+                  {`${allDetailData?.customReportId?.reportName || ''} Report for the period ${
+                    allDetailData?.versionValue
+                      ? DateTime.fromFormat(allDetailData.versionValue, 'yyyy-MM').toFormat('LLLL yyyy')
+                      : ''
+                  } created by ${`${allDetailData?.createdBy?.firstName || ''}${
+                    allDetailData?.createdBy?.lastName ? ' ' + allDetailData.createdBy.lastName : ''
+                  }`} at ${
+                    allDetailData?.createdAt
+                      ? DateTime.fromISO(allDetailData.createdAt).toFormat('dd LLL yyyy hh:mm a')
+                      : ''
+                  }`}
+                </Typography>
               </Box>
-              <Typography
-                variant="h6"
-                sx={{
-                  fontWeight: 500,
-                  color: 'text.primary',
-                }}
-              >
-                {`${allDetailData?.customReportId?.reportName || ''} Report for the period ${
-                  allDetailData?.versionValue
-                    ? DateTime.fromFormat(allDetailData.versionValue, 'yyyy-MM').toFormat('LLLL yyyy')
-                    : ''
-                } created by ${`${allDetailData?.createdBy?.firstName || ''}${
-                  allDetailData?.createdBy?.lastName ? ' ' + allDetailData.createdBy.lastName : ''
-                }`} at ${
-                  allDetailData?.createdAt
-                    ? DateTime.fromISO(allDetailData.createdAt).toFormat('dd LLL yyyy hh:mm a')
-                    : ''
-                }`}
-              </Typography>
-            </Box>
 
-            <Button
-              disabled={!(viewReportNameWithVersionValue && viewReportNameWithVersionValue.length > 0)}
-              variant="contained"
-              onClick={handleDownloadPdf}
-            >
-              Download PDF
-            </Button>
-          </Box>
+              <Button
+                variant="contained"
+                disabled={!(viewReportNameWithVersionValue && viewReportNameWithVersionValue.length > 0)}
+                onClick={handleDownloadPdf}
+              >
+                <PictureAsPdfIcon />
+              </Button>
+            </Box>
+          </>
         ) : (
           <Typography
             variant="h5"
@@ -158,9 +161,6 @@ export default function Report() {
                 style={tabStyle(index)}
                 onClick={() => {
                   setActiveTab(index);
-                  setActiveTabName(item.name);
-                  setViewReportRequestId(viewReportRequestId);
-                  setReportDetailData(item.dataSourceVersionId);
                 }}
               >
                 {item.name}
@@ -281,7 +281,6 @@ export default function Report() {
               setReload={setReload}
               reload={reload}
               setViewReportRequestId={setViewReportRequestId}
-              setReportDetailData={setReportDetailData}
               setAllDetailData={setAllDetailData}
               setViewReportNameWithVersionValue={setViewReportNameWithVersionValue}
             />
