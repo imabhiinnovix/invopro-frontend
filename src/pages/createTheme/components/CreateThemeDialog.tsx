@@ -27,6 +27,8 @@ import {
 import usePost from "../../../hooks/usePost";
 import { POST } from "../../../services/apiRoutes";
 import { styled } from "@mui/material/styles";
+import { useAppDispatch } from "../../../storeHooks";
+import { fetchThemeList } from "../themeActions";
 
 const fontFamilies = [
   "Arial",
@@ -78,6 +80,7 @@ const StyledButton = styled(Button)(({ theme }) => ({
 }));
 
 const CreateThemeDialog = ({ open, onClose }: CreateThemeDialogProps) => {
+  const dispatch = useAppDispatch();
   const [themeState, setThemeState] = React.useState<ThemeData>({
     name: "",
     title: {
@@ -299,6 +302,7 @@ const CreateThemeDialog = ({ open, onClose }: CreateThemeDialogProps) => {
           borderColor: ["#2980b9", "#c0392b", "#27ae60"],
           backgroundColor: ["#3498db55", "#e74c3c55", "#2ecc7155"],
         });
+        dispatch(fetchThemeList());
         onClose();
       }
     },
