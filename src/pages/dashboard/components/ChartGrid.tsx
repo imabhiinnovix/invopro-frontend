@@ -58,7 +58,6 @@ import TableChartIcon from "@mui/icons-material/TableChart";
 import { toast } from "react-toastify";
 import jsPDF from "jspdf";
 import axiosInstance from "../../../services/axiosInstance";
-import { POST } from "../../../services/apiRoutes";
 
 // Register ChartJS components
 ChartJS.register(
@@ -81,6 +80,7 @@ interface ChartGridProps {
   onEditChart: (chart: ChartResponse) => void;
   isAddChartModalOpen: boolean;
   isEditChartModalOpen: boolean;
+  gridColumns: number;
 }
 
 interface ChartDataItem {
@@ -263,7 +263,7 @@ const DrillDownDialog = styled(Dialog)({
 const DrillDownTable = styled(Table)(({ theme }) => ({
   "& .MuiTableCell-root": {
     padding: theme.spacing(1.5),
-    fontSize: '0.875rem',
+    fontSize: "0.875rem",
   },
   "& .MuiTableHead-root": {
     backgroundColor: theme.palette.background.default,
@@ -275,11 +275,11 @@ const DrillDownTable = styled(Table)(({ theme }) => ({
   },
   "& .MuiTableBody-root": {
     "& .MuiTableRow-root": {
-      transition: 'background-color 0.2s',
-      '&:hover': {
+      transition: "background-color 0.2s",
+      "&:hover": {
         backgroundColor: theme.palette.action.hover,
       },
-      '&:last-child td': {
+      "&:last-child td": {
         borderBottom: 0,
       },
     },
@@ -293,7 +293,7 @@ const DrillDownTable = styled(Table)(({ theme }) => ({
 const StyledTableContainer = styled(Paper)(({ theme }) => ({
   borderRadius: theme.shape.borderRadius,
   boxShadow: theme.shadows[1],
-  overflow: 'hidden',
+  overflow: "hidden",
 }));
 
 export const ChartGrid: React.FC<ChartGridProps> = ({
@@ -302,6 +302,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
   onEditChart,
   isAddChartModalOpen,
   isEditChartModalOpen,
+  gridColumns,
 }) => {
   const dispatch = useAppDispatch();
   const theme = useTheme();
@@ -315,17 +316,20 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
       widgetData: state.dashboard.widgetData,
     }));
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const [selectedChart, setSelectedChart] = useState<ChartResponse | null>(null);
+  const [selectedChart, setSelectedChart] = useState<ChartResponse | null>(
+    null
+  );
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [fullViewOpen, setFullViewOpen] = useState(false);
-  const [exportMenuAnchorEl, setExportMenuAnchorEl] = useState<null | HTMLElement>(null);
+  const [exportMenuAnchorEl, setExportMenuAnchorEl] =
+    useState<null | HTMLElement>(null);
   const [drillDownOpen, setDrillDownOpen] = useState(false);
   const [drillDownData, setDrillDownData] = useState<ChartDataItem[]>([]);
   const [drillDownTitle, setDrillDownTitle] = useState<string>("");
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [totalRecords, setTotalRecords] = useState(0);
+  const [, setTotalRecords] = useState(0);
   const [isDrillDownLoading, setIsDrillDownLoading] = useState(false);
   const itemsPerPage = 10;
 
@@ -508,12 +512,15 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
     setSelectedChart(null);
   };
 
-  const handleChartClick = async (chart: ChartResponse, elements: ActiveElement[]) => {
+  const handleChartClick = async (
+    chart: ChartResponse,
+    elements: ActiveElement[]
+  ) => {
     if (!elements || !elements.length) return;
-    
+
     const clickedElement = elements[0];
     const chartData = widgetData[chart._id]?.data || chart.data || [];
-    
+
     // Get the clicked data point details
     const clickedData = chartData.find((item: ChartDataItem) => {
       const dataIndex = clickedElement.index;
@@ -522,7 +529,6 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
       }
       return false;
     });
-
 
     if (clickedData) {
       // Open modal immediately
@@ -533,20 +539,26 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
 
       try {
         // Prepare the request payload
-        const dimensions = chart.dimensions 
-          ? Array.isArray(chart.dimensions) 
-            ? chart.dimensions.map(dim => ({ [dim]: clickedData.name }))
+        const dimensions = chart.dimensions
+          ? Array.isArray(chart.dimensions)
+            ? chart.dimensions.map((dim) => ({ [dim]: clickedData.name }))
             : [{ [chart.dimensions]: clickedData.name }]
           : [];
 
         const groupBy = chart.groupBy
           ? Array.isArray(chart.groupBy)
-            ? chart.groupBy.map(group => {
-              console.log("🚀 ~ handleChartClick ~ group:", group, clickedData, clickedData[group])
-              return{ [group]: clickedData[group] }})
+            ? chart.groupBy.map((group) => {
+                console.log(
+                  "🚀 ~ handleChartClick ~ group:",
+                  group,
+                  clickedData,
+                  clickedData[group]
+                );
+                return { [group]: clickedData[group] };
+              })
             : [{ [chart.groupBy]: clickedData.name }]
           : [];
-        
+
         const payload = {
           dataSourceId: chart.dataSourceId?._id,
           entityId: chart.dataSourceId?.entityId,
@@ -554,22 +566,25 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
           dimensions,
           groupBy,
           page: 1,
-          limit: itemsPerPage
+          limit: itemsPerPage,
         };
 
         // Make the API call
-        const response = await axiosInstance.post('/dataSource/getWidgetDataByFilter', payload);
-        
+        const response = await axiosInstance.post(
+          "/dataSource/getWidgetDataByFilter",
+          payload
+        );
+
         if (response.data.success) {
           setDrillDownData(response.data.data);
           setTotalPages(response.data.pagination.totalPages);
           setTotalRecords(response.data.pagination.totalRecords);
         } else {
-          toast.error(response.data.message || 'Failed to fetch detailed data');
+          toast.error(response.data.message || "Failed to fetch detailed data");
         }
       } catch (error) {
-        console.error('Error fetching detailed data:', error);
-        toast.error('Failed to fetch detailed data');
+        console.error("Error fetching detailed data:", error);
+        toast.error("Failed to fetch detailed data");
       } finally {
         setIsDrillDownLoading(false);
       }
@@ -582,23 +597,28 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
     setDrillDownTitle("");
   };
 
-  const handlePageChange = async (event: React.ChangeEvent<unknown>, value: number) => {
+  const handlePageChange = async (
+    event: React.ChangeEvent<unknown>,
+    value: number
+  ) => {
     if (!selectedChart) return;
-    
+
     try {
       const clickedData = drillDownData[0]; // Get the first item to maintain the filter
-      const dimensions = selectedChart.dimensions 
-        ? Array.isArray(selectedChart.dimensions) 
-          ? selectedChart.dimensions.map(dim => ({ [dim]: clickedData.name }))
+      const dimensions = selectedChart.dimensions
+        ? Array.isArray(selectedChart.dimensions)
+          ? selectedChart.dimensions.map((dim) => ({ [dim]: clickedData.name }))
           : [{ [selectedChart.dimensions]: clickedData.name }]
         : [];
 
       const groupBy = selectedChart.groupBy
         ? Array.isArray(selectedChart.groupBy)
-          ? selectedChart.groupBy.map(group => ({ [group]: clickedData.name }))
+          ? selectedChart.groupBy.map((group) => ({
+              [group]: clickedData.name,
+            }))
           : [{ [selectedChart.groupBy]: clickedData.name }]
         : [];
-      
+
       const payload = {
         dataSourceId: selectedChart.dataSourceId?._id,
         entityId: selectedChart.dataSourceId?.entityId,
@@ -606,22 +626,25 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
         dimensions,
         groupBy,
         page: value,
-        limit: itemsPerPage
+        limit: itemsPerPage,
       };
 
-      const response = await axiosInstance.post('/dataSource/getWidgetDataByFilter', payload);
-      
+      const response = await axiosInstance.post(
+        "/dataSource/getWidgetDataByFilter",
+        payload
+      );
+
       if (response.data.success) {
         setDrillDownData(response.data.data);
         setTotalPages(response.data.pagination.totalPages);
         setTotalRecords(response.data.pagination.totalRecords);
         setCurrentPage(value);
       } else {
-        toast.error(response.data.message || 'Failed to fetch detailed data');
+        toast.error(response.data.message || "Failed to fetch detailed data");
       }
     } catch (error) {
-      console.error('Error fetching detailed data:', error);
-      toast.error('Failed to fetch detailed data');
+      console.error("Error fetching detailed data:", error);
+      toast.error("Failed to fetch detailed data");
     }
   };
 
@@ -1411,7 +1434,10 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
   };
 
   const renderDrillDownDialog = () => {
-    const columns = drillDownData.length > 0 ? Object.keys(drillDownData[0]).filter(key => key !== '_id') : [];
+    const columns =
+      drillDownData.length > 0
+        ? Object.keys(drillDownData[0]).filter((key) => key !== "_id")
+        : [];
 
     return (
       <DrillDownDialog
@@ -1419,14 +1445,23 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
         onClose={handleDrillDownClose}
         aria-labelledby="drill-down-dialog-title"
       >
-        <DialogTitle id="drill-down-dialog-title" sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: `1px solid ${theme.palette.divider}`, p: 2 }}>
+        <DialogTitle
+          id="drill-down-dialog-title"
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            borderBottom: `1px solid ${theme.palette.divider}`,
+            p: 2,
+          }}
+        >
           <Typography variant="h6">{drillDownTitle}</Typography>
           <IconButton
             onClick={handleDrillDownClose}
             size="small"
             sx={{
               color: theme.palette.text.secondary,
-              '&:hover': {
+              "&:hover": {
                 color: theme.palette.text.primary,
                 backgroundColor: theme.palette.action.hover,
               },
@@ -1435,13 +1470,20 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
             <CloseIcon />
           </IconButton>
         </DialogTitle>
-        <DialogContent sx={{ p: 3, display: 'flex', flexDirection: 'column', height: '100%' }}>
-          <StyledTableContainer sx={{ flex: 1, overflow: 'auto' }}>
+        <DialogContent
+          sx={{
+            p: 3,
+            display: "flex",
+            flexDirection: "column",
+            height: "100%",
+          }}
+        >
+          <StyledTableContainer sx={{ flex: 1, overflow: "auto" }}>
             <DrillDownTable>
               <TableHead>
                 <TableRow>
                   {columns.map((column) => (
-                    <TableCell key={column} sx={{ fontWeight: 'bold' }}>
+                    <TableCell key={column} sx={{ fontWeight: "bold" }}>
                       {column}
                     </TableCell>
                   ))}
@@ -1454,7 +1496,14 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
                     <TableRow key={index}>
                       {columns.map((column) => (
                         <TableCell key={column}>
-                          <Box sx={{ width: '100%', height: 20, bgcolor: 'grey.200', borderRadius: 1 }} />
+                          <Box
+                            sx={{
+                              width: "100%",
+                              height: 20,
+                              bgcolor: "grey.200",
+                              borderRadius: 1,
+                            }}
+                          />
                         </TableCell>
                       ))}
                     </TableRow>
@@ -1464,8 +1513,8 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
                     <TableRow key={index}>
                       {columns.map((column) => (
                         <TableCell key={column}>
-                          {typeof row[column] === 'number' 
-                            ? row[column].toLocaleString() 
+                          {typeof row[column] === "number"
+                            ? row[column].toLocaleString()
                             : row[column]}
                         </TableCell>
                       ))}
@@ -1482,16 +1531,18 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
             </DrillDownTable>
           </StyledTableContainer>
           {!isDrillDownLoading && drillDownData.length > 0 && (
-            <Box sx={{ 
-              display: 'flex', 
-              justifyContent: 'center', 
-              mt: 'auto',
-              pt: 3,
-              pb: 2,
-              borderTop: `1px solid ${theme.palette.divider}`
-            }}>
-              <Pagination 
-                count={totalPages} 
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "center",
+                mt: "auto",
+                pt: 3,
+                pb: 2,
+                borderTop: `1px solid ${theme.palette.divider}`,
+              }}
+            >
+              <Pagination
+                count={totalPages}
                 page={currentPage}
                 onChange={handlePageChange}
                 color="primary"
@@ -1525,7 +1576,15 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
           <Grid
             item
             xs={12}
-            md={isAddChartModalOpen || isEditChartModalOpen ? 12 : 6}
+            md={
+              isAddChartModalOpen || isEditChartModalOpen
+                ? 12
+                : gridColumns === 1
+                ? 12
+                : gridColumns === 2
+                ? 6
+                : 4
+            }
             key={chart._id}
             sx={{
               display: "flex",

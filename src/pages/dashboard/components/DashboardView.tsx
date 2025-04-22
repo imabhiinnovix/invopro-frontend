@@ -1,8 +1,11 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Box, Typography, TextField, Button } from "@mui/material";
+import { Box, Typography, TextField, Button, ButtonGroup } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import EditIcon from "@mui/icons-material/Edit";
 import DoneIcon from "@mui/icons-material/Done";
+import PauseIcon from "@mui/icons-material/Pause";
+import ViewColumnIcon from "@mui/icons-material/ViewColumn";
+import SquareIcon from "@mui/icons-material/Square";
 import { useParams, useLocation } from "react-router-dom";
 import { ChartGrid } from "./ChartGrid";
 import { AddChartModal, ChartFormData } from "./AddChartModal";
@@ -14,6 +17,8 @@ import {
 } from "../dashboardActions";
 import { toast } from "react-toastify";
 import { ChartResponse, TemporaryChart } from "../types";
+import usePost from "../../../hooks/usePost";
+import { POST } from "../../../services/apiRoutes";
 
 interface DashboardViewProps {
   title: string;
@@ -32,6 +37,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   const [selectedChart, setSelectedChart] = useState<ChartResponse | null>(
     null
   );
+  const [gridColumns, setGridColumns] = useState(2);
+
   const inputRef = useRef<HTMLInputElement>(null);
   const { id: dashboardId } = useParams();
   const location = useLocation();
@@ -41,6 +48,27 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   );
   const dashboards = useAppSelector((state) => state.dashboard.dashboards);
   const currentDashboard = dashboards.find((d) => d._id === dashboardId);
+
+  const postGridColumns = usePost([""]);
+
+  useEffect(() => {
+    if (dashboards.length > 0) {
+      setGridColumns(
+        dashboards.find((dashboard) => dashboard?._id === dashboardId)?.settings
+          ?.gridColumns || 2
+      );
+    }
+  }, [dashboards, dashboardId]);
+
+  const handleGridColumns = (columns: number) => {
+    setGridColumns(columns);
+    postGridColumns.mutate({
+      url: `${POST.UPDATE_DASHBOARD}/${dashboardId}`,
+      payload: {
+        gridColumns: columns,
+      },
+    });
+  };
 
   useEffect(() => {
     setIsEditMode(true);
@@ -178,7 +206,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
       <Box
         sx={{
           p: 3,
-          pb: 0,
+          // pb: 0,
           // mb: 3,
           display: "flex",
           alignItems: "center",
@@ -230,14 +258,39 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               </Button>
             </>
           ) : (
-            <Button
-              onClick={handleEditModeToggle}
-              color="primary"
-              variant="contained"
-              startIcon={<EditIcon />}
-            >
-              Edit
-            </Button>
+            <>
+              <ButtonGroup variant="outlined" aria-label="grid columns">
+                <Button
+                  onClick={() => handleGridColumns(1)}
+                  variant={gridColumns === 1 ? "contained" : "outlined"}
+                  sx={{ minWidth: "40px" }}
+                >
+                  <SquareIcon />
+                </Button>
+                <Button
+                  onClick={() => handleGridColumns(2)}
+                  variant={gridColumns === 2 ? "contained" : "outlined"}
+                  sx={{ minWidth: "40px" }}
+                >
+                  <PauseIcon />
+                </Button>
+                <Button
+                  onClick={() => handleGridColumns(3)}
+                  variant={gridColumns === 3 ? "contained" : "outlined"}
+                  sx={{ minWidth: "40px" }}
+                >
+                  <ViewColumnIcon />
+                </Button>
+              </ButtonGroup>
+              <Button
+                onClick={handleEditModeToggle}
+                color="primary"
+                variant="contained"
+                startIcon={<EditIcon />}
+              >
+                Edit
+              </Button>
+            </>
           )}
         </Box>
       </Box>
@@ -263,7 +316,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               lg: "repeat(auto-fit, minmax(500px, 1fr))",
             },
             gap: 3,
-            p: 3,
+            p: 1,
+
             transition: "all 0.3s ease",
             ...((isAddChartModalOpen || isEditChartModalOpen) && {
               flex: "1 1 70%",
@@ -288,6 +342,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               onEditChart={handleEditChart}
               isAddChartModalOpen={isAddChartModalOpen}
               isEditChartModalOpen={isEditChartModalOpen}
+              gridColumns={gridColumns}
             />
           )}
         </Box>
