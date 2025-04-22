@@ -65,6 +65,7 @@ export default function Report() {
         width: '100%',
         backgroundColor: '#F8FAFC',
         minHeight: 'calc(100vh - 64px)',
+        p: 1,
       }}
     >
       <Box ref={headerRef}>
@@ -73,10 +74,10 @@ export default function Report() {
             <Box
               sx={{
                 cursor: 'pointer',
-                transition: 'transform 0.2s ease-in-out',
-                '&:hover': {
-                  transform: 'scale(1.2)',
-                },
+                // transition: 'transform 0.2s ease-in-out',
+                // '&:hover': {
+                //   transform: 'scale(1.2)',
+                // },
               }}
               onClick={() => {
                 setViewReportRequestId('');
@@ -116,17 +117,23 @@ export default function Report() {
                     color: 'text.primary',
                   }}
                 >
-                  {`${allDetailData?.customReportId?.reportName || ''} Report for the period ${
-                    allDetailData?.versionValue
+                  <Box component="span" fontWeight="bold">
+                    {allDetailData?.customReportId?.reportName || ''}
+                  </Box>{' '}
+                  Report for the period{' '}
+                  <Box component="span" fontWeight="bold">
+                    {allDetailData?.versionValue
                       ? DateTime.fromFormat(allDetailData.versionValue, 'yyyy-MM').toFormat('LLLL yyyy')
-                      : ''
-                  } created by ${`${allDetailData?.createdBy?.firstName || ''}${
+                      : ''}
+                  </Box>{' '}
+                  created by{' '}
+                  {`${allDetailData?.createdBy?.firstName || ''}${
                     allDetailData?.createdBy?.lastName ? ' ' + allDetailData.createdBy.lastName : ''
-                  }`} at ${
-                    allDetailData?.createdAt
-                      ? DateTime.fromISO(allDetailData.createdAt).toFormat('dd LLL yyyy hh:mm a')
-                      : ''
-                  }`}
+                  }`}{' '}
+                  at{' '}
+                  {allDetailData?.createdAt
+                    ? DateTime.fromISO(allDetailData.createdAt).toFormat('dd LLL yyyy hh:mm a')
+                    : ''}
                 </Typography>
               </Box>
 
