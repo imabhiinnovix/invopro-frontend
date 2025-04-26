@@ -71,8 +71,13 @@ const formatValue = ({ value, type }: { value: any; type: string }) => {
 };
 
 interface ViewReportProps {
-  viewReportRequestId: string;
-  reportDetailData: string;
+  dataSourceVersionId: string;
+  versionCode: string;
+  mappingFuctionName: string;
+  versionValue: string;
+  sheetCode: string;
+  designCode: string;
+  customReportId: string;
   maxHeight?: number;
   isView?: boolean;
 }
@@ -89,27 +94,42 @@ interface SubSection {
   verticalAlignment: Alignment;
   type: HeaderType;
   spanColumns: boolean;
-  view: string;
+  fontBold: boolean;
   lastCellBackGroundColor: string;
 }
 
 interface Section {
   sectionName: string;
   sectionBackGroundColor: string;
-  sectionColor: string;
+  sectionTextColor: string;
   sectionHorizontalAlignment: Alignment;
   sectionVerticalAlignment: Alignment;
   spanColumns: boolean;
   subSections: SubSection[];
   view: string;
+  fontBold: boolean;
 }
 
 interface ReportRequestData {
   success: boolean;
   data: Record<string, any>[];
-  sections: Section[];
 }
-const ViewReport: React.FC<ViewReportProps> = ({ reportDetailData, viewReportRequestId, maxHeight, isView }) => {
+
+interface ReportResponseDesignData {
+  success: boolean;
+  data: Section[];
+}
+const ViewReport: React.FC<ViewReportProps> = ({
+  dataSourceVersionId,
+  versionCode,
+  mappingFuctionName,
+  versionValue,
+  sheetCode,
+  designCode,
+  customReportId,
+  maxHeight,
+  isView,
+}) => {
   const [collapsedSections, setCollapsedSections] = useState<Record<number, boolean>>({});
   const toggleSection = (index: number) => {
     setCollapsedSections((prev) => ({
@@ -119,10 +139,18 @@ const ViewReport: React.FC<ViewReportProps> = ({ reportDetailData, viewReportReq
   };
   const [zoomScale, setZoomScale] = useState(1);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const allReportData = useGet<ReportRequestData>(
-    [`allReportData`, String(viewReportRequestId), String(reportDetailData)],
-    GET?.Custom_Report + `/view/${viewReportRequestId}/${reportDetailData}`,
-    !!viewReportRequestId
+  const reportData = useGet<ReportRequestData>(
+    [`reportDataOnDataSourceVersionId`, String(dataSourceVersionId)],
+    GET?.Custom_Report +
+      `/reportDataOnDataSourceVersionId/${dataSourceVersionId}?versionCode=${versionCode}&mappingFuctionName=${mappingFuctionName}&versionValue=${versionValue}`,
+    !!dataSourceVersionId && !!versionCode && !!mappingFuctionName && !!versionValue
+  );
+
+  const designData = useGet<ReportResponseDesignData>(
+    [`customReportDesignData`, String(customReportId), String(dataSourceVersionId)],
+    GET?.Custom_Report +
+      `/customReportDesignData/${customReportId}?mappingFuctionName=${mappingFuctionName}&versionValue=${versionValue}&sheetCode=${sheetCode}&designCode=${designCode}`,
+    !!customReportId && !!mappingFuctionName && !!versionValue && !!sheetCode && !!designCode && !!dataSourceVersionId
   );
   // Zoom in function
   const handleZoomIn = () => {
@@ -186,122 +214,131 @@ const ViewReport: React.FC<ViewReportProps> = ({ reportDetailData, viewReportReq
       )}
       <ScrollContainer ref={scrollContainerRef} scale={zoomScale} maxHeight={maxHeight}>
         <ZoomContainer scale={zoomScale}>
-          <StyledTableContainer>
-            <Table size="small" aria-label="dynamic report table">
-              <TableBody>
-                {allReportData.data?.sections.map((section, sectionIndex) => {
-                  const subSections = section.subSections || [];
-                  const isRowView = section?.view === 'row' || subSections[0]?.view === 'row';
-                  const isColumnView = section?.view === 'column' || subSections[0]?.view === 'column';
-                  const formatColor = (color?: string) => (color ? `#${color}` : undefined);
-                  return (
-                    <React.Fragment key={`section-${sectionIndex}`}>
-                      {(section.sectionName || section.spanColumns) && (
-                        <TableRow>
-                          <DynamicCell
-                            colSpan={(allReportData.data?.data.length ?? 0) + 1}
-                            align={section.sectionHorizontalAlignment || 'center'}
-                            bgColor={formatColor(section.sectionBackGroundColor)}
-                            textColor={formatColor(section.sectionColor)}
-                            fontWeight="bold"
-                            onClick={() => toggleSection(sectionIndex)}
-                          >
-                            <Box
-                              sx={{
-                                cursor: 'pointer',
-                                display: 'flex',
-                                justifyContent: 'space-between',
-                                alignItems: 'center',
-                              }}
-                            >
-                              {' '}
-                              <Box sx={{ flex: 1 }}>{section.sectionName}</Box>
-                              <Box sx={{ pr: 1 }}>
-                                {collapsedSections[sectionIndex] ? <KeyboardArrowDownIcon /> : <KeyboardArrowUpIcon />}
-                              </Box>
-                            </Box>
-                          </DynamicCell>
-                        </TableRow>
-                      )}
-                      {!collapsedSections[sectionIndex] &&
-                        isRowView &&
-                        subSections.map((subSection, subIndex) => (
-                          <TableRow key={`subrow-${subIndex}`}>
-                            <DynamicCell
-                              bgColor={formatColor(subSection.headerBackGroundColor)}
-                              textColor={formatColor(subSection.headerColor)}
-                              fontWeight="bold"
-                              align={subSection.horizontalAlignment || 'left'}
-                            >
-                              {subSection.headerName}
-                            </DynamicCell>
-
-                            {allReportData.data?.data.map((rowData, dataIndex) => (
-                              <DynamicCell
-                                key={`rowdata-${dataIndex}`}
-                                bgColor={formatColor(subSection.headerBackGroundColor)}
-                                textColor={formatColor(subSection.headerColor)}
-                                fontWeight="normal"
-                                align={subSection.horizontalAlignment || 'center'}
-                              >
-                                {formatValue({
-                                  value: rowData[subSection.headerName],
-                                  type: subSection.type,
-                                })}
-                              </DynamicCell>
-                            ))}
-                          </TableRow>
-                        ))}
-
-                      {!collapsedSections[sectionIndex] && isColumnView && (
-                        <>
+          {!!reportData.data && !!designData.data && (
+            <StyledTableContainer>
+              <Table size="small" aria-label="dynamic report table">
+                <TableBody>
+                  {designData.data?.data?.map((section, sectionIndex) => {
+                    const subSections = section.subSections || [];
+                    const isRowView = section?.view === 'row';
+                    const isColumnView = section?.view === 'column';
+                    const formatColor = (color?: string) => (color ? `#${color}` : undefined);
+                    return (
+                      <React.Fragment key={`section-${sectionIndex}`}>
+                        {!!section.sectionName && (
                           <TableRow>
-                            {subSections.map((subSection, subIndex) => (
+                            <DynamicCell
+                              colSpan={section.spanColumns ? (reportData.data?.data.length ?? 0) + 1 : 1}
+                              align={section.sectionHorizontalAlignment || 'center'}
+                              bgColor={formatColor(section.sectionBackGroundColor)}
+                              textColor={formatColor(section.sectionTextColor)}
+                              fontWeight={section.fontBold ? 'bold' : ''}
+                              onClick={() => toggleSection(sectionIndex)}
+                            >
+                              <Box
+                                sx={{
+                                  cursor: 'pointer',
+                                  display: 'flex',
+                                  justifyContent: 'space-between',
+                                  alignItems: 'center',
+                                }}
+                              >
+                                {' '}
+                                <Box sx={{ flex: 1 }}>{section.sectionName}</Box>
+                                <Box sx={{ pr: 1 }}>
+                                  {collapsedSections[sectionIndex] ? (
+                                    <KeyboardArrowDownIcon />
+                                  ) : (
+                                    <KeyboardArrowUpIcon />
+                                  )}
+                                </Box>
+                              </Box>
+                            </DynamicCell>
+                          </TableRow>
+                        )}
+                        {!collapsedSections[sectionIndex] &&
+                          isRowView &&
+                          subSections?.map((subSection, subIndex) => (
+                            <TableRow key={`subrow-${subIndex}`}>
                               <DynamicCell
-                                key={`header-${subIndex}`}
                                 bgColor={formatColor(subSection.headerBackGroundColor)}
                                 textColor={formatColor(subSection.headerColor)}
                                 fontWeight="bold"
-                                align={subSection.horizontalAlignment || 'center'}
+                                align={subSection.horizontalAlignment || 'left'}
                               >
                                 {subSection.headerName}
                               </DynamicCell>
-                            ))}
-                          </TableRow>
 
-                          {(allReportData.data?.data || []).map((rowData, rowIndex) => (
-                            <TableRow key={`row-${rowIndex}`}>
-                              {subSections.map((subSection, subIndex) => {
-                                const isTotalRow = rowData?.STC === 'Totals';
-                                const backgroundColor = isTotalRow
-                                  ? formatColor(subSection.lastCellBackGroundColor)
-                                  : 'transparent';
-
-                                return (
-                                  <DynamicCell
-                                    key={`cell-${rowIndex}-${subIndex}`}
-                                    bgColor={backgroundColor}
-                                    textColor={formatColor(subSection.headerColor)}
-                                    fontWeight="normal"
-                                    align={subSection.horizontalAlignment || 'center'}
-                                  >
-                                    {formatValue({
-                                      value: rowData[subSection.headerName],
-                                      type: subSection.type,
-                                    })}
-                                  </DynamicCell>
-                                );
-                              })}
+                              {reportData.data?.data?.map((rowData, dataIndex) => (
+                                <DynamicCell
+                                  key={`rowdata-${dataIndex}`}
+                                  bgColor={formatColor(subSection.headerBackGroundColor)}
+                                  textColor={formatColor(subSection.headerColor)}
+                                  fontWeight="normal"
+                                  align={subSection.horizontalAlignment || 'center'}
+                                >
+                                  {formatValue({
+                                    value: rowData[subSection.headerName],
+                                    type: subSection.type,
+                                  })}
+                                </DynamicCell>
+                              ))}
                             </TableRow>
                           ))}
-                        </>
-                      )}
-                    </React.Fragment>
-                  );
-                })}
-              </TableBody>
-            </Table>
-          </StyledTableContainer>
+
+                        {!collapsedSections[sectionIndex] && isColumnView && (
+                          <>
+                            <TableRow>
+                              {subSections?.map((subSection, subIndex) => (
+                                <DynamicCell
+                                  key={`header-${subIndex}`}
+                                  bgColor={formatColor(subSection.headerBackGroundColor)}
+                                  textColor={formatColor(subSection.headerColor)}
+                                  fontWeight="bold"
+                                  align={subSection.horizontalAlignment || 'center'}
+                                >
+                                  {subSection.headerName}
+                                </DynamicCell>
+                              ))}
+                            </TableRow>
+
+                            {(reportData.data?.data || []).map((rowData, rowIndex) => {
+                              const isLastRow = rowIndex === reportData.data?.data.length - 1;
+
+                              return (
+                                <TableRow key={`row-${rowIndex}`}>
+                                  {subSections?.map((subSection, subIndex) => {
+                                    const backgroundColor = isLastRow
+                                      ? formatColor(subSection.lastCellBackGroundColor)
+                                      : 'transparent';
+
+                                    return (
+                                      <DynamicCell
+                                        key={`cell-${rowIndex}-${subIndex}`}
+                                        bgColor={backgroundColor}
+                                        textColor={formatColor(subSection.headerColor)}
+                                        fontWeight="normal"
+                                        align={subSection.horizontalAlignment || 'center'}
+                                      >
+                                        {formatValue({
+                                          value: rowData[subSection.headerName],
+                                          type: subSection.type,
+                                        })}
+                                      </DynamicCell>
+                                    );
+                                  })}
+                                </TableRow>
+                              );
+                            })}
+                          </>
+                        )}
+                      </React.Fragment>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            </StyledTableContainer>
+          )}
         </ZoomContainer>
       </ScrollContainer>
     </Box>

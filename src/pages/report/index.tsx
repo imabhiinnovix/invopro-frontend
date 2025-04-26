@@ -170,7 +170,7 @@ export default function Report() {
                   setActiveTab(index);
                 }}
               >
-                {item.name}
+                {item.tabName}
               </div>
             ))}
           </Box>
@@ -179,8 +179,13 @@ export default function Report() {
               activeTab === index && (
                 <ViewReport
                   key={index}
-                  reportDetailData={item.dataSourceVersionId}
-                  viewReportRequestId={viewReportRequestId}
+                  dataSourceVersionId={item.dataSourceVersionId}
+                  versionCode={item.versionCode}
+                  mappingFuctionName={item.mappingFuctionName}
+                  versionValue={allDetailData.versionValue.split('-')[0]}
+                  sheetCode={item.sheetCode}
+                  designCode={item.designCode}
+                  customReportId={allDetailData.customReportId._id}
                   maxHeight={maxHeight}
                   isView={true}
                 />
@@ -240,14 +245,19 @@ export default function Report() {
                 )}
 
                 <Box>
-                  <Box sx={{ display: 'flex' }}>
+                  <Box sx={{ display: 'flex', mt: 1 }}>
                     <Box sx={{ fontWeight: 600 }}>Sheet Name: </Box>
-                    <Box>{item.name}</Box>
+                    <Box>{item.sheetName}</Box>
                   </Box>
                   <ViewReport
                     key={index}
-                    reportDetailData={item.dataSourceVersionId}
-                    viewReportRequestId={viewReportRequestId}
+                    dataSourceVersionId={item.dataSourceVersionId}
+                    versionCode={item.versionCode}
+                    mappingFuctionName={item.mappingFuctionName}
+                    versionValue={allDetailData.versionValue.split('-')[0]}
+                    sheetCode={item.sheetCode}
+                    designCode={item.designCode}
+                    customReportId={allDetailData.customReportId._id}
                   />
                 </Box>
 
