@@ -143,14 +143,14 @@ const ViewReport: React.FC<ViewReportProps> = ({
     [`reportDataOnDataSourceVersionId`, String(dataSourceVersionId)],
     GET?.Custom_Report +
       `/reportDataOnDataSourceVersionId/${dataSourceVersionId}?versionCode=${versionCode}&mappingFuctionName=${mappingFuctionName}&versionValue=${versionValue}`,
-    !!dataSourceVersionId && !!versionCode && !!mappingFuctionName && !!versionValue
+    !!dataSourceVersionId && !!versionCode && !!versionValue
   );
 
   const designData = useGet<ReportResponseDesignData>(
     [`customReportDesignData`, String(customReportId), String(dataSourceVersionId)],
     GET?.Custom_Report +
       `/customReportDesignData/${customReportId}?mappingFuctionName=${mappingFuctionName}&versionValue=${versionValue}&sheetCode=${sheetCode}&designCode=${designCode}`,
-    !!customReportId && !!mappingFuctionName && !!versionValue && !!sheetCode && !!designCode && !!dataSourceVersionId
+    !!customReportId && !!versionValue && !!sheetCode && !!designCode && !!dataSourceVersionId
   );
   // Zoom in function
   const handleZoomIn = () => {

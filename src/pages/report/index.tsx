@@ -9,6 +9,7 @@ import { DateTime } from 'luxon';
 import html2pdf from 'html2pdf.js';
 import ReportSelection from '../../components/atom/report/changeReportFromViewReport';
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
+import ScrollableTabNavigation from '../../components/atom/report/scrollableTab';
 
 export default function Report() {
   const [reload, setReload] = useState(false);
@@ -161,19 +162,12 @@ export default function Report() {
 
       {viewReportRequestId && viewReportRequestId.length > 0 ? (
         <Box ref={tabRef}>
-          <Box display="flex" borderBottom="1px solid #ccc" mb={2}>
-            {allDetailData?.dataSourceVersion?.map((item, index) => (
-              <div
-                key={index}
-                style={tabStyle(index)}
-                onClick={() => {
-                  setActiveTab(index);
-                }}
-              >
-                {item.tabName}
-              </div>
-            ))}
-          </Box>
+          <ScrollableTabNavigation
+            tabs={allDetailData?.dataSourceVersion || []}
+            activeTab={activeTab}
+            setActiveTab={setActiveTab}
+            tabStyle={tabStyle}
+          />
           {allDetailData?.dataSourceVersion?.map(
             (item, index) =>
               activeTab === index && (
@@ -194,7 +188,7 @@ export default function Report() {
 
           {/* To download pdf */}
 
-          <Box
+          {/* <Box
             sx={{
               display: 'none',
               marginBottom: 5,
@@ -264,7 +258,7 @@ export default function Report() {
                 <Box className="html2pdf__page-break" />
               </Box>
             ))}
-          </Box>
+          </Box> */}
         </Box>
       ) : (
         <Box
