@@ -67,6 +67,14 @@ const formatValue = ({ value, type }: { value: any; type: string }) => {
     return value.toString();
   }
 
+  if (type === 'usdm' && typeof value === 'number') {
+    // Format currency values
+    if (value >= 100000) {
+      return `$ ${(value / 1000000).toFixed(2)} M`;
+    }
+    return value.toString();
+  }
+
   return value;
 };
 
@@ -214,7 +222,35 @@ const ViewReport: React.FC<ViewReportProps> = ({
       )}
       <ScrollContainer ref={scrollContainerRef} scale={zoomScale} maxHeight={maxHeight}>
         <ZoomContainer scale={zoomScale}>
-          {!!reportData.data && !!designData.data && (
+          {reportData.isFetching && designData.isFetching ? (
+            <Box
+              sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '200px', width: '100%' }}
+            >
+              <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                <Box
+                  sx={{
+                    width: 40,
+                    height: 40,
+                    borderRadius: '50%',
+                    border: '3px solid #f3f3f3',
+                    borderTop: '3px solid #3498db',
+                    animation: 'spin 1s linear infinite',
+                    '@keyframes spin': {
+                      '0%': { transform: 'rotate(0deg)' },
+                      '100%': { transform: 'rotate(360deg)' },
+                    },
+                  }}
+                />
+                <Box sx={{ mt: 2, color: 'text.secondary' }}>Loading report data...</Box>
+              </Box>
+            </Box>
+          ) : !reportData.data || !designData.data ? (
+            <Box
+              sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '200px', width: '100%' }}
+            >
+              <Box sx={{ color: 'text.secondary', fontSize: '1rem' }}>No report data found</Box>
+            </Box>
+          ) : (
             <StyledTableContainer>
               <Table size="small" aria-label="dynamic report table">
                 <TableBody>
