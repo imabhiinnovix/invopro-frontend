@@ -90,6 +90,7 @@ const ReportRequestTable: React.FC<AttributeOptionTableProps> = ({
   const [downloadFileName, setDownLoadFileName] = useState('');
   const [processingRequestDataAvailable, setProcessingRequestDataAvailable] = useState(false);
   const [processingRequestCount, setProcessingRequestCount] = useState(0);
+  const [downloadRequestId, setDownloadRequestId] = useState('');
 
   const exportFile = useFileDownload<Blob>((data) => {
     const blob = new Blob([data], { type: 'application/octet-stream' });
@@ -106,6 +107,7 @@ const ReportRequestTable: React.FC<AttributeOptionTableProps> = ({
   });
 
   const downloadFile = (fileName: string, fileId: string) => {
+    setDownloadRequestId(fileId);
     setDownLoadFileName(fileName);
     exportFile.mutate({
       url: `${GET?.Custom_Report}/download/${fileId}`,
@@ -289,17 +291,35 @@ const ReportRequestTable: React.FC<AttributeOptionTableProps> = ({
               <StyledTableCell>{data.createdAt ? new Date(data.createdAt).toLocaleString() : '-'}</StyledTableCell>
               <StyledTableCell align="right">
                 {data.status === 'completed' ? (
-                  <Box>
-                    <Tooltip title="Download Excel" arrow>
-                      <StyledButton
-                        onClick={() => {
-                          downloadFile(`${data.customReportId?.reportName}-${data.versionValue}.xlsx`, data._id);
+                  <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
+                    {exportFile.isPending && !!downloadRequestId && downloadRequestId === data._id ? (
+                      <Box
+                        sx={{
+                          width: 27,
+                          height: 27,
+                          borderRadius: '50%',
+                          border: '3px solid #f3f3f3',
+                          borderTop: '3px solid #3498db',
+                          animation: 'spin 1s linear infinite',
+                          '@keyframes spin': {
+                            '0%': { transform: 'rotate(0deg)' },
+                            '100%': { transform: 'rotate(360deg)' },
+                          },
+                          mr: 1,
                         }}
-                        sx={{ mr: 1 }}
-                      >
-                        <SimCardDownloadIcon />
-                      </StyledButton>
-                    </Tooltip>
+                      />
+                    ) : (
+                      <Tooltip title="Download Excel" arrow>
+                        <StyledButton
+                          onClick={() => {
+                            downloadFile(`${data.customReportId?.reportName}-${data.versionValue}.xlsx`, data._id);
+                          }}
+                          sx={{ mr: 1 }}
+                        >
+                          <SimCardDownloadIcon />
+                        </StyledButton>
+                      </Tooltip>
+                    )}
                     <Tooltip title="View Report" arrow>
                       <StyledButton
                         onClick={() => {

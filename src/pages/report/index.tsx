@@ -27,6 +27,7 @@ export default function Report() {
   const [allDetailData, setAllDetailData] = useState<ReportRequestResponse | null>(null);
   const [activeTab, setActiveTab] = useState(0);
   const [downloadFileName, setDownLoadFileName] = useState('');
+  const [isPdfLoading, setIsPdfLoading] = useState(false);
 
   const [viewReportNameWithVersionValue, setViewReportNameWithVersionValue] = useState('');
   const exportFile = useFileDownload<Blob>((data) => {
@@ -71,7 +72,11 @@ export default function Report() {
 
   const handleDownloadPdf = () => {
     if (!targetRef.current || !viewReportNameWithVersionValue) return;
+    setIsPdfLoading(true);
 
+    setTimeout(() => {
+      setIsPdfLoading(false);
+    }, 500);
     const opt = {
       margin: 0.5,
       filename: `${viewReportNameWithVersionValue}.pdf`,
@@ -162,29 +167,64 @@ export default function Report() {
               </Box>
 
               <Box sx={{ display: 'flex', gap: 1 }}>
-                <Tooltip title="Download Pdf" arrow>
-                  <Button
-                    variant="contained"
-                    disabled={!(viewReportNameWithVersionValue && viewReportNameWithVersionValue.length > 0)}
-                    onClick={handleDownloadPdf}
-                  >
-                    <PictureAsPdfIcon />
-                  </Button>
-                </Tooltip>
-                <Tooltip title="Download Excel" arrow>
-                  <Button
-                    variant="contained"
-                    onClick={() => {
-                      downloadFile(
-                        `${allDetailData?.customReportId?.reportName}-${allDetailData?.versionValue}.xlsx`,
-                        allDetailData?._id || ''
-                      );
+                {isPdfLoading ? (
+                  <Box
+                    sx={{
+                      width: 27,
+                      height: 27,
+                      borderRadius: '50%',
+                      border: '3px solid #f3f3f3',
+                      borderTop: '3px solid #3498db',
+                      animation: 'spin 1s linear infinite',
+                      '@keyframes spin': {
+                        '0%': { transform: 'rotate(0deg)' },
+                        '100%': { transform: 'rotate(360deg)' },
+                      },
                     }}
-                    sx={{ mr: 1 }}
-                  >
-                    <SimCardDownloadIcon />
-                  </Button>
-                </Tooltip>
+                  />
+                ) : (
+                  <Tooltip title="Download Pdf" arrow>
+                    <Button
+                      variant="contained"
+                      disabled={!(viewReportNameWithVersionValue && viewReportNameWithVersionValue.length > 0)}
+                      onClick={handleDownloadPdf}
+                    >
+                      <PictureAsPdfIcon />
+                    </Button>
+                  </Tooltip>
+                )}
+
+                {exportFile.isPending ? (
+                  <Box
+                    sx={{
+                      width: 27,
+                      height: 27,
+                      borderRadius: '50%',
+                      border: '3px solid #f3f3f3',
+                      borderTop: '3px solid #3498db',
+                      animation: 'spin 1s linear infinite',
+                      '@keyframes spin': {
+                        '0%': { transform: 'rotate(0deg)' },
+                        '100%': { transform: 'rotate(360deg)' },
+                      },
+                    }}
+                  />
+                ) : (
+                  <Tooltip title="Download Excel" arrow>
+                    <Button
+                      variant="contained"
+                      onClick={() => {
+                        downloadFile(
+                          `${allDetailData?.customReportId?.reportName}-${allDetailData?.versionValue}.xlsx`,
+                          allDetailData?._id || ''
+                        );
+                      }}
+                      sx={{ mr: 1 }}
+                    >
+                      <SimCardDownloadIcon />
+                    </Button>
+                  </Tooltip>
+                )}
               </Box>
             </Box>
           </>
@@ -228,7 +268,6 @@ export default function Report() {
           )}
 
           {/* To download pdf */}
-
           <Box
             sx={{
               display: 'none',
