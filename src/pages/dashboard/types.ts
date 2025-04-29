@@ -10,9 +10,13 @@ export interface Dashboard {
   description: string;
   isDeleted: boolean;
   isActive: boolean;
+  settings: {
+    gridColumns: number;
+  };
   createdAt: string;
   updatedAt: string;
   __v: number;
+  widgetThemeId?: string;
 }
 
 export interface DashboardListResponse {
@@ -146,7 +150,7 @@ export interface DashboardSliceState {
   temporaryCharts: TemporaryChart[];
   chartsLoading: boolean;
   chartsError: string | null;
-  widgetData: Record<string, WidgetResponse['data']>;
+  widgetData: Record<string, WidgetResponse["data"]>;
 }
 
 export interface WidgetDetails {
@@ -318,4 +322,4 @@ export interface OperatorListResponse {
   message: string;
   data: OperatorType[];
   totalCount: number;
-} 
+}

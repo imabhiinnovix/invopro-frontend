@@ -1,15 +1,24 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { Box, Typography, TextField, Button } from '@mui/material';
-import AddIcon from '@mui/icons-material/Add';
-import EditIcon from '@mui/icons-material/Edit';
-import DoneIcon from '@mui/icons-material/Done';
-import { useParams, useLocation } from 'react-router-dom';
-import { ChartGrid } from './ChartGrid';
-import { AddChartModal, ChartFormData } from './AddChartModal';
-import { useAppDispatch, useAppSelector } from '../../../storeHooks';
-import { updateWidget, saveWidgets } from '../dashboardActions';
-import { toast } from 'react-toastify';
-import { ChartResponse, TemporaryChart } from '../types';
+import React, { useState, useRef, useEffect } from "react";
+import { Box, Typography, TextField, Button, ButtonGroup } from "@mui/material";
+import AddIcon from "@mui/icons-material/Add";
+import EditIcon from "@mui/icons-material/Edit";
+import DoneIcon from "@mui/icons-material/Done";
+import PauseIcon from "@mui/icons-material/Pause";
+import ViewColumnIcon from "@mui/icons-material/ViewColumn";
+import SquareIcon from "@mui/icons-material/Square";
+import { useParams, useLocation } from "react-router-dom";
+import { ChartGrid } from "./ChartGrid";
+import { AddChartModal, ChartFormData } from "./AddChartModal";
+import { useAppDispatch, useAppSelector } from "../../../storeHooks";
+import {
+  updateWidget,
+  saveWidgets,
+  fetchWidgetTheme,
+} from "../dashboardActions";
+import { toast } from "react-toastify";
+import { ChartResponse, TemporaryChart } from "../types";
+import usePost from "../../../hooks/usePost";
+import { POST } from "../../../services/apiRoutes";
 
 interface DashboardViewProps {
   title: string;
@@ -25,12 +34,41 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   const [title, setTitle] = useState(initialTitle);
   const [isAddChartModalOpen, setIsAddChartModalOpen] = useState(false);
   const [isEditChartModalOpen, setIsEditChartModalOpen] = useState(false);
-  const [selectedChart, setSelectedChart] = useState<ChartResponse | null>(null);
+  const [selectedChart, setSelectedChart] = useState<ChartResponse | null>(
+    null
+  );
+  const [gridColumns, setGridColumns] = useState(2);
+
   const inputRef = useRef<HTMLInputElement>(null);
   const { id: dashboardId } = useParams();
   const location = useLocation();
   const dispatch = useAppDispatch();
-  const temporaryCharts = useAppSelector((state) => state.dashboard.temporaryCharts);
+  const temporaryCharts = useAppSelector(
+    (state) => state.dashboard.temporaryCharts
+  );
+  const dashboards = useAppSelector((state) => state.dashboard.dashboards);
+  const currentDashboard = dashboards.find((d) => d._id === dashboardId);
+
+  const postGridColumns = usePost([""]);
+
+  useEffect(() => {
+    if (dashboards.length > 0) {
+      setGridColumns(
+        dashboards.find((dashboard) => dashboard?._id === dashboardId)?.settings
+          ?.gridColumns || 2
+      );
+    }
+  }, [dashboards, dashboardId]);
+
+  const handleGridColumns = (columns: number) => {
+    setGridColumns(columns);
+    postGridColumns.mutate({
+      url: `${POST.UPDATE_DASHBOARD}/${dashboardId}`,
+      payload: {
+        gridColumns: columns,
+      },
+    });
+  };
 
   useEffect(() => {
     setIsEditMode(true);
@@ -50,6 +88,12 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     setTitle(initialTitle);
   }, [initialTitle]);
 
+  useEffect(() => {
+    if (currentDashboard?.widgetThemeId) {
+      dispatch(fetchWidgetTheme(currentDashboard.widgetThemeId));
+    }
+  }, [currentDashboard?.widgetThemeId, dispatch]);
+
   const handleEditModeToggle = async () => {
     if (isEditMode) {
       // Save title first if it has changed
@@ -57,39 +101,45 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         onTitleChange(editedTitle);
         setTitle(editedTitle);
       }
-      
+
       // Save temporary charts only if there are any
       if (temporaryCharts.length > 0) {
         try {
-          const result = await dispatch(saveWidgets({
-            widgets: temporaryCharts.map((chart: TemporaryChart) => ({
-              dashboardId: chart.dashboardId,
-              widgetTypeId: chart.widgetTypeId?._id || '',
-              name: chart.name,
-              dimensions: chart.dimensions.join(','),
-              groupBy: chart.groupBy,
-              aggregation: chart.aggregation,
-              position: chart.position,
-              conditions: chart.conditions,
-              dataSourceId: chart.dataSourceId?._id || '',
-              entityId: chart.dataSourceId?.entityId || ''
-            }))
-          })).unwrap();
+          const result = await dispatch(
+            saveWidgets({
+              widgets: temporaryCharts.map((chart: TemporaryChart) => ({
+                dashboardId: chart.dashboardId,
+                widgetTypeId: chart.widgetTypeId?._id || "",
+                name: chart.name,
+                dimensions: chart.dimensions.join(","),
+                groupBy: chart.groupBy,
+                aggregation: chart.aggregation,
+                position: chart.position,
+                conditions: chart.conditions,
+                dataSourceId: chart.dataSourceId?._id || "",
+                entityId: chart.dataSourceId?.entityId || "",
+              })),
+            })
+          ).unwrap();
 
           if (result.success) {
-            toast.success('Charts saved successfully!');
+            toast.success("Charts saved successfully!");
           } else {
-            toast.error(result.message || 'Failed to save charts');
+            toast.error(result.message || "Failed to save charts");
           }
         } catch (error) {
-          if (typeof error === 'object' && error !== null && 'message' in error) {
+          if (
+            typeof error === "object" &&
+            error !== null &&
+            "message" in error
+          ) {
             toast.error(error.message as string);
           } else {
-            toast.error('Failed to save charts');
+            toast.error("Failed to save charts");
           }
         }
       }
-      
+
       setIsEditMode(false);
     } else {
       setIsEditMode(!isEditMode);
@@ -97,7 +147,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
+    if (e.key === "Enter") {
       onTitleChange(editedTitle);
       setIsEditMode(false);
     }
@@ -119,45 +169,49 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
   const handleChartUpdate = async (formData: ChartFormData) => {
     if (!selectedChart) return;
-    
+
     try {
-      const result = await dispatch(updateWidget({
-        ...formData,
-        _id: selectedChart._id,
-        dashboardId: dashboardId || ''
-      })).unwrap();
-      
+      const result = await dispatch(
+        updateWidget({
+          ...formData,
+          _id: selectedChart._id,
+          dashboardId: dashboardId || "",
+        })
+      ).unwrap();
+
       if (result.success) {
-        toast.success('Chart updated successfully!');
+        toast.success("Chart updated successfully!");
         handleCloseEditModal();
       } else {
-        toast.error(result.message || 'Failed to update chart');
+        toast.error(result.message || "Failed to update chart");
       }
     } catch (error) {
-      if (typeof error === 'object' && error !== null && 'message' in error) {
+      if (typeof error === "object" && error !== null && "message" in error) {
         toast.error(error.message as string);
       } else {
-        toast.error('Failed to update chart');
+        toast.error("Failed to update chart");
       }
     }
   };
 
   return (
-    <Box sx={{ 
-      height: '100%',
-      display: 'flex',
-      flexDirection: 'column',
-      overflow: 'hidden'
-    }}>
-      <Box 
-        sx={{ 
+    <Box
+      sx={{
+        height: "100%",
+        display: "flex",
+        flexDirection: "column",
+        overflow: "hidden",
+      }}
+    >
+      <Box
+        sx={{
           p: 3,
-          pb: 0,
+          // pb: 0,
           // mb: 3,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          flexShrink: 0
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          flexShrink: 0,
         }}
       >
         <Box sx={{ flex: 1, mr: 2 }}>
@@ -170,24 +224,20 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               size="small"
               fullWidth
               sx={{
-                '& .MuiInputBase-input': {
-                  fontSize: '1.5rem',
+                "& .MuiInputBase-input": {
+                  fontSize: "1.5rem",
                   fontWeight: 500,
                 },
               }}
             />
           ) : (
-            <Typography 
-              variant="h5" 
-              component="h1"
-              fontWeight={500}
-            >
+            <Typography variant="h5" component="h1" fontWeight={500}>
               {title}
             </Typography>
           )}
         </Box>
 
-        <Box sx={{ display: 'flex', gap: 2 }}>
+        <Box sx={{ display: "flex", gap: 2 }}>
           {isEditMode ? (
             <>
               <Button
@@ -208,62 +258,91 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               </Button>
             </>
           ) : (
-            <Button
-              onClick={handleEditModeToggle}
-              color="primary"
-              variant="contained"
-              startIcon={<EditIcon />}
-            >
-              Edit
-            </Button>
+            <>
+              <ButtonGroup variant="outlined" aria-label="grid columns">
+                <Button
+                  onClick={() => handleGridColumns(1)}
+                  variant={gridColumns === 1 ? "contained" : "outlined"}
+                  sx={{ minWidth: "40px" }}
+                >
+                  <SquareIcon />
+                </Button>
+                <Button
+                  onClick={() => handleGridColumns(2)}
+                  variant={gridColumns === 2 ? "contained" : "outlined"}
+                  sx={{ minWidth: "40px" }}
+                >
+                  <PauseIcon />
+                </Button>
+                <Button
+                  onClick={() => handleGridColumns(3)}
+                  variant={gridColumns === 3 ? "contained" : "outlined"}
+                  sx={{ minWidth: "40px" }}
+                >
+                  <ViewColumnIcon />
+                </Button>
+              </ButtonGroup>
+              <Button
+                onClick={handleEditModeToggle}
+                color="primary"
+                variant="contained"
+                startIcon={<EditIcon />}
+              >
+                Edit
+              </Button>
+            </>
           )}
         </Box>
       </Box>
 
-      <Box sx={{ 
-        display: 'flex', 
-        flex: 1,
-        overflow: 'hidden',
-        gap: 3,
-        height: 'calc(100% - 100px)'
-      }}>
-        <Box 
-          sx={{ 
+      <Box
+        sx={{
+          display: "flex",
+          flex: 1,
+          overflow: "hidden",
+          gap: 3,
+          height: "calc(100% - 100px)",
+        }}
+      >
+        <Box
+          sx={{
             flex: 1,
-            overflow: 'auto',
-            display: 'grid',
+            overflow: "auto",
+            display: "grid",
             gridTemplateColumns: {
-              xs: '1fr',
-              sm: 'repeat(auto-fit, minmax(400px, 1fr))',
-              md: 'repeat(auto-fit, minmax(450px, 1fr))',
-              lg: 'repeat(auto-fit, minmax(500px, 1fr))'
+              xs: "1fr",
+              sm: "repeat(auto-fit, minmax(400px, 1fr))",
+              md: "repeat(auto-fit, minmax(450px, 1fr))",
+              lg: "repeat(auto-fit, minmax(500px, 1fr))",
             },
             gap: 3,
-            p: 3,
-            transition: 'all 0.3s ease',
+            p: 1,
+
+            transition: "all 0.3s ease",
             ...((isAddChartModalOpen || isEditChartModalOpen) && {
-              flex: '1 1 70%',
+              flex: "1 1 70%",
             }),
-            '&::-webkit-scrollbar': {
-              width: '8px',
-              height: '8px'
+            "&::-webkit-scrollbar": {
+              width: "8px",
+              height: "8px",
             },
-            '&::-webkit-scrollbar-thumb': {
-              backgroundColor: 'rgba(0, 0, 0, 0.1)',
-              borderRadius: '4px'
+            "&::-webkit-scrollbar-thumb": {
+              backgroundColor: "rgba(0, 0, 0, 0.1)",
+              borderRadius: "4px",
             },
-            '&::-webkit-scrollbar-track': {
-              backgroundColor: 'transparent'
-            }
+            "&::-webkit-scrollbar-track": {
+              backgroundColor: "transparent",
+            },
           }}
         >
           {dashboardId && (
-            <ChartGrid 
-              dashboardId={dashboardId} 
-              isEditMode={isEditMode} 
+            <ChartGrid
+              dashboardId={dashboardId}
+              isEditMode={isEditMode}
               onEditChart={handleEditChart}
               isAddChartModalOpen={isAddChartModalOpen}
               isEditChartModalOpen={isEditChartModalOpen}
+              gridColumns={gridColumns}
             />
           )}
         </Box>
@@ -272,18 +351,18 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           <Box
             sx={{
               width: {
-                xs: '100%',
-                sm: '400px',
-                md: '450px',
-                lg: '500px'
+                xs: "100%",
+                sm: "400px",
+                md: "450px",
+                lg: "500px",
               },
               flexShrink: 0,
-              display: 'flex',
-              flexDirection: 'column',
-              borderLeft: '1px solid',
-              borderColor: 'divider',
-              overflow: 'hidden',
-              height: '100%'
+              display: "flex",
+              flexDirection: "column",
+              borderLeft: "1px solid",
+              borderColor: "divider",
+              overflow: "hidden",
+              height: "100%",
             }}
           >
             {isAddChartModalOpen && (
@@ -291,7 +370,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 open={isAddChartModalOpen}
                 onClose={handleCloseModal}
                 isSubmitting={false}
-                dashboardId={dashboardId || ''}
+                dashboardId={dashboardId || ""}
               />
             )}
             {isEditChartModalOpen && selectedChart && (
@@ -299,7 +378,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 open={isEditChartModalOpen}
                 onClose={handleCloseEditModal}
                 isSubmitting={false}
-                dashboardId={dashboardId || ''}
+                dashboardId={dashboardId || ""}
                 initialData={selectedChart}
                 onSave={handleChartUpdate}
               />
@@ -309,4 +388,4 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
       </Box>
     </Box>
   );
-}; 
+};
