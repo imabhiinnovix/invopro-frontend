@@ -222,7 +222,7 @@ const ViewReport: React.FC<ViewReportProps> = ({
       )}
       <ScrollContainer ref={scrollContainerRef} scale={zoomScale} maxHeight={maxHeight}>
         <ZoomContainer scale={zoomScale}>
-          {reportData.isFetching && designData.isFetching ? (
+          {reportData.isFetching || designData.isFetching || !reportData.data || !designData.data ? (
             <Box
               sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '200px', width: '100%' }}
             >

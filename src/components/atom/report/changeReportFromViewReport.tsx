@@ -252,7 +252,7 @@ export default function ReportSelection({
           minWidth: 120,
         }}
       >
-        Generate
+        View
       </Button>
     </Box>
   );

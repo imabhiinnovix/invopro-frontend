@@ -27,5 +27,6 @@ export interface ReportRequestResponse {
     dataSourceVersionId: string;
     versionCode: string;
     dataSourceId: string;
+    allowPdfDownload: boolean;
   }[];
 }
