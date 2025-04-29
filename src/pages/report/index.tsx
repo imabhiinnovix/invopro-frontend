@@ -1,4 +1,4 @@
-import { Box, Button, Table, TableBody, TableCell, TableRow, Typography } from '@mui/material';
+import { Box, Button, Table, TableBody, TableCell, TableRow, Tooltip, Typography } from '@mui/material';
 import GenerateReport from '../../components/atom/report/generateReport';
 import { useEffect, useRef, useState } from 'react';
 import ReportRequestTable from '../../components/atom/report/reportRequestTable';
@@ -10,6 +10,9 @@ import html2pdf from 'html2pdf.js';
 import ReportSelection from '../../components/atom/report/changeReportFromViewReport';
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 import ScrollableTabNavigation from '../../components/atom/report/scrollableTab';
+import SimCardDownloadIcon from '@mui/icons-material/SimCardDownload';
+import useFileDownload from '../../hooks/useFiledownload';
+import { GET } from '../../services/apiRoutes';
 
 export default function Report() {
   const [reload, setReload] = useState(false);
@@ -23,9 +26,29 @@ export default function Report() {
 
   const [allDetailData, setAllDetailData] = useState<ReportRequestResponse | null>(null);
   const [activeTab, setActiveTab] = useState(0);
+  const [downloadFileName, setDownLoadFileName] = useState('');
 
   const [viewReportNameWithVersionValue, setViewReportNameWithVersionValue] = useState('');
+  const exportFile = useFileDownload<Blob>((data) => {
+    const blob = new Blob([data], { type: 'application/octet-stream' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.href = url;
+    link.download = downloadFileName;
 
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    URL.revokeObjectURL(url);
+  });
+
+  const downloadFile = (fileName: string, fileId: string) => {
+    setDownLoadFileName(fileName);
+    exportFile.mutate({
+      url: `${GET?.Custom_Report}/download/${fileId}`,
+    });
+  };
   const tabStyle = (index: number) => ({
     padding: '10px 20px',
     cursor: 'pointer',
@@ -138,13 +161,31 @@ export default function Report() {
                 </Typography>
               </Box>
 
-              <Button
-                variant="contained"
-                disabled={!(viewReportNameWithVersionValue && viewReportNameWithVersionValue.length > 0)}
-                onClick={handleDownloadPdf}
-              >
-                <PictureAsPdfIcon />
-              </Button>
+              <Box sx={{ display: 'flex', gap: 1 }}>
+                <Tooltip title="Download Pdf" arrow>
+                  <Button
+                    variant="contained"
+                    disabled={!(viewReportNameWithVersionValue && viewReportNameWithVersionValue.length > 0)}
+                    onClick={handleDownloadPdf}
+                  >
+                    <PictureAsPdfIcon />
+                  </Button>
+                </Tooltip>
+                <Tooltip title="Download Excel" arrow>
+                  <Button
+                    variant="contained"
+                    onClick={() => {
+                      downloadFile(
+                        `${allDetailData?.customReportId?.reportName}-${allDetailData?.versionValue}.xlsx`,
+                        allDetailData?._id || ''
+                      );
+                    }}
+                    sx={{ mr: 1 }}
+                  >
+                    <SimCardDownloadIcon />
+                  </Button>
+                </Tooltip>
+              </Box>
             </Box>
           </>
         ) : (

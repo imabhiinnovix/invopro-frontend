@@ -13,6 +13,7 @@ import {
   Typography,
   Button,
   tableCellClasses,
+  Tooltip,
 } from '@mui/material';
 
 import useGet from '../../../hooks/useGet';
@@ -20,7 +21,8 @@ import { GET } from '../../../services/apiRoutes';
 import { ReportRequestResponse } from './types';
 import useFileDownload from '../../../hooks/useFiledownload';
 import { DateTime } from 'luxon';
-import DownloadForOfflineIcon from '@mui/icons-material/DownloadForOffline';
+import SimCardDownloadIcon from '@mui/icons-material/SimCardDownload';
+
 import VisibilityIcon from '@mui/icons-material/Visibility';
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
@@ -288,23 +290,27 @@ const ReportRequestTable: React.FC<AttributeOptionTableProps> = ({
               <StyledTableCell align="right">
                 {data.status === 'completed' ? (
                   <Box>
-                    <StyledButton
-                      onClick={() => {
-                        downloadFile(`${data.customReportId?.reportName}-${data.versionValue}.xlsx`, data._id);
-                      }}
-                      sx={{ mr: 1 }}
-                    >
-                      <DownloadForOfflineIcon />
-                    </StyledButton>
-                    <StyledButton
-                      onClick={() => {
-                        setAllDetailData(data);
-                        setViewReportRequestId(data._id);
-                        setViewReportNameWithVersionValue(`${data.customReportId?.reportName}-${data.versionValue}`);
-                      }}
-                    >
-                      <VisibilityIcon />
-                    </StyledButton>
+                    <Tooltip title="Download Excel" arrow>
+                      <StyledButton
+                        onClick={() => {
+                          downloadFile(`${data.customReportId?.reportName}-${data.versionValue}.xlsx`, data._id);
+                        }}
+                        sx={{ mr: 1 }}
+                      >
+                        <SimCardDownloadIcon />
+                      </StyledButton>
+                    </Tooltip>
+                    <Tooltip title="View Report" arrow>
+                      <StyledButton
+                        onClick={() => {
+                          setAllDetailData(data);
+                          setViewReportRequestId(data._id);
+                          setViewReportNameWithVersionValue(`${data.customReportId?.reportName}-${data.versionValue}`);
+                        }}
+                      >
+                        <VisibilityIcon />
+                      </StyledButton>
+                    </Tooltip>
                   </Box>
                 ) : (
                   '-'
