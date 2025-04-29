@@ -14,7 +14,7 @@ import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 const StyledTableContainer = styled(TableContainer)({
   maxWidth: '100%',
   overflowX: 'auto',
-  border: '1px solid #ccc',
+  // border: '1px solid #ccc',
   boxShadow: 'none',
 });
 
@@ -37,16 +37,17 @@ const ScrollContainer = styled(Box)<{ scale: number; maxHeight?: number }>(({ sc
 
 // Dynamic styled cell component that takes color props
 const DynamicCell = styled(TableCell)<{
+  isBorder?: boolean;
   bgColor?: string;
   textColor?: string;
   align?: 'left' | 'center' | 'right';
   fontWeight?: string;
-}>(({ bgColor, textColor, align, fontWeight }) => ({
+}>(({ bgColor, textColor, align, fontWeight, isBorder }) => ({
   backgroundColor: bgColor ? `#${bgColor}` : 'transparent',
   color: textColor ? `#${textColor}` : 'inherit',
   padding: '6px',
   textAlign: align || 'left',
-  border: '1px solid #ccc',
+  border: !!isBorder ? '1px solid #000000' : '',
   fontSize: '0.8rem',
   fontWeight: fontWeight || 'normal',
 }));
@@ -106,6 +107,19 @@ interface SubSection {
   lastCellBackGroundColor: string;
 }
 
+interface Comments {
+  comment: string;
+  backGroundColor: string;
+  horizontalAlignment: Alignment;
+  verticalAlignment: Alignment;
+  startTableColumn: string;
+  textColor: string;
+  fontBold: boolean;
+  isBorder: boolean;
+  mergeCell: number;
+  uiStartTableColumn?: number;
+}
+
 interface Section {
   sectionName: string;
   sectionBackGroundColor: string;
@@ -116,6 +130,8 @@ interface Section {
   subSections: SubSection[];
   view: string;
   fontBold: boolean;
+  comments?: Comments[];
+  space?: number;
 }
 
 interface ReportRequestData {
@@ -258,9 +274,67 @@ const ViewReport: React.FC<ViewReportProps> = ({
                     const subSections = section.subSections || [];
                     const isRowView = section?.view === 'row';
                     const isColumnView = section?.view === 'column';
+                    const space = section?.space === 0 ? 0 : 2;
                     const formatColor = (color?: string) => (color ? `#${color}` : undefined);
                     return (
                       <React.Fragment key={`section-${sectionIndex}`}>
+                        {!!section?.comments && section?.comments.length > 0 && (
+                          <>
+                            {isRowView && (
+                              <TableRow key={`tableRowComment-${sectionIndex}`}>
+                                {section?.comments?.map((comment, commentIndex) => {
+                                  const fillerCells = [];
+
+                                  if (comment.uiStartTableColumn && comment.uiStartTableColumn > commentIndex) {
+                                    for (let i = commentIndex; i < comment.uiStartTableColumn - 1; i++) {
+                                      fillerCells.push(
+                                        <DynamicCell key={`startcol-${commentIndex}-${i}`}>{''}</DynamicCell>
+                                      );
+                                    }
+                                  }
+
+                                  return (
+                                    <React.Fragment key={`comment-frag-${commentIndex}`}>
+                                      {fillerCells}
+                                      <DynamicCell
+                                        key={`comment-${commentIndex}`}
+                                        colSpan={comment.mergeCell || 0}
+                                        bgColor={formatColor(comment.backGroundColor)}
+                                        textColor={formatColor(comment.textColor)}
+                                        fontWeight={comment.fontBold ? 'bold' : 'normal'}
+                                        isBorder={true}
+                                        align={comment.horizontalAlignment || 'center'}
+                                      >
+                                        {comment.comment}
+                                      </DynamicCell>
+                                    </React.Fragment>
+                                  );
+                                })}
+                              </TableRow>
+                            )}
+                            {isColumnView && (
+                              <>
+                                {section?.comments?.map((comment, commentIndex) => (
+                                  <TableRow key={`column-${commentIndex}`}>
+                                    <DynamicCell
+                                      key={`comment-${commentIndex}`}
+                                      colSpan={comment.mergeCell ? comment.mergeCell : 0}
+                                      bgColor={formatColor(comment.backGroundColor)}
+                                      textColor={formatColor(comment.textColor)}
+                                      fontWeight={comment.fontBold ? 'bold' : 'normal'}
+                                      isBorder={false}
+                                      align={comment.horizontalAlignment || 'center'}
+                                    >
+                                      {comment.comment}
+                                    </DynamicCell>
+                                  </TableRow>
+                                ))}
+                              </>
+                            )}
+
+                            {space > 0 && <Box sx={{ mb: space }}></Box>}
+                          </>
+                        )}
                         {!!section.sectionName && (
                           <TableRow>
                             <DynamicCell
@@ -269,6 +343,7 @@ const ViewReport: React.FC<ViewReportProps> = ({
                               bgColor={formatColor(section.sectionBackGroundColor)}
                               textColor={formatColor(section.sectionTextColor)}
                               fontWeight={section.fontBold ? 'bold' : ''}
+                              isBorder={true}
                               onClick={() => toggleSection(sectionIndex)}
                             >
                               <Box
@@ -298,8 +373,10 @@ const ViewReport: React.FC<ViewReportProps> = ({
                             <TableRow key={`subrow-${subIndex}`}>
                               <DynamicCell
                                 bgColor={formatColor(subSection.headerBackGroundColor)}
+                                // colSpan={subSection.spanColumns ? (reportData.data?.data.length ?? 0) + 1 : 1}
                                 textColor={formatColor(subSection.headerColor)}
                                 fontWeight="bold"
+                                isBorder={true}
                                 align={subSection.horizontalAlignment || 'left'}
                               >
                                 {subSection.headerName}
@@ -311,6 +388,7 @@ const ViewReport: React.FC<ViewReportProps> = ({
                                   bgColor={formatColor(subSection.headerBackGroundColor)}
                                   textColor={formatColor(subSection.headerColor)}
                                   fontWeight="normal"
+                                  isBorder={true}
                                   align={subSection.horizontalAlignment || 'center'}
                                 >
                                   {formatValue({
@@ -331,6 +409,7 @@ const ViewReport: React.FC<ViewReportProps> = ({
                                   bgColor={formatColor(subSection.headerBackGroundColor)}
                                   textColor={formatColor(subSection.headerColor)}
                                   fontWeight="bold"
+                                  isBorder={true}
                                   align={subSection.horizontalAlignment || 'center'}
                                 >
                                   {subSection.headerName}
@@ -354,6 +433,7 @@ const ViewReport: React.FC<ViewReportProps> = ({
                                         bgColor={backgroundColor}
                                         textColor={formatColor(subSection.headerColor)}
                                         fontWeight="normal"
+                                        isBorder={true}
                                         align={subSection.horizontalAlignment || 'center'}
                                       >
                                         {formatValue({
