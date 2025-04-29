@@ -332,7 +332,11 @@ const ViewReport: React.FC<ViewReportProps> = ({
                               </>
                             )}
 
-                            {space > 0 && <Box sx={{ mb: space }}></Box>}
+                            {space > 0 && (
+                              <Box sx={{ mb: space }}>
+                                <DynamicCell key={``}>{''}</DynamicCell>
+                              </Box>
+                            )}
                           </>
                         )}
                         {!!section.sectionName && (

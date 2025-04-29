@@ -319,7 +319,7 @@ export default function Report() {
                 )}
 
                 <Box>
-                  <Box sx={{ display: 'flex', mt: 1 }}>
+                  <Box sx={{ display: 'flex', mt: 1, mb: 1 }}>
                     <Box sx={{ fontWeight: 600 }}>Sheet Name: </Box>
                     <Box>{item.sheetName}</Box>
                   </Box>
