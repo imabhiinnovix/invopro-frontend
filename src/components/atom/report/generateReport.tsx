@@ -1,4 +1,4 @@
-import { Box, Button } from "@mui/material";
+import { Box, Button, Typography } from "@mui/material";
 import { useForm } from "react-hook-form";
 import CommonDropdownSearch from "../../common/dropdown/searchableDropdown";
 import {
@@ -21,20 +21,19 @@ export default function GenerateReport({ setReload }: GenerateReportProps) {
   const {
     control,
     handleSubmit,
-    reset,
     formState: { errors },
   } = useForm<CustomReportRequestPayload>({});
 
   const [versionValue, setVersionValue] = useState("");
   const [reportId, setReportId] = useState("");
-  const [open, setOpen] = useState(false); // 🔹 Track dialog state
+  const [open, setOpen] = useState(false);
 
   const generateReport = usePost<
     CustomReportRequestPayload,
     CustomReportRequestResponse
   >(
     ["generateReport"],
-    (data) => {
+    () => {
       // if (data?.success) {
       //   reset();
       // }
@@ -49,7 +48,6 @@ export default function GenerateReport({ setReload }: GenerateReportProps) {
       DateTime.fromISO(formData.versionValue).toFormat("yyyy-LL")
     );
 
-    // Ensure we open dialog only if we have required values
     if (formData.customReportId && formData.versionValue) {
       setOpen(true);
     }
@@ -57,8 +55,29 @@ export default function GenerateReport({ setReload }: GenerateReportProps) {
 
   return (
     <>
-      <Box display="flex" justifyContent="space-between" gap={2}>
-        <Box flex={1} minWidth={150}>
+      <Box>
+        <Typography 
+          variant="subtitle1" 
+          sx={{ 
+            mb: 2,
+            fontWeight: 600,
+            color: 'text.primary'
+          }}
+        >
+          Generate New Report
+        </Typography>
+        
+        <Box 
+          display="flex" 
+          flexDirection={{ xs: 'column', md: 'row' }}
+          gap={2}
+          sx={{
+            '& .MuiFormControl-root': {
+              flex: 1,
+              minWidth: { xs: '100%', md: '200px' }
+            }
+          }}
+        >
           <CommonDropdownSearch
             control={control}
             name="customReportId"
@@ -72,9 +91,7 @@ export default function GenerateReport({ setReload }: GenerateReportProps) {
             apiName="customReport"
             defaultDataUrl=""
           />
-        </Box>
 
-        <Box flex={1} minWidth={150}>
           <CommonDatePicker
             name="versionValue"
             control={control}
@@ -82,37 +99,45 @@ export default function GenerateReport({ setReload }: GenerateReportProps) {
             label="Version Value*"
             rules={{ required: "Version Value is required" }}
           />
-        </Box>
 
-        <Box flex={1} minWidth={150} display="flex" alignItems="center">
-          {generateReport.isPending ? (
-            <ProgressBar />
-          ) : (
-            <Button
-              variant="text"
-              size="large"
-              type="submit"
-              onClick={handleSubmit(onSubmit)}
-              sx={{
-                fontWeight: "bold",
-                fontSize: "1.2rem",
-                width: "100%",
-                bgcolor: "#007bff",
-                color: "#fff",
-                "&:hover": { bgcolor: "#0056b3" },
-                "@media (max-width: 600px)": {
-                  fontSize: "1rem",
-                },
-              }}
-            >
-              Generate Report
-            </Button>
-          )}
+          <Box 
+            display="flex" 
+            alignItems={{ xs: 'stretch', md: 'flex-start' }}
+            sx={{ 
+              minWidth: { xs: '100%', md: '200px' }
+            }}
+          >
+            {generateReport.isPending ? (
+              <ProgressBar />
+            ) : (
+              <Button
+                variant="contained"
+                size="large"
+                type="submit"
+                onClick={handleSubmit(onSubmit)}
+                sx={{
+                  width: '100%',
+                  height: '56px',
+                  textTransform: 'none',
+                  fontSize: '0.875rem',
+                  fontWeight: 500,
+                  borderRadius: 1,
+                  boxShadow: 'none',
+                  bgcolor: 'primary.main',
+                  '&:hover': {
+                    bgcolor: 'primary.dark',
+                    boxShadow: 'none',
+                  }
+                }}
+              >
+                Generate Report
+              </Button>
+            )}
+          </Box>
         </Box>
       </Box>
 
-      {/* Only render UploadMultipleFiles when reportId & versionValue exist */}
-      {open && reportId && versionValue && (
+      {reportId && versionValue && (
         <UploadMultipleFiles
           open={open}
           setOpen={setOpen}

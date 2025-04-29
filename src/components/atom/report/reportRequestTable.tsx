@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback, version } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { styled } from '@mui/material/styles';
 import {
   Table,
@@ -11,8 +11,9 @@ import {
   Box,
   Skeleton,
   Typography,
-  tableCellClasses,
   Button,
+  tableCellClasses,
+  Tooltip,
 } from '@mui/material';
 
 import useGet from '../../../hooks/useGet';
@@ -20,32 +21,76 @@ import { GET } from '../../../services/apiRoutes';
 import { ReportRequestResponse } from './types';
 import useFileDownload from '../../../hooks/useFiledownload';
 import { DateTime } from 'luxon';
+import SimCardDownloadIcon from '@mui/icons-material/SimCardDownload';
+
+import VisibilityIcon from '@mui/icons-material/Visibility';
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
   [`&.${tableCellClasses.head}`]: {
-    backgroundColor: theme.palette.common.black,
-    color: theme.palette.common.white,
+    backgroundColor: theme.palette.grey[50],
+    color: theme.palette.text.primary,
+    fontWeight: 600,
+    fontSize: '0.813rem',
+    height: '48px',
+    padding: '0 16px',
+    borderBottom: `1px solid ${theme.palette.divider}`,
   },
   [`&.${tableCellClasses.body}`]: {
-    fontSize: 14,
+    fontSize: '0.875rem',
+    height: '52px',
+    padding: '0 16px',
+    borderBottom: `1px solid ${theme.palette.divider}`,
   },
 }));
 
 const StyledTableRow = styled(TableRow)(({ theme }) => ({
-  backgroundColor: theme.palette.action.hover,
+  '&:hover': {
+    backgroundColor: theme.palette.action.hover,
+  },
+}));
+
+const StyledButton = styled(Button)(({ theme }) => ({
+  textTransform: 'none',
+  borderRadius: 10,
+  // padding: '6px 12px',
+  // marginRight: '2',
+  fontSize: '0.813rem',
+  fontWeight: 500,
+  minWidth: '80px',
+  backgroundColor: theme.palette.primary.main,
+  color: 'white',
+  '&:hover': {
+    backgroundColor: theme.palette.primary.dark,
+  },
 }));
 
 interface AttributeOptionTableProps {
   reload: boolean; // reload is now a boolean
   setReload: React.Dispatch<React.SetStateAction<boolean>>;
+  setViewReportRequestId: React.Dispatch<React.SetStateAction<string>>;
+  setViewReportNameWithVersionValue: React.Dispatch<React.SetStateAction<string>>;
+  setAllDetailData: React.Dispatch<React.SetStateAction<ReportRequestResponse | null>>;
 }
 
-const ReportRequestTable: React.FC<AttributeOptionTableProps> = ({ reload, setReload }) => {
+interface ReportRequestData {
+  success: boolean;
+  data: ReportRequestResponse[];
+  totalCount: number;
+}
+
+const ReportRequestTable: React.FC<AttributeOptionTableProps> = ({
+  reload,
+  setReload,
+  setViewReportRequestId,
+  setViewReportNameWithVersionValue,
+  setAllDetailData,
+}) => {
   const [reportRequests, setReportRequests] = useState<ReportRequestResponse[]>([]);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [downloadFileName, setDownLoadFileName] = useState('');
   const [processingRequestDataAvailable, setProcessingRequestDataAvailable] = useState(false);
   const [processingRequestCount, setProcessingRequestCount] = useState(0);
+  const [downloadRequestId, setDownloadRequestId] = useState('');
 
   const exportFile = useFileDownload<Blob>((data) => {
     const blob = new Blob([data], { type: 'application/octet-stream' });
@@ -62,6 +107,7 @@ const ReportRequestTable: React.FC<AttributeOptionTableProps> = ({ reload, setRe
   });
 
   const downloadFile = (fileName: string, fileId: string) => {
+    setDownloadRequestId(fileId);
     setDownLoadFileName(fileName);
     exportFile.mutate({
       url: `${GET?.Custom_Report}/download/${fileId}`,
@@ -70,17 +116,13 @@ const ReportRequestTable: React.FC<AttributeOptionTableProps> = ({ reload, setRe
 
   const perPageItem = 10;
 
-  const reportRequestList = useGet<{ success: boolean; data: ReportRequestResponse[]; totalCount: number }>(
+  const reportRequestList = useGet<ReportRequestData>(
     [`reportRequestList`, String(currentPage)],
     GET?.Custom_Report + '/listReportRequest' + `?page=${currentPage}&limit=${perPageItem}`,
     !!currentPage
   );
 
-  const notProcessingReportRequestDetails: any = useGet<{
-    success: boolean;
-    data: ReportRequestResponse[];
-    totalCount: number;
-  }>(
+  const notProcessingReportRequestDetails = useGet<ReportRequestData>(
     [`notprocesssingReportRequestList`, String(processingRequestCount)],
     GET?.Custom_Report + `/listReportRequest?page=1&limit=10&status=notprocessing`,
     !!processingRequestCount
@@ -93,7 +135,6 @@ const ReportRequestTable: React.FC<AttributeOptionTableProps> = ({ reload, setRe
       const diff = now.diff(createdAt, ['hours']).toObject();
       return data.status === 'processing' && diff.hours! <= 1;
     });
-
     setProcessingRequestDataAvailable(processingReports.length > 0);
   }, [reportRequests]);
 
@@ -113,7 +154,7 @@ const ReportRequestTable: React.FC<AttributeOptionTableProps> = ({ reload, setRe
     if (!notProcessingReportRequestDetails?.data?.data) return;
 
     const dataMap: Map<string, string> = new Map(
-      notProcessingReportRequestDetails.data.data.map((item: any) => [item._id, item.status])
+      notProcessingReportRequestDetails.data.data.map((item) => [item._id, item.status])
     );
 
     setReportRequests((prevRequests) =>
@@ -124,7 +165,7 @@ const ReportRequestTable: React.FC<AttributeOptionTableProps> = ({ reload, setRe
   useEffect(() => {
     if (notProcessingReportRequestDetails?.data?.data) {
       const dataMap: Map<string, string> = new Map(
-        notProcessingReportRequestDetails?.data?.data.map((item: any) => [item._id, item.status])
+        notProcessingReportRequestDetails.data.data.map((item) => [item._id, item.status])
       );
       const updatedReportRequest = reportRequests.map((data) => {
         if (dataMap.has(data._id)) {
@@ -145,17 +186,17 @@ const ReportRequestTable: React.FC<AttributeOptionTableProps> = ({ reload, setRe
       reportRequestList.refetch();
       setReload(false);
     }
-  }, [currentPage, reload]);
+  }, [currentPage, reload, reportRequestList, setReload]);
 
   useEffect(() => {
     if (reportRequestList?.data?.data) {
       if (currentPage === 1) {
-        setReportRequests([...reportRequestList?.data?.data]);
+        setReportRequests([...reportRequestList.data.data]);
       } else {
-        setReportRequests((prev) => [...prev, ...reportRequestList?.data?.data]);
+        setReportRequests((prev) => [...prev, ...reportRequestList.data.data]);
       }
     }
-  }, [reportRequestList?.data?.data]);
+  }, [reportRequestList?.data?.data, currentPage]);
 
   useEffect(() => {
     setCurrentPage(currentPage);
@@ -165,26 +206,23 @@ const ReportRequestTable: React.FC<AttributeOptionTableProps> = ({ reload, setRe
 
   const lastElementRef = useCallback(
     (node: HTMLTableRowElement | null) => {
-      if (reportRequestList.isFetching || reportRequests.length >= reportRequestList?.data?.totalCount!) return;
+      if (reportRequestList.isFetching || reportRequests.length >= (reportRequestList?.data?.totalCount ?? 0)) return;
 
-      // Disconnect the previous observer if it exists
       if (lastRowRef.current) {
         lastRowRef.current.disconnect();
       }
 
-      // Create a new IntersectionObserver
       lastRowRef.current = new IntersectionObserver((entries) => {
         if (entries[0].isIntersecting) {
           setCurrentPage((prevPage) => prevPage + 1);
         }
       });
 
-      // Observe the new node if it exists
       if (node) {
         lastRowRef.current.observe(node);
       }
     },
-    [reportRequestList.isFetching] // Add the correct dependency
+    [reportRequestList.isFetching, reportRequests.length, reportRequestList?.data?.totalCount]
   );
 
   if (!reportRequestList.isFetching && !reportRequests.length) {
@@ -204,61 +242,108 @@ const ReportRequestTable: React.FC<AttributeOptionTableProps> = ({ reload, setRe
   }
 
   return (
-    <TableContainer component={Paper}>
-      <Table sx={{ width: '100%' }} aria-label="attribute-option-table">
+    <TableContainer
+      component={Paper}
+      sx={{
+        borderRadius: 'inherit',
+        boxShadow: 'none',
+        height: 'calc(100vh - 250px)',
+        '& .MuiTable-root': {
+          borderCollapse: 'separate',
+          borderSpacing: 0,
+        },
+      }}
+    >
+      <Table stickyHeader aria-label="report-request-table">
         <TableHead>
           <TableRow>
-            <StyledTableCell>REPORT TYPE</StyledTableCell>
-            <StyledTableCell>VERSION VALUE</StyledTableCell>
-            <StyledTableCell>STATUS</StyledTableCell>
-            <StyledTableCell>CREATED AT</StyledTableCell>
-            <StyledTableCell>ACTION</StyledTableCell>
+            <StyledTableCell>Report Name</StyledTableCell>
+            <StyledTableCell>Period</StyledTableCell>
+            <StyledTableCell>Status</StyledTableCell>
+            <StyledTableCell>Prepared By</StyledTableCell>
+            <StyledTableCell>Prepared On</StyledTableCell>
+            <StyledTableCell align="right">Action</StyledTableCell>
           </TableRow>
         </TableHead>
         <TableBody>
           {reportRequests.map((data, dataIndex) => (
-            <React.Fragment key={data._id}>
-              <StyledTableRow ref={reportRequests.length === dataIndex + 1 ? lastElementRef : null}>
-                <StyledTableCell>{data?.customReportId?.reportName || '-'}</StyledTableCell>
-                <StyledTableCell>{data?.versionValue || '-'}</StyledTableCell>
-                <StyledTableCell
-                  sx={{
-                    color:
-                      data?.status === 'completed'
-                        ? 'green'
-                        : data?.status === 'processing'
-                        ? 'orange'
-                        : data?.status === 'failed'
-                        ? 'red'
-                        : 'black',
-                    fontWeight: 'bold',
-                  }}
-                >
-                  {data?.status || '-'}
-                </StyledTableCell>
-                <StyledTableCell>{data.createdAt ? new Date(data.createdAt).toLocaleString() : '-'}</StyledTableCell>
-                <StyledTableCell>
-                  {data?.status && data.status === 'completed' ? (
-                    <Button
-                      onClick={() => {
-                        downloadFile(`${data?.customReportId?.reportName}-${data?.versionValue}.xlsx`, data._id);
-                      }}
-                    >
-                      Download
-                    </Button>
-                  ) : (
-                    '-'
-                  )}
-                </StyledTableCell>
-              </StyledTableRow>
-            </React.Fragment>
+            <StyledTableRow key={data._id} ref={reportRequests.length === dataIndex + 1 ? lastElementRef : null}>
+              <StyledTableCell>{data.customReportId?.reportName || '-'}</StyledTableCell>
+              <StyledTableCell>{data.versionValue || '-'}</StyledTableCell>
+              <StyledTableCell
+                sx={{
+                  color:
+                    data.status === 'completed'
+                      ? 'success.main'
+                      : data.status === 'processing'
+                      ? 'warning.main'
+                      : data.status === 'failed'
+                      ? 'error.main'
+                      : 'text.primary',
+                  fontWeight: 500,
+                }}
+              >
+                {data.status || '-'}
+              </StyledTableCell>
+              <StyledTableCell>
+                {`${data?.createdBy?.firstName || ''}${data?.createdBy?.lastName ? ' ' + data.createdBy.lastName : ''}`}
+              </StyledTableCell>
+              <StyledTableCell>{data.createdAt ? new Date(data.createdAt).toLocaleString() : '-'}</StyledTableCell>
+              <StyledTableCell align="right">
+                {data.status === 'completed' ? (
+                  <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
+                    {exportFile.isPending && !!downloadRequestId && downloadRequestId === data._id ? (
+                      <Box
+                        sx={{
+                          width: 27,
+                          height: 27,
+                          borderRadius: '50%',
+                          border: '3px solid #f3f3f3',
+                          borderTop: '3px solid #3498db',
+                          animation: 'spin 1s linear infinite',
+                          '@keyframes spin': {
+                            '0%': { transform: 'rotate(0deg)' },
+                            '100%': { transform: 'rotate(360deg)' },
+                          },
+                          mr: 1,
+                        }}
+                      />
+                    ) : (
+                      <Tooltip title="Download Excel" arrow>
+                        <StyledButton
+                          onClick={() => {
+                            downloadFile(`${data.customReportId?.reportName}-${data.versionValue}.xlsx`, data._id);
+                          }}
+                          sx={{ mr: 1 }}
+                        >
+                          <SimCardDownloadIcon />
+                        </StyledButton>
+                      </Tooltip>
+                    )}
+                    <Tooltip title="View Report" arrow>
+                      <StyledButton
+                        onClick={() => {
+                          setAllDetailData(data);
+                          setViewReportRequestId(data._id);
+                          setViewReportNameWithVersionValue(`${data.customReportId?.reportName}-${data.versionValue}`);
+                        }}
+                      >
+                        <VisibilityIcon />
+                      </StyledButton>
+                    </Tooltip>
+                  </Box>
+                ) : (
+                  '-'
+                )}
+              </StyledTableCell>
+            </StyledTableRow>
           ))}
 
           {reportRequestList.isFetching &&
             Array.from({ length: 1 }, (_, index) => (
               <StyledTableRow key={index}>
-                <StyledTableCell colSpan={9}>
-                  <Skeleton height={40} />
+                <StyledTableCell colSpan={5}>
+                  <Skeleton height={52} />
                 </StyledTableCell>
               </StyledTableRow>
             ))}

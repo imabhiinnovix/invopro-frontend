@@ -14,4 +14,19 @@ export interface ReportRequestResponse {
   versionValue: string;
   status: string;
   createdAt: string;
+  createdBy: {
+    firstName: string;
+    lastName: string;
+  };
+  dataSourceVersion?: {
+    sheetName: string;
+    sheetCode: string;
+    tabName: string;
+    mappingFuctionName: string;
+    designCode: string;
+    dataSourceVersionId: string;
+    versionCode: string;
+    dataSourceId: string;
+    allowPdfDownload: boolean;
+  }[];
 }

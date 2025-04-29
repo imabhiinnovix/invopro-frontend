@@ -11,7 +11,9 @@ import {
   Container,
   Box,
   Stack,
-  Divider,
+  Typography,
+  Button,
+  CircularProgress,
 } from "@mui/material";
 import { useForm } from "react-hook-form";
 import CommonDatePicker from "../../components/common/datePicker/datePicker";
@@ -26,7 +28,6 @@ import {
 import useGet from "../../hooks/useGet";
 import { useInfiniteScroll } from "../../hooks/useInfiniteScroll";
 import { DateTime } from "luxon";
-import ContainedButton from "../../components/molecule/containedButton";
 import usePost from "../../hooks/usePost";
 
 const DataSources = () => {
@@ -227,136 +228,197 @@ const DataSources = () => {
   // };
 
   return (
-    <Container style={{ margin: "4rem 0 0 0", width: "calc(100vw - 288px)" }}>
-      <Stack component="div" direction="row" justifyContent="space-between">
-        <CommonDatePicker
-          name="versionValue"
-          control={control}
-          views={["year", "month"]}
-          label="Version Value*"
-          rules={{ required: "Version Value is required" }}
-        />
-        <ContainedButton
-          disabled={dataSourceCreate?.isPending || !(versionDate && id)}
-          loading={dataSourceCreate?.isPending}
-          text="Save"
-          handleClick={handleSave}
-        />
-      </Stack>
-      <Divider style={{ margin: "1.5rem 0" }} />
-      <TableContainer
-        component={Paper}
-        sx={{
-          maxWidth: "fit-content",
-          maxHeight: "calc(100vh - 250px)",
-          backgroundColor: "#F5F5F5",
-          overflowY: "auto",
+    <Container 
+      maxWidth="xl" 
+      sx={{ 
+        margin: "2rem auto",
+        padding: "2rem",
+        backgroundColor: "#f8f9fa",
+        borderRadius: "12px",
+        boxShadow: "0 2px 4px rgba(0,0,0,0.05)"
+      }}
+    >
+      <Stack 
+        direction="row" 
+        justifyContent="space-between" 
+        alignItems="center"
+        sx={{ 
+          marginBottom: "2rem",
+          padding: "1rem",
+          backgroundColor: "white",
+          borderRadius: "8px",
+          boxShadow: "0 1px 3px rgba(0,0,0,0.1)"
         }}
       >
-        <Table>
-          <TableHead
-            sx={{
-              position: "sticky",
-              top: 0,
-              zIndex: 1,
-              backgroundColor: "#F5F5F5",
-            }}
-          >
-            <TableRow>
-              <TableCell style={{ fontWeight: "600", fontSize: "1rem" }}>
-                {optionsAttributes?.name ?? "Default Name"}
-              </TableCell>
-              {textAttributes?.map((textAttr) => (
-                <TableCell
-                  style={{ fontWeight: "600", fontSize: "1rem" }}
-                  key={textAttr?.optionAttributeId}
-                >
-                  {textAttr?.name}
-                </TableCell>
-              ))}
-              <TableCell style={{ fontWeight: "600", fontSize: "1rem" }} />
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {rows.map((row, rowIndex) => (
-              <TableRow key={rowIndex}>
-                {header?.map((field, headIndex) => (
-                  <TableCell key={field?.optionAttributeId}>
-                    <TextField
-                      value={row[field?.name as keyof typeof row]}
-                      disabled={headIndex === 0}
-                      onChange={(e) =>
-                        handleEdit(rowIndex, field?.name, e.target.value)
-                      }
-                      variant="outlined"
-                      size="small"
-                      type={
-                        textAttributes?.find((attr) => {
-                          return attr?.name === field?.name;
-                        })?.type ?? "text"
-                      }
-                      fullWidth
-                      slotProps={{
-                        input: {
-                          onWheel: (e) => {
-                            if (
-                              (e.target as HTMLInputElement)?.type === "number"
-                            ) {
-                              (e.target as HTMLInputElement)?.blur();
-                            }
-                          },
-                          onKeyDown: (e) => {
-                            if (
-                              (e.currentTarget as HTMLInputElement).type ===
-                                "number" &&
-                              ["e", "E", "+", "-"].includes(e.key)
-                            ) {
-                              e.preventDefault();
-                            }
-                          },
-                          sx: {
-                            fontSize: "1rem",
-                            padding: "4px 8px",
-                            border: "none",
-                            backgroundColor: "#fff",
-                            borderRadius: "8px",
-                          },
-                        },
-                      }}
-                    />
+        <Stack direction="row" spacing={2} alignItems="center">
+          <Typography variant="h6" color="primary" sx={{ fontWeight: 600 }}>
+            Data Source Version
+          </Typography>
+          <CommonDatePicker
+            name="versionValue"
+            control={control}
+            views={["year", "month"]}
+            label="Version Value*"
+            rules={{ required: "Version Value is required" }}
+          />
+        </Stack>
+        <Button
+          variant="contained"
+          disabled={dataSourceCreate?.isPending || !(versionDate && id)}
+          onClick={handleSave}
+          sx={{ 
+            minWidth: "150px",
+            height: "40px",
+            borderRadius: "6px",
+            textTransform: "none",
+            fontSize: "0.875rem",
+            fontWeight: 500,
+            boxShadow: "none",
+            "&:hover": {
+              boxShadow: "none",
+            }
+          }}
+        >
+          {dataSourceCreate?.isPending ? (
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                width: "56px",
+                height: "24px",
+              }}
+            >
+              <CircularProgress size={20} sx={{ color: "white" }} />
+            </Box>
+          ) : (
+            "Save Changes"
+          )}
+        </Button>
+      </Stack>
+      
+      <Box sx={{ display: "flex", justifyContent: "center" }}>
+        <TableContainer
+          component={Paper}
+          sx={{
+            maxHeight: "calc(100vh - 300px)",
+            borderRadius: "8px",
+            boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+            width: "fit-content",
+            "& .MuiTable-root": {
+              minWidth: "600px"
+            }
+          }}
+        >
+          <Table stickyHeader>
+            <TableHead>
+              <TableRow>
+                {header?.map((field) => (
+                  <TableCell
+                    key={field?.optionAttributeId}
+                    sx={{
+                      backgroundColor: "#f8f9fa",
+                      fontWeight: 600,
+                      fontSize: "0.95rem",
+                      color: "#495057",
+                      borderBottom: "2px solid #e9ecef",
+                      padding: "12px 16px"
+                    }}
+                  >
+                    {field?.name}
                   </TableCell>
                 ))}
-                {/* <TableCell>
-                  <IconButton
-                    onClick={() => handleDeleteRow(rowIndex)}
-                    color="primary"
-                    disabled={!(versionDate && id)}
-                  >
-                    <Delete />
-                  </IconButton>
-                </TableCell> */}
               </TableRow>
-            ))}
-            {sourceData?.hasNextPage && (
-              <Box ref={lastElementRef} marginTop={2} marginLeft={2}>
-                Loading...
-              </Box>
-            )}
-            {/* <TableRow>
-              <TableCell colSpan={4} align="center">
-                <Button
-                  onClick={handleAddRow}
-                  startIcon={<Add />}
-                  variant="contained"
-                  color="primary"
+            </TableHead>
+            <TableBody>
+              {rows.map((row, rowIndex) => (
+                <TableRow 
+                  key={rowIndex}
+                  sx={{
+                    "&:nth-of-type(odd)": {
+                      backgroundColor: "#f8f9fa"
+                    },
+                    "&:hover": {
+                      backgroundColor: "#f1f3f5"
+                    }
+                  }}
                 >
-                  Add Row
-                </Button>
-              </TableCell>
-            </TableRow> */}
-          </TableBody>
-        </Table>
-      </TableContainer>
+                  {header?.map((field, headIndex) => (
+                    <TableCell 
+                      key={field?.optionAttributeId}
+                      sx={{ 
+                        padding: "12px 16px",
+                        borderBottom: "1px solid #e9ecef"
+                      }}
+                    >
+                      <TextField
+                        value={row[field?.name as keyof typeof row]}
+                        disabled={headIndex === 0}
+                        onChange={(e) =>
+                          handleEdit(rowIndex, field?.name, e.target.value)
+                        }
+                        variant="outlined"
+                        size="small"
+                        type={
+                          textAttributes?.find((attr) => {
+                            return attr?.name === field?.name;
+                          })?.type ?? "text"
+                        }
+                        fullWidth
+                        sx={{
+                          "& .MuiOutlinedInput-root": {
+                            borderRadius: "6px",
+                            backgroundColor: "white",
+                            "&:hover .MuiOutlinedInput-notchedOutline": {
+                              borderColor: "#ced4da"
+                            },
+                            "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                              borderColor: "#1976d2"
+                            }
+                          }
+                        }}
+                        slotProps={{
+                          input: {
+                            onWheel: (e) => {
+                              if ((e.target as HTMLInputElement)?.type === "number") {
+                                (e.target as HTMLInputElement)?.blur();
+                              }
+                            },
+                            onKeyDown: (e) => {
+                              if (
+                                (e.currentTarget as HTMLInputElement).type === "number" &&
+                                ["e", "E", "+", "-"].includes(e.key)
+                              ) {
+                                e.preventDefault();
+                              }
+                            },
+                            sx: {
+                              fontSize: "0.95rem",
+                              padding: "8px 12px"
+                            }
+                          }
+                        }}
+                      />
+                    </TableCell>
+                  ))}
+                </TableRow>
+              ))}
+              {sourceData?.hasNextPage && (
+                <Box 
+                  ref={lastElementRef} 
+                  sx={{ 
+                    padding: "1rem",
+                    textAlign: "center",
+                    color: "#6c757d"
+                  }}
+                >
+                  Loading more data...
+                </Box>
+              )}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      </Box>
     </Container>
   );
 };

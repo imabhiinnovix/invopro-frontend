@@ -7,7 +7,7 @@ import App from "./App.tsx";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import MainProvider from "./context/main.tsx";
 import { Provider } from "react-redux";
-import store from "./store.tsx";
+import { store } from "./reducers";
 
 export const queryClient = new QueryClient();
 createRoot(document.getElementById("root")!).render(
