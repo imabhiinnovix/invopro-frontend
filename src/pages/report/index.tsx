@@ -1,27 +1,55 @@
-import { Box, Button, Typography } from '@mui/material';
+import { Box, Button, Table, TableBody, TableCell, TableRow, Tooltip, Typography } from '@mui/material';
 import GenerateReport from '../../components/atom/report/generateReport';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import ReportRequestTable from '../../components/atom/report/reportRequestTable';
 import ViewReport from '../../components/atom/report/viewReport';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import { usePDF, Margin } from 'react-to-pdf';
-import { ReportRequestResponse } from '../../components/atom/report/types';
+import type { ReportRequestResponse } from '../../components/atom/report/types';
+import { DateTime } from 'luxon';
+import html2pdf from 'html2pdf.js';
+import ReportSelection from '../../components/atom/report/changeReportFromViewReport';
+import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
+import ScrollableTabNavigation from '../../components/atom/report/scrollableTab';
+import SimCardDownloadIcon from '@mui/icons-material/SimCardDownload';
+import useFileDownload from '../../hooks/useFiledownload';
+import { GET } from '../../services/apiRoutes';
 
 export default function Report() {
   const [reload, setReload] = useState(false);
   const [viewReportRequestId, setViewReportRequestId] = useState('');
-  const [reportDetailData, setReportDetailData] = useState('');
+
+  const [maxHeight, setMaxHeight] = useState<number>(0);
+
+  const headerRef = useRef<HTMLDivElement>(null);
+  const tabRef = useRef<HTMLDivElement>(null);
+  const targetRef = useRef<HTMLDivElement>(null);
 
   const [allDetailData, setAllDetailData] = useState<ReportRequestResponse | null>(null);
   const [activeTab, setActiveTab] = useState(0);
-  const [activeTabName, setActiveTabName] = useState('');
+  const [downloadFileName, setDownLoadFileName] = useState('');
+  const [isPdfLoading, setIsPdfLoading] = useState(false);
 
   const [viewReportNameWithVersionValue, setViewReportNameWithVersionValue] = useState('');
-  const { toPDF, targetRef } = usePDF({
-    filename: `${viewReportNameWithVersionValue}.pdf`,
-    page: { orientation: 'landscape', margin: Margin.SMALL },
+  const exportFile = useFileDownload<Blob>((data) => {
+    const blob = new Blob([data], { type: 'application/octet-stream' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.href = url;
+    link.download = downloadFileName;
+
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    URL.revokeObjectURL(url);
   });
 
+  const downloadFile = (fileName: string, fileId: string) => {
+    setDownLoadFileName(fileName);
+    exportFile.mutate({
+      url: `${GET?.Custom_Report}/download/${fileId}`,
+    });
+  };
   const tabStyle = (index: number) => ({
     padding: '10px 20px',
     cursor: 'pointer',
@@ -29,94 +57,177 @@ export default function Report() {
     fontWeight: activeTab === index ? 'bold' : 'normal',
     backgroundColor: activeTab === index ? '#f0f0f0' : '#fff',
   });
+
+  useEffect(() => {
+    if (headerRef.current && tabRef.current && window.innerHeight) {
+      const headerHeight = headerRef.current?.clientHeight || 0;
+      const tabHeight = tabRef.current?.clientHeight || 0;
+      const total = headerHeight + tabHeight;
+      const leftHeight = window.innerHeight ? window.innerHeight : 0 - total - 30;
+      if (leftHeight > 0) {
+        setMaxHeight(leftHeight);
+      }
+    }
+  }, [headerRef.current, tabRef.current, window.innerHeight]);
+
+  const handleDownloadPdf = () => {
+    if (!targetRef.current || !viewReportNameWithVersionValue) return;
+    setIsPdfLoading(true);
+
+    setTimeout(() => {
+      setIsPdfLoading(false);
+    }, 500);
+    const opt = {
+      margin: 0.5,
+      filename: `${viewReportNameWithVersionValue}.pdf`,
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { scale: 2 },
+      jsPDF: { unit: 'in', format: 'a4', orientation: 'landscape' },
+    };
+
+    html2pdf().set(opt).from(targetRef.current.innerHTML).save();
+  };
+
   return (
     <Box
       sx={{
         width: '100%',
         backgroundColor: '#F8FAFC',
         minHeight: 'calc(100vh - 64px)',
+        p: 1,
       }}
     >
-      <Box
-        sx={{
-          display: 'flex',
-          alignItems: 'center',
-          height: '56px',
-          px: 3,
-          backgroundColor: 'white',
-          borderBottom: '1px solid',
-          borderColor: 'divider',
-        }}
-      >
+      <Box ref={headerRef}>
         {viewReportRequestId && viewReportRequestId.length > 0 ? (
-          <Box
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              width: '100%',
-            }}
-          >
+          <>
+            <Box
+              sx={{
+                cursor: 'pointer',
+                // transition: 'transform 0.2s ease-in-out',
+                // '&:hover': {
+                //   transform: 'scale(1.2)',
+                // },
+              }}
+              onClick={() => {
+                setViewReportRequestId('');
+              }}
+            >
+              <ArrowBackIcon fontSize="medium" />
+            </Box>
+            <ReportSelection
+              defaultReport={{
+                _id: allDetailData?.customReportId?._id || '',
+                reportName: allDetailData?.customReportId?.reportName || '',
+              }}
+              defaultVersion={{ _id: allDetailData?._id || '', versionValue: allDetailData?.versionValue || '' }}
+              setViewReportRequestId={setViewReportRequestId}
+              setAllDetailData={setAllDetailData}
+              setViewReportNameWithVersionValue={setViewReportNameWithVersionValue}
+            />
             <Box
               sx={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: 1,
+                justifyContent: 'space-between',
+                p: 2,
               }}
             >
               <Box
                 sx={{
-                  cursor: 'pointer',
-                  transition: 'transform 0.2s ease-in-out',
-                  '&:hover': {
-                    transform: 'scale(1.2)',
-                  },
-                }}
-                onClick={() => {
-                  setViewReportRequestId('');
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 1,
                 }}
               >
-                <ArrowBackIcon fontSize="medium" />
-              </Box>
-              <Typography
-                variant="h6"
-                sx={{
-                  fontWeight: 500,
-                  color: 'text.primary',
-                }}
-              >
-                Report View
-                <Box component="span" sx={{ fontWeight: 400, mx: 1, color: 'text.secondary' }}>
-                  Report Name:
-                </Box>
-                <Box component="span" sx={{ fontWeight: 500 }}>
-                  {allDetailData?.customReportId?.reportName}
-                </Box>
-                <Box component="span" sx={{ fontWeight: 400, mx: 1, color: 'text.secondary' }}>
-                  | Period:
-                </Box>
-                <Box component="span" sx={{ fontWeight: 500 }}>
-                  {allDetailData?.versionValue}
-                </Box>
-                <Box component="span" sx={{ fontWeight: 400, mx: 1, color: 'text.secondary' }}>
-                  | Created By:
-                </Box>
-                <Box component="span" sx={{ fontWeight: 500 }}>
+                <Typography
+                  variant="h6"
+                  sx={{
+                    fontWeight: 500,
+                    color: 'text.primary',
+                  }}
+                >
+                  <Box component="span" fontWeight="bold">
+                    {allDetailData?.customReportId?.reportName || ''}
+                  </Box>{' '}
+                  Report for the period{' '}
+                  <Box component="span" fontWeight="bold">
+                    {allDetailData?.versionValue
+                      ? DateTime.fromFormat(allDetailData.versionValue, 'yyyy-MM').toFormat('LLLL yyyy')
+                      : ''}
+                  </Box>{' '}
+                  created by{' '}
                   {`${allDetailData?.createdBy?.firstName || ''}${
                     allDetailData?.createdBy?.lastName ? ' ' + allDetailData.createdBy.lastName : ''
-                  }`}
-                </Box>
-              </Typography>
-            </Box>
+                  }`}{' '}
+                  at{' '}
+                  {allDetailData?.createdAt
+                    ? DateTime.fromISO(allDetailData.createdAt).toFormat('dd LLL yyyy hh:mm a')
+                    : ''}
+                </Typography>
+              </Box>
 
-            <Button
-              disabled={!(viewReportNameWithVersionValue && viewReportNameWithVersionValue.length > 0)}
-              variant="contained"
-              onClick={() => toPDF()}
-            >
-              Download PDF
-            </Button>
-          </Box>
+              <Box sx={{ display: 'flex', gap: 1 }}>
+                {isPdfLoading ? (
+                  <Box
+                    sx={{
+                      width: 27,
+                      height: 27,
+                      borderRadius: '50%',
+                      border: '3px solid #f3f3f3',
+                      borderTop: '3px solid #3498db',
+                      animation: 'spin 1s linear infinite',
+                      '@keyframes spin': {
+                        '0%': { transform: 'rotate(0deg)' },
+                        '100%': { transform: 'rotate(360deg)' },
+                      },
+                    }}
+                  />
+                ) : (
+                  <Tooltip title="Download Pdf" arrow>
+                    <Button
+                      variant="contained"
+                      disabled={!(viewReportNameWithVersionValue && viewReportNameWithVersionValue.length > 0)}
+                      onClick={handleDownloadPdf}
+                    >
+                      <PictureAsPdfIcon />
+                    </Button>
+                  </Tooltip>
+                )}
+
+                {exportFile.isPending ? (
+                  <Box
+                    sx={{
+                      width: 27,
+                      height: 27,
+                      borderRadius: '50%',
+                      border: '3px solid #f3f3f3',
+                      borderTop: '3px solid #3498db',
+                      animation: 'spin 1s linear infinite',
+                      '@keyframes spin': {
+                        '0%': { transform: 'rotate(0deg)' },
+                        '100%': { transform: 'rotate(360deg)' },
+                      },
+                    }}
+                  />
+                ) : (
+                  <Tooltip title="Download Excel" arrow>
+                    <Button
+                      variant="contained"
+                      onClick={() => {
+                        downloadFile(
+                          `${allDetailData?.customReportId?.reportName}-${allDetailData?.versionValue}.xlsx`,
+                          allDetailData?._id || ''
+                        );
+                      }}
+                      sx={{ mr: 1 }}
+                    >
+                      <SimCardDownloadIcon />
+                    </Button>
+                  </Tooltip>
+                )}
+              </Box>
+            </Box>
+          </>
         ) : (
           <Typography
             variant="h5"
@@ -131,78 +242,106 @@ export default function Report() {
       </Box>
 
       {viewReportRequestId && viewReportRequestId.length > 0 ? (
-        <Box>
-          <Box display="flex" borderBottom="1px solid #ccc" mb={2}>
-            {allDetailData?.dataSourceVersion?.map((item, index) => (
-              <div
-                key={index}
-                style={tabStyle(index)}
-                onClick={() => {
-                  setActiveTab(index);
-                  setActiveTabName(item.name);
-                  setViewReportRequestId(viewReportRequestId);
-                  setReportDetailData(item.dataSourceVersionId);
-                }}
-              >
-                {item.name}
-              </div>
-            ))}
-          </Box>
+        <Box ref={tabRef}>
+          <ScrollableTabNavigation
+            tabs={allDetailData?.dataSourceVersion || []}
+            activeTab={activeTab}
+            setActiveTab={setActiveTab}
+            tabStyle={tabStyle}
+          />
           {allDetailData?.dataSourceVersion?.map(
             (item, index) =>
               activeTab === index && (
                 <ViewReport
                   key={index}
-                  targetRef={''}
-                  reportDetailData={item.dataSourceVersionId}
-                  setViewReportRequestId={setViewReportRequestId}
-                  viewReportRequestId={viewReportRequestId}
+                  dataSourceVersionId={item.dataSourceVersionId}
+                  versionCode={item.versionCode}
+                  mappingFuctionName={item.mappingFuctionName}
+                  versionValue={allDetailData.versionValue.split('-')[0]}
+                  sheetCode={item.sheetCode}
+                  designCode={item.designCode}
+                  customReportId={allDetailData.customReportId._id}
+                  maxHeight={maxHeight}
+                  isView={true}
                 />
               )
           )}
 
           {/* To download pdf */}
           <Box
-            sx={{ position: 'absolute', top: '-9999px', left: '-9999px', width: '100%', marginBottom: 5 }}
+            sx={{
+              display: 'none',
+              marginBottom: 5,
+            }}
             ref={targetRef}
           >
             {allDetailData?.dataSourceVersion?.map((item, index) => (
-              <Box>
-                <Typography
-                  variant="h6"
-                  sx={{
-                    fontWeight: 500,
-                    color: 'text.primary',
-                  }}
-                >
-                  <Box component="span" sx={{ fontWeight: 400, mx: 1, color: 'text.primary' }}>
-                    Report Name:
+              <Box key={index}>
+                {index === 0 && (
+                  <Table
+                    size="small"
+                    sx={{
+                      width: 'auto',
+                      mb: 2,
+                      ml: 0,
+                      pl: 0,
+                    }}
+                  >
+                    <TableBody>
+                      <TableRow>
+                        <TableCell sx={{ fontWeight: 600, borderBottom: 'none', pr: 1, whiteSpace: 'nowrap' }}>
+                          Report Name:
+                        </TableCell>
+                        <TableCell sx={{ fontWeight: 500, borderBottom: 'none' }}>
+                          {allDetailData?.customReportId?.reportName}
+                        </TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell sx={{ fontWeight: 600, borderBottom: 'none', pr: 1, whiteSpace: 'nowrap' }}>
+                          Period:
+                        </TableCell>
+                        <TableCell sx={{ fontWeight: 500, borderBottom: 'none' }}>
+                          {allDetailData?.versionValue}
+                        </TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell sx={{ fontWeight: 600, borderBottom: 'none', pr: 1, whiteSpace: 'nowrap' }}>
+                          Created By:
+                        </TableCell>
+                        <TableCell sx={{ fontWeight: 500, borderBottom: 'none' }}>
+                          {`${allDetailData?.createdBy?.firstName || ''}${
+                            allDetailData?.createdBy?.lastName ? ' ' + allDetailData.createdBy.lastName : ''
+                          }`}
+                        </TableCell>
+                      </TableRow>
+                    </TableBody>
+                  </Table>
+                )}
+
+                <Box>
+                  <Box sx={{ display: 'flex', mt: 1, mb: 1 }}>
+                    <Box sx={{ fontWeight: 600 }}>Sheet Name: </Box>
+                    <Box>{item.sheetName}</Box>
                   </Box>
-                  <Box component="span" sx={{ fontWeight: 500 }}>
-                    {`${allDetailData?.customReportId?.reportName}-${item?.name}`}
-                  </Box>
-                  <Box component="span" sx={{ fontWeight: 400, mx: 1, color: 'text.primary' }}>
-                    | Period:
-                  </Box>
-                  <Box component="span" sx={{ fontWeight: 500 }}>
-                    {allDetailData?.versionValue}
-                  </Box>
-                  <Box component="span" sx={{ fontWeight: 400, mx: 1, color: 'text.primary' }}>
-                    | Created By:
-                  </Box>
-                  <Box component="span" sx={{ fontWeight: 500 }}>
-                    {`${allDetailData?.createdBy?.firstName || ''}${
-                      allDetailData?.createdBy?.lastName ? ' ' + allDetailData.createdBy.lastName : ''
-                    }`}
-                  </Box>
-                </Typography>
-                <ViewReport
-                  key={index}
-                  targetRef={''}
-                  reportDetailData={item.dataSourceVersionId}
-                  setViewReportRequestId={setViewReportRequestId}
-                  viewReportRequestId={viewReportRequestId}
-                />
+                  {!!item.allowPdfDownload ? (
+                    <ViewReport
+                      key={index}
+                      dataSourceVersionId={item.dataSourceVersionId}
+                      versionCode={item.versionCode}
+                      mappingFuctionName={item.mappingFuctionName}
+                      versionValue={allDetailData.versionValue.split('-')[0]}
+                      sheetCode={item.sheetCode}
+                      designCode={item.designCode}
+                      customReportId={allDetailData.customReportId._id}
+                    />
+                  ) : (
+                    <Box sx={{ mt: 30 }}>
+                      This sheet cannot be converted to PDF. Please refer to the Excel file for the available data.
+                    </Box>
+                  )}
+                </Box>
+
+                <Box className="html2pdf__page-break" />
               </Box>
             ))}
           </Box>
@@ -239,7 +378,6 @@ export default function Report() {
               setReload={setReload}
               reload={reload}
               setViewReportRequestId={setViewReportRequestId}
-              setReportDetailData={setReportDetailData}
               setAllDetailData={setAllDetailData}
               setViewReportNameWithVersionValue={setViewReportNameWithVersionValue}
             />
