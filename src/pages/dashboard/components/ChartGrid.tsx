@@ -153,6 +153,10 @@ const ChartContainer = styled(Box)(({ theme }) => ({
   },
   "&.horizontal-bar-chart": {
     minHeight: 450,
+    "& canvas": {
+      maxWidth: "98% !important",
+      maxHeight: "90% !important",
+    },
   },
   "&.number-chart": {
     minHeight: 250,
@@ -331,6 +335,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
   const [totalPages, setTotalPages] = useState(1);
   const [, setTotalRecords] = useState(0);
   const [isDrillDownLoading, setIsDrillDownLoading] = useState(false);
+  const [drillDownPayload, setDrillDownPayload] = useState<any>(null);
   const itemsPerPage = 10;
 
   // Combine permanent and temporary charts
@@ -518,6 +523,8 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
   ) => {
     if (!elements || !elements.length) return;
 
+    setSelectedChart(chart);
+
     const clickedElement = elements[0];
     const chartData =
       widgetData[chart._id]?.data?.widgetData || chart.data || [];
@@ -570,6 +577,9 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
           limit: itemsPerPage,
         };
 
+        // Save the payload for pagination
+        setDrillDownPayload(payload);
+
         // Make the API call
         const response = await axiosInstance.post(
           "/dataSource/getWidgetDataByFilter",
@@ -596,38 +606,20 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
     setDrillDownOpen(false);
     setDrillDownData([]);
     setDrillDownTitle("");
+    setDrillDownPayload(null);
   };
 
   const handlePageChange = async (
     event: React.ChangeEvent<unknown>,
     value: number
   ) => {
-    if (!selectedChart) return;
+    if (!selectedChart || !drillDownPayload) return;
 
     try {
-      const clickedData = drillDownData[0]; // Get the first item to maintain the filter
-      const dimensions = selectedChart.dimensions
-        ? Array.isArray(selectedChart.dimensions)
-          ? selectedChart.dimensions.map((dim) => ({ [dim]: clickedData.name }))
-          : [{ [selectedChart.dimensions]: clickedData.name }]
-        : [];
-
-      const groupBy = selectedChart.groupBy
-        ? Array.isArray(selectedChart.groupBy)
-          ? selectedChart.groupBy.map((group) => ({
-              [group]: clickedData.name,
-            }))
-          : [{ [selectedChart.groupBy]: clickedData.name }]
-        : [];
-
+      // Use the saved payload and just update the page number
       const payload = {
-        dataSourceId: selectedChart.dataSourceId?._id,
-        entityId: selectedChart.dataSourceId?.entityId,
-        conditions: selectedChart.conditions || [],
-        dimensions,
-        groupBy,
+        ...drillDownPayload,
         page: value,
-        limit: itemsPerPage,
       };
 
       const response = await axiosInstance.post(

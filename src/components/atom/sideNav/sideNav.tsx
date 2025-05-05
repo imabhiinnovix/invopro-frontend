@@ -139,6 +139,7 @@ export default function SideNav() {
   const [openDashboard, setOpenDashboard] = React.useState(false);
   const [isCreating, setIsCreating] = React.useState(false);
   const [newDashboardName, setNewDashboardName] = React.useState("");
+  const [dashboardType, setDashboardType] = React.useState<'normal' | 'trend'>('normal');
   const [isCreatingLoading, setIsCreatingLoading] = React.useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = React.useState(false);
   const [dashboardToDelete, setDashboardToDelete] =
@@ -179,24 +180,29 @@ export default function SideNav() {
       try {
         setIsCreatingLoading(true);
         const response = await dispatch(
-          createDashboard(newDashboardName.trim())
+          createDashboard({ name: newDashboardName.trim(), dashboardType })
         ).unwrap() as DashboardListResponse;
         await dispatch(fetchDashboardList());
         setIsCreating(false);
         setNewDashboardName("");
+        setDashboardType('normal');
         toast.success(response.message || "Dashboard created successfully!");
 
         // Navigate to the newly created dashboard
-        const newDashboard = response.data  ; // Get the first dashboard from the array
+        const newDashboard = response.data[0]; // Get the first dashboard from the array
       
         if (newDashboard) {
           navigate(`/dashboard/${newDashboard._id}`, {
             state: { enableEditMode: true },
           });
         }
-      } catch (error: { payload?: { message: string }; message?: string }) {
+      } catch (error: { payload?: { message: string }; message?: string } | unknown) {
         console.error("Failed to create dashboard:", error);
-        const errorMessage = error?.payload?.message || error?.message || "Failed to create dashboard. Please try again.";
+        const errorMessage = error && typeof error === 'object' && 'payload' in error
+          ? (error.payload as { message?: string })?.message
+          : error && typeof error === 'object' && 'message' in error
+            ? (error as { message?: string })?.message
+            : "Failed to create dashboard. Please try again.";
         toast.error(errorMessage);
       } finally {
         setIsCreatingLoading(false);
@@ -207,6 +213,7 @@ export default function SideNav() {
   const handleCancelCreate = () => {
     setIsCreating(false);
     setNewDashboardName("");
+    setDashboardType('normal');
   };
 
   const { infiniteQuery: dataSourceListAPI, lastElementRef } =
@@ -504,6 +511,8 @@ export default function SideNav() {
                           onCreate={handleCreateDashboard}
                           onCancel={handleCancelCreate}
                           isCreatingLoading={isCreatingLoading}
+                          dashboardType={dashboardType}
+                          onDashboardTypeChange={setDashboardType}
                         />
                       )}
 
