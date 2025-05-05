@@ -66,9 +66,9 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   const postGridColumns = usePost([""]);
 
   const { control, watch } = useForm({});
-  const versionValue = DateTime.fromISO(watch("versionValue")).toFormat(
-    "yyyy-LL"
-  );
+  const versionValue = watch("versionValue")
+    ? DateTime.fromISO(watch("versionValue")).toFormat("yyyy-LL")
+    : "";
 
   useEffect(() => {
     if (dashboards.length > 0) {
@@ -90,8 +90,10 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   };
 
   useEffect(() => {
-    if (dashboardId && versionValue) {
-      dispatch(fetchChartData({ dashboardId, versionValue }));
+    if (dashboardId) {
+      dispatch(
+        fetchChartData({ dashboardId, versionValue: versionValue || "" })
+      );
     }
   }, [dispatch, dashboardId, versionValue]);
 
@@ -271,7 +273,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               value={editedTitle}
               onChange={(e) => setEditedTitle(e.target.value)}
               onKeyDown={handleKeyPress}
-              size='small'
+              size="small"
               fullWidth
               sx={{
                 "& .MuiInputBase-input": {
@@ -282,7 +284,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               }}
             />
           ) : (
-            <Typography variant='h5' component='h1' fontWeight={500}>
+            <Typography variant="h5" component="h1" fontWeight={500}>
               {title}
             </Typography>
           )}
@@ -294,10 +296,10 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             <>
               <Box sx={{ width: "200px" }}>
                 <CommonDatePicker
-                  name='versionValue'
+                  name="versionValue"
                   control={control}
                   views={["year", "month"]}
-                  label='Version Value*'
+                  label="Version Value*"
                   rules={{ required: "Version Value is required" }}
                 />
               </Box>
@@ -306,10 +308,10 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                   <Checkbox
                     checked={isDynamicVersion}
                     onChange={handleDynamicVersionChange}
-                    size='small'
+                    size="small"
                   />
                 }
-                label=''
+                label=""
                 sx={{
                   mr: 0,
                   "& .MuiFormControlLabel-label": {
@@ -331,8 +333,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           {isEditMode ? (
             <>
               <Button
-                variant='contained'
-                color='primary'
+                variant="contained"
+                color="primary"
                 startIcon={<AddIcon />}
                 onClick={() => setIsAddChartModalOpen(true)}
                 sx={{ minWidth: "120px" }}
@@ -341,8 +343,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               </Button>
               <Button
                 onClick={handleEditModeToggle}
-                color='success'
-                variant='contained'
+                color="success"
+                variant="contained"
                 startIcon={<DoneIcon />}
                 sx={{ minWidth: "100px" }}
               >
@@ -352,9 +354,9 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           ) : (
             <>
               <ButtonGroup
-                variant='outlined'
-                aria-label='grid columns'
-                size='small'
+                variant="outlined"
+                aria-label="grid columns"
+                size="small"
               >
                 <Button
                   onClick={() => handleGridColumns(1)}
@@ -380,8 +382,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               </ButtonGroup>
               <Button
                 onClick={handleEditModeToggle}
-                color='primary'
-                variant='contained'
+                color="primary"
+                variant="contained"
                 startIcon={<EditIcon />}
               >
                 Edit
