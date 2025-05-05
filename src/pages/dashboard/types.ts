@@ -329,3 +329,11 @@ export interface OperatorListResponse {
   data: OperatorType[];
   totalCount: number;
 }
+
+export interface FetchChartDataPayload {
+  dashboardId: string;
+  versionValue?: string;
+  dynamicVersionValue?: string;
+  startDate?: string;
+  endDate?: string;
+}

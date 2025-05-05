@@ -270,7 +270,14 @@ export const fetchChartData = createAsyncThunk(
     {
       dashboardId,
       versionValue,
-    }: { dashboardId: string; versionValue?: string },
+      startVersionValue,
+      endVersionValue,
+    }: {
+      dashboardId: string;
+      versionValue?: string;
+      startVersionValue?: string;
+      endVersionValue?: string;
+    },
     { dispatch }
   ) => {
     const response = await axiosInstance.get<ChartDataResponse>(
@@ -293,6 +300,8 @@ export const fetchChartData = createAsyncThunk(
                 aggregation: chart.aggregation,
                 widgetType: chart.widgetTypeId?.chartType,
                 ...(versionValue && { versionValue }),
+                ...(startVersionValue && { startVersionValue }),
+                ...(endVersionValue && { endVersionValue }),
               }
             );
             if (widgetResponse.data.success) {
