@@ -58,7 +58,9 @@ const Dashboard = () => {
     useState<DashboardType | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [dashboardType, setDashboardType] = useState<'normal' | 'trend'>('normal');
+  const [dashboardType, setDashboardType] = useState<"normal" | "trend">(
+    "normal"
+  );
 
   useEffect(() => {
     if (!dashboards.length) {
@@ -126,28 +128,31 @@ const Dashboard = () => {
     if (newDashboardName.trim()) {
       try {
         setIsCreating(true);
-        const response = await dispatch(
+        const response = (await dispatch(
           createDashboard({ name: newDashboardName.trim(), dashboardType })
-        ).unwrap() as DashboardListResponse;
+        ).unwrap()) as DashboardListResponse;
         await dispatch(fetchDashboardList());
         setOpenCreateModal(false);
         setNewDashboardName("");
-        setDashboardType('normal');
+        setDashboardType("normal");
         toast.success(response.message || "Dashboard created successfully!");
 
         // Navigate to the newly created dashboard
         const newDashboard = response.data[0];
-      
+
         if (newDashboard) {
           navigate(`/dashboard/${newDashboard._id}`, {
             state: { enableEditMode: true },
           });
         }
-      } catch (error: { payload?: { message: string }; message?: string } | unknown) {
+      } catch (error:
+        | { payload?: { message: string }; message?: string }
+        | unknown) {
         console.error("Failed to create dashboard:", error);
-        const errorMessage = error && typeof error === 'object' && 'payload' in error
-          ? (error.payload as { message?: string })?.message
-          : error && typeof error === 'object' && 'message' in error
+        const errorMessage =
+          error && typeof error === "object" && "payload" in error
+            ? (error.payload as { message?: string })?.message
+            : error && typeof error === "object" && "message" in error
             ? (error as { message?: string })?.message
             : "Failed to create dashboard. Please try again.";
         toast.error(errorMessage);
@@ -160,16 +165,18 @@ const Dashboard = () => {
   const handleCloseCreateModal = () => {
     setOpenCreateModal(false);
     setNewDashboardName("");
-    setDashboardType('normal');
+    setDashboardType("normal");
   };
 
   // If no ID is provided, show the dashboard list view
   if (!id) {
     return (
-      <Box sx={{ 
-        width: "100%",
-        backgroundColor: "#F8FAFC"
-      }}>
+      <Box
+        sx={{
+          width: "100%",
+          backgroundColor: "#F8FAFC",
+        }}
+      >
         <Box
           sx={{
             display: "flex",
@@ -179,16 +186,16 @@ const Dashboard = () => {
             gap: 2,
             p: { xs: 2, md: 3 },
             backgroundColor: "white",
-            borderBottom: '1px solid',
-            borderColor: 'divider'
+            borderBottom: "1px solid",
+            borderColor: "divider",
           }}
         >
-          <Typography 
-            variant="h4" 
-            sx={{ 
-              fontWeight: 600, 
+          <Typography
+            variant="h4"
+            sx={{
+              fontWeight: 600,
               color: "text.primary",
-              fontSize: { xs: "1.75rem", md: "2rem" }
+              fontSize: { xs: "1.75rem", md: "2rem" },
             }}
           >
             Dashboards
@@ -240,69 +247,93 @@ const Dashboard = () => {
                     Created By
                   </TableCell>
                   <TableCell sx={{ fontWeight: 600, color: "text.primary" }}>
-                    Created At
+                    Type
                   </TableCell>
-                  <TableCell sx={{ fontWeight: 600, color: "text.primary" }}>
+                  {/* <TableCell sx={{ fontWeight: 600, color: "text.primary" }}>
                     Updated At
-                  </TableCell>
+                  </TableCell> */}
                   <TableCell sx={{ fontWeight: 600, color: "text.primary" }}>
                     Actions
                   </TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
-                {isLoading ? (
-                  Array(5).fill(0).map((_, index) => (
-                    <TableRow key={index}>
-                      <TableCell><Skeleton /></TableCell>
-                      <TableCell><Skeleton /></TableCell>
-                      <TableCell><Skeleton /></TableCell>
-                      <TableCell><Skeleton /></TableCell>
-                      <TableCell><Skeleton width={100} /></TableCell>
-                    </TableRow>
-                  ))
-                ) : dashboards.map((dashboard) => (
-                  <TableRow
-                    key={dashboard._id}
-                    onClick={() => handleEdit(dashboard._id)}
-                    sx={{
-                      "&:hover": {
-                        backgroundColor: alpha("#9C27B0", 0.02),
-                        transition: "background-color 0.2s",
-                      },
-                      cursor: "pointer",
-                    }}
-                  >
-                    <TableCell sx={{ fontWeight: 500 }}>
-                      {dashboard.name}
-                    </TableCell>
-                    <TableCell>{dashboard?.createdBy?.firstName} {dashboard?.createdBy?.lastName}</TableCell>
-                    <TableCell>
-                      {format(new Date(dashboard.createdAt), "MMM dd, yyyy HH:mm")}
-                    </TableCell>
-                    <TableCell>
-                      {format(new Date(dashboard.updatedAt), "MMM dd, yyyy HH:mm")}
-                    </TableCell>
-                    <TableCell>
-                      <Box sx={{ display: "flex", gap: 1 }}>
-                        <Tooltip title="Delete Dashboard">
-                          <IconButton
-                            onClick={(e) => handleDeleteClick(e, dashboard)}
-                            size="small"
-                            sx={{
-                              color: "#D32F2F",
-                              "&:hover": {
-                                backgroundColor: alpha("#D32F2F", 0.1),
-                              },
-                            }}
-                          >
-                            <DeleteIcon fontSize="small" />
-                          </IconButton>
-                        </Tooltip>
-                      </Box>
-                    </TableCell>
-                  </TableRow>
-                ))}
+                {isLoading
+                  ? Array(5)
+                      .fill(0)
+                      .map((_, index) => (
+                        <TableRow key={index}>
+                          <TableCell>
+                            <Skeleton />
+                          </TableCell>
+                          <TableCell>
+                            <Skeleton />
+                          </TableCell>
+                          <TableCell>
+                            <Skeleton />
+                          </TableCell>
+                          <TableCell>
+                            <Skeleton />
+                          </TableCell>
+                          <TableCell>
+                            <Skeleton width={100} />
+                          </TableCell>
+                        </TableRow>
+                      ))
+                  : dashboards.map((dashboard) => (
+                      <TableRow
+                        key={dashboard._id}
+                        onClick={() => handleEdit(dashboard._id)}
+                        sx={{
+                          "&:hover": {
+                            backgroundColor: alpha("#9C27B0", 0.02),
+                            transition: "background-color 0.2s",
+                          },
+                          cursor: "pointer",
+                        }}
+                      >
+                        <TableCell sx={{ fontWeight: 500 }}>
+                          {dashboard.name}
+                        </TableCell>
+                        <TableCell>
+                          {dashboard?.createdBy?.firstName}{" "}
+                          {dashboard?.createdBy?.lastName}
+                        </TableCell>
+                        <TableCell sx={{ fontWeight: 500 }}>
+                          {dashboard?.settings?.dashboardType}
+                        </TableCell>
+                        {/* <TableCell>
+                          {format(
+                            new Date(dashboard.createdAt),
+                            "MMM dd, yyyy HH:mm"
+                          )}
+                        </TableCell> */}
+                        {/* <TableCell>
+                          {format(
+                            new Date(dashboard.updatedAt),
+                            "MMM dd, yyyy HH:mm"
+                          )}
+                        </TableCell> */}
+                        <TableCell>
+                          <Box sx={{ display: "flex", gap: 1 }}>
+                            <Tooltip title="Delete Dashboard">
+                              <IconButton
+                                onClick={(e) => handleDeleteClick(e, dashboard)}
+                                size="small"
+                                sx={{
+                                  color: "#D32F2F",
+                                  "&:hover": {
+                                    backgroundColor: alpha("#D32F2F", 0.1),
+                                  },
+                                }}
+                              >
+                                <DeleteIcon fontSize="small" />
+                              </IconButton>
+                            </Tooltip>
+                          </Box>
+                        </TableCell>
+                      </TableRow>
+                    ))}
               </TableBody>
             </Table>
           </TableContainer>
@@ -371,7 +402,9 @@ const Dashboard = () => {
               <Select
                 value={dashboardType}
                 label="Dashboard Type"
-                onChange={(e) => setDashboardType(e.target.value as 'normal' | 'trend')}
+                onChange={(e) =>
+                  setDashboardType(e.target.value as "normal" | "trend")
+                }
               >
                 <MenuItem value="normal">Normal</MenuItem>
                 <MenuItem value="trend">Trend</MenuItem>
@@ -379,9 +412,9 @@ const Dashboard = () => {
             </FormControl>
           </DialogContent>
           <DialogActions sx={{ p: 2, gap: 1 }}>
-            <Button 
-              onClick={handleCloseCreateModal} 
-              sx={{ 
+            <Button
+              onClick={handleCloseCreateModal}
+              sx={{
                 color: "text.secondary",
                 "&:hover": {
                   backgroundColor: alpha(theme.palette.grey[500], 0.1),
@@ -438,4 +471,3 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
-
