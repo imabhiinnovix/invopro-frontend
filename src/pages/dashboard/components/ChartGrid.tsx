@@ -345,7 +345,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
 
   useEffect(() => {
     if (dashboardId) {
-      dispatch(fetchChartData(dashboardId));
+      dispatch(fetchChartData({ dashboardId }));
     }
   }, [dispatch, dashboardId]);
 
@@ -652,7 +652,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
   if (chartsError) {
     return (
       <ErrorContainer>
-        <Typography color="error" variant="h6">
+        <Typography color='error' variant='h6'>
           {chartsError}
         </Typography>
       </ErrorContainer>
@@ -662,7 +662,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
   if (!allCharts || allCharts.length === 0) {
     return (
       <EmptyContainer>
-        <Typography color="text.secondary" variant="h6">
+        <Typography color='text.secondary' variant='h6'>
           No charts available
         </Typography>
       </EmptyContainer>
@@ -1437,10 +1437,10 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
       <DrillDownDialog
         open={drillDownOpen}
         onClose={handleDrillDownClose}
-        aria-labelledby="drill-down-dialog-title"
+        aria-labelledby='drill-down-dialog-title'
       >
         <DialogTitle
-          id="drill-down-dialog-title"
+          id='drill-down-dialog-title'
           sx={{
             display: "flex",
             justifyContent: "space-between",
@@ -1449,10 +1449,10 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
             p: 2,
           }}
         >
-          <Typography variant="h6">{drillDownTitle}</Typography>
+          <Typography variant='h6'>{drillDownTitle}</Typography>
           <IconButton
             onClick={handleDrillDownClose}
-            size="small"
+            size='small'
             sx={{
               color: theme.palette.text.secondary,
               "&:hover": {
@@ -1516,7 +1516,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
                   ))
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={columns.length} align="center">
+                    <TableCell colSpan={columns.length} align='center'>
                       No data available
                     </TableCell>
                   </TableRow>
@@ -1539,7 +1539,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
                 count={totalPages}
                 page={currentPage}
                 onChange={handlePageChange}
-                color="primary"
+                color='primary'
               />
             </Box>
           )}
@@ -1600,7 +1600,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
                   </ChartTitleText>
                   <Box sx={{ display: "flex", gap: 1 }}>
                     <IconButton
-                      size="small"
+                      size='small'
                       onClick={() => handleFullViewClick(chart)}
                       sx={{
                         opacity: 0.7,
@@ -1610,7 +1610,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
                       <FullscreenIcon />
                     </IconButton>
                     <IconButton
-                      size="small"
+                      size='small'
                       onClick={(e) => handleExportMenuClick(e, chart)}
                       sx={{
                         opacity: 0.7,
@@ -1621,7 +1621,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
                     </IconButton>
                     {isEditMode && (
                       <IconButton
-                        size="small"
+                        size='small'
                         onClick={(e) => handleMenuClick(e, chart)}
                         sx={{
                           opacity: 0.7,
@@ -1701,9 +1701,9 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
         <Dialog
           open={deleteDialogOpen}
           onClose={handleDeleteCancel}
-          aria-labelledby="delete-dialog-title"
+          aria-labelledby='delete-dialog-title'
         >
-          <DialogTitle id="delete-dialog-title">Delete Chart</DialogTitle>
+          <DialogTitle id='delete-dialog-title'>Delete Chart</DialogTitle>
           <DialogContent>
             <Typography>
               Are you sure you want to delete this chart? This action cannot be
@@ -1714,8 +1714,8 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
             <Button onClick={handleDeleteCancel}>Cancel</Button>
             <Button
               onClick={handleDeleteConfirm}
-              color="error"
-              variant="contained"
+              color='error'
+              variant='contained'
               disabled={isDeleting}
             >
               {isDeleting ? "Deleting..." : "Delete"}
@@ -1738,10 +1738,10 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
             p: 2,
           }}
         >
-          <Typography variant="h6">{selectedChart?.name}</Typography>
+          <Typography variant='h6'>{selectedChart?.name}</Typography>
           <IconButton
             onClick={handleFullViewClose}
-            size="small"
+            size='small'
             sx={{
               color: theme.palette.text.secondary,
               "&:hover": {

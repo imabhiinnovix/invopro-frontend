@@ -12,6 +12,7 @@ export interface Dashboard {
   isActive: boolean;
   settings: {
     gridColumns: number;
+    dashboardType: string;
   };
   createdAt: string;
   updatedAt: string;

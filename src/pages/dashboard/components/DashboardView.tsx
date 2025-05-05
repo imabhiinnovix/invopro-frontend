@@ -1,5 +1,13 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Box, Typography, TextField, Button, ButtonGroup } from "@mui/material";
+import {
+  Box,
+  Typography,
+  TextField,
+  Button,
+  ButtonGroup,
+  Checkbox,
+  FormControlLabel,
+} from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import EditIcon from "@mui/icons-material/Edit";
 import DoneIcon from "@mui/icons-material/Done";
@@ -14,11 +22,16 @@ import {
   updateWidget,
   saveWidgets,
   fetchWidgetTheme,
+  fetchChartData,
+  updateDashboardVersion,
 } from "../dashboardActions";
 import { toast } from "react-toastify";
 import { ChartResponse, TemporaryChart } from "../types";
 import usePost from "../../../hooks/usePost";
 import { POST } from "../../../services/apiRoutes";
+import CommonDatePicker from "../../../components/common/datePicker/datePicker";
+import { useForm } from "react-hook-form";
+import { DateTime } from "luxon";
 
 interface DashboardViewProps {
   title: string;
@@ -38,6 +51,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     null
   );
   const [gridColumns, setGridColumns] = useState(2);
+  const [isDynamicVersion, setIsDynamicVersion] = useState(false);
 
   const inputRef = useRef<HTMLInputElement>(null);
   const { id: dashboardId } = useParams();
@@ -50,6 +64,11 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   const currentDashboard = dashboards.find((d) => d._id === dashboardId);
 
   const postGridColumns = usePost([""]);
+
+  const { control, watch } = useForm({});
+  const versionValue = DateTime.fromISO(watch("versionValue")).toFormat(
+    "yyyy-LL"
+  );
 
   useEffect(() => {
     if (dashboards.length > 0) {
@@ -69,6 +88,12 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
       },
     });
   };
+
+  useEffect(() => {
+    if (dashboardId && versionValue) {
+      dispatch(fetchChartData({ dashboardId, versionValue }));
+    }
+  }, [dispatch, dashboardId, versionValue]);
 
   useEffect(() => {
     setIsEditMode(true);
@@ -194,6 +219,30 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     }
   };
 
+  const handleDynamicVersionChange = async (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const isDynamic = e.target.checked;
+    setIsDynamicVersion(isDynamic);
+    if (!dashboardId) return;
+
+    try {
+      await dispatch(
+        updateDashboardVersion({
+          dashboardId,
+          ...(isDynamic && { versionValue }),
+          ...(!isDynamic && { dynamicVersionValue: "1m" }),
+        })
+      ).unwrap();
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        toast.error(error.message || "Failed to update version value");
+      } else {
+        toast.error("Failed to update version value");
+      }
+    }
+  };
+
   return (
     <Box
       sx={{
@@ -205,13 +254,14 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     >
       <Box
         sx={{
-          p: 3,
-          // pb: 0,
-          // mb: 3,
+          p: 2,
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
           flexShrink: 0,
+          gap: 2,
+          borderBottom: 1,
+          borderColor: "divider",
         }}
       >
         <Box sx={{ flex: 1, mr: 2 }}>
@@ -221,45 +271,91 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               value={editedTitle}
               onChange={(e) => setEditedTitle(e.target.value)}
               onKeyDown={handleKeyPress}
-              size="small"
+              size='small'
               fullWidth
               sx={{
                 "& .MuiInputBase-input": {
-                  fontSize: "1.5rem",
+                  fontSize: "1.25rem",
                   fontWeight: 500,
+                  py: 1.5,
                 },
               }}
             />
           ) : (
-            <Typography variant="h5" component="h1" fontWeight={500}>
+            <Typography variant='h5' component='h1' fontWeight={500}>
               {title}
             </Typography>
           )}
         </Box>
 
-        <Box sx={{ display: "flex", gap: 2 }}>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+          {isEditMode &&
+          currentDashboard?.settings?.dashboardType === "normal" ? (
+            <>
+              <Box sx={{ width: "200px" }}>
+                <CommonDatePicker
+                  name='versionValue'
+                  control={control}
+                  views={["year", "month"]}
+                  label='Version Value*'
+                  rules={{ required: "Version Value is required" }}
+                />
+              </Box>
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={isDynamicVersion}
+                    onChange={handleDynamicVersionChange}
+                    size='small'
+                  />
+                }
+                label=''
+                sx={{
+                  mr: 0,
+                  "& .MuiFormControlLabel-label": {
+                    fontSize: "0.875rem",
+                  },
+                }}
+              />
+            </>
+          ) : null}
+        </Box>
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            gap: 2,
+            minWidth: "fit-content",
+          }}
+        >
           {isEditMode ? (
             <>
               <Button
-                variant="contained"
-                color="primary"
+                variant='contained'
+                color='primary'
                 startIcon={<AddIcon />}
                 onClick={() => setIsAddChartModalOpen(true)}
+                sx={{ minWidth: "120px" }}
               >
                 Add Chart
               </Button>
               <Button
                 onClick={handleEditModeToggle}
-                color="success"
-                variant="contained"
+                color='success'
+                variant='contained'
                 startIcon={<DoneIcon />}
+                sx={{ minWidth: "100px" }}
               >
                 Save
               </Button>
             </>
           ) : (
             <>
-              <ButtonGroup variant="outlined" aria-label="grid columns">
+              <ButtonGroup
+                variant='outlined'
+                aria-label='grid columns'
+                size='small'
+              >
                 <Button
                   onClick={() => handleGridColumns(1)}
                   variant={gridColumns === 1 ? "contained" : "outlined"}
@@ -284,8 +380,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               </ButtonGroup>
               <Button
                 onClick={handleEditModeToggle}
-                color="primary"
-                variant="contained"
+                color='primary'
+                variant='contained'
                 startIcon={<EditIcon />}
               >
                 Edit
