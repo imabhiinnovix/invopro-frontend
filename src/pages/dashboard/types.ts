@@ -253,18 +253,20 @@ export interface WidgetResponse {
     createdAt: string;
     updatedAt: string;
     __v: number;
-    data: ChartData[];
+    data: {
+      label: string;
+      widgetData: ChartData[];
+    };
   };
 }
 
 export interface WidgetDataResponse {
   success: boolean;
   message: string;
-  data: Array<{
-    name: string;
-    Estimates: number;
-    data: number;
-  }>;
+  data: {
+    label: string;
+    widgetData: { name: string; Estimates: number; data: number }[];
+  };
 }
 
 export interface CombinedWidgetData {
@@ -296,11 +298,14 @@ export interface CombinedWidgetData {
   __v?: number;
   widgetTypeId?: WidgetDetails;
   dataSourceId?: DataSourceDetails;
-  data: Array<{
-    name: string;
-    Estimates: number;
-    data: number;
-  }>;
+  data: {
+    label: string;
+    widgetData: Array<{
+      name: string;
+      Estimates: number;
+      data: number;
+    }>;
+  };
 }
 
 export interface Operator {

@@ -90,7 +90,7 @@ interface ChartDataItem {
 }
 
 const StyledCard = styled(Card)(({ theme }) => ({
-  height: "fit-content",
+  height: "100%",
   minHeight: 500,
   display: "flex",
   flexDirection: "column",
@@ -519,7 +519,8 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
     if (!elements || !elements.length) return;
 
     const clickedElement = elements[0];
-    const chartData = widgetData[chart._id]?.data || chart.data || [];
+    const chartData =
+      widgetData[chart._id]?.data?.widgetData || chart.data || [];
 
     // Get the clicked data point details
     const clickedData = chartData.find((item: ChartDataItem) => {
@@ -687,7 +688,8 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
     });
 
     // Get widget data from the store
-    const chartData = widgetData[chart._id]?.data || chart.data || [];
+    const chartData =
+      widgetData[chart._id]?.data?.widgetData || chart.data || [];
 
     if (!chartData.length) {
       return {
@@ -1565,10 +1567,11 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
         sx={{
           height: "100%",
           alignContent: "flex-start",
-          "& > .MuiGrid-item": {
+          "& .MuiGrid-item": {
             display: "flex",
-            flexDirection: "column",
-            height: "fit-content",
+            "& > *": {
+              width: "100%",
+            },
           },
         }}
       >
@@ -1586,11 +1589,6 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
                 : 4
             }
             key={chart._id}
-            sx={{
-              display: "flex",
-              flexDirection: "column",
-              height: "fit-content",
-            }}
           >
             <StyledCard>
               <CardContent
@@ -1603,7 +1601,11 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
                 }}
               >
                 <ChartTitle>
-                  <ChartTitleText>{chart.name}</ChartTitleText>
+                  <ChartTitleText>
+                    {chart.name}
+                    {widgetData[chart._id]?.data?.label &&
+                      ` (${widgetData[chart._id]?.data?.label})`}
+                  </ChartTitleText>
                   <Box sx={{ display: "flex", gap: 1 }}>
                     <IconButton
                       size="small"
