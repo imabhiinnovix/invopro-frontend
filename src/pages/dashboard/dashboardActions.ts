@@ -15,10 +15,13 @@ export const fetchDashboardList = createAsyncThunk(
 
 export const createDashboard = createAsyncThunk(
   'dashboard/create',
-  async (name: string, { rejectWithValue }) => {
+  async (payload: { name: string; dashboardType: 'normal' | 'trend' }, { rejectWithValue }) => {
     try {
       const { data } = await axiosInstance.post<DashboardListResponse>(POST.CREATE_DASHBOARD, {
-        name,
+        name: payload.name,
+        settings: {
+          dashboardType: payload.dashboardType
+        }
       });
       if (!data.success) {
         return rejectWithValue({ message: data.message || 'Failed to create dashboard' });

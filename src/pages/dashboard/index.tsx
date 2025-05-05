@@ -5,6 +5,7 @@ import {
   fetchDashboardList,
   fetchChartData,
   createDashboard,
+  deleteDashboard,
 } from "./dashboardActions";
 import { DashboardView } from "./components/DashboardView";
 import { toast } from "react-toastify";
@@ -31,13 +32,16 @@ import {
   useTheme,
   alpha,
   Skeleton,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
-import EditIcon from "@mui/icons-material/Edit";
 import { format } from "date-fns";
 import { DeleteConfirmationModal } from "../../components/atom/sideNav/components/DeleteConfirmationModal";
-import { Dashboard as DashboardType } from "./types";
+import { Dashboard as DashboardType, DashboardListResponse } from "./types";
 
 const Dashboard = () => {
   const theme = useTheme();
@@ -54,6 +58,7 @@ const Dashboard = () => {
     useState<DashboardType | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [dashboardType, setDashboardType] = useState<'normal' | 'trend'>('normal');
 
   useEffect(() => {
     if (!dashboards.length) {
@@ -122,23 +127,30 @@ const Dashboard = () => {
       try {
         setIsCreating(true);
         const response = await dispatch(
-          createDashboard(newDashboardName.trim())
-        ).unwrap();
+          createDashboard({ name: newDashboardName.trim(), dashboardType })
+        ).unwrap() as DashboardListResponse;
         await dispatch(fetchDashboardList());
         setOpenCreateModal(false);
         setNewDashboardName("");
+        setDashboardType('normal');
         toast.success(response.message || "Dashboard created successfully!");
 
         // Navigate to the newly created dashboard
-        const newDashboard = response.data;
+        const newDashboard = response.data[0];
+      
         if (newDashboard) {
           navigate(`/dashboard/${newDashboard._id}`, {
             state: { enableEditMode: true },
           });
         }
-      } catch (error) {
+      } catch (error: { payload?: { message: string }; message?: string } | unknown) {
         console.error("Failed to create dashboard:", error);
-        toast.error("Failed to create dashboard. Please try again.");
+        const errorMessage = error && typeof error === 'object' && 'payload' in error
+          ? (error.payload as { message?: string })?.message
+          : error && typeof error === 'object' && 'message' in error
+            ? (error as { message?: string })?.message
+            : "Failed to create dashboard. Please try again.";
+        toast.error(errorMessage);
       } finally {
         setIsCreating(false);
       }
@@ -148,6 +160,7 @@ const Dashboard = () => {
   const handleCloseCreateModal = () => {
     setOpenCreateModal(false);
     setNewDashboardName("");
+    setDashboardType('normal');
   };
 
   // If no ID is provided, show the dashboard list view
@@ -272,24 +285,6 @@ const Dashboard = () => {
                     </TableCell>
                     <TableCell>
                       <Box sx={{ display: "flex", gap: 1 }}>
-                        {/* <Tooltip title="Edit Dashboard">
-                          <IconButton
-                            color="secondary"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleEdit(dashboard._id);
-                            }}
-                            size="small"
-                            sx={{
-                              color: "#9C27B0",
-                              "&:hover": {
-                                backgroundColor: alpha("#9C27B0", 0.1),
-                              },
-                            }}
-                          >
-                            <EditIcon fontSize="small" />
-                          </IconButton>
-                        </Tooltip> */}
                         <Tooltip title="Delete Dashboard">
                           <IconButton
                             onClick={(e) => handleDeleteClick(e, dashboard)}
@@ -357,6 +352,31 @@ const Dashboard = () => {
                 },
               }}
             />
+            <FormControl
+              fullWidth
+              margin="dense"
+              sx={{
+                mt: 2,
+                "& .MuiOutlinedInput-root": {
+                  "&:hover fieldset": {
+                    borderColor: "primary.main",
+                  },
+                  "&.Mui-focused fieldset": {
+                    borderColor: "primary.main",
+                  },
+                },
+              }}
+            >
+              <InputLabel>Dashboard Type</InputLabel>
+              <Select
+                value={dashboardType}
+                label="Dashboard Type"
+                onChange={(e) => setDashboardType(e.target.value as 'normal' | 'trend')}
+              >
+                <MenuItem value="normal">Normal</MenuItem>
+                <MenuItem value="trend">Trend</MenuItem>
+              </Select>
+            </FormControl>
           </DialogContent>
           <DialogActions sx={{ p: 2, gap: 1 }}>
             <Button 
@@ -408,11 +428,12 @@ const Dashboard = () => {
 
   // Show specific dashboard view
   return (
-    <DashboardView
-      title={currentDashboard.name}
-      onTitleChange={handleTitleChange}
-      onCreateWidget={handleCreateWidget}
-    />
+    <Box sx={{ p: 3 }}>
+      <DashboardView
+        title={currentDashboard.name}
+        onTitleChange={handleTitleChange}
+      />
+    </Box>
   );
 };
 
