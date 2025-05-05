@@ -61,6 +61,7 @@ interface AddChartModalProps {
   dashboardId: string;
   initialData?: ChartResponse;
   onSave?: (formData: ChartFormData) => Promise<void>;
+  isTrend?: boolean;
 }
 
 const FormSection = styled(Box)(({ theme }) => ({
@@ -161,7 +162,8 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
   isSubmitting,
   dashboardId,
   initialData,
-  onSave
+  onSave,
+  isTrend,
 }) => {
   const dispatch = useAppDispatch();
   const {
@@ -269,6 +271,15 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
       setSelectedDataSource(null);
     }
   }, [formData.dataSourceId, dataSources]);
+
+  useEffect(() => {
+    if (isTrend && open) {
+      setFormData((prev) => ({
+        ...prev,
+        dimensions: "versionValue",
+      }));
+    }
+  }, [isTrend, open, formData.dataSourceId]);
 
   const handleChange = (
     field: keyof ChartFormData,
@@ -437,8 +448,13 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
     e.preventDefault();
     
     try {
+      const dimensionsToSend = isTrend ? "versionValue" : formData.dimensions;
+
       if (onSave) {
-        await onSave(formData);
+        await onSave({
+          ...formData,
+          dimensions: dimensionsToSend,
+        });
       } else {
         // Get widget data using getWidgetData API
         const widgetResponse = await axiosInstance.post<WidgetDataResponse>(
@@ -446,7 +462,7 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
           {
             dataSourceId: formData.dataSourceId,
             entityId: selectedDataSource?.entityId._id,
-            dimensions: formData.dimensions.split(',').map(d => d.trim()),
+            dimensions: [dimensionsToSend],
             groupBy: formData.groupBy ? formData.groupBy.split(',').map(g => g.trim()) : [],
             conditions: formData.conditions.map(condition => ({
               ...condition,
@@ -464,7 +480,7 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
               dashboardId: dashboardId,
               widgetTypeId: formData.widgetTypeId,
               name: formData.name,
-              dimensions: formData.dimensions,
+              dimensions: dimensionsToSend,
               groupBy: formData.groupBy ? formData.groupBy.split(',').map(g => g.trim()) : [],
               aggregation: formData.aggregation,
               position: formData.position,
@@ -619,7 +635,7 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
                     value={formData.dimensions}
                     label="Dimensions"
                     onChange={handleDimensionChange}
-                    disabled={isSubmitting}
+                    disabled={isSubmitting || isTrend}
                     endAdornment={
                       formData.dimensions && (
                         <InputAdornment position="end">
@@ -628,6 +644,7 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
                             onClick={handleClearDimension}
                             edge="end"
                             sx={{ mr: 1 }}
+                            disabled={isTrend}
                           >
                             <ClearIcon fontSize="small" />
                           </IconButton>
@@ -635,15 +652,19 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
                       )
                     }
                   >
-                    {getAttributeOptions().map((attr) => (
-                      <MenuItem
-                        key={attr.name}
-                        value={attr.name}
-                        disabled={attr.name === formData.groupBy}
-                      >
-                        {attr.name}
-                      </MenuItem>
-                    ))}
+                    {isTrend ? (
+                      <MenuItem value="versionValue">versionValue</MenuItem>
+                    ) : (
+                      getAttributeOptions().map((attr) => (
+                        <MenuItem
+                          key={attr.name}
+                          value={attr.name}
+                          disabled={attr.name === formData.groupBy}
+                        >
+                          {attr.name}
+                        </MenuItem>
+                      ))
+                    )}
                   </StyledSelect>
                 </FormControl>
 

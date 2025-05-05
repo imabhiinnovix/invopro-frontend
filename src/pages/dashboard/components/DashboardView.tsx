@@ -528,6 +528,9 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 onClose={handleCloseModal}
                 isSubmitting={false}
                 dashboardId={dashboardId || ""}
+                isTrend={
+                  currentDashboard?.settings?.dashboardType === "trend"
+                }
               />
             )}
             {isEditChartModalOpen && selectedChart && (
@@ -538,6 +541,9 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 dashboardId={dashboardId || ""}
                 initialData={selectedChart}
                 onSave={handleChartUpdate}
+                isTrend={
+                  currentDashboard?.settings?.dashboardType === "trend"
+                }
               />
             )}
           </Box>
