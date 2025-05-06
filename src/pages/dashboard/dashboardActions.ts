@@ -480,10 +480,14 @@ export const updateDashboardVersion = createAsyncThunk(
       dashboardId,
       versionValue,
       dynamicVersionValue,
+      startVersionValue,
+      endVersionValue,
     }: {
       dashboardId: string;
       versionValue?: string;
       dynamicVersionValue?: string;
+      startVersionValue?: string;
+      endVersionValue?: string;
     },
     { rejectWithValue }
   ) => {
@@ -493,6 +497,8 @@ export const updateDashboardVersion = createAsyncThunk(
         {
           versionValue,
           ...(dynamicVersionValue && { dynamicVersionValue }),
+          ...(startVersionValue && { startVersionValue }),
+          ...(endVersionValue && { endVersionValue }),
         }
       );
       if (!data.success) {

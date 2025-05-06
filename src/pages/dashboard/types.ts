@@ -13,6 +13,11 @@ export interface Dashboard {
   settings: {
     gridColumns: number;
     dashboardType: string;
+    columnsGrid: number;
+    dynamicVersionValue: string;
+    endVersionValue: string;
+    startVersionValue: string;
+    versionValue: string;
   };
   createdAt: string;
   updatedAt: string;

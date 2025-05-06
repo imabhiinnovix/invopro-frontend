@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useMemo } from "react";
 import {
   Box,
   Typography,
@@ -7,6 +7,7 @@ import {
   ButtonGroup,
   Checkbox,
   FormControlLabel,
+  Stack,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import EditIcon from "@mui/icons-material/Edit";
@@ -32,6 +33,8 @@ import { POST } from "../../../services/apiRoutes";
 import CommonDatePicker from "../../../components/common/datePicker/datePicker";
 import { useForm } from "react-hook-form";
 import { DateTime } from "luxon";
+import { yupResolver } from "@hookform/resolvers/yup";
+import * as yup from "yup";
 
 interface DashboardViewProps {
   title: string;
@@ -41,7 +44,7 @@ interface DashboardViewProps {
 export const DashboardView: React.FC<DashboardViewProps> = ({
   title: initialTitle,
   onTitleChange,
-}) => {
+}): JSX.Element => {
   const [isEditMode, setIsEditMode] = useState(false);
   const [editedTitle, setEditedTitle] = useState(initialTitle);
   const [title, setTitle] = useState(initialTitle);
@@ -65,16 +68,111 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
   const postGridColumns = usePost([""]);
 
-  const { control, watch } = useForm({});
-  const versionValue = watch("versionValue")
-    ? DateTime.fromISO(watch("versionValue")).toFormat("yyyy-LL")
+  const validationSchema = yup.object({
+    versionValue: yup.string().nullable().optional(),
+    startDate: yup
+      .string()
+      .nullable()
+      .when("$isDashboardTrend", ([isDashboardTrend]) => {
+        if (isDashboardTrend) {
+          return yup.string().nullable().required("Start date is required");
+        }
+        return yup.string().nullable().optional();
+      }),
+    endDate: yup
+      .string()
+      .nullable()
+      .when(
+        ["$isDashboardTrend", "startDate"],
+        ([isDashboardTrend, startDate]) => {
+          if (isDashboardTrend && startDate) {
+            return yup
+              .string()
+              .nullable()
+              .required("End date is required")
+              .test(
+                "is-after-start",
+                "End date must be after or equal to start date",
+                function (value) {
+                  const { startDate } = this.parent;
+                  if (!value || !startDate) return true;
+
+                  try {
+                    const startDateTime = DateTime.fromISO(startDate);
+                    const endDateTime = DateTime.fromISO(value);
+                    return endDateTime >= startDateTime;
+                  } catch {
+                    return false;
+                  }
+                }
+              );
+          }
+          return yup.string().nullable().optional();
+        }
+      ),
+  });
+
+  const {
+    control,
+    watch,
+    setValue,
+    formState: { errors },
+    trigger,
+  } = useForm<{
+    versionValue?: string | null | undefined;
+    startDate?: string | null | undefined;
+    endDate?: string | null | undefined;
+  }>({
+    resolver: yupResolver(validationSchema),
+    defaultValues: {
+      versionValue:
+        currentDashboard?.settings?.versionValue &&
+        typeof currentDashboard.settings.versionValue === "string"
+          ? DateTime.fromFormat(
+              currentDashboard.settings.versionValue,
+              "yyyy-LL"
+            ).toISO()
+          : undefined,
+      startDate:
+        currentDashboard?.settings?.startVersionValue &&
+        typeof currentDashboard.settings.startVersionValue === "string"
+          ? DateTime.fromFormat(
+              currentDashboard.settings.startVersionValue,
+              "yyyy-LL"
+            ).toISO()
+          : undefined,
+      endDate:
+        currentDashboard?.settings?.endVersionValue &&
+        typeof currentDashboard.settings.endVersionValue === "string"
+          ? DateTime.fromFormat(
+              currentDashboard.settings.endVersionValue,
+              "yyyy-LL"
+            ).toISO()
+          : null,
+    },
+    context: {
+      isDashboardTrend: currentDashboard?.settings?.dashboardType === "trend",
+    },
+  });
+
+  const versionValue = watch("versionValue");
+  const formattedVersionValue = versionValue
+    ? DateTime.fromISO(versionValue).toFormat("yyyy-LL")
     : undefined;
-  const startVersionValue = watch("startDate")
-    ? DateTime.fromISO(watch("startDate")).toFormat("yyyy-MM-dd")
+
+  const startDate = watch("startDate");
+  const startVersionValue = startDate
+    ? DateTime.fromISO(startDate).toFormat("yyyy-LL")
     : undefined;
-  const endVersionValue = watch("endDate")
-    ? DateTime.fromISO(watch("endDate")).toFormat("yyyy-MM-dd")
+
+  const endDate = watch("endDate");
+  const endVersionValue = endDate
+    ? DateTime.fromISO(endDate).toFormat("yyyy-LL")
     : undefined;
+
+  const hasErrors = useMemo(() => {
+    return !!errors.startDate || !!errors.endDate;
+  }, [errors.startDate, errors.endDate, startVersionValue, endVersionValue]);
 
   useEffect(() => {
     if (dashboards.length > 0) {
@@ -89,37 +187,45 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     if (dashboardId) {
       if (
         currentDashboard?.settings?.dashboardType === "normal" &&
-        versionValue
+        formattedVersionValue
       ) {
         dispatch(
           fetchChartData({
             dashboardId,
-            versionValue,
-            dynamicVersionValue: isDynamicVersion ? "1m" : undefined,
+            versionValue: formattedVersionValue,
           })
         );
       } else if (
-        currentDashboard?.settings?.dashboardType === "termed" &&
+        currentDashboard?.settings?.dashboardType === "trend" &&
         startVersionValue &&
-        endVersionValue
+        endVersionValue &&
+        !hasErrors
       ) {
         dispatch(
           fetchChartData({
             dashboardId,
+            versionValue: undefined,
             startVersionValue,
             endVersionValue,
+          })
+        );
+        dispatch(
+          updateDashboardVersion({
+            dashboardId,
+            versionValue: undefined,
+            dynamicVersionValue: undefined,
+            ...(startVersionValue && { startVersionValue }),
+            ...(endVersionValue && { endVersionValue }),
           })
         );
       }
     }
   }, [
-    dispatch,
-    dashboardId,
-    versionValue,
-    isDynamicVersion,
     currentDashboard?.settings?.dashboardType,
-    startVersionValue,
-    endVersionValue,
+    dashboardId,
+    dispatch,
+    formattedVersionValue,
+    hasErrors,
   ]);
 
   useEffect(() => {
@@ -145,6 +251,51 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
       dispatch(fetchWidgetTheme(currentDashboard.widgetThemeId));
     }
   }, [currentDashboard?.widgetThemeId, dispatch]);
+
+  useEffect(() => {
+    if (currentDashboard?.settings) {
+      if (
+        currentDashboard.settings.versionValue &&
+        typeof currentDashboard.settings.versionValue === "string"
+      ) {
+        setValue(
+          "versionValue",
+          DateTime.fromFormat(
+            currentDashboard.settings.versionValue,
+            "yyyy-LL"
+          ).toISO()
+        );
+        setIsDynamicVersion(
+          !!currentDashboard.settings.versionValue &&
+            !currentDashboard.settings.dynamicVersionValue
+        );
+      }
+      if (
+        currentDashboard.settings.startVersionValue &&
+        typeof currentDashboard.settings.startVersionValue === "string"
+      ) {
+        setValue(
+          "startDate",
+          DateTime.fromFormat(
+            currentDashboard.settings.startVersionValue,
+            "yyyy-LL"
+          ).toISO()
+        );
+      }
+      if (
+        currentDashboard.settings.endVersionValue &&
+        typeof currentDashboard.settings.endVersionValue === "string"
+      ) {
+        setValue(
+          "endDate",
+          DateTime.fromFormat(
+            currentDashboard.settings.endVersionValue,
+            "yyyy-LL"
+          ).toISO()
+        );
+      }
+    }
+  }, [currentDashboard?.settings, setValue]);
 
   const handleGridColumns = (columns: number) => {
     setGridColumns(columns);
@@ -267,7 +418,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
       await dispatch(
         updateDashboardVersion({
           dashboardId,
-          ...(isDynamic && { versionValue }),
+          ...(isDynamic && { versionValue: formattedVersionValue }),
           ...(!isDynamic && { dynamicVersionValue: "1m" }),
         })
       ).unwrap();
@@ -280,7 +431,16 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     }
   };
 
-  console.log("versionValue", versionValue);
+  useEffect(() => {
+    if (
+      startDate &&
+      endDate &&
+      currentDashboard?.settings?.dashboardType === "trend"
+    ) {
+      trigger("endDate");
+      trigger("startDate");
+    }
+  }, [startDate, endDate, currentDashboard?.settings?.dashboardType, trigger]);
 
   return (
     <Box
@@ -310,7 +470,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               value={editedTitle}
               onChange={(e) => setEditedTitle(e.target.value)}
               onKeyDown={handleKeyPress}
-              size='small'
+              size="small"
               fullWidth
               sx={{
                 "& .MuiInputBase-input": {
@@ -321,7 +481,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               }}
             />
           ) : (
-            <Typography variant='h5' component='h1' fontWeight={500}>
+            <Typography variant="h5" component="h1" fontWeight={500}>
               {title}
             </Typography>
           )}
@@ -331,12 +491,12 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           {isEditMode &&
           currentDashboard?.settings?.dashboardType === "normal" ? (
             <>
-              <Box sx={{ width: "200px" }}>
+              <Box>
                 <CommonDatePicker
-                  name='versionValue'
+                  name="versionValue"
                   control={control}
                   views={["year", "month"]}
-                  label='Version Value*'
+                  label="Version Value"
                   rules={{ required: "Version Value is required" }}
                 />
               </Box>
@@ -345,10 +505,10 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                   <Checkbox
                     checked={isDynamicVersion}
                     onChange={handleDynamicVersionChange}
-                    size='small'
+                    size="small"
                   />
                 }
-                label=''
+                label="Sticky"
                 sx={{
                   mr: 0,
                   "& .MuiFormControlLabel-label": {
@@ -359,24 +519,33 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             </>
           ) : isEditMode &&
             currentDashboard?.settings?.dashboardType === "trend" ? (
-            <Box sx={{ display: "flex", gap: 2, alignItems: "center" }}>
-              <Box sx={{ width: "200px" }}>
-                <CommonDatePicker
-                  name='startDate'
-                  control={control}
-                  views={["year", "month"]}
-                  label='Start Date*'
-                  rules={{ required: "Start date is required" }}
-                />
-              </Box>
-              <Box sx={{ width: "200px" }}>
-                <CommonDatePicker
-                  name='endDate'
-                  control={control}
-                  views={["year", "month"]}
-                  label='End Date*'
-                  rules={{ required: "End date is required" }}
-                />
+            <Box
+              sx={{
+                display: "flex",
+                gap: 2,
+                alignItems: "center",
+                flexDirection: "column",
+                width: "100%",
+              }}
+            >
+              <Box sx={{ display: "flex", gap: 2, alignItems: "center" }}>
+                <Stack direction="row" spacing={2}>
+                  <CommonDatePicker
+                    name="startDate"
+                    control={control}
+                    views={["year", "month"]}
+                    label="Start Date"
+                    rules={{ required: "Start date is required" }}
+                  />
+
+                  <CommonDatePicker
+                    name="endDate"
+                    control={control}
+                    views={["year", "month"]}
+                    label="End Date"
+                    rules={{ required: "End date is required" }}
+                  />
+                </Stack>
               </Box>
             </Box>
           ) : null}
@@ -386,14 +555,13 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             display: "flex",
             alignItems: "center",
             gap: 2,
-            minWidth: "fit-content",
           }}
         >
           {isEditMode ? (
             <>
               <Button
-                variant='contained'
-                color='primary'
+                variant="contained"
+                color="primary"
                 startIcon={<AddIcon />}
                 onClick={() => setIsAddChartModalOpen(true)}
                 sx={{ minWidth: "120px" }}
@@ -402,8 +570,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               </Button>
               <Button
                 onClick={handleEditModeToggle}
-                color='success'
-                variant='contained'
+                color="success"
+                variant="contained"
                 startIcon={<DoneIcon />}
                 sx={{ minWidth: "100px" }}
               >
@@ -413,9 +581,9 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           ) : (
             <>
               <ButtonGroup
-                variant='outlined'
-                aria-label='grid columns'
-                size='small'
+                variant="outlined"
+                aria-label="grid columns"
+                size="small"
               >
                 <Button
                   onClick={() => handleGridColumns(1)}
@@ -441,8 +609,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               </ButtonGroup>
               <Button
                 onClick={handleEditModeToggle}
-                color='primary'
-                variant='contained'
+                color="primary"
+                variant="contained"
                 startIcon={<EditIcon />}
               >
                 Edit
@@ -528,9 +696,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 onClose={handleCloseModal}
                 isSubmitting={false}
                 dashboardId={dashboardId || ""}
-                isTrend={
-                  currentDashboard?.settings?.dashboardType === "trend"
-                }
+                isTrend={currentDashboard?.settings?.dashboardType === "trend"}
               />
             )}
             {isEditChartModalOpen && selectedChart && (
@@ -541,9 +707,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 dashboardId={dashboardId || ""}
                 initialData={selectedChart}
                 onSave={handleChartUpdate}
-                isTrend={
-                  currentDashboard?.settings?.dashboardType === "trend"
-                }
+                isTrend={currentDashboard?.settings?.dashboardType === "trend"}
               />
             )}
           </Box>
