@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Dialog,
   DialogTitle,
@@ -15,6 +15,7 @@ import {
   Divider,
   IconButton,
   Portal,
+  styled,
 } from "@mui/material";
 import Grid from "@mui/material/Grid2";
 import { SketchPicker, ColorResult } from "react-color";
@@ -26,20 +27,8 @@ import {
 } from "../types";
 import usePost from "../../../hooks/usePost";
 import { POST } from "../../../services/apiRoutes";
-import { styled } from "@mui/material/styles";
 import { useAppDispatch } from "../../../storeHooks";
 import { fetchThemeList } from "../themeActions";
-
-const fontFamilies = [
-  "Arial",
-  "Helvetica",
-  "Times New Roman",
-  "Georgia",
-  "Verdana",
-  "Courier New",
-  "Roboto",
-  "Open Sans",
-];
 
 const alignOptions = ["start", "center", "end"];
 const positionOptions = ["top", "bottom", "left", "right"];
@@ -107,12 +96,16 @@ const numberInputStyles = {
   },
 };
 
-const CreateThemeDialog = ({ open, onClose }: CreateThemeDialogProps) => {
+const CreateThemeDialog = ({
+  open,
+  onClose,
+  theme,
+}: CreateThemeDialogProps) => {
   const dispatch = useAppDispatch();
-  const [themeState, setThemeState] = React.useState<ThemeData>({
+  const [themeState, setThemeState] = useState<ThemeData>({
     name: "",
     title: {
-      show: true,
+      display: true,
       color: "#000000",
       font: {
         size: 16,
@@ -123,7 +116,7 @@ const CreateThemeDialog = ({ open, onClose }: CreateThemeDialogProps) => {
       position: "top",
     },
     subtitle: {
-      show: true,
+      display: true,
       color: "#000000",
       font: {
         size: 14,
@@ -229,121 +222,238 @@ const CreateThemeDialog = ({ open, onClose }: CreateThemeDialogProps) => {
 
   const [buttonRefs] = useState(() => new Map());
 
-  const createTheme = usePost<ThemeData, createThemeResponse>(
-    [""],
-    (data) => {
-      if (data?.success) {
-        setThemeState({
-          name: "",
-          title: {
-            show: true,
-            color: "#000000",
-            font: {
-              size: 16,
-              family: "Arial",
-              weight: "400",
-            },
-            align: "center",
-            position: "top",
+  // Initialize from existing theme if provided for update
+  useEffect(() => {
+    if (theme) {
+      setThemeState({
+        name: theme.name,
+        title: {
+          display: theme.title.display,
+          color: theme.title.color,
+          font: {
+            size: theme.title.font.size,
+            family: theme.title.font.family || "Arial", // Keep family but use default if missing
+            weight: theme.title.font.weight || "400",
           },
-          subtitle: {
-            show: true,
-            color: "#000000",
-            font: {
-              size: 14,
-              family: "Arial",
-              weight: "400",
-            },
-            align: "center",
-            position: "top",
+          align: theme.title.align,
+          position: theme.title.position,
+        },
+        subtitle: {
+          display: theme.subtitle.display,
+          color: theme.subtitle.color,
+          font: {
+            size: theme.subtitle.font.size,
+            family: theme.subtitle.font.family || "Arial", // Keep family but use default if missing
+            weight: theme.subtitle.font.weight || "400",
           },
-          legend: {
-            display: true,
-            position: "top",
-            labels: {
-              color: "#34495e",
+          align: theme.subtitle.align,
+          position: theme.subtitle.position,
+        },
+        legend: {
+          ...theme.legend,
+          labels: {
+            ...theme.legend.labels,
+            font: {
+              size: theme.legend.labels.font.size,
+              family: theme.legend.labels.font.family || "Arial", // Keep family but use default if missing
+            },
+          },
+        },
+        tooltip: theme.tooltip || themeState.tooltip,
+        scales: {
+          y: {
+            display: theme.scales.y.display,
+            beginAtZero: theme.scales.y.beginAtZero,
+            grid: {
+              color: theme.scales.y.grid.color,
+              drawBorder: theme.scales.y.grid.drawBorder || false,
+            },
+            title: {
+              display: theme.scales.y.title.display,
+              text: "Values", // Add required text property
+              color: theme.scales.y.title.color,
               font: {
-                size: 12,
-                family: "Arial",
+                size: theme.scales.y.title.font.size,
               },
-              padding: 20,
-              boxWidth: 15,
-              boxHeight: 15,
             },
           },
-          tooltip: {
+          x: {
+            display: theme.scales.x.display,
+            grid: {
+              display: theme.scales.x.grid.display,
+            },
+            ticks: {
+              color: theme.scales.x.ticks.color,
+              padding: theme.scales.x.ticks.padding,
+            },
+          },
+        },
+        interaction: {
+          mode: theme.interaction.mode,
+          intersect: theme.interaction.intersect,
+        },
+        layout: {
+          padding: {
+            top: theme.layout.padding.top,
+            bottom: theme.layout.padding.bottom,
+          },
+        },
+        fill: theme.fill || themeState.fill,
+        responsive: theme.responsive ?? themeState.responsive,
+        maintainAspectRatio:
+          theme.maintainAspectRatio ?? themeState.maintainAspectRatio,
+        chartType: theme.chartType || themeState.chartType,
+        colors: theme.colors || themeState.colors,
+        borderColor: theme.borderColor || themeState.borderColor,
+        backgroundColor: theme.backgroundColor || themeState.backgroundColor,
+      });
+    } else if (open) {
+      // Reset form when opening for a new theme
+      setThemeState({
+        name: "",
+        title: {
+          display: true,
+          color: "#000000",
+          font: {
+            size: 16,
+            family: "Arial",
+            weight: "400",
+          },
+          align: "center",
+          position: "top",
+        },
+        subtitle: {
+          display: true,
+          color: "#000000",
+          font: {
+            size: 14,
+            family: "Arial",
+            weight: "400",
+          },
+          align: "center",
+          position: "top",
+        },
+        legend: {
+          display: true,
+          position: "top",
+          labels: {
+            color: "#34495e",
+            font: {
+              size: 12,
+              family: "Arial",
+            },
+            padding: 20,
+            boxWidth: 15,
+            boxHeight: 15,
+          },
+        },
+        tooltip: {
+          display: true,
+          backgroundColor: "#2c3e50",
+          titleColor: "#ecf0f1",
+          borderColor: "#95a5a6",
+          borderWidth: 2,
+          padding: 10,
+        },
+        scales: {
+          y: {
             display: true,
-            backgroundColor: "#2c3e50",
-            titleColor: "#ecf0f1",
-            borderColor: "#95a5a6",
-            borderWidth: 2,
-            padding: 10,
-          },
-          scales: {
-            y: {
+            beginAtZero: true,
+            grid: {
+              color: "#ecf0f1",
+              drawBorder: false,
+            },
+            title: {
               display: true,
-              beginAtZero: true,
-              grid: {
-                color: "#ecf0f1",
-                drawBorder: false,
-              },
-              title: {
-                display: true,
-                text: "Values",
-                color: "#2c3e50",
-                font: {
-                  size: 14,
-                },
-              },
-            },
-            x: {
-              display: true,
-              grid: {
-                display: false,
-              },
-              ticks: {
-                color: "#7f8c8d",
-                padding: 10,
+              text: "Values",
+              color: "#2c3e50",
+              font: {
+                size: 14,
               },
             },
           },
-          interaction: {
-            mode: "nearest",
-            intersect: true,
-          },
-          layout: {
-            padding: {
-              top: 10,
-              bottom: 20,
+          x: {
+            display: true,
+            grid: {
+              display: false,
+            },
+            ticks: {
+              color: "#7f8c8d",
+              padding: 10,
             },
           },
-          fill: {
-            enabled: true,
-            type: "Smooth",
-            color: "#3498db",
-            opacity: 0.4,
+        },
+        interaction: {
+          mode: "nearest",
+          intersect: true,
+        },
+        layout: {
+          padding: {
+            top: 10,
+            bottom: 20,
           },
-          responsive: false,
-          maintainAspectRatio: true,
-          chartType: "line",
-          colors: ["#3498db", "#e74c3c", "#2ecc71"],
-          borderColor: ["#2980b9", "#c0392b", "#27ae60"],
-          backgroundColor: ["#3498db55", "#e74c3c55", "#2ecc7155"],
-        });
-        dispatch(fetchThemeList());
-        onClose();
-      }
-    },
-    true
-  );
+        },
+        fill: {
+          enabled: true,
+          type: "Smooth",
+          color: "#3498db",
+          opacity: 0.4,
+        },
+        responsive: false,
+        maintainAspectRatio: true,
+        chartType: "line",
+        colors: ["#3498db", "#e74c3c", "#2ecc71"],
+        borderColor: ["#2980b9", "#c0392b", "#27ae60"],
+        backgroundColor: ["#3498db55", "#e74c3c55", "#2ecc7155"],
+      });
+    }
+  }, [theme, open]);
+
+  const createTheme = usePost<ThemeData, createThemeResponse>([""], (data) => {
+    if (data?.success) {
+      dispatch(fetchThemeList());
+      onClose();
+    }
+  });
+
+  const updateTheme = usePost<ThemeData, createThemeResponse>([""], (data) => {
+    if (data?.success) {
+      dispatch(fetchThemeList());
+      onClose();
+    }
+  });
 
   const handleSubmit = () => {
-    createTheme.mutate({ url: POST.CREATE_THEME, payload: themeState });
+    if (theme) {
+      updateTheme.mutate({
+        url: `${POST.UPDATE_THEME}${theme._id}`,
+        payload: themeState,
+      });
+    } else {
+      createTheme.mutate({
+        url: POST.CREATE_THEME,
+        payload: themeState,
+      });
+    }
   };
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
-      <DialogTitle sx={{ pb: 1 }}>Create New Theme</DialogTitle>
+      <DialogTitle>
+        {theme ? "Update Theme" : "Create New Theme"}
+        <IconButton
+          aria-label="close"
+          onClick={onClose}
+          sx={{
+            position: "absolute",
+            right: 8,
+            top: 8,
+            color: (theme) => theme.palette.grey[500],
+          }}
+        >
+          <CloseIcon />
+        </IconButton>
+      </DialogTitle>
       <DialogContent sx={{ pt: 1 }}>
         <Box>
           <TextField
@@ -368,14 +478,14 @@ const CreateThemeDialog = ({ open, onClose }: CreateThemeDialogProps) => {
               <FormControl fullWidth size="small" margin="dense">
                 <InputLabel>Display Title</InputLabel>
                 <Select
-                  value={themeState.title.show}
+                  value={themeState.title.display}
                   label="Display Title"
                   onChange={(e) =>
                     setThemeState({
                       ...themeState,
                       title: {
                         ...themeState.title,
-                        show: e.target.value === "true",
+                        display: e.target.value === "true",
                       },
                     })
                   }
@@ -489,7 +599,7 @@ const CreateThemeDialog = ({ open, onClose }: CreateThemeDialogProps) => {
               </Box>
             </Grid>
 
-            <Grid size={{ xs: 12, sm: 4 }} component="div">
+            <Grid size={{ xs: 12, sm: 6 }} component="div">
               <TextField
                 fullWidth
                 size="small"
@@ -513,7 +623,7 @@ const CreateThemeDialog = ({ open, onClose }: CreateThemeDialogProps) => {
               />
             </Grid>
 
-            <Grid size={{ xs: 12, sm: 4 }} component="div">
+            <Grid size={{ xs: 12, sm: 6 }} component="div">
               <FormControl fullWidth size="small" margin="dense">
                 <InputLabel>Font Weight</InputLabel>
                 <Select
@@ -535,34 +645,6 @@ const CreateThemeDialog = ({ open, onClose }: CreateThemeDialogProps) => {
                   {fontWeightOptions.map((weight) => (
                     <MenuItem key={weight} value={weight}>
                       {weight}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </Grid>
-
-            <Grid size={{ xs: 12, sm: 4 }} component="div">
-              <FormControl fullWidth size="small" margin="dense">
-                <InputLabel>Font Family</InputLabel>
-                <Select
-                  value={themeState.title.font.family}
-                  label="Font Family"
-                  onChange={(e) =>
-                    setThemeState({
-                      ...themeState,
-                      title: {
-                        ...themeState.title,
-                        font: {
-                          ...themeState.title.font,
-                          family: e.target.value,
-                        },
-                      },
-                    })
-                  }
-                >
-                  {fontFamilies.map((family) => (
-                    <MenuItem key={family} value={family}>
-                      {family}
                     </MenuItem>
                   ))}
                 </Select>
@@ -628,14 +710,14 @@ const CreateThemeDialog = ({ open, onClose }: CreateThemeDialogProps) => {
               <FormControl fullWidth size="small" margin="dense">
                 <InputLabel>Display Subtitle</InputLabel>
                 <Select
-                  value={themeState.subtitle.show}
+                  value={themeState.subtitle.display}
                   label="Display Subtitle"
                   onChange={(e) =>
                     setThemeState({
                       ...themeState,
                       subtitle: {
                         ...themeState.subtitle,
-                        show: e.target.value === "true",
+                        display: e.target.value === "true",
                       },
                     })
                   }
@@ -752,7 +834,7 @@ const CreateThemeDialog = ({ open, onClose }: CreateThemeDialogProps) => {
                 </Box>
               </Box>
             </Grid>
-            <Grid size={{ xs: 12, sm: 4 }} component="div">
+            <Grid size={{ xs: 12, sm: 6 }} component="div">
               <TextField
                 fullWidth
                 size="small"
@@ -775,7 +857,7 @@ const CreateThemeDialog = ({ open, onClose }: CreateThemeDialogProps) => {
                 {...numberInputStyles}
               />
             </Grid>
-            <Grid size={{ xs: 12, sm: 4 }} component="div">
+            <Grid size={{ xs: 12, sm: 6 }} component="div">
               <FormControl fullWidth size="small" margin="dense">
                 <InputLabel>Font Weight</InputLabel>
                 <Select
@@ -797,33 +879,6 @@ const CreateThemeDialog = ({ open, onClose }: CreateThemeDialogProps) => {
                   {fontWeightOptions.map((weight) => (
                     <MenuItem key={weight} value={weight}>
                       {weight}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </Grid>
-            <Grid size={{ xs: 12, sm: 4 }} component="div">
-              <FormControl fullWidth size="small" margin="dense">
-                <InputLabel>Font Family</InputLabel>
-                <Select
-                  value={themeState.subtitle.font.family}
-                  label="Font Family"
-                  onChange={(e) =>
-                    setThemeState({
-                      ...themeState,
-                      subtitle: {
-                        ...themeState.subtitle,
-                        font: {
-                          ...themeState.subtitle.font,
-                          family: e.target.value,
-                        },
-                      },
-                    })
-                  }
-                >
-                  {fontFamilies.map((family) => (
-                    <MenuItem key={family} value={family}>
-                      {family}
                     </MenuItem>
                   ))}
                 </Select>
@@ -1068,37 +1123,6 @@ const CreateThemeDialog = ({ open, onClose }: CreateThemeDialogProps) => {
                   )}
                 </Box>
               </Box>
-            </Grid>
-
-            <Grid size={{ xs: 12, sm: 6 }} component="div">
-              <FormControl fullWidth size="small" margin="dense">
-                <InputLabel>Font Family</InputLabel>
-                <Select
-                  value={themeState.legend.labels.font.family}
-                  label="Font Family"
-                  onChange={(e) =>
-                    setThemeState({
-                      ...themeState,
-                      legend: {
-                        ...themeState.legend,
-                        labels: {
-                          ...themeState.legend.labels,
-                          font: {
-                            ...themeState.legend.labels.font,
-                            family: e.target.value,
-                          },
-                        },
-                      },
-                    })
-                  }
-                >
-                  {fontFamilies.map((family) => (
-                    <MenuItem key={family} value={family}>
-                      {family}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
             </Grid>
 
             <Grid size={{ xs: 12, sm: 6 }} component="div">
@@ -2977,9 +3001,19 @@ const CreateThemeDialog = ({ open, onClose }: CreateThemeDialogProps) => {
           onClick={handleSubmit}
           variant="contained"
           color="primary"
-          disabled={createTheme.isPending}
+          disabled={
+            !themeState.name.trim() ||
+            createTheme.isPending ||
+            updateTheme.isPending
+          }
         >
-          {createTheme.isPending ? "Creating..." : "Create"}
+          {createTheme.isPending
+            ? "Creating..."
+            : updateTheme.isPending
+            ? "Updating..."
+            : theme
+            ? "Update"
+            : "Create"}
         </StyledButton>
       </DialogActions>
     </Dialog>
