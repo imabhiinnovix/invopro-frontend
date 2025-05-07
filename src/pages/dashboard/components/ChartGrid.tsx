@@ -58,6 +58,7 @@ import TableChartIcon from "@mui/icons-material/TableChart";
 import { toast } from "react-toastify";
 import jsPDF from "jspdf";
 import axiosInstance from "../../../services/axiosInstance";
+import { Theme } from "../../createTheme/types";
 
 // Register ChartJS components
 ChartJS.register(
@@ -88,6 +89,16 @@ interface ChartDataItem {
   data: number;
   [key: string]: string | number;
 }
+
+type DrillDownPayload = {
+  dataSourceId?: string;
+  entityId?: string;
+  conditions?: Record<string, unknown>[];
+  dimensions?: Record<string, unknown>[];
+  groupBy?: Record<string, unknown>[];
+  page?: number;
+  limit?: number;
+};
 
 const StyledCard = styled(Card)(({ theme }) => ({
   height: "100%",
@@ -240,10 +251,12 @@ const NumberDisplay = styled(Box)(({ theme }) => ({
   gap: theme.spacing(1),
 }));
 
-const NumberValue = styled(Typography)(({ theme }) => ({
+const NumberValue = styled(Typography, {
+  shouldForwardProp: (prop) => prop !== "widgetTheme",
+})<{ widgetTheme?: Theme | null }>(({ theme, widgetTheme }) => ({
   fontSize: "3.5rem",
   fontWeight: 600,
-  color: theme.palette.primary.main,
+  color: widgetTheme?.colors?.[0] || theme.palette.primary.main,
   lineHeight: 1.2,
 }));
 
@@ -335,7 +348,8 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
   const [totalPages, setTotalPages] = useState(1);
   const [, setTotalRecords] = useState(0);
   const [isDrillDownLoading, setIsDrillDownLoading] = useState(false);
-  const [drillDownPayload, setDrillDownPayload] = useState<any>(null);
+  const [drillDownPayload, setDrillDownPayload] =
+    useState<DrillDownPayload | null>(null);
   const itemsPerPage = 10;
 
   // Combine permanent and temporary charts
@@ -478,7 +492,14 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
       let csvContent = "data:text/csv;charset=utf-8,";
 
       // Add header row
-      const headers = ["Category", ...datasets.map((dataset) => dataset.label)];
+      const headers = [
+        "Category",
+        ...datasets.map((dataset, i) =>
+          "label" in dataset
+            ? (dataset as { label: string }).label
+            : `Series ${i + 1}`
+        ),
+      ];
       csvContent += headers.join(",") + "\n";
 
       // Add data rows
@@ -705,22 +726,6 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
         new Set(chartData.map((item: ChartDataItem) => item.name))
       );
 
-      // Generate vibrant colors with transparency
-      const colors = [
-        "#FF149330", // Deep Pink
-        "#00BFFF30", // Deep Sky Blue
-        "#FFD70030", // Gold
-        "#00FF7F30", // Spring Green
-        "#9370DB30", // Medium Purple
-        "#FF450030", // Orange Red
-        "#FF69B430", // Hot Pink
-        "#32CD3230", // Lime Green
-        "#FF634730", // Tomato
-        "#1E90FF30", // Dodger Blue
-        "#FF8C0030", // Dark Orange
-        "#20B2AA30", // Light Sea Green
-      ];
-
       // Create a dataset for each unique group
       const datasets = uniqueGroups.map((group, index) => {
         const groupData = uniqueNames.map((name) => {
@@ -733,8 +738,12 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
         return {
           label: group,
           data: groupData,
-          backgroundColor: colors[index % colors.length],
-          borderColor: "white",
+          color: widgetTheme?.colors,
+          backgroundColor:
+            widgetTheme?.backgroundColor[
+              index % widgetTheme?.backgroundColor.length
+            ],
+          borderColor: widgetTheme?.borderColor,
           borderWidth: 2,
         };
       });
@@ -755,21 +764,9 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
         datasets: [
           {
             data: values,
-            backgroundColor: [
-              "#FF149330",
-              "#00BFFF30",
-              "#FFD70030",
-              "#00FF7F30",
-              "#9370DB30",
-              "#FF450030",
-              "#FF69B430",
-              "#32CD3230",
-              "#FF634730",
-              "#1E90FF30",
-              "#FF8C0030",
-              "#20B2AA30",
-            ],
-            borderColor: "white",
+            color: widgetTheme?.colors,
+            backgroundColor: widgetTheme?.backgroundColor,
+            borderColor: widgetTheme?.borderColor,
             borderWidth: 2,
           },
         ],
@@ -778,29 +775,13 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
 
     // Handle grouped horizontal bar chart
     if (chartType === "horizontalBar" && groupBy.length > 0) {
-      const groupByField = groupBy[0]; // Take the first groupBy field
+      const groupByField = groupBy[0];
       const uniqueGroups = Array.from(
         new Set(chartData.map((item) => item[groupByField] as string))
       );
       const uniqueNames = Array.from(
         new Set(chartData.map((item) => item.name))
       );
-
-      // Generate colors for each group
-      const colors = [
-        "#FF6384",
-        "#36A2EB",
-        "#FFCE56",
-        "#4BC0C0",
-        "#9966FF",
-        "#FF9F40",
-        "#FF99E6",
-        "#99FF99",
-        "#FF9999",
-        "#99CCFF",
-        "#FF99CC",
-        "#99FFCC",
-      ];
 
       // Create a dataset for each unique group
       const datasets = uniqueGroups.map((group, index) => {
@@ -814,8 +795,12 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
         return {
           label: group,
           data: groupData,
-          backgroundColor: colors[index % colors.length],
-          borderColor: colors[index % colors.length],
+          color: widgetTheme?.colors,
+          backgroundColor:
+            widgetTheme?.backgroundColor[
+              index % widgetTheme?.backgroundColor.length
+            ],
+          borderColor: widgetTheme?.borderColor,
           borderWidth: 1,
         };
       });
@@ -835,10 +820,11 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
         labels,
         datasets: [
           {
-            label: chart.name,
+            label: labels,
             data: values,
-            backgroundColor: theme.palette.primary.main,
-            borderColor: theme.palette.primary.main,
+            color: widgetTheme?.colors,
+            backgroundColor: widgetTheme?.backgroundColor,
+            borderColor: widgetTheme?.borderColor,
             borderWidth: 1,
           },
         ],
@@ -849,7 +835,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
     if (
       chartType === "verticalBar" ||
       chartType === "stackedBar" ||
-      chartType === "multiSeriesBar"
+      chartType === "multiSeriesPie"
     ) {
       const labels = chartData.map((item: ChartDataItem) => item.name);
 
@@ -858,21 +844,6 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
         const uniqueGroups = Array.from(
           new Set(chartData.map((item) => item[groupByField] as string))
         );
-
-        const colors = [
-          "#FF6384",
-          "#36A2EB",
-          "#FFCE56",
-          "#4BC0C0",
-          "#9966FF",
-          "#FF9F40",
-          "#FF99E6",
-          "#99FF99",
-          "#FF9999",
-          "#99CCFF",
-          "#FF99CC",
-          "#99FFCC",
-        ];
 
         const datasets = uniqueGroups.map((group, index) => {
           const groupData = labels.map((name) => {
@@ -885,8 +856,12 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
           return {
             label: group,
             data: groupData,
-            backgroundColor: colors[index % colors.length],
-            borderColor: colors[index % colors.length],
+            color: widgetTheme?.colors,
+            backgroundColor:
+              widgetTheme?.backgroundColor[
+                index % widgetTheme?.backgroundColor.length
+              ],
+            borderColor: widgetTheme?.borderColor,
             borderWidth: 1,
           };
         });
@@ -900,10 +875,11 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
         labels,
         datasets: [
           {
-            label: chart.name,
+            label: labels,
             data: values,
-            backgroundColor: theme.palette.primary.main,
-            borderColor: theme.palette.primary.main,
+            color: widgetTheme?.colors,
+            backgroundColor: widgetTheme?.backgroundColor,
+            borderColor: widgetTheme?.borderColor,
             borderWidth: 1,
           },
         ],
@@ -925,21 +901,6 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
           new Set(chartData.map((item) => item.name))
         );
 
-        const colors = [
-          "#FF6384", // Pink
-          "#36A2EB", // Blue
-          "#FFCE56", // Yellow
-          "#4BC0C0", // Teal
-          "#9966FF", // Purple
-          "#FF9F40", // Orange
-          "#FF99E6", // Light Pink
-          "#99FF99", // Light Green
-          "#FF9999", // Light Red
-          "#99CCFF", // Light Blue
-          "#FF99CC", // Rose
-          "#99FFCC", // Mint
-        ];
-
         // Create datasets for each group
         const datasets = uniqueGroups.map((group, index) => {
           const groupData = uniqueNames.map((name) => {
@@ -952,8 +913,11 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
           return {
             label: group,
             data: groupData,
-            backgroundColor: colors[index % colors.length],
-            borderColor: "white",
+            backgroundColor:
+              widgetTheme?.backgroundColor[
+                index % widgetTheme?.backgroundColor.length
+              ],
+            borderColor: widgetTheme?.borderColor,
             borderWidth: 2,
           };
         });
@@ -970,21 +934,8 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
         datasets: [
           {
             data: values,
-            backgroundColor: [
-              "#FF6384", // Pink
-              "#36A2EB", // Blue
-              "#FFCE56", // Yellow
-              "#4BC0C0", // Teal
-              "#9966FF", // Purple
-              "#FF9F40", // Orange
-              "#FF99E6", // Light Pink
-              "#99FF99", // Light Green
-              "#FF9999", // Light Red
-              "#99CCFF", // Light Blue
-              "#FF99CC", // Rose
-              "#99FFCC", // Mint
-            ],
-            borderColor: "white",
+            backgroundColor: widgetTheme?.backgroundColor,
+            borderColor: widgetTheme?.borderColor,
             borderWidth: 2,
           },
         ],
@@ -1004,22 +955,6 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
           new Set(chartData.map((item) => item.name))
         );
 
-        // Generate colors for each group
-        const colors = [
-          "#FF6384",
-          "#36A2EB",
-          "#FFCE56",
-          "#4BC0C0",
-          "#9966FF",
-          "#FF9F40",
-          "#FF99E6",
-          "#99FF99",
-          "#FF9999",
-          "#99CCFF",
-          "#FF99CC",
-          "#99FFCC",
-        ];
-
         // Create a dataset for each unique group
         const datasets = uniqueGroups.map((group, index) => {
           const groupData = uniqueNames.map((name) => {
@@ -1032,12 +967,15 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
           return {
             label: group,
             data: groupData,
-            borderColor: colors[index % colors.length],
-            backgroundColor: `${colors[index % colors.length]}40`,
-            pointBackgroundColor: colors[index % colors.length],
-            pointBorderColor: "#fff",
-            pointHoverBackgroundColor: "#fff",
-            pointHoverBorderColor: colors[index % colors.length],
+            color: widgetTheme?.colors,
+            backgroundColor:
+              widgetTheme?.backgroundColor[
+                index % widgetTheme?.backgroundColor.length
+              ],
+            pointBackgroundColor: widgetTheme?.colors,
+            pointBorderColor: widgetTheme?.borderColor,
+            pointHoverBackgroundColor: widgetTheme?.backgroundColor,
+            pointHoverBorderColor: widgetTheme?.borderColor,
             tension: 0.1,
           };
         });
@@ -1056,12 +994,12 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
           {
             label: chart.name,
             data: values,
-            borderColor: theme.palette.primary.main,
-            backgroundColor: `${theme.palette.primary.main}40`,
-            pointBackgroundColor: theme.palette.primary.main,
-            pointBorderColor: "#fff",
-            pointHoverBackgroundColor: "#fff",
-            pointHoverBorderColor: theme.palette.primary.main,
+            color: widgetTheme?.colors,
+            backgroundColor: widgetTheme?.backgroundColor,
+            pointBackgroundColor: widgetTheme?.backgroundColor,
+            pointBorderColor: widgetTheme?.borderColor,
+            pointHoverBackgroundColor: widgetTheme?.backgroundColor,
+            pointHoverBorderColor: widgetTheme?.borderColor,
             tension: 0.1,
           },
         ],
@@ -1069,54 +1007,62 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
     }
 
     // Handle grouped line/area chart
-    if ((chartType === "line" || chartType === "area") && groupBy.length > 0) {
-      const groupByField = groupBy[0]; // Take the first groupBy field
-      const uniqueGroups = Array.from(
-        new Set(chartData.map((item) => item[groupByField] as string))
-      );
-      const uniqueNames = Array.from(
-        new Set(chartData.map((item) => item.name))
-      );
-
-      // Generate colors for each group
-      const colors = [
-        "#FF6384",
-        "#36A2EB",
-        "#FFCE56",
-        "#4BC0C0",
-        "#9966FF",
-        "#FF9F40",
-        "#FF99E6",
-        "#99FF99",
-        "#FF9999",
-        "#99CCFF",
-        "#FF99CC",
-        "#99FFCC",
-      ];
-
-      // Create a dataset for each unique group
-      const datasets = uniqueGroups.map((group, index) => {
-        const groupData = uniqueNames.map((name) => {
-          const dataPoint = chartData.find(
-            (item) => item.name === name && item[groupByField] === group
-          );
-          return dataPoint ? dataPoint.data : 0;
+    if (chartType === "area" || chartType === "line") {
+      if (groupBy.length > 0) {
+        const groupByField = groupBy[0];
+        const uniqueGroups = Array.from(
+          new Set(chartData.map((item) => item[groupByField]))
+        );
+        const uniqueNames = Array.from(
+          new Set(chartData.map((item) => item.name))
+        );
+        const datasets = uniqueGroups.map((group, index) => {
+          const groupData = uniqueNames.map((name) => {
+            const dataPoint = chartData.find(
+              (item) => item.name === name && item[groupByField] === group
+            );
+            return dataPoint ? dataPoint.data : 0;
+          });
+          return {
+            label: group || chart.name,
+            data: groupData,
+            color: widgetTheme?.colors[index % widgetTheme?.colors.length],
+            borderColor:
+              widgetTheme?.borderColor[index % widgetTheme?.borderColor.length],
+            backgroundColor:
+              widgetTheme?.backgroundColor[
+                index % widgetTheme?.backgroundColor.length
+              ],
+            tension: 0.1,
+            fill: chartType === "area" ? "start" : false,
+          };
         });
-
         return {
-          label: group,
-          data: groupData,
-          borderColor: colors[index % colors.length],
-          backgroundColor: `${colors[index % colors.length]}20`,
-          tension: 0.1,
-          fill: chartType === "area" ? "start" : false,
+          labels: uniqueNames,
+          datasets,
         };
-      });
-
-      return {
-        labels: uniqueNames,
-        datasets,
-      };
+      } else {
+        // Non-grouped line/area chart
+        const labels = chartData.map((item: ChartDataItem) => item.name);
+        const values = chartData.map((item: ChartDataItem) => item.data);
+        return {
+          labels,
+          datasets: [
+            {
+              label: chart.name,
+              data: values,
+              color: widgetTheme?.colors[0],
+              borderColor: widgetTheme?.borderColor[0],
+              backgroundColor:
+                chartType === "area"
+                  ? widgetTheme?.backgroundColor[0]
+                  : "transparent",
+              tension: 0.1,
+              fill: chartType === "area" ? "start" : false,
+            },
+          ],
+        };
+      }
     }
 
     // Default single line/area chart (no grouping)
@@ -1345,7 +1291,9 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
       case "number":
         return (
           <NumberDisplay>
-            <NumberValue>{numberValue.toLocaleString()}</NumberValue>
+            <NumberValue widgetTheme={widgetTheme}>
+              {numberValue.toLocaleString()}
+            </NumberValue>
             <NumberLabel>{chart.name}</NumberLabel>
           </NumberDisplay>
         );

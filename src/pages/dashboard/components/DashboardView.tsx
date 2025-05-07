@@ -1,5 +1,16 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Box, Typography, TextField, Button, ButtonGroup } from "@mui/material";
+import {
+  Box,
+  Typography,
+  TextField,
+  Button,
+  ButtonGroup,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  SelectChangeEvent,
+} from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import EditIcon from "@mui/icons-material/Edit";
 import DoneIcon from "@mui/icons-material/Done";
@@ -14,11 +25,13 @@ import {
   updateWidget,
   saveWidgets,
   fetchWidgetTheme,
+  selectDashboardTheme,
 } from "../dashboardActions";
 import { toast } from "react-toastify";
 import { ChartResponse, TemporaryChart } from "../types";
 import usePost from "../../../hooks/usePost";
 import { POST } from "../../../services/apiRoutes";
+import { fetchThemeList } from "../../createTheme/themeActions";
 
 interface DashboardViewProps {
   title: string;
@@ -38,6 +51,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     null
   );
   const [gridColumns, setGridColumns] = useState(2);
+  const [selectedTheme, setSelectedTheme] = useState<string>("");
 
   const inputRef = useRef<HTMLInputElement>(null);
   const { id: dashboardId } = useParams();
@@ -48,6 +62,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   );
   const dashboards = useAppSelector((state) => state.dashboard.dashboards);
   const currentDashboard = dashboards.find((d) => d._id === dashboardId);
+
+  const { themes } = useAppSelector((state) => state.theme);
 
   const postGridColumns = usePost([""]);
 
@@ -91,8 +107,13 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   useEffect(() => {
     if (currentDashboard?.widgetThemeId) {
       dispatch(fetchWidgetTheme(currentDashboard.widgetThemeId));
+      setSelectedTheme(currentDashboard.widgetThemeId);
     }
   }, [currentDashboard?.widgetThemeId, dispatch]);
+
+  useEffect(() => {
+    dispatch(fetchThemeList());
+  }, [dispatch]);
 
   const handleEditModeToggle = async () => {
     if (isEditMode) {
@@ -194,6 +215,34 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     }
   };
 
+  const handleThemeChange = async (event: SelectChangeEvent) => {
+    const themeId = event.target.value;
+    setSelectedTheme(themeId);
+
+    if (dashboardId) {
+      try {
+        const result = await dispatch(
+          selectDashboardTheme({ dashboardId, widgetThemeId: themeId })
+        ).unwrap();
+
+        if (result.success) {
+          toast.success("Theme updated successfully!");
+          if (currentDashboard?.widgetThemeId) {
+            dispatch(fetchWidgetTheme(themeId));
+          }
+        } else {
+          toast.error(result.message || "Failed to update theme");
+        }
+      } catch (error) {
+        if (typeof error === "object" && error !== null && "message" in error) {
+          toast.error(error.message as string);
+        } else {
+          toast.error("Failed to update theme");
+        }
+      }
+    }
+  };
+
   return (
     <Box
       sx={{
@@ -206,8 +255,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
       <Box
         sx={{
           p: 3,
-          // pb: 0,
-          // mb: 3,
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
@@ -223,18 +270,34 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               onKeyDown={handleKeyPress}
               size="small"
               fullWidth
-              sx={{
-                "& .MuiInputBase-input": {
-                  fontSize: "1.5rem",
-                  fontWeight: 500,
-                },
-              }}
             />
           ) : (
             <Typography variant="h5" component="h1" fontWeight={500}>
               {title}
             </Typography>
           )}
+        </Box>
+
+        <Box sx={{ mr: 2 }}>
+          {isEditMode ? (
+            <FormControl sx={{ minWidth: 200 }}>
+              <InputLabel id="theme-select-label">Theme</InputLabel>
+              <Select
+                labelId="theme-select-label"
+                id="theme-select"
+                value={selectedTheme}
+                label="Theme"
+                onChange={handleThemeChange}
+                size="small"
+              >
+                {themes.map((theme) => (
+                  <MenuItem key={theme._id} value={theme._id}>
+                    {theme.name}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          ) : null}
         </Box>
 
         <Box sx={{ display: "flex", gap: 2 }}>
