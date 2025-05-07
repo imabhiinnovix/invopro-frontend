@@ -1,12 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "../../storeHooks";
-import {
-  fetchDashboardList,
-  fetchChartData,
-  createDashboard,
-  deleteDashboard,
-} from "./dashboardActions";
+import { fetchDashboardList, createDashboard } from "./dashboardActions";
 import { DashboardView } from "./components/DashboardView";
 import { toast } from "react-toastify";
 import axiosInstance from "../../services/axiosInstance";
@@ -39,7 +34,6 @@ import {
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
-import { format } from "date-fns";
 import { DeleteConfirmationModal } from "../../components/atom/sideNav/components/DeleteConfirmationModal";
 import { Dashboard as DashboardType, DashboardListResponse } from "./types";
 
@@ -61,6 +55,7 @@ const Dashboard = () => {
   const [dashboardType, setDashboardType] = useState<"normal" | "trend">(
     "normal"
   );
+  const [timePeriod, setTimePeriod] = useState<string>("1m");
 
   useEffect(() => {
     if (!dashboards.length) {
@@ -80,12 +75,6 @@ const Dashboard = () => {
     } catch (error) {
       console.error("Failed to update dashboard name:", error);
       toast.error("Failed to update dashboard name. Please try again.");
-    }
-  };
-
-  const handleCreateWidget = () => {
-    if (id) {
-      dispatch(fetchChartData({ dashboardId: id }));
     }
   };
 
@@ -129,7 +118,11 @@ const Dashboard = () => {
       try {
         setIsCreating(true);
         const response = (await dispatch(
-          createDashboard({ name: newDashboardName.trim(), dashboardType })
+          createDashboard({
+            name: newDashboardName.trim(),
+            dashboardType,
+            dynamicVersionValue: timePeriod,
+          })
         ).unwrap()) as DashboardListResponse;
         await dispatch(fetchDashboardList());
         setOpenCreateModal(false);
@@ -372,6 +365,7 @@ const Dashboard = () => {
               variant="outlined"
               value={newDashboardName}
               onChange={(e) => setNewDashboardName(e.target.value)}
+              size="small"
               sx={{
                 "& .MuiOutlinedInput-root": {
                   "&:hover fieldset": {
@@ -386,6 +380,7 @@ const Dashboard = () => {
             <FormControl
               fullWidth
               margin="dense"
+              size="small"
               sx={{
                 mt: 2,
                 "& .MuiOutlinedInput-root": {
@@ -410,6 +405,39 @@ const Dashboard = () => {
                 <MenuItem value="trend">Trend</MenuItem>
               </Select>
             </FormControl>
+
+            {dashboardType === "trend" && (
+              <FormControl
+                fullWidth
+                margin="dense"
+                sx={{
+                  mt: 2,
+                  "& .MuiOutlinedInput-root": {
+                    "&:hover fieldset": {
+                      borderColor: "primary.main",
+                    },
+                    "&.Mui-focused fieldset": {
+                      borderColor: "primary.main",
+                    },
+                  },
+                }}
+              >
+                <InputLabel id="time-period-label">Time Period</InputLabel>
+                <Select
+                  labelId="time-period-label"
+                  id="time-period-select"
+                  value={timePeriod}
+                  label="Time Period"
+                  onChange={(e) => setTimePeriod(e.target.value)}
+                  size="small"
+                >
+                  <MenuItem value="1m">Last 1 Month</MenuItem>
+                  <MenuItem value="3m">Last 3 Months</MenuItem>
+                  <MenuItem value="6m">Last 6 Months</MenuItem>
+                  <MenuItem value="12m">Last 12 Months</MenuItem>
+                </Select>
+              </FormControl>
+            )}
           </DialogContent>
           <DialogActions sx={{ p: 2, gap: 1 }}>
             <Button

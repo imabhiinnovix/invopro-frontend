@@ -532,9 +532,11 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
               fetchChartData({
                 dashboardId,
                 dashboardType: isTrend ? "trend" : "normal",
-                startVersionValue: currentDashboard?.settings?.startVersionValue || "",
-                endVersionValue: currentDashboard?.settings?.endVersionValue || "",
-                dynamicVersionValue: currentDashboard?.settings?.dynamicVersionValue || "1m",
+                startVersionValue:
+                  currentDashboard?.settings?.startVersionValue || "",
+                endVersionValue:
+                  currentDashboard?.settings?.endVersionValue || "",
+
                 versionValue: currentDashboard?.settings?.versionValue || "",
               })
             );

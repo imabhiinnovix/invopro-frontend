@@ -343,12 +343,6 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
 
   const widgetTheme = useAppSelector((state) => state.dashboard.widgetTheme);
 
-  useEffect(() => {
-    if (dashboardId) {
-      dispatch(fetchChartData({ dashboardId }));
-    }
-  }, [dispatch, dashboardId]);
-
   const handleMenuClick = (
     event: React.MouseEvent<HTMLElement>,
     chart: ChartResponse

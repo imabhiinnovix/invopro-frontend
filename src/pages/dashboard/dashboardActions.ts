@@ -25,7 +25,11 @@ export const fetchDashboardList = createAsyncThunk(
 export const createDashboard = createAsyncThunk(
   "dashboard/create",
   async (
-    payload: { name: string; dashboardType: "normal" | "trend" },
+    payload: {
+      name: string;
+      dashboardType: "normal" | "trend";
+      dynamicVersionValue: string;
+    },
     { rejectWithValue }
   ) => {
     try {
@@ -35,6 +39,7 @@ export const createDashboard = createAsyncThunk(
           name: payload.name,
           settings: {
             dashboardType: payload.dashboardType,
+            dynamicVersionValue: payload.dynamicVersionValue,
           },
         }
       );
@@ -272,14 +277,12 @@ export const fetchChartData = createAsyncThunk(
       versionValue,
       startVersionValue,
       endVersionValue,
-      dynamicVersionValue,
       dashboardType,
     }: {
       dashboardId: string;
       versionValue?: string;
       startVersionValue?: string;
       endVersionValue?: string;
-      dynamicVersionValue?: string;
       dashboardType?: string;
     },
     { dispatch }
@@ -306,7 +309,6 @@ export const fetchChartData = createAsyncThunk(
                 dashboardFilters: {
                   startVersionValue: startVersionValue || "",
                   endVersionValue: endVersionValue || "",
-                  dynamicVersionValue: dynamicVersionValue || "1m",
                   versionValue: versionValue || "",
                 },
                 dashBoardType: dashboardType || "normal",
