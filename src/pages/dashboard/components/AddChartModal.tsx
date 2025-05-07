@@ -17,8 +17,22 @@ import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
 import ClearIcon from "@mui/icons-material/Clear";
 import { useAppDispatch, useAppSelector } from "../../../storeHooks";
-import { fetchWidgetTypes, fetchAllDataSources, saveWidgets, fetchChartData } from "../dashboardActions";
-import { DataSource, DataSourceAttribute, ChartResponse, WidgetDataResponse, Operator, OperatorType, OperatorListResponse } from "../types";
+import {
+  fetchWidgetTypes,
+  fetchAllDataSources,
+  saveWidgets,
+  fetchChartData,
+} from "../dashboardActions";
+import {
+  DataSource,
+  DataSourceAttribute,
+  ChartResponse,
+  WidgetDataResponse,
+  Operator,
+  OperatorType,
+  OperatorListResponse,
+  Dashboard,
+} from "../types";
 import { toast } from "react-toastify";
 import axiosInstance from "../../../services/axiosInstance";
 import { GET } from "../../../services/apiRoutes";
@@ -62,6 +76,7 @@ interface AddChartModalProps {
   initialData?: ChartResponse;
   onSave?: (formData: ChartFormData) => Promise<void>;
   isTrend?: boolean;
+  currentDashboard?: Dashboard;
 }
 
 const FormSection = styled(Box)(({ theme }) => ({
@@ -121,28 +136,28 @@ const ConditionsSection = styled(FormSection)(({ theme }) => ({
 }));
 
 const ConfigurationPanel = styled(Box)(({ theme }) => ({
-  display: 'flex',
-  flexDirection: 'column',
-  height: '100%',
+  display: "flex",
+  flexDirection: "column",
+  height: "100%",
   backgroundColor: theme.palette.background.paper,
 }));
 
 const ConfigurationHeader = styled(Box)(({ theme }) => ({
   padding: theme.spacing(2, 3),
   borderBottom: `1px solid ${theme.palette.divider}`,
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'space-between',
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
   backgroundColor: theme.palette.background.paper,
   zIndex: 1,
 }));
 
 const ConfigurationContent = styled(Box)(({ theme }) => ({
   padding: theme.spacing(3),
-  overflowY: 'auto',
+  overflowY: "auto",
   flex: 1,
-  display: 'flex',
-  flexDirection: 'column',
+  display: "flex",
+  flexDirection: "column",
   gap: theme.spacing(3),
 }));
 
@@ -151,8 +166,8 @@ const ConfigurationFooter = styled(Box)(({ theme }) => ({
   borderTop: `1px solid ${theme.palette.divider}`,
   backgroundColor: theme.palette.background.paper,
   zIndex: 1,
-  display: 'flex',
-  justifyContent: 'flex-end',
+  display: "flex",
+  justifyContent: "flex-end",
   gap: theme.spacing(2),
 }));
 
@@ -164,14 +179,12 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
   initialData,
   onSave,
   isTrend,
+  currentDashboard,
 }) => {
+  console.log("🚀 ~ currentDashboard̥:", currentDashboard);
   const dispatch = useAppDispatch();
-  const {
-    widgetTypes,
-    dataSources,
-    widgetTypesLoading,
-    dataSourcesLoading,
-  } = useAppSelector((state) => state.dashboard);
+  const { widgetTypes, dataSources, widgetTypesLoading, dataSourcesLoading } =
+    useAppSelector((state) => state.dashboard);
 
   const [formData, setFormData] = useState<ChartFormData>({
     name: initialData?.name || "",
@@ -224,7 +237,9 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
 
         if (initialData.dataSourceId?._id) {
           dispatch(fetchAllDataSources()).then(() => {
-            const dataSource = dataSources.find(ds => ds._id === initialData.dataSourceId?._id);
+            const dataSource = dataSources.find(
+              (ds) => ds._id === initialData.dataSourceId?._id
+            );
             if (dataSource) {
               setSelectedDataSource(dataSource);
             }
@@ -361,15 +376,17 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
     event: SelectChangeEvent<unknown>
   ) => {
     const fieldName = event.target.value as string;
-    const attribute = selectedDataSource?.entityId.attributes.find(attr => attr.name === fieldName);
-    
+    const attribute = selectedDataSource?.entityId.attributes.find(
+      (attr) => attr.name === fieldName
+    );
+
     if (attribute) {
-      setFieldTypes(prev => ({
+      setFieldTypes((prev) => ({
         ...prev,
-        [index]: attribute.type
+        [index]: attribute.type,
       }));
     }
-    
+
     handleConditionChange(index, "field", fieldName);
     handleConditionChange(index, "operator", "");
     handleConditionChange(index, "value", "");
@@ -381,8 +398,8 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
   ) => {
     const value = event.target.value;
     const fieldType = fieldTypes[index];
-    
-    if (fieldType === 'date') {
+
+    if (fieldType === "date") {
       // Format date to YYYY-MM-DD
       const formattedDate = formatDateToYYYYMMDD(value);
       handleConditionChange(index, "value", formattedDate);
@@ -392,22 +409,20 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
   };
 
   const formatDateToYYYYMMDD = (dateString: string): string => {
-    if (!dateString) return '';
-    
+    if (!dateString) return "";
+
     const date = new Date(dateString);
     if (isNaN(date.getTime())) return dateString;
-    
+
     const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+
     return `${year}-${month}-${day}`;
   };
 
   const handleDataSourceChange = (event: SelectChangeEvent<unknown>) => {
-    const selectedDs = dataSources.find(
-      (ds) => ds._id === event.target.value
-    );
+    const selectedDs = dataSources.find((ds) => ds._id === event.target.value);
     if (selectedDs) {
       setSelectedDataSource(selectedDs);
       setFormData((prev) => ({
@@ -446,7 +461,7 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     try {
       const dimensionsToSend = isTrend ? "versionValue" : formData.dimensions;
 
@@ -463,54 +478,80 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
             dataSourceId: formData.dataSourceId,
             entityId: selectedDataSource?.entityId._id,
             dimensions: [dimensionsToSend],
-            groupBy: formData.groupBy ? formData.groupBy.split(',').map(g => g.trim()) : [],
-            conditions: formData.conditions.map(condition => ({
+            groupBy: formData.groupBy
+              ? formData.groupBy.split(",").map((g) => g.trim())
+              : [],
+            conditions: formData.conditions.map((condition) => ({
               ...condition,
-              _id: condition._id || uuidv4()
+              _id: condition._id || uuidv4(),
             })),
             aggregation: formData.aggregation,
-            widgetType: widgetTypes.find(wt => wt._id === formData.widgetTypeId)?.chartType || ''
+            widgetType:
+              widgetTypes.find((wt) => wt._id === formData.widgetTypeId)
+                ?.chartType || "",
+            dashboardFilters: {
+              startVersionValue: "",
+              endVersionValue: "",
+              dynamicVersionValue: "1m",
+              versionValue: "",
+            },
+            dashBoardType: isTrend ? "trend" : "normal",
           }
         );
 
         if (widgetResponse.data.success) {
           // Save the widget directly
-          const saveResponse = await dispatch(saveWidgets({
-            widgets: [{
-              dashboardId: dashboardId,
-              widgetTypeId: formData.widgetTypeId,
-              name: formData.name,
-              dimensions: dimensionsToSend,
-              groupBy: formData.groupBy ? formData.groupBy.split(',').map(g => g.trim()) : [],
-              aggregation: formData.aggregation,
-              position: formData.position,
-              conditions: formData.conditions.map(condition => ({
-                field: condition.field,
-                operator: condition.operator,
-                value: condition.value
-              })),
-              dataSourceId: formData.dataSourceId,
-              entityId: selectedDataSource?.entityId._id || ''
-            }]
-          })).unwrap();
+          const saveResponse = await dispatch(
+            saveWidgets({
+              widgets: [
+                {
+                  dashboardId: dashboardId,
+                  widgetTypeId: formData.widgetTypeId,
+                  name: formData.name,
+                  dimensions: dimensionsToSend,
+                  groupBy: formData.groupBy
+                    ? formData.groupBy.split(",").map((g) => g.trim())
+                    : [],
+                  aggregation: formData.aggregation,
+                  position: formData.position,
+                  conditions: formData.conditions.map((condition) => ({
+                    field: condition.field,
+                    operator: condition.operator,
+                    value: condition.value,
+                  })),
+                  dataSourceId: formData.dataSourceId,
+                  entityId: selectedDataSource?.entityId._id || "",
+                },
+              ],
+            })
+          ).unwrap();
 
           if (saveResponse.success) {
             // Fetch updated chart list
-            await dispatch(fetchChartData(dashboardId));
-            toast.success('Chart saved successfully!');
+            await dispatch(
+              fetchChartData({
+                dashboardId,
+                dashboardType: isTrend ? "trend" : "normal",
+                startVersionValue: currentDashboard?.settings?.startVersionValue || "",
+                endVersionValue: currentDashboard?.settings?.endVersionValue || "",
+                dynamicVersionValue: currentDashboard?.settings?.dynamicVersionValue || "1m",
+                versionValue: currentDashboard?.settings?.versionValue || "",
+              })
+            );
+            toast.success("Chart saved successfully!");
             onClose();
           } else {
-            toast.error(saveResponse.message || 'Failed to save chart');
+            toast.error(saveResponse.message || "Failed to save chart");
           }
         } else {
-          toast.error(widgetResponse.data.message || 'Failed to add chart');
+          toast.error(widgetResponse.data.message || "Failed to add chart");
         }
       }
     } catch (error) {
-      if (typeof error === 'object' && error !== null && 'message' in error) {
+      if (typeof error === "object" && error !== null && "message" in error) {
         toast.error(error.message as string);
       } else {
-        toast.error('Failed to add chart');
+        toast.error("Failed to add chart");
       }
     }
   };
@@ -529,9 +570,12 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
 
   const fetchOperators = async () => {
     try {
-      const response = await axiosInstance.post<OperatorListResponse>(GET.OPERATOR_LIST, {
-        fieldType: "all"
-      });
+      const response = await axiosInstance.post<OperatorListResponse>(
+        GET.OPERATOR_LIST,
+        {
+          fieldType: "all",
+        }
+      );
       if (response.data.success) {
         setOperators(response.data.data);
       }
@@ -541,12 +585,14 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
   };
 
   const getOperatorsForField = (fieldName: string): Operator[] => {
-    const attribute = selectedDataSource?.entityId.attributes.find(attr => attr.name === fieldName);
-    console.log("🚀 ~ attribute̥:", operators)
+    const attribute = selectedDataSource?.entityId.attributes.find(
+      (attr) => attr.name === fieldName
+    );
+    console.log("🚀 ~ attribute̥:", operators);
     if (!attribute) return [];
-    
+
     const fieldType = attribute.type;
-    const operatorType = operators.find(op => op.fieldType === fieldType);
+    const operatorType = operators.find((op) => op.fieldType === fieldType);
     return operatorType?.operators || [];
   };
 
@@ -815,23 +861,36 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
                     <StyledSelect
                       value={condition.operator}
                       label="Operator"
-                      onChange={(e) => handleConditionSelectChange(index, "operator", e)}
+                      onChange={(e) =>
+                        handleConditionSelectChange(index, "operator", e)
+                      }
                       disabled={isSubmitting || !condition.field}
                     >
                       {getOperatorsForField(condition.field).map((operator) => (
-                        <MenuItem key={operator._id} value={operator.operatorKey}>
+                        <MenuItem
+                          key={operator._id}
+                          value={operator.operatorKey}
+                        >
                           {operator.operatorName}
                         </MenuItem>
                       ))}
                     </StyledSelect>
                   </FormControl>
-                  {fieldTypes[index] === 'date' ? (
+                  {fieldTypes[index] === "date" ? (
                     <StyledTextField
                       label="Value"
                       type="date"
                       value={condition.value}
-                      onChange={(e) => handleConditionValueInputChange(index, e)}
-                      disabled={isSubmitting || !condition.operator || !getOperatorsForField(condition.field).find(op => op.operatorKey === condition.operator)?.valueRequired}
+                      onChange={(e) =>
+                        handleConditionValueInputChange(index, e)
+                      }
+                      disabled={
+                        isSubmitting ||
+                        !condition.operator ||
+                        !getOperatorsForField(condition.field).find(
+                          (op) => op.operatorKey === condition.operator
+                        )?.valueRequired
+                      }
                       size="small"
                       fullWidth
                       InputLabelProps={{
@@ -842,8 +901,16 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
                     <StyledTextField
                       label="Value"
                       value={condition.value}
-                      onChange={(e) => handleConditionValueInputChange(index, e)}
-                      disabled={isSubmitting || !condition.operator || !getOperatorsForField(condition.field).find(op => op.operatorKey === condition.operator)?.valueRequired}
+                      onChange={(e) =>
+                        handleConditionValueInputChange(index, e)
+                      }
+                      disabled={
+                        isSubmitting ||
+                        !condition.operator ||
+                        !getOperatorsForField(condition.field).find(
+                          (op) => op.operatorKey === condition.operator
+                        )?.valueRequired
+                      }
                       size="small"
                       fullWidth
                     />

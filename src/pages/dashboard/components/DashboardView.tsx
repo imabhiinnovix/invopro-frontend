@@ -207,17 +207,18 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             versionValue: undefined,
             startVersionValue,
             endVersionValue,
+            dashboardType: currentDashboard?.settings?.dashboardType,
           })
         );
-        dispatch(
-          updateDashboardVersion({
-            dashboardId,
-            versionValue: undefined,
-            dynamicVersionValue: undefined,
-            ...(startVersionValue && { startVersionValue }),
-            ...(endVersionValue && { endVersionValue }),
-          })
-        );
+        // dispatch(
+        //   updateDashboardVersion({
+        //     dashboardId,
+        //     versionValue: undefined,
+        //     dynamicVersionValue: undefined,
+        //     ...(startVersionValue && { startVersionValue }),
+        //     ...(endVersionValue && { endVersionValue }),
+        //   })
+        // );
       }
     }
   }, [
@@ -226,6 +227,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     dispatch,
     formattedVersionValue,
     hasErrors,
+    startVersionValue,
+    endVersionValue,
   ]);
 
   useEffect(() => {
@@ -418,8 +421,15 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
       await dispatch(
         updateDashboardVersion({
           dashboardId,
-          ...(isDynamic && { versionValue: formattedVersionValue }),
+          ...(isDynamic &&
+            currentDashboard?.settings?.dashboardType === "normal" && {
+              versionValue: formattedVersionValue,
+            }),
           ...(!isDynamic && { dynamicVersionValue: "1m" }),
+          ...(isDynamic &&
+            currentDashboard?.settings?.dashboardType === "trend" &&
+            startVersionValue &&
+            endVersionValue && { startVersionValue, endVersionValue }),
         })
       ).unwrap();
     } catch (error: unknown) {
@@ -500,22 +510,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                   rules={{ required: "Version Value is required" }}
                 />
               </Box>
-              <FormControlLabel
-                control={
-                  <Checkbox
-                    checked={isDynamicVersion}
-                    onChange={handleDynamicVersionChange}
-                    size="small"
-                  />
-                }
-                label="Sticky"
-                sx={{
-                  mr: 0,
-                  "& .MuiFormControlLabel-label": {
-                    fontSize: "0.875rem",
-                  },
-                }}
-              />
             </>
           ) : isEditMode &&
             currentDashboard?.settings?.dashboardType === "trend" ? (
@@ -549,6 +543,24 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               </Box>
             </Box>
           ) : null}
+          {isEditMode && (
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={isDynamicVersion}
+                  onChange={handleDynamicVersionChange}
+                  size="small"
+                />
+              }
+              label="Sticky"
+              sx={{
+                mr: 0,
+                "& .MuiFormControlLabel-label": {
+                  fontSize: "0.875rem",
+                },
+              }}
+            />
+          )}
         </Box>
         <Box
           sx={{
@@ -697,6 +709,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 isSubmitting={false}
                 dashboardId={dashboardId || ""}
                 isTrend={currentDashboard?.settings?.dashboardType === "trend"}
+                currentDashboard={currentDashboard}
               />
             )}
             {isEditChartModalOpen && selectedChart && (
@@ -708,6 +721,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 initialData={selectedChart}
                 onSave={handleChartUpdate}
                 isTrend={currentDashboard?.settings?.dashboardType === "trend"}
+                currentDashboard={currentDashboard}
               />
             )}
           </Box>

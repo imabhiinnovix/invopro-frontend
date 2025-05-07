@@ -85,7 +85,7 @@ const Dashboard = () => {
 
   const handleCreateWidget = () => {
     if (id) {
-      dispatch(fetchChartData(id));
+      dispatch(fetchChartData({ dashboardId: id }));
     }
   };
 

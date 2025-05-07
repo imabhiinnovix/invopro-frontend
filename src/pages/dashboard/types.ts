@@ -266,6 +266,13 @@ export interface WidgetResponse {
   };
 }
 
+export interface DashboardFilters {
+  startVersionValue: string;
+  endVersionValue: string;
+  dynamicVersionValue: string;
+  versionValue: string;
+}
+
 export interface WidgetDataResponse {
   success: boolean;
   message: string;
