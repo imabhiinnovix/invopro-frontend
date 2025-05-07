@@ -8,6 +8,10 @@ import {
   Checkbox,
   FormControlLabel,
   Stack,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import EditIcon from "@mui/icons-material/Edit";
@@ -55,6 +59,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   );
   const [gridColumns, setGridColumns] = useState(2);
   const [isDynamicVersion, setIsDynamicVersion] = useState(false);
+  const [timePeriod, setTimePeriod] = useState<string>("1m");
 
   const inputRef = useRef<HTMLInputElement>(null);
   const { id: dashboardId } = useParams();
@@ -497,71 +502,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           )}
         </Box>
 
-        <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-          {isEditMode &&
-          currentDashboard?.settings?.dashboardType === "normal" ? (
-            <>
-              <Box>
-                <CommonDatePicker
-                  name="versionValue"
-                  control={control}
-                  views={["year", "month"]}
-                  label="Version Value"
-                  rules={{ required: "Version Value is required" }}
-                />
-              </Box>
-            </>
-          ) : isEditMode &&
-            currentDashboard?.settings?.dashboardType === "trend" ? (
-            <Box
-              sx={{
-                display: "flex",
-                gap: 2,
-                alignItems: "center",
-                flexDirection: "column",
-                width: "100%",
-              }}
-            >
-              <Box sx={{ display: "flex", gap: 2, alignItems: "center" }}>
-                <Stack direction="row" spacing={2}>
-                  <CommonDatePicker
-                    name="startDate"
-                    control={control}
-                    views={["year", "month"]}
-                    label="Start Date"
-                    rules={{ required: "Start date is required" }}
-                  />
-
-                  <CommonDatePicker
-                    name="endDate"
-                    control={control}
-                    views={["year", "month"]}
-                    label="End Date"
-                    rules={{ required: "End date is required" }}
-                  />
-                </Stack>
-              </Box>
-            </Box>
-          ) : null}
-          {isEditMode && (
-            <FormControlLabel
-              control={
-                <Checkbox
-                  checked={isDynamicVersion}
-                  onChange={handleDynamicVersionChange}
-                  size="small"
-                />
-              }
-              label="Sticky"
-              sx={{
-                mr: 0,
-                "& .MuiFormControlLabel-label": {
-                  fontSize: "0.875rem",
-                },
-              }}
-            />
-          )}
-        </Box>
         <Box
           sx={{
             display: "flex",
@@ -631,6 +571,109 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           )}
         </Box>
       </Box>
+
+      {isEditMode && (
+        <Box
+          sx={{
+            p: 2,
+            display: "flex",
+            // alignItems: "center",
+            justifyContent: "space-between",
+            // flexShrink: 0,
+            gap: 2,
+            borderBottom: 1,
+            borderColor: "divider",
+          }}
+        >
+          <Stack direction="row" spacing={2}>
+            {currentDashboard?.settings?.dashboardType === "normal" ? (
+              <Box>
+                <CommonDatePicker
+                  name="versionValue"
+                  control={control}
+                  views={["year", "month"]}
+                  label="Version Value"
+                  rules={{ required: "Version Value is required" }}
+                />
+              </Box>
+            ) : currentDashboard?.settings?.dashboardType === "trend" ? (
+              <Stack direction="row" spacing={2}>
+                <CommonDatePicker
+                  name="startDate"
+                  control={control}
+                  views={["year", "month"]}
+                  label="Start Date"
+                  rules={{ required: "Start date is required" }}
+                />
+
+                <CommonDatePicker
+                  name="endDate"
+                  control={control}
+                  views={["year", "month"]}
+                  label="End Date"
+                  rules={{ required: "End date is required" }}
+                />
+              </Stack>
+            ) : null}
+            <FormControl sx={{ minWidth: 120 }}>
+              <InputLabel id="time-period-label">Time Period</InputLabel>
+              <Select
+                labelId="time-period-label"
+                id="time-period-select"
+                value={timePeriod}
+                label="Time Period"
+                onChange={(e) => setTimePeriod(e.target.value)}
+                // size="small"
+              >
+                <MenuItem value="1m">1 Month</MenuItem>
+                <MenuItem value="6m">6 Months</MenuItem>
+                <MenuItem value="12m">12 Months</MenuItem>
+              </Select>
+            </FormControl>
+          </Stack>
+
+          {/* <FormControlLabel
+            control={
+              <Checkbox
+                checked={isDynamicVersion}
+                onChange={handleDynamicVersionChange}
+                size="small"
+              />
+            }
+            label="Sticky"
+            sx={{
+              mr: 0,
+              "& .MuiFormControlLabel-label": {
+                fontSize: "0.875rem",
+              },
+            }}
+          /> */}
+
+          <Stack
+            direction="row"
+            spacing={2}
+            justifyContent="center"
+            alignItems="center"
+          >
+            <Button
+              variant="outlined"
+              color="secondary"
+              sx={{ minWidth: "100px", maxHeight: "fit-content" }}
+            >
+              Clear
+            </Button>
+            <Button
+              onClick={() => {}}
+              color="success"
+              variant="contained"
+              startIcon={<DoneIcon />}
+              sx={{ minWidth: "100px", maxHeight: "fit-content" }}
+            >
+              Save
+            </Button>
+          </Stack>
+        </Box>
+      )}
 
       <Box
         sx={{
