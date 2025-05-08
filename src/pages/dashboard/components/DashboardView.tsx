@@ -160,14 +160,12 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
   useEffect(() => {
     if (dashboardId) {
-      if (
-        currentDashboard?.settings?.dashboardType === "normal" &&
-        formattedVersionValue
-      ) {
+      if (currentDashboard?.settings?.dashboardType === "normal") {
         dispatch(
           fetchChartData({
             dashboardId,
-            versionValue: formattedVersionValue,
+            versionValue: formattedVersionValue || "",
+            dashboardType: "normal"
           })
         );
       } else if (
