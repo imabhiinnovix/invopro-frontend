@@ -164,8 +164,11 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         dispatch(
           fetchChartData({
             dashboardId,
-            versionValue: formattedVersionValue || "",
-            dashboardType: "normal"
+            // versionValue: formattedVersionValue || "",
+            dashboardType: "normal",
+            startVersionValue,
+            endVersionValue,
+            versionValue,
           })
         );
       } else if (
@@ -353,6 +356,19 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
       if (result.success) {
         toast.success("Chart updated successfully!");
         handleCloseEditModal();
+        
+        // Fetch updated chart data
+        if (dashboardId) {
+          dispatch(
+            fetchChartData({
+              dashboardId,
+              dashboardType: currentDashboard?.settings?.dashboardType || "normal",
+              startVersionValue,
+              endVersionValue,
+              versionValue: formattedVersionValue || "",
+            })
+          );
+        }
       } else {
         toast.error(result.message || "Failed to update chart");
       }
@@ -407,6 +423,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               size="small"
               fullWidth
               sx={{
+                maxWidth: "400px",
                 "& .MuiInputBase-input": {
                   fontSize: "1.25rem",
                   fontWeight: 500,
@@ -600,6 +617,9 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 dashboardId={dashboardId || ""}
                 isTrend={currentDashboard?.settings?.dashboardType === "trend"}
                 currentDashboard={currentDashboard}
+                startVersionValue={startVersionValue}
+                endVersionValue={endVersionValue}
+                versionValue={formattedVersionValue}
               />
             )}
             {isEditChartModalOpen && selectedChart && (
@@ -612,6 +632,9 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 onSave={handleChartUpdate}
                 isTrend={currentDashboard?.settings?.dashboardType === "trend"}
                 currentDashboard={currentDashboard}
+                startVersionValue={startVersionValue}
+                endVersionValue={endVersionValue}
+                versionValue={formattedVersionValue}
               />
             )}
           </Box>
