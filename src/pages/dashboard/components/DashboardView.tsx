@@ -430,6 +430,54 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         >
           {isEditMode ? (
             <>
+              <ButtonGroup
+                variant="outlined"
+                aria-label="grid columns"
+                size="small"
+              >
+                <Button
+                  onClick={() => handleGridColumns(1)}
+                  variant={gridColumns === 1 ? "contained" : "outlined"}
+                  sx={{ minWidth: "40px" }}
+                >
+                  <SquareIcon />
+                </Button>
+                <Button
+                  onClick={() => handleGridColumns(2)}
+                  variant={gridColumns === 2 ? "contained" : "outlined"}
+                  sx={{ minWidth: "40px" }}
+                >
+                  <PauseIcon />
+                </Button>
+                <Button
+                  onClick={() => handleGridColumns(3)}
+                  variant={gridColumns === 3 ? "contained" : "outlined"}
+                  sx={{ minWidth: "40px" }}
+                >
+                  <ViewColumnIcon />
+                </Button>
+              </ButtonGroup>
+              <Button
+                variant="contained"
+                color="primary"
+                startIcon={<AddIcon />}
+                onClick={() => setIsAddChartModalOpen(true)}
+                sx={{ minWidth: "120px" }}
+              >
+                Add Chart
+              </Button>
+              <Button
+                onClick={handleEditModeToggle}
+                color="success"
+                variant="contained"
+                startIcon={<DoneIcon />}
+                sx={{ minWidth: "100px" }}
+              >
+                Save
+              </Button>
+            </>
+          ) : (
+            <>
               <Box>
                 {currentDashboard?.settings?.dashboardType === "normal" ? (
                   <Box>
@@ -461,54 +509,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                   </Stack>
                 ) : null}
               </Box>
-              <Button
-                variant="contained"
-                color="primary"
-                startIcon={<AddIcon />}
-                onClick={() => setIsAddChartModalOpen(true)}
-                sx={{ minWidth: "120px" }}
-              >
-                Add Chart
-              </Button>
-              <Button
-                onClick={handleEditModeToggle}
-                color="success"
-                variant="contained"
-                startIcon={<DoneIcon />}
-                sx={{ minWidth: "100px" }}
-              >
-                Save
-              </Button>
-            </>
-          ) : (
-            <>
-              <ButtonGroup
-                variant="outlined"
-                aria-label="grid columns"
-                size="small"
-              >
-                <Button
-                  onClick={() => handleGridColumns(1)}
-                  variant={gridColumns === 1 ? "contained" : "outlined"}
-                  sx={{ minWidth: "40px" }}
-                >
-                  <SquareIcon />
-                </Button>
-                <Button
-                  onClick={() => handleGridColumns(2)}
-                  variant={gridColumns === 2 ? "contained" : "outlined"}
-                  sx={{ minWidth: "40px" }}
-                >
-                  <PauseIcon />
-                </Button>
-                <Button
-                  onClick={() => handleGridColumns(3)}
-                  variant={gridColumns === 3 ? "contained" : "outlined"}
-                  sx={{ minWidth: "40px" }}
-                >
-                  <ViewColumnIcon />
-                </Button>
-              </ButtonGroup>
               <Button
                 onClick={handleEditModeToggle}
                 color="primary"

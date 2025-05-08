@@ -9,7 +9,7 @@ import ListItemText from "@mui/material/ListItemText";
 import { useNav } from "../../../context/NavContext";
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import AddIcon from "@mui/icons-material/Add";
-import React, { useEffect, useMemo, useContext } from "react";
+import React, { useEffect, useMemo, useContext, useState } from "react";
 import { Collapse } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
@@ -27,11 +27,14 @@ import {
   createDashboard,
   deleteDashboard,
 } from "../../../pages/dashboard/dashboardActions";
-import { Dashboard as DashboardType, DashboardListResponse } from "../../../pages/dashboard/types";
+import {
+  Dashboard as DashboardType,
+  DashboardListResponse,
+} from "../../../pages/dashboard/types";
 import { toast } from "react-toastify";
 import { DeleteConfirmationModal } from "./components/DeleteConfirmationModal";
-import { DashboardCreationForm } from "./components/DashboardCreationForm";
 import { SubItemsList } from "./components/SubItemsList";
+import { CreateDashboardModal } from "./components/CreateDashboardModal";
 import LogoutIcon from "@mui/icons-material/Logout";
 import logo from "../../../assets/ReportiVix-logo.png";
 import { AuthContext } from "../../../context/AuthContext";
@@ -83,15 +86,15 @@ const Drawer = styled(MuiDrawer, {
     border: "none",
     height: "100%",
     position: "static",
-    overflow: "hidden"
+    overflow: "hidden",
   },
   "& .MuiDrawer-paper": {
     position: "static",
-    overflow: "hidden"
+    overflow: "hidden",
   },
   "& .MuiList-root": {
     height: "100%",
-    overflow: "hidden"
+    overflow: "hidden",
   },
   "& .MuiListItemButton-root": {
     "&.Mui-selected, &.Mui-selected:hover": {
@@ -137,9 +140,11 @@ export default function SideNav() {
   const { openNav } = useNav();
   const [openSettings, setOpenSettings] = React.useState(false);
   const [openDashboard, setOpenDashboard] = React.useState(false);
-  const [isCreating, setIsCreating] = React.useState(false);
   const [newDashboardName, setNewDashboardName] = React.useState("");
-  const [dashboardType, setDashboardType] = React.useState<'normal' | 'trend'>('normal');
+  const [dashboardType, setDashboardType] = React.useState<"normal" | "trend">(
+    "normal"
+  );
+  const [timePeriod, setTimePeriod] = React.useState<string>("1m");
   const [isCreatingLoading, setIsCreatingLoading] = React.useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = React.useState(false);
   const [dashboardToDelete, setDashboardToDelete] =
@@ -150,6 +155,7 @@ export default function SideNav() {
   const dispatch = useAppDispatch();
   const { dashboards, loading } = useAppSelector((state) => state.dashboard);
   const { clearAuthContext } = useContext(AuthContext);
+  const [openCreateModal, setOpenCreateModal] = useState(false);
 
   useEffect(() => {
     dispatch(fetchDashboardList());
@@ -179,28 +185,36 @@ export default function SideNav() {
     if (newDashboardName.trim()) {
       try {
         setIsCreatingLoading(true);
-        const response = await dispatch(
-          createDashboard({ name: newDashboardName.trim(), dashboardType })
-        ).unwrap() as DashboardListResponse;
+        const response = (await dispatch(
+          createDashboard({
+            name: newDashboardName.trim(),
+            dashboardType,
+            dynamicVersionValue: timePeriod,
+          })
+        ).unwrap()) as DashboardListResponse;
         await dispatch(fetchDashboardList());
-        setIsCreating(false);
+        setOpenCreateModal(false);
         setNewDashboardName("");
-        setDashboardType('normal');
+        setDashboardType("normal");
+        setTimePeriod("1m");
         toast.success(response.message || "Dashboard created successfully!");
 
         // Navigate to the newly created dashboard
-        const newDashboard = response.data[0]; // Get the first dashboard from the array
-      
+        const newDashboard = response?.data;
+
         if (newDashboard) {
           navigate(`/dashboard/${newDashboard._id}`, {
             state: { enableEditMode: true },
           });
         }
-      } catch (error: { payload?: { message: string }; message?: string } | unknown) {
+      } catch (error:
+        | { payload?: { message: string }; message?: string }
+        | unknown) {
         console.error("Failed to create dashboard:", error);
-        const errorMessage = error && typeof error === 'object' && 'payload' in error
-          ? (error.payload as { message?: string })?.message
-          : error && typeof error === 'object' && 'message' in error
+        const errorMessage =
+          error && typeof error === "object" && "payload" in error
+            ? (error.payload as { message?: string })?.message
+            : error && typeof error === "object" && "message" in error
             ? (error as { message?: string })?.message
             : "Failed to create dashboard. Please try again.";
         toast.error(errorMessage);
@@ -210,10 +224,11 @@ export default function SideNav() {
     }
   };
 
-  const handleCancelCreate = () => {
-    setIsCreating(false);
+  const handleCloseCreateModal = () => {
+    setOpenCreateModal(false);
     setNewDashboardName("");
-    setDashboardType('normal');
+    setDashboardType("normal");
+    setTimePeriod("1m");
   };
 
   const { infiniteQuery: dataSourceListAPI, lastElementRef } =
@@ -355,10 +370,10 @@ export default function SideNav() {
   return (
     <Box sx={{ display: "flex", height: "100%" }}>
       <Drawer variant="permanent" open={openNav} sx={{ p: 0 }}>
-        <Box 
-          sx={{ 
-            display: "flex", 
-            flexDirection: "column", 
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "column",
             height: "100%",
             // py: 2
           }}
@@ -389,9 +404,9 @@ export default function SideNav() {
           <List sx={{ flex: 1, py: 0 }}>
             {navItems.map((item, i) => (
               <React.Fragment key={i}>
-                <ListItem 
-                  disablePadding 
-                  sx={{ 
+                <ListItem
+                  disablePadding
+                  sx={{
                     display: "block",
                     mb: 0.5,
                   }}
@@ -404,18 +419,20 @@ export default function SideNav() {
                       minHeight: 42,
                       mx: 1.5,
                       px: 2,
-                      borderRadius: '8px',
+                      borderRadius: "8px",
                       justifyContent: openNav ? "initial" : "center",
                       backgroundColor: isRouteActive(item.route)
                         ? "#f1f5f9"
                         : "transparent",
                       color: isRouteActive(item.route) ? "#a136a1" : "inherit",
                       "& .MuiListItemIcon-root": {
-                        color: isRouteActive(item.route) ? "#a136a1" : "inherit",
+                        color: isRouteActive(item.route)
+                          ? "#a136a1"
+                          : "inherit",
                       },
-                      "&:hover": { 
+                      "&:hover": {
                         backgroundColor: "#f1f5f9",
-                        borderRadius: '8px',
+                        borderRadius: "8px",
                       },
                     }}
                   >
@@ -436,30 +453,42 @@ export default function SideNav() {
                         "& .MuiListItemText-primary": {
                           fontSize: "0.95rem",
                           fontWeight: 500,
-                          color: isRouteActive(item.route) ? "#a136a1" : "inherit",
+                          color: isRouteActive(item.route)
+                            ? "#a136a1"
+                            : "inherit",
                         },
                       }}
                     />
-                    {item.subItems && openNav && (
-                      item.name === "Dashboards" && openDashboard ||
-                      item.name !== "Dashboards" && openSettings ? (
-                        <ExpandLessIcon sx={{ 
-                          fontSize: "1.1rem",
-                          color: isRouteActive(item.route) ? "#a136a1" : "inherit"
-                        }} />
+                    {item.subItems &&
+                      openNav &&
+                      ((item.name === "Dashboards" && openDashboard) ||
+                      (item.name !== "Dashboards" && openSettings) ? (
+                        <ExpandLessIcon
+                          sx={{
+                            fontSize: "1.1rem",
+                            color: isRouteActive(item.route)
+                              ? "#a136a1"
+                              : "inherit",
+                          }}
+                        />
                       ) : (
-                        <ExpandMoreIcon sx={{ 
-                          fontSize: "1.1rem",
-                          color: isRouteActive(item.route) ? "#a136a1" : "inherit"
-                        }} />
-                      )
-                    )}
+                        <ExpandMoreIcon
+                          sx={{
+                            fontSize: "1.1rem",
+                            color: isRouteActive(item.route)
+                              ? "#a136a1"
+                              : "inherit",
+                          }}
+                        />
+                      ))}
                   </ListItemButton>
                 </ListItem>
 
                 {item.subItems && openNav && (
                   <Collapse
-                    in={item.name === "Dashboards" ? openDashboard : openSettings}
+                    in={
+                      item.name === "Dashboards" ? openDashboard : openSettings
+                    }
                     timeout="auto"
                     unmountOnExit
                   >
@@ -470,12 +499,12 @@ export default function SideNav() {
                           sx={{ display: "block", mb: 0.5 }}
                         >
                           <ListItemButton
-                            onClick={() => setIsCreating(true)}
+                            onClick={() => setOpenCreateModal(true)}
                             sx={{
                               minHeight: 36,
                               px: 2,
                               pl: 2,
-                              borderRadius: '8px',
+                              borderRadius: "8px",
                               mx: 1.5,
                               "&:hover": {
                                 backgroundColor: "#f1f5f9",
@@ -503,18 +532,6 @@ export default function SideNav() {
                           </ListItemButton>
                         </ListItem>
                       )}
-                      
-                      {isCreating && item.name === "Dashboards" && (
-                        <DashboardCreationForm
-                          newDashboardName={newDashboardName}
-                          onNameChange={(e) => setNewDashboardName(e.target.value)}
-                          onCreate={handleCreateDashboard}
-                          onCancel={handleCancelCreate}
-                          isCreatingLoading={isCreatingLoading}
-                          dashboardType={dashboardType}
-                          onDashboardTypeChange={setDashboardType}
-                        />
-                      )}
 
                       <SubItemsList
                         subItems={item.subItems.filter(
@@ -524,7 +541,7 @@ export default function SideNav() {
                         parentName={item.name}
                         dashboards={dashboards}
                         onDeleteClick={handleDeleteClick}
-                        onCreateClick={() => setIsCreating(true)}
+                        onCreateClick={() => setOpenCreateModal(true)}
                       />
                     </List>
                   </Collapse>
@@ -533,15 +550,15 @@ export default function SideNav() {
             ))}
           </List>
 
-          <Box sx={{ mt: 'auto', px: 1.5 }}>
+          <Box sx={{ mt: "auto", px: 1.5 }}>
             <ListItemButton
               onClick={handleLogout}
               sx={{
                 minHeight: 42,
                 px: 2,
-                borderRadius: '8px',
+                borderRadius: "8px",
                 justifyContent: openNav ? "initial" : "center",
-                "&:hover": { 
+                "&:hover": {
                   backgroundColor: "#f1f5f9",
                 },
               }}
@@ -569,6 +586,20 @@ export default function SideNav() {
           </Box>
         </Box>
       </Drawer>
+
+      {/* Create Dashboard Modal */}
+      <CreateDashboardModal
+        open={openCreateModal}
+        onClose={handleCloseCreateModal}
+        newDashboardName={newDashboardName}
+        onNameChange={setNewDashboardName}
+        onCreate={handleCreateDashboard}
+        isCreating={isCreatingLoading}
+        dashboardType={dashboardType}
+        onDashboardTypeChange={setDashboardType}
+        timePeriod={timePeriod}
+        onTimePeriodChange={setTimePeriod}
+      />
 
       <DeleteConfirmationModal
         open={deleteModalOpen}
