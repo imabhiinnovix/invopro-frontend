@@ -127,10 +127,6 @@ const ChartTitle = styled(Typography)(({ theme }) => ({
   gap: theme.spacing(1),
 }));
 
-const ChartTitleText = styled(Typography)({
-  flexGrow: 1,
-});
-
 const ChartContainer = styled(Box)(({ theme }) => ({
   flex: 1,
   minHeight: 400,
@@ -312,6 +308,329 @@ const StyledTableContainer = styled(Paper)(({ theme }) => ({
   boxShadow: theme.shadows[1],
   overflow: "hidden",
 }));
+
+const sliceLabelsPlugin = {
+  id: "sliceLabels",
+  afterDraw(chart: ChartJS) {
+    const { ctx } = chart;
+    const dataset = chart.data.datasets[0];
+    const meta = chart.getDatasetMeta(0);
+    const total = (dataset.data as number[]).reduce((a, b) => a + b, 0);
+
+    meta.data.forEach((element, index) => {
+      const point = element as PointElement;
+      if (!point || typeof point.tooltipPosition !== "function") return;
+      const value = dataset.data[index] as number;
+      const label = chart.data.labels?.[index] ?? "";
+      const percent = value / total;
+      // if (percent < 0.05) return; // skip small slices
+
+      const { x, y } = point.tooltipPosition(Boolean(chart.chartArea));
+      const text = `${label}: ${value}`;
+
+      ctx.save();
+      ctx.font =
+        percent < 0.1 ? "bold 10px sans-serif" : "bold 12px sans-serif";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+
+      // Measure text
+      const paddingX = 8;
+      const paddingY = 4;
+      const textMetrics = ctx.measureText(text);
+      const textWidth = textMetrics.width;
+      const textHeight = 16;
+
+      // Draw rounded rectangle
+      const rectX = x - textWidth / 2 - paddingX;
+      const rectY = y - textHeight / 2 - paddingY;
+      const rectWidth = textWidth + paddingX * 2;
+      const rectHeight = textHeight + paddingY * 2;
+      const radius = 6;
+
+      ctx.beginPath();
+      ctx.moveTo(rectX + radius, rectY);
+      ctx.lineTo(rectX + rectWidth - radius, rectY);
+      ctx.quadraticCurveTo(
+        rectX + rectWidth,
+        rectY,
+        rectX + rectWidth,
+        rectY + radius
+      );
+      ctx.lineTo(rectX + rectWidth, rectY + rectHeight - radius);
+      ctx.quadraticCurveTo(
+        rectX + rectWidth,
+        rectY + rectHeight,
+        rectX + rectWidth - radius,
+        rectY + rectHeight
+      );
+      ctx.lineTo(rectX + radius, rectY + rectHeight);
+      ctx.quadraticCurveTo(
+        rectX,
+        rectY + rectHeight,
+        rectX,
+        rectY + rectHeight - radius
+      );
+      ctx.lineTo(rectX, rectY + radius);
+      ctx.quadraticCurveTo(rectX, rectY, rectX + radius, rectY);
+      ctx.closePath();
+
+      ctx.fillStyle = "#fff";
+      ctx.globalAlpha = 0.85;
+      ctx.fill();
+      ctx.globalAlpha = 1;
+      ctx.strokeStyle = "#888";
+      ctx.lineWidth = 1;
+      ctx.stroke();
+
+      // Draw text
+      ctx.fillStyle = "#000";
+      ctx.fillText(text, x, y);
+      ctx.restore();
+    });
+  },
+};
+
+const pointLabelsPlugin = {
+  id: "pointLabels",
+  afterDraw(chart: ChartJS) {
+    const { ctx } = chart;
+    const datasets = chart.data.datasets;
+    const meta = chart.getDatasetMeta(0);
+
+    meta.data.forEach((element, index) => {
+      const point = element as PointElement;
+      if (!point || typeof point.tooltipPosition !== "function") return;
+      const { x, y } = point.tooltipPosition(Boolean(chart.chartArea));
+      const value = datasets[0].data[index] as number;
+      const text = `${value}`;
+
+      ctx.save();
+      ctx.font = "bold 12px sans-serif";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+
+      // Move label above the point
+      const offset = 18;
+      const labelY = y - offset;
+
+      // Measure text
+      const paddingX = 8;
+      const paddingY = 4;
+      const textMetrics = ctx.measureText(text);
+      const textWidth = textMetrics.width;
+      const textHeight = 16;
+
+      // Draw rounded rectangle above the point
+      const rectX = x - textWidth / 2 - paddingX;
+      const rectY = labelY - textHeight / 2 - paddingY;
+      const rectWidth = textWidth + paddingX * 2;
+      const rectHeight = textHeight + paddingY * 2;
+      const radius = 6;
+
+      ctx.beginPath();
+      ctx.moveTo(rectX + radius, rectY);
+      ctx.lineTo(rectX + rectWidth - radius, rectY);
+      ctx.quadraticCurveTo(
+        rectX + rectWidth,
+        rectY,
+        rectX + rectWidth,
+        rectY + radius
+      );
+      ctx.lineTo(rectX + rectWidth, rectY + rectHeight - radius);
+      ctx.quadraticCurveTo(
+        rectX + rectWidth,
+        rectY + rectHeight,
+        rectX + rectWidth - radius,
+        rectY + rectHeight
+      );
+      ctx.lineTo(rectX + radius, rectY + rectHeight);
+      ctx.quadraticCurveTo(
+        rectX,
+        rectY + rectHeight,
+        rectX,
+        rectY + rectHeight - radius
+      );
+      ctx.lineTo(rectX, rectY + radius);
+      ctx.quadraticCurveTo(rectX, rectY, rectX + radius, rectY);
+      ctx.closePath();
+
+      ctx.fillStyle = "#fff";
+      ctx.globalAlpha = 0.85;
+      ctx.fill();
+      ctx.globalAlpha = 1;
+      ctx.strokeStyle = "#888";
+      ctx.lineWidth = 1;
+      ctx.stroke();
+
+      // Draw text above the point
+      ctx.fillStyle = "#000";
+      ctx.fillText(text, x, labelY);
+      ctx.restore();
+    });
+  },
+};
+
+const barLabelsPlugin = {
+  id: "barLabels",
+  afterDraw(chart: ChartJS) {
+    const { ctx } = chart;
+    const datasets = chart.data.datasets;
+    const meta = chart.getDatasetMeta(0);
+
+    meta.data.forEach((element, index) => {
+      const bar = element as BarElement;
+      if (!bar || typeof bar.tooltipPosition !== "function") return;
+      const { x, y } = bar.tooltipPosition(Boolean(chart.chartArea));
+      const value = datasets[0].data[index] as number;
+      const text = `${value}`;
+
+      ctx.save();
+      ctx.font = "bold 12px sans-serif";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+
+      // Move label above the bar
+      const offset = 18;
+      const labelY = y - offset;
+
+      // Measure text
+      const paddingX = 8;
+      const paddingY = 4;
+      const textMetrics = ctx.measureText(text);
+      const textWidth = textMetrics.width;
+      const textHeight = 16;
+
+      // Draw rounded rectangle above the bar
+      const rectX = x - textWidth / 2 - paddingX;
+      const rectY = labelY - textHeight / 2 - paddingY;
+      const rectWidth = textWidth + paddingX * 2;
+      const rectHeight = textHeight + paddingY * 2;
+      const radius = 6;
+
+      ctx.beginPath();
+      ctx.moveTo(rectX + radius, rectY);
+      ctx.lineTo(rectX + rectWidth - radius, rectY);
+      ctx.quadraticCurveTo(
+        rectX + rectWidth,
+        rectY,
+        rectX + rectWidth,
+        rectY + radius
+      );
+      ctx.lineTo(rectX + rectWidth, rectY + rectHeight - radius);
+      ctx.quadraticCurveTo(
+        rectX + rectWidth,
+        rectY + rectHeight,
+        rectX + rectWidth - radius,
+        rectY + rectHeight
+      );
+      ctx.lineTo(rectX + radius, rectY + rectHeight);
+      ctx.quadraticCurveTo(
+        rectX,
+        rectY + rectHeight,
+        rectX,
+        rectY + rectHeight - radius
+      );
+      ctx.lineTo(rectX, rectY + radius);
+      ctx.quadraticCurveTo(rectX, rectY, rectX + radius, rectY);
+      ctx.closePath();
+
+      ctx.fillStyle = "#fff";
+      ctx.globalAlpha = 0.85;
+      ctx.fill();
+      ctx.globalAlpha = 1;
+      ctx.strokeStyle = "#888";
+      ctx.lineWidth = 1;
+      ctx.stroke();
+
+      // Draw text above the bar
+      ctx.fillStyle = "#000";
+      ctx.fillText(text, x, labelY);
+      ctx.restore();
+    });
+  },
+};
+
+const polarAreaLabelsPlugin = {
+  id: "polarAreaLabels",
+  afterDraw(chart: ChartJS) {
+    const { ctx } = chart;
+    const datasets = chart.data.datasets;
+    const meta = chart.getDatasetMeta(0);
+
+    meta.data.forEach((element, index) => {
+      const arc = element as ArcElement;
+      if (!arc || typeof arc.tooltipPosition !== "function") return;
+      const { x, y } = arc.tooltipPosition(Boolean(chart.chartArea));
+      const value = datasets[0].data[index] as number;
+      const label = chart.data.labels?.[index] ?? "";
+      const text = `${label}: ${value}`;
+
+      ctx.save();
+      ctx.font = "bold 12px sans-serif";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+
+      // Move label above the arc
+      const offset = 18;
+      const labelY = y - offset;
+
+      // Measure text
+      const paddingX = 8;
+      const paddingY = 4;
+      const textMetrics = ctx.measureText(text);
+      const textWidth = textMetrics.width;
+      const textHeight = 16;
+
+      // Draw rounded rectangle above the arc
+      const rectX = x - textWidth / 2 - paddingX;
+      const rectY = labelY - textHeight / 2 - paddingY;
+      const rectWidth = textWidth + paddingX * 2;
+      const rectHeight = textHeight + paddingY * 2;
+      const radius = 6;
+
+      ctx.beginPath();
+      ctx.moveTo(rectX + radius, rectY);
+      ctx.lineTo(rectX + rectWidth - radius, rectY);
+      ctx.quadraticCurveTo(
+        rectX + rectWidth,
+        rectY,
+        rectX + rectWidth,
+        rectY + radius
+      );
+      ctx.lineTo(rectX + rectWidth, rectY + rectHeight - radius);
+      ctx.quadraticCurveTo(
+        rectX + rectWidth,
+        rectY + rectHeight,
+        rectX + rectWidth - radius,
+        rectY + rectHeight
+      );
+      ctx.lineTo(rectX + radius, rectY + rectHeight);
+      ctx.quadraticCurveTo(
+        rectX,
+        rectY + rectHeight,
+        rectX,
+        rectY + rectHeight - radius
+      );
+      ctx.lineTo(rectX, rectY + radius);
+      ctx.quadraticCurveTo(rectX, rectY, rectX + radius, rectY);
+      ctx.closePath();
+
+      ctx.fillStyle = "#fff";
+      ctx.globalAlpha = 0.85;
+      ctx.fill();
+      ctx.globalAlpha = 1;
+      ctx.strokeStyle = "#888";
+      ctx.lineWidth = 1;
+      ctx.stroke();
+
+      // Draw text above the arc
+      ctx.fillStyle = "#000";
+      ctx.fillText(text, x, labelY);
+      ctx.restore();
+    });
+  },
+};
 
 export const ChartGrid: React.FC<ChartGridProps> = ({
   dashboardId,
@@ -1091,7 +1410,9 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
           display: widgetTheme?.legend?.display ?? true,
           align: "start" as const,
           labels: {
-            usePointStyle: widgetTheme?.legend?.labels?.usePointStyle ?? true,
+            usePointStyle: true,
+            color:
+              widgetTheme?.legend?.labels?.color ?? theme.palette.text.primary,
             padding: widgetTheme?.legend?.labels?.padding ?? 15,
             font: {
               size: widgetTheme?.legend?.labels?.font?.size ?? 12,
@@ -1102,7 +1423,6 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
           maxHeight: 100,
         },
         tooltip: {
-          enabled: true,
           display: widgetTheme?.tooltip?.display ?? true,
           backgroundColor:
             widgetTheme?.tooltip?.backgroundColor ??
@@ -1114,28 +1434,27 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
             widgetTheme?.tooltip?.borderColor ?? theme.palette.divider,
           borderWidth: widgetTheme?.tooltip?.borderWidth ?? 1,
           padding: widgetTheme?.tooltip?.padding ?? 12,
-          usePointStyle: widgetTheme?.tooltip?.usePointStyle ?? true,
-          displayColors: widgetTheme?.tooltip?.displayColors ?? true,
+          usePointStyle: true,
+          displayColors: true,
         },
       },
       layout: {
+        autoPadding: true,
         padding: {
           top: widgetTheme?.layout?.padding?.top ?? 10,
           bottom: widgetTheme?.layout?.padding?.bottom ?? 10,
-          left: widgetTheme?.layout?.padding?.left ?? 10,
-          right: widgetTheme?.layout?.padding?.right ?? 10,
         },
       },
-      interaction: {
-        mode: (widgetTheme?.interaction?.mode ?? "nearest") as
-          | "nearest"
-          | "y"
-          | "x"
-          | "index"
-          | "dataset"
-          | "point",
-        intersect: widgetTheme?.interaction?.intersect ?? false,
-      },
+      // interaction: {
+      //   mode: (widgetTheme?.interaction?.mode ?? "nearest") as
+      //     | "nearest"
+      //     | "y"
+      //     | "x"
+      //     | "index"
+      //     | "dataset"
+      //     | "point",
+      //   intersect: widgetTheme?.interaction?.intersect ?? false,
+      // },
     };
 
     // Apply chart type specific options
@@ -1166,9 +1485,15 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
           ...baseOptions,
           scales: {
             y: {
+              title: {
+                color: widgetTheme?.scales?.x?.ticks?.color ?? "grey",
+                display: true,
+                text: "Y-axis",
+              },
               display: widgetTheme?.scales?.y?.display ?? true,
               beginAtZero: widgetTheme?.scales?.y?.beginAtZero ?? true,
               grid: {
+                display: widgetTheme?.scales?.y?.grid?.display ?? false,
                 color:
                   widgetTheme?.scales?.y?.grid?.color ?? theme.palette.divider,
                 drawBorder: widgetTheme?.scales?.y?.grid?.drawBorder ?? false,
@@ -1183,16 +1508,21 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
               },
             },
             x: {
+              title: {
+                color: widgetTheme?.scales?.x?.ticks?.color ?? "grey",
+                display: true,
+                text: "X-axis",
+              },
               display: widgetTheme?.scales?.x?.display ?? true,
               grid: {
                 display: widgetTheme?.scales?.x?.grid?.display ?? false,
-                drawBorder: widgetTheme?.scales?.x?.grid?.drawBorder ?? false,
+                tickColor: widgetTheme?.scales?.x?.ticks?.color ?? "red",
               },
               ticks: {
-                padding: widgetTheme?.scales?.x?.ticks?.padding ?? 15,
-                maxRotation: widgetTheme?.scales?.x?.ticks?.maxRotation ?? 45,
-                minRotation: widgetTheme?.scales?.x?.ticks?.minRotation ?? 45,
-                autoSkip: true,
+                color:
+                  widgetTheme?.scales?.x?.ticks?.color ??
+                  theme.palette.text.secondary,
+                padding: widgetTheme?.scales?.x?.ticks?.padding ?? 8,
               },
             },
           },
@@ -1219,10 +1549,15 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
               stacked: chartType === "stackedBar",
             },
             x: {
+              title: {
+                color: widgetTheme?.scales?.x?.ticks?.color ?? "grey",
+                display: true,
+                text: "X-axis",
+              },
               display: widgetTheme?.scales?.x?.display ?? true,
               grid: {
                 display: widgetTheme?.scales?.x?.grid?.display ?? false,
-                drawBorder: widgetTheme?.scales?.x?.grid?.drawBorder ?? false,
+                tickColor: widgetTheme?.scales?.x?.ticks?.color ?? "red",
               },
               ticks: {
                 color:
@@ -1302,6 +1637,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
           <Pie
             {...baseChartProps}
             data={chartData as ChartData<"pie">}
+            plugins={[sliceLabelsPlugin]}
             ref={(ref) => {
               chartRefs.current[chartId] = ref as ChartJS<"pie"> | null;
             }}
@@ -1315,6 +1651,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
             ref={(ref) => {
               chartRefs.current[chartId] = ref as ChartJS<"doughnut"> | null;
             }}
+            plugins={[sliceLabelsPlugin]}
           />
         );
       case "multiSeriesPie":
@@ -1335,6 +1672,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
           <Bar
             {...baseChartProps}
             data={chartData as ChartData<"bar">}
+            plugins={[barLabelsPlugin]}
             ref={(ref) => {
               chartRefs.current[chartId] = ref as ChartJS<"bar"> | null;
             }}
@@ -1355,6 +1693,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
           <PolarArea
             {...baseChartProps}
             data={chartData as ChartData<"polarArea">}
+            plugins={[polarAreaLabelsPlugin]}
             ref={(ref) => {
               chartRefs.current[chartId] = ref as ChartJS<"polarArea"> | null;
             }}
@@ -1367,6 +1706,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
           <Line
             {...baseChartProps}
             data={chartData as ChartData<"line">}
+            plugins={[pointLabelsPlugin]}
             ref={(ref) => {
               chartRefs.current[chartId] = ref as ChartJS<"line"> | null;
             }}
@@ -1541,11 +1881,19 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
                 }}
               >
                 <ChartTitle>
-                  <ChartTitleText>
+                  <Typography
+                    sx={{
+                      color:
+                        widgetTheme?.title?.color ?? theme.palette.text.primary,
+                      fontSize: widgetTheme?.title?.font?.size ?? 12,
+                      fontWeight: widgetTheme?.title?.font?.weight ?? "normal",
+                      textAlign: widgetTheme?.title?.align ?? "center",
+                    }}
+                  >
                     {chart.name}
                     {widgetData[chart._id]?.data?.label &&
                       ` (${widgetData[chart._id]?.data?.label})`}
-                  </ChartTitleText>
+                  </Typography>
                   <Box sx={{ display: "flex", gap: 1 }}>
                     <IconButton
                       size="small"

@@ -33,11 +33,11 @@ import { fetchThemeList } from "../themeActions";
 const alignOptions = ["start", "center", "end"];
 const positionOptions = ["top", "bottom", "left", "right"];
 
-const interactionModes = ["nearest", "index", "dataset", "point", "x", "y"];
+// const interactionModes = ["nearest", "index", "dataset", "point", "x", "y"];
 
-const fillTypes = ["Smooth", "Solid", "Gradient"];
+// const fillTypes = ["Smooth", "Solid", "Gradient"];
 
-const chartTypes = ["line", "bar", "pie", "doughnut", "radar", "scatter"];
+// const chartTypes = ["line", "bar", "pie", "doughnut", "radar", "scatter"];
 
 // Add font weight options constant at the top with other constants
 const fontWeightOptions = [
@@ -200,7 +200,7 @@ const CreateThemeDialog = ({
     backgroundColor: ["#3498db55", "#e74c3c55", "#2ecc7155"],
   });
   const [showColorPicker, setShowColorPicker] = useState(false);
-  const [showSubtitleColorPicker, setShowSubtitleColorPicker] = useState(false);
+  // const [showSubtitleColorPicker, setShowSubtitleColorPicker] = useState(false);
   const [showLegendColorPicker, setShowLegendColorPicker] = useState(false);
   const [showTooltipBgPicker, setShowTooltipBgPicker] = useState(false);
   const [showTooltipTitlePicker, setShowTooltipTitlePicker] = useState(false);
@@ -211,7 +211,7 @@ const CreateThemeDialog = ({
     useState(false);
   const [showXScaleTicksColorPicker, setShowXScaleTicksColorPicker] =
     useState(false);
-  const [showFillColorPicker, setShowFillColorPicker] = useState(false);
+  // const [showFillColorPicker, setShowFillColorPicker] = useState(false);
   const [showColorsPicker, setShowColorsPicker] = useState<number | null>(null);
   const [showBorderColorPicker, setShowBorderColorPicker] = useState<
     number | null
@@ -695,7 +695,7 @@ const CreateThemeDialog = ({
               </FormControl>
             </Grid>
           </Grid>
-          <Grid container spacing={1} component="div">
+          {/* <Grid container spacing={1} component="div">
             <Grid size={{ xs: 12 }} component="div">
               <Divider sx={{ my: 2 }} textAlign="left">
                 <Typography
@@ -932,7 +932,7 @@ const CreateThemeDialog = ({
                 </Select>
               </FormControl>
             </Grid>
-          </Grid>
+          </Grid> */}
           <Grid container spacing={1} component="div">
             <Grid size={{ xs: 12 }} component="div">
               <Divider sx={{ my: 2 }} textAlign="left">
@@ -1795,7 +1795,7 @@ const CreateThemeDialog = ({
                 </Box>
               </Box>
             </Grid>
-            <Grid size={{ xs: 12, sm: 6 }} component="div">
+            {/* <Grid size={{ xs: 12, sm: 6 }} component="div">
               <FormControl fullWidth size="small" margin="dense">
                 <InputLabel>Display Title</InputLabel>
                 <Select
@@ -1821,8 +1821,8 @@ const CreateThemeDialog = ({
                   <MenuItem value="false">False</MenuItem>
                 </Select>
               </FormControl>
-            </Grid>
-            <Grid size={{ xs: 12, sm: 6 }} component="div">
+            </Grid> */}
+            {/* <Grid size={{ xs: 12, sm: 6 }} component="div">
               <TextField
                 fullWidth
                 size="small"
@@ -1845,8 +1845,8 @@ const CreateThemeDialog = ({
                   })
                 }
               />
-            </Grid>
-            <Grid size={{ xs: 12, sm: 6 }} component="div">
+            </Grid> */}
+            {/* <Grid size={{ xs: 12, sm: 6 }} component="div">
               <TextField
                 fullWidth
                 size="small"
@@ -1874,7 +1874,7 @@ const CreateThemeDialog = ({
                 }
                 {...numberInputStyles}
               />
-            </Grid>
+            </Grid> */}
             <Grid size={{ xs: 12, sm: 6 }} component="div">
               <Box
                 sx={{
@@ -2191,7 +2191,7 @@ const CreateThemeDialog = ({
               </Box>
             </Grid>
           </Grid>
-          <Grid container spacing={1} component="div">
+          {/* <Grid container spacing={1} component="div">
             <Grid size={{ xs: 12 }} component="div">
               <Divider sx={{ my: 2 }} textAlign="left">
                 <Typography
@@ -2247,7 +2247,7 @@ const CreateThemeDialog = ({
                 </Select>
               </FormControl>
             </Grid>
-          </Grid>
+          </Grid> */}
           <Grid container spacing={1} component="div">
             <Grid size={{ xs: 12 }} component="div">
               <Divider sx={{ my: 2 }} textAlign="left">
@@ -2306,7 +2306,7 @@ const CreateThemeDialog = ({
               />
             </Grid>
           </Grid>
-          <Grid container spacing={1} component="div">
+          {/* <Grid container spacing={1} component="div">
             <Grid size={{ xs: 12 }} component="div">
               <Divider sx={{ my: 2 }} textAlign="left">
                 <Typography
@@ -2482,8 +2482,8 @@ const CreateThemeDialog = ({
                 </Box>
               </Box>
             </Grid>
-          </Grid>
-          <Grid container spacing={1} component="div">
+          </Grid> */}
+          {/* <Grid container spacing={1} component="div">
             <Grid size={{ xs: 12 }} component="div">
               <Divider sx={{ my: 2 }} textAlign="left">
                 <Typography
@@ -2548,7 +2548,7 @@ const CreateThemeDialog = ({
                 </Select>
               </FormControl>
             </Grid>
-          </Grid>
+          </Grid> */}
           <Grid container spacing={1} component="div">
             <Grid size={{ xs: 12 }} component="div">
               <Divider sx={{ my: 2 }} textAlign="left">
