@@ -1017,6 +1017,9 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
       backgroundColor: theme.palette.primary.light,
       tension: 0.1,
       fill: chart.widgetTypeId?.chartType === "area" ? "start" : false,
+      pointRadius: 5,
+      pointHoverRadius: 9,
+      pointHitRadius: 20,
     });
 
     // Get widget data from the store
@@ -1064,6 +1067,9 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
             ],
           borderColor: widgetTheme?.borderColor,
           borderWidth: 2,
+          pointRadius: 5,
+          pointHoverRadius: 9,
+          pointHitRadius: 20,
         };
       });
 
@@ -1087,6 +1093,9 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
             backgroundColor: widgetTheme?.backgroundColor,
             borderColor: widgetTheme?.borderColor,
             borderWidth: 2,
+            pointRadius: 5,
+            pointHoverRadius: 9,
+            pointHitRadius: 20,
           },
         ],
       };
@@ -1121,6 +1130,9 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
             ],
           borderColor: widgetTheme?.borderColor,
           borderWidth: 1,
+          pointRadius: 5,
+          pointHoverRadius: 9,
+          pointHitRadius: 20,
         };
       });
 
@@ -1145,6 +1157,9 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
             backgroundColor: widgetTheme?.backgroundColor,
             borderColor: widgetTheme?.borderColor,
             borderWidth: 1,
+            pointRadius: 5,
+            pointHoverRadius: 9,
+            pointHitRadius: 20,
           },
         ],
       };
@@ -1182,6 +1197,9 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
               ],
             borderColor: widgetTheme?.borderColor,
             borderWidth: 1,
+            pointRadius: 5,
+            pointHoverRadius: 9,
+            pointHitRadius: 20,
           };
         });
 
@@ -1200,6 +1218,9 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
             backgroundColor: widgetTheme?.backgroundColor,
             borderColor: widgetTheme?.borderColor,
             borderWidth: 1,
+            pointRadius: 5,
+            pointHoverRadius: 9,
+            pointHitRadius: 20,
           },
         ],
       };
@@ -1238,6 +1259,9 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
               ],
             borderColor: widgetTheme?.borderColor,
             borderWidth: 2,
+            pointRadius: 5,
+            pointHoverRadius: 9,
+            pointHitRadius: 20,
           };
         });
 
@@ -1256,6 +1280,9 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
             backgroundColor: widgetTheme?.backgroundColor,
             borderColor: widgetTheme?.borderColor,
             borderWidth: 2,
+            pointRadius: 5,
+            pointHoverRadius: 9,
+            pointHitRadius: 20,
           },
         ],
       };
@@ -1296,6 +1323,9 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
             pointHoverBackgroundColor: widgetTheme?.backgroundColor,
             pointHoverBorderColor: widgetTheme?.borderColor,
             tension: 0.1,
+            pointRadius: 5,
+            pointHoverRadius: 9,
+            pointHitRadius: 20,
           };
         });
 
@@ -1320,6 +1350,9 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
             pointHoverBackgroundColor: widgetTheme?.backgroundColor,
             pointHoverBorderColor: widgetTheme?.borderColor,
             tension: 0.1,
+            pointRadius: 5,
+            pointHoverRadius: 9,
+            pointHitRadius: 20,
           },
         ],
       };
@@ -1354,6 +1387,9 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
               ],
             tension: 0.1,
             fill: chartType === "area" ? "start" : false,
+            pointRadius: 5,
+            pointHoverRadius: 9,
+            pointHitRadius: 20,
           };
         });
         return {
@@ -1378,6 +1414,9 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
                   : "transparent",
               tension: 0.1,
               fill: chartType === "area" ? "start" : false,
+              pointRadius: 5,
+              pointHoverRadius: 9,
+              pointHitRadius: 20,
             },
           ],
         };
@@ -1524,6 +1563,13 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
                   theme.palette.text.secondary,
                 padding: widgetTheme?.scales?.x?.ticks?.padding ?? 8,
               },
+            },
+          },
+          elements: {
+            point: {
+              radius: 7,
+              hoverRadius: 9,
+              hitRadius: 14,
             },
           },
         };
