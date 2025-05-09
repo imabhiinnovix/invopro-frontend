@@ -28,7 +28,7 @@ export interface Dashboard {
 export interface DashboardListResponse {
   success: boolean;
   message: string;
-  data: Dashboard[];
+  data: Dashboard;
   totalCount: number;
 }
 

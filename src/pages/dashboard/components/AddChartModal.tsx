@@ -77,6 +77,9 @@ interface AddChartModalProps {
   onSave?: (formData: ChartFormData) => Promise<void>;
   isTrend?: boolean;
   currentDashboard?: Dashboard;
+  startVersionValue?: string;
+  endVersionValue?: string;
+  versionValue?: string;
 }
 
 const FormSection = styled(Box)(({ theme }) => ({
@@ -180,8 +183,11 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
   onSave,
   isTrend,
   currentDashboard,
+  startVersionValue,
+  endVersionValue,
+  versionValue,
 }) => {
-  console.log("🚀 ~ currentDashboard̥:", currentDashboard);
+  console.log("🚀 ~ currentDashboard̥:", currentDashboard, startVersionValue, endVersionValue, versionValue);
   const dispatch = useAppDispatch();
   const { widgetTypes, dataSources, widgetTypesLoading, dataSourcesLoading } =
     useAppSelector((state) => state.dashboard);
@@ -490,10 +496,10 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
               widgetTypes.find((wt) => wt._id === formData.widgetTypeId)
                 ?.chartType || "",
             dashboardFilters: {
-              startVersionValue: "",
-              endVersionValue: "",
-              dynamicVersionValue: "1m",
-              versionValue: "",
+              startVersionValue: startVersionValue || "",
+              endVersionValue: endVersionValue || "",
+              dynamicVersionValue: currentDashboard?.settings?.dynamicVersionValue || "",
+              versionValue: versionValue || "",
             },
             dashBoardType: isTrend ? "trend" : "normal",
           }
@@ -532,12 +538,9 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
               fetchChartData({
                 dashboardId,
                 dashboardType: isTrend ? "trend" : "normal",
-                startVersionValue:
-                  currentDashboard?.settings?.startVersionValue || "",
-                endVersionValue:
-                  currentDashboard?.settings?.endVersionValue || "",
-
-                versionValue: currentDashboard?.settings?.versionValue || "",
+                startVersionValue: startVersionValue || "",
+                endVersionValue: endVersionValue || "",
+                versionValue: versionValue || "",
               })
             );
             toast.success("Chart saved successfully!");
@@ -701,7 +704,7 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
                     }
                   >
                     {isTrend ? (
-                      <MenuItem value="versionValue">versionValue</MenuItem>
+                      <MenuItem value="versionValue">Period</MenuItem>
                     ) : (
                       getAttributeOptions().map((attr) => (
                         <MenuItem

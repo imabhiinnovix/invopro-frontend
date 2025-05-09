@@ -44,7 +44,7 @@ import {
   ActiveElement,
 } from "chart.js";
 import { Line, Pie, Bar, Doughnut, Radar, PolarArea } from "react-chartjs-2";
-import { ChartResponse } from "../types";
+import { ChartResponse, Dashboard } from "../types";
 import { styled } from "@mui/material/styles";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -82,6 +82,11 @@ interface ChartGridProps {
   isAddChartModalOpen: boolean;
   isEditChartModalOpen: boolean;
   gridColumns: number;
+  currentDashboard: Dashboard;
+  startVersionValue: string;
+  endVersionValue: string;
+  versionValue: string;
+  isTrend: boolean;
 }
 
 interface ChartDataItem {
@@ -639,6 +644,11 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
   isAddChartModalOpen,
   isEditChartModalOpen,
   gridColumns,
+  currentDashboard,
+  startVersionValue,
+  endVersionValue,
+  versionValue,
+  isTrend,
 }) => {
   const dispatch = useAppDispatch();
   const theme = useTheme();
@@ -905,7 +915,18 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
           dataSourceId: chart.dataSourceId?._id,
           entityId: chart.dataSourceId?.entityId,
           conditions: chart.conditions || [],
-          dimensions,
+          dimensions: isTrend
+            ? [
+                {
+                  versionValue: clickedData.name,
+                },
+              ]
+            : dimensions,
+          dashboardFilters: {
+            stastartVersionValue: startVersionValue,
+            endVersionValue: endVersionValue,
+            versionValue: versionValue,
+          },
           groupBy,
           page: 1,
           limit: itemsPerPage,

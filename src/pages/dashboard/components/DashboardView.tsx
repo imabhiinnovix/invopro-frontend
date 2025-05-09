@@ -170,14 +170,15 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
   useEffect(() => {
     if (dashboardId) {
-      if (
-        currentDashboard?.settings?.dashboardType === "normal" &&
-        formattedVersionValue
-      ) {
+      if (currentDashboard?.settings?.dashboardType === "normal") {
         dispatch(
           fetchChartData({
             dashboardId,
-            versionValue: formattedVersionValue,
+            // versionValue: formattedVersionValue || "",
+            dashboardType: "normal",
+            startVersionValue,
+            endVersionValue,
+            versionValue,
           })
         );
       } else if (
@@ -370,6 +371,20 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
       if (result.success) {
         toast.success("Chart updated successfully!");
         handleCloseEditModal();
+
+        // Fetch updated chart data
+        if (dashboardId) {
+          dispatch(
+            fetchChartData({
+              dashboardId,
+              dashboardType:
+                currentDashboard?.settings?.dashboardType || "normal",
+              startVersionValue,
+              endVersionValue,
+              versionValue: formattedVersionValue || "",
+            })
+          );
+        }
       } else {
         toast.error(result.message || "Failed to update chart");
       }
@@ -484,6 +499,54 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         <Box sx={{ display: "flex", gap: 2 }}>
           {isEditMode ? (
             <>
+              <ButtonGroup
+                variant="outlined"
+                aria-label="grid columns"
+                size="small"
+              >
+                <Button
+                  onClick={() => handleGridColumns(1)}
+                  variant={gridColumns === 1 ? "contained" : "outlined"}
+                  sx={{ minWidth: "40px" }}
+                >
+                  <SquareIcon />
+                </Button>
+                <Button
+                  onClick={() => handleGridColumns(2)}
+                  variant={gridColumns === 2 ? "contained" : "outlined"}
+                  sx={{ minWidth: "40px" }}
+                >
+                  <PauseIcon />
+                </Button>
+                <Button
+                  onClick={() => handleGridColumns(3)}
+                  variant={gridColumns === 3 ? "contained" : "outlined"}
+                  sx={{ minWidth: "40px" }}
+                >
+                  <ViewColumnIcon />
+                </Button>
+              </ButtonGroup>
+              <Button
+                variant="contained"
+                color="primary"
+                startIcon={<AddIcon />}
+                onClick={() => setIsAddChartModalOpen(true)}
+                sx={{ minWidth: "120px" }}
+              >
+                Add Chart
+              </Button>
+              <Button
+                onClick={handleEditModeToggle}
+                color="success"
+                variant="contained"
+                startIcon={<DoneIcon />}
+                sx={{ minWidth: "100px" }}
+              >
+                Save
+              </Button>
+            </>
+          ) : (
+            <>
               <Box>
                 {currentDashboard?.settings?.dashboardType === "normal" ? (
                   <Box>
@@ -530,54 +593,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                   </Stack>
                 ) : null}
               </Box>
-              <Button
-                variant="contained"
-                color="primary"
-                startIcon={<AddIcon />}
-                onClick={() => setIsAddChartModalOpen(true)}
-                sx={{ minWidth: "120px" }}
-              >
-                Add Chart
-              </Button>
-              <Button
-                onClick={handleEditModeToggle}
-                color="success"
-                variant="contained"
-                startIcon={<DoneIcon />}
-                sx={{ minWidth: "100px" }}
-              >
-                Save
-              </Button>
-            </>
-          ) : (
-            <>
-              <ButtonGroup
-                variant="outlined"
-                aria-label="grid columns"
-                size="small"
-              >
-                <Button
-                  onClick={() => handleGridColumns(1)}
-                  variant={gridColumns === 1 ? "contained" : "outlined"}
-                  sx={{ minWidth: "40px" }}
-                >
-                  <SquareIcon />
-                </Button>
-                <Button
-                  onClick={() => handleGridColumns(2)}
-                  variant={gridColumns === 2 ? "contained" : "outlined"}
-                  sx={{ minWidth: "40px" }}
-                >
-                  <PauseIcon />
-                </Button>
-                <Button
-                  onClick={() => handleGridColumns(3)}
-                  variant={gridColumns === 3 ? "contained" : "outlined"}
-                  sx={{ minWidth: "40px" }}
-                >
-                  <ViewColumnIcon />
-                </Button>
-              </ButtonGroup>
               <Button
                 onClick={handleEditModeToggle}
                 color="primary"
@@ -639,6 +654,11 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               isAddChartModalOpen={isAddChartModalOpen}
               isEditChartModalOpen={isEditChartModalOpen}
               gridColumns={gridColumns}
+              currentDashboard={currentDashboard || ""}
+              startVersionValue={startVersionValue || ""}
+              endVersionValue={endVersionValue || ""}
+              versionValue={formattedVersionValue || ""}
+              isTrend={currentDashboard?.settings?.dashboardType === "trend"}
             />
           )}
         </Box>
@@ -669,6 +689,9 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 dashboardId={dashboardId || ""}
                 isTrend={currentDashboard?.settings?.dashboardType === "trend"}
                 currentDashboard={currentDashboard}
+                startVersionValue={startVersionValue}
+                endVersionValue={endVersionValue}
+                versionValue={formattedVersionValue}
               />
             )}
             {isEditChartModalOpen && selectedChart && (
@@ -681,6 +704,9 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 onSave={handleChartUpdate}
                 isTrend={currentDashboard?.settings?.dashboardType === "trend"}
                 currentDashboard={currentDashboard}
+                startVersionValue={startVersionValue}
+                endVersionValue={endVersionValue}
+                versionValue={formattedVersionValue}
               />
             )}
           </Box>
