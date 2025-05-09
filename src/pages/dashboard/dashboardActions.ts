@@ -293,45 +293,76 @@ export const fetchChartData = createAsyncThunk(
 
     // Make additional API calls for each chart
     if (response.data.success && response.data.data) {
-      await Promise.all(
-        response.data.data.map(async (chart) => {
-          try {
-            const widgetResponse = await axiosInstance.post<WidgetDataResponse>(
-              GET.DASHBOARD_WIDGET_DATA,
-              {
-                dataSourceId: chart.dataSourceId?._id,
-                entityId: chart.dataSourceId?.entityId,
-                dimensions: chart.dimensions,
-                groupBy: chart.groupBy,
-                conditions: chart.conditions,
-                aggregation: chart.aggregation,
-                widgetType: chart.widgetTypeId?.chartType,
-                dashboardFilters: {
-                  startVersionValue: startVersionValue || "",
-                  endVersionValue: endVersionValue || "",
-                  versionValue: versionValue || "",
-                },
-                dashBoardType: dashboardType || "normal",
+      // Process charts in batches of 3 to avoid overwhelming the system
+      const batchSize = 3;
+      const charts = response.data.data;
+
+      for (let i = 0; i < charts.length; i += batchSize) {
+        const batch = charts.slice(i, i + batchSize);
+        await Promise.all(
+          batch.map(async (chart) => {
+            try {
+              const widgetResponse =
+                await axiosInstance.post<WidgetDataResponse>(
+                  GET.DASHBOARD_WIDGET_DATA,
+                  {
+                    dataSourceId: chart.dataSourceId?._id,
+                    entityId: chart.dataSourceId?.entityId,
+                    dimensions: chart.dimensions,
+                    groupBy: chart.groupBy,
+                    conditions: chart.conditions,
+                    aggregation: chart.aggregation,
+                    widgetType: chart.widgetTypeId?.chartType,
+                    dashboardFilters: {
+                      startVersionValue: startVersionValue || "",
+                      endVersionValue: endVersionValue || "",
+                      versionValue: versionValue || "",
+                    },
+                    dashBoardType: dashboardType || "normal",
+                  }
+                );
+              if (widgetResponse.data.success) {
+                // Only store essential data
+                const essentialData = {
+                  _id: chart._id,
+                  createdBy: chart.createdBy,
+                  dashboardId: chart.dashboardId,
+                  organizationId: chart.organizationId,
+                  name: chart.name,
+                  position: chart.position,
+                  dimensions: chart.dimensions,
+                  groupBy: chart.groupBy,
+                  aggregation: chart.aggregation,
+                  conditions: chart.conditions,
+                  isActive: chart.isActive,
+                  createdAt: chart.createdAt,
+                  updatedAt: chart.updatedAt,
+                  widgetTypeId: chart.widgetTypeId,
+                  dataSourceId: chart.dataSourceId,
+                  data: {
+                    label: widgetResponse.data.data.label,
+                    widgetData: widgetResponse.data.data.widgetData.map(
+                      (item) => ({
+                        name: item.name,
+                        data: item.data,
+                        Estimates: item.Estimates || item.data, // Use data as Estimates if not provided
+                      })
+                    ),
+                  },
+                };
+                dispatch(
+                  storeWidgetData({ widgetId: chart._id, data: essentialData })
+                );
               }
-            );
-            if (widgetResponse.data.success) {
-              // Combine the chart metadata with the new data
-              const combinedData = {
-                ...chart,
-                data: widgetResponse.data.data,
-              };
-              dispatch(
-                storeWidgetData({ widgetId: chart._id, data: combinedData })
+            } catch (error) {
+              console.error(
+                `Failed to fetch widget data for chart ${chart._id}:`,
+                error
               );
             }
-          } catch (error) {
-            console.error(
-              `Failed to fetch widget data for chart ${chart._id}:`,
-              error
-            );
-          }
-        })
-      );
+          })
+        );
+      }
     }
 
     return response.data;
@@ -483,47 +514,19 @@ export const fetchWidgetTheme = createAsyncThunk(
   }
 );
 
-export const updateDashboardVersion = createAsyncThunk(
-  "dashboard/updateVersion",
-  async (
-    {
-      dashboardId,
-      versionValue,
-      dynamicVersionValue,
-      startVersionValue,
-      endVersionValue,
-    }: {
-      dashboardId: string;
-      versionValue?: string;
-      dynamicVersionValue?: string;
-      startVersionValue?: string;
-      endVersionValue?: string;
-    },
-    { rejectWithValue }
-  ) => {
-    try {
-      const { data } = await axiosInstance.post(
-        `${POST.UPDATE_DASHBOARD}/${dashboardId}`,
-        {
-          versionValue,
-          ...(dynamicVersionValue && { dynamicVersionValue }),
-          ...(startVersionValue && { startVersionValue }),
-          ...(endVersionValue && { endVersionValue }),
-        }
-      );
-      if (!data.success) {
-        return rejectWithValue({
-          message: data.message || "Failed to update dashboard version",
-        });
-      }
-      return data;
-    } catch (error) {
-      if (axios.isAxiosError(error) && error.response?.data) {
-        return rejectWithValue(error.response.data);
-      }
-      return rejectWithValue({
-        message: "Failed to update dashboard version. Please try again.",
-      });
-    }
+export const selectDashboardTheme = createAsyncThunk(
+  "dashboard/selectTheme",
+  async ({
+    dashboardId,
+    widgetThemeId,
+  }: {
+    dashboardId: string;
+    widgetThemeId: string;
+  }) => {
+    const { data } = await axiosInstance.post(
+      `/dashboard/selectTheme/${dashboardId}`,
+      { widgetThemeId }
+    );
+    return data;
   }
 );

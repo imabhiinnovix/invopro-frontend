@@ -6,6 +6,11 @@ import {
   Button,
   ButtonGroup,
   Stack,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  SelectChangeEvent,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import EditIcon from "@mui/icons-material/Edit";
@@ -22,6 +27,7 @@ import {
   saveWidgets,
   fetchWidgetTheme,
   fetchChartData,
+  selectDashboardTheme,
 } from "../dashboardActions";
 import { toast } from "react-toastify";
 import { ChartResponse, TemporaryChart } from "../types";
@@ -32,6 +38,7 @@ import { useForm } from "react-hook-form";
 import { DateTime } from "luxon";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
+import { fetchThemeList } from "../../createTheme/themeActions";
 
 interface DashboardViewProps {
   title: string;
@@ -51,6 +58,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     null
   );
   const [gridColumns, setGridColumns] = useState(2);
+  const [selectedTheme, setSelectedTheme] = useState<string>("");
 
   const inputRef = useRef<HTMLInputElement>(null);
   const { id: dashboardId } = useParams();
@@ -61,6 +69,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   );
   const dashboards = useAppSelector((state) => state.dashboard.dashboards);
   const currentDashboard = dashboards.find((d) => d._id === dashboardId);
+
+  const { themes } = useAppSelector((state) => state.theme);
 
   const postGridColumns = usePost([""]);
 
@@ -220,8 +230,13 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   useEffect(() => {
     if (currentDashboard?.widgetThemeId) {
       dispatch(fetchWidgetTheme(currentDashboard.widgetThemeId));
+      setSelectedTheme(currentDashboard.widgetThemeId);
     }
   }, [currentDashboard?.widgetThemeId, dispatch]);
+
+  useEffect(() => {
+    dispatch(fetchThemeList());
+  }, [dispatch]);
 
   useEffect(() => {
     if (currentDashboard?.settings) {
@@ -378,6 +393,34 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     }
   }, [startDate, endDate, currentDashboard?.settings?.dashboardType, trigger]);
 
+  const handleThemeChange = async (event: SelectChangeEvent) => {
+    const themeId = event.target.value;
+    setSelectedTheme(themeId);
+
+    if (dashboardId) {
+      try {
+        const result = await dispatch(
+          selectDashboardTheme({ dashboardId, widgetThemeId: themeId })
+        ).unwrap();
+
+        if (result.success) {
+          toast.success("Theme updated successfully!");
+          if (currentDashboard?.widgetThemeId) {
+            dispatch(fetchWidgetTheme(themeId));
+          }
+        } else {
+          toast.error(result.message || "Failed to update theme");
+        }
+      } catch (error) {
+        if (typeof error === "object" && error !== null && "message" in error) {
+          toast.error(error.message as string);
+        } else {
+          toast.error("Failed to update theme");
+        }
+      }
+    }
+  };
+
   return (
     <Box
       sx={{
@@ -408,13 +451,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               onKeyDown={handleKeyPress}
               size="small"
               fullWidth
-              sx={{
-                "& .MuiInputBase-input": {
-                  fontSize: "1.25rem",
-                  fontWeight: 500,
-                  py: 1.5,
-                },
-              }}
             />
           ) : (
             <Typography variant="h5" component="h1" fontWeight={500}>
@@ -423,13 +459,29 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           )}
         </Box>
 
-        <Box
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            gap: 2,
-          }}
-        >
+        <Box sx={{ mr: 2 }}>
+          {isEditMode ? (
+            <FormControl sx={{ minWidth: 200 }}>
+              <InputLabel id="theme-select-label">Theme</InputLabel>
+              <Select
+                labelId="theme-select-label"
+                id="theme-select"
+                value={selectedTheme}
+                label="Theme"
+                onChange={handleThemeChange}
+                size="small"
+              >
+                {themes.map((theme) => (
+                  <MenuItem key={theme._id} value={theme._id}>
+                    {theme.name}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          ) : null}
+        </Box>
+
+        <Box sx={{ display: "flex", gap: 2 }}>
           {isEditMode ? (
             <>
               <Box>
@@ -441,6 +493,11 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                       views={["year", "month"]}
                       label="Version Value"
                       rules={{ required: "Version Value is required" }}
+                      sx={{
+                        "& .MuiInputBase-input": {
+                          py: 1.1,
+                        },
+                      }}
                     />
                   </Box>
                 ) : currentDashboard?.settings?.dashboardType === "trend" ? (
@@ -451,6 +508,11 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                       views={["year", "month"]}
                       label="Start Date"
                       rules={{ required: "Start date is required" }}
+                      sx={{
+                        "& .MuiInputBase-input": {
+                          py: 1.1,
+                        },
+                      }}
                     />
 
                     <CommonDatePicker
@@ -459,6 +521,11 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                       views={["year", "month"]}
                       label="End Date"
                       rules={{ required: "End date is required" }}
+                      sx={{
+                        "& .MuiInputBase-input": {
+                          py: 1.1,
+                        },
+                      }}
                     />
                   </Stack>
                 ) : null}

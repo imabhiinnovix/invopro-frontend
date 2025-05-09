@@ -12,6 +12,8 @@ import { AdapterLuxon } from "@mui/x-date-pickers/AdapterLuxon";
 import { MobileDatePicker } from "@mui/x-date-pickers/MobileDatePicker";
 import { DateView } from "@mui/x-date-pickers/models";
 import { DateTime } from "luxon";
+import { Theme } from "@mui/material";
+import { SxProps } from "@mui/material";
 
 interface CommonDatePickerProps<T extends FieldValues> {
   control: Control<T>;
@@ -21,6 +23,7 @@ interface CommonDatePickerProps<T extends FieldValues> {
   defaultValue?: PathValue<T, Path<T>>;
   rules?: RegisterOptions<T>;
   disabled?: boolean;
+  sx?: SxProps<Theme>;
 }
 
 const CommonDatePicker = <T extends FieldValues>(
@@ -34,6 +37,7 @@ const CommonDatePicker = <T extends FieldValues>(
     defaultValue = null,
     rules = {},
     disabled = false,
+    sx,
   } = props;
 
   const [tempDate, setTempDate] = useState<DateTime | null>(
@@ -66,6 +70,7 @@ const CommonDatePicker = <T extends FieldValues>(
                   helperText: error?.message,
                 },
               }}
+              sx={sx}
             />
           </LocalizationProvider>
         );
