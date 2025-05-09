@@ -356,13 +356,14 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
       if (result.success) {
         toast.success("Chart updated successfully!");
         handleCloseEditModal();
-        
+
         // Fetch updated chart data
         if (dashboardId) {
           dispatch(
             fetchChartData({
               dashboardId,
-              dashboardType: currentDashboard?.settings?.dashboardType || "normal",
+              dashboardType:
+                currentDashboard?.settings?.dashboardType || "normal",
               startVersionValue,
               endVersionValue,
               versionValue: formattedVersionValue || "",
@@ -587,6 +588,11 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               isAddChartModalOpen={isAddChartModalOpen}
               isEditChartModalOpen={isEditChartModalOpen}
               gridColumns={gridColumns}
+              currentDashboard={currentDashboard || ""}
+              startVersionValue={startVersionValue || ""}
+              endVersionValue={endVersionValue || ""}
+              versionValue={formattedVersionValue || ""}
+              isTrend={currentDashboard?.settings?.dashboardType === "trend"}
             />
           )}
         </Box>
