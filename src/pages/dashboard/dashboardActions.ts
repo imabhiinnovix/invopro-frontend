@@ -342,11 +342,11 @@ export const fetchChartData = createAsyncThunk(
                   data: {
                     label: widgetResponse.data.data.label,
                     widgetData: widgetResponse.data.data.widgetData.map(
-                      (item) => ({
-                        name: item.name,
-                        data: item.data,
-                        Estimates: item.Estimates || item.data, // Use data as Estimates if not provided
-                      })
+                      (item) => {
+                        return {
+                          ...item
+                        };
+                      }
                     ),
                   },
                 };
