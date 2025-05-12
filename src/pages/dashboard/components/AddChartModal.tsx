@@ -66,6 +66,7 @@ export interface ChartFormData {
   dataSourceId: string;
   widgetTypeId: string;
   dashboardId: string;
+  isIncremental: boolean;
 }
 
 interface AddChartModalProps {
@@ -213,6 +214,7 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
     dataSourceId: initialData?.dataSourceId?._id || "",
     widgetTypeId: initialData?.widgetTypeId?._id || "",
     dashboardId,
+    isIncremental: initialData?.isIncremental || false,
   });
 
   const [selectedDataSource, setSelectedDataSource] =
@@ -239,6 +241,7 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
           dataSourceId: initialData.dataSourceId?._id || "",
           widgetTypeId: initialData.widgetTypeId?._id || "",
           dashboardId,
+          isIncremental: initialData.isIncremental || false,
         });
 
         if (initialData.dataSourceId?._id) {
@@ -270,6 +273,7 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
         dataSourceId: "",
         widgetTypeId: "",
         dashboardId,
+        isIncremental: false,
       });
     }
   }, [open, initialData, dashboardId, dispatch, dataSources]);
@@ -527,6 +531,7 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
                   })),
                   dataSourceId: formData.dataSourceId,
                   entityId: selectedDataSource?.entityId._id || "",
+                  isIncremental: formData.isIncremental || false,
                 },
               ],
             })
@@ -754,6 +759,26 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
                 </FormControl>
               </FormRow>
             </FormSection>
+
+            {!isTrend && (
+              <FormSection>
+                <SectionTitle>Incremental Settings</SectionTitle>
+                <FormRow>
+                  <FormControl fullWidth size="small">
+                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                      <input
+                        type="checkbox"
+                        id="isIncremental"
+                        checked={formData.isIncremental}
+                        onChange={(e) => handleChange("isIncremental", e.target.checked)}
+                        style={{ marginRight: '8px' }}
+                      />
+                      <label htmlFor="isIncremental">Incremental</label>
+                    </Box>
+                  </FormControl>
+                </FormRow>
+              </FormSection>
+            )}
 
             <FormSection>
               <SectionTitle>Aggregation</SectionTitle>

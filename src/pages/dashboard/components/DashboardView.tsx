@@ -307,6 +307,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 conditions: chart.conditions,
                 dataSourceId: chart.dataSourceId?._id || "",
                 entityId: chart.dataSourceId?.entityId || "",
+                isIncremental: chart.isIncremental || false,
               })),
             })
           ).unwrap();
