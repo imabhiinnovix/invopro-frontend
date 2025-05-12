@@ -1096,11 +1096,11 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
 
     // Handle non-grouped polar area chart
     if (chartType === "polarArea") {
-      const labels = chartData.map((item: ChartDataItem) => item.name);
+      const polarLabels = Array.from(new Set(chartData.map((item: ChartDataItem) => item.name)));
       const values = chartData.map((item: ChartDataItem) => item.data);
 
       return {
-        labels,
+        labels: polarLabels,
         datasets: [
           {
             data: values,
@@ -1186,7 +1186,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
       chartType === "stackedBar" ||
       chartType === "multiSeriesPie"
     ) {
-      const labels = chartData.map((item: ChartDataItem) => item.name);
+      const barLabels = Array.from(new Set(chartData.map((item: ChartDataItem) => item.name)));
 
       if (groupBy.length > 0) {
         const groupByField = groupBy[0];
@@ -1195,7 +1195,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
         );
 
         const datasets = uniqueGroups.map((group, index) => {
-          const groupData = labels.map((name) => {
+          const groupData = barLabels.map((name) => {
             const dataPoint = chartData.find(
               (item) => item.name === name && item[groupByField] === group
             );
@@ -1218,16 +1218,16 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
           };
         });
 
-        return { labels, datasets };
+        return { labels: barLabels, datasets };
       }
 
       // Handle non-grouped data
-      const values = chartData.map((item: ChartDataItem) => item.data);
+      const values = Array.from(new Set(chartData.map((item: ChartDataItem) => item.data)) );
       return {
-        labels,
+        labels: barLabels,
         datasets: [
           {
-            label: labels,
+            label: barLabels,
             data: values,
             color: widgetTheme?.colors,
             backgroundColor: widgetTheme?.backgroundColor,
@@ -1243,7 +1243,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
 
     // Handle pie chart or doughnut chart
     if (chartType === "pie" || chartType === "doughnut") {
-      const labels = chartData.map((item: ChartDataItem) => item.name);
+      const pieLabels = Array.from(new Set(chartData.map((item: ChartDataItem) => item.name)));
       const values = chartData.map((item: ChartDataItem) => item.data);
 
       // Handle grouped data
@@ -1288,7 +1288,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
 
       // Handle non-grouped data
       return {
-        labels,
+        labels: pieLabels,
         datasets: [
           {
             data: values,
@@ -1305,7 +1305,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
 
     // Handle radar chart
     if (chartType === "radar") {
-      const labels = chartData.map((item: ChartDataItem) => item.name);
+      const radarLabels = Array.from(new Set(chartData.map((item: ChartDataItem) => item.name)));
 
       if (groupBy.length > 0) {
         const groupByField = groupBy[0]; // Take the first groupBy field
@@ -1353,7 +1353,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
       // Handle non-grouped data
       const values = chartData.map((item: ChartDataItem) => item.data);
       return {
-        labels,
+        labels: radarLabels,
         datasets: [
           {
             label: chart.name,
@@ -1413,10 +1413,10 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
         };
       } else {
         // Non-grouped line/area chart
-        const labels = chartData.map((item: ChartDataItem) => item.name);
+        const lineLabels = Array.from(new Set(chartData.map((item: ChartDataItem) => item.name)));
         const values = chartData.map((item: ChartDataItem) => item.data);
         return {
-          labels,
+          labels: lineLabels,
           datasets: [
             {
               label: chart.name,
@@ -1439,11 +1439,11 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
     }
 
     // Default single line/area chart (no grouping)
-    const labels = chartData.map((item: ChartDataItem) => item.name);
+    const defaultLabels = Array.from(new Set(chartData.map((item: ChartDataItem) => item.name)));
     const values = chartData.map((item: ChartDataItem) => item.data);
 
     return {
-      labels,
+      labels: defaultLabels,
       datasets: [createDefaultDataset(values)],
     };
   };
