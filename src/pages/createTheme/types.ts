@@ -231,6 +231,7 @@ export interface ThemeData {
   colors: string[];
   borderColor: string[];
   backgroundColor: string[];
+  showLegendOverlay: boolean;
 }
 
 export interface CreateThemeDialogProps {

@@ -16,6 +16,8 @@ import {
   IconButton,
   Portal,
   styled,
+  FormControlLabel,
+  Checkbox,
 } from "@mui/material";
 import Grid from "@mui/material/Grid2";
 import { SketchPicker, ColorResult } from "react-color";
@@ -198,6 +200,7 @@ const CreateThemeDialog = ({
     colors: ["#3498db", "#e74c3c", "#2ecc71"],
     borderColor: ["#2980b9", "#c0392b", "#27ae60"],
     backgroundColor: ["#3498db55", "#e74c3c55", "#2ecc7155"],
+    showLegendOverlay: false,
   });
   const [showColorPicker, setShowColorPicker] = useState(false);
   // const [showSubtitleColorPicker, setShowSubtitleColorPicker] = useState(false);
@@ -306,6 +309,7 @@ const CreateThemeDialog = ({
         colors: theme.colors || themeState.colors,
         borderColor: theme.borderColor || themeState.borderColor,
         backgroundColor: theme.backgroundColor || themeState.backgroundColor,
+        showLegendOverlay: theme.showLegendOverlay || themeState.showLegendOverlay,
       });
     } else if (open) {
       // Reset form when opening for a new theme
@@ -405,6 +409,7 @@ const CreateThemeDialog = ({
         colors: ["#3498db", "#e74c3c", "#2ecc71"],
         borderColor: ["#2980b9", "#c0392b", "#27ae60"],
         backgroundColor: ["#3498db55", "#e74c3c55", "#2ecc7155"],
+        showLegendOverlay: false,
       });
     }
   }, [theme, open]);
@@ -2303,6 +2308,34 @@ const CreateThemeDialog = ({
                   })
                 }
                 {...numberInputStyles}
+              />
+            </Grid>
+          </Grid>
+          <Grid container spacing={1} component="div">
+            <Grid size={{ xs: 12 }} component="div">
+              <Divider sx={{ my: 2 }} textAlign="left">
+                <Typography
+                  variant="body2"
+                  sx={{ color: "rgba(0, 0, 0, 0.6)" }}
+                >
+                  legend overlay
+                </Typography>
+              </Divider>
+            </Grid>
+            <Grid size={{ xs: 12, sm: 6 }} component="div">
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={themeState.showLegendOverlay}
+                    onChange={(e) =>
+                      setThemeState({
+                        ...themeState,
+                        showLegendOverlay: e.target.checked,
+                      })
+                    }
+                  />
+                }
+                label="Show legend overlay"
               />
             </Grid>
           </Grid>
