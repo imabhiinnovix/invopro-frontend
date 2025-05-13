@@ -650,6 +650,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
   versionValue,
   isTrend,
 }) => {
+  console.log("🚀 ~ currentDashboard:", currentDashboard);
   const dispatch = useAppDispatch();
   const theme = useTheme();
   const chartRefs = useRef<{ [key: string]: ChartJS | null }>({});
@@ -930,6 +931,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
           groupBy,
           page: 1,
           limit: itemsPerPage,
+          dashBoardType: currentDashboard?.settings?.dashboardType,
         };
 
         // Save the payload for pagination
@@ -1096,7 +1098,9 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
 
     // Handle non-grouped polar area chart
     if (chartType === "polarArea") {
-      const polarLabels = Array.from(new Set(chartData.map((item: ChartDataItem) => item.name)));
+      const polarLabels = Array.from(
+        new Set(chartData.map((item: ChartDataItem) => item.name))
+      );
       const values = chartData.map((item: ChartDataItem) => item.data);
 
       return {
@@ -1186,7 +1190,9 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
       chartType === "stackedBar" ||
       chartType === "multiSeriesPie"
     ) {
-      const barLabels = Array.from(new Set(chartData.map((item: ChartDataItem) => item.name)));
+      const barLabels = Array.from(
+        new Set(chartData.map((item: ChartDataItem) => item.name))
+      );
 
       if (groupBy.length > 0) {
         const groupByField = groupBy[0];
@@ -1222,7 +1228,9 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
       }
 
       // Handle non-grouped data
-      const values = Array.from(new Set(chartData.map((item: ChartDataItem) => item.data)) );
+      const values = Array.from(
+        new Set(chartData.map((item: ChartDataItem) => item.data))
+      );
       return {
         labels: barLabels,
         datasets: [
@@ -1243,7 +1251,9 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
 
     // Handle pie chart or doughnut chart
     if (chartType === "pie" || chartType === "doughnut") {
-      const pieLabels = Array.from(new Set(chartData.map((item: ChartDataItem) => item.name)));
+      const pieLabels = Array.from(
+        new Set(chartData.map((item: ChartDataItem) => item.name))
+      );
       const values = chartData.map((item: ChartDataItem) => item.data);
 
       // Handle grouped data
@@ -1305,7 +1315,9 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
 
     // Handle radar chart
     if (chartType === "radar") {
-      const radarLabels = Array.from(new Set(chartData.map((item: ChartDataItem) => item.name)));
+      const radarLabels = Array.from(
+        new Set(chartData.map((item: ChartDataItem) => item.name))
+      );
 
       if (groupBy.length > 0) {
         const groupByField = groupBy[0]; // Take the first groupBy field
@@ -1413,7 +1425,9 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
         };
       } else {
         // Non-grouped line/area chart
-        const lineLabels = Array.from(new Set(chartData.map((item: ChartDataItem) => item.name)));
+        const lineLabels = Array.from(
+          new Set(chartData.map((item: ChartDataItem) => item.name))
+        );
         const values = chartData.map((item: ChartDataItem) => item.data);
         return {
           labels: lineLabels,
@@ -1439,7 +1453,9 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
     }
 
     // Default single line/area chart (no grouping)
-    const defaultLabels = Array.from(new Set(chartData.map((item: ChartDataItem) => item.name)));
+    const defaultLabels = Array.from(
+      new Set(chartData.map((item: ChartDataItem) => item.name))
+    );
     const values = chartData.map((item: ChartDataItem) => item.data);
 
     return {
