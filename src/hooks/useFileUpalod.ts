@@ -7,6 +7,7 @@ export const uploadCustomReportFile = async (formData) => {
     headers: {
       "Content-Type": "multipart/form-data",
     },
+    timeout: 300000,
   });
   return response.data;
 };
