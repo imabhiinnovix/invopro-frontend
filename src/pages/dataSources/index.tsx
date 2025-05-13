@@ -258,8 +258,8 @@ const DataSources = () => {
             name="versionValue"
             control={control}
             views={["year", "month"]}
-            label="Version Value*"
-            rules={{ required: "Version Value is required" }}
+            label="Period*"
+            rules={{ required: "Period is required" }}
           />
         </Stack>
         <Button

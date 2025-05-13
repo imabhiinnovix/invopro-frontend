@@ -555,8 +555,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                       name="versionValue"
                       control={control}
                       views={["year", "month"]}
-                      label="Version Value"
-                      rules={{ required: "Version Value is required" }}
+                      label="Period"
+                      rules={{ required: "Period is required" }}
                       sx={{
                         "& .MuiInputBase-input": {
                           py: 1.1,

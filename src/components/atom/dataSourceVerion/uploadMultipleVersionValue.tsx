@@ -755,7 +755,7 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
           justifyContent="space-between"
           alignItems={"center"}
         >
-          <Typography> Version Value: {versionValue} </Typography>
+          <Typography> period: {versionValue} </Typography>
           <Stack>
             <Button
               variant="contained"
