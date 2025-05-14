@@ -650,7 +650,6 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
   versionValue,
   isTrend,
 }) => {
-  console.log("🚀 ~ currentDashboard:", currentDashboard);
   const dispatch = useAppDispatch();
   const theme = useTheme();
   const chartRefs = useRef<{ [key: string]: ChartJS | null }>({});
@@ -901,12 +900,6 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
         const groupBy = chart.groupBy
           ? Array.isArray(chart.groupBy)
             ? chart.groupBy.map((group) => {
-                console.log(
-                  "🚀 ~ handleChartClick ~ group:",
-                  group,
-                  clickedData,
-                  clickedData[group]
-                );
                 return { [group]: clickedData[group] };
               })
             : [{ [chart.groupBy]: clickedData.name }]
@@ -1464,7 +1457,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
     };
   };
 
-  const getChartOptions = (chartType: string) => {
+  const getChartOptions = (chartType: string, chart: ChartResponse) => {
     const baseOptions = {
       responsive: true,
       maintainAspectRatio: false,
@@ -1558,7 +1551,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
               title: {
                 color: widgetTheme?.scales?.x?.ticks?.color ?? "grey",
                 display: true,
-                text: "Y-axis",
+                text: chart?.aggregation?.attributeName || "Y-axis",
               },
               display: widgetTheme?.scales?.y?.display ?? true,
               beginAtZero: widgetTheme?.scales?.y?.beginAtZero ?? true,
@@ -1581,7 +1574,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
               title: {
                 color: widgetTheme?.scales?.x?.ticks?.color ?? "grey",
                 display: true,
-                text: "X-axis",
+                text: chart?.dimensions?.[0] || "X-axis",
               },
               display: widgetTheme?.scales?.x?.display ?? true,
               grid: {
@@ -1623,13 +1616,18 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
               ticks: {
                 padding: widgetTheme?.scales?.y?.ticks?.padding ?? 8,
               },
+              title: {
+                color: widgetTheme?.scales?.x?.ticks?.color ?? "grey",
+                display: true,
+                text: chart?.aggregation?.attributeName || "Y-axis",
+              },
               stacked: chartType === "stackedBar",
             },
             x: {
               title: {
                 color: widgetTheme?.scales?.x?.ticks?.color ?? "grey",
                 display: true,
-                text: "X-axis",
+                text: chart?.dimensions?.[0] || "X-axis",
               },
               display: widgetTheme?.scales?.x?.display ?? true,
               grid: {
@@ -1685,7 +1683,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
   const renderChart = (chart: ChartResponse) => {
     const chartData = getChartData(chart);
     const chartType = chart.widgetTypeId?.chartType || "line";
-    const options = getChartOptions(chartType);
+    const options = getChartOptions(chartType, chart);
     const chartId = `chart-${chart._id}`;
     const numberValue = chartData.datasets[0]?.data[0] || 0;
 
