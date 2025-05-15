@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState } from 'react';
 import {
   Button,
   FormControl,
@@ -11,18 +11,26 @@ import {
   IconButton,
   SelectChangeEvent,
   InputAdornment,
-} from "@mui/material";
-import { styled } from "@mui/material/styles";
-import AddIcon from "@mui/icons-material/Add";
-import DeleteIcon from "@mui/icons-material/Delete";
-import ClearIcon from "@mui/icons-material/Clear";
-import { useAppDispatch, useAppSelector } from "../../../storeHooks";
-import { fetchWidgetTypes, fetchAllDataSources, saveWidgets, fetchChartData } from "../dashboardActions";
-import { DataSource, DataSourceAttribute, ChartResponse, WidgetDataResponse, Operator, OperatorType, OperatorListResponse } from "../types";
-import { toast } from "react-toastify";
-import axiosInstance from "../../../services/axiosInstance";
-import { GET } from "../../../services/apiRoutes";
-import { v4 as uuidv4 } from "uuid";
+} from '@mui/material';
+import { styled } from '@mui/material/styles';
+import AddIcon from '@mui/icons-material/Add';
+import DeleteIcon from '@mui/icons-material/Delete';
+import ClearIcon from '@mui/icons-material/Clear';
+import { useAppDispatch, useAppSelector } from '../../../storeHooks';
+import { fetchWidgetTypes, fetchAllDataSources, saveWidgets, fetchChartData } from '../dashboardActions';
+import {
+  DataSource,
+  DataSourceAttribute,
+  ChartResponse,
+  WidgetDataResponse,
+  Operator,
+  OperatorType,
+  OperatorListResponse,
+} from '../types';
+import { toast } from 'react-toastify';
+import axiosInstance from '../../../services/axiosInstance';
+import { GET } from '../../../services/apiRoutes';
+import { v4 as uuidv4 } from 'uuid';
 
 interface Condition {
   field: string;
@@ -61,11 +69,12 @@ interface AddChartModalProps {
   dashboardId: string;
   initialData?: ChartResponse;
   onSave?: (formData: ChartFormData) => Promise<void>;
+  isNaturalLangauage?: boolean;
 }
 
 const FormSection = styled(Box)(({ theme }) => ({
   marginBottom: theme.spacing(2),
-  "&:last-child": {
+  '&:last-child': {
     marginBottom: 0,
   },
 }));
@@ -75,46 +84,46 @@ const FirstFormSection = styled(FormSection)(({ theme }) => ({
 }));
 
 const SectionTitle = styled(Typography)(({ theme }) => ({
-  fontSize: "1rem",
+  fontSize: '1rem',
   fontWeight: 500,
   color: theme.palette.text.secondary,
   marginBottom: theme.spacing(1),
 }));
 
 const FormRow = styled(Box)(({ theme }) => ({
-  display: "flex",
+  display: 'flex',
   gap: theme.spacing(2),
   marginBottom: theme.spacing(2),
-  "&:last-child": {
+  '&:last-child': {
     marginBottom: 0,
   },
 }));
 
 const StyledTextField = styled(TextField)({
-  "& .MuiOutlinedInput-root": {
-    borderRadius: "8px",
+  '& .MuiOutlinedInput-root': {
+    borderRadius: '8px',
   },
 });
 
 const StyledSelect = styled(Select)({
-  borderRadius: "8px",
+  borderRadius: '8px',
 });
 
 const StyledButton = styled(Button)(({ theme }) => ({
-  borderRadius: "8px",
-  textTransform: "none",
+  borderRadius: '8px',
+  textTransform: 'none',
   padding: theme.spacing(1, 2),
-  "&.MuiButton-contained": {
-    boxShadow: "none",
-    "&:hover": {
-      boxShadow: "none",
+  '&.MuiButton-contained': {
+    boxShadow: 'none',
+    '&:hover': {
+      boxShadow: 'none',
     },
   },
 }));
 
 const ConditionsSection = styled(FormSection)(({ theme }) => ({
   border: `1px solid ${theme.palette.divider}`,
-  borderRadius: "8px",
+  borderRadius: '8px',
   padding: theme.spacing(2),
   backgroundColor: theme.palette.background.default,
 }));
@@ -161,27 +170,21 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
   isSubmitting,
   dashboardId,
   initialData,
-  onSave
+  onSave,
+  isNaturalLangauage,
 }) => {
   const dispatch = useAppDispatch();
-  const {
-    widgetTypes,
-    dataSources,
-    widgetTypesLoading,
-    dataSourcesLoading,
-  } = useAppSelector((state) => state.dashboard);
+  const { widgetTypes, dataSources, widgetTypesLoading, dataSourcesLoading } = useAppSelector(
+    (state) => state.dashboard
+  );
 
   const [formData, setFormData] = useState<ChartFormData>({
-    name: initialData?.name || "",
-    dimensions: Array.isArray(initialData?.dimensions)
-      ? initialData.dimensions.join(", ")
-      : "",
-    groupBy: Array.isArray(initialData?.groupBy)
-      ? initialData.groupBy.join(", ")
-      : "",
+    name: initialData?.name || '',
+    dimensions: Array.isArray(initialData?.dimensions) ? initialData.dimensions.join(', ') : '',
+    groupBy: Array.isArray(initialData?.groupBy) ? initialData.groupBy.join(', ') : '',
     aggregation: initialData?.aggregation || {
-      type: "count",
-      attributeName: "",
+      type: 'count',
+      attributeName: '',
     },
     position: initialData?.position || {
       x: 0,
@@ -189,13 +192,12 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
       index: 0,
     },
     conditions: initialData?.conditions || [],
-    dataSourceId: initialData?.dataSourceId?._id || "",
-    widgetTypeId: initialData?.widgetTypeId?._id || "",
+    dataSourceId: initialData?.dataSourceId?._id || '',
+    widgetTypeId: initialData?.widgetTypeId?._id || '',
     dashboardId,
   });
 
-  const [selectedDataSource, setSelectedDataSource] =
-    useState<DataSource | null>(null);
+  const [selectedDataSource, setSelectedDataSource] = useState<DataSource | null>(null);
 
   const [operators, setOperators] = useState<OperatorType[]>([]);
   const [fieldTypes, setFieldTypes] = useState<{ [key: string]: string }>({});
@@ -206,23 +208,23 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
       if (!formData.name && !formData.dimensions && !formData.groupBy) {
         setFormData({
           name: initialData.name,
-          dimensions: Array.isArray(initialData.dimensions)
-            ? initialData.dimensions.join(", ")
-            : "",
-          groupBy: Array.isArray(initialData.groupBy)
-            ? initialData.groupBy.join(", ")
-            : "",
+          dimensions: Array.isArray(initialData.dimensions) ? initialData.dimensions.join(', ') : '',
+          groupBy: Array.isArray(initialData.groupBy) ? initialData.groupBy.join(', ') : '',
           aggregation: initialData.aggregation,
-          position: initialData.position,
+          position: initialData?.position || {
+            x: 0,
+            y: 0,
+            index: 0,
+          },
           conditions: initialData.conditions,
-          dataSourceId: initialData.dataSourceId?._id || "",
-          widgetTypeId: initialData.widgetTypeId?._id || "",
+          dataSourceId: initialData.dataSourceId?._id || '',
+          widgetTypeId: initialData.widgetTypeId?._id || '',
           dashboardId,
         });
 
         if (initialData.dataSourceId?._id) {
           dispatch(fetchAllDataSources()).then(() => {
-            const dataSource = dataSources.find(ds => ds._id === initialData.dataSourceId?._id);
+            const dataSource = dataSources.find((ds) => ds._id === initialData.dataSourceId?._id);
             if (dataSource) {
               setSelectedDataSource(dataSource);
             }
@@ -231,12 +233,12 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
       }
     } else if (!open) {
       setFormData({
-        name: "",
-        dimensions: "",
-        groupBy: "",
+        name: '',
+        dimensions: '',
+        groupBy: '',
         aggregation: {
-          type: "count",
-          attributeName: "",
+          type: 'count',
+          attributeName: '',
         },
         position: {
           x: 0,
@@ -244,8 +246,8 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
           index: 0,
         },
         conditions: [],
-        dataSourceId: "",
-        widgetTypeId: "",
+        dataSourceId: '',
+        widgetTypeId: '',
         dashboardId,
       });
     }
@@ -261,19 +263,14 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
 
   useEffect(() => {
     if (formData.dataSourceId) {
-      const dataSource = dataSources.find(
-        (ds) => ds._id === formData.dataSourceId
-      );
+      const dataSource = dataSources.find((ds) => ds._id === formData.dataSourceId);
       setSelectedDataSource(dataSource || null);
     } else {
       setSelectedDataSource(null);
     }
   }, [formData.dataSourceId, dataSources]);
 
-  const handleChange = (
-    field: keyof ChartFormData,
-    value: string | number | Position | Aggregation | Condition[]
-  ) => {
+  const handleChange = (field: keyof ChartFormData, value: string | number | Position | Aggregation | Condition[]) => {
     setFormData((prev) => ({
       ...prev,
       [field]: value,
@@ -290,26 +287,17 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
     }));
   };
 
-  const handleConditionChange = (
-    index: number,
-    field: keyof Condition,
-    value: string
-  ) => {
+  const handleConditionChange = (index: number, field: keyof Condition, value: string) => {
     setFormData((prev) => ({
       ...prev,
-      conditions: prev.conditions.map((condition, i) =>
-        i === index ? { ...condition, [field]: value } : condition
-      ),
+      conditions: prev.conditions.map((condition, i) => (i === index ? { ...condition, [field]: value } : condition)),
     }));
   };
 
   const addCondition = () => {
     setFormData((prev) => ({
       ...prev,
-      conditions: [
-        ...prev.conditions,
-        { field: "", operator: "equals", value: "" },
-      ],
+      conditions: [...prev.conditions, { field: '', operator: 'equals', value: '' }],
     }));
   };
 
@@ -330,38 +318,28 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
     }));
   };
 
-  const handleSelectChange = (
-    field: keyof ChartFormData,
-    event: SelectChangeEvent<unknown>
-  ) => {
+  const handleSelectChange = (field: keyof ChartFormData, event: SelectChangeEvent<unknown>) => {
     handleChange(field, event.target.value as string);
   };
 
-  const handleConditionSelectChange = (
-    index: number,
-    field: keyof Condition,
-    event: SelectChangeEvent<unknown>
-  ) => {
+  const handleConditionSelectChange = (index: number, field: keyof Condition, event: SelectChangeEvent<unknown>) => {
     handleConditionChange(index, field, event.target.value as string);
   };
 
-  const handleConditionFieldChange = (
-    index: number,
-    event: SelectChangeEvent<unknown>
-  ) => {
+  const handleConditionFieldChange = (index: number, event: SelectChangeEvent<unknown>) => {
     const fieldName = event.target.value as string;
-    const attribute = selectedDataSource?.entityId.attributes.find(attr => attr.name === fieldName);
-    
+    const attribute = selectedDataSource?.entityId.attributes.find((attr) => attr.name === fieldName);
+
     if (attribute) {
-      setFieldTypes(prev => ({
+      setFieldTypes((prev) => ({
         ...prev,
-        [index]: attribute.type
+        [index]: attribute.type,
       }));
     }
-    
-    handleConditionChange(index, "field", fieldName);
-    handleConditionChange(index, "operator", "");
-    handleConditionChange(index, "value", "");
+
+    handleConditionChange(index, 'field', fieldName);
+    handleConditionChange(index, 'operator', '');
+    handleConditionChange(index, 'value', '');
   };
 
   const handleConditionValueInputChange = (
@@ -370,43 +348,41 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
   ) => {
     const value = event.target.value;
     const fieldType = fieldTypes[index];
-    
+
     if (fieldType === 'date') {
       // Format date to YYYY-MM-DD
       const formattedDate = formatDateToYYYYMMDD(value);
-      handleConditionChange(index, "value", formattedDate);
+      handleConditionChange(index, 'value', formattedDate);
     } else {
-      handleConditionChange(index, "value", value);
+      handleConditionChange(index, 'value', value);
     }
   };
 
   const formatDateToYYYYMMDD = (dateString: string): string => {
     if (!dateString) return '';
-    
+
     const date = new Date(dateString);
     if (isNaN(date.getTime())) return dateString;
-    
+
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const day = String(date.getDate()).padStart(2, '0');
-    
+
     return `${year}-${month}-${day}`;
   };
 
   const handleDataSourceChange = (event: SelectChangeEvent<unknown>) => {
-    const selectedDs = dataSources.find(
-      (ds) => ds._id === event.target.value
-    );
+    const selectedDs = dataSources.find((ds) => ds._id === event.target.value);
     if (selectedDs) {
       setSelectedDataSource(selectedDs);
       setFormData((prev) => ({
         ...prev,
         dataSourceId: event.target.value as string,
-        dimensions: "",
-        groupBy: "",
+        dimensions: '',
+        groupBy: '',
         aggregation: {
           ...prev.aggregation,
-          attributeName: "",
+          attributeName: '',
         },
         conditions: [],
       }));
@@ -414,69 +390,68 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
   };
 
   const handleAggregationTypeChange = (event: SelectChangeEvent<unknown>) => {
-    handleAggregationChange("type", event.target.value as string);
+    handleAggregationChange('type', event.target.value as string);
   };
 
-  const handleAggregationAttributeChange = (
-    event: SelectChangeEvent<unknown>
-  ) => {
-    handleAggregationChange("attributeName", event.target.value as string);
+  const handleAggregationAttributeChange = (event: SelectChangeEvent<unknown>) => {
+    handleAggregationChange('attributeName', event.target.value as string);
   };
 
   const handleDimensionChange = (event: SelectChangeEvent<unknown>) => {
     const newDimension = event.target.value as string;
-    handleChange("dimensions", newDimension);
+    handleChange('dimensions', newDimension);
   };
 
   const handleGroupByChange = (event: SelectChangeEvent<unknown>) => {
     const newGroupBy = event.target.value as string;
-    handleChange("groupBy", newGroupBy);
+    handleChange('groupBy', newGroupBy);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     try {
       if (onSave) {
         await onSave(formData);
       } else {
         // Get widget data using getWidgetData API
-        const widgetResponse = await axiosInstance.post<WidgetDataResponse>(
-          GET.DASHBOARD_WIDGET_DATA,
-          {
-            dataSourceId: formData.dataSourceId,
-            entityId: selectedDataSource?.entityId._id,
-            dimensions: formData.dimensions.split(',').map(d => d.trim()),
-            groupBy: formData.groupBy ? formData.groupBy.split(',').map(g => g.trim()) : [],
-            conditions: formData.conditions.map(condition => ({
-              ...condition,
-              _id: condition._id || uuidv4()
-            })),
-            aggregation: formData.aggregation,
-            widgetType: widgetTypes.find(wt => wt._id === formData.widgetTypeId)?.chartType || ''
-          }
-        );
+        const widgetResponse = await axiosInstance.post<WidgetDataResponse>(GET.DASHBOARD_WIDGET_DATA, {
+          dataSourceId: formData.dataSourceId,
+          entityId: selectedDataSource?.entityId._id,
+          dimensions: formData.dimensions.split(',').map((d) => d.trim()),
+          groupBy: formData.groupBy ? formData.groupBy.split(',').map((g) => g.trim()) : [],
+          conditions: formData.conditions.map((condition) => ({
+            ...condition,
+            _id: condition._id || uuidv4(),
+          })),
+          aggregation: formData.aggregation,
+          widgetType: widgetTypes.find((wt) => wt._id === formData.widgetTypeId)?.chartType || '',
+        });
 
         if (widgetResponse.data.success) {
           // Save the widget directly
-          const saveResponse = await dispatch(saveWidgets({
-            widgets: [{
-              dashboardId: dashboardId,
-              widgetTypeId: formData.widgetTypeId,
-              name: formData.name,
-              dimensions: formData.dimensions,
-              groupBy: formData.groupBy ? formData.groupBy.split(',').map(g => g.trim()) : [],
-              aggregation: formData.aggregation,
-              position: formData.position,
-              conditions: formData.conditions.map(condition => ({
-                field: condition.field,
-                operator: condition.operator,
-                value: condition.value
-              })),
-              dataSourceId: formData.dataSourceId,
-              entityId: selectedDataSource?.entityId._id || ''
-            }]
-          })).unwrap();
+          const saveResponse = await dispatch(
+            saveWidgets({
+              widgets: [
+                {
+                  dashboardId: dashboardId,
+                  widgetTypeId: formData.widgetTypeId,
+                  name: formData.name,
+                  dimensions: formData.dimensions,
+                  groupBy: formData.groupBy ? formData.groupBy.split(',').map((g) => g.trim()) : [],
+                  aggregation: formData.aggregation,
+                  position: formData.position,
+                  conditions: formData.conditions.map((condition) => ({
+                    field: condition.field,
+                    operator: condition.operator,
+                    value: condition.value,
+                  })),
+                  dataSourceId: formData.dataSourceId,
+                  entityId: selectedDataSource?.entityId._id || '',
+                },
+              ],
+            })
+          ).unwrap();
 
           if (saveResponse.success) {
             // Fetch updated chart list
@@ -504,33 +479,33 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
   };
 
   const handleClearDimension = () => {
-    handleChange("dimensions", "");
+    handleChange('dimensions', '');
   };
 
   const handleClearGroupBy = () => {
-    handleChange("groupBy", "");
+    handleChange('groupBy', '');
   };
 
   const fetchOperators = async () => {
     try {
       const response = await axiosInstance.post<OperatorListResponse>(GET.OPERATOR_LIST, {
-        fieldType: "all"
+        fieldType: 'all',
       });
       if (response.data.success) {
         setOperators(response.data.data);
       }
     } catch (error) {
-      console.error("Failed to fetch operators:", error);
+      console.error('Failed to fetch operators:', error);
     }
   };
 
   const getOperatorsForField = (fieldName: string): Operator[] => {
-    const attribute = selectedDataSource?.entityId.attributes.find(attr => attr.name === fieldName);
-    console.log("🚀 ~ attribute̥:", operators)
+    const attribute = selectedDataSource?.entityId.attributes.find((attr) => attr.name === fieldName);
+    console.log('🚀 ~ attribute̥:', operators);
     if (!attribute) return [];
-    
+
     const fieldType = attribute.type;
-    const operatorType = operators.find(op => op.fieldType === fieldType);
+    const operatorType = operators.find((op) => op.fieldType === fieldType);
     return operatorType?.operators || [];
   };
 
@@ -539,12 +514,16 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
   return (
     <ConfigurationPanel>
       <ConfigurationHeader>
-        <Typography variant="h6" fontWeight={600}>
-          {initialData ? "Edit Chart" : "Add New Chart"}
-        </Typography>
-        <IconButton onClick={onClose} size="small">
-          <ClearIcon />
-        </IconButton>
+        {!isNaturalLangauage && (
+          <>
+            <Typography variant="h6" fontWeight={600}>
+              {initialData ? 'Edit Chart' : 'Add New Chart'}
+            </Typography>
+            <IconButton onClick={onClose} size="small">
+              <ClearIcon />
+            </IconButton>
+          </>
+        )}
       </ConfigurationHeader>
 
       <ConfigurationContent>
@@ -553,7 +532,7 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
             fullWidth
             label="Chart Name"
             value={formData.name}
-            onChange={(e) => handleChange("name", e.target.value)}
+            onChange={(e) => handleChange('name', e.target.value)}
             disabled={isSubmitting}
             size="small"
           />
@@ -566,7 +545,7 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
               <StyledSelect
                 value={formData.widgetTypeId}
                 label="Chart Type"
-                onChange={(e) => handleSelectChange("widgetTypeId", e)}
+                onChange={(e) => handleSelectChange('widgetTypeId', e)}
                 disabled={isSubmitting || widgetTypesLoading}
               >
                 {widgetTypes.map((type) => (
@@ -595,9 +574,9 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
                   <MenuItem disabled>
                     <Box
                       sx={{
-                        display: "flex",
-                        justifyContent: "center",
-                        width: "100%",
+                        display: 'flex',
+                        justifyContent: 'center',
+                        width: '100%',
                       }}
                     >
                       Loading...
@@ -623,12 +602,7 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
                     endAdornment={
                       formData.dimensions && (
                         <InputAdornment position="end">
-                          <IconButton
-                            size="small"
-                            onClick={handleClearDimension}
-                            edge="end"
-                            sx={{ mr: 1 }}
-                          >
+                          <IconButton size="small" onClick={handleClearDimension} edge="end" sx={{ mr: 1 }}>
                             <ClearIcon fontSize="small" />
                           </IconButton>
                         </InputAdornment>
@@ -636,11 +610,7 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
                     }
                   >
                     {getAttributeOptions().map((attr) => (
-                      <MenuItem
-                        key={attr.name}
-                        value={attr.name}
-                        disabled={attr.name === formData.groupBy}
-                      >
+                      <MenuItem key={attr.name} value={attr.name} disabled={attr.name === formData.groupBy}>
                         {attr.name}
                       </MenuItem>
                     ))}
@@ -657,12 +627,7 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
                     endAdornment={
                       formData.groupBy && (
                         <InputAdornment position="end">
-                          <IconButton
-                            size="small"
-                            onClick={handleClearGroupBy}
-                            edge="end"
-                            sx={{ mr: 1 }}
-                          >
+                          <IconButton size="small" onClick={handleClearGroupBy} edge="end" sx={{ mr: 1 }}>
                             <ClearIcon fontSize="small" />
                           </IconButton>
                         </InputAdornment>
@@ -670,11 +635,7 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
                     }
                   >
                     {getAttributeOptions().map((attr) => (
-                      <MenuItem
-                        key={attr.name}
-                        value={attr.name}
-                        disabled={attr.name === formData.dimensions}
-                      >
+                      <MenuItem key={attr.name} value={attr.name} disabled={attr.name === formData.dimensions}>
                         {attr.name}
                       </MenuItem>
                     ))}
@@ -755,19 +716,14 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
             <ConditionsSection>
               <Box
                 sx={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
                   mb: 2,
                 }}
               >
                 <SectionTitle>Filters</SectionTitle>
-                <StyledButton
-                  startIcon={<AddIcon />}
-                  onClick={addCondition}
-                  disabled={isSubmitting}
-                  size="small"
-                >
+                <StyledButton startIcon={<AddIcon />} onClick={addCondition} disabled={isSubmitting} size="small">
                   Add Filters
                 </StyledButton>
               </Box>
@@ -794,7 +750,7 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
                     <StyledSelect
                       value={condition.operator}
                       label="Operator"
-                      onChange={(e) => handleConditionSelectChange(index, "operator", e)}
+                      onChange={(e) => handleConditionSelectChange(index, 'operator', e)}
                       disabled={isSubmitting || !condition.field}
                     >
                       {getOperatorsForField(condition.field).map((operator) => (
@@ -810,7 +766,12 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
                       type="date"
                       value={condition.value}
                       onChange={(e) => handleConditionValueInputChange(index, e)}
-                      disabled={isSubmitting || !condition.operator || !getOperatorsForField(condition.field).find(op => op.operatorKey === condition.operator)?.valueRequired}
+                      disabled={
+                        isSubmitting ||
+                        !condition.operator ||
+                        !getOperatorsForField(condition.field).find((op) => op.operatorKey === condition.operator)
+                          ?.valueRequired
+                      }
                       size="small"
                       fullWidth
                       InputLabelProps={{
@@ -822,16 +783,17 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
                       label="Value"
                       value={condition.value}
                       onChange={(e) => handleConditionValueInputChange(index, e)}
-                      disabled={isSubmitting || !condition.operator || !getOperatorsForField(condition.field).find(op => op.operatorKey === condition.operator)?.valueRequired}
+                      disabled={
+                        isSubmitting ||
+                        !condition.operator ||
+                        !getOperatorsForField(condition.field).find((op) => op.operatorKey === condition.operator)
+                          ?.valueRequired
+                      }
                       size="small"
                       fullWidth
                     />
                   )}
-                  <IconButton
-                    onClick={() => removeCondition(index)}
-                    disabled={isSubmitting}
-                    size="small"
-                  >
+                  <IconButton onClick={() => removeCondition(index)} disabled={isSubmitting} size="small">
                     <DeleteIcon />
                   </IconButton>
                 </FormRow>
@@ -840,28 +802,23 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
           </>
         )}
       </ConfigurationContent>
-
-      <ConfigurationFooter>
-        <StyledButton onClick={onClose} disabled={isSubmitting}>
-          Cancel
-        </StyledButton>
-        <StyledButton
-          onClick={handleSubmit}
-          variant="contained"
-          color="primary"
-          disabled={
-            isSubmitting || !formData.widgetTypeId || !formData.dataSourceId
-          }
-        >
-          {isSubmitting
-            ? initialData
-              ? "Updating..."
-              : "Creating..."
-            : initialData
-            ? "Update"
-            : "Create"}
-        </StyledButton>
-      </ConfigurationFooter>
+      {!isNaturalLangauage ? (
+        <ConfigurationFooter>
+          <StyledButton onClick={onClose} disabled={isSubmitting}>
+            Cancel
+          </StyledButton>
+          <StyledButton
+            onClick={handleSubmit}
+            variant="contained"
+            color="primary"
+            disabled={isSubmitting || !formData.widgetTypeId || !formData.dataSourceId}
+          >
+            {isSubmitting ? (initialData ? 'Updating...' : 'Creating...') : initialData ? 'Update' : 'Create'}
+          </StyledButton>
+        </ConfigurationFooter>
+      ) : (
+        <Button variant="contained">Visualize Graph</Button>
+      )}
     </ConfigurationPanel>
   );
 };

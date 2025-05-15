@@ -150,7 +150,7 @@ export interface DashboardSliceState {
   temporaryCharts: TemporaryChart[];
   chartsLoading: boolean;
   chartsError: string | null;
-  widgetData: Record<string, WidgetResponse["data"]>;
+  widgetData: Record<string, WidgetResponse['data']>;
 }
 
 export interface WidgetDetails {
@@ -185,10 +185,10 @@ export interface DataSourceDetails {
 export interface ChartResponse {
   _id: string;
   createdBy: string;
-  dashboardId: string;
+  dashboardId?: string;
   organizationId: string;
   name: string;
-  position: {
+  position?: {
     x: number;
     y: number;
     index: number;
@@ -212,6 +212,7 @@ export interface ChartResponse {
   widgetTypeId?: WidgetDetails;
   dataSourceId?: DataSourceDetails;
   data?: ChartData[];
+  userQuery?: string;
 }
 
 export interface ChartDataResponse {
