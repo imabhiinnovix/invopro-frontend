@@ -95,6 +95,10 @@ const dashboardSlice = createSlice({
     storeWidgetData: (state, action: PayloadAction<{ widgetId: string; data: WidgetResponse['data'] }>) => {
       state.widgetData[action.payload.widgetId] = action.payload.data;
     },
+    resetChartAndWidgetData: (state) => {
+      state.widgetData = {};
+      state.charts = [];
+    },
     updateChartsData: (state, action: PayloadAction<{ widgetId: string; data: WidgetResponse['data'] }>) => {
       state.charts = state.charts.map((chart) =>
         chart._id === action.payload.widgetId
@@ -393,6 +397,7 @@ export const {
   updateTemporaryChart,
   removeTemporaryChart,
   clearTemporaryCharts,
+  resetChartAndWidgetData,
 } = dashboardSlice.actions;
 
 export default dashboardSlice.reducer;

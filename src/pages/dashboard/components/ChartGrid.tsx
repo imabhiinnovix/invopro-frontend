@@ -59,6 +59,7 @@ import { toast } from 'react-toastify';
 import jsPDF from 'jspdf';
 import axiosInstance from '../../../services/axiosInstance';
 import { AddChartModal, ChartFormData } from './AddChartModal';
+import { resetChartAndWidgetData } from '../dashboardReducer';
 
 // Register ChartJS components
 ChartJS.register(
@@ -347,8 +348,12 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
   const widgetTheme = useAppSelector((state) => state.dashboard.widgetTheme);
 
   useEffect(() => {
-    if (dashboardId && !isNaturalLangauage) {
-      dispatch(fetchChartData(dashboardId));
+    if (dashboardId) {
+      if (isNaturalLangauage) {
+        dispatch(resetChartAndWidgetData());
+      } else {
+        dispatch(fetchChartData(dashboardId));
+      }
     }
   }, [dispatch, dashboardId]);
 
