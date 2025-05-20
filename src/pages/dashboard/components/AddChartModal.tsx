@@ -252,7 +252,7 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
 
         if (initialData.dataSourceId?._id) {
           dispatch(fetchAllDataSources()).then(() => {
-            const dataSource = dataSources.find((ds) => ds._id === initialData.dataSourceId?._id);
+            const dataSource = dataSources.find((ds: any) => ds._id === initialData.dataSourceId?._id);
             if (dataSource) {
               setSelectedDataSource(dataSource);
             }
