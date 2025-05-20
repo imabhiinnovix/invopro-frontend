@@ -131,6 +131,7 @@ export interface TemporaryChart {
   widgetTypeId?: WidgetDetails;
   dataSourceId?: DataSourceDetails;
   data?: ChartData[];
+  userQuery?: string;
 }
 
 export interface DashboardSliceState {

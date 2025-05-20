@@ -11,6 +11,8 @@ import {
   IconButton,
   SelectChangeEvent,
   InputAdornment,
+  CardContent,
+  Card,
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import AddIcon from '@mui/icons-material/Add';
@@ -162,6 +164,32 @@ const ConfigurationFooter = styled(Box)(({ theme }) => ({
   display: 'flex',
   justifyContent: 'flex-end',
   gap: theme.spacing(2),
+}));
+
+type IfElseWrapperProps = {
+  condition: boolean;
+  ifWrapper: (children: React.ReactNode) => JSX.Element;
+  elseWrapper: (children: React.ReactNode) => JSX.Element;
+  children: React.ReactNode;
+};
+
+const IfElseWrapper: React.FC<IfElseWrapperProps> = ({ condition, ifWrapper, elseWrapper, children }) =>
+  condition ? ifWrapper(children) : elseWrapper(children);
+
+const StyledCard = styled(Card)(({ theme }) => ({
+  height: '100%',
+  minHeight: 500,
+  display: 'flex',
+  flexDirection: 'column',
+  borderRadius: theme.shape.borderRadius,
+  boxShadow: theme.shadows[1],
+  transition: 'all 0.3s ease-in-out',
+  backgroundColor: theme.palette.background.paper,
+  border: `1px solid ${theme.palette.divider}`,
+  '&:hover': {
+    boxShadow: theme.shadows[3],
+    transform: 'translateY(-2px)',
+  },
 }));
 
 export const AddChartModal: React.FC<AddChartModalProps> = ({
@@ -512,7 +540,25 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
   if (!open) return null;
 
   return (
-    <ConfigurationPanel>
+    <IfElseWrapper
+      condition={!!isNaturalLangauage}
+      ifWrapper={(children) => (
+        <StyledCard>
+          <CardContent
+            sx={{
+              flexGrow: 1,
+              p: 3,
+              display: 'flex',
+              flexDirection: 'column',
+              height: '100%',
+            }}
+          >
+            {children}
+          </CardContent>
+        </StyledCard>
+      )}
+      elseWrapper={(children) => <ConfigurationPanel>{children}</ConfigurationPanel>} // No wrapper if false
+    >
       <ConfigurationHeader>
         {!isNaturalLangauage && (
           <>
@@ -817,8 +863,10 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
           </StyledButton>
         </ConfigurationFooter>
       ) : (
-        <Button variant="contained">Visualize Graph</Button>
+        <Button variant="contained" onClick={handleSubmit}>
+          Visualize Graph
+        </Button>
       )}
-    </ConfigurationPanel>
+    </IfElseWrapper>
   );
 };

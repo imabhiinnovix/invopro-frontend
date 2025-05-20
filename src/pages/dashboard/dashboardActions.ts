@@ -1,17 +1,23 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { GET, POST } from '../../services/apiRoutes';
-import { DashboardListResponse, WidgetTypeResponse, DataSourceResponse, ChartDataResponse, WidgetDataResponse, CombinedWidgetData } from './types';
+import {
+  DashboardListResponse,
+  WidgetTypeResponse,
+  DataSourceResponse,
+  ChartDataResponse,
+  WidgetDataResponse,
+  CombinedWidgetData,
+  ChartResponse,
+} from './types';
 import { Theme } from '../createTheme/types';
 import axiosInstance from '../../services/axiosInstance';
 import axios from 'axios';
+import { ChartFormData } from './components/AddChartModal';
 
-export const fetchDashboardList = createAsyncThunk(
-  'dashboard/fetchList',
-  async () => {
-    const { data } = await axiosInstance.get<DashboardListResponse>(GET.DASHBOARD_LIST);
-    return data;
-  }
-);
+export const fetchDashboardList = createAsyncThunk('dashboard/fetchList', async () => {
+  const { data } = await axiosInstance.get<DashboardListResponse>(GET.DASHBOARD_LIST);
+  return data;
+});
 
 export const createDashboard = createAsyncThunk(
   'dashboard/create',
@@ -20,8 +26,8 @@ export const createDashboard = createAsyncThunk(
       const { data } = await axiosInstance.post<DashboardListResponse>(POST.CREATE_DASHBOARD, {
         name: payload.name,
         settings: {
-          dashboardType: payload.dashboardType
-        }
+          dashboardType: payload.dashboardType,
+        },
       });
       if (!data.success) {
         return rejectWithValue({ message: data.message || 'Failed to create dashboard' });
@@ -117,10 +123,7 @@ export const createWidget = createAsyncThunk(
   'dashboard/createWidget',
   async (payload: CreateWidgetPayload, { rejectWithValue }) => {
     try {
-      const { data } = await axiosInstance.post<CreateWidgetResponse>(
-        POST.CREATE_WIDGET,
-        payload
-      );
+      const { data } = await axiosInstance.post<CreateWidgetResponse>(POST.CREATE_WIDGET, payload);
       if (data.success) {
         return data;
       }
@@ -134,13 +137,10 @@ export const createWidget = createAsyncThunk(
   }
 );
 
-export const fetchWidgetTypes = createAsyncThunk(
-  'dashboard/fetchWidgetTypes',
-  async () => {
-    const { data } = await axiosInstance.get<WidgetTypeResponse>(GET.WIDGET_TYPE_LIST);
-    return data;
-  }
-);
+export const fetchWidgetTypes = createAsyncThunk('dashboard/fetchWidgetTypes', async () => {
+  const { data } = await axiosInstance.get<WidgetTypeResponse>(GET.WIDGET_TYPE_LIST);
+  return data;
+});
 
 export const fetchDataSources = createAsyncThunk(
   'dashboard/fetchDataSources',
@@ -159,55 +159,50 @@ export const fetchDataSources = createAsyncThunk(
   }
 );
 
-export const fetchAllDataSources = createAsyncThunk(
-  'dashboard/fetchAllDataSources',
-  async (_, { rejectWithValue }) => {
-    try {
-      // First fetch the first page to get total count
-      const firstPageResponse = await axiosInstance.get<DataSourceResponse>(
-        `${GET.DATA_SOURCE_LIST}?paginate=true&page=1&limit=10`
-      );
-      
-      const { data: firstPageData, totalCount } = firstPageResponse.data;
-      let allDataSources = [...firstPageData];
-      
-      // Calculate how many additional pages we need to fetch
-      const totalPages = Math.ceil(totalCount / 10);
-      
-      // If there are more pages, fetch them
-      if (totalPages > 1) {
-        const additionalPagePromises = [];
-        
-        for (let page = 2; page <= totalPages; page++) {
-          additionalPagePromises.push(
-            axiosInstance.get<DataSourceResponse>(
-              `${GET.DATA_SOURCE_LIST}?paginate=true&page=${page}&limit=10`
-            )
-          );
-        }
-        
-        const additionalResponses = await Promise.all(additionalPagePromises);
-        
-        // Combine all data sources
-        additionalResponses.forEach(response => {
-          allDataSources = [...allDataSources, ...response.data.data];
-        });
+export const fetchAllDataSources = createAsyncThunk('dashboard/fetchAllDataSources', async (_, { rejectWithValue }) => {
+  try {
+    // First fetch the first page to get total count
+    const firstPageResponse = await axiosInstance.get<DataSourceResponse>(
+      `${GET.DATA_SOURCE_LIST}?paginate=true&page=1&limit=10`
+    );
+
+    const { data: firstPageData, totalCount } = firstPageResponse.data;
+    let allDataSources = [...firstPageData];
+
+    // Calculate how many additional pages we need to fetch
+    const totalPages = Math.ceil(totalCount / 10);
+
+    // If there are more pages, fetch them
+    if (totalPages > 1) {
+      const additionalPagePromises = [];
+
+      for (let page = 2; page <= totalPages; page++) {
+        additionalPagePromises.push(
+          axiosInstance.get<DataSourceResponse>(`${GET.DATA_SOURCE_LIST}?paginate=true&page=${page}&limit=10`)
+        );
       }
-      
-      return {
-        success: true,
-        message: "All data sources fetched successfully",
-        data: allDataSources,
-        totalCount
-      };
-    } catch (error) {
-      if (axios.isAxiosError(error) && error.response?.data) {
-        return rejectWithValue(error.response.data);
-      }
-      return rejectWithValue({ message: 'Failed to fetch all data sources' });
+
+      const additionalResponses = await Promise.all(additionalPagePromises);
+
+      // Combine all data sources
+      additionalResponses.forEach((response) => {
+        allDataSources = [...allDataSources, ...response.data.data];
+      });
     }
+
+    return {
+      success: true,
+      message: 'All data sources fetched successfully',
+      data: allDataSources,
+      totalCount,
+    };
+  } catch (error) {
+    if (axios.isAxiosError(error) && error.response?.data) {
+      return rejectWithValue(error.response.data);
+    }
+    return rejectWithValue({ message: 'Failed to fetch all data sources' });
   }
-);
+});
 
 export const loadMoreDataSources = createAsyncThunk(
   'dashboard/loadMoreDataSources',
@@ -228,7 +223,7 @@ export const loadMoreDataSources = createAsyncThunk(
 
 export const storeWidgetData = (payload: { widgetId: string; data: CombinedWidgetData }) => ({
   type: 'dashboard/storeWidgetData',
-  payload
+  payload,
 });
 
 export const fetchChartData = createAsyncThunk(
@@ -237,29 +232,26 @@ export const fetchChartData = createAsyncThunk(
     const response = await axiosInstance.get<ChartDataResponse>(
       `${GET.DASHBOARD_WIDGET_GET_CHART_DATA}/${dashboardId}`
     );
-    
+
     // Make additional API calls for each chart
     if (response.data.success && response.data.data) {
       await Promise.all(
         response.data.data.map(async (chart) => {
           try {
-            const widgetResponse = await axiosInstance.post<WidgetDataResponse>(
-              GET.DASHBOARD_WIDGET_DATA,
-              {
-                dataSourceId: chart.dataSourceId?._id,
-                entityId: chart.dataSourceId?.entityId,
-                dimensions: chart.dimensions,
-                groupBy: chart.groupBy,
-                conditions: chart.conditions,
-                aggregation: chart.aggregation,
-                widgetType: chart.widgetTypeId?.chartType
-              }
-            );
+            const widgetResponse = await axiosInstance.post<WidgetDataResponse>(GET.DASHBOARD_WIDGET_DATA, {
+              dataSourceId: chart.dataSourceId?._id,
+              entityId: chart.dataSourceId?.entityId,
+              dimensions: chart.dimensions,
+              groupBy: chart.groupBy,
+              conditions: chart.conditions,
+              aggregation: chart.aggregation,
+              widgetType: chart.widgetTypeId?.chartType,
+            });
             if (widgetResponse.data.success) {
               // Combine the chart metadata with the new data
               const combinedData = {
                 ...chart,
-                data: widgetResponse.data.data
+                data: widgetResponse.data.data,
               };
               dispatch(storeWidgetData({ widgetId: chart._id, data: combinedData }));
             }
@@ -269,8 +261,61 @@ export const fetchChartData = createAsyncThunk(
         })
       );
     }
-    
+
     return response.data;
+  }
+);
+
+export const fetchIndividualWidgetData = createAsyncThunk(
+  'nlQuery/getIndividualData',
+  async (chart: any, { rejectWithValue, dispatch }) => {
+    try {
+      const widgetResponse = await axiosInstance.post<WidgetDataResponse>(GET.DASHBOARD_WIDGET_DATA, {
+        dataSourceId: chart.dataSourceId,
+        entityId: chart.entityId,
+        dimensions: [chart.dimensions],
+        groupBy: chart.groupBy ? [chart.groupBy] : [],
+        conditions: chart.conditions,
+        aggregation: chart.aggregation,
+        widgetType: chart.chartType,
+      });
+      if (widgetResponse.data.success) {
+        // Combine the chart metadata with the new data
+        const combinedData = {
+          ...chart,
+          data: widgetResponse.data.data,
+        };
+
+        dispatch(storeWidgetData({ widgetId: chart._id, data: combinedData }));
+      }
+      return widgetResponse.data.data;
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response?.data) {
+        return rejectWithValue(error.response.data);
+      }
+      return rejectWithValue({ message: 'Failed to fetch query result' });
+    }
+  }
+);
+
+export const fetchWidgetSettingBasedOnNaturalLanguage = createAsyncThunk(
+  'nlQuery/getData',
+  async (userQuery: string, { rejectWithValue, dispatch }) => {
+    try {
+      const { data } = await axiosInstance.get<ChartResponse>(
+        `${GET.NL_Query}/getData?userQuery=${encodeURIComponent(userQuery)}`
+      );
+
+      const finalData: any = data?.data || {};
+
+      dispatch(storeWidgetData({ widgetId: finalData?._id, data: finalData }));
+      return data;
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response?.data) {
+        return rejectWithValue(error.response.data);
+      }
+      return rejectWithValue({ message: 'Failed to fetch query result' });
+    }
   }
 );
 
@@ -303,10 +348,7 @@ export const updateWidget = createAsyncThunk(
   'dashboard/updateWidget',
   async (payload: UpdateWidgetPayload, { rejectWithValue }) => {
     try {
-      const { data } = await axiosInstance.post<UpdateWidgetResponse>(
-        `${POST.UPDATE_WIDGET}/${payload._id}`,
-        payload
-      );
+      const { data } = await axiosInstance.post<UpdateWidgetResponse>(`${POST.UPDATE_WIDGET}/${payload._id}`, payload);
       if (data.success) {
         return data;
       }
@@ -346,26 +388,17 @@ interface SaveWidgetsPayload {
   }[];
 }
 
-export const saveWidgets = createAsyncThunk(
-  'dashboard/saveWidgets',
-  async (payload: SaveWidgetsPayload) => {
-    const { data } = await axiosInstance.post<CreateWidgetResponse>(
-      POST.SAVE_WIDGETS,
-      payload
-    );
-    return data;
-  }
-);
+export const saveWidgets = createAsyncThunk('dashboard/saveWidgets', async (payload: SaveWidgetsPayload) => {
+  const { data } = await axiosInstance.post<CreateWidgetResponse>(POST.SAVE_WIDGETS, payload);
+  return data;
+});
 
-export const fetchDashboardShareUsers = createAsyncThunk(
-  'dashboard/fetchShareUsers',
-  async (dashboardId: string) => {
-    const { data } = await axiosInstance.get<{ success: boolean; message: string; data: string[] }>(
-      `/dashboardShare/list/${dashboardId}`
-    );
-    return data;
-  }
-);
+export const fetchDashboardShareUsers = createAsyncThunk('dashboard/fetchShareUsers', async (dashboardId: string) => {
+  const { data } = await axiosInstance.get<{ success: boolean; message: string; data: string[] }>(
+    `/dashboardShare/list/${dashboardId}`
+  );
+  return data;
+});
 
 interface ShareDashboardPayload {
   receiverEmails: string[];
@@ -402,4 +435,4 @@ export const fetchWidgetTheme = createAsyncThunk(
     );
     return data;
   }
-); 
+);

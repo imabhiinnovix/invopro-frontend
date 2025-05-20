@@ -1,7 +1,32 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { DashboardListResponse, WidgetTypeResponse, DataSourceResponse, ChartDataResponse, ChartResponse, WidgetResponse, TemporaryChart, Dashboard, WidgetType, DataSource } from './types';
+import {
+  DashboardListResponse,
+  WidgetTypeResponse,
+  DataSourceResponse,
+  ChartDataResponse,
+  ChartResponse,
+  WidgetResponse,
+  TemporaryChart,
+  Dashboard,
+  WidgetType,
+  DataSource,
+} from './types';
 import { Theme } from '../createTheme/types';
-import { fetchDashboardList, fetchWidgetTypes, fetchDataSources, loadMoreDataSources, fetchChartData, deleteWidget, updateWidget, createWidget, fetchAllDataSources, saveWidgets, fetchDashboardShareUsers, fetchWidgetTheme } from './dashboardActions';
+import {
+  fetchDashboardList,
+  fetchWidgetTypes,
+  fetchDataSources,
+  loadMoreDataSources,
+  fetchChartData,
+  deleteWidget,
+  updateWidget,
+  createWidget,
+  fetchAllDataSources,
+  saveWidgets,
+  fetchDashboardShareUsers,
+  fetchWidgetTheme,
+  fetchWidgetSettingBasedOnNaturalLanguage,
+} from './dashboardActions';
 import { WritableDraft } from 'immer';
 
 interface Condition {
@@ -74,17 +99,17 @@ const dashboardSlice = createSlice({
       state.temporaryCharts.push(action.payload);
     },
     updateTemporaryChart: (state, action: PayloadAction<{ id: string; chart: TemporaryChart }>) => {
-      const index = state.temporaryCharts.findIndex(chart => chart._id === action.payload.id);
+      const index = state.temporaryCharts.findIndex((chart) => chart._id === action.payload.id);
       if (index !== -1) {
         state.temporaryCharts[index] = action.payload.chart;
       }
     },
     removeTemporaryChart: (state, action: PayloadAction<string>) => {
-      state.temporaryCharts = state.temporaryCharts.filter(chart => chart._id !== action.payload);
+      state.temporaryCharts = state.temporaryCharts.filter((chart) => chart._id !== action.payload);
     },
     clearTemporaryCharts: (state) => {
       state.temporaryCharts = [];
-    }
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -167,10 +192,28 @@ const dashboardSlice = createSlice({
         state.chartsError = null;
       })
       .addCase(fetchChartData.fulfilled, (state, action: PayloadAction<ChartDataResponse>) => {
+        console.log('action.payload.data', action.payload.data);
         state.chartsLoading = false;
         state.charts = action.payload.data;
       })
       .addCase(fetchChartData.rejected, (state, action) => {
+        state.chartsLoading = false;
+        state.chartsError = action.error.message || 'Failed to fetch chart data';
+      })
+      //chartdata from nlquery
+      .addCase(fetchWidgetSettingBasedOnNaturalLanguage.pending, (state) => {
+        state.chartsLoading = true;
+        state.chartsError = null;
+      })
+      .addCase(
+        fetchWidgetSettingBasedOnNaturalLanguage.fulfilled,
+        (state, action: PayloadAction<ChartDataResponse>) => {
+          console.log('action', action);
+          state.chartsLoading = false;
+          state.charts.push(action.payload.data as any);
+        }
+      )
+      .addCase(fetchWidgetSettingBasedOnNaturalLanguage.rejected, (state, action) => {
         state.chartsLoading = false;
         state.chartsError = action.error.message || 'Failed to fetch chart data';
       })
@@ -182,7 +225,7 @@ const dashboardSlice = createSlice({
       .addCase(deleteWidget.fulfilled, (state, action) => {
         state.chartsLoading = false;
         if (action.payload.success) {
-          state.charts = state.charts.filter(chart => chart._id !== action.meta.arg);
+          state.charts = state.charts.filter((chart) => chart._id !== action.meta.arg);
         }
       })
       .addCase(deleteWidget.rejected, (state, action) => {
@@ -199,16 +242,16 @@ const dashboardSlice = createSlice({
         if (action.payload.success) {
           const chartData = {
             ...action.payload.data,
-            dimensions: Array.isArray(action.payload.data.dimensions) 
-              ? action.payload.data.dimensions 
+            dimensions: Array.isArray(action.payload.data.dimensions)
+              ? action.payload.data.dimensions
               : [action.payload.data.dimensions],
-            groupBy: Array.isArray(action.payload.data.groupBy) 
-              ? action.payload.data.groupBy 
+            groupBy: Array.isArray(action.payload.data.groupBy)
+              ? action.payload.data.groupBy
               : [action.payload.data.groupBy],
             conditions: action.payload.data.conditions.map((condition: Condition) => ({
               ...condition,
-              _id: condition._id || ''
-            }))
+              _id: condition._id || '',
+            })),
           };
           state.charts = [...state.charts, chartData];
         }
@@ -226,26 +269,30 @@ const dashboardSlice = createSlice({
         state.chartsLoading = false;
         if (action.payload.success) {
           const updatedWidget = action.meta.arg;
-          state.charts = state.charts.map(chart => 
-            chart._id === updatedWidget._id ? {
-              ...chart,
-              name: updatedWidget.name,
-              dimensions: Array.isArray(updatedWidget.dimensions) ? updatedWidget.dimensions : [updatedWidget.dimensions],
-              groupBy: Array.isArray(updatedWidget.groupBy) ? updatedWidget.groupBy : [updatedWidget.groupBy],
-              aggregation: updatedWidget.aggregation,
-              position: updatedWidget.position,
-              conditions: updatedWidget.conditions.map((condition: Condition) => {
-                const existingCondition = chart.conditions.find(c => c.field === condition.field);
-                return {
-                  field: condition.field,
-                  operator: condition.operator,
-                  value: condition.value,
-                  _id: existingCondition?._id || condition._id || ''
-                };
-              }),
-              dataSourceId: updatedWidget.dataSourceId,
-              widgetTypeId: updatedWidget.widgetTypeId,
-            } : chart
+          state.charts = state.charts.map((chart) =>
+            chart._id === updatedWidget._id
+              ? {
+                  ...chart,
+                  name: updatedWidget.name,
+                  dimensions: Array.isArray(updatedWidget.dimensions)
+                    ? updatedWidget.dimensions
+                    : [updatedWidget.dimensions],
+                  groupBy: Array.isArray(updatedWidget.groupBy) ? updatedWidget.groupBy : [updatedWidget.groupBy],
+                  aggregation: updatedWidget.aggregation,
+                  position: updatedWidget.position,
+                  conditions: updatedWidget.conditions.map((condition: Condition) => {
+                    const existingCondition = chart.conditions.find((c) => c.field === condition.field);
+                    return {
+                      field: condition.field,
+                      operator: condition.operator,
+                      value: condition.value,
+                      _id: existingCondition?._id || condition._id || '',
+                    };
+                  }),
+                  dataSourceId: updatedWidget.dataSourceId,
+                  widgetTypeId: updatedWidget.widgetTypeId,
+                }
+              : chart
           );
         }
       })
@@ -260,7 +307,7 @@ const dashboardSlice = createSlice({
       .addCase(saveWidgets.fulfilled, (state) => {
         state.chartsLoading = false;
         // Convert temporary charts to permanent charts
-        const convertedCharts: WritableDraft<ChartResponse>[] = state.temporaryCharts.map(chart => ({
+        const convertedCharts: WritableDraft<ChartResponse>[] = state.temporaryCharts.map((chart) => ({
           _id: chart._id,
           createdBy: chart.createdBy,
           dashboardId: chart.dashboardId,
@@ -313,12 +360,7 @@ const dashboardSlice = createSlice({
   },
 });
 
-export const { 
-  storeWidgetData, 
-  addTemporaryChart, 
-  updateTemporaryChart, 
-  removeTemporaryChart,
-  clearTemporaryCharts 
-} = dashboardSlice.actions;
+export const { storeWidgetData, addTemporaryChart, updateTemporaryChart, removeTemporaryChart, clearTemporaryCharts } =
+  dashboardSlice.actions;
 
-export default dashboardSlice.reducer; 
+export default dashboardSlice.reducer;

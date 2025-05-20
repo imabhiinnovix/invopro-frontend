@@ -13,7 +13,9 @@ import {
 import SendIcon from '@mui/icons-material/Send';
 import { AddChartModal } from '../dashboard/components/AddChartModal';
 import { useAppDispatch, useAppSelector } from '../../storeHooks';
-import { fetchWidgetSettingBasedOnNaturalLanguage } from './naturalLanguageAction';
+
+import { ChartGrid } from '../dashboard/components/ChartGrid';
+import { fetchWidgetSettingBasedOnNaturalLanguage } from '../dashboard/dashboardActions';
 
 interface Message {
   role: 'user' | 'bot';
@@ -22,11 +24,11 @@ interface Message {
 
 const ChatPage: React.FC = () => {
   const dispatch = useAppDispatch();
-  const { widgetSettingsHistory, widgetSettingsLoading, widgetSettingsError } = useAppSelector((state) => ({
-    widgetSettingsHistory: state.naturalLanguageReducer.widgetSettingsHistory || [],
-    widgetSettingsLoading: state.naturalLanguageReducer.widgetSettingsLoading,
-    widgetSettingsError: state.naturalLanguageReducer.widgetSettingsError,
-  }));
+  // const { widgetSettingsHistory, widgetSettingsLoading, widgetSettingsError } = useAppSelector((state) => ({
+  //   widgetSettingsHistory: state.naturalLanguageReducer.widgetSettingsHistory || [],
+  //   widgetSettingsLoading: state.naturalLanguageReducer.widgetSettingsLoading,
+  //   widgetSettingsError: state.naturalLanguageReducer.widgetSettingsError,
+  // }));
 
   const [input, setInput] = useState('');
   const [openModalIndex, setOpenModalIndex] = useState<number | null>(null);
@@ -45,9 +47,9 @@ const ChatPage: React.FC = () => {
     if (e.key === 'Enter') handleSend();
   };
 
-  useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [widgetSettingsHistory]);
+  // useEffect(() => {
+  //   bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+  // }, [widgetSettingsHistory]);
 
   return (
     <Box component={Paper} elevation={3} display="flex" flexDirection="column" height="100%">
@@ -57,7 +59,16 @@ const ChatPage: React.FC = () => {
 
       <Box flex={1} display="flex" flexDirection="column" overflow="hidden">
         <Box flex={1} overflow="auto" px={2} py={1}>
-          <List>
+          <ChartGrid
+            dashboardId={'1'}
+            isEditMode={false}
+            onEditChart={() => {}}
+            isAddChartModalOpen={false}
+            isEditChartModalOpen={false}
+            gridColumns={1}
+            isNaturalLangauage={true}
+          />
+          {/* <List>
             {widgetSettingsHistory.map((data, index) => (
               <ListItem key={`chart-${index}`} alignItems="flex-start" sx={{ flexDirection: 'column' }}>
                 <Typography fontWeight="bold" color="text.secondary">
@@ -82,7 +93,7 @@ const ChatPage: React.FC = () => {
               </ListItem>
             )}
             <div ref={bottomRef} />
-          </List>
+          </List> */}
         </Box>
       </Box>
 
@@ -94,9 +105,10 @@ const ChatPage: React.FC = () => {
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={handleKeyPress}
-          disabled={widgetSettingsLoading}
+          // disabled={widgetSettingsLoading}
         />
-        <IconButton color="primary" onClick={handleSend} disabled={widgetSettingsLoading} sx={{ ml: 1 }}>
+        {/* disabled={widgetSettingsLoading} */}
+        <IconButton color="primary" onClick={handleSend} sx={{ ml: 1 }}>
           <SendIcon />
         </IconButton>
       </Box>

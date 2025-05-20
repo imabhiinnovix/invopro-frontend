@@ -1,62 +1,48 @@
-import React, { useState, useRef, useEffect } from "react";
-import { Box, Typography, TextField, Button, ButtonGroup } from "@mui/material";
-import AddIcon from "@mui/icons-material/Add";
-import EditIcon from "@mui/icons-material/Edit";
-import DoneIcon from "@mui/icons-material/Done";
-import PauseIcon from "@mui/icons-material/Pause";
-import ViewColumnIcon from "@mui/icons-material/ViewColumn";
-import SquareIcon from "@mui/icons-material/Square";
-import { useParams, useLocation } from "react-router-dom";
-import { ChartGrid } from "./ChartGrid";
-import { AddChartModal, ChartFormData } from "./AddChartModal";
-import { useAppDispatch, useAppSelector } from "../../../storeHooks";
-import {
-  updateWidget,
-  saveWidgets,
-  fetchWidgetTheme,
-} from "../dashboardActions";
-import { toast } from "react-toastify";
-import { ChartResponse, TemporaryChart } from "../types";
-import usePost from "../../../hooks/usePost";
-import { POST } from "../../../services/apiRoutes";
+import React, { useState, useRef, useEffect } from 'react';
+import { Box, Typography, TextField, Button, ButtonGroup } from '@mui/material';
+import AddIcon from '@mui/icons-material/Add';
+import EditIcon from '@mui/icons-material/Edit';
+import DoneIcon from '@mui/icons-material/Done';
+import PauseIcon from '@mui/icons-material/Pause';
+import ViewColumnIcon from '@mui/icons-material/ViewColumn';
+import SquareIcon from '@mui/icons-material/Square';
+import { useParams, useLocation } from 'react-router-dom';
+import { ChartGrid } from './ChartGrid';
+import { AddChartModal, ChartFormData } from './AddChartModal';
+import { useAppDispatch, useAppSelector } from '../../../storeHooks';
+import { updateWidget, saveWidgets, fetchWidgetTheme } from '../dashboardActions';
+import { toast } from 'react-toastify';
+import { ChartResponse, TemporaryChart } from '../types';
+import usePost from '../../../hooks/usePost';
+import { POST } from '../../../services/apiRoutes';
 
 interface DashboardViewProps {
   title: string;
   onTitleChange: (newTitle: string) => void;
 }
 
-export const DashboardView: React.FC<DashboardViewProps> = ({
-  title: initialTitle,
-  onTitleChange,
-}) => {
+export const DashboardView: React.FC<DashboardViewProps> = ({ title: initialTitle, onTitleChange }) => {
   const [isEditMode, setIsEditMode] = useState(false);
   const [editedTitle, setEditedTitle] = useState(initialTitle);
   const [title, setTitle] = useState(initialTitle);
   const [isAddChartModalOpen, setIsAddChartModalOpen] = useState(false);
   const [isEditChartModalOpen, setIsEditChartModalOpen] = useState(false);
-  const [selectedChart, setSelectedChart] = useState<ChartResponse | null>(
-    null
-  );
+  const [selectedChart, setSelectedChart] = useState<ChartResponse | null>(null);
   const [gridColumns, setGridColumns] = useState(2);
 
   const inputRef = useRef<HTMLInputElement>(null);
   const { id: dashboardId } = useParams();
   const location = useLocation();
   const dispatch = useAppDispatch();
-  const temporaryCharts = useAppSelector(
-    (state) => state.dashboard.temporaryCharts
-  );
+  const temporaryCharts = useAppSelector((state) => state.dashboard.temporaryCharts);
   const dashboards = useAppSelector((state) => state.dashboard.dashboards);
   const currentDashboard = dashboards.find((d) => d._id === dashboardId);
 
-  const postGridColumns = usePost([""]);
+  const postGridColumns = usePost(['']);
 
   useEffect(() => {
     if (dashboards.length > 0) {
-      setGridColumns(
-        dashboards.find((dashboard) => dashboard?._id === dashboardId)?.settings
-          ?.gridColumns || 2
-      );
+      setGridColumns(dashboards.find((dashboard) => dashboard?._id === dashboardId)?.settings?.gridColumns || 2);
     }
   }, [dashboards, dashboardId]);
 
@@ -109,33 +95,29 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             saveWidgets({
               widgets: temporaryCharts.map((chart: TemporaryChart) => ({
                 dashboardId: chart.dashboardId,
-                widgetTypeId: chart.widgetTypeId?._id || "",
+                widgetTypeId: chart.widgetTypeId?._id || '',
                 name: chart.name,
-                dimensions: chart.dimensions.join(","),
+                dimensions: chart.dimensions.join(','),
                 groupBy: chart.groupBy,
                 aggregation: chart.aggregation,
                 position: chart.position,
                 conditions: chart.conditions,
-                dataSourceId: chart.dataSourceId?._id || "",
-                entityId: chart.dataSourceId?.entityId || "",
+                dataSourceId: chart.dataSourceId?._id || '',
+                entityId: chart.dataSourceId?.entityId || '',
               })),
             })
           ).unwrap();
 
           if (result.success) {
-            toast.success("Charts saved successfully!");
+            toast.success('Charts saved successfully!');
           } else {
-            toast.error(result.message || "Failed to save charts");
+            toast.error(result.message || 'Failed to save charts');
           }
         } catch (error) {
-          if (
-            typeof error === "object" &&
-            error !== null &&
-            "message" in error
-          ) {
+          if (typeof error === 'object' && error !== null && 'message' in error) {
             toast.error(error.message as string);
           } else {
-            toast.error("Failed to save charts");
+            toast.error('Failed to save charts');
           }
         }
       }
@@ -147,7 +129,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter") {
+    if (e.key === 'Enter') {
       onTitleChange(editedTitle);
       setIsEditMode(false);
     }
@@ -175,21 +157,21 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         updateWidget({
           ...formData,
           _id: selectedChart._id,
-          dashboardId: dashboardId || "",
+          dashboardId: dashboardId || '',
         })
       ).unwrap();
 
       if (result.success) {
-        toast.success("Chart updated successfully!");
+        toast.success('Chart updated successfully!');
         handleCloseEditModal();
       } else {
-        toast.error(result.message || "Failed to update chart");
+        toast.error(result.message || 'Failed to update chart');
       }
     } catch (error) {
-      if (typeof error === "object" && error !== null && "message" in error) {
+      if (typeof error === 'object' && error !== null && 'message' in error) {
         toast.error(error.message as string);
       } else {
-        toast.error("Failed to update chart");
+        toast.error('Failed to update chart');
       }
     }
   };
@@ -197,10 +179,10 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   return (
     <Box
       sx={{
-        height: "100%",
-        display: "flex",
-        flexDirection: "column",
-        overflow: "hidden",
+        height: '100%',
+        display: 'flex',
+        flexDirection: 'column',
+        overflow: 'hidden',
       }}
     >
       <Box
@@ -208,9 +190,9 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           p: 3,
           // pb: 0,
           // mb: 3,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
           flexShrink: 0,
         }}
       >
@@ -224,8 +206,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               size="small"
               fullWidth
               sx={{
-                "& .MuiInputBase-input": {
-                  fontSize: "1.5rem",
+                '& .MuiInputBase-input': {
+                  fontSize: '1.5rem',
                   fontWeight: 500,
                 },
               }}
@@ -237,7 +219,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           )}
         </Box>
 
-        <Box sx={{ display: "flex", gap: 2 }}>
+        <Box sx={{ display: 'flex', gap: 2 }}>
           {isEditMode ? (
             <>
               <Button
@@ -248,12 +230,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               >
                 Add Chart
               </Button>
-              <Button
-                onClick={handleEditModeToggle}
-                color="success"
-                variant="contained"
-                startIcon={<DoneIcon />}
-              >
+              <Button onClick={handleEditModeToggle} color="success" variant="contained" startIcon={<DoneIcon />}>
                 Save
               </Button>
             </>
@@ -262,32 +239,27 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               <ButtonGroup variant="outlined" aria-label="grid columns">
                 <Button
                   onClick={() => handleGridColumns(1)}
-                  variant={gridColumns === 1 ? "contained" : "outlined"}
-                  sx={{ minWidth: "40px" }}
+                  variant={gridColumns === 1 ? 'contained' : 'outlined'}
+                  sx={{ minWidth: '40px' }}
                 >
                   <SquareIcon />
                 </Button>
                 <Button
                   onClick={() => handleGridColumns(2)}
-                  variant={gridColumns === 2 ? "contained" : "outlined"}
-                  sx={{ minWidth: "40px" }}
+                  variant={gridColumns === 2 ? 'contained' : 'outlined'}
+                  sx={{ minWidth: '40px' }}
                 >
                   <PauseIcon />
                 </Button>
                 <Button
                   onClick={() => handleGridColumns(3)}
-                  variant={gridColumns === 3 ? "contained" : "outlined"}
-                  sx={{ minWidth: "40px" }}
+                  variant={gridColumns === 3 ? 'contained' : 'outlined'}
+                  sx={{ minWidth: '40px' }}
                 >
                   <ViewColumnIcon />
                 </Button>
               </ButtonGroup>
-              <Button
-                onClick={handleEditModeToggle}
-                color="primary"
-                variant="contained"
-                startIcon={<EditIcon />}
-              >
+              <Button onClick={handleEditModeToggle} color="primary" variant="contained" startIcon={<EditIcon />}>
                 Edit
               </Button>
             </>
@@ -297,41 +269,41 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
       <Box
         sx={{
-          display: "flex",
+          display: 'flex',
           flex: 1,
-          overflow: "hidden",
+          overflow: 'hidden',
           gap: 3,
-          height: "calc(100% - 100px)",
+          height: 'calc(100% - 100px)',
         }}
       >
         <Box
           sx={{
             flex: 1,
-            overflow: "auto",
-            display: "grid",
+            overflow: 'auto',
+            display: 'grid',
             gridTemplateColumns: {
-              xs: "1fr",
-              sm: "repeat(auto-fit, minmax(400px, 1fr))",
-              md: "repeat(auto-fit, minmax(450px, 1fr))",
-              lg: "repeat(auto-fit, minmax(500px, 1fr))",
+              xs: '1fr',
+              sm: 'repeat(auto-fit, minmax(400px, 1fr))',
+              md: 'repeat(auto-fit, minmax(450px, 1fr))',
+              lg: 'repeat(auto-fit, minmax(500px, 1fr))',
             },
             gap: 3,
             p: 1,
 
-            transition: "all 0.3s ease",
+            transition: 'all 0.3s ease',
             ...((isAddChartModalOpen || isEditChartModalOpen) && {
-              flex: "1 1 70%",
+              flex: '1 1 70%',
             }),
-            "&::-webkit-scrollbar": {
-              width: "8px",
-              height: "8px",
+            '&::-webkit-scrollbar': {
+              width: '8px',
+              height: '8px',
             },
-            "&::-webkit-scrollbar-thumb": {
-              backgroundColor: "rgba(0, 0, 0, 0.1)",
-              borderRadius: "4px",
+            '&::-webkit-scrollbar-thumb': {
+              backgroundColor: 'rgba(0, 0, 0, 0.1)',
+              borderRadius: '4px',
             },
-            "&::-webkit-scrollbar-track": {
-              backgroundColor: "transparent",
+            '&::-webkit-scrollbar-track': {
+              backgroundColor: 'transparent',
             },
           }}
         >
@@ -351,18 +323,18 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           <Box
             sx={{
               width: {
-                xs: "100%",
-                sm: "400px",
-                md: "450px",
-                lg: "500px",
+                xs: '100%',
+                sm: '400px',
+                md: '450px',
+                lg: '500px',
               },
               flexShrink: 0,
-              display: "flex",
-              flexDirection: "column",
-              borderLeft: "1px solid",
-              borderColor: "divider",
-              overflow: "hidden",
-              height: "100%",
+              display: 'flex',
+              flexDirection: 'column',
+              borderLeft: '1px solid',
+              borderColor: 'divider',
+              overflow: 'hidden',
+              height: '100%',
             }}
           >
             {isAddChartModalOpen && (
@@ -370,7 +342,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 open={isAddChartModalOpen}
                 onClose={handleCloseModal}
                 isSubmitting={false}
-                dashboardId={dashboardId || ""}
+                dashboardId={dashboardId || ''}
               />
             )}
             {isEditChartModalOpen && selectedChart && (
@@ -378,7 +350,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 open={isEditChartModalOpen}
                 onClose={handleCloseEditModal}
                 isSubmitting={false}
-                dashboardId={dashboardId || ""}
+                dashboardId={dashboardId || ''}
                 initialData={selectedChart}
                 onSave={handleChartUpdate}
               />
