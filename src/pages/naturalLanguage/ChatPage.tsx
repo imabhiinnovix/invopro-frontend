@@ -1,38 +1,20 @@
 import React, { useState, useRef, useEffect } from 'react';
-import {
-  Box,
-  TextField,
-  IconButton,
-  Typography,
-  Paper,
-  List,
-  ListItem,
-  ListItemText,
-  CircularProgress,
-} from '@mui/material';
+import { Box, TextField, IconButton, Typography, Paper } from '@mui/material';
 import SendIcon from '@mui/icons-material/Send';
-import { AddChartModal } from '../dashboard/components/AddChartModal';
 import { useAppDispatch, useAppSelector } from '../../storeHooks';
 
 import { ChartGrid } from '../dashboard/components/ChartGrid';
 import { fetchWidgetSettingBasedOnNaturalLanguage } from '../dashboard/dashboardActions';
 
-interface Message {
-  role: 'user' | 'bot';
-  text: string;
-}
-
 const ChatPage: React.FC = () => {
   const dispatch = useAppDispatch();
-  // const { widgetSettingsHistory, widgetSettingsLoading, widgetSettingsError } = useAppSelector((state) => ({
-  //   widgetSettingsHistory: state.naturalLanguageReducer.widgetSettingsHistory || [],
-  //   widgetSettingsLoading: state.naturalLanguageReducer.widgetSettingsLoading,
-  //   widgetSettingsError: state.naturalLanguageReducer.widgetSettingsError,
-  // }));
+  const { chartsLoading } = useAppSelector((state) => ({
+    chartsLoading: state.dashboard.chartsLoading,
+  }));
+
+  const scrollRef = useRef<HTMLDivElement>(null);
 
   const [input, setInput] = useState('');
-  const [openModalIndex, setOpenModalIndex] = useState<number | null>(null);
-  const bottomRef = useRef<HTMLDivElement>(null);
 
   const handleSend = async () => {
     const trimmedInput = input.trim();
@@ -47,9 +29,11 @@ const ChatPage: React.FC = () => {
     if (e.key === 'Enter') handleSend();
   };
 
-  // useEffect(() => {
-  //   bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
-  // }, [widgetSettingsHistory]);
+  useEffect(() => {
+    if (!chartsLoading && scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    }
+  }, [chartsLoading]);
 
   return (
     <Box component={Paper} elevation={3} display="flex" flexDirection="column" height="100%">
@@ -58,7 +42,7 @@ const ChatPage: React.FC = () => {
       </Box>
 
       <Box flex={1} display="flex" flexDirection="column" overflow="hidden">
-        <Box flex={1} overflow="auto" px={2} py={1}>
+        <Box ref={scrollRef} flex={1} overflow="auto" px={2} py={1}>
           <ChartGrid
             dashboardId={'1'}
             isEditMode={false}
@@ -68,32 +52,6 @@ const ChatPage: React.FC = () => {
             gridColumns={1}
             isNaturalLangauage={true}
           />
-          {/* <List>
-            {widgetSettingsHistory.map((data, index) => (
-              <ListItem key={`chart-${index}`} alignItems="flex-start" sx={{ flexDirection: 'column' }}>
-                <Typography fontWeight="bold" color="text.secondary">
-                  Query: <span style={{ color: '#000' }}>{data.userQuery}</span>
-                </Typography>
-
-                <AddChartModal
-                  open={true}
-                  onClose={() => setOpenModalIndex(null)}
-                  isSubmitting={false}
-                  dashboardId={''}
-                  initialData={data}
-                  isNaturalLangauage={true}
-                  // onSave={handleChartUpdate}
-                />
-              </ListItem>
-            ))}
-            {widgetSettingsLoading && (
-              <ListItem>
-                <CircularProgress size={20} />
-                <ListItemText sx={{ ml: 2 }} primary="Fetching chart settings..." />
-              </ListItem>
-            )}
-            <div ref={bottomRef} />
-          </List> */}
         </Box>
       </Box>
 
@@ -105,9 +63,9 @@ const ChatPage: React.FC = () => {
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={handleKeyPress}
-          // disabled={widgetSettingsLoading}
+          disabled={chartsLoading}
         />
-        {/* disabled={widgetSettingsLoading} */}
+
         <IconButton color="primary" onClick={handleSend} sx={{ ml: 1 }}>
           <SendIcon />
         </IconButton>

@@ -343,8 +343,6 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
   // Combine permanent and temporary charts
   const allCharts = [...charts, ...temporaryCharts];
 
-  console.log(charts, 'kishachanrt');
-  console.log('allCharts', allCharts);
   const widgetTheme = useAppSelector((state) => state.dashboard.widgetTheme);
 
   useEffect(() => {
@@ -625,7 +623,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
     }
   };
 
-  if (chartsLoading) {
+  if (chartsLoading && !isNaturalLangauage) {
     return (
       <LoadingContainer>
         <CircularProgress />
@@ -871,8 +869,8 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
         ];
 
         const datasets = uniqueGroups.map((group, index) => {
-          const groupData = labels.map((name) => {
-            const dataPoint = chartData.find((item) => item.name === name && item[groupByField] === group);
+          const groupData = labels.map((name: any) => {
+            const dataPoint = chartData.find((item: any) => item.name === name && item[groupByField] === group);
             return dataPoint ? dataPoint.data : 0;
           });
 
@@ -1511,7 +1509,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
           },
         }}
       >
-        {allCharts.map((chart) => (
+        {allCharts?.map((chart, index) => (
           <>
             {isNaturalLangauage && (
               <Typography fontWeight="bold" color="text.secondary" p={3}>
@@ -1608,6 +1606,14 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
             </Grid>
           </>
         ))}
+
+        {chartsLoading && isNaturalLangauage && (
+          <Grid item xs={12} sx={{ display: 'flex', justifyContent: 'center', p: 2 }}>
+            <LoadingContainer>
+              <CircularProgress />
+            </LoadingContainer>
+          </Grid>
+        )}
       </Grid>
 
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleMenuClose} onClick={(e) => e.stopPropagation()}>
