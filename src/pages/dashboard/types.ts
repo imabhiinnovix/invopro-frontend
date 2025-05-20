@@ -274,10 +274,10 @@ export interface WidgetDataResponse {
 export interface CombinedWidgetData {
   _id: string;
   createdBy: string;
-  dashboardId: string;
+  dashboardId?: string;
   organizationId: string;
   name: string;
-  position: {
+  position?: {
     x: number;
     y: number;
     index: number;

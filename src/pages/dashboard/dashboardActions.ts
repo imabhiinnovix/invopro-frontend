@@ -13,6 +13,7 @@ import { Theme } from '../createTheme/types';
 import axiosInstance from '../../services/axiosInstance';
 import axios from 'axios';
 import { ChartFormData } from './components/AddChartModal';
+import { updateChartsData } from './dashboardReducer';
 
 export const fetchDashboardList = createAsyncThunk('dashboard/fetchList', async () => {
   const { data } = await axiosInstance.get<DashboardListResponse>(GET.DASHBOARD_LIST);
@@ -287,6 +288,7 @@ export const fetchIndividualWidgetData = createAsyncThunk(
         };
 
         dispatch(storeWidgetData({ widgetId: chart._id, data: combinedData }));
+        dispatch(updateChartsData({ widgetId: chart._id, data: combinedData }));
       }
       return widgetResponse.data.data;
     } catch (error) {

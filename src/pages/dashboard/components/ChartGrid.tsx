@@ -342,6 +342,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
   // Combine permanent and temporary charts
   const allCharts = [...charts, ...temporaryCharts];
 
+  console.log(charts, 'kishachanrt');
   console.log('allCharts', allCharts);
   const widgetTheme = useAppSelector((state) => state.dashboard.widgetTheme);
 
@@ -1277,7 +1278,6 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
   };
 
   const renderChart = (chart: ChartResponse) => {
-    console.log(chart, 'chart');
     const chartData = getChartData(chart);
     const chartType = chart.widgetTypeId?.chartType || 'line';
     const options = getChartOptions(chartType);
