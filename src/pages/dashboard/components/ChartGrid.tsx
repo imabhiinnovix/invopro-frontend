@@ -917,7 +917,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
               ]
             : dimensions,
           dashboardFilters: {
-            stastartVersionValue: startVersionValue,
+            startVersionValue: startVersionValue,
             endVersionValue: endVersionValue,
             versionValue: versionValue,
           },

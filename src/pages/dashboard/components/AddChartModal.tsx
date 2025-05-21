@@ -760,7 +760,7 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
               </FormRow>
             </FormSection>
 
-            {!isTrend && (
+            {isTrend && (
               <FormSection>
                 <SectionTitle>Incremental Settings</SectionTitle>
                 <FormRow>
