@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Box, TextField, IconButton, Typography, Paper } from '@mui/material';
 import SendIcon from '@mui/icons-material/Send';
 import { useAppDispatch, useAppSelector } from '../../storeHooks';
@@ -11,8 +11,6 @@ const ChatPage: React.FC = () => {
   const { chartsLoading } = useAppSelector((state) => ({
     chartsLoading: state.dashboard.chartsLoading,
   }));
-
-  const scrollRef = useRef<HTMLDivElement>(null);
 
   const [input, setInput] = useState('');
 
@@ -29,12 +27,6 @@ const ChatPage: React.FC = () => {
     if (e.key === 'Enter') handleSend();
   };
 
-  useEffect(() => {
-    if (!chartsLoading && scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-    }
-  }, [chartsLoading]);
-
   return (
     <Box component={Paper} elevation={3} display="flex" flexDirection="column" height="100%">
       <Box p={2} color="black">
@@ -42,7 +34,7 @@ const ChatPage: React.FC = () => {
       </Box>
 
       <Box flex={1} display="flex" flexDirection="column" overflow="hidden">
-        <Box ref={scrollRef} flex={1} overflow="auto" px={2} py={1}>
+        <Box flex={1} overflow="auto" px={2} py={1}>
           <ChartGrid
             dashboardId={'1'}
             isEditMode={false}
