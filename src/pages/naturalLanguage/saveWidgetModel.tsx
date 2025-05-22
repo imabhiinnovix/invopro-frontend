@@ -17,27 +17,27 @@ import {
 interface SaveWidgetModelProps {
   open: boolean;
   onClose: () => void;
-  newDashboardName: string;
+  newChartName: string;
   onNameChange: (name: string) => void;
   onCreate: () => void;
   isCreating: boolean;
-  dashboardType: 'normal' | 'trend';
-  onDashboardTypeChange: (type: 'normal' | 'trend') => void;
-  timePeriod: string;
-  onTimePeriodChange: (period: string) => void;
+  // dashboardType: 'normal' | 'trend';
+  // onDashboardTypeChange: (type: 'normal' | 'trend') => void;
+  // timePeriod: string;
+  // onTimePeriodChange: (period: string) => void;
 }
 
 export const SaveWidgetModel: React.FC<SaveWidgetModelProps> = ({
   open,
   onClose,
-  newDashboardName,
+  newChartName,
   onNameChange,
   onCreate,
   isCreating,
-  dashboardType,
-  onDashboardTypeChange,
-  timePeriod,
-  onTimePeriodChange,
+  // dashboardType,
+  // onDashboardTypeChange,
+  // timePeriod,
+  // onTimePeriodChange,
 }) => {
   const theme = useTheme();
 
@@ -62,17 +62,17 @@ export const SaveWidgetModel: React.FC<SaveWidgetModelProps> = ({
           py: 2,
         }}
       >
-        Save Widget
+        Save Chart Settings
       </DialogTitle>
       <DialogContent sx={{ mt: 2, pb: 1 }}>
         <TextField
           autoFocus
           margin="dense"
-          label="Dashboard Name"
+          label="Chart Name"
           type="text"
           fullWidth
           variant="outlined"
-          value={newDashboardName}
+          value={newChartName}
           onChange={(e) => onNameChange(e.target.value)}
           size="small"
           sx={{
@@ -86,7 +86,7 @@ export const SaveWidgetModel: React.FC<SaveWidgetModelProps> = ({
             },
           }}
         />
-        <FormControl
+        {/* <FormControl
           fullWidth
           margin="dense"
           size="small"
@@ -111,9 +111,9 @@ export const SaveWidgetModel: React.FC<SaveWidgetModelProps> = ({
             <MenuItem value="normal">Normal</MenuItem>
             <MenuItem value="trend">Trend</MenuItem>
           </Select>
-        </FormControl>
+        </FormControl> */}
 
-        {dashboardType === 'trend' && (
+        {/* {dashboardType === 'trend' && (
           <FormControl
             fullWidth
             margin="dense"
@@ -144,7 +144,7 @@ export const SaveWidgetModel: React.FC<SaveWidgetModelProps> = ({
               <MenuItem value="12m">Last 12 Months</MenuItem>
             </Select>
           </FormControl>
-        )}
+        )} */}
       </DialogContent>
       <DialogActions sx={{ p: 2, gap: 1 }}>
         <Button
@@ -158,10 +158,10 @@ export const SaveWidgetModel: React.FC<SaveWidgetModelProps> = ({
         >
           Cancel
         </Button>
-        <Button
+        {/* <Button
           onClick={onCreate}
           variant="contained"
-          disabled={!newDashboardName.trim() || isCreating}
+          // disabled={!newWidgetName.trim() || isCreating}
           sx={{
             backgroundColor: 'primary.main',
             '&:hover': {
@@ -174,7 +174,7 @@ export const SaveWidgetModel: React.FC<SaveWidgetModelProps> = ({
           }}
         >
           {isCreating ? 'Creating...' : 'Create'}
-        </Button>
+        </Button> */}
       </DialogActions>
     </Dialog>
   );

@@ -61,6 +61,7 @@ import jsPDF from 'jspdf';
 import axiosInstance from '../../../services/axiosInstance';
 import { AddChartModal, ChartFormData } from './AddChartModal';
 import { resetChartAndWidgetData } from '../dashboardReducer';
+import { SaveWidgetModel } from '../../naturalLanguage/saveWidgetModel';
 
 // Register ChartJS components
 ChartJS.register(
@@ -339,6 +340,9 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
   const [, setTotalRecords] = useState(0);
   const [isDrillDownLoading, setIsDrillDownLoading] = useState(false);
   const [drillDownPayload, setDrillDownPayload] = useState<any>(null);
+  const [openSaveChart, setOpenSaveChart] = useState(false);
+  const [chartSaveSettingData, setChartSaveSettingData] = useState<any>({});
+  const [newSaveChartName, setNewSaveChartName] = useState('');
   const itemsPerPage = 10;
 
   // Combine permanent and temporary charts
@@ -1835,7 +1839,26 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
                   <Typography fontWeight="bold" color="text.secondary">
                     Query: <span style={{ color: '#000' }}>{chart?.userQuery}</span>
                   </Typography>
-                  <Button variant="contained">Save</Button>
+                  <Button
+                    variant="contained"
+                    onClick={() => {
+                      setOpenSaveChart(true);
+                      setChartSaveSettingData(chart);
+                      setNewSaveChartName(chart.name);
+                    }}
+                  >
+                    Save
+                  </Button>
+                  <SaveWidgetModel
+                    open={openSaveChart}
+                    onClose={() => {
+                      setOpenSaveChart(false);
+                    }}
+                    onNameChange={() => {}}
+                    newChartName={newSaveChartName}
+                    onCreate={() => {}}
+                    isCreating={false}
+                  />
                 </Box>
               </>
             )}
