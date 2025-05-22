@@ -162,7 +162,7 @@ export const SaveWidgetModel: React.FC<SaveWidgetModelProps> = ({
         >
           Cancel
         </Button>
-        {/* <Button
+        <Button
           onClick={onCreate}
           variant="contained"
           // disabled={!newWidgetName.trim() || isCreating}
@@ -177,8 +177,8 @@ export const SaveWidgetModel: React.FC<SaveWidgetModelProps> = ({
             },
           }}
         >
-          {isCreating ? 'Creating...' : 'Create'}
-        </Button> */}
+          {isCreating ? 'Saving...' : 'Save'}
+        </Button>
       </DialogActions>
     </Dialog>
   );

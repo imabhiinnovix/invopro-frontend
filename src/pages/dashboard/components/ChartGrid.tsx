@@ -661,6 +661,14 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
     },
   ];
 
+  const bottomRef: any = isNaturalLangauage ? useRef<HTMLDivElement | null>(null) : '';
+
+  useEffect(() => {
+    if (isNaturalLangauage) {
+      bottomRef?.current?.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [chartsLoading, isNaturalLangauage]);
+
   const widgetTheme = useAppSelector((state) => state.dashboard.widgetTheme);
 
   useEffect(() => {
@@ -1856,12 +1864,6 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
       </DrillDownDialog>
     );
   };
-
-  const bottomRef = useRef<HTMLDivElement | null>(null);
-
-  useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [chartsLoading]);
 
   return (
     <>
