@@ -21,6 +21,7 @@ interface SaveWidgetModelProps {
   onNameChange: (name: string) => void;
   onCreate: () => void;
   isCreating: boolean;
+  dashboardList: any[];
   // dashboardType: 'normal' | 'trend';
   // onDashboardTypeChange: (type: 'normal' | 'trend') => void;
   // timePeriod: string;
@@ -34,6 +35,7 @@ export const SaveWidgetModel: React.FC<SaveWidgetModelProps> = ({
   onNameChange,
   onCreate,
   isCreating,
+  dashboardList,
   // dashboardType,
   // onDashboardTypeChange,
   // timePeriod,
@@ -41,6 +43,7 @@ export const SaveWidgetModel: React.FC<SaveWidgetModelProps> = ({
 }) => {
   const theme = useTheme();
 
+  console.log('dashboardList', dashboardList);
   return (
     <Dialog
       open={open}
@@ -86,7 +89,7 @@ export const SaveWidgetModel: React.FC<SaveWidgetModelProps> = ({
             },
           }}
         />
-        {/* <FormControl
+        <FormControl
           fullWidth
           margin="dense"
           size="small"
@@ -102,16 +105,19 @@ export const SaveWidgetModel: React.FC<SaveWidgetModelProps> = ({
             },
           }}
         >
-          <InputLabel>Dashboard Type</InputLabel>
+          <InputLabel>Select Dashboard*</InputLabel>
           <Select
             value={dashboardType}
-            label="Dashboard Type"
+            label="Dashboard"
             onChange={(e) => onDashboardTypeChange(e.target.value as 'normal' | 'trend')}
           >
-            <MenuItem value="normal">Normal</MenuItem>
-            <MenuItem value="trend">Trend</MenuItem>
+            {dashboardList?.map((data) => (
+              <MenuItem key={data._id} value={data._id}>
+                {data.name}
+              </MenuItem>
+            ))}
           </Select>
-        </FormControl> */}
+        </FormControl>
 
         {/* {dashboardType === 'trend' && (
           <FormControl

@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useAppDispatch, useAppSelector } from '../../../storeHooks';
-import { fetchChartData, deleteWidget, fetchIndividualWidgetData } from '../dashboardActions';
+import { fetchChartData, deleteWidget, fetchIndividualWidgetData, fetchDashboardList } from '../dashboardActions';
 import {
   Grid,
   Card,
@@ -317,14 +317,17 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
   const dispatch = useAppDispatch();
   const theme = useTheme();
   const chartRefs = useRef<{ [key: string]: ChartJS | null }>({});
-  const { charts, widgetTypes, temporaryCharts, chartsLoading, chartsError, widgetData } = useAppSelector((state) => ({
-    charts: state.dashboard.charts,
-    temporaryCharts: state.dashboard.temporaryCharts,
-    chartsLoading: state.dashboard.chartsLoading,
-    chartsError: state.dashboard.chartsError,
-    widgetData: state.dashboard.widgetData,
-    widgetTypes: state.dashboard.widgetTypes,
-  }));
+  const { charts, widgetTypes, temporaryCharts, chartsLoading, chartsError, widgetData, dashboards } = useAppSelector(
+    (state) => ({
+      charts: state.dashboard.charts,
+      temporaryCharts: state.dashboard.temporaryCharts,
+      chartsLoading: state.dashboard.chartsLoading,
+      chartsError: state.dashboard.chartsError,
+      widgetData: state.dashboard.widgetData,
+      widgetTypes: state.dashboard.widgetTypes,
+      dashboards: state.dashboard.dashboards || [],
+    })
+  );
 
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [selectedChart, setSelectedChart] = useState<ChartResponse | null>(null);
@@ -658,6 +661,12 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
   ];
 
   const widgetTheme = useAppSelector((state) => state.dashboard.widgetTheme);
+
+  useEffect(() => {
+    if (!dashboards.length) {
+      dispatch(fetchDashboardList());
+    }
+  }, [dispatch, dashboards.length]);
 
   useEffect(() => {
     if (dashboardId) {
@@ -998,6 +1007,46 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
     //   }
     // }
   };
+
+  // const handleCreateDashboard = async () => {
+  //   if (newDashboardName.trim()) {
+  //     try {
+  //       setIsCreating(true);
+  //       const response = (await dispatch(
+  //         createDashboard({
+  //           name: newDashboardName.trim(),
+  //           dashboardType,
+  //           dynamicVersionValue: timePeriod,
+  //         })
+  //       ).unwrap()) as DashboardListResponse;
+  //       await dispatch(fetchDashboardList());
+  //       setOpenCreateModal(false);
+  //       setNewDashboardName('');
+  //       setDashboardType('normal');
+  //       toast.success(response.message || 'Dashboard created successfully!');
+
+  //       // Navigate to the newly created dashboard
+  //       const newDashboard = response.data[0];
+
+  //       if (newDashboard) {
+  //         navigate(`/dashboard/${newDashboard._id}`, {
+  //           state: { enableEditMode: true },
+  //         });
+  //       }
+  //     } catch (error: { payload?: { message: string }; message?: string } | unknown) {
+  //       console.error('Failed to create dashboard:', error);
+  //       const errorMessage =
+  //         error && typeof error === 'object' && 'payload' in error
+  //           ? (error.payload as { message?: string })?.message
+  //           : error && typeof error === 'object' && 'message' in error
+  //           ? (error as { message?: string })?.message
+  //           : 'Failed to create dashboard. Please try again.';
+  //       toast.error(errorMessage);
+  //     } finally {
+  //       setIsCreating(false);
+  //     }
+  //   }
+  // };
   const getChartData = (chart: ChartResponse) => {
     const createDefaultDataset = (data: number[] = []): ChartDataset => ({
       label: chart.name,
@@ -1854,7 +1903,8 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
                     onClose={() => {
                       setOpenSaveChart(false);
                     }}
-                    onNameChange={() => {}}
+                    onNameChange={setNewSaveChartName}
+                    dashboardList={dashboards}
                     newChartName={newSaveChartName}
                     onCreate={() => {}}
                     isCreating={false}
