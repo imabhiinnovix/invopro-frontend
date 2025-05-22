@@ -24,6 +24,7 @@ import {
   TableRow,
   Paper,
   Pagination,
+  Divider,
 } from '@mui/material';
 import {
   Chart as ChartJS,
@@ -341,316 +342,316 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
   const itemsPerPage = 10;
 
   // Combine permanent and temporary charts
-  const allCharts = [...charts, ...temporaryCharts];
+  //const allCharts = [...charts, ...temporaryCharts];
 
-  // const allCharts = [
-  //   {
-  //     collectionName: 'Disclosure',
-  //     collectionCode: 'disclosure',
-  //     name: 'Disclosure by SBU',
-  //     dimensions: ['SBU'],
-  //     groupBy: [],
-  //     aggregation: {
-  //       type: 'Count',
-  //       attributeName: 'DisclosureNumber',
-  //     },
-  //     conditions: [],
-  //     error: '',
-  //     dataSourceId: {
-  //       _id: '6792332a753ceb4945e5b3b8',
-  //       name: 'Disclosure',
-  //       code: 'disclosure',
-  //     },
-  //     entityId: '679232f9753ceb4945e5b3a5',
-  //     widgetTypeId: {
-  //       _id: '67e68fd541db187651d5e6b8',
-  //       name: 'Line',
-  //       description: 'test line description',
-  //       chartType: 'line',
-  //       code: 'line-1',
-  //       isActive: true,
-  //       createdAt: '2024-08-07T00:00:00.000Z',
-  //       updatedAt: '2025-04-16T11:01:21.982Z',
-  //       __v: 1,
-  //       fieldConfig: [
-  //         {
-  //           fieldName: 'dimensions',
-  //           display: true,
-  //           required: true,
-  //           multiple: true,
-  //           type: 'multiselect',
-  //           label: 'Dimensions',
-  //           defaultValue: null,
-  //         },
-  //         {
-  //           fieldName: 'groupBy',
-  //           display: true,
-  //           required: true,
-  //           multiple: true,
-  //           type: 'multiselect',
-  //           label: 'Group By',
-  //           defaultValue: null,
-  //         },
-  //         {
-  //           fieldName: 'size',
-  //           display: false,
-  //           required: false,
-  //           multiple: false,
-  //           type: 'select',
-  //           label: 'Size',
-  //           defaultValue: null,
-  //         },
-  //         {
-  //           fieldName: 'aggregation',
-  //           display: true,
-  //           required: true,
-  //           multiple: false,
-  //           type: 'select',
-  //           label: 'Aggregation',
-  //           defaultValue: null,
-  //         },
-  //         {
-  //           fieldName: 'conditions',
-  //           display: true,
-  //           required: false,
-  //           multiple: true,
-  //           type: 'multiselect',
-  //           label: 'Conditions',
-  //           defaultValue: null,
-  //         },
-  //       ],
-  //     },
-  //     organizationId: '66de96d3548d06560e2931cb',
-  //     userQuery: 'disclosure number count based on sbu',
-  //     _id: 1747742108424,
-  //     data: {
-  //       label: '2025-11',
-  //       widgetData: [
-  //         {
-  //           name: 'SABIC R&D Europe',
-  //           data: 20,
-  //         },
-  //         {
-  //           name: 'SABIC Technical Center Houston',
-  //           data: 1,
-  //         },
-  //         {
-  //           name: 'SBU Polymers',
-  //           data: 7841,
-  //         },
-  //         {
-  //           name: 'SBU Performance Chemicals',
-  //           data: 2,
-  //         },
-  //         {
-  //           name: 'SBU Specialties',
-  //           data: 5272,
-  //         },
-  //         {
-  //           name: 'Research & Technology Riyadh',
-  //           data: 2,
-  //         },
-  //         {
-  //           name: 'SBU SHPP',
-  //           data: 6053,
-  //         },
-  //         {
-  //           name: 'SBU Strategy & Transformation',
-  //           data: 19,
-  //         },
-  //         {
-  //           name: '2-Ethylhexanol',
-  //           data: 1,
-  //         },
-  //         {
-  //           name: 'GE-B',
-  //           data: 312,
-  //         },
-  //         {
-  //           name: 'SBU Chemicals',
-  //           data: 1790,
-  //         },
-  //         {
-  //           name: 'SBU T&I',
-  //           data: 1074,
-  //         },
-  //         {
-  //           name: 'SBU Temp Chemicals Transfer',
-  //           data: 2,
-  //         },
-  //         {
-  //           name: 'Product Lines',
-  //           data: 668,
-  //         },
-  //         {
-  //           name: 'SBU Agri-nutrients',
-  //           data: 219,
-  //         },
-  //         {
-  //           name: 'SBU Temp Polymers Transfer (from Spec)',
-  //           data: 1,
-  //         },
-  //         {
-  //           name: 'SBU Metals',
-  //           data: 159,
-  //         },
-  //       ],
-  //     },
-  //   },
-  //   {
-  //     collectionName: 'Disclosure',
-  //     collectionCode: 'disclosure',
-  //     name: 'Disclosure by SBU',
-  //     dimensions: ['SBU'],
-  //     groupBy: [],
-  //     aggregation: {
-  //       type: 'Count',
-  //       attributeName: 'DisclosureNumber',
-  //     },
-  //     conditions: [],
-  //     error: '',
-  //     dataSourceId: {
-  //       _id: '6792332a753ceb4945e5b3b8',
-  //       name: 'Disclosure',
-  //       code: 'disclosure',
-  //     },
-  //     entityId: '679232f9753ceb4945e5b3a5',
-  //     widgetTypeId: {
-  //       _id: '67e68fd541db187651d5e6b8',
-  //       name: 'Line',
-  //       description: 'test line description',
-  //       chartType: 'line',
-  //       code: 'line-1',
-  //       isActive: true,
-  //       createdAt: '2024-08-07T00:00:00.000Z',
-  //       updatedAt: '2025-04-16T11:01:21.982Z',
-  //       __v: 1,
-  //       fieldConfig: [
-  //         {
-  //           fieldName: 'dimensions',
-  //           display: true,
-  //           required: true,
-  //           multiple: true,
-  //           type: 'multiselect',
-  //           label: 'Dimensions',
-  //           defaultValue: null,
-  //         },
-  //         {
-  //           fieldName: 'groupBy',
-  //           display: true,
-  //           required: true,
-  //           multiple: true,
-  //           type: 'multiselect',
-  //           label: 'Group By',
-  //           defaultValue: null,
-  //         },
-  //         {
-  //           fieldName: 'size',
-  //           display: false,
-  //           required: false,
-  //           multiple: false,
-  //           type: 'select',
-  //           label: 'Size',
-  //           defaultValue: null,
-  //         },
-  //         {
-  //           fieldName: 'aggregation',
-  //           display: true,
-  //           required: true,
-  //           multiple: false,
-  //           type: 'select',
-  //           label: 'Aggregation',
-  //           defaultValue: null,
-  //         },
-  //         {
-  //           fieldName: 'conditions',
-  //           display: true,
-  //           required: false,
-  //           multiple: true,
-  //           type: 'multiselect',
-  //           label: 'Conditions',
-  //           defaultValue: null,
-  //         },
-  //       ],
-  //     },
-  //     organizationId: '66de96d3548d06560e2931cb',
-  //     userQuery: 'disclosure number count based on sbu',
-  //     _id: 1747742108424,
-  //     data: {
-  //       label: '2025-11',
-  //       widgetData: [
-  //         {
-  //           name: 'SABIC R&D Europe',
-  //           data: 20,
-  //         },
-  //         {
-  //           name: 'SABIC Technical Center Houston',
-  //           data: 1,
-  //         },
-  //         {
-  //           name: 'SBU Polymers',
-  //           data: 7841,
-  //         },
-  //         {
-  //           name: 'SBU Performance Chemicals',
-  //           data: 2,
-  //         },
-  //         {
-  //           name: 'SBU Specialties',
-  //           data: 5272,
-  //         },
-  //         {
-  //           name: 'Research & Technology Riyadh',
-  //           data: 2,
-  //         },
-  //         {
-  //           name: 'SBU SHPP',
-  //           data: 6053,
-  //         },
-  //         {
-  //           name: 'SBU Strategy & Transformation',
-  //           data: 19,
-  //         },
-  //         {
-  //           name: '2-Ethylhexanol',
-  //           data: 1,
-  //         },
-  //         {
-  //           name: 'GE-B',
-  //           data: 312,
-  //         },
-  //         {
-  //           name: 'SBU Chemicals',
-  //           data: 1790,
-  //         },
-  //         {
-  //           name: 'SBU T&I',
-  //           data: 1074,
-  //         },
-  //         {
-  //           name: 'SBU Temp Chemicals Transfer',
-  //           data: 2,
-  //         },
-  //         {
-  //           name: 'Product Lines',
-  //           data: 668,
-  //         },
-  //         {
-  //           name: 'SBU Agri-nutrients',
-  //           data: 219,
-  //         },
-  //         {
-  //           name: 'SBU Temp Polymers Transfer (from Spec)',
-  //           data: 1,
-  //         },
-  //         {
-  //           name: 'SBU Metals',
-  //           data: 159,
-  //         },
-  //       ],
-  //     },
-  //   },
-  // ];
+  const allCharts = [
+    {
+      collectionName: 'Disclosure',
+      collectionCode: 'disclosure',
+      name: 'Disclosure by SBU',
+      dimensions: ['SBU'],
+      groupBy: [],
+      aggregation: {
+        type: 'Count',
+        attributeName: 'DisclosureNumber',
+      },
+      conditions: [],
+      error: '',
+      dataSourceId: {
+        _id: '6792332a753ceb4945e5b3b8',
+        name: 'Disclosure',
+        code: 'disclosure',
+      },
+      entityId: '679232f9753ceb4945e5b3a5',
+      widgetTypeId: {
+        _id: '67e68fd541db187651d5e6b8',
+        name: 'Line',
+        description: 'test line description',
+        chartType: 'line',
+        code: 'line-1',
+        isActive: true,
+        createdAt: '2024-08-07T00:00:00.000Z',
+        updatedAt: '2025-04-16T11:01:21.982Z',
+        __v: 1,
+        fieldConfig: [
+          {
+            fieldName: 'dimensions',
+            display: true,
+            required: true,
+            multiple: true,
+            type: 'multiselect',
+            label: 'Dimensions',
+            defaultValue: null,
+          },
+          {
+            fieldName: 'groupBy',
+            display: true,
+            required: true,
+            multiple: true,
+            type: 'multiselect',
+            label: 'Group By',
+            defaultValue: null,
+          },
+          {
+            fieldName: 'size',
+            display: false,
+            required: false,
+            multiple: false,
+            type: 'select',
+            label: 'Size',
+            defaultValue: null,
+          },
+          {
+            fieldName: 'aggregation',
+            display: true,
+            required: true,
+            multiple: false,
+            type: 'select',
+            label: 'Aggregation',
+            defaultValue: null,
+          },
+          {
+            fieldName: 'conditions',
+            display: true,
+            required: false,
+            multiple: true,
+            type: 'multiselect',
+            label: 'Conditions',
+            defaultValue: null,
+          },
+        ],
+      },
+      organizationId: '66de96d3548d06560e2931cb',
+      userQuery: 'disclosure number count based on sbu',
+      _id: 1747742108424,
+      data: {
+        label: '2025-11',
+        widgetData: [
+          {
+            name: 'SABIC R&D Europe',
+            data: 20,
+          },
+          {
+            name: 'SABIC Technical Center Houston',
+            data: 1,
+          },
+          {
+            name: 'SBU Polymers',
+            data: 7841,
+          },
+          {
+            name: 'SBU Performance Chemicals',
+            data: 2,
+          },
+          {
+            name: 'SBU Specialties',
+            data: 5272,
+          },
+          {
+            name: 'Research & Technology Riyadh',
+            data: 2,
+          },
+          {
+            name: 'SBU SHPP',
+            data: 6053,
+          },
+          {
+            name: 'SBU Strategy & Transformation',
+            data: 19,
+          },
+          {
+            name: '2-Ethylhexanol',
+            data: 1,
+          },
+          {
+            name: 'GE-B',
+            data: 312,
+          },
+          {
+            name: 'SBU Chemicals',
+            data: 1790,
+          },
+          {
+            name: 'SBU T&I',
+            data: 1074,
+          },
+          {
+            name: 'SBU Temp Chemicals Transfer',
+            data: 2,
+          },
+          {
+            name: 'Product Lines',
+            data: 668,
+          },
+          {
+            name: 'SBU Agri-nutrients',
+            data: 219,
+          },
+          {
+            name: 'SBU Temp Polymers Transfer (from Spec)',
+            data: 1,
+          },
+          {
+            name: 'SBU Metals',
+            data: 159,
+          },
+        ],
+      },
+    },
+    {
+      collectionName: 'Disclosure',
+      collectionCode: 'disclosure',
+      name: 'Disclosure by SBU',
+      dimensions: ['SBU'],
+      groupBy: [],
+      aggregation: {
+        type: 'Count',
+        attributeName: 'DisclosureNumber',
+      },
+      conditions: [],
+      error: '',
+      dataSourceId: {
+        _id: '6792332a753ceb4945e5b3b8',
+        name: 'Disclosure',
+        code: 'disclosure',
+      },
+      entityId: '679232f9753ceb4945e5b3a5',
+      widgetTypeId: {
+        _id: '67e68fd541db187651d5e6b8',
+        name: 'Line',
+        description: 'test line description',
+        chartType: 'line',
+        code: 'line-1',
+        isActive: true,
+        createdAt: '2024-08-07T00:00:00.000Z',
+        updatedAt: '2025-04-16T11:01:21.982Z',
+        __v: 1,
+        fieldConfig: [
+          {
+            fieldName: 'dimensions',
+            display: true,
+            required: true,
+            multiple: true,
+            type: 'multiselect',
+            label: 'Dimensions',
+            defaultValue: null,
+          },
+          {
+            fieldName: 'groupBy',
+            display: true,
+            required: true,
+            multiple: true,
+            type: 'multiselect',
+            label: 'Group By',
+            defaultValue: null,
+          },
+          {
+            fieldName: 'size',
+            display: false,
+            required: false,
+            multiple: false,
+            type: 'select',
+            label: 'Size',
+            defaultValue: null,
+          },
+          {
+            fieldName: 'aggregation',
+            display: true,
+            required: true,
+            multiple: false,
+            type: 'select',
+            label: 'Aggregation',
+            defaultValue: null,
+          },
+          {
+            fieldName: 'conditions',
+            display: true,
+            required: false,
+            multiple: true,
+            type: 'multiselect',
+            label: 'Conditions',
+            defaultValue: null,
+          },
+        ],
+      },
+      organizationId: '66de96d3548d06560e2931cb',
+      userQuery: 'disclosure number count based on sbu',
+      _id: 1747742108424,
+      data: {
+        label: '2025-11',
+        widgetData: [
+          {
+            name: 'SABIC R&D Europe',
+            data: 20,
+          },
+          {
+            name: 'SABIC Technical Center Houston',
+            data: 1,
+          },
+          {
+            name: 'SBU Polymers',
+            data: 7841,
+          },
+          {
+            name: 'SBU Performance Chemicals',
+            data: 2,
+          },
+          {
+            name: 'SBU Specialties',
+            data: 5272,
+          },
+          {
+            name: 'Research & Technology Riyadh',
+            data: 2,
+          },
+          {
+            name: 'SBU SHPP',
+            data: 6053,
+          },
+          {
+            name: 'SBU Strategy & Transformation',
+            data: 19,
+          },
+          {
+            name: '2-Ethylhexanol',
+            data: 1,
+          },
+          {
+            name: 'GE-B',
+            data: 312,
+          },
+          {
+            name: 'SBU Chemicals',
+            data: 1790,
+          },
+          {
+            name: 'SBU T&I',
+            data: 1074,
+          },
+          {
+            name: 'SBU Temp Chemicals Transfer',
+            data: 2,
+          },
+          {
+            name: 'Product Lines',
+            data: 668,
+          },
+          {
+            name: 'SBU Agri-nutrients',
+            data: 219,
+          },
+          {
+            name: 'SBU Temp Polymers Transfer (from Spec)',
+            data: 1,
+          },
+          {
+            name: 'SBU Metals',
+            data: 159,
+          },
+        ],
+      },
+    },
+  ];
 
   const widgetTheme = useAppSelector((state) => state.dashboard.widgetTheme);
 
@@ -1827,11 +1828,15 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
         {allCharts?.map((chart) => (
           <>
             {isNaturalLangauage && (
-              <Grid item>
-                <Typography fontWeight="bold" color="text.secondary">
-                  Query: <span style={{ color: '#000' }}>{chart?.userQuery}</span>
-                </Typography>
-              </Grid>
+              <>
+                <Divider sx={{ width: '100%', mt: 2, borderBottomWidth: '2px' }} />
+                <Divider sx={{ width: '100%', mt: 0.2, borderBottomWidth: '2px' }} />
+                <Box sx={{ pl: 4, pt: 3 }}>
+                  <Typography fontWeight="bold" color="text.secondary">
+                    Query: <span style={{ color: '#000' }}>{chart?.userQuery}</span>
+                  </Typography>
+                </Box>
+              </>
             )}
             <Grid
               item
