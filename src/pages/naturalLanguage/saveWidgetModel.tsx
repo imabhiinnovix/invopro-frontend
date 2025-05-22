@@ -22,8 +22,10 @@ interface SaveWidgetModelProps {
   onCreate: () => void;
   isCreating: boolean;
   dashboardList: any[];
+  dashBoardId: string;
+  onDashboardChange: (id: string) => void;
   // dashboardType: 'normal' | 'trend';
-  // onDashboardTypeChange: (type: 'normal' | 'trend') => void;
+
   // timePeriod: string;
   // onTimePeriodChange: (period: string) => void;
 }
@@ -36,8 +38,8 @@ export const SaveWidgetModel: React.FC<SaveWidgetModelProps> = ({
   onCreate,
   isCreating,
   dashboardList,
-  // dashboardType,
-  // onDashboardTypeChange,
+  dashBoardId,
+  onDashboardChange,
   // timePeriod,
   // onTimePeriodChange,
 }) => {
@@ -106,11 +108,7 @@ export const SaveWidgetModel: React.FC<SaveWidgetModelProps> = ({
           }}
         >
           <InputLabel>Select Dashboard*</InputLabel>
-          <Select
-            value={dashboardType}
-            label="Dashboard"
-            onChange={(e) => onDashboardTypeChange(e.target.value as 'normal' | 'trend')}
-          >
+          <Select value={dashBoardId} label="Dashboard" onChange={(e) => onDashboardChange(e.target.value)}>
             {dashboardList?.map((data) => (
               <MenuItem key={data._id} value={data._id}>
                 {data.name}

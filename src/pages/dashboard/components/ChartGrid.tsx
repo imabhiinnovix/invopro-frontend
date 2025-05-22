@@ -345,6 +345,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
   const [drillDownPayload, setDrillDownPayload] = useState<any>(null);
   const [openSaveChart, setOpenSaveChart] = useState(false);
   const [chartSaveSettingData, setChartSaveSettingData] = useState<any>({});
+  const [chartSaveDashboardId, setChartSaveDashboardId] = useState('');
   const [newSaveChartName, setNewSaveChartName] = useState('');
   const itemsPerPage = 10;
 
@@ -1906,6 +1907,8 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
                     onNameChange={setNewSaveChartName}
                     dashboardList={dashboards}
                     newChartName={newSaveChartName}
+                    dashBoardId={chartSaveDashboardId}
+                    onDashboardChange={setChartSaveDashboardId}
                     onCreate={() => {}}
                     isCreating={false}
                   />
