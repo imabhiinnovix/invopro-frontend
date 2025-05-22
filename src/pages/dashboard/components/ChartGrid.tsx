@@ -1831,10 +1831,11 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
               <>
                 <Divider sx={{ width: '100%', mt: 2, borderBottomWidth: '2px' }} />
                 <Divider sx={{ width: '100%', mt: 0.2, borderBottomWidth: '2px' }} />
-                <Box sx={{ pl: 4, pt: 3 }}>
+                <Box sx={{ pl: 4, pt: 3 }} display={'flex'} gap={3} alignItems={'center'}>
                   <Typography fontWeight="bold" color="text.secondary">
                     Query: <span style={{ color: '#000' }}>{chart?.userQuery}</span>
                   </Typography>
+                  <Button variant="contained">Save</Button>
                 </Box>
               </>
             )}
