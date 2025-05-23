@@ -506,6 +506,7 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
               versionValue: versionValue || "",
             },
             dashBoardType: isTrend ? "trend" : "normal",
+            isIncremental: formData.isIncremental || false,
           }
         );
 

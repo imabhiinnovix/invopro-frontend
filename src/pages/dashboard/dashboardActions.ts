@@ -319,6 +319,7 @@ export const fetchChartData = createAsyncThunk(
                       versionValue: versionValue || "",
                     },
                     dashBoardType: dashboardType || "normal",
+                    isIncremental: chart.isIncremental,
                   }
                 );
               if (widgetResponse.data.success) {
