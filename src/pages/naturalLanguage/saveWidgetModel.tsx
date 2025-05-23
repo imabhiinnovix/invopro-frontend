@@ -45,7 +45,6 @@ export const SaveWidgetModel: React.FC<SaveWidgetModelProps> = ({
 }) => {
   const theme = useTheme();
 
-  console.log('dashboardList', dashboardList);
   return (
     <Dialog
       open={open}

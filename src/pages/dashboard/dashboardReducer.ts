@@ -123,7 +123,10 @@ const dashboardSlice = createSlice({
                 };
               }),
               dataSourceId: action.payload.data.dataSourceId,
-              widgetTypeId: action.payload.data.widgetTypeId,
+              widgetTypeId: {
+                _id: action.payload.data.widgetTypeId as string,
+                chartType: action.payload.data?.chartType || 'line',
+              },
             }
           : chart
       );

@@ -156,14 +156,14 @@ export interface DashboardSliceState {
 
 export interface WidgetDetails {
   _id: string;
-  name: string;
-  description: string;
+  name?: string;
+  description?: string;
   chartType: string;
-  code: string;
-  isActive: boolean;
-  createdAt: string;
-  updatedAt: string;
-  __v: number;
+  code?: string;
+  isActive?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+  __v?: number;
 }
 
 export interface DataSourceDetails {
@@ -240,7 +240,7 @@ export interface WidgetResponse {
     createdBy: string;
     dashboardId: string;
     organizationId: string;
-    widgetTypeId: WidgetDetails;
+    widgetTypeId: WidgetDetails | string;
     name: string;
     dataSourceId: DataSourceDetails;
     dimensions: string[];
@@ -259,6 +259,7 @@ export interface WidgetResponse {
       label: string;
       widgetData: ChartData[];
     };
+    chartType?: string;
   };
 }
 

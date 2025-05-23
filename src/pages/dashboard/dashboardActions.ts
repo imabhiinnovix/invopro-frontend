@@ -387,6 +387,7 @@ interface SaveWidgetsPayload {
     }[];
     dataSourceId: string;
     entityId: string;
+    isIncremental?: boolean;
   }[];
 }
 
