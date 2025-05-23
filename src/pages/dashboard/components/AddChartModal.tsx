@@ -72,6 +72,9 @@ interface AddChartModalProps {
   initialData?: ChartResponse;
   onSave?: (formData: ChartFormData) => Promise<void>;
   isNaturalLangauage?: boolean;
+  setOpenSaveChart?: (open: boolean) => void;
+  setChartSaveSettingData?: (chart: ChartResponse) => void;
+  setNewSaveChartName?: (name: string) => void;
 }
 
 const FormSection = styled(Box)(({ theme }) => ({
@@ -200,6 +203,9 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
   initialData,
   onSave,
   isNaturalLangauage,
+  setOpenSaveChart,
+  setChartSaveSettingData,
+  setNewSaveChartName,
 }) => {
   const dispatch = useAppDispatch();
   const { widgetTypes, dataSources, widgetTypesLoading, dataSourcesLoading } = useAppSelector(
@@ -559,18 +565,16 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
       )}
       elseWrapper={(children) => <ConfigurationPanel>{children}</ConfigurationPanel>} // No wrapper if false
     >
-      <ConfigurationHeader>
-        {!isNaturalLangauage && (
-          <>
-            <Typography variant="h6" fontWeight={600}>
-              {initialData ? 'Edit Chart' : 'Add New Chart'}
-            </Typography>
-            <IconButton onClick={onClose} size="small">
-              <ClearIcon />
-            </IconButton>
-          </>
-        )}
-      </ConfigurationHeader>
+      {!isNaturalLangauage && (
+        <ConfigurationHeader>
+          <Typography variant="h6" fontWeight={600}>
+            {initialData ? 'Edit Chart' : 'Add New Chart'}
+          </Typography>
+          <IconButton onClick={onClose} size="small">
+            <ClearIcon />
+          </IconButton>
+        </ConfigurationHeader>
+      )}
 
       <ConfigurationContent>
         <FirstFormSection>
@@ -863,9 +867,43 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
           </StyledButton>
         </ConfigurationFooter>
       ) : (
-        <Button variant="contained" onClick={handleSubmit}>
-          Visualize Graph
-        </Button>
+        // <Button variant="contained" onClick={handleSubmit}>
+        //   Visualize Graph
+        // </Button>
+
+        <Box display="flex" gap={2} pb={2}>
+          <Button
+            variant="contained"
+            fullWidth
+            sx={{
+              flex: 1,
+              height: 56,
+              fontSize: 16,
+              backgroundColor: 'white',
+              fontWeight: 'bold',
+              color: 'black',
+              '&:hover': { backgroundColor: '#f0f0f0' },
+            }}
+            onClick={handleSubmit}
+          >
+            Preview Changes
+          </Button>
+          <Button
+            variant="contained"
+            color="primary"
+            fullWidth
+            sx={{ flex: 1, color: 'white', height: 56, fontWeight: 'bold', fontSize: 16 }}
+            onClick={() => {
+              if (initialData && setOpenSaveChart && setChartSaveSettingData && setNewSaveChartName) {
+                setOpenSaveChart(true);
+                setChartSaveSettingData(initialData);
+                setNewSaveChartName(initialData.name);
+              }
+            }}
+          >
+            Add to Dashboard
+          </Button>
+        </Box>
       )}
     </IfElseWrapper>
   );

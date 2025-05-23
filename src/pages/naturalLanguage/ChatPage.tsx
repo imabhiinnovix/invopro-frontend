@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Box, TextField, IconButton, Typography, Paper } from '@mui/material';
+import { Box, TextField, IconButton, Typography, Paper, InputAdornment } from '@mui/material';
 import SendIcon from '@mui/icons-material/Send';
 import { useAppDispatch, useAppSelector } from '../../storeHooks';
 
@@ -47,7 +47,7 @@ const ChatPage: React.FC = () => {
         </Box>
       </Box>
 
-      <Box display="flex" p={2} borderTop="1px solid #ccc">
+      {/* <Box display="flex" p={2}>
         <TextField
           fullWidth
           label="Type your message"
@@ -61,6 +61,75 @@ const ChatPage: React.FC = () => {
         <IconButton color="primary" onClick={handleSend} sx={{ ml: 1 }}>
           <SendIcon />
         </IconButton>
+      </Box> */}
+
+      <Box display="flex" p={2} mr={3.5} alignItems="center">
+        <TextField
+          multiline
+          minRows={3}
+          fullWidth
+          label="Ask anything"
+          variant="outlined"
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          onKeyDown={handleKeyPress}
+          disabled={chartsLoading}
+          InputProps={{
+            endAdornment: (
+              <InputAdornment position="end">
+                <IconButton
+                  onClick={handleSend}
+                  disabled={chartsLoading || !input.trim()}
+                  sx={{
+                    backgroundColor: '#5c5c5c',
+                    color: 'white',
+                    borderRadius: '16px',
+                    '&:hover': {
+                      backgroundColor: '#222',
+                    },
+                    width: 48,
+                    height: 48,
+                  }}
+                >
+                  <SendIcon />
+                </IconButton>
+              </InputAdornment>
+            ),
+          }}
+          sx={{
+            '& .MuiOutlinedInput-root': {
+              borderRadius: '24px',
+              alignItems: 'flex-start',
+              paddingRight: '8px',
+              '& fieldset': {
+                borderColor: '#5c5c5c', // Darker border
+              },
+              '&:hover fieldset': {
+                borderColor: '#444', // Even darker on hover
+              },
+              '&.Mui-focused fieldset': {
+                borderColor: '#333', // Darkest when focused
+              },
+            },
+            '& .MuiInputLabel-root': {
+              color: '#333', // Darker label
+            },
+            '& .MuiInputLabel-root.Mui-focused': {
+              color: '#222', // Even darker when focused
+            },
+          }}
+          // sx={{
+          //   '& .MuiOutlinedInput-root': {
+          //     borderRadius: '24px',
+          //     alignItems: 'flex-start',
+          //     paddingRight: '8px',
+          //     paddingLeft: '8px',
+          //   },
+          //   '& .MuiInputLabel-root': {
+          //     top: '-4px',
+          //   },
+          // }}
+        />
       </Box>
     </Box>
   );
