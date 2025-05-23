@@ -188,6 +188,7 @@ const dashboardSlice = createSlice({
       })
       .addCase(fetchDataSources.rejected, (state, action) => {
         state.dataSourcesLoading = false;
+
         state.dataSourcesError = action.error.message || 'Failed to fetch data sources';
       })
       // Fetch all data sources
@@ -228,12 +229,12 @@ const dashboardSlice = createSlice({
         state.chartsError = null;
       })
       .addCase(fetchChartData.fulfilled, (state, action: PayloadAction<ChartDataResponse>) => {
-        console.log('action.payload.data', action.payload.data);
         state.chartsLoading = false;
         state.charts = action.payload.data;
       })
       .addCase(fetchChartData.rejected, (state, action) => {
         state.chartsLoading = false;
+
         state.chartsError = action.error.message || 'Failed to fetch chart data';
       })
       //chartdata from nlquery
@@ -363,6 +364,7 @@ const dashboardSlice = createSlice({
       })
       .addCase(saveWidgets.rejected, (state, action) => {
         state.chartsLoading = false;
+        console.log(action);
         state.chartsError = action.error.message || 'Failed to save widgets';
       })
       // Share users actions

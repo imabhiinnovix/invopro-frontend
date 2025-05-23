@@ -972,13 +972,15 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
   }
 
   if (chartsError) {
-    return (
-      <ErrorContainer>
-        <Typography color="error" variant="h6">
-          {chartsError}
-        </Typography>
-      </ErrorContainer>
-    );
+    if (!isNaturalLangauage) {
+      return (
+        <ErrorContainer>
+          <Typography color="error" variant="h6">
+            {chartsError}
+          </Typography>
+        </ErrorContainer>
+      );
+    }
   }
 
   if ((!allCharts || allCharts.length === 0) && !isNaturalLangauage) {
@@ -1040,7 +1042,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
               aggregation: chartSaveSettingData.aggregation, //not
               position: chartSaveSettingData.position || { x: 0, y: 0, index: 0 }, //not there
               conditions: chartSaveSettingData.conditions,
-              dataSourceId: chartSaveSettingData.dataSourceId?._id || '',
+              dataSourceId: chartSaveSettingData.dataSourceId?._id || chartSaveSettingData.dataSourceId,
               entityId: chartSaveSettingData.dataSourceId?.entityId || chartSaveSettingData.entityId,
               isIncremental: chartSaveSettingData.isIncremental || false,
             },

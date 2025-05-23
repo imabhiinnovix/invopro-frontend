@@ -391,10 +391,20 @@ interface SaveWidgetsPayload {
   }[];
 }
 
-export const saveWidgets = createAsyncThunk('dashboard/saveWidgets', async (payload: SaveWidgetsPayload) => {
-  const { data } = await axiosInstance.post<CreateWidgetResponse>(POST.SAVE_WIDGETS, payload);
-  return data;
-});
+export const saveWidgets = createAsyncThunk(
+  'dashboard/saveWidgets',
+  async (payload: SaveWidgetsPayload, { rejectWithValue }) => {
+    try {
+      const { data } = await axiosInstance.post<CreateWidgetResponse>(POST.SAVE_WIDGETS, payload);
+      return data;
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response?.data) {
+        return rejectWithValue(error.response.data);
+      }
+      return rejectWithValue({ message: 'Failed to share dashboard. Please try again.' });
+    }
+  }
+);
 
 export const fetchDashboardShareUsers = createAsyncThunk('dashboard/fetchShareUsers', async (dashboardId: string) => {
   const { data } = await axiosInstance.get<{ success: boolean; message: string; data: string[] }>(
