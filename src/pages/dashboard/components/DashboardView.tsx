@@ -211,7 +211,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   ]);
 
   useEffect(() => {
-    setIsEditMode(true);
+    setIsEditMode(false);
     if (location.state?.enableEditMode) {
       setIsEditMode(true);
     }
@@ -560,6 +560,9 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                       sx={{
                         "& .MuiInputBase-input": {
                           py: 1.1,
+                        },
+                        "& .MuiFormLabel-root": {
+                          top: "-6px",
                         },
                       }}
                     />

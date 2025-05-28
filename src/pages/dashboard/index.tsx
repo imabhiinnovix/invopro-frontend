@@ -71,7 +71,9 @@ const Dashboard = () => {
   };
 
   const handleEdit = (dashboardId: string) => {
-    navigate(`/dashboard/${dashboardId}`);
+    navigate(`/dashboard/${dashboardId}`, {
+      state: { enableEditMode: false },
+    });
   };
 
   const handleDeleteClick = (e: React.MouseEvent, dashboard: DashboardType) => {
@@ -120,10 +122,11 @@ const Dashboard = () => {
         setOpenCreateModal(false);
         setNewDashboardName("");
         setDashboardType("normal");
+        setTimePeriod("1m");
         toast.success(response.message || "Dashboard created successfully!");
 
         // Navigate to the newly created dashboard
-        const newDashboard = response.data[0];
+        const newDashboard = response?.data;
 
         if (newDashboard) {
           navigate(`/dashboard/${newDashboard._id}`, {
