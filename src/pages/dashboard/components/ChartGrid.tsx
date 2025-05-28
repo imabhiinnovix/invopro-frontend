@@ -1712,7 +1712,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
           <Pie
             {...baseChartProps}
             data={chartData as ChartData<"pie">}
-            plugins={[sliceLabelsPlugin]}
+            plugins={widgetTheme?.showLegendOverlay && [sliceLabelsPlugin]}
             ref={(ref) => {
               chartRefs.current[chartId] = ref as ChartJS<"pie"> | null;
             }}
@@ -1726,7 +1726,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
             ref={(ref) => {
               chartRefs.current[chartId] = ref as ChartJS<"doughnut"> | null;
             }}
-            plugins={[sliceLabelsPlugin]}
+            plugins={widgetTheme?.showLegendOverlay && [sliceLabelsPlugin]}
           />
         );
       case "multiSeriesPie":
@@ -1747,7 +1747,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
           <Bar
             {...baseChartProps}
             data={chartData as ChartData<"bar">}
-            plugins={[barLabelsPlugin]}
+            plugins={widgetTheme?.showLegendOverlay && [barLabelsPlugin]}
             ref={(ref) => {
               chartRefs.current[chartId] = ref as ChartJS<"bar"> | null;
             }}
@@ -1768,7 +1768,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
           <PolarArea
             {...baseChartProps}
             data={chartData as ChartData<"polarArea">}
-            plugins={[polarAreaLabelsPlugin]}
+            plugins={widgetTheme?.showLegendOverlay && [polarAreaLabelsPlugin]}
             ref={(ref) => {
               chartRefs.current[chartId] = ref as ChartJS<"polarArea"> | null;
             }}
@@ -1781,7 +1781,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
           <Line
             {...baseChartProps}
             data={chartData as ChartData<"line">}
-            plugins={[pointLabelsPlugin]}
+            plugins={widgetTheme?.showLegendOverlay && [pointLabelsPlugin]}
             ref={(ref) => {
               chartRefs.current[chartId] = ref as ChartJS<"line"> | null;
             }}

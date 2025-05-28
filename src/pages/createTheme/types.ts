@@ -122,6 +122,7 @@ export interface Theme {
   createdAt: string;
   updatedAt: string;
   __v: number;
+ showLegendOverlay?: boolean
 }
 
 export interface ThemeListResponse {
