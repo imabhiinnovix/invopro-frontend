@@ -220,6 +220,7 @@ export interface ChartResponse {
   dataSourceId?: DataSourceDetails;
   data?: ChartData[];
   userQuery?: string;
+  isIncremental?: boolean;
 }
 
 export interface ChartDataResponse {
