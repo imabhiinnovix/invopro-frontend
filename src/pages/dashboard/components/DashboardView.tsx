@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useMemo } from "react";
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import {
   Box,
   Typography,
@@ -11,111 +11,109 @@ import {
   FormControl,
   InputLabel,
   SelectChangeEvent,
-} from "@mui/material";
-import AddIcon from "@mui/icons-material/Add";
-import EditIcon from "@mui/icons-material/Edit";
-import DoneIcon from "@mui/icons-material/Done";
-import PauseIcon from "@mui/icons-material/Pause";
-import ViewColumnIcon from "@mui/icons-material/ViewColumn";
-import SquareIcon from "@mui/icons-material/Square";
-import { useParams, useLocation } from "react-router-dom";
-import { ChartGrid } from "./ChartGrid";
-import { AddChartModal, ChartFormData } from "./AddChartModal";
-import { useAppDispatch, useAppSelector } from "../../../storeHooks";
-import {
-  updateWidget,
-  saveWidgets,
-  fetchWidgetTheme,
-  fetchChartData,
-  selectDashboardTheme,
-} from "../dashboardActions";
-import { toast } from "react-toastify";
-import { ChartResponse, TemporaryChart } from "../types";
-import usePost from "../../../hooks/usePost";
-import { POST } from "../../../services/apiRoutes";
-import CommonDatePicker from "../../../components/common/datePicker/datePicker";
-import { useForm } from "react-hook-form";
-import { DateTime } from "luxon";
-import { yupResolver } from "@hookform/resolvers/yup";
-import * as yup from "yup";
-import { fetchThemeList } from "../../createTheme/themeActions";
+} from '@mui/material';
+import AddIcon from '@mui/icons-material/Add';
+import EditIcon from '@mui/icons-material/Edit';
+import DoneIcon from '@mui/icons-material/Done';
+import PauseIcon from '@mui/icons-material/Pause';
+import ViewColumnIcon from '@mui/icons-material/ViewColumn';
+import SquareIcon from '@mui/icons-material/Square';
+import { useParams, useLocation } from 'react-router-dom';
+import { ChartGrid } from './ChartGrid';
+import { AddChartModal, ChartFormData } from './AddChartModal';
+import { useAppDispatch, useAppSelector } from '../../../storeHooks';
+import { updateWidget, saveWidgets, fetchWidgetTheme, fetchChartData, selectDashboardTheme } from '../dashboardActions';
+import { toast } from 'react-toastify';
+import { ChartResponse, TemporaryChart } from '../types';
+import usePost from '../../../hooks/usePost';
+import { POST } from '../../../services/apiRoutes';
+import CommonDatePicker from '../../../components/common/datePicker/datePicker';
+import { useForm } from 'react-hook-form';
+import { DateTime } from 'luxon';
+import { yupResolver } from '@hookform/resolvers/yup';
+import * as yup from 'yup';
+import { fetchThemeList } from '../../createTheme/themeActions';
+
+// import React, { useState, useRef, useEffect } from 'react';
+// import { Box, Typography, TextField, Button, ButtonGroup } from '@mui/material';
+// import AddIcon from '@mui/icons-material/Add';
+// import EditIcon from '@mui/icons-material/Edit';
+// import DoneIcon from '@mui/icons-material/Done';
+// import PauseIcon from '@mui/icons-material/Pause';
+// import ViewColumnIcon from '@mui/icons-material/ViewColumn';
+// import SquareIcon from '@mui/icons-material/Square';
+// import { useParams, useLocation } from 'react-router-dom';
+// import { ChartGrid } from './ChartGrid';
+// import { AddChartModal, ChartFormData } from './AddChartModal';
+// import { useAppDispatch, useAppSelector } from '../../../storeHooks';
+// import { updateWidget, saveWidgets, fetchWidgetTheme } from '../dashboardActions';
+// import { toast } from 'react-toastify';
+// import { ChartResponse, TemporaryChart } from '../types';
+// import usePost from '../../../hooks/usePost';
+// import { POST } from '../../../services/apiRoutes';
 
 interface DashboardViewProps {
   title: string;
   onTitleChange: (newTitle: string) => void;
 }
 
-export const DashboardView: React.FC<DashboardViewProps> = ({
-  title: initialTitle,
-  onTitleChange,
-}): JSX.Element => {
+export const DashboardView: React.FC<DashboardViewProps> = ({ title: initialTitle, onTitleChange }): JSX.Element => {
   const [isEditMode, setIsEditMode] = useState(false);
   const [editedTitle, setEditedTitle] = useState(initialTitle);
   const [title, setTitle] = useState(initialTitle);
   const [isAddChartModalOpen, setIsAddChartModalOpen] = useState(false);
   const [isEditChartModalOpen, setIsEditChartModalOpen] = useState(false);
-  const [selectedChart, setSelectedChart] = useState<ChartResponse | null>(
-    null
-  );
+  const [selectedChart, setSelectedChart] = useState<ChartResponse | null>(null);
   const [gridColumns, setGridColumns] = useState(2);
-  const [selectedTheme, setSelectedTheme] = useState<string>("");
+  const [selectedTheme, setSelectedTheme] = useState<string>('');
 
   const inputRef = useRef<HTMLInputElement>(null);
   const { id: dashboardId } = useParams();
   const location = useLocation();
   const dispatch = useAppDispatch();
-  const temporaryCharts = useAppSelector(
-    (state) => state.dashboard.temporaryCharts
-  );
+  const temporaryCharts = useAppSelector((state) => state.dashboard.temporaryCharts);
   const dashboards = useAppSelector((state) => state.dashboard.dashboards);
   const currentDashboard = dashboards.find((d) => d._id === dashboardId);
 
   const { themes } = useAppSelector((state) => state.theme);
 
-  const postGridColumns = usePost([""]);
+  const postGridColumns = usePost(['']);
 
   const validationSchema = yup.object({
     versionValue: yup.string().nullable().optional(),
     startDate: yup
       .string()
       .nullable()
-      .when("$isDashboardTrend", ([isDashboardTrend]) => {
+      .when('$isDashboardTrend', ([isDashboardTrend]) => {
         if (isDashboardTrend) {
-          return yup.string().nullable().required("Start date is required");
+          return yup.string().nullable().required('Start date is required');
         }
         return yup.string().nullable().optional();
       }),
     endDate: yup
       .string()
       .nullable()
-      .when(
-        ["$isDashboardTrend", "startDate"],
-        ([isDashboardTrend, startDate]) => {
-          if (isDashboardTrend && startDate) {
-            return yup
-              .string()
-              .nullable()
-              .required("End date is required")
-              .test(
-                "is-after-start",
-                "End date must be after or equal to start date",
-                function (value) {
-                  const { startDate } = this.parent;
-                  if (!value || !startDate) return true;
+      .when(['$isDashboardTrend', 'startDate'], ([isDashboardTrend, startDate]) => {
+        if (isDashboardTrend && startDate) {
+          return yup
+            .string()
+            .nullable()
+            .required('End date is required')
+            .test('is-after-start', 'End date must be after or equal to start date', function (value) {
+              const { startDate } = this.parent;
+              if (!value || !startDate) return true;
 
-                  try {
-                    const startDateTime = DateTime.fromISO(startDate);
-                    const endDateTime = DateTime.fromISO(value);
-                    return endDateTime >= startDateTime;
-                  } catch {
-                    return false;
-                  }
-                }
-              );
-          }
-          return yup.string().nullable().optional();
+              try {
+                const startDateTime = DateTime.fromISO(startDate);
+                const endDateTime = DateTime.fromISO(value);
+                return endDateTime >= startDateTime;
+              } catch {
+                return false;
+              }
+            });
         }
-      ),
+        return yup.string().nullable().optional();
+      }),
   });
 
   const {
@@ -136,31 +134,22 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
       endDate: DateTime.now().toISO(),
     },
     context: {
-      isDashboardTrend: currentDashboard?.settings?.dashboardType === "trend",
+      isDashboardTrend: currentDashboard?.settings?.dashboardType === 'trend',
     },
   });
 
-  const versionValue = watch("versionValue");
-  const formattedVersionValue = versionValue
-    ? DateTime.fromISO(versionValue).toFormat("yyyy-LL")
-    : undefined;
+  const versionValue = watch('versionValue');
+  const formattedVersionValue = versionValue ? DateTime.fromISO(versionValue).toFormat('yyyy-LL') : undefined;
 
-  const startDate = watch("startDate");
-  const startVersionValue = startDate
-    ? DateTime.fromISO(startDate).toFormat("yyyy-LL")
-    : undefined;
+  const startDate = watch('startDate');
+  const startVersionValue = startDate ? DateTime.fromISO(startDate).toFormat('yyyy-LL') : undefined;
 
-  const endDate = watch("endDate");
-  const endVersionValue = endDate
-    ? DateTime.fromISO(endDate).toFormat("yyyy-LL")
-    : undefined;
+  const endDate = watch('endDate');
+  const endVersionValue = endDate ? DateTime.fromISO(endDate).toFormat('yyyy-LL') : undefined;
 
   useEffect(() => {
     if (dashboards.length > 0) {
-      setGridColumns(
-        dashboards.find((dashboard) => dashboard?._id === dashboardId)?.settings
-          ?.gridColumns || 2
-      );
+      setGridColumns(dashboards.find((dashboard) => dashboard?._id === dashboardId)?.settings?.gridColumns || 2);
     }
   }, [dashboards, dashboardId]);
 
@@ -170,23 +159,22 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
   useEffect(() => {
     if (dashboardId) {
-      if (currentDashboard?.settings?.dashboardType === "normal") {
+      if (currentDashboard?.settings?.dashboardType === 'normal') {
         dispatch(
           fetchChartData({
             dashboardId,
             // versionValue: formattedVersionValue || "",
-            dashboardType: "normal",
+            dashboardType: 'normal',
             startVersionValue,
             endVersionValue,
             versionValue,
           })
         );
       } else if (
-        currentDashboard?.settings?.dashboardType === "trend" &&
+        currentDashboard?.settings?.dashboardType === 'trend' &&
         startVersionValue &&
         endVersionValue &&
-        DateTime.fromISO(startVersionValue) <
-          DateTime.fromISO(endVersionValue) &&
+        DateTime.fromISO(startVersionValue) < DateTime.fromISO(endVersionValue) &&
         !hasErrors
       ) {
         dispatch(
@@ -241,34 +229,34 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
   useEffect(() => {
     if (currentDashboard?.settings) {
-      setValue("versionValue", null);
+      setValue('versionValue', null);
 
       const currentDate = DateTime.now();
-      setValue("endDate", currentDate.toISO());
+      setValue('endDate', currentDate.toISO());
 
       if (currentDashboard.settings.dynamicVersionValue) {
         const period = currentDashboard.settings.dynamicVersionValue;
         let monthsToSubtract = 1;
 
         switch (period) {
-          case "1m":
+          case '1m':
             monthsToSubtract = 1;
             break;
-          case "3m":
+          case '3m':
             monthsToSubtract = 3;
             break;
-          case "6m":
+          case '6m':
             monthsToSubtract = 6;
             break;
-          case "12m":
+          case '12m':
             monthsToSubtract = 12;
             break;
         }
 
         const startDate = currentDate.minus({ months: monthsToSubtract });
-        setValue("startDate", startDate.toISO());
+        setValue('startDate', startDate.toISO());
       } else {
-        setValue("startDate", currentDate.minus({ months: 1 }).toISO());
+        setValue('startDate', currentDate.minus({ months: 1 }).toISO());
       }
     }
   }, [currentDashboard?.settings, setValue]);
@@ -298,34 +286,30 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             saveWidgets({
               widgets: temporaryCharts.map((chart: TemporaryChart) => ({
                 dashboardId: chart.dashboardId,
-                widgetTypeId: chart.widgetTypeId?._id || "",
+                widgetTypeId: chart.widgetTypeId?._id || '',
                 name: chart.name,
-                dimensions: chart.dimensions.join(","),
+                dimensions: chart.dimensions.join(','),
                 groupBy: chart.groupBy,
                 aggregation: chart.aggregation,
                 position: chart.position,
                 conditions: chart.conditions,
-                dataSourceId: chart.dataSourceId?._id || "",
-                entityId: chart.dataSourceId?.entityId || "",
+                dataSourceId: chart.dataSourceId?._id || '',
+                entityId: chart.dataSourceId?.entityId || '',
                 isIncremental: chart.isIncremental || false,
               })),
             })
           ).unwrap();
 
           if (result.success) {
-            toast.success("Charts saved successfully!");
+            toast.success('Charts saved successfully!');
           } else {
-            toast.error(result.message || "Failed to save charts");
+            toast.error(result.message || 'Failed to save charts');
           }
         } catch (error) {
-          if (
-            typeof error === "object" &&
-            error !== null &&
-            "message" in error
-          ) {
+          if (typeof error === 'object' && error !== null && 'message' in error) {
             toast.error(error.message as string);
           } else {
-            toast.error("Failed to save charts");
+            toast.error('Failed to save charts');
           }
         }
       }
@@ -337,7 +321,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter") {
+    if (e.key === 'Enter') {
       onTitleChange(editedTitle);
       setIsEditMode(false);
     }
@@ -365,12 +349,12 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         updateWidget({
           ...formData,
           _id: selectedChart._id,
-          dashboardId: dashboardId || "",
+          dashboardId: dashboardId || '',
         })
       ).unwrap();
 
       if (result.success) {
-        toast.success("Chart updated successfully!");
+        toast.success('Chart updated successfully!');
         handleCloseEditModal();
 
         // Fetch updated chart data
@@ -378,34 +362,29 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           dispatch(
             fetchChartData({
               dashboardId,
-              dashboardType:
-                currentDashboard?.settings?.dashboardType || "normal",
+              dashboardType: currentDashboard?.settings?.dashboardType || 'normal',
               startVersionValue,
               endVersionValue,
-              versionValue: formattedVersionValue || "",
+              versionValue: formattedVersionValue || '',
             })
           );
         }
       } else {
-        toast.error(result.message || "Failed to update chart");
+        toast.error(result.message || 'Failed to update chart');
       }
     } catch (error) {
-      if (typeof error === "object" && error !== null && "message" in error) {
+      if (typeof error === 'object' && error !== null && 'message' in error) {
         toast.error(error.message as string);
       } else {
-        toast.error("Failed to update chart");
+        toast.error('Failed to update chart');
       }
     }
   };
 
   useEffect(() => {
-    if (
-      startDate &&
-      endDate &&
-      currentDashboard?.settings?.dashboardType === "trend"
-    ) {
-      trigger("endDate");
-      trigger("startDate");
+    if (startDate && endDate && currentDashboard?.settings?.dashboardType === 'trend') {
+      trigger('endDate');
+      trigger('startDate');
     }
   }, [startDate, endDate, currentDashboard?.settings?.dashboardType, trigger]);
 
@@ -415,23 +394,21 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
     if (dashboardId) {
       try {
-        const result = await dispatch(
-          selectDashboardTheme({ dashboardId, widgetThemeId: themeId })
-        ).unwrap();
+        const result = await dispatch(selectDashboardTheme({ dashboardId, widgetThemeId: themeId })).unwrap();
 
         if (result.success) {
-          toast.success("Theme updated successfully!");
+          toast.success('Theme updated successfully!');
           if (currentDashboard?.widgetThemeId) {
             dispatch(fetchWidgetTheme(themeId));
           }
         } else {
-          toast.error(result.message || "Failed to update theme");
+          toast.error(result.message || 'Failed to update theme');
         }
       } catch (error) {
-        if (typeof error === "object" && error !== null && "message" in error) {
+        if (typeof error === 'object' && error !== null && 'message' in error) {
           toast.error(error.message as string);
         } else {
-          toast.error("Failed to update theme");
+          toast.error('Failed to update theme');
         }
       }
     }
@@ -440,22 +417,22 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   return (
     <Box
       sx={{
-        height: "100%",
-        display: "flex",
-        flexDirection: "column",
-        overflow: "hidden",
+        height: '100%',
+        display: 'flex',
+        flexDirection: 'column',
+        overflow: 'hidden',
       }}
     >
       <Box
         sx={{
           p: 2,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
           flexShrink: 0,
           gap: 2,
           borderBottom: 1,
-          borderColor: "divider",
+          borderColor: 'divider',
         }}
       >
         <Box sx={{ flex: 1, mr: 2 }}>
@@ -497,32 +474,28 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           ) : null}
         </Box>
 
-        <Box sx={{ display: "flex", gap: 2 }}>
+        <Box sx={{ display: 'flex', gap: 2 }}>
           {isEditMode ? (
             <>
-              <ButtonGroup
-                variant="outlined"
-                aria-label="grid columns"
-                size="small"
-              >
+              <ButtonGroup variant="outlined" aria-label="grid columns" size="small">
                 <Button
                   onClick={() => handleGridColumns(1)}
-                  variant={gridColumns === 1 ? "contained" : "outlined"}
-                  sx={{ minWidth: "40px" }}
+                  variant={gridColumns === 1 ? 'contained' : 'outlined'}
+                  sx={{ minWidth: '40px' }}
                 >
                   <SquareIcon />
                 </Button>
                 <Button
                   onClick={() => handleGridColumns(2)}
-                  variant={gridColumns === 2 ? "contained" : "outlined"}
-                  sx={{ minWidth: "40px" }}
+                  variant={gridColumns === 2 ? 'contained' : 'outlined'}
+                  sx={{ minWidth: '40px' }}
                 >
                   <PauseIcon />
                 </Button>
                 <Button
                   onClick={() => handleGridColumns(3)}
-                  variant={gridColumns === 3 ? "contained" : "outlined"}
-                  sx={{ minWidth: "40px" }}
+                  variant={gridColumns === 3 ? 'contained' : 'outlined'}
+                  sx={{ minWidth: '40px' }}
                 >
                   <ViewColumnIcon />
                 </Button>
@@ -532,7 +505,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 color="primary"
                 startIcon={<AddIcon />}
                 onClick={() => setIsAddChartModalOpen(true)}
-                sx={{ minWidth: "120px" }}
+                sx={{ minWidth: '120px' }}
               >
                 Add Chart
               </Button>
@@ -541,7 +514,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 color="success"
                 variant="contained"
                 startIcon={<DoneIcon />}
-                sx={{ minWidth: "100px" }}
+                sx={{ minWidth: '100px' }}
               >
                 Save
               </Button>
@@ -549,34 +522,34 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           ) : (
             <>
               <Box>
-                {currentDashboard?.settings?.dashboardType === "normal" ? (
+                {currentDashboard?.settings?.dashboardType === 'normal' ? (
                   <Box>
                     <CommonDatePicker
                       name="versionValue"
                       control={control}
-                      views={["year", "month"]}
+                      views={['year', 'month']}
                       label="Period"
-                      rules={{ required: "Period is required" }}
+                      rules={{ required: 'Period is required' }}
                       sx={{
-                        "& .MuiInputBase-input": {
+                        '& .MuiInputBase-input': {
                           py: 1.1,
                         },
-                        "& .MuiFormLabel-root": {
-                          top: "-6px",
+                        '& .MuiFormLabel-root': {
+                          top: '-6px',
                         },
                       }}
                     />
                   </Box>
-                ) : currentDashboard?.settings?.dashboardType === "trend" ? (
+                ) : currentDashboard?.settings?.dashboardType === 'trend' ? (
                   <Stack direction="row" spacing={2}>
                     <CommonDatePicker
                       name="startDate"
                       control={control}
-                      views={["year", "month"]}
+                      views={['year', 'month']}
                       label="Start Date"
-                      rules={{ required: "Start date is required" }}
+                      rules={{ required: 'Start date is required' }}
                       sx={{
-                        "& .MuiInputBase-input": {
+                        '& .MuiInputBase-input': {
                           py: 1.1,
                         },
                       }}
@@ -585,11 +558,11 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                     <CommonDatePicker
                       name="endDate"
                       control={control}
-                      views={["year", "month"]}
+                      views={['year', 'month']}
                       label="End Date"
-                      rules={{ required: "End date is required" }}
+                      rules={{ required: 'End date is required' }}
                       sx={{
-                        "& .MuiInputBase-input": {
+                        '& .MuiInputBase-input': {
                           py: 1.1,
                         },
                       }}
@@ -597,12 +570,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                   </Stack>
                 ) : null}
               </Box>
-              <Button
-                onClick={handleEditModeToggle}
-                color="primary"
-                variant="contained"
-                startIcon={<EditIcon />}
-              >
+              <Button onClick={handleEditModeToggle} color="primary" variant="contained" startIcon={<EditIcon />}>
                 Edit
               </Button>
             </>
@@ -612,41 +580,41 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
       <Box
         sx={{
-          display: "flex",
+          display: 'flex',
           flex: 1,
-          overflow: "hidden",
+          overflow: 'hidden',
           gap: 3,
-          height: "calc(100% - 100px)",
+          height: 'calc(100% - 100px)',
         }}
       >
         <Box
           sx={{
             flex: 1,
-            overflow: "auto",
-            display: "grid",
+            overflow: 'auto',
+            display: 'grid',
             gridTemplateColumns: {
-              xs: "1fr",
-              sm: "repeat(auto-fit, minmax(400px, 1fr))",
-              md: "repeat(auto-fit, minmax(450px, 1fr))",
-              lg: "repeat(auto-fit, minmax(500px, 1fr))",
+              xs: '1fr',
+              sm: 'repeat(auto-fit, minmax(400px, 1fr))',
+              md: 'repeat(auto-fit, minmax(450px, 1fr))',
+              lg: 'repeat(auto-fit, minmax(500px, 1fr))',
             },
             gap: 3,
             p: 1,
 
-            transition: "all 0.3s ease",
+            transition: 'all 0.3s ease',
             ...((isAddChartModalOpen || isEditChartModalOpen) && {
-              flex: "1 1 70%",
+              flex: '1 1 70%',
             }),
-            "&::-webkit-scrollbar": {
-              width: "8px",
-              height: "8px",
+            '&::-webkit-scrollbar': {
+              width: '8px',
+              height: '8px',
             },
-            "&::-webkit-scrollbar-thumb": {
-              backgroundColor: "rgba(0, 0, 0, 0.1)",
-              borderRadius: "4px",
+            '&::-webkit-scrollbar-thumb': {
+              backgroundColor: 'rgba(0, 0, 0, 0.1)',
+              borderRadius: '4px',
             },
-            "&::-webkit-scrollbar-track": {
-              backgroundColor: "transparent",
+            '&::-webkit-scrollbar-track': {
+              backgroundColor: 'transparent',
             },
           }}
         >
@@ -658,11 +626,11 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               isAddChartModalOpen={isAddChartModalOpen}
               isEditChartModalOpen={isEditChartModalOpen}
               gridColumns={gridColumns}
-              currentDashboard={currentDashboard || ""}
-              startVersionValue={startVersionValue || ""}
-              endVersionValue={endVersionValue || ""}
-              versionValue={formattedVersionValue || ""}
-              isTrend={currentDashboard?.settings?.dashboardType === "trend"}
+              currentDashboard={currentDashboard || ''}
+              startVersionValue={startVersionValue || ''}
+              endVersionValue={endVersionValue || ''}
+              versionValue={formattedVersionValue || ''}
+              isTrend={currentDashboard?.settings?.dashboardType === 'trend'}
             />
           )}
         </Box>
@@ -671,18 +639,18 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           <Box
             sx={{
               width: {
-                xs: "100%",
-                sm: "400px",
-                md: "450px",
-                lg: "500px",
+                xs: '100%',
+                sm: '400px',
+                md: '450px',
+                lg: '500px',
               },
               flexShrink: 0,
-              display: "flex",
-              flexDirection: "column",
-              borderLeft: "1px solid",
-              borderColor: "divider",
-              overflow: "hidden",
-              height: "100%",
+              display: 'flex',
+              flexDirection: 'column',
+              borderLeft: '1px solid',
+              borderColor: 'divider',
+              overflow: 'hidden',
+              height: '100%',
             }}
           >
             {isAddChartModalOpen && (
@@ -690,8 +658,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 open={isAddChartModalOpen}
                 onClose={handleCloseModal}
                 isSubmitting={false}
-                dashboardId={dashboardId || ""}
-                isTrend={currentDashboard?.settings?.dashboardType === "trend"}
+                dashboardId={dashboardId || ''}
+                isTrend={currentDashboard?.settings?.dashboardType === 'trend'}
                 currentDashboard={currentDashboard}
                 startVersionValue={startVersionValue}
                 endVersionValue={endVersionValue}
@@ -703,10 +671,10 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 open={isEditChartModalOpen}
                 onClose={handleCloseEditModal}
                 isSubmitting={false}
-                dashboardId={dashboardId || ""}
+                dashboardId={dashboardId || ''}
                 initialData={selectedChart}
                 onSave={handleChartUpdate}
-                isTrend={currentDashboard?.settings?.dashboardType === "trend"}
+                isTrend={currentDashboard?.settings?.dashboardType === 'trend'}
                 currentDashboard={currentDashboard}
                 startVersionValue={startVersionValue}
                 endVersionValue={endVersionValue}

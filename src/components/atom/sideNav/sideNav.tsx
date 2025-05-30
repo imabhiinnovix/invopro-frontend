@@ -1,44 +1,38 @@
-import { styled, Theme, CSSObject } from "@mui/material/styles";
-import Box from "@mui/material/Box";
-import MuiDrawer from "@mui/material/Drawer";
-import List from "@mui/material/List";
-import ListItem from "@mui/material/ListItem";
-import ListItemButton from "@mui/material/ListItemButton";
-import ListItemIcon from "@mui/material/ListItemIcon";
-import ListItemText from "@mui/material/ListItemText";
-import { useNav } from "../../../context/NavContext";
-import DashboardIcon from "@mui/icons-material/Dashboard";
-import AddIcon from "@mui/icons-material/Add";
-import React, { useEffect, useMemo, useContext, useState } from "react";
-import { Collapse } from "@mui/material";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import ExpandLessIcon from "@mui/icons-material/ExpandLess";
-import { useNavigate, useLocation } from "react-router-dom";
-import SourceIcon from "@mui/icons-material/Source";
-import AssessmentIcon from "@mui/icons-material/Assessment";
-import PaletteIcon from "@mui/icons-material/Palette";
-import { useInfiniteScroll } from "../../../hooks/useInfiniteScroll";
-import { GET } from "../../../services/apiRoutes";
-import { DataSourceListData, DataSourceListPayload } from "./types";
-import { setDataSourceList } from "../../../pages/dataSources/dataSourceActions";
-import { useAppDispatch, useAppSelector } from "../../../storeHooks";
-import {
-  fetchDashboardList,
-  createDashboard,
-  deleteDashboard,
-} from "../../../pages/dashboard/dashboardActions";
-import {
-  Dashboard as DashboardType,
-  DashboardListResponse,
-} from "../../../pages/dashboard/types";
-import { toast } from "react-toastify";
-import { DeleteConfirmationModal } from "./components/DeleteConfirmationModal";
-import { SubItemsList } from "./components/SubItemsList";
-import { CreateDashboardModal } from "./components/CreateDashboardModal";
-import LogoutIcon from "@mui/icons-material/Logout";
-import logo from "../../../assets/ReportiVix-logo.png";
-import { AuthContext } from "../../../context/AuthContext";
-import { clearLocalStorage } from "../../../utils/handleLocalStorage";
+import { styled, Theme, CSSObject } from '@mui/material/styles';
+import Box from '@mui/material/Box';
+import MuiDrawer from '@mui/material/Drawer';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemButton from '@mui/material/ListItemButton';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemText from '@mui/material/ListItemText';
+import { useNav } from '../../../context/NavContext';
+import DashboardIcon from '@mui/icons-material/Dashboard';
+import AddIcon from '@mui/icons-material/Add';
+import React, { useEffect, useMemo, useContext, useState } from 'react';
+import { Collapse } from '@mui/material';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import ExpandLessIcon from '@mui/icons-material/ExpandLess';
+import { useNavigate, useLocation } from 'react-router-dom';
+import SourceIcon from '@mui/icons-material/Source';
+import AssessmentIcon from '@mui/icons-material/Assessment';
+import PaletteIcon from '@mui/icons-material/Palette';
+import { useInfiniteScroll } from '../../../hooks/useInfiniteScroll';
+import { GET } from '../../../services/apiRoutes';
+import { DataSourceListData, DataSourceListPayload } from './types';
+import { setDataSourceList } from '../../../pages/dataSources/dataSourceActions';
+import { useAppDispatch, useAppSelector } from '../../../storeHooks';
+import { fetchDashboardList, createDashboard, deleteDashboard } from '../../../pages/dashboard/dashboardActions';
+import { Dashboard as DashboardType, DashboardListResponse } from '../../../pages/dashboard/types';
+import { toast } from 'react-toastify';
+import { DeleteConfirmationModal } from './components/DeleteConfirmationModal';
+import { SubItemsList } from './components/SubItemsList';
+import { CreateDashboardModal } from './components/CreateDashboardModal';
+import LogoutIcon from '@mui/icons-material/Logout';
+import logo from '../../../assets/ReportiVix-logo.png';
+import { AuthContext } from '../../../context/AuthContext';
+import { clearLocalStorage } from '../../../utils/handleLocalStorage';
+import { Language } from '@mui/icons-material';
 
 interface ErrorResponse {
   success: boolean;
@@ -50,58 +44,58 @@ const drawerWidth = 225;
 
 const openedMixin = (theme: Theme): CSSObject => ({
   width: drawerWidth,
-  position: "static",
-  transition: theme.transitions.create("width", {
+  position: 'static',
+  transition: theme.transitions.create('width', {
     easing: theme.transitions.easing.sharp,
     duration: theme.transitions.duration.enteringScreen,
   }),
-  overflowX: "hidden",
+  overflowX: 'hidden',
 });
 
 const closedMixin = (theme: Theme): CSSObject => ({
-  position: "static",
-  transition: theme.transitions.create("width", {
+  position: 'static',
+  transition: theme.transitions.create('width', {
     easing: theme.transitions.easing.sharp,
     duration: theme.transitions.duration.leavingScreen,
   }),
-  overflowX: "hidden",
+  overflowX: 'hidden',
   width: `calc(${theme.spacing(6)} + 1px)`,
-  [theme.breakpoints.up("sm")]: {
+  [theme.breakpoints.up('sm')]: {
     width: `calc(${theme.spacing(8)} + 1px)`,
   },
 });
 
 const Drawer = styled(MuiDrawer, {
-  shouldForwardProp: (prop) => prop !== "open",
+  shouldForwardProp: (prop) => prop !== 'open',
 })(({ theme }) => ({
   width: drawerWidth,
   flexShrink: 0,
-  whiteSpace: "nowrap",
-  boxSizing: "border-box",
-  height: "100vh",
-  position: "static",
-  backgroundColor: "#ffffff",
-  "& .MuiPaper-root": {
-    backgroundColor: "#ffffff",
-    border: "none",
-    height: "100%",
-    position: "static",
-    overflow: "hidden",
+  whiteSpace: 'nowrap',
+  boxSizing: 'border-box',
+  height: '100vh',
+  position: 'static',
+  backgroundColor: '#ffffff',
+  '& .MuiPaper-root': {
+    backgroundColor: '#ffffff',
+    border: 'none',
+    height: '100%',
+    position: 'static',
+    overflow: 'hidden',
   },
-  "& .MuiDrawer-paper": {
-    position: "static",
-    overflow: "hidden",
+  '& .MuiDrawer-paper': {
+    position: 'static',
+    overflow: 'hidden',
   },
-  "& .MuiList-root": {
-    height: "100%",
-    overflow: "hidden",
+  '& .MuiList-root': {
+    height: '100%',
+    overflow: 'hidden',
   },
-  "& .MuiListItemButton-root": {
-    "&.Mui-selected, &.Mui-selected:hover": {
-      backgroundColor: "#f1f5f9",
+  '& .MuiListItemButton-root': {
+    '&.Mui-selected, &.Mui-selected:hover': {
+      backgroundColor: '#f1f5f9',
     },
-    "&:hover": {
-      backgroundColor: "#f1f5f9",
+    '&:hover': {
+      backgroundColor: '#f1f5f9',
     },
   },
   variants: [
@@ -109,14 +103,14 @@ const Drawer = styled(MuiDrawer, {
       props: ({ open }) => open,
       style: {
         ...openedMixin(theme),
-        "& .MuiDrawer-paper": openedMixin(theme),
+        '& .MuiDrawer-paper': openedMixin(theme),
       },
     },
     {
       props: ({ open }) => !open,
       style: {
         ...closedMixin(theme),
-        "& .MuiDrawer-paper": closedMixin(theme),
+        '& .MuiDrawer-paper': closedMixin(theme),
       },
     },
   ],
@@ -140,15 +134,12 @@ export default function SideNav() {
   const { openNav } = useNav();
   const [openSettings, setOpenSettings] = React.useState(false);
   const [openDashboard, setOpenDashboard] = React.useState(false);
-  const [newDashboardName, setNewDashboardName] = React.useState("");
-  const [dashboardType, setDashboardType] = React.useState<"normal" | "trend">(
-    "normal"
-  );
-  const [timePeriod, setTimePeriod] = React.useState<string>("1m");
+  const [newDashboardName, setNewDashboardName] = React.useState('');
+  const [dashboardType, setDashboardType] = React.useState<'normal' | 'trend'>('normal');
+  const [timePeriod, setTimePeriod] = React.useState<string>('1m');
   const [isCreatingLoading, setIsCreatingLoading] = React.useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = React.useState(false);
-  const [dashboardToDelete, setDashboardToDelete] =
-    React.useState<DashboardType | null>(null);
+  const [dashboardToDelete, setDashboardToDelete] = React.useState<DashboardType | null>(null);
   const [isDeleting, setIsDeleting] = React.useState(false);
   const navigate = useNavigate();
   const location = useLocation();
@@ -161,13 +152,9 @@ export default function SideNav() {
     dispatch(fetchDashboardList());
   }, [dispatch]);
 
-  const handleItemClick = (
-    route: string,
-    hasSubItems: boolean,
-    itemName: string
-  ) => {
+  const handleItemClick = (route: string, hasSubItems: boolean, itemName: string) => {
     if (hasSubItems) {
-      if (itemName === "Dashboards") {
+      if (itemName === 'Dashboards') {
         setOpenDashboard((prev) => !prev);
         if (!openDashboard) {
           setOpenDashboard(true);
@@ -194,10 +181,10 @@ export default function SideNav() {
         ).unwrap()) as DashboardListResponse;
         await dispatch(fetchDashboardList());
         setOpenCreateModal(false);
-        setNewDashboardName("");
-        setDashboardType("normal");
-        setTimePeriod("1m");
-        toast.success(response.message || "Dashboard created successfully!");
+        setNewDashboardName('');
+        setDashboardType('normal');
+        setTimePeriod('1m');
+        toast.success(response.message || 'Dashboard created successfully!');
 
         // Navigate to the newly created dashboard
         const newDashboard = response?.data;
@@ -207,16 +194,14 @@ export default function SideNav() {
             state: { enableEditMode: true },
           });
         }
-      } catch (error:
-        | { payload?: { message: string }; message?: string }
-        | unknown) {
-        console.error("Failed to create dashboard:", error);
+      } catch (error: { payload?: { message: string }; message?: string } | unknown) {
+        console.error('Failed to create dashboard:', error);
         const errorMessage =
-          error && typeof error === "object" && "payload" in error
+          error && typeof error === 'object' && 'payload' in error
             ? (error.payload as { message?: string })?.message
-            : error && typeof error === "object" && "message" in error
+            : error && typeof error === 'object' && 'message' in error
             ? (error as { message?: string })?.message
-            : "Failed to create dashboard. Please try again.";
+            : 'Failed to create dashboard. Please try again.';
         toast.error(errorMessage);
       } finally {
         setIsCreatingLoading(false);
@@ -226,19 +211,15 @@ export default function SideNav() {
 
   const handleCloseCreateModal = () => {
     setOpenCreateModal(false);
-    setNewDashboardName("");
-    setDashboardType("normal");
-    setTimePeriod("1m");
+    setNewDashboardName('');
+    setDashboardType('normal');
+    setTimePeriod('1m');
   };
 
-  const { infiniteQuery: dataSourceListAPI, lastElementRef } =
-    useInfiniteScroll<DataSourceListPayload, DataSourceListData>(
-      ["dataSourceList"],
-      GET?.DATA_SOURCE_LIST + `?canEditInline=true`,
-      10,
-      "get",
-      true
-    );
+  const { infiniteQuery: dataSourceListAPI, lastElementRef } = useInfiniteScroll<
+    DataSourceListPayload,
+    DataSourceListData
+  >(['dataSourceList'], GET?.DATA_SOURCE_LIST + `?canEditInline=true`, 10, 'get', true);
 
   const dataSourceList = useMemo(() => {
     return dataSourceListAPI?.data?.pages?.flatMap((page) => page?.data) || [];
@@ -260,16 +241,13 @@ export default function SideNav() {
         setIsDeleting(true);
         await dispatch(deleteDashboard(dashboardToDelete._id)).unwrap();
         dispatch(fetchDashboardList());
-        toast.success("Dashboard deleted successfully!");
+        toast.success('Dashboard deleted successfully!');
         setDeleteModalOpen(false);
         setDashboardToDelete(null);
       } catch (error) {
-        console.error("Failed to delete dashboard:", error);
+        console.error('Failed to delete dashboard:', error);
         const errorResponse = error as ErrorResponse;
-        toast.error(
-          errorResponse.message ||
-            "Failed to delete dashboard. Please try again."
-        );
+        toast.error(errorResponse.message || 'Failed to delete dashboard. Please try again.');
       } finally {
         setIsDeleting(false);
       }
@@ -284,28 +262,28 @@ export default function SideNav() {
   const handleLogout = () => {
     clearAuthContext();
     clearLocalStorage();
-    navigate("/login");
+    navigate('/login');
   };
 
   const navItems: NavItem[] = useMemo(
     () => [
       {
-        name: "Dashboards",
-        icon: <DashboardIcon sx={{ fontSize: "1.1rem" }} />,
-        route: "/dashboard",
+        name: 'Dashboards',
+        icon: <DashboardIcon sx={{ fontSize: '1.1rem' }} />,
+        route: '/dashboard',
         subItems: [
           {
-            name: "Create New Dashboard",
-            icon: <AddIcon sx={{ fontSize: "0.9rem" }} />,
-            route: "#",
+            name: 'Create New Dashboard',
+            icon: <AddIcon sx={{ fontSize: '0.9rem' }} />,
+            route: '#',
             isCreateButton: true,
           },
           ...(loading
             ? [
                 {
-                  name: "Loading...",
+                  name: 'Loading...',
                   icon: <></>,
-                  route: "#",
+                  route: '#',
                 },
               ]
             : [
@@ -315,26 +293,26 @@ export default function SideNav() {
                   route: `/dashboard/${dashboard._id}`,
                 })),
                 {
-                  name: "All Dashboards",
+                  name: 'All Dashboards',
                   icon: <></>,
-                  route: "/dashboard",
+                  route: '/dashboard',
                   isMoreLink: true,
                 },
               ]),
         ],
       },
       {
-        name: "Reports",
-        icon: <AssessmentIcon sx={{ fontSize: "1.1rem" }} />,
-        route: "/reports",
+        name: 'Reports',
+        icon: <AssessmentIcon sx={{ fontSize: '1.1rem' }} />,
+        route: '/reports',
       },
       {
-        name: "Data Sources",
-        icon: <SourceIcon sx={{ fontSize: "1.1rem" }} />,
-        route: "/data-source",
+        name: 'Data Sources',
+        icon: <SourceIcon sx={{ fontSize: '1.1rem' }} />,
+        route: '/data-source',
         subItems: [
           ...(dataSourceList?.map((item) => ({
-            name: item?.name ?? "",
+            name: item?.name ?? '',
             icon: <></>,
             route: `/data-source/${item?._id}`,
           })) || []),
@@ -342,22 +320,27 @@ export default function SideNav() {
           ...(dataSourceListAPI?.hasNextPage
             ? [
                 {
-                  name: "",
+                  name: '',
                   icon: (
-                    <div ref={lastElementRef} style={{ paddingLeft: "1.5rem" }}>
+                    <div ref={lastElementRef} style={{ paddingLeft: '1.5rem' }}>
                       Loading...
                     </div>
                   ),
-                  route: "#",
+                  route: '#',
                 },
               ]
             : []),
         ],
       },
       {
-        name: "Create Theme",
-        icon: <PaletteIcon sx={{ fontSize: "1.1rem" }} />,
-        route: "/create-theme",
+        name: 'Create Theme',
+        icon: <PaletteIcon sx={{ fontSize: '1.1rem' }} />,
+        route: '/create-theme',
+      },
+      {
+        name: 'Natural Language',
+        icon: <Language sx={{ fontSize: '1.1rem' }} />,
+        route: '/natural-language',
       },
     ],
     [dataSourceList, dataSourceListAPI?.hasNextPage, dashboards, loading]
@@ -368,13 +351,13 @@ export default function SideNav() {
   };
 
   return (
-    <Box sx={{ display: "flex", height: "100%" }}>
+    <Box sx={{ display: 'flex', height: '100%' }}>
       <Drawer variant="permanent" open={openNav} sx={{ p: 0 }}>
         <Box
           sx={{
-            display: "flex",
-            flexDirection: "column",
-            height: "100%",
+            display: 'flex',
+            flexDirection: 'column',
+            height: '100%',
             // py: 2
           }}
         >
@@ -382,11 +365,11 @@ export default function SideNav() {
             sx={{
               px: 2,
               mb: 2,
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-              height: "50px",
-              borderBottom: "1px solid #e0e0e0",
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              height: '50px',
+              borderBottom: '1px solid #e0e0e0',
             }}
           >
             <Box
@@ -395,8 +378,8 @@ export default function SideNav() {
               alt="Logo"
               sx={{
                 width: openNav ? 120 : 40,
-                height: "auto",
-                transition: "width 0.2s ease-in-out",
+                height: 'auto',
+                transition: 'width 0.2s ease-in-out',
               }}
             />
           </Box>
@@ -407,40 +390,34 @@ export default function SideNav() {
                 <ListItem
                   disablePadding
                   sx={{
-                    display: "block",
+                    display: 'block',
                     mb: 0.5,
                   }}
                 >
                   <ListItemButton
-                    onClick={() =>
-                      handleItemClick(item.route, !!item.subItems, item.name)
-                    }
+                    onClick={() => handleItemClick(item.route, !!item.subItems, item.name)}
                     sx={{
                       minHeight: 42,
                       mx: 1.5,
                       px: 2,
-                      borderRadius: "8px",
-                      justifyContent: openNav ? "initial" : "center",
-                      backgroundColor: isRouteActive(item.route)
-                        ? "#f1f5f9"
-                        : "transparent",
-                      color: isRouteActive(item.route) ? "#a136a1" : "inherit",
-                      "& .MuiListItemIcon-root": {
-                        color: isRouteActive(item.route)
-                          ? "#a136a1"
-                          : "inherit",
+                      borderRadius: '8px',
+                      justifyContent: openNav ? 'initial' : 'center',
+                      backgroundColor: isRouteActive(item.route) ? '#f1f5f9' : 'transparent',
+                      color: isRouteActive(item.route) ? '#a136a1' : 'inherit',
+                      '& .MuiListItemIcon-root': {
+                        color: isRouteActive(item.route) ? '#a136a1' : 'inherit',
                       },
-                      "&:hover": {
-                        backgroundColor: "#f1f5f9",
-                        borderRadius: "8px",
+                      '&:hover': {
+                        backgroundColor: '#f1f5f9',
+                        borderRadius: '8px',
                       },
                     }}
                   >
                     <ListItemIcon
                       sx={{
                         minWidth: 0,
-                        mr: openNav ? 2 : "auto",
-                        justifyContent: "center",
+                        mr: openNav ? 2 : 'auto',
+                        justifyContent: 'center',
                       }}
                     >
                       {item.icon}
@@ -450,34 +427,27 @@ export default function SideNav() {
                       sx={{
                         opacity: openNav ? 1 : 0,
                         m: 0,
-                        "& .MuiListItemText-primary": {
-                          fontSize: "0.95rem",
+                        '& .MuiListItemText-primary': {
+                          fontSize: '0.95rem',
                           fontWeight: 500,
-                          color: isRouteActive(item.route)
-                            ? "#a136a1"
-                            : "inherit",
+                          color: isRouteActive(item.route) ? '#a136a1' : 'inherit',
                         },
                       }}
                     />
                     {item.subItems &&
                       openNav &&
-                      ((item.name === "Dashboards" && openDashboard) ||
-                      (item.name !== "Dashboards" && openSettings) ? (
+                      ((item.name === 'Dashboards' && openDashboard) || (item.name !== 'Dashboards' && openSettings) ? (
                         <ExpandLessIcon
                           sx={{
-                            fontSize: "1.1rem",
-                            color: isRouteActive(item.route)
-                              ? "#a136a1"
-                              : "inherit",
+                            fontSize: '1.1rem',
+                            color: isRouteActive(item.route) ? '#a136a1' : 'inherit',
                           }}
                         />
                       ) : (
                         <ExpandMoreIcon
                           sx={{
-                            fontSize: "1.1rem",
-                            color: isRouteActive(item.route)
-                              ? "#a136a1"
-                              : "inherit",
+                            fontSize: '1.1rem',
+                            color: isRouteActive(item.route) ? '#a136a1' : 'inherit',
                           }}
                         />
                       ))}
@@ -485,29 +455,20 @@ export default function SideNav() {
                 </ListItem>
 
                 {item.subItems && openNav && (
-                  <Collapse
-                    in={
-                      item.name === "Dashboards" ? openDashboard : openSettings
-                    }
-                    timeout="auto"
-                    unmountOnExit
-                  >
+                  <Collapse in={item.name === 'Dashboards' ? openDashboard : openSettings} timeout="auto" unmountOnExit>
                     <List component="div" disablePadding>
-                      {item.name === "Dashboards" && (
-                        <ListItem
-                          disablePadding
-                          sx={{ display: "block", mb: 0.5 }}
-                        >
+                      {item.name === 'Dashboards' && (
+                        <ListItem disablePadding sx={{ display: 'block', mb: 0.5 }}>
                           <ListItemButton
                             onClick={() => setOpenCreateModal(true)}
                             sx={{
                               minHeight: 36,
                               px: 2,
                               pl: 2,
-                              borderRadius: "8px",
+                              borderRadius: '8px',
                               mx: 1.5,
-                              "&:hover": {
-                                backgroundColor: "#f1f5f9",
+                              '&:hover': {
+                                backgroundColor: '#f1f5f9',
                               },
                             }}
                           >
@@ -515,17 +476,17 @@ export default function SideNav() {
                               sx={{
                                 minWidth: 0,
                                 mr: 1,
-                                justifyContent: "center",
+                                justifyContent: 'center',
                               }}
                             >
-                              <AddIcon sx={{ fontSize: "0.9rem" }} />
+                              <AddIcon sx={{ fontSize: '0.9rem' }} />
                             </ListItemIcon>
                             <ListItemText
                               primary="Create New Dashboard"
                               sx={{
                                 m: 0,
-                                "& .MuiListItemText-primary": {
-                                  fontSize: "0.8rem",
+                                '& .MuiListItemText-primary': {
+                                  fontSize: '0.8rem',
                                 },
                               }}
                             />
@@ -534,9 +495,7 @@ export default function SideNav() {
                       )}
 
                       <SubItemsList
-                        subItems={item.subItems.filter(
-                          (subItem) => !subItem.isCreateButton
-                        )}
+                        subItems={item.subItems.filter((subItem) => !subItem.isCreateButton)}
                         openNav={openNav}
                         parentName={item.name}
                         dashboards={dashboards}
@@ -550,35 +509,35 @@ export default function SideNav() {
             ))}
           </List>
 
-          <Box sx={{ mt: "auto", px: 1.5 }}>
+          <Box sx={{ mt: 'auto', px: 1.5 }}>
             <ListItemButton
               onClick={handleLogout}
               sx={{
                 minHeight: 42,
                 px: 2,
-                borderRadius: "8px",
-                justifyContent: openNav ? "initial" : "center",
-                "&:hover": {
-                  backgroundColor: "#f1f5f9",
+                borderRadius: '8px',
+                justifyContent: openNav ? 'initial' : 'center',
+                '&:hover': {
+                  backgroundColor: '#f1f5f9',
                 },
               }}
             >
               <ListItemIcon
                 sx={{
                   minWidth: 0,
-                  mr: openNav ? 2 : "auto",
-                  justifyContent: "center",
+                  mr: openNav ? 2 : 'auto',
+                  justifyContent: 'center',
                 }}
               >
-                <LogoutIcon sx={{ fontSize: "1.1rem" }} />
+                <LogoutIcon sx={{ fontSize: '1.1rem' }} />
               </ListItemIcon>
               <ListItemText
                 primary="Logout"
                 sx={{
                   opacity: openNav ? 1 : 0,
                   m: 0,
-                  "& .MuiListItemText-primary": {
-                    fontSize: "0.95rem",
+                  '& .MuiListItemText-primary': {
+                    fontSize: '0.95rem',
                   },
                 }}
               />

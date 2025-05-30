@@ -137,6 +137,7 @@ export interface TemporaryChart {
   widgetTypeId?: WidgetDetails;
   dataSourceId?: DataSourceDetails;
   data?: ChartData[];
+  userQuery?: string;
 }
 
 export interface DashboardSliceState {
@@ -156,19 +157,19 @@ export interface DashboardSliceState {
   temporaryCharts: TemporaryChart[];
   chartsLoading: boolean;
   chartsError: string | null;
-  widgetData: Record<string, WidgetResponse["data"]>;
+  widgetData: Record<string, WidgetResponse['data']>;
 }
 
 export interface WidgetDetails {
   _id: string;
-  name: string;
-  description: string;
+  name?: string;
+  description?: string;
   chartType: string;
-  code: string;
-  isActive: boolean;
-  createdAt: string;
-  updatedAt: string;
-  __v: number;
+  code?: string;
+  isActive?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+  __v?: number;
 }
 
 export interface DataSourceDetails {
@@ -191,10 +192,10 @@ export interface DataSourceDetails {
 export interface ChartResponse {
   _id: string;
   createdBy: string;
-  dashboardId: string;
+  dashboardId?: string;
   organizationId: string;
   name: string;
-  position: {
+  position?: {
     x: number;
     y: number;
     index: number;
@@ -218,6 +219,7 @@ export interface ChartResponse {
   widgetTypeId?: WidgetDetails;
   dataSourceId?: DataSourceDetails;
   data?: ChartData[];
+  userQuery?: string;
 }
 
 export interface ChartDataResponse {
@@ -244,7 +246,7 @@ export interface WidgetResponse {
     createdBy: string;
     dashboardId: string;
     organizationId: string;
-    widgetTypeId: WidgetDetails;
+    widgetTypeId: WidgetDetails | string;
     name: string;
     dataSourceId: DataSourceDetails;
     dimensions: string[];
@@ -263,6 +265,7 @@ export interface WidgetResponse {
       label: string;
       widgetData: ChartData[];
     };
+    chartType?: string;
   };
 }
 
@@ -285,10 +288,10 @@ export interface WidgetDataResponse {
 export interface CombinedWidgetData {
   _id: string;
   createdBy: string;
-  dashboardId: string;
+  dashboardId?: string;
   organizationId: string;
   name: string;
-  position: {
+  position?: {
     x: number;
     y: number;
     index: number;

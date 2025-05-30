@@ -1,19 +1,20 @@
-import { Route, Routes, Navigate } from "react-router-dom";
-import Login from "./pages/login";
-import SendOTP from "./pages/loginOTP/sendOTP";
-import VerifyOTP from "./pages/loginOTP/verifyOTP";
-import AuthProtect from "./Auth/AuthProtect";
-import SuperAdminProtect from "./Auth/SuperAdminProtect";
-import AdminSuperAdminProtect from "./Auth/AdminSuperAdminProtect";
-import Dashboard from "./pages/dashboard";
-import CommonLayout from "./components/molecule/layout/commonLayout";
-import AttributeOption from "./pages/attributeOption";
-import Report from "./pages/report";
-import DataSources from "./pages/dataSources";
-import DashboardOverview from "./pages/dashboard/overview";
-import DashboardAnalytics from "./pages/dashboard/analytics";
-import CreateTheme from "./pages/createTheme";
-import { getAuthToken } from "./utils/handleLocalStorage";
+import { Route, Routes, Navigate } from 'react-router-dom';
+import Login from './pages/login';
+import SendOTP from './pages/loginOTP/sendOTP';
+import VerifyOTP from './pages/loginOTP/verifyOTP';
+import AuthProtect from './Auth/AuthProtect';
+import SuperAdminProtect from './Auth/SuperAdminProtect';
+import AdminSuperAdminProtect from './Auth/AdminSuperAdminProtect';
+import Dashboard from './pages/dashboard';
+import CommonLayout from './components/molecule/layout/commonLayout';
+import AttributeOption from './pages/attributeOption';
+import Report from './pages/report';
+import DataSources from './pages/dataSources';
+import DashboardOverview from './pages/dashboard/overview';
+import DashboardAnalytics from './pages/dashboard/analytics';
+import CreateTheme from './pages/createTheme';
+import { getAuthToken } from './utils/handleLocalStorage';
+import NaturalLanguage from './pages/naturalLanguage/NaturalLanguage';
 
 const AppRoutes = () => {
   const token = getAuthToken();
@@ -21,7 +22,7 @@ const AppRoutes = () => {
   return (
     <Routes>
       {/* Root Route */}
-      <Route path="/" element={<Navigate to={token ? "/dashboard" : "/login"} replace />} />
+      <Route path="/" element={<Navigate to={token ? '/dashboard' : '/login'} replace />} />
 
       {/* Public Routes */}
       <Route path="/login" element={<Login />} />
@@ -37,6 +38,7 @@ const AppRoutes = () => {
           <Route path="/dashboard/:id" element={<Dashboard />} />
           <Route path="/reports" element={<Report />} />
           <Route path="/data-source/:id" element={<DataSources />} />
+          <Route path="/natural-language" element={<NaturalLanguage />} />
         </Route>
       </Route>
 
@@ -58,4 +60,4 @@ const AppRoutes = () => {
   );
 };
 
-export default AppRoutes; 
+export default AppRoutes;
