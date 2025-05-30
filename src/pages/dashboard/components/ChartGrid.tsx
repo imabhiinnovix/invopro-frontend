@@ -393,6 +393,10 @@ const sliceLabelsPlugin = {
   },
 };
 
+const ChartTitleText = styled(Typography)({
+  flexGrow: 1,
+});
+
 const pointLabelsPlugin = {
   id: 'pointLabels',
   afterDraw(chart: ChartJS) {
