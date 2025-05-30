@@ -393,16 +393,15 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
 
             // Get mapping data for this file
             const mappingData =
-              requiredVersionValues?.data?.versionValueDetails
-                ?.find((data) =>
-                  data?.requiredFiles?.some(
-                    (file) =>
-                      file?.name === keyName &&
-                      (!file?.sheetName ||
-                        file?.sheetName?.toLowerCase() ===
-                          requiredFile?.sheetName?.toLowerCase())
-                  )
-                )?.entityId?.attributes;
+              requiredVersionValues?.data?.versionValueDetails?.find((data) =>
+                data?.requiredFiles?.some(
+                  (file) =>
+                    file?.name === keyName &&
+                    (!file?.sheetName ||
+                      file?.sheetName?.toLowerCase() ===
+                        requiredFile?.sheetName?.toLowerCase())
+                )
+              )?.entityId?.attributes;
 
             if (mappingData) {
               mappingData?.forEach((option) => {
@@ -539,17 +538,19 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
               return null;
             }
 
-            const versionDetail = requiredVersionValues.data.versionValueDetails.find(data => {
-              if (!data?.requiredFiles?.length) {
-                return false;
-              }
-              return data.requiredFiles.some(
-                file =>
-                  file?.name === requiredFile.name &&
-                  (!file?.sheetName ||
-                    file.sheetName.toLowerCase() === requiredFile.sheetName?.toLowerCase())
-              );
-            });
+            const versionDetail =
+              requiredVersionValues.data.versionValueDetails.find((data) => {
+                if (!data?.requiredFiles?.length) {
+                  return false;
+                }
+                return data.requiredFiles.some(
+                  (file) =>
+                    file?.name === requiredFile.name &&
+                    (!file?.sheetName ||
+                      file.sheetName.toLowerCase() ===
+                        requiredFile.sheetName?.toLowerCase())
+                );
+              });
 
             return versionDetail?.entityId?.attributes;
           })();
@@ -557,7 +558,7 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
           if (mappingData) {
             mappingData.forEach((option) => {
               if (!option?.name || !option?.mappingName) return;
-              
+
               const matchedHeader = headers.find(
                 (name) =>
                   name
@@ -672,7 +673,7 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
       // Rename files to their required names before sending to backend
       files: data.files?.map((file: ExtendedFile) => {
         if (file && file.requiredName) {
-          const ext = file.name.split('.').pop();
+          const ext = file.name.split(".").pop();
           return new File([file], `${file.requiredName}.${ext}`, {
             type: file.type,
             lastModified: file.lastModified,
@@ -730,32 +731,32 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
 
   return (
     <>
-      {(isLoadingReportUpload || processingCount > 0) && (
-        <Backdrop
-          sx={(theme) => ({ color: "#fff", zIndex: theme.zIndex.modal + 1 })}
-          open={true}
-        >
-          <Box sx={{ width: "80%", textAlign: "center" }}>
-            <Typography variant="h6" mb={2}>
-              {processingCount > 0 ? `Validating ...` : `Uploading ...`}
-            </Typography>
-            <LinearProgress />
-          </Box>
-        </Backdrop>
-      )}
       <Dialog
         open={open}
         onClose={() => setOpen(false)}
         fullWidth
         maxWidth="md"
       >
+        {(isLoadingReportUpload || processingCount > 0) && (
+          <Backdrop
+            sx={(theme) => ({ color: "#fff", zIndex: theme.zIndex.modal + 1 })}
+            open={true}
+          >
+            <Box sx={{ width: "80%", textAlign: "center" }}>
+              <Typography variant="h6" mb={2}>
+                {processingCount > 0 ? `Validating ...` : `Uploading ...`}
+              </Typography>
+              <LinearProgress />
+            </Box>
+          </Backdrop>
+        )}
         <DialogTitle>Generate Report</DialogTitle>
         <DialogTitle
           display="flex"
           justifyContent="space-between"
           alignItems={"center"}
         >
-          <Typography> Version Value: {versionValue} </Typography>
+          <Typography> period: {versionValue} </Typography>
           <Stack>
             <Button
               variant="contained"
@@ -894,22 +895,27 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
                           >
                             {(() => {
                               // Get all files
-                              const allFiles = [...unmappedFiles, ...(watch("files") || [])].filter(Boolean);
-                              
+                              const allFiles = [
+                                ...unmappedFiles,
+                                ...(watch("files") || []),
+                              ].filter(Boolean);
+
                               // Create a Map using file names as keys to ensure uniqueness
                               const uniqueFiles = new Map();
-                              
-                              allFiles.forEach(file => {
+
+                              allFiles.forEach((file) => {
                                 if (file && !uniqueFiles.has(file.name)) {
                                   uniqueFiles.set(file.name, file);
                                 }
                               });
-                              
-                              return Array.from(uniqueFiles.values()).map(file => (
-                                <MenuItem key={file.name} value={file.name}>
-                                  {file.name}
-                                </MenuItem>
-                              ));
+
+                              return Array.from(uniqueFiles.values()).map(
+                                (file) => (
+                                  <MenuItem key={file.name} value={file.name}>
+                                    {file.name}
+                                  </MenuItem>
+                                )
+                              );
                             })()}
                           </Select>
                         </FormControl>

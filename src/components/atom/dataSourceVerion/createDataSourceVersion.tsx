@@ -338,8 +338,8 @@ const CreateDataSourceVersion: React.FC<CreateDataSourceVersionProps> = ({ setRe
                 name={'versionValue'}
                 control={control}
                 views={['year', 'month']}
-                label="Version Value*"
-                rules={{ required: 'Version Value is required' }}
+                label="Period*"
+                rules={{ required: 'Period is required' }}
               />
 
               <TextField

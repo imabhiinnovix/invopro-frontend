@@ -1,17 +1,84 @@
-import React, { useEffect, useRef } from 'react';
-import { Box, Card, CardContent, Typography } from '@mui/material';
-import { Chart as ChartJS, LineController, LineElement, PointElement, LinearScale, CategoryScale, Title, Tooltip, Legend } from 'chart.js';
-import { Theme } from '../types';
+import React, { useEffect, useRef, useState } from "react";
+import {
+  Box,
+  Card,
+  CardContent,
+  Typography,
+  IconButton,
+  Menu,
+  MenuItem,
+} from "@mui/material";
+import MoreVertIcon from "@mui/icons-material/MoreVert";
+import {
+  Chart as ChartJS,
+  LineController,
+  LineElement,
+  PointElement,
+  LinearScale,
+  CategoryScale,
+  Title,
+  Tooltip,
+  Legend,
+} from "chart.js";
+import { Theme } from "../types";
 
-ChartJS.register(LineController, LineElement, PointElement, LinearScale, CategoryScale, Title, Tooltip, Legend);
+ChartJS.register(
+  LineController,
+  LineElement,
+  PointElement,
+  LinearScale,
+  CategoryScale,
+  Title,
+  Tooltip,
+  Legend
+);
 
 interface ThemePreviewProps {
   theme: Theme;
+  onUpdate?: (theme: Theme) => void;
+  onDelete?: (themeId: string) => void;
+  onDuplicate?: (themeId: string) => void;
 }
 
-const ThemePreview: React.FC<ThemePreviewProps> = ({ theme }) => {
+const ThemePreview: React.FC<ThemePreviewProps> = ({
+  theme,
+  onUpdate,
+  onDelete,
+  onDuplicate,
+}) => {
   const chartRef = useRef<HTMLCanvasElement>(null);
   const chartInstance = useRef<ChartJS | null>(null);
+  const [menuAnchorEl, setMenuAnchorEl] = useState<null | HTMLElement>(null);
+  const open = Boolean(menuAnchorEl);
+
+  const handleMenuClick = (event: React.MouseEvent<HTMLElement>) => {
+    setMenuAnchorEl(event.currentTarget);
+  };
+
+  const handleMenuClose = () => {
+    setMenuAnchorEl(null);
+  };
+
+  const handleUpdate = () => {
+    if (onUpdate) {
+      onUpdate(theme);
+    }
+    handleMenuClose();
+  };
+
+  const handleDelete = () => {
+    if (onDelete) {
+      onDelete(theme._id);
+    }
+    handleMenuClose();
+  };
+
+  const handleDuplicate = () => {
+    if (onDuplicate) {
+      onDuplicate(theme._id);
+    }
+    handleMenuClose();
+  };
 
   useEffect(() => {
     if (chartRef.current) {
@@ -21,30 +88,30 @@ const ThemePreview: React.FC<ThemePreviewProps> = ({ theme }) => {
       }
 
       // Create new chart with theme settings
-      const ctx = chartRef.current.getContext('2d');
+      const ctx = chartRef.current.getContext("2d");
       if (ctx) {
         chartInstance.current = new ChartJS(ctx, {
-          type: 'line',
+          type: "line",
           data: {
-            labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+            labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun"],
             datasets: [
               {
-                label: 'Dataset 1',
+                label: "Dataset 1",
                 data: [12, 19, 3, 5, 2, 3],
                 borderColor: theme.colors[0],
                 backgroundColor: theme.backgroundColor[0],
                 borderWidth: 2,
                 fill: theme.fill.enabled,
-                tension: theme.fill.type === 'Smooth' ? 0.4 : 0,
+                tension: theme.fill.type === "Smooth" ? 0.4 : 0,
               },
               {
-                label: 'Dataset 2',
+                label: "Dataset 2",
                 data: [7, 11, 5, 8, 3, 7],
                 borderColor: theme.colors[1],
                 backgroundColor: theme.backgroundColor[1],
                 borderWidth: 2,
                 fill: theme.fill.enabled,
-                tension: theme.fill.type === 'Smooth' ? 0.4 : 0,
+                tension: theme.fill.type === "Smooth" ? 0.4 : 0,
               },
             ],
           },
@@ -54,30 +121,59 @@ const ThemePreview: React.FC<ThemePreviewProps> = ({ theme }) => {
             plugins: {
               title: {
                 display: theme.title.display,
-                text: 'Theme Preview',
+                text: "Theme Preview",
                 color: theme.title.color,
                 font: {
                   size: theme.title.font.size,
                   family: theme.title.font.family,
-                  weight: theme.title.font.weight as 'bold' | 'normal' | 'lighter' | 'bolder' | undefined,
+                  weight: theme.title.font.weight as
+                    | "bold"
+                    | "normal"
+                    | "lighter"
+                    | "bolder"
+                    | undefined,
                 },
-                align: theme.title.align as 'center' | 'start' | 'end' | undefined,
-                position: theme.title.position as 'top' | 'bottom' | 'left' | 'right' | undefined,
+                align: theme.title.align as
+                  | "center"
+                  | "start"
+                  | "end"
+                  | undefined,
+                position: theme.title.position as
+                  | "top"
+                  | "bottom"
+                  | "left"
+                  | "right"
+                  | undefined,
               },
               subtitle: {
                 display: theme.subtitle.display,
-                text: 'Sample Data',
+                text: "Sample Data",
                 color: theme.subtitle.color,
                 font: {
                   size: theme.subtitle.font.size,
                   family: theme.subtitle.font.family,
                 },
-                align: theme.subtitle.align as 'center' | 'start' | 'end' | undefined,
-                position: theme.subtitle.position as 'top' | 'bottom' | 'left' | 'right' | undefined,
+                align: theme.subtitle.align as
+                  | "center"
+                  | "start"
+                  | "end"
+                  | undefined,
+                position: theme.subtitle.position as
+                  | "top"
+                  | "bottom"
+                  | "left"
+                  | "right"
+                  | undefined,
               },
               legend: {
                 display: theme.legend.display,
-                position: theme.legend.position as 'top' | 'bottom' | 'left' | 'right' | 'chartArea' | undefined,
+                position: theme.legend.position as
+                  | "top"
+                  | "bottom"
+                  | "left"
+                  | "right"
+                  | "chartArea"
+                  | undefined,
                 labels: {
                   font: {
                     size: theme.legend.labels.font.size,
@@ -117,7 +213,7 @@ const ThemePreview: React.FC<ThemePreviewProps> = ({ theme }) => {
                 },
                 title: {
                   display: theme.scales.y.title.display,
-                  text: 'Y-Axis',
+                  text: "Y-Axis",
                   color: theme.scales.y.title.color,
                   font: {
                     size: theme.scales.y.title.font.size,
@@ -141,7 +237,14 @@ const ThemePreview: React.FC<ThemePreviewProps> = ({ theme }) => {
               },
             },
             interaction: {
-              mode: theme.interaction.mode as 'x' | 'y' | 'nearest' | 'index' | 'dataset' | 'point' | undefined,
+              mode: theme.interaction.mode as
+                | "x"
+                | "y"
+                | "nearest"
+                | "index"
+                | "dataset"
+                | "point"
+                | undefined,
               intersect: theme.interaction.intersect,
             },
             layout: {
@@ -160,17 +263,49 @@ const ThemePreview: React.FC<ThemePreviewProps> = ({ theme }) => {
   }, [theme]);
 
   return (
-    <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-      <CardContent sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
-        <Typography variant="h6" gutterBottom>
-          {theme.name}
-        </Typography>
-        <Box sx={{ flexGrow: 1, position: 'relative', height: 300 }}>
+    <Card sx={{ height: "100%", display: "flex", flexDirection: "column" }}>
+      <CardContent
+        sx={{ flexGrow: 1, display: "flex", flexDirection: "column" }}
+      >
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            mb: 1,
+          }}
+        >
+          <Typography variant="h6">{theme.name}</Typography>
+          <IconButton
+            id="theme-preview-menu"
+            aria-controls={open ? "theme-preview-menu" : undefined}
+            aria-haspopup="true"
+            aria-expanded={open ? "true" : undefined}
+            onClick={handleMenuClick}
+            size="small"
+          >
+            <MoreVertIcon />
+          </IconButton>
+        </Box>
+        <Box sx={{ flexGrow: 1, position: "relative", height: 300 }}>
           <canvas ref={chartRef} />
         </Box>
+        <Menu
+          id="theme-preview-menu"
+          anchorEl={menuAnchorEl}
+          open={open}
+          onClose={handleMenuClose}
+          MenuListProps={{
+            "aria-labelledby": "theme-preview-menu",
+          }}
+        >
+          <MenuItem onClick={handleUpdate}>Update</MenuItem>
+          <MenuItem onClick={handleDuplicate}>Duplicate</MenuItem>
+          <MenuItem onClick={handleDelete}>Delete</MenuItem>
+        </Menu>
       </CardContent>
     </Card>
   );
 };
 
-export default ThemePreview; 
+export default ThemePreview;

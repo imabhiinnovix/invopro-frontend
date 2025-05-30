@@ -182,7 +182,7 @@ const DataSourceVersionTable: React.FC<AttributeOptionTableProps> = ({ reload, s
         <TableHead>
           <TableRow>
             <StyledTableCell>VERSION NAME</StyledTableCell>
-            <StyledTableCell>VERSION VALUE</StyledTableCell>
+            <StyledTableCell>PERIOD</StyledTableCell>
             <StyledTableCell>DATA SOURCE NAME</StyledTableCell>
             <StyledTableCell>FILE NAME</StyledTableCell>
             <StyledTableCell>MAPPINGS</StyledTableCell>

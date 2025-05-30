@@ -20,6 +20,7 @@ export interface Theme {
     font: {
       size: number;
       family: string;
+      weight: string;
     };
     align: string;
     position: string;
@@ -121,6 +122,7 @@ export interface Theme {
   createdAt: string;
   updatedAt: string;
   __v: number;
+ showLegendOverlay?: boolean
 }
 
 export interface ThemeListResponse {
@@ -131,7 +133,7 @@ export interface ThemeListResponse {
 }
 
 export interface TitleSettings {
-  show: boolean;
+  display: boolean;
   color: string;
   font: {
     size: number;
@@ -143,7 +145,7 @@ export interface TitleSettings {
 }
 
 export interface SubtitleSettings {
-  show: boolean;
+  display: boolean;
   color: string;
   font: {
     size: number;
@@ -230,11 +232,13 @@ export interface ThemeData {
   colors: string[];
   borderColor: string[];
   backgroundColor: string[];
+  showLegendOverlay: boolean;
 }
 
 export interface CreateThemeDialogProps {
   open: boolean;
   onClose: () => void;
+  theme?: Theme | null;
 }
 
 export interface createThemeResponse {

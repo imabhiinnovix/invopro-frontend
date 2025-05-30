@@ -12,6 +12,12 @@ export interface Dashboard {
   isActive: boolean;
   settings: {
     gridColumns: number;
+    dashboardType: string;
+    columnsGrid: number;
+    dynamicVersionValue: string;
+    endVersionValue: string;
+    startVersionValue: string;
+    versionValue: string;
   };
   createdAt: string;
   updatedAt: string;
@@ -22,7 +28,7 @@ export interface Dashboard {
 export interface DashboardListResponse {
   success: boolean;
   message: string;
-  data: Dashboard[];
+  data: Dashboard;
   totalCount: number;
 }
 
@@ -260,6 +266,13 @@ export interface WidgetResponse {
   };
 }
 
+export interface DashboardFilters {
+  startVersionValue: string;
+  endVersionValue: string;
+  dynamicVersionValue: string;
+  versionValue: string;
+}
+
 export interface WidgetDataResponse {
   success: boolean;
   message: string;
@@ -327,4 +340,12 @@ export interface OperatorListResponse {
   message: string;
   data: OperatorType[];
   totalCount: number;
+}
+
+export interface FetchChartDataPayload {
+  dashboardId: string;
+  versionValue?: string;
+  dynamicVersionValue?: string;
+  startDate?: string;
+  endDate?: string;
 }

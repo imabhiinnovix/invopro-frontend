@@ -31,6 +31,9 @@ export const POST = {
   Custom_Report: "/customReports",
   DATA_SOURCE_VERSION_CREATE: "/dataSourceVersion/create",
   CREATE_THEME: "/widgetTheme/create",
+  DELETE_THEME: "/widgetTheme/delete/",
+  DUPLICATE_THEME: "/widgetTheme/duplicate/",
+  UPDATE_THEME: "/widgetTheme/update/",
 };
 export const PUT = {
   UPDATE_DATA_SOURCE: "/dataSource/update",

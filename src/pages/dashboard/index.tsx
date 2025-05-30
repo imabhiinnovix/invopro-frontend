@@ -1,12 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "../../storeHooks";
-import {
-  fetchDashboardList,
-  fetchChartData,
-  createDashboard,
-  deleteDashboard,
-} from "./dashboardActions";
+import { fetchDashboardList, createDashboard } from "./dashboardActions";
 import { DashboardView } from "./components/DashboardView";
 import { toast } from "react-toastify";
 import axiosInstance from "../../services/axiosInstance";
@@ -23,24 +18,15 @@ import {
   TableRow,
   Paper,
   IconButton,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  TextField,
   Tooltip,
   useTheme,
   alpha,
   Skeleton,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
-import { format } from "date-fns";
 import { DeleteConfirmationModal } from "../../components/atom/sideNav/components/DeleteConfirmationModal";
+import { CreateDashboardModal } from "../../components/atom/sideNav/components/CreateDashboardModal";
 import { Dashboard as DashboardType, DashboardListResponse } from "./types";
 
 const Dashboard = () => {
@@ -61,6 +47,7 @@ const Dashboard = () => {
   const [dashboardType, setDashboardType] = useState<"normal" | "trend">(
     "normal"
   );
+  const [timePeriod, setTimePeriod] = useState<string>("1m");
 
   useEffect(() => {
     if (!dashboards.length) {
@@ -83,14 +70,10 @@ const Dashboard = () => {
     }
   };
 
-  const handleCreateWidget = () => {
-    if (id) {
-      dispatch(fetchChartData(id));
-    }
-  };
-
   const handleEdit = (dashboardId: string) => {
-    navigate(`/dashboard/${dashboardId}`);
+    navigate(`/dashboard/${dashboardId}`, {
+      state: { enableEditMode: false },
+    });
   };
 
   const handleDeleteClick = (e: React.MouseEvent, dashboard: DashboardType) => {
@@ -129,16 +112,21 @@ const Dashboard = () => {
       try {
         setIsCreating(true);
         const response = (await dispatch(
-          createDashboard({ name: newDashboardName.trim(), dashboardType })
+          createDashboard({
+            name: newDashboardName.trim(),
+            dashboardType,
+            dynamicVersionValue: timePeriod,
+          })
         ).unwrap()) as DashboardListResponse;
         await dispatch(fetchDashboardList());
         setOpenCreateModal(false);
         setNewDashboardName("");
         setDashboardType("normal");
+        setTimePeriod("1m");
         toast.success(response.message || "Dashboard created successfully!");
 
         // Navigate to the newly created dashboard
-        const newDashboard = response.data[0];
+        const newDashboard = response?.data;
 
         if (newDashboard) {
           navigate(`/dashboard/${newDashboard._id}`, {
@@ -340,108 +328,18 @@ const Dashboard = () => {
         </Box>
 
         {/* Create Dashboard Modal */}
-        <Dialog
+        <CreateDashboardModal
           open={openCreateModal}
           onClose={handleCloseCreateModal}
-          PaperProps={{
-            sx: {
-              borderRadius: 2,
-              minWidth: { xs: "90%", sm: "400px" },
-              maxWidth: "500px",
-            },
-          }}
-        >
-          <DialogTitle
-            sx={{
-              backgroundColor: alpha(theme.palette.primary.main, 0.05),
-              color: "primary.main",
-              fontWeight: 600,
-              fontSize: "1.25rem",
-              py: 2,
-            }}
-          >
-            Create New Dashboard
-          </DialogTitle>
-          <DialogContent sx={{ mt: 2, pb: 1 }}>
-            <TextField
-              autoFocus
-              margin="dense"
-              label="Dashboard Name"
-              type="text"
-              fullWidth
-              variant="outlined"
-              value={newDashboardName}
-              onChange={(e) => setNewDashboardName(e.target.value)}
-              sx={{
-                "& .MuiOutlinedInput-root": {
-                  "&:hover fieldset": {
-                    borderColor: "primary.main",
-                  },
-                  "&.Mui-focused fieldset": {
-                    borderColor: "primary.main",
-                  },
-                },
-              }}
-            />
-            <FormControl
-              fullWidth
-              margin="dense"
-              sx={{
-                mt: 2,
-                "& .MuiOutlinedInput-root": {
-                  "&:hover fieldset": {
-                    borderColor: "primary.main",
-                  },
-                  "&.Mui-focused fieldset": {
-                    borderColor: "primary.main",
-                  },
-                },
-              }}
-            >
-              <InputLabel>Dashboard Type</InputLabel>
-              <Select
-                value={dashboardType}
-                label="Dashboard Type"
-                onChange={(e) =>
-                  setDashboardType(e.target.value as "normal" | "trend")
-                }
-              >
-                <MenuItem value="normal">Normal</MenuItem>
-                <MenuItem value="trend">Trend</MenuItem>
-              </Select>
-            </FormControl>
-          </DialogContent>
-          <DialogActions sx={{ p: 2, gap: 1 }}>
-            <Button
-              onClick={handleCloseCreateModal}
-              sx={{
-                color: "text.secondary",
-                "&:hover": {
-                  backgroundColor: alpha(theme.palette.grey[500], 0.1),
-                },
-              }}
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={handleCreateDashboard}
-              variant="contained"
-              disabled={!newDashboardName.trim() || isCreating}
-              sx={{
-                backgroundColor: "primary.main",
-                "&:hover": {
-                  backgroundColor: "primary.dark",
-                },
-                "&.Mui-disabled": {
-                  backgroundColor: alpha(theme.palette.primary.main, 0.5),
-                  color: "white",
-                },
-              }}
-            >
-              {isCreating ? "Creating..." : "Create"}
-            </Button>
-          </DialogActions>
-        </Dialog>
+          newDashboardName={newDashboardName}
+          onNameChange={setNewDashboardName}
+          onCreate={handleCreateDashboard}
+          isCreating={isCreating}
+          dashboardType={dashboardType}
+          onDashboardTypeChange={setDashboardType}
+          timePeriod={timePeriod}
+          onTimePeriodChange={setTimePeriod}
+        />
 
         {/* Delete Confirmation Modal */}
         <DeleteConfirmationModal
