@@ -21,6 +21,7 @@ import { AuthContext, AuthContextType } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import usePost from '../../hooks/usePost';
 import ProgressBar from '../../components/molecule/progressBar';
+import logo from "../../assets/logo.png";
 
 interface getLoginPayload {
   email: string;
@@ -105,7 +106,7 @@ function Login() {
         <TextField
           fullWidth
           label="Email address"
-          defaultValue="example@gmail.com"
+          placeholder="example@gmail.com"
           required
           error={!!errors.email}
           helperText={errors.email?.message}
@@ -114,13 +115,13 @@ function Login() {
         />
 
         {/* <Link variant="body2" color="inherit" sx={{ mb: 1.5 }}>
-          Forgot password?
+          Forgot pahttp://localhost:3020/dashboarssword?
         </Link> */}
 
         <TextField
           fullWidth
           label="Password"
-          defaultValue="@demo1234"
+          placeholder="@Demo1234"
           type={showPassword ? 'text' : 'password'}
           {...register('password')}
           required
@@ -161,7 +162,19 @@ function Login() {
 
   return (
     <Box display="flex" alignItems="center" justifyContent="center" height="85vh">
-      <Box maxWidth="600px">
+      <Box maxWidth="600px" >
+        <Box
+         display="flex"
+         alignItems="center"
+         justifyContent="center"
+        >
+          <Box
+           component="img"
+           src={logo}
+           alt="Logo"
+           width={250}
+          />
+        </Box>
         <Box gap={1.5} display="flex" flexDirection="column" alignItems="center" sx={{ mb: 5 }}>
           <Typography variant="h3" textAlign="center">
             Welcome to ReportiVix
@@ -176,7 +189,7 @@ function Login() {
             OR
           </Typography>
         </Divider>
-        <Typography variant="h6">
+        <Typography variant="h6" sx={{textAlign:'center'}}>
           Login with
           <Link href="/otp-login" variant="h5" sx={{ ml: 0.5, cursor: 'pointer', fontWeight: 'bold' }}>
             OTP!
