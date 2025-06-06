@@ -38,6 +38,16 @@ export interface DashboardState {
   error: string | null;
 }
 
+export interface FieldConfig {
+  fieldName: string;
+  display: boolean;
+  required: boolean;
+  multiple: boolean;
+  type: "text" | "select" | "multiselect" | "number" | "checkbox" | "date";
+  label: string;
+  defaultValue: any;
+}
+
 export interface WidgetType {
   _id: string;
   name: string;
@@ -48,6 +58,7 @@ export interface WidgetType {
   createdAt: string;
   updatedAt: string;
   __v: number;
+  fieldConfig?: FieldConfig[];
 }
 
 export interface WidgetTypeResponse {

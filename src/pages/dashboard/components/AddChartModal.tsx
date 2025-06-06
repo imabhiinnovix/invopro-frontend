@@ -29,6 +29,7 @@ import {
   OperatorType,
   OperatorListResponse,
   Dashboard,
+  FieldConfig,
 } from '../types';
 import { toast } from 'react-toastify';
 import axiosInstance from '../../../services/axiosInstance';
@@ -585,12 +586,310 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
 
   const getOperatorsForField = (fieldName: string): Operator[] => {
     const attribute = selectedDataSource?.entityId.attributes.find((attr) => attr.name === fieldName);
-    console.log('🚀 ~ attribute̥:', operators);
     if (!attribute) return [];
 
     const fieldType = attribute.type;
     const operatorType = operators.find((op) => op.fieldType === fieldType);
     return operatorType?.operators || [];
+  };
+
+  const getSelectedWidgetType = () => {
+    return widgetTypes.find(type => type._id === formData.widgetTypeId);
+  };
+
+  const getVisibleFields = (): FieldConfig[] => {
+    const selectedType = getSelectedWidgetType();
+    if (!selectedType?.fieldConfig) return [];
+
+    return selectedType.fieldConfig.filter(field => field.display === true);
+  };
+
+  const renderDynamicField = (fieldConfig: FieldConfig) => {
+    const { fieldName, label, type, required, multiple } = fieldConfig;
+
+    switch (fieldName) {
+      case 'dimensions':
+        const visibleFields = getVisibleFields();
+        const groupByField = visibleFields.find(f => f.fieldName === 'groupBy');
+
+        if (groupByField) {
+          return (
+            <FormSection key="dimensions-groupby">
+              <FormRow>
+                <FormControl fullWidth size="small">
+                  <InputLabel>{label}</InputLabel>
+                  <StyledSelect
+                    value={formData.dimensions}
+                    label={label}
+                    onChange={handleDimensionChange}
+                    disabled={isSubmitting || isTrend}
+                    endAdornment={
+                      formData.dimensions && (
+                        <InputAdornment position="end">
+                          <IconButton
+                            size="small"
+                            onClick={handleClearDimension}
+                            edge="end"
+                            sx={{ mr: 1 }}
+                            disabled={isTrend}
+                          >
+                            <ClearIcon fontSize="small" />
+                          </IconButton>
+                        </InputAdornment>
+                      )
+                    }
+                  >
+                    {isTrend ? (
+                      <MenuItem value="versionValue">Period</MenuItem>
+                    ) : (
+                      getAttributeOptions().map((attr) => (
+                        <MenuItem key={attr.name} value={attr.name} disabled={attr.name === formData.groupBy}>
+                          {attr.name}
+                        </MenuItem>
+                      ))
+                    )}
+                  </StyledSelect>
+                </FormControl>
+
+                <FormControl fullWidth size="small">
+                  <InputLabel>{groupByField.label}</InputLabel>
+                  <StyledSelect
+                    value={formData.groupBy}
+                    label={groupByField.label}
+                    onChange={handleGroupByChange}
+                    disabled={isSubmitting}
+                    endAdornment={
+                      formData.groupBy && (
+                        <InputAdornment position="end">
+                          <IconButton size="small" onClick={handleClearGroupBy} edge="end" sx={{ mr: 1 }}>
+                            <ClearIcon fontSize="small" />
+                          </IconButton>
+                        </InputAdornment>
+                      )
+                    }
+                  >
+                    {getAttributeOptions().map((attr) => (
+                      <MenuItem key={attr.name} value={attr.name} disabled={attr.name === formData.dimensions}>
+                        {attr.name}
+                      </MenuItem>
+                    ))}
+                  </StyledSelect>
+                </FormControl>
+              </FormRow>
+            </FormSection>
+          );
+        } else {
+          return (
+            <FormSection key={fieldName}>
+              <FormRow>
+                <FormControl fullWidth size="small">
+                  <InputLabel>{label}</InputLabel>
+                  <StyledSelect
+                    value={formData.dimensions}
+                    label={label}
+                    onChange={handleDimensionChange}
+                    disabled={isSubmitting || isTrend}
+                    endAdornment={
+                      formData.dimensions && (
+                        <InputAdornment position="end">
+                          <IconButton
+                            size="small"
+                            onClick={handleClearDimension}
+                            edge="end"
+                            sx={{ mr: 1 }}
+                            disabled={isTrend}
+                          >
+                            <ClearIcon fontSize="small" />
+                          </IconButton>
+                        </InputAdornment>
+                      )
+                    }
+                  >
+                    {isTrend ? (
+                      <MenuItem value="versionValue">Period</MenuItem>
+                    ) : (
+                      getAttributeOptions().map((attr) => (
+                        <MenuItem key={attr.name} value={attr.name} disabled={attr.name === formData.groupBy}>
+                          {attr.name}
+                        </MenuItem>
+                      ))
+                    )}
+                  </StyledSelect>
+                </FormControl>
+              </FormRow>
+            </FormSection>
+          );
+        }
+
+      case 'groupBy':
+        const visibleFieldsList = getVisibleFields();
+        const dimensionsField = visibleFieldsList.find(f => f.fieldName === 'dimensions');
+        if (dimensionsField) {
+          return null;
+        }
+
+        return (
+          <FormSection key={fieldName}>
+            <FormRow>
+              <FormControl fullWidth size="small">
+                <InputLabel>{label}</InputLabel>
+                <StyledSelect
+                  value={formData.groupBy}
+                  label={label}
+                  onChange={handleGroupByChange}
+                  disabled={isSubmitting}
+                  endAdornment={
+                    formData.groupBy && (
+                      <InputAdornment position="end">
+                        <IconButton size="small" onClick={handleClearGroupBy} edge="end" sx={{ mr: 1 }}>
+                          <ClearIcon fontSize="small" />
+                        </IconButton>
+                      </InputAdornment>
+                    )
+                  }
+                >
+                  {getAttributeOptions().map((attr) => (
+                    <MenuItem key={attr.name} value={attr.name} disabled={attr.name === formData.dimensions}>
+                      {attr.name}
+                    </MenuItem>
+                  ))}
+                </StyledSelect>
+              </FormControl>
+            </FormRow>
+          </FormSection>
+        );
+
+      case 'aggregation':
+        return (
+          <FormSection key={fieldName}>
+            <SectionTitle>{label}</SectionTitle>
+            <FormRow>
+              <FormControl fullWidth size="small">
+                <InputLabel>Type</InputLabel>
+                <StyledSelect
+                  value={formData.aggregation.type}
+                  label="Type"
+                  onChange={handleAggregationTypeChange}
+                  disabled={isSubmitting}
+                >
+                  <MenuItem value="Count">Count</MenuItem>
+                  <MenuItem value="Sum">Sum</MenuItem>
+                  <MenuItem value="Average">Average</MenuItem>
+                </StyledSelect>
+              </FormControl>
+
+              <FormControl fullWidth size="small">
+                <InputLabel>Attribute Name</InputLabel>
+                <StyledSelect
+                  value={formData.aggregation.attributeName}
+                  label="Attribute Name"
+                  onChange={handleAggregationAttributeChange}
+                  disabled={isSubmitting}
+                >
+                  {getAttributeOptions().map((attr) => (
+                    <MenuItem key={attr.name} value={attr.name}>
+                      {attr.name}
+                    </MenuItem>
+                  ))}
+                </StyledSelect>
+              </FormControl>
+            </FormRow>
+          </FormSection>
+        );
+
+      case 'conditions':
+        return (
+          <ConditionsSection key={fieldName}>
+            <Box
+              sx={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                mb: 2,
+              }}
+            >
+              <SectionTitle>{label}</SectionTitle>
+              <StyledButton startIcon={<AddIcon />} onClick={addCondition} disabled={isSubmitting} size="small">
+                Add Filters
+              </StyledButton>
+            </Box>
+
+            {formData.conditions.map((condition, index) => (
+              <FormRow key={index}>
+                <FormControl fullWidth size="small">
+                  <InputLabel>Field</InputLabel>
+                  <StyledSelect
+                    value={condition.field}
+                    label="Field"
+                    onChange={(e) => handleConditionFieldChange(index, e)}
+                    disabled={isSubmitting}
+                  >
+                    {getAttributeOptions().map((attr) => (
+                      <MenuItem key={attr.name} value={attr.name}>
+                        {attr.name}
+                      </MenuItem>
+                    ))}
+                  </StyledSelect>
+                </FormControl>
+                <FormControl fullWidth size="small">
+                  <InputLabel>Operator</InputLabel>
+                  <StyledSelect
+                    value={condition.operator}
+                    label="Operator"
+                    onChange={(e) => handleConditionSelectChange(index, 'operator', e)}
+                    disabled={isSubmitting || !condition.field}
+                  >
+                    {getOperatorsForField(condition.field).map((operator) => (
+                      <MenuItem key={operator._id} value={operator.operatorKey}>
+                        {operator.operatorName}
+                      </MenuItem>
+                    ))}
+                  </StyledSelect>
+                </FormControl>
+                {fieldTypes[index] === 'date' ? (
+                  <StyledTextField
+                    label="Value"
+                    type="date"
+                    value={condition.value}
+                    onChange={(e) => handleConditionValueInputChange(index, e)}
+                    disabled={
+                      isSubmitting ||
+                      !condition.operator ||
+                      !getOperatorsForField(condition.field).find((op) => op.operatorKey === condition.operator)
+                        ?.valueRequired
+                    }
+                    size="small"
+                    fullWidth
+                    InputLabelProps={{
+                      shrink: true,
+                    }}
+                  />
+                ) : (
+                  <StyledTextField
+                    label="Value"
+                    value={condition.value}
+                    onChange={(e) => handleConditionValueInputChange(index, e)}
+                    disabled={
+                      isSubmitting ||
+                      !condition.operator ||
+                      !getOperatorsForField(condition.field).find((op) => op.operatorKey === condition.operator)
+                        ?.valueRequired
+                    }
+                    size="small"
+                    fullWidth
+                  />
+                )}
+                <IconButton onClick={() => removeCondition(index)} disabled={isSubmitting} size="small">
+                  <DeleteIcon />
+                </IconButton>
+              </FormRow>
+            ))}
+          </ConditionsSection>
+        );
+
+      default:
+        return null;
+    }
   };
 
   if (!open) return null;
@@ -690,69 +989,197 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
 
         {selectedDataSource && (
           <>
-            <FormSection>
-              <FormRow>
-                <FormControl fullWidth size="small">
-                  <InputLabel>Dimensions</InputLabel>
-                  <StyledSelect
-                    value={formData.dimensions}
-                    label="Dimensions"
-                    onChange={handleDimensionChange}
-                    disabled={isSubmitting || isTrend}
-                    endAdornment={
-                      formData.dimensions && (
-                        <InputAdornment position="end">
-                          <IconButton
-                            size="small"
-                            onClick={handleClearDimension}
-                            edge="end"
-                            sx={{ mr: 1 }}
-                            disabled={isTrend}
-                          >
-                            <ClearIcon fontSize="small" />
-                          </IconButton>
-                        </InputAdornment>
-                      )
-                    }
-                  >
-                    {isTrend ? (
-                      <MenuItem value="versionValue">Period</MenuItem>
-                    ) : (
-                      getAttributeOptions().map((attr) => (
-                        <MenuItem key={attr.name} value={attr.name} disabled={attr.name === formData.groupBy}>
-                          {attr.name}
-                        </MenuItem>
-                      ))
-                    )}
-                  </StyledSelect>
-                </FormControl>
+            {getVisibleFields().length > 0 ? (
+              getVisibleFields().map((fieldConfig) => renderDynamicField(fieldConfig))
+            ) : (
+              <>
+                <FormSection>
+                  <FormRow>
+                    <FormControl fullWidth size="small">
+                      <InputLabel>Dimensions</InputLabel>
+                      <StyledSelect
+                        value={formData.dimensions}
+                        label="Dimensions"
+                        onChange={handleDimensionChange}
+                        disabled={isSubmitting || isTrend}
+                        endAdornment={
+                          formData.dimensions && (
+                            <InputAdornment position="end">
+                              <IconButton
+                                size="small"
+                                onClick={handleClearDimension}
+                                edge="end"
+                                sx={{ mr: 1 }}
+                                disabled={isTrend}
+                              >
+                                <ClearIcon fontSize="small" />
+                              </IconButton>
+                            </InputAdornment>
+                          )
+                        }
+                      >
+                        {isTrend ? (
+                          <MenuItem value="versionValue">Period</MenuItem>
+                        ) : (
+                          getAttributeOptions().map((attr) => (
+                            <MenuItem key={attr.name} value={attr.name} disabled={attr.name === formData.groupBy}>
+                              {attr.name}
+                            </MenuItem>
+                          ))
+                        )}
+                      </StyledSelect>
+                    </FormControl>
 
-                <FormControl fullWidth size="small">
-                  <InputLabel>Group By</InputLabel>
-                  <StyledSelect
-                    value={formData.groupBy}
-                    label="Group By"
-                    onChange={handleGroupByChange}
-                    disabled={isSubmitting}
-                    endAdornment={
-                      formData.groupBy && (
-                        <InputAdornment position="end">
-                          <IconButton size="small" onClick={handleClearGroupBy} edge="end" sx={{ mr: 1 }}>
-                            <ClearIcon fontSize="small" />
-                          </IconButton>
-                        </InputAdornment>
-                      )
-                    }
+                    <FormControl fullWidth size="small">
+                      <InputLabel>Group By</InputLabel>
+                      <StyledSelect
+                        value={formData.groupBy}
+                        label="Group By"
+                        onChange={handleGroupByChange}
+                        disabled={isSubmitting}
+                        endAdornment={
+                          formData.groupBy && (
+                            <InputAdornment position="end">
+                              <IconButton size="small" onClick={handleClearGroupBy} edge="end" sx={{ mr: 1 }}>
+                                <ClearIcon fontSize="small" />
+                              </IconButton>
+                            </InputAdornment>
+                          )
+                        }
+                      >
+                        {getAttributeOptions().map((attr) => (
+                          <MenuItem key={attr.name} value={attr.name} disabled={attr.name === formData.dimensions}>
+                            {attr.name}
+                          </MenuItem>
+                        ))}
+                      </StyledSelect>
+                    </FormControl>
+                  </FormRow>
+                </FormSection>
+
+                <FormSection>
+                  <SectionTitle>Aggregation</SectionTitle>
+                  <FormRow>
+                    <FormControl fullWidth size="small">
+                      <InputLabel>Type</InputLabel>
+                      <StyledSelect
+                        value={formData.aggregation.type}
+                        label="Type"
+                        onChange={handleAggregationTypeChange}
+                        disabled={isSubmitting}
+                      >
+                        <MenuItem value="Count">Count</MenuItem>
+                        <MenuItem value="Sum">Sum</MenuItem>
+                        <MenuItem value="Average">Average</MenuItem>
+                      </StyledSelect>
+                    </FormControl>
+
+                    <FormControl fullWidth size="small">
+                      <InputLabel>Attribute Name</InputLabel>
+                      <StyledSelect
+                        value={formData.aggregation.attributeName}
+                        label="Attribute Name"
+                        onChange={handleAggregationAttributeChange}
+                        disabled={isSubmitting}
+                      >
+                        {getAttributeOptions().map((attr) => (
+                          <MenuItem key={attr.name} value={attr.name}>
+                            {attr.name}
+                          </MenuItem>
+                        ))}
+                      </StyledSelect>
+                    </FormControl>
+                  </FormRow>
+                </FormSection>
+
+                <ConditionsSection>
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      mb: 2,
+                    }}
                   >
-                    {getAttributeOptions().map((attr) => (
-                      <MenuItem key={attr.name} value={attr.name} disabled={attr.name === formData.dimensions}>
-                        {attr.name}
-                      </MenuItem>
-                    ))}
-                  </StyledSelect>
-                </FormControl>
-              </FormRow>
-            </FormSection>
+                    <SectionTitle>Filters</SectionTitle>
+                    <StyledButton startIcon={<AddIcon />} onClick={addCondition} disabled={isSubmitting} size="small">
+                      Add Filters
+                    </StyledButton>
+                  </Box>
+
+                  {formData.conditions.map((condition, index) => (
+                    <FormRow key={index}>
+                      <FormControl fullWidth size="small">
+                        <InputLabel>Field</InputLabel>
+                        <StyledSelect
+                          value={condition.field}
+                          label="Field"
+                          onChange={(e) => handleConditionFieldChange(index, e)}
+                          disabled={isSubmitting}
+                        >
+                          {getAttributeOptions().map((attr) => (
+                            <MenuItem key={attr.name} value={attr.name}>
+                              {attr.name}
+                            </MenuItem>
+                          ))}
+                        </StyledSelect>
+                      </FormControl>
+                      <FormControl fullWidth size="small">
+                        <InputLabel>Operator</InputLabel>
+                        <StyledSelect
+                          value={condition.operator}
+                          label="Operator"
+                          onChange={(e) => handleConditionSelectChange(index, 'operator', e)}
+                          disabled={isSubmitting || !condition.field}
+                        >
+                          {getOperatorsForField(condition.field).map((operator) => (
+                            <MenuItem key={operator._id} value={operator.operatorKey}>
+                              {operator.operatorName}
+                            </MenuItem>
+                          ))}
+                        </StyledSelect>
+                      </FormControl>
+                      {fieldTypes[index] === 'date' ? (
+                        <StyledTextField
+                          label="Value"
+                          type="date"
+                          value={condition.value}
+                          onChange={(e) => handleConditionValueInputChange(index, e)}
+                          disabled={
+                            isSubmitting ||
+                            !condition.operator ||
+                            !getOperatorsForField(condition.field).find((op) => op.operatorKey === condition.operator)
+                              ?.valueRequired
+                          }
+                          size="small"
+                          fullWidth
+                          InputLabelProps={{
+                            shrink: true,
+                          }}
+                        />
+                      ) : (
+                        <StyledTextField
+                          label="Value"
+                          value={condition.value}
+                          onChange={(e) => handleConditionValueInputChange(index, e)}
+                          disabled={
+                            isSubmitting ||
+                            !condition.operator ||
+                            !getOperatorsForField(condition.field).find((op) => op.operatorKey === condition.operator)
+                              ?.valueRequired
+                          }
+                          size="small"
+                          fullWidth
+                        />
+                      )}
+                      <IconButton onClick={() => removeCondition(index)} disabled={isSubmitting} size="small">
+                        <DeleteIcon />
+                      </IconButton>
+                    </FormRow>
+                  ))}
+                </ConditionsSection>
+              </>
+            )}
 
             {isTrend && (
               <FormSection>
@@ -773,162 +1200,6 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
                 </FormRow>
               </FormSection>
             )}
-
-            <FormSection>
-              <SectionTitle>Aggregation</SectionTitle>
-              <FormRow>
-                <FormControl fullWidth size="small">
-                  <InputLabel>Type</InputLabel>
-                  <StyledSelect
-                    value={formData.aggregation.type}
-                    label="Type"
-                    onChange={handleAggregationTypeChange}
-                    disabled={isSubmitting}
-                  >
-                    <MenuItem value="Count">Count</MenuItem>
-                    <MenuItem value="Sum">Sum</MenuItem>
-                    <MenuItem value="Average">Average</MenuItem>
-                  </StyledSelect>
-                </FormControl>
-
-                <FormControl fullWidth size="small">
-                  <InputLabel>Attribute Name</InputLabel>
-                  <StyledSelect
-                    value={formData.aggregation.attributeName}
-                    label="Attribute Name"
-                    onChange={handleAggregationAttributeChange}
-                    disabled={isSubmitting}
-                  >
-                    {getAttributeOptions().map((attr) => (
-                      <MenuItem key={attr.name} value={attr.name}>
-                        {attr.name}
-                      </MenuItem>
-                    ))}
-                  </StyledSelect>
-                </FormControl>
-              </FormRow>
-            </FormSection>
-
-            {/* Position section commented out
-            <FormSection>
-              <SectionTitle>Position</SectionTitle>
-              <FormRow>
-                <StyledTextField
-                  label="X"
-                  type="number"
-                  value={formData.position.x}
-                  onChange={(e) => handlePositionChange("x", e.target.value)}
-                  disabled={isSubmitting}
-                  size="small"
-                />
-                <StyledTextField
-                  label="Y"
-                  type="number"
-                  value={formData.position.y}
-                  onChange={(e) => handlePositionChange("y", e.target.value)}
-                  disabled={isSubmitting}
-                  size="small"
-                />
-                <StyledTextField
-                  label="Index"
-                  type="number"
-                  value={formData.position.index}
-                  onChange={(e) =>
-                    handlePositionChange("index", e.target.value)
-                  }
-                  disabled={isSubmitting}
-                  size="small"
-                />
-              </FormRow>
-            </FormSection>
-            */}
-
-            <ConditionsSection>
-              <Box
-                sx={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  mb: 2,
-                }}
-              >
-                <SectionTitle>Filters</SectionTitle>
-                <StyledButton startIcon={<AddIcon />} onClick={addCondition} disabled={isSubmitting} size="small">
-                  Add Filters
-                </StyledButton>
-              </Box>
-
-              {formData.conditions.map((condition, index) => (
-                <FormRow key={index}>
-                  <FormControl fullWidth size="small">
-                    <InputLabel>Field</InputLabel>
-                    <StyledSelect
-                      value={condition.field}
-                      label="Field"
-                      onChange={(e) => handleConditionFieldChange(index, e)}
-                      disabled={isSubmitting}
-                    >
-                      {getAttributeOptions().map((attr) => (
-                        <MenuItem key={attr.name} value={attr.name}>
-                          {attr.name}
-                        </MenuItem>
-                      ))}
-                    </StyledSelect>
-                  </FormControl>
-                  <FormControl fullWidth size="small">
-                    <InputLabel>Operator</InputLabel>
-                    <StyledSelect
-                      value={condition.operator}
-                      label="Operator"
-                      onChange={(e) => handleConditionSelectChange(index, 'operator', e)}
-                      disabled={isSubmitting || !condition.field}
-                    >
-                      {getOperatorsForField(condition.field).map((operator) => (
-                        <MenuItem key={operator._id} value={operator.operatorKey}>
-                          {operator.operatorName}
-                        </MenuItem>
-                      ))}
-                    </StyledSelect>
-                  </FormControl>
-                  {fieldTypes[index] === 'date' ? (
-                    <StyledTextField
-                      label="Value"
-                      type="date"
-                      value={condition.value}
-                      onChange={(e) => handleConditionValueInputChange(index, e)}
-                      disabled={
-                        isSubmitting ||
-                        !condition.operator ||
-                        !getOperatorsForField(condition.field).find((op) => op.operatorKey === condition.operator)
-                          ?.valueRequired
-                      }
-                      size="small"
-                      fullWidth
-                      InputLabelProps={{
-                        shrink: true,
-                      }}
-                    />
-                  ) : (
-                    <StyledTextField
-                      label="Value"
-                      value={condition.value}
-                      onChange={(e) => handleConditionValueInputChange(index, e)}
-                      disabled={
-                        isSubmitting ||
-                        !condition.operator ||
-                        !getOperatorsForField(condition.field).find((op) => op.operatorKey === condition.operator)
-                          ?.valueRequired
-                      }
-                      size="small"
-                      fullWidth
-                    />
-                  )}
-                  <IconButton onClick={() => removeCondition(index)} disabled={isSubmitting} size="small">
-                    <DeleteIcon />
-                  </IconButton>
-                </FormRow>
-              ))}
-            </ConditionsSection>
           </>
         )}
       </ConfigurationContent>
