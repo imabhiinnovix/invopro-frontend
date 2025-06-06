@@ -337,7 +337,9 @@ export default function Report() {
             }}
             ref={targetRef}
           >
-            {allDetailData?.dataSourceVersion?.map((item, index) => (
+            {allDetailData?.dataSourceVersion
+              ?.filter(item => !!item.allowPdfDownload) // Only include sheets that allow PDF download
+              .map((item, index, filteredArray) => (
               <Box key={index}>
                 {index === 0 && (
                   <Table
@@ -385,25 +387,21 @@ export default function Report() {
                     <Box sx={{ fontWeight: 600 }}>Sheet Name: </Box>
                     <Box>{item.sheetName}</Box>
                   </Box>
-                  {!!item.allowPdfDownload ? (
-                    <ViewReport
-                      key={index}
-                      dataSourceVersionId={item.dataSourceVersionId}
-                      versionCode={item.versionCode}
-                      mappingFuctionName={item.mappingFuctionName}
-                      versionValue={allDetailData.versionValue.split('-')[0]}
-                      sheetCode={item.sheetCode}
-                      designCode={item.designCode}
-                      customReportId={allDetailData.customReportId._id}
-                    />
-                  ) : (
-                    <Box sx={{ mt: 30 }}>
-                      This sheet cannot be converted to PDF. Please refer to the Excel file for the available data.
-                    </Box>
-                  )}
+                  <ViewReport
+                    key={index}
+                    dataSourceVersionId={item.dataSourceVersionId}
+                    versionCode={item.versionCode}
+                    mappingFuctionName={item.mappingFuctionName}
+                    versionValue={allDetailData.versionValue.split('-')[0]}
+                    sheetCode={item.sheetCode}
+                    designCode={item.designCode}
+                    customReportId={allDetailData.customReportId._id}
+                  />
                 </Box>
 
-                <Box className="html2pdf__page-break" />
+                {index < filteredArray.length - 1 && (
+                  <Box className="html2pdf__page-break" />
+                )}
               </Box>
             ))}
           </Box>
