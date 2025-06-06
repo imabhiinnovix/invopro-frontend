@@ -13,6 +13,7 @@ export interface ReportRequestResponse {
   customReportId: { _id: string; reportName: string };
   versionValue: string;
   status: string;
+  intermediateReportId: string;
   createdAt: string;
   createdBy: {
     firstName: string;
@@ -28,5 +29,6 @@ export interface ReportRequestResponse {
     versionCode: string;
     dataSourceId: string;
     allowPdfDownload: boolean;
+    isIntermediate: boolean
   }[];
 }

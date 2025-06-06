@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { styled } from '@mui/material/styles';
+import React, { useState, useEffect, useRef, useCallback } from "react";
+import { styled } from "@mui/material/styles";
 import {
   Table,
   TableBody,
@@ -14,52 +14,53 @@ import {
   Button,
   tableCellClasses,
   Tooltip,
-} from '@mui/material';
+} from "@mui/material";
 
-import useGet from '../../../hooks/useGet';
-import { GET } from '../../../services/apiRoutes';
-import { ReportRequestResponse } from './types';
-import useFileDownload from '../../../hooks/useFiledownload';
-import { DateTime } from 'luxon';
-import SimCardDownloadIcon from '@mui/icons-material/SimCardDownload';
+import useGet from "../../../hooks/useGet";
+import { GET } from "../../../services/apiRoutes";
+import { ReportRequestResponse } from "./types";
+import useFileDownload from "../../../hooks/useFiledownload";
+import { DateTime } from "luxon";
+import SimCardDownloadIcon from "@mui/icons-material/SimCardDownload";
+import DownloadForOfflineIcon from '@mui/icons-material/DownloadForOffline';
 
-import VisibilityIcon from '@mui/icons-material/Visibility';
+import VisibilityIcon from "@mui/icons-material/Visibility";
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
   [`&.${tableCellClasses.head}`]: {
     backgroundColor: theme.palette.grey[50],
     color: theme.palette.text.primary,
     fontWeight: 600,
-    fontSize: '0.813rem',
-    height: '48px',
-    padding: '0 16px',
+    fontSize: "0.813rem",
+    height: "48px",
+    padding: "0 16px",
     borderBottom: `1px solid ${theme.palette.divider}`,
   },
   [`&.${tableCellClasses.body}`]: {
-    fontSize: '0.875rem',
-    height: '52px',
-    padding: '0 16px',
+    fontSize: "0.875rem",
+    height: "52px",
+    padding: "0 16px",
     borderBottom: `1px solid ${theme.palette.divider}`,
   },
 }));
 
 const StyledTableRow = styled(TableRow)(({ theme }) => ({
-  '&:hover': {
+  "&:hover": {
     backgroundColor: theme.palette.action.hover,
   },
 }));
 
 const StyledButton = styled(Button)(({ theme }) => ({
-  textTransform: 'none',
+  textTransform: "none",
   borderRadius: 10,
   // padding: '6px 12px',
   // marginRight: '2',
-  fontSize: '0.813rem',
+  fontSize: "0.813rem",
   fontWeight: 500,
-  minWidth: '80px',
+  minWidth: "80px",
   backgroundColor: theme.palette.primary.main,
-  color: 'white',
-  '&:hover': {
+  color: "white",
+  "&:hover": {
     backgroundColor: theme.palette.primary.dark,
   },
 }));
@@ -68,8 +69,12 @@ interface AttributeOptionTableProps {
   reload: boolean; // reload is now a boolean
   setReload: React.Dispatch<React.SetStateAction<boolean>>;
   setViewReportRequestId: React.Dispatch<React.SetStateAction<string>>;
-  setViewReportNameWithVersionValue: React.Dispatch<React.SetStateAction<string>>;
-  setAllDetailData: React.Dispatch<React.SetStateAction<ReportRequestResponse | null>>;
+  setViewReportNameWithVersionValue: React.Dispatch<
+    React.SetStateAction<string>
+  >;
+  setAllDetailData: React.Dispatch<
+    React.SetStateAction<ReportRequestResponse | null>
+  >;
 }
 
 interface ReportRequestData {
@@ -85,16 +90,20 @@ const ReportRequestTable: React.FC<AttributeOptionTableProps> = ({
   setViewReportNameWithVersionValue,
   setAllDetailData,
 }) => {
-  const [reportRequests, setReportRequests] = useState<ReportRequestResponse[]>([]);
+  const [reportRequests, setReportRequests] = useState<ReportRequestResponse[]>(
+    []
+  );
   const [currentPage, setCurrentPage] = useState<number>(1);
-  const [downloadFileName, setDownLoadFileName] = useState('');
-  const [processingRequestDataAvailable, setProcessingRequestDataAvailable] = useState(false);
+  const [downloadFileName, setDownLoadFileName] = useState("");
+  const [processingRequestDataAvailable, setProcessingRequestDataAvailable] =
+    useState(false);
   const [processingRequestCount, setProcessingRequestCount] = useState(0);
-  const [downloadRequestId, setDownloadRequestId] = useState('');
+  const [downloadRequestId, setDownloadRequestId] = useState("");
+  const [intermediateDownloadRequestId, setIntermediateDownloadRequestId] = useState("");
 
   const exportFile = useFileDownload<Blob>((data) => {
-    const blob = new Blob([data], { type: 'application/octet-stream' });
-    const link = document.createElement('a');
+    const blob = new Blob([data], { type: "application/octet-stream" });
+    const link = document.createElement("a");
     const url = URL.createObjectURL(blob);
     link.href = url;
     link.download = downloadFileName;
@@ -114,17 +123,28 @@ const ReportRequestTable: React.FC<AttributeOptionTableProps> = ({
     });
   };
 
+  const intermediateDownloadFile = (fileName: string, fileId: string) => {
+    setIntermediateDownloadRequestId(fileId);
+    setDownLoadFileName(fileName);
+    exportFile.mutate({
+      url: `${GET?.Custom_Report}/download/${fileId}?isIntermediate=true`,
+    });
+  };
+
   const perPageItem = 10;
 
   const reportRequestList = useGet<ReportRequestData>(
     [`reportRequestList`, String(currentPage)],
-    GET?.Custom_Report + '/listReportRequest' + `?page=${currentPage}&limit=${perPageItem}`,
+    GET?.Custom_Report +
+      "/listReportRequest" +
+      `?page=${currentPage}&limit=${perPageItem}`,
     !!currentPage
   );
 
   const notProcessingReportRequestDetails = useGet<ReportRequestData>(
     [`notprocesssingReportRequestList`, String(processingRequestCount)],
-    GET?.Custom_Report + `/listReportRequest?page=1&limit=10&status=notprocessing`,
+    GET?.Custom_Report +
+      `/listReportRequest?page=1&limit=10&status=notprocessing`,
     !!processingRequestCount
   );
 
@@ -132,8 +152,8 @@ const ReportRequestTable: React.FC<AttributeOptionTableProps> = ({
     const processingReports = reportRequests.filter((data) => {
       const createdAt = DateTime.fromISO(data.createdAt);
       const now = DateTime.utc();
-      const diff = now.diff(createdAt, ['hours']).toObject();
-      return data.status === 'processing' && diff.hours! <= 1;
+      const diff = now.diff(createdAt, ["hours"]).toObject();
+      return data.status === "processing" && diff.hours! <= 1;
     });
     setProcessingRequestDataAvailable(processingReports.length > 0);
   }, [reportRequests]);
@@ -154,18 +174,28 @@ const ReportRequestTable: React.FC<AttributeOptionTableProps> = ({
     if (!notProcessingReportRequestDetails?.data?.data) return;
 
     const dataMap: Map<string, string> = new Map(
-      notProcessingReportRequestDetails.data.data.map((item) => [item._id, item.status])
+      notProcessingReportRequestDetails.data.data.map((item) => [
+        item._id,
+        item.status,
+      ])
     );
 
     setReportRequests((prevRequests) =>
-      prevRequests.map((data) => (dataMap.has(data._id) ? { ...data, status: dataMap.get(data._id)! } : data))
+      prevRequests.map((data) =>
+        dataMap.has(data._id)
+          ? { ...data, status: dataMap.get(data._id)! }
+          : data
+      )
     );
   }, [notProcessingReportRequestDetails]);
 
   useEffect(() => {
     if (notProcessingReportRequestDetails?.data?.data) {
       const dataMap: Map<string, string> = new Map(
-        notProcessingReportRequestDetails.data.data.map((item) => [item._id, item.status])
+        notProcessingReportRequestDetails.data.data.map((item) => [
+          item._id,
+          item.status,
+        ])
       );
       const updatedReportRequest = reportRequests.map((data) => {
         if (dataMap.has(data._id)) {
@@ -206,7 +236,11 @@ const ReportRequestTable: React.FC<AttributeOptionTableProps> = ({
 
   const lastElementRef = useCallback(
     (node: HTMLTableRowElement | null) => {
-      if (reportRequestList.isFetching || reportRequests.length >= (reportRequestList?.data?.totalCount ?? 0)) return;
+      if (
+        reportRequestList.isFetching ||
+        reportRequests.length >= (reportRequestList?.data?.totalCount ?? 0)
+      )
+        return;
 
       if (lastRowRef.current) {
         lastRowRef.current.disconnect();
@@ -222,7 +256,11 @@ const ReportRequestTable: React.FC<AttributeOptionTableProps> = ({
         lastRowRef.current.observe(node);
       }
     },
-    [reportRequestList.isFetching, reportRequests.length, reportRequestList?.data?.totalCount]
+    [
+      reportRequestList.isFetching,
+      reportRequests.length,
+      reportRequestList?.data?.totalCount,
+    ]
   );
 
   if (!reportRequestList.isFetching && !reportRequests.length) {
@@ -230,7 +268,7 @@ const ReportRequestTable: React.FC<AttributeOptionTableProps> = ({
       <Box
         display="flex"
         flexDirection="column"
-        sx={{ textAlign: 'center', marginTop: 10 }}
+        sx={{ textAlign: "center", marginTop: 10 }}
         alignContent="center"
         alignItems="center"
       >
@@ -245,11 +283,11 @@ const ReportRequestTable: React.FC<AttributeOptionTableProps> = ({
     <TableContainer
       component={Paper}
       sx={{
-        borderRadius: 'inherit',
-        boxShadow: 'none',
-        height: 'calc(100vh - 250px)',
-        '& .MuiTable-root': {
-          borderCollapse: 'separate',
+        borderRadius: "inherit",
+        boxShadow: "none",
+        height: "calc(100vh - 250px)",
+        "& .MuiTable-root": {
+          borderCollapse: "separate",
           borderSpacing: 0,
         },
       }}
@@ -267,43 +305,64 @@ const ReportRequestTable: React.FC<AttributeOptionTableProps> = ({
         </TableHead>
         <TableBody>
           {reportRequests.map((data, dataIndex) => (
-            <StyledTableRow key={data._id} ref={reportRequests.length === dataIndex + 1 ? lastElementRef : null}>
-              <StyledTableCell>{data.customReportId?.reportName || '-'}</StyledTableCell>
-              <StyledTableCell>{data.versionValue || '-'}</StyledTableCell>
+            <StyledTableRow
+              key={data._id}
+              ref={
+                reportRequests.length === dataIndex + 1 ? lastElementRef : null
+              }
+            >
+              <StyledTableCell>
+                {data.customReportId?.reportName || "-"}
+              </StyledTableCell>
+              <StyledTableCell>{data.versionValue || "-"}</StyledTableCell>
               <StyledTableCell
                 sx={{
                   color:
-                    data.status === 'completed'
-                      ? 'success.main'
-                      : data.status === 'processing'
-                      ? 'warning.main'
-                      : data.status === 'failed'
-                      ? 'error.main'
-                      : 'text.primary',
+                    data.status === "completed"
+                      ? "success.main"
+                      : data.status === "processing"
+                      ? "warning.main"
+                      : data.status === "failed"
+                      ? "error.main"
+                      : "text.primary",
                   fontWeight: 500,
                 }}
               >
-                {data.status || '-'}
+                {data.status || "-"}
               </StyledTableCell>
               <StyledTableCell>
-                {`${data?.createdBy?.firstName || ''}${data?.createdBy?.lastName ? ' ' + data.createdBy.lastName : ''}`}
+                {`${data?.createdBy?.firstName || ""}${
+                  data?.createdBy?.lastName ? " " + data.createdBy.lastName : ""
+                }`}
               </StyledTableCell>
-              <StyledTableCell>{data.createdAt ? new Date(data.createdAt).toLocaleString() : '-'}</StyledTableCell>
-              <StyledTableCell align="right">
-                {data.status === 'completed' ? (
-                  <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
-                    {exportFile.isPending && !!downloadRequestId && downloadRequestId === data._id ? (
+              <StyledTableCell>
+                {data.createdAt
+                  ? new Date(data.createdAt).toLocaleString()
+                  : "-"}
+              </StyledTableCell>
+              <StyledTableCell align="right" sx={{display: 'flex'}}>
+                {data.status === "completed" ? (
+                  <Box
+                    sx={{
+                      display: "flex",
+                      justifyContent: "flex-end",
+                      alignItems: "center",
+                    }}
+                  >
+                    {exportFile.isPending &&
+                    !!downloadRequestId &&
+                    downloadRequestId === data._id ? (
                       <Box
                         sx={{
                           width: 27,
                           height: 27,
-                          borderRadius: '50%',
-                          border: '3px solid #f3f3f3',
-                          borderTop: '3px solid #3498db',
-                          animation: 'spin 1s linear infinite',
-                          '@keyframes spin': {
-                            '0%': { transform: 'rotate(0deg)' },
-                            '100%': { transform: 'rotate(360deg)' },
+                          borderRadius: "50%",
+                          border: "3px solid #f3f3f3",
+                          borderTop: "3px solid #3498db",
+                          animation: "spin 1s linear infinite",
+                          "@keyframes spin": {
+                            "0%": { transform: "rotate(0deg)" },
+                            "100%": { transform: "rotate(360deg)" },
                           },
                           mr: 1,
                         }}
@@ -312,7 +371,10 @@ const ReportRequestTable: React.FC<AttributeOptionTableProps> = ({
                       <Tooltip title="Download Excel" arrow>
                         <StyledButton
                           onClick={() => {
-                            downloadFile(`${data.customReportId?.reportName}-${data.versionValue}.xlsx`, data._id);
+                            downloadFile(
+                              `${data.customReportId?.reportName}-${data.versionValue}.xlsx`,
+                              data._id
+                            );
                           }}
                           sx={{ mr: 1 }}
                         >
@@ -325,7 +387,9 @@ const ReportRequestTable: React.FC<AttributeOptionTableProps> = ({
                         onClick={() => {
                           setAllDetailData(data);
                           setViewReportRequestId(data._id);
-                          setViewReportNameWithVersionValue(`${data.customReportId?.reportName}-${data.versionValue}`);
+                          setViewReportNameWithVersionValue(
+                            `${data.customReportId?.reportName}-${data.versionValue}`
+                          );
                         }}
                       >
                         <VisibilityIcon />
@@ -333,7 +397,50 @@ const ReportRequestTable: React.FC<AttributeOptionTableProps> = ({
                     </Tooltip>
                   </Box>
                 ) : (
-                  '-'
+                  "-"
+                )}
+                {data.status === "completed" && data.intermediateReportId && (
+                   <Box
+                   sx={{
+                     display: "flex",
+                     justifyContent: "flex-end",
+                     alignItems: "center",
+                   }}
+                 >
+                  {exportFile.isPending &&
+                  !!intermediateDownloadRequestId &&
+                  intermediateDownloadRequestId === data._id ? (
+                    <Box
+                      sx={{
+                        width: 27,
+                        height: 27,
+                        borderRadius: "50%",
+                        border: "3px solid #f3f3f3",
+                        borderTop: "3px solid #3498db",
+                        animation: "spin 1s linear infinite",
+                        "@keyframes spin": {
+                          "0%": { transform: "rotate(0deg)" },
+                          "100%": { transform: "rotate(360deg)" },
+                        },
+                        mr: 1,
+                      }}
+                    />
+                  ) : (
+                    <Tooltip title="Intermediate Download" arrow>
+                      <StyledButton
+                        onClick={() => {
+                          intermediateDownloadFile(
+                            `${data.customReportId?.reportName}-intermediate-${data.versionValue}.xlsx`,
+                            data._id
+                          );
+                        }}
+                        sx={{ mr: 1 }}
+                      >
+                        <DownloadForOfflineIcon />
+                      </StyledButton>
+                    </Tooltip>
+                  )}
+                  </Box>
                 )}
               </StyledTableCell>
             </StyledTableRow>
