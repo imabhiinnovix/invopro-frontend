@@ -1,4 +1,4 @@
-export const spacing = {
+export const SHADOWS = {
   s0: '0px',
   s1: '4px',
   s2: '8px',

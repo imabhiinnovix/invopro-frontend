@@ -1,11 +1,11 @@
-import { spacing } from './spacing';
-import { typography } from './typography';
-import { shadows } from './shadow';
-import {colors} from './color';
+import { TYPOGRAPHY } from './typography';
+import {COLORS} from './color';
+import { SPACING } from './shadow';
+import { SHADOWS } from './spacing';
 
-export const styles = {
-  spacing,
-  typography,
-  shadows,
-  colors,
+export const STYLE_GUIDE = {
+  SPACING,
+  TYPOGRAPHY,
+  SHADOWS,
+  COLORS,
 };
