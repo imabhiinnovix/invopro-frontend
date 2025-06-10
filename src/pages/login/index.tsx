@@ -1,26 +1,32 @@
-import { useState, useEffect, useContext, useLayoutEffect } from 'react';
+import { useState, useEffect, useContext, useLayoutEffect } from "react";
 
-import Box from '@mui/material/Box';
-import Link from '@mui/material/Link';
-import Divider from '@mui/material/Divider';
-import TextField from '@mui/material/TextField';
+import Box from "@mui/material/Box";
+import Link from "@mui/material/Link";
+import Divider from "@mui/material/Divider";
+import TextField from "@mui/material/TextField";
 
-import Typography from '@mui/material/Typography';
-import LoadingButton from '@mui/lab/LoadingButton';
-import { useForm } from 'react-hook-form';
-import { yupResolver } from '@hookform/resolvers/yup';
-import * as yup from 'yup';
+import Typography from "@mui/material/Typography";
+import LoadingButton from "@mui/lab/LoadingButton";
+import { useForm } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+import * as yup from "yup";
 
-import { POST } from '../../services/apiRoutes';
-import { IconButton, InputAdornment } from '@mui/material';
-import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
-import VisibilityIcon from '@mui/icons-material/Visibility';
-import { clearLocalStorage, getAuthToken, setAuthToken, setRoleId } from '../../utils/handleLocalStorage';
-import { roleId } from '../../utils/constants';
-import { AuthContext, AuthContextType } from '../../context/AuthContext';
-import { useNavigate } from 'react-router-dom';
-import usePost from '../../hooks/usePost';
-import ProgressBar from '../../components/molecule/progressBar';
+import { POST } from "../../services/apiRoutes";
+import { IconButton, InputAdornment } from "@mui/material";
+import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
+import VisibilityIcon from "@mui/icons-material/Visibility";
+import {
+  clearLocalStorage,
+  getAuthToken,
+  setAuthToken,
+  setRoleId,
+} from "../../utils/handleLocalStorage";
+import { roleId } from "../../utils/constants";
+import { AuthContext, AuthContextType } from "../../context/AuthContext";
+import { useNavigate } from "react-router-dom";
+import usePost from "../../hooks/usePost";
+import ProgressBar from "../../components/molecule/progressBar";
+import logo from "../../assets/logo.png";
 
 interface getLoginPayload {
   email: string;
@@ -42,17 +48,19 @@ interface userCredType {
 
 function Login() {
   const [showPassword, setShowPassword] = useState(false);
-  const { setIsAuthUser, userDetails } = useContext(AuthContext) as AuthContextType;
+  const { setIsAuthUser, userDetails } = useContext(
+    AuthContext
+  ) as AuthContextType;
 
   useEffect(() => {
     const token = getAuthToken();
     if (token) {
       if (userDetails?.data?.roleId === roleId?.SUPER_ADMIN) {
-        navigate('/dashboard');
+        navigate("/dashboard");
       } else if (userDetails?.data?.roleId === roleId?.ADMIN) {
-        navigate('/dashboard');
+        navigate("/dashboard");
       } else {
-        navigate('/dashboard');
+        navigate("/dashboard");
       }
       setRoleId(String(userDetails?.data?.roleId));
     }
@@ -61,7 +69,7 @@ function Login() {
   const navigate = useNavigate();
 
   const getLogin = usePost<getLoginPayload, getLoginResponse>(
-    [''],
+    [""],
     (data) => {
       if (data?.success) {
         setAuthToken(data?.data?.token);
@@ -78,10 +86,13 @@ function Login() {
   const LoginSchema = yup.object().shape({
     email: yup
       .string()
-      .required('Email is Required')
-      .matches(/^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/, 'Invalid email address')
-      .max(50, 'Email is too long'),
-    password: yup.string().required('Password is required'),
+      .required("Email is Required")
+      .matches(
+        /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/,
+        "Invalid email address"
+      )
+      .max(50, "Email is too long"),
+    password: yup.string().required("Password is required"),
   });
 
   const {
@@ -89,8 +100,8 @@ function Login() {
     handleSubmit,
     formState: { errors },
   } = useForm<userCredType>({
-    mode: 'all',
-    reValidateMode: 'onChange',
+    mode: "all",
+    reValidateMode: "onChange",
     resolver: yupResolver(LoginSchema),
   });
 
@@ -101,28 +112,31 @@ function Login() {
 
   const renderForm = (
     <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-y-5">
-      <Box display="flex" flexDirection="column" alignItems="flex-end" boxShadow={2} padding={4} borderRadius={5}>
+      <Box
+        display="flex"
+        flexDirection="column"
+        alignItems="flex-end"
+        boxShadow={2}
+        padding={4}
+        borderRadius={5}
+      >
         <TextField
           fullWidth
           label="Email address"
-          defaultValue="example@gmail.com"
+          placeholder="example@gmail.com"
           required
           error={!!errors.email}
           helperText={errors.email?.message}
-          {...register('email')}
+          {...register("email")}
           sx={{ mb: 3 }}
         />
-
-        {/* <Link variant="body2" color="inherit" sx={{ mb: 1.5 }}>
-          Forgot password?
-        </Link> */}
 
         <TextField
           fullWidth
           label="Password"
-          defaultValue="@demo1234"
-          type={showPassword ? 'text' : 'password'}
-          {...register('password')}
+          placeholder="@Demo1234"
+          type={showPassword ? "text" : "password"}
+          {...register("password")}
           required
           error={!!errors.password}
           helperText={errors.password?.message}
@@ -130,7 +144,10 @@ function Login() {
             input: {
               endAdornment: (
                 <InputAdornment position="end">
-                  <IconButton onClick={() => setShowPassword(!showPassword)} edge="end">
+                  <IconButton
+                    onClick={() => setShowPassword(!showPassword)}
+                    edge="end"
+                  >
                     {/* Replace with your icon logic */}
                     {showPassword ? <VisibilityIcon /> : <VisibilityOffIcon />}
                   </IconButton>
@@ -148,7 +165,7 @@ function Login() {
             type="submit"
             color="primary"
             variant="contained"
-            sx={{ fontWeight: 'bold' }}
+            sx={{ fontWeight: "bold" }}
           >
             Sign in
           </LoadingButton>
@@ -160,25 +177,49 @@ function Login() {
   );
 
   return (
-    <Box display="flex" alignItems="center" justifyContent="center" height="85vh">
+    <Box
+      display="flex"
+      alignItems="center"
+      justifyContent="center"
+      height="85vh"
+    >
       <Box maxWidth="600px">
-        <Box gap={1.5} display="flex" flexDirection="column" alignItems="center" sx={{ mb: 5 }}>
-          <Typography variant="h3" textAlign="center">
-            Welcome to ReportiVix
-          </Typography>
+        <Box
+          gap={1.5}
+          display="flex"
+          flexDirection="column"
+          alignItems="center"
+          sx={{ mb: 5 }}
+        >
+          <Box display="flex" alignItems="center" justifyContent="center">
+            <Typography variant="h3" textAlign="center">
+              Welcome to
+            </Typography>
+            <Box component="img" src={logo} alt="Logo" width={250} />
+          </Box>
+
           <Typography variant="h6" color="text.secondary" textAlign="center">
             To get started, please sign in
           </Typography>
         </Box>
         {renderForm}
-        <Divider sx={{ mt: 3, '&::before, &::after': { borderTopStyle: 'dashed' } }}>
-          <Typography variant="overline" sx={{ color: 'text.secondary', fontWeight: 'fontWeightMedium' }}>
+        <Divider
+          sx={{ mt: 3, "&::before, &::after": { borderTopStyle: "dashed" } }}
+        >
+          <Typography
+            variant="overline"
+            sx={{ color: "text.secondary", fontWeight: "fontWeightMedium" }}
+          >
             OR
           </Typography>
         </Divider>
-        <Typography variant="h6">
+        <Typography variant="h6" sx={{ textAlign: "center" }}>
           Login with
-          <Link href="/otp-login" variant="h5" sx={{ ml: 0.5, cursor: 'pointer', fontWeight: 'bold' }}>
+          <Link
+            href="/otp-login"
+            variant="h5"
+            sx={{ ml: 0.5, cursor: "pointer", fontWeight: "bold" }}
+          >
             OTP!
           </Link>
         </Typography>
