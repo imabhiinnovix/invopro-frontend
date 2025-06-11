@@ -15,6 +15,8 @@ import { useNavigate } from 'react-router-dom';
 import usePost from '../../hooks/usePost';
 import { sendOTPPayload, sendOTPResponse } from './types';
 import ProgressBar from '../../components/molecule/progressBar';
+import { STYLE_GUIDE } from '../../styles';
+import logo from '../../assets/logo.png';
 
 function SendOTP() {
   const navigate = useNavigate();
@@ -58,16 +60,21 @@ function SendOTP() {
 
   const renderForm = (
     <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-y-5">
-      <Box display="flex" flexDirection="column" alignItems="flex-end" boxShadow={2} padding={4} borderRadius={5}>
+      <Box display="flex" flexDirection="column" alignItems="flex-end" sx={{
+          boxShadow: STYLE_GUIDE.SHADOWS.cardSecondary,
+          padding: STYLE_GUIDE.SPACING.s8,
+          borderRadius: STYLE_GUIDE.SPACING.s2,
+          backgroundColor: STYLE_GUIDE.COLORS.backgroundPaper,
+        }}>
         <TextField
           fullWidth
           label="Email address"
-          defaultValue="example@gmail.com"
+          placeholder="example@gmail.com"
           required
           error={!!errors.email}
           helperText={errors.email?.message}
           {...register('email')}
-          sx={{ mb: 3 }}
+          sx={{ mb: STYLE_GUIDE.SPACING.s6 }}
         />
         {!sendOTP?.isPending && !sendOTP.isSuccess ? (
           <LoadingButton
@@ -76,7 +83,7 @@ function SendOTP() {
             type="submit"
             color="primary"
             variant="contained"
-            sx={{ fontWeight: 'bold' }}
+            sx={{ fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.bold}}
           >
             Login with OTP
           </LoadingButton>
@@ -88,25 +95,64 @@ function SendOTP() {
   );
 
   return (
-    <Box display="flex" alignItems="center" justifyContent="center" height="85vh">
+    <Box
+      display="flex"
+      alignItems="center"
+      justifyContent="center"
+      sx={{ margin: STYLE_GUIDE.SPACING.s3 }}
+    >
       <Box maxWidth="600px">
-        <Box gap={1.5} display="flex" flexDirection="column" alignItems="center" sx={{ mb: 5 }}>
-          <Typography variant="h3" textAlign="center">
-            Welcome to ReportiVix
-          </Typography>
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            marginBottom: STYLE_GUIDE.SPACING.s10
+          }}
+        >
+          <Box display="flex" alignItems="center" justifyContent="center" gap={STYLE_GUIDE.SPACING.s1}>
+            <Typography textAlign="center" sx={{ fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.xxxxl, fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.regular, mt: STYLE_GUIDE.SPACING.s1 }}>
+              Welcome to
+            </Typography>
+            <Box component="img" src={logo} alt="Logo" width={250} />
+          </Box>
           <Typography variant="h6" color="text.secondary" textAlign="center">
             Login with OTP
           </Typography>
         </Box>
         {renderForm}
-        <Divider sx={{ mt: 3, '&::before, &::after': { borderTopStyle: 'dashed' } }}>
-          <Typography variant="overline" sx={{ color: 'text.secondary', fontWeight: 'fontWeightMedium' }}>
+        <Divider
+          sx={{
+            marginTop: STYLE_GUIDE.SPACING.s6,
+            marginBottom: STYLE_GUIDE.SPACING.s4,
+            '&::before, &::after': {
+              borderTopStyle: 'dashed',
+              borderColor: STYLE_GUIDE.COLORS.divider
+            }
+          }}
+        >
+          <Typography
+            variant="overline"
+            sx={{ color: STYLE_GUIDE.COLORS.textMediumGray,
+              fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.medium,}}
+          >
             OR
           </Typography>
         </Divider>
-        <Typography variant="h6">
+        <Typography sx={{ textAlign: "center", 
+              fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.large,
+         }}>
           Login with
-          <Link href="/login" variant="h5" sx={{ ml: 0.5, cursor: 'pointer', fontWeight: 'bold' }}>
+          <Link
+            href="/login"
+            sx={{
+              marginLeft: STYLE_GUIDE.SPACING.s1,
+              cursor: 'pointer',
+              fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.bold,
+              color: STYLE_GUIDE.COLORS.primary,
+              fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.large,
+            }}
+          >
             Password!
           </Link>
         </Typography>

@@ -169,7 +169,7 @@ function Login() {
             type="submit"
             color="primary"
             variant="contained"
-            sx={{ fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.bold,}}
+            sx={{ fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.bold}}
           >
             Sign in
           </LoadingButton>
