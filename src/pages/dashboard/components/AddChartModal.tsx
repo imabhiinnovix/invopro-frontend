@@ -1243,10 +1243,12 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
               flex: 1,
               height: 56,
               fontSize: 16,
-              backgroundColor: 'white',
-              fontWeight: 'bold',
-              color: 'black',
-              '&:hover': { backgroundColor: '#f0f0f0' },
+              backgroundColor: STYLE_GUIDE.COLORS.white,
+              fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold,
+              color: STYLE_GUIDE.COLORS.textBlack,
+              '&:hover': { 
+                backgroundColor: STYLE_GUIDE.COLORS.backgroundDefault,
+              },
             }}
             onClick={handleSubmit}
           >
@@ -1256,7 +1258,13 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
             variant="contained"
             color="primary"
             fullWidth
-            sx={{ flex: 1, color: 'white', height: 56, fontWeight: 'bold', fontSize: 16 }}
+            sx={{ 
+              flex: 1, 
+              color: STYLE_GUIDE.COLORS.white, 
+              height: 56, 
+              fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold, 
+              fontSize: STYLE_GUIDE.SPACING.s4,
+            }}
             onClick={() => {
               if (initialData && setOpenSaveChart && setChartSaveSettingData && setNewSaveChartName) {
                 setOpenSaveChart(true);

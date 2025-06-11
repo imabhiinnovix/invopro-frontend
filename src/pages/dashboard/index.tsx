@@ -171,7 +171,7 @@ const Dashboard = () => {
       <Box
         sx={{
           width: "100%",
-          backgroundColor: STYLE_GUIDE.COLORS.backgroundDefault,
+          backgroundColor: STYLE_GUIDE.COLORS.backgroundSurface,
         }}
       >
         <Box
@@ -350,7 +350,7 @@ const Dashboard = () => {
 
   // Show specific dashboard view
   return (
-    <Box sx={{ p: 3 }}>
+    <Box sx={{ p: STYLE_GUIDE.SPACING.s1 }}>
       <DashboardView
         title={currentDashboard.name}
         onTitleChange={handleTitleChange}
