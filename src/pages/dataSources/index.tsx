@@ -29,6 +29,7 @@ import useGet from "../../hooks/useGet";
 import { useInfiniteScroll } from "../../hooks/useInfiniteScroll";
 import { DateTime } from "luxon";
 import usePost from "../../hooks/usePost";
+import { STYLE_GUIDE } from "../../styles";
 
 const DataSources = () => {
   const [rows, setRows] = useState<
@@ -231,11 +232,11 @@ const DataSources = () => {
     <Container 
       maxWidth="xl" 
       sx={{ 
-        margin: "2rem auto",
-        padding: "2rem",
-        backgroundColor: "#f8f9fa",
-        borderRadius: "12px",
-        boxShadow: "0 2px 4px rgba(0,0,0,0.05)"
+        margin: STYLE_GUIDE.SPACING.s8,
+        padding: STYLE_GUIDE.SPACING.s8,
+        backgroundColor: STYLE_GUIDE.COLORS.backgroundLightGray,
+        borderRadius: STYLE_GUIDE.SPACING.s3,
+        boxShadow: STYLE_GUIDE.SHADOWS.base
       }}
     >
       <Stack 
@@ -243,15 +244,15 @@ const DataSources = () => {
         justifyContent="space-between" 
         alignItems="center"
         sx={{ 
-          marginBottom: "2rem",
-          padding: "1rem",
-          backgroundColor: "white",
-          borderRadius: "8px",
-          boxShadow: "0 1px 3px rgba(0,0,0,0.1)"
+          marginBottom: STYLE_GUIDE.SPACING.s8,
+          padding: STYLE_GUIDE.SPACING.s4,
+          backgroundColor: STYLE_GUIDE.COLORS.white,
+          borderRadius: STYLE_GUIDE.SPACING.s2,
+          boxShadow: STYLE_GUIDE.SHADOWS.xxxl
         }}
       >
         <Stack direction="row" spacing={2} alignItems="center">
-          <Typography variant="h6" color="primary" sx={{ fontWeight: 600 }}>
+          <Typography variant="h6" color="primary" sx={{ fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold }}>
             Data Source Version
           </Typography>
           <CommonDatePicker
@@ -269,10 +270,10 @@ const DataSources = () => {
           sx={{ 
             minWidth: "150px",
             height: "40px",
-            borderRadius: "6px",
+            borderRadius: STYLE_GUIDE.SPACING.s1,
             textTransform: "none",
-            fontSize: "0.875rem",
-            fontWeight: 500,
+            fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
+            fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.medium,
             boxShadow: "none",
             "&:hover": {
               boxShadow: "none",
@@ -289,7 +290,7 @@ const DataSources = () => {
                 height: "24px",
               }}
             >
-              <CircularProgress size={20} sx={{ color: "white" }} />
+              <CircularProgress size={20} sx={{ color: STYLE_GUIDE.COLORS.white }} />
             </Box>
           ) : (
             "Save Changes"
@@ -302,8 +303,8 @@ const DataSources = () => {
           component={Paper}
           sx={{
             maxHeight: "calc(100vh - 300px)",
-            borderRadius: "8px",
-            boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+            borderRadius: STYLE_GUIDE.SPACING.s2,
+            boxShadow: STYLE_GUIDE.SHADOWS.xxxl,
             width: "fit-content",
             "& .MuiTable-root": {
               minWidth: "600px"
@@ -317,12 +318,12 @@ const DataSources = () => {
                   <TableCell
                     key={field?.optionAttributeId}
                     sx={{
-                      backgroundColor: "#f8f9fa",
-                      fontWeight: 600,
-                      fontSize: "0.95rem",
-                      color: "#495057",
-                      borderBottom: "2px solid #e9ecef",
-                      padding: "12px 16px"
+                      backgroundColor: STYLE_GUIDE.COLORS.backgroundLightGray,
+                      fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold,
+                      fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base,
+                      color: STYLE_GUIDE.COLORS.textGray,
+                      borderBottom: `2px solid ${STYLE_GUIDE.COLORS.divider}`,
+                       padding: "12px 16px"
                     }}
                   >
                     {field?.name}
@@ -336,10 +337,10 @@ const DataSources = () => {
                   key={rowIndex}
                   sx={{
                     "&:nth-of-type(odd)": {
-                      backgroundColor: "#f8f9fa"
+                      backgroundColor: STYLE_GUIDE.COLORS.backgroundDefault
                     },
                     "&:hover": {
-                      backgroundColor: "#f1f3f5"
+                      backgroundColor: STYLE_GUIDE.COLORS.backgroundHover
                     }
                   }}
                 >
@@ -348,7 +349,7 @@ const DataSources = () => {
                       key={field?.optionAttributeId}
                       sx={{ 
                         padding: "12px 16px",
-                        borderBottom: "1px solid #e9ecef"
+                        borderBottom: `1px solid ${STYLE_GUIDE.COLORS.divider2}`
                       }}
                     >
                       <TextField
@@ -367,13 +368,13 @@ const DataSources = () => {
                         fullWidth
                         sx={{
                           "& .MuiOutlinedInput-root": {
-                            borderRadius: "6px",
-                            backgroundColor: "white",
+                            borderRadius: STYLE_GUIDE.SPACING.s1,
+                            backgroundColor: STYLE_GUIDE.COLORS.white,
                             "&:hover .MuiOutlinedInput-notchedOutline": {
-                              borderColor: "#ced4da"
+                              borderColor: STYLE_GUIDE.COLORS.borderPrimary
                             },
                             "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                              borderColor: "#1976d2"
+                              borderColor: STYLE_GUIDE.COLORS.materialBlue
                             }
                           }
                         }}
@@ -393,7 +394,7 @@ const DataSources = () => {
                               }
                             },
                             sx: {
-                              fontSize: "0.95rem",
+                              fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base,
                               padding: "8px 12px"
                             }
                           }

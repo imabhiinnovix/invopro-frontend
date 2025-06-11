@@ -31,6 +31,7 @@ export const COLORS = {
     textDarkBlue: "#2c3e50",
     textLightGray: "#ecf0f1",
     textMediumGray: "#7f8c8d",
+    textGray: "#495057",
   
     chartBlue: "#3498db",
     chartRed: "#e74c3c",
@@ -56,7 +57,9 @@ export const COLORS = {
   
     borderGray: "#95a5a6",
     divider: "#e0e0e0",
+    divider2: "#e9ecef",
     loadingBorder: "#f3f3f3",
+    borderPrimary: "#ced4da",
   
     purple: "rgb(142, 25, 210)",
   
