@@ -95,11 +95,11 @@ interface ChartGridProps {
   isAddChartModalOpen: boolean;
   isEditChartModalOpen: boolean;
   gridColumns: number;
-  currentDashboard: Dashboard;
-  startVersionValue: string;
-  endVersionValue: string;
-  versionValue: string;
-  isTrend: boolean;
+  currentDashboard?: Dashboard;
+  startVersionValue?: string;
+  endVersionValue?: string;
+  versionValue?: string;
+  isTrend?: boolean;
   isNaturalLangauage?: boolean;
 }
 
