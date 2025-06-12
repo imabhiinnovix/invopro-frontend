@@ -1245,7 +1245,7 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
               fontSize: 16,
               backgroundColor: STYLE_GUIDE.COLORS.white,
               fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold,
-              color: STYLE_GUIDE.COLORS.textBlack,
+              color: STYLE_GUIDE.COLORS.black,
               '&:hover': { 
                 backgroundColor: STYLE_GUIDE.COLORS.backgroundDefault,
               },

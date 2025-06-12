@@ -68,7 +68,7 @@ export default function GenerateReport({ setReload }: GenerateReportProps) {
           variant="h6"
           sx={{
             fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold,
-            color: STYLE_GUIDE.COLORS.textBlack,
+            color: STYLE_GUIDE.COLORS.black,
           }}
         >
           Generate New Report

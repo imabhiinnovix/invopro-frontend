@@ -112,7 +112,7 @@ const VerifyOTP = () => {
             boxShadow: STYLE_GUIDE.SHADOWS.cardSecondary,
             padding: STYLE_GUIDE.SPACING.s8,
             borderRadius: STYLE_GUIDE.SPACING.s2,
-            backgroundColor: STYLE_GUIDE.COLORS.backgroundPaper,
+            backgroundColor: STYLE_GUIDE.COLORS.white,
           }}>
               <MuiOtpInput {...field} value={field.value} onChange={(value) => field.onChange(value)} length={6} />
             {error && <p style={{ color: 'red' }}>{error.message}</p>}

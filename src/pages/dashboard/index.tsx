@@ -182,7 +182,7 @@ const Dashboard = () => {
             alignItems: { xs: "flex-start", md: "center" },
             gap: STYLE_GUIDE.SPACING.s4,
             p: { xs: STYLE_GUIDE.SPACING.s4, md: STYLE_GUIDE.SPACING.s6 },
-            backgroundColor: STYLE_GUIDE.COLORS.backgroundPaper,
+            backgroundColor: STYLE_GUIDE.COLORS.white,
             borderBottom: "1px solid",
             borderColor: STYLE_GUIDE.COLORS.divider,
           }}
@@ -191,7 +191,7 @@ const Dashboard = () => {
             variant="h4"
             sx={{
               fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold,
-              color: STYLE_GUIDE.COLORS.textBlack,
+              color: STYLE_GUIDE.COLORS.black,
               fontSize: { xs: STYLE_GUIDE.TYPOGRAPHY.fontSize.large, md: STYLE_GUIDE.TYPOGRAPHY.fontSize.xxl },
             }}
           >
@@ -237,16 +237,16 @@ const Dashboard = () => {
             <Table stickyHeader>
               <TableHead>
                 <TableRow>
-                  <TableCell sx={{ fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold, color: STYLE_GUIDE.COLORS.textBlack }}>
+                  <TableCell sx={{ fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold, color: STYLE_GUIDE.COLORS.black }}>
                     Name
                   </TableCell>
-                  <TableCell sx={{ fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold, color: STYLE_GUIDE.COLORS.textBlack }}>
+                  <TableCell sx={{ fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold, color: STYLE_GUIDE.COLORS.black }}>
                     Created By
                   </TableCell>
-                  <TableCell sx={{ fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold, color: STYLE_GUIDE.COLORS.textBlack }}>
+                  <TableCell sx={{ fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold, color: STYLE_GUIDE.COLORS.black }}>
                     Type
                   </TableCell>
-                  <TableCell sx={{ fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold, color: STYLE_GUIDE.COLORS.textBlack }}>
+                  <TableCell sx={{ fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold, color: STYLE_GUIDE.COLORS.black }}>
                     Actions
                   </TableCell>
                 </TableRow>

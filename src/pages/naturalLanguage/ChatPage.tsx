@@ -30,7 +30,7 @@ const ChatPage: React.FC = () => {
 
   return (
     <Box component={Paper} elevation={3} display="flex" flexDirection="column" height="100%">
-      <Box p={STYLE_GUIDE.SPACING.s4} color={STYLE_GUIDE.COLORS.textBlack}>
+      <Box p={STYLE_GUIDE.SPACING.s4} color={STYLE_GUIDE.COLORS.black}>
         <Typography variant="h5">Generate Smart Charts from Your Questions</Typography>
       </Box>
 
@@ -86,7 +86,7 @@ const ChatPage: React.FC = () => {
                     color: STYLE_GUIDE.COLORS.white,
                     borderRadius: STYLE_GUIDE.SPACING.s4,
                     '&:hover': {
-                      backgroundColor: STYLE_GUIDE.COLORS.darkTextFocus,
+                      backgroundColor: STYLE_GUIDE.COLORS.darkDarker,
                     },
                     width: 48,
                     height: 48,

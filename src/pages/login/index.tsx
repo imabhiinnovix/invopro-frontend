@@ -121,7 +121,7 @@ function Login() {
           boxShadow: STYLE_GUIDE.SHADOWS.cardSecondary,
           padding: STYLE_GUIDE.SPACING.s8,
           borderRadius: STYLE_GUIDE.SPACING.s2,
-          backgroundColor: STYLE_GUIDE.COLORS.backgroundPaper,
+          backgroundColor: STYLE_GUIDE.COLORS.white,
         }}
       >
         <TextField

@@ -8,7 +8,6 @@ export const COLORS = {
     transparent: "transparent",
   
     backgroundDefault: "#f1f5f9",
-    backgroundPaper: "#ffffff",
     backgroundSurface: "#f8fafc",
     backgroundLight: "#f5f5f5",
     backgroundGray: "#f9f9f9",
@@ -26,7 +25,6 @@ export const COLORS = {
     materialPurpleDark: "#7B1FA2",
     materialError: "#D32F2F",
   
-    textBlack: "#000000",
     textDarkGray: "#34495e",
     textDarkBlue: "#2c3e50",
     textLightGray: "#ecf0f1",
@@ -49,7 +47,6 @@ export const COLORS = {
     darkBorderHover: "#444",
     darkBorderFocus: "#333",
     darkText: "#333",
-    darkTextFocus: "#222",
   
     canvasWhite: "#fff",
     canvasStroke: "#888",

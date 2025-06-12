@@ -44,7 +44,7 @@ const DynamicCell = styled(TableCell)<{
   fontWeight?: string;
 }>(({ bgColor, textColor, align, fontWeight, isBorder }) => ({
   backgroundColor: bgColor ? `#${bgColor}` : 'transparent',
-  color: textColor ? `#${textColor}` : STYLE_GUIDE.COLORS.textBlack,
+  color: textColor ? `#${textColor}` : STYLE_GUIDE.COLORS.black,
   padding: STYLE_GUIDE.SPACING.s2,
   textAlign: align || 'left',
   border: !!isBorder ? `1px solid ${STYLE_GUIDE.COLORS.borderGray}` : '',
