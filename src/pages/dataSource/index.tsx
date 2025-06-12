@@ -3,6 +3,7 @@ import { Box, Button } from '@mui/material';
 import { useState } from 'react';
 import CreateUpdateDataSource from '../../components/atom/dataSource/createUpdateDataSource';
 import DataSourceTable from '../../components/atom/dataSource/dataSourceTable';
+import { STYLE_GUIDE } from '../../styles';
 
 export default function DataSource() {
   const [reload, setReload] = useState(false);
@@ -11,15 +12,15 @@ export default function DataSource() {
       <Box
         display="flex"
         flexDirection="column"
-        p={2}
-        gap={4}
+        p={STYLE_GUIDE.SPACING.s4}
+        gap={STYLE_GUIDE.SPACING.s8}
         width="100%"
-        bgcolor="#f9f9f9"
+        bgcolor={STYLE_GUIDE.COLORS.backgroundLightGray}
         sx={{
           height: 'calc(100vh - 70px)',
           '@media (max-width: 600px)': {
-            p: 1,
-            gap: 1,
+            p: STYLE_GUIDE.SPACING.s2,
+            gap: STYLE_GUIDE.SPACING.s2,
           },
         }}
       >
@@ -29,7 +30,7 @@ export default function DataSource() {
           alignItems="center"
           sx={{
             // flexWrap: 'wrap-reverse',
-            gap: 2,
+            gap: STYLE_GUIDE.SPACING.s4,
           }}
         >
           <Box>
@@ -41,15 +42,15 @@ export default function DataSource() {
                   variant="contained"
                   size="large"
                   sx={{
-                    fontWeight: 'bold',
-                    fontSize: '1.2rem',
-                    padding: '15px 30px',
-                    bgcolor: '#007bff',
-                    color: '#fff',
-                    '&:hover': { bgcolor: '#0056b3' },
+                    fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.bold,
+                    fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.xl,
+                    padding: `${STYLE_GUIDE.SPACING.s4} ${STYLE_GUIDE.SPACING.s6}`,
+                    bgcolor: STYLE_GUIDE.COLORS.bootstrapPrimary,
+                    color: STYLE_GUIDE.COLORS.white,
+                    '&:hover': { bgcolor: STYLE_GUIDE.COLORS.darkDarker },
                     '@media (max-width: 600px)': {
-                      fontSize: '1rem',
-                      padding: '10px 20px',
+                      fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.large,
+                      padding: `${STYLE_GUIDE.SPACING.s3} ${STYLE_GUIDE.SPACING.s4}`,
                     },
                   }}
                 >
@@ -60,7 +61,7 @@ export default function DataSource() {
           </Box>
         </Box>
 
-        <Box mt={4} sx={{ overflowX: 'auto', flexGrow: 1 }}>
+        <Box mt={STYLE_GUIDE.SPACING.s8} sx={{ overflowX: 'auto', flexGrow: 1 }}>
           <DataSourceTable reload={reload} setReload={setReload} />
         </Box>
       </Box>
