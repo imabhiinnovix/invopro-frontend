@@ -35,6 +35,7 @@ import { toast } from 'react-toastify';
 import axiosInstance from '../../../services/axiosInstance';
 import { GET } from '../../../services/apiRoutes';
 import { v4 as uuidv4 } from 'uuid';
+import { DateTime } from 'luxon';
 
 interface Condition {
   field: string;
@@ -475,6 +476,8 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
 
     try {
       const dimensionsToSend = isTrend ? 'versionValue' : formData.dimensions;
+      const dashboardType = currentDashboard?.settings?.dashboardType || 'normal';
+      const formattedVersionValue = versionValue ? DateTime.fromISO(versionValue).toFormat('yyyy-LL') : '';
 
       if (onSave) {
         await onSave({
@@ -494,13 +497,18 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
           })),
           aggregation: formData.aggregation,
           widgetType: widgetTypes.find((wt) => wt._id === formData.widgetTypeId)?.chartType || '',
-          dashboardFilters: {
+          dashboardFilters: dashboardType === 'trend' ? {
             startVersionValue: startVersionValue || '',
             endVersionValue: endVersionValue || '',
-            dynamicVersionValue: currentDashboard?.settings?.dynamicVersionValue || '',
-            versionValue: versionValue || '',
+            versionValue: '',
+            dynamicVersionValue: ''
+          } : {
+            startVersionValue: '',
+            endVersionValue: '',
+            versionValue: formattedVersionValue,
+            dynamicVersionValue: formattedVersionValue ? "" : formattedVersionValue ? "" :'1m'
           },
-          dashBoardType: isTrend ? 'trend' : 'normal',
+          dashBoardType: dashboardType,
           isIncremental: formData.isIncremental || false,
         });
 
@@ -535,10 +543,11 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
             await dispatch(
               fetchChartData({
                 dashboardId,
-                dashboardType: isTrend ? 'trend' : 'normal',
-                startVersionValue: startVersionValue || '',
-                endVersionValue: endVersionValue || '',
-                versionValue: versionValue || '',
+                dashboardType,
+                startVersionValue: dashboardType === 'trend' ? startVersionValue : '',
+                endVersionValue: dashboardType === 'trend' ? endVersionValue : '',
+                versionValue: dashboardType === 'trend' ? '' : formattedVersionValue,
+                dynamicVersionValue: dashboardType === 'trend' ? '' : formattedVersionValue ? "":'1m'
               })
             );
             toast.success('Chart saved successfully!');

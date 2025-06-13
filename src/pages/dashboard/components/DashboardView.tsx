@@ -24,7 +24,7 @@ import { AddChartModal, ChartFormData } from './AddChartModal';
 import { useAppDispatch, useAppSelector } from '../../../storeHooks';
 import { updateWidget, saveWidgets, fetchWidgetTheme, fetchChartData, selectDashboardTheme } from '../dashboardActions';
 import { toast } from 'react-toastify';
-import { ChartResponse, TemporaryChart } from '../types';
+import { ChartResponse, TemporaryChart, Dashboard } from '../types';
 import usePost from '../../../hooks/usePost';
 import { POST } from '../../../services/apiRoutes';
 import CommonDatePicker from '../../../components/common/datePicker/datePicker';
@@ -33,24 +33,6 @@ import { DateTime } from 'luxon';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { fetchThemeList } from '../../createTheme/themeActions';
-
-// import React, { useState, useRef, useEffect } from 'react';
-// import { Box, Typography, TextField, Button, ButtonGroup } from '@mui/material';
-// import AddIcon from '@mui/icons-material/Add';
-// import EditIcon from '@mui/icons-material/Edit';
-// import DoneIcon from '@mui/icons-material/Done';
-// import PauseIcon from '@mui/icons-material/Pause';
-// import ViewColumnIcon from '@mui/icons-material/ViewColumn';
-// import SquareIcon from '@mui/icons-material/Square';
-// import { useParams, useLocation } from 'react-router-dom';
-// import { ChartGrid } from './ChartGrid';
-// import { AddChartModal, ChartFormData } from './AddChartModal';
-// import { useAppDispatch, useAppSelector } from '../../../storeHooks';
-// import { updateWidget, saveWidgets, fetchWidgetTheme } from '../dashboardActions';
-// import { toast } from 'react-toastify';
-// import { ChartResponse, TemporaryChart } from '../types';
-// import usePost from '../../../hooks/usePost';
-// import { POST } from '../../../services/apiRoutes';
 
 interface DashboardViewProps {
   title: string;
@@ -626,10 +608,10 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ title: initialTitl
               isAddChartModalOpen={isAddChartModalOpen}
               isEditChartModalOpen={isEditChartModalOpen}
               gridColumns={gridColumns}
-              currentDashboard={currentDashboard || ''}
-              startVersionValue={startVersionValue || ''}
-              endVersionValue={endVersionValue || ''}
-              versionValue={formattedVersionValue || ''}
+              currentDashboard={currentDashboard as Dashboard}
+              startVersionValue={currentDashboard?.settings?.dashboardType === 'normal' ? '' : startVersionValue || ''}
+              endVersionValue={currentDashboard?.settings?.dashboardType === 'normal' ? '' : endVersionValue || ''}
+              versionValue={versionValue || ''}
               isTrend={currentDashboard?.settings?.dashboardType === 'trend'}
             />
           )}
