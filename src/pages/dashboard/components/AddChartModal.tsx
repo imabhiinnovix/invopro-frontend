@@ -506,7 +506,7 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
             startVersionValue: '',
             endVersionValue: '',
             versionValue: formattedVersionValue,
-            dynamicVersionValue: '1m'
+            dynamicVersionValue: formattedVersionValue ? "" : formattedVersionValue ? "" :'1m'
           },
           dashBoardType: dashboardType,
           isIncremental: formData.isIncremental || false,
@@ -547,7 +547,7 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
                 startVersionValue: dashboardType === 'trend' ? startVersionValue : '',
                 endVersionValue: dashboardType === 'trend' ? endVersionValue : '',
                 versionValue: dashboardType === 'trend' ? '' : formattedVersionValue,
-                dynamicVersionValue: dashboardType === 'trend' ? '' : '1m'
+                dynamicVersionValue: dashboardType === 'trend' ? '' : formattedVersionValue ? "":'1m'
               })
             );
             toast.success('Chart saved successfully!');
