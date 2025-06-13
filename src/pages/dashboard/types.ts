@@ -149,6 +149,7 @@ export interface TemporaryChart {
   dataSourceId?: DataSourceDetails;
   data?: ChartData[];
   userQuery?: string;
+  isIncremental?: boolean;
 }
 
 export interface DashboardSliceState {
@@ -330,8 +331,8 @@ export interface CombinedWidgetData {
     label: string;
     widgetData: Array<{
       name: string;
-      Estimates: number;
       data: number;
+      [key: string]: string | number;
     }>;
   };
 }
@@ -363,4 +364,7 @@ export interface FetchChartDataPayload {
   dynamicVersionValue?: string;
   startDate?: string;
   endDate?: string;
+  startVersionValue?: string;
+  endVersionValue?: string;
+  dashboardType?: string;
 }

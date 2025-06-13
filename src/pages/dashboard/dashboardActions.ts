@@ -252,12 +252,14 @@ export const fetchChartData = createAsyncThunk(
       startVersionValue,
       endVersionValue,
       dashboardType,
+      dynamicVersionValue,
     }: {
       dashboardId: string;
       versionValue?: string;
       startVersionValue?: string;
       endVersionValue?: string;
       dashboardType?: string;
+      dynamicVersionValue?: string;
     },
     { dispatch }
   ) => {
@@ -285,9 +287,10 @@ export const fetchChartData = createAsyncThunk(
                 aggregation: chart.aggregation,
                 widgetType: chart.widgetTypeId?.chartType,
                 dashboardFilters: {
-                  startVersionValue: startVersionValue || '',
-                  endVersionValue: endVersionValue || '',
-                  versionValue: versionValue || '',
+                  startVersionValue: dashboardType === 'trend' ? (startVersionValue || '') : '',
+                  endVersionValue: dashboardType === 'trend' ? (endVersionValue || '') : '',
+                  versionValue: dashboardType === 'trend' ? '' : (versionValue || ''),
+                  dynamicVersionValue: dashboardType === 'trend' ? '' : (dynamicVersionValue || '1m'),
                 },
                 dashBoardType: dashboardType || 'normal',
                 isIncremental: chart.isIncremental,
