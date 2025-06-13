@@ -28,6 +28,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import { DeleteConfirmationModal } from "../../components/atom/sideNav/components/DeleteConfirmationModal";
 import { CreateDashboardModal } from "../../components/atom/sideNav/components/CreateDashboardModal";
 import { Dashboard as DashboardType, DashboardListResponse } from "./types";
+import { resetChartAndWidgetData } from "./dashboardReducer";
 
 const Dashboard = () => {
   const theme = useTheme();
@@ -56,6 +57,12 @@ const Dashboard = () => {
       setIsLoading(false);
     }
   }, [dispatch, dashboards.length]);
+
+  useEffect(() => {
+    if(id){
+      dispatch(resetChartAndWidgetData());
+    }
+  }, [id, dispatch])
 
   const handleTitleChange = async (newTitle: string) => {
     try {
@@ -124,6 +131,7 @@ const Dashboard = () => {
         setDashboardType("normal");
         setTimePeriod("1m");
         toast.success(response.message || "Dashboard created successfully!");
+        dispatch(resetChartAndWidgetData());
 
         // Navigate to the newly created dashboard
         const newDashboard = response?.data;
