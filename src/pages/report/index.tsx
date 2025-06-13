@@ -11,6 +11,7 @@ import ReportSelection from '../../components/atom/report/changeReportFromViewRe
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 import ScrollableTabNavigation from '../../components/atom/report/scrollableTab';
 import SimCardDownloadIcon from '@mui/icons-material/SimCardDownload';
+import DownloadForOfflineIcon from '@mui/icons-material/DownloadForOffline';
 import useFileDownload from '../../hooks/useFiledownload';
 import { GET } from '../../services/apiRoutes';
 
@@ -28,6 +29,8 @@ export default function Report() {
   const [activeTab, setActiveTab] = useState(0);
   const [downloadFileName, setDownLoadFileName] = useState('');
   const [isPdfLoading, setIsPdfLoading] = useState(false);
+  const [intermediateDownloadRequestId, setIntermediateDownloadRequestId] = useState('');
+  const [regularDownloadRequestId, setRegularDownloadRequestId] = useState('');
 
   const [viewReportNameWithVersionValue, setViewReportNameWithVersionValue] = useState('');
   const exportFile = useFileDownload<Blob>((data) => {
@@ -42,14 +45,27 @@ export default function Report() {
     document.body.removeChild(link);
 
     URL.revokeObjectURL(url);
+    
+    setIntermediateDownloadRequestId('');
+    setRegularDownloadRequestId('');
   });
 
   const downloadFile = (fileName: string, fileId: string) => {
+    setRegularDownloadRequestId(fileId);
     setDownLoadFileName(fileName);
     exportFile.mutate({
       url: `${GET?.Custom_Report}/download/${fileId}`,
     });
   };
+
+  const intermediateDownloadFile = (fileName: string, fileId: string) => {
+    setIntermediateDownloadRequestId(fileId);
+    setDownLoadFileName(fileName);
+    exportFile.mutate({
+      url: `${GET?.Custom_Report}/intermediate-download/${fileId}`,
+    });
+  };
+
   const tabStyle = (index: number) => ({
     padding: '10px 20px',
     cursor: 'pointer',
@@ -194,7 +210,52 @@ export default function Report() {
                   </Tooltip>
                 )}
 
-                {exportFile.isPending ? (
+                {allDetailData?.status === "completed" && allDetailData?.intermediateReportId && (
+                  <Box
+                    sx={{
+                      display: "flex",
+                      justifyContent: "flex-end",
+                      alignItems: "center",
+                    }}
+                  >
+                    {exportFile.isPending &&
+                    !!intermediateDownloadRequestId &&
+                    intermediateDownloadRequestId === allDetailData._id ? (
+                      <Box
+                        sx={{
+                          width: 27,
+                          height: 27,
+                          borderRadius: "50%",
+                          border: "3px solid #f3f3f3",
+                          borderTop: "3px solid #3498db",
+                          animation: "spin 1s linear infinite",
+                          "@keyframes spin": {
+                            "0%": { transform: "rotate(0deg)" },
+                            "100%": { transform: "rotate(360deg)" },
+                          },
+                          mr: 1,
+                        }}
+                      />
+                    ) : (
+                      <Tooltip title="Intermediate Download" arrow>
+                        <Button
+                          variant="contained"
+                          onClick={() => {
+                            intermediateDownloadFile(
+                              `${allDetailData.customReportId?.reportName}-intermediate-${allDetailData.versionValue}.xlsx`,
+                              allDetailData._id
+                            );
+                          }}
+                          sx={{ mr: 1 }}
+                        >
+                          <DownloadForOfflineIcon />
+                        </Button>
+                      </Tooltip>
+                    )}
+                  </Box>
+                )}
+
+                {exportFile.isPending && !!regularDownloadRequestId && regularDownloadRequestId === allDetailData?._id ? (
                   <Box
                     sx={{
                       width: 27,
@@ -225,6 +286,7 @@ export default function Report() {
                     </Button>
                   </Tooltip>
                 )}
+                
               </Box>
             </Box>
           </>
@@ -244,7 +306,7 @@ export default function Report() {
       {viewReportRequestId && viewReportRequestId.length > 0 ? (
         <Box ref={tabRef}>
           <ScrollableTabNavigation
-            tabs={allDetailData?.dataSourceVersion || []}
+            tabs={(allDetailData?.dataSourceVersion ?? []).filter(tab => !tab.isIntermediate)}
             activeTab={activeTab}
             setActiveTab={setActiveTab}
             tabStyle={tabStyle}
@@ -275,7 +337,9 @@ export default function Report() {
             }}
             ref={targetRef}
           >
-            {allDetailData?.dataSourceVersion?.map((item, index) => (
+            {allDetailData?.dataSourceVersion
+              ?.filter(item => !!item.allowPdfDownload) // Only include sheets that allow PDF download
+              .map((item, index, filteredArray) => (
               <Box key={index}>
                 {index === 0 && (
                   <Table
@@ -323,25 +387,21 @@ export default function Report() {
                     <Box sx={{ fontWeight: 600 }}>Sheet Name: </Box>
                     <Box>{item.sheetName}</Box>
                   </Box>
-                  {!!item.allowPdfDownload ? (
-                    <ViewReport
-                      key={index}
-                      dataSourceVersionId={item.dataSourceVersionId}
-                      versionCode={item.versionCode}
-                      mappingFuctionName={item.mappingFuctionName}
-                      versionValue={allDetailData.versionValue.split('-')[0]}
-                      sheetCode={item.sheetCode}
-                      designCode={item.designCode}
-                      customReportId={allDetailData.customReportId._id}
-                    />
-                  ) : (
-                    <Box sx={{ mt: 30 }}>
-                      This sheet cannot be converted to PDF. Please refer to the Excel file for the available data.
-                    </Box>
-                  )}
+                  <ViewReport
+                    key={index}
+                    dataSourceVersionId={item.dataSourceVersionId}
+                    versionCode={item.versionCode}
+                    mappingFuctionName={item.mappingFuctionName}
+                    versionValue={allDetailData.versionValue.split('-')[0]}
+                    sheetCode={item.sheetCode}
+                    designCode={item.designCode}
+                    customReportId={allDetailData.customReportId._id}
+                  />
                 </Box>
 
-                <Box className="html2pdf__page-break" />
+                {index < filteredArray.length - 1 && (
+                  <Box className="html2pdf__page-break" />
+                )}
               </Box>
             ))}
           </Box>
