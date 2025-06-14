@@ -19,6 +19,8 @@ import useGet from '../../../hooks/useGet';
 import { GET } from '../../../services/apiRoutes';
 import { DataSourceType } from './types';
 import CreateUpdateDataSource from './createUpdateDataSource';
+import { COLORS } from '../../../styles/color';
+import { TYPOGRAPHY } from '../../../styles/typography';
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
   [`&.${tableCellClasses.head}`]: {
@@ -26,7 +28,7 @@ const StyledTableCell = styled(TableCell)(({ theme }) => ({
     color: theme.palette.common.white,
   },
   [`&.${tableCellClasses.body}`]: {
-    fontSize: 14,
+    fontSize: TYPOGRAPHY.fontSize.base,
   },
 }));
 
@@ -111,7 +113,15 @@ const DataSourceTable: React.FC<AttributeOptionTableProps> = ({ reload, setReloa
         alignContent="center"
         alignItems="center"
       >
-        <Typography variant="h4" fontWeight="bold" gutterBottom>
+        <Typography 
+          variant="h4" 
+          sx={{
+            fontWeight: TYPOGRAPHY.fontWeight.bold,
+            color: COLORS.textDarkGray,
+            fontSize: TYPOGRAPHY.fontSize.xxl,
+          }}
+          gutterBottom
+        >
           No data source have been created yet. Please create a data source to display it here.
         </Typography>
       </Box>
@@ -163,11 +173,23 @@ const DataSourceTable: React.FC<AttributeOptionTableProps> = ({ reload, setReloa
                   {/* <Switch checked={data.isActive} /> */}
 
                   {data.isActive ? (
-                    <Typography color="success" fontSize={14} component="span">
+                    <Typography 
+                      sx={{
+                        color: COLORS.bootstrapSuccess,
+                        fontSize: TYPOGRAPHY.fontSize.small,
+                      }}
+                      component="span"
+                    >
                       ACTIVE
                     </Typography>
                   ) : (
-                    <Typography color="error" fontSize={14} component="span">
+                    <Typography 
+                      sx={{
+                        color: COLORS.bootstrapDanger,
+                        fontSize: TYPOGRAPHY.fontSize.small,
+                      }}
+                      component="span"
+                    >
                       INACTIVE
                     </Typography>
                   )}
