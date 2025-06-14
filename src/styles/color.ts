@@ -46,7 +46,7 @@ export const COLORS = {
     darkBorder: "#5c5c5c",
     darkBorderHover: "#444",
     darkBorderFocus: "#333",
-    darkText: "#333",
+    darkText: "#555",
   
     canvasWhite: "#fff",
     canvasStroke: "#888",
