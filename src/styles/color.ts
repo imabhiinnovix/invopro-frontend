@@ -57,12 +57,14 @@ export const COLORS = {
     divider2: "#e9ecef",
     loadingBorder: "#f3f3f3",
     borderPrimary: "#ced4da",
+    indigo600: "#1565c0",
   
     purple: "rgb(142, 25, 210)",
   
     blackLight: "rgba(0, 0, 0, 0.6)",
     blackBorder: "rgba(0, 0, 0, 0.12)",
     blackBackground: "rgba(0, 0, 0, 0.1)",
+    WhiteLight: "rgba(25, 118, 210, 0.08)"
   }
   
   

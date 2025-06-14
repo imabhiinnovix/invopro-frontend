@@ -13,6 +13,7 @@ import {
   useTheme,
   alpha,
 } from '@mui/material';
+import { STYLE_GUIDE } from '../../../../styles';
 
 interface CreateDashboardModalProps {
   open: boolean;
@@ -47,7 +48,7 @@ export const CreateDashboardModal: React.FC<CreateDashboardModalProps> = ({
       onClose={onClose}
       PaperProps={{
         sx: {
-          borderRadius: 2,
+          borderRadius: STYLE_GUIDE.SPACING.s1,
           minWidth: { xs: "90%", sm: "400px" },
           maxWidth: "500px",
         },
@@ -56,15 +57,16 @@ export const CreateDashboardModal: React.FC<CreateDashboardModalProps> = ({
       <DialogTitle
         sx={{
           backgroundColor: alpha(theme.palette.primary.main, 0.05),
-          color: "primary.main",
-          fontWeight: 600,
-          fontSize: "1.25rem",
-          py: 2,
+          color: STYLE_GUIDE.COLORS.bootstrapPrimary,
+          fontFamily: STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary,
+          fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold,
+          fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.large,
+          py: STYLE_GUIDE.SPACING.s4,
         }}
       >
         Create New Dashboard
       </DialogTitle>
-      <DialogContent sx={{ mt: 2, pb: 1 }}>
+      <DialogContent sx={{ mt: STYLE_GUIDE.SPACING.s4, pb: STYLE_GUIDE.SPACING.s2 }}>
         <TextField
           autoFocus
           margin="dense"
@@ -78,10 +80,10 @@ export const CreateDashboardModal: React.FC<CreateDashboardModalProps> = ({
           sx={{
             "& .MuiOutlinedInput-root": {
               "&:hover fieldset": {
-                borderColor: "primary.main",
+                borderColor: STYLE_GUIDE.COLORS.bootstrapPrimary,
               },
               "&.Mui-focused fieldset": {
-                borderColor: "primary.main",
+                borderColor: STYLE_GUIDE.COLORS.bootstrapPrimary,
               },
             },
           }}
@@ -146,11 +148,11 @@ export const CreateDashboardModal: React.FC<CreateDashboardModalProps> = ({
           </FormControl>
         )}
       </DialogContent>
-      <DialogActions sx={{ p: 2, gap: 1 }}>
+      <DialogActions sx={{ p: STYLE_GUIDE.SPACING.s4, gap: STYLE_GUIDE.SPACING.s2 }}>
         <Button
           onClick={onClose}
           sx={{
-            color: "text.secondary",
+            color:  STYLE_GUIDE.COLORS.darkText,
             "&:hover": {
               backgroundColor: alpha(theme.palette.grey[500], 0.1),
             },
@@ -163,13 +165,13 @@ export const CreateDashboardModal: React.FC<CreateDashboardModalProps> = ({
           variant="contained"
           disabled={!newDashboardName.trim() || isCreating}
           sx={{
-            backgroundColor: "primary.main",
+            backgroundColor: STYLE_GUIDE.COLORS.bootstrapPrimary,
             "&:hover": {
-              backgroundColor: "primary.dark",
+              backgroundColor:STYLE_GUIDE.COLORS.bootstrapPrimaryHover
             },
             "&.Mui-disabled": {
               backgroundColor: alpha(theme.palette.primary.main, 0.5),
-              color: "white",
+              color: STYLE_GUIDE.COLORS.white,
             },
           }}
         >

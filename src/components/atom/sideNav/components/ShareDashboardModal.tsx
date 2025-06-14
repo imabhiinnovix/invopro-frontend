@@ -17,6 +17,7 @@ import { Dashboard } from '../../../../pages/dashboard/types';
 import { useAppDispatch, useAppSelector } from '../../../../storeHooks';
 import { fetchDashboardShareUsers, shareDashboard } from '../../../../pages/dashboard/dashboardActions';
 import { toast } from 'react-toastify';
+import { STYLE_GUIDE } from '../../../../styles';
 
 interface ShareDashboardModalProps {
   open: boolean;
@@ -89,8 +90,8 @@ export const ShareDashboardModal: React.FC<ShareDashboardModalProps> = ({
         Share Dashboard
       </DialogTitle>
       <DialogContent>
-        <Box sx={{ mt: 2 }}>
-          <Typography variant="subtitle1" sx={{ mb: 2 }}>
+        <Box sx={{ mt: STYLE_GUIDE.SPACING.s2 }}>
+          <Typography variant="subtitle1" sx={{ mb: STYLE_GUIDE.SPACING.s2 }}>
             {dashboard?.name}
           </Typography>
           
@@ -105,15 +106,15 @@ export const ShareDashboardModal: React.FC<ShareDashboardModalProps> = ({
             label="Share with all users"
           />
 
-          <Box sx={{ mt: 2 }}>
+          <Box sx={{ mt: STYLE_GUIDE.SPACING.s2 }}>
             {shareUsersLoading ? (
-              <Box sx={{ display: 'flex', justifyContent: 'center', p: 2 }}>
+              <Box sx={{ display: 'flex', justifyContent: 'center', p: STYLE_GUIDE.SPACING.s2 }}>
                 <CircularProgress size={24} />
               </Box>
             ) : shareUsersError ? (
               <Typography color="error" variant="body2">
                 {shareUsersError}
-              </Typography>
+        </Typography>
             ) : (
               <Autocomplete
                 multiple
@@ -122,7 +123,7 @@ export const ShareDashboardModal: React.FC<ShareDashboardModalProps> = ({
                 value={selectedUsers}
                 onChange={(_, newValue) => setSelectedUsers(newValue)}
                 renderInput={(params) => (
-                  <TextField
+        <TextField
                     {...params}
                     label="Select users"
                     placeholder="Choose users to share with"
@@ -135,9 +136,9 @@ export const ShareDashboardModal: React.FC<ShareDashboardModalProps> = ({
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose} disabled={isSubmitting}>Cancel</Button>
-        <Button 
+        <Button
           onClick={handleSubmit} 
-          variant="contained" 
+          variant="contained"
           color="primary"
           disabled={(!sharedToAll && selectedUsers.length === 0) || isSubmitting}
         >
