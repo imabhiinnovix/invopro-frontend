@@ -21,6 +21,8 @@ import { GET } from '../../../services/apiRoutes';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import ErrorDialog from './showError';
+import { COLORS } from '../../../styles/color';
+import { TYPOGRAPHY } from '../../../styles/typography';
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
   [`&.${tableCellClasses.head}`]: {
@@ -28,7 +30,7 @@ const StyledTableCell = styled(TableCell)(({ theme }) => ({
     color: theme.palette.common.white,
   },
   [`&.${tableCellClasses.body}`]: {
-    fontSize: 14,
+   fontSize: TYPOGRAPHY.fontSize.base,
   },
 }));
 
@@ -169,7 +171,14 @@ const DataSourceVersionTable: React.FC<AttributeOptionTableProps> = ({ reload, s
         alignContent="center"
         alignItems="center"
       >
-        <Typography variant="h4" fontWeight="bold" gutterBottom>
+        <Typography 
+          variant="h4" 
+          sx={{
+            fontWeight: TYPOGRAPHY.fontWeight.bold,
+            color: COLORS.textDarkGray,
+            fontSize: TYPOGRAPHY.fontSize.xxl,
+          }}
+        >
           No data source version have been created yet. Please create a data source version to display it here.
         </Typography>
       </Box>
@@ -261,7 +270,7 @@ const DataSourceVersionTable: React.FC<AttributeOptionTableProps> = ({ reload, s
                 <StyledTableCell colSpan={10}>
                   <Skeleton height={40} />
                 </StyledTableCell>
-              </StyledTableRow>
+            </StyledTableRow>
             ))}
         </TableBody>
       </Table>
