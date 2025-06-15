@@ -1,12 +1,15 @@
 import { Box, Button, CircularProgress } from "@mui/material";
 import { ContainedButtonProps } from "./types";
 import Text from "../text";
+import { STYLE_GUIDE } from "../../../styles";
 
 const ContainedButton = (props: ContainedButtonProps) => {
   const { text, disabled, handleClick, loading } = props;
   return (
     <Button
-      sx={{ m: 1 }}
+      sx={{ 
+        m: STYLE_GUIDE.SPACING.s2,
+      }}
       variant="contained"
       type="submit"
       disabled={disabled}

@@ -58,10 +58,14 @@ export const COLORS = {
     loadingBorder: "#f3f3f3",
     borderPrimary: "#ced4da",
     indigo600: "#1565c0",
+    blue600: "#1a90ff",
+    blue700: "#308fe8",
+    coolBlue: "#cbd5e1",
   
     purple: "rgb(142, 25, 210)",
   
     blackLight: "rgba(0, 0, 0, 0.6)",
+    blackBorderPrimary: "rgba(0, 0, 0, 0.5)",
     blackBorder: "rgba(0, 0, 0, 0.12)",
     blackBackground: "rgba(0, 0, 0, 0.1)",
     WhiteLight: "rgba(25, 118, 210, 0.08)"
