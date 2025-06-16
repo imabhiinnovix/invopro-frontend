@@ -24,6 +24,8 @@ import { DateTime } from 'luxon';
 import SimCardDownloadIcon from '@mui/icons-material/SimCardDownload';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import { STYLE_GUIDE } from '../../../styles';
+import DownloadForOfflineIcon from '@mui/icons-material/DownloadForOffline';
+
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
   [`&.${tableCellClasses.head}`]: {

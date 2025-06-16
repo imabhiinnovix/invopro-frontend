@@ -99,8 +99,8 @@ const FirstFormSection = styled(FormSection)(({ theme }) => ({
 }));
 
 const SectionTitle = styled(Typography)(({ theme }) => ({
-  fontSize: '1rem',
-  fontWeight: 500,
+  fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base,
+  fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.medium,
   color: theme.palette.text.secondary,
   marginBottom: theme.spacing(1),
 }));
@@ -116,16 +116,16 @@ const FormRow = styled(Box)(({ theme }) => ({
 
 const StyledTextField = styled(TextField)({
   '& .MuiOutlinedInput-root': {
-    borderRadius: '8px',
+    borderRadius: STYLE_GUIDE.SPACING.s2,
   },
 });
 
 const StyledSelect = styled(Select)({
-  borderRadius: '8px',
+  borderRadius: STYLE_GUIDE.SPACING.s2,
 });
 
 const StyledButton = styled(Button)(({ theme }) => ({
-  borderRadius: '8px',
+  borderRadius: STYLE_GUIDE.SPACING.s2,
   textTransform: 'none',
   padding: theme.spacing(1, 2),
   '&.MuiButton-contained': {
@@ -138,8 +138,8 @@ const StyledButton = styled(Button)(({ theme }) => ({
 
 const ConditionsSection = styled(FormSection)(({ theme }) => ({
   border: `1px solid ${theme.palette.divider}`,
-  borderRadius: '8px',
-  padding: theme.spacing(2),
+  borderRadius: STYLE_GUIDE.SPACING.s2,
+  padding: STYLE_GUIDE.SPACING.s4,
   backgroundColor: theme.palette.background.default,
 }));
 
