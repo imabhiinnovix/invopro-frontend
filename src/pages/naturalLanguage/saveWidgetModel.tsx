@@ -108,14 +108,13 @@ export const SaveWidgetModel: React.FC<SaveWidgetModelProps> = ({
         >
           <InputLabel>Select Dashboard*</InputLabel>
           <Select value={dashBoardId} label="Dashboard" onChange={(e) => onDashboardChange(e.target.value)}>
-            {dashboardList?.map((data) => (
-              <MenuItem key={data._id} value={data._id}>
-                {data.name}
-              </MenuItem>
+            {dashboardList?.filter((data) => data.dashboardType === "normal")?.map((data) => (
+                <MenuItem key={data._id} value={data._id}>
+                  {data.name}
+                </MenuItem>
             ))}
           </Select>
         </FormControl>
-
         {/* {dashboardType === 'trend' && (
           <FormControl
             fullWidth
