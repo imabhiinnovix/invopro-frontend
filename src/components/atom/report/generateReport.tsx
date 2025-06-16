@@ -12,6 +12,7 @@ import ProgressBar from "../../molecule/progressBar";
 import { DateTime } from "luxon";
 import React, { useState } from "react";
 import UploadMultipleFiles from "../dataSourceVerion/uploadMultipleVersionValue";
+import { STYLE_GUIDE } from '../../../styles';
 
 interface GenerateReportProps {
   setReload: React.Dispatch<React.SetStateAction<boolean>>;
@@ -55,13 +56,19 @@ export default function GenerateReport({ setReload }: GenerateReportProps) {
 
   return (
     <>
-      <Box>
-        <Typography 
-          variant="subtitle1" 
-          sx={{ 
-            mb: 2,
-            fontWeight: 600,
-            color: 'text.primary'
+      <Box
+        sx={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: STYLE_GUIDE.SPACING.s4,
+          p: STYLE_GUIDE.SPACING.s6,
+        }}
+      >
+        <Typography
+          variant="h6"
+          sx={{
+            fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold,
+            color: STYLE_GUIDE.COLORS.textBlack,
           }}
         >
           Generate New Report
@@ -70,7 +77,7 @@ export default function GenerateReport({ setReload }: GenerateReportProps) {
         <Box 
           display="flex" 
           flexDirection={{ xs: 'column', md: 'row' }}
-          gap={2}
+          gap={STYLE_GUIDE.SPACING.s4}
           sx={{
             '& .MuiFormControl-root': {
               flex: 1,
@@ -119,14 +126,14 @@ export default function GenerateReport({ setReload }: GenerateReportProps) {
                   width: '100%',
                   height: '56px',
                   textTransform: 'none',
-                  fontSize: '0.875rem',
-                  fontWeight: 500,
+                  fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.medium,
                   borderRadius: 1,
                   boxShadow: 'none',
-                  bgcolor: 'primary.main',
+                  bgcolor: STYLE_GUIDE.COLORS.primary,
+                  color: STYLE_GUIDE.COLORS.white,
                   '&:hover': {
-                    bgcolor: 'primary.dark',
-                    boxShadow: 'none',
+                    bgcolor: STYLE_GUIDE.COLORS.primaryDark,
+                    boxShadow: STYLE_GUIDE.SHADOWS.none,
                   }
                 }}
               >

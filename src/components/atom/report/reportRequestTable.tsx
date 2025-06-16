@@ -12,37 +12,35 @@ import {
   Skeleton,
   Typography,
   Button,
-  tableCellClasses,
   Tooltip,
+  tableCellClasses,
 } from "@mui/material";
 
-import useGet from "../../../hooks/useGet";
-import { GET } from "../../../services/apiRoutes";
-import { ReportRequestResponse } from "./types";
-import useFileDownload from "../../../hooks/useFiledownload";
-import { DateTime } from "luxon";
-import SimCardDownloadIcon from "@mui/icons-material/SimCardDownload";
-import DownloadForOfflineIcon from '@mui/icons-material/DownloadForOffline';
-
-import VisibilityIcon from "@mui/icons-material/Visibility";
+import useGet from '../../../hooks/useGet';
+import { GET } from '../../../services/apiRoutes';
+import { ReportRequestResponse } from './types';
+import useFileDownload from '../../../hooks/useFiledownload';
+import { DateTime } from 'luxon';
+import SimCardDownloadIcon from '@mui/icons-material/SimCardDownload';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import { STYLE_GUIDE } from '../../../styles';
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
   [`&.${tableCellClasses.head}`]: {
     backgroundColor: theme.palette.grey[50],
     color: theme.palette.text.primary,
-    fontWeight: 600,
-    fontSize: "0.813rem",
+    fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold,
+    fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
     height: "48px",
     padding: "0 16px",
     borderBottom: `1px solid ${theme.palette.divider}`,
   },
   [`&.${tableCellClasses.body}`]: {
-    fontSize: "0.875rem",
+    fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base,
     height: "52px",
     padding: "0 16px",
     borderBottom: `1px solid ${theme.palette.divider}`,
-  },
-}));
+  }}))
 
 const StyledTableRow = styled(TableRow)(({ theme }) => ({
   "&:hover": {
@@ -51,13 +49,13 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
 }));
 
 const StyledButton = styled(Button)(({ theme }) => ({
-  textTransform: "none",
-  borderRadius: 10,
+  textTransform: 'none',
+  borderRadius: STYLE_GUIDE.SPACING.s2,
   // padding: '6px 12px',
   // marginRight: '2',
-  fontSize: "0.813rem",
-  fontWeight: 500,
-  minWidth: "80px",
+  fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
+  fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.bold,
+  minWidth: '80px',
   backgroundColor: theme.palette.primary.main,
   color: "white",
   "&:hover": {
