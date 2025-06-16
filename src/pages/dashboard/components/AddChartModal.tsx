@@ -36,6 +36,7 @@ import axiosInstance from '../../../services/axiosInstance';
 import { GET } from '../../../services/apiRoutes';
 import { v4 as uuidv4 } from 'uuid';
 import { DateTime } from 'luxon';
+import { STYLE_GUIDE } from '../../../styles';
 
 interface Condition {
   field: string;
@@ -911,7 +912,7 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
           <CardContent
             sx={{
               flexGrow: 1,
-              p: 3,
+              p: STYLE_GUIDE.SPACING.s6,
               display: 'flex',
               flexDirection: 'column',
               height: '100%',
@@ -921,11 +922,14 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
           </CardContent>
         </StyledCard>
       )}
-      elseWrapper={(children) => <ConfigurationPanel>{children}</ConfigurationPanel>} // No wrapper if false
+      elseWrapper={(children) => <ConfigurationPanel>{children}</ConfigurationPanel>}
     >
       {!isNaturalLangauage && (
         <ConfigurationHeader>
-          <Typography variant="h6" fontWeight={600}>
+          <Typography 
+            variant="h6" 
+            fontWeight={STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold}
+          >
             {initialData ? 'Edit Chart' : 'Add New Chart'}
           </Typography>
           <IconButton onClick={onClose} size="small">
@@ -1201,7 +1205,7 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
                         id="isIncremental"
                         checked={formData.isIncremental}
                         onChange={(e) => handleChange('isIncremental', e.target.checked)}
-                        style={{ marginRight: '8px' }}
+                        style={{ marginRight: STYLE_GUIDE.SPACING.s2 }}
                       />
                       <label htmlFor="isIncremental">Incremental</label>
                     </Box>
@@ -1222,16 +1226,16 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
             variant="contained"
             color="primary"
             disabled={isSubmitting || !formData.widgetTypeId || !formData.dataSourceId}
+            sx={{ 
+              fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.medium,
+              fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base
+            }}
           >
             {isSubmitting ? (initialData ? 'Updating...' : 'Creating...') : initialData ? 'Update' : 'Create'}
           </StyledButton>
         </ConfigurationFooter>
       ) : (
-        // <Button variant="contained" onClick={handleSubmit}>
-        //   Visualize Graph
-        // </Button>
-
-        <Box display="flex" gap={2} pb={2}>
+        <Box display="flex" gap={STYLE_GUIDE.SPACING.s4} pb={STYLE_GUIDE.SPACING.s4}>
           <Button
             variant="contained"
             fullWidth
