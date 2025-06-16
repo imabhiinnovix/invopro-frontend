@@ -272,7 +272,7 @@ const NumberValue = styled(Typography, {
   fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.xxxl,
   fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold,
   color: widgetTheme?.colors?.[0] || theme.palette.primary.main,
-  lineHeight: 1.2,
+  lineHeight: STYLE_GUIDE.TYPOGRAPHY.lineHeight.tight,
 }));
 
 const NumberLabel = styled(Typography)(({ theme }) => ({

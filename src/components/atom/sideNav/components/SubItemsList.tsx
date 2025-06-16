@@ -114,7 +114,7 @@ export const SubItemsList: React.FC<SubItemsListProps> = ({
                         whiteSpace: 'nowrap',
                         overflow: 'hidden',
                         textOverflow: 'ellipsis',
-                        lineHeight: 1.2,
+                        lineHeight: STYLE_GUIDE.TYPOGRAPHY.lineHeight.tight,
                       },
                           }}
                     />
@@ -168,7 +168,7 @@ export const SubItemsList: React.FC<SubItemsListProps> = ({
                         whiteSpace: 'nowrap',
                         overflow: 'hidden',
                         textOverflow: 'ellipsis',
-                        lineHeight: 1.2,
+                        lineHeight: STYLE_GUIDE.TYPOGRAPHY.lineHeight.tight,
                         ...(subItem.isMoreLink && {
                           textDecoration: 'underline',
                           color: STYLE_GUIDE.COLORS.materialBlue,
