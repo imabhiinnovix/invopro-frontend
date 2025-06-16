@@ -7,6 +7,7 @@ import {
   ChartDataResponse,
   WidgetDataResponse,
   CombinedWidgetData,
+  ChartResponse,
 } from './types';
 import { Theme } from '../createTheme/types';
 import axiosInstance from '../../services/axiosInstance';
@@ -287,10 +288,10 @@ export const fetchChartData = createAsyncThunk(
                 aggregation: chart.aggregation,
                 widgetType: chart.widgetTypeId?.chartType,
                 dashboardFilters: {
-                  startVersionValue: dashboardType === 'trend' ? (startVersionValue || '') : '',
-                  endVersionValue: dashboardType === 'trend' ? (endVersionValue || '') : '',
-                  versionValue: dashboardType === 'trend' ? '' : (versionValue || ''),
-                  dynamicVersionValue: dashboardType === 'trend' ? '' : versionValue ? "" : "1m",
+                  startVersionValue: dashboardType === 'trend' ? startVersionValue || '' : '',
+                  endVersionValue: dashboardType === 'trend' ? endVersionValue || '' : '',
+                  versionValue: dashboardType === 'trend' ? '' : versionValue || '',
+                  dynamicVersionValue: dashboardType === 'trend' ? '' : versionValue ? '' : '1m',
                 },
                 dashBoardType: dashboardType || 'normal',
                 isIncremental: chart.isIncremental,
@@ -320,6 +321,7 @@ export const fetchChartData = createAsyncThunk(
                         ...item,
                       };
                     }),
+                    totalCount: widgetResponse.data.data.totalCount,
                   },
                 };
                 dispatch(storeWidgetData({ widgetId: chart._id, data: essentialData }));

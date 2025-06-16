@@ -156,7 +156,7 @@ const dashboardSlice = createSlice({
       })
       .addCase(fetchDashboardList.fulfilled, (state, action: PayloadAction<DashboardListResponse>) => {
         state.loading = false;
-        state.dashboards = action.payload.data;
+        state.dashboards = Array.isArray(action.payload.data) ? action.payload.data : [action.payload.data];
       })
       .addCase(fetchDashboardList.rejected, (state, action) => {
         state.loading = false;
