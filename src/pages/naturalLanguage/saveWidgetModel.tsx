@@ -108,7 +108,7 @@ export const SaveWidgetModel: React.FC<SaveWidgetModelProps> = ({
         >
           <InputLabel>Select Dashboard*</InputLabel>
           <Select value={dashBoardId} label="Dashboard" onChange={(e) => onDashboardChange(e.target.value)}>
-            {dashboardList?.filter((data) => data.dashboardType === "normal")?.map((data) => (
+            {dashboardList?.filter((data) => data.settings.dashboardType === "normal")?.map((data) => (
                 <MenuItem key={data._id} value={data._id}>
                   {data.name}
                 </MenuItem>
