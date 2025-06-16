@@ -50,9 +50,9 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
 
 const StyledButton = styled(Button)(({ theme }) => ({
   textTransform: 'none',
-  borderRadius: STYLE_GUIDE.SPACING.s2,
-  // padding: '6px 12px',
-  // marginRight: '2',
+  borderRadius:  STYLE_GUIDE.SPACING.s2,
+  padding: '6px 12px',
+  marginRight: '8px',
   fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
   fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.bold,
   minWidth: '80px',
@@ -293,12 +293,12 @@ const ReportRequestTable: React.FC<AttributeOptionTableProps> = ({
       <Table stickyHeader aria-label="report-request-table">
         <TableHead>
           <TableRow>
-            <StyledTableCell>Report Name</StyledTableCell>
-            <StyledTableCell>Period</StyledTableCell>
-            <StyledTableCell>Status</StyledTableCell>
-            <StyledTableCell>Prepared By</StyledTableCell>
-            <StyledTableCell>Prepared On</StyledTableCell>
-            <StyledTableCell align="right">Action</StyledTableCell>
+            <StyledTableCell sx={{ fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.bold }}>Report Name</StyledTableCell>
+            <StyledTableCell sx={{ fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.bold }}>Period</StyledTableCell>
+            <StyledTableCell sx={{ fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.bold }}>Status</StyledTableCell>
+            <StyledTableCell sx={{ fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.bold }}>Prepared By</StyledTableCell>
+            <StyledTableCell sx={{ fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.bold }}>Prepared On</StyledTableCell>
+            <StyledTableCell sx={{ fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.bold }} align="right">Action</StyledTableCell>
           </TableRow>
         </TableHead>
         <TableBody>
