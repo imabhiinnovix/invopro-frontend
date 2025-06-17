@@ -67,5 +67,6 @@ export const GET = {
   DASHBOARD_WIDGET_DATA: '/dashboard/widget/getWidgetData',
   OPERATOR_LIST: '/operator/list',
   WIDGET_THEME: '/widgetTheme',
-  NL_Query: '/nlQuery/insights',
+  NL_Query: '/nlQuery',
+  NL_Query_INSIGHTS: '/nlQuery/insights'
 };

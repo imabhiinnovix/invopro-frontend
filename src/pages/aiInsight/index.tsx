@@ -52,7 +52,7 @@ const AIInsightPage: React.FC = () => {
 
   const insightMutation = useMutation({
     mutationFn: async (userQuery: string) => {
-      const { data } = await axiosInstance.get(`${GET.NL_Query}`, {
+      const { data } = await axiosInstance.get(`${GET.NL_Query_INSIGHTS}`, {
         params: { userQuery }
       });
       return data;
