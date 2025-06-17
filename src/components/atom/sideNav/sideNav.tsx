@@ -200,8 +200,8 @@ export default function SideNav() {
           error && typeof error === 'object' && 'payload' in error
             ? (error.payload as { message?: string })?.message
             : error && typeof error === 'object' && 'message' in error
-            ? (error as { message?: string })?.message
-            : 'Failed to create dashboard. Please try again.';
+              ? (error as { message?: string })?.message
+              : 'Failed to create dashboard. Please try again.';
         toast.error(errorMessage);
       } finally {
         setIsCreatingLoading(false);
@@ -242,6 +242,9 @@ export default function SideNav() {
         await dispatch(deleteDashboard(dashboardToDelete._id)).unwrap();
         dispatch(fetchDashboardList());
         toast.success('Dashboard deleted successfully!');
+        if (location.pathname === `/dashboard/${dashboardToDelete._id}`) {
+          navigate('/dashboard');
+        }
         setDeleteModalOpen(false);
         setDashboardToDelete(null);
       } catch (error) {
@@ -280,25 +283,25 @@ export default function SideNav() {
           },
           ...(loading
             ? [
-                {
-                  name: 'Loading...',
-                  icon: <></>,
-                  route: '#',
-                },
-              ]
+              {
+                name: 'Loading...',
+                icon: <></>,
+                route: '#',
+              },
+            ]
             : [
-                ...dashboards.slice(0, 5).map((dashboard: DashboardType) => ({
-                  name: dashboard.name,
-                  icon: <></>,
-                  route: `/dashboard/${dashboard._id}`,
-                })),
-                {
-                  name: 'All Dashboards',
-                  icon: <></>,
-                  route: '/dashboard',
-                  isMoreLink: true,
-                },
-              ]),
+              ...dashboards.slice(0, 5).map((dashboard: DashboardType) => ({
+                name: dashboard.name,
+                icon: <></>,
+                route: `/dashboard/${dashboard._id}`,
+              })),
+              {
+                name: 'All Dashboards',
+                icon: <></>,
+                route: '/dashboard',
+                isMoreLink: true,
+              },
+            ]),
         ],
       },
       {
@@ -319,16 +322,16 @@ export default function SideNav() {
 
           ...(dataSourceListAPI?.hasNextPage
             ? [
-                {
-                  name: '',
-                  icon: (
-                    <div ref={lastElementRef} style={{ paddingLeft: '1.5rem' }}>
-                      Loading...
-                    </div>
-                  ),
-                  route: '#',
-                },
-              ]
+              {
+                name: '',
+                icon: (
+                  <div ref={lastElementRef} style={{ paddingLeft: '1.5rem' }}>
+                    Loading...
+                  </div>
+                ),
+                route: '#',
+              },
+            ]
             : []),
         ],
       },
