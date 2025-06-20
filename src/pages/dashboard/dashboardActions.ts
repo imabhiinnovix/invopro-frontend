@@ -9,10 +9,10 @@ import {
   CombinedWidgetData,
   ChartResponse,
 } from './types';
+import { CreateWidgetResponse } from '../../types/dashboard';
 import { Theme } from '../createTheme/types';
 import axiosInstance from '../../services/axiosInstance';
 import axios from 'axios';
-import { ChartFormData } from './components/AddChartModal';
 import { updateChartsData } from './dashboardReducer';
 
 export const fetchDashboardList = createAsyncThunk('dashboard/fetchList', async () => {
@@ -98,40 +98,6 @@ interface CreateWidgetPayload {
   dataSourceId: string;
   widgetTypeId: string;
   dashboardId: string;
-}
-
-interface CreateWidgetResponse {
-  success: boolean;
-  message: string;
-  data: {
-    _id: string;
-    createdBy: string;
-    dashboardId: string;
-    organizationId: string;
-    widgetTypeId: string;
-    name: string;
-    dimensions: string;
-    groupBy: string;
-    aggregation: {
-      type: string;
-      attributeName: string;
-    };
-    position: {
-      x: number;
-      y: number;
-      index: number;
-    };
-    conditions: {
-      field: string;
-      operator: string;
-      value: string;
-      _id: string;
-    }[];
-    dataSourceId: string;
-    isActive: boolean;
-    createdAt: string;
-    updatedAt: string;
-  };
 }
 
 export const createWidget = createAsyncThunk(

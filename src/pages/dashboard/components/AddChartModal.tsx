@@ -13,6 +13,7 @@ import {
   InputAdornment,
   CardContent,
   Card,
+  FormHelperText,
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import AddIcon from '@mui/icons-material/Add';
@@ -21,16 +22,18 @@ import ClearIcon from '@mui/icons-material/Clear';
 import { useAppDispatch, useAppSelector } from '../../../storeHooks';
 import { fetchWidgetTypes, fetchAllDataSources, saveWidgets, fetchChartData } from '../dashboardActions';
 import {
+  ChartResponse,
   DataSource,
   DataSourceAttribute,
-  ChartResponse,
   WidgetDataResponse,
+  ErrorResponse,
   Operator,
   OperatorType,
   OperatorListResponse,
   Dashboard,
   FieldConfig,
-} from '../types';
+  Condition
+} from '../../../types/dashboard';
 import { toast } from 'react-toastify';
 import axiosInstance from '../../../services/axiosInstance';
 import { GET } from '../../../services/apiRoutes';
@@ -38,13 +41,6 @@ import { v4 as uuidv4 } from 'uuid';
 import { DateTime } from 'luxon';
 import { STYLE_GUIDE } from '../../../styles';
 import axios from 'axios';
-
-interface Condition {
-  field: string;
-  operator: string;
-  value: string;
-  _id?: string;
-}
 
 interface Position {
   x: number;
@@ -253,6 +249,7 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
 
   const [operators, setOperators] = useState<OperatorType[]>([]);
   const [fieldTypes, setFieldTypes] = useState<{ [key: string]: string }>({});
+  const [fieldErrors, setFieldErrors] = useState<{ [key: string]: string }>({});
 
   useEffect(() => {
     if (open && initialData) {
@@ -475,6 +472,7 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setFieldErrors({});
 
     try {
       const dimensionsToSend = isTrend ? 'versionValue' : formData.dimensions;
@@ -555,14 +553,41 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
             toast.success('Chart saved successfully!');
             onClose();
           } else {
+            if (saveResponse.errors && saveResponse.errors.length > 0) {
+              const newFieldErrors: { [key: string]: string } = {};
+              saveResponse.errors.forEach((err: ErrorResponse) => {
+                if (err.fieldName && err.message) {
+                  newFieldErrors[err.fieldName] = err.message;
+                }
+              });
+              setFieldErrors(newFieldErrors);
+            }
             toast.error(saveResponse.message || 'Failed to save chart');
           }
         } else {
+          if (widgetResponse.data.errors && widgetResponse.data.errors.length > 0) {
+            const newFieldErrors: { [key: string]: string } = {};
+            widgetResponse.data.errors.forEach((err: ErrorResponse) => {
+              if (err.fieldName && err.message) {
+                newFieldErrors[err.fieldName] = err.message;
+              }
+            });
+            setFieldErrors(newFieldErrors);
+          }
           toast.error(widgetResponse.data.message || 'Failed to add chart');
         }
       }
     } catch (error) {
       if (axios.isAxiosError(error) && error.response?.data) {
+        if (error.response.data.errors?.length > 0) {
+          const newFieldErrors: { [key: string]: string } = {};
+          error.response.data.errors.forEach((err: ErrorResponse) => {
+            if (err.fieldName && err.message) {
+              newFieldErrors[err.fieldName] = err.message;
+            }
+          });
+          setFieldErrors(newFieldErrors);
+        }
         const errorMessage = error.response.data.message || error.response.data.error || 'Failed to add chart';
         toast.error(errorMessage);
       } else if (typeof error === 'object' && error !== null && 'message' in error) {
@@ -637,6 +662,7 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
                     label={label}
                     onChange={handleDimensionChange}
                     disabled={isSubmitting || isTrend}
+                    error={!!fieldErrors['Dimension']}
                     endAdornment={
                       formData.dimensions && (
                         <InputAdornment position="end">
@@ -672,6 +698,7 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
                     label={groupByField.label}
                     onChange={handleGroupByChange}
                     disabled={isSubmitting}
+                    error={!!fieldErrors['GroupBy']}
                     endAdornment={
                       formData.groupBy && (
                         <InputAdornment position="end">
@@ -690,6 +717,9 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
                   </StyledSelect>
                 </FormControl>
               </FormRow>
+              {fieldErrors['GroupBy'] && (
+                <FormHelperText error>{fieldErrors['GroupBy']}</FormHelperText>
+              )}
             </FormSection>
           );
         } else {
@@ -703,6 +733,7 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
                     label={label}
                     onChange={handleDimensionChange}
                     disabled={isSubmitting || isTrend}
+                    error={!!fieldErrors['Dimension']}
                     endAdornment={
                       formData.dimensions && (
                         <InputAdornment position="end">
@@ -731,6 +762,9 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
                   </StyledSelect>
                 </FormControl>
               </FormRow>
+              {fieldErrors['Dimension'] && (
+                <FormHelperText error>{fieldErrors['Dimension']}</FormHelperText>
+              )}
             </FormSection>
           );
         }
@@ -752,6 +786,7 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
                   label={label}
                   onChange={handleGroupByChange}
                   disabled={isSubmitting}
+                  error={!!fieldErrors['GroupBy']}
                   endAdornment={
                     formData.groupBy && (
                       <InputAdornment position="end">
@@ -770,6 +805,9 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
                 </StyledSelect>
               </FormControl>
             </FormRow>
+            {fieldErrors['GroupBy'] && (
+              <FormHelperText error>{fieldErrors['GroupBy']}</FormHelperText>
+            )}
           </FormSection>
         );
 
@@ -1019,6 +1057,7 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
                         label="Dimensions"
                         onChange={handleDimensionChange}
                         disabled={isSubmitting || isTrend}
+                        error={!!fieldErrors['Dimension']}
                         endAdornment={
                           formData.dimensions && (
                             <InputAdornment position="end">
@@ -1045,6 +1084,9 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
                           ))
                         )}
                       </StyledSelect>
+                      {fieldErrors['Dimension'] && (
+                        <FormHelperText error>{fieldErrors['Dimension']}</FormHelperText>
+                      )}
                     </FormControl>
 
                     <FormControl fullWidth size="small">
@@ -1054,6 +1096,7 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
                         label="Group By"
                         onChange={handleGroupByChange}
                         disabled={isSubmitting}
+                        error={!!fieldErrors['GroupBy']}
                         endAdornment={
                           formData.groupBy && (
                             <InputAdornment position="end">
@@ -1070,6 +1113,9 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
                           </MenuItem>
                         ))}
                       </StyledSelect>
+                      {fieldErrors['GroupBy'] && (
+                        <FormHelperText error>{fieldErrors['GroupBy']}</FormHelperText>
+                      )}
                     </FormControl>
                   </FormRow>
                 </FormSection>
