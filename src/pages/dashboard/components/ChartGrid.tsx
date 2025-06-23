@@ -32,7 +32,9 @@ import {
   Pagination,
   Divider,
   Avatar,
+  TableContainer,
 } from '@mui/material';
+import { alpha } from '@mui/material/styles';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -43,13 +45,12 @@ import {
   Tooltip,
   Legend,
   ArcElement,
-  Filler,
   BarElement,
   RadialLinearScale,
-  ChartDataset,
   ChartData,
   ChartEvent,
   ActiveElement,
+  ChartDataset,
 } from 'chart.js';
 import { Line, Pie, Bar, Doughnut, Radar, PolarArea } from 'react-chartjs-2';
 import { ChartResponse, Dashboard } from '../types';
@@ -78,13 +79,12 @@ ChartJS.register(
   LinearScale,
   PointElement,
   LineElement,
-  ArcElement,
-  Filler,
-  BarElement,
-  RadialLinearScale,
   Title,
   Tooltip,
-  Legend
+  Legend,
+  ArcElement,
+  BarElement,
+  RadialLinearScale
 );
 
 interface ChartGridProps {
@@ -190,6 +190,16 @@ const ChartContainer = styled(Box)(({ theme }) => ({
     alignItems: 'center',
     justifyContent: 'center',
     gap: theme.spacing(2),
+  },
+  '&.table-chart': {
+    minHeight: 400,
+    padding: theme.spacing(2),
+    overflow: 'auto',
+    '& .MuiTableContainer-root': {
+      height: '100%',
+      width: '100%',
+      overflow: 'auto'
+    }
   },
   '&:hover': {
     overflow: 'hidden',
@@ -1184,8 +1194,8 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
         const groupBy = chart.groupBy
           ? Array.isArray(chart.groupBy)
             ? chart.groupBy.map((group) => {
-                return { [group]: clickedData[group] };
-              })
+              return { [group]: clickedData[group] };
+            })
             : [{ [chart.groupBy]: clickedData.name }]
           : [];
 
@@ -1195,10 +1205,10 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
           conditions: chart.conditions || [],
           dimensions: isTrend
             ? [
-                {
-                  versionValue: clickedData.name,
-                },
-              ]
+              {
+                versionValue: clickedData.name,
+              },
+            ]
             : dimensions,
           dashboardFilters: {
             startVersionValue: startVersionValue,
@@ -1970,7 +1980,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
           <Pie
             {...baseChartProps}
             data={chartData as ChartData<'pie'>}
-            plugins={widgetTheme?.showLegendOverlay && [sliceLabelsPlugin]}
+            plugins={widgetTheme?.showLegendOverlay ? [sliceLabelsPlugin] : undefined}
             ref={(ref) => {
               chartRefs.current[chartId] = ref as ChartJS<'pie'> | null;
             }}
@@ -1984,7 +1994,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
             ref={(ref) => {
               chartRefs.current[chartId] = ref as ChartJS<'doughnut'> | null;
             }}
-            plugins={widgetTheme?.showLegendOverlay && [sliceLabelsPlugin]}
+            plugins={widgetTheme?.showLegendOverlay ? [sliceLabelsPlugin] : undefined}
           />
         );
       case 'multiSeriesPie':
@@ -1997,15 +2007,12 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
             }}
           />
         );
-      case 'horizontalBar':
-      case 'verticalBar':
-      case 'stackedBar':
-      case 'multiSeriesBar':
+      case 'bar':
         return (
           <Bar
             {...baseChartProps}
             data={chartData as ChartData<'bar'>}
-            plugins={widgetTheme?.showLegendOverlay && [barLabelsPlugin]}
+            plugins={widgetTheme?.showLegendOverlay ? [barLabelsPlugin] : undefined}
             ref={(ref) => {
               chartRefs.current[chartId] = ref as ChartJS<'bar'> | null;
             }}
@@ -2026,7 +2033,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
           <PolarArea
             {...baseChartProps}
             data={chartData as ChartData<'polarArea'>}
-            plugins={widgetTheme?.showLegendOverlay && [polarAreaLabelsPlugin]}
+            plugins={widgetTheme?.showLegendOverlay ? [polarAreaLabelsPlugin] : undefined}
             ref={(ref) => {
               chartRefs.current[chartId] = ref as ChartJS<'polarArea'> | null;
             }}
@@ -2039,11 +2046,66 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
           <Line
             {...baseChartProps}
             data={chartData as ChartData<'line'>}
-            plugins={widgetTheme?.showLegendOverlay && [pointLabelsPlugin]}
+            plugins={widgetTheme?.showLegendOverlay ? [pointLabelsPlugin] : undefined}
             ref={(ref) => {
               chartRefs.current[chartId] = ref as ChartJS<'line'> | null;
             }}
           />
+        );
+      case 'tabular':
+        const chartDataArray = widgetData[chart._id]?.data?.widgetData || chart.data || [];
+        const columns = chartDataArray.length > 0 ? Object.keys(chartDataArray[0]) : [];
+        return (
+          <TableContainer component={Paper} sx={{ maxHeight: 400, overflow: 'auto' }}>
+            <Table stickyHeader>
+              <TableHead>
+                <TableRow>
+                  {columns.map((column) => (
+                    <TableCell
+                      key={column}
+                      sx={{
+                        backgroundColor: theme.palette.background.paper,
+                        fontWeight: 600,
+                        fontSize: '0.95rem',
+                        color: theme.palette.text.primary,
+                        borderBottom: `2px solid ${theme.palette.divider}`,
+                        padding: '12px 16px'
+                      }}
+                    >
+                      {column}
+                    </TableCell>
+                  ))}
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {chartDataArray.map((row, rowIndex) => (
+                  <TableRow
+                    key={rowIndex}
+                    sx={{
+                      '&:nth-of-type(odd)': {
+                        backgroundColor: alpha(theme.palette.action.hover, 0.05)
+                      },
+                      '&:hover': {
+                        backgroundColor: theme.palette.action.hover
+                      }
+                    }}
+                  >
+                    {columns.map((column) => (
+                      <TableCell
+                        key={`${rowIndex}-${column}`}
+                        sx={{
+                          padding: '12px 16px',
+                          borderBottom: `1px solid ${theme.palette.divider}`
+                        }}
+                      >
+                        {typeof row[column] === 'number' ? row[column].toLocaleString() : row[column]}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
         );
     }
   };
@@ -2260,7 +2322,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
               {isNaturalLangauage && (
                 <AddChartModal
                   open={true}
-                  onClose={() => {}}
+                  onClose={() => { }}
                   isSubmitting={false}
                   dashboardId={''}
                   initialData={chart}
@@ -2325,13 +2387,13 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
                     className={
                       (chart.widgetTypeId?.chartType || 'line') === 'pie'
                         ? 'pie-chart'
-                        : (chart.widgetTypeId?.chartType || 'line') === 'number'
-                        ? 'number-chart'
                         : (chart.widgetTypeId?.chartType || 'line') === 'horizontalBar'
-                        ? 'horizontal-bar-chart'
-                        : (chart.widgetTypeId?.chartType || 'line') === 'multiSeriesPie'
-                        ? 'pie-chart'
-                        : 'line-chart'
+                          ? 'horizontal-bar-chart'
+                          : (chart.widgetTypeId?.chartType || 'line') === 'tabular'
+                            ? 'table-chart'
+                            : (chart.widgetTypeId?.chartType || 'line') === 'multiSeriesPie'
+                              ? 'pie-chart'
+                              : 'line-chart'
                     }
                     onWheel={handleWheel}
                   >
