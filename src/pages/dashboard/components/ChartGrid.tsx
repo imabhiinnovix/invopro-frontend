@@ -34,7 +34,6 @@ import {
   Avatar,
   TableContainer,
 } from '@mui/material';
-import { alpha } from '@mui/material/styles';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -1150,6 +1149,10 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
 
   const handleExportMenuClick = (event: React.MouseEvent<HTMLElement>, chart: ChartResponse) => {
     event.stopPropagation();
+    if(chart.widgetTypeId?.chartType  === 'tabular'){
+      handleDownload(chart)
+      return;
+    }
     setExportMenuAnchorEl(event.currentTarget);
     setSelectedChart(chart);
   };
@@ -2064,9 +2067,9 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
                     <TableCell
                       key={column}
                       sx={{
-                        backgroundColor: theme.palette.background.paper,
+                        backgroundColor: '#f1f5f9',
                         fontWeight: 600,
-                        fontSize: '0.95rem',
+                        fontSize: '14px',
                         color: theme.palette.text.primary,
                         borderBottom: `2px solid ${theme.palette.divider}`,
                         padding: '12px 16px'
@@ -2083,7 +2086,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
                     key={rowIndex}
                     sx={{
                       '&:nth-of-type(odd)': {
-                        backgroundColor: alpha(theme.palette.action.hover, 0.05)
+                        // backgroundColor: alpha(theme.palette.action.hover, 0.05)
                       },
                       '&:hover': {
                         backgroundColor: theme.palette.action.hover
@@ -2218,6 +2221,49 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
         </DialogActions>
       </DrillDownDialog>
     );
+  };
+
+  const handleDownload = (chart: ChartResponse) => {
+    const chartType = chart.widgetTypeId?.chartType || 'line';
+    
+    if (chartType === 'tabular') {
+      const chartDataArray = widgetData[chart._id]?.data?.widgetData || chart.data || [];
+      if (chartDataArray.length === 0) {
+        toast.error('No data available to download');
+        return;
+      }
+
+      // Convert data to CSV
+      const columns = Object.keys(chartDataArray[0]);
+      const csvContent = [
+        columns.join(','),
+        ...chartDataArray.map(row => 
+          columns.map(column => {
+            const value = row[column];
+            return typeof value === 'number' ? value : `"${value}"`
+          }).join(',')
+        )
+      ].join('\n');
+
+      // Create and trigger download
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      const url = URL.createObjectURL(blob);
+      link.setAttribute('href', url);
+      link.setAttribute('download', `${chart.name || 'chart'}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      return;
+    }
+
+    const chartInstance = chartRefs.current[`chart-${chart._id}`];
+    if (!chartInstance) {
+      toast.error('Chart instance not found');
+      return;
+    }
+
   };
 
   return (
