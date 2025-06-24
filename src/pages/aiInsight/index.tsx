@@ -17,6 +17,7 @@ import * as yup from 'yup';
 import { useMutation } from '@tanstack/react-query';
 import axiosInstance from '../../services/axiosInstance';
 import { GET } from '../../services/apiRoutes';
+import { STYLE_GUIDE } from '../../styles';
 
 const validationSchema = yup.object().shape({
   query: yup.string().required('Please enter your question'),
@@ -106,128 +107,211 @@ const AIInsightPage: React.FC = () => {
   return (
     <Box sx={{
       height: '100%',
-      bgcolor: '#f7f9fb',
+      bgcolor: STYLE_GUIDE.COLORS.white200,
       display: 'flex',
       flexDirection: 'column',
-      boxShadow: "1px 0px 10px rgba(0,0,0,0.05)",
+      boxShadow: STYLE_GUIDE.SHADOWS.xs,
+      fontFamily: STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary,
     }}>
-      <Box px={2} py={3} borderBottom={1} borderColor="divider" bgcolor="white">
-        <Typography variant="h5" fontWeight={700} gutterBottom>
+      <Box
+        px={STYLE_GUIDE.SPACING.s4}
+        py={STYLE_GUIDE.SPACING.s4}
+        borderBottom={1}
+        borderColor={STYLE_GUIDE.COLORS.divider}
+        bgcolor={STYLE_GUIDE.COLORS.white}
+      >
+        <Typography
+          variant="h5"
+          fontWeight={STYLE_GUIDE.TYPOGRAPHY.fontWeight.bold}
+          gutterBottom
+          color={STYLE_GUIDE.COLORS.textDarkBlue}
+          fontSize={STYLE_GUIDE.TYPOGRAPHY.fontSize.xxl}
+          fontFamily={STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary}
+        >
           AI Insights
         </Typography>
-        <Typography variant="body1" color="text.secondary">
+        <Typography
+          variant="body1"
+          color={STYLE_GUIDE.COLORS.textMediumGray}
+          fontSize={STYLE_GUIDE.TYPOGRAPHY.fontSize.base}
+          fontFamily={STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary}
+        >
           Ask questions about your data and get AI-powered insights
         </Typography>
       </Box>
       <Box sx={{
         flex: 1,
         overflowY: 'auto',
-        px: { xs: 2, sm: 2 },
-        py: 2,
+        px: STYLE_GUIDE.SPACING.s4,
+        py: STYLE_GUIDE.SPACING.s3,
         display: 'flex',
         flexDirection: 'column',
-        gap: 2,
-        backgroundColor: 'white',
+        gap: STYLE_GUIDE.SPACING.s3,
+        backgroundColor: STYLE_GUIDE.COLORS.white,
       }}>
         {qaPairs.length === 0 && (
-          <Typography variant="body2" color="text.secondary" align="center" sx={{ mt: 4 }}>
+          <Typography
+            variant="body2"
+            color={STYLE_GUIDE.COLORS.textMediumGray}
+            align="center"
+            sx={{ mt: STYLE_GUIDE.SPACING.s6 }}
+            fontSize={STYLE_GUIDE.TYPOGRAPHY.fontSize.base}
+            fontFamily={STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary}
+          >
             Start the conversation by asking a question below.
           </Typography>
         )}
         {qaPairs.map((qa, index) => (
           <React.Fragment key={index}>
-            <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 0.5 }}>
-              <Box sx={{ display: 'flex', alignItems: 'flex-end', gap: 1 }}>
+            <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: STYLE_GUIDE.SPACING.s1 }}>
+              <Box sx={{ display: 'flex', alignItems: 'flex-end', gap: STYLE_GUIDE.SPACING.s1 }}>
                 <Box
                   sx={{
-                    bgcolor: 'primary.main',
-                    color: 'primary.contrastText',
-                    px: 2.5,
-                    py: 1.2,
-                    borderRadius: '24px',
+                    bgcolor: STYLE_GUIDE.COLORS.primary,
+                    color: STYLE_GUIDE.COLORS.white,
+                    px: STYLE_GUIDE.SPACING.s4,
+                    py: STYLE_GUIDE.SPACING.s2,
+                    borderRadius: STYLE_GUIDE.SPACING.s4,
                     maxWidth: 420,
-                    fontSize: '1rem',
+                    fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base,
                     wordBreak: 'break-word',
                     boxShadow: 'none',
+                    fontFamily: STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary,
                   }}
                 >
-                  {qa.userQuery}
+                  <Typography
+                    variant="body1"
+                    color="inherit"
+                    fontSize={STYLE_GUIDE.TYPOGRAPHY.fontSize.base}
+                    fontFamily={STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary}
+                  >
+                    {qa.userQuery}
+                  </Typography>
                 </Box>
-                <Avatar sx={{ bgcolor: 'primary.main', width: 32, height: 32, ml: 0.5 }}>
+                <Avatar sx={{
+                  bgcolor: STYLE_GUIDE.COLORS.primary,
+                  width: 32,
+                  height: 32,
+                  ml: STYLE_GUIDE.SPACING.s1
+                }}>
                   <PersonIcon />
                 </Avatar>
               </Box>
             </Box>
             {qa.loading && (
-              <Box sx={{ display: 'flex', justifyContent: 'flex-start', mb: 1.5 }}>
-                <Box sx={{ display: 'flex', alignItems: 'flex-end', gap: 1 }}>
-                  <Avatar sx={{ bgcolor: 'secondary.main', width: 32, height: 32, mr: 0.5 }}>
+              <Box sx={{ display: 'flex', justifyContent: 'flex-start', mb: STYLE_GUIDE.SPACING.s2 }}>
+                <Box sx={{ display: 'flex', alignItems: 'flex-end', gap: STYLE_GUIDE.SPACING.s1 }}>
+                  <Avatar sx={{
+                    bgcolor: STYLE_GUIDE.COLORS.materialPurple,
+                    width: 32,
+                    height: 32,
+                    mr: STYLE_GUIDE.SPACING.s1
+                  }}>
                     <AutoAwesomeIcon />
                   </Avatar>
                   <Box
                     sx={{
-                      bgcolor: 'grey.100',
-                      color: 'text.primary',
-                      px: 2.5,
-                      py: 1.2,
-                      borderRadius: '24px',
+                      bgcolor: STYLE_GUIDE.COLORS.backgroundGray,
+                      color: STYLE_GUIDE.COLORS.textDarkBlue,
+                      px: STYLE_GUIDE.SPACING.s4,
+                      py: STYLE_GUIDE.SPACING.s2,
+                      borderRadius: STYLE_GUIDE.SPACING.s4,
                       maxWidth: 520,
-                      fontSize: '1rem',
+                      fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base,
                       wordBreak: 'break-word',
                       boxShadow: 'none',
                       display: 'flex',
                       alignItems: 'center',
+                      fontFamily: STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary,
                     }}
                   >
-                    <CircularProgress size={20} sx={{ mr: 1 }} /> Generating insights...
+                    <CircularProgress size={20} sx={{ mr: STYLE_GUIDE.SPACING.s1 }} />
+                    <Typography
+                      variant="body2"
+                      color={STYLE_GUIDE.COLORS.textMediumGray}
+                      component="span"
+                      fontSize={STYLE_GUIDE.TYPOGRAPHY.fontSize.small}
+                      fontFamily={STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary}
+                    >
+                      Generating insights...
+                    </Typography>
                   </Box>
                 </Box>
               </Box>
             )}
             {qa.htmlContent && !qa.loading && (
-              <Box sx={{ display: 'flex', justifyContent: 'flex-start', mb: 1.5 }}>
-                <Box sx={{ display: 'flex', alignItems: 'flex-end', gap: 1 }}>
-                  <Avatar sx={{ bgcolor: 'secondary.main', width: 32, height: 32, mr: 0.5 }}>
+              <Box sx={{ display: 'flex', justifyContent: 'flex-start', mb: STYLE_GUIDE.SPACING.s2 }}>
+                <Box sx={{ display: 'flex', alignItems: 'flex-end', gap: STYLE_GUIDE.SPACING.s1 }}>
+                  <Avatar sx={{
+                    bgcolor: STYLE_GUIDE.COLORS.materialPurple,
+                    width: 32,
+                    height: 32,
+                    mr: STYLE_GUIDE.SPACING.s1
+                  }}>
                     <AutoAwesomeIcon />
                   </Avatar>
                   <Box
                     sx={{
-                      bgcolor: 'grey.100',
-                      color: 'text.primary',
-                      px: 2.5,
-                      py: 1.2,
-                      borderRadius: '24px',
+                      bgcolor: STYLE_GUIDE.COLORS.backgroundGray,
+                      color: STYLE_GUIDE.COLORS.textDarkBlue,
+                      px: STYLE_GUIDE.SPACING.s4,
+                      py: STYLE_GUIDE.SPACING.s2,
+                      borderRadius: STYLE_GUIDE.SPACING.s4,
                       maxWidth: 520,
-                      fontSize: '1rem',
+                      fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base,
                       wordBreak: 'break-word',
                       boxShadow: 'none',
+                      fontFamily: STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary,
                     }}
                   >
-                    <Box sx={{ mt: 0.5 }} dangerouslySetInnerHTML={{ __html: qa.htmlContent }} />
+                    <Box sx={{ mt: STYLE_GUIDE.SPACING.s1 }}>
+                      <Typography
+                        variant="body1"
+                        color={STYLE_GUIDE.COLORS.textDarkBlue}
+                        component="span"
+                        fontSize={STYLE_GUIDE.TYPOGRAPHY.fontSize.base}
+                        fontFamily={STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary}
+                        sx={{ wordBreak: 'break-word' }}
+                        dangerouslySetInnerHTML={{ __html: qa.htmlContent }}
+                      />
+                    </Box>
                   </Box>
                 </Box>
               </Box>
             )}
             {qa.error && !qa.loading && (
-              <Box sx={{ display: 'flex', justifyContent: 'flex-start', mb: 1.5 }}>
-                <Box sx={{ display: 'flex', alignItems: 'flex-end', gap: 1 }}>
-                  <Avatar sx={{ bgcolor: 'secondary.main', width: 32, height: 32, mr: 0.5 }}>
+              <Box sx={{ display: 'flex', justifyContent: 'flex-start', mb: STYLE_GUIDE.SPACING.s2 }}>
+                <Box sx={{ display: 'flex', alignItems: 'flex-end', gap: STYLE_GUIDE.SPACING.s1 }}>
+                  <Avatar sx={{
+                    bgcolor: STYLE_GUIDE.COLORS.materialPurple,
+                    width: 32,
+                    height: 32,
+                    mr: STYLE_GUIDE.SPACING.s1
+                  }}>
                     <AutoAwesomeIcon />
                   </Avatar>
                   <Box
                     sx={{
-                      bgcolor: 'grey.100',
-                      color: 'error.main',
-                      px: 2.5,
-                      py: 1.2,
-                      borderRadius: '24px',
+                      bgcolor: STYLE_GUIDE.COLORS.backgroundGray,
+                      color: STYLE_GUIDE.COLORS.materialError,
+                      px: STYLE_GUIDE.SPACING.s4,
+                      py: STYLE_GUIDE.SPACING.s2,
+                      borderRadius: STYLE_GUIDE.SPACING.s4,
                       maxWidth: 520,
-                      fontSize: '1rem',
+                      fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base,
                       wordBreak: 'break-word',
                       boxShadow: 'none',
+                      fontFamily: STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary,
                     }}
                   >
-                    {qa.error}
+                    <Typography
+                      variant="body2"
+                      color={STYLE_GUIDE.COLORS.materialError}
+                      fontSize={STYLE_GUIDE.TYPOGRAPHY.fontSize.small}
+                      fontFamily={STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary}
+                    >
+                      {qa.error}
+                    </Typography>
                   </Box>
                 </Box>
               </Box>
@@ -243,13 +327,13 @@ const AIInsightPage: React.FC = () => {
         )} */}
       <Box sx={{
         width: '100%',
-        bgcolor: 'white',
-        py: 2,
+        bgcolor: STYLE_GUIDE.COLORS.white,
+        py: STYLE_GUIDE.SPACING.s3,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
       }}>
-        <Box component="form" onSubmit={handleSubmit(onSubmit)} sx={{ display: 'flex', gap: 1, width: '100%', maxWidth: 900 }}>
+        <Box component="form" onSubmit={handleSubmit(onSubmit)} sx={{ display: 'flex', gap: STYLE_GUIDE.SPACING.s1, width: '100%', maxWidth: 900 }}>
           <TextField
             multiline
             minRows={2}
@@ -269,11 +353,11 @@ const AIInsightPage: React.FC = () => {
                     color="primary"
                     disabled={insightMutation.isPending}
                     sx={{
-                      backgroundColor: '#5c5c5c',
-                      color: 'white',
-                      borderRadius: '16px',
+                      backgroundColor: STYLE_GUIDE.COLORS.darkBackground,
+                      color: STYLE_GUIDE.COLORS.white,
+                      borderRadius: STYLE_GUIDE.SPACING.s3,
                       '&:hover': {
-                        backgroundColor: '#222',
+                        backgroundColor: STYLE_GUIDE.COLORS.darkDarker,
                       },
                       width: 48,
                       height: 48,
@@ -286,24 +370,27 @@ const AIInsightPage: React.FC = () => {
             }}
             sx={{
               '& .MuiOutlinedInput-root': {
-                borderRadius: '24px',
+                borderRadius: STYLE_GUIDE.SPACING.s4,
                 alignItems: 'center',
-                padding: '20px',
+                padding: STYLE_GUIDE.SPACING.s4,
+                fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base,
+                fontFamily: STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary,
                 '& fieldset': {
-                  borderColor: '#5c5c5c',
+                  borderColor: STYLE_GUIDE.COLORS.darkBorder,
                 },
                 '&:hover fieldset': {
-                  borderColor: '#444',
+                  borderColor: STYLE_GUIDE.COLORS.darkBorderHover,
                 },
                 '&.Mui-focused fieldset': {
-                  borderColor: '#333',
+                  borderColor: STYLE_GUIDE.COLORS.darkBorderFocus,
                 },
               },
               '& .MuiInputLabel-root': {
-                color: '#333',
+                color: STYLE_GUIDE.COLORS.textDarkBlue,
+                fontFamily: STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary,
               },
               '& .MuiInputLabel-root.Mui-focused': {
-                color: '#222',
+                color: STYLE_GUIDE.COLORS.textDarkGray,
               },
             }}
             autoComplete="off"

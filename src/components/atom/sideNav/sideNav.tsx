@@ -17,7 +17,6 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import SourceIcon from '@mui/icons-material/Source';
 import AssessmentIcon from '@mui/icons-material/Assessment';
 import PaletteIcon from '@mui/icons-material/Palette';
-import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import { useInfiniteScroll } from '../../../hooks/useInfiniteScroll';
 import { GET } from '../../../services/apiRoutes';
 import { DataSourceListData, DataSourceListPayload } from './types';
@@ -348,11 +347,11 @@ export default function SideNav() {
         icon: <Language sx={{ fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base }} />,
         route: '/VixAi-Chart',
       },
-      {
-        name: 'VixAI Insights',
-        icon: <AutoAwesomeIcon sx={{ fontSize: '1.1rem' }}/>,
-        route: '/VixAi-Insights',
-      },
+      // {
+      //   name: 'VixAI Insights',
+      //   icon: <AutoAwesomeIcon sx={{ fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base }}/>,
+      //   route: '/VixAi-Insights',
+      // },
     ],
     [dataSourceList, dataSourceListAPI?.hasNextPage, dashboards, loading]
   );
