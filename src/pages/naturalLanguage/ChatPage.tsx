@@ -5,6 +5,7 @@ import { useAppDispatch, useAppSelector } from '../../storeHooks';
 
 import { ChartGrid } from '../dashboard/components/ChartGrid';
 import { fetchWidgetSettingBasedOnNaturalLanguage } from '../dashboard/dashboardActions';
+import { STYLE_GUIDE } from '../../styles';
 
 const ChatPage: React.FC = () => {
   const dispatch = useAppDispatch();
@@ -29,12 +30,12 @@ const ChatPage: React.FC = () => {
 
   return (
     <Box component={Paper} elevation={3} display="flex" flexDirection="column" height="100%">
-      <Box p={2} color="black">
+      <Box p={STYLE_GUIDE.SPACING.s4} color={STYLE_GUIDE.COLORS.black}>
         <Typography variant="h5">Generate Smart Charts from Your Questions</Typography>
       </Box>
 
       <Box flex={1} display="flex" flexDirection="column" overflow="hidden">
-        <Box flex={1} overflow="auto" px={2} py={1}>
+        <Box flex={1} overflow="auto" px={STYLE_GUIDE.SPACING.s4} py={STYLE_GUIDE.SPACING.s2}>
           <ChartGrid
             dashboardId={'1'}
             isEditMode={false}
@@ -63,7 +64,7 @@ const ChatPage: React.FC = () => {
         </IconButton>
       </Box> */}
 
-      <Box display="flex" p={2} mr={3.5} alignItems="center">
+      <Box display="flex" p={STYLE_GUIDE.SPACING.s4} mr={STYLE_GUIDE.SPACING.s7} alignItems="center">
         <TextField
           multiline
           minRows={3}
@@ -81,11 +82,11 @@ const ChatPage: React.FC = () => {
                   onClick={handleSend}
                   disabled={chartsLoading || !input.trim()}
                   sx={{
-                    backgroundColor: '#5c5c5c',
-                    color: 'white',
-                    borderRadius: '16px',
+                    backgroundColor: STYLE_GUIDE.COLORS.darkBackground,
+                    color: STYLE_GUIDE.COLORS.white,
+                    borderRadius: STYLE_GUIDE.SPACING.s4,
                     '&:hover': {
-                      backgroundColor: '#222',
+                      backgroundColor: STYLE_GUIDE.COLORS.darkDarker,
                     },
                     width: 48,
                     height: 48,
@@ -98,24 +99,24 @@ const ChatPage: React.FC = () => {
           }}
           sx={{
             '& .MuiOutlinedInput-root': {
-              borderRadius: '24px',
+              borderRadius: STYLE_GUIDE.SPACING.s6,
               alignItems: 'flex-start',
-              paddingRight: '8px',
+              paddingRight: STYLE_GUIDE.SPACING.s2,
               '& fieldset': {
-                borderColor: '#5c5c5c', // Darker border
+                borderColor: STYLE_GUIDE.COLORS.darkBackground,
               },
               '&:hover fieldset': {
-                borderColor: '#444', // Even darker on hover
+                borderColor: STYLE_GUIDE.COLORS.darkBorderHover,
               },
               '&.Mui-focused fieldset': {
-                borderColor: '#333', // Darkest when focused
+                borderColor: STYLE_GUIDE.COLORS.darkBorderFocus,
               },
             },
             '& .MuiInputLabel-root': {
-              color: '#333', // Darker label
+              color: STYLE_GUIDE.COLORS.darkBorderFocus,
             },
             '& .MuiInputLabel-root.Mui-focused': {
-              color: '#222', // Even darker when focused
+              color: STYLE_GUIDE.COLORS.darkDarker,
             },
           }}
           // sx={{

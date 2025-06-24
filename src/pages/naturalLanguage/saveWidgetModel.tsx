@@ -13,6 +13,7 @@ import {
   useTheme,
   alpha,
 } from '@mui/material';
+import { STYLE_GUIDE } from '../../styles';
 
 interface SaveWidgetModelProps {
   open: boolean;
@@ -51,7 +52,7 @@ export const SaveWidgetModel: React.FC<SaveWidgetModelProps> = ({
       onClose={onClose}
       PaperProps={{
         sx: {
-          borderRadius: 2,
+          borderRadius: STYLE_GUIDE.SPACING.s4,
           minWidth: { xs: '90%', sm: '400px' },
           maxWidth: '500px',
         },
@@ -61,14 +62,14 @@ export const SaveWidgetModel: React.FC<SaveWidgetModelProps> = ({
         sx={{
           backgroundColor: alpha(theme.palette.primary.main, 0.05),
           color: 'primary.main',
-          fontWeight: 600,
-          fontSize: '1.25rem',
-          py: 2,
+          fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold,
+          fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.xl,
+          py: STYLE_GUIDE.SPACING.s4,
         }}
       >
         Save Chart Settings
       </DialogTitle>
-      <DialogContent sx={{ mt: 2, pb: 1 }}>
+      <DialogContent sx={{ mt: STYLE_GUIDE.SPACING.s4, pb: STYLE_GUIDE.SPACING.s2 }}>
         <TextField
           autoFocus
           margin="dense"
@@ -95,7 +96,7 @@ export const SaveWidgetModel: React.FC<SaveWidgetModelProps> = ({
           margin="dense"
           size="small"
           sx={{
-            mt: 2,
+            mt: STYLE_GUIDE.SPACING.s4,
             '& .MuiOutlinedInput-root': {
               '&:hover fieldset': {
                 borderColor: 'primary.main',
@@ -148,7 +149,7 @@ export const SaveWidgetModel: React.FC<SaveWidgetModelProps> = ({
           </FormControl>
         )} */}
       </DialogContent>
-      <DialogActions sx={{ p: 2, gap: 1 }}>
+      <DialogActions sx={{ p: STYLE_GUIDE.SPACING.s4, gap: STYLE_GUIDE.SPACING.s2 }}>
         <Button
           onClick={onClose}
           sx={{
@@ -171,7 +172,7 @@ export const SaveWidgetModel: React.FC<SaveWidgetModelProps> = ({
             },
             '&.Mui-disabled': {
               backgroundColor: alpha(theme.palette.primary.main, 0.5),
-              color: 'white',
+              color: STYLE_GUIDE.COLORS.white,
             },
           }}
         >

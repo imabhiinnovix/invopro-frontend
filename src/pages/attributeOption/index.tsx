@@ -2,6 +2,7 @@ import { useState } from 'react';
 import AttributeOptionTable from '../../components/atom/attributeOption/attributeOptionTable';
 import CreateUpdateAttributeOption from '../../components/atom/attributeOption/createUpdateAttributeOption';
 import { Box, Button } from '@mui/material';
+import { STYLE_GUIDE } from '../../styles';
 
 export default function AttributeOption() {
   const [attributeOptionReload, setAttributeOptionReload] = useState(false);
@@ -10,15 +11,15 @@ export default function AttributeOption() {
     <Box
       display="flex"
       flexDirection="column"
-      p={2}
-      gap={4}
+      p={STYLE_GUIDE.SPACING.s4}
+      gap={STYLE_GUIDE.SPACING.s8}
       width="100%"
-      bgcolor="#f9f9f9"
+      bgcolor={STYLE_GUIDE.COLORS.backgroundGray}
       sx={{
         height: 'calc(100vh - 70px)',
         '@media (max-width: 600px)': {
-          p: 1,
-          gap: 1,
+          p: STYLE_GUIDE.SPACING.s2,
+          gap: STYLE_GUIDE.SPACING.s2,
         },
       }}
     >
@@ -27,7 +28,7 @@ export default function AttributeOption() {
         justifyContent="flex-end"
         alignItems="center"
         sx={{
-          gap: 2,
+          gap: STYLE_GUIDE.SPACING.s4,
         }}
       >
         <CreateUpdateAttributeOption
@@ -38,15 +39,15 @@ export default function AttributeOption() {
               variant="contained"
               size="large"
               sx={{
-                fontWeight: 'bold',
-                fontSize: '1.2rem',
-                padding: '15px 30px',
-                bgcolor: '#007bff',
-                color: '#fff',
-                '&:hover': { bgcolor: '#0056b3' },
+                fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.bold,
+                fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.xl,
+                padding: `${STYLE_GUIDE.SPACING.s4} ${STYLE_GUIDE.SPACING.s6}`,
+                bgcolor: STYLE_GUIDE.COLORS.bootstrapPrimary,
+                color: STYLE_GUIDE.COLORS.white,
+                '&:hover': { bgcolor: STYLE_GUIDE.COLORS.bootstrapPrimaryHover },
                 '@media (max-width: 600px)': {
-                  fontSize: '1rem',
-                  padding: '10px 20px',
+                  fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.large,
+                  padding: `${STYLE_GUIDE.SPACING.s3} ${STYLE_GUIDE.SPACING.s4}`,
                 },
               }}
             >

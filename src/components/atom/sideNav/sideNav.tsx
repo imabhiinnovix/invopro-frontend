@@ -33,6 +33,8 @@ import logo from '../../../assets/ReportiVix-logo.png';
 import { AuthContext } from '../../../context/AuthContext';
 import { clearLocalStorage } from '../../../utils/handleLocalStorage';
 import { Language } from '@mui/icons-material';
+import { STYLE_GUIDE } from '../../../styles';
+
 
 interface ErrorResponse {
   success: boolean;
@@ -74,9 +76,9 @@ const Drawer = styled(MuiDrawer, {
   boxSizing: 'border-box',
   height: '100vh',
   position: 'static',
-  backgroundColor: '#ffffff',
+  backgroundColor: STYLE_GUIDE.COLORS.white,
   '& .MuiPaper-root': {
-    backgroundColor: '#ffffff',
+    backgroundColor: STYLE_GUIDE.COLORS.white,
     border: 'none',
     height: '100%',
     position: 'static',
@@ -92,10 +94,10 @@ const Drawer = styled(MuiDrawer, {
   },
   '& .MuiListItemButton-root': {
     '&.Mui-selected, &.Mui-selected:hover': {
-      backgroundColor: '#f1f5f9',
+      backgroundColor: STYLE_GUIDE.COLORS.backgroundDefault,
     },
     '&:hover': {
-      backgroundColor: '#f1f5f9',
+      backgroundColor: STYLE_GUIDE.COLORS.backgroundDefault,
     },
   },
   variants: [
@@ -272,12 +274,12 @@ export default function SideNav() {
     () => [
       {
         name: 'Dashboards',
-        icon: <DashboardIcon sx={{ fontSize: '1.1rem' }} />,
+        icon: <DashboardIcon sx={{ fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base }} />,
         route: '/dashboard',
         subItems: [
           {
             name: 'Create New Dashboard',
-            icon: <AddIcon sx={{ fontSize: '0.9rem' }} />,
+            icon: <AddIcon sx={{ fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base }} />,
             route: '#',
             isCreateButton: true,
           },
@@ -306,12 +308,12 @@ export default function SideNav() {
       },
       {
         name: 'Reports',
-        icon: <AssessmentIcon sx={{ fontSize: '1.1rem' }} />,
+        icon: <AssessmentIcon sx={{ fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base }} />,
         route: '/reports',
       },
       {
         name: 'Data Sources',
-        icon: <SourceIcon sx={{ fontSize: '1.1rem' }} />,
+        icon: <SourceIcon sx={{ fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base }} />,
         route: '/data-source',
         subItems: [
           ...(dataSourceList?.map((item) => ({
@@ -337,12 +339,12 @@ export default function SideNav() {
       },
       {
         name: 'Create Theme',
-        icon: <PaletteIcon sx={{ fontSize: '1.1rem' }} />,
+        icon: <PaletteIcon sx={{ fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base }} />,
         route: '/create-theme',
       },
       {
         name: 'Natural Language',
-        icon: <Language sx={{ fontSize: '1.1rem' }} />,
+        icon: <Language sx={{ fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base }} />,
         route: '/natural-language',
       },
     ],
@@ -361,18 +363,17 @@ export default function SideNav() {
             display: 'flex',
             flexDirection: 'column',
             height: '100%',
-            // py: 2
           }}
         >
           <Box
             sx={{
-              px: 2,
-              mb: 2,
+              px: STYLE_GUIDE.SPACING.s4,
+              mb: STYLE_GUIDE.SPACING.s4,
               display: 'flex',
               justifyContent: 'center',
               alignItems: 'center',
               height: '50px',
-              borderBottom: '1px solid #e0e0e0',
+              borderBottom: `1px solid ${STYLE_GUIDE.COLORS.divider}`,
             }}
           >
             <Box
@@ -442,14 +443,14 @@ export default function SideNav() {
                       ((item.name === 'Dashboards' && openDashboard) || (item.name !== 'Dashboards' && openSettings) ? (
                         <ExpandLessIcon
                           sx={{
-                            fontSize: '1.1rem',
+                            fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base,
                             color: isRouteActive(item.route) ? '#a136a1' : 'inherit',
                           }}
                         />
                       ) : (
                         <ExpandMoreIcon
                           sx={{
-                            fontSize: '1.1rem',
+                            fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base,
                             color: isRouteActive(item.route) ? '#a136a1' : 'inherit',
                           }}
                         />
@@ -466,12 +467,12 @@ export default function SideNav() {
                             onClick={() => setOpenCreateModal(true)}
                             sx={{
                               minHeight: 36,
-                              px: 2,
-                              pl: 2,
+                              px: STYLE_GUIDE.SPACING.s4,
+                              pl: STYLE_GUIDE.SPACING.s4,
                               borderRadius: '8px',
-                              mx: 1.5,
+                              mx: STYLE_GUIDE.SPACING.s3,
                               '&:hover': {
-                                backgroundColor: '#f1f5f9',
+                                backgroundColor: STYLE_GUIDE.COLORS.backgroundDefault,
                               },
                             }}
                           >
@@ -482,7 +483,7 @@ export default function SideNav() {
                                 justifyContent: 'center',
                               }}
                             >
-                              <AddIcon sx={{ fontSize: '0.9rem' }} />
+                              <AddIcon sx={{ fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base }} />
                             </ListItemIcon>
                             <ListItemText
                               primary="Create New Dashboard"
@@ -512,27 +513,27 @@ export default function SideNav() {
             ))}
           </List>
 
-          <Box sx={{ mt: 'auto', px: 1.5 }}>
+          <Box sx={{ mt: 'auto', px: STYLE_GUIDE.SPACING.s4, }}>
             <ListItemButton
               onClick={handleLogout}
               sx={{
                 minHeight: 42,
-                px: 2,
+                px: STYLE_GUIDE.SPACING.s4,
                 borderRadius: '8px',
                 justifyContent: openNav ? 'initial' : 'center',
                 '&:hover': {
-                  backgroundColor: '#f1f5f9',
+                  backgroundColor: STYLE_GUIDE.COLORS.backgroundDefault,
                 },
               }}
             >
               <ListItemIcon
                 sx={{
                   minWidth: 0,
-                  mr: openNav ? 2 : 'auto',
+                  mr: openNav ? STYLE_GUIDE.SPACING.s4 : 'auto',
                   justifyContent: 'center',
                 }}
               >
-                <LogoutIcon sx={{ fontSize: '1.1rem' }} />
+                <LogoutIcon sx={{ fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base }} />
               </ListItemIcon>
               <ListItemText
                 primary="Logout"
@@ -540,7 +541,7 @@ export default function SideNav() {
                   opacity: openNav ? 1 : 0,
                   m: 0,
                   '& .MuiListItemText-primary': {
-                    fontSize: '0.95rem',
+                    fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base,
                   },
                 }}
               />

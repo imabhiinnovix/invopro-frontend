@@ -20,6 +20,7 @@ import CommonSelect from '../../common/dropdown/commonSelect';
 import CommonDropdownSearch from '../../common/dropdown/searchableDropdown';
 import useGet from '../../../hooks/useGet';
 import usePut from '../../../hooks/usePut';
+import { STYLE_GUIDE } from '../../../styles';
 
 interface CreateUpdateDataSourceProps {
   setReload: React.Dispatch<React.SetStateAction<boolean>>;
@@ -27,6 +28,7 @@ interface CreateUpdateDataSourceProps {
   title: string;
   data?: DataSourceRequestPayload;
 }
+
 const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({ setReload, CustomButton, title, data }) => {
   const [open, setOpen] = useState(false);
 
@@ -45,7 +47,6 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({ setRelo
       code: data?.code ?? '',
       description: data?.description ?? '',
       versionType: data?.versionType ?? '',
-      // entityId: data?._id ?? '',
     },
   });
 
@@ -119,7 +120,11 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({ setRelo
       <Box onClick={() => setOpen(true)}>{CustomButton}</Box>
 
       <Dialog fullWidth maxWidth="lg" open={open} onClose={handleCancel}>
-        <DialogTitle fontWeight="bold" fontSize={20}>
+        <DialogTitle sx={{
+          fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.bold,
+          fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.xl,
+
+        }}>
           {title}
         </DialogTitle>
         <DialogContent dividers>
@@ -146,9 +151,9 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({ setRelo
                   errors.name?.message ||
                   (nameAvailability.isFetched && name.length > 0 ? (
                     nameAvailability.data?.available ? (
-                      <Typography color="success">Name is available</Typography>
+                      <Typography sx={{ color: STYLE_GUIDE.COLORS.bootstrapSuccess }}>Name is available</Typography>
                     ) : (
-                      <Typography color="error">Name is not available</Typography>
+                      <Typography sx={{ color: STYLE_GUIDE.COLORS.bootstrapDanger }}>Name is not available</Typography>
                     )
                   ) : (
                     ''
@@ -220,9 +225,9 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({ setRelo
                   errors.code?.message ||
                   (codeAvailability.isFetched && code.length > 0 ? (
                     codeAvailability.data?.available ? (
-                      <Typography color="success">Code is available</Typography>
+                      <Typography sx={{ color: STYLE_GUIDE.COLORS.bootstrapSuccess }}>Code is available</Typography>
                     ) : (
-                      <Typography color="error">Code is not available</Typography>
+                      <Typography sx={{ color: STYLE_GUIDE.COLORS.bootstrapDanger }}>Code is not available</Typography>
                     )
                   ) : (
                     ''
@@ -252,16 +257,28 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({ setRelo
               <Button
                 onClick={handleCancel}
                 color="error"
-                sx={{ fontSize: 18, fontWeight: 'bold', p: 1, pl: 2, pr: 2 }}
+                sx={{
+                  fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.large,
+                  fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.bold,
+                  p: STYLE_GUIDE.SPACING.s2,
+                  pl: STYLE_GUIDE.SPACING.s4,
+                  pr: STYLE_GUIDE.SPACING.s4
+                }}
               >
                 Cancel
               </Button>
               <Button
                 type="submit"
-                onClick={handleSubmit(onSubmit)}
                 variant="contained"
                 color="primary"
-                sx={{ fontSize: 18, fontWeight: 'bold', p: 1, pl: 2, pr: 2 }}
+                onClick={handleSubmit(onSubmit)}
+                sx={{
+                  fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.large,
+                  fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.bold,
+                  p: STYLE_GUIDE.SPACING.s2,
+                  pl: STYLE_GUIDE.SPACING.s4,
+                  pr: STYLE_GUIDE.SPACING.s4
+                }}
               >
                 Save Data Source
               </Button>

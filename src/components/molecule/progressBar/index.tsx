@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { styled } from '@mui/material/styles';
 import LinearProgress, { linearProgressClasses } from '@mui/material/LinearProgress';
+import { STYLE_GUIDE } from '../../../styles';
 
 interface CommonProgressBarProps {
   value?: number;
@@ -10,7 +11,7 @@ interface CommonProgressBarProps {
 
 const BorderLinearProgress = styled(LinearProgress)(({ theme }) => ({
   height: 15,
-  borderRadius: 5,
+  borderRadius: STYLE_GUIDE.SPACING.s1,
   width: '100%',
 
   [`&.${linearProgressClasses.colorPrimary}`]: {
@@ -20,10 +21,10 @@ const BorderLinearProgress = styled(LinearProgress)(({ theme }) => ({
     }),
   },
   [`& .${linearProgressClasses.bar}`]: {
-    borderRadius: 5,
-    backgroundColor: '#1a90ff',
+    borderRadius: STYLE_GUIDE.SPACING.s1,
+    backgroundColor: STYLE_GUIDE.COLORS.blue600,
     ...theme.applyStyles('dark', {
-      backgroundColor: '#308fe8',
+      backgroundColor: STYLE_GUIDE.COLORS.blue700,
     }),
   },
 }));

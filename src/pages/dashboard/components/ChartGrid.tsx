@@ -71,6 +71,7 @@ import { Theme } from '../../createTheme/types';
 import { AddChartModal, ChartFormData } from './AddChartModal';
 import { resetChartAndWidgetData } from '../dashboardReducer';
 import { SaveWidgetModel } from '../../naturalLanguage/saveWidgetModel';
+import { STYLE_GUIDE } from '../../../styles';
 
 // Register ChartJS components
 ChartJS.register(
@@ -94,11 +95,11 @@ interface ChartGridProps {
   isAddChartModalOpen: boolean;
   isEditChartModalOpen: boolean;
   gridColumns: number;
-  currentDashboard: Dashboard;
-  startVersionValue: string;
-  endVersionValue: string;
-  versionValue: string;
-  isTrend: boolean;
+  currentDashboard?: Dashboard;
+  startVersionValue?: string;
+  endVersionValue?: string;
+  versionValue?: string;
+  isTrend?: boolean;
   isNaturalLangauage?: boolean;
 }
 
@@ -135,8 +136,8 @@ const StyledCard = styled(Card)(({ theme }) => ({
 }));
 
 const ChartTitle = styled(Typography)(({ theme }) => ({
-  fontSize: '1.1rem',
-  fontWeight: 600,
+  fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.large,
+  fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold,
   color: theme.palette.text.primary,
   marginBottom: theme.spacing(2),
   display: 'flex',
@@ -268,10 +269,10 @@ const NumberDisplay = styled(Box)(({ theme }) => ({
 const NumberValue = styled(Typography, {
   shouldForwardProp: (prop) => prop !== 'widgetTheme',
 })<{ widgetTheme?: Theme | null }>(({ theme, widgetTheme }) => ({
-  fontSize: '3.5rem',
-  fontWeight: 600,
+  fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.xxxl,
+  fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold,
   color: widgetTheme?.colors?.[0] || theme.palette.primary.main,
-  lineHeight: 1.2,
+  lineHeight: STYLE_GUIDE.TYPOGRAPHY.lineHeight.tight,
 }));
 
 const NumberLabel = styled(Typography)(({ theme }) => ({
@@ -646,315 +647,6 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
 
   // Combine permanent and temporary charts
   const allCharts = [...charts, ...temporaryCharts];
-
-  // const allCharts = [
-  //   {
-  //     collectionName: 'Disclosure',
-  //     collectionCode: 'disclosure',
-  //     name: 'Disclosure by SBU',
-  //     dimensions: ['SBU'],
-  //     groupBy: [],
-  //     aggregation: {
-  //       type: 'Count',
-  //       attributeName: 'DisclosureNumber',
-  //     },
-  //     conditions: [],
-  //     error: '',
-  //     dataSourceId: {
-  //       _id: '6792332a753ceb4945e5b3b8',
-  //       name: 'Disclosure',
-  //       code: 'disclosure',
-  //     },
-  //     entityId: '679232f9753ceb4945e5b3a5',
-  //     widgetTypeId: {
-  //       _id: '67e68fd541db187651d5e6b8',
-  //       name: 'Line',
-  //       description: 'test line description',
-  //       chartType: 'line',
-  //       code: 'line-1',
-  //       isActive: true,
-  //       createdAt: '2024-08-07T00:00:00.000Z',
-  //       updatedAt: '2025-04-16T11:01:21.982Z',
-  //       __v: 1,
-  //       fieldConfig: [
-  //         {
-  //           fieldName: 'dimensions',
-  //           display: true,
-  //           required: true,
-  //           multiple: true,
-  //           type: 'multiselect',
-  //           label: 'Dimensions',
-  //           defaultValue: null,
-  //         },
-  //         {
-  //           fieldName: 'groupBy',
-  //           display: true,
-  //           required: true,
-  //           multiple: true,
-  //           type: 'multiselect',
-  //           label: 'Group By',
-  //           defaultValue: null,
-  //         },
-  //         {
-  //           fieldName: 'size',
-  //           display: false,
-  //           required: false,
-  //           multiple: false,
-  //           type: 'select',
-  //           label: 'Size',
-  //           defaultValue: null,
-  //         },
-  //         {
-  //           fieldName: 'aggregation',
-  //           display: true,
-  //           required: true,
-  //           multiple: false,
-  //           type: 'select',
-  //           label: 'Aggregation',
-  //           defaultValue: null,
-  //         },
-  //         {
-  //           fieldName: 'conditions',
-  //           display: true,
-  //           required: false,
-  //           multiple: true,
-  //           type: 'multiselect',
-  //           label: 'Conditions',
-  //           defaultValue: null,
-  //         },
-  //       ],
-  //     },
-  //     organizationId: '66de96d3548d06560e2931cb',
-  //     userQuery: 'disclosure number count based on sbu',
-  //     _id: 1747742108424,
-  //     data: {
-  //       label: '2025-11',
-  //       widgetData: [
-  //         {
-  //           name: 'SABIC R&D Europe',
-  //           data: 20,
-  //         },
-  //         {
-  //           name: 'SABIC Technical Center Houston',
-  //           data: 1,
-  //         },
-  //         {
-  //           name: 'SBU Polymers',
-  //           data: 7841,
-  //         },
-  //         {
-  //           name: 'SBU Performance Chemicals',
-  //           data: 2,
-  //         },
-  //         {
-  //           name: 'SBU Specialties',
-  //           data: 5272,
-  //         },
-  //         {
-  //           name: 'Research & Technology Riyadh',
-  //           data: 2,
-  //         },
-  //         {
-  //           name: 'SBU SHPP',
-  //           data: 6053,
-  //         },
-  //         {
-  //           name: 'SBU Strategy & Transformation',
-  //           data: 19,
-  //         },
-  //         {
-  //           name: '2-Ethylhexanol',
-  //           data: 1,
-  //         },
-  //         {
-  //           name: 'GE-B',
-  //           data: 312,
-  //         },
-  //         {
-  //           name: 'SBU Chemicals',
-  //           data: 1790,
-  //         },
-  //         {
-  //           name: 'SBU T&I',
-  //           data: 1074,
-  //         },
-  //         {
-  //           name: 'SBU Temp Chemicals Transfer',
-  //           data: 2,
-  //         },
-  //         {
-  //           name: 'Product Lines',
-  //           data: 668,
-  //         },
-  //         {
-  //           name: 'SBU Agri-nutrients',
-  //           data: 219,
-  //         },
-  //         {
-  //           name: 'SBU Temp Polymers Transfer (from Spec)',
-  //           data: 1,
-  //         },
-  //         {
-  //           name: 'SBU Metals',
-  //           data: 159,
-  //         },
-  //       ],
-  //     },
-  //   },
-  //   {
-  //     collectionName: 'Disclosure',
-  //     collectionCode: 'disclosure',
-  //     name: 'Disclosure by SBU',
-  //     dimensions: ['SBU'],
-  //     groupBy: [],
-  //     aggregation: {
-  //       type: 'Count',
-  //       attributeName: 'DisclosureNumber',
-  //     },
-  //     conditions: [],
-  //     error: '',
-  //     dataSourceId: {
-  //       _id: '6792332a753ceb4945e5b3b8',
-  //       name: 'Disclosure',
-  //       code: 'disclosure',
-  //     },
-  //     entityId: '679232f9753ceb4945e5b3a5',
-  //     widgetTypeId: {
-  //       _id: '67e68fd541db187651d5e6b8',
-  //       name: 'Line',
-  //       description: 'test line description',
-  //       chartType: 'line',
-  //       code: 'line-1',
-  //       isActive: true,
-  //       createdAt: '2024-08-07T00:00:00.000Z',
-  //       updatedAt: '2025-04-16T11:01:21.982Z',
-  //       __v: 1,
-  //       fieldConfig: [
-  //         {
-  //           fieldName: 'dimensions',
-  //           display: true,
-  //           required: true,
-  //           multiple: true,
-  //           type: 'multiselect',
-  //           label: 'Dimensions',
-  //           defaultValue: null,
-  //         },
-  //         {
-  //           fieldName: 'groupBy',
-  //           display: true,
-  //           required: true,
-  //           multiple: true,
-  //           type: 'multiselect',
-  //           label: 'Group By',
-  //           defaultValue: null,
-  //         },
-  //         {
-  //           fieldName: 'size',
-  //           display: false,
-  //           required: false,
-  //           multiple: false,
-  //           type: 'select',
-  //           label: 'Size',
-  //           defaultValue: null,
-  //         },
-  //         {
-  //           fieldName: 'aggregation',
-  //           display: true,
-  //           required: true,
-  //           multiple: false,
-  //           type: 'select',
-  //           label: 'Aggregation',
-  //           defaultValue: null,
-  //         },
-  //         {
-  //           fieldName: 'conditions',
-  //           display: true,
-  //           required: false,
-  //           multiple: true,
-  //           type: 'multiselect',
-  //           label: 'Conditions',
-  //           defaultValue: null,
-  //         },
-  //       ],
-  //     },
-  //     organizationId: '66de96d3548d06560e2931cb',
-  //     userQuery: 'disclosure number count based on sbu',
-  //     _id: 1747742108424,
-  //     data: {
-  //       label: '2025-11',
-  //       widgetData: [
-  //         {
-  //           name: 'SABIC R&D Europe',
-  //           data: 20,
-  //         },
-  //         {
-  //           name: 'SABIC Technical Center Houston',
-  //           data: 1,
-  //         },
-  //         {
-  //           name: 'SBU Polymers',
-  //           data: 7841,
-  //         },
-  //         {
-  //           name: 'SBU Performance Chemicals',
-  //           data: 2,
-  //         },
-  //         {
-  //           name: 'SBU Specialties',
-  //           data: 5272,
-  //         },
-  //         {
-  //           name: 'Research & Technology Riyadh',
-  //           data: 2,
-  //         },
-  //         {
-  //           name: 'SBU SHPP',
-  //           data: 6053,
-  //         },
-  //         {
-  //           name: 'SBU Strategy & Transformation',
-  //           data: 19,
-  //         },
-  //         {
-  //           name: '2-Ethylhexanol',
-  //           data: 1,
-  //         },
-  //         {
-  //           name: 'GE-B',
-  //           data: 312,
-  //         },
-  //         {
-  //           name: 'SBU Chemicals',
-  //           data: 1790,
-  //         },
-  //         {
-  //           name: 'SBU T&I',
-  //           data: 1074,
-  //         },
-  //         {
-  //           name: 'SBU Temp Chemicals Transfer',
-  //           data: 2,
-  //         },
-  //         {
-  //           name: 'Product Lines',
-  //           data: 668,
-  //         },
-  //         {
-  //           name: 'SBU Agri-nutrients',
-  //           data: 219,
-  //         },
-  //         {
-  //           name: 'SBU Temp Polymers Transfer (from Spec)',
-  //           data: 1,
-  //         },
-  //         {
-  //           name: 'SBU Metals',
-  //           data: 159,
-  //         },
-  //       ],
-  //     },
-  //   },
-  // ];
 
   const bottomRef: any = isNaturalLangauage ? useRef<HTMLDivElement | null>(null) : '';
 
@@ -2091,7 +1783,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
               <TableHead>
                 <TableRow>
                   {columns.map((column) => (
-                    <TableCell key={column} sx={{ fontWeight: 'bold' }}>
+                    <TableCell key={column} sx={{ fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.medium }}>
                       {column}
                     </TableCell>
                   ))}
@@ -2162,10 +1854,11 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
     <>
       <Grid
         container
-        spacing={3}
+        spacing={STYLE_GUIDE.SPACING.s4}
         sx={{
           height: '100%',
           alignContent: 'flex-start',
+          p: STYLE_GUIDE.SPACING.s6,
           '& .MuiGrid-item': {
             display: 'flex',
             '& > *': {
@@ -2200,7 +1893,9 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
                           flexShrink: 1,
                         }}
                       >
-                        <Typography variant="body1">{chart?.userQuery}</Typography>
+                        <Typography variant="body2" fontWeight={STYLE_GUIDE.TYPOGRAPHY.fontWeight.regular}>
+                          {chart?.userQuery}
+                        </Typography>
                       </Box>
                       <Avatar sx={{ bgcolor: 'purple', width: 40, height: 40, fontSize: 20 }}>U</Avatar>
                     </Box>
@@ -2227,8 +1922,8 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
                           flexShrink: 1,
                         }}
                       >
-                        <Typography variant="body1">
-                          Here's the result based on your query:{chart?.userQuery}
+                        <Typography variant="body2" fontWeight={STYLE_GUIDE.TYPOGRAPHY.fontWeight.regular}>
+                          Here's the result based on your query: {chart?.userQuery}
                         </Typography>
                       </Box>
                     </Box>
@@ -2340,7 +2035,6 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
                 </CardContent>
               </StyledCard>
             </Grid>
-            {/* </Grid> */}
           </>
         ))}
 

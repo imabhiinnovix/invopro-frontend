@@ -9,13 +9,13 @@ import ZoomOutIcon from '@mui/icons-material/ZoomOut';
 import RestartAltIcon from '@mui/icons-material/RestartAlt';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
+import { STYLE_GUIDE } from '../../../styles';
 
 // Styled components for custom table styling
 const StyledTableContainer = styled(TableContainer)({
   maxWidth: '100%',
   overflowX: 'auto',
-  // border: '1px solid #ccc',
-  boxShadow: 'none',
+  boxShadow: STYLE_GUIDE.SHADOWS.none,
 });
 
 // Zoom container with scroll capabilities
@@ -44,12 +44,12 @@ const DynamicCell = styled(TableCell)<{
   fontWeight?: string;
 }>(({ bgColor, textColor, align, fontWeight, isBorder }) => ({
   backgroundColor: bgColor ? `#${bgColor}` : 'transparent',
-  color: textColor ? `#${textColor}` : 'inherit',
-  padding: '6px',
+  color: textColor ? `#${textColor}` : STYLE_GUIDE.COLORS.black,
+  padding: STYLE_GUIDE.SPACING.s2,
   textAlign: align || 'left',
-  border: !!isBorder ? '1px solid #000000' : '',
-  fontSize: '0.8rem',
-  fontWeight: fontWeight || 'normal',
+  border: !!isBorder ? `1px solid ${STYLE_GUIDE.COLORS.borderGray}` : '',
+  fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
+  fontWeight: fontWeight || STYLE_GUIDE.TYPOGRAPHY.fontWeight.regular,
 }));
 
 // Format value based on type
@@ -379,7 +379,7 @@ const ViewReport: React.FC<ViewReportProps> = ({
                                 bgColor={formatColor(subSection.headerBackGroundColor)}
                                 // colSpan={subSection.spanColumns ? (reportData.data?.data.length ?? 0) + 1 : 1}
                                 textColor={formatColor(subSection.headerColor)}
-                                fontWeight="bold"
+                                fontWeight={STYLE_GUIDE.TYPOGRAPHY.fontWeight.bold}
                                 isBorder={true}
                                 align={subSection.horizontalAlignment || 'left'}
                               >

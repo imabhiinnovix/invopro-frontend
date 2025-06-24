@@ -33,6 +33,7 @@ import { DateTime } from 'luxon';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { fetchThemeList } from '../../createTheme/themeActions';
+import { STYLE_GUIDE } from '../../../styles';
 
 interface DashboardViewProps {
   title: string;
@@ -407,17 +408,17 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ title: initialTitl
     >
       <Box
         sx={{
-          p: 2,
+          p: STYLE_GUIDE.SPACING.s6,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
           flexShrink: 0,
-          gap: 2,
+          gap: STYLE_GUIDE.SPACING.s4,
           borderBottom: 1,
           borderColor: 'divider',
         }}
       >
-        <Box sx={{ flex: 1, mr: 2 }}>
+        <Box sx={{ flex: 1, mr: STYLE_GUIDE.SPACING.s4 }}>
           {isEditMode ? (
             <TextField
               inputRef={inputRef}
@@ -428,13 +429,13 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ title: initialTitl
               fullWidth
             />
           ) : (
-            <Typography variant="h5" component="h1" fontWeight={500}>
+            <Typography variant="h4" component="h1" fontWeight={STYLE_GUIDE.TYPOGRAPHY.fontWeight.medium} sx={{ mr: STYLE_GUIDE.SPACING.s4 }}>
               {title}
             </Typography>
           )}
         </Box>
 
-        <Box sx={{ mr: 2 }}>
+        <Box sx={{ mr: STYLE_GUIDE.SPACING.s4 }}>
           {isEditMode ? (
             <FormControl sx={{ minWidth: 200 }}>
               <InputLabel id="theme-select-label">Theme</InputLabel>
@@ -456,28 +457,28 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ title: initialTitl
           ) : null}
         </Box>
 
-        <Box sx={{ display: 'flex', gap: 2 }}>
+        <Box sx={{ display: 'flex', gap: STYLE_GUIDE.SPACING.s4 }}>
           {isEditMode ? (
             <>
               <ButtonGroup variant="outlined" aria-label="grid columns" size="small">
                 <Button
                   onClick={() => handleGridColumns(1)}
                   variant={gridColumns === 1 ? 'contained' : 'outlined'}
-                  sx={{ minWidth: '40px' }}
+                  sx={{ px: STYLE_GUIDE.SPACING.s6 }}
                 >
                   <SquareIcon />
                 </Button>
                 <Button
                   onClick={() => handleGridColumns(2)}
                   variant={gridColumns === 2 ? 'contained' : 'outlined'}
-                  sx={{ minWidth: '40px' }}
+                  sx={{ px: STYLE_GUIDE.SPACING.s6 }}
                 >
                   <PauseIcon />
                 </Button>
                 <Button
                   onClick={() => handleGridColumns(3)}
                   variant={gridColumns === 3 ? 'contained' : 'outlined'}
-                  sx={{ minWidth: '40px' }}
+                  sx={{ px: STYLE_GUIDE.SPACING.s6 }}
                 >
                   <ViewColumnIcon />
                 </Button>
@@ -487,7 +488,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ title: initialTitl
                 color="primary"
                 startIcon={<AddIcon />}
                 onClick={() => setIsAddChartModalOpen(true)}
-                sx={{ minWidth: '120px' }}
+                sx={{ px: STYLE_GUIDE.SPACING.s6 }}
               >
                 Add Chart
               </Button>
@@ -496,7 +497,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ title: initialTitl
                 color="success"
                 variant="contained"
                 startIcon={<DoneIcon />}
-                sx={{ minWidth: '100px' }}
+                sx={{ px: STYLE_GUIDE.SPACING.s6 }}
               >
                 Save
               </Button>
@@ -523,7 +524,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ title: initialTitl
                     />
                   </Box>
                 ) : currentDashboard?.settings?.dashboardType === 'trend' ? (
-                  <Stack direction="row" spacing={2}>
+                  <Stack direction="row" spacing={STYLE_GUIDE.SPACING.s6}>
                     <CommonDatePicker
                       name="startDate"
                       control={control}
@@ -565,7 +566,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ title: initialTitl
           display: 'flex',
           flex: 1,
           overflow: 'hidden',
-          gap: 3,
+          gap: STYLE_GUIDE.SPACING.s6,
           height: 'calc(100% - 100px)',
         }}
       >
@@ -580,8 +581,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ title: initialTitl
               md: 'repeat(auto-fit, minmax(450px, 1fr))',
               lg: 'repeat(auto-fit, minmax(500px, 1fr))',
             },
-            gap: 3,
-            p: 1,
+            gap: STYLE_GUIDE.SPACING.s4,
+            p: STYLE_GUIDE.SPACING.s4,
 
             transition: 'all 0.3s ease',
             ...((isAddChartModalOpen || isEditChartModalOpen) && {

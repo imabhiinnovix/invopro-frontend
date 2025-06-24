@@ -23,6 +23,7 @@ import useGet from '../../../hooks/useGet';
 import { GET } from '../../../services/apiRoutes';
 import CreateUpdateEntity from './createUpdateEntity';
 import { Attribute, EntityRequestPayload } from './types';
+import { STYLE_GUIDE } from '../../../styles';
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
   [`&.${tableCellClasses.head}`]: {
@@ -30,7 +31,7 @@ const StyledTableCell = styled(TableCell)(({ theme }) => ({
     color: theme.palette.common.white,
   },
   [`&.${tableCellClasses.body}`]: {
-    fontSize: 14,
+    fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base,
   },
 }));
 
@@ -148,7 +149,14 @@ const EntityTable: React.FC<EntityTableProps> = ({ reloadEntity, setReloadEntity
         alignContent="center"
         alignItems="center"
       >
-        <Typography variant="h4" fontWeight="bold" gutterBottom>
+        <Typography 
+          variant="h4" 
+          sx={{
+            fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.bold,
+            color: STYLE_GUIDE.COLORS.textDarkGray,
+            fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.xxl,
+          }}
+        >
           No entities have been created yet. Please create an entity to display it here.
         </Typography>
       </Box>
@@ -204,11 +212,25 @@ const EntityTable: React.FC<EntityTableProps> = ({ reloadEntity, setReloadEntity
                   {/* <Switch checked={data.isActive} /> */}
 
                   {data.isActive ? (
-                    <Typography color="success" fontSize={14} component="span">
+                    <Typography 
+                     component="span"
+                      sx={{
+                        color: STYLE_GUIDE.COLORS.bootstrapSuccess,
+                        fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base,
+                        fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.medium
+                      }}
+                    >
                       ACTIVE
                     </Typography>
                   ) : (
-                    <Typography color="error" fontSize={14} component="span">
+                    <Typography 
+                      component="span"
+                      sx={{
+                        color: STYLE_GUIDE.COLORS.bootstrapDanger,
+                        fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base,
+                        fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.medium
+                      }}
+                    >
                       INACTIVE
                     </Typography>
                   )}

@@ -6,6 +6,7 @@ import logo from "../../../assets/ReportiVix-logo.png";
 import { AccountPopover } from "../../atom/accountPopover/accountPopover";
 import { Menu as MenuIcon } from "@mui/icons-material";
 import { useNav } from "../../../context/NavContext";
+import { STYLE_GUIDE } from "../../../styles";
 
 const Header = () => {
   const { pathname } = useLocation();
@@ -21,13 +22,14 @@ const Header = () => {
         position="sticky"
         color="inherit"
         elevation={2}
-        sx={{ height: 70 }}
+        sx={{ 
+          height: 70 }}
       >
         <Toolbar>
           <Box
             component="a"
             // href="/"
-            gap={1}
+            gap={STYLE_GUIDE.SPACING.s2}
             sx={{
               display: "flex",
               alignContent: "center",

@@ -23,6 +23,7 @@ import useGet from '../../../hooks/useGet';
 import { GET } from '../../../services/apiRoutes';
 import { AttributeOptionRequestPayload } from './types';
 import CreateUpdateAttributeOption from './createUpdateAttributeOption';
+import { STYLE_GUIDE } from '../../../styles';
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
   [`&.${tableCellClasses.head}`]: {
@@ -30,7 +31,7 @@ const StyledTableCell = styled(TableCell)(({ theme }) => ({
     color: theme.palette.common.white,
   },
   [`&.${tableCellClasses.body}`]: {
-    fontSize: 14,
+     fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base,
   },
 }));
 
@@ -116,7 +117,7 @@ const AttributeOptionTable: React.FC<AttributeOptionTableProps> = ({
   );
 
   const renderAttributes = (attributes: string[] = []): JSX.Element => (
-    <Box sx={{ margin: 1 }}>
+    <Box sx={{ margin: STYLE_GUIDE.SPACING.s2 }}>
       <Table size="small" aria-label="attributes">
         <TableHead>
           <TableRow>
@@ -143,7 +144,16 @@ const AttributeOptionTable: React.FC<AttributeOptionTableProps> = ({
         alignContent="center"
         alignItems="center"
       >
-        <Typography variant="h4" fontWeight="bold" gutterBottom>
+        <Typography 
+          variant="h4" 
+          sx={{
+            fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.bold,
+            color: STYLE_GUIDE.COLORS.textDarkGray,
+            fontFamily: STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary,
+            fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.xxl,
+          }}
+          gutterBottom
+        >
           No attributes option have been created yet. Please create an an attribute option to display it here.
         </Typography>
       </Box>
@@ -197,11 +207,23 @@ const AttributeOptionTable: React.FC<AttributeOptionTableProps> = ({
                   {/* <Switch checked={data.isActive} /> */}
 
                   {data.isActive ? (
-                    <Typography color="success" fontSize={14} component="span">
+                    <Typography 
+                      sx={{
+                        color: STYLE_GUIDE.COLORS.bootstrapSuccess,
+                        fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
+                      }}
+                      component="span"
+                    >
                       ACTIVE
                     </Typography>
                   ) : (
-                    <Typography color="error" fontSize={14} component="span">
+                    <Typography 
+                      sx={{
+                        color: STYLE_GUIDE.COLORS.bootstrapDanger,
+                        fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
+                      }}
+                      component="span"
+                    >
                       INACTIVE
                     </Typography>
                   )}

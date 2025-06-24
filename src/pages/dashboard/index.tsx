@@ -29,6 +29,7 @@ import { DeleteConfirmationModal } from "../../components/atom/sideNav/component
 import { CreateDashboardModal } from "../../components/atom/sideNav/components/CreateDashboardModal";
 import { Dashboard as DashboardType, DashboardListResponse } from "./types";
 import { resetChartAndWidgetData } from "./dashboardReducer";
+import { STYLE_GUIDE } from '../../styles';
 
 const Dashboard = () => {
   const theme = useTheme();
@@ -170,7 +171,7 @@ const Dashboard = () => {
       <Box
         sx={{
           width: "100%",
-          backgroundColor: "#F8FAFC",
+          backgroundColor: STYLE_GUIDE.COLORS.backgroundSurface,
         }}
       >
         <Box
@@ -179,19 +180,19 @@ const Dashboard = () => {
             flexDirection: { xs: "column", md: "row" },
             justifyContent: "space-between",
             alignItems: { xs: "flex-start", md: "center" },
-            gap: 2,
-            p: { xs: 2, md: 3 },
-            backgroundColor: "white",
+            gap: STYLE_GUIDE.SPACING.s4,
+            p: { xs: STYLE_GUIDE.SPACING.s4, md: STYLE_GUIDE.SPACING.s6 },
+            backgroundColor: STYLE_GUIDE.COLORS.white,
             borderBottom: "1px solid",
-            borderColor: "divider",
+            borderColor: STYLE_GUIDE.COLORS.divider,
           }}
         >
           <Typography
             variant="h4"
             sx={{
-              fontWeight: 600,
-              color: "text.primary",
-              fontSize: { xs: "1.75rem", md: "2rem" },
+              fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold,
+              color: STYLE_GUIDE.COLORS.black,
+              fontSize: { xs: STYLE_GUIDE.TYPOGRAPHY.fontSize.large, md: STYLE_GUIDE.TYPOGRAPHY.fontSize.xxl },
             }}
           >
             Dashboards
@@ -201,54 +202,51 @@ const Dashboard = () => {
             startIcon={<AddIcon />}
             onClick={() => setOpenCreateModal(true)}
             sx={{
-              backgroundColor: "#9C27B0",
-              color: "white",
+              backgroundColor: STYLE_GUIDE.COLORS.primary,
+              color: STYLE_GUIDE.COLORS.white,
               "&:hover": {
-                backgroundColor: "#7B1FA2",
+                backgroundColor: STYLE_GUIDE.COLORS.primaryDark,
               },
-              px: 3,
-              py: 1,
-              borderRadius: 1,
+              px: STYLE_GUIDE.SPACING.s6,
+              py: STYLE_GUIDE.SPACING.s2,
+              borderRadius: STYLE_GUIDE.SPACING.s2,
               textTransform: "none",
-              fontSize: "1rem",
-              fontWeight: 500,
+              fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base,
+              fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.medium,
             }}
           >
             Create New Dashboard
           </Button>
         </Box>
 
-        <Box sx={{ p: { xs: 2, md: 3 } }}>
+        <Box sx={{ p: { xs: STYLE_GUIDE.SPACING.s4, md: STYLE_GUIDE.SPACING.s6 } }}>
           <TableContainer
             component={Paper}
             sx={{
-              borderRadius: 2,
-              boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.05)",
+              borderRadius: STYLE_GUIDE.SPACING.s4,
+              boxShadow: STYLE_GUIDE.SHADOWS.cardPrimary,
               maxHeight: "calc(100vh - 300px)",
               overflow: "auto",
               "& .MuiTableCell-root": {
                 borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-                py: 2,
-                px: 3,
+                py: STYLE_GUIDE.SPACING.s4,
+                px: STYLE_GUIDE.SPACING.s6,
               },
             }}
           >
             <Table stickyHeader>
               <TableHead>
                 <TableRow>
-                  <TableCell sx={{ fontWeight: 600, color: "text.primary" }}>
+                  <TableCell sx={{ fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold, color: STYLE_GUIDE.COLORS.black }}>
                     Name
                   </TableCell>
-                  <TableCell sx={{ fontWeight: 600, color: "text.primary" }}>
+                  <TableCell sx={{ fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold, color: STYLE_GUIDE.COLORS.black }}>
                     Created By
                   </TableCell>
-                  <TableCell sx={{ fontWeight: 600, color: "text.primary" }}>
+                  <TableCell sx={{ fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold, color: STYLE_GUIDE.COLORS.black }}>
                     Type
                   </TableCell>
-                  {/* <TableCell sx={{ fontWeight: 600, color: "text.primary" }}>
-                    Updated At
-                  </TableCell> */}
-                  <TableCell sx={{ fontWeight: 600, color: "text.primary" }}>
+                  <TableCell sx={{ fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold, color: STYLE_GUIDE.COLORS.black }}>
                     Actions
                   </TableCell>
                 </TableRow>
@@ -269,9 +267,6 @@ const Dashboard = () => {
                             <Skeleton />
                           </TableCell>
                           <TableCell>
-                            <Skeleton />
-                          </TableCell>
-                          <TableCell>
                             <Skeleton width={100} />
                           </TableCell>
                         </TableRow>
@@ -282,44 +277,32 @@ const Dashboard = () => {
                         onClick={() => handleEdit(dashboard._id)}
                         sx={{
                           "&:hover": {
-                            backgroundColor: alpha("#9C27B0", 0.02),
+                            backgroundColor: alpha(STYLE_GUIDE.COLORS.primary, 0.02),
                             transition: "background-color 0.2s",
                           },
                           cursor: "pointer",
                         }}
                       >
-                        <TableCell sx={{ fontWeight: 500 }}>
+                        <TableCell sx={{ fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.medium }}>
                           {dashboard.name}
                         </TableCell>
                         <TableCell>
                           {dashboard?.createdBy?.firstName}{" "}
                           {dashboard?.createdBy?.lastName}
                         </TableCell>
-                        <TableCell sx={{ fontWeight: 500 }}>
+                        <TableCell sx={{ fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.medium }}>
                           {dashboard?.settings?.dashboardType}
                         </TableCell>
-                        {/* <TableCell>
-                          {format(
-                            new Date(dashboard.createdAt),
-                            "MMM dd, yyyy HH:mm"
-                          )}
-                        </TableCell> */}
-                        {/* <TableCell>
-                          {format(
-                            new Date(dashboard.updatedAt),
-                            "MMM dd, yyyy HH:mm"
-                          )}
-                        </TableCell> */}
                         <TableCell>
-                          <Box sx={{ display: "flex", gap: 1 }}>
+                          <Box sx={{ display: "flex", gap: STYLE_GUIDE.SPACING.s1 }}>
                             <Tooltip title="Delete Dashboard">
                               <IconButton
                                 onClick={(e) => handleDeleteClick(e, dashboard)}
                                 size="small"
                                 sx={{
-                                  color: "#D32F2F",
+                                  color: STYLE_GUIDE.COLORS.materialError,
                                   "&:hover": {
-                                    backgroundColor: alpha("#D32F2F", 0.1),
+                                    backgroundColor: alpha(STYLE_GUIDE.COLORS.materialError, 0.1),
                                   },
                                 }}
                               >
@@ -367,7 +350,7 @@ const Dashboard = () => {
 
   // Show specific dashboard view
   return (
-    <Box sx={{ p: 3 }}>
+    <Box sx={{ p: STYLE_GUIDE.SPACING.s1 }}>
       <DashboardView
         title={currentDashboard.name}
         onTitleChange={handleTitleChange}

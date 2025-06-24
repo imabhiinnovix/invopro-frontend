@@ -15,6 +15,8 @@ import DashboardAnalytics from './pages/dashboard/analytics';
 import CreateTheme from './pages/createTheme';
 import { getAuthToken } from './utils/handleLocalStorage';
 import NaturalLanguage from './pages/naturalLanguage/NaturalLanguage';
+import Entity from './pages/entity';
+import DataSource from './pages/dataSource';
 
 const AppRoutes = () => {
   const token = getAuthToken();
@@ -39,6 +41,8 @@ const AppRoutes = () => {
           <Route path="/reports" element={<Report />} />
           <Route path="/data-source/:id" element={<DataSources />} />
           <Route path="/natural-language" element={<NaturalLanguage />} />
+          <Route path="/entity" element={<Entity />} />
+          <Route path="/data-src"   element={<DataSource/>} />
         </Route>
       </Route>
 

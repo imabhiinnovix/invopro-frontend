@@ -1,4 +1,5 @@
 import { styled } from '@mui/material/styles';
+import { STYLE_GUIDE } from '../../../styles';
 
 type DividerProps = {
   width: string;
@@ -7,7 +8,7 @@ type DividerProps = {
 };
 
 const StyledDivider = styled('hr')(({ width, color, opacity }: DividerProps) => ({
-  margin: '8px auto',
+  margin: `${STYLE_GUIDE.SPACING.s2} auto`,
   border: 0,
   borderTop: `1px solid ${color}`,
   backgroundColor: color,

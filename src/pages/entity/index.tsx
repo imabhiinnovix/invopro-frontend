@@ -3,6 +3,7 @@ import { Box, Button } from '@mui/material';
 import CreateUpdateEntity from '../../components/atom/entity/createUpdateEntity';
 import EntityTable from '../../components/atom/entity/entityTable';
 import { useState } from 'react';
+import { STYLE_GUIDE } from '../../styles';
 
 export default function Entity() {
   const [reloadEntity, setReloadEntity] = useState(false);
@@ -11,15 +12,15 @@ export default function Entity() {
       <Box
         display="flex"
         flexDirection="column"
-        p={2}
-        gap={4}
+        p={STYLE_GUIDE.SPACING.s4}
+        gap={STYLE_GUIDE.SPACING.s8}
         width="100%"
-        bgcolor="#f9f9f9"
+        bgcolor={STYLE_GUIDE.COLORS.backgroundGray}
         sx={{
           height: 'calc(100vh - 70px)',
           '@media (max-width: 600px)': {
-            p: 1,
-            gap: 1,
+            p: STYLE_GUIDE.SPACING.s2,
+            gap: STYLE_GUIDE.SPACING.s2,
           },
         }}
       >
@@ -28,8 +29,7 @@ export default function Entity() {
           justifyContent="flex-end"
           alignItems="center"
           sx={{
-            // flexWrap: 'wrap-reverse',
-            gap: 2,
+            gap: STYLE_GUIDE.SPACING.s4,
           }}
         >
           <Box>
@@ -41,15 +41,15 @@ export default function Entity() {
                   variant="contained"
                   size="large"
                   sx={{
-                    fontWeight: 'bold',
-                    fontSize: '1.2rem',
-                    padding: '15px 30px',
-                    bgcolor: '#007bff',
-                    color: '#fff',
-                    '&:hover': { bgcolor: '#0056b3' },
+                    fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.bold,
+                    fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.xl,
+                    padding: `${STYLE_GUIDE.SPACING.s4} ${STYLE_GUIDE.SPACING.s6}`,
+                    bgcolor: STYLE_GUIDE.COLORS.bootstrapPrimary,
+                    color: STYLE_GUIDE.COLORS.white,
+                    '&:hover': { bgcolor: STYLE_GUIDE.COLORS.darkDarker },
                     '@media (max-width: 600px)': {
-                      fontSize: '1rem',
-                      padding: '10px 20px',
+                      fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.large,
+                      padding: `${STYLE_GUIDE.SPACING.s3} ${STYLE_GUIDE.SPACING.s4}`,
                     },
                   }}
                 >
@@ -62,58 +62,58 @@ export default function Entity() {
           {/* <Box display="flex" gap={3} flexWrap="wrap" justifyContent="center">
             <Box
               sx={{
-                borderRadius: 2,
-                bgcolor: '#28a745',
-                color: '#fff',
+                borderRadius: STYLE_GUIDE.SPACING.s4,
+                bgcolor: STYLE_GUIDE.COLORS.bootstrapSuccess,
+                color: STYLE_GUIDE.COLORS.white,
                 display: 'flex',
                 flexDirection: 'column',
                 justifyContent: 'center',
                 alignItems: 'center',
-                fontSize: '20px',
-                fontWeight: 'bold',
-                boxShadow: 2,
-                p: 4,
+                fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.xl,
+                fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.bold,
+                boxShadow: STYLE_GUIDE.SHADOWS.base,
+                p: STYLE_GUIDE.SPACING.s8,
                 minWidth: '120px',
                 '@media (max-width: 600px)': {
-                  fontSize: '16px',
-                  p: 2,
+                  fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.large,
+                  p: STYLE_GUIDE.SPACING.s4,
                 },
               }}
             >
               Active Entities
-              <Typography variant="h4" fontWeight="bold" sx={{ '@media (max-width: 600px)': { fontSize: '24px' } }}>
+              <Typography variant="h4" fontWeight={STYLE_GUIDE.TYPOGRAPHY.fontWeight.bold} sx={{ '@media (max-width: 600px)': { fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.xl } }}>
                 2
               </Typography>
             </Box>
             <Box
               sx={{
-                borderRadius: 2,
-                bgcolor: '#dc3545',
-                color: '#fff',
+                borderRadius: STYLE_GUIDE.SPACING.s4,
+                bgcolor: STYLE_GUIDE.COLORS.bootstrapDanger,
+                color: STYLE_GUIDE.COLORS.white,
                 display: 'flex',
                 flexDirection: 'column',
                 justifyContent: 'center',
                 alignItems: 'center',
-                fontSize: '20px',
-                fontWeight: 'bold',
-                boxShadow: 2,
-                p: 4,
+                fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.xl,
+                fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.bold,
+                boxShadow: STYLE_GUIDE.SHADOWS.base,
+                p: STYLE_GUIDE.SPACING.s8,
                 minWidth: '120px',
                 '@media (max-width: 600px)': {
-                  fontSize: '16px',
-                  p: 2,
+                  fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.large,
+                  p: STYLE_GUIDE.SPACING.s4,
                 },
               }}
             >
               Inactive Entities
-              <Typography variant="h4" fontWeight="bold" sx={{ '@media (max-width: 600px)': { fontSize: '24px' } }}>
+              <Typography variant="h4" fontWeight={STYLE_GUIDE.TYPOGRAPHY.fontWeight.bold} sx={{ '@media (max-width: 600px)': { fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.xl } }}>
                 2
               </Typography>
             </Box>
           </Box> */}
         </Box>
 
-        <Box mt={4} sx={{ overflowX: 'auto', flexGrow: 1 }}>
+        <Box mt={STYLE_GUIDE.SPACING.s8} sx={{ overflowX: 'auto', flexGrow: 1 }}>
           <EntityTable reloadEntity={reloadEntity} setReloadEntity={setReloadEntity} />
         </Box>
       </Box>

@@ -27,6 +27,7 @@ import { useNavigate } from "react-router-dom";
 import usePost from "../../hooks/usePost";
 import ProgressBar from "../../components/molecule/progressBar";
 import logo from "../../assets/logo.png";
+import { STYLE_GUIDE } from "../../styles";
 
 interface getLoginPayload {
   email: string;
@@ -116,9 +117,12 @@ function Login() {
         display="flex"
         flexDirection="column"
         alignItems="flex-end"
-        boxShadow={2}
-        padding={4}
-        borderRadius={5}
+        sx={{
+          boxShadow: STYLE_GUIDE.SHADOWS.cardSecondary,
+          padding: STYLE_GUIDE.SPACING.s8,
+          borderRadius: STYLE_GUIDE.SPACING.s2,
+          backgroundColor: STYLE_GUIDE.COLORS.white,
+        }}
       >
         <TextField
           fullWidth
@@ -128,7 +132,7 @@ function Login() {
           error={!!errors.email}
           helperText={errors.email?.message}
           {...register("email")}
-          sx={{ mb: 3 }}
+          sx={{ mb: STYLE_GUIDE.SPACING.s6 }}
         />
 
         <TextField
@@ -155,7 +159,7 @@ function Login() {
               ),
             },
           }}
-          sx={{ mb: 3 }}
+          sx={{ mb: STYLE_GUIDE.SPACING.s6 }}
         />
 
         {!getLogin.isPending && !getLogin.isSuccess ? (
@@ -165,7 +169,7 @@ function Login() {
             type="submit"
             color="primary"
             variant="contained"
-            sx={{ fontWeight: "bold" }}
+            sx={{ fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.bold}}
           >
             Sign in
           </LoadingButton>
@@ -181,18 +185,19 @@ function Login() {
       display="flex"
       alignItems="center"
       justifyContent="center"
-      height="85vh"
+      sx={{margin: STYLE_GUIDE.SPACING.s3}}
     >
       <Box maxWidth="600px">
         <Box
-          gap={1.5}
-          display="flex"
-          flexDirection="column"
-          alignItems="center"
-          sx={{ mb: 5 }}
+         sx={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          marginBottom: STYLE_GUIDE.SPACING.s10
+        }}
         >
-          <Box display="flex" alignItems="center" justifyContent="center">
-            <Typography variant="h3" textAlign="center">
+          <Box display="flex" alignItems="center" justifyContent="center"  gap={STYLE_GUIDE.SPACING.s1}>
+            <Typography textAlign="center" sx={{ fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.xxxxl, fontWeight: 400, mt:STYLE_GUIDE.SPACING.s1 }}>
               Welcome to
             </Typography>
             <Box component="img" src={logo} alt="Logo" width={250} />
@@ -204,21 +209,36 @@ function Login() {
         </Box>
         {renderForm}
         <Divider
-          sx={{ mt: 3, "&::before, &::after": { borderTopStyle: "dashed" } }}
+        sx={{
+          marginTop: STYLE_GUIDE.SPACING.s6,
+          marginBottom: STYLE_GUIDE.SPACING.s4,
+          '&::before, &::after': {
+            borderTopStyle: 'dashed',
+            borderColor: STYLE_GUIDE.COLORS.divider
+          }
+        }}
         >
           <Typography
             variant="overline"
-            sx={{ color: "text.secondary", fontWeight: "fontWeightMedium" }}
+            sx={{ color: STYLE_GUIDE.COLORS.textMediumGray,
+              fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.medium,}}
           >
             OR
           </Typography>
         </Divider>
-        <Typography variant="h6" sx={{ textAlign: "center" }}>
+        <Typography sx={{ textAlign: "center", 
+              fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.large,
+         }}>
           Login with
           <Link
             href="/otp-login"
-            variant="h5"
-            sx={{ ml: 0.5, cursor: "pointer", fontWeight: "bold" }}
+            sx={{
+              marginLeft: STYLE_GUIDE.SPACING.s1,
+              cursor: 'pointer',
+              fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.bold,
+              color: STYLE_GUIDE.COLORS.primary,
+              fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.large,
+            }}
           >
             OTP!
           </Link>

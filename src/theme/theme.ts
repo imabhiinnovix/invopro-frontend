@@ -1,21 +1,22 @@
 import { createTheme } from '@mui/material/styles';
+import { STYLE_GUIDE } from '../styles';
 
 // Define common values for reuse
 const commonValues = {
-  borderRadius: '8px',
-  boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.1), 0px 1px 2px rgba(0, 0, 0, 0.06)',
+  borderRadius: parseInt(STYLE_GUIDE.SPACING.s2),
+  boxShadow: STYLE_GUIDE.SHADOWS.sm,
   colors: {
     primary: {
-      main: '#a136a1',
-      light: '#b459b4',
-      dark: '#8c2d8c',
-      contrastText: '#ffffff',
+      main: STYLE_GUIDE.COLORS.primary,
+      light: STYLE_GUIDE.COLORS.primaryLight,
+      dark: STYLE_GUIDE.COLORS.primaryDark,
+      contrastText: STYLE_GUIDE.COLORS.white,
     },
-    background: {
-      default: '#f1f5f9',
-      paper: '#ffffff',
+      background: {
+      default: STYLE_GUIDE.COLORS.backgroundDefault,
+      paper: STYLE_GUIDE.COLORS.white,
     },
-    divider: '#e0e0e0',
+    divider: STYLE_GUIDE.COLORS.divider,
   }
 };
 
@@ -26,7 +27,7 @@ export const theme = createTheme({
     divider: commonValues.colors.divider,
   },
   shape: {
-    borderRadius: 8,
+    borderRadius: parseInt(STYLE_GUIDE.SPACING.s2),
   },
   components: {
     MuiPaper: {
@@ -66,13 +67,13 @@ export const theme = createTheme({
         root: {
           borderRadius: commonValues.borderRadius,
           '&:hover': {
-            backgroundColor: commonValues.colors.background.default,
+            backgroundColor: STYLE_GUIDE.COLORS.backgroundHover,
           },
           '&.Mui-selected': {
-            backgroundColor: commonValues.colors.background.default,
+            backgroundColor: STYLE_GUIDE.COLORS.backgroundHover,
             color: commonValues.colors.primary.main,
             '&:hover': {
-              backgroundColor: commonValues.colors.background.default,
+              backgroundColor: STYLE_GUIDE.COLORS.backgroundHover,
             },
           },
         },
