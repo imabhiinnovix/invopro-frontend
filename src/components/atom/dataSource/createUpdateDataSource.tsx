@@ -20,9 +20,7 @@ import CommonSelect from '../../common/dropdown/commonSelect';
 import CommonDropdownSearch from '../../common/dropdown/searchableDropdown';
 import useGet from '../../../hooks/useGet';
 import usePut from '../../../hooks/usePut';
-import { COLORS } from '../../../styles/color';
-import { TYPOGRAPHY } from '../../../styles/typography';
-import { SPACING } from '../../../styles/spacing';
+import { STYLE_GUIDE } from '../../../styles';
 
 interface CreateUpdateDataSourceProps {
   setReload: React.Dispatch<React.SetStateAction<boolean>>;
@@ -123,10 +121,10 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({ setRelo
 
       <Dialog fullWidth maxWidth="lg" open={open} onClose={handleCancel}>
         <DialogTitle sx={{
-            fontWeight: TYPOGRAPHY.fontWeight.bold,
-            fontSize: TYPOGRAPHY.fontSize.xl,
-            
-          }}>
+          fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.bold,
+          fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.xl,
+
+        }}>
           {title}
         </DialogTitle>
         <DialogContent dividers>
@@ -153,9 +151,9 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({ setRelo
                   errors.name?.message ||
                   (nameAvailability.isFetched && name.length > 0 ? (
                     nameAvailability.data?.available ? (
-                      <Typography sx={{ color: COLORS.bootstrapSuccess }}>Name is available</Typography>
+                      <Typography sx={{ color: STYLE_GUIDE.COLORS.bootstrapSuccess }}>Name is available</Typography>
                     ) : (
-                      <Typography sx={{ color: COLORS.bootstrapDanger }}>Name is not available</Typography>
+                      <Typography sx={{ color: STYLE_GUIDE.COLORS.bootstrapDanger }}>Name is not available</Typography>
                     )
                   ) : (
                     ''
@@ -227,9 +225,9 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({ setRelo
                   errors.code?.message ||
                   (codeAvailability.isFetched && code.length > 0 ? (
                     codeAvailability.data?.available ? (
-                      <Typography sx={{ color: COLORS.bootstrapSuccess }}>Code is available</Typography>
+                      <Typography sx={{ color: STYLE_GUIDE.COLORS.bootstrapSuccess }}>Code is available</Typography>
                     ) : (
-                      <Typography sx={{ color: COLORS.bootstrapDanger }}>Code is not available</Typography>
+                      <Typography sx={{ color: STYLE_GUIDE.COLORS.bootstrapDanger }}>Code is not available</Typography>
                     )
                   ) : (
                     ''
@@ -256,30 +254,30 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({ setRelo
           ) : (
             <>
               {' '}
-              <Button 
+              <Button
                 onClick={handleCancel}
                 color="error"
-                sx={{ 
-                  fontSize: TYPOGRAPHY.fontSize.large,
-                  fontWeight: TYPOGRAPHY.fontWeight.bold,
-                  p: SPACING.s2,
-                  pl: SPACING.s4,
-                  pr: SPACING.s4
+                sx={{
+                  fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.large,
+                  fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.bold,
+                  p: STYLE_GUIDE.SPACING.s2,
+                  pl: STYLE_GUIDE.SPACING.s4,
+                  pr: STYLE_GUIDE.SPACING.s4
                 }}
               >
                 Cancel
               </Button>
-              <Button 
-                type="submit" 
+              <Button
+                type="submit"
                 variant="contained"
                 color="primary"
                 onClick={handleSubmit(onSubmit)}
-                sx={{ 
-                  fontSize: TYPOGRAPHY.fontSize.large,
-                  fontWeight: TYPOGRAPHY.fontWeight.bold,
-                  p: SPACING.s2,
-                  pl: SPACING.s4,
-                  pr: SPACING.s4
+                sx={{
+                  fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.large,
+                  fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.bold,
+                  p: STYLE_GUIDE.SPACING.s2,
+                  pl: STYLE_GUIDE.SPACING.s4,
+                  pr: STYLE_GUIDE.SPACING.s4
                 }}
               >
                 Save Data Source

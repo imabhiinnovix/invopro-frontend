@@ -19,8 +19,7 @@ import useGet from '../../../hooks/useGet';
 import { GET } from '../../../services/apiRoutes';
 import { DataSourceType } from './types';
 import CreateUpdateDataSource from './createUpdateDataSource';
-import { COLORS } from '../../../styles/color';
-import { TYPOGRAPHY } from '../../../styles/typography';
+import { STYLE_GUIDE } from '../../../styles';
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
   [`&.${tableCellClasses.head}`]: {
@@ -28,7 +27,7 @@ const StyledTableCell = styled(TableCell)(({ theme }) => ({
     color: theme.palette.common.white,
   },
   [`&.${tableCellClasses.body}`]: {
-    fontSize: TYPOGRAPHY.fontSize.base,
+    fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base,
   },
 }));
 
@@ -116,9 +115,9 @@ const DataSourceTable: React.FC<AttributeOptionTableProps> = ({ reload, setReloa
         <Typography 
           variant="h4" 
           sx={{
-            fontWeight: TYPOGRAPHY.fontWeight.bold,
-            color: COLORS.textDarkGray,
-            fontSize: TYPOGRAPHY.fontSize.xxl,
+            fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.bold,
+            color: STYLE_GUIDE.COLORS.textDarkGray,
+            fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.xxl,
           }}
           gutterBottom
         >
@@ -175,8 +174,8 @@ const DataSourceTable: React.FC<AttributeOptionTableProps> = ({ reload, setReloa
                   {data.isActive ? (
                     <Typography 
                       sx={{
-                        color: COLORS.bootstrapSuccess,
-                        fontSize: TYPOGRAPHY.fontSize.small,
+                        color: STYLE_GUIDE.COLORS.bootstrapSuccess,
+                        fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
                       }}
                       component="span"
                     >
@@ -185,8 +184,8 @@ const DataSourceTable: React.FC<AttributeOptionTableProps> = ({ reload, setReloa
                   ) : (
                     <Typography 
                       sx={{
-                        color: COLORS.bootstrapDanger,
-                        fontSize: TYPOGRAPHY.fontSize.small,
+                        color: STYLE_GUIDE.COLORS.bootstrapDanger,
+                        fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
                       }}
                       component="span"
                     >

@@ -23,9 +23,7 @@ import useGet from '../../../hooks/useGet';
 import { GET } from '../../../services/apiRoutes';
 import { AttributeOptionRequestPayload } from './types';
 import CreateUpdateAttributeOption from './createUpdateAttributeOption';
-import { COLORS } from '../../../styles/color';
-import { TYPOGRAPHY } from '../../../styles/typography';
-import { SPACING } from '../../../styles/spacing';
+import { STYLE_GUIDE } from '../../../styles';
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
   [`&.${tableCellClasses.head}`]: {
@@ -33,7 +31,7 @@ const StyledTableCell = styled(TableCell)(({ theme }) => ({
     color: theme.palette.common.white,
   },
   [`&.${tableCellClasses.body}`]: {
-     fontSize: TYPOGRAPHY.fontSize.base,
+     fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base,
   },
 }));
 
@@ -119,7 +117,7 @@ const AttributeOptionTable: React.FC<AttributeOptionTableProps> = ({
   );
 
   const renderAttributes = (attributes: string[] = []): JSX.Element => (
-    <Box sx={{ margin: SPACING.s2 }}>
+    <Box sx={{ margin: STYLE_GUIDE.SPACING.s2 }}>
       <Table size="small" aria-label="attributes">
         <TableHead>
           <TableRow>
@@ -149,10 +147,10 @@ const AttributeOptionTable: React.FC<AttributeOptionTableProps> = ({
         <Typography 
           variant="h4" 
           sx={{
-            fontWeight: TYPOGRAPHY.fontWeight.bold,
-            color: COLORS.textDarkGray,
-            fontFamily: TYPOGRAPHY.fontFamily.primary,
-            fontSize: TYPOGRAPHY.fontSize.xxl,
+            fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.bold,
+            color: STYLE_GUIDE.COLORS.textDarkGray,
+            fontFamily: STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary,
+            fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.xxl,
           }}
           gutterBottom
         >
@@ -211,8 +209,8 @@ const AttributeOptionTable: React.FC<AttributeOptionTableProps> = ({
                   {data.isActive ? (
                     <Typography 
                       sx={{
-                        color: COLORS.bootstrapSuccess,
-                        fontSize: TYPOGRAPHY.fontSize.small,
+                        color: STYLE_GUIDE.COLORS.bootstrapSuccess,
+                        fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
                       }}
                       component="span"
                     >
@@ -221,8 +219,8 @@ const AttributeOptionTable: React.FC<AttributeOptionTableProps> = ({
                   ) : (
                     <Typography 
                       sx={{
-                        color: COLORS.bootstrapDanger,
-                        fontSize: TYPOGRAPHY.fontSize.small,
+                        color: STYLE_GUIDE.COLORS.bootstrapDanger,
+                        fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
                       }}
                       component="span"
                     >

@@ -12,9 +12,7 @@ import MenuItem, { menuItemClasses } from '@mui/material/MenuItem';
 import { AuthContext } from '../../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { clearLocalStorage } from '../../../utils/handleLocalStorage';
-import { COLORS } from '../../../styles/color';
-import { TYPOGRAPHY } from '../../../styles/typography';
-import { SPACING } from '../../../styles/spacing';
+import { STYLE_GUIDE } from '../../../styles';
 
 interface MenuItem {
   label: string;
@@ -57,7 +55,7 @@ export function AccountPopover() {
       <IconButton
         onClick={handleOpenPopover}
         sx={{
-          p: parseFloat(SPACING.s1) / 2,
+          p: parseFloat(STYLE_GUIDE.SPACING.s1) / 2,
           width: 40,
           height: 40,
         }}
@@ -79,12 +77,12 @@ export function AccountPopover() {
           },
         }}
       >
-        <Box sx={{ p: SPACING.s4, pb: SPACING.s2 }}>
+        <Box sx={{ p: STYLE_GUIDE.SPACING.s4, pb: STYLE_GUIDE.SPACING.s2 }}>
           <Typography variant="subtitle2" noWrap>
             {`${userDetails?.data?.firstName} ${userDetails?.data?.lastName}`}
           </Typography>
 
-          <Typography variant="body2" sx={{ color: COLORS.textMediumGray }} noWrap>
+          <Typography variant="body2" sx={{ color: STYLE_GUIDE.COLORS.textMediumGray }} noWrap>
             {userDetails?.data?.email}
           </Typography>
         </Box>
@@ -94,20 +92,20 @@ export function AccountPopover() {
         <MenuList
           disablePadding
           sx={{
-            p: SPACING.s2,
-            gap: SPACING.s1,
+            p: STYLE_GUIDE.SPACING.s2,
+            gap: STYLE_GUIDE.SPACING.s1,
             display: 'flex',
             flexDirection: 'column',
             [`& .${menuItemClasses.root}`]: {
-              px: SPACING.s2,
-              gap: SPACING.s4,
+              px: STYLE_GUIDE.SPACING.s2,
+              gap: STYLE_GUIDE.SPACING.s4,
               borderRadius: 0.75,
-              color: COLORS.textMediumGray,
-              '&:hover': { color: COLORS.textDarkGray },
+              color: STYLE_GUIDE.COLORS.textMediumGray,
+              '&:hover': { color: STYLE_GUIDE.COLORS.textDarkGray },
               [`&.${menuItemClasses.selected}`]: {
-                color: COLORS.textDarkGray,
-                bgcolor: COLORS.backgroundHover,
-                fontWeight: TYPOGRAPHY.fontWeight.semiBold,
+                color: STYLE_GUIDE.COLORS.textDarkGray,
+                bgcolor: STYLE_GUIDE.COLORS.backgroundHover,
+                fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold,
               },
             },
           }}
@@ -124,7 +122,7 @@ export function AccountPopover() {
           ))}
         </MenuList>
 
-        <Box sx={{ p: SPACING.s2 }}>
+        <Box sx={{ p: STYLE_GUIDE.SPACING.s2 }}>
           <Button fullWidth color="error" size="medium" variant="text" onClick={logout}>
             Logout
           </Button>

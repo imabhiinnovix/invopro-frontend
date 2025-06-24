@@ -21,8 +21,7 @@ import { GET } from '../../../services/apiRoutes';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import ErrorDialog from './showError';
-import { COLORS } from '../../../styles/color';
-import { TYPOGRAPHY } from '../../../styles/typography';
+import { STYLE_GUIDE } from '../../../styles';
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
   [`&.${tableCellClasses.head}`]: {
@@ -30,7 +29,7 @@ const StyledTableCell = styled(TableCell)(({ theme }) => ({
     color: theme.palette.common.white,
   },
   [`&.${tableCellClasses.body}`]: {
-   fontSize: TYPOGRAPHY.fontSize.base,
+   fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base,
   },
 }));
 
@@ -174,9 +173,9 @@ const DataSourceVersionTable: React.FC<AttributeOptionTableProps> = ({ reload, s
         <Typography 
           variant="h4" 
           sx={{
-            fontWeight: TYPOGRAPHY.fontWeight.bold,
-            color: COLORS.textDarkGray,
-            fontSize: TYPOGRAPHY.fontSize.xxl,
+            fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.bold,
+            color: STYLE_GUIDE.COLORS.textDarkGray,
+            fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.xxl,
           }}
         >
           No data source version have been created yet. Please create a data source version to display it here.
