@@ -34,7 +34,6 @@ export const POST = {
   DELETE_THEME: '/widgetTheme/delete/',
   DUPLICATE_THEME: '/widgetTheme/duplicate/',
   UPDATE_THEME: '/widgetTheme/update/',
-  AI_INSIGHT: '/api/ai-insight',
 };
 export const PUT = {
   UPDATE_DATA_SOURCE: '/dataSource/update',

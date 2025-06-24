@@ -344,14 +344,14 @@ export default function SideNav() {
         route: '/create-theme',
       },
       {
-        name: 'VixAiChart',
+        name: 'VixAI Chart',
         icon: <Language sx={{ fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base }} />,
-        route: '/natural-language',
+        route: '/VixAi-Chart',
       },
       {
-        name: 'VixAiInsight',
-        icon: <AutoAwesomeIcon sx={{ fontSize: '1.1rem' }} />,
-        route: '/ai-insight',
+        name: 'VixAI Insights',
+        icon: <AutoAwesomeIcon sx={{ fontSize: '1.1rem' }}/>,
+        route: '/VixAi-Insights',
       },
     ],
     [dataSourceList, dataSourceListAPI?.hasNextPage, dashboards, loading]

@@ -50,6 +50,13 @@ const AIInsightPage: React.FC = () => {
     resolver: yupResolver(validationSchema),
   });
 
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSubmit(onSubmit)();
+    }
+  };
+
   const insightMutation = useMutation({
     mutationFn: async (userQuery: string) => {
       const { data } = await axiosInstance.get(`${GET.NL_Query_INSIGHTS}`, {
@@ -102,6 +109,7 @@ const AIInsightPage: React.FC = () => {
       bgcolor: '#f7f9fb',
       display: 'flex',
       flexDirection: 'column',
+      boxShadow: "1px 0px 10px rgba(0,0,0,0.05)",
     }}>
       <Box px={2} py={3} borderBottom={1} borderColor="divider" bgcolor="white">
         <Typography variant="h5" fontWeight={700} gutterBottom>
@@ -171,7 +179,7 @@ const AIInsightPage: React.FC = () => {
                       alignItems: 'center',
                     }}
                   >
-                    <CircularProgress size={20} sx={{ mr: 1 }} /> Generating insight...
+                    <CircularProgress size={20} sx={{ mr: 1 }} /> Generating insights...
                   </Box>
                 </Box>
               </Box>
@@ -228,7 +236,7 @@ const AIInsightPage: React.FC = () => {
         ))}
         <div ref={messagesEndRef} />
       </Box>
-        {/* {insightMutation.isError && (
+      {/* {insightMutation.isError && (
           <Alert severity="error" sx={{ mb: 2, width: '100%' }}>
             {insightMutation.error?.response?.data?.message || 'An error occurred'}
           </Alert>
@@ -241,7 +249,6 @@ const AIInsightPage: React.FC = () => {
         alignItems: 'center',
         justifyContent: 'center',
       }}>
-    
         <Box component="form" onSubmit={handleSubmit(onSubmit)} sx={{ display: 'flex', gap: 1, width: '100%', maxWidth: 900 }}>
           <TextField
             multiline
@@ -253,6 +260,7 @@ const AIInsightPage: React.FC = () => {
             error={!!errors.query}
             helperText={errors.query?.message}
             disabled={insightMutation.isPending}
+            onKeyDown={handleKeyPress}
             InputProps={{
               endAdornment: (
                 <InputAdornment position="end">
