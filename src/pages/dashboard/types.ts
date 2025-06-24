@@ -43,7 +43,7 @@ export interface FieldConfig {
   display: boolean;
   required: boolean;
   multiple: boolean;
-  type: "text" | "select" | "multiselect" | "number" | "checkbox" | "date";
+  type: 'text' | 'select' | 'multiselect' | 'number' | 'checkbox' | 'date';
   label: string;
   defaultValue: any;
 }
@@ -277,6 +277,7 @@ export interface WidgetResponse {
     data: {
       label: string;
       widgetData: ChartData[];
+      totalCount: number;
     };
     chartType?: string;
   };
@@ -294,6 +295,7 @@ export interface WidgetDataResponse {
   message: string;
   data: {
     label: string;
+    totalCount: string;
     widgetData: { name: string; Estimates: number; data: number }[];
   };
 }

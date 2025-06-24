@@ -17,6 +17,7 @@ import { getAuthToken } from './utils/handleLocalStorage';
 import NaturalLanguage from './pages/naturalLanguage/NaturalLanguage';
 import Entity from './pages/entity';
 import DataSource from './pages/dataSource';
+import AIInsightPage from './pages/aiInsight';
 
 const AppRoutes = () => {
   const token = getAuthToken();
@@ -40,9 +41,10 @@ const AppRoutes = () => {
           <Route path="/dashboard/:id" element={<Dashboard />} />
           <Route path="/reports" element={<Report />} />
           <Route path="/data-source/:id" element={<DataSources />} />
-          <Route path="/natural-language" element={<NaturalLanguage />} />
           <Route path="/entity" element={<Entity />} />
-          <Route path="/data-src"   element={<DataSource/>} />
+          <Route path="/data-src" element={<DataSource />} />
+          <Route path="/VixAi-Insights" element={<AIInsightPage />} />
+          <Route path="/VixAi-Chart" element={<NaturalLanguage />} />
         </Route>
       </Route>
 

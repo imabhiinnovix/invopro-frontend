@@ -61,6 +61,7 @@ export const COLORS = {
     blue600: "#1a90ff",
     blue700: "#308fe8",
     coolBlue: "#cbd5e1",
+    white200: "#f7f9fb",
   
     purple: "rgb(142, 25, 210)",
   

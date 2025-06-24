@@ -343,10 +343,15 @@ export default function SideNav() {
         route: '/create-theme',
       },
       {
-        name: 'Natural Language',
+        name: 'VixAI Chart',
         icon: <Language sx={{ fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base }} />,
-        route: '/natural-language',
+        route: '/VixAi-Chart',
       },
+      // {
+      //   name: 'VixAI Insights',
+      //   icon: <AutoAwesomeIcon sx={{ fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base }}/>,
+      //   route: '/VixAi-Insights',
+      // },
     ],
     [dataSourceList, dataSourceListAPI?.hasNextPage, dashboards, loading]
   );

@@ -1094,11 +1094,19 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
       const groupByField = groupBy[0];
       const uniqueGroups = Array.from(new Set(chartData.map((item: ChartDataItem) => item[groupByField] as string)));
       const uniqueNames = Array.from(new Set(chartData.map((item: ChartDataItem) => item.name)));
-
+      let uniqueNameDataMap: any = {};
       // Create a dataset for each unique group
       const datasets = uniqueGroups.map((group, index) => {
+        let totalDataBasedOnGroup = 0;
         const groupData = uniqueNames.map((name) => {
           const dataPoint = chartData.find((item) => item.name === name && item[groupByField] === group);
+          const data = dataPoint ? dataPoint.data : 0;
+          totalDataBasedOnGroup = totalDataBasedOnGroup + data;
+          if (uniqueNameDataMap[name]) {
+            uniqueNameDataMap[name] = uniqueNameDataMap[name] + data;
+          } else {
+            uniqueNameDataMap[name] = data;
+          }
           return dataPoint ? dataPoint.data : 0;
         });
 
@@ -1123,7 +1131,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
 
     // Handle non-grouped polar area chart
     if (chartType === 'polarArea') {
-      const polarLabels = Array.from(new Set(chartData.map((item: ChartDataItem) => item.name)));
+      const polarLabels = Array.from(new Set(chartData.map((item: ChartDataItem) => `${item.name}-${item.data}`)));
       const values = chartData.map((item: ChartDataItem) => item.data);
 
       return {
@@ -1148,11 +1156,19 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
       const groupByField = groupBy[0];
       const uniqueGroups = Array.from(new Set(chartData.map((item) => item[groupByField] as string)));
       const uniqueNames = Array.from(new Set(chartData.map((item) => item.name)));
-
+      let uniqueNameDataMap: any = {};
       // Create a dataset for each unique group
       const datasets = uniqueGroups.map((group, index) => {
+        let totalDataBasedOnGroup = 0;
         const groupData = uniqueNames.map((name) => {
           const dataPoint = chartData.find((item) => item.name === name && item[groupByField] === group);
+          const data = dataPoint ? dataPoint.data : 0;
+          totalDataBasedOnGroup = totalDataBasedOnGroup + data;
+          if (uniqueNameDataMap[name]) {
+            uniqueNameDataMap[name] = uniqueNameDataMap[name] + data;
+          } else {
+            uniqueNameDataMap[name] = data;
+          }
           return dataPoint ? dataPoint.data : 0;
         });
 
@@ -1177,7 +1193,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
 
     // Handle non-grouped horizontal bar chart
     if (chartType === 'horizontalBar') {
-      const labels = chartData.map((item: ChartDataItem) => item.name);
+      const labels = chartData.map((item: ChartDataItem) => `${item.name}-${item.data}`);
       const values = chartData.map((item: ChartDataItem) => item.data);
 
       return {
@@ -1205,10 +1221,18 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
       if (groupBy.length > 0) {
         const groupByField = groupBy[0];
         const uniqueGroups = Array.from(new Set(chartData.map((item) => item[groupByField] as string)));
-
+        let uniqueNameDataMap: any = {};
         const datasets = uniqueGroups.map((group, index) => {
+          let totalDataBasedOnGroup = 0;
           const groupData = barLabels.map((name) => {
             const dataPoint = chartData.find((item) => item.name === name && item[groupByField] === group);
+            const data = dataPoint ? dataPoint.data : 0;
+            totalDataBasedOnGroup = totalDataBasedOnGroup + data;
+            if (uniqueNameDataMap[name]) {
+              uniqueNameDataMap[name] = uniqueNameDataMap[name] + data;
+            } else {
+              uniqueNameDataMap[name] = data;
+            }
             return dataPoint ? dataPoint.data : 0;
           });
 
@@ -1230,8 +1254,11 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
 
       // Handle non-grouped data
       const values = Array.from(new Set(chartData.map((item: ChartDataItem) => item.data)));
+      const barLabelsName = Array.from(
+        new Set(chartData.map((item: ChartDataItem) => `${item.name}(Total:${item.data})`))
+      );
       return {
-        labels: barLabels,
+        labels: barLabelsName,
         datasets: [
           {
             label: barLabels,
@@ -1250,7 +1277,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
 
     // Handle pie chart or doughnut chart
     if (chartType === 'pie' || chartType === 'doughnut') {
-      const pieLabels = Array.from(new Set(chartData.map((item: ChartDataItem) => item.name)));
+      const pieLabels = Array.from(new Set(chartData.map((item: ChartDataItem) => `${item.name}(Total:${item.data})`)));
       const values = chartData.map((item: ChartDataItem) => item.data);
 
       // Handle grouped data
@@ -1258,11 +1285,19 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
         const groupByField = groupBy[0]; // Take the first groupBy field
         const uniqueGroups = Array.from(new Set(chartData.map((item) => item[groupByField] as string)));
         const uniqueNames = Array.from(new Set(chartData.map((item) => item.name)));
-
+        let uniqueNameDataMap: any = {};
         // Create datasets for each group
         const datasets = uniqueGroups.map((group, index) => {
+          let totalDataBasedOnGroup = 0;
           const groupData = uniqueNames.map((name) => {
             const dataPoint = chartData.find((item) => item.name === name && item[groupByField] === group);
+            const data = dataPoint ? dataPoint.data : 0;
+            totalDataBasedOnGroup = totalDataBasedOnGroup + data;
+            if (uniqueNameDataMap[name]) {
+              uniqueNameDataMap[name] = uniqueNameDataMap[name] + data;
+            } else {
+              uniqueNameDataMap[name] = data;
+            }
             return dataPoint ? dataPoint.data : 0;
           });
 
@@ -1303,17 +1338,28 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
 
     // Handle radar chart
     if (chartType === 'radar') {
-      const radarLabels = Array.from(new Set(chartData.map((item: ChartDataItem) => item.name)));
+      const radarLabels = Array.from(
+        new Set(chartData.map((item: ChartDataItem) => `${item.name}(Total:${item.data})`))
+      );
 
       if (groupBy.length > 0) {
         const groupByField = groupBy[0]; // Take the first groupBy field
         const uniqueGroups = Array.from(new Set(chartData.map((item) => item[groupByField] as string)));
         const uniqueNames = Array.from(new Set(chartData.map((item) => item.name)));
-
+        let uniqueNameDataMap: any = {};
         // Create a dataset for each unique group
         const datasets = uniqueGroups.map((group, index) => {
+          let totalDataBasedOnGroup = 0;
           const groupData = uniqueNames.map((name) => {
             const dataPoint = chartData.find((item) => item.name === name && item[groupByField] === group);
+
+            const data = dataPoint ? dataPoint.data : 0;
+            totalDataBasedOnGroup = totalDataBasedOnGroup + data;
+            if (uniqueNameDataMap[name]) {
+              uniqueNameDataMap[name] = uniqueNameDataMap[name] + data;
+            } else {
+              uniqueNameDataMap[name] = data;
+            }
             return dataPoint ? dataPoint.data : 0;
           });
 
@@ -1334,7 +1380,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
         });
 
         return {
-          labels: uniqueNames,
+          labels: uniqueNames.map((name) => `${name}(Total:${uniqueNameDataMap[name]})`),
           datasets,
         };
       }
@@ -1368,13 +1414,23 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
         const groupByField = groupBy[0];
         const uniqueGroups = Array.from(new Set(chartData.map((item) => item[groupByField])));
         const uniqueNames = Array.from(new Set(chartData.map((item) => item.name)));
+        let uniqueNameDataMap: any = {};
         const datasets = uniqueGroups.map((group, index) => {
+          let totalDataBasedOnGroup = 0;
           const groupData = uniqueNames.map((name) => {
             const dataPoint = chartData.find((item) => item.name === name && item[groupByField] === group);
-            return dataPoint ? dataPoint.data : 0;
+            const data = dataPoint ? dataPoint.data : 0;
+            totalDataBasedOnGroup = totalDataBasedOnGroup + data;
+            if (uniqueNameDataMap[name]) {
+              uniqueNameDataMap[name] = uniqueNameDataMap[name] + data;
+            } else {
+              uniqueNameDataMap[name] = data;
+            }
+
+            return data;
           });
           return {
-            label: group || chart.name,
+            label: `${group || chart.name}(Total:${totalDataBasedOnGroup})`,
             data: groupData,
             color: widgetTheme?.colors[index % widgetTheme?.colors.length],
             borderColor: widgetTheme?.borderColor[index % widgetTheme?.borderColor.length],
@@ -1387,12 +1443,14 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
           };
         });
         return {
-          labels: uniqueNames,
+          labels: uniqueNames.map((name) => `${name}(Total:${uniqueNameDataMap[name]})`),
           datasets,
         };
       } else {
         // Non-grouped line/area chart
-        const lineLabels = Array.from(new Set(chartData.map((item: ChartDataItem) => item.name)));
+        const lineLabels = Array.from(
+          new Set(chartData.map((item: ChartDataItem) => `${item.name}(Total:${item.data})`))
+        );
         const values = chartData.map((item: ChartDataItem) => item.data);
         return {
           labels: lineLabels,
@@ -2032,6 +2090,9 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
                   >
                     {renderChart(chart)}
                   </ChartContainer>
+                  <Box sx={{ mt: 'auto', textAlign: 'right', fontWeight: 'bold', color: 'primary.main' }}>
+                    Total:{widgetData[chart._id]?.data?.totalCount}
+                  </Box>
                 </CardContent>
               </StyledCard>
             </Grid>
