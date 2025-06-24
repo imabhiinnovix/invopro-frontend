@@ -34,6 +34,7 @@ export const POST = {
   DELETE_THEME: '/widgetTheme/delete/',
   DUPLICATE_THEME: '/widgetTheme/duplicate/',
   UPDATE_THEME: '/widgetTheme/update/',
+  AI_INSIGHT: '/api/ai-insight',
 };
 export const PUT = {
   UPDATE_DATA_SOURCE: '/dataSource/update',
@@ -66,5 +67,5 @@ export const GET = {
   DASHBOARD_WIDGET_DATA: '/dashboard/widget/getWidgetData',
   OPERATOR_LIST: '/operator/list',
   WIDGET_THEME: '/widgetTheme',
-  NL_Query: '/nlQuery',
+  NL_Query: '/nlQuery/insights',
 };
