@@ -1149,7 +1149,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
 
   const handleExportMenuClick = (event: React.MouseEvent<HTMLElement>, chart: ChartResponse) => {
     event.stopPropagation();
-    if(chart.widgetTypeId?.chartType  === 'tabular'){
+    if (chart.widgetTypeId?.chartType === 'tabular') {
       handleDownload(chart)
       return;
     }
@@ -1955,6 +1955,15 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
 
   const renderChart = (chart: ChartResponse) => {
     const chartData = getChartData(chart);
+
+    const dimensionField = Array.isArray(chart.dimensions) && chart.dimensions.length > 0
+      ? chart.dimensions[0]
+      : typeof chart.dimensions === 'string'
+        ? chart.dimensions
+        : 'name';
+
+    const aggregationField = chart.aggregation?.attributeName || 'data';
+
     const chartType = chart.widgetTypeId?.chartType || 'line';
     const options = getChartOptions(chartType, chart);
     const chartId = `chart-${chart._id}`;
@@ -2057,7 +2066,15 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
         );
       case 'tabular':
         const chartDataArray = widgetData[chart._id]?.data?.widgetData || chart.data || [];
-        const columns = chartDataArray.length > 0 ? Object.keys(chartDataArray[0]) : [];
+
+        const columns = chartDataArray.length > 0
+          ? Object.keys(chartDataArray[0]).map((col) => {
+            if (col === 'name') return dimensionField;
+            if (col === 'data') return aggregationField;
+            return col;
+          })
+          : [];
+
         return (
           <TableContainer component={Paper} sx={{ maxHeight: 400, overflow: 'auto' }}>
             <Table stickyHeader>
@@ -2081,29 +2098,33 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
                 </TableRow>
               </TableHead>
               <TableBody>
-                {chartDataArray.map((row, rowIndex) => (
+                {chartDataArray?.map((row, rowIndex) => (
                   <TableRow
                     key={rowIndex}
                     sx={{
-                      '&:nth-of-type(odd)': {
-                        // backgroundColor: alpha(theme.palette.action.hover, 0.05)
-                      },
                       '&:hover': {
                         backgroundColor: theme.palette.action.hover
                       }
                     }}
                   >
-                    {columns.map((column) => (
-                      <TableCell
-                        key={`${rowIndex}-${column}`}
-                        sx={{
-                          padding: '12px 16px',
-                          borderBottom: `1px solid ${theme.palette.divider}`
-                        }}
-                      >
-                        {typeof row[column] === 'number' ? row[column].toLocaleString() : row[column]}
-                      </TableCell>
-                    ))}
+                    {columns.map((column) => {
+                      let value;
+                      if (column === dimensionField && 'name' in row) value = row['name'];
+                      else if (column === aggregationField && 'data' in row) value = row['data'];
+                      else value = row[column];
+
+                      return (
+                        <TableCell
+                          key={`${rowIndex}-${column}`}
+                          sx={{
+                            padding: '12px 16px',
+                            borderBottom: `1px solid ${theme.palette.divider}`
+                          }}
+                        >
+                          {typeof value === 'number' ? value.toLocaleString() : value}
+                        </TableCell>
+                      );
+                    })}
                   </TableRow>
                 ))}
               </TableBody>
@@ -2225,7 +2246,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
 
   const handleDownload = (chart: ChartResponse) => {
     const chartType = chart.widgetTypeId?.chartType || 'line';
-    
+
     if (chartType === 'tabular') {
       const chartDataArray = widgetData[chart._id]?.data?.widgetData || chart.data || [];
       if (chartDataArray.length === 0) {
@@ -2237,7 +2258,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
       const columns = Object.keys(chartDataArray[0]);
       const csvContent = [
         columns.join(','),
-        ...chartDataArray.map(row => 
+        ...chartDataArray.map(row =>
           columns.map(column => {
             const value = row[column];
             return typeof value === 'number' ? value : `"${value}"`
