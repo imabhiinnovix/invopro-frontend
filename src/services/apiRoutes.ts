@@ -67,5 +67,6 @@ export const GET = {
   OPERATOR_LIST: '/operator/list',
   WIDGET_THEME: '/widgetTheme',
   NL_Query: '/nlQuery',
-  NL_Query_INSIGHTS: '/nlQuery/insights'
+  NL_Query_INSIGHTS: '/nlQuery/insights',
+  Report_Settings: '/customReports/listSettings?paginate=true',
 };
