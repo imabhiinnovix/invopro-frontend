@@ -56,15 +56,31 @@ const FilterColumnsEditor: React.FC<Props> = ({
 }) => (
     <>
         {filters.map((filter, filterIndex) => (
-            <Accordion key={filter._id} defaultExpanded={filterIndex === 0} sx={{ mb: 2, borderRadius: 2, boxShadow: 1 }}>
+            <Accordion
+                key={filter._id}
+                defaultExpanded={filterIndex === 0}
+                sx={{
+                    mb: STYLE_GUIDE.SPACING.s2,
+                    borderRadius: STYLE_GUIDE.SPACING.s2,
+                    boxShadow: STYLE_GUIDE.SPACING.s1
+                }}
+            >
                 <AccordionSummary expandIcon={<ExpandMoreIcon />}>
                     <Typography variant="subtitle1" sx={{ fontWeight: 500 }}>
                         {filter.section} - {filter.attribute}
                     </Typography>
                 </AccordionSummary>
-                <AccordionDetails sx={{ bgcolor: STYLE_GUIDE.COLORS.backgroundLightGray, borderRadius: 2 }}>
-                    <Box sx={{ mb: 2 }}>
-                        <Box display="flex" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }}>
+                <AccordionDetails sx={{
+                    bgcolor: STYLE_GUIDE.COLORS.backgroundLightGray,
+                    borderRadius: STYLE_GUIDE.SPACING.s4
+                }}>
+                    <Box sx={{ mb: STYLE_GUIDE.SPACING.s2 }}>
+                        <Box
+                            display="flex"
+                            justifyContent="space-between"
+                            alignItems="center"
+                            sx={{ mb: STYLE_GUIDE.SPACING.s2 }}
+                        >
                             <Typography variant="subtitle2" sx={{ fontWeight: 500 }}>
                                 Filter Columns ({filter.columns.length})
                             </Typography>
@@ -78,15 +94,24 @@ const FilterColumnsEditor: React.FC<Props> = ({
                             </Button>
                         </Box>
                         {filter.columns.length === 0 ? (
-                            <Box sx={{ p: 2, textAlign: "center", color: STYLE_GUIDE.COLORS.textMediumGray }}>
+                            <Box sx={{ p: STYLE_GUIDE.SPACING.s2, textAlign: "center", color: STYLE_GUIDE.COLORS.textMediumGray }}>
                                 <Typography variant="body2" sx={{ fontStyle: "italic" }}>
                                     No columns added yet.
                                 </Typography>
                             </Box>
                         ) : (
                             filter.columns.map((column) => (
-                                <Box key={column._id} sx={{ mb: 2, p: 2, border: `1px solid ${STYLE_GUIDE.COLORS.divider}`, borderRadius: 1, bgcolor: STYLE_GUIDE.COLORS.white }}>
-                                    <Box display="flex" alignItems="center" gap={2} sx={{ mb: 1 }}>
+                                <Box
+                                    key={column._id}
+                                    sx={{
+                                        mb: STYLE_GUIDE.SPACING.s2,
+                                        p: STYLE_GUIDE.SPACING.s2,
+                                        border: `1px solid ${STYLE_GUIDE.COLORS.divider}`,
+                                        borderRadius: 1,
+                                        bgcolor: STYLE_GUIDE.COLORS.white
+                                    }}
+                                >
+                                    <Box display="flex" alignItems="center" gap={2} sx={{ mb: STYLE_GUIDE.SPACING.s1 }}>
                                         <Typography sx={{ minWidth: 120, fontWeight: 'bold' }}>
                                             Report Header:
                                         </Typography>
@@ -151,12 +176,16 @@ const FilterColumnsEditor: React.FC<Props> = ({
                                         </Box>
                                     </Box>
                                     <Box>
-                                        <Typography variant="body2" color={STYLE_GUIDE.COLORS.textMediumGray} sx={{ mb: 1 }}>
+                                        <Typography
+                                            variant="body2"
+                                            color={STYLE_GUIDE.COLORS.textMediumGray}
+                                            sx={{ mb: STYLE_GUIDE.SPACING.s1 }}
+                                        >
                                             Attribute Values:
                                         </Typography>
                                         {editingColumns[column._id] ? (
                                             <>
-                                                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, mb: 2 }}>
+                                                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, mb: STYLE_GUIDE.SPACING.s2 }}>
                                                     {column.attributeValues.length > 0 ? (
                                                         column.attributeValues.map((value, valueIndex) => (
                                                             <Box key={valueIndex} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>

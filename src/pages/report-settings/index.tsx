@@ -27,6 +27,8 @@ import SheetNameEditor from "./components/SheetNameEditor";
 import AddColumnModal from "./components/AddColumnModal";
 import ConfirmDialog from "./components/ConfirmDialog";
 import type { Report, FilterColumn, ReportSetting } from "./types";
+import { POST } from "../../services/apiRoutes";
+import usePost from "../../hooks/usePost";
 
 
 const ReportSettings: React.FC = () => {
@@ -153,7 +155,6 @@ const ReportSettings: React.FC = () => {
     };
 
     const handleCancelEditColumn = (columnId: string) => {
-        // Restore original column data if present
         const original = originalColumnData[columnId];
         if (original) {
             setLocalSettings(prev =>
@@ -272,10 +273,9 @@ const ReportSettings: React.FC = () => {
                 )
             );
 
-            console.log("Added new column:", { reportHeader, attributeValues, filterId: addColumnModal.filterId });
 
-        } catch (error) {
-            console.error(error);
+        } catch (e) {
+            console.error(e);
         }
     };
 
@@ -330,6 +330,8 @@ const ReportSettings: React.FC = () => {
 
     };
 
+    const post = usePost(["update-report-settings"]);
+
     const handleSaveAllChanges = async () => {
         try {
             if (!selectedReport) return;
@@ -338,7 +340,7 @@ const ReportSettings: React.FC = () => {
                 reportName: selectedReport.reportName,
                 reportSettings: selectedReport.reportSettings.map(sheet => ({
                     sheetName: sheet.sheetName,
-                    sheetCode: sheet.sheetCode
+                    sheetCode: sheet.sheetCode,
                 })),
                 filters: selectedReport.filters.map(filter => ({
                     sheetCode: filter.sheetCode,
@@ -352,7 +354,21 @@ const ReportSettings: React.FC = () => {
                 }))
             };
 
-            console.log(JSON.stringify(output, null, 2));
+            post.mutate(
+                {
+                    url: `${POST.UPDATE_REPORT_SETTINGS}/${selectedReport._id}`,
+                    payload: output,
+                },
+                {
+                    onSuccess: () => {
+                        dispatch(fetchCustomReportSettings());
+                    },
+                    onError: (e: any) => {
+                        dispatch(fetchCustomReportSettings());
+                        console.error(e);
+                    }
+                }
+            );
 
         } catch (e) {
             console.error(e);
@@ -371,6 +387,11 @@ const ReportSettings: React.FC = () => {
         "Edit Filter Columns",
     ];
 
+    const isAnyEditActive =
+        isEditingReportName ||
+        isEditingSheetName ||
+        Object.values(editingColumns).some(Boolean);
+
     return (
         <Container maxWidth={false} sx={{ bgcolor: STYLE_GUIDE.COLORS.backgroundDefault, minHeight: '100vh' }}>
             <Paper elevation={3} sx={{
@@ -387,6 +408,7 @@ const ReportSettings: React.FC = () => {
                     sx={{
                         fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.bold,
                         color: STYLE_GUIDE.COLORS.primary,
+                        mb: STYLE_GUIDE.SPACING.s8,
                         letterSpacing: 1,
                     }}
                 >
@@ -563,6 +585,7 @@ const ReportSettings: React.FC = () => {
                                         onClick={handleSaveAllChanges}
                                         startIcon={<CheckIcon />}
                                         sx={{ minWidth: 180, fontWeight: 600 }}
+                                        disabled={isAnyEditActive}
                                     >
                                         Save All Changes
                                     </Button>
