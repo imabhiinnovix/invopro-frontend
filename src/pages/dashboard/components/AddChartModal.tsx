@@ -37,6 +37,7 @@ import { GET } from '../../../services/apiRoutes';
 import { v4 as uuidv4 } from 'uuid';
 import { DateTime } from 'luxon';
 import { STYLE_GUIDE } from '../../../styles';
+import axios from 'axios';
 
 interface Condition {
   field: string;
@@ -561,7 +562,10 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
         }
       }
     } catch (error) {
-      if (typeof error === 'object' && error !== null && 'message' in error) {
+      if (axios.isAxiosError(error) && error.response?.data) {
+        const errorMessage = error.response.data.message || error.response.data.error || 'Failed to add chart';
+        toast.error(errorMessage);
+      } else if (typeof error === 'object' && error !== null && 'message' in error) {
         toast.error(error.message as string);
       } else {
         toast.error('Failed to add chart');
