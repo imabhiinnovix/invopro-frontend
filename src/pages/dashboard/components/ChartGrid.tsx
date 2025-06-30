@@ -32,6 +32,7 @@ import {
   Pagination,
   Divider,
   Avatar,
+  TableContainer,
 } from '@mui/material';
 import {
   Chart as ChartJS,
@@ -43,13 +44,12 @@ import {
   Tooltip,
   Legend,
   ArcElement,
-  Filler,
   BarElement,
   RadialLinearScale,
-  ChartDataset,
   ChartData,
   ChartEvent,
   ActiveElement,
+  ChartDataset,
 } from 'chart.js';
 import { Line, Pie, Bar, Doughnut, Radar, PolarArea } from 'react-chartjs-2';
 import { ChartResponse, Dashboard } from '../types';
@@ -79,13 +79,12 @@ ChartJS.register(
   LinearScale,
   PointElement,
   LineElement,
-  ArcElement,
-  Filler,
-  BarElement,
-  RadialLinearScale,
   Title,
   Tooltip,
-  Legend
+  Legend,
+  ArcElement,
+  BarElement,
+  RadialLinearScale
 );
 
 interface ChartGridProps {
@@ -191,6 +190,16 @@ const ChartContainer = styled(Box)(({ theme }) => ({
     alignItems: 'center',
     justifyContent: 'center',
     gap: theme.spacing(2),
+  },
+  '&.table-chart': {
+    minHeight: 400,
+    padding: theme.spacing(2),
+    overflow: 'auto',
+    '& .MuiTableContainer-root': {
+      height: '100%',
+      width: '100%',
+      overflow: 'auto'
+    }
   },
   '&:hover': {
     overflow: 'hidden',
@@ -832,6 +841,10 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
 
   const handleExportMenuClick = (event: React.MouseEvent<HTMLElement>, chart: ChartResponse) => {
     event.stopPropagation();
+    if (chart.widgetTypeId?.chartType === 'tabular') {
+      handleDownload(chart)
+      return;
+    }
     setExportMenuAnchorEl(event.currentTarget);
     setSelectedChart(chart);
   };
@@ -876,8 +889,8 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
         const groupBy = chart.groupBy
           ? Array.isArray(chart.groupBy)
             ? chart.groupBy.map((group) => {
-                return { [group]: clickedData[group] };
-              })
+              return { [group]: clickedData[group] };
+            })
             : [{ [chart.groupBy]: clickedData.name }]
           : [];
 
@@ -887,10 +900,10 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
           conditions: chart.conditions || [],
           dimensions: isTrend
             ? [
-                {
-                  versionValue: clickedData.name,
-                },
-              ]
+              {
+                versionValue: clickedData.name,
+              },
+            ]
             : dimensions,
           dashboardFilters: {
             startVersionValue: startVersionValue,
@@ -1692,6 +1705,15 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
 
   const renderChart = (chart: ChartResponse) => {
     const chartData = getChartData(chart);
+
+    const dimensionField = Array.isArray(chart.dimensions) && chart.dimensions.length > 0
+      ? chart.dimensions[0]
+      : typeof chart.dimensions === 'string'
+        ? chart.dimensions
+        : 'name';
+
+    const aggregationField = chart.aggregation?.attributeName || 'data';
+
     const chartType = chart.widgetTypeId?.chartType || 'line';
     const options = getChartOptions(chartType, chart);
     const chartId = `chart-${chart._id}`;
@@ -1720,7 +1742,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
           <Pie
             {...baseChartProps}
             data={chartData as ChartData<'pie'>}
-            plugins={widgetTheme?.showLegendOverlay && [sliceLabelsPlugin]}
+            plugins={widgetTheme?.showLegendOverlay ? [sliceLabelsPlugin] : undefined}
             ref={(ref) => {
               chartRefs.current[chartId] = ref as ChartJS<'pie'> | null;
             }}
@@ -1734,7 +1756,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
             ref={(ref) => {
               chartRefs.current[chartId] = ref as ChartJS<'doughnut'> | null;
             }}
-            plugins={widgetTheme?.showLegendOverlay && [sliceLabelsPlugin]}
+            plugins={widgetTheme?.showLegendOverlay ? [sliceLabelsPlugin] : undefined}
           />
         );
       case 'multiSeriesPie':
@@ -1747,15 +1769,12 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
             }}
           />
         );
-      case 'horizontalBar':
-      case 'verticalBar':
-      case 'stackedBar':
-      case 'multiSeriesBar':
+      case 'bar':
         return (
           <Bar
             {...baseChartProps}
             data={chartData as ChartData<'bar'>}
-            plugins={widgetTheme?.showLegendOverlay && [barLabelsPlugin]}
+            plugins={widgetTheme?.showLegendOverlay ? [barLabelsPlugin] : undefined}
             ref={(ref) => {
               chartRefs.current[chartId] = ref as ChartJS<'bar'> | null;
             }}
@@ -1776,7 +1795,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
           <PolarArea
             {...baseChartProps}
             data={chartData as ChartData<'polarArea'>}
-            plugins={widgetTheme?.showLegendOverlay && [polarAreaLabelsPlugin]}
+            plugins={widgetTheme?.showLegendOverlay ? [polarAreaLabelsPlugin] : undefined}
             ref={(ref) => {
               chartRefs.current[chartId] = ref as ChartJS<'polarArea'> | null;
             }}
@@ -1789,11 +1808,78 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
           <Line
             {...baseChartProps}
             data={chartData as ChartData<'line'>}
-            plugins={widgetTheme?.showLegendOverlay && [pointLabelsPlugin]}
+            plugins={widgetTheme?.showLegendOverlay ? [pointLabelsPlugin] : undefined}
             ref={(ref) => {
               chartRefs.current[chartId] = ref as ChartJS<'line'> | null;
             }}
           />
+        );
+      case 'tabular':
+        const chartDataArray = widgetData[chart._id]?.data?.widgetData || chart.data || [];
+
+        const columns = chartDataArray.length > 0
+          ? Object.keys(chartDataArray[0]).map((col) => {
+            if (col === 'name') return dimensionField;
+            if (col === 'data') return aggregationField;
+            return col;
+          })
+          : [];
+
+        return (
+          <TableContainer component={Paper} sx={{ maxHeight: 400, overflow: 'auto' }}>
+            <Table stickyHeader>
+              <TableHead>
+                <TableRow>
+                  {columns.map((column) => (
+                    <TableCell
+                      key={column}
+                      sx={{
+                        backgroundColor: '#f1f5f9',
+                        fontWeight: 600,
+                        fontSize: '14px',
+                        color: theme.palette.text.primary,
+                        borderBottom: `2px solid ${theme.palette.divider}`,
+                        padding: '12px 16px'
+                      }}
+                    >
+                      {column}
+                    </TableCell>
+                  ))}
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {chartDataArray?.map((row, rowIndex) => (
+                  <TableRow
+                    key={rowIndex}
+                    sx={{
+                      '&:hover': {
+                        backgroundColor: theme.palette.action.hover
+                      }
+                    }}
+                  >
+                    {columns.map((column) => {
+                      let value;
+                      if (column === dimensionField && 'name' in row) value = row['name'];
+                      else if (column === aggregationField && 'data' in row) value = row['data'];
+                      else value = row[column];
+
+                      return (
+                        <TableCell
+                          key={`${rowIndex}-${column}`}
+                          sx={{
+                            padding: '12px 16px',
+                            borderBottom: `1px solid ${theme.palette.divider}`
+                          }}
+                        >
+                          {typeof value === 'number' ? value.toLocaleString() : value}
+                        </TableCell>
+                      );
+                    })}
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
         );
     }
   };
@@ -1908,6 +1994,49 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
     );
   };
 
+  const handleDownload = (chart: ChartResponse) => {
+    const chartType = chart.widgetTypeId?.chartType || 'line';
+
+    if (chartType === 'tabular') {
+      const chartDataArray = widgetData[chart._id]?.data?.widgetData || chart.data || [];
+      if (chartDataArray.length === 0) {
+        toast.error('No data available to download');
+        return;
+      }
+
+      // Convert data to CSV
+      const columns = Object.keys(chartDataArray[0]);
+      const csvContent = [
+        columns.join(','),
+        ...chartDataArray.map(row =>
+          columns.map(column => {
+            const value = row[column];
+            return typeof value === 'number' ? value : `"${value}"`
+          }).join(',')
+        )
+      ].join('\n');
+
+      // Create and trigger download
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      const url = URL.createObjectURL(blob);
+      link.setAttribute('href', url);
+      link.setAttribute('download', `${chart.name || 'chart'}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      return;
+    }
+
+    const chartInstance = chartRefs.current[`chart-${chart._id}`];
+    if (!chartInstance) {
+      toast.error('Chart instance not found');
+      return;
+    }
+
+  };
+
   return (
     <>
       <Grid
@@ -2013,7 +2142,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
               {isNaturalLangauage && (
                 <AddChartModal
                   open={true}
-                  onClose={() => {}}
+                  onClose={() => { }}
                   isSubmitting={false}
                   dashboardId={''}
                   initialData={chart}
@@ -2078,13 +2207,13 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
                     className={
                       (chart.widgetTypeId?.chartType || 'line') === 'pie'
                         ? 'pie-chart'
-                        : (chart.widgetTypeId?.chartType || 'line') === 'number'
-                        ? 'number-chart'
                         : (chart.widgetTypeId?.chartType || 'line') === 'horizontalBar'
-                        ? 'horizontal-bar-chart'
-                        : (chart.widgetTypeId?.chartType || 'line') === 'multiSeriesPie'
-                        ? 'pie-chart'
-                        : 'line-chart'
+                          ? 'horizontal-bar-chart'
+                          : (chart.widgetTypeId?.chartType || 'line') === 'tabular'
+                            ? 'table-chart'
+                            : (chart.widgetTypeId?.chartType || 'line') === 'multiSeriesPie'
+                              ? 'pie-chart'
+                              : 'line-chart'
                     }
                     onWheel={handleWheel}
                   >
