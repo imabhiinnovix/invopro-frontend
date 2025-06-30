@@ -1092,10 +1092,12 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
     // Get widget data from the store
     const chartData = widgetData[chart._id]?.data?.widgetData || chart.data || [];
 
-    if (!chartData.length) {
+    // Check if widgetData is empty or has no meaningful data
+    if (!chartData.length || chartData.every((item: ChartDataItem) => item.data === 0)) {
       return {
         labels: [],
         datasets: [createDefaultDataset()],
+        isEmpty: true, // Add a flag to indicate empty data
       };
     }
 
@@ -1492,6 +1494,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
     return {
       labels: defaultLabels,
       datasets: [createDefaultDataset(values)],
+      isEmpty: false,
     };
   };
 
@@ -1718,6 +1721,14 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
     const options = getChartOptions(chartType, chart);
     const chartId = `chart-${chart._id}`;
     const numberValue = chartData.datasets[0]?.data[0] || 0;
+
+    if (chartData.isEmpty) {
+      return (
+          <Typography color="text.secondary" variant="h6">
+            No data present for this set of data :|
+          </Typography>
+      );
+    }
 
     const baseChartProps = {
       id: chartId,
