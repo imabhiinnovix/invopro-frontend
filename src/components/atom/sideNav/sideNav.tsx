@@ -517,6 +517,7 @@ export default function SideNav() {
               justifyContent: "center",
               alignItems: "center",
               height: STYLE_GUIDE.SPACING.s10,
+              marginRight:"108px",
               borderBottom: `1px solid ${STYLE_GUIDE.COLORS.divider}`,
                           }}
           >
