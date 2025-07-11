@@ -1,4 +1,4 @@
-import { Box, Button, Typography } from "@mui/material";
+import { Box, Button, Typography, useTheme } from "@mui/material";
 import { useForm } from "react-hook-form";
 import CommonDropdownSearch from "../../common/dropdown/searchableDropdown";
 import {
@@ -19,6 +19,7 @@ interface GenerateReportProps {
 }
 
 export default function GenerateReport({ setReload }: GenerateReportProps) {
+  const theme = useTheme();
   const {
     control,
     handleSubmit,
@@ -68,7 +69,7 @@ export default function GenerateReport({ setReload }: GenerateReportProps) {
           variant="h6"
           sx={{
             fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold,
-            color: STYLE_GUIDE.COLORS.black,
+            color: theme.palette.text.primary,
           }}
         >
           Generate New Report
@@ -129,10 +130,10 @@ export default function GenerateReport({ setReload }: GenerateReportProps) {
                   fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.medium,
                   borderRadius: 1,
                   boxShadow: 'none',
-                  bgcolor: STYLE_GUIDE.COLORS.primary,
-                  color: STYLE_GUIDE.COLORS.white,
+                  bgcolor: theme.palette.primary.main,
+                  color: theme.palette.primary.contrastText,
                   '&:hover': {
-                    bgcolor: STYLE_GUIDE.COLORS.primaryDark,
+                    bgcolor: theme.palette.primary.dark,
                     boxShadow: STYLE_GUIDE.SHADOWS.none,
                   }
                 }}

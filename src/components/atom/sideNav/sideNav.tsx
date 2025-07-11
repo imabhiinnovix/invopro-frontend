@@ -1,4 +1,4 @@
-import { styled, Theme, CSSObject } from '@mui/material/styles';
+import { styled, Theme, CSSObject, useTheme } from '@mui/material/styles';
 import Box from '@mui/material/Box';
 import MuiDrawer from '@mui/material/Drawer';
 import List from '@mui/material/List';
@@ -17,6 +17,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import SourceIcon from '@mui/icons-material/Source';
 import AssessmentIcon from '@mui/icons-material/Assessment';
 import PaletteIcon from '@mui/icons-material/Palette';
+import BrushIcon from '@mui/icons-material/Brush';
 import { useInfiniteScroll } from '../../../hooks/useInfiniteScroll';
 import { GET } from '../../../services/apiRoutes';
 import { DataSourceListData, DataSourceListPayload } from './types';
@@ -79,7 +80,7 @@ const Drawer = styled(MuiDrawer, {
   position: 'static',
   backgroundColor: STYLE_GUIDE.COLORS.white,
   '& .MuiPaper-root': {
-    backgroundColor: STYLE_GUIDE.COLORS.white,
+    backgroundColor: theme.palette.background.paper,
     border: 'none',
     height: '100%',
     position: 'static',
@@ -95,10 +96,10 @@ const Drawer = styled(MuiDrawer, {
   },
   '& .MuiListItemButton-root': {
     '&.Mui-selected, &.Mui-selected:hover': {
-      backgroundColor: STYLE_GUIDE.COLORS.backgroundDefault,
+      backgroundColor: theme.palette.action.hover,
     },
     '&:hover': {
-      backgroundColor: STYLE_GUIDE.COLORS.backgroundDefault,
+      backgroundColor: theme.palette.action.hover,
     },
   },
   variants: [
@@ -134,6 +135,7 @@ interface NavItem {
 }
 
 export default function SideNav() {
+  const theme = useTheme();
   const { openNav } = useNav();
   const [openSettings, setOpenSettings] = React.useState(false);
   const [openDashboard, setOpenDashboard] = React.useState(false);
@@ -344,6 +346,11 @@ export default function SideNav() {
         route: '/create-theme',
       },
       {
+        name: 'Dashboard Themes',
+        icon: <BrushIcon sx={{ fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base }} />,
+        route: '/dashboard-themes',
+      },
+      {
         name: 'VixAI Chart',
         icon: <Language sx={{ fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base }} />,
         route: '/VixAi-Chart',
@@ -384,7 +391,7 @@ export default function SideNav() {
               justifyContent: 'center',
               alignItems: 'center',
               height: '50px',
-              borderBottom: `1px solid ${STYLE_GUIDE.COLORS.divider}`,
+              borderBottom: `1px solid ${theme.palette.divider}`,
             }}
           >
             <Box
@@ -417,13 +424,13 @@ export default function SideNav() {
                       px: 2,
                       borderRadius: '8px',
                       justifyContent: openNav ? 'initial' : 'center',
-                      backgroundColor: isRouteActive(item.route) ? '#f1f5f9' : 'transparent',
-                      color: isRouteActive(item.route) ? '#a136a1' : 'inherit',
+                      backgroundColor: isRouteActive(item.route) ? '#ffffff' : 'transparent',
+                      color: isRouteActive(item.route) ? theme.palette.primary.main : theme.palette.text.primary,
                       '& .MuiListItemIcon-root': {
-                        color: isRouteActive(item.route) ? '#a136a1' : 'inherit',
+                        color: isRouteActive(item.route) ? theme.palette.primary.main : theme.palette.text.primary,
                       },
                       '&:hover': {
-                        backgroundColor: '#f1f5f9',
+                        backgroundColor: isRouteActive(item.route) ? '#ffffff' : theme.palette.action.hover,
                         borderRadius: '8px',
                       },
                     }}
@@ -445,7 +452,7 @@ export default function SideNav() {
                         '& .MuiListItemText-primary': {
                           fontSize: '0.95rem',
                           fontWeight: 500,
-                          color: isRouteActive(item.route) ? '#a136a1' : 'inherit',
+                          color: isRouteActive(item.route) ? theme.palette.primary.main : theme.palette.text.primary,
                         },
                       }}
                     />
@@ -455,14 +462,14 @@ export default function SideNav() {
                         <ExpandLessIcon
                           sx={{
                             fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base,
-                            color: isRouteActive(item.route) ? '#a136a1' : 'inherit',
+                            color: isRouteActive(item.route) ? theme.palette.primary.main : theme.palette.text.primary,
                           }}
                         />
                       ) : (
                         <ExpandMoreIcon
                           sx={{
                             fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base,
-                            color: isRouteActive(item.route) ? '#a136a1' : 'inherit',
+                            color: isRouteActive(item.route) ? theme.palette.primary.main : theme.palette.text.primary,
                           }}
                         />
                       ))}
@@ -532,8 +539,9 @@ export default function SideNav() {
                 px: STYLE_GUIDE.SPACING.s4,
                 borderRadius: '8px',
                 justifyContent: openNav ? 'initial' : 'center',
+                color: theme.palette.text.primary,
                 '&:hover': {
-                  backgroundColor: STYLE_GUIDE.COLORS.backgroundDefault,
+                  backgroundColor: theme.palette.action.hover,
                 },
               }}
             >

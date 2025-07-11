@@ -1,6 +1,6 @@
 import React from "react";
 import {
-    Accordion, AccordionSummary, AccordionDetails, Typography, Box, Button, Chip, TextField, IconButton
+    Accordion, AccordionSummary, AccordionDetails, Typography, Box, Button, Chip, TextField, IconButton, useTheme
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import AddIcon from "@mui/icons-material/Add";
@@ -53,7 +53,10 @@ const FilterColumnsEditor: React.FC<Props> = ({
     onChangeEditColumnValue,
     onChangeAttributeValueInput,
     onAddColumn
-}) => (
+}) => {
+    const theme = useTheme();
+    
+    return (
     <>
         {filters.map((filter, filterIndex) => (
             <Accordion
@@ -71,8 +74,9 @@ const FilterColumnsEditor: React.FC<Props> = ({
                     </Typography>
                 </AccordionSummary>
                 <AccordionDetails sx={{
-                    bgcolor: STYLE_GUIDE.COLORS.backgroundLightGray,
-                    borderRadius: STYLE_GUIDE.SPACING.s4
+                    bgcolor: theme.palette.background.default,
+                    borderRadius: STYLE_GUIDE.SPACING.s4,
+                    border: `1px solid ${theme.palette.divider}`
                 }}>
                     <Box sx={{ mb: STYLE_GUIDE.SPACING.s2 }}>
                         <Box
@@ -94,7 +98,7 @@ const FilterColumnsEditor: React.FC<Props> = ({
                             </Button>
                         </Box>
                         {filter.columns.length === 0 ? (
-                            <Box sx={{ p: STYLE_GUIDE.SPACING.s2, textAlign: "center", color: STYLE_GUIDE.COLORS.textMediumGray }}>
+                            <Box sx={{ p: STYLE_GUIDE.SPACING.s2, textAlign: "center", color: theme.palette.text.secondary }}>
                                 <Typography variant="body2" sx={{ fontStyle: "italic" }}>
                                     No columns added yet.
                                 </Typography>
@@ -106,9 +110,9 @@ const FilterColumnsEditor: React.FC<Props> = ({
                                     sx={{
                                         mb: STYLE_GUIDE.SPACING.s2,
                                         p: STYLE_GUIDE.SPACING.s2,
-                                        border: `1px solid ${STYLE_GUIDE.COLORS.divider}`,
+                                        border: `1px solid ${theme.palette.divider}`,
                                         borderRadius: 1,
-                                        bgcolor: STYLE_GUIDE.COLORS.white
+                                        bgcolor: theme.palette.background.paper
                                     }}
                                 >
                                     <Box display="flex" alignItems="center" gap={2} sx={{ mb: STYLE_GUIDE.SPACING.s1 }}>
@@ -178,7 +182,7 @@ const FilterColumnsEditor: React.FC<Props> = ({
                                     <Box>
                                         <Typography
                                             variant="body2"
-                                            color={STYLE_GUIDE.COLORS.textMediumGray}
+                                            color={theme.palette.text.secondary}
                                             sx={{ mb: STYLE_GUIDE.SPACING.s1 }}
                                         >
                                             Attribute Values:
@@ -199,7 +203,7 @@ const FilterColumnsEditor: React.FC<Props> = ({
                                                             </Box>
                                                         ))
                                                     ) : (
-                                                        <Typography variant="body2" color={STYLE_GUIDE.COLORS.materialError} sx={{ fontStyle: 'italic' }}>
+                                                        <Typography variant="body2" color={theme.palette.error.main} sx={{ fontStyle: 'italic' }}>
                                                             At least one attribute value is required.
                                                         </Typography>
                                                     )}
@@ -244,7 +248,7 @@ const FilterColumnsEditor: React.FC<Props> = ({
                                                         ))}
                                                     </Box>
                                                 ) : (
-                                                    <Typography variant="body2" color={STYLE_GUIDE.COLORS.textMediumGray} sx={{ fontStyle: 'italic' }}>
+                                                    <Typography variant="body2" color={theme.palette.text.secondary} sx={{ fontStyle: 'italic' }}>
                                                         No attribute values
                                                     </Typography>
                                                 )}
@@ -259,6 +263,7 @@ const FilterColumnsEditor: React.FC<Props> = ({
             </Accordion>
         ))}
     </>
-);
+    );
+};
 
 export default FilterColumnsEditor;

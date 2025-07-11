@@ -13,6 +13,7 @@ import DataSources from './pages/dataSources';
 import DashboardOverview from './pages/dashboard/overview';
 import DashboardAnalytics from './pages/dashboard/analytics';
 import CreateTheme from './pages/createTheme';
+import DashboardThemePage from './pages/dashboardTheme';
 import { getAuthToken } from './utils/handleLocalStorage';
 import NaturalLanguage from './pages/naturalLanguage/NaturalLanguage';
 import Entity from './pages/entity';
@@ -62,6 +63,7 @@ const AppRoutes = () => {
       <Route element={<AdminSuperAdminProtect />}>
         <Route element={<CommonLayout />}>
           <Route path="/create-theme" element={<CreateTheme />} />
+          <Route path="/dashboard-themes" element={<DashboardThemePage />} />
         </Route>
       </Route>
     </Routes>

@@ -29,7 +29,7 @@ import DownloadForOfflineIcon from '@mui/icons-material/DownloadForOffline';
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
   [`&.${tableCellClasses.head}`]: {
-    backgroundColor: theme.palette.grey[50],
+    backgroundColor: theme.palette.background.default,
     color: theme.palette.text.primary,
     fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold,
     fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
@@ -42,11 +42,21 @@ const StyledTableCell = styled(TableCell)(({ theme }) => ({
     height: "52px",
     padding: "0 16px",
     borderBottom: `1px solid ${theme.palette.divider}`,
+    color: theme.palette.text.primary,
   }}))
 
 const StyledTableRow = styled(TableRow)(({ theme }) => ({
   "&:hover": {
     backgroundColor: theme.palette.action.hover,
+    transform: 'translateY(-1px)',
+    transition: 'all 0.2s ease-in-out',
+    boxShadow: theme.shadows[1],
+  },
+  "&:nth-of-type(odd)": {
+    backgroundColor: theme.palette.background.default,
+  },
+  "&:nth-of-type(even)": {
+    backgroundColor: theme.palette.background.paper,
   },
 }));
 
@@ -59,9 +69,14 @@ const StyledButton = styled(Button)(({ theme }) => ({
   fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.bold,
   minWidth: '80px',
   backgroundColor: theme.palette.primary.main,
-  color: "white",
+  color: theme.palette.primary.contrastText,
   "&:hover": {
     backgroundColor: theme.palette.primary.dark,
+    transform: 'translateY(-1px)',
+    boxShadow: theme.shadows[2],
+  },
+  "&:active": {
+    transform: 'translateY(0)',
   },
 }));
 

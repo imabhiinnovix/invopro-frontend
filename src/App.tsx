@@ -7,6 +7,7 @@ import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { NavProvider } from "./context/NavContext";
 import AuthProvider from "./context/AuthContext";
+import { DashboardThemeProvider } from "./context/DashboardThemeProvider";
 import AppRoutes from "./routes";
 
 function App() {
@@ -16,8 +17,10 @@ function App() {
         <BrowserRouter>
           <AuthProvider>
             <NavProvider>
-              <AppRoutes />
-              <ToastContainer />
+              <DashboardThemeProvider>
+                <AppRoutes />
+                <ToastContainer />
+              </DashboardThemeProvider>
             </NavProvider>
           </AuthProvider>
         </BrowserRouter>

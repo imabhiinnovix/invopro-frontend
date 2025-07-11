@@ -128,7 +128,7 @@ const CreateTheme = () => {
         Browse and preview available chart themes
       </Typography>
       <Grid container spacing={3}>
-        {themes.map((theme) => (
+        {themes?.map((theme) => (
           <Grid item xs={12} sm={6} md={4} key={theme._id}>
             <ThemePreview
               theme={theme}

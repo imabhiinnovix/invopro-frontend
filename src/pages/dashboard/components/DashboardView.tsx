@@ -447,7 +447,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ title: initialTitl
                 onChange={handleThemeChange}
                 size="small"
               >
-                {themes.map((theme) => (
+                {themes?.map((theme) => (
                   <MenuItem key={theme._id} value={theme._id}>
                     {theme.name}
                   </MenuItem>

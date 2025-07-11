@@ -1,5 +1,6 @@
 import { createTheme } from '@mui/material/styles';
 import { STYLE_GUIDE } from '../styles';
+import './themeAugmentation';
 
 // Define common values for reuse
 const commonValues = {
@@ -25,6 +26,10 @@ export const theme = createTheme({
     primary: commonValues.colors.primary,
     background: commonValues.colors.background,
     divider: commonValues.colors.divider,
+    border: {
+      main: STYLE_GUIDE.COLORS.borderGray,
+      hover: STYLE_GUIDE.COLORS.materialPurpleDark,
+    },
   },
   shape: {
     borderRadius: parseInt(STYLE_GUIDE.SPACING.s2),
