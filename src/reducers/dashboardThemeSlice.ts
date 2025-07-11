@@ -1,6 +1,7 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { DashboardTheme } from '../types/dashboardTheme';
 import { STYLE_GUIDE } from '../styles';
+import { createCompleteTheme } from '../utils/themeUtils';
 
 // Helper function to generate unique ID
 const generateId = () => Math.random().toString(36).substr(2, 9);
@@ -168,60 +169,100 @@ const getDefaultTheme = (): DashboardTheme => ({
   updatedAt: new Date().toISOString(),
 });
 
-// Sample themes for testing
+// Sample themes for testing - using createCompleteTheme to ensure all properties are set
 const sampleThemes: DashboardTheme[] = [
   getDefaultTheme(),
   {
-    ...getDefaultTheme(),
+    ...createCompleteTheme({
+      name: 'Dark Theme',
+      description: 'A dark theme for better contrast',
+      colors: {
+        primary: {
+          main: '#bb86fc',
+          light: '#d4a4fc',
+          contrastText: '#000000',
+        },
+        secondary: {
+          main: '#dc004e',
+          light: '#ff5983',
+          dark: '#9a0036',
+          contrastText: '#ffffff',
+        },
+        background: {
+          default: '#121212',
+          paper: '#1e1e1e',
+          surface: '#2d2d2d',
+          hover: '#3d3d3d',
+          card: '#2d2d2d',
+          dropdown: '#1e1e1e',
+        },
+        text: {
+          primary: '#ffffff',
+          secondary: '#b3b3b3',
+          disabled: '#666666',
+          hint: '#888888',
+        },
+        divider: '#333333',
+        border: '#444444',
+        borderHover: '#555555',
+        inputText: '#ffffff',
+        inputBorder: '#666666',
+        dropdownBg: '#1e1e1e',
+        dropdownOptionBg: '#2d2d2d',
+        dropdownOptionText: '#ffffff',
+      },
+    }),
     _id: generateId(),
-    name: 'Dark Theme',
-    description: 'A dark theme for better contrast',
-    colors: {
-      ...getDefaultTheme().colors,
-      primary: {
-        main: '#bb86fc',
-        light: '#d4a4fc',
-        contrastText: '#000000',
-      },
-      background: {
-        default: '#121212',
-        paper: '#1e1e1e',
-        surface: '#2d2d2d',
-        hover: '#3d3d3d',
-        card: '#2d2d2d',
-        dropdown: '#1e1e1e',
-      },
-      text: {
-        primary: '#ffffff',
-        secondary: '#b3b3b3',
-        disabled: '#666666',
-        hint: '#888888',
-      },
-    },
     isDefault: false,
     isActive: false,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
   },
   {
-    ...getDefaultTheme(),
+    ...createCompleteTheme({
+      name: 'Sebic',
+      description: 'Professional blue theme for corporate use',
+      colors: {
+        primary: {
+          main: '#1976d2',
+          light: '#42a5f5',
+          contrastText: '#ffffff',
+        },
+        secondary: {
+          main: '#dc004e',
+          light: '#ff5983',
+          dark: '#9a0036',
+          contrastText: '#ffffff',
+        },
+        inputText: '#1565c0',
+        inputBorder: '#1976d2',
+        dropdownBg: '#f8f9ff',
+        dropdownOptionBg: '#e3f2fd',
+        dropdownOptionText: '#1565c0',
+        border: '#1976d2',
+        borderHover: '#1565c0',
+        background: {
+          default: STYLE_GUIDE.COLORS.backgroundDefault,
+          paper: STYLE_GUIDE.COLORS.white,
+          surface: STYLE_GUIDE.COLORS.backgroundSurface,
+          hover: STYLE_GUIDE.COLORS.backgroundHover,
+          card: STYLE_GUIDE.COLORS.backgroundSurface,
+          dropdown: STYLE_GUIDE.COLORS.white,
+        },
+        text: {
+          primary: STYLE_GUIDE.COLORS.textDarkGray,
+          secondary: STYLE_GUIDE.COLORS.textMediumGray,
+          disabled: STYLE_GUIDE.COLORS.textGray,
+          hint: STYLE_GUIDE.COLORS.textMediumGray,
+        },
+        divider: STYLE_GUIDE.COLORS.divider,
+      },
+    }),
     _id: generateId(),
-    name: 'Sebic',
-    description: 'Professional blue theme for corporate use',
-    colors: {
-      ...getDefaultTheme().colors,
-      primary: {
-        main: '#1976d2',
-        light: '#42a5f5',
-        contrastText: '#ffffff',
-      },
-      secondary: {
-        main: '#dc004e',
-        light: '#ff5983',
-        dark: '#9a0036',
-        contrastText: '#ffffff',
-      },
-    },
     isDefault: false,
     isActive: false,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
   },
 ];
 
@@ -275,8 +316,7 @@ const dashboardThemeSlice = createSlice({
     // Local actions for theme management
     createDashboardTheme: (state, action: PayloadAction<Partial<DashboardTheme>>) => {
       const newTheme: DashboardTheme = {
-        ...getDefaultTheme(),
-        ...action.payload,
+        ...createCompleteTheme(action.payload),
         _id: generateId(),
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
@@ -289,8 +329,8 @@ const dashboardThemeSlice = createSlice({
       const index = state.themes.findIndex(theme => theme._id === id);
       if (index !== -1) {
         const updatedTheme = {
-          ...state.themes[index],
-          ...themeData,
+          ...createCompleteTheme({ ...state.themes[index], ...themeData }),
+          _id: id,
           updatedAt: new Date().toISOString(),
         };
         state.themes[index] = updatedTheme;

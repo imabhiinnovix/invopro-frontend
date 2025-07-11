@@ -276,9 +276,6 @@ const CreateDashboardThemeDialog: React.FC<CreateDashboardThemeDialogProps> = ({
                       <ColorPickerField label="Card Background" path="colors.background.card" color={formData.colors.background.card} />
                     </Grid>
                     <Grid item xs={12} md={3}>
-                      <ColorPickerField label="Dropdown Background" path="colors.background.dropdown" color={formData.colors.background.dropdown} />
-                    </Grid>
-                    <Grid item xs={12} md={3}>
                       <ColorPickerField label="Text Primary" path="colors.text.primary" color={formData.colors.text.primary} />
                     </Grid>
                     <Grid item xs={12} md={3}>

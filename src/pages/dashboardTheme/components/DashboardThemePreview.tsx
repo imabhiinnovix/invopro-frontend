@@ -214,6 +214,19 @@ const DashboardThemePreview: React.FC<DashboardThemePreviewProps> = ({
           </Stack>
           
           <Stack direction="row" spacing={0.5}>
+            {!isCurrentTheme && (
+              <Tooltip title="Apply Theme">
+                <IconButton
+                  size="small"
+                  onClick={handleApply}
+                  sx={{ 
+                    color: 'success.main',
+                  }}
+                >
+                  <ApplyIcon fontSize="small" />
+                </IconButton>
+              </Tooltip>
+            )}
             <Tooltip title={isCurrentTheme ? "Cannot delete active theme" : "Delete Theme"}>
               <span>
                 <IconButton

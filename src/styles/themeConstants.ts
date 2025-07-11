@@ -160,6 +160,17 @@ export const createMuiThemeFromDashboardTheme = (dashboardTheme: DashboardTheme)
         main: dashboardTheme.colors.border,
         hover: dashboardTheme.colors.borderHover,
       },
+      input: {
+        text: dashboardTheme.colors.inputText,
+        border: dashboardTheme.colors.inputBorder,
+        focusBorder: dashboardTheme.colors.primary.main,
+      },
+      dropdown: {
+        background: dashboardTheme.colors.dropdownBg,
+        optionBackground: dashboardTheme.colors.dropdownOptionBg,
+        optionText: dashboardTheme.colors.dropdownOptionText,
+        optionHoverBackground: dashboardTheme.colors.background.hover,
+      },
     },
     typography: {
       fontFamily: dashboardTheme.typography.fontFamily.primary,

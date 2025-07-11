@@ -30,6 +30,17 @@ export const theme = createTheme({
       main: STYLE_GUIDE.COLORS.borderGray,
       hover: STYLE_GUIDE.COLORS.materialPurpleDark,
     },
+    input: {
+      text: STYLE_GUIDE.COLORS.textDarkGray,
+      border: STYLE_GUIDE.COLORS.borderGray,
+      focusBorder: STYLE_GUIDE.COLORS.primary,
+    },
+    dropdown: {
+      background: STYLE_GUIDE.COLORS.white,
+      optionBackground: STYLE_GUIDE.COLORS.backgroundHover,
+      optionText: STYLE_GUIDE.COLORS.textDarkGray,
+      optionHoverBackground: STYLE_GUIDE.COLORS.backgroundLightGray,
+    },
   },
   shape: {
     borderRadius: parseInt(STYLE_GUIDE.SPACING.s2),
@@ -79,6 +90,48 @@ export const theme = createTheme({
             color: commonValues.colors.primary.main,
             '&:hover': {
               backgroundColor: STYLE_GUIDE.COLORS.backgroundHover,
+            },
+          },
+        },
+      },
+    },
+    MuiSelect: {
+      styleOverrides: {
+        root: {
+          '& .MuiOutlinedInput-root': {
+            backgroundColor: STYLE_GUIDE.COLORS.white,
+            '& fieldset': {
+              borderColor: STYLE_GUIDE.COLORS.borderGray,
+            },
+            '&:hover fieldset': {
+              borderColor: STYLE_GUIDE.COLORS.primary,
+            },
+            '&.Mui-focused fieldset': {
+              borderColor: STYLE_GUIDE.COLORS.primary,
+            },
+          },
+          '& .MuiInputLabel-root': {
+            color: STYLE_GUIDE.COLORS.textDarkGray,
+          },
+          '& .MuiInputLabel-root.Mui-focused': {
+            color: STYLE_GUIDE.COLORS.primary,
+          },
+          '& .MuiSelect-select': {
+            color: STYLE_GUIDE.COLORS.textDarkGray,
+          },
+        },
+      },
+    },
+    MuiMenuItem: {
+      styleOverrides: {
+        root: {
+          '&:hover': {
+            backgroundColor: STYLE_GUIDE.COLORS.backgroundLightGray,
+          },
+          '&.Mui-selected': {
+            backgroundColor: STYLE_GUIDE.COLORS.backgroundHover,
+            '&:hover': {
+              backgroundColor: STYLE_GUIDE.COLORS.backgroundLightGray,
             },
           },
         },
