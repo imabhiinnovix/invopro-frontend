@@ -1,41 +1,52 @@
-import { styled, Theme, CSSObject } from '@mui/material/styles';
-import Box from '@mui/material/Box';
-import MuiDrawer from '@mui/material/Drawer';
-import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
-import ListItemButton from '@mui/material/ListItemButton';
-import ListItemIcon from '@mui/material/ListItemIcon';
-import ListItemText from '@mui/material/ListItemText';
-import { useNav } from '../../../context/NavContext';
-import DashboardIcon from '@mui/icons-material/Dashboard';
-import AddIcon from '@mui/icons-material/Add';
-import React, { useEffect, useMemo, useContext, useState } from 'react';
-import { Collapse } from '@mui/material';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import ExpandLessIcon from '@mui/icons-material/ExpandLess';
-import { useNavigate, useLocation } from 'react-router-dom';
-import SourceIcon from '@mui/icons-material/Source';
-import AssessmentIcon from '@mui/icons-material/Assessment';
-import PaletteIcon from '@mui/icons-material/Palette';
-import { useInfiniteScroll } from '../../../hooks/useInfiniteScroll';
-import { GET } from '../../../services/apiRoutes';
-import { DataSourceListData, DataSourceListPayload } from './types';
-import { setDataSourceList } from '../../../pages/dataSources/dataSourceActions';
-import { useAppDispatch, useAppSelector } from '../../../storeHooks';
-import { fetchDashboardList, createDashboard, deleteDashboard } from '../../../pages/dashboard/dashboardActions';
-import { Dashboard as DashboardType, DashboardListResponse } from '../../../pages/dashboard/types';
-import { toast } from 'react-toastify';
-import { DeleteConfirmationModal } from './components/DeleteConfirmationModal';
-import { SubItemsList } from './components/SubItemsList';
-import { CreateDashboardModal } from './components/CreateDashboardModal';
-import LogoutIcon from '@mui/icons-material/Logout';
-import logo from '../../../assets/ReportiVix-logo.png';
-import { AuthContext } from '../../../context/AuthContext';
-import { clearLocalStorage } from '../../../utils/handleLocalStorage';
-import { Language } from '@mui/icons-material';
-import { STYLE_GUIDE } from '../../../styles';
-import SettingsIcon from '@mui/icons-material/Settings';
+import { styled, Theme, CSSObject } from "@mui/material/styles";
+import Box from "@mui/material/Box";
+import MuiDrawer from "@mui/material/Drawer";
+import List from "@mui/material/List";
+import ListItem from "@mui/material/ListItem";
+import ListItemButton from "@mui/material/ListItemButton";
+import ListItemIcon from "@mui/material/ListItemIcon";
+import ListItemText from "@mui/material/ListItemText";
+import { useNav } from "../../../context/NavContext";
+import DashboardIcon from "@mui/icons-material/Dashboard";
+import AddIcon from "@mui/icons-material/Add";
+import React, { useEffect, useMemo, useContext, useState } from "react";
+import { Collapse, IconButton, Menu, MenuItem, Tooltip } from "@mui/material";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import ExpandLessIcon from "@mui/icons-material/ExpandLess";
+import { useNavigate, useLocation } from "react-router-dom";
+import SourceIcon from "@mui/icons-material/Source";
+import AssessmentIcon from "@mui/icons-material/Assessment";
+import PaletteIcon from "@mui/icons-material/Palette";
+import { useInfiniteScroll } from "../../../hooks/useInfiniteScroll";
+import { GET } from "../../../services/apiRoutes";
+import { DataSourceListData, DataSourceListPayload } from "./types";
+import { setDataSourceList } from "../../../pages/dataSources/dataSourceActions";
+import { useAppDispatch, useAppSelector } from "../../../storeHooks";
+import {
+  fetchDashboardList,
+  createDashboard,
+  deleteDashboard,
+} from "../../../pages/dashboard/dashboardActions";
+import {
+  Dashboard as DashboardType,
+  DashboardListResponse,
+} from "../../../pages/dashboard/types";
+import { toast } from "react-toastify";
+import { DeleteConfirmationModal } from "./components/DeleteConfirmationModal";
+import { SubItemsList } from "./components/SubItemsList";
+import { CreateDashboardModal } from "./components/CreateDashboardModal";
+import LogoutIcon from "@mui/icons-material/Logout";
+import logo from "../../../assets/ReportiVix-logo.png";
+import NotivixLogo from "../../../assets/NotiVix-Logo-TRANS-V1.png";
 
+import { AuthContext } from "../../../context/AuthContext";
+import { clearLocalStorage } from "../../../utils/handleLocalStorage";
+import { Language } from "@mui/icons-material";
+import { STYLE_GUIDE } from "../../../styles";
+import SettingsIcon from "@mui/icons-material/Settings";
+import GridViewIcon from "@mui/icons-material/GridView";
+import reportivixIcon from "../../../../public/Reportivix-fav-32.png";
+import notivixIcon from "../../../../public/NotiVix-fav-32.png";
 
 interface ErrorResponse {
   success: boolean;
@@ -47,57 +58,57 @@ const drawerWidth = 225;
 
 const openedMixin = (theme: Theme): CSSObject => ({
   width: drawerWidth,
-  position: 'static',
-  transition: theme.transitions.create('width', {
+  position: "static",
+  transition: theme.transitions.create("width", {
     easing: theme.transitions.easing.sharp,
     duration: theme.transitions.duration.enteringScreen,
   }),
-  overflowX: 'hidden',
+  overflowX: "hidden",
 });
 
 const closedMixin = (theme: Theme): CSSObject => ({
-  position: 'static',
-  transition: theme.transitions.create('width', {
+  position: "static",
+  transition: theme.transitions.create("width", {
     easing: theme.transitions.easing.sharp,
     duration: theme.transitions.duration.leavingScreen,
   }),
-  overflowX: 'hidden',
+  overflowX: "hidden",
   width: `calc(${theme.spacing(6)} + 1px)`,
-  [theme.breakpoints.up('sm')]: {
+  [theme.breakpoints.up("sm")]: {
     width: `calc(${theme.spacing(8)} + 1px)`,
   },
 });
 
 const Drawer = styled(MuiDrawer, {
-  shouldForwardProp: (prop) => prop !== 'open',
+  shouldForwardProp: (prop) => prop !== "open",
 })(({ theme }) => ({
   width: drawerWidth,
   flexShrink: 0,
-  whiteSpace: 'nowrap',
-  boxSizing: 'border-box',
-  height: '100vh',
-  position: 'static',
+  whiteSpace: "nowrap",
+  boxSizing: "border-box",
+  height: "100vh",
+  position: "static",
   backgroundColor: STYLE_GUIDE.COLORS.white,
-  '& .MuiPaper-root': {
+  "& .MuiPaper-root": {
     backgroundColor: STYLE_GUIDE.COLORS.white,
-    border: 'none',
-    height: '100%',
-    position: 'static',
-    overflow: 'hidden',
+    border: "none",
+    height: "100%",
+    position: "static",
+    overflow: "hidden",
   },
-  '& .MuiDrawer-paper': {
-    position: 'static',
-    overflow: 'hidden',
+  "& .MuiDrawer-paper": {
+    position: "static",
+    overflow: "hidden",
   },
-  '& .MuiList-root': {
-    height: '100%',
-    overflow: 'hidden',
+  "& .MuiList-root": {
+    height: "100%",
+    overflow: "hidden",
   },
-  '& .MuiListItemButton-root': {
-    '&.Mui-selected, &.Mui-selected:hover': {
+  "& .MuiListItemButton-root": {
+    "&.Mui-selected, &.Mui-selected:hover": {
       backgroundColor: STYLE_GUIDE.COLORS.backgroundDefault,
     },
-    '&:hover': {
+    "&:hover": {
       backgroundColor: STYLE_GUIDE.COLORS.backgroundDefault,
     },
   },
@@ -106,14 +117,14 @@ const Drawer = styled(MuiDrawer, {
       props: ({ open }) => open,
       style: {
         ...openedMixin(theme),
-        '& .MuiDrawer-paper': openedMixin(theme),
+        "& .MuiDrawer-paper": openedMixin(theme),
       },
     },
     {
       props: ({ open }) => !open,
       style: {
         ...closedMixin(theme),
-        '& .MuiDrawer-paper': closedMixin(theme),
+        "& .MuiDrawer-paper": closedMixin(theme),
       },
     },
   ],
@@ -137,12 +148,15 @@ export default function SideNav() {
   const { openNav } = useNav();
   const [openSettings, setOpenSettings] = React.useState(false);
   const [openDashboard, setOpenDashboard] = React.useState(false);
-  const [newDashboardName, setNewDashboardName] = React.useState('');
-  const [dashboardType, setDashboardType] = React.useState<'normal' | 'trend'>('normal');
-  const [timePeriod, setTimePeriod] = React.useState<string>('1m');
+  const [newDashboardName, setNewDashboardName] = React.useState("");
+  const [dashboardType, setDashboardType] = React.useState<"normal" | "trend">(
+    "normal"
+  );
+  const [timePeriod, setTimePeriod] = React.useState<string>("1m");
   const [isCreatingLoading, setIsCreatingLoading] = React.useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = React.useState(false);
-  const [dashboardToDelete, setDashboardToDelete] = React.useState<DashboardType | null>(null);
+  const [dashboardToDelete, setDashboardToDelete] =
+    React.useState<DashboardType | null>(null);
   const [isDeleting, setIsDeleting] = React.useState(false);
   const navigate = useNavigate();
   const location = useLocation();
@@ -150,14 +164,40 @@ export default function SideNav() {
   const { dashboards, loading } = useAppSelector((state) => state.dashboard);
   const { clearAuthContext } = useContext(AuthContext);
   const [openCreateModal, setOpenCreateModal] = useState(false);
+  const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+  const open = Boolean(anchorEl);
+  const [activeTab, setActiveTab] = React.useState<"ReportiVix" | "Notifix">(
+    "ReportiVix"
+  );
+
+  // Sync activeTab with URL
+  useEffect(() => {
+    const path = location.pathname;
+    if (path.includes("/notivix")) {
+      if (activeTab !== "Notifix") {
+        setActiveTab("Notifix");
+      }
+    } else {
+      if (activeTab !== "ReportiVix") {
+        setActiveTab("ReportiVix");
+      }
+    }
+  }, [location.pathname, activeTab]);
+  
 
   useEffect(() => {
-    dispatch(fetchDashboardList());
-  }, [dispatch]);
+    if (activeTab === "ReportiVix") {
+      dispatch(fetchDashboardList());
+    }
+  }, [dispatch, activeTab]);
 
-  const handleItemClick = (route: string, hasSubItems: boolean, itemName: string) => {
+  const handleItemClick = (
+    route: string,
+    hasSubItems: boolean,
+    itemName: string
+  ) => {
     if (hasSubItems) {
-      if (itemName === 'Dashboards') {
+      if (itemName === "Dashboards") {
         setOpenDashboard((prev) => !prev);
         if (!openDashboard) {
           setOpenDashboard(true);
@@ -184,10 +224,10 @@ export default function SideNav() {
         ).unwrap()) as DashboardListResponse;
         await dispatch(fetchDashboardList());
         setOpenCreateModal(false);
-        setNewDashboardName('');
-        setDashboardType('normal');
-        setTimePeriod('1m');
-        toast.success(response.message || 'Dashboard created successfully!');
+        setNewDashboardName("");
+        setDashboardType("normal");
+        setTimePeriod("1m");
+        toast.success(response.message || "Dashboard created successfully!");
 
         // Navigate to the newly created dashboard
         const newDashboard = response?.data;
@@ -197,14 +237,15 @@ export default function SideNav() {
             state: { enableEditMode: true },
           });
         }
-      } catch (error: { payload?: { message: string }; message?: string } | unknown) {
-        console.error('Failed to create dashboard:', error);
+      } catch (error:
+        | { payload?: { message: string }; message?: string }
+        | unknown) {
         const errorMessage =
-          error && typeof error === 'object' && 'payload' in error
+          error && typeof error === "object" && "payload" in error
             ? (error.payload as { message?: string })?.message
-            : error && typeof error === 'object' && 'message' in error
+            : error && typeof error === "object" && "message" in error
               ? (error as { message?: string })?.message
-              : 'Failed to create dashboard. Please try again.';
+              : "Failed to create dashboard. Please try again.";
         toast.error(errorMessage);
       } finally {
         setIsCreatingLoading(false);
@@ -214,15 +255,19 @@ export default function SideNav() {
 
   const handleCloseCreateModal = () => {
     setOpenCreateModal(false);
-    setNewDashboardName('');
-    setDashboardType('normal');
-    setTimePeriod('1m');
+    setNewDashboardName("");
+    setDashboardType("normal");
+    setTimePeriod("1m");
   };
 
-  const { infiniteQuery: dataSourceListAPI, lastElementRef } = useInfiniteScroll<
-    DataSourceListPayload,
-    DataSourceListData
-  >(['dataSourceList'], GET?.DATA_SOURCE_LIST + `?canEditInline=true`, 10, 'get', true);
+  const { infiniteQuery: dataSourceListAPI, lastElementRef } =
+    useInfiniteScroll<DataSourceListPayload, DataSourceListData>(
+      ["dataSourceList"],
+      GET?.DATA_SOURCE_LIST + `?canEditInline=true`,
+      10,
+      "get",
+      true
+    );
 
   const dataSourceList = useMemo(() => {
     return dataSourceListAPI?.data?.pages?.flatMap((page) => page?.data) || [];
@@ -244,16 +289,18 @@ export default function SideNav() {
         setIsDeleting(true);
         await dispatch(deleteDashboard(dashboardToDelete._id)).unwrap();
         dispatch(fetchDashboardList());
-        toast.success('Dashboard deleted successfully!');
+        toast.success("Dashboard deleted successfully!");
         if (location.pathname === `/dashboard/${dashboardToDelete._id}`) {
-          navigate('/dashboard');
+          navigate("/dashboard");
         }
         setDeleteModalOpen(false);
         setDashboardToDelete(null);
       } catch (error) {
-        console.error('Failed to delete dashboard:', error);
         const errorResponse = error as ErrorResponse;
-        toast.error(errorResponse.message || 'Failed to delete dashboard. Please try again.');
+        toast.error(
+          errorResponse.message ||
+            "Failed to delete dashboard. Please try again."
+        );
       } finally {
         setIsDeleting(false);
       }
@@ -268,133 +315,289 @@ export default function SideNav() {
   const handleLogout = () => {
     clearAuthContext();
     clearLocalStorage();
-    navigate('/login');
+    navigate("/login");
   };
 
-  const navItems: NavItem[] = useMemo(
-    () => [
+  const navItems: NavItem[] = useMemo(() => {
+    if (activeTab === "Notifix") {
+      return [
+        {
+          name: "Dashboard",
+          icon: (
+            <AssessmentIcon
+              sx={{ fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base }}
+            />
+          ),
+          route: "/notivix/dashboard",
+        },
+        {
+          name: "Users",
+          icon: (
+            <AssessmentIcon
+              sx={{ fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base }}
+            />
+          ),
+          route: "/notivix/users",
+        },
+        {
+          name: "Notification Settings",
+          icon: (
+            <AssessmentIcon
+              sx={{ fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base }}
+            />
+          ),
+          route: "/notivix/notification-settings",
+        },
+        {
+          name: "IP",
+          icon: (
+            <AssessmentIcon
+              sx={{ fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base }}
+            />
+          ),
+          route: "/notivix/ip",
+        },
+      ];
+    }
+    return [
       {
-        name: 'Dashboards',
-        icon: <DashboardIcon sx={{ fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base }} />,
-        route: '/dashboard',
+        name: "Dashboards",
+        icon: (
+          <DashboardIcon
+            sx={{ fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base }}
+          />
+        ),
+        route: "/dashboard",
         subItems: [
           {
-            name: 'Create New Dashboard',
-            icon: <AddIcon sx={{ fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base }} />,
-            route: '#',
+            name: "Create New Dashboard",
+            icon: (
+              <AddIcon
+                sx={{ fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base }}
+              />
+            ),
+            route: "#",
             isCreateButton: true,
           },
           ...(loading
             ? [
-              {
-                name: 'Loading...',
-                icon: <></>,
-                route: '#',
-              },
-            ]
+                {
+                  name: "Loading...",
+                  icon: <></>,
+                  route: "#",
+                },
+              ]
             : [
-              ...dashboards.slice(0, 5).map((dashboard: DashboardType) => ({
-                name: dashboard.name,
-                icon: <></>,
-                route: `/dashboard/${dashboard._id}`,
-              })),
-              {
-                name: 'All Dashboards',
-                icon: <></>,
-                route: '/dashboard',
-                isMoreLink: true,
-              },
-            ]),
+                ...dashboards.slice(0, 5).map((dashboard: DashboardType) => ({
+                  name: dashboard.name,
+                  icon: <></>,
+                  route: `/dashboard/${dashboard._id}`,
+                })),
+                {
+                  name: "All Dashboards",
+                  icon: <></>,
+                  route: "/dashboard",
+                  isMoreLink: true,
+                },
+              ]),
         ],
       },
       {
-        name: 'Reports',
-        icon: <AssessmentIcon sx={{ fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base }} />,
-        route: '/reports',
+        name: "Reports",
+        icon: (
+          <AssessmentIcon
+            sx={{ fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base }}
+          />
+        ),
+        route: "/reports",
       },
       {
-        name: 'Data Sources',
-        icon: <SourceIcon sx={{ fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base }} />,
-        route: '/data-source',
+        name: "Data Sources",
+        icon: (
+          <SourceIcon sx={{ fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base }} />
+        ),
+        route: "/data-source",
         subItems: [
           ...(dataSourceList?.map((item) => ({
-            name: item?.name ?? '',
+            name: item?.name ?? "",
             icon: <></>,
             route: `/data-source/${item?._id}`,
           })) || []),
 
           ...(dataSourceListAPI?.hasNextPage
             ? [
-              {
-                name: '',
-                icon: (
-                  <div ref={lastElementRef} style={{ paddingLeft: '1.5rem' }}>
-                    Loading...
-                  </div>
-                ),
-                route: '#',
-              },
-            ]
+                {
+                  name: "",
+                  icon: (
+                    <div ref={lastElementRef} style={{ paddingLeft: "1.5rem" }}>
+                      Loading...
+                    </div>
+                  ),
+                  route: "#",
+                },
+              ]
             : []),
         ],
       },
       {
-        name: 'Create Theme',
-        icon: <PaletteIcon sx={{ fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base }} />,
-        route: '/create-theme',
+        name: "Create Theme",
+        icon: (
+          <PaletteIcon
+            sx={{ fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base }}
+          />
+        ),
+        route: "/create-theme",
       },
       {
-        name: 'VixAI Chart',
-        icon: <Language sx={{ fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base }} />,
-        route: '/VixAi-Chart',
+        name: "VixAI Chart",
+        icon: (
+          <Language sx={{ fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base }} />
+        ),
+        route: "/VixAi-Chart",
       },
       {
-        name: 'Report Settings',
-        icon: <SettingsIcon sx={{ fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base }} />,
-        route: '/report-settings',
+        name: "Report Settings",
+        icon: (
+          <SettingsIcon
+            sx={{ fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base }}
+          />
+        ),
+        route: "/report-settings",
       },
       // {
-      //   name: 'VixAI Insights',
-      //   icon: <AutoAwesomeIcon sx={{ fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base }}/>,
-      //   route: '/VixAi-Insights',
-      // },
-    ],
-    [dataSourceList, dataSourceListAPI?.hasNextPage, dashboards, loading]
-  );
+      //     //   name: 'VixAI Insights',
+      //     //   icon: <AutoAwesomeIcon sx={{ fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base }}/>,
+      //     //   route: '/VixAi-Insights',
+      //     // },
+    ];
+  }, [
+    dataSourceList,
+    dataSourceListAPI?.hasNextPage,
+    dashboards,
+    loading,
+    activeTab,
+  ]);
 
   const isRouteActive = (route: string) => {
     return location.pathname.startsWith(route);
   };
 
+  const handleMenuClick = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+  };
+
+  const handleMenuItemClick = (option: "ReportiVix" | "Notifix") => {
+    setActiveTab(option);
+    const baseRoute = option === "Notifix" ? "/notivix" : "";
+    navigate(`${baseRoute}/dashboard`);
+    handleMenuClose();
+  };
+
   return (
-    <Box sx={{ display: 'flex', height: '100%' }}>
+    <Box sx={{ display: "flex", height: "100%" }}>
       <Drawer variant="permanent" open={openNav} sx={{ p: 0 }}>
         <Box
           sx={{
-            display: 'flex',
-            flexDirection: 'column',
-            height: '100%',
+            display: "flex",
+            flexDirection: "column",
+            height: "100%",
+            marginRight: STYLE_GUIDE.SPACING.s10,
           }}
         >
           <Box
             sx={{
               px: STYLE_GUIDE.SPACING.s4,
               mb: STYLE_GUIDE.SPACING.s4,
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center',
-              height: '50px',
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              height: STYLE_GUIDE.SPACING.s10,
               borderBottom: `1px solid ${STYLE_GUIDE.COLORS.divider}`,
-            }}
+                          }}
           >
+            {openNav && (
+              <div>
+                <IconButton
+                  aria-label="more"
+                  id="long-button"
+                  aria-controls={open ? "long-menu" : undefined}
+                  aria-expanded={open ? "true" : undefined}
+                  aria-haspopup="true"
+                  onClick={handleMenuClick}
+                >
+                  <Tooltip title="Tab Switch" placement="top">
+                    <GridViewIcon
+                      sx={{
+                        color: STYLE_GUIDE.COLORS.black,
+                        fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base,
+                        boxShadow: STYLE_GUIDE.SHADOWS.cardPrimary,
+                      }}
+                    />
+                  </Tooltip>
+                </IconButton>
+                <Menu
+                  id="long-menu"
+                  anchorEl={anchorEl}
+                  open={open}
+                  onClose={handleMenuClose}
+                >
+                  <MenuItem
+                    onClick={() => handleMenuItemClick("Notifix")}
+                 
+                     sx={{
+                      height: STYLE_GUIDE.SPACING.s12,
+                      display: "flex",
+                      alignItems: "center",
+                      padding: `0 ${STYLE_GUIDE.SPACING.s3}`,
+                      color: activeTab === "Notifix" ? STYLE_GUIDE.COLORS.primaryDark : STYLE_GUIDE.COLORS.black,
+                      "& .MuiListItemIcon-root": {
+                        color: activeTab === "Notifix" ? STYLE_GUIDE.COLORS.white : STYLE_GUIDE.COLORS.black,
+                      },
+                    }}
+                  >
+
+                    <img
+                      src={notivixIcon}
+                      alt="Notifix Favicon"
+                      style={{ width: STYLE_GUIDE.SPACING.s5, height: STYLE_GUIDE.SPACING.s5, marginRight: STYLE_GUIDE.SPACING.s3 }}
+                    />
+                    Notifix
+                  </MenuItem>
+                  <MenuItem
+                    onClick={() => handleMenuItemClick("ReportiVix")}
+                    sx={{
+                      height: STYLE_GUIDE.SPACING.s12,
+                      display: "flex",
+                      alignItems: "center",
+                      padding: `0 ${STYLE_GUIDE.SPACING.s3}`,
+                      color: activeTab === "ReportiVix" ? STYLE_GUIDE.COLORS.primaryDark : STYLE_GUIDE.COLORS.black,           
+                      "& .MuiListItemIcon-root": {
+                        color: activeTab === "ReportiVix" ? STYLE_GUIDE.COLORS.white : STYLE_GUIDE.COLORS.black,
+                      },
+                    }}
+                  >
+                    <img
+                      src={reportivixIcon}
+                      alt="ReportiVix Favicon"
+                      style={{ width: STYLE_GUIDE.SPACING.s4, height: STYLE_GUIDE.SPACING.s4, marginRight:STYLE_GUIDE.SPACING.s2}}
+                    />
+                    ReportiVix
+                  </MenuItem>
+                </Menu>
+              </div>
+            )}{" "}
             <Box
               component="img"
-              src={logo}
+              src={activeTab === "Notifix" ? NotivixLogo : logo}
               alt="Logo"
               sx={{
                 width: openNav ? 120 : 40,
-                height: 'auto',
-                transition: 'width 0.2s ease-in-out',
+                height: "auto",
+                transition: "width 0.2s ease-in-out",
               }}
             />
           </Box>
@@ -405,34 +608,42 @@ export default function SideNav() {
                 <ListItem
                   disablePadding
                   sx={{
-                    display: 'block',
+                    display: "block",
                     mb: 0.5,
                   }}
                 >
                   <ListItemButton
-                    onClick={() => handleItemClick(item.route, !!item.subItems, item.name)}
+                    onClick={() =>
+                      handleItemClick(item.route, !!item.subItems, item.name)
+                    }
                     sx={{
                       minHeight: 42,
                       mx: 1.5,
                       px: 2,
-                      borderRadius: '8px',
-                      justifyContent: openNav ? 'initial' : 'center',
-                      backgroundColor: isRouteActive(item.route) ? '#f1f5f9' : 'transparent',
-                      color: isRouteActive(item.route) ? '#a136a1' : 'inherit',
-                      '& .MuiListItemIcon-root': {
-                        color: isRouteActive(item.route) ? '#a136a1' : 'inherit',
+                      borderRadius: "8px",
+                      justifyContent: openNav ? "initial" : "center",
+                      backgroundColor: isRouteActive(item.route)
+                        ? "#f1f5f9"
+                        : "transparent",
+                      color: isRouteActive(item.route)
+                        ? `${STYLE_GUIDE.COLORS.primaryDark}`
+                        : "inherit",
+                      "& .MuiListItemIcon-root": {
+                        color: isRouteActive(item.route)
+                          ? `${STYLE_GUIDE.COLORS.primaryDark}`
+                          : "inherit",
                       },
-                      '&:hover': {
-                        backgroundColor: '#f1f5f9',
-                        borderRadius: '8px',
+                      "&:hover": {
+                        backgroundColor: "#f1f5f9",
+                        borderRadius: "8px",
                       },
                     }}
                   >
                     <ListItemIcon
                       sx={{
                         minWidth: 0,
-                        mr: openNav ? 2 : 'auto',
-                        justifyContent: 'center',
+                        mr: openNav ? 2 : "auto",
+                        justifyContent: "center",
                       }}
                     >
                       {item.icon}
@@ -442,27 +653,34 @@ export default function SideNav() {
                       sx={{
                         opacity: openNav ? 1 : 0,
                         m: 0,
-                        '& .MuiListItemText-primary': {
-                          fontSize: '0.95rem',
+                        "& .MuiListItemText-primary": {
+                          fontSize: "0.95rem",
                           fontWeight: 500,
-                          color: isRouteActive(item.route) ? '#a136a1' : 'inherit',
+                          color: isRouteActive(item.route)
+                            ? `${STYLE_GUIDE.COLORS.primaryDark}`
+                            : "inherit",
                         },
                       }}
                     />
                     {item.subItems &&
                       openNav &&
-                      ((item.name === 'Dashboards' && openDashboard) || (item.name !== 'Dashboards' && openSettings) ? (
+                      ((item.name === "Dashboards" && openDashboard) ||
+                      (item.name !== "Dashboards" && openSettings) ? (
                         <ExpandLessIcon
                           sx={{
                             fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base,
-                            color: isRouteActive(item.route) ? '#a136a1' : 'inherit',
+                            color: isRouteActive(item.route)
+                              ? `${STYLE_GUIDE.COLORS.primaryDark}`
+                              : "inherit",
                           }}
                         />
                       ) : (
                         <ExpandMoreIcon
                           sx={{
                             fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base,
-                            color: isRouteActive(item.route) ? '#a136a1' : 'inherit',
+                            color: isRouteActive(item.route)
+                              ? `${STYLE_GUIDE.COLORS.primaryDark}`
+                              : "inherit",
                           }}
                         />
                       ))}
@@ -470,20 +688,30 @@ export default function SideNav() {
                 </ListItem>
 
                 {item.subItems && openNav && (
-                  <Collapse in={item.name === 'Dashboards' ? openDashboard : openSettings} timeout="auto" unmountOnExit>
+                  <Collapse
+                    in={
+                      item.name === "Dashboards" ? openDashboard : openSettings
+                    }
+                    timeout="auto"
+                    unmountOnExit
+                  >
                     <List component="div" disablePadding>
-                      {item.name === 'Dashboards' && (
-                        <ListItem disablePadding sx={{ display: 'block', mb: 0.5 }}>
+                      {item.name === "Dashboards" && (
+                        <ListItem
+                          disablePadding
+                          sx={{ display: "block", mb: 0.5 }}
+                        >
                           <ListItemButton
                             onClick={() => setOpenCreateModal(true)}
                             sx={{
                               minHeight: 36,
                               px: STYLE_GUIDE.SPACING.s4,
                               pl: STYLE_GUIDE.SPACING.s4,
-                              borderRadius: '8px',
+                              borderRadius: "8px",
                               mx: STYLE_GUIDE.SPACING.s3,
-                              '&:hover': {
-                                backgroundColor: STYLE_GUIDE.COLORS.backgroundDefault,
+                              "&:hover": {
+                                backgroundColor:
+                                  STYLE_GUIDE.COLORS.backgroundDefault,
                               },
                             }}
                           >
@@ -491,17 +719,22 @@ export default function SideNav() {
                               sx={{
                                 minWidth: 0,
                                 mr: 1,
-                                justifyContent: 'center',
+                                justifyContent: "center",
                               }}
                             >
-                              <AddIcon sx={{ fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base }} />
+                              <AddIcon
+                                sx={{
+                                  fontSize:
+                                    STYLE_GUIDE.TYPOGRAPHY.fontSize.base,
+                                }}
+                              />
                             </ListItemIcon>
                             <ListItemText
                               primary="Create New Dashboard"
                               sx={{
                                 m: 0,
-                                '& .MuiListItemText-primary': {
-                                  fontSize: '0.8rem',
+                                "& .MuiListItemText-primary": {
+                                  fontSize: "0.8rem",
                                 },
                               }}
                             />
@@ -510,7 +743,9 @@ export default function SideNav() {
                       )}
 
                       <SubItemsList
-                        subItems={item.subItems.filter((subItem) => !subItem.isCreateButton)}
+                        subItems={item.subItems.filter(
+                          (subItem) => !subItem.isCreateButton
+                        )}
                         openNav={openNav}
                         parentName={item.name}
                         dashboards={dashboards}
@@ -524,15 +759,15 @@ export default function SideNav() {
             ))}
           </List>
 
-          <Box sx={{ mt: 'auto', px: STYLE_GUIDE.SPACING.s4, }}>
+          <Box sx={{ mt: "auto", px: STYLE_GUIDE.SPACING.s4 }}>
             <ListItemButton
               onClick={handleLogout}
               sx={{
                 minHeight: 42,
                 px: STYLE_GUIDE.SPACING.s4,
-                borderRadius: '8px',
-                justifyContent: openNav ? 'initial' : 'center',
-                '&:hover': {
+                borderRadius: "8px",
+                justifyContent: openNav ? "initial" : "center",
+                "&:hover": {
                   backgroundColor: STYLE_GUIDE.COLORS.backgroundDefault,
                 },
               }}
@@ -540,18 +775,20 @@ export default function SideNav() {
               <ListItemIcon
                 sx={{
                   minWidth: 0,
-                  mr: openNav ? STYLE_GUIDE.SPACING.s4 : 'auto',
-                  justifyContent: 'center',
+                  mr: openNav ? STYLE_GUIDE.SPACING.s4 : "auto",
+                  justifyContent: "center",
                 }}
               >
-                <LogoutIcon sx={{ fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base }} />
+                <LogoutIcon
+                  sx={{ fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base }}
+                />
               </ListItemIcon>
               <ListItemText
                 primary="Logout"
                 sx={{
                   opacity: openNav ? 1 : 0,
                   m: 0,
-                  '& .MuiListItemText-primary': {
+                  "& .MuiListItemText-primary": {
                     fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base,
                   },
                 }}

@@ -47,6 +47,10 @@ const AppRoutes = () => {
           <Route path="/VixAi-Insights" element={<AIInsightPage />} />
           <Route path="/VixAi-Chart" element={<NaturalLanguage />} />
           <Route path="/report-settings" element={<ReportSettings />} />
+          {/* // Notivix routes */}
+                    <Route path="/notivix/dashboard" element={<ReportSettings />} />
+                    
+
         </Route>
       </Route>
 
