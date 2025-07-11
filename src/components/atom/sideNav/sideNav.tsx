@@ -506,6 +506,7 @@ export default function SideNav() {
             flexDirection: "column",
             height: "100%",
             marginRight: STYLE_GUIDE.SPACING.s10,
+            width:"300px"
           }}
         >
           <Box
