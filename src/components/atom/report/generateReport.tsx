@@ -1,4 +1,4 @@
-import { Box, Button, Typography, useTheme } from "@mui/material";
+import { Box, Button, Typography, useTheme, Card, CardContent } from "@mui/material";
 import { useForm } from "react-hook-form";
 import CommonDropdownSearch from "../../common/dropdown/searchableDropdown";
 import {
@@ -57,93 +57,100 @@ export default function GenerateReport({ setReload }: GenerateReportProps) {
 
   return (
     <>
-      <Box
+      <Card
         sx={{
-          display: 'flex',
-          flexDirection: 'column',
-          gap: STYLE_GUIDE.SPACING.s4,
-          p: STYLE_GUIDE.SPACING.s6,
+          borderRadius: 1,
+          boxShadow: theme.shadows[1],
         }}
       >
-        <Typography
-          variant="h6"
+        <CardContent
           sx={{
-            fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold,
-            color: theme.palette.text.primary,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: STYLE_GUIDE.SPACING.s4,
+            p: STYLE_GUIDE.SPACING.s6,
           }}
         >
-          Generate New Report
-        </Typography>
-        
-        <Box 
-          display="flex" 
-          flexDirection={{ xs: 'column', md: 'row' }}
-          gap={STYLE_GUIDE.SPACING.s4}
-          sx={{
-            '& .MuiFormControl-root': {
-              flex: 1,
-              minWidth: { xs: '100%', md: '200px' }
-            }
-          }}
-        >
-          <CommonDropdownSearch
-            control={control}
-            name="customReportId"
-            label="Select Report"
-            apiUrl={`${GET.Custom_Report}/list`}
-            labelName="reportName"
-            labelValue="_id"
-            rules={{ required: "Report selection is required" }}
-            error={!!errors.customReportId}
-            errorMessage={errors.customReportId?.message}
-            apiName="customReport"
-            defaultDataUrl=""
-          />
-
-          <CommonDatePicker
-            name="versionValue"
-            control={control}
-            views={["year", "month"]}
-            label="Period*"
-            rules={{ required: "Period is required" }}
-          />
-
-          <Box 
-            display="flex" 
-            alignItems={{ xs: 'stretch', md: 'flex-start' }}
-            sx={{ 
-              minWidth: { xs: '100%', md: '200px' }
+          <Typography
+            variant="h6"
+            sx={{
+              fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold,
+              color: theme.palette.text.primary,
             }}
           >
-            {generateReport.isPending ? (
-              <ProgressBar />
-            ) : (
-              <Button
-                variant="contained"
-                size="large"
-                type="submit"
-                onClick={handleSubmit(onSubmit)}
-                sx={{
-                  width: '100%',
-                  height: '56px',
-                  textTransform: 'none',
-                  fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.medium,
-                  borderRadius: 1,
-                  boxShadow: 'none',
-                  bgcolor: theme.palette.primary.main,
-                  color: theme.palette.primary.contrastText,
-                  '&:hover': {
-                    bgcolor: theme.palette.primary.dark,
-                    boxShadow: STYLE_GUIDE.SHADOWS.none,
-                  }
-                }}
-              >
-                Generate Report
-              </Button>
-            )}
+            Generate New Report
+          </Typography>
+          
+          <Box 
+            display="flex" 
+            flexDirection={{ xs: 'column', md: 'row' }}
+            gap={STYLE_GUIDE.SPACING.s4}
+            sx={{
+              '& .MuiFormControl-root': {
+                flex: 1,
+                minWidth: { xs: '100%', md: '200px' }
+              }
+            }}
+          >
+            <CommonDropdownSearch
+              control={control}
+              name="customReportId"
+              label="Select Report"
+              apiUrl={`${GET.Custom_Report}/list`}
+              labelName="reportName"
+              labelValue="_id"
+              rules={{ required: "Report selection is required" }}
+              error={!!errors.customReportId}
+              errorMessage={errors.customReportId?.message}
+              apiName="customReport"
+              defaultDataUrl=""
+            />
+
+            <CommonDatePicker
+              name="versionValue"
+              control={control}
+              views={["year", "month"]}
+              label="Period*"
+              rules={{ required: "Period is required" }}
+            />
+
+            <Box 
+              display="flex" 
+              alignItems={{ xs: 'stretch', md: 'flex-start' }}
+              sx={{ 
+                minWidth: { xs: '100%', md: '200px' }
+              }}
+            >
+              {generateReport.isPending ? (
+                <ProgressBar />
+              ) : (
+                <Button
+                  variant="contained"
+                  size="large"
+                  type="submit"
+                  onClick={handleSubmit(onSubmit)}
+                  sx={{
+                    width: '100%',
+                    height: '56px',
+                    textTransform: 'none',
+                    fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.medium,
+                    borderRadius: 1,
+                    boxShadow: 'none',
+                    bgcolor: theme.palette.primary.main,
+                    color: theme.palette.primary.contrastText,
+                    '&:hover': {
+                      bgcolor: theme.palette.primary.dark,
+                      boxShadow: STYLE_GUIDE.SHADOWS.none,
+                    }
+                  }}
+                >
+                  Generate Report
+                </Button>
+              )}
+            </Box>
           </Box>
-        </Box>
-      </Box>
+        </CardContent>
+      </Card>
 
       {reportId && versionValue && (
         <UploadMultipleFiles

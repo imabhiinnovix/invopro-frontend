@@ -15,6 +15,8 @@ import {
   Button,
   CircularProgress,
   useTheme,
+  Card,
+  CardContent,
 } from "@mui/material";
 import { useForm } from "react-hook-form";
 import CommonDatePicker from "../../components/common/datePicker/datePicker";
@@ -241,64 +243,67 @@ const DataSources = () => {
         boxShadow: STYLE_GUIDE.SHADOWS.base
       }}
     >
-      <Stack 
-        direction="row" 
-        justifyContent="space-between" 
-        alignItems="center"
+      <Card 
         sx={{ 
           marginBottom: STYLE_GUIDE.SPACING.s8,
-          padding: STYLE_GUIDE.SPACING.s4,
-          backgroundColor: STYLE_GUIDE.COLORS.white,
           borderRadius: STYLE_GUIDE.SPACING.s2,
-          boxShadow: STYLE_GUIDE.SHADOWS.xxxl
+          boxShadow: STYLE_GUIDE.SHADOWS.xxxl,
         }}
       >
-        <Stack direction="row" spacing={2} alignItems="center">
-          <Typography variant="h6" color="primary" sx={{ fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold }}>
-            Data Source Version
-          </Typography>
-          <CommonDatePicker
-            name="versionValue"
-            control={control}
-            views={["year", "month"]}
-            label="Period*"
-            rules={{ required: "Period is required" }}
-          />
-        </Stack>
-        <Button
-          variant="contained"
-          disabled={dataSourceCreate?.isPending || !(versionDate && id)}
-          onClick={handleSave}
-          sx={{ 
-            minWidth: "150px",
-            height: "40px",
-            borderRadius: STYLE_GUIDE.SPACING.s1,
-            textTransform: "none",
-            fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
-            fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.medium,
-            boxShadow: "none",
-            "&:hover": {
-              boxShadow: "none",
-            }
-          }}
-        >
-          {dataSourceCreate?.isPending ? (
-            <Box
-              sx={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                width: "56px",
-                height: "24px",
+        <CardContent sx={{ padding: STYLE_GUIDE.SPACING.s4 }}>
+          <Stack 
+            direction="row" 
+            justifyContent="space-between" 
+            alignItems="center"
+          >
+            <Stack direction="row" spacing={2} alignItems="center">
+              <Typography variant="h6" color="primary" sx={{ fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold }}>
+                Data Source Version
+              </Typography>
+              <CommonDatePicker
+                name="versionValue"
+                control={control}
+                views={["year", "month"]}
+                label="Period*"
+                rules={{ required: "Period is required" }}
+              />
+            </Stack>
+            <Button
+              variant="contained"
+              disabled={dataSourceCreate?.isPending || !(versionDate && id)}
+              onClick={handleSave}
+              sx={{ 
+                minWidth: "150px",
+                height: "40px",
+                borderRadius: STYLE_GUIDE.SPACING.s1,
+                textTransform: "none",
+                fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
+                fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.medium,
+                boxShadow: "none",
+                "&:hover": {
+                  boxShadow: "none",
+                }
               }}
             >
-              <CircularProgress size={20} sx={{ color: STYLE_GUIDE.COLORS.white }} />
-            </Box>
-          ) : (
-            "Save Changes"
-          )}
-        </Button>
-      </Stack>
+              {dataSourceCreate?.isPending ? (
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    width: "56px",
+                    height: "24px",
+                  }}
+                >
+                  <CircularProgress size={20} sx={{ color: STYLE_GUIDE.COLORS.white }} />
+                </Box>
+              ) : (
+                "Save Changes"
+              )}
+            </Button>
+          </Stack>
+        </CardContent>
+      </Card>
       
       <Box sx={{ display: "flex", justifyContent: "center" }}>
         <TableContainer
