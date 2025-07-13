@@ -397,7 +397,7 @@ const ReportSettings: React.FC = () => {
         Object.values(editingColumns).some(Boolean);
 
     return (
-        <Container maxWidth={false} sx={{ bgcolor: theme.palette.background.default, minHeight: '100vh' }}>
+        <Box sx={{ backgroundColor: theme.palette.background.paper }}>
             <Paper elevation={3} sx={{
                 p: STYLE_GUIDE.SPACING.s4,
                 mt: STYLE_GUIDE.SPACING.s4,
@@ -775,7 +775,7 @@ const ReportSettings: React.FC = () => {
                 onConfirm={handleConfirmDeleteColumn}
                 onCancel={handleCancelDeleteColumn}
             />
-        </Container>
+        </Box>
     );
 };
 

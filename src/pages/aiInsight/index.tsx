@@ -7,6 +7,7 @@ import {
   CircularProgress,
   Avatar,
   InputAdornment,
+  useTheme,
 } from '@mui/material';
 import SendIcon from '@mui/icons-material/Send';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
@@ -39,6 +40,7 @@ function extractHtmlFromApiData(data: any): string {
 }
 
 const AIInsightPage: React.FC = () => {
+  const theme = useTheme();
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [qaPairs, setQAPairs] = React.useState<QAPair[]>([]);
 
@@ -107,7 +109,7 @@ const AIInsightPage: React.FC = () => {
   return (
     <Box sx={{
       height: '100%',
-      bgcolor: STYLE_GUIDE.COLORS.white200,
+      bgcolor: theme.palette.background.paper,
       display: 'flex',
       flexDirection: 'column',
       boxShadow: STYLE_GUIDE.SHADOWS.xs,

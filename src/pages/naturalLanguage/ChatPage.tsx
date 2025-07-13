@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Box, TextField, IconButton, Typography, Paper, InputAdornment } from '@mui/material';
+import { Box, TextField, IconButton, Typography, Paper, InputAdornment, useTheme } from '@mui/material';
 import SendIcon from '@mui/icons-material/Send';
 import { useAppDispatch, useAppSelector } from '../../storeHooks';
 
@@ -8,6 +8,7 @@ import { fetchWidgetSettingBasedOnNaturalLanguage } from '../dashboard/dashboard
 import { STYLE_GUIDE } from '../../styles';
 
 const ChatPage: React.FC = () => {
+  const theme = useTheme();
   const dispatch = useAppDispatch();
   const { chartsLoading } = useAppSelector((state) => ({
     chartsLoading: state.dashboard.chartsLoading,
@@ -29,7 +30,14 @@ const ChatPage: React.FC = () => {
   };
 
   return (
-    <Box component={Paper} elevation={3} display="flex" flexDirection="column" height="100%">
+    <Box 
+      component={Paper} 
+      elevation={3} 
+      display="flex" 
+      flexDirection="column" 
+      height="100%"
+      sx={{ backgroundColor: theme.palette.background.paper }}
+    >
       <Box p={STYLE_GUIDE.SPACING.s4} color={STYLE_GUIDE.COLORS.black}>
         <Typography variant="h5">Generate Smart Charts from Your Questions</Typography>
       </Box>

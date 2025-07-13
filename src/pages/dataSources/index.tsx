@@ -14,6 +14,7 @@ import {
   Typography,
   Button,
   CircularProgress,
+  useTheme,
 } from "@mui/material";
 import { useForm } from "react-hook-form";
 import CommonDatePicker from "../../components/common/datePicker/datePicker";
@@ -32,6 +33,7 @@ import usePost from "../../hooks/usePost";
 import { STYLE_GUIDE } from "../../styles";
 
 const DataSources = () => {
+  const theme = useTheme();
   const [rows, setRows] = useState<
     { [x: string]: string | number | boolean }[]
   >([]);
@@ -234,7 +236,7 @@ const DataSources = () => {
       sx={{ 
         margin: STYLE_GUIDE.SPACING.s8,
         padding: STYLE_GUIDE.SPACING.s8,
-        backgroundColor: STYLE_GUIDE.COLORS.backgroundLightGray,
+        backgroundColor: theme.palette.background.paper,
         borderRadius: STYLE_GUIDE.SPACING.s3,
         boxShadow: STYLE_GUIDE.SHADOWS.base
       }}

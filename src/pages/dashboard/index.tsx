@@ -171,7 +171,7 @@ const Dashboard = () => {
       <Box
         sx={{
           width: "100%",
-          backgroundColor: STYLE_GUIDE.COLORS.backgroundSurface,
+          backgroundColor: theme.palette.background.paper,
         }}
       >
         <Box
@@ -182,7 +182,7 @@ const Dashboard = () => {
             alignItems: { xs: "flex-start", md: "center" },
             gap: STYLE_GUIDE.SPACING.s4,
             p: { xs: STYLE_GUIDE.SPACING.s4, md: STYLE_GUIDE.SPACING.s6 },
-            backgroundColor: STYLE_GUIDE.COLORS.white,
+            backgroundColor: theme.palette.background.paper,
             borderBottom: "1px solid",
             borderColor: STYLE_GUIDE.COLORS.divider,
           }}
@@ -350,7 +350,7 @@ const Dashboard = () => {
 
   // Show specific dashboard view
   return (
-    <Box sx={{ p: STYLE_GUIDE.SPACING.s1 }}>
+    <Box sx={{ p: STYLE_GUIDE.SPACING.s1, backgroundColor: theme.palette.background.paper }}>
       <DashboardView
         title={currentDashboard.name}
         onTitleChange={handleTitleChange}

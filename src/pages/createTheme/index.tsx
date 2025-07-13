@@ -12,6 +12,7 @@ import {
   DialogContent,
   DialogContentText,
   DialogActions,
+  useTheme,
 } from "@mui/material";
 import { useAppDispatch, useAppSelector } from "../../storeHooks";
 import { fetchThemeList } from "./themeActions";
@@ -22,6 +23,7 @@ import usePost from "../../hooks/usePost";
 import { POST } from "../../services/apiRoutes";
 
 const CreateTheme = () => {
+  const theme = useTheme();
   const dispatch = useAppDispatch();
   const { themes, loading, error } = useAppSelector((state) => state.theme);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -111,7 +113,7 @@ const CreateTheme = () => {
   }
 
   return (
-    <Box sx={{ p: 3 }}>
+    <Box sx={{ p: 3, backgroundColor: theme.palette.background.paper }}>
       <Stack direction="row" justifyContent="space-between" alignItems="center">
         <Typography variant="h4" component="h1" gutterBottom>
           Theme Library

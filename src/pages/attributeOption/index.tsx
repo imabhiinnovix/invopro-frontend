@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import AttributeOptionTable from '../../components/atom/attributeOption/attributeOptionTable';
 import CreateUpdateAttributeOption from '../../components/atom/attributeOption/createUpdateAttributeOption';
-import { Box, Button } from '@mui/material';
+import { Box, Button, useTheme } from '@mui/material';
 import { STYLE_GUIDE } from '../../styles';
 
 export default function AttributeOption() {
+  const theme = useTheme();
   const [attributeOptionReload, setAttributeOptionReload] = useState(false);
   return (
     
@@ -14,7 +15,7 @@ export default function AttributeOption() {
       p={STYLE_GUIDE.SPACING.s4}
       gap={STYLE_GUIDE.SPACING.s8}
       width="100%"
-      bgcolor={STYLE_GUIDE.COLORS.backgroundGray}
+      bgcolor={theme.palette.background.paper}
       sx={{
         height: 'calc(100vh - 70px)',
         '@media (max-width: 600px)': {

@@ -113,7 +113,7 @@ export default function Report() {
     <Box
       sx={{
         width: '100%',
-        backgroundColor: '#F8FAFC',
+        backgroundColor: theme.palette.background.paper,
         minHeight: 'calc(100vh - 64px)',
         p: 1,
       }}

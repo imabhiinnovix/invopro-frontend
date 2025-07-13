@@ -11,6 +11,7 @@ import {
   DialogContent,
   DialogContentText,
   DialogActions,
+  useTheme,
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -31,6 +32,7 @@ import CreateDashboardThemeDialog from './components/CreateDashboardThemeDialog'
 import { toast } from 'react-toastify';
 
 const DashboardThemePage = () => {
+  const theme = useTheme();
   const dispatch = useAppDispatch();
   const { themes, loading, error, success, currentTheme } = useAppSelector((state) => state.dashboardTheme);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -106,7 +108,7 @@ const DashboardThemePage = () => {
   }
 
   return (
-    <Box sx={{ p: 3, maxWidth: '1400px', margin: '0 auto' }}>
+    <Box sx={{ p: 3, maxWidth: '1400px', margin: '0 auto', backgroundColor: theme.palette.background.paper }}>
       <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 3 }}>
         <Box>
           <Typography variant="h4" component="h1" gutterBottom sx={{ fontWeight: 600 }}>
