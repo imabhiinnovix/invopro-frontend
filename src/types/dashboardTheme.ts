@@ -133,6 +133,7 @@ export interface DashboardTheme {
       borderRadius: string;
       boxShadow: string;
       headerBackground: string;
+      headerText: string;
       rowHoverBackground: string;
       borderColor: string;
     };

@@ -14,6 +14,7 @@ import {
   DialogContent,
   Stack,
   DialogActions,
+  useTheme,
 } from '@mui/material';
 import { useForm } from 'react-hook-form';
 import CommonDropdownSearch from '../../common/dropdown/searchableDropdown';
@@ -44,6 +45,7 @@ interface FormValues {
 }
 
 const CreateDataSourceVersion: React.FC<CreateDataSourceVersionProps> = ({ setReload, CustomButton, title }) => {
+  const theme = useTheme();
   const [open, setOpen] = useState(false);
   const [versionName, setVersionName] = useState('');
   const [file, setFile] = useState<File | null>(null);
@@ -387,8 +389,20 @@ const CreateDataSourceVersion: React.FC<CreateDataSourceVersionProps> = ({ setRe
                       <TableRow>
                         {/* <TableCell>{fileName?.split('.')[0]} Attribute</TableCell>
                         <TableCell>Entity Setting Attribute</TableCell> */}
-                        <TableCell>Entity Setting Attribute</TableCell>
-                        <TableCell>{fileName?.split('.')[0]} Attribute</TableCell>
+                        <TableCell sx={{ 
+                          backgroundColor: theme.palette.table?.headerBackground,
+                          color: theme.palette.table?.headerText,
+                          fontWeight: 'medium'
+                        }}>
+                          Entity Setting Attribute
+                        </TableCell>
+                        <TableCell sx={{ 
+                          backgroundColor: theme.palette.table?.headerBackground,
+                          color: theme.palette.table?.headerText,
+                          fontWeight: 'medium'
+                        }}>
+                          {fileName?.split('.')[0]} Attribute
+                        </TableCell>
                       </TableRow>
                     </TableHead>
                     <TableBody>

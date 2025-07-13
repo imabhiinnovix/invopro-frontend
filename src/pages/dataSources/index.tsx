@@ -325,10 +325,10 @@ const DataSources = () => {
                   <TableCell
                     key={field?.optionAttributeId}
                     sx={{
-                      backgroundColor: STYLE_GUIDE.COLORS.backgroundLightGray,
+                      backgroundColor: theme.palette.table?.headerBackground || STYLE_GUIDE.COLORS.backgroundLightGray,
                       fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold,
                       fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base,
-                      color: STYLE_GUIDE.COLORS.textGray,
+                      color: theme.palette.table?.headerText || STYLE_GUIDE.COLORS.textGray,
                       borderBottom: `2px solid ${STYLE_GUIDE.COLORS.divider}`,
                        padding: "12px 16px"
                     }}

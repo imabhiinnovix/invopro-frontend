@@ -86,6 +86,7 @@ export const getDefaultDashboardTheme = (): DashboardTheme => ({
       borderRadius: STYLE_GUIDE.SPACING.s2,
       boxShadow: STYLE_GUIDE.SHADOWS.sm,
       headerBackground: STYLE_GUIDE.COLORS.backgroundLightGray,
+      headerText: STYLE_GUIDE.COLORS.textGray,
       rowHoverBackground: STYLE_GUIDE.COLORS.backgroundHover,
       borderColor: STYLE_GUIDE.COLORS.divider,
     },
@@ -296,7 +297,7 @@ export const createMuiThemeFromDashboardTheme = (dashboardTheme: DashboardTheme)
             boxShadow: dashboardTheme.components.table.boxShadow,
             '& .MuiTableHead-root .MuiTableCell-root': {
               backgroundColor: dashboardTheme.components.table.headerBackground,
-              color: dashboardTheme.colors.text.primary,
+              color: dashboardTheme.components.table.headerText,
               fontWeight: '600',
               fontSize: '14px',
               borderBottom: `2px solid ${dashboardTheme.colors.divider}`,
@@ -315,7 +316,7 @@ export const createMuiThemeFromDashboardTheme = (dashboardTheme: DashboardTheme)
           root: {
             '& .MuiTableCell-root': {
               backgroundColor: dashboardTheme.components.table.headerBackground,
-              color: dashboardTheme.colors.text.primary,
+              color: dashboardTheme.components.table.headerText,
               fontWeight: '600',
               fontSize: '14px',
               borderBottom: `2px solid ${dashboardTheme.colors.divider}`,
@@ -331,7 +332,7 @@ export const createMuiThemeFromDashboardTheme = (dashboardTheme: DashboardTheme)
           },
           head: {
             backgroundColor: dashboardTheme.components.table.headerBackground,
-            color: dashboardTheme.colors.text.primary,
+            color: dashboardTheme.components.table.headerText,
             fontWeight: '600',
             fontSize: '14px',
             borderBottom: `2px solid ${dashboardTheme.colors.divider}`,

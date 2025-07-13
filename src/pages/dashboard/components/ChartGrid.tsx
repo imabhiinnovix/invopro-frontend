@@ -1845,10 +1845,10 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
                     <TableCell
                       key={column}
                       sx={{
-                        backgroundColor: '#f1f5f9',
+                        backgroundColor: theme.palette.table?.headerBackground || '#f1f5f9',
                         fontWeight: 600,
                         fontSize: '14px',
-                        color: theme.palette.text.primary,
+                        color: theme.palette.table?.headerText || theme.palette.text.primary,
                         borderBottom: `2px solid ${theme.palette.divider}`,
                         padding: '12px 16px'
                       }}
@@ -1938,7 +1938,11 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
               <TableHead>
                 <TableRow>
                   {columns.map((column) => (
-                    <TableCell key={column} sx={{ fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.medium }}>
+                    <TableCell key={column} sx={{ 
+                      fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.medium,
+                      backgroundColor: theme.palette.table?.headerBackground,
+                      color: theme.palette.table?.headerText
+                    }}>
                       {column}
                     </TableCell>
                   ))}

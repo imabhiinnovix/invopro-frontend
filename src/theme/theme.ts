@@ -41,6 +41,10 @@ export const theme = createTheme({
       optionText: STYLE_GUIDE.COLORS.textDarkGray,
       optionHoverBackground: STYLE_GUIDE.COLORS.backgroundLightGray,
     },
+    table: {
+      headerBackground: STYLE_GUIDE.COLORS.backgroundLightGray,
+      headerText: STYLE_GUIDE.COLORS.textGray,
+    },
   },
   shape: {
     borderRadius: parseInt(STYLE_GUIDE.SPACING.s2),
@@ -75,6 +79,20 @@ export const theme = createTheme({
         root: {
           borderRadius: commonValues.borderRadius,
           boxShadow: commonValues.boxShadow,
+        },
+      },
+    },
+    MuiTableHead: {
+      styleOverrides: {
+        root: {
+          backgroundColor: STYLE_GUIDE.COLORS.backgroundLightGray,
+          '& .MuiTableCell-root': {
+            backgroundColor: STYLE_GUIDE.COLORS.backgroundLightGray,
+            color: STYLE_GUIDE.COLORS.textGray,
+            fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold,
+            fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base,
+            borderBottom: `2px solid ${STYLE_GUIDE.COLORS.divider}`,
+          },
         },
       },
     },

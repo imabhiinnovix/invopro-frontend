@@ -67,8 +67,9 @@ interface ExtendedFile extends File {
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
   [`&.${tableCellClasses.head}`]: {
-    backgroundColor: theme.palette.common.black,
-    color: theme.palette.common.white,
+    backgroundColor: theme.palette.table?.headerBackground || theme.palette.background.default,
+    color: theme.palette.table?.headerText || theme.palette.text.primary,
+    fontWeight: theme.typography.fontWeightMedium,
   },
   [`&.${tableCellClasses.body}`]: {
     fontSize: 14,

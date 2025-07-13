@@ -29,8 +29,8 @@ import DownloadForOfflineIcon from '@mui/icons-material/DownloadForOffline';
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
   [`&.${tableCellClasses.head}`]: {
-    backgroundColor: theme.palette.background.default,
-    color: theme.palette.text.primary,
+    backgroundColor: theme.palette.table?.headerBackground || theme.palette.background.default,
+    color: theme.palette.table?.headerText || theme.palette.text.primary,
     fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold,
     fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
     height: "48px",

@@ -11,6 +11,7 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
+  useTheme,
 } from "@mui/material";
 import { Control, UseFormSetValue, UseFormWatch } from "react-hook-form";
 import CommonSelect from "../../common/dropdown/commonSelect";
@@ -52,6 +53,7 @@ const ViewMapping: React.FC<CreateDataSourceVersionProps> = ({
   trigger,
   watch,
 }) => {
+  const theme = useTheme();
   const watchMapping = watch(`mappings.${fileName.extededName}`);
   const handleCancel = () => {
     trigger();
@@ -108,8 +110,20 @@ const ViewMapping: React.FC<CreateDataSourceVersionProps> = ({
               <Table>
                 <TableHead>
                   <TableRow>
-                    <TableCell>Entity Setting Attribute</TableCell>
-                    <TableCell>{fileName.extededName} Attribute</TableCell>
+                    <TableCell sx={{ 
+                      backgroundColor: theme.palette.table?.headerBackground,
+                      color: theme.palette.table?.headerText,
+                      fontWeight: 'medium'
+                    }}>
+                      Entity Setting Attribute
+                    </TableCell>
+                    <TableCell sx={{ 
+                      backgroundColor: theme.palette.table?.headerBackground,
+                      color: theme.palette.table?.headerText,
+                      fontWeight: 'medium'
+                    }}>
+                      {fileName.extededName} Attribute
+                    </TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>

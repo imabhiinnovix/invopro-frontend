@@ -17,6 +17,10 @@ declare module '@mui/material/styles' {
       optionText: string;
       optionHoverBackground: string;
     };
+    table?: {
+      headerBackground: string;
+      headerText: string;
+    };
   }
   
   interface PaletteOptions {
@@ -34,6 +38,10 @@ declare module '@mui/material/styles' {
       optionBackground: string;
       optionText: string;
       optionHoverBackground: string;
+    };
+    table?: {
+      headerBackground: string;
+      headerText: string;
     };
   }
 }
@@ -55,6 +63,10 @@ declare module '@mui/material/styles/createPalette' {
       optionText: string;
       optionHoverBackground: string;
     };
+    table?: {
+      headerBackground: string;
+      headerText: string;
+    };
   }
   
   interface PaletteOptions {
@@ -72,6 +84,10 @@ declare module '@mui/material/styles/createPalette' {
       optionBackground: string;
       optionText: string;
       optionHoverBackground: string;
+    };
+    table?: {
+      headerBackground: string;
+      headerText: string;
     };
   }
 } 

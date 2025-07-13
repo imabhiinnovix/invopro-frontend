@@ -237,16 +237,16 @@ const Dashboard = () => {
             <Table stickyHeader>
               <TableHead>
                 <TableRow>
-                  <TableCell sx={{ fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold, color: STYLE_GUIDE.COLORS.black }}>
+                  <TableCell sx={{ fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold, color: theme.palette.table?.headerText || STYLE_GUIDE.COLORS.black }}>
                     Name
                   </TableCell>
-                  <TableCell sx={{ fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold, color: STYLE_GUIDE.COLORS.black }}>
+                  <TableCell sx={{ fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold, color: theme.palette.table?.headerText || STYLE_GUIDE.COLORS.black }}>
                     Created By
                   </TableCell>
-                  <TableCell sx={{ fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold, color: STYLE_GUIDE.COLORS.black }}>
+                  <TableCell sx={{ fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold, color: theme.palette.table?.headerText || STYLE_GUIDE.COLORS.black }}>
                     Type
                   </TableCell>
-                  <TableCell sx={{ fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold, color: STYLE_GUIDE.COLORS.black }}>
+                  <TableCell sx={{ fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold, color: theme.palette.table?.headerText || STYLE_GUIDE.COLORS.black }}>
                     Actions
                   </TableCell>
                 </TableRow>

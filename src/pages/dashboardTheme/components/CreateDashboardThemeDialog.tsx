@@ -263,6 +263,26 @@ const CreateDashboardThemeDialog: React.FC<CreateDashboardThemeDialogProps> = ({
 
                 <Paper elevation={2} sx={{ p: 3, mb: 3 }}>
                   <Typography variant="h6" sx={{ mb: 2, fontWeight: 700 }}>
+                    Table Colors
+                  </Typography>
+                  <Grid container spacing={2}>
+                    <Grid item xs={12} md={3}>
+                      <ColorPickerField label="Table Header Background" path="components.table.headerBackground" color={formData.components.table.headerBackground} />
+                    </Grid>
+                    <Grid item xs={12} md={3}>
+                      <ColorPickerField label="Table Header Text" path="components.table.headerText" color={formData.components.table.headerText} />
+                    </Grid>
+                    <Grid item xs={12} md={3}>
+                      <ColorPickerField label="Table Row Hover Background" path="components.table.rowHoverBackground" color={formData.components.table.rowHoverBackground} />
+                    </Grid>
+                    <Grid item xs={12} md={3}>
+                      <ColorPickerField label="Table Border Color" path="components.table.borderColor" color={formData.components.table.borderColor} />
+                    </Grid>
+                  </Grid>
+                </Paper>
+
+                <Paper elevation={2} sx={{ p: 3, mb: 3 }}>
+                  <Typography variant="h6" sx={{ mb: 2, fontWeight: 700 }}>
                     Background & Text
                   </Typography>
                   <Grid container spacing={2}>

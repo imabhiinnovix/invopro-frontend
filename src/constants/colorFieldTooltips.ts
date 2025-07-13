@@ -22,6 +22,10 @@ export const COLOR_FIELD_TOOLTIPS: { [key: string]: string } = {
   'Dropdown Option Background': 'Background color for individual dropdown options',
   'Dropdown Option Text': 'Text color for dropdown options and menu items',
   'Card Background': 'Background color for card components and content containers',
+  'Table Header Background': 'Background color for table headers across all data tables in the application',
+  'Table Header Text': 'Text color for table headers across all data tables in the application',
+  'Table Row Hover Background': 'Background color for table rows when hovered over',
+  'Table Border Color': 'Color for table borders and cell separators',
 };
 
 export const getColorFieldTooltip = (label: string): string => {
