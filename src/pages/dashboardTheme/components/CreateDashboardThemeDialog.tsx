@@ -273,7 +273,16 @@ const CreateDashboardThemeDialog: React.FC<CreateDashboardThemeDialogProps> = ({
                       <ColorPickerField label="Table Header Text" path="components.table.headerText" color={formData.components.table.headerText} />
                     </Grid>
                     <Grid item xs={12} md={3}>
+                      <ColorPickerField label="Table Row Odd Background" path="components.table.rowOddBackground" color={formData.components.table.rowOddBackground} />
+                    </Grid>
+                    <Grid item xs={12} md={3}>
+                      <ColorPickerField label="Table Row Even Background" path="components.table.rowEvenBackground" color={formData.components.table.rowEvenBackground} />
+                    </Grid>
+                    <Grid item xs={12} md={3}>
                       <ColorPickerField label="Table Row Hover Background" path="components.table.rowHoverBackground" color={formData.components.table.rowHoverBackground} />
+                    </Grid>
+                    <Grid item xs={12} md={3}>
+                      <ColorPickerField label="Table Row Text" path="components.table.rowText" color={formData.components.table.rowText} />
                     </Grid>
                     <Grid item xs={12} md={3}>
                       <ColorPickerField label="Table Border Color" path="components.table.borderColor" color={formData.components.table.borderColor} />

@@ -15,6 +15,7 @@ import {
   Tooltip,
   tableCellClasses,
 } from "@mui/material";
+import { useDashboardTheme } from "../../../context/DashboardThemeProvider";
 
 import useGet from '../../../hooks/useGet';
 import { GET } from '../../../services/apiRoutes';
@@ -51,12 +52,6 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
     transform: 'translateY(-1px)',
     transition: 'all 0.2s ease-in-out',
     boxShadow: theme.shadows[1],
-  },
-  "&:nth-of-type(odd)": {
-    backgroundColor: theme.palette.background.default,
-  },
-  "&:nth-of-type(even)": {
-    backgroundColor: theme.palette.background.paper,
   },
 }));
 
@@ -105,6 +100,7 @@ const ReportRequestTable: React.FC<AttributeOptionTableProps> = ({
   setViewReportNameWithVersionValue,
   setAllDetailData,
 }) => {
+  const { currentTheme } = useDashboardTheme();
   const [reportRequests, setReportRequests] = useState<ReportRequestResponse[]>(
     []
   );
@@ -325,11 +321,19 @@ const ReportRequestTable: React.FC<AttributeOptionTableProps> = ({
               ref={
                 reportRequests.length === dataIndex + 1 ? lastElementRef : null
               }
+              sx={{
+                backgroundColor: dataIndex % 2 === 0 
+                  ? currentTheme?.components?.table?.rowOddBackground || '#f1f5f9'
+                  : currentTheme?.components?.table?.rowEvenBackground || '#ffffff',
+                '&:hover': {
+                  backgroundColor: currentTheme?.components?.table?.rowHoverBackground || '#f0f0f0',
+                }
+              }}
             >
-              <StyledTableCell>
+              <StyledTableCell sx={{ color: currentTheme?.components?.table?.rowText || '#34495e' }}>
                 {data.customReportId?.reportName || "-"}
               </StyledTableCell>
-              <StyledTableCell>{data.versionValue || "-"}</StyledTableCell>
+              <StyledTableCell sx={{ color: currentTheme?.components?.table?.rowText || '#34495e' }}>{data.versionValue || "-"}</StyledTableCell>
               <StyledTableCell
                 sx={{
                   color:
@@ -345,12 +349,12 @@ const ReportRequestTable: React.FC<AttributeOptionTableProps> = ({
               >
                 {data.status || "-"}
               </StyledTableCell>
-              <StyledTableCell>
+              <StyledTableCell sx={{ color: currentTheme?.components?.table?.rowText || '#34495e' }}>
                 {`${data?.createdBy?.firstName || ""}${
                   data?.createdBy?.lastName ? " " + data.createdBy.lastName : ""
                 }`}
               </StyledTableCell>
-              <StyledTableCell>
+              <StyledTableCell sx={{ color: currentTheme?.components?.table?.rowText || '#34495e' }}>
                 {data.createdAt
                   ? new Date(data.createdAt).toLocaleString()
                   : "-"}
@@ -463,7 +467,12 @@ const ReportRequestTable: React.FC<AttributeOptionTableProps> = ({
 
           {reportRequestList.isFetching &&
             Array.from({ length: 1 }, (_, index) => (
-              <StyledTableRow key={index}>
+              <StyledTableRow 
+                key={index}
+                sx={{
+                  backgroundColor: currentTheme?.components?.table?.rowOddBackground || '#f1f5f9',
+                }}
+              >
                 <StyledTableCell colSpan={5}>
                   <Skeleton height={52} />
                 </StyledTableCell>

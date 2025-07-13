@@ -44,6 +44,10 @@ export const theme = createTheme({
     table: {
       headerBackground: STYLE_GUIDE.COLORS.backgroundLightGray,
       headerText: STYLE_GUIDE.COLORS.textGray,
+      rowOddBackground: STYLE_GUIDE.COLORS.backgroundDefault,
+      rowEvenBackground: STYLE_GUIDE.COLORS.white,
+      rowHoverBackground: STYLE_GUIDE.COLORS.backgroundHover,
+      rowText: STYLE_GUIDE.COLORS.textDarkGray,
     },
   },
   shape: {

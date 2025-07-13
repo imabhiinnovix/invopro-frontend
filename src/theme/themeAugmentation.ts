@@ -20,6 +20,10 @@ declare module '@mui/material/styles' {
     table?: {
       headerBackground: string;
       headerText: string;
+      rowOddBackground: string;
+      rowEvenBackground: string;
+      rowHoverBackground: string;
+      rowText: string;
     };
   }
   
@@ -42,6 +46,10 @@ declare module '@mui/material/styles' {
     table?: {
       headerBackground: string;
       headerText: string;
+      rowOddBackground: string;
+      rowEvenBackground: string;
+      rowHoverBackground: string;
+      rowText: string;
     };
   }
 }
@@ -66,6 +74,10 @@ declare module '@mui/material/styles/createPalette' {
     table?: {
       headerBackground: string;
       headerText: string;
+      rowOddBackground: string;
+      rowEvenBackground: string;
+      rowHoverBackground: string;
+      rowText: string;
     };
   }
   
@@ -88,6 +100,10 @@ declare module '@mui/material/styles/createPalette' {
     table?: {
       headerBackground: string;
       headerText: string;
+      rowOddBackground: string;
+      rowEvenBackground: string;
+      rowHoverBackground: string;
+      rowText: string;
     };
   }
 } 

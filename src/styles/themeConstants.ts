@@ -87,7 +87,10 @@ export const getDefaultDashboardTheme = (): DashboardTheme => ({
       boxShadow: STYLE_GUIDE.SHADOWS.sm,
       headerBackground: STYLE_GUIDE.COLORS.backgroundLightGray,
       headerText: STYLE_GUIDE.COLORS.textGray,
+      rowOddBackground: STYLE_GUIDE.COLORS.backgroundDefault,
+      rowEvenBackground: STYLE_GUIDE.COLORS.white,
       rowHoverBackground: STYLE_GUIDE.COLORS.backgroundHover,
+      rowText: STYLE_GUIDE.COLORS.textDarkGray,
       borderColor: STYLE_GUIDE.COLORS.divider,
     },
     navigation: {
@@ -306,7 +309,7 @@ export const createMuiThemeFromDashboardTheme = (dashboardTheme: DashboardTheme)
               backgroundColor: dashboardTheme.components.table.rowHoverBackground,
             },
             '& .MuiTableCell-root': {
-              color: dashboardTheme.colors.text.primary,
+              color: dashboardTheme.components.table.rowText,
             },
           },
         },
@@ -338,7 +341,7 @@ export const createMuiThemeFromDashboardTheme = (dashboardTheme: DashboardTheme)
             borderBottom: `2px solid ${dashboardTheme.colors.divider}`,
           },
           body: {
-            color: dashboardTheme.colors.text.primary,
+            color: dashboardTheme.components.table.rowText,
             borderBottom: `1px solid ${dashboardTheme.colors.divider}`,
           },
         },
@@ -350,10 +353,10 @@ export const createMuiThemeFromDashboardTheme = (dashboardTheme: DashboardTheme)
               backgroundColor: dashboardTheme.components.table.rowHoverBackground,
             },
             '&:nth-of-type(odd)': {
-              backgroundColor: dashboardTheme.colors.background.default,
+              backgroundColor: dashboardTheme.components.table.rowOddBackground,
             },
             '&:nth-of-type(even)': {
-              backgroundColor: dashboardTheme.colors.background.paper,
+              backgroundColor: dashboardTheme.components.table.rowEvenBackground,
             },
           },
         },

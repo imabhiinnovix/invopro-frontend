@@ -24,7 +24,10 @@ export const COLOR_FIELD_TOOLTIPS: { [key: string]: string } = {
   'Card Background': 'Background color for card components and content containers',
   'Table Header Background': 'Background color for table headers across all data tables in the application',
   'Table Header Text': 'Text color for table headers across all data tables in the application',
+  'Table Row Odd Background': 'Background color for odd-numbered table rows (1st, 3rd, 5th, etc.)',
+  'Table Row Even Background': 'Background color for even-numbered table rows (2nd, 4th, 6th, etc.)',
   'Table Row Hover Background': 'Background color for table rows when hovered over',
+  'Table Row Text': 'Text color for table row content across all data tables',
   'Table Border Color': 'Color for table borders and cell separators',
 };
 

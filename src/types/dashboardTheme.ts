@@ -134,7 +134,10 @@ export interface DashboardTheme {
       boxShadow: string;
       headerBackground: string;
       headerText: string;
+      rowOddBackground: string;
+      rowEvenBackground: string;
       rowHoverBackground: string;
+      rowText: string;
       borderColor: string;
     };
     navigation: {
