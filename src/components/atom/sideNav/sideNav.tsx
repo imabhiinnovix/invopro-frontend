@@ -158,17 +158,19 @@ export default function SideNav() {
     dispatch(fetchDashboardList());
   }, [dispatch]);
 
-  const handleItemClick = (route: string, hasSubItems: boolean, itemName: string) => {
+
+  const handleItemClick = (
+    route: string,
+    hasSubItems: boolean,
+    itemName: string
+  ) => {
     if (hasSubItems) {
-      if (itemName === 'Dashboards') {
+      if (itemName === "Dashboards") {
         setOpenDashboard((prev) => !prev);
         if (!openDashboard) {
           setOpenDashboard(true);
         }
         navigate(route);
-      } else if (itemName === 'Data Sources') {
-        // Navigate to main data source page
-        navigate('/data-source');
       } else {
         setOpenSettings((prev) => !prev);
       }
@@ -319,26 +321,27 @@ export default function SideNav() {
         route: '/reports',
       },
       {
-        name: 'Data Sources',
-        icon: <SourceIcon sx={{ fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base }} />,
-        route: '/data-source',
+        name: "Data Sources",
+        icon: (
+          <SourceIcon sx={{ fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base }} />
+        ),
+        route: "/data-source",
         subItems: [
           ...(dataSourceList?.map((item) => ({
-            name: item?.name ?? '',
+            name: item?.name ?? "",
             icon: <></>,
             route: `/data-source/${item?._id}`,
           })) || []),
-
           ...(dataSourceListAPI?.hasNextPage
             ? [
               {
-                name: '',
+                name: "",
                 icon: (
-                  <div ref={lastElementRef} style={{ paddingLeft: '1.5rem' }}>
+                  <div ref={lastElementRef} style={{ paddingLeft: "1.5rem" }}>
                     Loading...
                   </div>
                 ),
-                route: '#',
+                route: "#",
               },
             ]
             : []),

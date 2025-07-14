@@ -18,6 +18,7 @@ import { useAppDispatch, useAppSelector } from '../../../../storeHooks';
 import { fetchDashboardShareUsers, shareDashboard } from '../../../../pages/dashboard/dashboardActions';
 import { toast } from 'react-toastify';
 import { STYLE_GUIDE } from '../../../../styles';
+import { useDashboardTheme } from '../../../../context/DashboardThemeProvider';
 
 interface ShareDashboardModalProps {
   open: boolean;
@@ -42,6 +43,8 @@ export const ShareDashboardModal: React.FC<ShareDashboardModalProps> = ({
     shareUsersError: state.dashboard.shareUsersError,
   }));
 
+  const currentTheme = useDashboardTheme();
+  
   useEffect(() => {
     if (open && dashboard?._id) {
       dispatch(fetchDashboardShareUsers(dashboard._id));
@@ -94,7 +97,7 @@ export const ShareDashboardModal: React.FC<ShareDashboardModalProps> = ({
           <Typography variant="subtitle1" sx={{ mb: STYLE_GUIDE.SPACING.s2 }}>
             {dashboard?.name}
           </Typography>
-          
+
           <FormControlLabel
             control={
               <Checkbox
@@ -114,7 +117,7 @@ export const ShareDashboardModal: React.FC<ShareDashboardModalProps> = ({
             ) : shareUsersError ? (
               <Typography color="error" variant="body2">
                 {shareUsersError}
-        </Typography>
+              </Typography>
             ) : (
               <Autocomplete
                 multiple
@@ -123,10 +126,11 @@ export const ShareDashboardModal: React.FC<ShareDashboardModalProps> = ({
                 value={selectedUsers}
                 onChange={(_, newValue) => setSelectedUsers(newValue)}
                 renderInput={(params) => (
-        <TextField
+                  <TextField
                     {...params}
                     label="Select users"
                     placeholder="Choose users to share with"
+                    sx={{ '& .MuiOutlinedInput-root': { borderRadius: STYLE_GUIDE.SPACING.s2, alignItems: 'center', fontSize: '14px', backgroundColor: currentTheme?.currentTheme?.colors?.background?.paper || '#ffffff', '& fieldset': { borderColor: currentTheme?.currentTheme?.colors?.inputBorder || STYLE_GUIDE.COLORS.darkBackground, }, '&:hover fieldset': { borderColor: currentTheme?.currentTheme?.colors?.borderHover || STYLE_GUIDE.COLORS.darkBorderHover, }, '&.Mui-focused fieldset': { borderColor: currentTheme?.currentTheme?.components?.input?.focusBorderColor || currentTheme?.currentTheme?.components?.input?.focusBorderColorFallback || STYLE_GUIDE.COLORS.inputFocusFallback, }, }, '& .MuiInputLabel-root': { color: currentTheme?.currentTheme?.colors?.text?.secondary || STYLE_GUIDE.COLORS.darkBorderFocus, }, '& .MuiInputLabel-root.Mui-focused': { color: currentTheme?.currentTheme?.components?.input?.focusBorderColor || currentTheme?.currentTheme?.components?.input?.focusBorderColorFallback || STYLE_GUIDE.COLORS.inputFocusFallback, }, '& .MuiInputBase-input': { color: `${currentTheme?.currentTheme?.colors?.inputText || currentTheme?.currentTheme?.colors?.text?.primary || '#000000'} !important`, }, '& .MuiInputBase-input::placeholder': { color: `${currentTheme?.currentTheme?.colors?.text?.secondary || '#666'} !important`, }, '& .MuiInputBase-input:-webkit-autofill': { WebkitTextFillColor: `${currentTheme?.currentTheme?.colors?.inputText || currentTheme?.currentTheme?.colors?.text?.primary || '#000000'} !important`, WebkitBoxShadow: `0 0 0 1000px ${currentTheme?.currentTheme?.colors?.background?.paper || '#ffffff'} inset !important`, }, }}
                   />
                 )}
               />
@@ -137,7 +141,7 @@ export const ShareDashboardModal: React.FC<ShareDashboardModalProps> = ({
       <DialogActions>
         <Button onClick={onClose} disabled={isSubmitting}>Cancel</Button>
         <Button
-          onClick={handleSubmit} 
+          onClick={handleSubmit}
           variant="contained"
           color="primary"
           disabled={(!sharedToAll && selectedUsers.length === 0) || isSubmitting}

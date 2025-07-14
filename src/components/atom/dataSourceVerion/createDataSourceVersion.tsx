@@ -28,6 +28,8 @@ import ExcelJS from 'exceljs';
 import { toast } from 'react-toastify';
 import CommonSelect from '../../common/dropdown/commonSelect';
 import useFilePostData from '../../../hooks/usePostMultipart';
+import { STYLE_GUIDE } from '../../../styles';
+import { useDashboardTheme } from '../../../context/DashboardThemeProvider';
 
 interface CreateDataSourceVersionProps {
   setReload: React.Dispatch<React.SetStateAction<boolean>>;
@@ -54,6 +56,8 @@ const CreateDataSourceVersion: React.FC<CreateDataSourceVersionProps> = ({ setRe
   const [fileUploadLoader, setFileUploadLoader] = useState(false);
   const [settingAttribute, setSettingAttribute] = useState<Record<any, any>[]>([]);
   const [settingAttributeOption, setSettingAttributeOption] = useState<string[]>([]);
+
+  const { currentTheme } = useDashboardTheme();
 
   const {
     control,
@@ -88,9 +92,9 @@ const CreateDataSourceVersion: React.FC<CreateDataSourceVersionProps> = ({ setRe
   const versionNameAvailability = useGet<{ success: boolean; available: boolean; message: string }>(
     [`codeAvailability`, versionName],
     GET?.Data_Source_Version +
-      `/dataSourceId/${watch('dataSourceId')}/versionValue/${DateTime.fromISO(watch('versionValue')).toFormat(
-        'yyyy-LL'
-      )}/versionName/${versionName}`,
+    `/dataSourceId/${watch('dataSourceId')}/versionValue/${DateTime.fromISO(watch('versionValue')).toFormat(
+      'yyyy-LL'
+    )}/versionName/${versionName}`,
     !!versionName && !!watch('dataSourceId') && !!watch('versionValue')
   );
 
@@ -372,6 +376,7 @@ const CreateDataSourceVersion: React.FC<CreateDataSourceVersionProps> = ({ setRe
                     ''
                   ))
                 }
+                sx={{ '& .MuiOutlinedInput-root': { borderRadius: STYLE_GUIDE.SPACING.s2, alignItems: 'center', fontSize: '14px', backgroundColor: currentTheme?.colors?.background?.paper || '#ffffff', '& fieldset': { borderColor: currentTheme?.colors?.inputBorder || STYLE_GUIDE.COLORS.darkBackground, }, '&:hover fieldset': { borderColor: currentTheme?.colors?.borderHover || STYLE_GUIDE.COLORS.darkBorderHover, }, '&.Mui-focused fieldset': { borderColor: currentTheme?.components?.input?.focusBorderColor || currentTheme?.components?.input?.focusBorderColorFallback || STYLE_GUIDE.COLORS.inputFocusFallback, }, }, '& .MuiInputLabel-root': { color: currentTheme?.colors?.text?.secondary || STYLE_GUIDE.COLORS.darkBorderFocus, }, '& .MuiInputLabel-root.Mui-focused': { color: currentTheme?.components?.input?.focusBorderColor || currentTheme?.components?.input?.focusBorderColorFallback || STYLE_GUIDE.COLORS.inputFocusFallback, }, '& .MuiInputBase-input': { color: `${currentTheme?.colors?.inputText || currentTheme?.colors?.text?.primary || '#000000'} !important`, }, '& .MuiInputBase-input::placeholder': { color: `${currentTheme?.colors?.text?.secondary || '#666'} !important`, }, '& .MuiInputBase-input:-webkit-autofill': { WebkitTextFillColor: `${currentTheme?.colors?.inputText || currentTheme?.colors?.text?.primary || '#000000'} !important`, WebkitBoxShadow: `0 0 0 1000px ${currentTheme?.colors?.background?.paper || '#ffffff'} inset !important`, }, }}
               />
 
               {fileUploadLoader ? (
@@ -389,14 +394,14 @@ const CreateDataSourceVersion: React.FC<CreateDataSourceVersionProps> = ({ setRe
                       <TableRow>
                         {/* <TableCell>{fileName?.split('.')[0]} Attribute</TableCell>
                         <TableCell>Entity Setting Attribute</TableCell> */}
-                        <TableCell sx={{ 
+                        <TableCell sx={{
                           backgroundColor: theme.palette.table?.headerBackground,
                           color: theme.palette.table?.headerText,
                           fontWeight: 'medium'
                         }}>
                           Entity Setting Attribute
                         </TableCell>
-                        <TableCell sx={{ 
+                        <TableCell sx={{
                           backgroundColor: theme.palette.table?.headerBackground,
                           color: theme.palette.table?.headerText,
                           fontWeight: 'medium'
@@ -435,6 +440,7 @@ const CreateDataSourceVersion: React.FC<CreateDataSourceVersionProps> = ({ setRe
                                   })}
                                   error={!!errors.separator?.[option]}
                                   helperText={errors.separator?.[option]?.message}
+                                  sx={{ '& .MuiOutlinedInput-root': { borderRadius: STYLE_GUIDE.SPACING.s2, alignItems: 'center', fontSize: '14px', backgroundColor: currentTheme?.colors?.background?.paper || '#ffffff', '& fieldset': { borderColor: currentTheme?.colors?.inputBorder || STYLE_GUIDE.COLORS.darkBackground, }, '&:hover fieldset': { borderColor: currentTheme?.colors?.borderHover || STYLE_GUIDE.COLORS.darkBorderHover, }, '&.Mui-focused fieldset': { borderColor: currentTheme?.components?.input?.focusBorderColor || currentTheme?.components?.input?.focusBorderColorFallback || STYLE_GUIDE.COLORS.inputFocusFallback, }, }, '& .MuiInputLabel-root': { color: currentTheme?.colors?.text?.secondary || STYLE_GUIDE.COLORS.darkBorderFocus, }, '& .MuiInputLabel-root.Mui-focused': { color: currentTheme?.components?.input?.focusBorderColor || currentTheme?.components?.input?.focusBorderColorFallback || STYLE_GUIDE.COLORS.inputFocusFallback, }, '& .MuiInputBase-input': { color: `${currentTheme?.colors?.inputText || currentTheme?.colors?.text?.primary || '#000000'} !important`, }, '& .MuiInputBase-input::placeholder': { color: `${currentTheme?.colors?.text?.secondary || '#666'} !important`, }, '& .MuiInputBase-input:-webkit-autofill': { WebkitTextFillColor: `${currentTheme?.colors?.inputText || currentTheme?.colors?.text?.primary || '#000000'} !important`, WebkitBoxShadow: `0 0 0 1000px ${currentTheme?.colors?.background?.paper || '#ffffff'} inset !important`, }, }}
                                 />
                               )}
                           </TableCell>

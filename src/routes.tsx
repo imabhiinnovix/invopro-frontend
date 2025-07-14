@@ -42,6 +42,7 @@ const AppRoutes = () => {
           <Route path="/dashboard/analytics" element={<DashboardAnalytics />} />
           <Route path="/dashboard/:id" element={<Dashboard />} />
           <Route path="/reports" element={<Report />} />
+          <Route path="/data-source" element={<DataSource />} />
           <Route path="/data-source/:id" element={<DataSources />} />
           <Route path="/entity" element={<Entity />} />
           <Route path="/data-src" element={<DataSource />} />
