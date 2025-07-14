@@ -305,6 +305,56 @@ export const createCompleteTheme = (baseTheme: Partial<DashboardTheme>): Dashboa
       },
       MuiAutocomplete: {
         styleOverrides: {
+          root: {
+            '& .MuiOutlinedInput-root': {
+              backgroundColor: baseTheme.colors?.dropdownBg || STYLE_GUIDE.COLORS.white,
+              '& fieldset': {
+                borderColor: baseTheme.colors?.inputBorder || STYLE_GUIDE.COLORS.borderGray,
+              },
+              '&:hover fieldset': {
+                borderColor: baseTheme.colors?.borderHover || STYLE_GUIDE.COLORS.borderGray,
+              },
+              '&.Mui-focused fieldset': {
+                borderColor: baseTheme.colors?.primary?.main || STYLE_GUIDE.COLORS.primary,
+              },
+            },
+            '& .MuiInputLabel-root': {
+              color: baseTheme.colors?.dropdownLabelColor || baseTheme.colors?.text?.secondary || STYLE_GUIDE.COLORS.textDarkGray,
+            },
+            '& .MuiInputLabel-root.Mui-focused': {
+              color: baseTheme.colors?.dropdownFocusedLabel || baseTheme.colors?.primary?.main || STYLE_GUIDE.COLORS.primary,
+            },
+            '& .MuiInputBase-input': {
+              color: `${baseTheme.colors?.dropdownSelectedText || baseTheme.colors?.text?.primary || STYLE_GUIDE.COLORS.textDarkGray} !important`,
+            },
+            '& .MuiAutocomplete-input': {
+              color: `${baseTheme.colors?.dropdownSelectedText || baseTheme.colors?.text?.primary || STYLE_GUIDE.COLORS.textDarkGray} !important`,
+            },
+            '& .MuiAutocomplete-tag': {
+              color: `${baseTheme.colors?.dropdownSelectedText || baseTheme.colors?.text?.primary || STYLE_GUIDE.COLORS.textDarkGray} !important`,
+            },
+            '& .MuiAutocomplete-endAdornment': {
+              color: `${baseTheme.colors?.dropdownSelectedText || baseTheme.colors?.text?.primary || STYLE_GUIDE.COLORS.textDarkGray} !important`,
+            },
+            '& .MuiAutocomplete-inputRoot': {
+              color: `${baseTheme.colors?.dropdownSelectedText || baseTheme.colors?.text?.primary || STYLE_GUIDE.COLORS.textDarkGray} !important`,
+            },
+            '& .MuiAutocomplete-inputRoot input': {
+              color: `${baseTheme.colors?.dropdownSelectedText || baseTheme.colors?.text?.primary || STYLE_GUIDE.COLORS.textDarkGray} !important`,
+            },
+            '& .MuiAutocomplete-inputRoot .MuiAutocomplete-input': {
+              color: `${baseTheme.colors?.dropdownSelectedText || baseTheme.colors?.text?.primary || STYLE_GUIDE.COLORS.textDarkGray} !important`,
+            },
+            '& input': {
+              color: `${baseTheme.colors?.dropdownSelectedText || baseTheme.colors?.text?.primary || STYLE_GUIDE.COLORS.textDarkGray} !important`,
+            },
+            '& .MuiInputBase-root input': {
+              color: `${baseTheme.colors?.dropdownSelectedText || baseTheme.colors?.text?.primary || STYLE_GUIDE.COLORS.textDarkGray} !important`,
+            },
+            '& .MuiOutlinedInput-root input': {
+              color: `${baseTheme.colors?.dropdownSelectedText || baseTheme.colors?.text?.primary || STYLE_GUIDE.COLORS.textDarkGray} !important`,
+            },
+          },
           paper: {
             border: `1px solid ${baseTheme.colors?.inputBorder || STYLE_GUIDE.COLORS.borderGray}`,
             color: baseTheme.colors?.dropdownOptionText || baseTheme.colors?.text?.primary || STYLE_GUIDE.COLORS.textDarkGray,

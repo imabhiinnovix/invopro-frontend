@@ -48,7 +48,35 @@ const StyledAutocomplete = <
       color: theme.palette.dropdown?.focusedLabel || theme.palette.primary.main,
     },
     '& .MuiInputBase-input': {
-      color: theme.palette.dropdown?.selectedText || theme.palette.text.primary,
+      color: `${theme.palette.dropdown?.selectedText || theme.palette.text.primary} !important`,
+    },
+    '& .MuiAutocomplete-input': {
+      color: `${theme.palette.dropdown?.selectedText || theme.palette.text.primary} !important`,
+    },
+    '& .MuiAutocomplete-tag': {
+      color: `${theme.palette.dropdown?.selectedText || theme.palette.text.primary} !important`,
+    },
+    '& .MuiAutocomplete-endAdornment': {
+      color: `${theme.palette.dropdown?.selectedText || theme.palette.text.primary} !important`,
+    },
+    '& .MuiAutocomplete-inputRoot': {
+      color: `${theme.palette.dropdown?.selectedText || theme.palette.text.primary} !important`,
+    },
+    // Additional specific selectors to force the color
+    '& .MuiAutocomplete-inputRoot input': {
+      color: `${theme.palette.dropdown?.selectedText || theme.palette.text.primary} !important`,
+    },
+    '& .MuiAutocomplete-inputRoot .MuiAutocomplete-input': {
+      color: `${theme.palette.dropdown?.selectedText || theme.palette.text.primary} !important`,
+    },
+    '& input': {
+      color: `${theme.palette.dropdown?.selectedText || theme.palette.text.primary} !important`,
+    },
+    '& .MuiInputBase-root input': {
+      color: `${theme.palette.dropdown?.selectedText || theme.palette.text.primary} !important`,
+    },
+    '& .MuiOutlinedInput-root input': {
+      color: `${theme.palette.dropdown?.selectedText || theme.palette.text.primary} !important`,
     },
     ...sx,
   };
