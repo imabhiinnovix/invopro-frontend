@@ -123,7 +123,7 @@ const StyledCard = styled(Card)(({ theme }) => ({
   minHeight: 500,
   display: 'flex',
   flexDirection: 'column',
-  borderRadius: theme.shape.borderRadius,
+  borderRadius: STYLE_GUIDE.SPACING.s2,
   boxShadow: theme.shadows[1],
   transition: 'all 0.3s ease-in-out',
   backgroundColor: theme.palette.background.paper,
@@ -151,7 +151,7 @@ const ChartContainer = styled(Box)(({ theme }) => ({
   height: '100%',
   // padding: theme.spacing(4),
   backgroundColor: '#ffffff',
-  borderRadius: theme.shape.borderRadius,
+  borderRadius: STYLE_GUIDE.SPACING.s2,
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
@@ -332,7 +332,7 @@ const DrillDownTable = styled(Table)(({ theme }) => ({
 }));
 
 const StyledTableContainer = styled(Paper)(({ theme }) => ({
-  borderRadius: theme.shape.borderRadius,
+  borderRadius: STYLE_GUIDE.SPACING.s2,
   boxShadow: theme.shadows[1],
   overflow: 'hidden',
 }));

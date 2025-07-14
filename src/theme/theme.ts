@@ -4,7 +4,6 @@ import './themeAugmentation';
 
 // Define common values for reuse
 const commonValues = {
-  borderRadius: parseInt(STYLE_GUIDE.SPACING.s2),
   boxShadow: STYLE_GUIDE.SHADOWS.sm,
   colors: {
     primary: {
@@ -40,6 +39,7 @@ export const theme = createTheme({
       optionBackground: STYLE_GUIDE.COLORS.backgroundHover,
       optionText: STYLE_GUIDE.COLORS.textDarkGray,
       optionHoverBackground: STYLE_GUIDE.COLORS.backgroundLightGray,
+      border: STYLE_GUIDE.SPACING.s1
     },
     table: {
       headerBackground: STYLE_GUIDE.COLORS.backgroundLightGray,
@@ -50,14 +50,10 @@ export const theme = createTheme({
       rowText: STYLE_GUIDE.COLORS.textDarkGray,
     },
   },
-  shape: {
-    borderRadius: parseInt(STYLE_GUIDE.SPACING.s2),
-  },
   components: {
     MuiPaper: {
       styleOverrides: {
         root: {
-          borderRadius: commonValues.borderRadius,
           boxShadow: commonValues.boxShadow,
         },
       },
@@ -65,7 +61,6 @@ export const theme = createTheme({
     MuiCard: {
       styleOverrides: {
         root: {
-          borderRadius: commonValues.borderRadius,
           boxShadow: commonValues.boxShadow,
         },
       },
@@ -74,14 +69,12 @@ export const theme = createTheme({
       styleOverrides: {
         root: {
           textTransform: 'none',
-          borderRadius: commonValues.borderRadius,
         },
       },
     },
     MuiTableContainer: {
       styleOverrides: {
         root: {
-          borderRadius: commonValues.borderRadius,
           boxShadow: commonValues.boxShadow,
         },
       },
@@ -94,7 +87,6 @@ export const theme = createTheme({
             backgroundColor: STYLE_GUIDE.COLORS.backgroundLightGray,
             color: STYLE_GUIDE.COLORS.textGray,
             fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold,
-            fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base,
             borderBottom: `2px solid ${STYLE_GUIDE.COLORS.divider}`,
           },
         },
@@ -103,7 +95,6 @@ export const theme = createTheme({
     MuiListItemButton: {
       styleOverrides: {
         root: {
-          borderRadius: commonValues.borderRadius,
           '&:hover': {
             backgroundColor: STYLE_GUIDE.COLORS.backgroundHover,
           },

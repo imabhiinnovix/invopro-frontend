@@ -20,9 +20,7 @@ export const validateDashboardTheme = (theme: Partial<DashboardTheme>): { isVali
     errors.push('Background color is required');
   }
 
-  if (!theme.typography?.fontFamily?.primary) {
-    errors.push('Primary font family is required');
-  }
+
 
   // Validate color format (hex)
   const hexColorRegex = /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/;
@@ -156,52 +154,29 @@ export const createCompleteTheme = (baseTheme: Partial<DashboardTheme>): Dashboa
       border: baseTheme.colors?.border || STYLE_GUIDE.COLORS.borderGray,
       borderHover: baseTheme.colors?.borderHover || STYLE_GUIDE.COLORS.materialPurpleDark,
     },
-    typography: {
-      fontFamily: baseTheme.typography?.fontFamily || STYLE_GUIDE.TYPOGRAPHY.fontFamily,
-      fontSize: baseTheme.typography?.fontSize || STYLE_GUIDE.TYPOGRAPHY.fontSize,
-      fontWeight: baseTheme.typography?.fontWeight || STYLE_GUIDE.TYPOGRAPHY.fontWeight,
-      lineHeight: baseTheme.typography?.lineHeight || STYLE_GUIDE.TYPOGRAPHY.lineHeight,
-      letterSpacing: baseTheme.typography?.letterSpacing || STYLE_GUIDE.TYPOGRAPHY.letterSpacing,
-    },
     components: baseTheme.components || {
       button: {
-        borderRadius: STYLE_GUIDE.SPACING.s2,
         textTransform: 'none',
-        fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
-        fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.medium,
-        padding: {
-          small: '6px 16px',
-          medium: '8px 24px',
-          large: '12px 32px',
-        },
-        minHeight: {
-          small: '32px',
-          medium: '40px',
-          large: '48px',
-        },
       },
       card: {
-        borderRadius: STYLE_GUIDE.SPACING.s2,
         boxShadow: STYLE_GUIDE.SHADOWS.sm,
-        padding: STYLE_GUIDE.SPACING.s4,
       },
       paper: {
-        borderRadius: STYLE_GUIDE.SPACING.s2,
         boxShadow: STYLE_GUIDE.SHADOWS.sm,
       },
       input: {
-        borderRadius: STYLE_GUIDE.SPACING.s1,
-        fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
-        padding: '12px 16px',
         borderColor: STYLE_GUIDE.COLORS.borderGray,
         focusBorderColor: STYLE_GUIDE.COLORS.primary,
         focusBorderColorFallback: STYLE_GUIDE.COLORS.inputFocusFallback,
       },
       table: {
-        borderRadius: STYLE_GUIDE.SPACING.s2,
         boxShadow: STYLE_GUIDE.SHADOWS.sm,
         headerBackground: STYLE_GUIDE.COLORS.backgroundLightGray,
+        headerText: STYLE_GUIDE.COLORS.textGray,
+        rowOddBackground: STYLE_GUIDE.COLORS.backgroundDefault,
+        rowEvenBackground: STYLE_GUIDE.COLORS.white,
         rowHoverBackground: STYLE_GUIDE.COLORS.backgroundHover,
+        rowText: STYLE_GUIDE.COLORS.textDarkGray,
         borderColor: STYLE_GUIDE.COLORS.divider,
       },
       navigation: {
@@ -219,12 +194,10 @@ export const createCompleteTheme = (baseTheme: Partial<DashboardTheme>): Dashboa
         activeTextColor: STYLE_GUIDE.COLORS.white,
         hoverBackground: STYLE_GUIDE.COLORS.backgroundHover,
         hoverTextColor: STYLE_GUIDE.COLORS.textDarkGray,
-        width: '280px',
       },
       header: {
         backgroundColor: STYLE_GUIDE.COLORS.white,
         textColor: STYLE_GUIDE.COLORS.textDarkGray,
-        height: '64px',
         boxShadow: STYLE_GUIDE.SHADOWS.sm,
       },
       MuiOutlinedInput: {
@@ -321,29 +294,10 @@ export const createCompleteTheme = (baseTheme: Partial<DashboardTheme>): Dashboa
         },
       },
     },
-    spacing: baseTheme.spacing || {
-      s0: STYLE_GUIDE.SPACING.s0,
-      s1: STYLE_GUIDE.SPACING.s1,
-      s2: STYLE_GUIDE.SPACING.s2,
-      s3: STYLE_GUIDE.SPACING.s3,
-      s4: STYLE_GUIDE.SPACING.s4,
-      s5: STYLE_GUIDE.SPACING.s5,
-      s6: STYLE_GUIDE.SPACING.s6,
-      s7: STYLE_GUIDE.SPACING.s7,
-      s8: STYLE_GUIDE.SPACING.s8,
-      s9: STYLE_GUIDE.SPACING.s9,
-      s10: STYLE_GUIDE.SPACING.s10,
-      s11: STYLE_GUIDE.SPACING.s11,
-      s12: STYLE_GUIDE.SPACING.s12,
-      s13: STYLE_GUIDE.SPACING.s13,
-      s14: STYLE_GUIDE.SPACING.s14,
-      s15: STYLE_GUIDE.SPACING.s15,
-    },
+    
     shadows: baseTheme.shadows || STYLE_GUIDE.SHADOWS,
     layout: baseTheme.layout || {
       maxWidth: '1200px',
-      containerPadding: STYLE_GUIDE.SPACING.s4,
-      gridGap: STYLE_GUIDE.SPACING.s3,
     },
   };
 
@@ -371,20 +325,20 @@ export const exportThemeAsCSS = (theme: DashboardTheme): string => {
     `  --color-border: ${theme.colors.border};`,
     ``,
     `  /* Typography */`,
-    `  --font-family-primary: ${theme.typography.fontFamily.primary};`,
-    `  --font-family-secondary: ${theme.typography.fontFamily.secondary};`,
-    `  --font-size-base: ${theme.typography.fontSize.base};`,
-    `  --font-size-small: ${theme.typography.fontSize.small};`,
-    `  --font-size-large: ${theme.typography.fontSize.large};`,
-    `  --font-weight-regular: ${theme.typography.fontWeight.regular};`,
-    `  --font-weight-medium: ${theme.typography.fontWeight.medium};`,
-    `  --font-weight-bold: ${theme.typography.fontWeight.bold};`,
+    `  --font-family-primary: ${STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary};`,
+    `  --font-family-secondary: ${STYLE_GUIDE.TYPOGRAPHY.fontFamily.secondary};`,
+    `  --font-size-base: ${STYLE_GUIDE.TYPOGRAPHY.fontSize.base};`,
+    `  --font-size-small: ${STYLE_GUIDE.TYPOGRAPHY.fontSize.small};`,
+    `  --font-size-large: ${STYLE_GUIDE.TYPOGRAPHY.fontSize.large};`,
+    `  --font-weight-regular: ${STYLE_GUIDE.TYPOGRAPHY.fontWeight.regular};`,
+    `  --font-weight-medium: ${STYLE_GUIDE.TYPOGRAPHY.fontWeight.medium};`,
+    `  --font-weight-bold: ${STYLE_GUIDE.TYPOGRAPHY.fontWeight.bold};`,
     ``,
     `  /* Spacing */`,
-    `  --spacing-s0: ${theme.spacing.s0};`,
-    `  --spacing-s2: ${theme.spacing.s2};`,
-    `  --spacing-s4: ${theme.spacing.s4};`,
-    `  --spacing-s6: ${theme.spacing.s6};`,
+    `  --spacing-s0: ${STYLE_GUIDE.SPACING.s0};`,
+    `  --spacing-s2: ${STYLE_GUIDE.SPACING.s2};`,
+    `  --spacing-s4: ${STYLE_GUIDE.SPACING.s4};`,
+    `  --spacing-s6: ${STYLE_GUIDE.SPACING.s6};`,
     ``,
     `  /* Shadows */`,
     `  --shadow-sm: ${theme.shadows.sm};`,
@@ -392,8 +346,12 @@ export const exportThemeAsCSS = (theme: DashboardTheme): string => {
     `  --shadow-lg: ${theme.shadows.lg};`,
     ``,
     `  /* Components */`,
-    `  --border-radius: ${theme.components.button.borderRadius};`,
+    `  --border-radius: ${STYLE_GUIDE.SPACING.s2};`,
     `  --card-shadow: ${theme.components.card.boxShadow};`,
+    `  --input-border-color: ${theme.components.input.borderColor};`,
+    `  --input-focus-border-color: ${theme.components.input.focusBorderColor};`,
+    `  --table-header-background: ${theme.components.table.headerBackground};`,
+    `  --table-header-text: ${theme.components.table.headerText};`,
     `}`,
   ].join('\n');
 

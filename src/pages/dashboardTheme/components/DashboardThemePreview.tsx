@@ -18,6 +18,7 @@ import {
   Palette as PaletteIcon,
 } from '@mui/icons-material';
 import { DashboardTheme } from '../../../types/dashboardTheme';
+import { STYLE_GUIDE } from '../../../styles';
 
 interface DashboardThemePreviewProps {
   theme: DashboardTheme;
@@ -147,7 +148,7 @@ const DashboardThemePreview: React.FC<DashboardThemePreviewProps> = ({
             <Box
               sx={{
                 height: 24,
-                borderRadius: theme.components.button.borderRadius,
+                borderRadius: STYLE_GUIDE.SPACING.s2,
                 bgcolor: theme.colors.primary.main,
                 display: 'flex',
                 alignItems: 'center',
@@ -158,9 +159,8 @@ const DashboardThemePreview: React.FC<DashboardThemePreviewProps> = ({
                 variant="caption"
                 sx={{
                   color: theme.colors.primary.contrastText,
-                  fontSize: theme.components.button.fontSize,
-                  fontWeight: theme.components.button.fontWeight,
-                  textTransform: theme.components.button.textTransform,
+                  fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
+                  fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.medium,
                 }}
               >
                 Button
@@ -170,11 +170,11 @@ const DashboardThemePreview: React.FC<DashboardThemePreviewProps> = ({
             <Box
               sx={{
                 height: 16,
-                borderRadius: theme.components.card.borderRadius,
+                borderRadius: STYLE_GUIDE.SPACING.s2,
                 bgcolor: theme.colors.background.paper,
                 border: '1px solid',
                 borderColor: theme.colors.border,
-                boxShadow: theme.components.card.boxShadow,
+                boxShadow: STYLE_GUIDE.SHADOWS.sm,
               }}
             />
           </Stack>
@@ -187,9 +187,9 @@ const DashboardThemePreview: React.FC<DashboardThemePreviewProps> = ({
           <Typography
             variant="body2"
             sx={{
-              fontFamily: theme.typography.fontFamily.primary,
-              fontSize: theme.typography.fontSize.small,
-              fontWeight: theme.typography.fontWeight.medium,
+              fontFamily: STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary,
+              fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
+              fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.medium,
               color: theme.colors.text.primary,
             }}
           >

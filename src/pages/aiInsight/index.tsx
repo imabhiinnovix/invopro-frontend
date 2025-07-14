@@ -357,7 +357,7 @@ const AIInsightPage: React.FC = () => {
                     sx={{
                       backgroundColor: currentTheme?.colors?.primary?.main || STYLE_GUIDE.COLORS.darkBackground,
                       color: currentTheme?.colors?.primary?.contrastText || STYLE_GUIDE.COLORS.white,
-                      borderRadius: currentTheme?.components?.button?.borderRadius || STYLE_GUIDE.SPACING.s4,
+                      borderRadius: STYLE_GUIDE.SPACING.s4,
                       '&:hover': {
                         backgroundColor: currentTheme?.colors?.primary?.light || STYLE_GUIDE.COLORS.darkDarker,
                       },

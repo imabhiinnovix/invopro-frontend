@@ -188,7 +188,7 @@ const StyledCard = styled(Card)(({ theme }) => ({
   minHeight: 500,
   display: 'flex',
   flexDirection: 'column',
-  borderRadius: theme.shape.borderRadius,
+  borderRadius: STYLE_GUIDE.SPACING.s2,
   boxShadow: theme.shadows[1],
   transition: 'all 0.3s ease-in-out',
   backgroundColor: theme.palette.background.paper,

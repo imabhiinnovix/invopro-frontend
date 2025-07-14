@@ -50,89 +50,23 @@ export interface DashboardTheme {
     borderHover: string;
   };
 
-  // Typography
-  typography: {
-    fontFamily: {
-      primary: string;
-      secondary: string;
-      mono: string;
-      serif: string;
-    };
-    fontSize: {
-      xs: string;
-      small: string;
-      base: string;
-      large: string;
-      xl: string;
-      xxl: string;
-      xxxl: string;
-      xxxxl: string;
-      display: string;
-      hero: string;
-    };
-    fontWeight: {
-      thin: string;
-      extraLight: string;
-      light: string;
-      regular: string;
-      medium: string;
-      semiBold: string;
-      bold: string;
-      extraBold: string;
-      black: string;
-    };
-    lineHeight: {
-      tight: string;
-      normal: string;
-      relaxed: string;
-      loose: string;
-    };
-    letterSpacing: {
-      tight: string;
-      normal: string;
-      wide: string;
-      wider: string;
-      widest: string;
-    };
-  };
-
-  // Component Styles
+  // Component Styles (without spacing properties)
   components: {
     button: {
-      borderRadius: string;
       textTransform: 'none' | 'capitalize' | 'uppercase' | 'lowercase';
-      fontSize: string;
-      fontWeight: string;
-      padding: {
-        small: string;
-        medium: string;
-        large: string;
-      };
-      minHeight: {
-        small: string;
-        medium: string;
-        large: string;
-      };
     };
     card: {
-      borderRadius: string;
       boxShadow: string;
-      padding: string;
     };
     paper: {
-      borderRadius: string;
       boxShadow: string;
     };
     input: {
-      borderRadius: string;
-      fontSize: string;
-      padding: string;
       borderColor: string;
       focusBorderColor: string;
       focusBorderColorFallback: string;
     };
     table: {
-      borderRadius: string;
       boxShadow: string;
       headerBackground: string;
       headerText: string;
@@ -157,34 +91,12 @@ export interface DashboardTheme {
       activeTextColor: string;
       hoverBackground: string;
       hoverTextColor: string;
-      width: string;
     };
     header: {
       backgroundColor: string;
       textColor: string;
-      height: string;
       boxShadow: string;
     };
-  };
-
-  // Spacing
-  spacing: {
-    s0: string;
-    s1: string;
-    s2: string;
-    s3: string;
-    s4: string;
-    s5: string;
-    s6: string;
-    s7: string;
-    s8: string;
-    s9: string;
-    s10: string;
-    s11: string;
-    s12: string;
-    s13: string;
-    s14: string;
-    s15: string;
   };
 
   // Shadows
@@ -199,8 +111,6 @@ export interface DashboardTheme {
   // Layout
   layout: {
     maxWidth: string;
-    containerPadding: string;
-    gridGap: string;
   };
 }
 
@@ -221,9 +131,7 @@ export interface DashboardThemeFormData {
   name: string;
   description?: string;
   colors: DashboardTheme['colors'];
-  typography: DashboardTheme['typography'];
   components: DashboardTheme['components'];
-  spacing: DashboardTheme['spacing'];
   shadows: DashboardTheme['shadows'];
   layout: DashboardTheme['layout'];
 }

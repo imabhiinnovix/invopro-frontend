@@ -43,49 +43,22 @@ export const getDefaultDashboardTheme = (): DashboardTheme => ({
     border: STYLE_GUIDE.COLORS.borderGray,
     borderHover: STYLE_GUIDE.COLORS.materialPurpleDark,
   },
-  typography: {
-    fontFamily: STYLE_GUIDE.TYPOGRAPHY.fontFamily,
-    fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize,
-    fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight,
-    lineHeight: STYLE_GUIDE.TYPOGRAPHY.lineHeight,
-    letterSpacing: STYLE_GUIDE.TYPOGRAPHY.letterSpacing,
-  },
   components: {
     button: {
-      borderRadius: STYLE_GUIDE.SPACING.s2,
       textTransform: 'none',
-      fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
-      fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.medium,
-      padding: {
-        small: '6px 16px',
-        medium: '8px 24px',
-        large: '12px 32px',
-      },
-      minHeight: {
-        small: '32px',
-        medium: '40px',
-        large: '48px',
-      },
     },
     card: {
-      borderRadius: STYLE_GUIDE.SPACING.s2,
       boxShadow: STYLE_GUIDE.SHADOWS.sm,
-      padding: STYLE_GUIDE.SPACING.s4,
     },
     paper: {
-      borderRadius: STYLE_GUIDE.SPACING.s2,
       boxShadow: STYLE_GUIDE.SHADOWS.sm,
     },
     input: {
-      borderRadius: STYLE_GUIDE.SPACING.s1,
-      fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
-      padding: '12px 16px',
       borderColor: STYLE_GUIDE.COLORS.borderGray,
       focusBorderColor: STYLE_GUIDE.COLORS.primary,
       focusBorderColorFallback: STYLE_GUIDE.COLORS.inputFocusFallback,
     },
     table: {
-      borderRadius: STYLE_GUIDE.SPACING.s2,
       boxShadow: STYLE_GUIDE.SHADOWS.sm,
       headerBackground: STYLE_GUIDE.COLORS.backgroundLightGray,
       headerText: STYLE_GUIDE.COLORS.textGray,
@@ -110,38 +83,16 @@ export const getDefaultDashboardTheme = (): DashboardTheme => ({
       activeTextColor: STYLE_GUIDE.COLORS.white,
       hoverBackground: STYLE_GUIDE.COLORS.backgroundHover,
       hoverTextColor: STYLE_GUIDE.COLORS.textDarkGray,
-      width: '280px',
     },
     header: {
       backgroundColor: STYLE_GUIDE.COLORS.white,
       textColor: STYLE_GUIDE.COLORS.textDarkGray,
-      height: '64px',
       boxShadow: STYLE_GUIDE.SHADOWS.sm,
     },
-  },
-  spacing: {
-    s0: STYLE_GUIDE.SPACING.s0,
-    s1: STYLE_GUIDE.SPACING.s1,
-    s2: STYLE_GUIDE.SPACING.s2,
-    s3: STYLE_GUIDE.SPACING.s3,
-    s4: STYLE_GUIDE.SPACING.s4,
-    s5: STYLE_GUIDE.SPACING.s5,
-    s6: STYLE_GUIDE.SPACING.s6,
-    s7: STYLE_GUIDE.SPACING.s7,
-    s8: STYLE_GUIDE.SPACING.s8,
-    s9: STYLE_GUIDE.SPACING.s9,
-    s10: STYLE_GUIDE.SPACING.s10,
-    s11: STYLE_GUIDE.SPACING.s11,
-    s12: STYLE_GUIDE.SPACING.s12,
-    s13: STYLE_GUIDE.SPACING.s13,
-    s14: STYLE_GUIDE.SPACING.s14,
-    s15: STYLE_GUIDE.SPACING.s15,
   },
   shadows: STYLE_GUIDE.SHADOWS,
   layout: {
     maxWidth: '1200px',
-    containerPadding: STYLE_GUIDE.SPACING.s4,
-    gridGap: STYLE_GUIDE.SPACING.s3,
   },
 });
 
@@ -179,76 +130,10 @@ export const createMuiThemeFromDashboardTheme = (dashboardTheme: DashboardTheme)
         optionHoverBackground: dashboardTheme.colors.background.hover,
       },
     },
-    typography: {
-      fontFamily: dashboardTheme.typography.fontFamily.primary,
-      h1: {
-        fontFamily: dashboardTheme.typography.fontFamily.primary,
-        fontSize: dashboardTheme.typography.fontSize.xxxxl,
-        fontWeight: dashboardTheme.typography.fontWeight.bold,
-        lineHeight: dashboardTheme.typography.lineHeight.tight,
-      },
-      h2: {
-        fontFamily: dashboardTheme.typography.fontFamily.primary,
-        fontSize: dashboardTheme.typography.fontSize.xxxl,
-        fontWeight: dashboardTheme.typography.fontWeight.semiBold,
-        lineHeight: dashboardTheme.typography.lineHeight.tight,
-      },
-      h3: {
-        fontFamily: dashboardTheme.typography.fontFamily.primary,
-        fontSize: dashboardTheme.typography.fontSize.xxl,
-        fontWeight: dashboardTheme.typography.fontWeight.semiBold,
-        lineHeight: dashboardTheme.typography.lineHeight.normal,
-      },
-      h4: {
-        fontFamily: dashboardTheme.typography.fontFamily.primary,
-        fontSize: dashboardTheme.typography.fontSize.xl,
-        fontWeight: dashboardTheme.typography.fontWeight.medium,
-        lineHeight: dashboardTheme.typography.lineHeight.normal,
-      },
-      h5: {
-        fontFamily: dashboardTheme.typography.fontFamily.primary,
-        fontSize: dashboardTheme.typography.fontSize.large,
-        fontWeight: dashboardTheme.typography.fontWeight.medium,
-        lineHeight: dashboardTheme.typography.lineHeight.normal,
-      },
-      h6: {
-        fontFamily: dashboardTheme.typography.fontFamily.primary,
-        fontSize: dashboardTheme.typography.fontSize.base,
-        fontWeight: dashboardTheme.typography.fontWeight.medium,
-        lineHeight: dashboardTheme.typography.lineHeight.normal,
-      },
-      body1: {
-        fontFamily: dashboardTheme.typography.fontFamily.primary,
-        fontSize: dashboardTheme.typography.fontSize.base,
-        fontWeight: dashboardTheme.typography.fontWeight.regular,
-        lineHeight: dashboardTheme.typography.lineHeight.normal,
-        color: dashboardTheme.colors.text.primary,
-      },
-      body2: {
-        fontFamily: dashboardTheme.typography.fontFamily.primary,
-        fontSize: dashboardTheme.typography.fontSize.small,
-        fontWeight: dashboardTheme.typography.fontWeight.regular,
-        lineHeight: dashboardTheme.typography.lineHeight.normal,
-        color: dashboardTheme.colors.text.secondary,
-      },
-      caption: {
-        fontFamily: dashboardTheme.typography.fontFamily.primary,
-        fontSize: dashboardTheme.typography.fontSize.xs,
-        fontWeight: dashboardTheme.typography.fontWeight.regular,
-        lineHeight: dashboardTheme.typography.lineHeight.normal,
-        color: dashboardTheme.colors.text.secondary,
-      },
-    },
-    shape: {
-      borderRadius: parseInt(dashboardTheme.components.button.borderRadius),
-    },
     components: {
       MuiCard: {
         styleOverrides: {
           root: {
-            borderRadius: dashboardTheme.components.card.borderRadius,
-            boxShadow: dashboardTheme.components.card.boxShadow,
-            padding: dashboardTheme.components.card.padding,
             backgroundColor: dashboardTheme.colors.background.card,
             color: dashboardTheme.colors.text.primary,
           },
@@ -257,8 +142,6 @@ export const createMuiThemeFromDashboardTheme = (dashboardTheme: DashboardTheme)
       MuiPaper: {
         styleOverrides: {
           root: {
-            borderRadius: dashboardTheme.components.paper.borderRadius,
-            boxShadow: dashboardTheme.components.paper.boxShadow,
             backgroundColor: dashboardTheme.colors.background.card,
             color: dashboardTheme.colors.text.primary,
           },
@@ -268,8 +151,6 @@ export const createMuiThemeFromDashboardTheme = (dashboardTheme: DashboardTheme)
         styleOverrides: {
           root: {
             '& .MuiOutlinedInput-root': {
-              borderRadius: dashboardTheme.components.input.borderRadius,
-              fontSize: dashboardTheme.components.input.fontSize,
               color: dashboardTheme.colors.text.primary,
               '& fieldset': {
                 borderColor: dashboardTheme.components.input.borderColor,
@@ -299,13 +180,9 @@ export const createMuiThemeFromDashboardTheme = (dashboardTheme: DashboardTheme)
       MuiTableContainer: {
         styleOverrides: {
           root: {
-            borderRadius: dashboardTheme.components.table.borderRadius,
-            boxShadow: dashboardTheme.components.table.boxShadow,
             '& .MuiTableHead-root .MuiTableCell-root': {
               backgroundColor: dashboardTheme.components.table.headerBackground,
               color: dashboardTheme.components.table.headerText,
-              fontWeight: '600',
-              fontSize: '14px',
               borderBottom: `2px solid ${dashboardTheme.colors.divider}`,
             },
             '& .MuiTableBody-root .MuiTableRow-root:hover': {
@@ -323,8 +200,6 @@ export const createMuiThemeFromDashboardTheme = (dashboardTheme: DashboardTheme)
             '& .MuiTableCell-root': {
               backgroundColor: dashboardTheme.components.table.headerBackground,
               color: dashboardTheme.components.table.headerText,
-              fontWeight: '600',
-              fontSize: '14px',
               borderBottom: `2px solid ${dashboardTheme.colors.divider}`,
             },
           },
@@ -339,8 +214,6 @@ export const createMuiThemeFromDashboardTheme = (dashboardTheme: DashboardTheme)
           head: {
             backgroundColor: dashboardTheme.components.table.headerBackground,
             color: dashboardTheme.components.table.headerText,
-            fontWeight: '600',
-            fontSize: '14px',
             borderBottom: `2px solid ${dashboardTheme.colors.divider}`,
           },
           body: {
@@ -367,7 +240,6 @@ export const createMuiThemeFromDashboardTheme = (dashboardTheme: DashboardTheme)
       MuiListItemButton: {
         styleOverrides: {
           root: {
-            borderRadius: dashboardTheme.components.button.borderRadius,
             color: dashboardTheme.colors.text.primary,
             '&:hover': {
               backgroundColor: dashboardTheme.components.navigation.hoverBackground,
@@ -476,7 +348,6 @@ export const createMuiThemeFromDashboardTheme = (dashboardTheme: DashboardTheme)
             },
             '&::-webkit-scrollbar-thumb': {
               background: dashboardTheme.colors.divider,
-              borderRadius: '4px',
               '&:hover': {
                 background: dashboardTheme.colors.text.secondary,
               },
@@ -494,12 +365,6 @@ export const createMuiThemeFromDashboardTheme = (dashboardTheme: DashboardTheme)
       MuiButton: {
         styleOverrides: {
           root: {
-            borderRadius: dashboardTheme.components.button.borderRadius,
-            textTransform: dashboardTheme.components.button.textTransform,
-            fontSize: dashboardTheme.components.button.fontSize,
-            fontWeight: dashboardTheme.components.button.fontWeight,
-            minHeight: dashboardTheme.components.button.minHeight.medium,
-            padding: dashboardTheme.components.button.padding.medium,
             '&.MuiButton-contained': {
               '&.MuiButton-colorPrimary': {
                 backgroundColor: dashboardTheme.colors.primary.main,
@@ -563,14 +428,6 @@ export const createMuiThemeFromDashboardTheme = (dashboardTheme: DashboardTheme)
               '&:hover': {
                 backgroundColor: dashboardTheme.colors.background.hover,
               },
-            },
-            '&.MuiButton-sizeSmall': {
-              minHeight: dashboardTheme.components.button.minHeight.small,
-              padding: dashboardTheme.components.button.padding.small,
-            },
-            '&.MuiButton-sizeLarge': {
-              minHeight: dashboardTheme.components.button.minHeight.large,
-              padding: dashboardTheme.components.button.padding.large,
             },
           },
         },

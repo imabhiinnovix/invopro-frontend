@@ -367,37 +367,26 @@ export default function SideNav() {
       // TO BE ADDED LATER
       {
         name: 'VixAI Insights',
-        icon: <AutoAwesomeIcon sx={{ fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base }}/>,
+        icon: <AutoAwesomeIcon sx={{ fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base }} />,
         route: '/VixAi-Insights',
       },
       // TO be removed later
       {
         name: 'attribute-option',
-        icon: <AutoAwesomeIcon sx={{ fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base }}/>,
+        icon: <AutoAwesomeIcon sx={{ fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base }} />,
         route: '/attribute-option',
       },
       {
         name: 'superadmin',
-        icon: <AutoAwesomeIcon sx={{ fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base }}/>,
+        icon: <AutoAwesomeIcon sx={{ fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base }} />,
         route: '/superadmin/dashboard',
       },
-{
+      {
         name: 'entity',
-        icon: <AutoAwesomeIcon sx={{ fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base }}/>,
+        icon: <AutoAwesomeIcon sx={{ fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base }} />,
         route: '/entity',
       },
-      {
-        name: 'dashboard/overview',
-        icon: <AutoAwesomeIcon sx={{ fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base }}/>,
-        route: 'dashboard/overview',
-      },
-      {
-        name: 'dashboard/analytics',
-        icon: <AutoAwesomeIcon sx={{ fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base }}/>,
-        route: '/dashboard/analytics',
-      },
-      
-      
+
     ],
     [dataSourceList, dataSourceListAPI?.hasNextPage, dashboards, loading]
   );
