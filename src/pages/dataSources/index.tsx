@@ -327,10 +327,10 @@ const DataSources = () => {
                   <TableCell
                     key={field?.optionAttributeId}
                     sx={{
-                      backgroundColor: theme.palette.table?.headerBackground || STYLE_GUIDE.COLORS.backgroundLightGray,
+                      backgroundColor: currentTheme?.components?.table?.headerBackground || STYLE_GUIDE.COLORS.backgroundLightGray,
                       fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold,
                       fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base,
-                      color: theme.palette.table?.headerText || STYLE_GUIDE.COLORS.textGray,
+                      color: currentTheme?.components?.table?.headerText || STYLE_GUIDE.COLORS.textGray,
                       borderBottom: `2px solid ${STYLE_GUIDE.COLORS.divider}`,
                        padding: "12px 16px"
                     }}
@@ -358,7 +358,8 @@ const DataSources = () => {
                       key={field?.optionAttributeId}
                       sx={{ 
                         padding: "12px 16px",
-                        borderBottom: `1px solid ${STYLE_GUIDE.COLORS.divider2}`
+                        borderBottom: `1px solid ${STYLE_GUIDE.COLORS.divider2}`,
+                        color: currentTheme?.components?.table?.rowText || STYLE_GUIDE.COLORS.textDarkGray
                       }}
                     >
                       <TextField
@@ -376,7 +377,39 @@ const DataSources = () => {
                         }
                         fullWidth
                         sx={{
-                          '& .MuiOutlinedInput-root': { borderRadius: STYLE_GUIDE.SPACING.s2, alignItems: 'flex-start', paddingRight: STYLE_GUIDE.SPACING.s2, fontSize: '14px', backgroundColor: currentTheme?.colors?.background?.paper || '#ffffff', '& fieldset': { borderColor: currentTheme?.colors?.inputBorder || STYLE_GUIDE.COLORS.darkBackground, }, '&:hover fieldset': { borderColor: currentTheme?.colors?.borderHover || STYLE_GUIDE.COLORS.darkBorderHover, }, '&.Mui-focused fieldset': { borderColor: currentTheme?.components?.input?.focusBorderColor || currentTheme?.components?.input?.focusBorderColorFallback || STYLE_GUIDE.COLORS.inputFocusFallback, }, }, '& .MuiInputLabel-root': { color: currentTheme?.colors?.text?.secondary || STYLE_GUIDE.COLORS.darkBorderFocus, }, '& .MuiInputLabel-root.Mui-focused': { color: currentTheme?.components?.input?.focusBorderColor || currentTheme?.components?.input?.focusBorderColorFallback || STYLE_GUIDE.COLORS.inputFocusFallback, }, '& .MuiInputBase-input': { color: `${currentTheme?.colors?.inputText || theme.palette.text.primary} !important`, }, '& .MuiInputBase-input::placeholder': { color: `${currentTheme?.colors?.text?.secondary || '#666'} !important`, }, '& .MuiInputBase-input:-webkit-autofill': { WebkitTextFillColor: `${currentTheme?.colors?.inputText || theme.palette.text.primary} !important`, WebkitBoxShadow: `0 0 0 1000px ${currentTheme?.colors?.background?.paper || '#ffffff'} inset !important`, }, }}
+                          '& .MuiOutlinedInput-root': { 
+                            borderRadius: STYLE_GUIDE.SPACING.s2, 
+                            alignItems: 'flex-start', 
+                            paddingRight: STYLE_GUIDE.SPACING.s2, 
+                            fontSize: '14px', 
+                            backgroundColor: currentTheme?.colors?.background?.paper || '#ffffff', 
+                            '& fieldset': { 
+                              borderColor: currentTheme?.colors?.inputBorder || STYLE_GUIDE.COLORS.darkBackground, 
+                            }, 
+                            '&:hover fieldset': { 
+                              borderColor: currentTheme?.colors?.borderHover || STYLE_GUIDE.COLORS.darkBorderHover, 
+                            }, 
+                            '&.Mui-focused fieldset': { 
+                              borderColor: currentTheme?.components?.input?.focusBorderColor || currentTheme?.components?.input?.focusBorderColorFallback || STYLE_GUIDE.COLORS.inputFocusFallback, 
+                            }, 
+                          }, 
+                          '& .MuiInputLabel-root': { 
+                            color: currentTheme?.colors?.text?.secondary || STYLE_GUIDE.COLORS.darkBorderFocus, 
+                          }, 
+                          '& .MuiInputLabel-root.Mui-focused': { 
+                            color: currentTheme?.components?.input?.focusBorderColor || currentTheme?.components?.input?.focusBorderColorFallback || STYLE_GUIDE.COLORS.inputFocusFallback, 
+                          }, 
+                          '& .MuiInputBase-input': { 
+                            color: currentTheme?.components?.table?.rowText || currentTheme?.colors?.inputText || STYLE_GUIDE.COLORS.textDarkGray, 
+                          }, 
+                          '& .MuiInputBase-input::placeholder': { 
+                            color: currentTheme?.colors?.text?.secondary || '#666', 
+                          }, 
+                          '& .MuiInputBase-input:-webkit-autofill': { 
+                            WebkitTextFillColor: currentTheme?.components?.table?.rowText || currentTheme?.colors?.inputText || STYLE_GUIDE.COLORS.textDarkGray, 
+                            WebkitBoxShadow: `0 0 0 1000px ${currentTheme?.colors?.background?.paper || '#ffffff'} inset`, 
+                          }, 
+                        }}
                         slotProps={{
                           input: {
                             onWheel: (e) => {

@@ -136,7 +136,41 @@ function Login() {
           error={!!errors.email}
           helperText={errors.email?.message}
           {...register("email")}
-          sx={{ mb: STYLE_GUIDE.SPACING.s6, '& .MuiOutlinedInput-root': { borderRadius: STYLE_GUIDE.SPACING.s2, alignItems: 'flex-start', paddingRight: STYLE_GUIDE.SPACING.s2, fontSize: '14px', backgroundColor: currentTheme?.colors?.background?.paper || '#ffffff', '& fieldset': { borderColor: currentTheme?.colors?.inputBorder || STYLE_GUIDE.COLORS.darkBackground, }, '&:hover fieldset': { borderColor: currentTheme?.colors?.borderHover || STYLE_GUIDE.COLORS.darkBorderHover, }, '&.Mui-focused fieldset': { borderColor: currentTheme?.components?.input?.focusBorderColor || currentTheme?.components?.input?.focusBorderColorFallback || STYLE_GUIDE.COLORS.inputFocusFallback, }, }, '& .MuiInputLabel-root': { color: currentTheme?.colors?.text?.secondary || STYLE_GUIDE.COLORS.darkBorderFocus, }, '& .MuiInputLabel-root.Mui-focused': { color: currentTheme?.components?.input?.focusBorderColor || currentTheme?.components?.input?.focusBorderColorFallback || STYLE_GUIDE.COLORS.inputFocusFallback, }, '& .MuiInputBase-input': { color: `${currentTheme?.colors?.inputText || theme.palette.text.primary} !important`, }, '& .MuiInputBase-input::placeholder': { color: `${currentTheme?.colors?.text?.secondary || '#666'} !important`, }, '& .MuiInputBase-input:-webkit-autofill': { WebkitTextFillColor: `${currentTheme?.colors?.inputText || theme.palette.text.primary} !important`, WebkitBoxShadow: `0 0 0 1000px ${currentTheme?.colors?.background?.paper || '#ffffff'} inset !important`, }, }}
+          sx={{ 
+            mb: STYLE_GUIDE.SPACING.s6, 
+            '& .MuiOutlinedInput-root': { 
+              borderRadius: STYLE_GUIDE.SPACING.s2, 
+              alignItems: 'flex-start', 
+              paddingRight: STYLE_GUIDE.SPACING.s2, 
+              fontSize: '14px', 
+              backgroundColor: currentTheme?.colors?.background?.paper || '#ffffff', 
+              '& fieldset': { 
+                borderColor: currentTheme?.colors?.inputBorder || STYLE_GUIDE.COLORS.darkBackground, 
+              }, 
+              '&:hover fieldset': { 
+                borderColor: currentTheme?.colors?.borderHover || STYLE_GUIDE.COLORS.darkBorderHover, 
+              }, 
+              '&.Mui-focused fieldset': { 
+                borderColor: currentTheme?.components?.input?.focusBorderColor || currentTheme?.components?.input?.focusBorderColorFallback || STYLE_GUIDE.COLORS.inputFocusFallback, 
+              }, 
+            }, 
+            '& .MuiInputLabel-root': { 
+              color: currentTheme?.colors?.text?.secondary || STYLE_GUIDE.COLORS.darkBorderFocus, 
+            }, 
+            '& .MuiInputLabel-root.Mui-focused': { 
+              color: currentTheme?.components?.input?.focusBorderColor || currentTheme?.components?.input?.focusBorderColorFallback || STYLE_GUIDE.COLORS.inputFocusFallback, 
+            }, 
+            '& .MuiInputBase-input': { 
+              color: currentTheme?.colors?.inputText || currentTheme?.colors?.text?.primary || theme.palette.text.primary, 
+            }, 
+            '& .MuiInputBase-input::placeholder': { 
+              color: currentTheme?.colors?.text?.secondary || '#666', 
+            }, 
+            '& .MuiInputBase-input:-webkit-autofill': { 
+              WebkitTextFillColor: currentTheme?.colors?.inputText || currentTheme?.colors?.text?.primary || theme.palette.text.primary, 
+              WebkitBoxShadow: `0 0 0 1000px ${currentTheme?.colors?.background?.paper || '#ffffff'} inset`, 
+            }, 
+          }}
         />
 
         <TextField
@@ -163,7 +197,41 @@ function Login() {
               ),
             },
           }}
-          sx={{  mb: STYLE_GUIDE.SPACING.s6,'& .MuiOutlinedInput-root': { borderRadius: STYLE_GUIDE.SPACING.s2, alignItems: 'flex-start', paddingRight: STYLE_GUIDE.SPACING.s2, fontSize: '14px', backgroundColor: currentTheme?.colors?.background?.paper || '#ffffff', '& fieldset': { borderColor: currentTheme?.colors?.inputBorder || STYLE_GUIDE.COLORS.darkBackground, }, '&:hover fieldset': { borderColor: currentTheme?.colors?.borderHover || STYLE_GUIDE.COLORS.darkBorderHover, }, '&.Mui-focused fieldset': { borderColor: currentTheme?.components?.input?.focusBorderColor || currentTheme?.components?.input?.focusBorderColorFallback || STYLE_GUIDE.COLORS.inputFocusFallback, }, }, '& .MuiInputLabel-root': { color: currentTheme?.colors?.text?.secondary || STYLE_GUIDE.COLORS.darkBorderFocus, }, '& .MuiInputLabel-root.Mui-focused': { color: currentTheme?.components?.input?.focusBorderColor || currentTheme?.components?.input?.focusBorderColorFallback || STYLE_GUIDE.COLORS.inputFocusFallback, }, '& .MuiInputBase-input': { color: `${currentTheme?.colors?.inputText || theme.palette.text.primary} !important`, }, '& .MuiInputBase-input::placeholder': { color: `${currentTheme?.colors?.text?.secondary || '#666'} !important`, }, '& .MuiInputBase-input:-webkit-autofill': { WebkitTextFillColor: `${currentTheme?.colors?.inputText || theme.palette.text.primary} !important`, WebkitBoxShadow: `0 0 0 1000px ${currentTheme?.colors?.background?.paper || '#ffffff'} inset !important`, }, }}
+          sx={{ 
+            mb: STYLE_GUIDE.SPACING.s6,
+            '& .MuiOutlinedInput-root': { 
+              borderRadius: STYLE_GUIDE.SPACING.s2, 
+              alignItems: 'flex-start', 
+              paddingRight: STYLE_GUIDE.SPACING.s2, 
+              fontSize: '14px', 
+              backgroundColor: currentTheme?.colors?.background?.paper || '#ffffff', 
+              '& fieldset': { 
+                borderColor: currentTheme?.colors?.inputBorder || STYLE_GUIDE.COLORS.darkBackground, 
+              }, 
+              '&:hover fieldset': { 
+                borderColor: currentTheme?.colors?.borderHover || STYLE_GUIDE.COLORS.darkBorderHover, 
+              }, 
+              '&.Mui-focused fieldset': { 
+                borderColor: currentTheme?.components?.input?.focusBorderColor || currentTheme?.components?.input?.focusBorderColorFallback || STYLE_GUIDE.COLORS.inputFocusFallback, 
+              }, 
+            }, 
+            '& .MuiInputLabel-root': { 
+              color: currentTheme?.colors?.text?.secondary || STYLE_GUIDE.COLORS.darkBorderFocus, 
+            }, 
+            '& .MuiInputLabel-root.Mui-focused': { 
+              color: currentTheme?.components?.input?.focusBorderColor || currentTheme?.components?.input?.focusBorderColorFallback || STYLE_GUIDE.COLORS.inputFocusFallback, 
+            }, 
+            '& .MuiInputBase-input': { 
+              color: currentTheme?.colors?.inputText || currentTheme?.colors?.text?.primary || theme.palette.text.primary, 
+            }, 
+            '& .MuiInputBase-input::placeholder': { 
+              color: currentTheme?.colors?.text?.secondary || '#666', 
+            }, 
+            '& .MuiInputBase-input:-webkit-autofill': { 
+              WebkitTextFillColor: currentTheme?.colors?.inputText || currentTheme?.colors?.text?.primary || theme.palette.text.primary, 
+              WebkitBoxShadow: `0 0 0 1000px ${currentTheme?.colors?.background?.paper || '#ffffff'} inset`, 
+            }, 
+          }}
         />
 
         {!getLogin.isPending && !getLogin.isSuccess ? (

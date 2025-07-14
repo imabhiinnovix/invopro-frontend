@@ -222,7 +222,18 @@ export const createCompleteTheme = (baseTheme: Partial<DashboardTheme>): Dashboa
         styleOverrides: {
           root: {
             borderColor: baseTheme.colors?.inputBorder || STYLE_GUIDE.COLORS.borderGray,
-            color: baseTheme.colors?.inputText || STYLE_GUIDE.COLORS.textDarkGray,
+            color: baseTheme.colors?.inputText || baseTheme.colors?.text?.primary || STYLE_GUIDE.COLORS.textDarkGray,
+          },
+        },
+      },
+      MuiTableCell: {
+        styleOverrides: {
+          head: {
+            color: (baseTheme.components as any)?.table?.headerText || STYLE_GUIDE.COLORS.textGray,
+            backgroundColor: (baseTheme.components as any)?.table?.headerBackground || STYLE_GUIDE.COLORS.backgroundLightGray,
+          },
+          body: {
+            color: (baseTheme.components as any)?.table?.rowText || STYLE_GUIDE.COLORS.textDarkGray,
           },
         },
       },
@@ -248,8 +259,13 @@ export const createCompleteTheme = (baseTheme: Partial<DashboardTheme>): Dashboa
         styleOverrides: {
           select: {
             borderColor: baseTheme.colors?.inputBorder || STYLE_GUIDE.COLORS.borderGray,
-            color: baseTheme.colors?.inputText || STYLE_GUIDE.COLORS.textDarkGray,
+            color: baseTheme.colors?.inputText || baseTheme.colors?.text?.primary || STYLE_GUIDE.COLORS.textDarkGray,
             backgroundColor: baseTheme.colors?.dropdownBg || STYLE_GUIDE.COLORS.white,
+          },
+          root: {
+            '& .MuiSelect-select': {
+              color: baseTheme.colors?.inputText || baseTheme.colors?.text?.primary || STYLE_GUIDE.COLORS.textDarkGray,
+            },
           },
         },
       },
@@ -257,7 +273,7 @@ export const createCompleteTheme = (baseTheme: Partial<DashboardTheme>): Dashboa
         styleOverrides: {
           paper: {
             border: `1px solid ${baseTheme.colors?.inputBorder || STYLE_GUIDE.COLORS.borderGray}`,
-            color: baseTheme.colors?.dropdownOptionText || STYLE_GUIDE.COLORS.textDarkGray,
+            color: baseTheme.colors?.dropdownOptionText || baseTheme.colors?.text?.primary || STYLE_GUIDE.COLORS.textDarkGray,
             backgroundColor: baseTheme.colors?.dropdownBg || STYLE_GUIDE.COLORS.white,
           },
         },
@@ -266,7 +282,7 @@ export const createCompleteTheme = (baseTheme: Partial<DashboardTheme>): Dashboa
         styleOverrides: {
           root: {
             borderBottom: `1px solid ${baseTheme.colors?.inputBorder || STYLE_GUIDE.COLORS.borderGray}`,
-            color: baseTheme.colors?.dropdownOptionText || STYLE_GUIDE.COLORS.textDarkGray,
+            color: baseTheme.colors?.dropdownOptionText || baseTheme.colors?.text?.primary || STYLE_GUIDE.COLORS.textDarkGray,
             backgroundColor: baseTheme.colors?.dropdownOptionBg || STYLE_GUIDE.COLORS.backgroundHover,
             '&:hover': {
               backgroundColor: baseTheme.colors?.background?.hover || STYLE_GUIDE.COLORS.backgroundHover,
@@ -279,12 +295,12 @@ export const createCompleteTheme = (baseTheme: Partial<DashboardTheme>): Dashboa
         styleOverrides: {
           paper: {
             border: `1px solid ${baseTheme.colors?.inputBorder || STYLE_GUIDE.COLORS.borderGray}`,
-            color: baseTheme.colors?.dropdownOptionText || STYLE_GUIDE.COLORS.textDarkGray,
+            color: baseTheme.colors?.dropdownOptionText || baseTheme.colors?.text?.primary || STYLE_GUIDE.COLORS.textDarkGray,
             backgroundColor: baseTheme.colors?.dropdownBg || STYLE_GUIDE.COLORS.white,
           },
           option: {
             borderBottom: `1px solid ${baseTheme.colors?.inputBorder || STYLE_GUIDE.COLORS.borderGray}`,
-            color: baseTheme.colors?.dropdownOptionText || STYLE_GUIDE.COLORS.textDarkGray,
+            color: baseTheme.colors?.dropdownOptionText || baseTheme.colors?.text?.primary || STYLE_GUIDE.COLORS.textDarkGray,
             backgroundColor: baseTheme.colors?.dropdownOptionBg || STYLE_GUIDE.COLORS.backgroundHover,
             '&:hover': {
               backgroundColor: baseTheme.colors?.background?.hover || STYLE_GUIDE.COLORS.backgroundHover,

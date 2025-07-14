@@ -1879,7 +1879,8 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
                           key={`${rowIndex}-${column}`}
                           sx={{
                             padding: '12px 16px',
-                            borderBottom: `1px solid ${theme.palette.divider}`
+                            borderBottom: `1px solid ${theme.palette.divider}`,
+                            color: theme.palette.table?.rowText
                           }}
                         >
                           {typeof value === 'number' ? value.toLocaleString() : value}
@@ -1940,7 +1941,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
                   {columns.map((column) => (
                     <TableCell key={column} sx={{ 
                       fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.medium,
-                      backgroundColor: theme.palette.table?.headerBackground,
+                      backgroundColor: theme.palette.table?.headerBackground || theme.palette.background.default,
                       color: theme.palette.table?.headerText
                     }}>
                       {column}
@@ -1971,7 +1972,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
                   drillDownData.map((row, index) => (
                     <TableRow key={index}>
                       {columns.map((column) => (
-                        <TableCell key={column}>
+                        <TableCell key={column} sx={{ color: theme.palette.table?.rowText }}>
                           {typeof row[column] === 'number' ? row[column].toLocaleString() : row[column]}
                         </TableCell>
                       ))}

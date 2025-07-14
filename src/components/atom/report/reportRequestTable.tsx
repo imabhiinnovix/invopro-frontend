@@ -43,7 +43,7 @@ const StyledTableCell = styled(TableCell)(({ theme }) => ({
     height: "52px",
     padding: "0 16px",
     borderBottom: `1px solid ${theme.palette.divider}`,
-    color: theme.palette.text.primary,
+    color: theme.palette.table?.rowText,
   }}))
 
 const StyledTableRow = styled(TableRow)(({ theme }) => ({
