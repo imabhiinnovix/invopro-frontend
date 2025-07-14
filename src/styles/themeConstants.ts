@@ -24,7 +24,11 @@ export const getDefaultDashboardTheme = (): DashboardTheme => ({
     dropdownBorder: STYLE_GUIDE.COLORS.borderGray,
     dropdownOptionBg: STYLE_GUIDE.COLORS.backgroundHover,
     dropdownOptionText: STYLE_GUIDE.COLORS.textDarkGray,
-
+    dropdownSelectedText: STYLE_GUIDE.COLORS.primary,
+    dropdownLabelColor: STYLE_GUIDE.COLORS.textMediumGray,
+    dropdownFocusedBorder: STYLE_GUIDE.COLORS.primary,
+    dropdownFocusedLabel: STYLE_GUIDE.COLORS.primary,
+    iconPrimary: STYLE_GUIDE.COLORS.black,
     background: {
       default: STYLE_GUIDE.COLORS.backgroundDefault,
       paper: STYLE_GUIDE.COLORS.white,
@@ -128,6 +132,10 @@ export const createMuiThemeFromDashboardTheme = (dashboardTheme: DashboardTheme)
         optionBackground: dashboardTheme.colors.dropdownOptionBg,
         optionText: dashboardTheme.colors.dropdownOptionText,
         optionHoverBackground: dashboardTheme.colors.background.hover,
+        selectedText: dashboardTheme.colors.dropdownSelectedText,
+        labelColor: dashboardTheme.colors.dropdownLabelColor,
+        focusedBorder: dashboardTheme.colors.dropdownFocusedBorder,
+        focusedLabel: dashboardTheme.colors.dropdownFocusedLabel,
       },
     },
     components: {
@@ -301,33 +309,42 @@ export const createMuiThemeFromDashboardTheme = (dashboardTheme: DashboardTheme)
       MuiMenu: {
         styleOverrides: {
           paper: {
-            backgroundColor: dashboardTheme.colors.background.dropdown,
-            color: dashboardTheme.colors.text.primary,
+            backgroundColor: dashboardTheme.colors.dropdownBg,
+            color: dashboardTheme.colors.dropdownOptionText,
           },
         },
       },
       MuiPopover: {
         styleOverrides: {
           paper: {
-            backgroundColor: dashboardTheme.colors.background.dropdown,
-            color: dashboardTheme.colors.text.primary,
+            backgroundColor: dashboardTheme.colors.dropdownBg,
+            color: dashboardTheme.colors.dropdownOptionText,
           },
         },
       },
       MuiSelect: {
         styleOverrides: {
           select: {
-            backgroundColor: dashboardTheme.colors.background.dropdown,
-            color: dashboardTheme.colors.text.primary,
+            backgroundColor: dashboardTheme.colors.dropdownBg,
+            color: dashboardTheme.colors.dropdownSelectedText,
           },
         },
       },
       MuiMenuItem: {
         styleOverrides: {
           root: {
-            color: dashboardTheme.colors.text.primary,
+            color: dashboardTheme.colors.dropdownOptionText,
+            backgroundColor: dashboardTheme.colors.dropdownOptionBg,
             '&:hover': {
-              backgroundColor: dashboardTheme.colors.background.hover,
+              backgroundColor: dashboardTheme.colors.dropdownOptionBg,
+            },
+            '&.Mui-selected': {
+              backgroundColor: dashboardTheme.colors.dropdownOptionBg,
+              color: dashboardTheme.colors.dropdownSelectedText,
+              '&:hover': {
+                backgroundColor: dashboardTheme.colors.dropdownOptionBg,
+                color: dashboardTheme.colors.dropdownSelectedText,
+              },
             },
           },
         },

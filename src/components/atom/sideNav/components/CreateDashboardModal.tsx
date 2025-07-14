@@ -6,15 +6,13 @@ import {
   DialogActions,
   Button,
   TextField,
-  FormControl,
-  InputLabel,
-  Select,
   MenuItem,
   useTheme,
   alpha,
 } from '@mui/material';
 import { STYLE_GUIDE } from '../../../../styles';
 import { useDashboardTheme } from '../../../../context/DashboardThemeProvider';
+import StyledSelect from '../../common/StyledSelect';
 
 interface CreateDashboardModalProps {
   open: boolean;
@@ -114,64 +112,30 @@ export const CreateDashboardModal: React.FC<CreateDashboardModalProps> = ({
             },
           }}
         />
-        <FormControl
-          fullWidth
-          margin="dense"
+        <StyledSelect
+          label="Dashboard Type"
+          value={dashboardType}
+          onChange={(e) => onDashboardTypeChange(e.target.value as "normal" | "trend")}
           size="small"
-          sx={{
-            mt: 2,
-            "& .MuiOutlinedInput-root": {
-              "&:hover fieldset": {
-                borderColor: "primary.main",
-              },
-              "&.Mui-focused fieldset": {
-                borderColor: "primary.main",
-              },
-            },
-          }}
+          sx={{ mt: 2 }}
         >
-          <InputLabel>Dashboard Type</InputLabel>
-          <Select
-            value={dashboardType}
-            label="Dashboard Type"
-            onChange={(e) => onDashboardTypeChange(e.target.value as "normal" | "trend")}
-          >
-            <MenuItem value="normal">Normal</MenuItem>
-            <MenuItem value="trend">Trend</MenuItem>
-          </Select>
-        </FormControl>
+          <MenuItem value="normal">Normal</MenuItem>
+          <MenuItem value="trend">Trend</MenuItem>
+        </StyledSelect>
 
         {dashboardType === "trend" && (
-          <FormControl
-            fullWidth
-            margin="dense"
-            sx={{
-              mt: 2,
-              "& .MuiOutlinedInput-root": {
-                "&:hover fieldset": {
-                  borderColor: "primary.main",
-                },
-                "&.Mui-focused fieldset": {
-                  borderColor: "primary.main",
-                },
-              },
-            }}
+          <StyledSelect
+            label="Time Period"
+            value={timePeriod}
+            onChange={(e) => onTimePeriodChange(e.target.value as string)}
+            size="small"
+            sx={{ mt: 2 }}
           >
-            <InputLabel id="time-period-label">Time Period</InputLabel>
-            <Select
-              labelId="time-period-label"
-              id="time-period-select"
-              value={timePeriod}
-              label="Time Period"
-              onChange={(e) => onTimePeriodChange(e.target.value)}
-              size="small"
-            >
-              <MenuItem value="1m">Last 1 Month</MenuItem>
-              <MenuItem value="3m">Last 3 Months</MenuItem>
-              <MenuItem value="6m">Last 6 Months</MenuItem>
-              <MenuItem value="12m">Last 12 Months</MenuItem>
-            </Select>
-          </FormControl>
+            <MenuItem value="1m">Last 1 Month</MenuItem>
+            <MenuItem value="3m">Last 3 Months</MenuItem>
+            <MenuItem value="6m">Last 6 Months</MenuItem>
+            <MenuItem value="12m">Last 12 Months</MenuItem>
+          </StyledSelect>
         )}
       </DialogContent>
       <DialogActions sx={{ p: STYLE_GUIDE.SPACING.s4, gap: STYLE_GUIDE.SPACING.s2 }}>

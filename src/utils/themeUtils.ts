@@ -135,6 +135,10 @@ export const createCompleteTheme = (baseTheme: Partial<DashboardTheme>): Dashboa
       dropdownBorder: baseTheme.colors?.dropdownBorder || STYLE_GUIDE.COLORS.borderGray,
       dropdownOptionBg: baseTheme.colors?.dropdownOptionBg || STYLE_GUIDE.COLORS.backgroundHover,
       dropdownOptionText: baseTheme.colors?.dropdownOptionText || STYLE_GUIDE.COLORS.textDarkGray,
+      dropdownSelectedText: baseTheme.colors?.dropdownSelectedText || STYLE_GUIDE.COLORS.primary,
+      dropdownLabelColor: baseTheme.colors?.dropdownLabelColor || STYLE_GUIDE.COLORS.textMediumGray,
+      dropdownFocusedBorder: baseTheme.colors?.dropdownFocusedBorder || STYLE_GUIDE.COLORS.primary,
+      dropdownFocusedLabel: baseTheme.colors?.dropdownFocusedLabel || STYLE_GUIDE.COLORS.primary,
       iconPrimary: baseTheme.colors?.iconPrimary || '#000000',
       background: {
         default: baseTheme.colors?.background?.default || STYLE_GUIDE.COLORS.backgroundDefault,
@@ -259,12 +263,12 @@ export const createCompleteTheme = (baseTheme: Partial<DashboardTheme>): Dashboa
         styleOverrides: {
           select: {
             borderColor: baseTheme.colors?.inputBorder || STYLE_GUIDE.COLORS.borderGray,
-            color: baseTheme.colors?.inputText || baseTheme.colors?.text?.primary || STYLE_GUIDE.COLORS.textDarkGray,
+            color: baseTheme.colors?.dropdownSelectedText || baseTheme.colors?.text?.primary || STYLE_GUIDE.COLORS.textDarkGray,
             backgroundColor: baseTheme.colors?.dropdownBg || STYLE_GUIDE.COLORS.white,
           },
           root: {
             '& .MuiSelect-select': {
-              color: baseTheme.colors?.inputText || baseTheme.colors?.text?.primary || STYLE_GUIDE.COLORS.textDarkGray,
+              color: baseTheme.colors?.dropdownSelectedText || baseTheme.colors?.text?.primary || STYLE_GUIDE.COLORS.textDarkGray,
             },
           },
         },
@@ -288,6 +292,14 @@ export const createCompleteTheme = (baseTheme: Partial<DashboardTheme>): Dashboa
               backgroundColor: baseTheme.colors?.background?.hover || STYLE_GUIDE.COLORS.backgroundHover,
               borderColor: baseTheme.colors?.borderHover || STYLE_GUIDE.COLORS.borderGray,
             },
+            '&.Mui-selected': {
+              backgroundColor: baseTheme.colors?.dropdownOptionBg || STYLE_GUIDE.COLORS.backgroundHover,
+              color: baseTheme.colors?.dropdownSelectedText || baseTheme.colors?.primary?.main || STYLE_GUIDE.COLORS.primary,
+              '&:hover': {
+                backgroundColor: baseTheme.colors?.background?.hover || STYLE_GUIDE.COLORS.backgroundHover,
+                color: baseTheme.colors?.dropdownSelectedText || baseTheme.colors?.primary?.main || STYLE_GUIDE.COLORS.primary,
+              },
+            },
           },
         },
       },
@@ -305,6 +317,14 @@ export const createCompleteTheme = (baseTheme: Partial<DashboardTheme>): Dashboa
             '&:hover': {
               backgroundColor: baseTheme.colors?.background?.hover || STYLE_GUIDE.COLORS.backgroundHover,
               borderColor: baseTheme.colors?.borderHover || STYLE_GUIDE.COLORS.borderGray,
+            },
+            '&[aria-selected="true"]': {
+              backgroundColor: baseTheme.colors?.dropdownOptionBg || STYLE_GUIDE.COLORS.backgroundHover,
+              color: baseTheme.colors?.dropdownSelectedText || baseTheme.colors?.primary?.main || STYLE_GUIDE.COLORS.primary,
+              '&:hover': {
+                backgroundColor: baseTheme.colors?.background?.hover || STYLE_GUIDE.COLORS.backgroundHover,
+                color: baseTheme.colors?.dropdownSelectedText || baseTheme.colors?.primary?.main || STYLE_GUIDE.COLORS.primary,
+              },
             },
           },
         },
@@ -392,6 +412,10 @@ export const importThemeFromCSS = (cssContent: string): Partial<DashboardTheme> 
       dropdownBorder: '#000000',
       dropdownOptionBg: '#ffffff',
       dropdownOptionText: '#000000',
+      dropdownSelectedText: '#000000',
+      dropdownLabelColor: '#000000',
+      dropdownFocusedBorder: '#000000',
+      dropdownFocusedLabel: '#000000',
       background: { default: '#ffffff', paper: '#ffffff', surface: '#ffffff', hover: '#ffffff', card: '#ffffff', dropdown: '#ffffff' },
       text: { primary: '#000000', secondary: '#000000', disabled: '#000000', hint: '#000000' },
       divider: '#000000',

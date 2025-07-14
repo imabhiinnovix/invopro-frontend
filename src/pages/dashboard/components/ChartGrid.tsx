@@ -1109,7 +1109,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
       const groupByField = groupBy[0];
       const uniqueGroups = Array.from(new Set(chartData.map((item: ChartDataItem) => item[groupByField] as string)));
       const uniqueNames = Array.from(new Set(chartData.map((item: ChartDataItem) => item.name)));
-      let uniqueNameDataMap: any = {};
+      const uniqueNameDataMap: any = {};
       // Create a dataset for each unique group
       const datasets = uniqueGroups.map((group, index) => {
         let totalDataBasedOnGroup = 0;
@@ -1171,7 +1171,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
       const groupByField = groupBy[0];
       const uniqueGroups = Array.from(new Set(chartData.map((item) => item[groupByField] as string)));
       const uniqueNames = Array.from(new Set(chartData.map((item) => item.name)));
-      let uniqueNameDataMap: any = {};
+      const uniqueNameDataMap: any = {};
       // Create a dataset for each unique group
       const datasets = uniqueGroups.map((group, index) => {
         let totalDataBasedOnGroup = 0;
@@ -1236,7 +1236,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
       if (groupBy.length > 0) {
         const groupByField = groupBy[0];
         const uniqueGroups = Array.from(new Set(chartData.map((item) => item[groupByField] as string)));
-        let uniqueNameDataMap: any = {};
+        const uniqueNameDataMap: any = {};
         const datasets = uniqueGroups.map((group, index) => {
           let totalDataBasedOnGroup = 0;
           const groupData = barLabels.map((name) => {
@@ -1300,7 +1300,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
         const groupByField = groupBy[0]; // Take the first groupBy field
         const uniqueGroups = Array.from(new Set(chartData.map((item) => item[groupByField] as string)));
         const uniqueNames = Array.from(new Set(chartData.map((item) => item.name)));
-        let uniqueNameDataMap: any = {};
+        const uniqueNameDataMap: any = {};
         // Create datasets for each group
         const datasets = uniqueGroups.map((group, index) => {
           let totalDataBasedOnGroup = 0;
@@ -1361,7 +1361,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
         const groupByField = groupBy[0]; // Take the first groupBy field
         const uniqueGroups = Array.from(new Set(chartData.map((item) => item[groupByField] as string)));
         const uniqueNames = Array.from(new Set(chartData.map((item) => item.name)));
-        let uniqueNameDataMap: any = {};
+        const uniqueNameDataMap: any = {};
         // Create a dataset for each unique group
         const datasets = uniqueGroups.map((group, index) => {
           let totalDataBasedOnGroup = 0;
@@ -1429,7 +1429,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
         const groupByField = groupBy[0];
         const uniqueGroups = Array.from(new Set(chartData.map((item) => item[groupByField])));
         const uniqueNames = Array.from(new Set(chartData.map((item) => item.name)));
-        let uniqueNameDataMap: any = {};
+        const uniqueNameDataMap: any = {};
         const datasets = uniqueGroups.map((group, index) => {
           let totalDataBasedOnGroup = 0;
           const groupData = uniqueNames.map((name) => {

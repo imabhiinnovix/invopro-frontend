@@ -305,6 +305,18 @@ const CreateDashboardThemeDialog: React.FC<CreateDashboardThemeDialogProps> = ({
                     <Grid item xs={12} md={3}>
                       <ColorPickerField label="Dropdown Option Text" path="colors.dropdownOptionText" color={formData.colors.dropdownOptionText} />
                     </Grid>
+                    <Grid item xs={12} md={3}>
+                      <ColorPickerField label="Dropdown Selected Text" path="colors.dropdownSelectedText" color={formData.colors.dropdownSelectedText} />
+                    </Grid>
+                    <Grid item xs={12} md={3}>
+                      <ColorPickerField label="Dropdown Label Color" path="colors.dropdownLabelColor" color={formData.colors.dropdownLabelColor} />
+                    </Grid>
+                    <Grid item xs={12} md={3}>
+                      <ColorPickerField label="Dropdown Focused Border" path="colors.dropdownFocusedBorder" color={formData.colors.dropdownFocusedBorder} />
+                    </Grid>
+                    <Grid item xs={12} md={3}>
+                      <ColorPickerField label="Dropdown Focused Label" path="colors.dropdownFocusedLabel" color={formData.colors.dropdownFocusedLabel} />
+                    </Grid>
                   </Grid>
                 </Paper>
 

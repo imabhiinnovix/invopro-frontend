@@ -6,15 +6,13 @@ import {
   DialogActions,
   Button,
   TextField,
-  FormControl,
-  InputLabel,
-  Select,
   MenuItem,
   useTheme,
   alpha,
 } from '@mui/material';
 import { useDashboardTheme } from '../../context/DashboardThemeProvider';
 import { STYLE_GUIDE } from '../../styles';
+import StyledSelect from '../../components/atom/common/StyledSelect';
 
 interface SaveWidgetModelProps {
   open: boolean;
@@ -84,31 +82,19 @@ export const SaveWidgetModel: React.FC<SaveWidgetModelProps> = ({
           size="small"
           sx={{ '& .MuiOutlinedInput-root': { borderRadius: STYLE_GUIDE.SPACING.s2, alignItems: 'flex-start', paddingRight: STYLE_GUIDE.SPACING.s2, fontSize: '14px', backgroundColor: currentTheme?.colors?.background?.paper || '#ffffff', '& fieldset': { borderColor: currentTheme?.colors?.inputBorder || STYLE_GUIDE.COLORS.darkBackground, }, '&:hover fieldset': { borderColor: currentTheme?.colors?.borderHover || STYLE_GUIDE.COLORS.darkBorderHover, }, '&.Mui-focused fieldset': { borderColor: currentTheme?.components?.input?.focusBorderColor || currentTheme?.components?.input?.focusBorderColorFallback || STYLE_GUIDE.COLORS.inputFocusFallback, }, }, '& .MuiInputLabel-root': { color: currentTheme?.colors?.text?.secondary || STYLE_GUIDE.COLORS.darkBorderFocus, }, '& .MuiInputLabel-root.Mui-focused': { color: currentTheme?.components?.input?.focusBorderColor || currentTheme?.components?.input?.focusBorderColorFallback || STYLE_GUIDE.COLORS.inputFocusFallback, }, '& .MuiInputBase-input': { color: `${currentTheme?.colors?.inputText || theme.palette.text.primary} !important`, }, '& .MuiInputBase-input::placeholder': { color: `${currentTheme?.colors?.text?.secondary || '#666'} !important`, }, '& .MuiInputBase-input:-webkit-autofill': { WebkitTextFillColor: `${currentTheme?.colors?.inputText || theme.palette.text.primary} !important`, WebkitBoxShadow: `0 0 0 1000px ${currentTheme?.colors?.background?.paper || '#ffffff'} inset !important`, }, }}
         />
-        <FormControl
-          fullWidth
-          margin="dense"
+        <StyledSelect
+          label="Select Dashboard*"
+          value={dashBoardId}
+          onChange={(e) => onDashboardChange(e.target.value as string)}
           size="small"
-          sx={{
-            mt: STYLE_GUIDE.SPACING.s4,
-            '& .MuiOutlinedInput-root': {
-              '&:hover fieldset': {
-                borderColor: 'primary.main',
-              },
-              '&.Mui-focused fieldset': {
-                borderColor: 'primary.main',
-              },
-            },
-          }}
+          sx={{ mt: STYLE_GUIDE.SPACING.s4 }}
         >
-          <InputLabel>Select Dashboard*</InputLabel>
-          <Select value={dashBoardId} label="Dashboard" onChange={(e) => onDashboardChange(e.target.value)}>
-            {dashboardList?.filter((data) => data.settings.dashboardType === "normal")?.map((data) => (
-                <MenuItem key={data._id} value={data._id}>
-                  {data.name}
-                </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
+          {dashboardList?.filter((data) => data.settings.dashboardType === "normal")?.map((data) => (
+              <MenuItem key={data._id} value={data._id}>
+                {data.name}
+              </MenuItem>
+          ))}
+        </StyledSelect>
         {/* {dashboardType === 'trend' && (
           <FormControl
             fullWidth

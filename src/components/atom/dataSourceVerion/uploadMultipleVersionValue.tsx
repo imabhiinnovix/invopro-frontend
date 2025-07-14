@@ -26,11 +26,9 @@ import {
   Stack,
   Backdrop,
   LinearProgress,
-  Select,
   MenuItem,
-  FormControl,
-  InputLabel,
 } from "@mui/material";
+import StyledSelect from "../common/StyledSelect";
 import UploadFileIcon from "@mui/icons-material/UploadFile";
 import useGet from "../../../hooks/useGet";
 import { GET } from "../../../services/apiRoutes";
@@ -876,50 +874,47 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
                       <Box
                         sx={{ display: "flex", gap: 1, alignItems: "center" }}
                       >
-                        <FormControl fullWidth>
-                          <InputLabel>Select File</InputLabel>
-                          <Select
-                            value={fileSelections[fileName.extededName] || ""}
-                            onChange={(e) => {
-                              const selectedFile = [
-                                ...unmappedFiles,
-                                ...(watch("files") || []),
-                              ].find((f) => f?.name === e.target.value);
-                              if (selectedFile) {
-                                handleFileSelection(
-                                  selectedFile,
-                                  fileName.extededName
-                                );
-                              }
-                            }}
-                            label="Select File"
-                          >
-                            {(() => {
-                              // Get all files
-                              const allFiles = [
-                                ...unmappedFiles,
-                                ...(watch("files") || []),
-                              ].filter(Boolean);
-
-                              // Create a Map using file names as keys to ensure uniqueness
-                              const uniqueFiles = new Map();
-
-                              allFiles.forEach((file) => {
-                                if (file && !uniqueFiles.has(file.name)) {
-                                  uniqueFiles.set(file.name, file);
-                                }
-                              });
-
-                              return Array.from(uniqueFiles.values()).map(
-                                (file) => (
-                                  <MenuItem key={file.name} value={file.name}>
-                                    {file.name}
-                                  </MenuItem>
-                                )
+                        <StyledSelect
+                          label="Select File"
+                          value={fileSelections[fileName.extededName] || ""}
+                          onChange={(e) => {
+                            const selectedFile = [
+                              ...unmappedFiles,
+                              ...(watch("files") || []),
+                            ].find((f) => f?.name === e.target.value as string);
+                            if (selectedFile) {
+                              handleFileSelection(
+                                selectedFile,
+                                fileName.extededName
                               );
-                            })()}
-                          </Select>
-                        </FormControl>
+                            }
+                          }}
+                        >
+                          {(() => {
+                            // Get all files
+                            const allFiles = [
+                              ...unmappedFiles,
+                              ...(watch("files") || []),
+                            ].filter(Boolean);
+
+                            // Create a Map using file names as keys to ensure uniqueness
+                            const uniqueFiles = new Map();
+
+                            allFiles.forEach((file) => {
+                              if (file && !uniqueFiles.has(file.name)) {
+                                uniqueFiles.set(file.name, file);
+                              }
+                            });
+
+                            return Array.from(uniqueFiles.values()).map(
+                              (file) => (
+                                <MenuItem key={file.name} value={file.name}>
+                                  {file.name}
+                                </MenuItem>
+                              )
+                            );
+                          })()}
+                        </StyledSelect>
                         {fileSelections[fileName.extededName] && (
                           <Button
                             color="error"

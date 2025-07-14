@@ -6,9 +6,6 @@ import {
     Paper,
     Box,
     CircularProgress,
-    FormControl,
-    InputLabel,
-    Select,
     MenuItem,
     Button,
     Divider,
@@ -20,6 +17,7 @@ import {
     Card,
     CardContent
 } from "@mui/material";
+import StyledSelect from "../../components/atom/common/StyledSelect";
 import { fetchCustomReportSettings } from "./customReportsActions";
 import { RootState, AppDispatch } from "../../store";
 import CheckIcon from "@mui/icons-material/Check";
@@ -38,7 +36,7 @@ const ReportSettings: React.FC = () => {
     const theme = useTheme();
     const dispatch = useDispatch<AppDispatch>();
     const { settings = [], loading, error } = useSelector((state: RootState) => state.customReports);
-    const [selectedReportId, setSelectedReportId] = useState<string>("");
+    const [selectedReportId, setSelectedReportId] = useState<any>("");
 
     const [editReportName, setEditReportName] = useState<string>("");
     const [isEditingReportName, setIsEditingReportName] = useState(false);
@@ -468,67 +466,21 @@ const ReportSettings: React.FC = () => {
                                 }}>
                                     Select Report
                                 </Typography>
-                                <FormControl fullWidth>
-                                    <InputLabel id="report-select-label">Select Report to Edit</InputLabel>
-                                    <Select
-                                        labelId="report-select-label"
-                                        value={selectedReportId}
-                                        label="Select Report to Edit"
-                                        onChange={e => {
-                                            setSelectedReportId(e.target.value);
-                                            setIsEditingReportName(false);
-                                            setIsEditingSheetName(false);
-                                        }}
-                                        sx={{
-                                            '& .MuiOutlinedInput-root': {
-                                                backgroundColor: theme.palette.dropdown?.background,
-                                                '& fieldset': {
-                                                    borderColor: theme.palette.input?.border,
-                                                },
-                                                '&:hover fieldset': {
-                                                    borderColor: theme.palette.input?.focusBorder,
-                                                },
-                                                '&.Mui-focused fieldset': {
-                                                    borderColor: theme.palette.input?.focusBorder,
-                                                },
-                                            },
-                                            '& .MuiInputLabel-root': {
-                                                color: theme.palette.input?.text,
-                                            },
-                                            '& .MuiInputLabel-root.Mui-focused': {
-                                                color: theme.palette.input?.focusBorder,
-                                            },
-                                            '& .MuiSelect-select': {
-                                                color: theme.palette.input?.text,
-                                            },
-                                        }}
-                                        MenuProps={{
-                                            PaperProps: {
-                                                sx: {
-                                                    backgroundColor: theme.palette.dropdown?.background,
-                                                    '& .MuiMenuItem-root': {
-                                                        color: theme.palette.dropdown?.optionText,
-                                                        '&:hover': {
-                                                            backgroundColor: theme.palette.dropdown?.optionHoverBackground,
-                                                        },
-                                                        '&.Mui-selected': {
-                                                            backgroundColor: theme.palette.dropdown?.optionBackground,
-                                                            '&:hover': {
-                                                                backgroundColor: theme.palette.dropdown?.optionHoverBackground,
-                                                            },
-                                                        },
-                                                    },
-                                                },
-                                            },
-                                        }}
-                                    >
-                                        {settings.map(report => (
-                                            <MenuItem key={report._id} value={report._id}>
-                                                {report.reportName}
-                                            </MenuItem>
-                                        ))}
-                                    </Select>
-                                </FormControl>
+                                <StyledSelect
+                                    label="Select Report to Edit"
+                                    value={selectedReportId}
+                                    onChange={(e) => {
+                                        setSelectedReportId(e.target.value as string);
+                                        setIsEditingReportName(false);
+                                        setIsEditingSheetName(false);
+                                    }}
+                                >
+                                    {settings.map(report => (
+                                        <MenuItem key={report._id} value={report._id}>
+                                            {report.reportName}
+                                        </MenuItem>
+                                    ))}
+                                </StyledSelect>
                             </CardContent>
                         </Card>
 
@@ -576,63 +528,18 @@ const ReportSettings: React.FC = () => {
                                         }}>
                                             Select and Edit Sheet Settings
                                         </Typography>
-                                        <FormControl fullWidth sx={{ mb: 2 }}>
-                                            <InputLabel id="sheet-select-label">Select Sheet to Edit</InputLabel>
-                                            <Select
-                                                labelId="sheet-select-label"
-                                                value={selectedSheetCode}
-                                                label="Select Sheet to Edit"
-                                                onChange={e => setSelectedSheetCode(e.target.value)}
-                                                sx={{
-                                                    '& .MuiOutlinedInput-root': {
-                                                        backgroundColor: theme.palette.dropdown?.background,
-                                                        '& fieldset': {
-                                                            borderColor: theme.palette.input?.border,
-                                                        },
-                                                        '&:hover fieldset': {
-                                                            borderColor: theme.palette.input?.focusBorder,
-                                                        },
-                                                        '&.Mui-focused fieldset': {
-                                                            borderColor: theme.palette.input?.focusBorder,
-                                                        },
-                                                    },
-                                                    '& .MuiInputLabel-root': {
-                                                        color: theme.palette.input?.text,
-                                                    },
-                                                    '& .MuiInputLabel-root.Mui-focused': {
-                                                        color: theme.palette.input?.focusBorder,
-                                                    },
-                                                    '& .MuiSelect-select': {
-                                                        color: theme.palette.input?.text,
-                                                    },
-                                                }}
-                                                MenuProps={{
-                                                    PaperProps: {
-                                                        sx: {
-                                                            backgroundColor: theme.palette.dropdown?.background,
-                                                            '& .MuiMenuItem-root': {
-                                                                color: theme.palette.dropdown?.optionText,
-                                                                '&:hover': {
-                                                                    backgroundColor: theme.palette.dropdown?.optionHoverBackground,
-                                                                },
-                                                                '&.Mui-selected': {
-                                                                    backgroundColor: theme.palette.dropdown?.optionBackground,
-                                                                    '&:hover': {
-                                                                        backgroundColor: theme.palette.dropdown?.optionHoverBackground,
-                                                                    },
-                                                                },
-                                                            },
-                                                        },
-                                                    },
-                                                }}
-                                            >
-                                                {settings.find(r => r._id === selectedReportId)?.reportSettings.map((sheet: ReportSetting) => (
-                                                    <MenuItem key={sheet._id} value={sheet.sheetCode}>
-                                                        {sheet.sheetName}
-                                                    </MenuItem>
-                                                ))}
-                                            </Select>
-                                        </FormControl>
+                                        <StyledSelect
+                                            label="Select Sheet to Edit"
+                                            value={selectedSheetCode}
+                                            onChange={(e) => setSelectedSheetCode(e.target.value as string)}
+                                            sx={{ mb: 2 }}
+                                        >
+                                            {settings.find(r => r._id === selectedReportId)?.reportSettings.map((sheet: ReportSetting) => (
+                                                <MenuItem key={sheet._id} value={sheet.sheetCode}>
+                                                    {sheet.sheetName}
+                                                </MenuItem>
+                                            ))}
+                                        </StyledSelect>
                                         {selectedSheet && (
                                             <SheetNameEditor
                                                 sheetCode={selectedSheet.sheetCode}

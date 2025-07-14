@@ -6,13 +6,11 @@ import {
   Button,
   ButtonGroup,
   Stack,
-  Select,
   MenuItem,
-  FormControl,
-  InputLabel,
   SelectChangeEvent,
   useTheme,
 } from '@mui/material';
+import StyledSelect from '../../../components/atom/common/StyledSelect';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import DoneIcon from '@mui/icons-material/Done';
@@ -375,8 +373,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ title: initialTitl
     }
   }, [startDate, endDate, currentDashboard?.settings?.dashboardType, trigger]);
 
-  const handleThemeChange = async (event: SelectChangeEvent) => {
-    const themeId = event.target.value;
+  const handleThemeChange = async (event: SelectChangeEvent<unknown>) => {
+    const themeId = event.target.value as string;
     setSelectedTheme(themeId);
 
     if (dashboardId) {
@@ -442,23 +440,19 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ title: initialTitl
 
         <Box sx={{ mr: STYLE_GUIDE.SPACING.s4 }}>
           {isEditMode ? (
-            <FormControl sx={{ minWidth: 200 }}>
-              <InputLabel id="theme-select-label">Theme</InputLabel>
-              <Select
-                labelId="theme-select-label"
-                id="theme-select"
-                value={selectedTheme}
-                label="Theme"
-                onChange={handleThemeChange}
-                size="small"
-              >
-                {themes?.map((theme) => (
-                  <MenuItem key={theme._id} value={theme._id}>
-                    {theme.name}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
+            <StyledSelect
+              label="Theme"
+              value={selectedTheme}
+              onChange={handleThemeChange}
+              size="small"
+              sx={{ minWidth: 200 }}
+            >
+              {themes?.map((theme) => (
+                <MenuItem key={theme._id} value={theme._id}>
+                  {theme.name}
+                </MenuItem>
+              ))}
+            </StyledSelect>
           ) : null}
         </Box>
 

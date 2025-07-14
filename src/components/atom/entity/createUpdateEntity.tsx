@@ -148,10 +148,10 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
           const uniqueNames = new Set<string>(); // Track unique names
 
           // Read the first row (headers) and remove duplicates
-          worksheet.getRow(1).eachCell((cell, colNumber) => {
+          worksheet.getRow(1).eachCell((cell, _colNumber) => {
             if (cell.value) {
-              let actualHeaderName = cell.value.toString().trim();
-              let cleanedName = cell.value
+              const actualHeaderName = cell.value.toString().trim();
+              const cleanedName = cell.value
                 .toString()
                 .replace(/[^a-zA-Z0-9/]/g, "") // Remove special characters except '/'
                 .replace(/\//g, " or ") // Replace '/' with ' or '

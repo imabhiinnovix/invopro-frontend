@@ -17,6 +17,10 @@ declare module '@mui/material/styles' {
       optionBackground: string;
       optionText: string;
       optionHoverBackground: string;
+      selectedText: string;
+      labelColor: string;
+      focusedBorder: string;
+      focusedLabel: string;
     };
     table?: {
       headerBackground: string;
@@ -44,6 +48,10 @@ declare module '@mui/material/styles' {
       optionBackground: string;
       optionText: string;
       optionHoverBackground: string;
+      selectedText: string;
+      labelColor: string;
+      focusedBorder: string;
+      focusedLabel: string;
     };
     table?: {
       headerBackground: string;
@@ -73,6 +81,10 @@ declare module '@mui/material/styles/createPalette' {
       optionBackground: string;
       optionText: string;
       optionHoverBackground: string;
+      selectedText: string;
+      labelColor: string;
+      focusedBorder: string;
+      focusedLabel: string;
     };
     table?: {
       headerBackground: string;
@@ -100,6 +112,10 @@ declare module '@mui/material/styles/createPalette' {
       optionBackground: string;
       optionText: string;
       optionHoverBackground: string;
+      selectedText: string;
+      labelColor: string;
+      focusedBorder: string;
+      focusedLabel: string;
     };
     table?: {
       headerBackground: string;
