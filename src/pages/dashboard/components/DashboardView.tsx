@@ -11,6 +11,7 @@ import {
   FormControl,
   InputLabel,
   SelectChangeEvent,
+  useTheme,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
@@ -42,6 +43,7 @@ interface DashboardViewProps {
 }
 
 export const DashboardView: React.FC<DashboardViewProps> = ({ title: initialTitle, onTitleChange }): JSX.Element => {
+  const theme = useTheme();
   const { currentTheme } = useDashboardTheme();
   const [isEditMode, setIsEditMode] = useState(false);
   const [editedTitle, setEditedTitle] = useState(initialTitle);
@@ -429,31 +431,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ title: initialTitl
               onKeyDown={handleKeyPress}
               size="small"
               fullWidth
-              sx={{
-                '& .MuiOutlinedInput-root': {
-                  borderRadius: STYLE_GUIDE.SPACING.s2,
-                  fontSize: '14px',
-                  paddingRight: STYLE_GUIDE.SPACING.s2,
-                  '& fieldset': {
-                    borderColor: currentTheme?.colors?.inputBorder || '#ccc',
-                  },
-                  '&:hover fieldset': {
-                    borderColor: currentTheme?.colors?.borderHover || '#999',
-                  },
-                  '&.Mui-focused fieldset': {
-                    borderColor: currentTheme?.components?.input?.focusBorderColor || currentTheme?.components?.input?.focusBorderColorFallback || STYLE_GUIDE.COLORS.inputFocusFallback,
-                  },
-                },
-                '& .MuiInputLabel-root': {
-                  color: currentTheme?.colors?.text?.secondary || '#666',
-                },
-                '& .MuiInputLabel-root.Mui-focused': {
-                  color: currentTheme?.components?.input?.focusBorderColor || '#1976d2',
-                },
-                '& .MuiInputBase-input': {
-                  color: currentTheme?.colors?.inputText || '#333',
-                },
-              }}
+              sx={{ '& .MuiOutlinedInput-root': { borderRadius: STYLE_GUIDE.SPACING.s2, alignItems: 'flex-start', paddingRight: STYLE_GUIDE.SPACING.s2, fontSize: '14px', backgroundColor: currentTheme?.colors?.background?.paper || '#ffffff', '& fieldset': { borderColor: currentTheme?.colors?.inputBorder || STYLE_GUIDE.COLORS.darkBackground, }, '&:hover fieldset': { borderColor: currentTheme?.colors?.borderHover || STYLE_GUIDE.COLORS.darkBorderHover, }, '&.Mui-focused fieldset': { borderColor: currentTheme?.components?.input?.focusBorderColor || currentTheme?.components?.input?.focusBorderColorFallback || STYLE_GUIDE.COLORS.inputFocusFallback, }, }, '& .MuiInputLabel-root': { color: currentTheme?.colors?.text?.secondary || STYLE_GUIDE.COLORS.darkBorderFocus, }, '& .MuiInputLabel-root.Mui-focused': { color: currentTheme?.components?.input?.focusBorderColor || currentTheme?.components?.input?.focusBorderColorFallback || STYLE_GUIDE.COLORS.inputFocusFallback, }, '& .MuiInputBase-input': { color: `${currentTheme?.colors?.inputText || theme.palette.text.primary} !important`, }, '& .MuiInputBase-input::placeholder': { color: `${currentTheme?.colors?.text?.secondary || '#666'} !important`, }, '& .MuiInputBase-input:-webkit-autofill': { WebkitTextFillColor: `${currentTheme?.colors?.inputText || theme.palette.text.primary} !important`, WebkitBoxShadow: `0 0 0 1000px ${currentTheme?.colors?.background?.paper || '#ffffff'} inset !important`, }, }}
             />
           ) : (
             <Typography variant="h4" component="h1" fontWeight={STYLE_GUIDE.TYPOGRAPHY.fontWeight.medium} sx={{ mr: STYLE_GUIDE.SPACING.s4 }}>

@@ -14,6 +14,7 @@ import {
   CardContent,
   Card,
   FormHelperText,
+  useTheme,
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import AddIcon from '@mui/icons-material/Add';
@@ -215,6 +216,7 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
   setChartSaveSettingData,
   setNewSaveChartName,
 }) => {
+  const theme = useTheme();
   const { currentTheme } = useDashboardTheme();
   const dispatch = useAppDispatch();
   const { widgetTypes, dataSources, widgetTypesLoading, dataSourcesLoading } = useAppSelector(
@@ -936,13 +938,13 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
                         color: currentTheme?.components?.input?.focusBorderColor || currentTheme?.components?.input?.focusBorderColorFallback || STYLE_GUIDE.COLORS.inputFocusFallback,
                       },
                       '& .MuiInputBase-input': {
-                        color: `${currentTheme?.colors?.inputText} !important`,
+                        color: `${currentTheme?.colors?.inputText || theme.palette.text.primary} !important`,
                       },
                       '& .MuiInputBase-input::placeholder': {
                         color: `${currentTheme?.colors?.text?.secondary || '#666'} !important`,
                       },
                       '& .MuiInputBase-input:-webkit-autofill': {
-                        WebkitTextFillColor: `${currentTheme?.colors?.inputText} !important`,
+                        WebkitTextFillColor: `${currentTheme?.colors?.inputText || theme.palette.text.primary} !important`,
                         WebkitBoxShadow: `0 0 0 1000px ${currentTheme?.colors?.background?.paper || '#ffffff'} inset !important`,
                       },
                     }}
@@ -985,13 +987,13 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
                         color: currentTheme?.components?.input?.focusBorderColor || currentTheme?.components?.input?.focusBorderColorFallback || STYLE_GUIDE.COLORS.inputFocusFallback,
                       },
                       '& .MuiInputBase-input': {
-                        color: `${currentTheme?.colors?.inputText} !important`,
+                        color: `${currentTheme?.colors?.inputText || theme.palette.text.primary} !important`,
                       },
                       '& .MuiInputBase-input::placeholder': {
                         color: `${currentTheme?.colors?.text?.secondary || '#666'} !important`,
                       },
                       '& .MuiInputBase-input:-webkit-autofill': {
-                        WebkitTextFillColor: `${currentTheme?.colors?.inputText} !important`,
+                        WebkitTextFillColor: `${currentTheme?.colors?.inputText || theme.palette.text.primary} !important`,
                         WebkitBoxShadow: `0 0 0 1000px ${currentTheme?.colors?.background?.paper || '#ffffff'} inset !important`,
                       },
                     }}
@@ -1080,13 +1082,13 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
                 color: currentTheme?.components?.input?.focusBorderColor || currentTheme?.components?.input?.focusBorderColorFallback || STYLE_GUIDE.COLORS.inputFocusFallback,
               },
               '& .MuiInputBase-input': {
-                color: `${currentTheme?.colors?.inputText} !important`,
+                color: `${currentTheme?.colors?.inputText || theme.palette.text.primary} !important`,
               },
               '& .MuiInputBase-input::placeholder': {
                 color: `${currentTheme?.colors?.text?.secondary || '#666'} !important`,
               },
               '& .MuiInputBase-input:-webkit-autofill': {
-                WebkitTextFillColor: `${currentTheme?.colors?.inputText} !important`,
+                WebkitTextFillColor: `${currentTheme?.colors?.inputText || theme.palette.text.primary} !important`,
                 WebkitBoxShadow: `0 0 0 1000px ${currentTheme?.colors?.background?.paper || '#ffffff'} inset !important`,
               },
             }}
@@ -1345,13 +1347,13 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
                               color: currentTheme?.components?.input?.focusBorderColor || currentTheme?.components?.input?.focusBorderColorFallback || STYLE_GUIDE.COLORS.inputFocusFallback,
                             },
                             '& .MuiInputBase-input': {
-                              color: `${currentTheme?.colors?.inputText} !important`,
+                              color: `${currentTheme?.colors?.inputText || theme.palette.text.primary} !important`,
                             },
                             '& .MuiInputBase-input::placeholder': {
                               color: `${currentTheme?.colors?.text?.secondary || '#666'} !important`,
                             },
                             '& .MuiInputBase-input:-webkit-autofill': {
-                              WebkitTextFillColor: `${currentTheme?.colors?.inputText} !important`,
+                              WebkitTextFillColor: `${currentTheme?.colors?.inputText || theme.palette.text.primary} !important`,
                               WebkitBoxShadow: `0 0 0 1000px ${currentTheme?.colors?.background?.paper || '#ffffff'} inset !important`,
                             },
                           }}
@@ -1394,13 +1396,13 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
                               color: currentTheme?.components?.input?.focusBorderColor || currentTheme?.components?.input?.focusBorderColorFallback || STYLE_GUIDE.COLORS.inputFocusFallback,
                             },
                             '& .MuiInputBase-input': {
-                              color: `${currentTheme?.colors?.inputText} !important`,
+                              color: `${currentTheme?.colors?.inputText || theme.palette.text.primary} !important`,
                             },
                             '& .MuiInputBase-input::placeholder': {
                               color: `${currentTheme?.colors?.text?.secondary || '#666'} !important`,
                             },
                             '& .MuiInputBase-input:-webkit-autofill': {
-                              WebkitTextFillColor: `${currentTheme?.colors?.inputText} !important`,
+                              WebkitTextFillColor: `${currentTheme?.colors?.inputText || theme.palette.text.primary} !important`,
                               WebkitBoxShadow: `0 0 0 1000px ${currentTheme?.colors?.background?.paper || '#ffffff'} inset !important`,
                             },
                           }}

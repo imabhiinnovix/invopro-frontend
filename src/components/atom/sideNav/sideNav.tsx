@@ -34,6 +34,7 @@ import logo from '../../../assets/ReportiVix-logo.png';
 import { AuthContext } from '../../../context/AuthContext';
 import { clearLocalStorage } from '../../../utils/handleLocalStorage';
 import { Language } from '@mui/icons-material';
+import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import { STYLE_GUIDE } from '../../../styles';
 import SettingsIcon from '@mui/icons-material/Settings';
 
@@ -165,6 +166,9 @@ export default function SideNav() {
           setOpenDashboard(true);
         }
         navigate(route);
+      } else if (itemName === 'Data Sources') {
+        // Navigate to main data source page
+        navigate('/data-source');
       } else {
         setOpenSettings((prev) => !prev);
       }
@@ -360,11 +364,40 @@ export default function SideNav() {
         icon: <SettingsIcon sx={{ fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base }} />,
         route: '/report-settings',
       },
-      // {
-      //   name: 'VixAI Insights',
-      //   icon: <AutoAwesomeIcon sx={{ fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base }}/>,
-      //   route: '/VixAi-Insights',
-      // },
+      // TO BE ADDED LATER
+      {
+        name: 'VixAI Insights',
+        icon: <AutoAwesomeIcon sx={{ fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base }}/>,
+        route: '/VixAi-Insights',
+      },
+      // TO be removed later
+      {
+        name: 'attribute-option',
+        icon: <AutoAwesomeIcon sx={{ fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base }}/>,
+        route: '/attribute-option',
+      },
+      {
+        name: 'superadmin',
+        icon: <AutoAwesomeIcon sx={{ fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base }}/>,
+        route: '/superadmin/dashboard',
+      },
+{
+        name: 'entity',
+        icon: <AutoAwesomeIcon sx={{ fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base }}/>,
+        route: '/entity',
+      },
+      {
+        name: 'dashboard/overview',
+        icon: <AutoAwesomeIcon sx={{ fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base }}/>,
+        route: 'dashboard/overview',
+      },
+      {
+        name: 'dashboard/analytics',
+        icon: <AutoAwesomeIcon sx={{ fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base }}/>,
+        route: '/dashboard/analytics',
+      },
+      
+      
     ],
     [dataSourceList, dataSourceListAPI?.hasNextPage, dashboards, loading]
   );
