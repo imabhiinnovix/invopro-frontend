@@ -339,14 +339,44 @@ export default function SideNav() {
           ),
           route: "/notivix/users",
         },
+        // {
+        //   name: "Notification Settings",
+        //   icon: (
+        //     <AssessmentIcon
+        //       sx={{ fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base }}
+        //     />
+        //   ),
+        //   route: "/notivix/notification-settings",
+        // },
+
         {
           name: "Notification Settings",
           icon: (
-            <AssessmentIcon
+            <SettingsIcon
               sx={{ fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base }}
             />
           ),
           route: "/notivix/notification-settings",
+          subItems: [
+            {
+              name: "Settings",
+              icon: (
+                <SettingsIcon
+                  sx={{ fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base }}
+                />
+              ),
+              route: "/notivix/notification-settings/settings",
+            },
+            {
+              name: "Notification",
+              icon: (
+                <SettingsIcon
+                  sx={{ fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base }}
+                />
+              ),
+              route: "/notivix/notification-settings/notification",
+            },
+          ],
         },
         {
           name: "IP",

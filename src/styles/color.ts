@@ -69,7 +69,9 @@ export const COLORS = {
     blackBorderPrimary: "rgba(0, 0, 0, 0.5)",
     blackBorder: "rgba(0, 0, 0, 0.12)",
     blackBackground: "rgba(0, 0, 0, 0.1)",
-    WhiteLight: "rgba(25, 118, 210, 0.08)"
+    WhiteLight: "rgba(25, 118, 210, 0.08)",
+
+    error:"d32f2"
   }
   
   

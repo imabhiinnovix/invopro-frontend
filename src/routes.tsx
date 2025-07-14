@@ -1,24 +1,25 @@
-import { Route, Routes, Navigate } from 'react-router-dom';
-import Login from './pages/login';
-import SendOTP from './pages/loginOTP/sendOTP';
-import VerifyOTP from './pages/loginOTP/verifyOTP';
-import AuthProtect from './Auth/AuthProtect';
-import SuperAdminProtect from './Auth/SuperAdminProtect';
-import AdminSuperAdminProtect from './Auth/AdminSuperAdminProtect';
-import Dashboard from './pages/dashboard';
-import CommonLayout from './components/molecule/layout/commonLayout';
-import AttributeOption from './pages/attributeOption';
-import Report from './pages/report';
-import DataSources from './pages/dataSources';
-import DashboardOverview from './pages/dashboard/overview';
-import DashboardAnalytics from './pages/dashboard/analytics';
-import CreateTheme from './pages/createTheme';
-import { getAuthToken } from './utils/handleLocalStorage';
-import NaturalLanguage from './pages/naturalLanguage/NaturalLanguage';
-import Entity from './pages/entity';
-import DataSource from './pages/dataSource';
-import AIInsightPage from './pages/aiInsight';
-import ReportSettings from './pages/report-settings';
+import { Route, Routes, Navigate } from "react-router-dom";
+import Login from "./pages/login";
+import SendOTP from "./pages/loginOTP/sendOTP";
+import VerifyOTP from "./pages/loginOTP/verifyOTP";
+import AuthProtect from "./Auth/AuthProtect";
+import SuperAdminProtect from "./Auth/SuperAdminProtect";
+import AdminSuperAdminProtect from "./Auth/AdminSuperAdminProtect";
+import Dashboard from "./pages/dashboard";
+import CommonLayout from "./components/molecule/layout/commonLayout";
+import AttributeOption from "./pages/attributeOption";
+import Report from "./pages/report";
+import DataSources from "./pages/dataSources";
+import DashboardOverview from "./pages/dashboard/overview";
+import DashboardAnalytics from "./pages/dashboard/analytics";
+import CreateTheme from "./pages/createTheme";
+import { getAuthToken } from "./utils/handleLocalStorage";
+import NaturalLanguage from "./pages/naturalLanguage/NaturalLanguage";
+import Entity from "./pages/entity";
+import DataSource from "./pages/dataSource";
+import AIInsightPage from "./pages/aiInsight";
+import ReportSettings from "./pages/report-settings";
+import NotificationSettings from "./pages/notificationSettings";
 
 const AppRoutes = () => {
   const token = getAuthToken();
@@ -26,7 +27,10 @@ const AppRoutes = () => {
   return (
     <Routes>
       {/* Root Route */}
-      <Route path="/" element={<Navigate to={token ? '/dashboard' : '/login'} replace />} />
+      <Route
+        path="/"
+        element={<Navigate to={token ? "/dashboard" : "/login"} replace />}
+      />
 
       {/* Public Routes */}
       <Route path="/login" element={<Login />} />
@@ -48,9 +52,11 @@ const AppRoutes = () => {
           <Route path="/VixAi-Chart" element={<NaturalLanguage />} />
           <Route path="/report-settings" element={<ReportSettings />} />
           {/* // Notivix routes */}
-                    <Route path="/notivix/dashboard" element={<ReportSettings />} />
-                    
-
+          <Route path="/notivix/dashboard" element={<ReportSettings />} />
+          <Route
+            path="/notivix/notification-settings"
+            element={<NotificationSettings />}
+          />
         </Route>
       </Route>
 
