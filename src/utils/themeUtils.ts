@@ -129,13 +129,13 @@ export const createCompleteTheme = (baseTheme: Partial<DashboardTheme>): Dashboa
         dark: baseTheme.colors?.secondary?.dark || generateDarkColor(baseTheme.colors?.secondary?.main || STYLE_GUIDE.COLORS.materialBlue),
         contrastText: baseTheme.colors?.secondary?.contrastText || getContrastTextColor(baseTheme.colors?.secondary?.main || STYLE_GUIDE.COLORS.materialBlue),
       },
-      // New input and dropdown colors
       inputText: baseTheme.colors?.inputText || STYLE_GUIDE.COLORS.textDarkGray,
       inputBorder: baseTheme.colors?.inputBorder || STYLE_GUIDE.COLORS.borderGray,
       dropdownBg: baseTheme.colors?.dropdownBg || STYLE_GUIDE.COLORS.white,
       dropdownBorder: baseTheme.colors?.dropdownBorder || STYLE_GUIDE.COLORS.borderGray,
       dropdownOptionBg: baseTheme.colors?.dropdownOptionBg || STYLE_GUIDE.COLORS.backgroundHover,
       dropdownOptionText: baseTheme.colors?.dropdownOptionText || STYLE_GUIDE.COLORS.textDarkGray,
+      iconPrimary: baseTheme.colors?.iconPrimary || '#000000',
       background: {
         default: baseTheme.colors?.background?.default || STYLE_GUIDE.COLORS.backgroundDefault,
         paper: baseTheme.colors?.background?.paper || STYLE_GUIDE.COLORS.white,
@@ -397,6 +397,7 @@ export const importThemeFromCSS = (cssContent: string): Partial<DashboardTheme> 
       divider: '#000000',
       border: '#000000',
       borderHover: '#000000',
+      iconPrimary: '#000000'
     },
   };
 

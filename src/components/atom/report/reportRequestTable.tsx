@@ -26,6 +26,7 @@ import SimCardDownloadIcon from '@mui/icons-material/SimCardDownload';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import { STYLE_GUIDE } from '../../../styles';
 import DownloadForOfflineIcon from '@mui/icons-material/DownloadForOffline';
+import { getIconColor } from "../../../utils/iconStyles";
 
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
@@ -397,7 +398,7 @@ const ReportRequestTable: React.FC<AttributeOptionTableProps> = ({
                           }}
                           sx={{ mr: 1 }}
                         >
-                          <SimCardDownloadIcon />
+                          <SimCardDownloadIcon  sx={{ color: getIconColor(currentTheme) }}/>
                         </StyledButton>
                       </Tooltip>
                     )}
@@ -411,7 +412,7 @@ const ReportRequestTable: React.FC<AttributeOptionTableProps> = ({
                           );
                         }}
                       >
-                        <VisibilityIcon />
+                        <VisibilityIcon  sx={{ color: getIconColor(currentTheme) }}/>
                       </StyledButton>
                     </Tooltip>
                   </Box>
@@ -455,7 +456,7 @@ const ReportRequestTable: React.FC<AttributeOptionTableProps> = ({
                         }}
                         sx={{ mr: 1 }}
                       >
-                        <DownloadForOfflineIcon />
+                        <DownloadForOfflineIcon  sx={{ color: getIconColor(currentTheme) }}/>
                       </StyledButton>
                     </Tooltip>
                   )}

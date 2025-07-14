@@ -3,6 +3,7 @@ import { Box, TextField, IconButton, Typography, Paper, InputAdornment, useTheme
 import SendIcon from '@mui/icons-material/Send';
 import { useAppDispatch, useAppSelector } from '../../storeHooks';
 import { useDashboardTheme } from '../../context/DashboardThemeProvider';
+import { getIconColor } from '../../utils/iconStyles';
 
 import { ChartGrid } from '../dashboard/components/ChartGrid';
 import { fetchWidgetSettingBasedOnNaturalLanguage } from '../dashboard/dashboardActions';
@@ -102,7 +103,7 @@ const ChatPage: React.FC = () => {
                     height: 48,
                   }}
                 >
-                  <SendIcon />
+                  <SendIcon sx={{ color: getIconColor(currentTheme) }} />
                 </IconButton>
               </InputAdornment>
             ),

@@ -14,6 +14,8 @@ import SimCardDownloadIcon from '@mui/icons-material/SimCardDownload';
 import DownloadForOfflineIcon from '@mui/icons-material/DownloadForOffline';
 import useFileDownload from '../../hooks/useFiledownload';
 import { GET } from '../../services/apiRoutes';
+import { getIconColor } from '../../utils/iconStyles';
+import { useDashboardTheme } from '../../context/DashboardThemeProvider';
 
 export default function Report() {
   const theme = useTheme();
@@ -32,8 +34,10 @@ export default function Report() {
   const [isPdfLoading, setIsPdfLoading] = useState(false);
   const [intermediateDownloadRequestId, setIntermediateDownloadRequestId] = useState('');
   const [regularDownloadRequestId, setRegularDownloadRequestId] = useState('');
-
   const [viewReportNameWithVersionValue, setViewReportNameWithVersionValue] = useState('');
+
+   const { currentTheme } = useDashboardTheme();
+
   const exportFile = useFileDownload<Blob>((data) => {
     const blob = new Blob([data], { type: 'application/octet-stream' });
     const link = document.createElement('a');
@@ -223,7 +227,7 @@ export default function Report() {
                         }
                       }}
                     >
-                      <PictureAsPdfIcon />
+                      <PictureAsPdfIcon sx={{ color: getIconColor(currentTheme) }}/>
                     </Button>
                   </Tooltip>
                 )}
@@ -266,7 +270,7 @@ export default function Report() {
                           }}
                           sx={{ mr: 1 }}
                         >
-                          <DownloadForOfflineIcon />
+                          <DownloadForOfflineIcon  sx={{ color: getIconColor(currentTheme) }}/>
                         </Button>
                       </Tooltip>
                     )}
@@ -309,7 +313,7 @@ export default function Report() {
                         }
                       }}
                     >
-                      <SimCardDownloadIcon />
+                      <SimCardDownloadIcon sx={{ color: getIconColor(currentTheme) }} />
                     </Button>
                   </Tooltip>
                 )}

@@ -20,6 +20,7 @@ import ProgressBar from '../../molecule/progressBar';
 import usePut from '../../../hooks/usePut';
 import { STYLE_GUIDE } from '../../../styles';
 import { useDashboardTheme } from '../../../context/DashboardThemeProvider';
+import { getIconColor } from '../../../utils/iconStyles';
 
 interface CreateUpdateAttributeOptionProps {
   setAttributeOptionReload: React.Dispatch<React.SetStateAction<boolean>>;
@@ -165,7 +166,7 @@ const CreateUpdateAttributeOption: React.FC<CreateUpdateAttributeOptionProps> = 
                                 color="primary"
                                 aria-label="add value"
                               >
-                                <AddIcon />
+                                <AddIcon sx={{ color: getIconColor(currentTheme) }}/>
                               </IconButton>
                             </InputAdornment>
                           ),

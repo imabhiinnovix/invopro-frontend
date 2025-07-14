@@ -310,6 +310,17 @@ const CreateDashboardThemeDialog: React.FC<CreateDashboardThemeDialogProps> = ({
 
                 <Paper elevation={2} sx={{ p: 3, mb: 3 }}>
                   <Typography variant="h6" sx={{ mb: 2, fontWeight: 700 }}>
+                    Icon Colors
+                  </Typography>
+                  <Grid container spacing={2}>
+                    <Grid item xs={12} md={3}>
+                      <ColorPickerField label="Icon Color" path="colors.iconPrimary" color={formData.colors.iconPrimary} />
+                    </Grid>
+                  </Grid>
+                </Paper>
+
+                <Paper elevation={2} sx={{ p: 3, mb: 3 }}>
+                  <Typography variant="h6" sx={{ mb: 2, fontWeight: 700 }}>
                     Table Colors
                   </Typography>
                   <Grid container spacing={2}>

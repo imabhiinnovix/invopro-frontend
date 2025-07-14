@@ -37,6 +37,8 @@ import { Language } from '@mui/icons-material';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import { STYLE_GUIDE } from '../../../styles';
 import SettingsIcon from '@mui/icons-material/Settings';
+import { getIconColor } from '../../../utils/iconStyles';
+import { useDashboardTheme } from '../../../context/DashboardThemeProvider';
 
 
 interface ErrorResponse {
@@ -154,6 +156,8 @@ export default function SideNav() {
   const { clearAuthContext } = useContext(AuthContext);
   const [openCreateModal, setOpenCreateModal] = useState(false);
 
+  const { currentTheme } = useDashboardTheme();
+
   useEffect(() => {
     dispatch(fetchDashboardList());
   }, [dispatch]);
@@ -166,11 +170,12 @@ export default function SideNav() {
   ) => {
     if (hasSubItems) {
       if (itemName === "Dashboards") {
-        setOpenDashboard((prev) => !prev);
         if (!openDashboard) {
           setOpenDashboard(true);
+        } else {
+          setOpenDashboard(false);
+          navigate(route);
         }
-        navigate(route);
       } else {
         setOpenSettings((prev) => !prev);
       }
@@ -279,16 +284,27 @@ export default function SideNav() {
     navigate('/login');
   };
 
+  const createIcon = (IconComponent: React.ComponentType<any>, route: string) => {
+    return (
+      <IconComponent 
+        sx={{ 
+          fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base, 
+          color: location.pathname.startsWith(route) ? theme.palette.primary.main : getIconColor(currentTheme) 
+        }} 
+      />
+    );
+  };
+
   const navItems: NavItem[] = useMemo(
     () => [
       {
         name: 'Dashboards',
-        icon: <DashboardIcon sx={{ fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base }} />,
+        icon: createIcon(DashboardIcon, '/dashboard'),
         route: '/dashboard',
         subItems: [
           {
             name: 'Create New Dashboard',
-            icon: <AddIcon sx={{ fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base }} />,
+            icon: <AddIcon sx={{ fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base, color: getIconColor(currentTheme) }} />,
             route: '#',
             isCreateButton: true,
           },
@@ -317,14 +333,12 @@ export default function SideNav() {
       },
       {
         name: 'Reports',
-        icon: <AssessmentIcon sx={{ fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base }} />,
+        icon: createIcon(AssessmentIcon, '/reports'),
         route: '/reports',
       },
       {
         name: "Data Sources",
-        icon: (
-          <SourceIcon sx={{ fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base }} />
-        ),
+        icon: createIcon(SourceIcon, "/data-source"),
         route: "/data-source",
         subItems: [
           ...(dataSourceList?.map((item) => ({
@@ -349,49 +363,49 @@ export default function SideNav() {
       },
       {
         name: 'Create Theme',
-        icon: <PaletteIcon sx={{ fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base }} />,
+        icon: createIcon(PaletteIcon, '/create-theme'),
         route: '/create-theme',
       },
       {
         name: 'Dashboard Themes',
-        icon: <BrushIcon sx={{ fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base }} />,
-        route: '/dashboard-themes',
+        icon: createIcon(BrushIcon, '/themes'),
+        route: '/themes',
       },
       {
         name: 'VixAI Chart',
-        icon: <Language sx={{ fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base }} />,
+        icon: createIcon(Language, '/VixAi-Chart'),
         route: '/VixAi-Chart',
       },
       {
         name: 'Report Settings',
-        icon: <SettingsIcon sx={{ fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base }} />,
+        icon: createIcon(SettingsIcon, '/report-settings'),
         route: '/report-settings',
       },
       // TO BE ADDED LATER
       {
         name: 'VixAI Insights',
-        icon: <AutoAwesomeIcon sx={{ fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base }} />,
+        icon: createIcon(AutoAwesomeIcon, '/VixAi-Insights'),
         route: '/VixAi-Insights',
       },
       // TO be removed later
       {
         name: 'attribute-option',
-        icon: <AutoAwesomeIcon sx={{ fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base }} />,
+        icon: createIcon(AutoAwesomeIcon, '/attribute-option'),
         route: '/attribute-option',
       },
       {
         name: 'superadmin',
-        icon: <AutoAwesomeIcon sx={{ fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base }} />,
+        icon: createIcon(AutoAwesomeIcon, '/superadmin/dashboard'),
         route: '/superadmin/dashboard',
       },
       {
         name: 'entity',
-        icon: <AutoAwesomeIcon sx={{ fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base }} />,
+        icon: createIcon(AutoAwesomeIcon, '/entity'),
         route: '/entity',
       },
 
     ],
-    [dataSourceList, dataSourceListAPI?.hasNextPage, dashboards, loading]
+    [dataSourceList, dataSourceListAPI?.hasNextPage, dashboards, loading, location.pathname]
   );
 
   const isRouteActive = (route: string) => {
@@ -526,7 +540,7 @@ export default function SideNav() {
                                 justifyContent: 'center',
                               }}
                             >
-                              <AddIcon sx={{ fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base }} />
+                              <AddIcon sx={{ fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base, color: getIconColor(currentTheme) }} />
                             </ListItemIcon>
                             <ListItemText
                               primary="Create New Dashboard"
@@ -577,7 +591,7 @@ export default function SideNav() {
                   justifyContent: 'center',
                 }}
               >
-                <LogoutIcon sx={{ fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base }} />
+                <LogoutIcon sx={{ color: getIconColor(currentTheme) }} />
               </ListItemIcon>
               <ListItemText
                 primary="Logout"

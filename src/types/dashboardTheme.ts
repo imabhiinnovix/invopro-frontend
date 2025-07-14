@@ -30,6 +30,9 @@ export interface DashboardTheme {
     dropdownBorder: string;
     dropdownOptionBg: string;
     dropdownOptionText: string;
+    
+    // Icon colors
+    iconPrimary: string;
 
     background: {
       default: string;

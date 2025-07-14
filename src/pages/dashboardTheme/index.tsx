@@ -30,6 +30,7 @@ import { DashboardTheme } from '../../types/dashboardTheme';
 import DashboardThemePreview from './components/DashboardThemePreview';
 import CreateDashboardThemeDialog from './components/CreateDashboardThemeDialog';
 import { toast } from 'react-toastify';
+import { getIconColor } from '../../utils/iconStyles';
 
 const DashboardThemePage = () => {
   const theme = useTheme();
@@ -120,7 +121,7 @@ const DashboardThemePage = () => {
         </Box>
         <Button
           variant="contained"
-          startIcon={<AddIcon />}
+          startIcon={<AddIcon sx={{ color: getIconColor(currentTheme) }}/>}
           onClick={() => setIsDialogOpen(true)}
           sx={{ 
             px: 3, 

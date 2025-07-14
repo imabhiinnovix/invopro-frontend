@@ -64,7 +64,7 @@ const AppRoutes = () => {
       <Route element={<AdminSuperAdminProtect />}>
         <Route element={<CommonLayout />}>
           <Route path="/create-theme" element={<CreateTheme />} />
-          <Route path="/dashboard-themes" element={<DashboardThemePage />} />
+          <Route path="/themes" element={<DashboardThemePage />} />
         </Route>
       </Route>
     </Routes>
