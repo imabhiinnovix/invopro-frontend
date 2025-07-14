@@ -36,6 +36,18 @@ const StyledSelect: React.FC<StyledSelectProps> = ({
     '& .MuiInputLabel-root.Mui-focused': {
       color: theme.palette.dropdown?.focusedLabel || theme.palette.primary.main,
     },
+    // Label color when it's above the input (shrink state)
+    '& .MuiInputLabel-root.MuiInputLabel-shrink': {
+      color: theme.palette.dropdown?.focusedLabel || theme.palette.primary.main,
+    },
+    // Label color when input has value
+    '& .MuiInputLabel-root.MuiInputLabel-shrink.Mui-focused': {
+      color: theme.palette.dropdown?.focusedLabel || theme.palette.primary.main,
+    },
+    // Label color when input has value but not focused
+    '& .MuiInputLabel-root.MuiInputLabel-shrink:not(.Mui-focused)': {
+      color: theme.palette.dropdown?.focusedLabel || theme.palette.primary.main,
+    },
     '& .MuiSelect-select': {
       color: theme.palette.dropdown?.selectedText || theme.palette.text.primary,
     },

@@ -244,6 +244,40 @@ export const createCompleteTheme = (baseTheme: Partial<DashboardTheme>): Dashboa
       MuiTextField: {
         styleOverrides: {
           root: {
+            '& .MuiOutlinedInput-root': {
+              backgroundColor: baseTheme.colors?.dropdownBg || STYLE_GUIDE.COLORS.white,
+              '& fieldset': {
+                borderColor: baseTheme.colors?.inputBorder || STYLE_GUIDE.COLORS.borderGray,
+              },
+              '&:hover fieldset': {
+                borderColor: baseTheme.colors?.borderHover || STYLE_GUIDE.COLORS.borderGray,
+              },
+              '&.Mui-focused fieldset': {
+                borderColor: baseTheme.colors?.primary?.main || STYLE_GUIDE.COLORS.primary,
+              },
+            },
+            '& .MuiInputLabel-root': {
+              color: baseTheme.colors?.dropdownLabelColor || baseTheme.colors?.text?.secondary || STYLE_GUIDE.COLORS.textDarkGray,
+            },
+            '& .MuiInputLabel-root.Mui-focused': {
+              color: baseTheme.colors?.dropdownFocusedLabel || baseTheme.colors?.primary?.main || STYLE_GUIDE.COLORS.primary,
+            },
+            // Label color when it's above the input (shrink state)
+            '& .MuiInputLabel-root.MuiInputLabel-shrink': {
+              color: baseTheme.colors?.dropdownFocusedLabel || baseTheme.colors?.primary?.main || STYLE_GUIDE.COLORS.primary,
+            },
+            // Label color when input has value
+            '& .MuiInputLabel-root.MuiInputLabel-shrink.Mui-focused': {
+              color: baseTheme.colors?.dropdownFocusedLabel || baseTheme.colors?.primary?.main || STYLE_GUIDE.COLORS.primary,
+            },
+            // Label color when input has value but not focused
+            '& .MuiInputLabel-root.MuiInputLabel-shrink:not(.Mui-focused)': {
+              color: baseTheme.colors?.dropdownFocusedLabel || baseTheme.colors?.primary?.main || STYLE_GUIDE.COLORS.primary,
+            },
+            '& .MuiInputBase-input': {
+              color: baseTheme.colors?.dropdownSelectedText || baseTheme.colors?.text?.primary || STYLE_GUIDE.COLORS.textDarkGray,
+            },
+            // Fallback for older selectors
             '& .MuiOutlinedInput-notchedOutline': {
               borderColor: baseTheme.colors?.inputBorder || STYLE_GUIDE.COLORS.borderGray,
             },
@@ -254,22 +288,52 @@ export const createCompleteTheme = (baseTheme: Partial<DashboardTheme>): Dashboa
               borderColor: baseTheme.colors?.primary?.main || STYLE_GUIDE.COLORS.primary,
             },
             '& input': {
-              color: baseTheme.colors?.inputText || STYLE_GUIDE.COLORS.textDarkGray,
+              color: baseTheme.colors?.dropdownSelectedText || baseTheme.colors?.text?.primary || STYLE_GUIDE.COLORS.textDarkGray,
             },
           },
         },
       },
       MuiSelect: {
         styleOverrides: {
+          root: {
+            '& .MuiOutlinedInput-root': {
+              backgroundColor: baseTheme.colors?.dropdownBg || STYLE_GUIDE.COLORS.white,
+              '& fieldset': {
+                borderColor: baseTheme.colors?.inputBorder || STYLE_GUIDE.COLORS.borderGray,
+              },
+              '&:hover fieldset': {
+                borderColor: baseTheme.colors?.borderHover || STYLE_GUIDE.COLORS.borderGray,
+              },
+              '&.Mui-focused fieldset': {
+                borderColor: baseTheme.colors?.primary?.main || STYLE_GUIDE.COLORS.primary,
+              },
+            },
+            '& .MuiInputLabel-root': {
+              color: baseTheme.colors?.dropdownLabelColor || baseTheme.colors?.text?.secondary || STYLE_GUIDE.COLORS.textDarkGray,
+            },
+            '& .MuiInputLabel-root.Mui-focused': {
+              color: baseTheme.colors?.dropdownFocusedLabel || baseTheme.colors?.primary?.main || STYLE_GUIDE.COLORS.primary,
+            },
+            // Label color when it's above the input (shrink state)
+            '& .MuiInputLabel-root.MuiInputLabel-shrink': {
+              color: baseTheme.colors?.dropdownFocusedLabel || baseTheme.colors?.primary?.main || STYLE_GUIDE.COLORS.primary,
+            },
+            // Label color when input has value
+            '& .MuiInputLabel-root.MuiInputLabel-shrink.Mui-focused': {
+              color: baseTheme.colors?.dropdownFocusedLabel || baseTheme.colors?.primary?.main || STYLE_GUIDE.COLORS.primary,
+            },
+            // Label color when input has value but not focused
+            '& .MuiInputLabel-root.MuiInputLabel-shrink:not(.Mui-focused)': {
+              color: baseTheme.colors?.dropdownFocusedLabel || baseTheme.colors?.primary?.main || STYLE_GUIDE.COLORS.primary,
+            },
+            '& .MuiSelect-select': {
+              color: baseTheme.colors?.dropdownSelectedText || baseTheme.colors?.text?.primary || STYLE_GUIDE.COLORS.textDarkGray,
+            },
+          },
           select: {
             borderColor: baseTheme.colors?.inputBorder || STYLE_GUIDE.COLORS.borderGray,
             color: baseTheme.colors?.dropdownSelectedText || baseTheme.colors?.text?.primary || STYLE_GUIDE.COLORS.textDarkGray,
             backgroundColor: baseTheme.colors?.dropdownBg || STYLE_GUIDE.COLORS.white,
-          },
-          root: {
-            '& .MuiSelect-select': {
-              color: baseTheme.colors?.dropdownSelectedText || baseTheme.colors?.text?.primary || STYLE_GUIDE.COLORS.textDarkGray,
-            },
           },
         },
       },
@@ -300,6 +364,16 @@ export const createCompleteTheme = (baseTheme: Partial<DashboardTheme>): Dashboa
                 color: baseTheme.colors?.dropdownSelectedText || baseTheme.colors?.primary?.main || STYLE_GUIDE.COLORS.primary,
               },
             },
+            // Selected option label styling
+            '&.Mui-selected .MuiTypography-root': {
+              color: baseTheme.colors?.dropdownSelectedText || baseTheme.colors?.primary?.main || STYLE_GUIDE.COLORS.primary,
+            },
+            '&.Mui-selected span': {
+              color: baseTheme.colors?.dropdownSelectedText || baseTheme.colors?.primary?.main || STYLE_GUIDE.COLORS.primary,
+            },
+            '&.Mui-selected div': {
+              color: baseTheme.colors?.dropdownSelectedText || baseTheme.colors?.primary?.main || STYLE_GUIDE.COLORS.primary,
+            },
           },
         },
       },
@@ -322,6 +396,18 @@ export const createCompleteTheme = (baseTheme: Partial<DashboardTheme>): Dashboa
               color: baseTheme.colors?.dropdownLabelColor || baseTheme.colors?.text?.secondary || STYLE_GUIDE.COLORS.textDarkGray,
             },
             '& .MuiInputLabel-root.Mui-focused': {
+              color: baseTheme.colors?.dropdownFocusedLabel || baseTheme.colors?.primary?.main || STYLE_GUIDE.COLORS.primary,
+            },
+            // Label color when it's above the input (shrink state)
+            '& .MuiInputLabel-root.MuiInputLabel-shrink': {
+              color: baseTheme.colors?.dropdownFocusedLabel || baseTheme.colors?.primary?.main || STYLE_GUIDE.COLORS.primary,
+            },
+            // Label color when input has value
+            '& .MuiInputLabel-root.MuiInputLabel-shrink.Mui-focused': {
+              color: baseTheme.colors?.dropdownFocusedLabel || baseTheme.colors?.primary?.main || STYLE_GUIDE.COLORS.primary,
+            },
+            // Label color when input has value but not focused
+            '& .MuiInputLabel-root.MuiInputLabel-shrink:not(.Mui-focused)': {
               color: baseTheme.colors?.dropdownFocusedLabel || baseTheme.colors?.primary?.main || STYLE_GUIDE.COLORS.primary,
             },
             '& .MuiInputBase-input': {
@@ -379,6 +465,30 @@ export const createCompleteTheme = (baseTheme: Partial<DashboardTheme>): Dashboa
           },
         },
       },
+      // InputLabel theming for above labels
+      MuiInputLabel: {
+        styleOverrides: {
+          root: {
+            color: baseTheme.colors?.dropdownLabelColor || baseTheme.colors?.text?.secondary || STYLE_GUIDE.COLORS.textDarkGray,
+            '&.Mui-focused': {
+              color: baseTheme.colors?.dropdownFocusedLabel || baseTheme.colors?.primary?.main || STYLE_GUIDE.COLORS.primary,
+            },
+            // Label color when it's above the input (shrink state)
+            '&.MuiInputLabel-shrink': {
+              color: baseTheme.colors?.dropdownFocusedLabel || baseTheme.colors?.primary?.main || STYLE_GUIDE.COLORS.primary,
+            },
+            // Label color when input has value
+            '&.MuiInputLabel-shrink.Mui-focused': {
+              color: baseTheme.colors?.dropdownFocusedLabel || baseTheme.colors?.primary?.main || STYLE_GUIDE.COLORS.primary,
+            },
+            // Label color when input has value but not focused
+            '&.MuiInputLabel-shrink:not(.Mui-focused)': {
+              color: baseTheme.colors?.dropdownFocusedLabel || baseTheme.colors?.primary?.main || STYLE_GUIDE.COLORS.primary,
+            },
+          },
+        },
+      },
+
     },
     
     shadows: baseTheme.shadows || STYLE_GUIDE.SHADOWS,
