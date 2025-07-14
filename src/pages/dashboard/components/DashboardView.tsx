@@ -34,6 +34,7 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { fetchThemeList } from '../../createTheme/themeActions';
 import { STYLE_GUIDE } from '../../../styles';
+import { useDashboardTheme } from '../../../context/DashboardThemeProvider';
 
 interface DashboardViewProps {
   title: string;
@@ -41,6 +42,7 @@ interface DashboardViewProps {
 }
 
 export const DashboardView: React.FC<DashboardViewProps> = ({ title: initialTitle, onTitleChange }): JSX.Element => {
+  const { currentTheme } = useDashboardTheme();
   const [isEditMode, setIsEditMode] = useState(false);
   const [editedTitle, setEditedTitle] = useState(initialTitle);
   const [title, setTitle] = useState(initialTitle);
@@ -427,6 +429,31 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ title: initialTitl
               onKeyDown={handleKeyPress}
               size="small"
               fullWidth
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  borderRadius: STYLE_GUIDE.SPACING.s2,
+                  fontSize: '14px',
+                  paddingRight: STYLE_GUIDE.SPACING.s2,
+                  '& fieldset': {
+                    borderColor: currentTheme?.colors?.inputBorder || '#ccc',
+                  },
+                  '&:hover fieldset': {
+                    borderColor: currentTheme?.colors?.borderHover || '#999',
+                  },
+                  '&.Mui-focused fieldset': {
+                    borderColor: currentTheme?.components?.input?.focusBorderColor || currentTheme?.components?.input?.focusBorderColorFallback || STYLE_GUIDE.COLORS.inputFocusFallback,
+                  },
+                },
+                '& .MuiInputLabel-root': {
+                  color: currentTheme?.colors?.text?.secondary || '#666',
+                },
+                '& .MuiInputLabel-root.Mui-focused': {
+                  color: currentTheme?.components?.input?.focusBorderColor || '#1976d2',
+                },
+                '& .MuiInputBase-input': {
+                  color: currentTheme?.colors?.inputText || '#333',
+                },
+              }}
             />
           ) : (
             <Typography variant="h4" component="h1" fontWeight={STYLE_GUIDE.TYPOGRAPHY.fontWeight.medium} sx={{ mr: STYLE_GUIDE.SPACING.s4 }}>

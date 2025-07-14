@@ -21,6 +21,7 @@ import CommonDropdownSearch from '../../common/dropdown/searchableDropdown';
 import useGet from '../../../hooks/useGet';
 import usePut from '../../../hooks/usePut';
 import { STYLE_GUIDE } from '../../../styles';
+import { useDashboardTheme } from '../../../context/DashboardThemeProvider';
 
 interface CreateUpdateDataSourceProps {
   setReload: React.Dispatch<React.SetStateAction<boolean>>;
@@ -34,6 +35,8 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({ setRelo
 
   const [code, setCode] = useState('');
   const [name, setName] = useState('');
+  const { currentTheme } = useDashboardTheme();
+
   const {
     control,
     handleSubmit,
@@ -132,6 +135,40 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({ setRelo
             <Stack spacing={3}>
               <TextField
                 label="Data Source Name*"
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    borderRadius: STYLE_GUIDE.SPACING.s2,
+                    alignItems: 'flex-start',
+                    paddingRight: STYLE_GUIDE.SPACING.s2,
+                    fontSize: '14px',
+                    backgroundColor: currentTheme?.colors?.background?.paper || '#ffffff',
+                    '& fieldset': {
+                      borderColor: currentTheme?.colors?.inputBorder || STYLE_GUIDE.COLORS.darkBackground,
+                    },
+                    '&:hover fieldset': {
+                      borderColor: currentTheme?.colors?.borderHover || STYLE_GUIDE.COLORS.darkBorderHover,
+                    },
+                    '&.Mui-focused fieldset': {
+                      borderColor: currentTheme?.components?.input?.focusBorderColor || currentTheme?.components?.input?.focusBorderColorFallback || STYLE_GUIDE.COLORS.inputFocusFallback,
+                    },
+                  },
+                  '& .MuiInputLabel-root': {
+                    color: currentTheme?.colors?.text?.secondary || STYLE_GUIDE.COLORS.darkBorderFocus,
+                  },
+                  '& .MuiInputLabel-root.Mui-focused': {
+                    color: currentTheme?.components?.input?.focusBorderColor || currentTheme?.components?.input?.focusBorderColorFallback || STYLE_GUIDE.COLORS.inputFocusFallback,
+                  },
+                  '& .MuiInputBase-input': {
+                    color: `${currentTheme?.colors?.inputText} !important`,
+                  },
+                  '& .MuiInputBase-input::placeholder': {
+                    color: `${currentTheme?.colors?.text?.secondary || '#666'} !important`,
+                  },
+                  '& .MuiInputBase-input:-webkit-autofill': {
+                    WebkitTextFillColor: `${currentTheme?.colors?.inputText} !important`,
+                    WebkitBoxShadow: `0 0 0 1000px ${currentTheme?.colors?.background?.paper || '#ffffff'} inset !important`,
+                  },
+                }}
                 fullWidth
                 {...register('name', {
                   required: 'Data source name is required',
@@ -169,6 +206,41 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({ setRelo
                 {...register('description')}
                 error={!!errors.description}
                 helperText={errors.description?.message}
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    borderRadius: STYLE_GUIDE.SPACING.s2,
+                    alignItems: 'flex-start',
+                    paddingRight: STYLE_GUIDE.SPACING.s2,
+                    fontSize: '14px',
+                    padding: '12px 16px',
+                    backgroundColor: currentTheme?.colors?.background?.paper || '#ffffff',
+                    '& fieldset': {
+                      borderColor: currentTheme?.colors?.inputBorder || STYLE_GUIDE.COLORS.darkBackground,
+                    },
+                    '&:hover fieldset': {
+                      borderColor: currentTheme?.colors?.borderHover || STYLE_GUIDE.COLORS.darkBorderHover,
+                    },
+                    '&.Mui-focused fieldset': {
+                      borderColor: currentTheme?.components?.input?.focusBorderColor || currentTheme?.components?.input?.focusBorderColorFallback || STYLE_GUIDE.COLORS.inputFocusFallback,
+                    },
+                  },
+                  '& .MuiInputLabel-root': {
+                    color: currentTheme?.colors?.text?.secondary || STYLE_GUIDE.COLORS.darkBorderFocus,
+                  },
+                  '& .MuiInputLabel-root.Mui-focused': {
+                    color: currentTheme?.components?.input?.focusBorderColor || currentTheme?.components?.input?.focusBorderColorFallback || STYLE_GUIDE.COLORS.inputFocusFallback,
+                  },
+                  '& .MuiInputBase-input': {
+                    color: `${currentTheme?.colors?.inputText} !important`,
+                  },
+                  '& .MuiInputBase-input::placeholder': {
+                    color: `${currentTheme?.colors?.text?.secondary || '#666'} !important`,
+                  },
+                  '& .MuiInputBase-input:-webkit-autofill': {
+                    WebkitTextFillColor: `${currentTheme?.colors?.inputText} !important`,
+                    WebkitBoxShadow: `0 0 0 1000px ${currentTheme?.colors?.background?.paper || '#ffffff'} inset !important`,
+                  },
+                }}
               />
               {!data?._id && (
                 <CommonDropdownSearch
@@ -203,6 +275,41 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({ setRelo
 
               <TextField
                 label="Data Source Code(Unique Code)*"
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    borderRadius: STYLE_GUIDE.SPACING.s2,
+                    alignItems: 'flex-start',
+                    paddingRight: STYLE_GUIDE.SPACING.s2,
+                    fontSize: '14px',
+                    padding: '12px 16px',
+                    backgroundColor: currentTheme?.colors?.background?.paper || '#ffffff',
+                    '& fieldset': {
+                      borderColor: currentTheme?.colors?.inputBorder || STYLE_GUIDE.COLORS.darkBackground,
+                    },
+                    '&:hover fieldset': {
+                      borderColor: currentTheme?.colors?.borderHover || STYLE_GUIDE.COLORS.darkBorderHover,
+                    },
+                    '&.Mui-focused fieldset': {
+                      borderColor: currentTheme?.components?.input?.focusBorderColor || currentTheme?.components?.input?.focusBorderColorFallback || STYLE_GUIDE.COLORS.inputFocusFallback,
+                    },
+                  },
+                  '& .MuiInputLabel-root': {
+                    color: currentTheme?.colors?.text?.secondary || STYLE_GUIDE.COLORS.darkBorderFocus,
+                  },
+                  '& .MuiInputLabel-root.Mui-focused': {
+                    color: currentTheme?.components?.input?.focusBorderColor || currentTheme?.components?.input?.focusBorderColorFallback || STYLE_GUIDE.COLORS.inputFocusFallback,
+                  },
+                  '& .MuiInputBase-input': {
+                    color: `${currentTheme?.colors?.inputText} !important`,
+                  },
+                  '& .MuiInputBase-input::placeholder': {
+                    color: `${currentTheme?.colors?.text?.secondary || '#666'} !important`,
+                  },
+                  '& .MuiInputBase-input:-webkit-autofill': {
+                    WebkitTextFillColor: `${currentTheme?.colors?.inputText} !important`,
+                    WebkitBoxShadow: `0 0 0 1000px ${currentTheme?.colors?.background?.paper || '#ffffff'} inset !important`,
+                  },
+                }}
                 fullWidth
                 {...register('code', {
                   required: 'Data source code is required',

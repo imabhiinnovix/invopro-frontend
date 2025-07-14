@@ -18,7 +18,9 @@ import * as yup from 'yup';
 import { useMutation } from '@tanstack/react-query';
 import axiosInstance from '../../services/axiosInstance';
 import { GET } from '../../services/apiRoutes';
+import { useDashboardTheme } from '../../context/DashboardThemeProvider';
 import { STYLE_GUIDE } from '../../styles';
+
 
 const validationSchema = yup.object().shape({
   query: yup.string().required('Please enter your question'),
@@ -41,8 +43,11 @@ function extractHtmlFromApiData(data: any): string {
 
 const AIInsightPage: React.FC = () => {
   const theme = useTheme();
+  const { currentTheme } = useDashboardTheme();
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [qaPairs, setQAPairs] = React.useState<QAPair[]>([]);
+
+
 
   const {
     register,
@@ -112,31 +117,31 @@ const AIInsightPage: React.FC = () => {
       bgcolor: theme.palette.background.paper,
       display: 'flex',
       flexDirection: 'column',
-      boxShadow: STYLE_GUIDE.SHADOWS.xs,
-      fontFamily: STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary,
+      boxShadow: theme.shadows[1],
+      fontFamily: theme.typography.fontFamily,
     }}>
       <Box
-        px={STYLE_GUIDE.SPACING.s4}
-        py={STYLE_GUIDE.SPACING.s4}
+        px={3}
+        py={3}
         borderBottom={1}
-        borderColor={STYLE_GUIDE.COLORS.divider}
-        bgcolor={STYLE_GUIDE.COLORS.white}
+        borderColor={theme.palette.divider}
+        bgcolor={theme.palette.background.paper}
       >
         <Typography
           variant="h5"
-          fontWeight={STYLE_GUIDE.TYPOGRAPHY.fontWeight.bold}
+          fontWeight={600}
           gutterBottom
-          color={STYLE_GUIDE.COLORS.textDarkBlue}
-          fontSize={STYLE_GUIDE.TYPOGRAPHY.fontSize.xxl}
-          fontFamily={STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary}
+          color={theme.palette.text.primary}
+          fontSize="1.5rem"
+          fontFamily={theme.typography.fontFamily}
         >
           AI Insights
         </Typography>
         <Typography
           variant="body1"
-          color={STYLE_GUIDE.COLORS.textMediumGray}
-          fontSize={STYLE_GUIDE.TYPOGRAPHY.fontSize.base}
-          fontFamily={STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary}
+          color={theme.palette.text.secondary}
+          fontSize="1rem"
+          fontFamily={theme.typography.fontFamily}
         >
           Ask questions about your data and get AI-powered insights
         </Typography>
@@ -144,96 +149,96 @@ const AIInsightPage: React.FC = () => {
       <Box sx={{
         flex: 1,
         overflowY: 'auto',
-        px: STYLE_GUIDE.SPACING.s4,
-        py: STYLE_GUIDE.SPACING.s3,
+        px: 3,
+        py: 2,
         display: 'flex',
         flexDirection: 'column',
-        gap: STYLE_GUIDE.SPACING.s3,
-        backgroundColor: STYLE_GUIDE.COLORS.white,
+        gap: 2,
+        backgroundColor: theme.palette.background.paper,
       }}>
         {qaPairs.length === 0 && (
           <Typography
             variant="body2"
-            color={STYLE_GUIDE.COLORS.textMediumGray}
+            color={theme.palette.text.secondary}
             align="center"
-            sx={{ mt: STYLE_GUIDE.SPACING.s6 }}
-            fontSize={STYLE_GUIDE.TYPOGRAPHY.fontSize.base}
-            fontFamily={STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary}
+            sx={{ mt: 6 }}
+            fontSize="1rem"
+            fontFamily={theme.typography.fontFamily}
           >
             Start the conversation by asking a question below.
           </Typography>
         )}
         {qaPairs.map((qa, index) => (
           <React.Fragment key={index}>
-            <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: STYLE_GUIDE.SPACING.s1 }}>
-              <Box sx={{ display: 'flex', alignItems: 'flex-end', gap: STYLE_GUIDE.SPACING.s1 }}>
+            <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 1 }}>
+              <Box sx={{ display: 'flex', alignItems: 'flex-end', gap: 1 }}>
                 <Box
                   sx={{
-                    bgcolor: STYLE_GUIDE.COLORS.primary,
-                    color: STYLE_GUIDE.COLORS.white,
-                    px: STYLE_GUIDE.SPACING.s4,
-                    py: STYLE_GUIDE.SPACING.s2,
-                    borderRadius: STYLE_GUIDE.SPACING.s4,
+                    bgcolor: theme.palette.primary.main,
+                    color: theme.palette.primary.contrastText,
+                    px: 3,
+                    py: 1.5,
+                    borderRadius: 3,
                     maxWidth: 420,
-                    fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base,
+                    fontSize: '1rem',
                     wordBreak: 'break-word',
                     boxShadow: 'none',
-                    fontFamily: STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary,
+                    fontFamily: theme.typography.fontFamily,
                   }}
                 >
                   <Typography
                     variant="body1"
                     color="inherit"
-                    fontSize={STYLE_GUIDE.TYPOGRAPHY.fontSize.base}
-                    fontFamily={STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary}
+                    fontSize="1rem"
+                    fontFamily={theme.typography.fontFamily}
                   >
                     {qa.userQuery}
                   </Typography>
                 </Box>
                 <Avatar sx={{
-                  bgcolor: STYLE_GUIDE.COLORS.primary,
+                  bgcolor: theme.palette.primary.main,
                   width: 32,
                   height: 32,
-                  ml: STYLE_GUIDE.SPACING.s1
+                  ml: 1
                 }}>
                   <PersonIcon />
                 </Avatar>
               </Box>
             </Box>
             {qa.loading && (
-              <Box sx={{ display: 'flex', justifyContent: 'flex-start', mb: STYLE_GUIDE.SPACING.s2 }}>
-                <Box sx={{ display: 'flex', alignItems: 'flex-end', gap: STYLE_GUIDE.SPACING.s1 }}>
+              <Box sx={{ display: 'flex', justifyContent: 'flex-start', mb: 2 }}>
+                <Box sx={{ display: 'flex', alignItems: 'flex-end', gap: 1 }}>
                   <Avatar sx={{
-                    bgcolor: STYLE_GUIDE.COLORS.materialPurple,
+                    bgcolor: theme.palette.secondary.main,
                     width: 32,
                     height: 32,
-                    mr: STYLE_GUIDE.SPACING.s1
+                    mr: 1
                   }}>
                     <AutoAwesomeIcon />
                   </Avatar>
                   <Box
                     sx={{
-                      bgcolor: STYLE_GUIDE.COLORS.backgroundGray,
-                      color: STYLE_GUIDE.COLORS.textDarkBlue,
-                      px: STYLE_GUIDE.SPACING.s4,
-                      py: STYLE_GUIDE.SPACING.s2,
-                      borderRadius: STYLE_GUIDE.SPACING.s4,
+                      bgcolor: theme.palette.background.default,
+                      color: theme.palette.text.primary,
+                      px: 3,
+                      py: 1.5,
+                      borderRadius: 3,
                       maxWidth: 520,
-                      fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base,
+                      fontSize: '1rem',
                       wordBreak: 'break-word',
                       boxShadow: 'none',
                       display: 'flex',
                       alignItems: 'center',
-                      fontFamily: STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary,
+                      fontFamily: theme.typography.fontFamily,
                     }}
                   >
-                    <CircularProgress size={20} sx={{ mr: STYLE_GUIDE.SPACING.s1 }} />
+                    <CircularProgress size={20} sx={{ mr: 1 }} />
                     <Typography
                       variant="body2"
-                      color={STYLE_GUIDE.COLORS.textMediumGray}
+                      color={theme.palette.text.secondary}
                       component="span"
-                      fontSize={STYLE_GUIDE.TYPOGRAPHY.fontSize.small}
-                      fontFamily={STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary}
+                      fontSize="0.875rem"
+                      fontFamily={theme.typography.fontFamily}
                     >
                       Generating insights...
                     </Typography>
@@ -242,37 +247,37 @@ const AIInsightPage: React.FC = () => {
               </Box>
             )}
             {qa.htmlContent && !qa.loading && (
-              <Box sx={{ display: 'flex', justifyContent: 'flex-start', mb: STYLE_GUIDE.SPACING.s2 }}>
-                <Box sx={{ display: 'flex', alignItems: 'flex-end', gap: STYLE_GUIDE.SPACING.s1 }}>
+              <Box sx={{ display: 'flex', justifyContent: 'flex-start', mb: 2 }}>
+                <Box sx={{ display: 'flex', alignItems: 'flex-end', gap: 1 }}>
                   <Avatar sx={{
-                    bgcolor: STYLE_GUIDE.COLORS.materialPurple,
+                    bgcolor: theme.palette.secondary.main,
                     width: 32,
                     height: 32,
-                    mr: STYLE_GUIDE.SPACING.s1
+                    mr: 1
                   }}>
                     <AutoAwesomeIcon />
                   </Avatar>
                   <Box
                     sx={{
-                      bgcolor: STYLE_GUIDE.COLORS.backgroundGray,
-                      color: STYLE_GUIDE.COLORS.textDarkBlue,
-                      px: STYLE_GUIDE.SPACING.s4,
-                      py: STYLE_GUIDE.SPACING.s2,
-                      borderRadius: STYLE_GUIDE.SPACING.s4,
+                      bgcolor: theme.palette.background.default,
+                      color: theme.palette.text.primary,
+                      px: 3,
+                      py: 1.5,
+                      borderRadius: 3,
                       maxWidth: 520,
-                      fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base,
+                      fontSize: '1rem',
                       wordBreak: 'break-word',
                       boxShadow: 'none',
-                      fontFamily: STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary,
+                      fontFamily: theme.typography.fontFamily,
                     }}
                   >
-                    <Box sx={{ mt: STYLE_GUIDE.SPACING.s1 }}>
+                    <Box sx={{ mt: 1 }}>
                       <Typography
                         variant="body1"
-                        color={STYLE_GUIDE.COLORS.textDarkBlue}
+                        color={theme.palette.text.primary}
                         component="span"
-                        fontSize={STYLE_GUIDE.TYPOGRAPHY.fontSize.base}
-                        fontFamily={STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary}
+                        fontSize="1rem"
+                        fontFamily={theme.typography.fontFamily}
                         sx={{ wordBreak: 'break-word' }}
                         dangerouslySetInnerHTML={{ __html: qa.htmlContent }}
                       />
@@ -282,35 +287,35 @@ const AIInsightPage: React.FC = () => {
               </Box>
             )}
             {qa.error && !qa.loading && (
-              <Box sx={{ display: 'flex', justifyContent: 'flex-start', mb: STYLE_GUIDE.SPACING.s2 }}>
-                <Box sx={{ display: 'flex', alignItems: 'flex-end', gap: STYLE_GUIDE.SPACING.s1 }}>
+              <Box sx={{ display: 'flex', justifyContent: 'flex-start', mb: 2 }}>
+                <Box sx={{ display: 'flex', alignItems: 'flex-end', gap: 1 }}>
                   <Avatar sx={{
-                    bgcolor: STYLE_GUIDE.COLORS.materialPurple,
+                    bgcolor: theme.palette.error.main,
                     width: 32,
                     height: 32,
-                    mr: STYLE_GUIDE.SPACING.s1
+                    mr: 1
                   }}>
                     <AutoAwesomeIcon />
                   </Avatar>
                   <Box
                     sx={{
-                      bgcolor: STYLE_GUIDE.COLORS.backgroundGray,
-                      color: STYLE_GUIDE.COLORS.materialError,
-                      px: STYLE_GUIDE.SPACING.s4,
-                      py: STYLE_GUIDE.SPACING.s2,
-                      borderRadius: STYLE_GUIDE.SPACING.s4,
+                      bgcolor: theme.palette.background.default,
+                      color: theme.palette.error.main,
+                      px: 3,
+                      py: 1.5,
+                      borderRadius: 3,
                       maxWidth: 520,
-                      fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base,
+                      fontSize: '1rem',
                       wordBreak: 'break-word',
                       boxShadow: 'none',
-                      fontFamily: STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary,
+                      fontFamily: theme.typography.fontFamily,
                     }}
                   >
                     <Typography
                       variant="body2"
-                      color={STYLE_GUIDE.COLORS.materialError}
-                      fontSize={STYLE_GUIDE.TYPOGRAPHY.fontSize.small}
-                      fontFamily={STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary}
+                      color={theme.palette.error.main}
+                      fontSize="0.875rem"
+                      fontFamily={theme.typography.fontFamily}
                     >
                       {qa.error}
                     </Typography>
@@ -322,20 +327,15 @@ const AIInsightPage: React.FC = () => {
         ))}
         <div ref={messagesEndRef} />
       </Box>
-      {/* {insightMutation.isError && (
-          <Alert severity="error" sx={{ mb: 2, width: '100%' }}>
-            {insightMutation.error?.response?.data?.message || 'An error occurred'}
-          </Alert>
-        )} */}
       <Box sx={{
         width: '100%',
-        bgcolor: STYLE_GUIDE.COLORS.white,
-        py: STYLE_GUIDE.SPACING.s3,
+        bgcolor: theme.palette.background.paper,
+        py: 2,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
       }}>
-        <Box component="form" onSubmit={handleSubmit(onSubmit)} sx={{ display: 'flex', gap: STYLE_GUIDE.SPACING.s1, width: '100%', maxWidth: 900 }}>
+        <Box component="form" onSubmit={handleSubmit(onSubmit)} sx={{ display: 'flex', gap: 1, width: '100%', maxWidth: 900 }}>
           <TextField
             multiline
             minRows={2}
@@ -355,11 +355,11 @@ const AIInsightPage: React.FC = () => {
                     color="primary"
                     disabled={insightMutation.isPending}
                     sx={{
-                      backgroundColor: STYLE_GUIDE.COLORS.darkBackground,
-                      color: STYLE_GUIDE.COLORS.white,
-                      borderRadius: STYLE_GUIDE.SPACING.s3,
+                      backgroundColor: currentTheme?.colors?.primary?.main || STYLE_GUIDE.COLORS.darkBackground,
+                      color: currentTheme?.colors?.primary?.contrastText || STYLE_GUIDE.COLORS.white,
+                      borderRadius: currentTheme?.components?.button?.borderRadius || STYLE_GUIDE.SPACING.s4,
                       '&:hover': {
-                        backgroundColor: STYLE_GUIDE.COLORS.darkDarker,
+                        backgroundColor: currentTheme?.colors?.primary?.light || STYLE_GUIDE.COLORS.darkDarker,
                       },
                       width: 48,
                       height: 48,
@@ -372,27 +372,37 @@ const AIInsightPage: React.FC = () => {
             }}
             sx={{
               '& .MuiOutlinedInput-root': {
-                borderRadius: STYLE_GUIDE.SPACING.s4,
-                alignItems: 'center',
-                padding: STYLE_GUIDE.SPACING.s4,
-                fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base,
-                fontFamily: STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary,
+                borderRadius: STYLE_GUIDE.SPACING.s6,
+                alignItems: 'flex-start',
+                padding: 3,
+                paddingRight: STYLE_GUIDE.SPACING.s2,
+                fontSize: '14px',
+                backgroundColor: currentTheme?.colors?.background?.paper || '#ffffff',
                 '& fieldset': {
-                  borderColor: STYLE_GUIDE.COLORS.darkBorder,
+                  borderColor: currentTheme?.colors?.inputBorder || STYLE_GUIDE.COLORS.darkBackground,
                 },
                 '&:hover fieldset': {
-                  borderColor: STYLE_GUIDE.COLORS.darkBorderHover,
+                  borderColor: currentTheme?.colors?.borderHover || STYLE_GUIDE.COLORS.darkBorderHover,
                 },
                 '&.Mui-focused fieldset': {
-                  borderColor: STYLE_GUIDE.COLORS.darkBorderFocus,
+                  borderColor: currentTheme?.components?.input?.focusBorderColor || currentTheme?.components?.input?.focusBorderColorFallback || STYLE_GUIDE.COLORS.inputFocusFallback,
                 },
               },
               '& .MuiInputLabel-root': {
-                color: STYLE_GUIDE.COLORS.textDarkBlue,
-                fontFamily: STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary,
+                color: currentTheme?.colors?.text?.secondary || STYLE_GUIDE.COLORS.darkBorderFocus,
               },
               '& .MuiInputLabel-root.Mui-focused': {
-                color: STYLE_GUIDE.COLORS.textDarkGray,
+                color: currentTheme?.components?.input?.focusBorderColor || currentTheme?.components?.input?.focusBorderColorFallback || STYLE_GUIDE.COLORS.inputFocusFallback,
+              },
+              '& .MuiInputBase-input': {
+                color: `${currentTheme?.colors?.inputText || theme.palette.text.primary} !important`,
+              },
+              '& .MuiInputBase-input::placeholder': {
+                color: `${currentTheme?.colors?.text?.secondary || '#666'} !important`,
+              },
+              '& .MuiInputBase-input:-webkit-autofill': {
+                WebkitTextFillColor: `${currentTheme?.colors?.inputText || theme.palette.text.primary} !important`,
+                WebkitBoxShadow: `0 0 0 1000px ${currentTheme?.colors?.background?.paper || '#ffffff'} inset !important`,
               },
             }}
             autoComplete="off"

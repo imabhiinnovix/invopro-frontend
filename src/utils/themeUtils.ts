@@ -135,6 +135,7 @@ export const createCompleteTheme = (baseTheme: Partial<DashboardTheme>): Dashboa
       inputText: baseTheme.colors?.inputText || STYLE_GUIDE.COLORS.textDarkGray,
       inputBorder: baseTheme.colors?.inputBorder || STYLE_GUIDE.COLORS.borderGray,
       dropdownBg: baseTheme.colors?.dropdownBg || STYLE_GUIDE.COLORS.white,
+      dropdownBorder: baseTheme.colors?.dropdownBorder || STYLE_GUIDE.COLORS.borderGray,
       dropdownOptionBg: baseTheme.colors?.dropdownOptionBg || STYLE_GUIDE.COLORS.backgroundHover,
       dropdownOptionText: baseTheme.colors?.dropdownOptionText || STYLE_GUIDE.COLORS.textDarkGray,
       background: {
@@ -194,6 +195,7 @@ export const createCompleteTheme = (baseTheme: Partial<DashboardTheme>): Dashboa
         padding: '12px 16px',
         borderColor: STYLE_GUIDE.COLORS.borderGray,
         focusBorderColor: STYLE_GUIDE.COLORS.primary,
+        focusBorderColorFallback: STYLE_GUIDE.COLORS.inputFocusFallback,
       },
       table: {
         borderRadius: STYLE_GUIDE.SPACING.s2,
@@ -413,6 +415,7 @@ export const importThemeFromCSS = (cssContent: string): Partial<DashboardTheme> 
       inputText: '#000000',
       inputBorder: '#000000',
       dropdownBg: '#ffffff',
+      dropdownBorder: '#000000',
       dropdownOptionBg: '#ffffff',
       dropdownOptionText: '#000000',
       background: { default: '#ffffff', paper: '#ffffff', surface: '#ffffff', hover: '#ffffff', card: '#ffffff', dropdown: '#ffffff' },

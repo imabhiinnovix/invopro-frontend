@@ -41,6 +41,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { DateTime } from 'luxon';
 import { STYLE_GUIDE } from '../../../styles';
 import axios from 'axios';
+import { useDashboardTheme } from '../../../context/DashboardThemeProvider';
 
 interface Position {
   x: number;
@@ -111,11 +112,6 @@ const FormRow = styled(Box)(({ theme }) => ({
   },
 }));
 
-const StyledTextField = styled(TextField)({
-  '& .MuiOutlinedInput-root': {
-    borderRadius: STYLE_GUIDE.SPACING.s2,
-  },
-});
 
 const StyledSelect = styled(Select)({
   borderRadius: STYLE_GUIDE.SPACING.s2,
@@ -219,7 +215,7 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
   setChartSaveSettingData,
   setNewSaveChartName,
 }) => {
-  console.log('🚀 ~ currentDashboard̥:', currentDashboard, startVersionValue, endVersionValue, versionValue);
+  const { currentTheme } = useDashboardTheme();
   const dispatch = useAppDispatch();
   const { widgetTypes, dataSources, widgetTypesLoading, dataSourcesLoading } = useAppSelector(
     (state) => state.dashboard
@@ -506,7 +502,7 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
             startVersionValue: '',
             endVersionValue: '',
             versionValue: formattedVersionValue,
-            dynamicVersionValue: formattedVersionValue ? "" : formattedVersionValue ? "" :'1m'
+            dynamicVersionValue: formattedVersionValue ? "" : formattedVersionValue ? "" : '1m'
           },
           dashBoardType: dashboardType,
           isIncremental: formData.isIncremental || false,
@@ -547,7 +543,7 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
                 startVersionValue: dashboardType === 'trend' ? startVersionValue : '',
                 endVersionValue: dashboardType === 'trend' ? endVersionValue : '',
                 versionValue: dashboardType === 'trend' ? '' : formattedVersionValue,
-                dynamicVersionValue: dashboardType === 'trend' ? '' : formattedVersionValue ? "":'1m'
+                dynamicVersionValue: dashboardType === 'trend' ? '' : formattedVersionValue ? "" : '1m'
               })
             );
             toast.success('Chart saved successfully!');
@@ -899,7 +895,7 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
                   </StyledSelect>
                 </FormControl>
                 {fieldTypes[index] === 'date' ? (
-                  <StyledTextField
+                  <TextField
                     label="Value"
                     type="date"
                     value={condition.value}
@@ -915,9 +911,44 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
                     InputLabelProps={{
                       shrink: true,
                     }}
+                    sx={{
+                      '& .MuiOutlinedInput-root': {
+                        borderRadius: STYLE_GUIDE.SPACING.s2,
+                        alignItems: 'flex-start',
+                        mb: 2,
+                        paddingRight: STYLE_GUIDE.SPACING.s2,
+                        fontSize: '14px',
+                        backgroundColor: currentTheme?.colors?.background?.paper || '#ffffff',
+                        '& fieldset': {
+                          borderColor: currentTheme?.colors?.inputBorder || STYLE_GUIDE.COLORS.darkBackground,
+                        },
+                        '&:hover fieldset': {
+                          borderColor: currentTheme?.colors?.borderHover || STYLE_GUIDE.COLORS.darkBorderHover,
+                        },
+                        '&.Mui-focused fieldset': {
+                          borderColor: currentTheme?.components?.input?.focusBorderColor || currentTheme?.components?.input?.focusBorderColorFallback || STYLE_GUIDE.COLORS.inputFocusFallback,
+                        },
+                      },
+                      '& .MuiInputLabel-root': {
+                        color: currentTheme?.colors?.text?.secondary || STYLE_GUIDE.COLORS.darkBorderFocus,
+                      },
+                      '& .MuiInputLabel-root.Mui-focused': {
+                        color: currentTheme?.components?.input?.focusBorderColor || currentTheme?.components?.input?.focusBorderColorFallback || STYLE_GUIDE.COLORS.inputFocusFallback,
+                      },
+                      '& .MuiInputBase-input': {
+                        color: `${currentTheme?.colors?.inputText} !important`,
+                      },
+                      '& .MuiInputBase-input::placeholder': {
+                        color: `${currentTheme?.colors?.text?.secondary || '#666'} !important`,
+                      },
+                      '& .MuiInputBase-input:-webkit-autofill': {
+                        WebkitTextFillColor: `${currentTheme?.colors?.inputText} !important`,
+                        WebkitBoxShadow: `0 0 0 1000px ${currentTheme?.colors?.background?.paper || '#ffffff'} inset !important`,
+                      },
+                    }}
                   />
                 ) : (
-                  <StyledTextField
+                  <TextField
                     label="Value"
                     value={condition.value}
                     onChange={(e) => handleConditionValueInputChange(index, e)}
@@ -929,6 +960,41 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
                     }
                     size="small"
                     fullWidth
+                    sx={{
+                      '& .MuiOutlinedInput-root': {
+                        borderRadius: STYLE_GUIDE.SPACING.s2,
+                        alignItems: 'flex-start',
+                        mb: 2,
+                        paddingRight: STYLE_GUIDE.SPACING.s2,
+                        fontSize: '14px',
+                        backgroundColor: currentTheme?.colors?.background?.paper || '#ffffff',
+                        '& fieldset': {
+                          borderColor: currentTheme?.colors?.inputBorder || STYLE_GUIDE.COLORS.darkBackground,
+                        },
+                        '&:hover fieldset': {
+                          borderColor: currentTheme?.colors?.borderHover || STYLE_GUIDE.COLORS.darkBorderHover,
+                        },
+                        '&.Mui-focused fieldset': {
+                          borderColor: currentTheme?.components?.input?.focusBorderColor || currentTheme?.components?.input?.focusBorderColorFallback || STYLE_GUIDE.COLORS.inputFocusFallback,
+                        },
+                      },
+                      '& .MuiInputLabel-root': {
+                        color: currentTheme?.colors?.text?.secondary || STYLE_GUIDE.COLORS.darkBorderFocus,
+                      },
+                      '& .MuiInputLabel-root.Mui-focused': {
+                        color: currentTheme?.components?.input?.focusBorderColor || currentTheme?.components?.input?.focusBorderColorFallback || STYLE_GUIDE.COLORS.inputFocusFallback,
+                      },
+                      '& .MuiInputBase-input': {
+                        color: `${currentTheme?.colors?.inputText} !important`,
+                      },
+                      '& .MuiInputBase-input::placeholder': {
+                        color: `${currentTheme?.colors?.text?.secondary || '#666'} !important`,
+                      },
+                      '& .MuiInputBase-input:-webkit-autofill': {
+                        WebkitTextFillColor: `${currentTheme?.colors?.inputText} !important`,
+                        WebkitBoxShadow: `0 0 0 1000px ${currentTheme?.colors?.background?.paper || '#ffffff'} inset !important`,
+                      },
+                    }}
                   />
                 )}
                 <IconButton onClick={() => removeCondition(index)} disabled={isSubmitting} size="small">
@@ -968,8 +1034,8 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
     >
       {!isNaturalLangauage && (
         <ConfigurationHeader>
-          <Typography 
-            variant="h6" 
+          <Typography
+            variant="h6"
             fontWeight={STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold}
           >
             {initialData ? 'Edit Chart' : 'Add New Chart'}
@@ -982,13 +1048,48 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
 
       <ConfigurationContent>
         <FirstFormSection>
-          <StyledTextField
+          <TextField
             fullWidth
             label="Chart Name"
             value={formData.name}
             onChange={(e) => handleChange('name', e.target.value)}
             disabled={isSubmitting}
             size="small"
+            sx={{
+              '& .MuiOutlinedInput-root': {
+                borderRadius: STYLE_GUIDE.SPACING.s2,
+                alignItems: 'flex-start',
+                mb: 2,
+                paddingRight: STYLE_GUIDE.SPACING.s2,
+                fontSize: '14px',
+                backgroundColor: currentTheme?.colors?.background?.paper || '#ffffff',
+                '& fieldset': {
+                  borderColor: currentTheme?.colors?.inputBorder || STYLE_GUIDE.COLORS.darkBackground,
+                },
+                '&:hover fieldset': {
+                  borderColor: currentTheme?.colors?.borderHover || STYLE_GUIDE.COLORS.darkBorderHover,
+                },
+                '&.Mui-focused fieldset': {
+                  borderColor: currentTheme?.components?.input?.focusBorderColor || currentTheme?.components?.input?.focusBorderColorFallback || STYLE_GUIDE.COLORS.inputFocusFallback,
+                },
+              },
+              '& .MuiInputLabel-root': {
+                color: currentTheme?.colors?.text?.secondary || STYLE_GUIDE.COLORS.darkBorderFocus,
+              },
+              '& .MuiInputLabel-root.Mui-focused': {
+                color: currentTheme?.components?.input?.focusBorderColor || currentTheme?.components?.input?.focusBorderColorFallback || STYLE_GUIDE.COLORS.inputFocusFallback,
+              },
+              '& .MuiInputBase-input': {
+                color: `${currentTheme?.colors?.inputText} !important`,
+              },
+              '& .MuiInputBase-input::placeholder': {
+                color: `${currentTheme?.colors?.text?.secondary || '#666'} !important`,
+              },
+              '& .MuiInputBase-input:-webkit-autofill': {
+                WebkitTextFillColor: `${currentTheme?.colors?.inputText} !important`,
+                WebkitBoxShadow: `0 0 0 1000px ${currentTheme?.colors?.background?.paper || '#ffffff'} inset !important`,
+              },
+            }}
           />
         </FirstFormSection>
 
@@ -1203,7 +1304,7 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
                         </StyledSelect>
                       </FormControl>
                       {fieldTypes[index] === 'date' ? (
-                        <StyledTextField
+                        <TextField
                           label="Value"
                           type="date"
                           value={condition.value}
@@ -1219,9 +1320,44 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
                           InputLabelProps={{
                             shrink: true,
                           }}
+                          sx={{
+                            '& .MuiOutlinedInput-root': {
+                              borderRadius: STYLE_GUIDE.SPACING.s2,
+                              alignItems: 'flex-start',
+                              mb: 2,
+                              paddingRight: STYLE_GUIDE.SPACING.s2,
+                              fontSize: '14px',
+                              backgroundColor: currentTheme?.colors?.background?.paper || '#ffffff',
+                              '& fieldset': {
+                                borderColor: currentTheme?.colors?.inputBorder || STYLE_GUIDE.COLORS.darkBackground,
+                              },
+                              '&:hover fieldset': {
+                                borderColor: currentTheme?.colors?.borderHover || STYLE_GUIDE.COLORS.darkBorderHover,
+                              },
+                              '&.Mui-focused fieldset': {
+                                borderColor: currentTheme?.components?.input?.focusBorderColor || currentTheme?.components?.input?.focusBorderColorFallback || STYLE_GUIDE.COLORS.inputFocusFallback,
+                              },
+                            },
+                            '& .MuiInputLabel-root': {
+                              color: currentTheme?.colors?.text?.secondary || STYLE_GUIDE.COLORS.darkBorderFocus,
+                            },
+                            '& .MuiInputLabel-root.Mui-focused': {
+                              color: currentTheme?.components?.input?.focusBorderColor || currentTheme?.components?.input?.focusBorderColorFallback || STYLE_GUIDE.COLORS.inputFocusFallback,
+                            },
+                            '& .MuiInputBase-input': {
+                              color: `${currentTheme?.colors?.inputText} !important`,
+                            },
+                            '& .MuiInputBase-input::placeholder': {
+                              color: `${currentTheme?.colors?.text?.secondary || '#666'} !important`,
+                            },
+                            '& .MuiInputBase-input:-webkit-autofill': {
+                              WebkitTextFillColor: `${currentTheme?.colors?.inputText} !important`,
+                              WebkitBoxShadow: `0 0 0 1000px ${currentTheme?.colors?.background?.paper || '#ffffff'} inset !important`,
+                            },
+                          }}
                         />
                       ) : (
-                        <StyledTextField
+                        <TextField
                           label="Value"
                           value={condition.value}
                           onChange={(e) => handleConditionValueInputChange(index, e)}
@@ -1233,6 +1369,41 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
                           }
                           size="small"
                           fullWidth
+                          sx={{
+                            '& .MuiOutlinedInput-root': {
+                              borderRadius: STYLE_GUIDE.SPACING.s2,
+                              alignItems: 'flex-start',
+                              mb: 2,
+                              paddingRight: STYLE_GUIDE.SPACING.s2,
+                              fontSize: '14px',
+                              backgroundColor: currentTheme?.colors?.background?.paper || '#ffffff',
+                              '& fieldset': {
+                                borderColor: currentTheme?.colors?.inputBorder || STYLE_GUIDE.COLORS.darkBackground,
+                              },
+                              '&:hover fieldset': {
+                                borderColor: currentTheme?.colors?.borderHover || STYLE_GUIDE.COLORS.darkBorderHover,
+                              },
+                              '&.Mui-focused fieldset': {
+                                borderColor: currentTheme?.components?.input?.focusBorderColor || currentTheme?.components?.input?.focusBorderColorFallback || STYLE_GUIDE.COLORS.inputFocusFallback,
+                              },
+                            },
+                            '& .MuiInputLabel-root': {
+                              color: currentTheme?.colors?.text?.secondary || STYLE_GUIDE.COLORS.darkBorderFocus,
+                            },
+                            '& .MuiInputLabel-root.Mui-focused': {
+                              color: currentTheme?.components?.input?.focusBorderColor || currentTheme?.components?.input?.focusBorderColorFallback || STYLE_GUIDE.COLORS.inputFocusFallback,
+                            },
+                            '& .MuiInputBase-input': {
+                              color: `${currentTheme?.colors?.inputText} !important`,
+                            },
+                            '& .MuiInputBase-input::placeholder': {
+                              color: `${currentTheme?.colors?.text?.secondary || '#666'} !important`,
+                            },
+                            '& .MuiInputBase-input:-webkit-autofill': {
+                              WebkitTextFillColor: `${currentTheme?.colors?.inputText} !important`,
+                              WebkitBoxShadow: `0 0 0 1000px ${currentTheme?.colors?.background?.paper || '#ffffff'} inset !important`,
+                            },
+                          }}
                         />
                       )}
                       <IconButton onClick={() => removeCondition(index)} disabled={isSubmitting} size="small">
@@ -1276,7 +1447,7 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
             variant="contained"
             color="primary"
             disabled={isSubmitting || !formData.widgetTypeId || !formData.dataSourceId}
-            sx={{ 
+            sx={{
               fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.medium,
               fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base
             }}
@@ -1296,7 +1467,7 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
               backgroundColor: STYLE_GUIDE.COLORS.white,
               fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold,
               color: STYLE_GUIDE.COLORS.black,
-              '&:hover': { 
+              '&:hover': {
                 backgroundColor: STYLE_GUIDE.COLORS.backgroundDefault,
               },
             }}
@@ -1308,11 +1479,11 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
             variant="contained"
             color="primary"
             fullWidth
-            sx={{ 
-              flex: 1, 
-              color: STYLE_GUIDE.COLORS.white, 
-              height: 56, 
-              fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold, 
+            sx={{
+              flex: 1,
+              color: STYLE_GUIDE.COLORS.white,
+              height: 56,
+              fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold,
               fontSize: STYLE_GUIDE.SPACING.s4,
             }}
             onClick={() => {

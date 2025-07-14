@@ -14,6 +14,7 @@ import {
   alpha,
 } from '@mui/material';
 import { STYLE_GUIDE } from '../../../../styles';
+import { useDashboardTheme } from '../../../../context/DashboardThemeProvider';
 
 interface CreateDashboardModalProps {
   open: boolean;
@@ -41,6 +42,7 @@ export const CreateDashboardModal: React.FC<CreateDashboardModalProps> = ({
   onTimePeriodChange,
 }) => {
   const theme = useTheme();
+  const { currentTheme } = useDashboardTheme();
 
   return (
     <Dialog
@@ -78,13 +80,37 @@ export const CreateDashboardModal: React.FC<CreateDashboardModalProps> = ({
           onChange={(e) => onNameChange(e.target.value)}
           size="small"
           sx={{
-            "& .MuiOutlinedInput-root": {
-              "&:hover fieldset": {
-                borderColor: STYLE_GUIDE.COLORS.bootstrapPrimary,
+            '& .MuiOutlinedInput-root': {
+              borderRadius: STYLE_GUIDE.SPACING.s2,
+              alignItems: 'flex-start',
+              paddingRight: STYLE_GUIDE.SPACING.s2,
+              fontSize: '14px',
+              backgroundColor: currentTheme?.colors?.background?.paper || '#ffffff',
+              '& fieldset': {
+                borderColor: currentTheme?.colors?.inputBorder || STYLE_GUIDE.COLORS.darkBackground,
               },
-              "&.Mui-focused fieldset": {
-                borderColor: STYLE_GUIDE.COLORS.bootstrapPrimary,
+              '&:hover fieldset': {
+                borderColor: currentTheme?.colors?.borderHover || STYLE_GUIDE.COLORS.darkBorderHover,
               },
+              '&.Mui-focused fieldset': {
+                borderColor: currentTheme?.components?.input?.focusBorderColor || STYLE_GUIDE.COLORS.darkBorderFocus,
+              },
+            },
+            '& .MuiInputLabel-root': {
+              color: currentTheme?.colors?.text?.secondary || STYLE_GUIDE.COLORS.darkBorderFocus,
+            },
+            '& .MuiInputLabel-root.Mui-focused': {
+              color: currentTheme?.components?.input?.focusBorderColor || STYLE_GUIDE.COLORS.darkDarker,
+            },
+            '& .MuiInputBase-input': {
+              color: `${currentTheme?.colors?.inputText} !important`,
+            },
+            '& .MuiInputBase-input::placeholder': {
+              color: `${currentTheme?.colors?.text?.secondary || '#666'} !important`,
+            },
+            '& .MuiInputBase-input:-webkit-autofill': {
+              WebkitTextFillColor: `${currentTheme?.colors?.inputText} !important`,
+              WebkitBoxShadow: `0 0 0 1000px ${currentTheme?.colors?.background?.paper || '#ffffff'} inset !important`,
             },
           }}
         />
@@ -152,7 +178,7 @@ export const CreateDashboardModal: React.FC<CreateDashboardModalProps> = ({
         <Button
           onClick={onClose}
           sx={{
-            color:  STYLE_GUIDE.COLORS.darkText,
+            color: STYLE_GUIDE.COLORS.darkText,
             "&:hover": {
               backgroundColor: alpha(theme.palette.grey[500], 0.1),
             },
@@ -167,7 +193,7 @@ export const CreateDashboardModal: React.FC<CreateDashboardModalProps> = ({
           sx={{
             backgroundColor: STYLE_GUIDE.COLORS.bootstrapPrimary,
             "&:hover": {
-              backgroundColor:STYLE_GUIDE.COLORS.bootstrapPrimaryHover
+              backgroundColor: STYLE_GUIDE.COLORS.bootstrapPrimaryHover
             },
             "&.Mui-disabled": {
               backgroundColor: alpha(theme.palette.primary.main, 0.5),

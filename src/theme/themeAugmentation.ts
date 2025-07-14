@@ -13,6 +13,7 @@ declare module '@mui/material/styles' {
     };
     dropdown?: {
       background: string;
+      border: string;
       optionBackground: string;
       optionText: string;
       optionHoverBackground: string;
@@ -39,6 +40,7 @@ declare module '@mui/material/styles' {
     };
     dropdown?: {
       background: string;
+      border: string;
       optionBackground: string;
       optionText: string;
       optionHoverBackground: string;
@@ -67,6 +69,7 @@ declare module '@mui/material/styles/createPalette' {
     };
     dropdown?: {
       background: string;
+      border: string;
       optionBackground: string;
       optionText: string;
       optionHoverBackground: string;

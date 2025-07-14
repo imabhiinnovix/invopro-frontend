@@ -24,6 +24,8 @@ import { createDashboardTheme, updateDashboardTheme } from '../../../reducers/da
 import { DashboardTheme, CreateDashboardThemeDialogProps } from '../../../types/dashboardTheme';
 import { getDefaultDashboardTheme } from '../../../styles/themeConstants';
 import { getColorFieldTooltip } from '../../../constants/colorFieldTooltips';
+import { STYLE_GUIDE } from '../../../styles';
+import { useDashboardTheme } from '../../../context/DashboardThemeProvider';
 
 const getDefaultTheme = (): DashboardTheme => ({
   ...getDefaultDashboardTheme(),
@@ -63,6 +65,7 @@ const CreateDashboardThemeDialog: React.FC<CreateDashboardThemeDialogProps> = ({
   const [formData, setFormData] = useState<DashboardTheme>(getDefaultTheme());
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
+  const { currentTheme } = useDashboardTheme();
 
   useEffect(() => {
     if (theme) {
@@ -198,7 +201,42 @@ const CreateDashboardThemeDialog: React.FC<CreateDashboardThemeDialogProps> = ({
                 helperText={errors.name}
                 fullWidth
                 required
-                sx={{ mb: 2 }}
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    borderRadius: STYLE_GUIDE.SPACING.s6,
+                    alignItems: 'flex-start',
+                    mb: 2,
+                    paddingRight: STYLE_GUIDE.SPACING.s2,
+                    fontSize: '14px',
+                    padding: '12px 16px',
+                    backgroundColor: currentTheme?.colors?.background?.paper || '#ffffff',
+                    '& fieldset': {
+                      borderColor: currentTheme?.colors?.inputBorder || STYLE_GUIDE.COLORS.darkBackground,
+                    },
+                    '&:hover fieldset': {
+                      borderColor: currentTheme?.colors?.borderHover || STYLE_GUIDE.COLORS.darkBorderHover,
+                    },
+                    '&.Mui-focused fieldset': {
+                      borderColor: currentTheme?.components?.input?.focusBorderColor || currentTheme?.components?.input?.focusBorderColorFallback || STYLE_GUIDE.COLORS.inputFocusFallback,
+                    },
+                  },
+                  '& .MuiInputLabel-root': {
+                    color: currentTheme?.colors?.text?.secondary || STYLE_GUIDE.COLORS.darkBorderFocus,
+                  },
+                  '& .MuiInputLabel-root.Mui-focused': {
+                    color: currentTheme?.components?.input?.focusBorderColor || currentTheme?.components?.input?.focusBorderColorFallback || STYLE_GUIDE.COLORS.inputFocusFallback,
+                  },
+                  '& .MuiInputBase-input': {
+                    color: `${currentTheme?.colors?.inputText} !important`,
+                  },
+                  '& .MuiInputBase-input::placeholder': {
+                    color: `${currentTheme?.colors?.text?.secondary || '#666'} !important`,
+                  },
+                  '& .MuiInputBase-input:-webkit-autofill': {
+                    WebkitTextFillColor: `${currentTheme?.colors?.inputText} !important`,
+                    WebkitBoxShadow: `0 0 0 1000px ${currentTheme?.colors?.background?.paper || '#ffffff'} inset !important`,
+                  },
+                }}
               />
             </Stack>
 
@@ -250,7 +288,16 @@ const CreateDashboardThemeDialog: React.FC<CreateDashboardThemeDialogProps> = ({
                       <ColorPickerField label="Input Border Color" path="colors.inputBorder" color={formData.colors.inputBorder} />
                     </Grid>
                     <Grid item xs={12} md={3}>
+                      <ColorPickerField label="Input Focus Border Color" path="components.input.focusBorderColor" color={formData.components.input.focusBorderColor} />
+                    </Grid>
+                    <Grid item xs={12} md={3}>
+                      <ColorPickerField label="Input Focus Border Fallback" path="components.input.focusBorderColorFallback" color={formData.components.input.focusBorderColorFallback} />
+                    </Grid>
+                    <Grid item xs={12} md={3}>
                       <ColorPickerField label="Dropdown Background" path="colors.dropdownBg" color={formData.colors.dropdownBg} />
+                    </Grid>
+                    <Grid item xs={12} md={3}>
+                      <ColorPickerField label="Dropdown Border Color" path="colors.dropdownBorder" color={formData.colors.dropdownBorder} />
                     </Grid>
                     <Grid item xs={12} md={3}>
                       <ColorPickerField label="Dropdown Option Background" path="colors.dropdownOptionBg" color={formData.colors.dropdownOptionBg} />

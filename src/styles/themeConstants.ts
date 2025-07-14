@@ -21,6 +21,7 @@ export const getDefaultDashboardTheme = (): DashboardTheme => ({
     inputText: STYLE_GUIDE.COLORS.textDarkGray,
     inputBorder: STYLE_GUIDE.COLORS.borderGray,
     dropdownBg: STYLE_GUIDE.COLORS.white,
+    dropdownBorder: STYLE_GUIDE.COLORS.borderGray,
     dropdownOptionBg: STYLE_GUIDE.COLORS.backgroundHover,
     dropdownOptionText: STYLE_GUIDE.COLORS.textDarkGray,
 
@@ -81,6 +82,7 @@ export const getDefaultDashboardTheme = (): DashboardTheme => ({
       padding: '12px 16px',
       borderColor: STYLE_GUIDE.COLORS.borderGray,
       focusBorderColor: STYLE_GUIDE.COLORS.primary,
+      focusBorderColorFallback: STYLE_GUIDE.COLORS.inputFocusFallback,
     },
     table: {
       borderRadius: STYLE_GUIDE.SPACING.s2,
@@ -171,6 +173,7 @@ export const createMuiThemeFromDashboardTheme = (dashboardTheme: DashboardTheme)
       },
       dropdown: {
         background: dashboardTheme.colors.dropdownBg,
+        border: dashboardTheme.colors.dropdownBorder,
         optionBackground: dashboardTheme.colors.dropdownOptionBg,
         optionText: dashboardTheme.colors.dropdownOptionText,
         optionHoverBackground: dashboardTheme.colors.background.hover,
@@ -272,10 +275,10 @@ export const createMuiThemeFromDashboardTheme = (dashboardTheme: DashboardTheme)
                 borderColor: dashboardTheme.components.input.borderColor,
               },
               '&:hover fieldset': {
-                borderColor: dashboardTheme.components.input.focusBorderColor,
+                borderColor: dashboardTheme.components.input.focusBorderColor || dashboardTheme.components.input.focusBorderColorFallback,
               },
               '&.Mui-focused fieldset': {
-                borderColor: dashboardTheme.components.input.focusBorderColor,
+                borderColor: dashboardTheme.components.input.focusBorderColor || dashboardTheme.components.input.focusBorderColorFallback,
               },
               '& input': {
                 color: dashboardTheme.colors.text.primary,

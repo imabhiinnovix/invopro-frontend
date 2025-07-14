@@ -27,6 +27,7 @@ export interface DashboardTheme {
     inputText: string;
     inputBorder: string;
     dropdownBg: string;
+    dropdownBorder: string;
     dropdownOptionBg: string;
     dropdownOptionText: string;
 
@@ -128,6 +129,7 @@ export interface DashboardTheme {
       padding: string;
       borderColor: string;
       focusBorderColor: string;
+      focusBorderColorFallback: string;
     };
     table: {
       borderRadius: string;
