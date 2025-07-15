@@ -14,7 +14,6 @@ import {
   Typography,
   Button,
   CircularProgress,
-  useTheme,
   Card,
   CardContent,
 } from "@mui/material";
@@ -33,10 +32,9 @@ import { useInfiniteScroll } from "../../hooks/useInfiniteScroll";
 import { DateTime } from "luxon";
 import usePost from "../../hooks/usePost";
 import { STYLE_GUIDE } from "../../styles";
-import { useUnifiedTheme } from '../../hooks/useUnifiedTheme';
+import { useUnifiedTheme } from "../../hooks/useUnifiedTheme";
 
 const DataSources = () => {
-  
   const theme = useUnifiedTheme();
   const [rows, setRows] = useState<
     { [x: string]: string | number | boolean }[]
@@ -233,228 +231,280 @@ const DataSources = () => {
   //   const updatedRows = rows.filter((_, i) => i !== index);
   //   setRows(updatedRows);
   // };
+  const tab = localStorage.getItem("activeTab");
+  console.log("rrrrrrr", tab === "Notifix");
 
-  return (
-    <Container 
-      maxWidth="xl" 
-      sx={{ 
-        margin: STYLE_GUIDE.SPACING.s8,
-        padding: STYLE_GUIDE.SPACING.s8,
-        backgroundColor: theme.palette.background.paper,
-        borderRadius: STYLE_GUIDE.SPACING.s3,
-        boxShadow: STYLE_GUIDE.SHADOWS.base
-      }}
-    >
-      <Card 
-        sx={{ 
-          marginBottom: STYLE_GUIDE.SPACING.s8,
-          borderRadius: STYLE_GUIDE.SPACING.s2,
-          boxShadow: STYLE_GUIDE.SHADOWS.xxxl,
+return (
+  <>
+    {tab === "Notifix" ? (
+      <p>yesss</p>
+    ) : (
+      <Container
+        maxWidth="xl"
+        sx={{
+          margin: STYLE_GUIDE.SPACING.s8,
+          padding: STYLE_GUIDE.SPACING.s8,
+          backgroundColor: theme.palette.background.paper,
+          borderRadius: STYLE_GUIDE.SPACING.s3,
+          boxShadow: STYLE_GUIDE.SHADOWS.base,
         }}
       >
-        <CardContent sx={{ padding: STYLE_GUIDE.SPACING.s4 }}>
-          <Stack 
-            direction="row" 
-            justifyContent="space-between" 
-            alignItems="center"
-          >
-            <Stack direction="row" spacing={2} alignItems="center">
-              <Typography variant="h6" color="primary" sx={{ fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold }}>
-                Data Source Version
-              </Typography>
-              <CommonDatePicker
-                name="versionValue"
-                control={control}
-                views={["year", "month"]}
-                label="Period*"
-                rules={{ required: "Period is required" }}
-              />
-            </Stack>
-            <Button
-              variant="contained"
-              disabled={dataSourceCreate?.isPending || !(versionDate && id)}
-              onClick={handleSave}
-              sx={{ 
-                minWidth: "150px",
-                height: "40px",
-                borderRadius: STYLE_GUIDE.SPACING.s1,
-                textTransform: "none",
-                fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
-                fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.medium,
-                boxShadow: "none",
-                "&:hover": {
-                  boxShadow: "none",
-                }
-              }}
-            >
-              {dataSourceCreate?.isPending ? (
-                <Box
-                  sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    width: "56px",
-                    height: "24px",
-                  }}
-                >
-                  <CircularProgress size={20} sx={{ color: STYLE_GUIDE.COLORS.white }} />
-                </Box>
-              ) : (
-                "Save Changes"
-              )}
-            </Button>
-          </Stack>
-        </CardContent>
-      </Card>
-      
-      <Box sx={{ display: "flex", justifyContent: "center" }}>
-        <TableContainer
-          component={Paper}
+        <Card
           sx={{
-            maxHeight: "calc(100vh - 300px)",
+            marginBottom: STYLE_GUIDE.SPACING.s8,
             borderRadius: STYLE_GUIDE.SPACING.s2,
             boxShadow: STYLE_GUIDE.SHADOWS.xxxl,
-            width: "fit-content",
-            backgroundColor: theme.palette.card?.background || STYLE_GUIDE.COLORS.backgroundSurface,
-            "& .MuiTable-root": {
-              minWidth: "600px"
-            }
           }}
         >
-          <Table stickyHeader>
-            <TableHead>
-              <TableRow>
-                {header?.map((field) => (
-                  <TableCell
-                    key={field?.optionAttributeId}
+          <CardContent sx={{ padding: STYLE_GUIDE.SPACING.s4 }}>
+            <Stack
+              direction="row"
+              justifyContent="space-between"
+              alignItems="center"
+            >
+              <Stack direction="row" spacing={2} alignItems="center">
+                <Typography
+                  variant="h6"
+                  color="primary"
+                  sx={{ fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold }}
+                >
+                  Data Source Version
+                </Typography>
+                <CommonDatePicker
+                  name="versionValue"
+                  control={control}
+                  views={["year", "month"]}
+                  label="Period*"
+                  rules={{ required: "Period is required" }}
+                />
+              </Stack>
+              <Button
+                variant="contained"
+                disabled={dataSourceCreate?.isPending || !(versionDate && id)}
+                onClick={handleSave}
+                sx={{
+                  minWidth: "150px",
+                  height: "40px",
+                  borderRadius: STYLE_GUIDE.SPACING.s1,
+                  textTransform: "none",
+                  fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
+                  fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.medium,
+                  boxShadow: "none",
+                  "&:hover": {
+                    boxShadow: "none",
+                  },
+                }}
+              >
+                {dataSourceCreate?.isPending ? (
+                  <Box
                     sx={{
-                      backgroundColor: theme.palette.table?.headerBackground || STYLE_GUIDE.COLORS.backgroundLightGray,
-                      fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold,
-                      fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base,
-                      color: theme.palette.table?.headerText || STYLE_GUIDE.COLORS.textGray,
-                      borderBottom: `2px solid ${STYLE_GUIDE.COLORS.divider}`,
-                       padding: "12px 16px"
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      width: "56px",
+                      height: "24px",
                     }}
                   >
-                    {field?.name}
-                  </TableCell>
-                ))}
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {rows.map((row, rowIndex) => (
-                <TableRow 
-                  key={rowIndex}
-                  sx={{
-                    backgroundColor: rowIndex % 2 === 0 
-                      ? theme.palette.table?.rowEvenBackground || STYLE_GUIDE.COLORS.white
-                      : theme.palette.table?.rowOddBackground || STYLE_GUIDE.COLORS.backgroundDefault,
-                    "&:hover": {
-                      backgroundColor: theme.palette.table?.rowHoverBackground || STYLE_GUIDE.COLORS.backgroundHover
-                    }
-                  }}
-                >
-                  {header?.map((field, headIndex) => (
-                    <TableCell 
+                    <CircularProgress
+                      size={20}
+                      sx={{ color: STYLE_GUIDE.COLORS.white }}
+                    />
+                  </Box>
+                ) : (
+                  "Save Changes"
+                )}
+              </Button>
+            </Stack>
+          </CardContent>
+        </Card>
+
+        <Box sx={{ display: "flex", justifyContent: "center" }}>
+          <TableContainer
+            component={Paper}
+            sx={{
+              maxHeight: "calc(100vh - 300px)",
+              borderRadius: STYLE_GUIDE.SPACING.s2,
+              boxShadow: STYLE_GUIDE.SHADOWS.xxxl,
+              width: "fit-content",
+              backgroundColor:
+                theme.palette.card?.background ||
+                STYLE_GUIDE.COLORS.backgroundSurface,
+              "& .MuiTable-root": {
+                minWidth: "600px",
+              },
+            }}
+          >
+            <Table stickyHeader>
+              <TableHead>
+                <TableRow>
+                  {header?.map((field) => (
+                    <TableCell
                       key={field?.optionAttributeId}
-                      sx={{ 
+                      sx={{
+                        backgroundColor:
+                          theme.palette.table?.headerBackground ||
+                          STYLE_GUIDE.COLORS.backgroundLightGray,
+                        fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold,
+                        fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base,
+                        color:
+                          theme.palette.table?.headerText ||
+                          STYLE_GUIDE.COLORS.textGray,
+                        borderBottom: `2px solid ${STYLE_GUIDE.COLORS.divider}`,
                         padding: "12px 16px",
-                        borderBottom: `1px solid ${STYLE_GUIDE.COLORS.divider2}`,
-                        color: theme.palette.table?.rowText || STYLE_GUIDE.COLORS.textDarkGray
                       }}
                     >
-                      <TextField
-                        value={row[field?.name as keyof typeof row]}
-                        disabled={headIndex === 0}
-                        onChange={(e) =>
-                          handleEdit(rowIndex, field?.name, e.target.value)
-                        }
-                        variant="outlined"
-                        size="small"
-                        type={
-                          textAttributes?.find((attr) => {
-                            return attr?.name === field?.name;
-                          })?.type ?? "text"
-                        }
-                        fullWidth
-                        sx={{
-                          '& .MuiOutlinedInput-root': { 
-                            borderRadius: STYLE_GUIDE.SPACING.s2, 
-                            alignItems: 'flex-start', 
-                            paddingRight: STYLE_GUIDE.SPACING.s2, 
-                            fontSize: '14px', 
-                            backgroundColor: theme.palette.background.paper || STYLE_GUIDE.COLORS.white, 
-                            '& fieldset': { 
-                              borderColor: theme.palette.input?.border || STYLE_GUIDE.COLORS.borderGray, 
-                            }, 
-                            '&:hover fieldset': { 
-                              borderColor: theme.palette.border?.hover || STYLE_GUIDE.COLORS.borderGray, 
-                            }, 
-                            '&.Mui-focused fieldset': { 
-                              borderColor: theme.palette.input?.focusBorder || STYLE_GUIDE.COLORS.primary, 
-                            }, 
-                          }, 
-                          '& .MuiInputLabel-root': { 
-                            color: theme.palette.text?.secondary || STYLE_GUIDE.COLORS.textMediumGray, 
-                          }, 
-                          '& .MuiInputLabel-root.Mui-focused': { 
-                            color: theme.palette.input?.focusBorder || STYLE_GUIDE.COLORS.primary, 
-                          }, 
-                          '& .MuiInputBase-input': { 
-                            color: theme.palette.table?.rowText || theme.palette.input?.text || STYLE_GUIDE.COLORS.textDarkGray, 
-                          }, 
-                          '& .MuiInputBase-input::placeholder': { 
-                            color: theme.palette.text?.secondary || STYLE_GUIDE.COLORS.textMediumGray, 
-                          }, 
-                          '& .MuiInputBase-input:-webkit-autofill': { 
-                            WebkitTextFillColor: theme.palette.table?.rowText || theme.palette.input?.text || STYLE_GUIDE.COLORS.textDarkGray, 
-                            WebkitBoxShadow: `0 0 0 1000px ${theme.palette.background.paper || STYLE_GUIDE.COLORS.white} inset`, 
-                          }, 
-                        }}
-                        slotProps={{
-                          input: {
-                            onWheel: (e) => {
-                              if ((e.target as HTMLInputElement)?.type === "number") {
-                                (e.target as HTMLInputElement)?.blur();
-                              }
-                            },
-                            onKeyDown: (e) => {
-                              if (
-                                (e.currentTarget as HTMLInputElement).type === "number" &&
-                                ["e", "E", "+", "-"].includes(e.key)
-                              ) {
-                                e.preventDefault();
-                              }
-                            },
-                            sx: {
-                              fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base,
-                              padding: "8px 12px"
-                            }
-                          }
-                        }}
-                      />
+                      {field?.name}
                     </TableCell>
                   ))}
                 </TableRow>
-              ))}
-              {sourceData?.hasNextPage && (
-                <Box 
-                  ref={lastElementRef} 
-                  sx={{ 
-                    padding: "1rem",
-                    textAlign: "center",
-                    color: "#6c757d"
-                  }}
-                >
-                  Loading more data...
-                </Box>
-              )}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      </Box>
-    </Container>
-  );
+              </TableHead>
+              <TableBody>
+                {rows.map((row, rowIndex) => (
+                  <TableRow
+                    key={rowIndex}
+                    sx={{
+                      backgroundColor:
+                        rowIndex % 2 === 0
+                          ? theme.palette.table?.rowEvenBackground ||
+                            STYLE_GUIDE.COLORS.white
+                          : theme.palette.table?.rowOddBackground ||
+                            STYLE_GUIDE.COLORS.backgroundDefault,
+                      "&:hover": {
+                        backgroundColor:
+                          theme.palette.table?.rowHoverBackground ||
+                          STYLE_GUIDE.COLORS.backgroundHover,
+                      },
+                    }}
+                  >
+                    {header?.map((field, headIndex) => (
+                      <TableCell
+                        key={field?.optionAttributeId}
+                        sx={{
+                          padding: "12px 16px",
+                          borderBottom: `1px solid ${STYLE_GUIDE.COLORS.divider2}`,
+                          color:
+                            theme.palette.table?.rowText ||
+                            STYLE_GUIDE.COLORS.textDarkGray,
+                        }}
+                      >
+                        <TextField
+                          value={row[field?.name as keyof typeof row]}
+                          disabled={headIndex === 0}
+                          onChange={(e) =>
+                            handleEdit(rowIndex, field?.name, e.target.value)
+                          }
+                          variant="outlined"
+                          size="small"
+                          type={
+                            textAttributes?.find((attr) => {
+                              return attr?.name === field?.name;
+                            })?.type ?? "text"
+                          }
+                          fullWidth
+                          sx={{
+                            "& .MuiOutlinedInput-root": {
+                              borderRadius: STYLE_GUIDE.SPACING.s2,
+                              alignItems: "flex-start",
+                              paddingRight: STYLE_GUIDE.SPACING.s2,
+                              fontSize: "14px",
+                              backgroundColor:
+                                theme.palette.background.paper ||
+                                STYLE_GUIDE.COLORS.white,
+                              "& fieldset": {
+                                borderColor:
+                                  theme.palette.input?.border ||
+                                  STYLE_GUIDE.COLORS.borderGray,
+                              },
+                              "&:hover fieldset": {
+                                borderColor:
+                                  theme.palette.border?.hover ||
+                                  STYLE_GUIDE.COLORS.borderGray,
+                              },
+                              "&.Mui-focused fieldset": {
+                                borderColor:
+                                  theme.palette.input?.focusBorder ||
+                                  STYLE_GUIDE.COLORS.primary,
+                              },
+                            },
+                            "& .MuiInputLabel-root": {
+                              color:
+                                theme.palette.text?.secondary ||
+                                STYLE_GUIDE.COLORS.textMediumGray,
+                            },
+                            "& .MuiInputLabel-root.Mui-focused": {
+                              color:
+                                theme.palette.input?.focusBorder ||
+                                STYLE_GUIDE.COLORS.primary,
+                            },
+                            "& .MuiInputBase-input": {
+                              color:
+                                theme.palette.table?.rowText ||
+                                theme.palette.input?.text ||
+                                STYLE_GUIDE.COLORS.textDarkGray,
+                            },
+                            "& .MuiInputBase-input::placeholder": {
+                              color:
+                                theme.palette.text?.secondary ||
+                                STYLE_GUIDE.COLORS.textMediumGray,
+                            },
+                            "& .MuiInputBase-input:-webkit-autofill": {
+                              WebkitTextFillColor:
+                                theme.palette.table?.rowText ||
+                                theme.palette.input?.text ||
+                                STYLE_GUIDE.COLORS.textDarkGray,
+                              WebkitBoxShadow: `0 0 0 1000px ${theme.palette.background.paper || STYLE_GUIDE.COLORS.white} inset`,
+                            },
+                          }}
+                          slotProps={{
+                            input: {
+                              onWheel: (e) => {
+                                if (
+                                  (e.target as HTMLInputElement)?.type ===
+                                  "number"
+                                ) {
+                                  (e.target as HTMLInputElement)?.blur();
+                                }
+                              },
+                              onKeyDown: (e) => {
+                                if (
+                                  (e.currentTarget as HTMLInputElement).type ===
+                                    "number" &&
+                                  ["e", "E", "+", "-"].includes(e.key)
+                                ) {
+                                  e.preventDefault();
+                                }
+                              },
+                              sx: {
+                                fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base,
+                                padding: "8px 12px",
+                              },
+                            },
+                          }}
+                        />
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))}
+                {sourceData?.hasNextPage && (
+                  <Box
+                    ref={lastElementRef}
+                    sx={{
+                      padding: "1rem",
+                      textAlign: "center",
+                      color: "#6c757d",
+                    }}
+                  >
+                    Loading more data...
+                  </Box>
+                )}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </Box>
+      </Container>
+    )}
+  </>
+);
 };
 
 export default DataSources;

@@ -24,6 +24,7 @@ import NotificationSettings from "./pages/notificationSettings";
 import Users from "./pages/users";
 import Roles from "./pages/roles";
 import Organization from "./pages/organization/organization";
+import NotifixDataSource from './pages/notifixDataSource';
 
 const AppRoutes = () => {
   const token = getAuthToken();
@@ -74,6 +75,8 @@ const AppRoutes = () => {
             path="/notivix/settings/organization"
             element={<Organization />}
           />
+                    <Route path="/notivix/data-source/:id" element={<NotifixDataSource />} />
+
         </Route>
       </Route>
 
