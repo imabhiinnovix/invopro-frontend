@@ -78,6 +78,18 @@ const UnifiedThemeProvider: React.FC<UnifiedThemeProviderProps> = ({ children })
           border: dashboardTheme.colors.border,
           shadow: dashboardTheme.components.card.boxShadow,
         },
+        dialog: {
+          background: dashboardTheme.components.dialog.backgroundColor,
+          border: dashboardTheme.components.dialog.borderColor,
+          shadow: dashboardTheme.components.dialog.boxShadow,
+          borderRadius: dashboardTheme.components.dialog.borderRadius,
+          titleColor: dashboardTheme.components.dialog.titleColor,
+          titleFontSize: dashboardTheme.components.dialog.titleFontSize,
+          titleFontWeight: dashboardTheme.components.dialog.titleFontWeight,
+          contentColor: dashboardTheme.components.dialog.contentColor,
+          contentFontSize: dashboardTheme.components.dialog.contentFontSize,
+          overlayColor: dashboardTheme.components.dialog.overlayColor,
+        },
         icon: {
           primary: dashboardTheme.colors.iconPrimary,
         },
@@ -96,6 +108,39 @@ const UnifiedThemeProvider: React.FC<UnifiedThemeProviderProps> = ({ children })
             root: {
               boxShadow: dashboardTheme.components?.card?.boxShadow || STYLE_GUIDE.SHADOWS.sm,
               backgroundColor: dashboardTheme.colors.background.card || STYLE_GUIDE.COLORS.backgroundSurface,
+            },
+          },
+        },
+        MuiDialog: {
+          styleOverrides: {
+            paper: {
+              backgroundColor: dashboardTheme.components?.dialog?.backgroundColor || STYLE_GUIDE.COLORS.white,
+              border: `1px solid ${dashboardTheme.components?.dialog?.borderColor || dashboardTheme.colors.border}`,
+              boxShadow: dashboardTheme.components?.dialog?.boxShadow || STYLE_GUIDE.SHADOWS.lg,
+              borderRadius: dashboardTheme.components?.dialog?.borderRadius || '8px',
+            },
+            backdrop: {
+              backgroundColor: dashboardTheme.components?.dialog?.overlayColor || 'rgba(0, 0, 0, 0.5)',
+            },
+          },
+        },
+        MuiDialogTitle: {
+          styleOverrides: {
+            root: {
+              color: dashboardTheme.components?.dialog?.titleColor || dashboardTheme.colors.text.primary,
+              fontSize: dashboardTheme.components?.dialog?.titleFontSize || '1.25rem',
+              fontWeight: dashboardTheme.components?.dialog?.titleFontWeight || STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold,
+              padding: '16px 24px',
+              borderBottom: `1px solid ${dashboardTheme.colors.divider}`,
+            },
+          },
+        },
+        MuiDialogContent: {
+          styleOverrides: {
+            root: {
+              color: dashboardTheme.components?.dialog?.contentColor || dashboardTheme.colors.text.primary,
+              fontSize: dashboardTheme.components?.dialog?.contentFontSize || '1rem',
+              padding: '16px 24px',
             },
           },
         },

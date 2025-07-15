@@ -36,6 +36,18 @@ declare module '@mui/material/styles' {
       border: string;
       shadow: string;
     };
+    dialog?: {
+      background: string;
+      border: string;
+      shadow: string;
+      borderRadius: string;
+      titleColor: string;
+      titleFontSize: string;
+      titleFontWeight: string;
+      contentColor: string;
+      contentFontSize: string;
+      overlayColor: string;
+    };
     icon?: {
       primary: string;
     };
@@ -74,6 +86,18 @@ declare module '@mui/material/styles' {
       background: string;
       border: string;
       shadow: string;
+    };
+    dialog?: {
+      background: string;
+      border: string;
+      shadow: string;
+      borderRadius: string;
+      titleColor: string;
+      titleFontSize: string;
+      titleFontWeight: string;
+      contentColor: string;
+      contentFontSize: string;
+      overlayColor: string;
     };
     icon?: {
       primary: string;
@@ -124,6 +148,18 @@ declare module '@mui/material/styles/createPalette' {
       border: string;
       shadow: string;
     };
+    dialog?: {
+      background: string;
+      border: string;
+      shadow: string;
+      borderRadius: string;
+      titleColor: string;
+      titleFontSize: string;
+      titleFontWeight: string;
+      contentColor: string;
+      contentFontSize: string;
+      overlayColor: string;
+    };
     icon?: {
       primary: string;
     };
@@ -162,6 +198,18 @@ declare module '@mui/material/styles/createPalette' {
       background: string;
       border: string;
       shadow: string;
+    };
+    dialog?: {
+      background: string;
+      border: string;
+      shadow: string;
+      borderRadius: string;
+      titleColor: string;
+      titleFontSize: string;
+      titleFontWeight: string;
+      contentColor: string;
+      contentFontSize: string;
+      overlayColor: string;
     };
     icon?: {
       primary: string;

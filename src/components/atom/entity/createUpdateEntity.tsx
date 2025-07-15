@@ -279,11 +279,35 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
     <>
       <Box onClick={() => setOpen(true)}>{CustomButton}</Box>
 
-      <Dialog fullWidth maxWidth="lg" open={open} onClose={handleCancel}>
-        <DialogTitle fontWeight="bold" fontSize={20}>
+      <Dialog 
+        fullWidth 
+        maxWidth="lg" 
+        open={open} 
+        onClose={handleCancel}
+        PaperProps={{
+          sx: {
+            backgroundColor: theme.palette.dialog?.background || STYLE_GUIDE.COLORS.white,
+            border: `1px solid ${theme.palette.dialog?.border || theme.palette.border?.main || STYLE_GUIDE.COLORS.borderGray}`,
+            borderRadius: theme.palette.dialog?.borderRadius || '8px',
+            boxShadow: theme.palette.dialog?.shadow || STYLE_GUIDE.SHADOWS.lg,
+          }
+        }}
+      >
+        <DialogTitle 
+          sx={{
+            fontWeight: theme.palette.dialog?.titleFontWeight || STYLE_GUIDE.TYPOGRAPHY.fontWeight.bold,
+            fontSize: theme.palette.dialog?.titleFontSize || '20px',
+            color: theme.palette.dialog?.titleColor || STYLE_GUIDE.COLORS.textDarkGray,
+          }}
+        >
           {title}
         </DialogTitle>
-        <DialogContent dividers>
+        <DialogContent sx={{
+          color: theme.palette.dialog?.contentColor || STYLE_GUIDE.COLORS.textDarkGray,
+          fontSize: theme.palette.dialog?.contentFontSize || '1rem',
+          borderTop: `1px solid ${theme.palette.divider}`,
+          borderBottom: `1px solid ${theme.palette.divider}`,
+        }}>
           <Box component="form" onSubmit={handleSubmit(onSubmit)} noValidate>
             <Stack spacing={3}>
               {/* Entity Name */}

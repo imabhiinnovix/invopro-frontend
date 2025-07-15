@@ -89,11 +89,31 @@ export const ShareDashboardModal: React.FC<ShareDashboardModalProps> = ({
   };
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-      <DialogTitle>
+    <Dialog 
+      open={open} 
+      onClose={onClose} 
+      maxWidth="sm" 
+      fullWidth
+      PaperProps={{
+        sx: {
+          backgroundColor: theme.palette.dialog?.background || STYLE_GUIDE.COLORS.white,
+          border: `1px solid ${theme.palette.dialog?.border || theme.palette.border?.main || STYLE_GUIDE.COLORS.borderGray}`,
+          borderRadius: theme.palette.dialog?.borderRadius || '8px',
+          boxShadow: theme.palette.dialog?.shadow || STYLE_GUIDE.SHADOWS.lg,
+        }
+      }}
+    >
+      <DialogTitle sx={{
+        color: theme.palette.dialog?.titleColor || STYLE_GUIDE.COLORS.textDarkGray,
+        fontSize: theme.palette.dialog?.titleFontSize || '1.25rem',
+        fontWeight: theme.palette.dialog?.titleFontWeight || STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold,
+      }}>
         Share Dashboard
       </DialogTitle>
-      <DialogContent>
+      <DialogContent sx={{
+        color: theme.palette.dialog?.contentColor || STYLE_GUIDE.COLORS.textDarkGray,
+        fontSize: theme.palette.dialog?.contentFontSize || '1rem',
+      }}>
         <Box sx={{ mt: STYLE_GUIDE.SPACING.s2 }}>
           <Typography variant="subtitle1" sx={{ mb: STYLE_GUIDE.SPACING.s2 }}>
             {dashboard?.name}

@@ -364,6 +364,29 @@ const CreateDashboardThemeDialog: React.FC<CreateDashboardThemeDialogProps> = ({
 
                 <Paper elevation={2} sx={{ p: 3, mb: 3 }}>
                   <Typography variant="h6" sx={{ mb: 2, fontWeight: 700 }}>
+                    Dialog Colors
+                  </Typography>
+                  <Grid container spacing={2}>
+                    <Grid item xs={12} md={3}>
+                      <ColorPickerField label="Dialog Background" path="components.dialog.backgroundColor" color={formData.components.dialog.backgroundColor} />
+                    </Grid>
+                    <Grid item xs={12} md={3}>
+                      <ColorPickerField label="Dialog Border Color" path="components.dialog.borderColor" color={formData.components.dialog.borderColor} />
+                    </Grid>
+                    <Grid item xs={12} md={3}>
+                      <ColorPickerField label="Dialog Title Color" path="components.dialog.titleColor" color={formData.components.dialog.titleColor} />
+                    </Grid>
+                    <Grid item xs={12} md={3}>
+                      <ColorPickerField label="Dialog Content Color" path="components.dialog.contentColor" color={formData.components.dialog.contentColor} />
+                    </Grid>
+                    <Grid item xs={12} md={3}>
+                      <ColorPickerField label="Dialog Overlay Color" path="components.dialog.overlayColor" color={formData.components.dialog.overlayColor} />
+                    </Grid>
+                  </Grid>
+                </Paper>
+
+                <Paper elevation={2} sx={{ p: 3, mb: 3 }}>
+                  <Typography variant="h6" sx={{ mb: 2, fontWeight: 700 }}>
                     Background & Text
                   </Typography>
                   <Grid container spacing={2}>

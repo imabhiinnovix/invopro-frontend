@@ -68,6 +68,18 @@ export interface DashboardTheme {
     paper: {
       boxShadow: string;
     };
+    dialog: {
+      backgroundColor: string;
+      borderColor: string;
+      boxShadow: string;
+      borderRadius: string;
+      titleColor: string;
+      titleFontSize: string;
+      titleFontWeight: string;
+      contentColor: string;
+      contentFontSize: string;
+      overlayColor: string;
+    };
     input: {
       borderColor: string;
       focusBorderColor: string;

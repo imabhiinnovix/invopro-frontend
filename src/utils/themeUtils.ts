@@ -165,6 +165,18 @@ export const createCompleteTheme = (baseTheme: Partial<DashboardTheme>): Dashboa
       card: {
         boxShadow: STYLE_GUIDE.SHADOWS.sm,
       },
+      dialog: {
+        backgroundColor: STYLE_GUIDE.COLORS.white,
+        borderColor: STYLE_GUIDE.COLORS.borderGray,
+        boxShadow: STYLE_GUIDE.SHADOWS.lg,
+        borderRadius: '8px',
+        titleColor: STYLE_GUIDE.COLORS.textDarkGray,
+        titleFontSize: '1.25rem',
+        titleFontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold,
+        contentColor: STYLE_GUIDE.COLORS.textDarkGray,
+        contentFontSize: '1rem',
+        overlayColor: 'rgba(0, 0, 0, 0.5)',
+      },
       paper: {
         boxShadow: STYLE_GUIDE.SHADOWS.sm,
       },

@@ -120,6 +120,18 @@ const getDefaultTheme = (): DashboardTheme => ({
       textColor: STYLE_GUIDE.COLORS.textDarkGray,
       boxShadow: STYLE_GUIDE.SHADOWS.sm,
     },
+    dialog: {
+      backgroundColor: STYLE_GUIDE.COLORS.white,
+      borderColor: STYLE_GUIDE.COLORS.white,
+      boxShadow:STYLE_GUIDE.SHADOWS.sm,
+      borderRadius: STYLE_GUIDE.SPACING.s2,
+      titleColor: STYLE_GUIDE.COLORS.textDarkGray,
+      titleFontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.hero,
+      titleFontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.bold,
+      contentColor: STYLE_GUIDE.COLORS.textDarkGray,
+      contentFontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.hero,
+      overlayColor: STYLE_GUIDE.COLORS.WhiteLight
+    }
   },
   shadows: STYLE_GUIDE.SHADOWS,
   layout: {
@@ -188,7 +200,7 @@ const sampleThemes: DashboardTheme[] = [
   },
   {
     ...createCompleteTheme({
-      name: 'Sebic',
+      name: 'Blue Theme',
       description: 'Professional blue theme for corporate use',
       colors: {
         primary: {

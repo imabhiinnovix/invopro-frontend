@@ -48,25 +48,33 @@ export const CreateDashboardModal: React.FC<CreateDashboardModalProps> = ({
       onClose={onClose}
       PaperProps={{
         sx: {
-          borderRadius: STYLE_GUIDE.SPACING.s1,
+          borderRadius: theme.palette.dialog?.borderRadius || STYLE_GUIDE.SPACING.s1,
           minWidth: { xs: "90%", sm: "400px" },
           maxWidth: "500px",
+          backgroundColor: theme.palette.dialog?.background || STYLE_GUIDE.COLORS.white,
+          border: `1px solid ${theme.palette.dialog?.border || theme.palette.border?.main || STYLE_GUIDE.COLORS.borderGray}`,
+          boxShadow: theme.palette.dialog?.shadow || STYLE_GUIDE.SHADOWS.lg,
         },
       }}
     >
       <DialogTitle
         sx={{
           backgroundColor: alpha(theme.palette.primary.main, 0.05),
-          color: STYLE_GUIDE.COLORS.bootstrapPrimary,
+          color: theme.palette.dialog?.titleColor || STYLE_GUIDE.COLORS.bootstrapPrimary,
           fontFamily: STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary,
-          fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold,
-          fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.large,
+          fontWeight: theme.palette.dialog?.titleFontWeight || STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold,
+          fontSize: theme.palette.dialog?.titleFontSize || STYLE_GUIDE.TYPOGRAPHY.fontSize.large,
           py: STYLE_GUIDE.SPACING.s4,
         }}
       >
         Create New Dashboard
       </DialogTitle>
-      <DialogContent sx={{ mt: STYLE_GUIDE.SPACING.s4, pb: STYLE_GUIDE.SPACING.s2 }}>
+      <DialogContent sx={{ 
+        mt: STYLE_GUIDE.SPACING.s4, 
+        pb: STYLE_GUIDE.SPACING.s2,
+        color: theme.palette.dialog?.contentColor || STYLE_GUIDE.COLORS.textDarkGray,
+        fontSize: theme.palette.dialog?.contentFontSize || '1rem',
+      }}>
         <TextField
           autoFocus
           margin="dense"

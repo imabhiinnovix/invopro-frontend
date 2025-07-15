@@ -54,6 +54,18 @@ export const getDefaultDashboardTheme = (): DashboardTheme => ({
     card: {
       boxShadow: STYLE_GUIDE.SHADOWS.sm,
     },
+    dialog: {
+      backgroundColor: STYLE_GUIDE.COLORS.white,
+      borderColor: STYLE_GUIDE.COLORS.borderGray,
+      boxShadow: STYLE_GUIDE.SHADOWS.lg,
+      borderRadius: '4px',
+      titleColor: STYLE_GUIDE.COLORS.textDarkGray,
+      titleFontSize: '1.25rem',
+      titleFontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold,
+      contentColor: STYLE_GUIDE.COLORS.textDarkGray,
+      contentFontSize: '1rem',
+      overlayColor: 'rgba(0, 0, 0, 0.5)',
+    },
     paper: {
       boxShadow: STYLE_GUIDE.SHADOWS.sm,
     },
@@ -141,6 +153,18 @@ export const createMuiThemeFromDashboardTheme = (dashboardTheme: DashboardTheme)
       icon: {
         primary: dashboardTheme.colors.iconPrimary,
       },
+      dialog: {
+        background: dashboardTheme.components.dialog.backgroundColor,
+        border: dashboardTheme.components.dialog.borderColor,
+        shadow: dashboardTheme.components.dialog.boxShadow,
+        borderRadius: dashboardTheme.components.dialog.borderRadius,
+        titleColor: dashboardTheme.components.dialog.titleColor,
+        titleFontSize: dashboardTheme.components.dialog.titleFontSize,
+        titleFontWeight: dashboardTheme.components.dialog.titleFontWeight,
+        contentColor: dashboardTheme.components.dialog.contentColor,
+        contentFontSize: dashboardTheme.components.dialog.contentFontSize,
+        overlayColor: dashboardTheme.components.dialog.overlayColor,
+      },
     },
     // Include the full dashboard theme for backward compatibility
     dashboardTheme,
@@ -158,6 +182,36 @@ export const createMuiThemeFromDashboardTheme = (dashboardTheme: DashboardTheme)
           root: {
             backgroundColor: dashboardTheme.colors.background.card,
             color: dashboardTheme.colors.text.primary,
+          },
+        },
+      },
+      MuiDialog: {
+        styleOverrides: {
+          paper: {
+            backgroundColor: dashboardTheme.components.dialog.backgroundColor,
+            border: `1px solid ${dashboardTheme.components.dialog.borderColor}`,
+            boxShadow: dashboardTheme.components.dialog.boxShadow,
+            borderRadius: dashboardTheme.components.dialog.borderRadius,
+          },
+        },
+      },
+      MuiDialogTitle: {
+        styleOverrides: {
+          root: {
+            color: dashboardTheme.components.dialog.titleColor,
+            fontSize: dashboardTheme.components.dialog.titleFontSize,
+            fontWeight: dashboardTheme.components.dialog.titleFontWeight,
+            padding: '16px 24px',
+            borderBottom: `1px solid ${dashboardTheme.colors.divider}`,
+          },
+        },
+      },
+      MuiDialogContent: {
+        styleOverrides: {
+          root: {
+            color: dashboardTheme.components.dialog.contentColor,
+            fontSize: dashboardTheme.components.dialog.contentFontSize,
+            padding: '16px 24px',
           },
         },
       },
@@ -300,14 +354,6 @@ export const createMuiThemeFromDashboardTheme = (dashboardTheme: DashboardTheme)
       MuiToolbar: {
         styleOverrides: {
           root: {
-            color: dashboardTheme.colors.text.primary,
-          },
-        },
-      },
-      MuiDialog: {
-        styleOverrides: {
-          paper: {
-            backgroundColor: dashboardTheme.colors.background.surface,
             color: dashboardTheme.colors.text.primary,
           },
         },

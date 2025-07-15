@@ -291,15 +291,19 @@ const NumberLabel = styled(Typography)(({ theme }) => ({
 }));
 
 // Add new styled components for drill-down dialog
-const DrillDownDialog = styled(Dialog)({
+const DrillDownDialog = styled(Dialog)(({ theme }) => ({
   '& .MuiDialog-paper': {
     width: 'calc(100% - 32px)',
     height: 'calc(100% - 32px)',
     margin: 16,
     maxWidth: 'calc(100% - 32px)',
     maxHeight: 'calc(100% - 32px)',
+    backgroundColor: theme.palette.dialog?.background || STYLE_GUIDE.COLORS.white,
+    border: `1px solid ${theme.palette.dialog?.border || theme.palette.border?.main || STYLE_GUIDE.COLORS.borderGray}`,
+    borderRadius: theme.palette.dialog?.borderRadius || '8px',
+    boxShadow: theme.palette.dialog?.shadow || STYLE_GUIDE.SHADOWS.lg,
   },
-});
+}));
 
 const DrillDownTable = styled(Table)(({ theme }) => ({
   '& .MuiTableCell-root': {
@@ -2310,9 +2314,33 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
       </Menu>
 
       {deleteDialogOpen && (
-        <Dialog open={deleteDialogOpen} onClose={handleDeleteCancel} aria-labelledby="delete-dialog-title">
-          <DialogTitle id="delete-dialog-title">Delete Chart</DialogTitle>
-          <DialogContent>
+        <Dialog 
+          open={deleteDialogOpen} 
+          onClose={handleDeleteCancel} 
+          aria-labelledby="delete-dialog-title"
+          PaperProps={{
+            sx: {
+              backgroundColor: theme.palette.dialog?.background || STYLE_GUIDE.COLORS.white,
+              border: `1px solid ${theme.palette.dialog?.border || theme.palette.border?.main || STYLE_GUIDE.COLORS.borderGray}`,
+              borderRadius: theme.palette.dialog?.borderRadius || '8px',
+              boxShadow: theme.palette.dialog?.shadow || STYLE_GUIDE.SHADOWS.lg,
+            }
+          }}
+        >
+          <DialogTitle 
+            id="delete-dialog-title"
+            sx={{
+              color: theme.palette.dialog?.titleColor || STYLE_GUIDE.COLORS.textDarkGray,
+              fontSize: theme.palette.dialog?.titleFontSize || '1.25rem',
+              fontWeight: theme.palette.dialog?.titleFontWeight || STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold,
+            }}
+          >
+            Delete Chart
+          </DialogTitle>
+          <DialogContent sx={{
+            color: theme.palette.dialog?.contentColor || STYLE_GUIDE.COLORS.textDarkGray,
+            fontSize: theme.palette.dialog?.contentFontSize || '1rem',
+          }}>
             <Typography>Are you sure you want to delete this chart? This action cannot be undone.</Typography>
           </DialogContent>
           <DialogActions>
