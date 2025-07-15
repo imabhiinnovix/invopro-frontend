@@ -332,7 +332,7 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
                     }}
                   >
                     <Typography variant="h6" mb={2}>
-                      Attribute {index + 1}
+                      Attribute yyyy{index + 1}
                     </Typography>
                     <Stack spacing={2}>
                       {/* Attribute Name */}

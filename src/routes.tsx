@@ -20,6 +20,9 @@ import DataSource from "./pages/dataSource";
 import AIInsightPage from "./pages/aiInsight";
 import ReportSettings from "./pages/report-settings";
 import NotificationSettings from "./pages/notificationSettings";
+import Users from "./pages/users";
+import Roles from "./pages/roles";
+import Organization from "./pages/organization/organization";
 
 const AppRoutes = () => {
   const token = getAuthToken();
@@ -56,6 +59,18 @@ const AppRoutes = () => {
           <Route
             path="/notivix/notification-settings"
             element={<NotificationSettings />}
+          />
+           <Route
+            path="/notivix/settings/users"
+            element={<Users />}
+          />
+          <Route
+            path="/notivix/settings/roles"
+            element={<Roles />}
+          />
+          <Route
+            path="/notivix/settings/organization"
+            element={<Organization />}
           />
         </Route>
       </Route>
