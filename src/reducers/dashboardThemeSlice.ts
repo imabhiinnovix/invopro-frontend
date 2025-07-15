@@ -252,10 +252,20 @@ const sampleThemes: DashboardTheme[] = [
   },
 ];
 
+// Organization theme info
+interface OrganizationThemeInfo {
+  organizationId: string;
+  organizationName: string;
+  themeId: string;
+  isDefault: boolean;
+}
+
 // Initial state
 interface DashboardThemeState {
   themes: DashboardTheme[];
   dashboardTheme: DashboardTheme | null;
+  currentTheme: DashboardTheme | null;
+  organizationTheme: OrganizationThemeInfo | null;
   loading: boolean;
   error: string | null;
   success: string | null;
@@ -280,6 +290,8 @@ const getInitialCurrentTheme = (): DashboardTheme => {
 const initialState: DashboardThemeState = {
   themes: sampleThemes,
   dashboardTheme: getInitialCurrentTheme(),
+  currentTheme: getInitialCurrentTheme(),
+  organizationTheme: null,
   loading: false,
   error: null,
   success: null,
@@ -364,9 +376,20 @@ const dashboardThemeSlice = createSlice({
     resetToDefaultTheme: (state) => {
       const defaultTheme = state.themes.find(theme => theme.isDefault) || state.themes[0];
       state.dashboardTheme = defaultTheme;
+      state.currentTheme = defaultTheme;
       // Save default theme name to localStorage
       saveThemeToStorage(defaultTheme.name);
       state.success = 'Reset to default theme successfully';
+    },
+    setDashboardTheme: (state, action: PayloadAction<DashboardTheme>) => {
+      state.currentTheme = action.payload;
+      state.dashboardTheme = action.payload;
+      // Save theme name to localStorage
+      saveThemeToStorage(action.payload.name);
+      state.success = 'Theme applied successfully';
+    },
+    setOrganizationTheme: (state, action: PayloadAction<OrganizationThemeInfo>) => {
+      state.organizationTheme = action.payload;
     },
   },
 });
@@ -381,6 +404,8 @@ export const {
   duplicateDashboardTheme,
   applyDashboardTheme,
   resetToDefaultTheme,
+  setDashboardTheme,
+  setOrganizationTheme,
 } = dashboardThemeSlice.actions;
 
 export default dashboardThemeSlice.reducer; 
