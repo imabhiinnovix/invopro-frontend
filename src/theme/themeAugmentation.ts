@@ -31,6 +31,11 @@ declare module '@mui/material/styles' {
       rowHoverBackground: string;
       rowText: string;
     };
+    card?: {
+      background: string;
+      border: string;
+      shadow: string;
+    };
     icon?: {
       primary: string;
     };
@@ -64,6 +69,11 @@ declare module '@mui/material/styles' {
       rowEvenBackground: string;
       rowHoverBackground: string;
       rowText: string;
+    };
+    card?: {
+      background: string;
+      border: string;
+      shadow: string;
     };
     icon?: {
       primary: string;
@@ -109,6 +119,11 @@ declare module '@mui/material/styles/createPalette' {
       rowHoverBackground: string;
       rowText: string;
     };
+    card?: {
+      background: string;
+      border: string;
+      shadow: string;
+    };
     icon?: {
       primary: string;
     };
@@ -142,6 +157,11 @@ declare module '@mui/material/styles/createPalette' {
       rowEvenBackground: string;
       rowHoverBackground: string;
       rowText: string;
+    };
+    card?: {
+      background: string;
+      border: string;
+      shadow: string;
     };
     icon?: {
       primary: string;

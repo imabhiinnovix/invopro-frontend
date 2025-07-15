@@ -78,6 +78,7 @@ const DashboardThemePreview: React.FC<DashboardThemePreviewProps> = ({
         border: isCurrentTheme ? 2 : 1,
         borderColor: isCurrentTheme ? 'success.main' : 'divider',
         cursor: isCurrentTheme ? 'default' : 'pointer',
+        backgroundColor: theme.colors.background.card || STYLE_GUIDE.COLORS.backgroundSurface,
         '&:hover': {
           boxShadow: 4,
           transform: 'translateY(-2px)',

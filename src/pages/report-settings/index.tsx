@@ -454,6 +454,7 @@ const ReportSettings: React.FC = () => {
                         <Card sx={{ 
                             mb: 3, 
                             border: `1px solid ${theme.palette.border?.main}`,
+                            backgroundColor: theme.palette.card?.background || STYLE_GUIDE.COLORS.backgroundSurface,
                             '&:hover': {
                                 boxShadow: theme.shadows[4],
                                 borderColor: `${theme.palette.border?.hover}`,
@@ -489,6 +490,7 @@ const ReportSettings: React.FC = () => {
                                 <Card sx={{ 
                                     mb: 3, 
                                     border: `1px solid ${theme.palette.border?.main}`,
+                                    backgroundColor: theme.palette.card?.background || STYLE_GUIDE.COLORS.backgroundSurface,
                                     '&:hover': {
                                         boxShadow: theme.shadows[4],
                                         borderColor: `${theme.palette.border?.hover}`,
@@ -516,6 +518,7 @@ const ReportSettings: React.FC = () => {
                                 <Card sx={{ 
                                     mb: 3, 
                                     border: `1px solid ${theme.palette.border?.main}`,
+                                    backgroundColor: theme.palette.card?.background || STYLE_GUIDE.COLORS.backgroundSurface,
                                     '&:hover': {
                                         boxShadow: theme.shadows[4],
                                         borderColor: `${theme.palette.border?.hover}`,
@@ -559,6 +562,7 @@ const ReportSettings: React.FC = () => {
                                     <Card sx={{ 
                                         mb: 3, 
                                         border: `1px solid ${theme.palette.border?.main}`,
+                                        backgroundColor: theme.palette.card?.background || STYLE_GUIDE.COLORS.backgroundSurface,
                                         '&:hover': {
                                             boxShadow: theme.shadows[4],
                                             borderColor: `${theme.palette.border?.hover}`,

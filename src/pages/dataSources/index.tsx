@@ -315,6 +315,7 @@ const DataSources = () => {
             borderRadius: STYLE_GUIDE.SPACING.s2,
             boxShadow: STYLE_GUIDE.SHADOWS.xxxl,
             width: "fit-content",
+            backgroundColor: theme.palette.card?.background || STYLE_GUIDE.COLORS.backgroundSurface,
             "& .MuiTable-root": {
               minWidth: "600px"
             }
@@ -327,10 +328,10 @@ const DataSources = () => {
                   <TableCell
                     key={field?.optionAttributeId}
                     sx={{
-                      backgroundColor: theme.dashboardTheme?.components?.table?.headerBackground || STYLE_GUIDE.COLORS.backgroundLightGray,
+                      backgroundColor: theme.palette.table?.headerBackground || STYLE_GUIDE.COLORS.backgroundLightGray,
                       fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold,
                       fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base,
-                      color: theme.dashboardTheme?.components?.table?.headerText || STYLE_GUIDE.COLORS.textGray,
+                      color: theme.palette.table?.headerText || STYLE_GUIDE.COLORS.textGray,
                       borderBottom: `2px solid ${STYLE_GUIDE.COLORS.divider}`,
                        padding: "12px 16px"
                     }}
@@ -345,11 +346,11 @@ const DataSources = () => {
                 <TableRow 
                   key={rowIndex}
                   sx={{
-                    "&:nth-of-type(odd)": {
-                      backgroundColor: STYLE_GUIDE.COLORS.backgroundDefault
-                    },
+                    backgroundColor: rowIndex % 2 === 0 
+                      ? theme.palette.table?.rowEvenBackground || STYLE_GUIDE.COLORS.white
+                      : theme.palette.table?.rowOddBackground || STYLE_GUIDE.COLORS.backgroundDefault,
                     "&:hover": {
-                      backgroundColor: STYLE_GUIDE.COLORS.backgroundHover
+                      backgroundColor: theme.palette.table?.rowHoverBackground || STYLE_GUIDE.COLORS.backgroundHover
                     }
                   }}
                 >
@@ -359,7 +360,7 @@ const DataSources = () => {
                       sx={{ 
                         padding: "12px 16px",
                         borderBottom: `1px solid ${STYLE_GUIDE.COLORS.divider2}`,
-                        color: theme.dashboardTheme?.components?.table?.rowText || STYLE_GUIDE.COLORS.textDarkGray
+                        color: theme.palette.table?.rowText || STYLE_GUIDE.COLORS.textDarkGray
                       }}
                     >
                       <TextField
@@ -382,32 +383,32 @@ const DataSources = () => {
                             alignItems: 'flex-start', 
                             paddingRight: STYLE_GUIDE.SPACING.s2, 
                             fontSize: '14px', 
-                            backgroundColor: theme.dashboardTheme?.colors?.background?.paper || '#ffffff', 
+                            backgroundColor: theme.palette.background.paper || STYLE_GUIDE.COLORS.white, 
                             '& fieldset': { 
-                              borderColor: theme.dashboardTheme?.colors?.inputBorder || STYLE_GUIDE.COLORS.darkBackground, 
+                              borderColor: theme.palette.input?.border || STYLE_GUIDE.COLORS.borderGray, 
                             }, 
                             '&:hover fieldset': { 
-                              borderColor: theme.dashboardTheme?.colors?.borderHover || STYLE_GUIDE.COLORS.darkBorderHover, 
+                              borderColor: theme.palette.border?.hover || STYLE_GUIDE.COLORS.borderGray, 
                             }, 
                             '&.Mui-focused fieldset': { 
-                              borderColor: theme.dashboardTheme?.components?.input?.focusBorderColor || theme.dashboardTheme?.components?.input?.focusBorderColorFallback || STYLE_GUIDE.COLORS.inputFocusFallback, 
+                              borderColor: theme.palette.input?.focusBorder || STYLE_GUIDE.COLORS.primary, 
                             }, 
                           }, 
                           '& .MuiInputLabel-root': { 
-                            color: theme.dashboardTheme?.colors?.text?.secondary || STYLE_GUIDE.COLORS.darkBorderFocus, 
+                            color: theme.palette.text?.secondary || STYLE_GUIDE.COLORS.textMediumGray, 
                           }, 
                           '& .MuiInputLabel-root.Mui-focused': { 
-                            color: theme.dashboardTheme?.components?.input?.focusBorderColor || theme.dashboardTheme?.components?.input?.focusBorderColorFallback || STYLE_GUIDE.COLORS.inputFocusFallback, 
+                            color: theme.palette.input?.focusBorder || STYLE_GUIDE.COLORS.primary, 
                           }, 
                           '& .MuiInputBase-input': { 
-                            color: theme.dashboardTheme?.components?.table?.rowText || theme.dashboardTheme?.colors?.inputText || STYLE_GUIDE.COLORS.textDarkGray, 
+                            color: theme.palette.table?.rowText || theme.palette.input?.text || STYLE_GUIDE.COLORS.textDarkGray, 
                           }, 
                           '& .MuiInputBase-input::placeholder': { 
-                            color: theme.dashboardTheme?.colors?.text?.secondary || '#666', 
+                            color: theme.palette.text?.secondary || STYLE_GUIDE.COLORS.textMediumGray, 
                           }, 
                           '& .MuiInputBase-input:-webkit-autofill': { 
-                            WebkitTextFillColor: theme.dashboardTheme?.components?.table?.rowText || theme.dashboardTheme?.colors?.inputText || STYLE_GUIDE.COLORS.textDarkGray, 
-                            WebkitBoxShadow: `0 0 0 1000px ${theme.dashboardTheme?.colors?.background?.paper || '#ffffff'} inset`, 
+                            WebkitTextFillColor: theme.palette.table?.rowText || theme.palette.input?.text || STYLE_GUIDE.COLORS.textDarkGray, 
+                            WebkitBoxShadow: `0 0 0 1000px ${theme.palette.background.paper || STYLE_GUIDE.COLORS.white} inset`, 
                           }, 
                         }}
                         slotProps={{

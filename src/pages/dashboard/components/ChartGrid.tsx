@@ -124,10 +124,10 @@ const StyledCard = styled(Card)(({ theme }) => ({
   display: 'flex',
   flexDirection: 'column',
   borderRadius: STYLE_GUIDE.SPACING.s2,
-  boxShadow: theme.shadows[1],
+  boxShadow: theme.palette.card?.shadow || theme.shadows[1],
   transition: 'all 0.3s ease-in-out',
-  backgroundColor: theme.palette.background.paper,
-  border: `1px solid ${theme.palette.divider}`,
+  backgroundColor: theme.palette.card?.background || STYLE_GUIDE.COLORS.backgroundSurface,
+  border: `1px solid ${theme.palette.card?.border || theme.palette.divider}`,
   '&:hover': {
     boxShadow: theme.shadows[3],
     transform: 'translateY(-2px)',
@@ -150,7 +150,7 @@ const ChartContainer = styled(Box)(({ theme }) => ({
   minHeight: 400,
   height: '100%',
   // padding: theme.spacing(4),
-  backgroundColor: '#ffffff',
+  backgroundColor: theme.palette.background.paper || STYLE_GUIDE.COLORS.white,
   borderRadius: STYLE_GUIDE.SPACING.s2,
   display: 'flex',
   alignItems: 'center',
@@ -219,7 +219,7 @@ const LoadingContainer = styled(Box)(({ theme }) => ({
   justifyContent: 'center',
   alignItems: 'center',
   minHeight: '400px',
-  backgroundColor: '#ffffff',
+  backgroundColor: theme.palette.background.paper || STYLE_GUIDE.COLORS.white,
   borderRadius: '12px',
   border: `1px solid ${theme.palette.divider}`,
 }));
@@ -229,7 +229,7 @@ const ErrorContainer = styled(Box)(({ theme }) => ({
   justifyContent: 'center',
   alignItems: 'center',
   minHeight: '400px',
-  backgroundColor: '#ffffff',
+  backgroundColor: theme.palette.background.paper || STYLE_GUIDE.COLORS.white,
   borderRadius: '12px',
   border: `1px solid ${theme.palette.divider}`,
 }));
@@ -239,7 +239,7 @@ const EmptyContainer = styled(Box)(({ theme }) => ({
   justifyContent: 'center',
   alignItems: 'center',
   minHeight: '400px',
-  backgroundColor: '#ffffff',
+  backgroundColor: theme.palette.background.paper || STYLE_GUIDE.COLORS.white,
   borderRadius: '12px',
   border: `1px solid ${theme.palette.divider}`,
 }));
@@ -333,8 +333,9 @@ const DrillDownTable = styled(Table)(({ theme }) => ({
 
 const StyledTableContainer = styled(Paper)(({ theme }) => ({
   borderRadius: STYLE_GUIDE.SPACING.s2,
-  boxShadow: theme.shadows[1],
+  boxShadow: theme.palette.card?.shadow || theme.shadows[1],
   overflow: 'hidden',
+  backgroundColor: theme.palette.card?.background || STYLE_GUIDE.COLORS.backgroundSurface,
 }));
 
 const sliceLabelsPlugin = {
@@ -1837,7 +1838,11 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
           : [];
 
         return (
-          <TableContainer component={Paper} sx={{ maxHeight: 400, overflow: 'auto' }}>
+          <TableContainer component={Paper} sx={{ 
+            maxHeight: 400, 
+            overflow: 'auto',
+            backgroundColor: theme.palette.background.paper || STYLE_GUIDE.COLORS.white,
+          }}>
             <Table stickyHeader>
               <TableHead>
                 <TableRow>
@@ -1845,10 +1850,10 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
                     <TableCell
                       key={column}
                       sx={{
-                        backgroundColor: theme.palette.table?.headerBackground || '#f1f5f9',
-                        fontWeight: 600,
+                        backgroundColor: theme.palette.table?.headerBackground || STYLE_GUIDE.COLORS.backgroundLightGray,
+                        fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold,
                         fontSize: '14px',
-                        color: theme.palette.table?.headerText || theme.palette.text.primary,
+                        color: theme.palette.table?.headerText || STYLE_GUIDE.COLORS.textGray,
                         borderBottom: `2px solid ${theme.palette.divider}`,
                         padding: '12px 16px'
                       }}
@@ -1863,8 +1868,11 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
                   <TableRow
                     key={rowIndex}
                     sx={{
+                      backgroundColor: rowIndex % 2 === 0 
+                        ? theme.palette.table?.rowEvenBackground || STYLE_GUIDE.COLORS.white
+                        : theme.palette.table?.rowOddBackground || STYLE_GUIDE.COLORS.backgroundDefault,
                       '&:hover': {
-                        backgroundColor: theme.palette.action.hover
+                        backgroundColor: theme.palette.table?.rowHoverBackground || STYLE_GUIDE.COLORS.backgroundHover
                       }
                     }}
                   >
@@ -1880,7 +1888,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
                           sx={{
                             padding: '12px 16px',
                             borderBottom: `1px solid ${theme.palette.divider}`,
-                            color: theme.palette.table?.rowText
+                            color: theme.palette.table?.rowText || STYLE_GUIDE.COLORS.textDarkGray
                           }}
                         >
                           {typeof value === 'number' ? value.toLocaleString() : value}
@@ -1940,9 +1948,9 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
                 <TableRow>
                   {columns.map((column) => (
                     <TableCell key={column} sx={{ 
-                      fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.medium,
-                      backgroundColor: theme.palette.table?.headerBackground || theme.palette.background.default,
-                      color: theme.palette.table?.headerText
+                      fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold,
+                      backgroundColor: theme.palette.table?.headerBackground || STYLE_GUIDE.COLORS.backgroundLightGray,
+                      color: theme.palette.table?.headerText || STYLE_GUIDE.COLORS.textGray
                     }}>
                       {column}
                     </TableCell>
@@ -1970,9 +1978,21 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
                   ))
                 ) : drillDownData.length > 0 ? (
                   drillDownData.map((row, index) => (
-                    <TableRow key={index}>
+                    <TableRow 
+                      key={index}
+                      sx={{
+                        backgroundColor: index % 2 === 0 
+                          ? theme.palette.table?.rowEvenBackground || STYLE_GUIDE.COLORS.white
+                          : theme.palette.table?.rowOddBackground || STYLE_GUIDE.COLORS.backgroundDefault,
+                        '&:hover': {
+                          backgroundColor: theme.palette.table?.rowHoverBackground || STYLE_GUIDE.COLORS.backgroundHover
+                        }
+                      }}
+                    >
                       {columns.map((column) => (
-                        <TableCell key={column} sx={{ color: theme.palette.table?.rowText }}>
+                        <TableCell key={column} sx={{ 
+                          color: theme.palette.table?.rowText || STYLE_GUIDE.COLORS.textDarkGray 
+                        }}>
                           {typeof row[column] === 'number' ? row[column].toLocaleString() : row[column]}
                         </TableCell>
                       ))}

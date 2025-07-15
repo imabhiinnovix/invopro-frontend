@@ -227,6 +227,7 @@ const Dashboard = () => {
               boxShadow: STYLE_GUIDE.SHADOWS.cardPrimary,
               maxHeight: "calc(100vh - 300px)",
               overflow: "auto",
+              backgroundColor: theme.palette.card?.background || STYLE_GUIDE.COLORS.backgroundSurface,
               "& .MuiTableCell-root": {
                 borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
                 py: STYLE_GUIDE.SPACING.s4,
@@ -237,16 +238,32 @@ const Dashboard = () => {
             <Table stickyHeader>
               <TableHead>
                 <TableRow>
-                  <TableCell sx={{ fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold, color: theme.palette.table?.headerText || STYLE_GUIDE.COLORS.black }}>
+                  <TableCell sx={{ 
+                    fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold, 
+                    color: theme.palette.table?.headerText || STYLE_GUIDE.COLORS.textGray,
+                    backgroundColor: theme.palette.table?.headerBackground || STYLE_GUIDE.COLORS.backgroundLightGray,
+                  }}>
                     Name
                   </TableCell>
-                  <TableCell sx={{ fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold, color: theme.palette.table?.headerText || STYLE_GUIDE.COLORS.black }}>
+                  <TableCell sx={{ 
+                    fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold, 
+                    color: theme.palette.table?.headerText || STYLE_GUIDE.COLORS.textGray,
+                    backgroundColor: theme.palette.table?.headerBackground || STYLE_GUIDE.COLORS.backgroundLightGray,
+                  }}>
                     Created By
                   </TableCell>
-                  <TableCell sx={{ fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold, color: theme.palette.table?.headerText || STYLE_GUIDE.COLORS.black }}>
+                  <TableCell sx={{ 
+                    fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold, 
+                    color: theme.palette.table?.headerText || STYLE_GUIDE.COLORS.textGray,
+                    backgroundColor: theme.palette.table?.headerBackground || STYLE_GUIDE.COLORS.backgroundLightGray,
+                  }}>
                     Type
                   </TableCell>
-                  <TableCell sx={{ fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold, color: theme.palette.table?.headerText || STYLE_GUIDE.COLORS.black }}>
+                  <TableCell sx={{ 
+                    fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold, 
+                    color: theme.palette.table?.headerText || STYLE_GUIDE.COLORS.textGray,
+                    backgroundColor: theme.palette.table?.headerBackground || STYLE_GUIDE.COLORS.backgroundLightGray,
+                  }}>
                     Actions
                   </TableCell>
                 </TableRow>
@@ -271,29 +288,42 @@ const Dashboard = () => {
                           </TableCell>
                         </TableRow>
                       ))
-                  : dashboards.map((dashboard) => (
+                  : dashboards.map((dashboard, index) => (
                       <TableRow
                         key={dashboard._id}
                         onClick={() => handleEdit(dashboard._id)}
                         sx={{
+                          backgroundColor: index % 2 === 0 
+                            ? theme.palette.table?.rowEvenBackground || STYLE_GUIDE.COLORS.white
+                            : theme.palette.table?.rowOddBackground || STYLE_GUIDE.COLORS.backgroundDefault,
                           "&:hover": {
-                            backgroundColor: alpha(STYLE_GUIDE.COLORS.primary, 0.02),
+                            backgroundColor: theme.palette.table?.rowHoverBackground || STYLE_GUIDE.COLORS.backgroundHover,
                             transition: "background-color 0.2s",
                           },
                           cursor: "pointer",
                         }}
                       >
-                        <TableCell sx={{ fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.medium }}>
+                        <TableCell sx={{ 
+                          fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.medium,
+                          color: theme.palette.table?.rowText || STYLE_GUIDE.COLORS.textDarkGray,
+                        }}>
                           {dashboard.name}
                         </TableCell>
-                        <TableCell>
+                        <TableCell sx={{ 
+                          color: theme.palette.table?.rowText || STYLE_GUIDE.COLORS.textDarkGray,
+                        }}>
                           {dashboard?.createdBy?.firstName}{" "}
                           {dashboard?.createdBy?.lastName}
                         </TableCell>
-                        <TableCell sx={{ fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.medium }}>
+                        <TableCell sx={{ 
+                          fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.medium,
+                          color: theme.palette.table?.rowText || STYLE_GUIDE.COLORS.textDarkGray,
+                        }}>
                           {dashboard?.settings?.dashboardType}
                         </TableCell>
-                        <TableCell>
+                        <TableCell sx={{ 
+                          color: theme.palette.table?.rowText || STYLE_GUIDE.COLORS.textDarkGray,
+                        }}>
                           <Box sx={{ display: "flex", gap: STYLE_GUIDE.SPACING.s1 }}>
                             <Tooltip title="Delete Dashboard">
                               <IconButton

@@ -30,8 +30,8 @@ import { useUnifiedTheme } from '../../../hooks/useUnifiedTheme';
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
   [`&.${tableCellClasses.head}`]: {
-    backgroundColor: theme.palette.table?.headerBackground || theme.palette.background.default,
-    color: theme.palette.table?.headerText || theme.palette.text.primary,
+    backgroundColor: theme.palette.table?.headerBackground || STYLE_GUIDE.COLORS.backgroundLightGray,
+    color: theme.palette.table?.headerText || STYLE_GUIDE.COLORS.textGray,
     fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold,
     fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
     height: "48px",
@@ -43,13 +43,19 @@ const StyledTableCell = styled(TableCell)(({ theme }) => ({
     height: "52px",
     padding: "0 16px",
     borderBottom: `1px solid ${theme.palette.divider}`,
-    color: theme.palette.table?.rowText,
+    color: theme.palette.table?.rowText || STYLE_GUIDE.COLORS.textDarkGray,
   }
 }))
 
 const StyledTableRow = styled(TableRow)(({ theme }) => ({
+  "&:nth-of-type(odd)": {
+    backgroundColor: theme.palette.table?.rowOddBackground || STYLE_GUIDE.COLORS.backgroundDefault,
+  },
+  "&:nth-of-type(even)": {
+    backgroundColor: theme.palette.table?.rowEvenBackground || STYLE_GUIDE.COLORS.white,
+  },
   "&:hover": {
-    backgroundColor: theme.palette.action.hover,
+    backgroundColor: theme.palette.table?.rowHoverBackground || STYLE_GUIDE.COLORS.backgroundHover,
     transform: 'translateY(-1px)',
     transition: 'all 0.2s ease-in-out',
     boxShadow: theme.shadows[1],

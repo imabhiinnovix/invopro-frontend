@@ -188,10 +188,10 @@ const StyledCard = styled(Card)(({ theme }) => ({
   display: 'flex',
   flexDirection: 'column',
   borderRadius: STYLE_GUIDE.SPACING.s2,
-  boxShadow: theme.shadows[1],
+  boxShadow: theme.palette.card?.shadow || theme.shadows[1],
   transition: 'all 0.3s ease-in-out',
-  backgroundColor: theme.palette.background.paper,
-  border: `1px solid ${theme.palette.divider}`,
+  backgroundColor: theme.palette.card?.background || STYLE_GUIDE.COLORS.backgroundSurface,
+  border: `1px solid ${theme.palette.card?.border || theme.palette.divider}`,
   '&:hover': {
     boxShadow: theme.shadows[3],
     transform: 'translateY(-2px)',

@@ -26,11 +26,20 @@ export default function DataSource() {
           },
         }}
       >
-        <Card 
-          sx={{ 
+        <Card
+          sx={{
+            height: "100%",
+            display: "flex",
+            flexDirection: "column",
             borderRadius: STYLE_GUIDE.SPACING.s2,
-            boxShadow: STYLE_GUIDE.SHADOWS.base,
-            backgroundColor: theme.palette.background.paper,
+            boxShadow: theme.palette.card?.shadow || theme.shadows[1],
+            transition: "all 0.3s ease-in-out",
+            backgroundColor: theme.palette.card?.background || STYLE_GUIDE.COLORS.backgroundSurface,
+            border: `1px solid ${theme.palette.card?.border || theme.palette.divider}`,
+            "&:hover": {
+              boxShadow: theme.shadows[3],
+              transform: "translateY(-2px)",
+            },
           }}
         >
           <CardContent sx={{ padding: STYLE_GUIDE.SPACING.s4 }}>
@@ -73,12 +82,12 @@ export default function DataSource() {
           </CardContent>
         </Card>
 
-        <Card 
-          sx={{ 
+        <Card
+          sx={{
             borderRadius: STYLE_GUIDE.SPACING.s2,
-            boxShadow: STYLE_GUIDE.SHADOWS.base,
-            backgroundColor: theme.palette.background.paper,
-            flexGrow: 1,
+            boxShadow: theme.palette.card?.shadow || theme.shadows[1],
+            backgroundColor: theme.palette.card?.background || STYLE_GUIDE.COLORS.backgroundSurface,
+            border: `1px solid ${theme.palette.card?.border || theme.palette.divider}`,
           }}
         >
           <CardContent sx={{ padding: 0 }}>
