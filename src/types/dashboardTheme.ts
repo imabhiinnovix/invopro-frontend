@@ -57,6 +57,51 @@ export interface DashboardTheme {
     borderHover: string;
   };
 
+  // Typography Settings
+  typography: {
+    // Global typography (fallback)
+    fontFamily: string;
+    fontSize: string;
+    fontWeight: string;
+    
+    // Component-specific typography
+    headings: {
+      fontFamily: string;
+      fontSize: string;
+      fontWeight: string;
+    };
+    body: {
+      fontFamily: string;
+      fontSize: string;
+      fontWeight: string;
+    };
+    buttons: {
+      fontFamily: string;
+      fontSize: string;
+      fontWeight: string;
+    };
+    cards: {
+      fontFamily: string;
+      fontSize: string;
+      fontWeight: string;
+    };
+    inputs: {
+      fontFamily: string;
+      fontSize: string;
+      fontWeight: string;
+    };
+    tables: {
+      fontFamily: string;
+      fontSize: string;
+      fontWeight: string;
+    };
+    navigation: {
+      fontFamily: string;
+      fontSize: string;
+      fontWeight: string;
+    };
+  };
+
   // Component Styles (without spacing properties)
   components: {
     button: {
