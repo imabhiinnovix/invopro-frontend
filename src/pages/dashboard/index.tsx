@@ -19,7 +19,6 @@ import {
   Paper,
   IconButton,
   Tooltip,
-  useTheme,
   alpha,
   Skeleton,
 } from "@mui/material";
@@ -30,9 +29,10 @@ import { CreateDashboardModal } from "../../components/atom/sideNav/components/C
 import { Dashboard as DashboardType, DashboardListResponse } from "./types";
 import { resetChartAndWidgetData } from "./dashboardReducer";
 import { STYLE_GUIDE } from '../../styles';
+import { useUnifiedTheme } from '../../hooks/useUnifiedTheme';
 
 const Dashboard = () => {
-  const theme = useTheme();
+  const theme = useUnifiedTheme();
   const { id } = useParams();
   const navigate = useNavigate();
   const dispatch = useAppDispatch();

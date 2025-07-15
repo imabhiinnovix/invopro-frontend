@@ -1,4 +1,4 @@
-import { Box, Button, Typography, useTheme, Card, CardContent } from "@mui/material";
+import { Box, Button, Typography, Card, CardContent } from "@mui/material";
 import { useForm } from "react-hook-form";
 import CommonDropdownSearch from "../../common/dropdown/searchableDropdown";
 import {
@@ -13,13 +13,14 @@ import { DateTime } from "luxon";
 import React, { useState } from "react";
 import UploadMultipleFiles from "../dataSourceVerion/uploadMultipleVersionValue";
 import { STYLE_GUIDE } from '../../../styles';
+import { useUnifiedTheme } from "../../../hooks/useUnifiedTheme";
 
 interface GenerateReportProps {
   setReload: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 export default function GenerateReport({ setReload }: GenerateReportProps) {
-  const theme = useTheme();
+  const theme = useUnifiedTheme();
   const {
     control,
     handleSubmit,

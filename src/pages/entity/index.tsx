@@ -1,12 +1,13 @@
 // import Typography from '@mui/material/Typography';
-import { Box, Button, useTheme } from '@mui/material';
+import { Box, Button } from '@mui/material';
 import CreateUpdateEntity from '../../components/atom/entity/createUpdateEntity';
 import EntityTable from '../../components/atom/entity/entityTable';
 import { useState } from 'react';
 import { STYLE_GUIDE } from '../../styles';
+import { useUnifiedTheme } from '../../hooks/useUnifiedTheme';
 
 export default function Entity() {
-  const theme = useTheme();
+  const theme = useUnifiedTheme();
   const [reloadEntity, setReloadEntity] = useState(false);
   return (
     <>

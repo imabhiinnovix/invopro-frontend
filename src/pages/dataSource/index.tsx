@@ -1,12 +1,13 @@
 // import Typography from '@mui/material/Typography';
-import { Box, Button, useTheme, Card, CardContent } from '@mui/material';
+import { Box, Button, Card, CardContent } from '@mui/material';
 import { useState } from 'react';
 import CreateUpdateDataSource from '../../components/atom/dataSource/createUpdateDataSource';
 import DataSourceTable from '../../components/atom/dataSource/dataSourceTable';
 import { STYLE_GUIDE } from '../../styles';
+import { useUnifiedTheme } from '../../hooks/useUnifiedTheme';
 
 export default function DataSource() {
-  const theme = useTheme();
+  const theme = useUnifiedTheme();
   const [reload, setReload] = useState(false);
   return (
     <>

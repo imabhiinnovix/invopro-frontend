@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import AttributeOptionTable from '../../components/atom/attributeOption/attributeOptionTable';
 import CreateUpdateAttributeOption from '../../components/atom/attributeOption/createUpdateAttributeOption';
-import { Box, Button, useTheme } from '@mui/material';
+import { Box, Button } from '@mui/material';
 import { STYLE_GUIDE } from '../../styles';
+import { useUnifiedTheme } from '../../hooks/useUnifiedTheme';
 
 export default function AttributeOption() {
-  const theme = useTheme();
+  const theme = useUnifiedTheme();
   const [attributeOptionReload, setAttributeOptionReload] = useState(false);
   return (
     

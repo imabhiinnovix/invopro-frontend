@@ -1,4 +1,4 @@
-import { Box, Button, Table, TableBody, TableCell, TableRow, Tooltip, Typography, useTheme } from '@mui/material';
+import { Box, Button, Table, TableBody, TableCell, TableRow, Tooltip, Typography } from '@mui/material';
 import GenerateReport from '../../components/atom/report/generateReport';
 import { useEffect, useRef, useState } from 'react';
 import ReportRequestTable from '../../components/atom/report/reportRequestTable';
@@ -14,11 +14,10 @@ import SimCardDownloadIcon from '@mui/icons-material/SimCardDownload';
 import DownloadForOfflineIcon from '@mui/icons-material/DownloadForOffline';
 import useFileDownload from '../../hooks/useFiledownload';
 import { GET } from '../../services/apiRoutes';
-import { getIconColor } from '../../utils/iconStyles';
-import { useDashboardTheme } from '../../context/DashboardThemeProvider';
+import { useUnifiedTheme } from '../../hooks/useUnifiedTheme';
 
 export default function Report() {
-  const theme = useTheme();
+  const theme = useUnifiedTheme();
   const [reload, setReload] = useState(false);
   const [viewReportRequestId, setViewReportRequestId] = useState('');
 
@@ -35,8 +34,6 @@ export default function Report() {
   const [intermediateDownloadRequestId, setIntermediateDownloadRequestId] = useState('');
   const [regularDownloadRequestId, setRegularDownloadRequestId] = useState('');
   const [viewReportNameWithVersionValue, setViewReportNameWithVersionValue] = useState('');
-
-   const { currentTheme } = useDashboardTheme();
 
   const exportFile = useFileDownload<Blob>((data) => {
     const blob = new Blob([data], { type: 'application/octet-stream' });
@@ -227,7 +224,7 @@ export default function Report() {
                         }
                       }}
                     >
-                      <PictureAsPdfIcon sx={{ color: getIconColor(currentTheme) }}/>
+                      <PictureAsPdfIcon sx={{ color: theme.getIconColor() }}/>
                     </Button>
                   </Tooltip>
                 )}
@@ -270,7 +267,7 @@ export default function Report() {
                           }}
                           sx={{ mr: 1 }}
                         >
-                          <DownloadForOfflineIcon  sx={{ color: getIconColor(currentTheme) }}/>
+                          <DownloadForOfflineIcon  sx={{ color: theme.getIconColor() }}/>
                         </Button>
                       </Tooltip>
                     )}
@@ -313,7 +310,7 @@ export default function Report() {
                         }
                       }}
                     >
-                      <SimCardDownloadIcon sx={{ color: getIconColor(currentTheme) }} />
+                      <SimCardDownloadIcon sx={{ color: theme.getIconColor() }} />
                     </Button>
                   </Tooltip>
                 )}

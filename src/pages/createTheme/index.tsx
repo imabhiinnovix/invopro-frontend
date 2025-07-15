@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Box,
   Typography,
@@ -12,7 +12,6 @@ import {
   DialogContent,
   DialogContentText,
   DialogActions,
-  useTheme,
 } from "@mui/material";
 import { useAppDispatch, useAppSelector } from "../../storeHooks";
 import { fetchThemeList } from "./themeActions";
@@ -21,9 +20,10 @@ import CreateThemeDialog from "./components/CreateThemeDialog";
 import { Theme } from "./types";
 import usePost from "../../hooks/usePost";
 import { POST } from "../../services/apiRoutes";
+import { useUnifiedTheme } from '../../hooks/useUnifiedTheme';
 
 const CreateTheme = () => {
-  const theme = useTheme();
+  const theme = useUnifiedTheme();
   const dispatch = useAppDispatch();
   const { themes, loading, error } = useAppSelector((state) => state.theme);
   const [isDialogOpen, setIsDialogOpen] = useState(false);

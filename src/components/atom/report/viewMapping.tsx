@@ -11,11 +11,12 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  useTheme,
 } from "@mui/material";
 import { Control, UseFormSetValue, UseFormWatch } from "react-hook-form";
 import CommonSelect from "../../common/dropdown/commonSelect";
 import { CustomReportData } from "../dataSourceVerion/uploadMultipleVersionValue";
+import { useUnifiedTheme } from '../../../hooks/useUnifiedTheme';
+
 
 interface CreateDataSourceVersionProps {
   fileName: {
@@ -53,7 +54,7 @@ const ViewMapping: React.FC<CreateDataSourceVersionProps> = ({
   trigger,
   watch,
 }) => {
-  const theme = useTheme();
+  const theme = useUnifiedTheme();
   const watchMapping = watch(`mappings.${fileName.extededName}`);
   const handleCancel = () => {
     trigger();

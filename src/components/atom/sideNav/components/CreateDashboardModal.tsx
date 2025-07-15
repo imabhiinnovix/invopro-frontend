@@ -7,12 +7,12 @@ import {
   Button,
   TextField,
   MenuItem,
-  useTheme,
   alpha,
 } from '@mui/material';
 import { STYLE_GUIDE } from '../../../../styles';
-import { useDashboardTheme } from '../../../../context/DashboardThemeProvider';
 import StyledSelect from '../../common/StyledSelect';
+import { useUnifiedTheme } from '../../../../hooks/useUnifiedTheme';
+
 
 interface CreateDashboardModalProps {
   open: boolean;
@@ -39,8 +39,8 @@ export const CreateDashboardModal: React.FC<CreateDashboardModalProps> = ({
   timePeriod,
   onTimePeriodChange,
 }) => {
-  const theme = useTheme();
-  const { currentTheme } = useDashboardTheme();
+  const theme = useUnifiedTheme();
+  
 
   return (
     <Dialog
@@ -83,32 +83,32 @@ export const CreateDashboardModal: React.FC<CreateDashboardModalProps> = ({
               alignItems: 'flex-start',
               paddingRight: STYLE_GUIDE.SPACING.s2,
               fontSize: '14px',
-              backgroundColor: currentTheme?.colors?.background?.paper || '#ffffff',
+              backgroundColor: theme.dashboardTheme?.colors?.background?.paper || '#ffffff',
               '& fieldset': {
-                borderColor: currentTheme?.colors?.inputBorder || STYLE_GUIDE.COLORS.darkBackground,
+                borderColor: theme.dashboardTheme?.colors?.inputBorder || STYLE_GUIDE.COLORS.darkBackground,
               },
               '&:hover fieldset': {
-                borderColor: currentTheme?.colors?.borderHover || STYLE_GUIDE.COLORS.darkBorderHover,
+                borderColor: theme.dashboardTheme?.colors?.borderHover || STYLE_GUIDE.COLORS.darkBorderHover,
               },
               '&.Mui-focused fieldset': {
-                borderColor: currentTheme?.components?.input?.focusBorderColor || STYLE_GUIDE.COLORS.darkBorderFocus,
+                borderColor: theme.dashboardTheme?.components?.input?.focusBorderColor || STYLE_GUIDE.COLORS.darkBorderFocus,
               },
             },
             '& .MuiInputLabel-root': {
-              color: currentTheme?.colors?.text?.secondary || STYLE_GUIDE.COLORS.darkBorderFocus,
+              color: theme.dashboardTheme?.colors?.text?.secondary || STYLE_GUIDE.COLORS.darkBorderFocus,
             },
             '& .MuiInputLabel-root.Mui-focused': {
-              color: currentTheme?.components?.input?.focusBorderColor || STYLE_GUIDE.COLORS.darkDarker,
+              color: theme.dashboardTheme?.components?.input?.focusBorderColor || STYLE_GUIDE.COLORS.darkDarker,
             },
             '& .MuiInputBase-input': {
-              color: `${currentTheme?.colors?.inputText} !important`,
+              color: `${theme.dashboardTheme?.colors?.inputText} !important`,
             },
             '& .MuiInputBase-input::placeholder': {
-              color: `${currentTheme?.colors?.text?.secondary || '#666'} !important`,
+              color: `${theme.dashboardTheme?.colors?.text?.secondary || '#666'} !important`,
             },
             '& .MuiInputBase-input:-webkit-autofill': {
-              WebkitTextFillColor: `${currentTheme?.colors?.inputText} !important`,
-              WebkitBoxShadow: `0 0 0 1000px ${currentTheme?.colors?.background?.paper || '#ffffff'} inset !important`,
+              WebkitTextFillColor: `${theme.dashboardTheme?.colors?.inputText} !important`,
+              WebkitBoxShadow: `0 0 0 1000px ${theme.dashboardTheme?.colors?.background?.paper || '#ffffff'} inset !important`,
             },
           }}
         />

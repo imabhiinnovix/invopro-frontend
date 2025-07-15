@@ -1,4 +1,5 @@
 import '@mui/material/styles';
+import { DashboardTheme } from '../types/dashboardTheme';
 
 declare module '@mui/material/styles' {
   interface Palette {
@@ -29,6 +30,9 @@ declare module '@mui/material/styles' {
       rowEvenBackground: string;
       rowHoverBackground: string;
       rowText: string;
+    };
+    icon?: {
+      primary: string;
     };
   }
   
@@ -61,6 +65,17 @@ declare module '@mui/material/styles' {
       rowHoverBackground: string;
       rowText: string;
     };
+    icon?: {
+      primary: string;
+    };
+  }
+
+  interface Theme {
+    dashboardTheme: DashboardTheme;
+  }
+
+  interface ThemeOptions {
+    dashboardTheme?: DashboardTheme;
   }
 }
 
@@ -94,6 +109,9 @@ declare module '@mui/material/styles/createPalette' {
       rowHoverBackground: string;
       rowText: string;
     };
+    icon?: {
+      primary: string;
+    };
   }
   
   interface PaletteOptions {
@@ -124,6 +142,9 @@ declare module '@mui/material/styles/createPalette' {
       rowEvenBackground: string;
       rowHoverBackground: string;
       rowText: string;
+    };
+    icon?: {
+      primary: string;
     };
   }
 } 

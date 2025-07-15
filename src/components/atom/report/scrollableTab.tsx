@@ -1,8 +1,10 @@
 import type React from 'react';
 
-import { Box, IconButton, useTheme } from '@mui/material';
+import { Box, IconButton } from '@mui/material';
 import { KeyboardArrowLeft, KeyboardArrowRight } from '@mui/icons-material';
 import { useRef, useState, useEffect } from 'react';
+import { useUnifiedTheme } from '../../../hooks/useUnifiedTheme';
+
 
 interface ScrollableTabNavigationProps {
   tabs: { tabName: string }[];
@@ -17,7 +19,7 @@ export default function ScrollableTabNavigation({
   setActiveTab,
   tabStyle,
 }: ScrollableTabNavigationProps) {
-  const theme = useTheme();
+  const theme = useUnifiedTheme();
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [showLeftArrow, setShowLeftArrow] = useState(false);
   const [showRightArrow, setShowRightArrow] = useState(false);

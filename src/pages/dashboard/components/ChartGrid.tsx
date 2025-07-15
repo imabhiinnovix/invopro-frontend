@@ -14,7 +14,6 @@ import {
   Typography,
   Box,
   CircularProgress,
-  useTheme,
   IconButton,
   Menu,
   MenuItem,
@@ -72,6 +71,7 @@ import { AddChartModal, ChartFormData } from './AddChartModal';
 import { resetChartAndWidgetData } from '../dashboardReducer';
 import { SaveWidgetModel } from '../../naturalLanguage/saveWidgetModel';
 import { STYLE_GUIDE } from '../../../styles';
+import { useUnifiedTheme } from '../../../hooks/useUnifiedTheme';
 
 // Register ChartJS components
 ChartJS.register(
@@ -618,7 +618,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
   isNaturalLangauage,
 }) => {
   const dispatch = useAppDispatch();
-  const theme = useTheme();
+  const theme = useUnifiedTheme();
   const chartRefs = useRef<{ [key: string]: ChartJS | null }>({});
   const { charts, widgetTypes, temporaryCharts, chartsLoading, chartsError, widgetData, dashboards } = useAppSelector(
     (state) => ({

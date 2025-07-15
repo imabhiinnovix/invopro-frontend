@@ -1,4 +1,4 @@
-import { styled, Theme, CSSObject, useTheme } from '@mui/material/styles';
+import { styled, Theme, CSSObject } from '@mui/material/styles';
 import Box from '@mui/material/Box';
 import MuiDrawer from '@mui/material/Drawer';
 import List from '@mui/material/List';
@@ -37,8 +37,7 @@ import { Language } from '@mui/icons-material';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import { STYLE_GUIDE } from '../../../styles';
 import SettingsIcon from '@mui/icons-material/Settings';
-import { getIconColor } from '../../../utils/iconStyles';
-import { useDashboardTheme } from '../../../context/DashboardThemeProvider';
+import { useUnifiedTheme } from '../../../hooks/useUnifiedTheme';
 
 
 interface ErrorResponse {
@@ -138,7 +137,7 @@ interface NavItem {
 }
 
 export default function SideNav() {
-  const theme = useTheme();
+  const theme = useUnifiedTheme();
   const { openNav } = useNav();
   const [openSettings, setOpenSettings] = React.useState(false);
   const [openDashboard, setOpenDashboard] = React.useState(false);
@@ -155,8 +154,6 @@ export default function SideNav() {
   const { dashboards, loading } = useAppSelector((state) => state.dashboard);
   const { clearAuthContext } = useContext(AuthContext);
   const [openCreateModal, setOpenCreateModal] = useState(false);
-
-  const { currentTheme } = useDashboardTheme();
 
   useEffect(() => {
     dispatch(fetchDashboardList());
@@ -289,7 +286,7 @@ export default function SideNav() {
       <IconComponent 
         sx={{ 
           fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base, 
-          color: location.pathname.startsWith(route) ? theme.palette.primary.main : getIconColor(currentTheme) 
+          color: location.pathname.startsWith(route) ? theme.palette.primary.main : theme.getIconColor() 
         }} 
       />
     );
@@ -304,7 +301,7 @@ export default function SideNav() {
         subItems: [
           {
             name: 'Create New Dashboard',
-            icon: <AddIcon sx={{ fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base, color: getIconColor(currentTheme) }} />,
+            icon: <AddIcon sx={{ fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base, color: theme.getIconColor() }} />,
             route: '#',
             isCreateButton: true,
           },
@@ -540,7 +537,7 @@ export default function SideNav() {
                                 justifyContent: 'center',
                               }}
                             >
-                              <AddIcon sx={{ fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base, color: getIconColor(currentTheme) }} />
+                              <AddIcon sx={{ fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base, color: theme.getIconColor() }} />
                             </ListItemIcon>
                             <ListItemText
                               primary="Create New Dashboard"
@@ -591,7 +588,7 @@ export default function SideNav() {
                   justifyContent: 'center',
                 }}
               >
-                <LogoutIcon sx={{ color: getIconColor(currentTheme) }} />
+                <LogoutIcon sx={{ color: theme.getIconColor() }} />
               </ListItemIcon>
               <ListItemText
                 primary="Logout"

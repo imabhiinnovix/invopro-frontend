@@ -1,5 +1,5 @@
 import { Autocomplete, AutocompleteProps, TextField, TextFieldProps } from '@mui/material';
-import { useTheme } from '@mui/material/styles';
+import { useUnifiedTheme } from '../../../hooks/useUnifiedTheme';
 
 interface StyledAutocompleteProps<
   T,
@@ -26,7 +26,7 @@ const StyledAutocomplete = <
   sx = {},
   ...props
 }: StyledAutocompleteProps<T, Multiple, DisableClearable, FreeSolo>) => {
-  const theme = useTheme();
+  const theme = useUnifiedTheme();
 
   const autocompleteSx = {
     '& .MuiOutlinedInput-root': {

@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
-    Container,
     Typography,
     Paper,
     Box,
@@ -30,10 +29,11 @@ import ConfirmDialog from "./components/ConfirmDialog";
 import type { Report, FilterColumn, ReportSetting } from "./types";
 import { POST } from "../../services/apiRoutes";
 import usePost from "../../hooks/usePost";
+import { useUnifiedTheme } from '../../hooks/useUnifiedTheme';
 
 
 const ReportSettings: React.FC = () => {
-    const theme = useTheme();
+    const theme = useUnifiedTheme();
     const dispatch = useDispatch<AppDispatch>();
     const { settings = [], loading, error } = useSelector((state: RootState) => state.customReports);
     const [selectedReportId, setSelectedReportId] = useState<any>("");

@@ -25,7 +25,7 @@ import { DashboardTheme, CreateDashboardThemeDialogProps } from '../../../types/
 import { getDefaultDashboardTheme } from '../../../styles/themeConstants';
 import { getColorFieldTooltip } from '../../../constants/colorFieldTooltips';
 import { STYLE_GUIDE } from '../../../styles';
-import { useDashboardTheme } from '../../../context/DashboardThemeProvider';
+import { useUnifiedTheme } from '../../../hooks/useUnifiedTheme';
 
 const getDefaultTheme = (): DashboardTheme => ({
   ...getDefaultDashboardTheme(),
@@ -40,6 +40,7 @@ interface TabPanelProps {
 }
 
 function TabPanel(props: TabPanelProps) {
+    const theme = useUnifiedTheme();
   const { children, value, index, ...other } = props;
 
   return (
@@ -60,12 +61,13 @@ const CreateDashboardThemeDialog: React.FC<CreateDashboardThemeDialogProps> = ({
   onClose,
   theme,
 }) => {
+  const unifiedTheme = useUnifiedTheme();
   const dispatch = useAppDispatch();
   const [tabValue, setTabValue] = useState(0);
   const [formData, setFormData] = useState<DashboardTheme>(getDefaultTheme());
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
-  const { currentTheme } = useDashboardTheme();
+  
 
   useEffect(() => {
     if (theme) {
@@ -209,32 +211,32 @@ const CreateDashboardThemeDialog: React.FC<CreateDashboardThemeDialogProps> = ({
                     paddingRight: STYLE_GUIDE.SPACING.s2,
                     fontSize: '14px',
                     padding: '12px 16px',
-                    backgroundColor: currentTheme?.colors?.background?.paper || '#ffffff',
+                    backgroundColor: unifiedTheme.palette.background.paper || '#ffffff',
                     '& fieldset': {
-                      borderColor: currentTheme?.colors?.inputBorder || STYLE_GUIDE.COLORS.darkBackground,
+                      borderColor: unifiedTheme.palette.divider || STYLE_GUIDE.COLORS.darkBackground,
                     },
                     '&:hover fieldset': {
-                      borderColor: currentTheme?.colors?.borderHover || STYLE_GUIDE.COLORS.darkBorderHover,
+                      borderColor: unifiedTheme.palette.primary.main || STYLE_GUIDE.COLORS.darkBorderHover,
                     },
                     '&.Mui-focused fieldset': {
-                      borderColor: currentTheme?.components?.input?.focusBorderColor || currentTheme?.components?.input?.focusBorderColorFallback || STYLE_GUIDE.COLORS.inputFocusFallback,
+                      borderColor: unifiedTheme.palette.primary.main || STYLE_GUIDE.COLORS.inputFocusFallback,
                     },
                   },
                   '& .MuiInputLabel-root': {
-                    color: currentTheme?.colors?.text?.secondary || STYLE_GUIDE.COLORS.darkBorderFocus,
+                    color: unifiedTheme.palette.text.secondary || STYLE_GUIDE.COLORS.darkBorderFocus,
                   },
                   '& .MuiInputLabel-root.Mui-focused': {
-                    color: currentTheme?.components?.input?.focusBorderColor || currentTheme?.components?.input?.focusBorderColorFallback || STYLE_GUIDE.COLORS.inputFocusFallback,
+                    color: unifiedTheme.palette.primary.main || STYLE_GUIDE.COLORS.inputFocusFallback,
                   },
                   '& .MuiInputBase-input': {
-                    color: `${currentTheme?.colors?.inputText} !important`,
+                    color: `${unifiedTheme.palette.text.primary} !important`,
                   },
                   '& .MuiInputBase-input::placeholder': {
-                    color: `${currentTheme?.colors?.text?.secondary || '#666'} !important`,
+                    color: `${unifiedTheme.palette.text.secondary || '#666'} !important`,
                   },
                   '& .MuiInputBase-input:-webkit-autofill': {
-                    WebkitTextFillColor: `${currentTheme?.colors?.inputText} !important`,
-                    WebkitBoxShadow: `0 0 0 1000px ${currentTheme?.colors?.background?.paper || '#ffffff'} inset !important`,
+                    WebkitTextFillColor: `${unifiedTheme.palette.text.primary} !important`,
+                    WebkitBoxShadow: `0 0 0 1000px ${unifiedTheme.palette.background.paper || '#ffffff'} inset !important`,
                   },
                 }}
               />

@@ -30,12 +30,12 @@ import { DashboardTheme } from '../../types/dashboardTheme';
 import DashboardThemePreview from './components/DashboardThemePreview';
 import CreateDashboardThemeDialog from './components/CreateDashboardThemeDialog';
 import { toast } from 'react-toastify';
-import { getIconColor } from '../../utils/iconStyles';
+import { useUnifiedTheme } from '../../hooks/useUnifiedTheme';
 
 const DashboardThemePage = () => {
-  const theme = useTheme();
+  const unifiedTheme = useUnifiedTheme();
   const dispatch = useAppDispatch();
-  const { themes, loading, error, success, currentTheme } = useAppSelector((state) => state.dashboardTheme);
+  const { themes, loading, error, success, dashboardTheme } = useAppSelector((state) => state.dashboardTheme);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedTheme, setSelectedTheme] = useState<DashboardTheme | null>(null);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
@@ -109,7 +109,7 @@ const DashboardThemePage = () => {
   }
 
   return (
-    <Box sx={{ p: 3, maxWidth: '1400px', margin: '0 auto', backgroundColor: theme.palette.background.paper }}>
+    <Box sx={{ p: 3, maxWidth: '1400px', margin: '0 auto', backgroundColor: unifiedTheme.palette.background.paper }}>
       <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 3 }}>
         <Box>
           <Typography variant="h4" component="h1" gutterBottom sx={{ fontWeight: 600 }}>
@@ -121,7 +121,7 @@ const DashboardThemePage = () => {
         </Box>
         <Button
           variant="contained"
-          startIcon={<AddIcon sx={{ color: getIconColor(currentTheme) }}/>}
+          startIcon={<AddIcon sx={{ color: unifiedTheme.getIconColor() }}/>}
           onClick={() => setIsDialogOpen(true)}
           sx={{ 
             px: 3, 
@@ -135,12 +135,12 @@ const DashboardThemePage = () => {
         </Button>
       </Stack>
 
-      {currentTheme && (
+      {dashboardTheme && (
         <Box sx={{ mb: 3, p: 2, bgcolor: 'background.paper', borderRadius: 2, border: '1px solid', borderColor: 'divider' }}>
           <Stack direction="row" alignItems="center" spacing={2}>
             <ApplyIcon color="success" />
             <Typography variant="body1" fontWeight={500}>
-              Currently Applied: <strong>{currentTheme.name}</strong>
+              Currently Applied: <strong>{dashboardTheme.name}</strong>
             </Typography>
           </Stack>
         </Box>
@@ -155,7 +155,7 @@ const DashboardThemePage = () => {
               onDelete={handleDeleteTheme}
               onDuplicate={handleDuplicateTheme}
               onApply={handleApplyTheme}
-              isCurrentTheme={currentTheme?._id === theme._id}
+              isCurrentTheme={dashboardTheme?._id === theme._id}
             />
           </Grid>
         ))}

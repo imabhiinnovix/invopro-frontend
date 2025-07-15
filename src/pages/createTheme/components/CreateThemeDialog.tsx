@@ -32,7 +32,8 @@ import { POST } from "../../../services/apiRoutes";
 import { useAppDispatch } from "../../../storeHooks";
 import { fetchThemeList } from "../themeActions";
 import { STYLE_GUIDE } from "../../../styles";
-import { useDashboardTheme } from "../../../context/DashboardThemeProvider";
+import { useUnifiedTheme } from "../../../hooks/useUnifiedTheme";
+
 
 
 const alignOptions = ["start", "center", "end"];
@@ -107,7 +108,8 @@ const CreateThemeDialog = ({
   theme,
 }: CreateThemeDialogProps) => {
   const dispatch = useAppDispatch();
-  const { currentTheme } = useDashboardTheme();
+  const unifiedTheme = useUnifiedTheme();
+  
   const [themeState, setThemeState] = useState<ThemeData>({
     name: "",
     title: {
@@ -630,40 +632,40 @@ const CreateThemeDialog = ({
                   })
                 }
                 {...numberInputStyles}
-                sx={{
-                  '& .MuiOutlinedInput-root': {
-                    borderRadius: STYLE_GUIDE.SPACING.s2,
-                    alignItems: 'flex-start',
-                    paddingRight: STYLE_GUIDE.SPACING.s2,
-                    fontSize: '14px',
-                    backgroundColor: currentTheme?.colors?.background?.paper || '#ffffff',
-                    '& fieldset': {
-                      borderColor: currentTheme?.colors?.inputBorder || STYLE_GUIDE.COLORS.darkBackground,
+                                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      borderRadius: STYLE_GUIDE.SPACING.s2,
+                      alignItems: 'flex-start',
+                      paddingRight: STYLE_GUIDE.SPACING.s2,
+                      fontSize: '14px',
+                      backgroundColor: unifiedTheme.dashboardTheme?.colors?.background?.paper || '#ffffff',
+                      '& fieldset': {
+                        borderColor: unifiedTheme.dashboardTheme?.colors?.inputBorder || STYLE_GUIDE.COLORS.darkBackground,
+                      },
+                      '&:hover fieldset': {
+                        borderColor: unifiedTheme.dashboardTheme?.colors?.borderHover || STYLE_GUIDE.COLORS.darkBorderHover,
+                      },
+                      '&.Mui-focused fieldset': {
+                        borderColor: unifiedTheme.dashboardTheme?.components?.input?.focusBorderColor || STYLE_GUIDE.COLORS.darkBorderFocus,
+                      },
                     },
-                    '&:hover fieldset': {
-                      borderColor: currentTheme?.colors?.borderHover || STYLE_GUIDE.COLORS.darkBorderHover,
+                    '& .MuiInputLabel-root': {
+                      color: unifiedTheme.dashboardTheme?.colors?.text?.secondary || STYLE_GUIDE.COLORS.darkBorderFocus,
                     },
-                    '&.Mui-focused fieldset': {
-                      borderColor: currentTheme?.components?.input?.focusBorderColor || STYLE_GUIDE.COLORS.darkBorderFocus,
+                    '& .MuiInputLabel-root.Mui-focused': {
+                      color: unifiedTheme.dashboardTheme?.components?.input?.focusBorderColor || STYLE_GUIDE.COLORS.darkDarker,
                     },
-                  },
-                  '& .MuiInputLabel-root': {
-                    color: currentTheme?.colors?.text?.secondary || STYLE_GUIDE.COLORS.darkBorderFocus,
-                  },
-                  '& .MuiInputLabel-root.Mui-focused': {
-                    color: currentTheme?.components?.input?.focusBorderColor || STYLE_GUIDE.COLORS.darkDarker,
-                  },
-                  '& .MuiInputBase-input': {
-                    color: `${currentTheme?.colors?.inputText} !important`,
-                  },
-                  '& .MuiInputBase-input::placeholder': {
-                    color: `${currentTheme?.colors?.text?.secondary || '#666'} !important`,
-                  },
-                  '& .MuiInputBase-input:-webkit-autofill': {
-                    WebkitTextFillColor: `${currentTheme?.colors?.inputText } !important`,
-                    WebkitBoxShadow: `0 0 0 1000px ${currentTheme?.colors?.background?.paper || '#ffffff'} inset !important`,
-                  },
-                }}
+                    '& .MuiInputBase-input': {
+                      color: `${unifiedTheme.dashboardTheme?.colors?.inputText} !important`,
+                    },
+                    '& .MuiInputBase-input::placeholder': {
+                      color: `${unifiedTheme.dashboardTheme?.colors?.text?.secondary || '#666'} !important`,
+                    },
+                    '& .MuiInputBase-input:-webkit-autofill': {
+                      WebkitTextFillColor: `${unifiedTheme.dashboardTheme?.colors?.inputText } !important`,
+                      WebkitBoxShadow: `0 0 0 1000px ${unifiedTheme.dashboardTheme?.colors?.background?.paper || '#ffffff'} inset !important`,
+                    },
+                  }}
               />
             </Grid>
 

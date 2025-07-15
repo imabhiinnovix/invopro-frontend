@@ -1,7 +1,8 @@
-import { Box, useTheme } from '@mui/material';
+import { Box } from '@mui/material';
+import { useUnifiedTheme } from '../../hooks/useUnifiedTheme';
 
 function SuperAdmin() {
-  const theme = useTheme();
+  const theme = useUnifiedTheme();
   return <Box sx={{ backgroundColor: theme.palette.background.paper }}>{/* <TemporaryDrawer /> */}</Box>;
 }
 

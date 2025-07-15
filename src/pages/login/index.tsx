@@ -28,8 +28,7 @@ import usePost from "../../hooks/usePost";
 import ProgressBar from "../../components/molecule/progressBar";
 import logo from "../../assets/logo.png";
 import { STYLE_GUIDE } from "../../styles";
-import { useDashboardTheme } from '../../context/DashboardThemeProvider';
-import { useTheme } from '@mui/material';
+import { useUnifiedTheme } from '../../hooks/useUnifiedTheme';
 
 interface getLoginPayload {
   email: string;
@@ -50,8 +49,8 @@ interface userCredType {
 }
 
 function Login() {
-  const { currentTheme } = useDashboardTheme();
-  const theme = useTheme();
+  
+  const theme = useUnifiedTheme();
   const [showPassword, setShowPassword] = useState(false);
   const { setIsAuthUser, userDetails } = useContext(
     AuthContext
@@ -143,32 +142,32 @@ function Login() {
               alignItems: 'flex-start', 
               paddingRight: STYLE_GUIDE.SPACING.s2, 
               fontSize: '14px', 
-              backgroundColor: currentTheme?.colors?.background?.paper || '#ffffff', 
+              backgroundColor: theme.palette.background.paper || '#ffffff', 
               '& fieldset': { 
-                borderColor: currentTheme?.colors?.inputBorder || STYLE_GUIDE.COLORS.darkBackground, 
+                borderColor: theme.input?.border || STYLE_GUIDE.COLORS.darkBackground, 
               }, 
               '&:hover fieldset': { 
-                borderColor: currentTheme?.colors?.borderHover || STYLE_GUIDE.COLORS.darkBorderHover, 
+                borderColor: theme.border?.hover || STYLE_GUIDE.COLORS.darkBorderHover, 
               }, 
               '&.Mui-focused fieldset': { 
-                borderColor: currentTheme?.components?.input?.focusBorderColor || currentTheme?.components?.input?.focusBorderColorFallback || STYLE_GUIDE.COLORS.inputFocusFallback, 
+                borderColor: theme.input?.focusBorder || STYLE_GUIDE.COLORS.inputFocusFallback, 
               }, 
             }, 
             '& .MuiInputLabel-root': { 
-              color: currentTheme?.colors?.text?.secondary || STYLE_GUIDE.COLORS.darkBorderFocus, 
+              color: theme.palette.text.secondary || STYLE_GUIDE.COLORS.darkBorderFocus, 
             }, 
             '& .MuiInputLabel-root.Mui-focused': { 
-              color: currentTheme?.components?.input?.focusBorderColor || currentTheme?.components?.input?.focusBorderColorFallback || STYLE_GUIDE.COLORS.inputFocusFallback, 
+              color: theme.input?.focusBorder || STYLE_GUIDE.COLORS.inputFocusFallback, 
             }, 
             '& .MuiInputBase-input': { 
-              color: currentTheme?.colors?.inputText || currentTheme?.colors?.text?.primary || theme.palette.text.primary, 
+              color: theme.getInputTextColor() || theme.palette.text.primary, 
             }, 
             '& .MuiInputBase-input::placeholder': { 
-              color: currentTheme?.colors?.text?.secondary || '#666', 
+              color: theme.palette.text.secondary || '#666', 
             }, 
             '& .MuiInputBase-input:-webkit-autofill': { 
-              WebkitTextFillColor: currentTheme?.colors?.inputText || currentTheme?.colors?.text?.primary || theme.palette.text.primary, 
-              WebkitBoxShadow: `0 0 0 1000px ${currentTheme?.colors?.background?.paper || '#ffffff'} inset`, 
+              WebkitTextFillColor: theme.getInputTextColor() || theme.palette.text.primary, 
+              WebkitBoxShadow: `0 0 0 1000px ${theme.palette.background.paper || '#ffffff'} inset`, 
             }, 
           }}
         />
@@ -204,32 +203,32 @@ function Login() {
               alignItems: 'flex-start', 
               paddingRight: STYLE_GUIDE.SPACING.s2, 
               fontSize: '14px', 
-              backgroundColor: currentTheme?.colors?.background?.paper || '#ffffff', 
+              backgroundColor: theme.dashboardTheme?.colors?.background?.paper || '#ffffff', 
               '& fieldset': { 
-                borderColor: currentTheme?.colors?.inputBorder || STYLE_GUIDE.COLORS.darkBackground, 
+                borderColor: theme.dashboardTheme?.colors?.inputBorder || STYLE_GUIDE.COLORS.darkBackground, 
               }, 
               '&:hover fieldset': { 
-                borderColor: currentTheme?.colors?.borderHover || STYLE_GUIDE.COLORS.darkBorderHover, 
+                borderColor: theme.dashboardTheme?.colors?.borderHover || STYLE_GUIDE.COLORS.darkBorderHover, 
               }, 
               '&.Mui-focused fieldset': { 
-                borderColor: currentTheme?.components?.input?.focusBorderColor || currentTheme?.components?.input?.focusBorderColorFallback || STYLE_GUIDE.COLORS.inputFocusFallback, 
+                borderColor: theme.dashboardTheme?.components?.input?.focusBorderColor || theme.dashboardTheme?.components?.input?.focusBorderColorFallback || STYLE_GUIDE.COLORS.inputFocusFallback, 
               }, 
             }, 
             '& .MuiInputLabel-root': { 
-              color: currentTheme?.colors?.text?.secondary || STYLE_GUIDE.COLORS.darkBorderFocus, 
+              color: theme.dashboardTheme?.colors?.text?.secondary || STYLE_GUIDE.COLORS.darkBorderFocus, 
             }, 
             '& .MuiInputLabel-root.Mui-focused': { 
-              color: currentTheme?.components?.input?.focusBorderColor || currentTheme?.components?.input?.focusBorderColorFallback || STYLE_GUIDE.COLORS.inputFocusFallback, 
+              color: theme.dashboardTheme?.components?.input?.focusBorderColor || theme.dashboardTheme?.components?.input?.focusBorderColorFallback || STYLE_GUIDE.COLORS.inputFocusFallback, 
             }, 
             '& .MuiInputBase-input': { 
-              color: currentTheme?.colors?.inputText || currentTheme?.colors?.text?.primary || theme.palette.text.primary, 
+              color: theme.dashboardTheme?.colors?.inputText || theme.dashboardTheme?.colors?.text?.primary || theme.palette.text.primary, 
             }, 
             '& .MuiInputBase-input::placeholder': { 
-              color: currentTheme?.colors?.text?.secondary || '#666', 
+              color: theme.dashboardTheme?.colors?.text?.secondary || '#666', 
             }, 
             '& .MuiInputBase-input:-webkit-autofill': { 
-              WebkitTextFillColor: currentTheme?.colors?.inputText || currentTheme?.colors?.text?.primary || theme.palette.text.primary, 
-              WebkitBoxShadow: `0 0 0 1000px ${currentTheme?.colors?.background?.paper || '#ffffff'} inset`, 
+              WebkitTextFillColor: theme.dashboardTheme?.colors?.inputText || theme.dashboardTheme?.colors?.text?.primary || theme.palette.text.primary, 
+              WebkitBoxShadow: `0 0 0 1000px ${theme.dashboardTheme?.colors?.background?.paper || '#ffffff'} inset`, 
             }, 
           }}
         />

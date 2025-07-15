@@ -18,7 +18,7 @@ import { useAppDispatch, useAppSelector } from '../../../../storeHooks';
 import { fetchDashboardShareUsers, shareDashboard } from '../../../../pages/dashboard/dashboardActions';
 import { toast } from 'react-toastify';
 import { STYLE_GUIDE } from '../../../../styles';
-import { useDashboardTheme } from '../../../../context/DashboardThemeProvider';
+import { useUnifiedTheme } from '../../../../hooks/useUnifiedTheme';
 
 interface ShareDashboardModalProps {
   open: boolean;
@@ -42,8 +42,9 @@ export const ShareDashboardModal: React.FC<ShareDashboardModalProps> = ({
     shareUsersLoading: state.dashboard.shareUsersLoading,
     shareUsersError: state.dashboard.shareUsersError,
   }));
-
-  const currentTheme = useDashboardTheme();
+ 
+  const theme = useUnifiedTheme();
+  
   
   useEffect(() => {
     if (open && dashboard?._id) {
@@ -130,7 +131,7 @@ export const ShareDashboardModal: React.FC<ShareDashboardModalProps> = ({
                     {...params}
                     label="Select users"
                     placeholder="Choose users to share with"
-                    sx={{ '& .MuiOutlinedInput-root': { borderRadius: STYLE_GUIDE.SPACING.s2, alignItems: 'center', fontSize: '14px', backgroundColor: currentTheme?.currentTheme?.colors?.background?.paper || '#ffffff', '& fieldset': { borderColor: currentTheme?.currentTheme?.colors?.inputBorder || STYLE_GUIDE.COLORS.darkBackground, }, '&:hover fieldset': { borderColor: currentTheme?.currentTheme?.colors?.borderHover || STYLE_GUIDE.COLORS.darkBorderHover, }, '&.Mui-focused fieldset': { borderColor: currentTheme?.currentTheme?.components?.input?.focusBorderColor || currentTheme?.currentTheme?.components?.input?.focusBorderColorFallback || STYLE_GUIDE.COLORS.inputFocusFallback, }, }, '& .MuiInputLabel-root': { color: currentTheme?.currentTheme?.colors?.text?.secondary || STYLE_GUIDE.COLORS.darkBorderFocus, }, '& .MuiInputLabel-root.Mui-focused': { color: currentTheme?.currentTheme?.components?.input?.focusBorderColor || currentTheme?.currentTheme?.components?.input?.focusBorderColorFallback || STYLE_GUIDE.COLORS.inputFocusFallback, }, '& .MuiInputBase-input': { color: `${currentTheme?.currentTheme?.colors?.inputText || currentTheme?.currentTheme?.colors?.text?.primary || '#000000'} !important`, }, '& .MuiInputBase-input::placeholder': { color: `${currentTheme?.currentTheme?.colors?.text?.secondary || '#666'} !important`, }, '& .MuiInputBase-input:-webkit-autofill': { WebkitTextFillColor: `${currentTheme?.currentTheme?.colors?.inputText || currentTheme?.currentTheme?.colors?.text?.primary || '#000000'} !important`, WebkitBoxShadow: `0 0 0 1000px ${currentTheme?.currentTheme?.colors?.background?.paper || '#ffffff'} inset !important`, }, }}
+                    sx={{ '& .MuiOutlinedInput-root': { borderRadius: STYLE_GUIDE.SPACING.s2, alignItems: 'center', fontSize: '14px', backgroundColor: theme.dashboardTheme?.colors?.background?.paper || '#ffffff', '& fieldset': { borderColor: theme.dashboardTheme?.colors?.inputBorder || STYLE_GUIDE.COLORS.darkBackground, }, '&:hover fieldset': { borderColor: theme.dashboardTheme?.colors?.borderHover || STYLE_GUIDE.COLORS.darkBorderHover, }, '&.Mui-focused fieldset': { borderColor: theme.dashboardTheme?.components?.input?.focusBorderColor || theme.dashboardTheme?.components?.input?.focusBorderColorFallback || STYLE_GUIDE.COLORS.inputFocusFallback, }, }, '& .MuiInputLabel-root': { color: theme.dashboardTheme?.components?.input?.focusBorderColor || STYLE_GUIDE.COLORS.darkBorderFocus, }, '& .MuiInputLabel-root.Mui-focused': { color: theme.dashboardTheme?.components?.input?.focusBorderColor || theme.dashboardTheme?.components?.input?.focusBorderColorFallback || STYLE_GUIDE.COLORS.inputFocusFallback, }, '& .MuiInputBase-input': { color: `${theme.dashboardTheme?.components?.input?.focusBorderColor || theme.dashboardTheme?.components?.input?.focusBorderColorFallback || '#000000'} !important`, }, '& .MuiInputBase-input::placeholder': { color: `${theme.dashboardTheme?.components?.input?.focusBorderColor || '#666'} !important`, }, '& .MuiInputBase-input:-webkit-autofill': { WebkitTextFillColor: `${theme.dashboardTheme?.components?.input?.focusBorderColor || '#000000'} !important`, WebkitBoxShadow: `0 0 0 1000px ${theme.dashboardTheme?.colors?.background?.paper || '#ffffff'} inset !important`, }, }}
                   />
                 )}
               />

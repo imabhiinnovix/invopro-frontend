@@ -14,7 +14,6 @@ import {
   CardContent,
   Card,
   FormHelperText,
-  useTheme,
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import AddIcon from '@mui/icons-material/Add';
@@ -42,7 +41,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { DateTime } from 'luxon';
 import { STYLE_GUIDE } from '../../../styles';
 import axios from 'axios';
-import { useDashboardTheme } from '../../../context/DashboardThemeProvider';
+import { useUnifiedTheme } from '../../../hooks/useUnifiedTheme';
 
 interface Position {
   x: number;
@@ -216,8 +215,8 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
   setChartSaveSettingData,
   setNewSaveChartName,
 }) => {
-  const theme = useTheme();
-  const { currentTheme } = useDashboardTheme();
+  const theme = useUnifiedTheme();
+  
   const dispatch = useAppDispatch();
   const { widgetTypes, dataSources, widgetTypesLoading, dataSourcesLoading } = useAppSelector(
     (state) => state.dashboard
@@ -920,32 +919,32 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
                         mb: 2,
                         paddingRight: STYLE_GUIDE.SPACING.s2,
                         fontSize: '14px',
-                        backgroundColor: currentTheme?.colors?.background?.paper || '#ffffff',
+                        backgroundColor: theme.dashboardTheme?.colors?.background?.paper || '#ffffff',
                         '& fieldset': {
-                          borderColor: currentTheme?.colors?.inputBorder || STYLE_GUIDE.COLORS.darkBackground,
+                          borderColor: theme.getInputBorderColor() || STYLE_GUIDE.COLORS.darkBackground,
                         },
                         '&:hover fieldset': {
-                          borderColor: currentTheme?.colors?.borderHover || STYLE_GUIDE.COLORS.darkBorderHover,
+                          borderColor: theme.border?.hover || STYLE_GUIDE.COLORS.darkBorderHover,
                         },
                         '&.Mui-focused fieldset': {
-                          borderColor: currentTheme?.components?.input?.focusBorderColor || currentTheme?.components?.input?.focusBorderColorFallback || STYLE_GUIDE.COLORS.inputFocusFallback,
+                          borderColor: theme.input?.focusBorder || STYLE_GUIDE.COLORS.inputFocusFallback,
                         },
                       },
                       '& .MuiInputLabel-root': {
-                        color: currentTheme?.colors?.text?.secondary || STYLE_GUIDE.COLORS.darkBorderFocus,
+                        color: theme.palette.text.secondary || STYLE_GUIDE.COLORS.darkBorderFocus,
                       },
                       '& .MuiInputLabel-root.Mui-focused': {
-                        color: currentTheme?.components?.input?.focusBorderColor || currentTheme?.components?.input?.focusBorderColorFallback || STYLE_GUIDE.COLORS.inputFocusFallback,
+                        color: theme.input?.focusBorder || STYLE_GUIDE.COLORS.inputFocusFallback,
                       },
                       '& .MuiInputBase-input': {
-                        color: `${currentTheme?.colors?.inputText || theme.palette.text.primary} !important`,
+                        color: `${theme.getInputTextColor() || theme.palette.text.primary} !important`,
                       },
                       '& .MuiInputBase-input::placeholder': {
-                        color: `${currentTheme?.colors?.text?.secondary || '#666'} !important`,
+                        color: `${theme.palette.text.secondary || '#666'} !important`,
                       },
                       '& .MuiInputBase-input:-webkit-autofill': {
-                        WebkitTextFillColor: `${currentTheme?.colors?.inputText || theme.palette.text.primary} !important`,
-                        WebkitBoxShadow: `0 0 0 1000px ${currentTheme?.colors?.background?.paper || '#ffffff'} inset !important`,
+                        WebkitTextFillColor: `${theme.getInputTextColor() || theme.palette.text.primary} !important`,
+                        WebkitBoxShadow: `0 0 0 1000px ${theme.dashboardTheme?.colors?.background?.paper || '#ffffff'} inset !important`,
                       },
                     }}
                   />
@@ -969,32 +968,32 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
                         mb: 2,
                         paddingRight: STYLE_GUIDE.SPACING.s2,
                         fontSize: '14px',
-                        backgroundColor: currentTheme?.colors?.background?.paper || '#ffffff',
+                        backgroundColor: theme.dashboardTheme?.colors?.background?.paper || '#ffffff',
                         '& fieldset': {
-                          borderColor: currentTheme?.colors?.inputBorder || STYLE_GUIDE.COLORS.darkBackground,
+                          borderColor: theme.getInputBorderColor() || STYLE_GUIDE.COLORS.darkBackground,
                         },
                         '&:hover fieldset': {
-                          borderColor: currentTheme?.colors?.borderHover || STYLE_GUIDE.COLORS.darkBorderHover,
+                          borderColor: theme.border?.hover || STYLE_GUIDE.COLORS.darkBorderHover,
                         },
                         '&.Mui-focused fieldset': {
-                          borderColor: currentTheme?.components?.input?.focusBorderColor || currentTheme?.components?.input?.focusBorderColorFallback || STYLE_GUIDE.COLORS.inputFocusFallback,
+                          borderColor: theme.input?.focusBorder || STYLE_GUIDE.COLORS.inputFocusFallback,
                         },
                       },
                       '& .MuiInputLabel-root': {
-                        color: currentTheme?.colors?.text?.secondary || STYLE_GUIDE.COLORS.darkBorderFocus,
+                        color: theme.palette.text.secondary || STYLE_GUIDE.COLORS.darkBorderFocus,
                       },
                       '& .MuiInputLabel-root.Mui-focused': {
-                        color: currentTheme?.components?.input?.focusBorderColor || currentTheme?.components?.input?.focusBorderColorFallback || STYLE_GUIDE.COLORS.inputFocusFallback,
+                        color: theme.input?.focusBorder || STYLE_GUIDE.COLORS.inputFocusFallback,
                       },
                       '& .MuiInputBase-input': {
-                        color: `${currentTheme?.colors?.inputText || theme.palette.text.primary} !important`,
+                        color: `${theme.getInputTextColor() || theme.palette.text.primary} !important`,
                       },
                       '& .MuiInputBase-input::placeholder': {
-                        color: `${currentTheme?.colors?.text?.secondary || '#666'} !important`,
+                        color: `${theme.palette.text.secondary || '#666'} !important`,
                       },
                       '& .MuiInputBase-input:-webkit-autofill': {
-                        WebkitTextFillColor: `${currentTheme?.colors?.inputText || theme.palette.text.primary} !important`,
-                        WebkitBoxShadow: `0 0 0 1000px ${currentTheme?.colors?.background?.paper || '#ffffff'} inset !important`,
+                        WebkitTextFillColor: `${theme.getInputTextColor() || theme.palette.text.primary} !important`,
+                        WebkitBoxShadow: `0 0 0 1000px ${theme.dashboardTheme?.colors?.background?.paper || '#ffffff'} inset !important`,
                       },
                     }}
                   />
@@ -1064,32 +1063,32 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
                 mb: 2,
                 paddingRight: STYLE_GUIDE.SPACING.s2,
                 fontSize: '14px',
-                backgroundColor: currentTheme?.colors?.background?.paper || '#ffffff',
+                backgroundColor: theme.dashboardTheme?.colors?.background?.paper || '#ffffff',
                 '& fieldset': {
-                  borderColor: currentTheme?.colors?.inputBorder || STYLE_GUIDE.COLORS.darkBackground,
+                  borderColor: theme.getInputBorderColor() || STYLE_GUIDE.COLORS.darkBackground,
                 },
                 '&:hover fieldset': {
-                  borderColor: currentTheme?.colors?.borderHover || STYLE_GUIDE.COLORS.darkBorderHover,
+                  borderColor: theme.border?.hover || STYLE_GUIDE.COLORS.darkBorderHover,
                 },
                 '&.Mui-focused fieldset': {
-                  borderColor: currentTheme?.components?.input?.focusBorderColor || currentTheme?.components?.input?.focusBorderColorFallback || STYLE_GUIDE.COLORS.inputFocusFallback,
+                  borderColor: theme.input?.focusBorder || theme.input?.focusBorderFallback || STYLE_GUIDE.COLORS.inputFocusFallback,
                 },
               },
               '& .MuiInputLabel-root': {
-                color: currentTheme?.colors?.text?.secondary || STYLE_GUIDE.COLORS.darkBorderFocus,
+                color: theme.palette.text.secondary || STYLE_GUIDE.COLORS.darkBorderFocus,
               },
               '& .MuiInputLabel-root.Mui-focused': {
-                color: currentTheme?.components?.input?.focusBorderColor || currentTheme?.components?.input?.focusBorderColorFallback || STYLE_GUIDE.COLORS.inputFocusFallback,
+                color: theme.input?.focusBorder || theme.input?.focusBorderFallback || STYLE_GUIDE.COLORS.inputFocusFallback,
               },
               '& .MuiInputBase-input': {
-                color: `${currentTheme?.colors?.inputText || theme.palette.text.primary} !important`,
+                color: `${theme.getInputTextColor() || theme.palette.text.primary} !important`,
               },
               '& .MuiInputBase-input::placeholder': {
-                color: `${currentTheme?.colors?.text?.secondary || '#666'} !important`,
+                color: `${theme.palette.text.secondary || '#666'} !important`,
               },
               '& .MuiInputBase-input:-webkit-autofill': {
-                WebkitTextFillColor: `${currentTheme?.colors?.inputText || theme.palette.text.primary} !important`,
-                WebkitBoxShadow: `0 0 0 1000px ${currentTheme?.colors?.background?.paper || '#ffffff'} inset !important`,
+                WebkitTextFillColor: `${theme.getInputTextColor() || theme.palette.text.primary} !important`,
+                WebkitBoxShadow: `0 0 0 1000px ${theme.dashboardTheme?.colors?.background?.paper || '#ffffff'} inset !important`,
               },
             }}
           />
@@ -1329,32 +1328,32 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
                               mb: 2,
                               paddingRight: STYLE_GUIDE.SPACING.s2,
                               fontSize: '14px',
-                              backgroundColor: currentTheme?.colors?.background?.paper || '#ffffff',
+                              backgroundColor: theme.dashboardTheme?.colors?.background?.paper || '#ffffff',
                               '& fieldset': {
-                                borderColor: currentTheme?.colors?.inputBorder || STYLE_GUIDE.COLORS.darkBackground,
+                                borderColor: theme.getInputBorderColor() || STYLE_GUIDE.COLORS.darkBackground,
                               },
                               '&:hover fieldset': {
-                                borderColor: currentTheme?.colors?.borderHover || STYLE_GUIDE.COLORS.darkBorderHover,
+                                borderColor: theme.border?.hover || STYLE_GUIDE.COLORS.darkBorderHover,
                               },
                               '&.Mui-focused fieldset': {
-                                borderColor: currentTheme?.components?.input?.focusBorderColor || currentTheme?.components?.input?.focusBorderColorFallback || STYLE_GUIDE.COLORS.inputFocusFallback,
+                                borderColor: theme.input?.focusBorder || theme.input?.focusBorderFallback || STYLE_GUIDE.COLORS.inputFocusFallback,
                               },
                             },
                             '& .MuiInputLabel-root': {
-                              color: currentTheme?.colors?.text?.secondary || STYLE_GUIDE.COLORS.darkBorderFocus,
+                              color: theme.palette.text.secondary || STYLE_GUIDE.COLORS.darkBorderFocus,
                             },
                             '& .MuiInputLabel-root.Mui-focused': {
-                              color: currentTheme?.components?.input?.focusBorderColor || currentTheme?.components?.input?.focusBorderColorFallback || STYLE_GUIDE.COLORS.inputFocusFallback,
+                              color: theme.input?.focusBorder || theme.input?.focusBorderFallback || STYLE_GUIDE.COLORS.inputFocusFallback,
                             },
                             '& .MuiInputBase-input': {
-                              color: `${currentTheme?.colors?.inputText || theme.palette.text.primary} !important`,
+                              color: `${theme.getInputTextColor() || theme.palette.text.primary} !important`,
                             },
                             '& .MuiInputBase-input::placeholder': {
-                              color: `${currentTheme?.colors?.text?.secondary || '#666'} !important`,
+                              color: `${theme.palette.text.secondary || '#666'} !important`,
                             },
                             '& .MuiInputBase-input:-webkit-autofill': {
-                              WebkitTextFillColor: `${currentTheme?.colors?.inputText || theme.palette.text.primary} !important`,
-                              WebkitBoxShadow: `0 0 0 1000px ${currentTheme?.colors?.background?.paper || '#ffffff'} inset !important`,
+                              WebkitTextFillColor: `${theme.getInputTextColor() || theme.palette.text.primary} !important`,
+                              WebkitBoxShadow: `0 0 0 1000px ${theme.dashboardTheme?.colors?.background?.paper || '#ffffff'} inset !important`,
                             },
                           }}
                         />
@@ -1378,32 +1377,32 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
                               mb: 2,
                               paddingRight: STYLE_GUIDE.SPACING.s2,
                               fontSize: '14px',
-                              backgroundColor: currentTheme?.colors?.background?.paper || '#ffffff',
+                              backgroundColor: theme.dashboardTheme?.colors?.background?.paper || '#ffffff',
                               '& fieldset': {
-                                borderColor: currentTheme?.colors?.inputBorder || STYLE_GUIDE.COLORS.darkBackground,
+                                borderColor: theme.getInputBorderColor() || STYLE_GUIDE.COLORS.darkBackground,
                               },
                               '&:hover fieldset': {
-                                borderColor: currentTheme?.colors?.borderHover || STYLE_GUIDE.COLORS.darkBorderHover,
+                                borderColor: theme.border?.hover || STYLE_GUIDE.COLORS.darkBorderHover,
                               },
                               '&.Mui-focused fieldset': {
-                                borderColor: currentTheme?.components?.input?.focusBorderColor || currentTheme?.components?.input?.focusBorderColorFallback || STYLE_GUIDE.COLORS.inputFocusFallback,
+                                borderColor: theme.input?.focusBorder || theme.input?.focusBorderFallback || STYLE_GUIDE.COLORS.inputFocusFallback,
                               },
                             },
                             '& .MuiInputLabel-root': {
-                              color: currentTheme?.colors?.text?.secondary || STYLE_GUIDE.COLORS.darkBorderFocus,
+                              color: theme.palette.text.secondary || STYLE_GUIDE.COLORS.darkBorderFocus,
                             },
                             '& .MuiInputLabel-root.Mui-focused': {
-                              color: currentTheme?.components?.input?.focusBorderColor || currentTheme?.components?.input?.focusBorderColorFallback || STYLE_GUIDE.COLORS.inputFocusFallback,
+                              color: theme.input?.focusBorder || theme.input?.focusBorderFallback || STYLE_GUIDE.COLORS.inputFocusFallback,
                             },
                             '& .MuiInputBase-input': {
-                              color: `${currentTheme?.colors?.inputText || theme.palette.text.primary} !important`,
+                              color: `${theme.getInputTextColor() || theme.palette.text.primary} !important`,
                             },
                             '& .MuiInputBase-input::placeholder': {
-                              color: `${currentTheme?.colors?.text?.secondary || '#666'} !important`,
+                              color: `${theme.palette.text.secondary || '#666'} !important`,
                             },
                             '& .MuiInputBase-input:-webkit-autofill': {
-                              WebkitTextFillColor: `${currentTheme?.colors?.inputText || theme.palette.text.primary} !important`,
-                              WebkitBoxShadow: `0 0 0 1000px ${currentTheme?.colors?.background?.paper || '#ffffff'} inset !important`,
+                              WebkitTextFillColor: `${theme.getInputTextColor() || theme.palette.text.primary} !important`,
+                              WebkitBoxShadow: `0 0 0 1000px ${theme.dashboardTheme?.colors?.background?.paper || '#ffffff'} inset !important`,
                             },
                           }}
                         />

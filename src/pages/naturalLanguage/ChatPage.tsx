@@ -1,17 +1,16 @@
 import React, { useState } from 'react';
-import { Box, TextField, IconButton, Typography, Paper, InputAdornment, useTheme } from '@mui/material';
+import { Box, TextField, IconButton, Typography, Paper, InputAdornment } from '@mui/material';
 import SendIcon from '@mui/icons-material/Send';
 import { useAppDispatch, useAppSelector } from '../../storeHooks';
-import { useDashboardTheme } from '../../context/DashboardThemeProvider';
-import { getIconColor } from '../../utils/iconStyles';
 
 import { ChartGrid } from '../dashboard/components/ChartGrid';
 import { fetchWidgetSettingBasedOnNaturalLanguage } from '../dashboard/dashboardActions';
 import { STYLE_GUIDE } from '../../styles';
+import { useUnifiedTheme } from '../../hooks/useUnifiedTheme';
 
 const ChatPage: React.FC = () => {
-  const theme = useTheme();
-  const { currentTheme } = useDashboardTheme();
+  const theme = useUnifiedTheme();
+  
   const dispatch = useAppDispatch();
   const { chartsLoading } = useAppSelector((state) => ({
     chartsLoading: state.dashboard.chartsLoading,
@@ -93,17 +92,17 @@ const ChatPage: React.FC = () => {
                   onClick={handleSend}
                   disabled={chartsLoading || !input.trim()}
                   sx={{
-                    backgroundColor: currentTheme?.colors?.primary?.main || STYLE_GUIDE.COLORS.darkBackground,
-                    color: currentTheme?.colors?.primary?.contrastText || STYLE_GUIDE.COLORS.white,
+                    backgroundColor: theme.dashboardTheme?.colors?.primary?.main || STYLE_GUIDE.COLORS.darkBackground,
+                    color: theme.dashboardTheme?.colors?.primary?.contrastText || STYLE_GUIDE.COLORS.white,
                     borderRadius: STYLE_GUIDE.SPACING.s4,
                     '&:hover': {
-                      backgroundColor: currentTheme?.colors?.primary?.light || STYLE_GUIDE.COLORS.darkDarker,
+                      backgroundColor: theme.dashboardTheme?.colors?.primary?.light || STYLE_GUIDE.COLORS.darkDarker,
                     },
                     width: 48,
                     height: 48,
                   }}
                 >
-                  <SendIcon sx={{ color: getIconColor(currentTheme) }} />
+                  <SendIcon sx={{ color: theme.getIconColor() }} />
                 </IconButton>
               </InputAdornment>
             ),
@@ -114,32 +113,32 @@ const ChatPage: React.FC = () => {
               alignItems: 'flex-start',
               paddingRight: STYLE_GUIDE.SPACING.s2,
               fontSize: '14px',
-              backgroundColor: currentTheme?.colors?.background?.paper || '#ffffff',
+              backgroundColor: theme.dashboardTheme?.colors?.background?.paper || '#ffffff',
               '& fieldset': {
-                borderColor: currentTheme?.colors?.inputBorder || STYLE_GUIDE.COLORS.darkBackground,
+                borderColor: theme.dashboardTheme?.colors?.inputBorder || STYLE_GUIDE.COLORS.darkBackground,
               },
               '&:hover fieldset': {
-                borderColor: currentTheme?.colors?.borderHover || STYLE_GUIDE.COLORS.darkBorderHover,
+                borderColor: theme.dashboardTheme?.colors?.borderHover || STYLE_GUIDE.COLORS.darkBorderHover,
               },
                               '&.Mui-focused fieldset': {
-                  borderColor: currentTheme?.components?.input?.focusBorderColor || currentTheme?.components?.input?.focusBorderColorFallback || STYLE_GUIDE.COLORS.inputFocusFallback,
+                  borderColor: theme.dashboardTheme?.components?.input?.focusBorderColor || theme.dashboardTheme?.components?.input?.focusBorderColorFallback || STYLE_GUIDE.COLORS.inputFocusFallback,
                 },
             },
             '& .MuiInputLabel-root': {
-              color: currentTheme?.colors?.text?.secondary || STYLE_GUIDE.COLORS.darkBorderFocus,
+              color: theme.dashboardTheme?.colors?.text?.secondary || STYLE_GUIDE.COLORS.darkBorderFocus,
             },
                           '& .MuiInputLabel-root.Mui-focused': {
-                color: currentTheme?.components?.input?.focusBorderColor || currentTheme?.components?.input?.focusBorderColorFallback || STYLE_GUIDE.COLORS.inputFocusFallback,
+                color: theme.dashboardTheme?.components?.input?.focusBorderColor || theme.dashboardTheme?.components?.input?.focusBorderColorFallback || STYLE_GUIDE.COLORS.inputFocusFallback,
               },
             '& .MuiInputBase-input': {
-              color: `${currentTheme?.colors?.inputText || theme.palette.text.primary} !important`,
+              color: `${theme.dashboardTheme?.colors?.inputText || theme.palette.text.primary} !important`,
             },
             '& .MuiInputBase-input::placeholder': {
-              color: `${currentTheme?.colors?.text?.secondary || '#666'} !important`,
+              color: `${theme.dashboardTheme?.colors?.text?.secondary || '#666'} !important`,
             },
             '& .MuiInputBase-input:-webkit-autofill': {
-              WebkitTextFillColor: `${currentTheme?.colors?.inputText || theme.palette.text.primary} !important`,
-              WebkitBoxShadow: `0 0 0 1000px ${currentTheme?.colors?.background?.paper || '#ffffff'} inset !important`,
+              WebkitTextFillColor: `${theme.dashboardTheme?.colors?.inputText || theme.palette.text.primary} !important`,
+              WebkitBoxShadow: `0 0 0 1000px ${theme.dashboardTheme?.colors?.background?.paper || '#ffffff'} inset !important`,
             },
           }}
         />

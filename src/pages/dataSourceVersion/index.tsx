@@ -1,11 +1,12 @@
-import { Box, Button, useTheme } from '@mui/material';
+import { Box, Button } from '@mui/material';
 import { useState } from 'react';
 import CreateDataSourceVersion from '../../components/atom/dataSourceVerion/createDataSourceVersion';
 import DataSourceVersionTable from '../../components/atom/dataSourceVerion/dataSourceVersionTable';
 import { STYLE_GUIDE } from '../../styles';
+import { useUnifiedTheme } from '../../hooks/useUnifiedTheme';
 
 export default function DataSourceVersion() {
-  const theme = useTheme();
+  const theme = useUnifiedTheme();
   const [reload, setReload] = useState(false);
 
   return (

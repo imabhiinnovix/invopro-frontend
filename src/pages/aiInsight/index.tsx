@@ -7,7 +7,6 @@ import {
   CircularProgress,
   Avatar,
   InputAdornment,
-  useTheme,
 } from '@mui/material';
 import SendIcon from '@mui/icons-material/Send';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
@@ -18,8 +17,8 @@ import * as yup from 'yup';
 import { useMutation } from '@tanstack/react-query';
 import axiosInstance from '../../services/axiosInstance';
 import { GET } from '../../services/apiRoutes';
-import { useDashboardTheme } from '../../context/DashboardThemeProvider';
 import { STYLE_GUIDE } from '../../styles';
+import { useUnifiedTheme } from '../../hooks/useUnifiedTheme';
 
 
 const validationSchema = yup.object().shape({
@@ -42,8 +41,8 @@ function extractHtmlFromApiData(data: any): string {
 }
 
 const AIInsightPage: React.FC = () => {
-  const theme = useTheme();
-  const { currentTheme } = useDashboardTheme();
+  const theme = useUnifiedTheme();
+  
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [qaPairs, setQAPairs] = React.useState<QAPair[]>([]);
 
@@ -355,11 +354,11 @@ const AIInsightPage: React.FC = () => {
                     color="primary"
                     disabled={insightMutation.isPending}
                     sx={{
-                      backgroundColor: currentTheme?.colors?.primary?.main || STYLE_GUIDE.COLORS.darkBackground,
-                      color: currentTheme?.colors?.primary?.contrastText || STYLE_GUIDE.COLORS.white,
+                      backgroundColor: theme.dashboardTheme?.colors?.primary?.main || STYLE_GUIDE.COLORS.darkBackground,
+                      color: theme.dashboardTheme?.colors?.primary?.contrastText || STYLE_GUIDE.COLORS.white,
                       borderRadius: STYLE_GUIDE.SPACING.s4,
                       '&:hover': {
-                        backgroundColor: currentTheme?.colors?.primary?.light || STYLE_GUIDE.COLORS.darkDarker,
+                        backgroundColor: theme.dashboardTheme?.colors?.primary?.light || STYLE_GUIDE.COLORS.darkDarker,
                       },
                       width: 48,
                       height: 48,
@@ -377,32 +376,32 @@ const AIInsightPage: React.FC = () => {
                 padding: 3,
                 paddingRight: STYLE_GUIDE.SPACING.s2,
                 fontSize: '14px',
-                backgroundColor: currentTheme?.colors?.background?.paper || '#ffffff',
+                backgroundColor: theme.dashboardTheme?.colors?.background?.paper || '#ffffff',
                 '& fieldset': {
-                  borderColor: currentTheme?.colors?.inputBorder || STYLE_GUIDE.COLORS.darkBackground,
+                  borderColor: theme.dashboardTheme?.colors?.inputBorder || STYLE_GUIDE.COLORS.darkBackground,
                 },
                 '&:hover fieldset': {
-                  borderColor: currentTheme?.colors?.borderHover || STYLE_GUIDE.COLORS.darkBorderHover,
+                  borderColor: theme.dashboardTheme?.colors?.borderHover || STYLE_GUIDE.COLORS.darkBorderHover,
                 },
                 '&.Mui-focused fieldset': {
-                  borderColor: currentTheme?.components?.input?.focusBorderColor || currentTheme?.components?.input?.focusBorderColorFallback || STYLE_GUIDE.COLORS.inputFocusFallback,
+                  borderColor: theme.dashboardTheme?.components?.input?.focusBorderColor || theme.dashboardTheme?.components?.input?.focusBorderColorFallback || STYLE_GUIDE.COLORS.inputFocusFallback,
                 },
               },
               '& .MuiInputLabel-root': {
-                color: currentTheme?.colors?.text?.secondary || STYLE_GUIDE.COLORS.darkBorderFocus,
+                color: theme.dashboardTheme?.colors?.text?.secondary || STYLE_GUIDE.COLORS.darkBorderFocus,
               },
               '& .MuiInputLabel-root.Mui-focused': {
-                color: currentTheme?.components?.input?.focusBorderColor || currentTheme?.components?.input?.focusBorderColorFallback || STYLE_GUIDE.COLORS.inputFocusFallback,
+                color: theme.dashboardTheme?.components?.input?.focusBorderColor || theme.dashboardTheme?.components?.input?.focusBorderColorFallback || STYLE_GUIDE.COLORS.inputFocusFallback,
               },
               '& .MuiInputBase-input': {
-                color: `${currentTheme?.colors?.inputText || theme.palette.text.primary} !important`,
+                color: `${theme.dashboardTheme?.colors?.inputText || theme.palette.text.primary} !important`,
               },
               '& .MuiInputBase-input::placeholder': {
-                color: `${currentTheme?.colors?.text?.secondary || '#666'} !important`,
+                color: `${theme.dashboardTheme?.colors?.text?.secondary || '#666'} !important`,
               },
               '& .MuiInputBase-input:-webkit-autofill': {
-                WebkitTextFillColor: `${currentTheme?.colors?.inputText || theme.palette.text.primary} !important`,
-                WebkitBoxShadow: `0 0 0 1000px ${currentTheme?.colors?.background?.paper || '#ffffff'} inset !important`,
+                WebkitTextFillColor: `${theme.dashboardTheme?.colors?.inputText || theme.palette.text.primary} !important`,
+                WebkitBoxShadow: `0 0 0 1000px ${theme.dashboardTheme?.colors?.background?.paper || '#ffffff'} inset !important`,
               },
             }}
             autoComplete="off"

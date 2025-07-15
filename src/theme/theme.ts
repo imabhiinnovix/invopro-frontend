@@ -12,7 +12,7 @@ const commonValues = {
       dark: STYLE_GUIDE.COLORS.primaryDark,
       contrastText: STYLE_GUIDE.COLORS.white,
     },
-      background: {
+    background: {
       default: STYLE_GUIDE.COLORS.backgroundDefault,
       paper: STYLE_GUIDE.COLORS.white,
     },
@@ -39,7 +39,11 @@ export const theme = createTheme({
       optionBackground: STYLE_GUIDE.COLORS.backgroundHover,
       optionText: STYLE_GUIDE.COLORS.textDarkGray,
       optionHoverBackground: STYLE_GUIDE.COLORS.backgroundLightGray,
-      border: STYLE_GUIDE.SPACING.s1
+      border: STYLE_GUIDE.SPACING.s1,
+      selectedText: STYLE_GUIDE.COLORS.textDarkGray,
+      labelColor: STYLE_GUIDE.COLORS.textDarkGray,
+      focusedBorder: STYLE_GUIDE.COLORS.primary,
+      focusedLabel: STYLE_GUIDE.COLORS.primary
     },
     table: {
       headerBackground: STYLE_GUIDE.COLORS.backgroundLightGray,

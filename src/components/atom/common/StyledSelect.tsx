@@ -1,6 +1,6 @@
 import React from 'react';
 import { Select, SelectProps, FormControl, InputLabel } from '@mui/material';
-import { useTheme } from '@mui/material/styles';
+import { useUnifiedTheme } from '../../../hooks/useUnifiedTheme';
 
 interface StyledSelectProps extends Omit<SelectProps, 'MenuProps'> {
   label?: string;
@@ -15,7 +15,7 @@ const StyledSelect: React.FC<StyledSelectProps> = ({
   sx = {}, 
   ...props 
 }) => {
-  const theme = useTheme();
+  const theme = useUnifiedTheme();
 
   const selectSx = {
     '& .MuiOutlinedInput-root': {

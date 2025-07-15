@@ -117,6 +117,7 @@ export const createMuiThemeFromDashboardTheme = (dashboardTheme: DashboardTheme)
         disabled: dashboardTheme.colors.text.disabled,
       },
       divider: dashboardTheme.colors.divider,
+      // Custom palette properties
       border: {
         main: dashboardTheme.colors.border,
         hover: dashboardTheme.colors.borderHover,
@@ -137,7 +138,12 @@ export const createMuiThemeFromDashboardTheme = (dashboardTheme: DashboardTheme)
         focusedBorder: dashboardTheme.colors.dropdownFocusedBorder,
         focusedLabel: dashboardTheme.colors.dropdownFocusedLabel,
       },
+      icon: {
+        primary: dashboardTheme.colors.iconPrimary,
+      },
     },
+    // Include the full dashboard theme for backward compatibility
+    dashboardTheme,
     components: {
       MuiCard: {
         styleOverrides: {

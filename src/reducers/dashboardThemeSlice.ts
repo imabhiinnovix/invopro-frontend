@@ -243,7 +243,7 @@ const sampleThemes: DashboardTheme[] = [
 // Initial state
 interface DashboardThemeState {
   themes: DashboardTheme[];
-  currentTheme: DashboardTheme | null;
+  dashboardTheme: DashboardTheme | null;
   loading: boolean;
   error: string | null;
   success: string | null;
@@ -267,7 +267,7 @@ const getInitialCurrentTheme = (): DashboardTheme => {
 
 const initialState: DashboardThemeState = {
   themes: sampleThemes,
-  currentTheme: getInitialCurrentTheme(),
+  dashboardTheme: getInitialCurrentTheme(),
   loading: false,
   error: null,
   success: null,
@@ -285,7 +285,7 @@ const dashboardThemeSlice = createSlice({
       state.success = null;
     },
     setCurrentTheme: (state, action: PayloadAction<DashboardTheme | null>) => {
-      state.currentTheme = action.payload;
+      state.dashboardTheme = action.payload;
     },
     // Local actions for theme management
     createDashboardTheme: (state, action: PayloadAction<Partial<DashboardTheme>>) => {
@@ -309,9 +309,9 @@ const dashboardThemeSlice = createSlice({
         };
         state.themes[index] = updatedTheme;
         
-        // If the updated theme is the current theme, update currentTheme as well
-        if (state.currentTheme && state.currentTheme._id === id) {
-          state.currentTheme = updatedTheme;
+        // If the updated theme is the current theme, update dashboardTheme as well
+        if (state.dashboardTheme && state.dashboardTheme._id === id) {
+          state.dashboardTheme = updatedTheme;
         }
         
         state.success = 'Theme updated successfully';
@@ -343,7 +343,7 @@ const dashboardThemeSlice = createSlice({
       const themeId = action.payload;
       const themeToApply = state.themes.find(theme => theme._id === themeId);
       if (themeToApply) {
-        state.currentTheme = themeToApply;
+        state.dashboardTheme = themeToApply;
         // Save theme name to localStorage
         saveThemeToStorage(themeToApply.name);
         state.success = 'Theme applied successfully';
@@ -351,7 +351,7 @@ const dashboardThemeSlice = createSlice({
     },
     resetToDefaultTheme: (state) => {
       const defaultTheme = state.themes.find(theme => theme.isDefault) || state.themes[0];
-      state.currentTheme = defaultTheme;
+      state.dashboardTheme = defaultTheme;
       // Save default theme name to localStorage
       saveThemeToStorage(defaultTheme.name);
       state.success = 'Reset to default theme successfully';
