@@ -14,6 +14,9 @@ import {
   Typography,
   Button,
   CircularProgress,
+  useTheme,
+  Card,
+  CardContent,
 } from "@mui/material";
 import { useForm } from "react-hook-form";
 import CommonDatePicker from "../../components/common/datePicker/datePicker";
@@ -30,8 +33,11 @@ import { useInfiniteScroll } from "../../hooks/useInfiniteScroll";
 import { DateTime } from "luxon";
 import usePost from "../../hooks/usePost";
 import { STYLE_GUIDE } from "../../styles";
+import { useUnifiedTheme } from '../../hooks/useUnifiedTheme';
 
 const DataSources = () => {
+  
+  const theme = useUnifiedTheme();
   const [rows, setRows] = useState<
     { [x: string]: string | number | boolean }[]
   >([]);
@@ -234,69 +240,72 @@ const DataSources = () => {
       sx={{ 
         margin: STYLE_GUIDE.SPACING.s8,
         padding: STYLE_GUIDE.SPACING.s8,
-        backgroundColor: STYLE_GUIDE.COLORS.backgroundLightGray,
+        backgroundColor: theme.palette.background.paper,
         borderRadius: STYLE_GUIDE.SPACING.s3,
         boxShadow: STYLE_GUIDE.SHADOWS.base
       }}
     >
-      <Stack 
-        direction="row" 
-        justifyContent="space-between" 
-        alignItems="center"
+      <Card 
         sx={{ 
           marginBottom: STYLE_GUIDE.SPACING.s8,
-          padding: STYLE_GUIDE.SPACING.s4,
-          backgroundColor: STYLE_GUIDE.COLORS.white,
           borderRadius: STYLE_GUIDE.SPACING.s2,
-          boxShadow: STYLE_GUIDE.SHADOWS.xxxl
+          boxShadow: STYLE_GUIDE.SHADOWS.xxxl,
         }}
       >
-        <Stack direction="row" spacing={2} alignItems="center">
-          <Typography variant="h6" color="primary" sx={{ fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold }}>
-            Data Source Version
-          </Typography>
-          <CommonDatePicker
-            name="versionValue"
-            control={control}
-            views={["year", "month"]}
-            label="Period*"
-            rules={{ required: "Period is required" }}
-          />
-        </Stack>
-        <Button
-          variant="contained"
-          disabled={dataSourceCreate?.isPending || !(versionDate && id)}
-          onClick={handleSave}
-          sx={{ 
-            minWidth: "150px",
-            height: "40px",
-            borderRadius: STYLE_GUIDE.SPACING.s1,
-            textTransform: "none",
-            fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
-            fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.medium,
-            boxShadow: "none",
-            "&:hover": {
-              boxShadow: "none",
-            }
-          }}
-        >
-          {dataSourceCreate?.isPending ? (
-            <Box
-              sx={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                width: "56px",
-                height: "24px",
+        <CardContent sx={{ padding: STYLE_GUIDE.SPACING.s4 }}>
+          <Stack 
+            direction="row" 
+            justifyContent="space-between" 
+            alignItems="center"
+          >
+            <Stack direction="row" spacing={2} alignItems="center">
+              <Typography variant="h6" color="primary" sx={{ fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold }}>
+                Data Source Version
+              </Typography>
+              <CommonDatePicker
+                name="versionValue"
+                control={control}
+                views={["year", "month"]}
+                label="Period*"
+                rules={{ required: "Period is required" }}
+              />
+            </Stack>
+            <Button
+              variant="contained"
+              disabled={dataSourceCreate?.isPending || !(versionDate && id)}
+              onClick={handleSave}
+              sx={{ 
+                minWidth: "150px",
+                height: "40px",
+                borderRadius: STYLE_GUIDE.SPACING.s1,
+                textTransform: "none",
+                fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
+                fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.medium,
+                boxShadow: "none",
+                "&:hover": {
+                  boxShadow: "none",
+                }
               }}
             >
-              <CircularProgress size={20} sx={{ color: STYLE_GUIDE.COLORS.white }} />
-            </Box>
-          ) : (
-            "Save Changes"
-          )}
-        </Button>
-      </Stack>
+              {dataSourceCreate?.isPending ? (
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    width: "56px",
+                    height: "24px",
+                  }}
+                >
+                  <CircularProgress size={20} sx={{ color: STYLE_GUIDE.COLORS.white }} />
+                </Box>
+              ) : (
+                "Save Changes"
+              )}
+            </Button>
+          </Stack>
+        </CardContent>
+      </Card>
       
       <Box sx={{ display: "flex", justifyContent: "center" }}>
         <TableContainer
@@ -306,6 +315,7 @@ const DataSources = () => {
             borderRadius: STYLE_GUIDE.SPACING.s2,
             boxShadow: STYLE_GUIDE.SHADOWS.xxxl,
             width: "fit-content",
+            backgroundColor: theme.palette.card?.background || STYLE_GUIDE.COLORS.backgroundSurface,
             "& .MuiTable-root": {
               minWidth: "600px"
             }
@@ -318,10 +328,10 @@ const DataSources = () => {
                   <TableCell
                     key={field?.optionAttributeId}
                     sx={{
-                      backgroundColor: STYLE_GUIDE.COLORS.backgroundLightGray,
+                      backgroundColor: theme.palette.table?.headerBackground || STYLE_GUIDE.COLORS.backgroundLightGray,
                       fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold,
                       fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base,
-                      color: STYLE_GUIDE.COLORS.textGray,
+                      color: theme.palette.table?.headerText || STYLE_GUIDE.COLORS.textGray,
                       borderBottom: `2px solid ${STYLE_GUIDE.COLORS.divider}`,
                        padding: "12px 16px"
                     }}
@@ -336,11 +346,11 @@ const DataSources = () => {
                 <TableRow 
                   key={rowIndex}
                   sx={{
-                    "&:nth-of-type(odd)": {
-                      backgroundColor: STYLE_GUIDE.COLORS.backgroundDefault
-                    },
+                    backgroundColor: rowIndex % 2 === 0 
+                      ? theme.palette.table?.rowEvenBackground || STYLE_GUIDE.COLORS.white
+                      : theme.palette.table?.rowOddBackground || STYLE_GUIDE.COLORS.backgroundDefault,
                     "&:hover": {
-                      backgroundColor: STYLE_GUIDE.COLORS.backgroundHover
+                      backgroundColor: theme.palette.table?.rowHoverBackground || STYLE_GUIDE.COLORS.backgroundHover
                     }
                   }}
                 >
@@ -349,7 +359,8 @@ const DataSources = () => {
                       key={field?.optionAttributeId}
                       sx={{ 
                         padding: "12px 16px",
-                        borderBottom: `1px solid ${STYLE_GUIDE.COLORS.divider2}`
+                        borderBottom: `1px solid ${STYLE_GUIDE.COLORS.divider2}`,
+                        color: theme.palette.table?.rowText || STYLE_GUIDE.COLORS.textDarkGray
                       }}
                     >
                       <TextField
@@ -367,16 +378,38 @@ const DataSources = () => {
                         }
                         fullWidth
                         sx={{
-                          "& .MuiOutlinedInput-root": {
-                            borderRadius: STYLE_GUIDE.SPACING.s1,
-                            backgroundColor: STYLE_GUIDE.COLORS.white,
-                            "&:hover .MuiOutlinedInput-notchedOutline": {
-                              borderColor: STYLE_GUIDE.COLORS.borderPrimary
-                            },
-                            "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                              borderColor: STYLE_GUIDE.COLORS.materialBlue
-                            }
-                          }
+                          '& .MuiOutlinedInput-root': { 
+                            borderRadius: STYLE_GUIDE.SPACING.s2, 
+                            alignItems: 'flex-start', 
+                            paddingRight: STYLE_GUIDE.SPACING.s2, 
+                            fontSize: '14px', 
+                            backgroundColor: theme.palette.background.paper || STYLE_GUIDE.COLORS.white, 
+                            '& fieldset': { 
+                              borderColor: theme.palette.input?.border || STYLE_GUIDE.COLORS.borderGray, 
+                            }, 
+                            '&:hover fieldset': { 
+                              borderColor: theme.palette.border?.hover || STYLE_GUIDE.COLORS.borderGray, 
+                            }, 
+                            '&.Mui-focused fieldset': { 
+                              borderColor: theme.palette.input?.focusBorder || STYLE_GUIDE.COLORS.primary, 
+                            }, 
+                          }, 
+                          '& .MuiInputLabel-root': { 
+                            color: theme.palette.text?.secondary || STYLE_GUIDE.COLORS.textMediumGray, 
+                          }, 
+                          '& .MuiInputLabel-root.Mui-focused': { 
+                            color: theme.palette.input?.focusBorder || STYLE_GUIDE.COLORS.primary, 
+                          }, 
+                          '& .MuiInputBase-input': { 
+                            color: theme.palette.table?.rowText || theme.palette.input?.text || STYLE_GUIDE.COLORS.textDarkGray, 
+                          }, 
+                          '& .MuiInputBase-input::placeholder': { 
+                            color: theme.palette.text?.secondary || STYLE_GUIDE.COLORS.textMediumGray, 
+                          }, 
+                          '& .MuiInputBase-input:-webkit-autofill': { 
+                            WebkitTextFillColor: theme.palette.table?.rowText || theme.palette.input?.text || STYLE_GUIDE.COLORS.textDarkGray, 
+                            WebkitBoxShadow: `0 0 0 1000px ${theme.palette.background.paper || STYLE_GUIDE.COLORS.white} inset`, 
+                          }, 
                         }}
                         slotProps={{
                           input: {

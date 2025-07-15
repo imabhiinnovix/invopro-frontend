@@ -9,6 +9,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import CheckIcon from "@mui/icons-material/Check";
 import CloseIcon from "@mui/icons-material/Close";
 import { STYLE_GUIDE } from '../../../styles';
+import { useUnifiedTheme } from '../../../hooks/useUnifiedTheme';
 
 interface FilterColumn {
     _id: string;
@@ -53,212 +54,220 @@ const FilterColumnsEditor: React.FC<Props> = ({
     onChangeEditColumnValue,
     onChangeAttributeValueInput,
     onAddColumn
-}) => (
-    <>
-        {filters.map((filter, filterIndex) => (
-            <Accordion
-                key={filter._id}
-                defaultExpanded={filterIndex === 0}
-                sx={{
-                    mb: STYLE_GUIDE.SPACING.s2,
-                    borderRadius: STYLE_GUIDE.SPACING.s2,
-                    boxShadow: STYLE_GUIDE.SPACING.s1
-                }}
-            >
-                <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                    <Typography variant="subtitle1" sx={{ fontWeight: 500 }}>
-                        {filter.section} - {filter.attribute}
-                    </Typography>
-                </AccordionSummary>
-                <AccordionDetails sx={{
-                    bgcolor: STYLE_GUIDE.COLORS.backgroundLightGray,
-                    borderRadius: STYLE_GUIDE.SPACING.s4
-                }}>
-                    <Box sx={{ mb: STYLE_GUIDE.SPACING.s2 }}>
-                        <Box
-                            display="flex"
-                            justifyContent="space-between"
-                            alignItems="center"
-                            sx={{ mb: STYLE_GUIDE.SPACING.s2 }}
-                        >
-                            <Typography variant="subtitle2" sx={{ fontWeight: 500 }}>
-                                Filter Columns ({filter.columns.length})
-                            </Typography>
-                            <Button
-                                variant="outlined"
-                                size="small"
-                                startIcon={<AddIcon />}
-                                onClick={() => onAddColumn(filter._id)}
+}) => {
+    const theme = useUnifiedTheme();
+
+    
+
+    return (
+        <>
+            {filters.map((filter, filterIndex) => (
+                <Accordion
+                    key={filter._id}
+                    defaultExpanded={filterIndex === 0}
+                    sx={{
+                        mb: STYLE_GUIDE.SPACING.s2,
+                        borderRadius: STYLE_GUIDE.SPACING.s2,
+                        boxShadow: STYLE_GUIDE.SPACING.s1
+                    }}
+                >
+                    <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                        <Typography variant="subtitle1" sx={{ fontWeight: 500 }}>
+                            {filter.section} - {filter.attribute}
+                        </Typography>
+                    </AccordionSummary>
+                    <AccordionDetails sx={{
+                        bgcolor: theme.palette.background.default,
+                        borderRadius: STYLE_GUIDE.SPACING.s4,
+                        border: `1px solid ${theme.palette.divider}`
+                    }}>
+                        <Box sx={{ mb: STYLE_GUIDE.SPACING.s2 }}>
+                            <Box
+                                display="flex"
+                                justifyContent="space-between"
+                                alignItems="center"
+                                sx={{ mb: STYLE_GUIDE.SPACING.s2 }}
                             >
-                                Add Column
-                            </Button>
-                        </Box>
-                        {filter.columns.length === 0 ? (
-                            <Box sx={{ p: STYLE_GUIDE.SPACING.s2, textAlign: "center", color: STYLE_GUIDE.COLORS.textMediumGray }}>
-                                <Typography variant="body2" sx={{ fontStyle: "italic" }}>
-                                    No columns added yet.
+                                <Typography variant="subtitle2" sx={{ fontWeight: 500 }}>
+                                    Filter Columns ({filter.columns.length})
                                 </Typography>
-                            </Box>
-                        ) : (
-                            filter.columns.map((column) => (
-                                <Box
-                                    key={column._id}
-                                    sx={{
-                                        mb: STYLE_GUIDE.SPACING.s2,
-                                        p: STYLE_GUIDE.SPACING.s2,
-                                        border: `1px solid ${STYLE_GUIDE.COLORS.divider}`,
-                                        borderRadius: 1,
-                                        bgcolor: STYLE_GUIDE.COLORS.white
-                                    }}
+                                <Button
+                                    variant="outlined"
+                                    size="small"
+                                    startIcon={<AddIcon />}
+                                    onClick={() => onAddColumn(filter._id)}
                                 >
-                                    <Box display="flex" alignItems="center" gap={2} sx={{ mb: STYLE_GUIDE.SPACING.s1 }}>
-                                        <Typography sx={{ minWidth: 120, fontWeight: 'bold' }}>
-                                            Report Header:
-                                        </Typography>
-                                        {editingColumns[column._id] ? (
-                                            <TextField
-                                                value={editColumnValues[column._id] || ""}
-                                                onChange={e => onChangeEditColumnValue(column._id, e.target.value)}
-                                                size="small"
-                                                fullWidth
-                                                error={!editColumnValues[column._id]?.trim()}
-                                                helperText={!editColumnValues[column._id]?.trim() ? "Header cannot be empty" : ""}
-                                                sx={{ maxWidth: 300 }}
-                                            />
-                                        ) : (
-                                            <Typography variant="body1" sx={{ flex: 1 }}>
-                                                {column.reportHeader}
+                                    Add Column
+                                </Button>
+                            </Box>
+                            {filter.columns.length === 0 ? (
+                                <Box sx={{ p: STYLE_GUIDE.SPACING.s2, textAlign: "center", color: theme.palette.text.secondary }}>
+                                    <Typography variant="body2" sx={{ fontStyle: "italic" }}>
+                                        No columns added yet.
+                                    </Typography>
+                                </Box>
+                            ) : (
+                                filter.columns.map((column) => (
+                                    <Box
+                                        key={column._id}
+                                        sx={{
+                                            mb: STYLE_GUIDE.SPACING.s2,
+                                            p: STYLE_GUIDE.SPACING.s2,
+                                            border: `1px solid ${theme.palette.divider}`,
+                                            borderRadius: 1,
+                                            bgcolor: theme.palette.background.paper
+                                        }}
+                                    >
+                                        <Box display="flex" alignItems="center" gap={2} sx={{ mb: STYLE_GUIDE.SPACING.s1 }}>
+                                            <Typography sx={{ minWidth: 120, fontWeight: 'bold' }}>
+                                                Report Header:
                                             </Typography>
-                                        )}
-                                        <Box sx={{ display: 'flex', gap: 1, ml: 'auto' }}>
+                                            {editingColumns[column._id] ? (
+                                                <TextField
+                                                    value={editColumnValues[column._id] || ""}
+                                                    onChange={e => onChangeEditColumnValue(column._id, e.target.value)}
+                                                    size="small"
+                                                    fullWidth
+                                                    error={!editColumnValues[column._id]?.trim()}
+                                                    helperText={!editColumnValues[column._id]?.trim() ? "Header cannot be empty" : ""}
+                                                    sx={{ maxWidth: 300 }}
+                                                />
+                                            ) : (
+                                                <Typography variant="body1" sx={{ flex: 1 }}>
+                                                    {column.reportHeader}
+                                                </Typography>
+                                            )}
+                                            <Box sx={{ display: 'flex', gap: 1, ml: 'auto' }}>
+                                                {editingColumns[column._id] ? (
+                                                    <>
+                                                        <Button
+                                                            variant="contained"
+                                                            color="primary"
+                                                            size="small"
+                                                            onClick={() => onSaveColumn(column._id)}
+                                                            disabled={!editColumnValues[column._id]?.trim() || !column.attributeValues.length}
+                                                            startIcon={<CheckIcon />}
+                                                        >
+                                                            Save
+                                                        </Button>
+                                                        <Button
+                                                            variant="outlined"
+                                                            size="small"
+                                                            onClick={() => onCancelEditColumn(column._id)}
+                                                            startIcon={<CloseIcon />}
+                                                        >
+                                                            Cancel
+                                                        </Button>
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <Button
+                                                            variant="outlined"
+                                                            size="small"
+                                                            onClick={() => onEditColumn(column._id)}
+                                                            startIcon={<EditIcon />}
+                                                        >
+                                                            Edit
+                                                        </Button>
+                                                        <Button
+                                                            variant="outlined"
+                                                            color="error"
+                                                            size="small"
+                                                            onClick={() => onDeleteColumn(column._id)}
+                                                            startIcon={<DeleteIcon />}
+                                                        >
+                                                            Delete
+                                                        </Button>
+                                                    </>
+                                                )}
+                                            </Box>
+                                        </Box>
+                                        <Box>
+                                            <Typography
+                                                variant="body2"
+                                                color={theme.palette.text.secondary}
+                                                sx={{ mb: STYLE_GUIDE.SPACING.s1 }}
+                                            >
+                                                Attribute Values:
+                                            </Typography>
                                             {editingColumns[column._id] ? (
                                                 <>
-                                                    <Button
-                                                        variant="contained"
-                                                        color="primary"
-                                                        size="small"
-                                                        onClick={() => onSaveColumn(column._id)}
-                                                        disabled={!editColumnValues[column._id]?.trim() || !column.attributeValues.length}
-                                                        startIcon={<CheckIcon />}
-                                                    >
-                                                        Save
-                                                    </Button>
-                                                    <Button
-                                                        variant="outlined"
-                                                        size="small"
-                                                        onClick={() => onCancelEditColumn(column._id)}
-                                                        startIcon={<CloseIcon />}
-                                                    >
-                                                        Cancel
-                                                    </Button>
+                                                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, mb: STYLE_GUIDE.SPACING.s2 }}>
+                                                        {column.attributeValues.length > 0 ? (
+                                                            column.attributeValues.map((value, valueIndex) => (
+                                                                <Box key={valueIndex} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                                                    <Chip
+                                                                        label={value}
+                                                                        size="small"
+                                                                        variant="outlined"
+                                                                        onDelete={() => onRemoveAttributeValue(column._id, value)}
+                                                                        deleteIcon={<CloseIcon />}
+                                                                    />
+                                                                </Box>
+                                                            ))
+                                                        ) : (
+                                                            <Typography variant="body2" color={theme.palette.error.main} sx={{ fontStyle: 'italic' }}>
+                                                                At least one attribute value is required.
+                                                            </Typography>
+                                                        )}
+                                                        <Box sx={{ display: 'flex', gap: 1 }}>
+                                                            <TextField
+                                                                size="small"
+                                                                placeholder="Add attribute value"
+                                                                value={attributeValueInputs[column._id] || ""}
+                                                                onChange={e => onChangeAttributeValueInput(column._id, e.target.value)}
+                                                                onKeyDown={e => {
+                                                                    if (e.key === 'Enter' && attributeValueInputs[column._id]?.trim()) {
+                                                                        onAddAttributeValue(column._id, attributeValueInputs[column._id].trim());
+                                                                    }
+                                                                }}
+                                                                sx={{ '& .MuiOutlinedInput-root': { borderRadius: STYLE_GUIDE.SPACING.s2, alignItems: 'center', fontSize: '14px', backgroundColor: theme.dashboardTheme?.colors?.background?.paper || '#ffffff', '& fieldset': { borderColor: theme.dashboardTheme?.colors?.inputBorder || STYLE_GUIDE.COLORS.darkBackground, }, '&:hover fieldset': { borderColor: theme.dashboardTheme?.colors?.borderHover || STYLE_GUIDE.COLORS.darkBorderHover, }, '&.Mui-focused fieldset': { borderColor: theme.dashboardTheme?.components?.input?.focusBorderColor || theme.dashboardTheme?.components?.input?.focusBorderColorFallback || STYLE_GUIDE.COLORS.inputFocusFallback, }, }, '& .MuiInputLabel-root': { color: theme.dashboardTheme?.colors?.text?.secondary || STYLE_GUIDE.COLORS.darkBorderFocus, }, '& .MuiInputLabel-root.Mui-focused': { color: theme.dashboardTheme?.components?.input?.focusBorderColor || theme.dashboardTheme?.components?.input?.focusBorderColorFallback || STYLE_GUIDE.COLORS.inputFocusFallback, }, '& .MuiInputBase-input': { color: `${theme.dashboardTheme?.colors?.inputText || theme.dashboardTheme?.colors?.text?.primary || '#000000'} !important`, }, '& .MuiInputBase-input::placeholder': { color: `${theme.dashboardTheme?.colors?.text?.secondary || '#666'} !important`, }, '& .MuiInputBase-input:-webkit-autofill': { WebkitTextFillColor: `${theme.dashboardTheme?.colors?.inputText || theme.dashboardTheme?.colors?.text?.primary || '#000000'} !important`, WebkitBoxShadow: `0 0 0 1000px ${theme.dashboardTheme?.colors?.background?.paper || '#ffffff'} inset !important`, }, }}
+                                                            />
+                                                            <IconButton
+                                                                color="primary"
+                                                                onClick={() => {
+                                                                    if (attributeValueInputs[column._id]?.trim()) {
+                                                                        onAddAttributeValue(column._id, attributeValueInputs[column._id].trim());
+                                                                    }
+                                                                }}
+                                                                disabled={!attributeValueInputs[column._id]?.trim()}
+                                                                size="small"
+                                                            >
+                                                                <AddIcon />
+                                                            </IconButton>
+                                                        </Box>
+                                                    </Box>
                                                 </>
                                             ) : (
-                                                <>
-                                                    <Button
-                                                        variant="outlined"
-                                                        size="small"
-                                                        onClick={() => onEditColumn(column._id)}
-                                                        startIcon={<EditIcon />}
-                                                    >
-                                                        Edit
-                                                    </Button>
-                                                    <Button
-                                                        variant="outlined"
-                                                        color="error"
-                                                        size="small"
-                                                        onClick={() => onDeleteColumn(column._id)}
-                                                        startIcon={<DeleteIcon />}
-                                                    >
-                                                        Delete
-                                                    </Button>
-                                                </>
-                                            )}
-                                        </Box>
-                                    </Box>
-                                    <Box>
-                                        <Typography
-                                            variant="body2"
-                                            color={STYLE_GUIDE.COLORS.textMediumGray}
-                                            sx={{ mb: STYLE_GUIDE.SPACING.s1 }}
-                                        >
-                                            Attribute Values:
-                                        </Typography>
-                                        {editingColumns[column._id] ? (
-                                            <>
-                                                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, mb: STYLE_GUIDE.SPACING.s2 }}>
+                                                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                                                     {column.attributeValues.length > 0 ? (
-                                                        column.attributeValues.map((value, valueIndex) => (
-                                                            <Box key={valueIndex} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                                                            {column.attributeValues.map((value, valueIndex) => (
                                                                 <Chip
+                                                                    key={valueIndex}
                                                                     label={value}
                                                                     size="small"
                                                                     variant="outlined"
-                                                                    onDelete={() => onRemoveAttributeValue(column._id, value)}
-                                                                    deleteIcon={<CloseIcon />}
                                                                 />
-                                                            </Box>
-                                                        ))
+                                                            ))}
+                                                        </Box>
                                                     ) : (
-                                                        <Typography variant="body2" color={STYLE_GUIDE.COLORS.materialError} sx={{ fontStyle: 'italic' }}>
-                                                            At least one attribute value is required.
+                                                        <Typography variant="body2" color={theme.palette.text.secondary} sx={{ fontStyle: 'italic' }}>
+                                                            No attribute values
                                                         </Typography>
                                                     )}
-                                                    <Box sx={{ display: 'flex', gap: 1 }}>
-                                                        <TextField
-                                                            size="small"
-                                                            placeholder="Add attribute value"
-                                                            value={attributeValueInputs[column._id] || ""}
-                                                            onChange={e => onChangeAttributeValueInput(column._id, e.target.value)}
-                                                            onKeyDown={e => {
-                                                                if (e.key === 'Enter' && attributeValueInputs[column._id]?.trim()) {
-                                                                    onAddAttributeValue(column._id, attributeValueInputs[column._id].trim());
-                                                                }
-                                                            }}
-                                                        />
-                                                        <IconButton
-                                                            color="primary"
-                                                            onClick={() => {
-                                                                if (attributeValueInputs[column._id]?.trim()) {
-                                                                    onAddAttributeValue(column._id, attributeValueInputs[column._id].trim());
-                                                                }
-                                                            }}
-                                                            disabled={!attributeValueInputs[column._id]?.trim()}
-                                                            size="small"
-                                                        >
-                                                            <AddIcon />
-                                                        </IconButton>
-                                                    </Box>
                                                 </Box>
-                                            </>
-                                        ) : (
-                                            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                                                {column.attributeValues.length > 0 ? (
-                                                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-                                                        {column.attributeValues.map((value, valueIndex) => (
-                                                            <Chip
-                                                                key={valueIndex}
-                                                                label={value}
-                                                                size="small"
-                                                                variant="outlined"
-                                                            />
-                                                        ))}
-                                                    </Box>
-                                                ) : (
-                                                    <Typography variant="body2" color={STYLE_GUIDE.COLORS.textMediumGray} sx={{ fontStyle: 'italic' }}>
-                                                        No attribute values
-                                                    </Typography>
-                                                )}
-                                            </Box>
-                                        )}
+                                            )}
+                                        </Box>
                                     </Box>
-                                </Box>
-                            ))
-                        )}
-                    </Box>
-                </AccordionDetails>
-            </Accordion>
-        ))}
-    </>
-);
+                                ))
+                            )}
+                        </Box>
+                    </AccordionDetails>
+                </Accordion>
+            ))}
+        </>
+    );
+};
 
 export default FilterColumnsEditor;

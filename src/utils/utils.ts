@@ -1,5 +1,5 @@
-export function objectToFormData(obj, formData = new FormData(), parentKey = '') {
-  for (let key in obj) {
+export function objectToFormData(obj: any, formData = new FormData(), parentKey = '') {
+  for (const key in obj) {
       if (!obj.hasOwnProperty(key)) continue;
       const value = obj[key];
       const formKey = parentKey ? `${parentKey}[${key}]` : key;

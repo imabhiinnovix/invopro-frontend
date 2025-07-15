@@ -3,8 +3,10 @@ import AttributeOptionTable from '../../components/atom/attributeOption/attribut
 import CreateUpdateAttributeOption from '../../components/atom/attributeOption/createUpdateAttributeOption';
 import { Box, Button } from '@mui/material';
 import { STYLE_GUIDE } from '../../styles';
+import { useUnifiedTheme } from '../../hooks/useUnifiedTheme';
 
 export default function AttributeOption() {
+  const theme = useUnifiedTheme();
   const [attributeOptionReload, setAttributeOptionReload] = useState(false);
   return (
     
@@ -14,7 +16,7 @@ export default function AttributeOption() {
       p={STYLE_GUIDE.SPACING.s4}
       gap={STYLE_GUIDE.SPACING.s8}
       width="100%"
-      bgcolor={STYLE_GUIDE.COLORS.backgroundGray}
+      bgcolor={theme.palette.background.paper}
       sx={{
         height: 'calc(100vh - 70px)',
         '@media (max-width: 600px)': {

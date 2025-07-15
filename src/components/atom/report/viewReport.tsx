@@ -47,7 +47,7 @@ const DynamicCell = styled(TableCell)<{
   color: textColor ? `#${textColor}` : STYLE_GUIDE.COLORS.black,
   padding: STYLE_GUIDE.SPACING.s2,
   textAlign: align || 'left',
-  border: !!isBorder ? `1px solid ${STYLE_GUIDE.COLORS.borderGray}` : '',
+  border: isBorder ? `1px solid ${STYLE_GUIDE.COLORS.borderGray}` : '',
   fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
   fontWeight: fontWeight || STYLE_GUIDE.TYPOGRAPHY.fontWeight.regular,
 }));

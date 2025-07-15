@@ -4,8 +4,10 @@ import CreateUpdateEntity from '../../components/atom/entity/createUpdateEntity'
 import EntityTable from '../../components/atom/entity/entityTable';
 import { useState } from 'react';
 import { STYLE_GUIDE } from '../../styles';
+import { useUnifiedTheme } from '../../hooks/useUnifiedTheme';
 
 export default function Entity() {
+  const theme = useUnifiedTheme();
   const [reloadEntity, setReloadEntity] = useState(false);
   return (
     <>
@@ -15,7 +17,7 @@ export default function Entity() {
         p={STYLE_GUIDE.SPACING.s4}
         gap={STYLE_GUIDE.SPACING.s8}
         width="100%"
-        bgcolor={STYLE_GUIDE.COLORS.backgroundGray}
+        bgcolor={theme.palette.background.paper}
         sx={{
           height: 'calc(100vh - 70px)',
           '@media (max-width: 600px)': {

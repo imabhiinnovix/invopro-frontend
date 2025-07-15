@@ -21,6 +21,7 @@ import {
   Legend,
 } from "chart.js";
 import { Theme } from "../types";
+import { STYLE_GUIDE } from "../../../styles";
 
 ChartJS.register(
   LineController,
@@ -263,7 +264,12 @@ const ThemePreview: React.FC<ThemePreviewProps> = ({
   }, [theme]);
 
   return (
-    <Card sx={{ height: "100%", display: "flex", flexDirection: "column" }}>
+    <Card sx={{ 
+      height: "100%", 
+      display: "flex", 
+      flexDirection: "column",
+      backgroundColor: STYLE_GUIDE.COLORS.backgroundLightGray,
+    }}>
       <CardContent
         sx={{ flexGrow: 1, display: "flex", flexDirection: "column" }}
       >

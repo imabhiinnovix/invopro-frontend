@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Box,
   Typography,
@@ -20,8 +20,10 @@ import CreateThemeDialog from "./components/CreateThemeDialog";
 import { Theme } from "./types";
 import usePost from "../../hooks/usePost";
 import { POST } from "../../services/apiRoutes";
+import { useUnifiedTheme } from '../../hooks/useUnifiedTheme';
 
 const CreateTheme = () => {
+  const theme = useUnifiedTheme();
   const dispatch = useAppDispatch();
   const { themes, loading, error } = useAppSelector((state) => state.theme);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -111,7 +113,7 @@ const CreateTheme = () => {
   }
 
   return (
-    <Box sx={{ p: 3 }}>
+    <Box sx={{ p: 3, backgroundColor: theme.palette.background.paper }}>
       <Stack direction="row" justifyContent="space-between" alignItems="center">
         <Typography variant="h4" component="h1" gutterBottom>
           Theme Library
@@ -128,7 +130,7 @@ const CreateTheme = () => {
         Browse and preview available chart themes
       </Typography>
       <Grid container spacing={3}>
-        {themes.map((theme) => (
+        {themes?.map((theme) => (
           <Grid item xs={12} sm={6} md={4} key={theme._id}>
             <ThemePreview
               theme={theme}

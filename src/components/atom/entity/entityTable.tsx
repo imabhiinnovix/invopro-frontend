@@ -27,16 +27,26 @@ import { STYLE_GUIDE } from '../../../styles';
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
   [`&.${tableCellClasses.head}`]: {
-    backgroundColor: theme.palette.common.black,
-    color: theme.palette.common.white,
+    backgroundColor: theme.palette.table?.headerBackground || STYLE_GUIDE.COLORS.backgroundLightGray,
+    color: theme.palette.table?.headerText || STYLE_GUIDE.COLORS.textGray,
+    fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold,
   },
   [`&.${tableCellClasses.body}`]: {
     fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base,
+    color: theme.palette.table?.rowText || STYLE_GUIDE.COLORS.textDarkGray,
   },
 }));
 
 const StyledTableRow = styled(TableRow)(({ theme }) => ({
-  backgroundColor: theme.palette.action.hover,
+  "&:nth-of-type(odd)": {
+    backgroundColor: theme.palette.table?.rowOddBackground || STYLE_GUIDE.COLORS.backgroundDefault,
+  },
+  "&:nth-of-type(even)": {
+    backgroundColor: theme.palette.table?.rowEvenBackground || STYLE_GUIDE.COLORS.white,
+  },
+  "&:hover": {
+    backgroundColor: theme.palette.table?.rowHoverBackground || STYLE_GUIDE.COLORS.backgroundHover,
+  },
 }));
 
 interface EntityTableProps {

@@ -1,21 +1,22 @@
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from 'react';
 import {
     Dialog,
     DialogTitle,
     DialogContent,
     DialogActions,
-    IconButton,
     Button,
+    TextField,
     Box,
     Typography,
     FormControl,
-    TextField,
     Chip,
-    Alert
-} from "@mui/material";
-import AddIcon from "@mui/icons-material/Add";
-import CloseIcon from "@mui/icons-material/Close";
+    Alert,
+    IconButton
+} from '@mui/material';
+import AddIcon from '@mui/icons-material/Add';
+import CloseIcon from '@mui/icons-material/Close';
 import { STYLE_GUIDE } from '../../../styles';
+import { useUnifiedTheme } from '../../../hooks/useUnifiedTheme';
 
 interface AddColumnModalProps {
     open: boolean;
@@ -33,6 +34,7 @@ const AddColumnModal: React.FC<AddColumnModalProps> = ({
     onAdd,
     filterInfo
 }) => {
+    const theme = useUnifiedTheme();
     const [reportHeader, setReportHeader] = useState("");
     const [attributeValueInput, setAttributeValueInput] = useState("");
     const [attributeValues, setAttributeValues] = useState<string[]>([]);
@@ -40,6 +42,8 @@ const AddColumnModal: React.FC<AddColumnModalProps> = ({
         reportHeader?: string;
         attributeValues?: string;
     }>({});
+
+    
 
     useEffect(() => {
         if (open) {
@@ -98,10 +102,20 @@ const AddColumnModal: React.FC<AddColumnModalProps> = ({
             maxWidth="md"
             fullWidth
             PaperProps={{
-                sx: { minHeight: '400px', bgcolor: STYLE_GUIDE.COLORS.backgroundSurface }
+                sx: { 
+                    minHeight: '400px', 
+                    backgroundColor: theme.palette.dialog?.background || STYLE_GUIDE.COLORS.backgroundSurface,
+                    border: `1px solid ${theme.palette.dialog?.border || theme.palette.border?.main || STYLE_GUIDE.COLORS.borderGray}`,
+                    borderRadius: theme.palette.dialog?.borderRadius || '8px',
+                    boxShadow: theme.palette.dialog?.shadow || STYLE_GUIDE.SHADOWS.lg,
+                }
             }}
         >
-            <DialogTitle sx={{ fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.bold, color: STYLE_GUIDE.COLORS.primary }}>
+            <DialogTitle sx={{ 
+                fontWeight: theme.palette.dialog?.titleFontWeight || STYLE_GUIDE.TYPOGRAPHY.fontWeight.bold, 
+                color: theme.palette.dialog?.titleColor || STYLE_GUIDE.COLORS.primary,
+                fontSize: theme.palette.dialog?.titleFontSize || '1.25rem',
+            }}>
                 Add New Filter Column
                 <IconButton
                     aria-label="close"
@@ -110,14 +124,19 @@ const AddColumnModal: React.FC<AddColumnModalProps> = ({
                         position: 'absolute',
                         right: 8,
                         top: 8,
-                        color: STYLE_GUIDE.COLORS.borderGray,
+                        color: theme.palette.dialog?.titleColor || STYLE_GUIDE.COLORS.borderGray,
                     }}
                 >
                     <CloseIcon />
                 </IconButton>
             </DialogTitle>
 
-            <DialogContent dividers>
+            <DialogContent sx={{
+                color: theme.palette.dialog?.contentColor || STYLE_GUIDE.COLORS.textDarkGray,
+                fontSize: theme.palette.dialog?.contentFontSize || '1rem',
+                borderTop: `1px solid ${theme.palette.divider}`,
+                borderBottom: `1px solid ${theme.palette.divider}`,
+            }}>
                 {filterInfo && (
                     <Alert severity="info" sx={{ mb: STYLE_GUIDE.SPACING.s3 }}>
                         Adding column to filter: <strong>{filterInfo.section} - {filterInfo.attribute}</strong>
@@ -140,10 +159,7 @@ const AddColumnModal: React.FC<AddColumnModalProps> = ({
                             helperText={errors.reportHeader}
                             fullWidth
                             autoFocus
-                            sx={{
-                                bgcolor: STYLE_GUIDE.COLORS.backgroundDefault,
-                                borderRadius: STYLE_GUIDE.SPACING.s1,
-                            }}
+                            sx={{ '& .MuiOutlinedInput-root': { borderRadius: STYLE_GUIDE.SPACING.s2, alignItems: 'center', fontSize: '14px', backgroundColor: theme.dashboardTheme?.colors?.background?.paper || '#ffffff', '& fieldset': { borderColor: theme.getInputBorderColor() || STYLE_GUIDE.COLORS.darkBackground, }, '&:hover fieldset': { borderColor: theme.border?.hover || STYLE_GUIDE.COLORS.darkBorderHover, }, '&.Mui-focused fieldset': { borderColor: theme.input?.focusBorder || STYLE_GUIDE.COLORS.inputFocusFallback, }, }, '& .MuiInputLabel-root': { color: theme.palette.text.secondary || STYLE_GUIDE.COLORS.darkBorderFocus, }, '& .MuiInputLabel-root.Mui-focused': { color: theme.input?.focusBorder || STYLE_GUIDE.COLORS.inputFocusFallback, }, '& .MuiInputBase-input': { color: `${theme.getInputTextColor() || theme.palette.text.primary || '#000000'} !important`, }, '& .MuiInputBase-input::placeholder': { color: `${theme.palette.text.secondary || '#666'} !important`, }, '& .MuiInputBase-input:-webkit-autofill': { WebkitTextFillColor: `${theme.getInputTextColor() || theme.palette.text.primary || '#000000'} !important`, WebkitBoxShadow: `0 0 0 1000px ${theme.dashboardTheme?.colors?.background?.paper || '#ffffff'} inset !important`, }, }}
                         />
                     </FormControl>
 
@@ -160,10 +176,7 @@ const AddColumnModal: React.FC<AddColumnModalProps> = ({
                                 placeholder="Enter value and press Enter or click Add"
                                 size="small"
                                 fullWidth
-                                sx={{
-                                    bgcolor: STYLE_GUIDE.COLORS.backgroundDefault,
-                                    borderRadius: STYLE_GUIDE.SPACING.s1,
-                                }}
+                                sx={{ '& .MuiOutlinedInput-root': { borderRadius: STYLE_GUIDE.SPACING.s2, alignItems: 'center', fontSize: '14px', backgroundColor: theme.dashboardTheme?.colors?.background?.paper || '#ffffff', '& fieldset': { borderColor: theme.getInputBorderColor() || STYLE_GUIDE.COLORS.darkBackground, }, '&:hover fieldset': { borderColor: theme.border?.hover || STYLE_GUIDE.COLORS.darkBorderHover, }, '&.Mui-focused fieldset': { borderColor: theme.input?.focusBorder || STYLE_GUIDE.COLORS.inputFocusFallback, }, }, '& .MuiInputLabel-root': { color: theme.palette.text.secondary || STYLE_GUIDE.COLORS.darkBorderFocus, }, '& .MuiInputLabel-root.Mui-focused': { color: theme.input?.focusBorder || STYLE_GUIDE.COLORS.inputFocusFallback, }, '& .MuiInputBase-input': { color: `${theme.getInputTextColor() || theme.palette.text.primary || '#000000'} !important`, }, '& .MuiInputBase-input::placeholder': { color: `${theme.palette.text.secondary || '#666'} !important`, }, '& .MuiInputBase-input:-webkit-autofill': { WebkitTextFillColor: `${theme.getInputTextColor() || theme.palette.text.primary || '#000000'} !important`, WebkitBoxShadow: `0 0 0 1000px ${theme.dashboardTheme?.colors?.background?.paper || '#ffffff'} inset !important`, }, }}
                             />
                             <Button
                                 variant="outlined"

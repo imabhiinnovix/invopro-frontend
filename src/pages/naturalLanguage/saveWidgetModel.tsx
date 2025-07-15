@@ -6,14 +6,12 @@ import {
   DialogActions,
   Button,
   TextField,
-  FormControl,
-  InputLabel,
-  Select,
   MenuItem,
-  useTheme,
   alpha,
 } from '@mui/material';
 import { STYLE_GUIDE } from '../../styles';
+import StyledSelect from '../../components/atom/common/StyledSelect';
+import { useUnifiedTheme } from '../../hooks/useUnifiedTheme';
 
 interface SaveWidgetModelProps {
   open: boolean;
@@ -44,7 +42,8 @@ export const SaveWidgetModel: React.FC<SaveWidgetModelProps> = ({
   // timePeriod,
   // onTimePeriodChange,
 }) => {
-  const theme = useTheme();
+  
+  const theme = useUnifiedTheme();
 
   return (
     <Dialog
@@ -80,42 +79,21 @@ export const SaveWidgetModel: React.FC<SaveWidgetModelProps> = ({
           value={newChartName}
           onChange={(e) => onNameChange(e.target.value)}
           size="small"
-          sx={{
-            '& .MuiOutlinedInput-root': {
-              '&:hover fieldset': {
-                borderColor: 'primary.main',
-              },
-              '&.Mui-focused fieldset': {
-                borderColor: 'primary.main',
-              },
-            },
-          }}
+          sx={{ '& .MuiOutlinedInput-root': { borderRadius: STYLE_GUIDE.SPACING.s2, alignItems: 'flex-start', paddingRight: STYLE_GUIDE.SPACING.s2, fontSize: '14px', backgroundColor: theme.dashboardTheme?.colors?.background?.paper || '#ffffff', '& fieldset': { borderColor: theme.dashboardTheme?.colors?.inputBorder || STYLE_GUIDE.COLORS.darkBackground, }, '&:hover fieldset': { borderColor: theme.dashboardTheme?.colors?.borderHover || STYLE_GUIDE.COLORS.darkBorderHover, }, '&.Mui-focused fieldset': { borderColor: theme.dashboardTheme?.components?.input?.focusBorderColor || theme.dashboardTheme?.components?.input?.focusBorderColorFallback || STYLE_GUIDE.COLORS.inputFocusFallback, }, }, '& .MuiInputLabel-root': { color: theme.dashboardTheme?.colors?.text?.secondary || STYLE_GUIDE.COLORS.darkBorderFocus, }, '& .MuiInputLabel-root.Mui-focused': { color: theme.dashboardTheme?.components?.input?.focusBorderColor || theme.dashboardTheme?.components?.input?.focusBorderColorFallback || STYLE_GUIDE.COLORS.inputFocusFallback, }, '& .MuiInputBase-input': { color: `${theme.dashboardTheme?.colors?.inputText || theme.palette.text.primary} !important`, }, '& .MuiInputBase-input::placeholder': { color: `${theme.dashboardTheme?.colors?.text?.secondary || '#666'} !important`, }, '& .MuiInputBase-input:-webkit-autofill': { WebkitTextFillColor: `${theme.dashboardTheme?.colors?.inputText || theme.palette.text.primary} !important`, WebkitBoxShadow: `0 0 0 1000px ${theme.dashboardTheme?.colors?.background?.paper || '#ffffff'} inset !important`, }, }}
         />
-        <FormControl
-          fullWidth
-          margin="dense"
+        <StyledSelect
+          label="Select Dashboard*"
+          value={dashBoardId}
+          onChange={(e) => onDashboardChange(e.target.value as string)}
           size="small"
-          sx={{
-            mt: STYLE_GUIDE.SPACING.s4,
-            '& .MuiOutlinedInput-root': {
-              '&:hover fieldset': {
-                borderColor: 'primary.main',
-              },
-              '&.Mui-focused fieldset': {
-                borderColor: 'primary.main',
-              },
-            },
-          }}
+          sx={{ mt: STYLE_GUIDE.SPACING.s4 }}
         >
-          <InputLabel>Select Dashboard*</InputLabel>
-          <Select value={dashBoardId} label="Dashboard" onChange={(e) => onDashboardChange(e.target.value)}>
-            {dashboardList?.filter((data) => data.settings.dashboardType === "normal")?.map((data) => (
-                <MenuItem key={data._id} value={data._id}>
-                  {data.name}
-                </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
+          {dashboardList?.filter((data) => data.settings.dashboardType === "normal")?.map((data) => (
+              <MenuItem key={data._id} value={data._id}>
+                {data.name}
+              </MenuItem>
+          ))}
+        </StyledSelect>
         {/* {dashboardType === 'trend' && (
           <FormControl
             fullWidth

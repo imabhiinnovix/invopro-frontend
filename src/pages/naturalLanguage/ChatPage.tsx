@@ -6,8 +6,11 @@ import { useAppDispatch, useAppSelector } from '../../storeHooks';
 import { ChartGrid } from '../dashboard/components/ChartGrid';
 import { fetchWidgetSettingBasedOnNaturalLanguage } from '../dashboard/dashboardActions';
 import { STYLE_GUIDE } from '../../styles';
+import { useUnifiedTheme } from '../../hooks/useUnifiedTheme';
 
 const ChatPage: React.FC = () => {
+  const theme = useUnifiedTheme();
+  
   const dispatch = useAppDispatch();
   const { chartsLoading } = useAppSelector((state) => ({
     chartsLoading: state.dashboard.chartsLoading,
@@ -29,7 +32,14 @@ const ChatPage: React.FC = () => {
   };
 
   return (
-    <Box component={Paper} elevation={3} display="flex" flexDirection="column" height="100%">
+    <Box
+      component={Paper}
+      elevation={3}
+      display="flex"
+      flexDirection="column"
+      height="100%"
+      sx={{ backgroundColor: theme.palette.background.paper }}
+    >
       <Box p={STYLE_GUIDE.SPACING.s4} color={STYLE_GUIDE.COLORS.black}>
         <Typography variant="h5">Generate Smart Charts from Your Questions</Typography>
       </Box>
@@ -39,7 +49,7 @@ const ChatPage: React.FC = () => {
           <ChartGrid
             dashboardId={'1'}
             isEditMode={false}
-            onEditChart={() => {}}
+            onEditChart={() => { }}
             isAddChartModalOpen={false}
             isEditChartModalOpen={false}
             gridColumns={1}
@@ -82,17 +92,17 @@ const ChatPage: React.FC = () => {
                   onClick={handleSend}
                   disabled={chartsLoading || !input.trim()}
                   sx={{
-                    backgroundColor: STYLE_GUIDE.COLORS.darkBackground,
-                    color: STYLE_GUIDE.COLORS.white,
+                    backgroundColor: theme.dashboardTheme?.colors?.primary?.main || STYLE_GUIDE.COLORS.darkBackground,
+                    color: theme.dashboardTheme?.colors?.primary?.contrastText || STYLE_GUIDE.COLORS.white,
                     borderRadius: STYLE_GUIDE.SPACING.s4,
                     '&:hover': {
-                      backgroundColor: STYLE_GUIDE.COLORS.darkDarker,
+                      backgroundColor: theme.dashboardTheme?.colors?.primary?.light || STYLE_GUIDE.COLORS.darkDarker,
                     },
                     width: 48,
                     height: 48,
                   }}
                 >
-                  <SendIcon />
+                  <SendIcon sx={{ color: theme.getIconColor() }} />
                 </IconButton>
               </InputAdornment>
             ),
@@ -102,34 +112,35 @@ const ChatPage: React.FC = () => {
               borderRadius: STYLE_GUIDE.SPACING.s6,
               alignItems: 'flex-start',
               paddingRight: STYLE_GUIDE.SPACING.s2,
+              fontSize: '14px',
+              backgroundColor: theme.dashboardTheme?.colors?.background?.paper || '#ffffff',
               '& fieldset': {
-                borderColor: STYLE_GUIDE.COLORS.darkBackground,
+                borderColor: theme.dashboardTheme?.colors?.inputBorder || STYLE_GUIDE.COLORS.darkBackground,
               },
               '&:hover fieldset': {
-                borderColor: STYLE_GUIDE.COLORS.darkBorderHover,
+                borderColor: theme.dashboardTheme?.colors?.borderHover || STYLE_GUIDE.COLORS.darkBorderHover,
               },
-              '&.Mui-focused fieldset': {
-                borderColor: STYLE_GUIDE.COLORS.darkBorderFocus,
-              },
+                              '&.Mui-focused fieldset': {
+                  borderColor: theme.dashboardTheme?.components?.input?.focusBorderColor || theme.dashboardTheme?.components?.input?.focusBorderColorFallback || STYLE_GUIDE.COLORS.inputFocusFallback,
+                },
             },
             '& .MuiInputLabel-root': {
-              color: STYLE_GUIDE.COLORS.darkBorderFocus,
+              color: theme.dashboardTheme?.colors?.text?.secondary || STYLE_GUIDE.COLORS.darkBorderFocus,
             },
-            '& .MuiInputLabel-root.Mui-focused': {
-              color: STYLE_GUIDE.COLORS.darkDarker,
+                          '& .MuiInputLabel-root.Mui-focused': {
+                color: theme.dashboardTheme?.components?.input?.focusBorderColor || theme.dashboardTheme?.components?.input?.focusBorderColorFallback || STYLE_GUIDE.COLORS.inputFocusFallback,
+              },
+            '& .MuiInputBase-input': {
+              color: `${theme.dashboardTheme?.colors?.inputText || theme.palette.text.primary} !important`,
+            },
+            '& .MuiInputBase-input::placeholder': {
+              color: `${theme.dashboardTheme?.colors?.text?.secondary || '#666'} !important`,
+            },
+            '& .MuiInputBase-input:-webkit-autofill': {
+              WebkitTextFillColor: `${theme.dashboardTheme?.colors?.inputText || theme.palette.text.primary} !important`,
+              WebkitBoxShadow: `0 0 0 1000px ${theme.dashboardTheme?.colors?.background?.paper || '#ffffff'} inset !important`,
             },
           }}
-          // sx={{
-          //   '& .MuiOutlinedInput-root': {
-          //     borderRadius: '24px',
-          //     alignItems: 'flex-start',
-          //     paddingRight: '8px',
-          //     paddingLeft: '8px',
-          //   },
-          //   '& .MuiInputLabel-root': {
-          //     top: '-4px',
-          //   },
-          // }}
         />
       </Box>
     </Box>

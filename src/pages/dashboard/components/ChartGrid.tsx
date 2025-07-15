@@ -14,7 +14,6 @@ import {
   Typography,
   Box,
   CircularProgress,
-  useTheme,
   IconButton,
   Menu,
   MenuItem,
@@ -72,6 +71,7 @@ import { AddChartModal, ChartFormData } from './AddChartModal';
 import { resetChartAndWidgetData } from '../dashboardReducer';
 import { SaveWidgetModel } from '../../naturalLanguage/saveWidgetModel';
 import { STYLE_GUIDE } from '../../../styles';
+import { useUnifiedTheme } from '../../../hooks/useUnifiedTheme';
 
 // Register ChartJS components
 ChartJS.register(
@@ -123,11 +123,11 @@ const StyledCard = styled(Card)(({ theme }) => ({
   minHeight: 500,
   display: 'flex',
   flexDirection: 'column',
-  borderRadius: theme.shape.borderRadius,
-  boxShadow: theme.shadows[1],
+  borderRadius: STYLE_GUIDE.SPACING.s2,
+  boxShadow: theme.palette.card?.shadow || theme.shadows[1],
   transition: 'all 0.3s ease-in-out',
-  backgroundColor: theme.palette.background.paper,
-  border: `1px solid ${theme.palette.divider}`,
+  backgroundColor: theme.palette.card?.background || STYLE_GUIDE.COLORS.backgroundSurface,
+  border: `1px solid ${theme.palette.card?.border || theme.palette.divider}`,
   '&:hover': {
     boxShadow: theme.shadows[3],
     transform: 'translateY(-2px)',
@@ -150,8 +150,8 @@ const ChartContainer = styled(Box)(({ theme }) => ({
   minHeight: 400,
   height: '100%',
   // padding: theme.spacing(4),
-  backgroundColor: '#ffffff',
-  borderRadius: theme.shape.borderRadius,
+  backgroundColor: theme.palette.background.paper || STYLE_GUIDE.COLORS.white,
+  borderRadius: STYLE_GUIDE.SPACING.s2,
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
@@ -219,7 +219,7 @@ const LoadingContainer = styled(Box)(({ theme }) => ({
   justifyContent: 'center',
   alignItems: 'center',
   minHeight: '400px',
-  backgroundColor: '#ffffff',
+  backgroundColor: theme.palette.background.paper || STYLE_GUIDE.COLORS.white,
   borderRadius: '12px',
   border: `1px solid ${theme.palette.divider}`,
 }));
@@ -229,7 +229,7 @@ const ErrorContainer = styled(Box)(({ theme }) => ({
   justifyContent: 'center',
   alignItems: 'center',
   minHeight: '400px',
-  backgroundColor: '#ffffff',
+  backgroundColor: theme.palette.background.paper || STYLE_GUIDE.COLORS.white,
   borderRadius: '12px',
   border: `1px solid ${theme.palette.divider}`,
 }));
@@ -239,7 +239,7 @@ const EmptyContainer = styled(Box)(({ theme }) => ({
   justifyContent: 'center',
   alignItems: 'center',
   minHeight: '400px',
-  backgroundColor: '#ffffff',
+  backgroundColor: theme.palette.background.paper || STYLE_GUIDE.COLORS.white,
   borderRadius: '12px',
   border: `1px solid ${theme.palette.divider}`,
 }));
@@ -291,15 +291,19 @@ const NumberLabel = styled(Typography)(({ theme }) => ({
 }));
 
 // Add new styled components for drill-down dialog
-const DrillDownDialog = styled(Dialog)({
+const DrillDownDialog = styled(Dialog)(({ theme }) => ({
   '& .MuiDialog-paper': {
     width: 'calc(100% - 32px)',
     height: 'calc(100% - 32px)',
     margin: 16,
     maxWidth: 'calc(100% - 32px)',
     maxHeight: 'calc(100% - 32px)',
+    backgroundColor: theme.palette.dialog?.background || STYLE_GUIDE.COLORS.white,
+    border: `1px solid ${theme.palette.dialog?.border || theme.palette.border?.main || STYLE_GUIDE.COLORS.borderGray}`,
+    borderRadius: theme.palette.dialog?.borderRadius || '8px',
+    boxShadow: theme.palette.dialog?.shadow || STYLE_GUIDE.SHADOWS.lg,
   },
-});
+}));
 
 const DrillDownTable = styled(Table)(({ theme }) => ({
   '& .MuiTableCell-root': {
@@ -332,9 +336,10 @@ const DrillDownTable = styled(Table)(({ theme }) => ({
 }));
 
 const StyledTableContainer = styled(Paper)(({ theme }) => ({
-  borderRadius: theme.shape.borderRadius,
-  boxShadow: theme.shadows[1],
+  borderRadius: STYLE_GUIDE.SPACING.s2,
+  boxShadow: theme.palette.card?.shadow || theme.shadows[1],
   overflow: 'hidden',
+  backgroundColor: theme.palette.card?.background || STYLE_GUIDE.COLORS.backgroundSurface,
 }));
 
 const sliceLabelsPlugin = {
@@ -618,7 +623,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
   isNaturalLangauage,
 }) => {
   const dispatch = useAppDispatch();
-  const theme = useTheme();
+  const theme = useUnifiedTheme();
   const chartRefs = useRef<{ [key: string]: ChartJS | null }>({});
   const { charts, widgetTypes, temporaryCharts, chartsLoading, chartsError, widgetData, dashboards } = useAppSelector(
     (state) => ({
@@ -1109,7 +1114,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
       const groupByField = groupBy[0];
       const uniqueGroups = Array.from(new Set(chartData.map((item: ChartDataItem) => item[groupByField] as string)));
       const uniqueNames = Array.from(new Set(chartData.map((item: ChartDataItem) => item.name)));
-      let uniqueNameDataMap: any = {};
+      const uniqueNameDataMap: any = {};
       // Create a dataset for each unique group
       const datasets = uniqueGroups.map((group, index) => {
         let totalDataBasedOnGroup = 0;
@@ -1171,7 +1176,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
       const groupByField = groupBy[0];
       const uniqueGroups = Array.from(new Set(chartData.map((item) => item[groupByField] as string)));
       const uniqueNames = Array.from(new Set(chartData.map((item) => item.name)));
-      let uniqueNameDataMap: any = {};
+      const uniqueNameDataMap: any = {};
       // Create a dataset for each unique group
       const datasets = uniqueGroups.map((group, index) => {
         let totalDataBasedOnGroup = 0;
@@ -1236,7 +1241,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
       if (groupBy.length > 0) {
         const groupByField = groupBy[0];
         const uniqueGroups = Array.from(new Set(chartData.map((item) => item[groupByField] as string)));
-        let uniqueNameDataMap: any = {};
+        const uniqueNameDataMap: any = {};
         const datasets = uniqueGroups.map((group, index) => {
           let totalDataBasedOnGroup = 0;
           const groupData = barLabels.map((name) => {
@@ -1300,7 +1305,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
         const groupByField = groupBy[0]; // Take the first groupBy field
         const uniqueGroups = Array.from(new Set(chartData.map((item) => item[groupByField] as string)));
         const uniqueNames = Array.from(new Set(chartData.map((item) => item.name)));
-        let uniqueNameDataMap: any = {};
+        const uniqueNameDataMap: any = {};
         // Create datasets for each group
         const datasets = uniqueGroups.map((group, index) => {
           let totalDataBasedOnGroup = 0;
@@ -1361,7 +1366,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
         const groupByField = groupBy[0]; // Take the first groupBy field
         const uniqueGroups = Array.from(new Set(chartData.map((item) => item[groupByField] as string)));
         const uniqueNames = Array.from(new Set(chartData.map((item) => item.name)));
-        let uniqueNameDataMap: any = {};
+        const uniqueNameDataMap: any = {};
         // Create a dataset for each unique group
         const datasets = uniqueGroups.map((group, index) => {
           let totalDataBasedOnGroup = 0;
@@ -1429,7 +1434,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
         const groupByField = groupBy[0];
         const uniqueGroups = Array.from(new Set(chartData.map((item) => item[groupByField])));
         const uniqueNames = Array.from(new Set(chartData.map((item) => item.name)));
-        let uniqueNameDataMap: any = {};
+        const uniqueNameDataMap: any = {};
         const datasets = uniqueGroups.map((group, index) => {
           let totalDataBasedOnGroup = 0;
           const groupData = uniqueNames.map((name) => {
@@ -1837,7 +1842,11 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
           : [];
 
         return (
-          <TableContainer component={Paper} sx={{ maxHeight: 400, overflow: 'auto' }}>
+          <TableContainer component={Paper} sx={{ 
+            maxHeight: 400, 
+            overflow: 'auto',
+            backgroundColor: theme.palette.background.paper || STYLE_GUIDE.COLORS.white,
+          }}>
             <Table stickyHeader>
               <TableHead>
                 <TableRow>
@@ -1845,10 +1854,10 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
                     <TableCell
                       key={column}
                       sx={{
-                        backgroundColor: '#f1f5f9',
-                        fontWeight: 600,
+                        backgroundColor: theme.palette.table?.headerBackground || STYLE_GUIDE.COLORS.backgroundLightGray,
+                        fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold,
                         fontSize: '14px',
-                        color: theme.palette.text.primary,
+                        color: theme.palette.table?.headerText || STYLE_GUIDE.COLORS.textGray,
                         borderBottom: `2px solid ${theme.palette.divider}`,
                         padding: '12px 16px'
                       }}
@@ -1863,8 +1872,11 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
                   <TableRow
                     key={rowIndex}
                     sx={{
+                      backgroundColor: rowIndex % 2 === 0 
+                        ? theme.palette.table?.rowEvenBackground || STYLE_GUIDE.COLORS.white
+                        : theme.palette.table?.rowOddBackground || STYLE_GUIDE.COLORS.backgroundDefault,
                       '&:hover': {
-                        backgroundColor: theme.palette.action.hover
+                        backgroundColor: theme.palette.table?.rowHoverBackground || STYLE_GUIDE.COLORS.backgroundHover
                       }
                     }}
                   >
@@ -1879,7 +1891,8 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
                           key={`${rowIndex}-${column}`}
                           sx={{
                             padding: '12px 16px',
-                            borderBottom: `1px solid ${theme.palette.divider}`
+                            borderBottom: `1px solid ${theme.palette.divider}`,
+                            color: theme.palette.table?.rowText || STYLE_GUIDE.COLORS.textDarkGray
                           }}
                         >
                           {typeof value === 'number' ? value.toLocaleString() : value}
@@ -1938,7 +1951,11 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
               <TableHead>
                 <TableRow>
                   {columns.map((column) => (
-                    <TableCell key={column} sx={{ fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.medium }}>
+                    <TableCell key={column} sx={{ 
+                      fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold,
+                      backgroundColor: theme.palette.table?.headerBackground || STYLE_GUIDE.COLORS.backgroundLightGray,
+                      color: theme.palette.table?.headerText || STYLE_GUIDE.COLORS.textGray
+                    }}>
                       {column}
                     </TableCell>
                   ))}
@@ -1965,9 +1982,21 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
                   ))
                 ) : drillDownData.length > 0 ? (
                   drillDownData.map((row, index) => (
-                    <TableRow key={index}>
+                    <TableRow 
+                      key={index}
+                      sx={{
+                        backgroundColor: index % 2 === 0 
+                          ? theme.palette.table?.rowEvenBackground || STYLE_GUIDE.COLORS.white
+                          : theme.palette.table?.rowOddBackground || STYLE_GUIDE.COLORS.backgroundDefault,
+                        '&:hover': {
+                          backgroundColor: theme.palette.table?.rowHoverBackground || STYLE_GUIDE.COLORS.backgroundHover
+                        }
+                      }}
+                    >
                       {columns.map((column) => (
-                        <TableCell key={column}>
+                        <TableCell key={column} sx={{ 
+                          color: theme.palette.table?.rowText || STYLE_GUIDE.COLORS.textDarkGray 
+                        }}>
                           {typeof row[column] === 'number' ? row[column].toLocaleString() : row[column]}
                         </TableCell>
                       ))}
@@ -2285,9 +2314,33 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
       </Menu>
 
       {deleteDialogOpen && (
-        <Dialog open={deleteDialogOpen} onClose={handleDeleteCancel} aria-labelledby="delete-dialog-title">
-          <DialogTitle id="delete-dialog-title">Delete Chart</DialogTitle>
-          <DialogContent>
+        <Dialog 
+          open={deleteDialogOpen} 
+          onClose={handleDeleteCancel} 
+          aria-labelledby="delete-dialog-title"
+          PaperProps={{
+            sx: {
+              backgroundColor: theme.palette.dialog?.background || STYLE_GUIDE.COLORS.white,
+              border: `1px solid ${theme.palette.dialog?.border || theme.palette.border?.main || STYLE_GUIDE.COLORS.borderGray}`,
+              borderRadius: theme.palette.dialog?.borderRadius || '8px',
+              boxShadow: theme.palette.dialog?.shadow || STYLE_GUIDE.SHADOWS.lg,
+            }
+          }}
+        >
+          <DialogTitle 
+            id="delete-dialog-title"
+            sx={{
+              color: theme.palette.dialog?.titleColor || STYLE_GUIDE.COLORS.textDarkGray,
+              fontSize: theme.palette.dialog?.titleFontSize || '1.25rem',
+              fontWeight: theme.palette.dialog?.titleFontWeight || STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold,
+            }}
+          >
+            Delete Chart
+          </DialogTitle>
+          <DialogContent sx={{
+            color: theme.palette.dialog?.contentColor || STYLE_GUIDE.COLORS.textDarkGray,
+            fontSize: theme.palette.dialog?.contentFontSize || '1rem',
+          }}>
             <Typography>Are you sure you want to delete this chart? This action cannot be undone.</Typography>
           </DialogContent>
           <DialogActions>

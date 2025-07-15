@@ -14,8 +14,10 @@ import SimCardDownloadIcon from '@mui/icons-material/SimCardDownload';
 import DownloadForOfflineIcon from '@mui/icons-material/DownloadForOffline';
 import useFileDownload from '../../hooks/useFiledownload';
 import { GET } from '../../services/apiRoutes';
+import { useUnifiedTheme } from '../../hooks/useUnifiedTheme';
 
 export default function Report() {
+  const theme = useUnifiedTheme();
   const [reload, setReload] = useState(false);
   const [viewReportRequestId, setViewReportRequestId] = useState('');
 
@@ -31,8 +33,8 @@ export default function Report() {
   const [isPdfLoading, setIsPdfLoading] = useState(false);
   const [intermediateDownloadRequestId, setIntermediateDownloadRequestId] = useState('');
   const [regularDownloadRequestId, setRegularDownloadRequestId] = useState('');
-
   const [viewReportNameWithVersionValue, setViewReportNameWithVersionValue] = useState('');
+
   const exportFile = useFileDownload<Blob>((data) => {
     const blob = new Blob([data], { type: 'application/octet-stream' });
     const link = document.createElement('a');
@@ -69,9 +71,13 @@ export default function Report() {
   const tabStyle = (index: number) => ({
     padding: '10px 20px',
     cursor: 'pointer',
-    borderBottom: activeTab === index ? '2px solid rgb(142, 25, 210)' : '2px solid transparent',
+    borderBottom: activeTab === index ? `2px solid ${theme.palette.primary.main}` : '2px solid transparent',
     fontWeight: activeTab === index ? 'bold' : 'normal',
-    backgroundColor: activeTab === index ? '#f0f0f0' : '#fff',
+    backgroundColor: activeTab === index ? theme.palette.primary.light : theme.palette.background.paper,
+    color: activeTab === index ? theme.palette.primary.main : theme.palette.text.primary,
+    '&:hover': {
+      backgroundColor: activeTab === index ? theme.palette.primary.light : theme.palette.action.hover,
+    },
   });
 
   useEffect(() => {
@@ -108,7 +114,7 @@ export default function Report() {
     <Box
       sx={{
         width: '100%',
-        backgroundColor: '#F8FAFC',
+        backgroundColor: theme.palette.background.paper,
         minHeight: 'calc(100vh - 64px)',
         p: 1,
       }}
@@ -119,10 +125,11 @@ export default function Report() {
             <Box
               sx={{
                 cursor: 'pointer',
-                // transition: 'transform 0.2s ease-in-out',
-                // '&:hover': {
-                //   transform: 'scale(1.2)',
-                // },
+                color: theme.palette.text.primary,
+                '&:hover': {
+                  backgroundColor: theme.palette.action.hover,
+                  color: theme.palette.primary.main,
+                },
               }}
               onClick={() => {
                 setViewReportRequestId('');
@@ -204,8 +211,20 @@ export default function Report() {
                       variant="contained"
                       disabled={!(viewReportNameWithVersionValue && viewReportNameWithVersionValue.length > 0)}
                       onClick={handleDownloadPdf}
+                      sx={{
+                        bgcolor: theme.palette.primary.main,
+                        color: theme.palette.primary.contrastText,
+                        '&:hover': {
+                          bgcolor: theme.palette.primary.dark,
+                          boxShadow: theme.shadows[3],
+                        },
+                        '&:disabled': {
+                          bgcolor: theme.palette.action.disabledBackground,
+                          color: theme.palette.action.disabled,
+                        }
+                      }}
                     >
-                      <PictureAsPdfIcon />
+                      <PictureAsPdfIcon sx={{ color: theme.getIconColor() }}/>
                     </Button>
                   </Tooltip>
                 )}
@@ -248,7 +267,7 @@ export default function Report() {
                           }}
                           sx={{ mr: 1 }}
                         >
-                          <DownloadForOfflineIcon />
+                          <DownloadForOfflineIcon  sx={{ color: theme.getIconColor() }}/>
                         </Button>
                       </Tooltip>
                     )}
@@ -280,9 +299,18 @@ export default function Report() {
                           allDetailData?._id || ''
                         );
                       }}
-                      sx={{ mr: 1 }}
+                      sx={{ 
+                        mr: 1,
+                        bgcolor: theme.palette.success.main,
+                        color: theme.palette.success.contrastText,
+                        '&:hover': {
+                          bgcolor: theme.palette.success.dark,
+                          transform: 'translateY(-1px)',
+                          boxShadow: theme.shadows[3],
+                        }
+                      }}
                     >
-                      <SimCardDownloadIcon />
+                      <SimCardDownloadIcon sx={{ color: theme.getIconColor() }} />
                     </Button>
                   </Tooltip>
                 )}
@@ -295,7 +323,7 @@ export default function Report() {
             variant="h5"
             sx={{
               fontWeight: 600,
-              color: 'text.primary',
+              color: theme.palette.text.primary,
             }}
           >
             Reports
@@ -417,10 +445,10 @@ export default function Report() {
         >
           <Box
             sx={{
-              backgroundColor: 'white',
+              backgroundColor: theme.palette.background.paper,
               borderRadius: 1,
               p: 2,
-              boxShadow: '0px 1px 2px rgba(0, 0, 0, 0.05)',
+              boxShadow: theme.shadows[1],
             }}
           >
             <GenerateReport setReload={setReload} />
@@ -428,9 +456,9 @@ export default function Report() {
 
           <Box
             sx={{
-              backgroundColor: 'white',
+              backgroundColor: theme.palette.background.paper,
               borderRadius: 1,
-              boxShadow: '0px 1px 2px rgba(0, 0, 0, 0.05)',
+              boxShadow: theme.shadows[1],
               overflow: 'hidden',
             }}
           >
