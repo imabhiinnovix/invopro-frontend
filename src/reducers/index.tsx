@@ -4,12 +4,14 @@ import dashboardReducer from '../pages/dashboard/dashboardReducer';
 // import naturalLanguageReducer from '../pages/naturalLanguage/naturalLanguageReducer';
 import themeReducer from '../pages/createTheme/themeSlice';
 import { configureStore } from '@reduxjs/toolkit';
+import customReportsReducer from '../pages/report-settings/customReportsReducer';
 
 // 👇 Explicitly define the shape of your Redux state
 const rootReducer = combineReducers({
   dataSource: dataSourceReducer,
   dashboard: dashboardReducer,
   theme: themeReducer,
+  customReports: customReportsReducer,
   // naturalLanguageReducer: naturalLanguageReducer,
 });
 

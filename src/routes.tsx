@@ -19,6 +19,7 @@ import Entity from './pages/entity';
 import DataSource from './pages/dataSource';
 import AIInsightPage from './pages/aiInsight';
 import DataSourceVersion from './pages/dataSourceVersion';
+import ReportSettings from './pages/report-settings';
 
 const AppRoutes = () => {
   const token = getAuthToken();
@@ -47,6 +48,7 @@ const AppRoutes = () => {
           <Route path="/data-src-version" element={<DataSourceVersion />} />
           <Route path="/VixAi-Insights" element={<AIInsightPage />} />
           <Route path="/VixAi-Chart" element={<NaturalLanguage />} />
+          <Route path="/report-settings" element={<ReportSettings />} />
         </Route>
       </Route>
 

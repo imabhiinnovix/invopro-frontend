@@ -34,6 +34,7 @@ export const POST = {
   DELETE_THEME: '/widgetTheme/delete/',
   DUPLICATE_THEME: '/widgetTheme/duplicate/',
   UPDATE_THEME: '/widgetTheme/update/',
+  UPDATE_REPORT_SETTINGS: '/customReports/updateSettings',
 };
 export const PUT = {
   UPDATE_DATA_SOURCE: '/dataSource/update',
@@ -67,5 +68,6 @@ export const GET = {
   OPERATOR_LIST: '/operator/list',
   WIDGET_THEME: '/widgetTheme',
   NL_Query: '/nlQuery',
-  NL_Query_INSIGHTS: '/nlQuery/insights'
+  NL_Query_INSIGHTS: '/nlQuery/insights',
+  Report_Settings: '/customReports/listSettings?paginate=true',
 };

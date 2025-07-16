@@ -34,6 +34,7 @@ import { AuthContext } from '../../../context/AuthContext';
 import { clearLocalStorage } from '../../../utils/handleLocalStorage';
 import { Language } from '@mui/icons-material';
 import { STYLE_GUIDE } from '../../../styles';
+import SettingsIcon from '@mui/icons-material/Settings';
 
 
 interface ErrorResponse {
@@ -346,6 +347,11 @@ export default function SideNav() {
         name: 'VixAI Chart',
         icon: <Language sx={{ fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base }} />,
         route: '/VixAi-Chart',
+      },
+      {
+        name: 'Report Settings',
+        icon: <SettingsIcon sx={{ fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base }} />,
+        route: '/report-settings',
       },
       // {
       //   name: 'VixAI Insights',
