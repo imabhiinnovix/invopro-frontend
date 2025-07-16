@@ -204,8 +204,9 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ title: initialTitl
   useEffect(() => {
     if (currentDashboard?.widgetThemeId) {
       setSelectedTheme(currentDashboard.widgetThemeId);
+      dispatch(fetchWidgetTheme(currentDashboard.widgetThemeId));
     }
-  }, [currentDashboard?.widgetThemeId]);
+  }, [currentDashboard?.widgetThemeId, dispatch]);
 
   useEffect(() => {
     dispatch(fetchThemeList());
@@ -382,9 +383,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ title: initialTitl
 
         if (result.success) {
           toast.success('Theme updated successfully!');
-          if (currentDashboard?.widgetThemeId) {
-            dispatch(fetchWidgetTheme(themeId));
-          }
+          dispatch(fetchWidgetTheme(themeId));
         } else {
           toast.error(result.message || 'Failed to update theme');
         }
