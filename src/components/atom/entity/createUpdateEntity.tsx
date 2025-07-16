@@ -1,7 +1,6 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useForm, useFieldArray, FieldError } from "react-hook-form";
 import ExcelJS from "exceljs";
-
 import {
   Box,
   Button,
@@ -105,46 +104,51 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
     control,
     name: "attributes",
   });
-  const [referenceEntityFields, setReferenceEntityFields] = useState<{
+  const [referenceEntityNames, setReferenceEntityNames] = useState<{
     [key: number]: string[];
   }>({});
-  const selectedReferenceEntityIds = watch("attributes")?.map(
-    (attr: any) => attr.referenceEntityId
-  );
-  const prevEntityIdsRef = React.useRef<(string | undefined)[]>([]);
+  const [referenceEntityTypes, setReferenceEntityTypes] = useState<{
+    [key: number]: string[];
+  }>({});
+
+  // Watch attributes explicitly to ensure updates are captured
+  const attributes = watch("attributes");
+
+
+
+  const prevEntityIdRef = useRef<string | undefined>(undefined);
 
   useEffect(() => {
-    if (!selectedReferenceEntityIds) return;
+    const entityId = attributes?.[0]?.referenceEntityId;
+    if (!entityId || entityId === prevEntityIdRef.current) return;
 
-    selectedReferenceEntityIds.forEach((entityId, idx) => {
-      if (entityId && prevEntityIdsRef.current[idx] !== entityId) {
-        axiosInstance
-          .get(`/entities/${entityId}`)
-          .then((res) => {
+    axiosInstance
+      .get(`/entities/${entityId}`)
+      .then((res) => {
+        const namesArr =
+          res.data?.data?.attributes?.map((f: any) => f.name) || [];
+        const typesArr =
+          res.data?.data?.attributes?.map((f: any) => f._id) || [];
+        setReferenceEntityNames((prev) => {
+          if (JSON.stringify(prev[0]) !== JSON.stringify(namesArr)) {
+            return { ...prev, 0: namesArr };
+          }
+          return prev;
+        });
+        setReferenceEntityTypes((prev) => {
+          if (JSON.stringify(prev[0]) !== JSON.stringify(typesArr)) {
+            return { ...prev, 0: typesArr };
+          }
+          return prev;
+        });
+      })
+      .catch(() => {
+        setReferenceEntityNames((prev) => ({ ...prev, 0: [] }));
+        setReferenceEntityTypes((prev) => ({ ...prev, 0: [] }));
+      });
 
-            const fieldsArr =
-              res.data?.data?.attributes?.map((f: any) => f.name) || [];
-            setReferenceEntityFields((prev) => ({
-              ...prev,
-              [idx]: fieldsArr,
-            }));
-          })
-          .catch(() => {
-            setReferenceEntityFields((prev) => ({
-              ...prev,
-              [idx]: [],
-            }));
-          });
-      } else if (!entityId) {
-        setReferenceEntityFields((prev) => ({
-          ...prev,
-          [idx]: [],
-        }));
-      }
-      prevEntityIdsRef.current[idx] = entityId;
-    });
-  }, [JSON.stringify(selectedReferenceEntityIds), fields.length]);
-
+    prevEntityIdRef.current = entityId;
+  }, [attributes?.[0]?.referenceEntityId]);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files?.[0]) {
@@ -265,6 +269,7 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
           setFileName(null);
           setFile(null);
           setFileUploadLoader(false);
+          return;
         }
       };
 
@@ -300,50 +305,53 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
     true
   );
 
-const onSubmit = (formData: EntityRequestPayload) => {
+  const onSubmit = (formData: EntityRequestPayload) => {
+    const newAttributes = formData.attributes?.map((data, index) => {
+      const {
+        referenceEntityId,
+        referenceEntityField,
+        referenceRelationType,
+        ...rest
+      } = data;
 
-  const newAttributes = formData.attributes?.map((data) => {
-    const {
-      referenceEntityId,
-      referenceEntityField,
-      referenceRelationType,
-      ...rest
-    } = data;
-
-    const updated = {
-      ...rest,
-      required: data.required === "Mandatory" ? true : false,
-    };
-
-    if (!["option", "multioption"].includes(data.type)) {
-      updated.optionAttributeId = "";
-    }
-
-    // Inject referenceEntitySetting if all fields are present
-    if (referenceEntityId && referenceEntityField && referenceRelationType) {
-      updated.referenceEntitySetting = {
-        refEntityId: referenceEntityId,
-        refEntityField: referenceEntityField,
-        relationType: referenceRelationType,
+      const updated = {
+        ...rest,
+        required: data.required === "Mandatory" ? true : false,
       };
-    }
 
-    return updated;
-  });
+      if (!["option", "multioption"].includes(data.type)) {
+        updated.optionAttributeId = "";
+      }
 
+      if (referenceEntityId && referenceEntityField && referenceRelationType) {
+        const selectedName = referenceEntityField;
+        const typeIndex = referenceEntityNames[index]?.indexOf(selectedName);
+        const selectedType =
+          typeIndex !== -1 && typeIndex !== undefined
+            ? referenceEntityTypes[index]?.[typeIndex] || ""
+            : "";
 
-  const newFormData = { ...formData, attributes: newAttributes };
+        updated.referenceEntitySetting = {
+          refEntityId: referenceEntityId,
+          refEntityField: selectedType,
+          relationType: referenceRelationType,
+        };
+      }
 
-
-  if (data && data._id) {
-    updateEntity.mutate({
-      url: `${POST.UPDATE_ENTITY}/${data._id}`,
-      payload: newFormData,
+      return updated;
     });
-  } else {
-    createEntity.mutate({ url: POST.CREATE_ENTITY, payload: newFormData });
-  }
-};
+
+    const newFormData = { ...formData, attributes: newAttributes };
+
+    if (data && data._id) {
+      updateEntity.mutate({
+        url: `${POST.UPDATE_ENTITY}/${data._id}`,
+        payload: newFormData,
+      });
+    } else {
+      createEntity.mutate({ url: POST.CREATE_ENTITY, payload: newFormData });
+    }
+  };
 
   const handleCancel = () => {
     setFile(null);
@@ -495,9 +503,9 @@ const onSubmit = (formData: EntityRequestPayload) => {
                       }
                     />
 
-                    {watch("attributes") &&
+                    {attributes &&
                       ["option", "multioption"].includes(
-                        watch("attributes")?.[index]?.type!
+                        attributes[index]?.type || ""
                       ) && (
                         <CommonDropdownSearch
                           control={control}
@@ -530,7 +538,7 @@ const onSubmit = (formData: EntityRequestPayload) => {
                       defaultValue={attribute.required || "Not Mandatory"}
                       rules={{ required: "Attribute Validation is required" }}
                       error={!!errors.attributes?.[index]?.required}
-                      errorMessage={
+                      helperText={
                         (errors.attributes?.[index]?.required as FieldError)
                           ?.message
                       }
@@ -544,7 +552,7 @@ const onSubmit = (formData: EntityRequestPayload) => {
                       labelName="name"
                       labelValue="_id"
                       defaultValue={attribute.referenceEntityId || ""}
-                      rules={{ required: "Reference Entity ID is required" }}
+                      rules={{ required: false }} // Relaxed for debugging
                       error={!!errors.attributes?.[index]?.referenceEntityId}
                       errorMessage={
                         (
@@ -555,15 +563,16 @@ const onSubmit = (formData: EntityRequestPayload) => {
                       apiName="entities"
                       defaultDataUrl={`${GET.Entity_List}`}
                     />
+
                     <CommonSelect
                       control={control}
                       name={`attributes.${index}.referenceEntityField`}
                       label="Reference Entity Field"
-                      options={referenceEntityFields[index] || []}
+                      options={referenceEntityNames[index] || []}
                       defaultValue={attribute.referenceEntityField || ""}
-                      rules={{ required: "Reference Entity Field is required" }}
+                      rules={{ required: false }} // Relaxed for debugging
                       error={!!errors.attributes?.[index]?.referenceEntityField}
-                      errorMessage={
+                      helperText={
                         (
                           errors.attributes?.[index]
                             ?.referenceEntityField as FieldError
@@ -575,14 +584,15 @@ const onSubmit = (formData: EntityRequestPayload) => {
                       control={control}
                       name={`attributes.${index}.referenceRelationType`}
                       label="Reference Relation Type"
-                      options={[
-                        "many_to_one",
-                        "one_to_one",
-                        "self",
-                      ]}
-                      rules={{
-                        required: "Reference Relation Type is required",
-                      }}
+                      options={["many_to_one", "one_to_one", "self"]}
+                      rules={{ required: false }} // Relaxed for debugging
+                      error={!!errors.attributes?.[index]?.referenceRelationType}
+                      helperText={
+                        (
+                          errors.attributes?.[index]
+                            ?.referenceRelationType as FieldError
+                        )?.message
+                      }
                     />
                   </Stack>
 
