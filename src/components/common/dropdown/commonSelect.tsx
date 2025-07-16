@@ -1,4 +1,5 @@
-import React, { useEffect, useLayoutEffect } from "react";
+
+import React from "react";
 import {
   MenuItem,
   FormHelperText,
@@ -7,17 +8,18 @@ import { Controller } from "react-hook-form";
 import StyledSelect from "../../atom/common/StyledSelect";
 
 interface CommonSelectProps {
-  control: any; // React Hook Form control
-  name: string; // Field name
-  label: string; // Label for the select
-  options: string[]; // List of options
-  defaultValue?: string; // Default value for the select
-  rules?: any; // Validation rules
-  error?: boolean; // Error state
-  errorMessage?: string; // Error message
+  control: any;
+  name: string;
+  label: string;
+  options: string[];
+  defaultValue?: string | string[];
+  rules?: any;
+  error?: boolean;
+  errorMessage?: string;
   disabled?: boolean;
-  value?: string;
+  value?: string | string[];
   setValue?: any;
+  multiple?: boolean;
 }
 
 const CommonSelect: React.FC<CommonSelectProps> = ({
@@ -25,18 +27,26 @@ const CommonSelect: React.FC<CommonSelectProps> = ({
   name,
   label,
   options,
-  defaultValue = "",
+  defaultValue,
   rules = {},
   error = false,
   errorMessage = "",
   disabled = false,
+  multiple = false,
 }) => {
+  // Fallback for defaultValue if not provided
+  const resolvedDefaultValue = defaultValue !== undefined
+    ? defaultValue
+    : multiple
+    ? []
+    : "";
+
   return (
     <div>
       <Controller
         name={name}
         control={control}
-        defaultValue={defaultValue}
+        defaultValue={resolvedDefaultValue}
         rules={rules}
         render={({ field }) => (
           <StyledSelect
@@ -44,6 +54,18 @@ const CommonSelect: React.FC<CommonSelectProps> = ({
             label={label}
             disabled={disabled}
             error={error}
+            multiple={multiple}
+            value={
+              multiple
+                ? Array.isArray(field.value)
+                  ? field.value
+                  : []
+                : field.value || ""
+            }
+            onChange={(e) => {
+              const value = e.target.value;
+              field.onChange(multiple ? value : value);
+            }}
           >
             {options.map((option) => (
               <MenuItem key={option} value={option}>

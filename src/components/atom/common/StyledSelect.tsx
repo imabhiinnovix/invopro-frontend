@@ -88,6 +88,7 @@ const StyledSelect: React.FC<StyledSelectProps> = ({
           label={label}
           MenuProps={menuProps}
           sx={selectSx}
+          multiple={props.multiple} 
           {...props}
         >
           {children}
