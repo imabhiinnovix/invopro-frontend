@@ -22,17 +22,19 @@ import InfoIcon from '@mui/icons-material/Info';
 import { ChromePicker } from 'react-color';
 import { useAppDispatch } from '../../../storeHooks';
 import { createDashboardTheme, updateDashboardTheme } from '../../../reducers/dashboardThemeSlice';
-import { DashboardTheme, CreateDashboardThemeDialogProps } from '../../../types/dashboardTheme';
+import { DashboardTheme, CreateDashboardThemeDialogProps, FontOption } from '../../../types/dashboardTheme';
 import { getDefaultDashboardTheme } from '../../../styles/themeConstants';
 import { getColorFieldTooltip } from '../../../constants/colorFieldTooltips';
 import { STYLE_GUIDE } from '../../../styles';
 import { useUnifiedTheme } from '../../../hooks/useUnifiedTheme';
 import { useComponentTypography } from '../../../hooks/useComponentTypography';
+import { toast } from 'react-toastify';
 
 const getDefaultTheme = (): DashboardTheme => ({
   ...getDefaultDashboardTheme(),
   name: '',
   description: '',
+  customFonts: [],
 });
 
 interface TabPanelProps {
@@ -78,7 +80,7 @@ const CreateDashboardThemeDialog: React.FC<CreateDashboardThemeDialogProps> = ({
     } else {
       setFormData(getDefaultTheme());
     }
-  }, [theme]);
+  }, [theme, open]);
 
   const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
@@ -189,7 +191,7 @@ const CreateDashboardThemeDialog: React.FC<CreateDashboardThemeDialogProps> = ({
       </DialogTitle>
 
       <DialogContent sx={{ p: 0 }}>
-        <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+        <Box>
           <Tabs value={tabValue} onChange={handleTabChange} aria-label="theme settings tabs">
             <Tab label="Colors" />
             <Tab label="Typography" />
@@ -453,7 +455,7 @@ const CreateDashboardThemeDialog: React.FC<CreateDashboardThemeDialogProps> = ({
             {/* Global Typography */}
             <Paper elevation={2} sx={{ p: 3, mb: 3 }}>
               <Typography variant="h6" sx={{ mb: 2, fontWeight: 700 }}>
-                Global Typography (Fallback)
+                Global Typography
               </Typography>
               <Grid container spacing={2}>
                 <Grid item xs={12} md={4}>
@@ -468,6 +470,11 @@ const CreateDashboardThemeDialog: React.FC<CreateDashboardThemeDialogProps> = ({
                     {STYLE_GUIDE.TYPOGRAPHY.fontOptions.map((option) => (
                       <MenuItem key={option.value} value={option.value}>
                         {option.label}
+                      </MenuItem>
+                    ))}
+                    {formData.customFonts?.map((font) => (
+                      <MenuItem key={font.value} value={font.value}>
+                        {font.label}
                       </MenuItem>
                     ))}
                   </TextField>
@@ -527,6 +534,11 @@ const CreateDashboardThemeDialog: React.FC<CreateDashboardThemeDialogProps> = ({
                         {option.label}
                       </MenuItem>
                     ))}
+                    {formData.customFonts?.map((font) => (
+                      <MenuItem key={font.value} value={font.value}>
+                        {font.label}
+                      </MenuItem>
+                    ))}
                   </TextField>
                 </Grid>
                 <Grid item xs={12} md={4}>
@@ -582,6 +594,11 @@ const CreateDashboardThemeDialog: React.FC<CreateDashboardThemeDialogProps> = ({
                     {STYLE_GUIDE.TYPOGRAPHY.fontOptions.map((option) => (
                       <MenuItem key={option.value} value={option.value}>
                         {option.label}
+                      </MenuItem>
+                    ))}
+                    {formData.customFonts?.map((font) => (
+                      <MenuItem key={font.value} value={font.value}>
+                        {font.label}
                       </MenuItem>
                     ))}
                   </TextField>
@@ -641,6 +658,11 @@ const CreateDashboardThemeDialog: React.FC<CreateDashboardThemeDialogProps> = ({
                         {option.label}
                       </MenuItem>
                     ))}
+                    {formData.customFonts?.map((font) => (
+                      <MenuItem key={font.value} value={font.value}>
+                        {font.label}
+                      </MenuItem>
+                    ))}
                   </TextField>
                 </Grid>
                 <Grid item xs={12} md={4}>
@@ -696,6 +718,11 @@ const CreateDashboardThemeDialog: React.FC<CreateDashboardThemeDialogProps> = ({
                     {STYLE_GUIDE.TYPOGRAPHY.fontOptions.map((option) => (
                       <MenuItem key={option.value} value={option.value}>
                         {option.label}
+                      </MenuItem>
+                    ))}
+                    {formData.customFonts?.map((font) => (
+                      <MenuItem key={font.value} value={font.value}>
+                        {font.label}
                       </MenuItem>
                     ))}
                   </TextField>
@@ -755,6 +782,11 @@ const CreateDashboardThemeDialog: React.FC<CreateDashboardThemeDialogProps> = ({
                         {option.label}
                       </MenuItem>
                     ))}
+                    {formData.customFonts?.map((font) => (
+                      <MenuItem key={font.value} value={font.value}>
+                        {font.label}
+                      </MenuItem>
+                    ))}
                   </TextField>
                 </Grid>
                 <Grid item xs={12} md={4}>
@@ -810,6 +842,11 @@ const CreateDashboardThemeDialog: React.FC<CreateDashboardThemeDialogProps> = ({
                     {STYLE_GUIDE.TYPOGRAPHY.fontOptions.map((option) => (
                       <MenuItem key={option.value} value={option.value}>
                         {option.label}
+                      </MenuItem>
+                    ))}
+                    {formData.customFonts?.map((font) => (
+                      <MenuItem key={font.value} value={font.value}>
+                        {font.label}
                       </MenuItem>
                     ))}
                   </TextField>
@@ -869,6 +906,11 @@ const CreateDashboardThemeDialog: React.FC<CreateDashboardThemeDialogProps> = ({
                         {option.label}
                       </MenuItem>
                     ))}
+                    {formData.customFonts?.map((font) => (
+                      <MenuItem key={font.value} value={font.value}>
+                        {font.label}
+                      </MenuItem>
+                    ))}
                   </TextField>
                 </Grid>
                 <Grid item xs={12} md={4}>
@@ -906,92 +948,109 @@ const CreateDashboardThemeDialog: React.FC<CreateDashboardThemeDialogProps> = ({
               </Grid>
             </Paper>
 
-            {/* Typography Preview */}
+            {/* Custom Font Upload */}
             <Paper elevation={2} sx={{ p: 3, mb: 3 }}>
               <Typography variant="h6" sx={{ mb: 2, fontWeight: 700 }}>
-                Typography Preview
+                Custom Font Upload
               </Typography>
-              <Grid container spacing={3}>
-                <Grid item xs={12} md={6}>
-                  <Box
-                    sx={{
-                      p: 3,
-                      border: '1px solid',
-                      borderColor: 'divider',
-                      borderRadius: 1,
-                      backgroundColor: 'background.paper',
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+                Upload a .ttf font file to use in your theme. The font will be available in the font family dropdowns above.
+              </Typography>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+                <Button
+                  variant="outlined"
+                  component="label"
+                  sx={{
+                    textTransform: 'none',
+                    borderColor: unifiedTheme.palette.primary.main,
+                    color: unifiedTheme.palette.primary.main,
+                    '&:hover': {
+                      borderColor: unifiedTheme.palette.primary.dark,
+                      backgroundColor: unifiedTheme.palette.primary.light,
+                      color: unifiedTheme.palette.primary.dark,
+                    },
+                  }}
+                >
+                  Upload .ttf File
+                  <input
+                    type="file"
+                    hidden
+                    accept=".ttf"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file && (file.type === 'font/ttf' || file.name.toLowerCase().endsWith('.ttf'))) {
+                        // Extract font name from file name (remove .ttf extension)
+                        const fontName = file.name.replace(/\.ttf$/i, '');
+                        const fontValue = `"${fontName}", sans-serif`;
+                        
+                        const reader = new FileReader();
+                        reader.onload = (event) => {
+                          const dataUrl = event.target?.result as string;
+                          
+                          const fontFace = `
+                            @font-face {
+                              font-family: "${fontName}";
+                              src: url("${dataUrl}") format("truetype");
+                              font-weight: normal;
+                              font-style: normal;
+                            }
+                          `;
+                          
+                          const style = document.createElement('style');
+                          style.textContent = fontFace;
+                          document.head.appendChild(style);
+                          
+                          const newFontOption = {
+                            label: `${fontName} (Custom)`,
+                            value: fontValue,
+                          };
+                          
+                          setFormData(prev => ({
+                            ...prev,
+                            customFonts: [...(prev.customFonts || []), newFontOption],
+                          }));
+                          
+                          toast.success(`Font "${fontName}" uploaded and loaded successfully!`);
+                        };
+                        
+                        reader.readAsDataURL(file);
+                      } else {
+                        toast.error('Please select a valid .ttf file.');
+                      }
                     }}
-                  >
-                    <Typography
-                      variant="h4"
-                      sx={{
-                        fontFamily: formData.typography?.headings?.fontFamily || formData.typography?.fontFamily || STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary,
-                        fontSize: formData.typography?.headings?.fontSize || formData.typography?.fontSize || STYLE_GUIDE.TYPOGRAPHY.fontSize.large,
-                        fontWeight: formData.typography?.headings?.fontWeight || formData.typography?.fontWeight || STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold,
-                        mb: 2,
-                      }}
-                    >
-                      Heading Text
-                    </Typography>
-                    <Typography
-                      sx={{
-                        fontFamily: formData.typography?.body?.fontFamily || formData.typography?.fontFamily || STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary,
-                        fontSize: formData.typography?.body?.fontSize || formData.typography?.fontSize || STYLE_GUIDE.TYPOGRAPHY.fontSize.base,
-                        fontWeight: formData.typography?.body?.fontWeight || formData.typography?.fontWeight || STYLE_GUIDE.TYPOGRAPHY.fontWeight.regular,
-                        mb: 2,
-                      }}
-                    >
-                      This is body text that demonstrates the typography settings for regular content.
-                    </Typography>
-                    <Button
-                      variant="contained"
-                      sx={{
-                        fontFamily: formData.typography?.buttons?.fontFamily || formData.typography?.fontFamily || STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary,
-                        fontSize: formData.typography?.buttons?.fontSize || formData.typography?.fontSize || STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
-                        fontWeight: formData.typography?.buttons?.fontWeight || formData.typography?.fontWeight || STYLE_GUIDE.TYPOGRAPHY.fontWeight.medium,
-                      }}
-                    >
-                      Button Text
-                    </Button>
+                  />
+                </Button>
+                {formData.customFonts && formData.customFonts.length > 0 && (
+                  <Typography variant="body2" color="success.main">
+                    {formData.customFonts.length} custom font(s) uploaded
+                  </Typography>
+                )}
+              </Box>
+              {formData.customFonts && formData.customFonts.length > 0 && (
+                <Box sx={{ mt: 2 }}>
+                  <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>
+                    Uploaded Fonts:
+                  </Typography>
+                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                    {formData.customFonts?.map((font: FontOption, index) => (
+                      <Box
+                        key={index}
+                        sx={{
+                          p: 1,
+                          px: 2,
+                          border: '1px solid',
+                          borderColor: 'divider',
+                          borderRadius: 1,
+                          backgroundColor: 'background.default',
+                          fontSize: '0.875rem',
+                        }}
+                      >
+                        {font.label}
+                      </Box>
+                    ))}
                   </Box>
-                </Grid>
-                <Grid item xs={12} md={6}>
-                  <Box
-                    sx={{
-                      p: 3,
-                      border: '1px solid',
-                      borderColor: 'divider',
-                      borderRadius: 1,
-                      backgroundColor: 'background.paper',
-                    }}
-                  >
-                    <Typography variant="h6" sx={{ mb: 2 }}>
-                      Card Content
-                    </Typography>
-                    <Typography
-                      sx={{
-                        fontFamily: formData.typography?.cards?.fontFamily || formData.typography?.fontFamily || STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary,
-                        fontSize: formData.typography?.cards?.fontSize || formData.typography?.fontSize || STYLE_GUIDE.TYPOGRAPHY.fontSize.base,
-                        fontWeight: formData.typography?.cards?.fontWeight || formData.typography?.fontWeight || STYLE_GUIDE.TYPOGRAPHY.fontWeight.regular,
-                        mb: 2,
-                      }}
-                    >
-                      This is card content with its own typography settings.
-                    </Typography>
-                    <TextField
-                      fullWidth
-                      label="Input Field"
-                      sx={{
-                        '& .MuiInputBase-input': {
-                          fontFamily: formData.typography?.inputs?.fontFamily || formData.typography?.fontFamily || STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary,
-                          fontSize: formData.typography?.inputs?.fontSize || formData.typography?.fontSize || STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
-                          fontWeight: formData.typography?.inputs?.fontWeight || formData.typography?.fontWeight || STYLE_GUIDE.TYPOGRAPHY.fontWeight.regular,
-                        },
-                      }}
-                    />
-                  </Box>
-                </Grid>
-              </Grid>
+                </Box>
+              )}
             </Paper>
           </Box>
         </TabPanel>

@@ -181,6 +181,7 @@ const getDefaultTheme = (): DashboardTheme => ({
   layout: {
     maxWidth: '1200px',
   },
+  customFonts: [],
   isDefault: true,
   isActive: true,
   createdAt: new Date().toISOString(),

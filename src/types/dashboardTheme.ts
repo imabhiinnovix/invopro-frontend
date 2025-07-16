@@ -1,3 +1,8 @@
+export interface FontOption {
+  label: string;
+  value: string;
+}
+
 export interface DashboardTheme {
   _id?: string;
   name: string;
@@ -176,6 +181,9 @@ export interface DashboardTheme {
   layout: {
     maxWidth: string;
   };
+
+  // Custom Fonts
+  customFonts?: FontOption[];
 }
 
 export interface DashboardThemeListResponse {

@@ -153,6 +153,7 @@ export const getDefaultDashboardTheme = (): DashboardTheme => ({
   layout: {
     maxWidth: '1200px',
   },
+  customFonts: [],
 });
 
 // Convert dashboard theme to MUI theme
