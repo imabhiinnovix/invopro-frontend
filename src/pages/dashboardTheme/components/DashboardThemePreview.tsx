@@ -19,6 +19,7 @@ import {
 } from '@mui/icons-material';
 import { DashboardTheme } from '../../../types/dashboardTheme';
 import { STYLE_GUIDE } from '../../../styles';
+import { useComponentTypography } from '../../../hooks/useComponentTypography';
 
 interface DashboardThemePreviewProps {
   theme: DashboardTheme;
@@ -37,6 +38,7 @@ const DashboardThemePreview: React.FC<DashboardThemePreviewProps> = ({
   onApply,
   isCurrentTheme = false,
 }) => {
+  const { getCardSx } = useComponentTypography();
   const handleDelete = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (theme._id) {
@@ -71,6 +73,7 @@ const DashboardThemePreview: React.FC<DashboardThemePreviewProps> = ({
     <Card
       onClick={handleCardClick}
       sx={{
+        ...getCardSx(),
         height: '100%',
         display: 'flex',
         flexDirection: 'column',

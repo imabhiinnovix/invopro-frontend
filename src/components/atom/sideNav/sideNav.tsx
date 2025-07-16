@@ -38,6 +38,7 @@ import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import { STYLE_GUIDE } from '../../../styles';
 import SettingsIcon from '@mui/icons-material/Settings';
 import { useUnifiedTheme } from '../../../hooks/useUnifiedTheme';
+import { useComponentTypography } from '../../../hooks/useComponentTypography';
 
 
 interface ErrorResponse {
@@ -138,6 +139,7 @@ interface NavItem {
 
 export default function SideNav() {
   const theme = useUnifiedTheme();
+  const { getNavigationSx } = useComponentTypography();
   const { openNav } = useNav();
   const [openSettings, setOpenSettings] = React.useState(false);
   const [openDashboard, setOpenDashboard] = React.useState(false);
@@ -301,7 +303,7 @@ export default function SideNav() {
         subItems: [
           {
             name: 'Create New Dashboard',
-            icon: <AddIcon sx={{ fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base, color: theme.getIconColor() }} />,
+            icon: <AddIcon sx={{ fontSize: getNavigationSx().fontSize, color: theme.getIconColor() }} />,
             route: '#',
             isCreateButton: true,
           },
@@ -486,8 +488,7 @@ export default function SideNav() {
                         opacity: openNav ? 1 : 0,
                         m: 0,
                         '& .MuiListItemText-primary': {
-                          fontSize: '0.95rem',
-                          fontWeight: 500,
+                          ...getNavigationSx(),
                           color: isRouteActive(item.route) ? theme.palette.primary.main : theme.palette.text.primary,
                         },
                       }}
@@ -497,14 +498,14 @@ export default function SideNav() {
                       ((item.name === 'Dashboards' && openDashboard) || (item.name !== 'Dashboards' && openSettings) ? (
                         <ExpandLessIcon
                           sx={{
-                            fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base,
+                            fontSize: getNavigationSx().fontSize,
                             color: isRouteActive(item.route) ? theme.palette.primary.main : theme.palette.text.primary,
                           }}
                         />
                       ) : (
                         <ExpandMoreIcon
                           sx={{
-                            fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base,
+                            fontSize: getNavigationSx().fontSize,
                             color: isRouteActive(item.route) ? theme.palette.primary.main : theme.palette.text.primary,
                           }}
                         />
@@ -537,14 +538,14 @@ export default function SideNav() {
                                 justifyContent: 'center',
                               }}
                             >
-                              <AddIcon sx={{ fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base, color: theme.getIconColor() }} />
+                              <AddIcon sx={{ fontSize: getNavigationSx().fontSize, color: theme.getIconColor() }} />
                             </ListItemIcon>
                             <ListItemText
                               primary="Create New Dashboard"
                               sx={{
                                 m: 0,
                                 '& .MuiListItemText-primary': {
-                                  fontSize: '0.8rem',
+                                  ...getNavigationSx(),
                                 },
                               }}
                             />
@@ -596,7 +597,7 @@ export default function SideNav() {
                   opacity: openNav ? 1 : 0,
                   m: 0,
                   '& .MuiListItemText-primary': {
-                    fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base,
+                    ...getNavigationSx(),
                   },
                 }}
               />

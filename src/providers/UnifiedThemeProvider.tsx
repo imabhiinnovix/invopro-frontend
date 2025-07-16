@@ -44,72 +44,85 @@ const UnifiedThemeProviderInner: React.FC<UnifiedThemeProviderProps> = ({ childr
 
   // Create a unified theme that combines the base MUI theme with the dashboard theme and typography settings
   const unifiedTheme = React.useMemo(() => {
-      const baseThemeWithTypography = {
-    ...baseTheme,
-    typography: {
-      ...baseTheme.typography,
-      fontFamily: effectiveTypographySettings.fontFamily,
-      fontSize: parseInt(effectiveTypographySettings.fontSize),
-      // Override specific typography variants to use the selected font
-      h1: {
-        ...baseTheme.typography.h1,
-        fontFamily: getComponentTypography('headings').fontFamily,
-        fontWeight: parseInt(getComponentTypography('headings').fontWeight),
+    console.log('Creating unified theme with typography:', {
+      effectiveTypographySettings,
+      dashboardTheme: dashboardTheme?.typography,
+      headings: getComponentTypography('headings'),
+      body: getComponentTypography('body'),
+    });
+
+    const baseThemeWithTypography = {
+      ...baseTheme,
+      typography: {
+        ...baseTheme.typography,
+        fontFamily: effectiveTypographySettings.fontFamily,
+        fontSize: parseInt(effectiveTypographySettings.fontSize),
+        // Override specific typography variants to use the selected font
+        h1: {
+          ...baseTheme.typography.h1,
+          fontFamily: getComponentTypography('headings').fontFamily,
+          fontWeight: parseInt(getComponentTypography('headings').fontWeight),
+          fontSize: getComponentTypography('headings').fontSize,
+        },
+        h2: {
+          ...baseTheme.typography.h2,
+          fontFamily: getComponentTypography('headings').fontFamily,
+          fontWeight: parseInt(getComponentTypography('headings').fontWeight),
+          fontSize: getComponentTypography('headings').fontSize,
+        },
+        h3: {
+          ...baseTheme.typography.h3,
+          fontFamily: getComponentTypography('headings').fontFamily,
+          fontWeight: parseInt(getComponentTypography('headings').fontWeight),
+          fontSize: getComponentTypography('headings').fontSize,
+        },
+        h4: {
+          ...baseTheme.typography.h4,
+          fontFamily: getComponentTypography('headings').fontFamily,
+          fontWeight: parseInt(getComponentTypography('headings').fontWeight),
+          fontSize: getComponentTypography('headings').fontSize,
+        },
+        h5: {
+          ...baseTheme.typography.h5,
+          fontFamily: getComponentTypography('headings').fontFamily,
+          fontWeight: parseInt(getComponentTypography('headings').fontWeight),
+          fontSize: getComponentTypography('headings').fontSize,
+        },
+        h6: {
+          ...baseTheme.typography.h6,
+          fontFamily: getComponentTypography('headings').fontFamily,
+          fontWeight: parseInt(getComponentTypography('headings').fontWeight),
+          fontSize: getComponentTypography('headings').fontSize,
+        },
+        body1: {
+          ...baseTheme.typography.body1,
+          fontFamily: getComponentTypography('body').fontFamily,
+          fontSize: getComponentTypography('body').fontSize,
+          fontWeight: parseInt(getComponentTypography('body').fontWeight),
+        },
+        body2: {
+          ...baseTheme.typography.body2,
+          fontFamily: getComponentTypography('body').fontFamily,
+          fontSize: getComponentTypography('body').fontSize,
+          fontWeight: parseInt(getComponentTypography('body').fontWeight),
+        },
+        button: {
+          ...baseTheme.typography.button,
+          fontFamily: getComponentTypography('buttons').fontFamily,
+          fontWeight: parseInt(getComponentTypography('buttons').fontWeight),
+        },
+        caption: {
+          ...baseTheme.typography.caption,
+          fontFamily: getComponentTypography('body').fontFamily,
+          fontWeight: parseInt(getComponentTypography('body').fontWeight),
+        },
+        overline: {
+          ...baseTheme.typography.overline,
+          fontFamily: getComponentTypography('body').fontFamily,
+          fontWeight: parseInt(getComponentTypography('body').fontWeight),
+        },
       },
-      h2: {
-        ...baseTheme.typography.h2,
-        fontFamily: getComponentTypography('headings').fontFamily,
-        fontWeight: parseInt(getComponentTypography('headings').fontWeight),
-      },
-      h3: {
-        ...baseTheme.typography.h3,
-        fontFamily: getComponentTypography('headings').fontFamily,
-        fontWeight: parseInt(getComponentTypography('headings').fontWeight),
-      },
-      h4: {
-        ...baseTheme.typography.h4,
-        fontFamily: getComponentTypography('headings').fontFamily,
-        fontWeight: parseInt(getComponentTypography('headings').fontWeight),
-      },
-      h5: {
-        ...baseTheme.typography.h5,
-        fontFamily: getComponentTypography('headings').fontFamily,
-        fontWeight: parseInt(getComponentTypography('headings').fontWeight),
-      },
-      h6: {
-        ...baseTheme.typography.h6,
-        fontFamily: getComponentTypography('headings').fontFamily,
-        fontWeight: parseInt(getComponentTypography('headings').fontWeight),
-      },
-      body1: {
-        ...baseTheme.typography.body1,
-        fontFamily: getComponentTypography('body').fontFamily,
-        fontSize: getComponentTypography('body').fontSize,
-        fontWeight: parseInt(getComponentTypography('body').fontWeight),
-      },
-      body2: {
-        ...baseTheme.typography.body2,
-        fontFamily: getComponentTypography('body').fontFamily,
-        fontSize: getComponentTypography('body').fontSize,
-        fontWeight: parseInt(getComponentTypography('body').fontWeight),
-      },
-      button: {
-        ...baseTheme.typography.button,
-        fontFamily: getComponentTypography('buttons').fontFamily,
-        fontWeight: parseInt(getComponentTypography('buttons').fontWeight),
-      },
-      caption: {
-        ...baseTheme.typography.caption,
-        fontFamily: getComponentTypography('body').fontFamily,
-        fontWeight: parseInt(getComponentTypography('body').fontWeight),
-      },
-      overline: {
-        ...baseTheme.typography.overline,
-        fontFamily: getComponentTypography('body').fontFamily,
-        fontWeight: parseInt(getComponentTypography('body').fontWeight),
-      },
-    },
-  };
+    };
 
     if (!dashboardTheme) {
       return baseThemeWithTypography;
@@ -197,7 +210,22 @@ const UnifiedThemeProviderInner: React.FC<UnifiedThemeProviderProps> = ({ childr
           styleOverrides: {
             root: {
               textTransform: dashboardTheme.components?.button?.textTransform || 'none',
-              fontFamily: getComponentTypography('buttons').fontFamily,
+              fontFamily: `${getComponentTypography('buttons').fontFamily} !important`,
+              fontWeight: parseInt(getComponentTypography('buttons').fontWeight),
+              fontSize: getComponentTypography('buttons').fontSize,
+            },
+            text: {
+              fontFamily: `${getComponentTypography('buttons').fontFamily} !important`,
+              fontWeight: parseInt(getComponentTypography('buttons').fontWeight),
+              fontSize: getComponentTypography('buttons').fontSize,
+            },
+            outlined: {
+              fontFamily: `${getComponentTypography('buttons').fontFamily} !important`,
+              fontWeight: parseInt(getComponentTypography('buttons').fontWeight),
+              fontSize: getComponentTypography('buttons').fontSize,
+            },
+            contained: {
+              fontFamily: `${getComponentTypography('buttons').fontFamily} !important`,
               fontWeight: parseInt(getComponentTypography('buttons').fontWeight),
               fontSize: getComponentTypography('buttons').fontSize,
             },
@@ -208,12 +236,13 @@ const UnifiedThemeProviderInner: React.FC<UnifiedThemeProviderProps> = ({ childr
             root: {
               boxShadow: dashboardTheme.components?.card?.boxShadow || STYLE_GUIDE.SHADOWS.sm,
               backgroundColor: dashboardTheme.colors.background.card || STYLE_GUIDE.COLORS.backgroundSurface,
-              fontFamily: getComponentTypography('cards').fontFamily,
+              fontFamily: `${getComponentTypography('cards').fontFamily} !important`,
               fontWeight: parseInt(getComponentTypography('cards').fontWeight),
               fontSize: getComponentTypography('cards').fontSize,
             },
           },
         },
+
         MuiDialog: {
           styleOverrides: {
             paper: {
@@ -232,7 +261,7 @@ const UnifiedThemeProviderInner: React.FC<UnifiedThemeProviderProps> = ({ childr
               fontWeight: dashboardTheme.components?.dialog?.titleFontWeight || STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold,
               padding: '16px 24px',
               borderBottom: `1px solid ${dashboardTheme.colors.divider}`,
-              fontFamily: getComponentTypography('headings').fontFamily,
+              fontFamily: `${getComponentTypography('headings').fontFamily} !important`,
             },
           },
         },
@@ -242,7 +271,7 @@ const UnifiedThemeProviderInner: React.FC<UnifiedThemeProviderProps> = ({ childr
               color: dashboardTheme.components?.dialog?.contentColor || dashboardTheme.colors.text.primary,
               fontSize: dashboardTheme.components?.dialog?.contentFontSize || '1rem',
               padding: '16px 24px',
-              fontFamily: getComponentTypography('body').fontFamily,
+              fontFamily: `${getComponentTypography('body').fontFamily} !important`,
               fontWeight: parseInt(getComponentTypography('body').fontWeight),
             },
           },
@@ -252,23 +281,9 @@ const UnifiedThemeProviderInner: React.FC<UnifiedThemeProviderProps> = ({ childr
             root: {
               boxShadow: dashboardTheme.components?.paper?.boxShadow || STYLE_GUIDE.SHADOWS.sm,
               backgroundColor: dashboardTheme.colors.background.paper || STYLE_GUIDE.COLORS.white,
-            },
-          },
-        },
-        MuiTableCell: {
-          styleOverrides: {
-            head: {
-              backgroundColor: dashboardTheme.components?.table?.headerBackground || STYLE_GUIDE.COLORS.backgroundLightGray,
-              color: dashboardTheme.components?.table?.headerText || STYLE_GUIDE.COLORS.textGray,
-              fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold,
-              fontFamily: getComponentTypography('tables').fontFamily,
-              fontSize: getComponentTypography('tables').fontSize,
-            },
-            body: {
-              color: dashboardTheme.components?.table?.rowText || STYLE_GUIDE.COLORS.textDarkGray,
-              fontFamily: getComponentTypography('tables').fontFamily,
-              fontWeight: parseInt(getComponentTypography('tables').fontWeight),
-              fontSize: getComponentTypography('tables').fontSize,
+              fontFamily: `${getComponentTypography('cards').fontFamily} !important`,
+              fontWeight: parseInt(getComponentTypography('cards').fontWeight),
+              fontSize: getComponentTypography('cards').fontSize,
             },
           },
         },
@@ -290,7 +305,47 @@ const UnifiedThemeProviderInner: React.FC<UnifiedThemeProviderProps> = ({ childr
         MuiTypography: {
           styleOverrides: {
             root: {
-              fontFamily: getComponentTypography('body').fontFamily,
+              fontFamily: `${getComponentTypography('body').fontFamily} !important`,
+              fontWeight: parseInt(getComponentTypography('body').fontWeight),
+              fontSize: getComponentTypography('body').fontSize,
+            },
+            h1: {
+              fontFamily: `${getComponentTypography('headings').fontFamily} !important`,
+              fontWeight: parseInt(getComponentTypography('headings').fontWeight),
+              fontSize: getComponentTypography('headings').fontSize,
+            },
+            h2: {
+              fontFamily: `${getComponentTypography('headings').fontFamily} !important`,
+              fontWeight: parseInt(getComponentTypography('headings').fontWeight),
+              fontSize: getComponentTypography('headings').fontSize,
+            },
+            h3: {
+              fontFamily: `${getComponentTypography('headings').fontFamily} !important`,
+              fontWeight: parseInt(getComponentTypography('headings').fontWeight),
+              fontSize: getComponentTypography('headings').fontSize,
+            },
+            h4: {
+              fontFamily: `${getComponentTypography('headings').fontFamily} !important`,
+              fontWeight: parseInt(getComponentTypography('headings').fontWeight),
+              fontSize: getComponentTypography('headings').fontSize,
+            },
+            h5: {
+              fontFamily: `${getComponentTypography('headings').fontFamily} !important`,
+              fontWeight: parseInt(getComponentTypography('headings').fontWeight),
+              fontSize: getComponentTypography('headings').fontSize,
+            },
+            h6: {
+              fontFamily: `${getComponentTypography('headings').fontFamily} !important`,
+              fontWeight: parseInt(getComponentTypography('headings').fontWeight),
+              fontSize: getComponentTypography('headings').fontSize,
+            },
+            body1: {
+              fontFamily: `${getComponentTypography('body').fontFamily} !important`,
+              fontWeight: parseInt(getComponentTypography('body').fontWeight),
+              fontSize: getComponentTypography('body').fontSize,
+            },
+            body2: {
+              fontFamily: `${getComponentTypography('body').fontFamily} !important`,
               fontWeight: parseInt(getComponentTypography('body').fontWeight),
               fontSize: getComponentTypography('body').fontSize,
             },
@@ -299,7 +354,12 @@ const UnifiedThemeProviderInner: React.FC<UnifiedThemeProviderProps> = ({ childr
         MuiInputBase: {
           styleOverrides: {
             root: {
-              fontFamily: getComponentTypography('inputs').fontFamily,
+              fontFamily: `${getComponentTypography('inputs').fontFamily} !important`,
+              fontWeight: parseInt(getComponentTypography('inputs').fontWeight),
+              fontSize: getComponentTypography('inputs').fontSize,
+            },
+            input: {
+              fontFamily: `${getComponentTypography('inputs').fontFamily} !important`,
               fontWeight: parseInt(getComponentTypography('inputs').fontWeight),
               fontSize: getComponentTypography('inputs').fontSize,
             },
@@ -308,9 +368,86 @@ const UnifiedThemeProviderInner: React.FC<UnifiedThemeProviderProps> = ({ childr
         MuiInputLabel: {
           styleOverrides: {
             root: {
-              fontFamily: getComponentTypography('inputs').fontFamily,
+              fontFamily: `${getComponentTypography('inputs').fontFamily} !important`,
               fontWeight: parseInt(getComponentTypography('inputs').fontWeight),
               fontSize: getComponentTypography('inputs').fontSize,
+            },
+          },
+        },
+        MuiTextField: {
+          styleOverrides: {
+            root: {
+              fontFamily: `${getComponentTypography('inputs').fontFamily} !important`,
+              fontWeight: parseInt(getComponentTypography('inputs').fontWeight),
+              fontSize: getComponentTypography('inputs').fontSize,
+            },
+          },
+        },
+        MuiListItemButton: {
+          styleOverrides: {
+            root: {
+              fontFamily: `${getComponentTypography('navigation').fontFamily} !important`,
+              fontWeight: parseInt(getComponentTypography('navigation').fontWeight),
+              fontSize: getComponentTypography('navigation').fontSize,
+            },
+          },
+        },
+        MuiListItemText: {
+          styleOverrides: {
+            root: {
+              fontFamily: `${getComponentTypography('navigation').fontFamily} !important`,
+              fontWeight: parseInt(getComponentTypography('navigation').fontWeight),
+              fontSize: getComponentTypography('navigation').fontSize,
+            },
+            primary: {
+              fontFamily: `${getComponentTypography('navigation').fontFamily} !important`,
+              fontWeight: parseInt(getComponentTypography('navigation').fontWeight),
+              fontSize: getComponentTypography('navigation').fontSize,
+            },
+            secondary: {
+              fontFamily: `${getComponentTypography('navigation').fontFamily} !important`,
+              fontWeight: parseInt(getComponentTypography('navigation').fontWeight),
+              fontSize: getComponentTypography('navigation').fontSize,
+            },
+          },
+        },
+        MuiListItem: {
+          styleOverrides: {
+            root: {
+              fontFamily: `${getComponentTypography('navigation').fontFamily} !important`,
+              fontWeight: parseInt(getComponentTypography('navigation').fontWeight),
+              fontSize: getComponentTypography('navigation').fontSize,
+            },
+          },
+        },
+        MuiList: {
+          styleOverrides: {
+            root: {
+              fontFamily: `${getComponentTypography('navigation').fontFamily} !important`,
+              fontWeight: parseInt(getComponentTypography('navigation').fontWeight),
+              fontSize: getComponentTypography('navigation').fontSize,
+            },
+          },
+        },
+        MuiTableCell: {
+          styleOverrides: {
+            root: {
+              fontFamily: `${getComponentTypography('tables').fontFamily} !important`,
+              fontWeight: parseInt(getComponentTypography('tables').fontWeight),
+              fontSize: getComponentTypography('tables').fontSize,
+            },
+            head: {
+              backgroundColor: dashboardTheme.components?.table?.headerBackground || STYLE_GUIDE.COLORS.backgroundLightGray,
+              color: dashboardTheme.components?.table?.headerText || STYLE_GUIDE.COLORS.textGray,
+              fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold,
+              fontFamily: `${getComponentTypography('tables').fontFamily} !important`,
+              fontSize: getComponentTypography('tables').fontSize,
+            },
+            body: {
+              color: dashboardTheme.components?.table?.rowText || STYLE_GUIDE.COLORS.textDarkGray,
+              fontFamily: `${getComponentTypography('tables').fontFamily} !important`,
+              fontWeight: parseInt(getComponentTypography('tables').fontWeight),
+              fontSize: getComponentTypography('tables').fontSize,
             },
           },
         },
@@ -322,6 +459,102 @@ const UnifiedThemeProviderInner: React.FC<UnifiedThemeProviderProps> = ({ childr
 
   return (
     <ThemeProvider theme={unifiedTheme}>
+      <style>
+        {(() => {
+          const headingsTypography = getComponentTypography('headings');
+          const bodyTypography = getComponentTypography('body');
+          const buttonsTypography = getComponentTypography('buttons');
+          const cardsTypography = getComponentTypography('cards');
+          const inputsTypography = getComponentTypography('inputs');
+          const tablesTypography = getComponentTypography('tables');
+          const navigationTypography = getComponentTypography('navigation');
+          
+
+          
+          const cssString = `
+            :root {
+              --theme-font-family-primary: ${effectiveTypographySettings.fontFamily};
+              --theme-font-family-headings: ${headingsTypography.fontFamily};
+              --theme-font-family-body: ${bodyTypography.fontFamily};
+              --theme-font-family-buttons: ${buttonsTypography.fontFamily};
+              --theme-font-family-cards: ${cardsTypography.fontFamily};
+              --theme-font-family-inputs: ${inputsTypography.fontFamily};
+              --theme-font-family-tables: ${tablesTypography.fontFamily};
+              --theme-font-family-navigation: ${navigationTypography.fontFamily};
+            }
+            
+            /* Force typography on all elements */
+            * {
+              font-family: var(--theme-font-family-primary) !important;
+            }
+            
+            /* Force typography on specific elements */
+            body, html, #root {
+              font-family: var(--theme-font-family-primary) !important;
+            }
+            
+            /* Force typography on headings */
+            h1, h2, h3, h4, h5, h6,
+            .MuiTypography-h1, .MuiTypography-h2, .MuiTypography-h3, 
+            .MuiTypography-h4, .MuiTypography-h5, .MuiTypography-h6 {
+              font-family: var(--theme-font-family-headings) !important;
+            }
+            
+            /* Force typography on buttons */
+            button, .MuiButton-root, .MuiButtonBase-root,
+            .MuiButton-text, .MuiButton-outlined, .MuiButton-contained {
+              font-family: var(--theme-font-family-buttons) !important;
+            }
+            
+            /* Force typography on inputs */
+            input, textarea, .MuiInputBase-root, .MuiTextField-root,
+            .MuiInputBase-input, .MuiInputLabel-root {
+              font-family: var(--theme-font-family-inputs) !important;
+            }
+            
+            /* Force typography on cards and papers */
+            .MuiCard-root, .MuiPaper-root {
+              font-family: var(--theme-font-family-cards) !important;
+            }
+            
+            /* Force typography on navigation */
+            nav, .MuiDrawer-root, .MuiAppBar-root,
+            .MuiListItemButton-root, .MuiListItemText-root,
+            .MuiListItemText-primary, .MuiListItemText-secondary,
+            .MuiListItem-root, .MuiList-root {
+              font-family: var(--theme-font-family-navigation) !important;
+            }
+            
+            /* Force typography on body text */
+            .MuiTypography-root,
+            .MuiTypography-body1, .MuiTypography-body2,
+            .MuiTypography-button, .MuiTypography-caption,
+            .MuiTypography-overline, .MuiTypography-subtitle1,
+            .MuiTypography-subtitle2 {
+              font-family: var(--theme-font-family-body) !important;
+            }
+            
+            /* Force typography on tables */
+            .MuiTableCell-root, .MuiTableCell-head, .MuiTableCell-body,
+            .MuiTable-root, .MuiTableHead-root, .MuiTableBody-root, .MuiTableRow-root,
+            .MuiTableContainer-root .MuiTable-root .MuiTableCell-root,
+            .MuiTableContainer-root .MuiTable-root .MuiTableHead-root .MuiTableRow-root .MuiTableCell-root,
+            .MuiTableContainer-root .MuiTable-root .MuiTableBody-root .MuiTableRow-root .MuiTableCell-root,
+            [class*="MuiTableCell"], div[class*="StyledTableCell"] {
+              font-family: var(--theme-font-family-tables) !important;
+            }
+            
+            /* Override any inline styles */
+            [style*="font-family"] {
+              font-family: var(--theme-font-family-primary) !important;
+            }
+          `;
+          
+
+          
+          return cssString;
+        })()}
+      </style>
       {children}
     </ThemeProvider>
   );

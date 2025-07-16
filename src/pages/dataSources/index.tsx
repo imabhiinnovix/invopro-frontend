@@ -34,10 +34,12 @@ import { DateTime } from "luxon";
 import usePost from "../../hooks/usePost";
 import { STYLE_GUIDE } from "../../styles";
 import { useUnifiedTheme } from '../../hooks/useUnifiedTheme';
+import { useComponentTypography } from '../../hooks/useComponentTypography';
 
 const DataSources = () => {
   
   const theme = useUnifiedTheme();
+  const { getHeadingSx, getTableSx } = useComponentTypography();
   const [rows, setRows] = useState<
     { [x: string]: string | number | boolean }[]
   >([]);
@@ -259,7 +261,7 @@ const DataSources = () => {
             alignItems="center"
           >
             <Stack direction="row" spacing={2} alignItems="center">
-              <Typography variant="h6" color="primary" sx={{ fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold }}>
+              <Typography variant="h6" sx={{ ...getHeadingSx(), fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold, color: "primary" }}>
                 Data Source Version
               </Typography>
               <CommonDatePicker
@@ -311,6 +313,7 @@ const DataSources = () => {
         <TableContainer
           component={Paper}
           sx={{
+            ...getTableSx(),
             maxHeight: "calc(100vh - 300px)",
             borderRadius: STYLE_GUIDE.SPACING.s2,
             boxShadow: STYLE_GUIDE.SHADOWS.xxxl,

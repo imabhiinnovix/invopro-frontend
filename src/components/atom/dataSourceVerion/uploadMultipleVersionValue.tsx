@@ -41,6 +41,7 @@ import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import { useUploadCustomReportFile } from "../../../hooks/useFileUpalod";
 import { objectToFormData } from "../../../utils/utils";
 import * as XLSX from "xlsx";
+import { useComponentTypography } from "../../../hooks/useComponentTypography";
 
 interface UploadMultipleFilesProps {
   reportId: string;
@@ -85,6 +86,7 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
   versionValue,
   setReload,
 }) => {
+  const { getTableSx } = useComponentTypography();
   const [openMappingModal, setOpenMappingModal] = useState(-1);
   const [processingCount, setProcessingCount] = useState(0);
   const [fileUploads, setFileUploads] = useState<Record<string, File | null>>(
@@ -787,7 +789,7 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
           </Stack>
         </DialogTitle>
         <DialogContent>
-          <TableContainer component={Paper}>
+          <TableContainer component={Paper} sx={{ ...getTableSx() }}>
             <Table sx={{ width: "100%" }} aria-label="customized table">
               <TableHead>
                 <TableRow>

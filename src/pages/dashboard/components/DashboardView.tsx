@@ -33,6 +33,7 @@ import * as yup from 'yup';
 import { fetchThemeList } from '../../createTheme/themeActions';
 import { STYLE_GUIDE } from '../../../styles';
 import { useUnifiedTheme } from '../../../hooks/useUnifiedTheme';
+import { useComponentTypography } from '../../../hooks/useComponentTypography';
 
 interface DashboardViewProps {
   title: string;
@@ -41,6 +42,7 @@ interface DashboardViewProps {
 
 export const DashboardView: React.FC<DashboardViewProps> = ({ title: initialTitle, onTitleChange }): JSX.Element => {
   const theme = useUnifiedTheme();
+  const { getHeadingSx, getButtonSx } = useComponentTypography();
   const [isEditMode, setIsEditMode] = useState(false);
   const [editedTitle, setEditedTitle] = useState(initialTitle);
   const [title, setTitle] = useState(initialTitle);
@@ -201,10 +203,9 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ title: initialTitl
 
   useEffect(() => {
     if (currentDashboard?.widgetThemeId) {
-      dispatch(fetchWidgetTheme(currentDashboard.widgetThemeId));
       setSelectedTheme(currentDashboard.widgetThemeId);
     }
-  }, [currentDashboard?.widgetThemeId, dispatch]);
+  }, [currentDashboard?.widgetThemeId]);
 
   useEffect(() => {
     dispatch(fetchThemeList());
@@ -430,7 +431,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ title: initialTitl
               sx={{ '& .MuiOutlinedInput-root': { borderRadius: STYLE_GUIDE.SPACING.s2, alignItems: 'flex-start', paddingRight: STYLE_GUIDE.SPACING.s2, fontSize: '14px', backgroundColor: theme.getDropdownBackground(), '& fieldset': { borderColor: theme.getInputBorderColor(), }, '&:hover fieldset': { borderColor: theme.border?.hover || STYLE_GUIDE.COLORS.darkBorderHover, }, '&.Mui-focused fieldset': { borderColor: theme.input?.focusBorder || STYLE_GUIDE.COLORS.inputFocusFallback, }, }, '& .MuiInputLabel-root': { color: theme.palette.text.secondary, }, '& .MuiInputLabel-root.Mui-focused': { color: theme.input?.focusBorder || STYLE_GUIDE.COLORS.inputFocusFallback, }, '& .MuiInputBase-input': { color: `${theme.getInputTextColor()} !important`, }, '& .MuiInputBase-input::placeholder': { color: `${theme.palette.text.secondary} !important`, }, '& .MuiInputBase-input:-webkit-autofill': { WebkitTextFillColor: `${theme.getInputTextColor()} !important`, WebkitBoxShadow: `0 0 0 1000px ${theme.getDropdownBackground()} inset !important`, }, }}
             />
           ) : (
-            <Typography variant="h4" component="h1" fontWeight={STYLE_GUIDE.TYPOGRAPHY.fontWeight.medium} sx={{ mr: STYLE_GUIDE.SPACING.s4 }}>
+            <Typography variant="h4" component="h1" sx={{ ...getHeadingSx(), mr: STYLE_GUIDE.SPACING.s4, fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.medium }}>
               {title}
             </Typography>
           )}
@@ -485,7 +486,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ title: initialTitl
                 color="primary"
                 startIcon={<AddIcon />}
                 onClick={() => setIsAddChartModalOpen(true)}
-                sx={{ px: STYLE_GUIDE.SPACING.s6 }}
+                sx={{ ...getButtonSx(), px: STYLE_GUIDE.SPACING.s6 }}
               >
                 Add Chart
               </Button>
@@ -494,7 +495,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ title: initialTitl
                 color="success"
                 variant="contained"
                 startIcon={<DoneIcon />}
-                sx={{ px: STYLE_GUIDE.SPACING.s6 }}
+                sx={{ ...getButtonSx(), px: STYLE_GUIDE.SPACING.s6 }}
               >
                 Save
               </Button>
@@ -550,7 +551,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ title: initialTitl
                   </Stack>
                 ) : null}
               </Box>
-              <Button onClick={handleEditModeToggle} color="primary" variant="contained" startIcon={<EditIcon />}>
+              <Button onClick={handleEditModeToggle} color="primary" variant="contained" startIcon={<EditIcon />} sx={{ ...getButtonSx() }}>
                 Edit
               </Button>
             </>

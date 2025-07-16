@@ -22,6 +22,7 @@ import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import ErrorDialog from './showError';
 import { STYLE_GUIDE } from '../../../styles';
+import { useComponentTypography } from '../../../hooks/useComponentTypography';
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
   [`&.${tableCellClasses.head}`]: {
@@ -53,6 +54,7 @@ interface AttributeOptionTableProps {
 }
 
 const DataSourceVersionTable: React.FC<AttributeOptionTableProps> = ({ reload, setReload }) => {
+  const { getHeadingSx, getTableSx } = useComponentTypography();
   const [dataSourceVersion, setDataSourceVersion] = useState<any[]>([]);
   const [currentPage, setCurrentPage] = useState<number>(1);
 
@@ -183,6 +185,7 @@ const DataSourceVersionTable: React.FC<AttributeOptionTableProps> = ({ reload, s
         <Typography 
           variant="h4" 
           sx={{
+            ...getHeadingSx(),
             fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.bold,
             color: STYLE_GUIDE.COLORS.textDarkGray,
             fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.xxl,
@@ -195,7 +198,7 @@ const DataSourceVersionTable: React.FC<AttributeOptionTableProps> = ({ reload, s
   }
 
   return (
-    <TableContainer component={Paper}>
+    <TableContainer component={Paper} sx={{ ...getTableSx() }}>
       <Table sx={{ width: '100%' }} aria-label="attribute-option-table">
         <TableHead>
           <TableRow>

@@ -11,7 +11,6 @@ import {
   DialogContent,
   DialogContentText,
   DialogActions,
-  useTheme,
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -31,9 +30,12 @@ import DashboardThemePreview from './components/DashboardThemePreview';
 import CreateDashboardThemeDialog from './components/CreateDashboardThemeDialog';
 import { toast } from 'react-toastify';
 import { useUnifiedTheme } from '../../hooks/useUnifiedTheme';
+import { useComponentTypography } from '../../hooks/useComponentTypography';
+
 
 const DashboardThemePage = () => {
   const unifiedTheme = useUnifiedTheme();
+  const { getHeadingSx, getButtonSx } = useComponentTypography();
   const dispatch = useAppDispatch();
   const { themes, loading, error, success, dashboardTheme } = useAppSelector((state) => state.dashboardTheme);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -112,7 +114,7 @@ const DashboardThemePage = () => {
     <Box sx={{ p: 3, maxWidth: '1400px', margin: '0 auto', backgroundColor: unifiedTheme.palette.background.paper }}>
       <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 3 }}>
         <Box>
-          <Typography variant="h4" component="h1" gutterBottom sx={{ fontWeight: 600 }}>
+          <Typography variant="h4" component="h1" gutterBottom sx={{ ...getHeadingSx(), fontWeight: 600 }}>
             Dashboard Theme Library
           </Typography>
           <Typography variant="body1" color="text.secondary">
@@ -124,6 +126,7 @@ const DashboardThemePage = () => {
           startIcon={<AddIcon sx={{ color: unifiedTheme.getIconColor() }}/>}
           onClick={() => setIsDialogOpen(true)}
           sx={{ 
+            ...getButtonSx(),
             px: 3, 
             py: 1.5,
             borderRadius: 2,
@@ -174,11 +177,14 @@ const DashboardThemePage = () => {
             variant="contained"
             startIcon={<AddIcon />}
             onClick={() => setIsDialogOpen(true)}
+            sx={{ ...getButtonSx() }}
           >
             Create Your First Theme
           </Button>
         </Box>
       )}
+
+
 
       <CreateDashboardThemeDialog
         open={isDialogOpen}
@@ -199,7 +205,7 @@ const DashboardThemePage = () => {
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={cancelDelete} color="primary">
+          <Button onClick={cancelDelete} color="primary" sx={{ ...getButtonSx() }}>
             Cancel
           </Button>
           <Button
@@ -207,6 +213,7 @@ const DashboardThemePage = () => {
             color="error"
             variant="contained"
             disabled={loading}
+            sx={{ ...getButtonSx() }}
           >
             {loading ? 'Deleting...' : 'Delete'}
           </Button>

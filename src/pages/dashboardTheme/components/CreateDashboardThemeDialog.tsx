@@ -27,6 +27,7 @@ import { getDefaultDashboardTheme } from '../../../styles/themeConstants';
 import { getColorFieldTooltip } from '../../../constants/colorFieldTooltips';
 import { STYLE_GUIDE } from '../../../styles';
 import { useUnifiedTheme } from '../../../hooks/useUnifiedTheme';
+import { useComponentTypography } from '../../../hooks/useComponentTypography';
 
 const getDefaultTheme = (): DashboardTheme => ({
   ...getDefaultDashboardTheme(),
@@ -63,6 +64,7 @@ const CreateDashboardThemeDialog: React.FC<CreateDashboardThemeDialogProps> = ({
   theme,
 }) => {
   const unifiedTheme = useUnifiedTheme();
+  const { getButtonSx } = useComponentTypography();
   const dispatch = useAppDispatch();
   const [tabValue, setTabValue] = useState(0);
   const [formData, setFormData] = useState<DashboardTheme>(getDefaultTheme());
@@ -996,7 +998,7 @@ const CreateDashboardThemeDialog: React.FC<CreateDashboardThemeDialogProps> = ({
       </DialogContent>
 
       <DialogActions sx={{ p: 3 }}>
-        <Button onClick={onClose} color="secondary" disabled={loading}>
+        <Button onClick={onClose} color="secondary" disabled={loading} sx={{ ...getButtonSx() }}>
           Cancel
         </Button>
         <Button
@@ -1005,6 +1007,7 @@ const CreateDashboardThemeDialog: React.FC<CreateDashboardThemeDialogProps> = ({
           variant="contained"
           disabled={loading || !formData.name.trim()}
           startIcon={loading ? <CircularProgress size={16} /> : null}
+          sx={{ ...getButtonSx() }}
         >
           {loading ? 'Saving...' : (theme ? 'Update Theme' : 'Create Theme')}
         </Button>

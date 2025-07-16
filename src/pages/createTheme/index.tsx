@@ -21,9 +21,11 @@ import { Theme } from "./types";
 import usePost from "../../hooks/usePost";
 import { POST } from "../../services/apiRoutes";
 import { useUnifiedTheme } from '../../hooks/useUnifiedTheme';
+import { useComponentTypography } from '../../hooks/useComponentTypography';
 
 const CreateTheme = () => {
   const theme = useUnifiedTheme();
+  const { getHeadingSx } = useComponentTypography();
   const dispatch = useAppDispatch();
   const { themes, loading, error } = useAppSelector((state) => state.theme);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -115,7 +117,7 @@ const CreateTheme = () => {
   return (
     <Box sx={{ p: 3, backgroundColor: theme.palette.background.paper }}>
       <Stack direction="row" justifyContent="space-between" alignItems="center">
-        <Typography variant="h4" component="h1" gutterBottom>
+        <Typography variant="h4" component="h1" gutterBottom sx={getHeadingSx()}>
           Theme Library
         </Typography>
         <Button

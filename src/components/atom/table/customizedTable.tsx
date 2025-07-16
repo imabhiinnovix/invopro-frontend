@@ -13,6 +13,7 @@ import IconButton from '@mui/material/IconButton';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import { STYLE_GUIDE } from '../../../styles';
+import { useComponentTypography } from '../../../hooks/useComponentTypography';
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
   [`&.${tableCellClasses.head}`]: {
@@ -52,6 +53,7 @@ type CustomizedTablesProps = {
 };
 
 const CustomizedTables: React.FC<CustomizedTablesProps> = ({ rows, columns }) => {
+  const { getTableSx } = useComponentTypography();
   const [expandedRows, setExpandedRows] = React.useState<{ [key: number]: boolean }>({});
 
   const toggleRow = (index: number) => {
@@ -92,7 +94,7 @@ const CustomizedTables: React.FC<CustomizedTablesProps> = ({ rows, columns }) =>
   );
 
   return (
-    <TableContainer component={Paper}>
+    <TableContainer component={Paper} sx={{ ...getTableSx() }}>
       <Table sx={{ width: '100%' }} aria-label="customized table">
         <TableHead>
           <TableRow>
