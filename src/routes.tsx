@@ -19,6 +19,7 @@ import NaturalLanguage from './pages/naturalLanguage/NaturalLanguage';
 import Entity from './pages/entity';
 import DataSource from './pages/dataSource';
 import AIInsightPage from './pages/aiInsight';
+import DataSourceVersion from './pages/dataSourceVersion';
 import ReportSettings from './pages/report-settings';
 import NotificationSettings from "./pages/notificationSettings";
 import Users from "./pages/users";
@@ -54,6 +55,7 @@ const AppRoutes = () => {
           <Route path="/data-source/:id" element={<DataSources />} />
           <Route path="/entity" element={<Entity />} />
           <Route path="/data-src" element={<DataSource />} />
+          <Route path="/data-src-version" element={<DataSourceVersion />} />
           <Route path="/VixAi-Insights" element={<AIInsightPage />} />
           <Route path="/VixAi-Chart" element={<NaturalLanguage />} />
           <Route path="/report-settings" element={<ReportSettings />} />
