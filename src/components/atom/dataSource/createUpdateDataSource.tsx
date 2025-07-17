@@ -31,12 +31,9 @@ interface DataSourceRequestPayload {
   code: string;
   description?: string;
   versionType: string;
-  entities?: {
-    entityId: string;
-    entityAttribute?: string;
-    entityAttributeId?: string;
-  }[];
-  entityId?: { name: string }; // For update mode
+  entityId: string;
+  entityAttributes?: string[][];
+  entityAttributeIds?: string[][];
   _id?: string;
 }
 
@@ -61,8 +58,9 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({
   const [open, setOpen] = useState(false);
   const [code, setCode] = useState('');
   const [name, setName] = useState('');
-  const [entityAttributes, setEntityAttributes] = useState<{ [key: number]: string[] }>({});
-  const [entityAttributeIds, setEntityAttributeIds] = useState<{ [key: number]: string[] }>({});
+  const [entityAttributes, setEntityAttributes] = useState<string[]>([]);
+  const [entityAttributeIds, setEntityAttributeIds] = useState<string[]>([]);
+  const lastFetchedEntityId = useRef<string | null>(null);
 
   const {
     control,
@@ -78,68 +76,68 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({
       code: data?.code ?? '',
       description: data?.description ?? '',
       versionType: data?.versionType ?? '',
-      entities: data?.entities ?? [{ entityId: '', entityAttribute: '' }],
+      entityId: data?.entityId ?? '',
+      entityAttributes: data?.entityAttributes?.length ? data.entityAttributes : [['']],
+      entityAttributeIds: data?.entityAttributeIds?.length ? data.entityAttributeIds : [['']],
     },
   });
 
   const { fields, append, remove } = useFieldArray({
     control,
-    name: 'entities',
+    name: 'entityAttributes',
   });
 
-  const entities = watch('entities');
-  const prevEntityIdsRef = useRef<(string | undefined)[]>([]);
+  const entityId = watch('entityId');
+  const entityAttributesField = watch('entityAttributes');
+
+  // Debugging log to verify form state
+  console.log("Form State:", watch());
 
   useEffect(() => {
-    console.log('data prop:', data); // Debug data prop
-    if (!entities?.length) return;
-
-    entities.forEach((entity, index) => {
-      const entityId = entity?.entityId ?? '';
-      const prevEntityId = prevEntityIdsRef.current[index];
-
-      // Validate entityId before making API call
-      if (entityId && entityId !== prevEntityId && /^[a-f0-9]{24}$/.test(entityId)) {
-        console.log('Fetching entityId:', entityId, 'at index:', index);
-        axiosInstance
-          .get(`/entities/${entityId}`)
-          .then((res) => {
-            const namesArr = res.data?.data?.attributes?.map((f: any) => f.name) || [];
-            const typesArr = res.data?.data?.attributes?.map((f: any) => f._id) || [];
-            setEntityAttributes((prev) => ({
-              ...prev,
-              [index]: namesArr,
-            }));
-            setEntityAttributeIds((prev) => ({
-              ...prev,
-              [index]: typesArr,
-            }));
-          })
-          .catch((error) => {
-            console.error(`Error fetching attributes for entityId ${entityId} at index ${index}:`, error.message);
-            setEntityAttributes((prev) => ({ ...prev, [index]: [] }));
-            setEntityAttributeIds((prev) => ({ ...prev, [index]: [] }));
-            setValue(`entities.${index}.entityAttribute`, '');
-            if (error.response?.status === 404) {
-              console.warn(`Invalid entityId: ${entityId}. Resetting to empty.`);
-              setValue(`entities.${index}.entityId`, '');
-            }
-          });
-      } else if (!entityId && prevEntityId) {
-        setEntityAttributes((prev) => ({ ...prev, [index]: [] }));
-        setEntityAttributeIds((prev) => ({ ...prev, [index]: [] }));
-        setValue(`entities.${index}.entityAttribute`, '');
-      } else if (entityId && !/^[a-f0-9]{24}$/.test(entityId)) {
-        console.warn(`Invalid entityId format: ${entityId} at index ${index}. Resetting to empty.`);
-        setValue(`entities.${index}.entityId`, '');
-        setEntityAttributes((prev) => ({ ...prev, [index]: [] }));
-        setEntityAttributeIds((prev) => ({ ...prev, [index]: [] }));
-        setValue(`entities.${index}.entityAttribute`, '');
+    if (entityId && /^[a-f0-9]{24}$/.test(entityId) && entityId !== lastFetchedEntityId.current) {
+      console.log('Fetching entityId:', entityId);
+      axiosInstance
+        .get(`/entities/${entityId}`)
+        .then((res) => {
+          const namesArr = res.data?.data?.attributes?.map((f: any) => f.name) || [];
+          const typesArr = res.data?.data?.attributes?.map((f: any) => f._id) || [];
+          setEntityAttributes(namesArr);
+          setEntityAttributeIds(typesArr);
+          lastFetchedEntityId.current = entityId;
+        })
+        .catch((error) => {
+          console.error(`Error fetching attributes for entityId ${entityId}:`, error.message);
+          setEntityAttributes([]);
+          setEntityAttributeIds([]);
+          if (entityAttributesField) {
+            entityAttributesField.forEach((_, index) => {
+              setValue(`entityAttributes.${index}`, ['']);
+            });
+          }
+          if (error.response?.status === 404) {
+            console.warn(`Invalid entityId: ${entityId}. Resetting to empty.`);
+            setValue('entityId', '');
+          }
+          lastFetchedEntityId.current = null;
+        });
+    } else if (!entityId && lastFetchedEntityId.current) {
+      setEntityAttributes([]);
+      setEntityAttributeIds([]);
+      if (entityAttributesField) {
+        entityAttributesField.forEach((_, index) => {
+          setValue(`entityAttributes.${index}`, ['']);
+        });
       }
-    });
+      lastFetchedEntityId.current = null;
+    }
+  }, [entityId, setValue, entityAttributesField]);
 
-    prevEntityIdsRef.current = entities.map((entity) => entity?.entityId ?? '');
-  }, [entities.map((entity) => entity?.entityId ?? ''), setValue]);
+  useEffect(() => {
+    // Ensure at least one entityAttributes field is present when modal opens
+    if (open && fields.length === 0) {
+      append(['']);
+    }
+  }, [open, fields, append]);
 
   const codeAvailability = useGet<{ success: boolean; available: boolean; message: string }>(
     [`codeAvailability`, code],
@@ -181,60 +179,51 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({
     true
   );
 
- 
-  const onSubmit = (formData: DataSourceRequestPayload) => {
 
-  const updatedEntities = formData.entities?.map((entity, index) => {
-    const updatedEntity = { ...entity };
-    if (entity.entityId && entity.entityAttribute) {
-      const selectedName = entity.entityAttribute;
-      const typeIndex = entityAttributes[index]?.indexOf(selectedName);
-      updatedEntity.entityAttributeId =
-        typeIndex !== -1 ? entityAttributeIds[index]?.[typeIndex] || '' : '';
+   const onSubmit = (formData: DataSourceRequestPayload) => {
+    console.log("formData before processing:", formData);
+    const updatedEntityAttributeIds = formData.entityAttributes?.map((attributes) => {
+      return attributes
+        .filter((attribute) => attribute !== '') 
+        .map((attribute) => {
+          const typeIndex = entityAttributes.indexOf(attribute);
+          return typeIndex !== -1 ? entityAttributeIds[typeIndex] || '' : '';
+        })
+        .filter((id) => id !== ''); 
+    }) || [];
+
+    const updatedFormData = {
+      ...formData,
+      entityAttributeIds: updatedEntityAttributeIds,
+      uniqueAttributeRules: updatedEntityAttributeIds, // Use IDs for uniqueAttributeRules
+    };
+
+    console.log("updatedFormData:", updatedFormData);
+
+    if (data && data._id) {
+      updateDataSource.mutate({
+        url: `${PUT.UPDATE_DATA_SOURCE}/${data._id}`,
+        payload: updatedFormData,
+      });
     } else {
-      updatedEntity.entityAttributeId = '';
+      createDataSource.mutate({
+        url: POST.CREATE_DATA_SOURCE,
+        payload: updatedFormData,
+      });
     }
-    return updatedEntity;
-  });
-
-  const uniqueAttributeRules = formData.entities?.map(
-    (entity) => entity.entityAttribute
-  ) || [];
-
-  const updatedFormData = {
-    ...formData,
-    entities: updatedEntities,
-    uniqueAttributeRules, 
   };
-  if (data && data._id) {
-    updateDataSource.mutate({
-      url: `${PUT.UPDATE_DATA_SOURCE}/${data._id}`,
-      payload: updatedFormData,
-    });
-  } else {
-    createDataSource.mutate({
-      url: POST.CREATE_DATA_SOURCE,
-      payload: updatedFormData,
-    });
-  }
-};
 
   const handleCancel = () => {
     setOpen(false);
     setCode('');
     setName('');
-    setEntityAttributes({});
-    setEntityAttributeIds({});
+    setEntityAttributes([]);
+    setEntityAttributeIds([]);
     reset();
   };
 
   const handleAddMoreEntity = () => {
-    const lastEntityId = entities.length > 0 ? entities[entities.length - 1].entityId : '';
-    if (lastEntityId && /^[a-f0-9]{24}$/.test(lastEntityId)) {
-      append({ entityId: lastEntityId, entityAttribute: '' });
-    } else {
-      append({ entityId: '', entityAttribute: '' });
-    }
+    append(['']);
   };
 
   return (
@@ -400,74 +389,67 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({
                 }}
               />
 
-              {!data?._id && (
-                <>
-                  {fields.map((field, index) => (
-                    <Box key={field.id} sx={{ mb: 3 }}>
+              <Box sx={{ mb: 3 }}>
+                <CommonDropdownSearch
+                  control={control}
+                  name="entityId"
+                  label="Select Entity*"
+                  apiUrl={`${GET.Entity_List}`}
+                  labelName="name"
+                  labelValue="_id"
+                  defaultValue={data?.entityId || ''}
+                  rules={{ required: 'Entity is required' }}
+                  error={!!errors.entityId}
+                  errorMessage={errors.entityId?.message as string}
+                  apiName="entityList"
+                  defaultDataUrl=""
+                />
+              </Box>
+
+              {fields.map((field, index) => (
+                <Box key={field.id} sx={{ mb: 3 }}>
+                  <Stack direction="row" spacing={2} alignItems="center">
+                    <Box sx={{ flex: 1 }}>
                       <Typography variant="h6" mb={1}>
-                        Entity {index + 1}
+                        Unique {index + 1} Attributes
                       </Typography>
-                      <Stack direction="row" spacing={2} alignItems="center">
-                        <Box sx={{ flex: 1 }}>
-                          <CommonDropdownSearch
-                            control={control}
-                            name={`entities.${index}.entityId`}
-                            label="Select Entity*"
-                            apiUrl={`${GET.Entity_List}`}
-                            labelName="name"
-                            labelValue="_id"
-                            defaultValue={entities[index].entityId || ''}
-                            rules={{ required: 'Entity is required' }}
-                            error={!!errors.entities?.[index]?.entityId}
-                            errorMessage={errors.entities?.[index]?.entityId?.message as string}
-                            apiName="entityList"
-                            defaultDataUrl=""
-                            disabled={index === fields.length - 1 && entities[index].entityId}
-                          />
-                        </Box>
-                        <Box sx={{ flex: 1 }}>
-                          <CommonSelect
-                            control={control}
-                            name={`entities.${index}.entityAttribute`}
-                            label="Select Entity Attribute*"
-                            options={entities[index].entityId ? entityAttributes[index] || [] : []}
-                            defaultValue={[]}
-                            multiple={true}
-                            rules={{ required: entities[index].entityId ? 'Entity Attribute is required' : false }}
-                            error={!!errors.entities?.[index]?.entityAttribute}
-                            errorMessage={errors.entities?.[index]?.entityAttribute?.message as string}
-                          />
-                        </Box>
-                        <Stack direction="row" spacing={1} alignItems="center">
-                          {fields.length > 1 && entities[index].entityId && (
-                            <IconButton color="error" onClick={() => remove(index)}>
-                              <RemoveCircleOutlineIcon />
-                            </IconButton>
-                          )}
-                          {index === fields.length - 1 && (
-                            <Button
-                              variant="contained"
-                              startIcon={<AddCircleOutlineIcon />}
-                              onClick={handleAddMoreEntity}
-                              sx={{ whiteSpace: 'nowrap' }}
-                            >
-                              Add More Entity
-                            </Button>
-                          )}
-                        </Stack>
-                      </Stack>
+                      <CommonSelect
+                        control={control}
+                        name={`entityAttributes.${index}`}
+                        label={`Select Unique Attribute ${index + 1}*`}
+                        options={entityAttributes}
+                        multiple={true}
+                        defaultValue={field.value || ['']}
+                        rules={{ required: entityId ? 'Unique Attribute is required' : false }}
+                        error={!!errors.entityAttributes?.[index]}
+                        errorMessage={errors.entityAttributes?.[index]?.message as string}
+                      />
                     </Box>
-                  ))}
-                </>
-              )}
+                    {fields.length > 1 && (
+                      <IconButton color="error" onClick={() => remove(index)}>
+                        <RemoveCircleOutlineIcon />
+                      </IconButton>
+                    )}
+                  </Stack>
+                </Box>
+              ))}
+
+              <Button
+                variant="contained"
+                startIcon={<AddCircleOutlineIcon />}
+                onClick={handleAddMoreEntity}
+                sx={{ whiteSpace: 'nowrap', mt: 2 }}
+              >
+                Add More Entity
+              </Button>
 
               {!!data?._id && (
                 <CommonSelect
                   control={control}
                   name="entityType"
                   label="Select Entity*"
-                  options={data?.entityId?.name ? [data.entityId.name] : ['']}
-                  defaultValue={data?.entityId?.name || ''}
+                  options={data?.entityId ? [data.entityId] : ['']}
+                  defaultValue={data?.entityId || ''}
                   rules={{ required: '' }}
                   error={false}
                   errorMessage=""
