@@ -12,9 +12,10 @@ import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 import ScrollableTabNavigation from '../../components/atom/report/scrollableTab';
 import SimCardDownloadIcon from '@mui/icons-material/SimCardDownload';
 import DownloadForOfflineIcon from '@mui/icons-material/DownloadForOffline';
-import useFileDownload from '../../hooks/useFiledownload';
 import { GET } from '../../services/apiRoutes';
 import { useUnifiedTheme } from '../../hooks/useUnifiedTheme';
+import { useComponentTypography } from '../../hooks/useComponentTypography';
+import useFileDownload from '../../hooks/useFiledownload';
 
 export default function Report() {
   const theme = useUnifiedTheme();
@@ -34,6 +35,8 @@ export default function Report() {
   const [intermediateDownloadRequestId, setIntermediateDownloadRequestId] = useState('');
   const [regularDownloadRequestId, setRegularDownloadRequestId] = useState('');
   const [viewReportNameWithVersionValue, setViewReportNameWithVersionValue] = useState('');
+
+   const { getHeadingSx, getButtonSx } = useComponentTypography();
 
   const exportFile = useFileDownload<Blob>((data) => {
     const blob = new Blob([data], { type: 'application/octet-stream' });
@@ -212,6 +215,7 @@ export default function Report() {
                       disabled={!(viewReportNameWithVersionValue && viewReportNameWithVersionValue.length > 0)}
                       onClick={handleDownloadPdf}
                       sx={{
+                        ...getButtonSx(),
                         bgcolor: theme.palette.primary.main,
                         color: theme.palette.primary.contrastText,
                         '&:hover': {
@@ -265,7 +269,7 @@ export default function Report() {
                               allDetailData._id
                             );
                           }}
-                          sx={{ mr: 1 }}
+                          sx={{ ...getButtonSx(), mr: 1 }}
                         >
                           <DownloadForOfflineIcon  sx={{ color: theme.getIconColor() }}/>
                         </Button>
@@ -300,6 +304,7 @@ export default function Report() {
                         );
                       }}
                       sx={{ 
+                        ...getButtonSx(),
                         mr: 1,
                         bgcolor: theme.palette.success.main,
                         color: theme.palette.success.contrastText,
@@ -322,7 +327,9 @@ export default function Report() {
           <Typography
             variant="h5"
             sx={{
-              fontWeight: 600,
+              ...getHeadingSx(),
+              fontSize: getHeadingSx().fontSize,
+              fontWeight: getHeadingSx().fontWeight,
               color: theme.palette.text.primary,
             }}
           >

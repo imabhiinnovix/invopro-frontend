@@ -43,6 +43,7 @@ interface DataSourceRequestPayload {
 interface DataSourceResponse {
   success: boolean;
 }
+import { useComponentTypography } from '../../../hooks/useComponentTypography';
 
 interface CreateUpdateDataSourceProps {
   setReload: React.Dispatch<React.SetStateAction<boolean>>;
@@ -58,6 +59,7 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({
   data,
 }) => {
   const theme = useUnifiedTheme();
+  const { getDialogTitleSx } = useComponentTypography();
   const [open, setOpen] = useState(false);
   const [code, setCode] = useState('');
   const [name, setName] = useState('');
@@ -255,13 +257,10 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({
           },
         }}
       >
-        <DialogTitle
-          sx={{
-            fontWeight: theme.palette.dialog?.titleFontWeight || STYLE_GUIDE.TYPOGRAPHY.fontWeight.bold,
-            fontSize: theme.palette.dialog?.titleFontSize || STYLE_GUIDE.TYPOGRAPHY.fontSize.xl,
-            color: theme.palette.dialog?.titleColor || STYLE_GUIDE.COLORS.textDarkGray,
-          }}
-        >
+        <DialogTitle sx={{
+          ...getDialogTitleSx(),
+          color: theme.palette.dialog?.titleColor || STYLE_GUIDE.COLORS.textDarkGray,
+        }}>
           {title}
         </DialogTitle>
         <DialogContent

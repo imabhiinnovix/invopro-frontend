@@ -30,10 +30,12 @@ import type { Report, FilterColumn, ReportSetting } from "./types";
 import { POST } from "../../services/apiRoutes";
 import usePost from "../../hooks/usePost";
 import { useUnifiedTheme } from '../../hooks/useUnifiedTheme';
+import { useComponentTypography } from '../../hooks/useComponentTypography';
 
 
 const ReportSettings: React.FC = () => {
     const theme = useUnifiedTheme();
+    const { getHeadingSx, getBodySx, getButtonSx, getCardSx, getInputSx } = useComponentTypography();
     const dispatch = useDispatch<AppDispatch>();
     const { settings = [], loading, error } = useSelector((state: RootState) => state.customReports);
     const [selectedReportId, setSelectedReportId] = useState<any>("");
@@ -408,7 +410,7 @@ const ReportSettings: React.FC = () => {
                     textAlign="center"
                     gutterBottom
                     sx={{
-                        fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.bold,
+                        ...getHeadingSx(),
                         color: theme.palette.primary.main,
                         mb: STYLE_GUIDE.SPACING.s8,
                         letterSpacing: 1,
@@ -423,12 +425,12 @@ const ReportSettings: React.FC = () => {
                             <StepLabel
                                 sx={{
                                     '& .MuiStepLabel-label': {
-                                        fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.medium,
+                                        ...getBodySx(),
                                         color: theme.palette.text.secondary,
                                     },
                                     '&.Mui-active .MuiStepLabel-label': {
                                         color: theme.palette.primary.main,
-                                        fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold,
+                                        fontWeight: getHeadingSx().fontWeight,
                                     },
                                     '&.Mui-completed .MuiStepLabel-label': {
                                         color: theme.palette.success.main,
@@ -452,6 +454,7 @@ const ReportSettings: React.FC = () => {
                 ) : (
                     <Box>
                         <Card sx={{ 
+                            ...getCardSx(),
                             mb: 3, 
                             border: `1px solid ${theme.palette.border?.main}`,
                             backgroundColor: theme.palette.card?.background || STYLE_GUIDE.COLORS.backgroundSurface,
@@ -462,7 +465,7 @@ const ReportSettings: React.FC = () => {
                         }}>
                             <CardContent sx={{ p: 3 }}>
                                 <Typography variant="h6" gutterBottom sx={{ 
-                                    fontWeight: 600,
+                                    ...getHeadingSx(),
                                     color: theme.palette.text.primary,
                                 }}>
                                     Select Report
@@ -488,6 +491,7 @@ const ReportSettings: React.FC = () => {
                         {selectedReport && (
                             <>
                                 <Card sx={{ 
+                                    ...getCardSx(),
                                     mb: 3, 
                                     border: `1px solid ${theme.palette.border?.main}`,
                                     backgroundColor: theme.palette.card?.background || STYLE_GUIDE.COLORS.backgroundSurface,
@@ -498,7 +502,7 @@ const ReportSettings: React.FC = () => {
                                 }}>
                                     <CardContent sx={{ p: 3 }}>
                                         <Typography variant="h6" gutterBottom sx={{ 
-                                            fontWeight: 600,
+                                            ...getHeadingSx(),
                                             color: theme.palette.text.primary,
                                         }}>
                                             Edit Report Name
@@ -516,6 +520,7 @@ const ReportSettings: React.FC = () => {
                                 </Card>
 
                                 <Card sx={{ 
+                                    ...getCardSx(),
                                     mb: 3, 
                                     border: `1px solid ${theme.palette.border?.main}`,
                                     backgroundColor: theme.palette.card?.background || STYLE_GUIDE.COLORS.backgroundSurface,
@@ -526,7 +531,7 @@ const ReportSettings: React.FC = () => {
                                 }}>
                                     <CardContent sx={{ p: 3 }}>
                                         <Typography variant="h6" gutterBottom sx={{ 
-                                            fontWeight: 600,
+                                            ...getHeadingSx(),
                                             color: theme.palette.text.primary,
                                         }}>
                                             Select and Edit Sheet Settings
@@ -560,6 +565,7 @@ const ReportSettings: React.FC = () => {
 
                                 {selectedSheetCode && selectedFilters.length > 0 && (
                                     <Card sx={{ 
+                                        ...getCardSx(),
                                         mb: 3, 
                                         border: `1px solid ${theme.palette.border?.main}`,
                                         backgroundColor: theme.palette.card?.background || STYLE_GUIDE.COLORS.backgroundSurface,
@@ -570,7 +576,7 @@ const ReportSettings: React.FC = () => {
                                     }}>
                                         <CardContent sx={{ p: 3 }}>
                                             <Typography variant="h6" gutterBottom sx={{ 
-                                                fontWeight: 600,
+                                                ...getHeadingSx(),
                                                 color: theme.palette.text.primary,
                                             }}>
                                                 Edit Filter Columns for {selectedSheet?.sheetName}
@@ -625,6 +631,7 @@ const ReportSettings: React.FC = () => {
 
                                 {selectedSheetCode && selectedFilters.length === 0 && (
                                     <Card sx={{ 
+                                        ...getCardSx(),
                                         mb: 3, 
                                         bgcolor: STYLE_GUIDE.COLORS.backgroundGray,
                                         border: `1px solid ${theme.palette.border?.main}`,
@@ -649,8 +656,8 @@ const ReportSettings: React.FC = () => {
                                         onClick={handleSaveAllChanges}
                                         startIcon={<CheckIcon />}
                                         sx={{ 
+                                            ...getButtonSx(),
                                             minWidth: 180, 
-                                            fontWeight: 600,
                                             bgcolor: theme.palette.primary.main,
                                             color: theme.palette.primary.contrastText,
                                             '&:hover': {

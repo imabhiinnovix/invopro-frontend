@@ -1,5 +1,6 @@
 import { DashboardTheme } from '../types/dashboardTheme';
 import { STYLE_GUIDE } from '../styles';
+import { TYPOGRAPHY } from '../styles/typography';
 
 /**
  * Validates a dashboard theme object
@@ -158,6 +159,54 @@ export const createCompleteTheme = (baseTheme: Partial<DashboardTheme>): Dashboa
       border: baseTheme.colors?.border || STYLE_GUIDE.COLORS.borderGray,
       borderHover: baseTheme.colors?.borderHover || STYLE_GUIDE.COLORS.materialPurpleDark,
     },
+    typography: baseTheme.typography || {
+      // Global typography (fallback)
+      fontFamily: TYPOGRAPHY.fontFamily.primary,
+      fontSize: TYPOGRAPHY.fontSize.base,
+      fontWeight: TYPOGRAPHY.fontWeight.regular,
+      
+      // Component-specific typography
+      headings: {
+        fontFamily: TYPOGRAPHY.fontFamily.primary,
+        fontSize: TYPOGRAPHY.fontSize.xxl,
+        fontWeight: TYPOGRAPHY.fontWeight.semiBold,
+      },
+      body: {
+        fontFamily: TYPOGRAPHY.fontFamily.primary,
+        fontSize: TYPOGRAPHY.fontSize.base,
+        fontWeight: TYPOGRAPHY.fontWeight.regular,
+      },
+      buttons: {
+        fontFamily: TYPOGRAPHY.fontFamily.primary,
+        fontSize: TYPOGRAPHY.fontSize.base,
+        fontWeight: TYPOGRAPHY.fontWeight.medium,
+      },
+      cards: {
+        fontFamily: TYPOGRAPHY.fontFamily.primary,
+        fontSize: TYPOGRAPHY.fontSize.base,
+        fontWeight: TYPOGRAPHY.fontWeight.regular,
+      },
+      inputs: {
+        fontFamily: TYPOGRAPHY.fontFamily.primary,
+        fontSize: TYPOGRAPHY.fontSize.base,
+        fontWeight: TYPOGRAPHY.fontWeight.regular,
+      },
+      tables: {
+        fontFamily: TYPOGRAPHY.fontFamily.primary,
+        fontSize: TYPOGRAPHY.fontSize.base,
+        fontWeight: TYPOGRAPHY.fontWeight.regular,
+      },
+      navigation: {
+        fontFamily: TYPOGRAPHY.fontFamily.primary,
+        fontSize: TYPOGRAPHY.fontSize.base,
+        fontWeight: TYPOGRAPHY.fontWeight.medium,
+      },
+      dialog: {
+        fontFamily: TYPOGRAPHY.fontFamily.primary,
+        fontSize: TYPOGRAPHY.fontSize.large,
+        fontWeight: TYPOGRAPHY.fontWeight.semiBold,
+      },
+    },
     components: baseTheme.components || {
       button: {
         textTransform: 'none',
@@ -171,8 +220,9 @@ export const createCompleteTheme = (baseTheme: Partial<DashboardTheme>): Dashboa
         boxShadow: STYLE_GUIDE.SHADOWS.lg,
         borderRadius: '8px',
         titleColor: STYLE_GUIDE.COLORS.textDarkGray,
-        titleFontSize: '1.25rem',
-        titleFontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold,
+        titleFontFamily: baseTheme.typography?.dialog?.fontFamily || baseTheme.typography?.fontFamily || TYPOGRAPHY.fontFamily.primary,
+        titleFontSize: baseTheme.typography?.dialog?.fontSize || '1.25rem',
+        titleFontWeight: baseTheme.typography?.dialog?.fontWeight || STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold,
         contentColor: STYLE_GUIDE.COLORS.textDarkGray,
         contentFontSize: '1rem',
         overlayColor: 'rgba(0, 0, 0, 0.5)',

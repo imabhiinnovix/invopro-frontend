@@ -42,6 +42,7 @@ declare module '@mui/material/styles' {
       shadow: string;
       borderRadius: string;
       titleColor: string;
+      titleFontFamily: string;
       titleFontSize: string;
       titleFontWeight: string;
       contentColor: string;
@@ -93,6 +94,7 @@ declare module '@mui/material/styles' {
       shadow: string;
       borderRadius: string;
       titleColor: string;
+      titleFontFamily: string;
       titleFontSize: string;
       titleFontWeight: string;
       contentColor: string;
@@ -154,6 +156,7 @@ declare module '@mui/material/styles/createPalette' {
       shadow: string;
       borderRadius: string;
       titleColor: string;
+      titleFontFamily: string;
       titleFontSize: string;
       titleFontWeight: string;
       contentColor: string;
@@ -205,6 +208,7 @@ declare module '@mui/material/styles/createPalette' {
       shadow: string;
       borderRadius: string;
       titleColor: string;
+      titleFontFamily: string;
       titleFontSize: string;
       titleFontWeight: string;
       contentColor: string;

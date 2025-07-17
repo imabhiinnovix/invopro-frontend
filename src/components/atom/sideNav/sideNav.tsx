@@ -1,52 +1,44 @@
-import { styled, Theme, CSSObject } from "@mui/material/styles";
-import Box from "@mui/material/Box";
-import MuiDrawer from "@mui/material/Drawer";
-import List from "@mui/material/List";
-import ListItem from "@mui/material/ListItem";
-import ListItemButton from "@mui/material/ListItemButton";
-import ListItemIcon from "@mui/material/ListItemIcon";
-import ListItemText from "@mui/material/ListItemText";
-import { useNav } from "../../../context/NavContext";
-import DashboardIcon from "@mui/icons-material/Dashboard";
-import AddIcon from "@mui/icons-material/Add";
-import React, { useEffect, useMemo, useContext, useState } from "react";
-import { Collapse, IconButton, Menu, MenuItem, Tooltip } from "@mui/material";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import ExpandLessIcon from "@mui/icons-material/ExpandLess";
-import { useNavigate, useLocation } from "react-router-dom";
-import SourceIcon from "@mui/icons-material/Source";
-import AssessmentIcon from "@mui/icons-material/Assessment";
-import PaletteIcon from "@mui/icons-material/Palette";
-import BrushIcon from "@mui/icons-material/Brush";
-import { useInfiniteScroll } from "../../../hooks/useInfiniteScroll";
-import { GET } from "../../../services/apiRoutes";
-import { DataSourceListData, DataSourceListPayload } from "./types";
-import { setDataSourceList } from "../../../pages/dataSources/dataSourceActions";
-import { useAppDispatch, useAppSelector } from "../../../storeHooks";
-import {
-  fetchDashboardList,
-  createDashboard,
-  deleteDashboard,
-} from "../../../pages/dashboard/dashboardActions";
-import {
-  Dashboard as DashboardType,
-  DashboardListResponse,
-} from "../../../pages/dashboard/types";
-import { toast } from "react-toastify";
-import { DeleteConfirmationModal } from "./components/DeleteConfirmationModal";
-import { SubItemsList } from "./components/SubItemsList";
-import { CreateDashboardModal } from "./components/CreateDashboardModal";
-import LogoutIcon from "@mui/icons-material/Logout";
-import logo from "../../../assets/ReportiVix-logo.png";
-import NotivixLogo from "../../../assets/NotiVix-Logo-TRANS-V1.png";
-
-import { AuthContext } from "../../../context/AuthContext";
-import { clearLocalStorage } from "../../../utils/handleLocalStorage";
-import { Language } from "@mui/icons-material";
-import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
-import { STYLE_GUIDE } from "../../../styles";
-import SettingsIcon from "@mui/icons-material/Settings";
-import { useUnifiedTheme } from "../../../hooks/useUnifiedTheme";
+import { styled, Theme, CSSObject } from '@mui/material/styles';
+import Box from '@mui/material/Box';
+import MuiDrawer from '@mui/material/Drawer';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemButton from '@mui/material/ListItemButton';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemText from '@mui/material/ListItemText';
+import { useNav } from '../../../context/NavContext';
+import DashboardIcon from '@mui/icons-material/Dashboard';
+import AddIcon from '@mui/icons-material/Add';
+import React, { useEffect, useMemo, useContext, useState } from 'react';
+import { Collapse, IconButton, Menu, MenuItem, Tooltip } from '@mui/material';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import ExpandLessIcon from '@mui/icons-material/ExpandLess';
+import { useNavigate, useLocation } from 'react-router-dom';
+import SourceIcon from '@mui/icons-material/Source';
+import AssessmentIcon from '@mui/icons-material/Assessment';
+import PaletteIcon from '@mui/icons-material/Palette';
+import BrushIcon from '@mui/icons-material/Brush';
+import { useInfiniteScroll } from '../../../hooks/useInfiniteScroll';
+import { GET } from '../../../services/apiRoutes';
+import { DataSourceListData, DataSourceListPayload } from './types';
+import { setDataSourceList } from '../../../pages/dataSources/dataSourceActions';
+import { useAppDispatch, useAppSelector } from '../../../storeHooks';
+import { fetchDashboardList, createDashboard, deleteDashboard } from '../../../pages/dashboard/dashboardActions';
+import { Dashboard as DashboardType, DashboardListResponse } from '../../../pages/dashboard/types';
+import { toast } from 'react-toastify';
+import { DeleteConfirmationModal } from './components/DeleteConfirmationModal';
+import { SubItemsList } from './components/SubItemsList';
+import { CreateDashboardModal } from './components/CreateDashboardModal';
+import LogoutIcon from '@mui/icons-material/Logout';
+import logo from '../../../assets/ReportiVix-logo.png';
+import { AuthContext } from '../../../context/AuthContext';
+import { clearLocalStorage } from '../../../utils/handleLocalStorage';
+import { Language } from '@mui/icons-material';
+import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
+import { STYLE_GUIDE } from '../../../styles';
+import SettingsIcon from '@mui/icons-material/Settings';
+import { useUnifiedTheme } from '../../../hooks/useUnifiedTheme';
+import { useComponentTypography } from '../../../hooks/useComponentTypography';
 import reportivixIcon from "../../../../public/Reportivix-fav-32.png";
 import notivixIcon from "../../../../public/NotiVix-fav-32.png";
 import NotificationsIcon from "@mui/icons-material/Notifications";
@@ -54,6 +46,7 @@ import PeopleIcon from "@mui/icons-material/People";
 import BusinessIcon from "@mui/icons-material/Business";
 import AssignmentIndIcon from "@mui/icons-material/AssignmentInd";
 import GridViewIcon from "@mui/icons-material/GridView";
+import NotivixLogo from "../../../assets/NotiVix-Logo-TRANS-V1.png";
 
 interface ErrorResponse {
   success: boolean;
@@ -153,6 +146,7 @@ interface NavItem {
 
 export default function SideNav() {
   const theme = useUnifiedTheme();
+  const { getNavigationSx } = useComponentTypography();
   const { openNav } = useNav();
   const [openSettings, setOpenSettings] = React.useState(false);
   const [openDashboard, setOpenDashboard] = React.useState(false);
@@ -448,13 +442,9 @@ export default function SideNav() {
         route: "/dashboard",
         subItems: [
           {
-            name: "Create New Dashboard",
-            icon: (
-              <AddIcon
-                sx={{ fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base }}
-              />
-            ),
-            route: "#",
+            name: 'Create New Dashboard',
+            icon: <AddIcon sx={{ fontSize: getNavigationSx().fontSize, color: theme.getIconColor() }} />,
+            route: '#',
             isCreateButton: true,
           },
           ...(loading
@@ -759,12 +749,9 @@ export default function SideNav() {
                       sx={{
                         opacity: openNav ? 1 : 0,
                         m: 0,
-                        "& .MuiListItemText-primary": {
-                          fontSize: "0.95rem",
-                          fontWeight: 500,
-                          color: isRouteActive(item.route)
-                            ? theme.palette.primary.main
-                            : theme.palette.text.primary,
+                        '& .MuiListItemText-primary': {
+                          ...getNavigationSx(),
+                          color: isRouteActive(item.route) ? theme.palette.primary.main : theme.palette.text.primary,
                         },
                       }}
                     />
@@ -778,19 +765,15 @@ export default function SideNav() {
                         openSettings) ? (
                         <ExpandLessIcon
                           sx={{
-                            fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base,
-                            color: isRouteActive(item.route)
-                              ? theme.palette.primary.main
-                              : theme.palette.text.primary,
+                            fontSize: getNavigationSx().fontSize,
+                            color: isRouteActive(item.route) ? theme.palette.primary.main : theme.palette.text.primary,
                           }}
                         />
                       ) : (
                         <ExpandMoreIcon
                           sx={{
-                            fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base,
-                            color: isRouteActive(item.route)
-                              ? theme.palette.primary.main
-                              : theme.palette.text.primary,
+                            fontSize: getNavigationSx().fontSize,
+                            color: isRouteActive(item.route) ? theme.palette.primary.main : theme.palette.text.primary,
                           }}
                         />
                       ))}
@@ -836,20 +819,14 @@ export default function SideNav() {
                                 justifyContent: "center",
                               }}
                             >
-                              <AddIcon
-                                sx={{
-                                  fontSize:
-                                    STYLE_GUIDE.TYPOGRAPHY.fontSize.base,
-                                  color: theme.getIconColor(),
-                                }}
-                              />
+                              <AddIcon sx={{ fontSize: getNavigationSx().fontSize, color: theme.getIconColor() }} />
                             </ListItemIcon>
                             <ListItemText
                               primary="Create New Dashboard"
                               sx={{
                                 m: 0,
-                                "& .MuiListItemText-primary": {
-                                  fontSize: "0.8rem",
+                                '& .MuiListItemText-primary': {
+                                  ...getNavigationSx(),
                                 },
                               }}
                             />
@@ -1097,8 +1074,8 @@ export default function SideNav() {
                 sx={{
                   opacity: openNav ? 1 : 0,
                   m: 0,
-                  "& .MuiListItemText-primary": {
-                    fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base,
+                  '& .MuiListItemText-primary': {
+                    ...getNavigationSx(),
                   },
                 }}
               />

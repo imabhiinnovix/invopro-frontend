@@ -1,3 +1,8 @@
+export interface FontOption {
+  label: string;
+  value: string;
+}
+
 export interface DashboardTheme {
   _id?: string;
   name: string;
@@ -57,6 +62,56 @@ export interface DashboardTheme {
     borderHover: string;
   };
 
+  // Typography Settings
+  typography: {
+    // Global typography (fallback)
+    fontFamily: string;
+    fontSize: string;
+    fontWeight: string;
+    
+    // Component-specific typography
+    headings: {
+      fontFamily: string;
+      fontSize: string;
+      fontWeight: string;
+    };
+    body: {
+      fontFamily: string;
+      fontSize: string;
+      fontWeight: string;
+    };
+    buttons: {
+      fontFamily: string;
+      fontSize: string;
+      fontWeight: string;
+    };
+    cards: {
+      fontFamily: string;
+      fontSize: string;
+      fontWeight: string;
+    };
+    inputs: {
+      fontFamily: string;
+      fontSize: string;
+      fontWeight: string;
+    };
+    tables: {
+      fontFamily: string;
+      fontSize: string;
+      fontWeight: string;
+    };
+    navigation: {
+      fontFamily: string;
+      fontSize: string;
+      fontWeight: string;
+    };
+    dialog: {
+      fontFamily: string;
+      fontSize: string;
+      fontWeight: string;
+    };
+  };
+
   // Component Styles (without spacing properties)
   components: {
     button: {
@@ -74,6 +129,7 @@ export interface DashboardTheme {
       boxShadow: string;
       borderRadius: string;
       titleColor: string;
+      titleFontFamily: string;
       titleFontSize: string;
       titleFontWeight: string;
       contentColor: string;
@@ -131,6 +187,9 @@ export interface DashboardTheme {
   layout: {
     maxWidth: string;
   };
+
+  // Custom Fonts
+  customFonts?: FontOption[];
 }
 
 export interface DashboardThemeListResponse {

@@ -1,4 +1,4 @@
-import React from "react";
+import React from 'react';
 import {
   Button,
   Box,
@@ -16,6 +16,8 @@ import { Control, UseFormSetValue, UseFormWatch } from "react-hook-form";
 import CommonSelect from "../../common/dropdown/commonSelect";
 import { CustomReportData } from "../dataSourceVerion/uploadMultipleVersionValue";
 import { useUnifiedTheme } from '../../../hooks/useUnifiedTheme';
+import { STYLE_GUIDE } from '../../../styles';
+import { useComponentTypography } from '../../../hooks';
 
 
 interface CreateDataSourceVersionProps {
@@ -95,6 +97,8 @@ const ViewMapping: React.FC<CreateDataSourceVersionProps> = ({
     setOpen(-1);
   };
 
+  const { getDialogTitleSx } = useComponentTypography();
+
   return (
     <div>
       <Box onClick={() => setOpen(index)}>{CustomButton}</Box>
@@ -105,7 +109,14 @@ const ViewMapping: React.FC<CreateDataSourceVersionProps> = ({
           fullWidth
           maxWidth="sm"
         >
-          <DialogTitle>{title}</DialogTitle>
+          <DialogTitle
+            sx={{
+              ...getDialogTitleSx(),
+              color: theme.palette.dialog?.titleColor || STYLE_GUIDE.COLORS.textDarkGray,
+            }}
+          >
+            {title}
+          </DialogTitle>
           <DialogContent>
             <Box component="form" noValidate>
               <Table>

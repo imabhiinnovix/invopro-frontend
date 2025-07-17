@@ -19,6 +19,7 @@ import axiosInstance from '../../services/axiosInstance';
 import { GET } from '../../services/apiRoutes';
 import { STYLE_GUIDE } from '../../styles';
 import { useUnifiedTheme } from '../../hooks/useUnifiedTheme';
+import { useComponentTypography } from '../../hooks/useComponentTypography';
 
 
 const validationSchema = yup.object().shape({
@@ -42,6 +43,7 @@ function extractHtmlFromApiData(data: any): string {
 
 const AIInsightPage: React.FC = () => {
   const theme = useUnifiedTheme();
+  const { getHeadingSx } = useComponentTypography();
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [qaPairs, setQAPairs] = React.useState<QAPair[]>([]);
@@ -128,19 +130,24 @@ const AIInsightPage: React.FC = () => {
       >
         <Typography
           variant="h5"
-          fontWeight={600}
           gutterBottom
-          color={theme.palette.text.primary}
-          fontSize="1.5rem"
-          fontFamily={theme.typography.fontFamily}
+          sx={{ 
+            ...getHeadingSx(),
+
+            fontWeight: 600,
+            color: theme.palette.text.primary,
+            fontSize: "1.5rem",
+          }}
         >
           AI Insights
         </Typography>
         <Typography
           variant="body1"
-          color={theme.palette.text.secondary}
-          fontSize="1rem"
-          fontFamily={theme.typography.fontFamily}
+          sx={{
+            color: theme.palette.text.secondary,
+            fontSize: "1rem",
+            fontFamily: theme.typography.fontFamily,
+          }}
         >
           Ask questions about your data and get AI-powered insights
         </Typography>
@@ -158,11 +165,13 @@ const AIInsightPage: React.FC = () => {
         {qaPairs.length === 0 && (
           <Typography
             variant="body2"
-            color={theme.palette.text.secondary}
             align="center"
-            sx={{ mt: 6 }}
-            fontSize="1rem"
-            fontFamily={theme.typography.fontFamily}
+            sx={{ 
+              mt: 6,
+              color: theme.palette.text.secondary,
+              fontSize: "1rem",
+              fontFamily: theme.typography.fontFamily,
+            }}
           >
             Start the conversation by asking a question below.
           </Typography>

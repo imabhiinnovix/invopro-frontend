@@ -26,6 +26,7 @@ import VisibilityIcon from '@mui/icons-material/Visibility';
 import { STYLE_GUIDE } from '../../../styles';
 import DownloadForOfflineIcon from '@mui/icons-material/DownloadForOffline';
 import { useUnifiedTheme } from '../../../hooks/useUnifiedTheme';
+import { useComponentTypography } from '../../../hooks/useComponentTypography';
 
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
@@ -120,6 +121,7 @@ const ReportRequestTable: React.FC<AttributeOptionTableProps> = ({
   const [intermediateDownloadRequestId, setIntermediateDownloadRequestId] = useState("");
 
   const theme = useUnifiedTheme();
+  const { getHeadingSx, getTableSx } = useComponentTypography();
 
   const exportFile = useFileDownload<Blob>((data) => {
     const blob = new Blob([data], { type: "application/octet-stream" });
@@ -292,7 +294,7 @@ const ReportRequestTable: React.FC<AttributeOptionTableProps> = ({
         alignContent="center"
         alignItems="center"
       >
-        <Typography variant="h4" fontWeight="bold" gutterBottom>
+        <Typography variant="h4" gutterBottom sx={{ ...getHeadingSx(), fontWeight: "bold" }}>
           No report requests have been made yet.
         </Typography>
       </Box>
@@ -303,6 +305,7 @@ const ReportRequestTable: React.FC<AttributeOptionTableProps> = ({
     <TableContainer
       component={Paper}
       sx={{
+        ...getTableSx(),
         borderRadius: "inherit",
         boxShadow: "none",
         height: "calc(100vh - 250px)",

@@ -1,6 +1,7 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { DashboardTheme } from '../types/dashboardTheme';
 import { STYLE_GUIDE } from '../styles';
+import { TYPOGRAPHY } from '../styles/typography';
 import { createCompleteTheme } from '../utils/themeUtils';
 
 // Helper function to generate unique ID
@@ -74,6 +75,49 @@ const getDefaultTheme = (): DashboardTheme => ({
     border: STYLE_GUIDE.COLORS.borderGray,
     borderHover: STYLE_GUIDE.COLORS.materialPurpleDark,
   },
+  typography: {
+    // Global typography (fallback)
+    fontFamily: TYPOGRAPHY.fontFamily.primary,
+    fontSize: TYPOGRAPHY.fontSize.base,
+    fontWeight: TYPOGRAPHY.fontWeight.regular,
+    
+    // Component-specific typography
+    headings: {
+      fontFamily: TYPOGRAPHY.fontFamily.primary,
+      fontSize: TYPOGRAPHY.fontSize.xxl,
+      fontWeight: TYPOGRAPHY.fontWeight.semiBold,
+    },
+    body: {
+      fontFamily: TYPOGRAPHY.fontFamily.primary,
+      fontSize: TYPOGRAPHY.fontSize.base,
+      fontWeight: TYPOGRAPHY.fontWeight.regular,
+    },
+    buttons: {
+      fontFamily: TYPOGRAPHY.fontFamily.primary,
+      fontSize: TYPOGRAPHY.fontSize.base,
+      fontWeight: TYPOGRAPHY.fontWeight.medium,
+    },
+    cards: {
+      fontFamily: TYPOGRAPHY.fontFamily.primary,
+      fontSize: TYPOGRAPHY.fontSize.base,
+      fontWeight: TYPOGRAPHY.fontWeight.regular,
+    },
+    inputs: {
+      fontFamily: TYPOGRAPHY.fontFamily.primary,
+      fontSize: TYPOGRAPHY.fontSize.base,
+      fontWeight: TYPOGRAPHY.fontWeight.regular,
+    },
+    tables: {
+      fontFamily: TYPOGRAPHY.fontFamily.primary,
+      fontSize: TYPOGRAPHY.fontSize.base,
+      fontWeight: TYPOGRAPHY.fontWeight.regular,
+    },
+    navigation: {
+      fontFamily: TYPOGRAPHY.fontFamily.primary,
+      fontSize: TYPOGRAPHY.fontSize.base,
+      fontWeight: TYPOGRAPHY.fontWeight.medium,
+    },
+  },
   components: {
     button: {
       textTransform: 'none',
@@ -137,6 +181,7 @@ const getDefaultTheme = (): DashboardTheme => ({
   layout: {
     maxWidth: '1200px',
   },
+  customFonts: [],
   isDefault: true,
   isActive: true,
   createdAt: new Date().toISOString(),
@@ -191,6 +236,46 @@ const sampleThemes: DashboardTheme[] = [
         dropdownFocusedLabel: '#bb86fc',
         iconPrimary: '#ffffff',
       },
+      typography: {
+        fontFamily: TYPOGRAPHY.fontFamily.secondary,
+        fontSize: TYPOGRAPHY.fontSize.base,
+        fontWeight: TYPOGRAPHY.fontWeight.regular,
+        headings: {
+          fontFamily: TYPOGRAPHY.fontFamily.secondary,
+          fontSize: TYPOGRAPHY.fontSize.xxl,
+          fontWeight: TYPOGRAPHY.fontWeight.bold,
+        },
+        body: {
+          fontFamily: TYPOGRAPHY.fontFamily.secondary,
+          fontSize: TYPOGRAPHY.fontSize.base,
+          fontWeight: TYPOGRAPHY.fontWeight.regular,
+        },
+        buttons: {
+          fontFamily: TYPOGRAPHY.fontFamily.secondary,
+          fontSize: TYPOGRAPHY.fontSize.base,
+          fontWeight: TYPOGRAPHY.fontWeight.medium,
+        },
+        cards: {
+          fontFamily: TYPOGRAPHY.fontFamily.secondary,
+          fontSize: TYPOGRAPHY.fontSize.base,
+          fontWeight: TYPOGRAPHY.fontWeight.regular,
+        },
+        inputs: {
+          fontFamily: TYPOGRAPHY.fontFamily.secondary,
+          fontSize: TYPOGRAPHY.fontSize.base,
+          fontWeight: TYPOGRAPHY.fontWeight.regular,
+        },
+        tables: {
+          fontFamily: TYPOGRAPHY.fontFamily.secondary,
+          fontSize: TYPOGRAPHY.fontSize.base,
+          fontWeight: TYPOGRAPHY.fontWeight.regular,
+        },
+        navigation: {
+          fontFamily: TYPOGRAPHY.fontFamily.secondary,
+          fontSize: TYPOGRAPHY.fontSize.base,
+          fontWeight: TYPOGRAPHY.fontWeight.medium,
+        },
+      },
     }),
     _id: generateId(),
     isDefault: false,
@@ -242,6 +327,46 @@ const sampleThemes: DashboardTheme[] = [
           hint: STYLE_GUIDE.COLORS.textMediumGray,
         },
         divider: STYLE_GUIDE.COLORS.divider,
+      },
+      typography: {
+        fontFamily: TYPOGRAPHY.fontFamily.primary,
+        fontSize: TYPOGRAPHY.fontSize.base,
+        fontWeight: TYPOGRAPHY.fontWeight.regular,
+        headings: {
+          fontFamily: TYPOGRAPHY.fontFamily.primary,
+          fontSize: TYPOGRAPHY.fontSize.xxl,
+          fontWeight: TYPOGRAPHY.fontWeight.semiBold,
+        },
+        body: {
+          fontFamily: TYPOGRAPHY.fontFamily.primary,
+          fontSize: TYPOGRAPHY.fontSize.base,
+          fontWeight: TYPOGRAPHY.fontWeight.regular,
+        },
+        buttons: {
+          fontFamily: TYPOGRAPHY.fontFamily.primary,
+          fontSize: TYPOGRAPHY.fontSize.base,
+          fontWeight: TYPOGRAPHY.fontWeight.medium,
+        },
+        cards: {
+          fontFamily: TYPOGRAPHY.fontFamily.primary,
+          fontSize: TYPOGRAPHY.fontSize.base,
+          fontWeight: TYPOGRAPHY.fontWeight.regular,
+        },
+        inputs: {
+          fontFamily: TYPOGRAPHY.fontFamily.primary,
+          fontSize: TYPOGRAPHY.fontSize.base,
+          fontWeight: TYPOGRAPHY.fontWeight.regular,
+        },
+        tables: {
+          fontFamily: TYPOGRAPHY.fontFamily.primary,
+          fontSize: TYPOGRAPHY.fontSize.base,
+          fontWeight: TYPOGRAPHY.fontWeight.regular,
+        },
+        navigation: {
+          fontFamily: TYPOGRAPHY.fontFamily.primary,
+          fontSize: TYPOGRAPHY.fontSize.base,
+          fontWeight: TYPOGRAPHY.fontWeight.medium,
+        },
       },
     }),
     _id: generateId(),

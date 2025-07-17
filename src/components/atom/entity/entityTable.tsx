@@ -24,6 +24,7 @@ import { GET } from '../../../services/apiRoutes';
 import CreateUpdateEntity from './createUpdateEntity';
 import { Attribute, EntityRequestPayload } from './types';
 import { STYLE_GUIDE } from '../../../styles';
+import { useComponentTypography } from '../../../hooks/useComponentTypography';
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
   [`&.${tableCellClasses.head}`]: {
@@ -55,6 +56,7 @@ interface EntityTableProps {
 }
 
 const EntityTable: React.FC<EntityTableProps> = ({ reloadEntity, setReloadEntity }) => {
+  const { getHeadingSx, getTableSx } = useComponentTypography();
   const [entities, setEntities] = useState<EntityRequestPayload[]>([]);
   const [currentPage, setCurrentPage] = useState<number>(1);
 
@@ -162,6 +164,7 @@ const EntityTable: React.FC<EntityTableProps> = ({ reloadEntity, setReloadEntity
         <Typography 
           variant="h4" 
           sx={{
+            ...getHeadingSx(),
             fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.bold,
             color: STYLE_GUIDE.COLORS.textDarkGray,
             fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.xxl,
@@ -174,7 +177,7 @@ const EntityTable: React.FC<EntityTableProps> = ({ reloadEntity, setReloadEntity
   }
 
   return (
-    <TableContainer component={Paper}>
+    <TableContainer component={Paper} sx={{ ...getTableSx() }}>
       <Table sx={{ width: '100%' }} aria-label="customized table">
         <TableHead>
           <TableRow>

@@ -12,6 +12,7 @@ import {
 import { STYLE_GUIDE } from '../../styles';
 import StyledSelect from '../../components/atom/common/StyledSelect';
 import { useUnifiedTheme } from '../../hooks/useUnifiedTheme';
+import { useComponentTypography } from '../../hooks';
 
 interface SaveWidgetModelProps {
   open: boolean;
@@ -44,6 +45,7 @@ export const SaveWidgetModel: React.FC<SaveWidgetModelProps> = ({
 }) => {
   
   const theme = useUnifiedTheme();
+  const { getDialogTitleSx } = useComponentTypography();
 
   return (
     <Dialog
@@ -61,8 +63,7 @@ export const SaveWidgetModel: React.FC<SaveWidgetModelProps> = ({
         sx={{
           backgroundColor: alpha(theme.palette.primary.main, 0.05),
           color: 'primary.main',
-          fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold,
-          fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.xl,
+          ...getDialogTitleSx(),
           py: STYLE_GUIDE.SPACING.s4,
         }}
       >

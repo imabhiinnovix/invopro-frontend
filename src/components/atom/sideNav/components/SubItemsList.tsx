@@ -7,6 +7,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { Dashboard } from '../../../../pages/dashboard/types';
 import { ShareDashboardModal } from './ShareDashboardModal';
 import { STYLE_GUIDE } from '../../../../styles';
+import { useComponentTypography } from '../../../../hooks/useComponentTypography';
 
 interface SubItem {
   name: string;
@@ -35,6 +36,7 @@ export const SubItemsList: React.FC<SubItemsListProps> = ({
 }) => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { getNavigationSx } = useComponentTypography();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [selectedDashboard, setSelectedDashboard] = useState<Dashboard | null>(null);
   const [shareModalOpen, setShareModalOpen] = useState(false);
@@ -99,7 +101,7 @@ export const SubItemsList: React.FC<SubItemsListProps> = ({
                         justifyContent: 'center',
                         mr: openNav ? 2 : 'auto',
                         '& .MuiSvgIcon-root': {
-                          fontSize: '0.9rem',
+                          fontSize: getNavigationSx().fontSize,
                         },
                       }}
                     >
@@ -110,7 +112,7 @@ export const SubItemsList: React.FC<SubItemsListProps> = ({
                           sx={{
                             opacity: openNav ? 1 : 0,
                       '& .MuiListItemText-primary': {
-                        fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base,
+                        ...getNavigationSx(),
                         whiteSpace: 'nowrap',
                         overflow: 'hidden',
                         textOverflow: 'ellipsis',
@@ -153,7 +155,7 @@ export const SubItemsList: React.FC<SubItemsListProps> = ({
                         justifyContent: 'center',
                         mr: openNav ? 2 : 'auto',
                         '& .MuiSvgIcon-root': {
-                          fontSize: '0.9rem',
+                          fontSize: getNavigationSx().fontSize,
                         },
                       }}
                     >
@@ -164,7 +166,7 @@ export const SubItemsList: React.FC<SubItemsListProps> = ({
                           sx={{
                             opacity: openNav ? 1 : 0,
                       '& .MuiListItemText-primary': {
-                        fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base,
+                        ...getNavigationSx(),
                         whiteSpace: 'nowrap',
                         overflow: 'hidden',
                         textOverflow: 'ellipsis',
@@ -201,7 +203,7 @@ export const SubItemsList: React.FC<SubItemsListProps> = ({
                           },
                         }}
                       >
-                        <MoreVertIcon sx={{ fontSize: '0.9rem' }} />
+                        <MoreVertIcon sx={{ fontSize: getNavigationSx().fontSize }} />
                       </IconButton>
                     )}
                   </ListItemButton>
@@ -217,13 +219,13 @@ export const SubItemsList: React.FC<SubItemsListProps> = ({
         onClose={handleMenuClose}
         onClick={(e) => e.stopPropagation()}
       >
-        <MenuItem onClick={handleShare}>
+        <MenuItem onClick={handleShare} sx={{ '& .MuiListItemText-root': { ...getNavigationSx() } }}>
           <ListItemIcon>
             <ShareIcon fontSize="small" />
           </ListItemIcon>
           Share
         </MenuItem>
-        <MenuItem onClick={handleDelete}>
+        <MenuItem onClick={handleDelete} sx={{ '& .MuiListItemText-root': { ...getNavigationSx() } }}>
           <ListItemIcon>
             <DeleteIcon fontSize="small" sx={{ color: 'red' }} />
           </ListItemIcon>

@@ -47,6 +47,49 @@ export const getDefaultDashboardTheme = (): DashboardTheme => ({
     border: STYLE_GUIDE.COLORS.borderGray,
     borderHover: STYLE_GUIDE.COLORS.materialPurpleDark,
   },
+  typography: {
+    // Global typography (fallback)
+    fontFamily: STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary,
+    fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base,
+    fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.regular,
+    
+    // Component-specific typography
+    headings: {
+      fontFamily: STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary,
+      fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.large,
+      fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold,
+    },
+    body: {
+      fontFamily: STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary,
+      fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base,
+      fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.regular,
+    },
+    buttons: {
+      fontFamily: STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary,
+      fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
+      fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.medium,
+    },
+    cards: {
+      fontFamily: STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary,
+      fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base,
+      fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.regular,
+    },
+    inputs: {
+      fontFamily: STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary,
+      fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
+      fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.regular,
+    },
+    tables: {
+      fontFamily: STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary,
+      fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
+      fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.regular,
+    },
+    navigation: {
+      fontFamily: STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary,
+      fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
+      fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.medium,
+    },
+  },
   components: {
     button: {
       textTransform: 'none',
@@ -110,6 +153,7 @@ export const getDefaultDashboardTheme = (): DashboardTheme => ({
   layout: {
     maxWidth: '1200px',
   },
+  customFonts: [],
 });
 
 // Convert dashboard theme to MUI theme

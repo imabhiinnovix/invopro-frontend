@@ -29,6 +29,7 @@ import CommonSelect from '../../common/dropdown/commonSelect';
 import useFilePostData from '../../../hooks/usePostMultipart';
 import { STYLE_GUIDE } from '../../../styles';
 import { useUnifiedTheme } from '../../../hooks/useUnifiedTheme';
+import { useComponentTypography } from '../../../hooks';
 
 interface CreateDataSourceVersionProps {
   setReload: React.Dispatch<React.SetStateAction<boolean>>;
@@ -56,7 +57,7 @@ const CreateDataSourceVersion: React.FC<CreateDataSourceVersionProps> = ({ setRe
   const [settingAttribute, setSettingAttribute] = useState<Record<any, any>[]>([]);
   const [settingAttributeOption, setSettingAttributeOption] = useState<string[]>([]);
 
-  
+  const { getDialogTitleSx } = useComponentTypography();
 
   const {
     control,
@@ -321,7 +322,14 @@ const CreateDataSourceVersion: React.FC<CreateDataSourceVersionProps> = ({ setRe
     <div>
       <Box onClick={() => setOpen(true)}>{CustomButton}</Box>
       <Dialog open={open} onClose={handleFormClose} fullWidth maxWidth="sm">
-        <DialogTitle>{title}</DialogTitle>
+        <DialogTitle
+          sx={{
+            ...getDialogTitleSx(),
+            color: theme.palette.dialog?.titleColor || STYLE_GUIDE.COLORS.textDarkGray,
+          }}
+        >
+          {title}
+        </DialogTitle>
         <DialogContent>
           <Box component="form" onSubmit={handleSubmit(onSubmit)} noValidate>
             <Stack spacing={3}>

@@ -16,21 +16,25 @@ import {
   Tooltip,
   IconButton,
   Paper,
+  MenuItem,
 } from '@mui/material';
 import InfoIcon from '@mui/icons-material/Info';
 import { ChromePicker } from 'react-color';
 import { useAppDispatch } from '../../../storeHooks';
 import { createDashboardTheme, updateDashboardTheme } from '../../../reducers/dashboardThemeSlice';
-import { DashboardTheme, CreateDashboardThemeDialogProps } from '../../../types/dashboardTheme';
+import { DashboardTheme, CreateDashboardThemeDialogProps, FontOption } from '../../../types/dashboardTheme';
 import { getDefaultDashboardTheme } from '../../../styles/themeConstants';
 import { getColorFieldTooltip } from '../../../constants/colorFieldTooltips';
 import { STYLE_GUIDE } from '../../../styles';
 import { useUnifiedTheme } from '../../../hooks/useUnifiedTheme';
+import { useComponentTypography } from '../../../hooks/useComponentTypography';
+import { toast } from 'react-toastify';
 
 const getDefaultTheme = (): DashboardTheme => ({
   ...getDefaultDashboardTheme(),
   name: '',
   description: '',
+  customFonts: [],
 });
 
 interface TabPanelProps {
@@ -40,7 +44,6 @@ interface TabPanelProps {
 }
 
 function TabPanel(props: TabPanelProps) {
-    const theme = useUnifiedTheme();
   const { children, value, index, ...other } = props;
 
   return (
@@ -62,6 +65,7 @@ const CreateDashboardThemeDialog: React.FC<CreateDashboardThemeDialogProps> = ({
   theme,
 }) => {
   const unifiedTheme = useUnifiedTheme();
+  const { getButtonSx, getDialogTitleSx } = useComponentTypography();
   const dispatch = useAppDispatch();
   const [tabValue, setTabValue] = useState(0);
   const [formData, setFormData] = useState<DashboardTheme>(getDefaultTheme());
@@ -75,7 +79,7 @@ const CreateDashboardThemeDialog: React.FC<CreateDashboardThemeDialogProps> = ({
     } else {
       setFormData(getDefaultTheme());
     }
-  }, [theme]);
+  }, [theme, open]);
 
   const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
@@ -181,14 +185,20 @@ const CreateDashboardThemeDialog: React.FC<CreateDashboardThemeDialogProps> = ({
         sx: { height: '90vh' }
       }}
     >
-      <DialogTitle>
-        {theme ? 'Edit Dashboard Theme' : 'Create New Dashboard Theme'}
+      <DialogTitle
+        sx={{
+          ...getDialogTitleSx(),
+          color: unifiedTheme.palette.dialog?.titleColor || unifiedTheme.palette.text.primary,
+        }}
+      >
+        {theme ? 'Edit Dashboard Theme' : 'Create Dashboard Theme'}
       </DialogTitle>
 
       <DialogContent sx={{ p: 0 }}>
-        <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+        <Box>
           <Tabs value={tabValue} onChange={handleTabChange} aria-label="theme settings tabs">
-            <Tab label="Theme Selection" />
+            <Tab label="Colors" />
+            <Tab label="Typography" />
           </Tabs>
         </Box>
 
@@ -439,10 +449,681 @@ const CreateDashboardThemeDialog: React.FC<CreateDashboardThemeDialogProps> = ({
             </Grid>
           </Box>
         </TabPanel>
+
+        <TabPanel value={tabValue} index={1}>
+          <Box sx={{ p: 3 }}>
+            <Typography variant="h6" sx={{ mb: 3, fontWeight: 700 }}>
+              Component-Specific Typography Settings
+            </Typography>
+            
+            {/* Global Typography */}
+            <Paper elevation={2} sx={{ p: 3, mb: 3 }}>
+              <Typography variant="h6" sx={{ mb: 2, fontWeight: 700 }}>
+                Global Typography
+              </Typography>
+              <Grid container spacing={2}>
+                <Grid item xs={12} md={4}>
+                  <TextField
+                    select
+                    fullWidth
+                    label="Font Family"
+                    value={formData.typography?.fontFamily || STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary}
+                    onChange={(e) => handleInputChange('typography.fontFamily', e.target.value)}
+                    sx={{ mb: 2 }}
+                  >
+                    {STYLE_GUIDE.TYPOGRAPHY.fontOptions.map((option) => (
+                      <MenuItem key={option.value} value={option.value}>
+                        {option.label}
+                      </MenuItem>
+                    ))}
+                    {formData.customFonts?.map((font) => (
+                      <MenuItem key={font.value} value={font.value}>
+                        {font.label}
+                      </MenuItem>
+                    ))}
+                  </TextField>
+                </Grid>
+                <Grid item xs={12} md={4}>
+                  <TextField
+                    select
+                    fullWidth
+                    label="Font Size"
+                    value={formData.typography?.fontSize || STYLE_GUIDE.TYPOGRAPHY.fontSize.base}
+                    onChange={(e) => handleInputChange('typography.fontSize', e.target.value)}
+                    sx={{ mb: 2 }}
+                  >
+                    {Object.entries(STYLE_GUIDE.TYPOGRAPHY.fontSize).map(([key, value]) => (
+                      <MenuItem key={value} value={value}>
+                        {key.charAt(0).toUpperCase() + key.slice(1)} ({value})
+                      </MenuItem>
+                    ))}
+                  </TextField>
+                </Grid>
+                <Grid item xs={12} md={4}>
+                  <TextField
+                    select
+                    fullWidth
+                    label="Font Weight"
+                    value={formData.typography?.fontWeight || STYLE_GUIDE.TYPOGRAPHY.fontWeight.regular}
+                    onChange={(e) => handleInputChange('typography.fontWeight', e.target.value)}
+                    sx={{ mb: 2 }}
+                  >
+                    {Object.entries(STYLE_GUIDE.TYPOGRAPHY.fontWeight).map(([key, value]) => (
+                      <MenuItem key={value} value={value}>
+                        {key.charAt(0).toUpperCase() + key.slice(1)} ({value})
+                      </MenuItem>
+                    ))}
+                  </TextField>
+                </Grid>
+              </Grid>
+            </Paper>
+
+            {/* Headings Typography */}
+            <Paper elevation={2} sx={{ p: 3, mb: 3 }}>
+              <Typography variant="h6" sx={{ mb: 2, fontWeight: 700 }}>
+                Headings Typography
+              </Typography>
+              <Grid container spacing={2}>
+                <Grid item xs={12} md={4}>
+                  <TextField
+                    select
+                    fullWidth
+                    label="Font Family"
+                    value={formData.typography?.headings?.fontFamily || formData.typography?.fontFamily || STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary}
+                    onChange={(e) => handleInputChange('typography.headings.fontFamily', e.target.value)}
+                    sx={{ mb: 2 }}
+                  >
+                    {STYLE_GUIDE.TYPOGRAPHY.fontOptions.map((option) => (
+                      <MenuItem key={option.value} value={option.value}>
+                        {option.label}
+                      </MenuItem>
+                    ))}
+                    {formData.customFonts?.map((font) => (
+                      <MenuItem key={font.value} value={font.value}>
+                        {font.label}
+                      </MenuItem>
+                    ))}
+                  </TextField>
+                </Grid>
+                <Grid item xs={12} md={4}>
+                  <TextField
+                    select
+                    fullWidth
+                    label="Font Size"
+                    value={formData.typography?.headings?.fontSize || formData.typography?.fontSize || STYLE_GUIDE.TYPOGRAPHY.fontSize.large}
+                    onChange={(e) => handleInputChange('typography.headings.fontSize', e.target.value)}
+                    sx={{ mb: 2 }}
+                  >
+                    {Object.entries(STYLE_GUIDE.TYPOGRAPHY.fontSize).map(([key, value]) => (
+                      <MenuItem key={value} value={value}>
+                        {key.charAt(0).toUpperCase() + key.slice(1)} ({value})
+                      </MenuItem>
+                    ))}
+                  </TextField>
+                </Grid>
+                <Grid item xs={12} md={4}>
+                  <TextField
+                    select
+                    fullWidth
+                    label="Font Weight"
+                    value={formData.typography?.headings?.fontWeight || formData.typography?.fontWeight || STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold}
+                    onChange={(e) => handleInputChange('typography.headings.fontWeight', e.target.value)}
+                    sx={{ mb: 2 }}
+                  >
+                    {Object.entries(STYLE_GUIDE.TYPOGRAPHY.fontWeight).map(([key, value]) => (
+                      <MenuItem key={value} value={value}>
+                        {key.charAt(0).toUpperCase() + key.slice(1)} ({value})
+                      </MenuItem>
+                    ))}
+                  </TextField>
+                </Grid>
+              </Grid>
+            </Paper>
+
+            {/* Body Text Typography */}
+            <Paper elevation={2} sx={{ p: 3, mb: 3 }}>
+              <Typography variant="h6" sx={{ mb: 2, fontWeight: 700 }}>
+                Body Text Typography
+              </Typography>
+              <Grid container spacing={2}>
+                <Grid item xs={12} md={4}>
+                  <TextField
+                    select
+                    fullWidth
+                    label="Font Family"
+                    value={formData.typography?.body?.fontFamily || formData.typography?.fontFamily || STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary}
+                    onChange={(e) => handleInputChange('typography.body.fontFamily', e.target.value)}
+                    sx={{ mb: 2 }}
+                  >
+                    {STYLE_GUIDE.TYPOGRAPHY.fontOptions.map((option) => (
+                      <MenuItem key={option.value} value={option.value}>
+                        {option.label}
+                      </MenuItem>
+                    ))}
+                    {formData.customFonts?.map((font) => (
+                      <MenuItem key={font.value} value={font.value}>
+                        {font.label}
+                      </MenuItem>
+                    ))}
+                  </TextField>
+                </Grid>
+                <Grid item xs={12} md={4}>
+                  <TextField
+                    select
+                    fullWidth
+                    label="Font Size"
+                    value={formData.typography?.body?.fontSize || formData.typography?.fontSize || STYLE_GUIDE.TYPOGRAPHY.fontSize.base}
+                    onChange={(e) => handleInputChange('typography.body.fontSize', e.target.value)}
+                    sx={{ mb: 2 }}
+                  >
+                    {Object.entries(STYLE_GUIDE.TYPOGRAPHY.fontSize).map(([key, value]) => (
+                      <MenuItem key={value} value={value}>
+                        {key.charAt(0).toUpperCase() + key.slice(1)} ({value})
+                      </MenuItem>
+                    ))}
+                  </TextField>
+                </Grid>
+                <Grid item xs={12} md={4}>
+                  <TextField
+                    select
+                    fullWidth
+                    label="Font Weight"
+                    value={formData.typography?.body?.fontWeight || formData.typography?.fontWeight || STYLE_GUIDE.TYPOGRAPHY.fontWeight.regular}
+                    onChange={(e) => handleInputChange('typography.body.fontWeight', e.target.value)}
+                    sx={{ mb: 2 }}
+                  >
+                    {Object.entries(STYLE_GUIDE.TYPOGRAPHY.fontWeight).map(([key, value]) => (
+                      <MenuItem key={value} value={value}>
+                        {key.charAt(0).toUpperCase() + key.slice(1)} ({value})
+                      </MenuItem>
+                    ))}
+                  </TextField>
+                </Grid>
+              </Grid>
+            </Paper>
+
+            {/* Buttons Typography */}
+            <Paper elevation={2} sx={{ p: 3, mb: 3 }}>
+              <Typography variant="h6" sx={{ mb: 2, fontWeight: 700 }}>
+                Buttons Typography
+              </Typography>
+              <Grid container spacing={2}>
+                <Grid item xs={12} md={4}>
+                  <TextField
+                    select
+                    fullWidth
+                    label="Font Family"
+                    value={formData.typography?.buttons?.fontFamily || formData.typography?.fontFamily || STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary}
+                    onChange={(e) => handleInputChange('typography.buttons.fontFamily', e.target.value)}
+                    sx={{ mb: 2 }}
+                  >
+                    {STYLE_GUIDE.TYPOGRAPHY.fontOptions.map((option) => (
+                      <MenuItem key={option.value} value={option.value}>
+                        {option.label}
+                      </MenuItem>
+                    ))}
+                    {formData.customFonts?.map((font) => (
+                      <MenuItem key={font.value} value={font.value}>
+                        {font.label}
+                      </MenuItem>
+                    ))}
+                  </TextField>
+                </Grid>
+                <Grid item xs={12} md={4}>
+                  <TextField
+                    select
+                    fullWidth
+                    label="Font Size"
+                    value={formData.typography?.buttons?.fontSize || formData.typography?.fontSize || STYLE_GUIDE.TYPOGRAPHY.fontSize.small}
+                    onChange={(e) => handleInputChange('typography.buttons.fontSize', e.target.value)}
+                    sx={{ mb: 2 }}
+                  >
+                    {Object.entries(STYLE_GUIDE.TYPOGRAPHY.fontSize).map(([key, value]) => (
+                      <MenuItem key={value} value={value}>
+                        {key.charAt(0).toUpperCase() + key.slice(1)} ({value})
+                      </MenuItem>
+                    ))}
+                  </TextField>
+                </Grid>
+                <Grid item xs={12} md={4}>
+                  <TextField
+                    select
+                    fullWidth
+                    label="Font Weight"
+                    value={formData.typography?.buttons?.fontWeight || formData.typography?.fontWeight || STYLE_GUIDE.TYPOGRAPHY.fontWeight.medium}
+                    onChange={(e) => handleInputChange('typography.buttons.fontWeight', e.target.value)}
+                    sx={{ mb: 2 }}
+                  >
+                    {Object.entries(STYLE_GUIDE.TYPOGRAPHY.fontWeight).map(([key, value]) => (
+                      <MenuItem key={value} value={value}>
+                        {key.charAt(0).toUpperCase() + key.slice(1)} ({value})
+                      </MenuItem>
+                    ))}
+                  </TextField>
+                </Grid>
+              </Grid>
+            </Paper>
+
+            {/* Cards Typography */}
+            <Paper elevation={2} sx={{ p: 3, mb: 3 }}>
+              <Typography variant="h6" sx={{ mb: 2, fontWeight: 700 }}>
+                Cards Typography
+              </Typography>
+              <Grid container spacing={2}>
+                <Grid item xs={12} md={4}>
+                  <TextField
+                    select
+                    fullWidth
+                    label="Font Family"
+                    value={formData.typography?.cards?.fontFamily || formData.typography?.fontFamily || STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary}
+                    onChange={(e) => handleInputChange('typography.cards.fontFamily', e.target.value)}
+                    sx={{ mb: 2 }}
+                  >
+                    {STYLE_GUIDE.TYPOGRAPHY.fontOptions.map((option) => (
+                      <MenuItem key={option.value} value={option.value}>
+                        {option.label}
+                      </MenuItem>
+                    ))}
+                    {formData.customFonts?.map((font) => (
+                      <MenuItem key={font.value} value={font.value}>
+                        {font.label}
+                      </MenuItem>
+                    ))}
+                  </TextField>
+                </Grid>
+                <Grid item xs={12} md={4}>
+                  <TextField
+                    select
+                    fullWidth
+                    label="Font Size"
+                    value={formData.typography?.cards?.fontSize || formData.typography?.fontSize || STYLE_GUIDE.TYPOGRAPHY.fontSize.base}
+                    onChange={(e) => handleInputChange('typography.cards.fontSize', e.target.value)}
+                    sx={{ mb: 2 }}
+                  >
+                    {Object.entries(STYLE_GUIDE.TYPOGRAPHY.fontSize).map(([key, value]) => (
+                      <MenuItem key={value} value={value}>
+                        {key.charAt(0).toUpperCase() + key.slice(1)} ({value})
+                      </MenuItem>
+                    ))}
+                  </TextField>
+                </Grid>
+                <Grid item xs={12} md={4}>
+                  <TextField
+                    select
+                    fullWidth
+                    label="Font Weight"
+                    value={formData.typography?.cards?.fontWeight || formData.typography?.fontWeight || STYLE_GUIDE.TYPOGRAPHY.fontWeight.regular}
+                    onChange={(e) => handleInputChange('typography.cards.fontWeight', e.target.value)}
+                    sx={{ mb: 2 }}
+                  >
+                    {Object.entries(STYLE_GUIDE.TYPOGRAPHY.fontWeight).map(([key, value]) => (
+                      <MenuItem key={value} value={value}>
+                        {key.charAt(0).toUpperCase() + key.slice(1)} ({value})
+                      </MenuItem>
+                    ))}
+                  </TextField>
+                </Grid>
+              </Grid>
+            </Paper>
+
+            {/* Inputs Typography */}
+            <Paper elevation={2} sx={{ p: 3, mb: 3 }}>
+              <Typography variant="h6" sx={{ mb: 2, fontWeight: 700 }}>
+                Inputs Typography
+              </Typography>
+              <Grid container spacing={2}>
+                <Grid item xs={12} md={4}>
+                  <TextField
+                    select
+                    fullWidth
+                    label="Font Family"
+                    value={formData.typography?.inputs?.fontFamily || formData.typography?.fontFamily || STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary}
+                    onChange={(e) => handleInputChange('typography.inputs.fontFamily', e.target.value)}
+                    sx={{ mb: 2 }}
+                  >
+                    {STYLE_GUIDE.TYPOGRAPHY.fontOptions.map((option) => (
+                      <MenuItem key={option.value} value={option.value}>
+                        {option.label}
+                      </MenuItem>
+                    ))}
+                    {formData.customFonts?.map((font) => (
+                      <MenuItem key={font.value} value={font.value}>
+                        {font.label}
+                      </MenuItem>
+                    ))}
+                  </TextField>
+                </Grid>
+                <Grid item xs={12} md={4}>
+                  <TextField
+                    select
+                    fullWidth
+                    label="Font Size"
+                    value={formData.typography?.inputs?.fontSize || formData.typography?.fontSize || STYLE_GUIDE.TYPOGRAPHY.fontSize.small}
+                    onChange={(e) => handleInputChange('typography.inputs.fontSize', e.target.value)}
+                    sx={{ mb: 2 }}
+                  >
+                    {Object.entries(STYLE_GUIDE.TYPOGRAPHY.fontSize).map(([key, value]) => (
+                      <MenuItem key={value} value={value}>
+                        {key.charAt(0).toUpperCase() + key.slice(1)} ({value})
+                      </MenuItem>
+                    ))}
+                  </TextField>
+                </Grid>
+                <Grid item xs={12} md={4}>
+                  <TextField
+                    select
+                    fullWidth
+                    label="Font Weight"
+                    value={formData.typography?.inputs?.fontWeight || formData.typography?.fontWeight || STYLE_GUIDE.TYPOGRAPHY.fontWeight.regular}
+                    onChange={(e) => handleInputChange('typography.inputs.fontWeight', e.target.value)}
+                    sx={{ mb: 2 }}
+                  >
+                    {Object.entries(STYLE_GUIDE.TYPOGRAPHY.fontWeight).map(([key, value]) => (
+                      <MenuItem key={value} value={value}>
+                        {key.charAt(0).toUpperCase() + key.slice(1)} ({value})
+                      </MenuItem>
+                    ))}
+                  </TextField>
+                </Grid>
+              </Grid>
+            </Paper>
+
+            {/* Tables Typography */}
+            <Paper elevation={2} sx={{ p: 3, mb: 3 }}>
+              <Typography variant="h6" sx={{ mb: 2, fontWeight: 700 }}>
+                Tables Typography
+              </Typography>
+              <Grid container spacing={2}>
+                <Grid item xs={12} md={4}>
+                  <TextField
+                    select
+                    fullWidth
+                    label="Font Family"
+                    value={formData.typography?.tables?.fontFamily || formData.typography?.fontFamily || STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary}
+                    onChange={(e) => handleInputChange('typography.tables.fontFamily', e.target.value)}
+                    sx={{ mb: 2 }}
+                  >
+                    {STYLE_GUIDE.TYPOGRAPHY.fontOptions.map((option) => (
+                      <MenuItem key={option.value} value={option.value}>
+                        {option.label}
+                      </MenuItem>
+                    ))}
+                    {formData.customFonts?.map((font) => (
+                      <MenuItem key={font.value} value={font.value}>
+                        {font.label}
+                      </MenuItem>
+                    ))}
+                  </TextField>
+                </Grid>
+                <Grid item xs={12} md={4}>
+                  <TextField
+                    select
+                    fullWidth
+                    label="Font Size"
+                    value={formData.typography?.tables?.fontSize || formData.typography?.fontSize || STYLE_GUIDE.TYPOGRAPHY.fontSize.small}
+                    onChange={(e) => handleInputChange('typography.tables.fontSize', e.target.value)}
+                    sx={{ mb: 2 }}
+                  >
+                    {Object.entries(STYLE_GUIDE.TYPOGRAPHY.fontSize).map(([key, value]) => (
+                      <MenuItem key={value} value={value}>
+                        {key.charAt(0).toUpperCase() + key.slice(1)} ({value})
+                      </MenuItem>
+                    ))}
+                  </TextField>
+                </Grid>
+                <Grid item xs={12} md={4}>
+                  <TextField
+                    select
+                    fullWidth
+                    label="Font Weight"
+                    value={formData.typography?.tables?.fontWeight || formData.typography?.fontWeight || STYLE_GUIDE.TYPOGRAPHY.fontWeight.regular}
+                    onChange={(e) => handleInputChange('typography.tables.fontWeight', e.target.value)}
+                    sx={{ mb: 2 }}
+                  >
+                    {Object.entries(STYLE_GUIDE.TYPOGRAPHY.fontWeight).map(([key, value]) => (
+                      <MenuItem key={value} value={value}>
+                        {key.charAt(0).toUpperCase() + key.slice(1)} ({value})
+                      </MenuItem>
+                    ))}
+                  </TextField>
+                </Grid>
+              </Grid>
+            </Paper>
+
+            {/* Navigation Typography */}
+            <Paper elevation={2} sx={{ p: 3, mb: 3 }}>
+              <Typography variant="h6" sx={{ mb: 2, fontWeight: 700 }}>
+                Navigation Typography
+              </Typography>
+              <Grid container spacing={2}>
+                <Grid item xs={12} md={4}>
+                  <TextField
+                    select
+                    fullWidth
+                    label="Font Family"
+                    value={formData.typography?.navigation?.fontFamily || formData.typography?.fontFamily || STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary}
+                    onChange={(e) => handleInputChange('typography.navigation.fontFamily', e.target.value)}
+                    sx={{ mb: 2 }}
+                  >
+                    {STYLE_GUIDE.TYPOGRAPHY.fontOptions.map((option) => (
+                      <MenuItem key={option.value} value={option.value}>
+                        {option.label}
+                      </MenuItem>
+                    ))}
+                    {formData.customFonts?.map((font) => (
+                      <MenuItem key={font.value} value={font.value}>
+                        {font.label}
+                      </MenuItem>
+                    ))}
+                  </TextField>
+                </Grid>
+                <Grid item xs={12} md={4}>
+                  <TextField
+                    select
+                    fullWidth
+                    label="Font Size"
+                    value={formData.typography?.navigation?.fontSize || formData.typography?.fontSize || STYLE_GUIDE.TYPOGRAPHY.fontSize.small}
+                    onChange={(e) => handleInputChange('typography.navigation.fontSize', e.target.value)}
+                    sx={{ mb: 2 }}
+                  >
+                    {Object.entries(STYLE_GUIDE.TYPOGRAPHY.fontSize).map(([key, value]) => (
+                      <MenuItem key={value} value={value}>
+                        {key.charAt(0).toUpperCase() + key.slice(1)} ({value})
+                      </MenuItem>
+                    ))}
+                  </TextField>
+                </Grid>
+                <Grid item xs={12} md={4}>
+                  <TextField
+                    select
+                    fullWidth
+                    label="Font Weight"
+                    value={formData.typography?.navigation?.fontWeight || formData.typography?.fontWeight || STYLE_GUIDE.TYPOGRAPHY.fontWeight.medium}
+                    onChange={(e) => handleInputChange('typography.navigation.fontWeight', e.target.value)}
+                    sx={{ mb: 2 }}
+                  >
+                    {Object.entries(STYLE_GUIDE.TYPOGRAPHY.fontWeight).map(([key, value]) => (
+                      <MenuItem key={value} value={value}>
+                        {key.charAt(0).toUpperCase() + key.slice(1)} ({value})
+                      </MenuItem>
+                    ))}
+                  </TextField>
+                </Grid>
+              </Grid>
+            </Paper>
+
+            {/* Dialog Typography */}
+            <Paper elevation={2} sx={{ p: 3, mb: 3 }}>
+              <Typography variant="h6" sx={{ mb: 2, fontWeight: 700 }}>
+                Dialog Typography
+              </Typography>
+              <Grid container spacing={2}>
+                <Grid item xs={12} md={4}>
+                  <TextField
+                    select
+                    fullWidth
+                    label="Font Family"
+                    value={formData.typography?.dialog?.fontFamily || formData.typography?.fontFamily || STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary}
+                    onChange={(e) => handleInputChange('typography.dialog.fontFamily', e.target.value)}
+                    sx={{ mb: 2 }}
+                  >
+                    {STYLE_GUIDE.TYPOGRAPHY.fontOptions.map((option) => (
+                      <MenuItem key={option.value} value={option.value}>
+                        {option.label}
+                      </MenuItem>
+                    ))}
+                    {formData.customFonts?.map((font) => (
+                      <MenuItem key={font.value} value={font.value}>
+                        {font.label}
+                      </MenuItem>
+                    ))}
+                  </TextField>
+                </Grid>
+                <Grid item xs={12} md={4}>
+                  <TextField
+                    select
+                    fullWidth
+                    label="Font Size"
+                    value={formData.typography?.dialog?.fontSize || formData.typography?.fontSize || STYLE_GUIDE.TYPOGRAPHY.fontSize.large}
+                    onChange={(e) => handleInputChange('typography.dialog.fontSize', e.target.value)}
+                    sx={{ mb: 2 }}
+                  >
+                    {Object.entries(STYLE_GUIDE.TYPOGRAPHY.fontSize).map(([key, value]) => (
+                      <MenuItem key={value} value={value}>
+                        {key.charAt(0).toUpperCase() + key.slice(1)} ({value})
+                      </MenuItem>
+                    ))}
+                  </TextField>
+                </Grid>
+                <Grid item xs={12} md={4}>
+                  <TextField
+                    select
+                    fullWidth
+                    label="Font Weight"
+                    value={formData.typography?.dialog?.fontWeight || formData.typography?.fontWeight || STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold}
+                    onChange={(e) => handleInputChange('typography.dialog.fontWeight', e.target.value)}
+                    sx={{ mb: 2 }}
+                  >
+                    {Object.entries(STYLE_GUIDE.TYPOGRAPHY.fontWeight).map(([key, value]) => (
+                      <MenuItem key={value} value={value}>
+                        {key.charAt(0).toUpperCase() + key.slice(1)} ({value})
+                      </MenuItem>
+                    ))}
+                  </TextField>
+                </Grid>
+              </Grid>
+            </Paper>
+
+            {/* Custom Font Upload */}
+            <Paper elevation={2} sx={{ p: 3, mb: 3 }}>
+              <Typography variant="h6" sx={{ mb: 2, fontWeight: 700 }}>
+                Custom Font Upload
+              </Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+                Upload a .ttf font file to use in your theme. The font will be available in the font family dropdowns above.
+              </Typography>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+                <Button
+                  variant="outlined"
+                  component="label"
+                  sx={{
+                    textTransform: 'none',
+                    borderColor: unifiedTheme.palette.primary.main,
+                    color: unifiedTheme.palette.primary.main,
+                    '&:hover': {
+                      borderColor: unifiedTheme.palette.primary.dark,
+                      backgroundColor: unifiedTheme.palette.primary.light,
+                      color: unifiedTheme.palette.primary.dark,
+                    },
+                  }}
+                >
+                  Upload .ttf File
+                  <input
+                    type="file"
+                    hidden
+                    accept=".ttf"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file && (file.type === 'font/ttf' || file.name.toLowerCase().endsWith('.ttf'))) {
+                        // Extract font name from file name (remove .ttf extension)
+                        const fontName = file.name.replace(/\.ttf$/i, '');
+                        const fontValue = `"${fontName}", sans-serif`;
+                        
+                        const reader = new FileReader();
+                        reader.onload = (event) => {
+                          const dataUrl = event.target?.result as string;
+                          
+                          const fontFace = `
+                            @font-face {
+                              font-family: "${fontName}";
+                              src: url("${dataUrl}") format("truetype");
+                              font-weight: normal;
+                              font-style: normal;
+                            }
+                          `;
+                          
+                          const style = document.createElement('style');
+                          style.textContent = fontFace;
+                          document.head.appendChild(style);
+                          
+                          const newFontOption = {
+                            label: `${fontName} (Custom)`,
+                            value: fontValue,
+                          };
+                          
+                          setFormData(prev => ({
+                            ...prev,
+                            customFonts: [...(prev.customFonts || []), newFontOption],
+                          }));
+                          
+                          toast.success(`Font "${fontName}" uploaded and loaded successfully!`);
+                        };
+                        
+                        reader.readAsDataURL(file);
+                      } else {
+                        toast.error('Please select a valid .ttf file.');
+                      }
+                    }}
+                  />
+                </Button>
+                {formData.customFonts && formData.customFonts.length > 0 && (
+                  <Typography variant="body2" color="success.main">
+                    {formData.customFonts.length} custom font(s) uploaded
+                  </Typography>
+                )}
+              </Box>
+              {formData.customFonts && formData.customFonts.length > 0 && (
+                <Box sx={{ mt: 2 }}>
+                  <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>
+                    Uploaded Fonts:
+                  </Typography>
+                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                    {formData.customFonts?.map((font: FontOption, index) => (
+                      <Box
+                        key={index}
+                        sx={{
+                          p: 1,
+                          px: 2,
+                          border: '1px solid',
+                          borderColor: 'divider',
+                          borderRadius: 1,
+                          backgroundColor: 'background.default',
+                          fontSize: '0.875rem',
+                        }}
+                      >
+                        {font.label}
+                      </Box>
+                    ))}
+                  </Box>
+                </Box>
+              )}
+            </Paper>
+          </Box>
+        </TabPanel>
       </DialogContent>
 
       <DialogActions sx={{ p: 3 }}>
-        <Button onClick={onClose} color="secondary" disabled={loading}>
+        <Button onClick={onClose} color="secondary" disabled={loading} sx={{ ...getButtonSx() }}>
           Cancel
         </Button>
         <Button
@@ -451,6 +1132,7 @@ const CreateDashboardThemeDialog: React.FC<CreateDashboardThemeDialogProps> = ({
           variant="contained"
           disabled={loading || !formData.name.trim()}
           startIcon={loading ? <CircularProgress size={16} /> : null}
+          sx={{ ...getButtonSx() }}
         >
           {loading ? 'Saving...' : (theme ? 'Update Theme' : 'Create Theme')}
         </Button>

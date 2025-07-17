@@ -28,6 +28,7 @@ import { toast } from "react-toastify";
 import axiosInstance from "../../../services/axiosInstance";
 import { STYLE_GUIDE } from '../../../styles';
 import { useUnifiedTheme } from '../../../hooks/useUnifiedTheme';
+import { useComponentTypography } from '../../../hooks/useComponentTypography';
 
 interface CreateUpdateEntityProps {
   setReloadEntity: React.Dispatch<React.SetStateAction<boolean>>;
@@ -44,6 +45,7 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
 }) => {
   
   const theme = useUnifiedTheme();
+  const { getDialogTitleSx } = useComponentTypography();
   const [open, setOpen] = useState(false);
   const [_file, setFile] = useState<File | null>(null);
   const [fileName, setFileName] = useState<string | null>(null);
@@ -381,8 +383,7 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
       >
         <DialogTitle 
           sx={{
-            fontWeight: theme.palette.dialog?.titleFontWeight || STYLE_GUIDE.TYPOGRAPHY.fontWeight.bold,
-            fontSize: theme.palette.dialog?.titleFontSize || '20px',
+            ...getDialogTitleSx(),
             color: theme.palette.dialog?.titleColor || STYLE_GUIDE.COLORS.textDarkGray,
           }}
         >

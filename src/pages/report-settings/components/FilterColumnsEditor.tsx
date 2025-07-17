@@ -10,6 +10,7 @@ import CheckIcon from "@mui/icons-material/Check";
 import CloseIcon from "@mui/icons-material/Close";
 import { STYLE_GUIDE } from '../../../styles';
 import { useUnifiedTheme } from '../../../hooks/useUnifiedTheme';
+import { useComponentTypography } from '../../../hooks/useComponentTypography';
 
 interface FilterColumn {
     _id: string;
@@ -56,6 +57,7 @@ const FilterColumnsEditor: React.FC<Props> = ({
     onAddColumn
 }) => {
     const theme = useUnifiedTheme();
+    const { getHeadingSx, getBodySx, getButtonSx, getInputSx } = useComponentTypography();
 
     
 
@@ -72,7 +74,7 @@ const FilterColumnsEditor: React.FC<Props> = ({
                     }}
                 >
                     <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                        <Typography variant="subtitle1" sx={{ fontWeight: 500 }}>
+                        <Typography variant="subtitle1" sx={{ ...getHeadingSx() }}>
                             {filter.section} - {filter.attribute}
                         </Typography>
                     </AccordionSummary>
@@ -88,7 +90,7 @@ const FilterColumnsEditor: React.FC<Props> = ({
                                 alignItems="center"
                                 sx={{ mb: STYLE_GUIDE.SPACING.s2 }}
                             >
-                                <Typography variant="subtitle2" sx={{ fontWeight: 500 }}>
+                                <Typography variant="subtitle2" sx={{ ...getHeadingSx() }}>
                                     Filter Columns ({filter.columns.length})
                                 </Typography>
                                 <Button
@@ -96,13 +98,14 @@ const FilterColumnsEditor: React.FC<Props> = ({
                                     size="small"
                                     startIcon={<AddIcon />}
                                     onClick={() => onAddColumn(filter._id)}
+                                    sx={getButtonSx()}
                                 >
                                     Add Column
                                 </Button>
                             </Box>
                             {filter.columns.length === 0 ? (
                                 <Box sx={{ p: STYLE_GUIDE.SPACING.s2, textAlign: "center", color: theme.palette.text.secondary }}>
-                                    <Typography variant="body2" sx={{ fontStyle: "italic" }}>
+                                    <Typography variant="body2" sx={{ ...getBodySx(), fontStyle: "italic" }}>
                                         No columns added yet.
                                     </Typography>
                                 </Box>
@@ -119,7 +122,7 @@ const FilterColumnsEditor: React.FC<Props> = ({
                                         }}
                                     >
                                         <Box display="flex" alignItems="center" gap={2} sx={{ mb: STYLE_GUIDE.SPACING.s1 }}>
-                                            <Typography sx={{ minWidth: 120, fontWeight: 'bold' }}>
+                                            <Typography sx={{ minWidth: 120, ...getBodySx(), fontWeight: 'bold' }}>
                                                 Report Header:
                                             </Typography>
                                             {editingColumns[column._id] ? (
@@ -133,7 +136,7 @@ const FilterColumnsEditor: React.FC<Props> = ({
                                                     sx={{ maxWidth: 300 }}
                                                 />
                                             ) : (
-                                                <Typography variant="body1" sx={{ flex: 1 }}>
+                                                <Typography variant="body1" sx={{ flex: 1, ...getBodySx() }}>
                                                     {column.reportHeader}
                                                 </Typography>
                                             )}
@@ -147,6 +150,7 @@ const FilterColumnsEditor: React.FC<Props> = ({
                                                             onClick={() => onSaveColumn(column._id)}
                                                             disabled={!editColumnValues[column._id]?.trim() || !column.attributeValues.length}
                                                             startIcon={<CheckIcon />}
+                                                            sx={getButtonSx()}
                                                         >
                                                             Save
                                                         </Button>
@@ -155,6 +159,7 @@ const FilterColumnsEditor: React.FC<Props> = ({
                                                             size="small"
                                                             onClick={() => onCancelEditColumn(column._id)}
                                                             startIcon={<CloseIcon />}
+                                                            sx={getButtonSx()}
                                                         >
                                                             Cancel
                                                         </Button>
@@ -166,6 +171,7 @@ const FilterColumnsEditor: React.FC<Props> = ({
                                                             size="small"
                                                             onClick={() => onEditColumn(column._id)}
                                                             startIcon={<EditIcon />}
+                                                            sx={getButtonSx()}
                                                         >
                                                             Edit
                                                         </Button>
@@ -175,6 +181,7 @@ const FilterColumnsEditor: React.FC<Props> = ({
                                                             size="small"
                                                             onClick={() => onDeleteColumn(column._id)}
                                                             startIcon={<DeleteIcon />}
+                                                            sx={getButtonSx()}
                                                         >
                                                             Delete
                                                         </Button>
@@ -186,7 +193,7 @@ const FilterColumnsEditor: React.FC<Props> = ({
                                             <Typography
                                                 variant="body2"
                                                 color={theme.palette.text.secondary}
-                                                sx={{ mb: STYLE_GUIDE.SPACING.s1 }}
+                                                sx={{ mb: STYLE_GUIDE.SPACING.s1, ...getBodySx() }}
                                             >
                                                 Attribute Values:
                                             </Typography>

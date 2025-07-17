@@ -30,9 +30,11 @@ import { Dashboard as DashboardType, DashboardListResponse } from "./types";
 import { resetChartAndWidgetData } from "./dashboardReducer";
 import { STYLE_GUIDE } from '../../styles';
 import { useUnifiedTheme } from '../../hooks/useUnifiedTheme';
+import { useComponentTypography } from '../../hooks/useComponentTypography';
 
 const Dashboard = () => {
   const theme = useUnifiedTheme();
+  const { getHeadingSx, getButtonSx, getTableSx } = useComponentTypography();
   const { id } = useParams();
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
@@ -190,6 +192,8 @@ const Dashboard = () => {
           <Typography
             variant="h4"
             sx={{
+              ...getHeadingSx(),
+  
               fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold,
               color: STYLE_GUIDE.COLORS.black,
               fontSize: { xs: STYLE_GUIDE.TYPOGRAPHY.fontSize.large, md: STYLE_GUIDE.TYPOGRAPHY.fontSize.xxl },
@@ -202,6 +206,7 @@ const Dashboard = () => {
             startIcon={<AddIcon />}
             onClick={() => setOpenCreateModal(true)}
             sx={{
+              ...getButtonSx(),
               backgroundColor: STYLE_GUIDE.COLORS.primary,
               color: STYLE_GUIDE.COLORS.white,
               "&:hover": {
@@ -211,8 +216,6 @@ const Dashboard = () => {
               py: STYLE_GUIDE.SPACING.s2,
               borderRadius: STYLE_GUIDE.SPACING.s2,
               textTransform: "none",
-              fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base,
-              fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.medium,
             }}
           >
             Create New Dashboard
@@ -223,6 +226,7 @@ const Dashboard = () => {
           <TableContainer
             component={Paper}
             sx={{
+              ...getTableSx(),
               borderRadius: STYLE_GUIDE.SPACING.s4,
               boxShadow: STYLE_GUIDE.SHADOWS.cardPrimary,
               maxHeight: "calc(100vh - 300px)",
