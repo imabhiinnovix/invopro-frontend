@@ -31,6 +31,7 @@ import CreateDashboardThemeDialog from './components/CreateDashboardThemeDialog'
 import { toast } from 'react-toastify';
 import { useUnifiedTheme } from '../../hooks/useUnifiedTheme';
 import { useComponentTypography } from '../../hooks/useComponentTypography';
+import { STYLE_GUIDE } from '../../styles';
 
 
 const DashboardThemePage = () => {
@@ -42,6 +43,8 @@ const DashboardThemePage = () => {
   const [selectedTheme, setSelectedTheme] = useState<DashboardTheme | null>(null);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [themeToDelete, setThemeToDelete] = useState<string | null>(null);
+
+  const { getDialogTitleSx } = useComponentTypography();
 
   useEffect(() => {
     if (error) {
@@ -198,7 +201,15 @@ const DashboardThemePage = () => {
         aria-labelledby="delete-dialog-title"
         aria-describedby="delete-dialog-description"
       >
-        <DialogTitle id="delete-dialog-title">Delete Theme</DialogTitle>
+        <DialogTitle 
+          id="delete-dialog-title"
+          sx={{
+             ...getDialogTitleSx(),
+            color: unifiedTheme.palette.dialog?.titleColor || STYLE_GUIDE.COLORS.textDarkGray,
+          }}
+        >
+          Delete Theme
+        </DialogTitle>
         <DialogContent>
           <DialogContentText id="delete-dialog-description">
             Are you sure you want to delete this theme? This action cannot be undone.

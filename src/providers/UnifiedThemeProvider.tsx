@@ -10,10 +10,12 @@ interface UnifiedThemeProviderProps {
 }
 
 const UnifiedThemeProviderInner: React.FC<UnifiedThemeProviderProps> = ({ children }) => {
-  const { dashboardTheme } = useAppSelector((state) => state.dashboardTheme);
+  const { dashboardTheme } = useAppSelector((state) => ({
+    dashboardTheme: state.dashboardTheme.dashboardTheme,
+  }));
   const { typographySettings } = useTypography();
-  
-  // Use dashboard theme typography if available, otherwise use typography context
+
+  // Determine effective typography settings
   const effectiveTypographySettings = dashboardTheme?.typography ? {
     fontFamily: dashboardTheme.typography.fontFamily,
     fontSize: dashboardTheme.typography.fontSize,
@@ -21,7 +23,7 @@ const UnifiedThemeProviderInner: React.FC<UnifiedThemeProviderProps> = ({ childr
   } : typographySettings;
 
   // Helper function to get component-specific typography
-  const getComponentTypography = (componentType: 'headings' | 'body' | 'buttons' | 'cards' | 'inputs' | 'tables' | 'navigation') => {
+  const getComponentTypography = (componentType: 'headings' | 'body' | 'buttons' | 'cards' | 'inputs' | 'tables' | 'navigation' | 'dialog') => {
     if (!dashboardTheme?.typography) {
       return effectiveTypographySettings;
     }
@@ -44,12 +46,6 @@ const UnifiedThemeProviderInner: React.FC<UnifiedThemeProviderProps> = ({ childr
 
   // Create a unified theme that combines the base MUI theme with the dashboard theme and typography settings
   const unifiedTheme = React.useMemo(() => {
-    console.log('Creating unified theme with typography:', {
-      effectiveTypographySettings,
-      dashboardTheme: dashboardTheme?.typography,
-      headings: getComponentTypography('headings'),
-      body: getComponentTypography('body'),
-    });
 
     const baseThemeWithTypography = {
       ...baseTheme,
@@ -194,6 +190,7 @@ const UnifiedThemeProviderInner: React.FC<UnifiedThemeProviderProps> = ({ childr
           shadow: dashboardTheme.components.dialog.boxShadow,
           borderRadius: dashboardTheme.components.dialog.borderRadius,
           titleColor: dashboardTheme.components.dialog.titleColor,
+          titleFontFamily: dashboardTheme.components.dialog.titleFontFamily,
           titleFontSize: dashboardTheme.components.dialog.titleFontSize,
           titleFontWeight: dashboardTheme.components.dialog.titleFontWeight,
           contentColor: dashboardTheme.components.dialog.contentColor,
@@ -261,7 +258,6 @@ const UnifiedThemeProviderInner: React.FC<UnifiedThemeProviderProps> = ({ childr
               fontWeight: dashboardTheme.components?.dialog?.titleFontWeight || STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold,
               padding: '16px 24px',
               borderBottom: `1px solid ${dashboardTheme.colors.divider}`,
-              fontFamily: `${getComponentTypography('headings').fontFamily} !important`,
             },
           },
         },
@@ -459,102 +455,6 @@ const UnifiedThemeProviderInner: React.FC<UnifiedThemeProviderProps> = ({ childr
 
   return (
     <ThemeProvider theme={unifiedTheme}>
-      <style>
-        {(() => {
-          const headingsTypography = getComponentTypography('headings');
-          const bodyTypography = getComponentTypography('body');
-          const buttonsTypography = getComponentTypography('buttons');
-          const cardsTypography = getComponentTypography('cards');
-          const inputsTypography = getComponentTypography('inputs');
-          const tablesTypography = getComponentTypography('tables');
-          const navigationTypography = getComponentTypography('navigation');
-          
-
-          
-          const cssString = `
-            :root {
-              --theme-font-family-primary: ${effectiveTypographySettings.fontFamily};
-              --theme-font-family-headings: ${headingsTypography.fontFamily};
-              --theme-font-family-body: ${bodyTypography.fontFamily};
-              --theme-font-family-buttons: ${buttonsTypography.fontFamily};
-              --theme-font-family-cards: ${cardsTypography.fontFamily};
-              --theme-font-family-inputs: ${inputsTypography.fontFamily};
-              --theme-font-family-tables: ${tablesTypography.fontFamily};
-              --theme-font-family-navigation: ${navigationTypography.fontFamily};
-            }
-            
-            /* Force typography on all elements */
-            * {
-              font-family: var(--theme-font-family-primary) !important;
-            }
-            
-            /* Force typography on specific elements */
-            body, html, #root {
-              font-family: var(--theme-font-family-primary) !important;
-            }
-            
-            /* Force typography on headings */
-            h1, h2, h3, h4, h5, h6,
-            .MuiTypography-h1, .MuiTypography-h2, .MuiTypography-h3, 
-            .MuiTypography-h4, .MuiTypography-h5, .MuiTypography-h6 {
-              font-family: var(--theme-font-family-headings) !important;
-            }
-            
-            /* Force typography on buttons */
-            button, .MuiButton-root, .MuiButtonBase-root,
-            .MuiButton-text, .MuiButton-outlined, .MuiButton-contained {
-              font-family: var(--theme-font-family-buttons) !important;
-            }
-            
-            /* Force typography on inputs */
-            input, textarea, .MuiInputBase-root, .MuiTextField-root,
-            .MuiInputBase-input, .MuiInputLabel-root {
-              font-family: var(--theme-font-family-inputs) !important;
-            }
-            
-            /* Force typography on cards and papers */
-            .MuiCard-root, .MuiPaper-root {
-              font-family: var(--theme-font-family-cards) !important;
-            }
-            
-            /* Force typography on navigation */
-            nav, .MuiDrawer-root, .MuiAppBar-root,
-            .MuiListItemButton-root, .MuiListItemText-root,
-            .MuiListItemText-primary, .MuiListItemText-secondary,
-            .MuiListItem-root, .MuiList-root {
-              font-family: var(--theme-font-family-navigation) !important;
-            }
-            
-            /* Force typography on body text */
-            .MuiTypography-root,
-            .MuiTypography-body1, .MuiTypography-body2,
-            .MuiTypography-button, .MuiTypography-caption,
-            .MuiTypography-overline, .MuiTypography-subtitle1,
-            .MuiTypography-subtitle2 {
-              font-family: var(--theme-font-family-body) !important;
-            }
-            
-            /* Force typography on tables */
-            .MuiTableCell-root, .MuiTableCell-head, .MuiTableCell-body,
-            .MuiTable-root, .MuiTableHead-root, .MuiTableBody-root, .MuiTableRow-root,
-            .MuiTableContainer-root .MuiTable-root .MuiTableCell-root,
-            .MuiTableContainer-root .MuiTable-root .MuiTableHead-root .MuiTableRow-root .MuiTableCell-root,
-            .MuiTableContainer-root .MuiTable-root .MuiTableBody-root .MuiTableRow-root .MuiTableCell-root,
-            [class*="MuiTableCell"], div[class*="StyledTableCell"] {
-              font-family: var(--theme-font-family-tables) !important;
-            }
-            
-            /* Override any inline styles */
-            [style*="font-family"] {
-              font-family: var(--theme-font-family-primary) !important;
-            }
-          `;
-          
-
-          
-          return cssString;
-        })()}
-      </style>
       {children}
     </ThemeProvider>
   );

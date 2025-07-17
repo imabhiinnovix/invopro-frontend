@@ -105,6 +105,11 @@ export interface DashboardTheme {
       fontSize: string;
       fontWeight: string;
     };
+    dialog: {
+      fontFamily: string;
+      fontSize: string;
+      fontWeight: string;
+    };
   };
 
   // Component Styles (without spacing properties)
@@ -124,6 +129,7 @@ export interface DashboardTheme {
       boxShadow: string;
       borderRadius: string;
       titleColor: string;
+      titleFontFamily: string;
       titleFontSize: string;
       titleFontWeight: string;
       contentColor: string;

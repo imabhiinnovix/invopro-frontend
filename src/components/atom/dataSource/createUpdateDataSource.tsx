@@ -22,6 +22,7 @@ import useGet from '../../../hooks/useGet';
 import usePut from '../../../hooks/usePut';
 import { STYLE_GUIDE } from '../../../styles';
 import { useUnifiedTheme } from '../../../hooks/useUnifiedTheme';
+import { useComponentTypography } from '../../../hooks/useComponentTypography';
 
 interface CreateUpdateDataSourceProps {
   setReload: React.Dispatch<React.SetStateAction<boolean>>;
@@ -32,6 +33,7 @@ interface CreateUpdateDataSourceProps {
 
 const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({ setReload, CustomButton, title, data }) => {
   const theme = useUnifiedTheme();
+  const { getDialogTitleSx } = useComponentTypography();
   const [open, setOpen] = useState(false);
 
   const [code, setCode] = useState('');
@@ -138,8 +140,7 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({ setRelo
         }}
       >
         <DialogTitle sx={{
-          fontWeight: theme.palette.dialog?.titleFontWeight || STYLE_GUIDE.TYPOGRAPHY.fontWeight.bold,
-          fontSize: theme.palette.dialog?.titleFontSize || STYLE_GUIDE.TYPOGRAPHY.fontSize.xl,
+          ...getDialogTitleSx(),
           color: theme.palette.dialog?.titleColor || STYLE_GUIDE.COLORS.textDarkGray,
         }}>
           {title}

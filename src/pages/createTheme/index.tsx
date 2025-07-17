@@ -22,6 +22,7 @@ import usePost from "../../hooks/usePost";
 import { POST } from "../../services/apiRoutes";
 import { useUnifiedTheme } from '../../hooks/useUnifiedTheme';
 import { useComponentTypography } from '../../hooks/useComponentTypography';
+import { STYLE_GUIDE } from "../../styles";
 
 const CreateTheme = () => {
   const theme = useUnifiedTheme();
@@ -91,6 +92,8 @@ const CreateTheme = () => {
     setSelectedTheme(null);
   };
 
+   const { getDialogTitleSx } = useComponentTypography();
+
   if (loading) {
     return (
       <Box
@@ -156,7 +159,15 @@ const CreateTheme = () => {
         aria-labelledby="delete-dialog-title"
         aria-describedby="delete-dialog-description"
       >
-        <DialogTitle id="delete-dialog-title">Delete Theme</DialogTitle>
+        <DialogTitle 
+          id="delete-dialog-title"
+          sx={{
+           ...getDialogTitleSx(),
+            color: theme.palette.dialog?.titleColor || STYLE_GUIDE.COLORS.textDarkGray,
+          }}
+        >
+          Delete Theme
+        </DialogTitle>
         <DialogContent>
           <DialogContentText id="delete-dialog-description">
             Are you sure you want to delete this theme? This action cannot be

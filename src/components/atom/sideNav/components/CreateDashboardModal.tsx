@@ -12,6 +12,7 @@ import {
 import { STYLE_GUIDE } from '../../../../styles';
 import StyledSelect from '../../common/StyledSelect';
 import { useUnifiedTheme } from '../../../../hooks/useUnifiedTheme';
+import { useComponentTypography } from '../../../../hooks/useComponentTypography';
 
 
 interface CreateDashboardModalProps {
@@ -40,6 +41,7 @@ export const CreateDashboardModal: React.FC<CreateDashboardModalProps> = ({
   onTimePeriodChange,
 }) => {
   const theme = useUnifiedTheme();
+  const { getDialogTitleSx } = useComponentTypography();
   
 
   return (
@@ -61,10 +63,8 @@ export const CreateDashboardModal: React.FC<CreateDashboardModalProps> = ({
         sx={{
           backgroundColor: alpha(theme.palette.primary.main, 0.05),
           color: theme.palette.dialog?.titleColor || STYLE_GUIDE.COLORS.bootstrapPrimary,
-          fontFamily: STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary,
-          fontWeight: theme.palette.dialog?.titleFontWeight || STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold,
-          fontSize: theme.palette.dialog?.titleFontSize || STYLE_GUIDE.TYPOGRAPHY.fontSize.large,
           py: STYLE_GUIDE.SPACING.s4,
+          ...getDialogTitleSx(),
         }}
       >
         Create New Dashboard

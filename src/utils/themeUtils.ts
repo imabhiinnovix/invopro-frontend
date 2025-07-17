@@ -201,6 +201,11 @@ export const createCompleteTheme = (baseTheme: Partial<DashboardTheme>): Dashboa
         fontSize: TYPOGRAPHY.fontSize.base,
         fontWeight: TYPOGRAPHY.fontWeight.medium,
       },
+      dialog: {
+        fontFamily: TYPOGRAPHY.fontFamily.primary,
+        fontSize: TYPOGRAPHY.fontSize.large,
+        fontWeight: TYPOGRAPHY.fontWeight.semiBold,
+      },
     },
     components: baseTheme.components || {
       button: {
@@ -215,8 +220,9 @@ export const createCompleteTheme = (baseTheme: Partial<DashboardTheme>): Dashboa
         boxShadow: STYLE_GUIDE.SHADOWS.lg,
         borderRadius: '8px',
         titleColor: STYLE_GUIDE.COLORS.textDarkGray,
-        titleFontSize: '1.25rem',
-        titleFontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold,
+        titleFontFamily: baseTheme.typography?.dialog?.fontFamily || baseTheme.typography?.fontFamily || TYPOGRAPHY.fontFamily.primary,
+        titleFontSize: baseTheme.typography?.dialog?.fontSize || '1.25rem',
+        titleFontWeight: baseTheme.typography?.dialog?.fontWeight || STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold,
         contentColor: STYLE_GUIDE.COLORS.textDarkGray,
         contentFontSize: '1rem',
         overlayColor: 'rgba(0, 0, 0, 0.5)',

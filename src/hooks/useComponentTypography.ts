@@ -6,7 +6,7 @@ export const useComponentTypography = () => {
   const { typographySettings } = useTypographySettings();
 
   // Helper function to get component-specific typography
-  const getComponentTypography = (componentType: 'headings' | 'body' | 'buttons' | 'cards' | 'inputs' | 'tables' | 'navigation') => {
+  const getComponentTypography = (componentType: 'headings' | 'body' | 'buttons' | 'cards' | 'inputs' | 'tables' | 'navigation' | 'dialog') => {
     if (!dashboardTheme?.typography) {
       return typographySettings;
     }
@@ -294,6 +294,64 @@ export const useComponentTypography = () => {
     };
   };
 
+  const getDialogTitleSx = () => {
+    const typography = getComponentTypography('dialog');
+    return {
+      fontFamily: `${typography.fontFamily} !important`,
+      fontSize: typography.fontSize,
+      fontWeight: parseInt(typography.fontWeight),
+      // Maximum specificity overrides for DialogTitle
+      '&.MuiDialogTitle-root': {
+        fontFamily: `${typography.fontFamily} !important`,
+        fontSize: `${typography.fontSize} !important`,
+        fontWeight: `${typography.fontWeight} !important`,
+      },
+      '&.MuiTypography-root': {
+        fontFamily: `${typography.fontFamily} !important`,
+        fontSize: `${typography.fontSize} !important`,
+        fontWeight: `${typography.fontWeight} !important`,
+      },
+      // Override any inline styles
+      '&[style*="font-family"]': {
+        fontFamily: `${typography.fontFamily} !important`,
+      },
+      '&[style*="font-size"]': {
+        fontSize: `${typography.fontSize} !important`,
+      },
+      '&[style*="font-weight"]': {
+        fontWeight: `${typography.fontWeight} !important`,
+      },
+      // Override theme styleOverrides with maximum specificity
+      '&.MuiDialogTitle-root[style*="font-family"]': {
+        fontFamily: `${typography.fontFamily} !important`,
+      },
+      '&.MuiDialogTitle-root[style*="font-size"]': {
+        fontSize: `${typography.fontSize} !important`,
+      },
+      '&.MuiDialogTitle-root[style*="font-weight"]': {
+        fontWeight: `${typography.fontWeight} !important`,
+      },
+      // Force on all child elements
+      '& *': {
+        fontFamily: `${typography.fontFamily} !important`,
+        fontSize: `${typography.fontSize} !important`,
+        fontWeight: `${typography.fontWeight} !important`,
+      },
+      // Additional specificity for nested elements
+      '& .MuiTypography-root': {
+        fontFamily: `${typography.fontFamily} !important`,
+        fontSize: `${typography.fontSize} !important`,
+        fontWeight: `${typography.fontWeight} !important`,
+      },
+      // Override any Material-UI theme overrides
+      '&.MuiDialogTitle-root.MuiTypography-root': {
+        fontFamily: `${typography.fontFamily} !important`,
+        fontSize: `${typography.fontSize} !important`,
+        fontWeight: `${typography.fontWeight} !important`,
+      },
+    };
+  };
+
 
 
 
@@ -310,6 +368,7 @@ export const useComponentTypography = () => {
     getInputSx,
     getTableSx,
     getNavigationSx,
+    getDialogTitleSx,
     
     // Current theme info
     hasDashboardTheme: !!dashboardTheme?.typography,
