@@ -1,3 +1,4 @@
+
 import * as React from "react";
 import { useState, useEffect } from "react";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
@@ -29,7 +30,9 @@ const generateColumns = (
   sampleRowData: Record<string, any>,
   handleView: (id: string) => void,
   handleEdit: (id: string) => void,
-  handleDelete: (id: string) => void
+  handleDelete: (id: string) => void,
+  loading: boolean, // Add loading parameter
+  rows: any[] // Add rows parameter
 ): GridColDef[] => {
   const dynamicColumns = Object.keys(sampleRowData)
     .filter((key) => key !== "_id")
@@ -152,13 +155,13 @@ export default function NotifixDataSource() {
         const response = await axiosInstance.get(
           `dataSourceVersion/versionData?dataSourceId=${dataSourceId}&versionValue=${versionValue}`
         );
-        console.log("API Response:", response);
+        console.log("Raw API Response:", response.data);
 
         const rawData = response?.data?.data || [];
-        const totalCount = response?.data?.data?.total || 0;
+        const totalCount = response?.data?.total || 0;
 
         if (!Array.isArray(rawData)) {
-          console.error("Expected rawData to be an array, got:", rawData);
+          console.error("Invalid API response: rawData is not an array", rawData);
           setRows([]);
           setRowCount(0);
           setColumns([]);
@@ -166,11 +169,12 @@ export default function NotifixDataSource() {
         }
 
         const formattedRows = rawData.map((item: any) => ({
-          _id: item._id || item.id || Math.random().toString(36).substring(2),
+          _id: item._id || item.id, // Use reliable ID from API
           ...item.rowData,
         }));
 
         setRows(formattedRows);
+        console.log("Formatted Rows:", formattedRows);
         setRowCount(totalCount);
 
         if (formattedRows.length > 0) {
@@ -178,7 +182,9 @@ export default function NotifixDataSource() {
             formattedRows[0],
             handleView,
             handleEdit,
-            handleDelete
+            handleDelete,
+            loading, // Pass loading
+            rows // Pass rows
           );
           setColumns(dynamicCols);
         } else {
@@ -196,13 +202,14 @@ export default function NotifixDataSource() {
     };
 
     fetchData();
-  }, []);
+  }, []); // Note: `rows` and `loading` are not dependencies here since columns are set only once
 
   const handleView = (id: string) => {
+    console.log("Rows:", rows);
+    console.log("Searching for ID:", id);
     const row = rows.find((r) => r._id === id);
     if (row) {
-      console.log("Viewing row data:", row);
-      // Dynamically populate formData with all row fields
+      console.log("Found row:", row);
       const newFormData: Record<string, any> = { id: row._id };
       Object.keys(row).forEach((key) => {
         if (key !== "_id") {
@@ -283,7 +290,6 @@ export default function NotifixDataSource() {
     console.log(`Search value: ${value}`);
   };
 
-  // Generate fields for modal dynamically based on columns
   const renderModalFields = () => {
     const fields = columns
       .filter((col) => col.field !== "actions" && col.field !== "_id")
@@ -309,6 +315,10 @@ export default function NotifixDataSource() {
     );
   };
 
+  if (loading) {
+    return <Typography>Loading...</Typography>;
+  }
+
   return (
     <Box
       sx={{
@@ -327,7 +337,7 @@ export default function NotifixDataSource() {
           color: STYLE_GUIDE?.COLORS?.primaryDark || "#3f51b5",
         }}
       >
-        Case List{" "}
+        Case List
       </Typography>
 
       <Card
@@ -411,73 +421,81 @@ export default function NotifixDataSource() {
                   },
                 }}
               >
-                Add 
+                Add
               </Button>
             </Box>
           </Box>
 
-          <DataGrid
-            loading={loading}
-            rows={rows}
-            columns={columns}
-            getRowId={(row) => row._id}
-            initialState={{
-              pagination: { paginationModel: { page: 0, pageSize: 10 } },
-            }}
-            pageSizeOptions={[5, 10]}
-            disableColumnMenu
-            rowCount={rowCount}
-            paginationMode="server"
-            sx={{
-              border: 0,
-              backgroundColor: STYLE_GUIDE?.COLORS?.white || "#ffffff",
-              overflow: "visible",
-              "& .MuiDataGrid-columnHeaders": {
-                backgroundColor:
-                  STYLE_GUIDE?.COLORS?.backgroundLight || "#f5f5f5",
-                color: STYLE_GUIDE?.COLORS?.black || "#000000",
-                fontWeight: 600,
-                fontSize: "1rem",
-                position: "relative",
-                zIndex: 1,
-              },
-              "& .MuiDataGrid-columnHeaderTitle": {
-                fontWeight: 600,
-                color: STYLE_GUIDE?.COLORS?.black || "#000000",
-              },
-              "& .MuiDataGrid-columnHeader": {
-                outline: "none",
-                "&:focus, &:focus-within": {
-                  outline: "none",
+          {rows.length > 0 ? (
+            <DataGrid
+              loading={loading}
+              rows={rows}
+              columns={columns}
+              getRowId={(row) => row._id}
+              initialState={{
+                pagination: { paginationModel: { page: 0, pageSize: 10 } },
+              }}
+              pageSizeOptions={[5, 10]}
+              disableColumnMenu
+              rowCount={rowCount}
+              paginationMode="server"
+              sx={{
+                border: 0,
+                backgroundColor: STYLE_GUIDE?.COLORS?.white || "#ffffff",
+                overflow: "visible",
+                "& .MuiDataGrid-columnHeaders": {
+                  backgroundColor:
+                    STYLE_GUIDE?.COLORS?.backgroundLight || "#f5f5f5",
+                  color: STYLE_GUIDE?.COLORS?.black || "#000000",
+                  fontWeight: 600,
+                  fontSize: "1rem",
+                  position: "relative",
+                  zIndex: 1,
                 },
-                "& .MuiDataGrid-columnSeparator": {
-                  color: STYLE_GUIDE?.COLORS?.primaryDark || "#3f51b5",
-                  "&:hover": {
-                    color: STYLE_GUIDE?.COLORS?.primary || "#5c6bc0",
+                "& .MuiDataGrid-columnHeaderTitle": {
+                  fontWeight: 600,
+                  color: STYLE_GUIDE?.COLORS?.black || "#000000",
+                },
+                "& .MuiDataGrid-columnHeader": {
+                  outline: "none",
+                  "&:focus, &:focus-within": {
+                    outline: "none",
+                  },
+                  "& .MuiDataGrid-columnSeparator": {
+                    color: STYLE_GUIDE?.COLORS?.primaryDark || "#3f51b5",
+                    "&:hover": {
+                      color: STYLE_GUIDE?.COLORS?.primary || "#5c6bc0",
+                    },
                   },
                 },
-              },
-              "& .MuiDataGrid-cell": {
-                backgroundColor: STYLE_GUIDE?.COLORS?.white || "#ffffff",
-                color: STYLE_GUIDE?.COLORS?.black || "#000000",
-                borderBottom: `1px solid ${STYLE_GUIDE?.COLORS?.divider || "#e0e0e0"}`,
-                borderRight: "none",
-                outline: "none",
-                "&:focus, &:focus-within": {
+                "& .MuiDataGrid-cell": {
+                  backgroundColor: STYLE_GUIDE?.COLORS?.white || "#ffffff",
+                  color: STYLE_GUIDE?.COLORS?.black || "#000000",
+                  borderBottom: `1px solid ${
+                    STYLE_GUIDE?.COLORS?.divider || "#e0e0e0"
+                  }`,
+                  borderRight: "none",
                   outline: "none",
+                  "&:focus, &:focus-within": {
+                    outline: "none",
+                  },
                 },
-              },
-              "& .MuiDataGrid-row:hover": {
-                backgroundColor:
-                  STYLE_GUIDE?.COLORS?.backgroundDefault || "#f1f5f9",
-              },
-              "& .MuiDataGrid-footerContainer": {
-                backgroundColor: STYLE_GUIDE?.COLORS?.white || "#ffffff",
-                borderTop: `1px solid ${STYLE_GUIDE?.COLORS?.divider || "#e0e0e0"}`,
-                color: STYLE_GUIDE?.COLORS?.black || "#000000",
-              },
-            }}
-          />
+                "& .MuiDataGrid-row:hover": {
+                  backgroundColor:
+                    STYLE_GUIDE?.COLORS?.backgroundDefault || "#f1f5f9",
+                },
+                "& .MuiDataGrid-footerContainer": {
+                  backgroundColor: STYLE_GUIDE?.COLORS?.white || "#ffffff",
+                  borderTop: `1px solid ${
+                    STYLE_GUIDE?.COLORS?.divider || "#e0e0e0"
+                  }`,
+                  color: STYLE_GUIDE?.COLORS?.black || "#000000",
+                },
+              }}
+            />
+          ) : (
+            <Typography>No data available</Typography>
+          )}
         </CardContent>
       </Card>
 
@@ -509,10 +527,10 @@ export default function NotifixDataSource() {
             {modalMode === "add"
               ? "Add Notification"
               : modalMode === "edit"
-                ? "Edit Notification"
-                : modalMode === "view"
-                  ? "View Notification"
-                  : "Filter Notifications"}
+              ? "Edit Notification"
+              : modalMode === "view"
+              ? "View Notification"
+              : "Filter Notifications"}
           </Typography>
           <Box
             sx={{
