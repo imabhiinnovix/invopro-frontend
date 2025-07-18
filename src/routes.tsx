@@ -75,7 +75,7 @@ const AppRoutes = () => {
             path="/notivix/settings/organization"
             element={<Organization />}
           />
-                    <Route path="/notivix/data-source/:id" element={<NotifixDataSource />} />
+          <Route path="/notivix/data-source/:id" element={<NotifixDataSource />} />
 
         </Route>
       </Route>
