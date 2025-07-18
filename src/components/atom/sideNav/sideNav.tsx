@@ -355,15 +355,15 @@ export default function SideNav() {
           icon: createIcon(AssessmentIcon, "/themes"),
           route: "/notivix/dashboard",
         },
-        {
-          name: "Users",
-          icon: (
-            <AssessmentIcon
-              sx={{ fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base }}
-            />
-          ),
-          route: "/notivix/users",
-        },
+        // {
+        //   name: "Users",
+        //   icon: (
+        //     <AssessmentIcon
+        //       sx={{ fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base }}
+        //     />
+        //   ),
+        //   route: "/notivix/users",
+        // },
        
         ...(dataSourceList?.map((item) => ({
         name: item?.name ?? "",
@@ -412,15 +412,15 @@ export default function SideNav() {
             },
           ],
         },
-        {
-          name: "IP",
-          icon: (
-            <AssessmentIcon
-              sx={{ fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base }}
-            />
-          ),
-          route: "/notivix/ip",
-        },
+        // {
+        //   name: "IP",
+        //   icon: (
+        //     <AssessmentIcon
+        //       sx={{ fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base }}
+        //     />
+        //   ),
+        //   route: "/notivix/ip",
+        // },
       ];
     }
     return [
