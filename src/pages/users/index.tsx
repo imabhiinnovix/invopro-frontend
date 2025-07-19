@@ -3,14 +3,13 @@ import { useState } from 'react';
 import { DataGrid, GridColDef } from '@mui/x-data-grid';
 import { Box, Card, CardContent, Typography, TextField, Button, InputAdornment, Modal, Dialog, DialogTitle, DialogContent, DialogActions,  Tooltip,
  } from '@mui/material';
-import { STYLE_GUIDE } from '../../styles';
 import SearchIcon from '@mui/icons-material/Search';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import DeleteIcon from '@mui/icons-material/Delete';
-
+import { STYLE_GUIDE } from '../../styles';
 const columns: GridColDef[] = [
   { field: 'id', headerName: 'ID', width: 70, disableColumnMenu: true, resizable: true },
   { field: 'email', headerName: 'Email', width: 130, disableColumnMenu: true, resizable: true },
@@ -22,7 +21,7 @@ const columns: GridColDef[] = [
     width: 150,
     disableColumnMenu: true,
     sortable: false,
-    resizable: false, // Actions column typically not resizable
+    resizable: false,
     renderCell: (params) => (
       <Box sx={{ display: 'flex', gap: 1 }}>
                 <Tooltip title="Delete" arrow>
@@ -30,17 +29,17 @@ const columns: GridColDef[] = [
         <Button
           variant="text"
           onClick={() => params.row.handleEdit(params.row)}
-          sx={{ minWidth: 'auto', color: STYLE_GUIDE?.COLORS?.primaryDark || '#3f51b5' }}
+          sx={{ minWidth: 'auto' }}
         >
           <EditIcon />
         </Button>
         </Tooltip>
-              <Tooltip title="Delete" arrow>
+              <Tooltip title="View" arrow>
         
         <Button
           variant="text"
           onClick={() => params.row.handleView(params.row)}
-          sx={{ minWidth: 'auto', color: STYLE_GUIDE?.COLORS?.primaryDark || '#3f51b5' }}
+          sx={{ minWidth: 'auto' }}
         >
           <VisibilityIcon />
         </Button>
@@ -50,7 +49,7 @@ const columns: GridColDef[] = [
         <Button
           variant="text"
           onClick={() => params.row.handleDelete(params.row.id)}
-          sx={{ minWidth: 'auto', color: STYLE_GUIDE?.COLORS?.error || '#d32f2f' }}
+          sx={{ minWidth: 'auto', color: 'error.main' }}
         >
           <DeleteIcon />
         </Button>
@@ -176,7 +175,6 @@ export default function Users() {
         flexGrow: 1,
         p: 3,
         ml: { xs: 0 }, // Adjust for SideNav width
-        backgroundColor: STYLE_GUIDE?.COLORS?.backgroundLight || '#f5f5f5',
         minHeight: '100vh',
       }}
     >
@@ -186,7 +184,6 @@ export default function Users() {
         sx={{
           mb: 3,
           fontWeight: 400,
-          color: STYLE_GUIDE?.COLORS?.primaryDark || '#3f51b5',
         }}
       >
       Users 
@@ -195,8 +192,6 @@ export default function Users() {
       {/* Card containing controls and table */}
       <Card
         sx={{
-          backgroundColor: STYLE_GUIDE?.COLORS?.white || '#ffffff',
-          boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.1)',
           borderRadius: '8px',
           overflow: 'visible',
         }}
@@ -222,19 +217,12 @@ export default function Users() {
                 width: '300px',
                 '& .MuiOutlinedInput-root': {
                   borderRadius: '8px',
-                  backgroundColor: STYLE_GUIDE?.COLORS?.white || '#ffffff',
-                  '& fieldset': {
-                    borderColor: STYLE_GUIDE?.COLORS?.divider || '#e0e0e0',
-                  },
-                  '&:hover fieldset': {
-                    borderColor: STYLE_GUIDE?.COLORS?.primaryDark || '#3f51b5',
-                  },
                 },
               }}
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
-                    <SearchIcon sx={{ color: STYLE_GUIDE?.COLORS?.primaryDark || '#3f51b5' }} />
+                    <SearchIcon />
                   </InputAdornment>
                 ),
               }}
@@ -248,12 +236,6 @@ export default function Users() {
                 onClick={handleFilter}
                 sx={{
                   borderRadius: '8px',
-                  borderColor: STYLE_GUIDE?.COLORS?.divider || '#e0e0e0',
-                  color: STYLE_GUIDE?.COLORS?.primaryDark || '#3f51b5',
-                  '&:hover': {
-                    backgroundColor: STYLE_GUIDE?.COLORS?.backgroundDefault || '#f1f5f9',
-                    borderColor: STYLE_GUIDE?.COLORS?.primaryDark || '#3f51b5',
-                  },
                 }}
               >
                 Filter
@@ -264,11 +246,6 @@ export default function Users() {
                 onClick={handleAddUser}
                 sx={{
                   borderRadius: '8px',
-                  backgroundColor: STYLE_GUIDE?.COLORS?.primaryDark || '#3f51b5',
-                  color: STYLE_GUIDE?.COLORS?.white || '#ffffff',
-                  '&:hover': {
-                    backgroundColor: STYLE_GUIDE?.COLORS?.primary || '#5c6bc0',
-                  },
                 }}
               >
                 Add User
@@ -289,57 +266,12 @@ export default function Users() {
             pageSizeOptions={[5, 10]}
             disableColumnMenu
             sx={{
-              border: 0,
-              backgroundColor: STYLE_GUIDE?.COLORS?.white || '#ffffff',
-              overflow: 'visible', // Ensure resize handles are not clipped
-              '& .MuiDataGrid-columnHeaders': {
-                backgroundColor: STYLE_GUIDE?.COLORS?.backgroundLight || '#f5f5f5',
-                color: STYLE_GUIDE?.COLORS?.black || '#000000',
-                fontWeight: 600,
-                fontSize: '1rem',
-                position: 'relative',
-                zIndex: 1, // Ensure headers are above cells
-              },
-              '& .MuiDataGrid-columnHeaderTitle': {
-                fontWeight: 600,
-                color: STYLE_GUIDE?.COLORS?.black || '#000000',
-              },
-              '& .MuiDataGrid-columnHeader': {
-                outline: 'none',
-                '&:focus, &:focus-within': {
-                  outline: 'none',
-                },
-                '& .MuiDataGrid-columnSeparator': {
-                  color: STYLE_GUIDE?.COLORS?.primaryDark || '#3f51b5', // Visible resize handle
-                  '&:hover': {
-                    color: STYLE_GUIDE?.COLORS?.primary || '#5c6bc0',
-                  },
-                },
-              },
-              '& .MuiDataGrid-cell': {
-                backgroundColor: STYLE_GUIDE?.COLORS?.white || '#ffffff',
-                color: STYLE_GUIDE?.COLORS?.black || '#000000',
-                borderBottom: `1px solid ${STYLE_GUIDE?.COLORS?.divider || '#e0e0e0'}`,
-                borderRight: 'none',
-                outline: 'none',
-                '&:focus, &:focus-within': {
-                  outline: 'none',
-                },
-              },
-              '& .MuiDataGrid-row:hover': {
-                backgroundColor: STYLE_GUIDE?.COLORS?.backgroundDefault || '#f1f5f9',
-              },
-              '& .MuiDataGrid-footerContainer': {
-                backgroundColor: STYLE_GUIDE?.COLORS?.white || '#ffffff',
-                borderTop: `1px solid ${STYLE_GUIDE?.COLORS?.divider || '#e0e0e0'}`,
-                color: STYLE_GUIDE?.COLORS?.black || '#000000',
-              },
+              overflow: 'visible',
             }}
           />
         </CardContent>
       </Card>
 
-      {/* Unified Add/Edit/View/Filter Modal */}
       <Modal
         open={openModal}
         onClose={handleCloseModal}
@@ -353,13 +285,12 @@ export default function Users() {
           sx={{
             backgroundColor: STYLE_GUIDE?.COLORS?.white || '#ffffff',
             borderRadius: '8px',
-            boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.2)',
             p: 3,
             width: '600px',
             maxWidth: '90%',
           }}
         >
-          <Typography variant="h6" sx={{ mb: 2, color: STYLE_GUIDE?.COLORS?.primaryDark || '#3f51b5' }}>
+          <Typography variant="h6" sx={{ mb: 2 }}>
             {modalMode === 'add' ? 'Add User' : 
              modalMode === 'edit' ? 'Edit User' : 
              modalMode === 'view' ? 'View User' : 'Filter Users'}
@@ -407,8 +338,6 @@ export default function Users() {
               onClick={handleCloseModal}
               sx={{
                 borderRadius: '8px',
-                borderColor: STYLE_GUIDE?.COLORS?.divider || '#e0e0e0',
-                color: STYLE_GUIDE?.COLORS?.primaryDark || '#3f51b5',
               }}
             >
               Cancel
@@ -419,11 +348,6 @@ export default function Users() {
                 onClick={handleSave}
                 sx={{
                   borderRadius: '8px',
-                  backgroundColor: STYLE_GUIDE?.COLORS?.primaryDark || '#3f51b5',
-                  color: STYLE_GUIDE?.COLORS?.white || '#ffffff',
-                  '&:hover': {
-                    backgroundColor: STYLE_GUIDE?.COLORS?.primary || '#5c6bc0',
-                  },
                 }}
               >
                 {modalMode === 'filter' ? 'Apply' : 'Save'}
@@ -433,18 +357,16 @@ export default function Users() {
         </Box>
       </Modal>
 
-      {/* Delete Dialog */}
       <Dialog
         open={openDialog}
         onClose={handleCloseDialog}
         sx={{
           '& .MuiDialog-paper': {
             borderRadius: '8px',
-            backgroundColor: STYLE_GUIDE?.COLORS?.white || '#ffffff',
           },
         }}
       >
-        <DialogTitle sx={{ color: STYLE_GUIDE?.COLORS?.primaryDark || '#3f51b5' }}>
+        <DialogTitle>
           Confirm Delete
         </DialogTitle>
         <DialogContent>
@@ -457,20 +379,15 @@ export default function Users() {
             onClick={handleCloseDialog}
             sx={{
               borderRadius: '8px',
-              color: STYLE_GUIDE?.COLORS?.primaryDark || '#3f51b5',
             }}
           >
             No
           </Button>
           <Button
             onClick={handleConfirmDelete}
+            color="error"
             sx={{
               borderRadius: '8px',
-              backgroundColor: STYLE_GUIDE?.COLORS?.error || '#d32f2f',
-              color: "#000000",
-              '&:hover': {
-                backgroundColor: STYLE_GUIDE?.COLORS?.error || '#b71c1c',
-              },
             }}
           >
             Yes

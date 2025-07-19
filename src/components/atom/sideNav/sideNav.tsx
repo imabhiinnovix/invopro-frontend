@@ -308,7 +308,7 @@ export default function SideNav() {
         const errorResponse = error as ErrorResponse;
         toast.error(
           errorResponse.message ||
-            "Failed to delete dashboard. Please try again."
+          "Failed to delete dashboard. Please try again."
         );
       } finally {
         setIsDeleting(false);
@@ -327,10 +327,10 @@ export default function SideNav() {
     navigate("/login");
   };
   console.log("dataSourceList", dataSourceList);
-  const dataNotivixSourceList =[
+  const dataNotivixSourceList = [
     {
-      name:"IPCounsel",
-      _id:1
+      name: "IPCounsel",
+      _id: 1
     }
   ]
   const navItems: NavItem[] = useMemo(() => {
@@ -375,19 +375,19 @@ export default function SideNav() {
             })) || []),
             ...(dataSourceListAPI?.hasNextPage
               ? [
-                  {
-                    name: "",
-                    icon: (
-                      <div
-                        ref={lastElementRef}
-                        style={{ paddingLeft: "1.5rem" }}
-                      >
-                        Loading...
-                      </div>
-                    ),
-                    route: "#",
-                  },
-                ]
+                {
+                  name: "",
+                  icon: (
+                    <div
+                      ref={lastElementRef}
+                      style={{ paddingLeft: "1.5rem" }}
+                    >
+                      Loading...
+                    </div>
+                  ),
+                  route: "#",
+                },
+              ]
               : []),
           ] as SubNavItem[],
         },
@@ -429,6 +429,11 @@ export default function SideNav() {
           ),
           route: "/notivix/ip",
         },
+        {
+          name: "Dashboard Themes",
+          icon: createIcon(BrushIcon, "/themes"),
+          route: "/themes",
+        },
       ];
     }
     return [
@@ -449,25 +454,25 @@ export default function SideNav() {
           },
           ...(loading
             ? [
-                {
-                  name: "Loading...",
-                  icon: <></>,
-                  route: "#",
-                },
-              ]
+              {
+                name: "Loading...",
+                icon: <></>,
+                route: "#",
+              },
+            ]
             : [
-                ...dashboards.slice(0, 5).map((dashboard: DashboardType) => ({
-                  name: dashboard.name,
-                  icon: <></>,
-                  route: `/dashboard/${dashboard._id}`,
-                })),
-                {
-                  name: "All Dashboards",
-                  icon: <></>,
-                  route: "/dashboard",
-                  isMoreLink: true,
-                },
-              ]),
+              ...dashboards.slice(0, 5).map((dashboard: DashboardType) => ({
+                name: dashboard.name,
+                icon: <></>,
+                route: `/dashboard/${dashboard._id}`,
+              })),
+              {
+                name: "All Dashboards",
+                icon: <></>,
+                route: "/dashboard",
+                isMoreLink: true,
+              },
+            ]),
         ] as SubNavItem[],
       },
       {
@@ -487,16 +492,16 @@ export default function SideNav() {
           })) || []),
           ...(dataSourceListAPI?.hasNextPage
             ? [
-                {
-                  name: "",
-                  icon: (
-                    <div ref={lastElementRef} style={{ paddingLeft: "1.5rem" }}>
-                      Loading...
-                    </div>
-                  ),
-                  route: "#",
-                },
-              ]
+              {
+                name: "",
+                icon: (
+                  <div ref={lastElementRef} style={{ paddingLeft: "1.5rem" }}>
+                    Loading...
+                  </div>
+                ),
+                route: "#",
+              },
+            ]
             : []),
         ] as SubNavItem[],
       },
@@ -758,11 +763,11 @@ export default function SideNav() {
                     {item.subItems &&
                       openNav &&
                       ((item.name === "Dashboards" && openDashboard) ||
-                      (item.name === "Notification Settings" &&
-                        openNotificationSettings) ||
-                      (item.name !== "Dashboards" &&
-                        item.name !== "Notification Settings" &&
-                        openSettings) ? (
+                        (item.name === "Notification Settings" &&
+                          openNotificationSettings) ||
+                        (item.name !== "Dashboards" &&
+                          item.name !== "Notification Settings" &&
+                          openSettings) ? (
                         <ExpandLessIcon
                           sx={{
                             fontSize: getNavigationSx().fontSize,
@@ -870,18 +875,18 @@ export default function SideNav() {
                       justifyContent: openNav ? "initial" : "center",
                       backgroundColor:
                         isRouteActive("/notivix/settings") ||
-                        isRouteActive("/settings")
+                          isRouteActive("/settings")
                           ? "#f1f5f9"
                           : "transparent",
                       color:
                         isRouteActive("/notivix/settings") ||
-                        isRouteActive("/settings")
+                          isRouteActive("/settings")
                           ? `${STYLE_GUIDE.COLORS.primaryDark}`
                           : "inherit",
                       "& .MuiListItemIcon-root": {
                         color:
                           isRouteActive("/notivix/settings") ||
-                          isRouteActive("/settings")
+                            isRouteActive("/settings")
                             ? `${STYLE_GUIDE.COLORS.primaryDark}`
                             : "inherit",
                       },
@@ -912,7 +917,7 @@ export default function SideNav() {
                           fontWeight: 500,
                           color:
                             isRouteActive("/notivix/settings") ||
-                            isRouteActive("/settings")
+                              isRouteActive("/settings")
                               ? `${STYLE_GUIDE.COLORS.primaryDark}`
                               : "inherit",
                         },
@@ -925,7 +930,7 @@ export default function SideNav() {
                             fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base,
                             color:
                               isRouteActive("/notivix/settings") ||
-                              isRouteActive("/settings")
+                                isRouteActive("/settings")
                                 ? `${STYLE_GUIDE.COLORS.primaryDark}`
                                 : "inherit",
                           }}
@@ -936,7 +941,7 @@ export default function SideNav() {
                             fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base,
                             color:
                               isRouteActive("/notivix/settings") ||
-                              isRouteActive("/settings")
+                                isRouteActive("/settings")
                                 ? `${STYLE_GUIDE.COLORS.primaryDark}`
                                 : "inherit",
                           }}

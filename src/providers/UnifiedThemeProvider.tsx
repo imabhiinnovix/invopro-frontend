@@ -272,6 +272,8 @@ const UnifiedThemeProviderInner: React.FC<UnifiedThemeProviderProps> = ({ childr
             },
           },
         },
+
+
         MuiPaper: {
           styleOverrides: {
             root: {
@@ -441,6 +443,97 @@ const UnifiedThemeProviderInner: React.FC<UnifiedThemeProviderProps> = ({ childr
             },
             body: {
               color: dashboardTheme.components?.table?.rowText || STYLE_GUIDE.COLORS.textDarkGray,
+              fontFamily: `${getComponentTypography('tables').fontFamily} !important`,
+              fontWeight: parseInt(getComponentTypography('tables').fontWeight),
+              fontSize: getComponentTypography('tables').fontSize,
+            },
+          },
+        },
+        // DataGrid specific styling
+        MuiDataGrid: {
+          styleOverrides: {
+            root: {
+              fontFamily: `${getComponentTypography('tables').fontFamily} !important`,
+              fontWeight: parseInt(getComponentTypography('tables').fontWeight),
+              fontSize: getComponentTypography('tables').fontSize,
+              border: 'none',
+              backgroundColor: dashboardTheme.colors.background.paper || STYLE_GUIDE.COLORS.white,
+            },
+            columnHeaders: {
+              backgroundColor: dashboardTheme.components?.table?.headerBackground || STYLE_GUIDE.COLORS.backgroundLightGray,
+              color: dashboardTheme.components?.table?.headerText || STYLE_GUIDE.COLORS.textGray,
+              fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold,
+              fontFamily: `${getComponentTypography('tables').fontFamily} !important`,
+              fontSize: getComponentTypography('tables').fontSize,
+              borderBottom: `2px solid ${dashboardTheme.colors.divider}`,
+            },
+            columnHeaderTitle: {
+              fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold,
+              color: dashboardTheme.components?.table?.headerText || STYLE_GUIDE.COLORS.textGray,
+              fontFamily: `${getComponentTypography('tables').fontFamily} !important`,
+              fontSize: getComponentTypography('tables').fontSize,
+            },
+            columnHeader: {
+              outline: 'none',
+              '&:focus, &:focus-within': {
+                outline: 'none',
+              },
+              '& .MuiDataGrid-columnSeparator': {
+                color: dashboardTheme.colors.primary.main,
+                '&:hover': {
+                  color: dashboardTheme.colors.primary.light,
+                },
+              },
+            },
+            cell: {
+              backgroundColor: dashboardTheme.colors.background.paper || STYLE_GUIDE.COLORS.white,
+              color: dashboardTheme.components?.table?.rowText || STYLE_GUIDE.COLORS.textDarkGray,
+              borderBottom: `1px solid ${dashboardTheme.colors.divider}`,
+              borderRight: 'none',
+              outline: 'none',
+              fontFamily: `${getComponentTypography('tables').fontFamily} !important`,
+              fontWeight: parseInt(getComponentTypography('tables').fontWeight),
+              fontSize: getComponentTypography('tables').fontSize,
+              '&:focus, &:focus-within': {
+                outline: 'none',
+              },
+            },
+            row: {
+              '&:nth-of-type(odd)': {
+                backgroundColor: dashboardTheme.components?.table?.rowOddBackground || STYLE_GUIDE.COLORS.backgroundDefault,
+              },
+              '&:nth-of-type(even)': {
+                backgroundColor: dashboardTheme.components?.table?.rowEvenBackground || STYLE_GUIDE.COLORS.white,
+              },
+              '&:hover': {
+                backgroundColor: dashboardTheme.components?.table?.rowHoverBackground || STYLE_GUIDE.COLORS.backgroundHover,
+              },
+              '&.Mui-selected': {
+                backgroundColor: `${dashboardTheme.colors.primary.light}20`,
+                '&:hover': {
+                  backgroundColor: `${dashboardTheme.colors.primary.light}30`,
+                },
+              },
+            },
+            footerContainer: {
+              backgroundColor: dashboardTheme.colors.background.paper || STYLE_GUIDE.COLORS.white,
+              borderTop: `1px solid ${dashboardTheme.colors.divider}`,
+              color: dashboardTheme.colors.text.primary,
+              fontFamily: `${getComponentTypography('tables').fontFamily} !important`,
+              fontWeight: parseInt(getComponentTypography('tables').fontWeight),
+              fontSize: getComponentTypography('tables').fontSize,
+            },
+            pagination: {
+              fontFamily: `${getComponentTypography('tables').fontFamily} !important`,
+              fontWeight: parseInt(getComponentTypography('tables').fontWeight),
+              fontSize: getComponentTypography('tables').fontSize,
+            },
+            virtualScroller: {
+              backgroundColor: dashboardTheme.colors.background.paper || STYLE_GUIDE.COLORS.white,
+            },
+            overlay: {
+              backgroundColor: dashboardTheme.colors.background.paper || STYLE_GUIDE.COLORS.white,
+              color: dashboardTheme.colors.text.primary,
               fontFamily: `${getComponentTypography('tables').fontFamily} !important`,
               fontWeight: parseInt(getComponentTypography('tables').fontWeight),
               fontSize: getComponentTypography('tables').fontSize,
