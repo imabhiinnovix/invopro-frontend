@@ -1,20 +1,22 @@
 import * as React from 'react';
 import { useState } from 'react';
 import { DataGrid, GridColDef } from '@mui/x-data-grid';
-import { Box, Card, CardContent, Typography, TextField, Button, InputAdornment, Modal, Dialog, DialogTitle, DialogContent, DialogActions,  Tooltip,
- } from '@mui/material';
+import {
+  Box, Card, CardContent, Typography, TextField, Button, InputAdornment, Modal, Dialog, DialogTitle, DialogContent, DialogActions, Tooltip,
+} from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import DeleteIcon from '@mui/icons-material/Delete';
+import { useUnifiedTheme } from '../../hooks/useUnifiedTheme';
 import { STYLE_GUIDE } from '../../styles';
 const columns: GridColDef[] = [
   { field: 'id', headerName: 'ID', width: 70, disableColumnMenu: true, resizable: true },
   { field: 'email', headerName: 'Email', width: 130, disableColumnMenu: true, resizable: true },
   { field: 'roles', headerName: 'Roles', width: 130, disableColumnMenu: true, resizable: true },
- 
+
   {
     field: 'actions',
     headerName: 'Actions',
@@ -24,35 +26,35 @@ const columns: GridColDef[] = [
     resizable: false,
     renderCell: (params) => (
       <Box sx={{ display: 'flex', gap: 1 }}>
-                <Tooltip title="Delete" arrow>
-        
-        <Button
-          variant="text"
-          onClick={() => params.row.handleEdit(params.row)}
-          sx={{ minWidth: 'auto' }}
-        >
-          <EditIcon />
-        </Button>
+        <Tooltip title="Delete" arrow>
+
+          <Button
+            variant="text"
+            onClick={() => params.row.handleEdit(params.row)}
+            sx={{ minWidth: 'auto' }}
+          >
+            <EditIcon />
+          </Button>
         </Tooltip>
-              <Tooltip title="View" arrow>
-        
-        <Button
-          variant="text"
-          onClick={() => params.row.handleView(params.row)}
-          sx={{ minWidth: 'auto' }}
-        >
-          <VisibilityIcon />
-        </Button>
+        <Tooltip title="View" arrow>
+
+          <Button
+            variant="text"
+            onClick={() => params.row.handleView(params.row)}
+            sx={{ minWidth: 'auto' }}
+          >
+            <VisibilityIcon />
+          </Button>
         </Tooltip>
-                <Tooltip title="Delete" arrow>
-        
-        <Button
-          variant="text"
-          onClick={() => params.row.handleDelete(params.row.id)}
-          sx={{ minWidth: 'auto', color: 'error.main' }}
-        >
-          <DeleteIcon />
-        </Button>
+        <Tooltip title="Delete" arrow>
+
+          <Button
+            variant="text"
+            onClick={() => params.row.handleDelete(params.row.id)}
+            sx={{ minWidth: 'auto', color: 'error.main' }}
+          >
+            <DeleteIcon />
+          </Button>
         </Tooltip>
       </Box>
     ),
@@ -61,8 +63,8 @@ const columns: GridColDef[] = [
 
 type UserRow = {
   id: number;
- email: string | null;
- roles: string | null;
+  email: string | null;
+  roles: string | null;
   handleEdit?: (rowData: UserRow) => void;
   handleView?: (rowData: UserRow) => void;
   handleDelete?: (id: number) => void;
@@ -88,6 +90,7 @@ const rows: UserRow[] = [
 const paginationModel = { page: 0, pageSize: 10 };
 
 export default function Users() {
+  const theme = useUnifiedTheme();
   const [openModal, setOpenModal] = useState(false);
   const [modalMode, setModalMode] = useState<'add' | 'edit' | 'view' | 'filter' | null>(null);
   const [openDialog, setOpenDialog] = useState(false);
@@ -121,7 +124,7 @@ export default function Users() {
   };
 
   const handleAddUser = () => {
-    setFormData({ id: '', email: '', roles: '',  });
+    setFormData({ id: '', email: '', roles: '', });
     setModalMode('add');
     setOpenModal(true);
   };
@@ -186,7 +189,7 @@ export default function Users() {
           fontWeight: 400,
         }}
       >
-      Users 
+        Users
       </Typography>
 
       {/* Card containing controls and table */}
@@ -267,6 +270,19 @@ export default function Users() {
             disableColumnMenu
             sx={{
               overflow: 'visible',
+              // '& .MuiDataGrid-columnHeaders': {
+              //   backgroundColor: `${theme.palette.table?.headerBackground || STYLE_GUIDE.COLORS.backgroundLightGray} !important`,
+              //   color: `${theme.palette.table?.headerText || STYLE_GUIDE.COLORS.textGray} !important`,
+              // },
+              // '& .MuiDataGrid-row:nth-of-type(odd)': {
+              //   backgroundColor: `${theme.palette.table?.rowOddBackground || STYLE_GUIDE.COLORS.backgroundDefault} !important`,
+              // },
+              // '& .MuiDataGrid-row:nth-of-type(even)': {
+              //   backgroundColor: `${theme.palette.table?.rowEvenBackground || STYLE_GUIDE.COLORS.white} !important`,
+              // },
+              // '& .MuiDataGrid-row:hover': {
+              //   backgroundColor: `${theme.palette.table?.rowHoverBackground || STYLE_GUIDE.COLORS.backgroundHover} !important`,
+              // },
             }}
           />
         </CardContent>
@@ -283,7 +299,7 @@ export default function Users() {
       >
         <Box
           sx={{
-            backgroundColor: STYLE_GUIDE?.COLORS?.white || '#ffffff',
+            backgroundColor: theme.palette.background.paper || STYLE_GUIDE.COLORS.white,
             borderRadius: '8px',
             p: 3,
             width: '600px',
@@ -291,9 +307,9 @@ export default function Users() {
           }}
         >
           <Typography variant="h6" sx={{ mb: 2 }}>
-            {modalMode === 'add' ? 'Add User' : 
-             modalMode === 'edit' ? 'Edit User' : 
-             modalMode === 'view' ? 'View User' : 'Filter Users'}
+            {modalMode === 'add' ? 'Add User' :
+              modalMode === 'edit' ? 'Edit User' :
+                modalMode === 'view' ? 'View User' : 'Filter Users'}
           </Typography>
           <Box
             sx={{
@@ -330,7 +346,7 @@ export default function Users() {
               fullWidth
               sx={{ '& .MuiOutlinedInput-root': { borderRadius: '8px' } }}
             />
-         
+
           </Box>
           <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1, mt: 3 }}>
             <Button

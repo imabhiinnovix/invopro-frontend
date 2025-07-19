@@ -361,7 +361,7 @@ export default function SideNav() {
               sx={{ fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base }}
             />
           ),
-          route: "/notivix/users",
+          route: "/notivix/settings/users",
         },
         {
           name: "Data Sources",

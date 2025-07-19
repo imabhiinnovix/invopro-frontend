@@ -46,7 +46,6 @@ const UnifiedThemeProviderInner: React.FC<UnifiedThemeProviderProps> = ({ childr
 
   // Create a unified theme that combines the base MUI theme with the dashboard theme and typography settings
   const unifiedTheme = React.useMemo(() => {
-
     const baseThemeWithTypography = {
       ...baseTheme,
       typography: {
@@ -460,8 +459,8 @@ const UnifiedThemeProviderInner: React.FC<UnifiedThemeProviderProps> = ({ childr
               backgroundColor: dashboardTheme.colors.background.paper || STYLE_GUIDE.COLORS.white,
             },
             columnHeaders: {
-              backgroundColor: dashboardTheme.components?.table?.headerBackground || STYLE_GUIDE.COLORS.backgroundLightGray,
-              color: dashboardTheme.components?.table?.headerText || STYLE_GUIDE.COLORS.textGray,
+              backgroundColor: `${dashboardTheme.components?.table?.headerBackground || STYLE_GUIDE.COLORS.backgroundLightGray} !important`,
+              color: `${dashboardTheme.components?.table?.headerText || STYLE_GUIDE.COLORS.textGray} !important`,
               fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold,
               fontFamily: `${getComponentTypography('tables').fontFamily} !important`,
               fontSize: getComponentTypography('tables').fontSize,
@@ -469,7 +468,7 @@ const UnifiedThemeProviderInner: React.FC<UnifiedThemeProviderProps> = ({ childr
             },
             columnHeaderTitle: {
               fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold,
-              color: dashboardTheme.components?.table?.headerText || STYLE_GUIDE.COLORS.textGray,
+              color: `${dashboardTheme.components?.table?.headerText || STYLE_GUIDE.COLORS.textGray} !important`,
               fontFamily: `${getComponentTypography('tables').fontFamily} !important`,
               fontSize: getComponentTypography('tables').fontSize,
             },
@@ -479,39 +478,35 @@ const UnifiedThemeProviderInner: React.FC<UnifiedThemeProviderProps> = ({ childr
                 outline: 'none',
               },
               '& .MuiDataGrid-columnSeparator': {
-                color: dashboardTheme.colors.primary.main,
+                color: `${dashboardTheme.colors.primary.main} !important`,
                 '&:hover': {
-                  color: dashboardTheme.colors.primary.light,
+                  color: `${dashboardTheme.colors.primary.light} !important`,
                 },
               },
             },
             cell: {
-              backgroundColor: dashboardTheme.colors.background.paper || STYLE_GUIDE.COLORS.white,
-              color: dashboardTheme.components?.table?.rowText || STYLE_GUIDE.COLORS.textDarkGray,
+              color: `${dashboardTheme.components?.table?.rowText || STYLE_GUIDE.COLORS.textDarkGray} !important`,
               borderBottom: `1px solid ${dashboardTheme.colors.divider}`,
               borderRight: 'none',
               outline: 'none',
               fontFamily: `${getComponentTypography('tables').fontFamily} !important`,
               fontWeight: parseInt(getComponentTypography('tables').fontWeight),
               fontSize: getComponentTypography('tables').fontSize,
-              '&:focus, &:focus-within': {
-                outline: 'none',
-              },
             },
             row: {
               '&:nth-of-type(odd)': {
-                backgroundColor: dashboardTheme.components?.table?.rowOddBackground || STYLE_GUIDE.COLORS.backgroundDefault,
+                backgroundColor: `${dashboardTheme.components?.table?.rowOddBackground || STYLE_GUIDE.COLORS.backgroundDefault} !important`,
               },
               '&:nth-of-type(even)': {
-                backgroundColor: dashboardTheme.components?.table?.rowEvenBackground || STYLE_GUIDE.COLORS.white,
+                backgroundColor: `${dashboardTheme.components?.table?.rowEvenBackground || STYLE_GUIDE.COLORS.white} !important`,
               },
               '&:hover': {
-                backgroundColor: dashboardTheme.components?.table?.rowHoverBackground || STYLE_GUIDE.COLORS.backgroundHover,
+                backgroundColor: `${dashboardTheme.components?.table?.rowHoverBackground || STYLE_GUIDE.COLORS.backgroundHover} !important`,
               },
               '&.Mui-selected': {
-                backgroundColor: `${dashboardTheme.colors.primary.light}20`,
+                backgroundColor: `${dashboardTheme.colors.primary.light}20 !important`,
                 '&:hover': {
-                  backgroundColor: `${dashboardTheme.colors.primary.light}30`,
+                  backgroundColor: `${dashboardTheme.colors.primary.light}30 !important`,
                 },
               },
             },
