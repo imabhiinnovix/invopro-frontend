@@ -2,7 +2,7 @@ import * as React from 'react';
 import { useState } from 'react';
 import { DataGrid, GridColDef } from '@mui/x-data-grid';
 import {
-  Box, Card, CardContent, Typography, TextField, Button, InputAdornment, Modal, Dialog, DialogTitle, DialogContent, DialogActions, Tooltip,
+  Box, Card, CardContent, Typography, TextField, Button, InputAdornment, Modal, Dialog, DialogTitle, DialogContent, DialogActions, Tooltip, Chip, FormControl, InputLabel, Select, MenuItem, Switch, FormControlLabel,
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import FilterListIcon from '@mui/icons-material/FilterList';
@@ -12,11 +12,114 @@ import VisibilityIcon from '@mui/icons-material/Visibility';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { useUnifiedTheme } from '../../hooks/useUnifiedTheme';
 import { STYLE_GUIDE } from '../../styles';
+
+// Mock data as provided by user
+const mockUsers = [
+  {
+    organizationId: '64e5a4d23a2b2d001234abcd',
+    email: 'johndoe@example.com',
+    roleIds: [
+      '64e5a4d23a2b2d00aaaabbbb',
+      '64e5a4d23a2b2d00ccccdddd'
+    ],
+    firstName: 'John',
+    lastName: 'Doe',
+    mobile: 9876543210,
+    isVerified: true,
+    status: 'active',
+    organizationProductSubscriptionIds: [
+      '64e5a4d23a2b2d00eeeeffff',
+      '64e5a4d23a2b2d00gggghhhh'
+    ]
+  },
+  {
+    organizationId: '64e5a4d23a2b2d0099998888',
+    email: 'janedoe@example.com',
+    roleIds: [
+      '64e5a4d23a2b2d00ddddaaaa'
+    ],
+    firstName: 'Jane',
+    lastName: 'Doe',
+    mobile: 9123456789,
+    isVerified: false,
+    status: 'inactive',
+    organizationProductSubscriptionIds: [
+      '64e5a4d23a2b2d00hhhhiiii'
+    ]
+  }
+];
+
+// Add unique IDs for DataGrid
+const usersWithIds = mockUsers.map((user, index) => ({
+  ...user,
+  id: index + 1, // DataGrid requires unique id field
+}));
+
 const columns: GridColDef[] = [
   { field: 'id', headerName: 'ID', width: 70, disableColumnMenu: true, resizable: true },
-  { field: 'email', headerName: 'Email', width: 130, disableColumnMenu: true, resizable: true },
-  { field: 'roles', headerName: 'Roles', width: 130, disableColumnMenu: true, resizable: true },
-
+  { field: 'firstName', headerName: 'First Name', width: 130, disableColumnMenu: true, resizable: true },
+  { field: 'lastName', headerName: 'Last Name', width: 130, disableColumnMenu: true, resizable: true },
+  { field: 'email', headerName: 'Email', width: 200, disableColumnMenu: true, resizable: true },
+  { 
+    field: 'mobile', 
+    headerName: 'Mobile', 
+    width: 130, 
+    disableColumnMenu: true, 
+    resizable: true,
+    valueFormatter: (params) => params.value ? params.value.toString() : '-'
+  },
+  {
+    field: 'roleIds',
+    headerName: 'Roles',
+    width: 200,
+    disableColumnMenu: true,
+    resizable: true,
+    renderCell: (params) => (
+      <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
+        {params.value?.map((roleId: string) => (
+          <Chip key={roleId} label={roleId.slice(-8)} size="small" variant="outlined" />
+        )) || '-'}
+      </Box>
+    ),
+  },
+  {
+    field: 'organizationId',
+    headerName: 'Organization',
+    width: 150,
+    disableColumnMenu: true,
+    resizable: true,
+    renderCell: (params) => params.value ? params.value.slice(-8) : '-',
+  },
+  {
+    field: 'status',
+    headerName: 'Status',
+    width: 100,
+    disableColumnMenu: true,
+    resizable: true,
+    renderCell: (params) => (
+      <Chip 
+        label={params.value} 
+        size="small" 
+        color={params.value === 'active' ? 'success' : 'error'}
+        variant="outlined"
+      />
+    ),
+  },
+  {
+    field: 'isVerified',
+    headerName: 'Verified',
+    width: 100,
+    disableColumnMenu: true,
+    resizable: true,
+    renderCell: (params) => (
+      <Chip 
+        label={params.value ? 'Yes' : 'No'} 
+        size="small" 
+        color={params.value ? 'success' : 'warning'}
+        variant="outlined"
+      />
+    ),
+  },
   {
     field: 'actions',
     headerName: 'Actions',
@@ -26,8 +129,7 @@ const columns: GridColDef[] = [
     resizable: false,
     renderCell: (params) => (
       <Box sx={{ display: 'flex', gap: 1 }}>
-        <Tooltip title="Delete" arrow>
-
+        <Tooltip title="Edit" arrow>
           <Button
             variant="text"
             onClick={() => params.row.handleEdit(params.row)}
@@ -37,7 +139,6 @@ const columns: GridColDef[] = [
           </Button>
         </Tooltip>
         <Tooltip title="View" arrow>
-
           <Button
             variant="text"
             onClick={() => params.row.handleView(params.row)}
@@ -47,7 +148,6 @@ const columns: GridColDef[] = [
           </Button>
         </Tooltip>
         <Tooltip title="Delete" arrow>
-
           <Button
             variant="text"
             onClick={() => params.row.handleDelete(params.row.id)}
@@ -61,32 +161,6 @@ const columns: GridColDef[] = [
   },
 ];
 
-type UserRow = {
-  id: number;
-  email: string | null;
-  roles: string | null;
-  handleEdit?: (rowData: UserRow) => void;
-  handleView?: (rowData: UserRow) => void;
-  handleDelete?: (id: number) => void;
-};
-
-const rows: UserRow[] = [
-  { id: 1, lastName: 'Snow', email: 'Jon', roles: "primary" },
-  { id: 2, lastName: 'Lannister', email: 'Cersei', roles: null },
-  { id: 3, lastName: 'Lannister', email: 'Jaime', roles: "primary" },
-  { id: 4, lastName: 'Stark', email: 'Arya', roles: null },
-  { id: 5, lastName: 'Targaryen', email: 'Daenerys', roles: null },
-  { id: 6, lastName: 'Melisandre', email: null, roles: "primary" },
-  { id: 7, lastName: 'Clifford', email: 'Ferrara', roles: null },
-  { id: 8, lastName: 'Frances', email: 'Rossini', roles: null },
-  { id: 9, lastName: 'Roxie', email: 'Harvey', roles: "primary" },
-].map((row) => ({
-  ...row,
-  handleEdit: (rowData: UserRow) => rowData,
-  handleView: (rowData: UserRow) => rowData,
-  handleDelete: (id: number) => id,
-}));
-
 const paginationModel = { page: 0, pageSize: 10 };
 
 export default function Users() {
@@ -94,25 +168,49 @@ export default function Users() {
   const [openModal, setOpenModal] = useState(false);
   const [modalMode, setModalMode] = useState<'add' | 'edit' | 'view' | 'filter' | null>(null);
   const [openDialog, setOpenDialog] = useState(false);
-  const [formData, setFormData] = useState({ id: '', email: '', roles: '' });
   const [deleteId, setDeleteId] = useState<number | null>(null);
   const [searchValue, setSearchValue] = useState('');
 
-  const handleEdit = (row: UserRow) => {
+  // Form data for modal
+  const [formData, setFormData] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    mobile: '',
+    organizationId: '',
+    roleIds: [] as string[],
+    organizationProductSubscriptionIds: [] as string[],
+    isVerified: false,
+    status: 'active' as 'active' | 'inactive',
+  });
+
+  const handleEdit = (row: any) => {
     setFormData({
-      id: row.id.toString(),
-      email: row.email || '',
-      roles: row.roles || '',
+      firstName: row.firstName,
+      lastName: row.lastName || '',
+      email: row.email,
+      mobile: row.mobile?.toString() || '',
+      organizationId: row.organizationId || '',
+      roleIds: row.roleIds,
+      organizationProductSubscriptionIds: row.organizationProductSubscriptionIds,
+      isVerified: row.isVerified,
+      status: row.status,
     });
     setModalMode('edit');
     setOpenModal(true);
   };
 
-  const handleView = (row: UserRow) => {
+  const handleView = (row: any) => {
     setFormData({
-      id: row.id.toString(),
-      email: row.email || '',
-      roles: row.roles || '',
+      firstName: row.firstName,
+      lastName: row.lastName || '',
+      email: row.email,
+      mobile: row.mobile?.toString() || '',
+      organizationId: row.organizationId || '',
+      roleIds: row.roleIds,
+      organizationProductSubscriptionIds: row.organizationProductSubscriptionIds,
+      isVerified: row.isVerified,
+      status: row.status,
     });
     setModalMode('view');
     setOpenModal(true);
@@ -124,13 +222,22 @@ export default function Users() {
   };
 
   const handleAddUser = () => {
-    setFormData({ id: '', email: '', roles: '', });
+    setFormData({
+      firstName: '',
+      lastName: '',
+      email: '',
+      mobile: '',
+      organizationId: '',
+      roleIds: [],
+      organizationProductSubscriptionIds: [],
+      isVerified: false,
+      status: 'active',
+    });
     setModalMode('add');
     setOpenModal(true);
   };
 
   const handleFilter = () => {
-    setFormData({ id: '', email: '', roles: '' });
     setModalMode('filter');
     setOpenModal(true);
   };
@@ -138,7 +245,17 @@ export default function Users() {
   const handleCloseModal = () => {
     setOpenModal(false);
     setModalMode(null);
-    setFormData({ id: '', email: '', roles: '', });
+    setFormData({
+      firstName: '',
+      lastName: '',
+      email: '',
+      mobile: '',
+      organizationId: '',
+      roleIds: [],
+      organizationProductSubscriptionIds: [],
+      isVerified: false,
+      status: 'active',
+    });
   };
 
   const handleCloseDialog = () => {
@@ -146,30 +263,28 @@ export default function Users() {
     setDeleteId(null);
   };
 
-  const handleConfirmDelete = () => {
-    console.log(`Deleting row with ID: ${deleteId}`);
-    // Implement actual delete logic here
+  const handleConfirmDelete = async () => {
+    console.log(`Deleting user with ID: ${deleteId}`);
     handleCloseDialog();
   };
 
-  const handleSave = () => {
-    if (modalMode === 'add') {
-      console.log(`Adding new User: `, formData);
-      // Implement add logic here
-    } else if (modalMode === 'edit') {
-      console.log(`Saving edited row: `, formData);
-      // Implement save logic here
-    } else if (modalMode === 'filter') {
-      console.log(`Applying filter: `, formData);
-      // Implement filter logic here
+  const handleSave = async () => {
+    try {
+      if (modalMode === 'add') {
+        console.log('Add user:', formData);
+      } else if (modalMode === 'edit') {
+        console.log('Edit user:', formData);
+      } else if (modalMode === 'filter') {
+        console.log('Apply filter:', formData);
+      }
+      handleCloseModal();
+    } catch (error) {
+      console.error('Error saving user:', error);
     }
-    handleCloseModal();
   };
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setSearchValue(value);
-    console.log(`Search value: ${value}`);
+    setSearchValue(e.target.value);
   };
 
   return (
@@ -177,7 +292,7 @@ export default function Users() {
       sx={{
         flexGrow: 1,
         p: 3,
-        ml: { xs: 0 }, // Adjust for SideNav width
+        ml: { xs: 0 },
         minHeight: '100vh',
       }}
     >
@@ -258,8 +373,8 @@ export default function Users() {
 
           {/* Table */}
           <DataGrid
-            rows={rows.map((row) => ({
-              ...row,
+            rows={usersWithIds.map((user) => ({
+              ...user,
               handleEdit,
               handleView,
               handleDelete,
@@ -270,24 +385,12 @@ export default function Users() {
             disableColumnMenu
             sx={{
               overflow: 'visible',
-              // '& .MuiDataGrid-columnHeaders': {
-              //   backgroundColor: `${theme.palette.table?.headerBackground || STYLE_GUIDE.COLORS.backgroundLightGray} !important`,
-              //   color: `${theme.palette.table?.headerText || STYLE_GUIDE.COLORS.textGray} !important`,
-              // },
-              // '& .MuiDataGrid-row:nth-of-type(odd)': {
-              //   backgroundColor: `${theme.palette.table?.rowOddBackground || STYLE_GUIDE.COLORS.backgroundDefault} !important`,
-              // },
-              // '& .MuiDataGrid-row:nth-of-type(even)': {
-              //   backgroundColor: `${theme.palette.table?.rowEvenBackground || STYLE_GUIDE.COLORS.white} !important`,
-              // },
-              // '& .MuiDataGrid-row:hover': {
-              //   backgroundColor: `${theme.palette.table?.rowHoverBackground || STYLE_GUIDE.COLORS.backgroundHover} !important`,
-              // },
             }}
           />
         </CardContent>
       </Card>
 
+      {/* Modal for Add/Edit/View/Filter */}
       <Modal
         open={openModal}
         onClose={handleCloseModal}
@@ -302,8 +405,10 @@ export default function Users() {
             backgroundColor: theme.palette.background.paper || STYLE_GUIDE.COLORS.white,
             borderRadius: '8px',
             p: 3,
-            width: '600px',
+            width: '700px',
             maxWidth: '90%',
+            maxHeight: '90vh',
+            overflow: 'auto',
           }}
         >
           <Typography variant="h6" sx={{ mb: 2 }}>
@@ -311,6 +416,7 @@ export default function Users() {
               modalMode === 'edit' ? 'Edit User' :
                 modalMode === 'view' ? 'View User' : 'Filter Users'}
           </Typography>
+          
           <Box
             sx={{
               display: 'grid',
@@ -319,14 +425,23 @@ export default function Users() {
             }}
           >
             <TextField
-              label="ID"
-              value={formData.id}
-              onChange={(e) => setFormData({ ...formData, id: e.target.value })}
-              disabled={modalMode === 'edit' || modalMode === 'view'}
+              label="First Name"
+              value={formData.firstName}
+              onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
+              disabled={modalMode === 'view'}
+              variant="outlined"
+              fullWidth
+              required
+              sx={{ '& .MuiOutlinedInput-root': { borderRadius: '8px' } }}
+            />
+            <TextField
+              label="Last Name"
+              value={formData.lastName}
+              onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
+              disabled={modalMode === 'view'}
               variant="outlined"
               fullWidth
               sx={{ '& .MuiOutlinedInput-root': { borderRadius: '8px' } }}
-              style={{ display: modalMode === 'add' ? 'none' : 'block' }}
             />
             <TextField
               label="Email"
@@ -335,19 +450,72 @@ export default function Users() {
               disabled={modalMode === 'view'}
               variant="outlined"
               fullWidth
+              required
+              type="email"
               sx={{ '& .MuiOutlinedInput-root': { borderRadius: '8px' } }}
             />
             <TextField
-              label="Roles"
-              value={formData.roles}
-              onChange={(e) => setFormData({ ...formData, roles: e.target.value })}
+              label="Mobile"
+              value={formData.mobile}
+              onChange={(e) => setFormData({ ...formData, mobile: e.target.value })}
+              disabled={modalMode === 'view'}
+              variant="outlined"
+              fullWidth
+              type="tel"
+              sx={{ '& .MuiOutlinedInput-root': { borderRadius: '8px' } }}
+            />
+            <TextField
+              label="Organization ID"
+              value={formData.organizationId}
+              onChange={(e) => setFormData({ ...formData, organizationId: e.target.value })}
               disabled={modalMode === 'view'}
               variant="outlined"
               fullWidth
               sx={{ '& .MuiOutlinedInput-root': { borderRadius: '8px' } }}
             />
-
+            <FormControl fullWidth sx={{ '& .MuiOutlinedInput-root': { borderRadius: '8px' } }}>
+              <InputLabel>Status</InputLabel>
+              <Select
+                value={formData.status}
+                onChange={(e) => setFormData({ ...formData, status: e.target.value as 'active' | 'inactive' })}
+                disabled={modalMode === 'view'}
+                label="Status"
+              >
+                <MenuItem value="active">Active</MenuItem>
+                <MenuItem value="inactive">Inactive</MenuItem>
+              </Select>
+            </FormControl>
+            <TextField
+              label="Role IDs (comma separated)"
+              value={formData.roleIds.join(', ')}
+              onChange={(e) => setFormData({ ...formData, roleIds: e.target.value.split(',').map(id => id.trim()).filter(Boolean) })}
+              disabled={modalMode === 'view'}
+              variant="outlined"
+              fullWidth
+              sx={{ '& .MuiOutlinedInput-root': { borderRadius: '8px' } }}
+            />
+            <TextField
+              label="Subscription IDs (comma separated)"
+              value={formData.organizationProductSubscriptionIds.join(', ')}
+              onChange={(e) => setFormData({ ...formData, organizationProductSubscriptionIds: e.target.value.split(',').map(id => id.trim()).filter(Boolean) })}
+              disabled={modalMode === 'view'}
+              variant="outlined"
+              fullWidth
+              sx={{ '& .MuiOutlinedInput-root': { borderRadius: '8px' } }}
+            />
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={formData.isVerified}
+                  onChange={(e) => setFormData({ ...formData, isVerified: e.target.checked })}
+                  disabled={modalMode === 'view'}
+                />
+              }
+              label="Verified"
+              sx={{ gridColumn: 'span 2' }}
+            />
           </Box>
+          
           <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1, mt: 3 }}>
             <Button
               variant="outlined"
@@ -373,6 +541,7 @@ export default function Users() {
         </Box>
       </Modal>
 
+      {/* Delete Confirmation Dialog */}
       <Dialog
         open={openDialog}
         onClose={handleCloseDialog}
