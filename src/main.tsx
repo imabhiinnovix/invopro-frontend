@@ -3,7 +3,6 @@ import { createRoot } from "react-dom/client";
 
 import App from "./App.tsx";
 
-// Third-Party Library
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import MainProvider from "./context/main.tsx";
 import { Provider } from "react-redux";
