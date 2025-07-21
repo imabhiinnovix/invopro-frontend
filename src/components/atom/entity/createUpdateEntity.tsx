@@ -1,3 +1,7 @@
+
+
+
+
 import React, { useEffect, useState, useRef } from "react";
 import { useForm, useFieldArray, FieldError } from "react-hook-form";
 import ExcelJS from "exceljs";
@@ -45,6 +49,7 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
   console.log("CreateUpdateEntity data:", data);
   const theme = useUnifiedTheme();
   const [open, setOpen] = useState(false);
+  const [isFormReady, setIsFormReady] = useState(false);
   const [_file, setFile] = useState<File | null>(null);
   const [fileName, setFileName] = useState<string | null>(null);
   const [fileUploadLoader, setFileUploadLoader] = useState(false);
@@ -65,9 +70,9 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
         type: attr.type ?? "",
         required: attr.required ?? "Not Mandatory",
         optionAttributeId: attr.optionAttributeId ?? "",
-        refEntityId: attr.referenceEntitySetting?.refEntityId ?? "",
-        refEntityField: attr.referenceEntitySetting?.refEntityField ?? "",
-        relationType: attr.referenceEntitySetting?.relationType ?? "",
+        refEntityId: "",
+        refEntityField: "",
+        relationType: "",
         validation: attr.validation ?? [],
         transformations: attr.transformations ?? [],
         cleaner: attr.cleaner ?? [],
@@ -97,10 +102,10 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
         name: attr.name ?? "",
         mappingName: attr.mappingName ?? "",
         type: attr.type ?? "",
-        required: attr.required ?? "Not Mandatory",
+        required: attr.required ? "Mandatory" : "Not Mandatory",
         optionAttributeId: attr.optionAttributeId ?? "",
-        refEntityId: attr.referenceEntitySetting?.refEntityId ?? "",
-        refEntityField: attr.referenceEntitySetting?.refEntityField ?? "",
+        refEntityId: attr.referenceEntitySetting?.refEntityId?._id ?? "",
+        refEntityField: attr.referenceEntitySetting?.refEntityField?.name ?? "", // Use name instead of _id
         relationType: attr.referenceEntitySetting?.relationType ?? "",
         validation: attr.validation ?? [],
         transformations: attr.transformations ?? [],
@@ -121,7 +126,17 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
         },
       ],
     });
+    console.log("Form reset with refEntityId:", data?.attributes?.[0]?.referenceEntitySetting?.refEntityId?._id);
+    console.log("Form reset with refEntityField:", data?.attributes?.[0]?.referenceEntitySetting?.refEntityField?.name);
   }, [data, reset]);
+
+  useEffect(() => {
+    if (open) {
+      setIsFormReady(true);
+    } else {
+      setIsFormReady(false);
+    }
+  }, [open]);
 
   const { fields, append, remove, replace } = useFieldArray({
     control,
@@ -130,6 +145,7 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
   const [referenceEntityNames, setReferenceEntityNames] = useState<{
     [key: number]: string[];
   }>({});
+  console.log("referenceEntityNames:", referenceEntityNames);
   const [referenceEntityTypes, setReferenceEntityTypes] = useState<{
     [key: number]: string[];
   }>({});
@@ -139,21 +155,33 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
   const referenceEntityIdsString = attributes?.map((attr) => attr.refEntityId).join(",") || "";
 
   useEffect(() => {
-    if (open) {
+    if (open && isFormReady) {
+      console.log("Fetching reference entities for attributes:", attributes);
       attributes?.forEach((attribute, index) => {
         const entityId = attribute?.refEntityId;
-        if (!entityId) {
+        console.log(`Processing entityId: ${entityId} for index: ${index}`);
+        
+        if (
+          !entityId ||
+          entityId === prevEntityIdsRef.current[index] ||
+          !/^[a-f\d]{24}$/i.test(entityId)
+        ) {
+          console.log(`Skipping fetch for entityId: ${entityId}, index: ${index}`);
           setReferenceEntityNames((prev) => ({ ...prev, [index]: [] }));
           setReferenceEntityTypes((prev) => ({ ...prev, [index]: [] }));
           return;
         }
 
+        console.log(`Fetching entity data for ID: ${entityId}`);
         axiosInstance
           .get(`/entities/${entityId}`)
           .then((res) => {
+            console.log(`Response for entityId ${entityId}:`, res.data);
             const namesArr = res.data?.data?.attributes?.map((f: any) => f.name) || [];
             const typesArr = res.data?.data?.attributes?.map((f: any) => f._id) || [];
 
+            console.log(`Setting names for index ${index}:`, namesArr);
+            console.log(`Setting types for index ${index}:`, typesArr);
             setReferenceEntityNames((prev) => ({
               ...prev,
               [index]: namesArr,
@@ -163,7 +191,9 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
               [index]: typesArr,
             }));
           })
-          .catch(() => {
+          .catch((error) => {
+            console.error(`Failed to fetch entity ${entityId}:`, error);
+            toast.error(`Failed to load reference entity data for ID ${entityId}`);
             setReferenceEntityNames((prev) => ({ ...prev, [index]: [] }));
             setReferenceEntityTypes((prev) => ({ ...prev, [index]: [] }));
           });
@@ -171,7 +201,7 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
 
       prevEntityIdsRef.current = attributes?.map((attr) => attr.refEntityId) || [];
     }
-  }, [open, attributes, referenceEntityIdsString]);
+  }, [open, isFormReady, attributes, referenceEntityIdsString]);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files?.[0]) {
@@ -330,7 +360,6 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
   const onSubmit = (formData: EntityRequestPayload) => {
     console.log("Form Data123:", formData);
 
-    // Check if referenceEntityNames and referenceEntityTypes are populated
     const isReferenceDataLoaded = attributes.every(
       (_, index) => referenceEntityNames[index] && referenceEntityTypes[index]
     );
@@ -341,12 +370,7 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
     }
 
     const newAttributes = formData.attributes?.map((data, index) => {
-      const {
-        refEntityId,
-        refEntityField,
-        relationType,
-        ...rest
-      } = data;
+      const { refEntityId, refEntityField, relationType, ...rest } = data;
 
       const updated = {
         ...rest,
@@ -705,7 +729,7 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
                               ?.focusBorderColor ||
                             theme.dashboardTheme?.components?.input
                               ?.focusBorderColorFallback ||
-                            STYLE_GUIDE.COLORS.inputFocusFallback,
+                              STYLE_GUIDE.COLORS.inputFocusFallback,
                         },
                         "& .MuiInputBase-input": {
                           color: `${theme.dashboardTheme?.colors?.inputText || theme.palette.text.primary} !important`,
@@ -730,6 +754,7 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
                         "date",
                         "boolean",
                         "richtext",
+                        "reference",
                         "url",
                         "option",
                         "multioption",
@@ -808,16 +833,16 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
                       control={control}
                       name={`attributes.${index}.refEntityField`}
                       label="Reference Entity Field"
-                      options={referenceEntityNames[index] || []}
+                      options={referenceEntityNames[index]?.length ? referenceEntityNames[index] : ["No fields available"]}
                       defaultValue={attribute.refEntityField || ""}
                       rules={{ required: false }}
                       error={!!errors.attributes?.[index]?.refEntityField}
                       helperText={
-                        (
-                          errors.attributes?.[index]
-                            ?.refEntityField as FieldError
-                        )?.message
+                        referenceEntityNames[index]?.length
+                          ? (errors.attributes?.[index]?.refEntityField as FieldError)?.message
+                          : "No reference fields available for this entity"
                       }
+                      disabled={!referenceEntityNames[index]?.length}
                     />
 
                     <CommonSelect
@@ -827,9 +852,7 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
                       options={["many_to_one", "one_to_one", "self"]}
                       defaultValue={attribute.relationType || ""}
                       rules={{ required: false }}
-                      error={
-                        !!errors.attributes?.[index]?.relationType
-                      }
+                      error={!!errors.attributes?.[index]?.relationType}
                       helperText={
                         (
                           errors.attributes?.[index]
@@ -906,3 +929,5 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
 };
 
 export default CreateUpdateEntity;
+
+

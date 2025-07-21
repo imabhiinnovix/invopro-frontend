@@ -1,5 +1,4 @@
-
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useForm, useFieldArray } from 'react-hook-form';
 import {
   Box,
@@ -12,6 +11,8 @@ import {
   Stack,
   Typography,
   IconButton,
+  Snackbar,
+  Alert,
 } from '@mui/material';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutline';
@@ -26,6 +27,17 @@ import { STYLE_GUIDE } from '../../../styles';
 import { useUnifiedTheme } from '../../../hooks/useUnifiedTheme';
 import axiosInstance from '../../../services/axiosInstance';
 
+interface Attribute {
+  _id: string;
+  name: string;
+}
+
+interface Entity {
+  _id: string;
+  name: string;
+  attributes: Attribute[];
+}
+
 interface DataSourceRequestPayload {
   name: string;
   code: string;
@@ -34,6 +46,7 @@ interface DataSourceRequestPayload {
   entityId: string;
   entityAttributes?: string[][];
   entityAttributeIds?: string[][];
+  uniqueAttributeRules?: { _id: string; name: string }[][];
   _id?: string;
 }
 
@@ -45,7 +58,7 @@ interface CreateUpdateDataSourceProps {
   setReload: React.Dispatch<React.SetStateAction<boolean>>;
   CustomButton: React.ReactElement;
   title: string;
-  data?: DataSourceRequestPayload;
+  data?: DataSourceRequestPayload & { entityId: Entity | string; uniqueAttributeRules?: { _id: string; name: string }[][] };
 }
 
 const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({
@@ -60,8 +73,10 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({
   const [name, setName] = useState('');
   const [entityAttributes, setEntityAttributes] = useState<string[]>([]);
   const [entityAttributeIds, setEntityAttributeIds] = useState<string[]>([]);
-  const lastFetchedEntityId = useRef<string | null>(null);
-
+  const [entityName, setEntityName] = useState<string>(''); // State for entity name
+  const [isLoadingEntity, setIsLoadingEntity] = useState(false); // Loading state for API call
+  const [error, setError] = useState<string | null>(null); // Error state for API call
+console.log("data", data);
   const {
     control,
     handleSubmit,
@@ -76,9 +91,13 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({
       code: data?.code ?? '',
       description: data?.description ?? '',
       versionType: data?.versionType ?? '',
-      entityId: data?.entityId ?? '',
-      entityAttributes: data?.entityAttributes?.length ? data.entityAttributes : [['']],
-      entityAttributeIds: data?.entityAttributeIds?.length ? data.entityAttributeIds : [['']],
+      entityId: typeof data?.entityId === 'string' ? data.entityId : data?.entityId?._id ?? '',
+      entityAttributes: data?.uniqueAttributeRules?.length
+        ? data.uniqueAttributeRules.map((rule) => rule.map((attr) => attr.name))
+        : [['']],
+      entityAttributeIds: data?.uniqueAttributeRules?.length
+        ? data.uniqueAttributeRules.map((rule) => rule.map((attr) => attr._id))
+        : [['']],
     },
   });
 
@@ -88,66 +107,75 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({
   });
 
   const entityId = watch('entityId');
-  const entityAttributesField = watch('entityAttributes');
 
-  // Debugging log to verify form state
-  console.log("Form State:", watch());
-
+  // Initialize entityName from data prop (for edit mode)
   useEffect(() => {
-    if (entityId && /^[a-f0-9]{24}$/.test(entityId) && entityId !== lastFetchedEntityId.current) {
-      console.log('Fetching entityId:', entityId);
-      axiosInstance
-        .get(`/entities/${entityId}`)
-        .then((res) => {
-          const namesArr = res.data?.data?.attributes?.map((f: any) => f.name) || [];
-          const typesArr = res.data?.data?.attributes?.map((f: any) => f._id) || [];
-          setEntityAttributes(namesArr);
-          setEntityAttributeIds(typesArr);
-          lastFetchedEntityId.current = entityId;
-        })
-        .catch((error) => {
-          console.error(`Error fetching attributes for entityId ${entityId}:`, error.message);
-          setEntityAttributes([]);
-          setEntityAttributeIds([]);
-          if (entityAttributesField) {
-            entityAttributesField.forEach((_, index) => {
-              setValue(`entityAttributes.${index}`, ['']);
-            });
-          }
-          if (error.response?.status === 404) {
-            console.warn(`Invalid entityId: ${entityId}. Resetting to empty.`);
-            setValue('entityId', '');
-          }
-          lastFetchedEntityId.current = null;
-        });
-    } else if (!entityId && lastFetchedEntityId.current) {
+    if (data?.entityId && typeof data.entityId !== 'string' && data.entityId.name) {
+      setEntityName(data.entityId.name);
+      // Optionally set attributes if available in data
+      if (data.entityId.attributes) {
+        setEntityAttributes(data.entityId.attributes.map((attr) => attr.name));
+        setEntityAttributeIds(data.entityId.attributes.map((attr) => attr._id));
+      }
+    } else {
+      setEntityName('');
       setEntityAttributes([]);
       setEntityAttributeIds([]);
-      if (entityAttributesField) {
-        entityAttributesField.forEach((_, index) => {
-          setValue(`entityAttributes.${index}`, ['']);
-        });
-      }
-      lastFetchedEntityId.current = null;
     }
-  }, [entityId, setValue, entityAttributesField]);
+  }, [data]);
+
+  // Fetch entity details when dialog is open and entityId changes
+  useEffect(() => {
+    if (!open || !entityId) {
+      // Clear attributes and name if no entityId or dialog is closed
+      setEntityAttributes([]);
+      setEntityAttributeIds([]);
+      setEntityName('');
+      return;
+    }
+
+    // Skip API call if entityName is already set (e.g., from data prop in edit mode)
+    if (entityName && data?.entityId && (typeof data.entityId === 'string' ? data.entityId === entityId : data.entityId._id === entityId)) {
+      return;
+    }
+
+    setIsLoadingEntity(true);
+    setError(null);
+
+    axiosInstance
+      .get(`/entities/${entityId}`)
+      .then((response) => {
+        console.log('Entity API Response:', response.data);
+        if (response.data) {
+          setEntityName(response.data.name || '');
+          setEntityAttributes(response.data.attributes?.map((attr: Attribute) => attr.name) || []);
+          setEntityAttributeIds(response.data.attributes?.map((attr: Attribute) => attr._id) || []);
+        }
+      })
+      .catch((error) => {
+        console.error('Error fetching entity details:', error);
+        setError('Failed to fetch entity details. Please try again.');
+      })
+      .finally(() => {
+        setIsLoadingEntity(false);
+      });
+  }, [entityId, open, entityName, data]);
 
   useEffect(() => {
-    // Ensure at least one entityAttributes field is present when modal opens
     if (open && fields.length === 0) {
       append(['']);
     }
   }, [open, fields, append]);
 
-  const codeAvailability = useGet<{ success: boolean; available: boolean; message: string }>(
-    [`codeAvailability`, code],
-    GET?.Data_Source_Code + `/${code}`,
-    !!code && /^[a-zA-Z0-9_]+$/.test(code)
-  );
+ const codeAvailability = useGet<{ success: boolean; available: boolean; message: string }>(
+  [`codeAvailability`, code],
+  `${GET?.Data_Source_Code}/${code}`,
+  !!code && /^[a-zA-Z0-9_]+$/.test(code)
+);
 
   const nameAvailability = useGet<{ success: boolean; available: boolean; message: string }>(
     [`nameAvailability`, name],
-    GET?.Data_Source_Name + `/${name}`,
+    `${GET?.Data_Source_Name}/${name}`,
     !!name
   );
 
@@ -179,26 +207,36 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({
     true
   );
 
-
-   const onSubmit = (formData: DataSourceRequestPayload) => {
-    console.log("formData before processing:", formData);
+  const onSubmit = (formData: DataSourceRequestPayload) => {
+    console.log('formData before processing:', formData);
     const updatedEntityAttributeIds = formData.entityAttributes?.map((attributes) => {
+      if (!Array.isArray(attributes)) {
+        console.error('Invalid attributes format:', attributes);
+        return [];
+      }
       return attributes
-        .filter((attribute) => attribute !== '') 
+        .filter((attribute) => attribute !== '' && typeof attribute === 'string')
         .map((attribute) => {
           const typeIndex = entityAttributes.indexOf(attribute);
           return typeIndex !== -1 ? entityAttributeIds[typeIndex] || '' : '';
         })
-        .filter((id) => id !== ''); 
+        .filter((id) => id !== '' && typeof id === 'string');
     }) || [];
+
+    const updatedUniqueAttributeRules = updatedEntityAttributeIds.map((ids) =>
+      ids.map((id) => {
+        const index = entityAttributeIds.indexOf(id);
+        return { _id: id, name: entityAttributes[index] || '' };
+      })
+    );
 
     const updatedFormData = {
       ...formData,
       entityAttributeIds: updatedEntityAttributeIds,
-      uniqueAttributeRules: updatedEntityAttributeIds, // Use IDs for uniqueAttributeRules
+      uniqueAttributeRules: updatedUniqueAttributeRules,
     };
 
-    console.log("updatedFormData:", updatedFormData);
+    console.log('updatedFormData:', updatedFormData);
 
     if (data && data._id) {
       updateDataSource.mutate({
@@ -219,12 +257,20 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({
     setName('');
     setEntityAttributes([]);
     setEntityAttributeIds([]);
+    setEntityName('');
+    setError(null);
     reset();
   };
 
   const handleAddMoreEntity = () => {
     append(['']);
   };
+
+  // Transform entityAttributes for CommonSelect
+  const selectOptions = entityAttributes.map((name, idx) => ({
+    label: name,
+    value: entityAttributeIds[idx] || name,
+  }));
 
   return (
     <>
@@ -263,8 +309,46 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({
         >
           <Box component="form" onSubmit={handleSubmit(onSubmit)} noValidate>
             <Stack spacing={3}>
+              {/* Display Entity Name */}
+              {entityName && (
+                <Typography variant="body1" sx={{ mb: 2 }}>
+                  Selected Entity: <strong>{entityName}</strong>
+                </Typography>
+              )}
+              {isLoadingEntity && <ProgressBar />}
               <TextField
                 label="Data Source Name*"
+                fullWidth
+                {...register('name', {
+                  required: 'Data source name is required',
+                })}
+                onChange={(event) => {
+                  setName(event.target.value);
+                  setValue('name', event.target.value);
+                }}
+                onBlur={(event) => {
+                  const sanitizedCode = event.target.value.toLowerCase().replace(/[^a-zA-Z0-9_]/g, '');
+                  setCode(sanitizedCode);
+                  setValue('code', sanitizedCode);
+                }}
+                error={!!errors.name}
+                defaultValue={data?.name ?? ''}
+                helperText={
+                  errors.name?.message ||
+                  (nameAvailability.isFetched && name.length > 0 ? (
+                    nameAvailability.data?.available ? (
+                      <Typography sx={{ color: STYLE_GUIDE.COLORS.bootstrapSuccess }}>
+                        Name is available
+                      </Typography>
+                    ) : (
+                      <Typography sx={{ color: STYLE_GUIDE.COLORS.bootstrapDanger }}>
+                        Name is not available
+                      </Typography>
+                    )
+                  ) : (
+                    ''
+                  ))
+                }
                 sx={{
                   '& .MuiOutlinedInput-root': {
                     borderRadius: STYLE_GUIDE.SPACING.s2,
@@ -305,37 +389,6 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({
                     WebkitBoxShadow: `0 0 0 1000px ${theme.dashboardTheme?.colors?.background?.paper || '#ffffff'} inset !important`,
                   },
                 }}
-                fullWidth
-                {...register('name', {
-                  required: 'Data source name is required',
-                })}
-                onChange={(event) => {
-                  setName(event.target.value);
-                  setValue('name', event.target.value);
-                }}
-                onBlur={(event) => {
-                  const sanitizedCode = event.target.value.toLowerCase().replace(/[^a-zA-Z0-9_]/g, '');
-                  setCode(sanitizedCode);
-                  setValue('code', sanitizedCode);
-                }}
-                error={!!errors.name}
-                defaultValue={data?.name ? data.name : ''}
-                helperText={
-                  errors.name?.message ||
-                  (nameAvailability.isFetched && name.length > 0 ? (
-                    nameAvailability.data?.available ? (
-                      <Typography sx={{ color: STYLE_GUIDE.COLORS.bootstrapSuccess }}>
-                        Name is available
-                      </Typography>
-                    ) : (
-                      <Typography sx={{ color: STYLE_GUIDE.COLORS.bootstrapDanger }}>
-                        Name is not available
-                      </Typography>
-                    )
-                  ) : (
-                    ''
-                  ))
-                }
               />
 
               <TextField
@@ -397,9 +450,9 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({
                   apiUrl={`${GET.Entity_List}`}
                   labelName="name"
                   labelValue="_id"
-                  defaultValue={data?.entityId || ''}
+                  defaultValue={typeof data?.entityId === 'string' ? data.entityId : data?.entityId?._id || ''}
                   rules={{ required: 'Entity is required' }}
-                  error={!!errors.entityId}
+                  error={!!errors.entity一天前Id}
                   errorMessage={errors.entityId?.message as string}
                   apiName="entityList"
                   defaultDataUrl=""
@@ -417,7 +470,7 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({
                         control={control}
                         name={`entityAttributes.${index}`}
                         label={`Select Unique Attribute ${index + 1}*`}
-                        options={entityAttributes}
+                        options={selectOptions}
                         multiple={true}
                         defaultValue={field.value || ['']}
                         rules={{ required: entityId ? 'Unique Attribute is required' : false }}
@@ -448,8 +501,17 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({
                   control={control}
                   name="entityType"
                   label="Select Entity*"
-                  options={data?.entityId ? [data.entityId] : ['']}
-                  defaultValue={data?.entityId || ''}
+                  options={
+                    data?.entityId
+                      ? [
+                          {
+                            label: typeof data.entityId === 'string' ? data.entityId : data.entityId.name || '',
+                            value: typeof data.entityId === 'string' ? data.entityId : data.entityId._id || '',
+                          },
+                        ]
+                      : [{ label: '', value: '' }]
+                  }
+                  defaultValue={typeof data?.entityId === 'string' ? data.entityId : data?.entityId?._id || ''}
                   rules={{ required: '' }}
                   error={false}
                   errorMessage=""
@@ -459,6 +521,39 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({
 
               <TextField
                 label="Data Source Code(Unique Code)*"
+                fullWidth
+                {...register('code', {
+                  required: 'Data source code is required',
+                  pattern: {
+                    value: /^(?!.*(\$|\0|^system\.|\.system\.))[\w]+$/,
+                    message:
+                      'Data source code should not contain special characters, null characters, space or restricted prefixes (e.g., "system." or ".system.")',
+                  },
+                })}
+                onChange={(event) => {
+                  const sanitizedCode = event.target.value.toLowerCase().replace(/[^a-zA-Z0-9_]/g, '');
+                  setCode(sanitizedCode);
+                  setValue('code', sanitizedCode);
+                }}
+                error={!!errors.code}
+                value={code || (data?.code ? data.code : (name?.toLowerCase() || '').replace(/[^a-zA-Z0-9_]/g, ''))}
+                disabled={data?.code ? true : false}
+                helperText={
+                  errors.code?.message ||
+                  (codeAvailability.isFetched && code.length > 0 ? (
+                    codeAvailability.data?.available ? (
+                      <Typography sx={{ color: STYLE_GUIDE.COLORS.bootstrapSuccess }}>
+                        Code is available
+                      </Typography>
+                    ) : (
+                      <Typography sx={{ color: STYLE_GUIDE.COLORS.bootstrapDanger }}>
+                        Code is not available
+                      </Typography>
+                    )
+                  ) : (
+                    ''
+                  ))
+                }
                 sx={{
                   '& .MuiOutlinedInput-root': {
                     borderRadius: STYLE_GUIDE.SPACING.s2,
@@ -500,46 +595,16 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({
                     WebkitBoxShadow: `0 0 0 1000px ${theme.dashboardTheme?.colors?.background?.paper || '#ffffff'} inset !important`,
                   },
                 }}
-                fullWidth
-                {...register('code', {
-                  required: 'Data source code is required',
-                  pattern: {
-                    value: /^(?!.*(\$|\0|^system\.|\.system\.))[\w]+$/,
-                    message:
-                      'Data source code should not contain special characters, null characters, space or restricted prefixes (e.g., "system." or ".system.")',
-                  },
-                })}
-                onChange={(event) => {
-                  const sanitizedCode = event.target.value.toLowerCase().replace(/[^a-zA-Z0-9_]/g, '');
-                  setCode(sanitizedCode);
-                  setValue('code', sanitizedCode);
-                }}
-                error={!!errors.code}
-                value={code || (data?.code ? data.code : (name?.toLowerCase() || '').replace(/[^a-zA-Z0-9_]/g, ''))}
-                disabled={data?.code ? true : false}
-                helperText={
-                  errors.code?.message ||
-                  (codeAvailability.isFetched && code.length > 0 ? (
-                    codeAvailability.data?.available ? (
-                      <Typography sx={{ color: STYLE_GUIDE.COLORS.bootstrapSuccess }}>
-                        Code is available
-                      </Typography>
-                    ) : (
-                      <Typography sx={{ color: STYLE_GUIDE.COLORS.bootstrapDanger }}>
-                        Code is not available
-                      </Typography>
-                    )
-                  ) : (
-                    ''
-                  ))
-                }
               />
 
               <CommonSelect
                 control={control}
                 name="versionType"
                 label="Version Type"
-                options={['monthly', 'number']}
+                options={[
+                  { label: 'Monthly', value: 'monthly' },
+                  { label: 'Number', value: 'number' },
+                ]}
                 defaultValue={data?.versionType || ''}
                 rules={{ required: 'Version type is required' }}
                 error={!!errors.versionType}
@@ -585,8 +650,22 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({
           )}
         </DialogActions>
       </Dialog>
+
+      {/* Error Snackbar */}
+      <Snackbar
+        open={!!error}
+        autoHideDuration={6000}
+        onClose={() => setError(null)}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+      >
+        <Alert onClose={() => setError(null)} severity="error" sx={{ width: '100%' }}>
+          {error}
+        </Alert>
+      </Snackbar>
     </>
   );
 };
 
 export default CreateUpdateDataSource;
+
+
