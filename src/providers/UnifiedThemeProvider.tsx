@@ -46,7 +46,6 @@ const UnifiedThemeProviderInner: React.FC<UnifiedThemeProviderProps> = ({ childr
 
   // Create a unified theme that combines the base MUI theme with the dashboard theme and typography settings
   const unifiedTheme = React.useMemo(() => {
-
     const baseThemeWithTypography = {
       ...baseTheme,
       typography: {
@@ -272,6 +271,8 @@ const UnifiedThemeProviderInner: React.FC<UnifiedThemeProviderProps> = ({ childr
             },
           },
         },
+
+
         MuiPaper: {
           styleOverrides: {
             root: {
@@ -441,6 +442,93 @@ const UnifiedThemeProviderInner: React.FC<UnifiedThemeProviderProps> = ({ childr
             },
             body: {
               color: dashboardTheme.components?.table?.rowText || STYLE_GUIDE.COLORS.textDarkGray,
+              fontFamily: `${getComponentTypography('tables').fontFamily} !important`,
+              fontWeight: parseInt(getComponentTypography('tables').fontWeight),
+              fontSize: getComponentTypography('tables').fontSize,
+            },
+          },
+        },
+        // DataGrid specific styling
+        MuiDataGrid: {
+          styleOverrides: {
+            root: {
+              fontFamily: `${getComponentTypography('tables').fontFamily} !important`,
+              fontWeight: parseInt(getComponentTypography('tables').fontWeight),
+              fontSize: getComponentTypography('tables').fontSize,
+              border: 'none',
+              backgroundColor: dashboardTheme.colors.background.paper || STYLE_GUIDE.COLORS.white,
+            },
+            columnHeaders: {
+              backgroundColor: `${dashboardTheme.components?.table?.headerBackground || STYLE_GUIDE.COLORS.backgroundLightGray} !important`,
+              color: `${dashboardTheme.components?.table?.headerText || STYLE_GUIDE.COLORS.textGray} !important`,
+              fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold,
+              fontFamily: `${getComponentTypography('tables').fontFamily} !important`,
+              fontSize: getComponentTypography('tables').fontSize,
+              borderBottom: `2px solid ${dashboardTheme.colors.divider}`,
+            },
+            columnHeaderTitle: {
+              fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold,
+              color: `${dashboardTheme.components?.table?.headerText || STYLE_GUIDE.COLORS.textGray} !important`,
+              fontFamily: `${getComponentTypography('tables').fontFamily} !important`,
+              fontSize: getComponentTypography('tables').fontSize,
+            },
+            columnHeader: {
+              outline: 'none',
+              '&:focus, &:focus-within': {
+                outline: 'none',
+              },
+              '& .MuiDataGrid-columnSeparator': {
+                color: `${dashboardTheme.colors.primary.main} !important`,
+                '&:hover': {
+                  color: `${dashboardTheme.colors.primary.light} !important`,
+                },
+              },
+            },
+            cell: {
+              color: `${dashboardTheme.components?.table?.rowText || STYLE_GUIDE.COLORS.textDarkGray} !important`,
+              borderBottom: `1px solid ${dashboardTheme.colors.divider}`,
+              borderRight: 'none',
+              outline: 'none',
+              fontFamily: `${getComponentTypography('tables').fontFamily} !important`,
+              fontWeight: parseInt(getComponentTypography('tables').fontWeight),
+              fontSize: getComponentTypography('tables').fontSize,
+            },
+            row: {
+              '&:nth-of-type(odd)': {
+                backgroundColor: `${dashboardTheme.components?.table?.rowOddBackground || STYLE_GUIDE.COLORS.backgroundDefault} !important`,
+              },
+              '&:nth-of-type(even)': {
+                backgroundColor: `${dashboardTheme.components?.table?.rowEvenBackground || STYLE_GUIDE.COLORS.white} !important`,
+              },
+              '&:hover': {
+                backgroundColor: `${dashboardTheme.components?.table?.rowHoverBackground || STYLE_GUIDE.COLORS.backgroundHover} !important`,
+              },
+              '&.Mui-selected': {
+                backgroundColor: `${dashboardTheme.colors.primary.light}20 !important`,
+                '&:hover': {
+                  backgroundColor: `${dashboardTheme.colors.primary.light}30 !important`,
+                },
+              },
+            },
+            footerContainer: {
+              backgroundColor: dashboardTheme.colors.background.paper || STYLE_GUIDE.COLORS.white,
+              borderTop: `1px solid ${dashboardTheme.colors.divider}`,
+              color: dashboardTheme.colors.text.primary,
+              fontFamily: `${getComponentTypography('tables').fontFamily} !important`,
+              fontWeight: parseInt(getComponentTypography('tables').fontWeight),
+              fontSize: getComponentTypography('tables').fontSize,
+            },
+            pagination: {
+              fontFamily: `${getComponentTypography('tables').fontFamily} !important`,
+              fontWeight: parseInt(getComponentTypography('tables').fontWeight),
+              fontSize: getComponentTypography('tables').fontSize,
+            },
+            virtualScroller: {
+              backgroundColor: dashboardTheme.colors.background.paper || STYLE_GUIDE.COLORS.white,
+            },
+            overlay: {
+              backgroundColor: dashboardTheme.colors.background.paper || STYLE_GUIDE.COLORS.white,
+              color: dashboardTheme.colors.text.primary,
               fontFamily: `${getComponentTypography('tables').fontFamily} !important`,
               fontWeight: parseInt(getComponentTypography('tables').fontWeight),
               fontSize: getComponentTypography('tables').fontSize,

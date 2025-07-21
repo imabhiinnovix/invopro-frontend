@@ -21,6 +21,11 @@ import DataSource from './pages/dataSource';
 import AIInsightPage from './pages/aiInsight';
 import DataSourceVersion from './pages/dataSourceVersion';
 import ReportSettings from './pages/report-settings';
+import NotificationSettings from "./pages/notificationSettings";
+import Users from "./pages/users";
+import Roles from "./pages/roles";
+import Organization from "./pages/organization/organization";
+import NotifixDataSource from './pages/notifixDataSource';
 
 const AppRoutes = () => {
   const token = getAuthToken();
@@ -28,7 +33,10 @@ const AppRoutes = () => {
   return (
     <Routes>
       {/* Root Route */}
-      <Route path="/" element={<Navigate to={token ? '/dashboard' : '/login'} replace />} />
+      <Route
+        path="/"
+        element={<Navigate to={token ? "/dashboard" : "/login"} replace />}
+      />
 
       {/* Public Routes */}
       <Route path="/login" element={<Login />} />
@@ -51,6 +59,26 @@ const AppRoutes = () => {
           <Route path="/VixAi-Insights" element={<AIInsightPage />} />
           <Route path="/VixAi-Chart" element={<NaturalLanguage />} />
           <Route path="/report-settings" element={<ReportSettings />} />
+          {/* // Notivix routes */}
+          <Route path="/notivix/dashboard" element={<ReportSettings />} />
+          <Route
+            path="/notivix/notification-settings"
+            element={<NotificationSettings />}
+          />
+           <Route
+            path="/notivix/settings/users"
+            element={<Users />}
+          />
+          <Route
+            path="/notivix/settings/roles"
+            element={<Roles />}
+          />
+          <Route
+            path="/notivix/settings/organization"
+            element={<Organization />}
+          />
+                    <Route path="/notivix/data-source/:id" element={<NotifixDataSource />} />
+
         </Route>
       </Route>
 

@@ -1,4 +1,5 @@
 import '@mui/material/styles';
+import React from 'react';
 import { DashboardTheme } from '../types/dashboardTheme';
 
 declare module '@mui/material/styles' {
@@ -103,6 +104,23 @@ declare module '@mui/material/styles' {
     };
     icon?: {
       primary: string;
+    };
+  }
+
+  interface Components {
+    MuiDataGrid?: {
+      styleOverrides?: {
+        root?: React.CSSProperties;
+        columnHeaders?: React.CSSProperties;
+        columnHeaderTitle?: React.CSSProperties;
+        columnHeader?: React.CSSProperties;
+        cell?: React.CSSProperties;
+        row?: React.CSSProperties;
+        footerContainer?: React.CSSProperties;
+        pagination?: React.CSSProperties;
+        virtualScroller?: React.CSSProperties;
+        overlay?: React.CSSProperties;
+      };
     };
   }
 

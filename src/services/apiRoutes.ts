@@ -48,6 +48,7 @@ export const GET = {
   GET_ORGANIZATION: '/organizations/',
   Entity_List: '/entities/list',
   Get_Entity: '/entities',
+  Get_Entity_By_Id: '/entities:entityId',
   Attribute_Option_List: 'attributeOptions/list',
   Attribute_Option_Get: 'attributeOptions/get',
   Data_Source_List: '/dataSource/list',

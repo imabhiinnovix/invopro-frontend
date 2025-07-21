@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useForm, useFieldArray, FieldError } from "react-hook-form";
 import ExcelJS from "exceljs";
 import {
@@ -20,11 +20,12 @@ import FileUploadButton from "../file/fileUploadButton";
 import { GET, POST } from "../../../services/apiRoutes";
 import ProgressBar from "../../molecule/progressBar";
 import usePost from "../../../hooks/usePost";
+import usePut from "../../../hooks/usePut";
 import { EntityRequestPayload, EntityResponse } from "./types";
 import CommonSelect from "../../common/dropdown/commonSelect";
 import CommonDropdownSearch from "../../common/dropdown/searchableDropdown";
-import usePut from "../../../hooks/usePut";
 import { toast } from "react-toastify";
+import axiosInstance from "../../../services/axiosInstance";
 import { STYLE_GUIDE } from '../../../styles';
 import { useUnifiedTheme } from '../../../hooks/useUnifiedTheme';
 import { useComponentTypography } from '../../../hooks/useComponentTypography';
@@ -35,6 +36,7 @@ interface CreateUpdateEntityProps {
   title: string;
   data?: EntityRequestPayload;
 }
+
 const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
   setReloadEntity,
   CustomButton,
@@ -65,8 +67,11 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
           name: "",
           mappingName: "",
           type: "",
-          required: "", // Default to empty string for consistency
+          required: "",
           optionAttributeId: "",
+          referenceEntityId: "",
+          referenceEntityField: "",
+          referenceRelationType: "",
           validation: [],
           transformations: [],
           cleaner: [],
@@ -86,6 +91,9 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
           type: "",
           required: "",
           optionAttributeId: "",
+          referenceEntityId: "",
+          referenceEntityField: "",
+          referenceRelationType: "",
           validation: [],
           transformations: [],
           cleaner: [],
@@ -98,6 +106,51 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
     control,
     name: "attributes",
   });
+  const [referenceEntityNames, setReferenceEntityNames] = useState<{
+    [key: number]: string[];
+  }>({});
+  const [referenceEntityTypes, setReferenceEntityTypes] = useState<{
+    [key: number]: string[];
+  }>({});
+
+  // Watch attributes explicitly to ensure updates are captured
+  const attributes = watch("attributes");
+
+
+
+  const prevEntityIdRef = useRef<string | undefined>(undefined);
+
+  useEffect(() => {
+    const entityId = attributes?.[0]?.referenceEntityId;
+    if (!entityId || entityId === prevEntityIdRef.current) return;
+
+    axiosInstance
+      .get(`/entities/${entityId}`)
+      .then((res) => {
+        const namesArr =
+          res.data?.data?.attributes?.map((f: any) => f.name) || [];
+        const typesArr =
+          res.data?.data?.attributes?.map((f: any) => f._id) || [];
+        setReferenceEntityNames((prev) => {
+          if (JSON.stringify(prev[0]) !== JSON.stringify(namesArr)) {
+            return { ...prev, 0: namesArr };
+          }
+          return prev;
+        });
+        setReferenceEntityTypes((prev) => {
+          if (JSON.stringify(prev[0]) !== JSON.stringify(typesArr)) {
+            return { ...prev, 0: typesArr };
+          }
+          return prev;
+        });
+      })
+      .catch(() => {
+        setReferenceEntityNames((prev) => ({ ...prev, 0: [] }));
+        setReferenceEntityTypes((prev) => ({ ...prev, 0: [] }));
+      });
+
+    prevEntityIdRef.current = entityId;
+  }, [attributes?.[0]?.referenceEntityId]);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files?.[0]) {
@@ -126,7 +179,7 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
           const workbook = new ExcelJS.Workbook();
           try {
             await workbook.xlsx.load(arrayBuffer);
-          } catch (error) {
+          } catch {
             toast.error(
               "Failed to load the Excel file. Ensure the file is valid."
             );
@@ -145,8 +198,20 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
           }
 
           const worksheet = workbook.worksheets[0];
-          const headers: any[] = [];
-          const uniqueNames = new Set<string>(); // Track unique names
+          const headers: {
+            name: string;
+            mappingName: string;
+            type: string;
+            optionAttributeId: string;
+            referenceEntityId: string;
+            referenceEntityField: string;
+            referenceRelationType: string;
+            validation: unknown[];
+            transformations: unknown[];
+            cleaner: unknown[];
+            required: string;
+          }[] = [];
+          const uniqueNames = new Set<string>();
 
           // Read the first row (headers) and remove duplicates
           worksheet.getRow(1).eachCell((cell, _colNumber) => {
@@ -154,9 +219,9 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
               const actualHeaderName = cell.value.toString().trim();
               const cleanedName = cell.value
                 .toString()
-                .replace(/[^a-zA-Z0-9/]/g, "") // Remove special characters except '/'
-                .replace(/\//g, " or ") // Replace '/' with ' or '
-                .replace(/\s+/g, " ") // Normalize multiple spaces
+                .replace(/[^a-zA-Z0-9/]/g, "")
+                .replace(/\//g, " or ")
+                .replace(/\s+/g, " ")
                 .trim();
 
               if (!uniqueNames.has(cleanedName)) {
@@ -166,6 +231,9 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
                   mappingName: actualHeaderName,
                   type: "text",
                   optionAttributeId: "",
+                  referenceEntityId: "",
+                  referenceEntityField: "",
+                  referenceRelationType: "",
                   validation: [],
                   transformations: [],
                   cleaner: [],
@@ -175,18 +243,15 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
             }
           });
 
-          // Read the second row (for type inference)
           worksheet.getRow(2).eachCell((cell, colNumber) => {
             if (headers[colNumber - 1] != undefined) {
               const firstValue = cell.value;
-
               let type = "text";
               if (typeof firstValue === "number") {
                 type = "number";
               } else if (firstValue instanceof Date) {
                 type = "date";
               }
-
               headers[colNumber - 1].type = type;
             }
           });
@@ -206,6 +271,7 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
           setFileName(null);
           setFile(null);
           setFileUploadLoader(false);
+          return;
         }
       };
 
@@ -242,19 +308,39 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
   );
 
   const onSubmit = (formData: EntityRequestPayload) => {
-    const newAttributes = formData.attributes?.map((data) => {
+    const newAttributes = formData.attributes?.map((data, index) => {
+      const {
+        referenceEntityId,
+        referenceEntityField,
+        referenceRelationType,
+        ...rest
+      } = data;
+
+      const updated = {
+        ...rest,
+        required: data.required === "Mandatory" ? true : false,
+      };
+
       if (!["option", "multioption"].includes(data.type)) {
-        return {
-          ...data, // Corrected spread operator
-          optionAttributeId: "", // Adding the optionAttributeId property
-          required: data.required === "Mandatory" ? true : false,
-        };
-      } else {
-        return {
-          ...data,
-          required: data.required === "Mandatory" ? true : false,
+        updated.optionAttributeId = "";
+      }
+
+      if (referenceEntityId && referenceEntityField && referenceRelationType) {
+        const selectedName = referenceEntityField;
+        const typeIndex = referenceEntityNames[index]?.indexOf(selectedName);
+        const selectedType =
+          typeIndex !== -1 && typeIndex !== undefined
+            ? referenceEntityTypes[index]?.[typeIndex] || ""
+            : "";
+
+        updated.referenceEntitySetting = {
+          refEntityId: referenceEntityId,
+          refEntityField: selectedType,
+          relationType: referenceRelationType,
         };
       }
+
+      return updated;
     });
 
     const newFormData = { ...formData, attributes: newAttributes };
@@ -274,7 +360,7 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
     setFileName(null);
     setOpen(false);
     setFileUploadLoader(false);
-    reset(); // Reset form on cancel
+    reset();
   };
 
   return (
@@ -311,7 +397,6 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
         }}>
           <Box component="form" onSubmit={handleSubmit(onSubmit)} noValidate>
             <Stack spacing={3}>
-              {/* Entity Name */}
               <TextField
                 label="Entity Name*"
                 fullWidth
@@ -327,7 +412,6 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
                 sx={{ '& .MuiOutlinedInput-root': { borderRadius: STYLE_GUIDE.SPACING.s2, alignItems: 'flex-start', paddingRight: STYLE_GUIDE.SPACING.s2, fontSize: '14px', backgroundColor: theme.dashboardTheme?.colors?.background?.paper || '#ffffff', '& fieldset': { borderColor: theme.dashboardTheme?.colors?.inputBorder || STYLE_GUIDE.COLORS.darkBackground, }, '&:hover fieldset': { borderColor: theme.dashboardTheme?.colors?.borderHover || STYLE_GUIDE.COLORS.darkBorderHover, }, '&.Mui-focused fieldset': { borderColor: theme.dashboardTheme?.components?.input?.focusBorderColor || theme.dashboardTheme?.components?.input?.focusBorderColorFallback || STYLE_GUIDE.COLORS.inputFocusFallback, }, }, '& .MuiInputLabel-root': { color: theme.dashboardTheme?.colors?.text?.secondary || STYLE_GUIDE.COLORS.darkBorderFocus, }, '& .MuiInputLabel-root.Mui-focused': { color: theme.dashboardTheme?.components?.input?.focusBorderColor || theme.dashboardTheme?.components?.input?.focusBorderColorFallback || STYLE_GUIDE.COLORS.inputFocusFallback, }, '& .MuiInputBase-input': { color: `${theme.dashboardTheme?.colors?.inputText || theme.palette.text.primary} !important`, }, '& .MuiInputBase-input::placeholder': { color: `${theme.dashboardTheme?.colors?.text?.secondary || '#666'} !important`, }, '& .MuiInputBase-input:-webkit-autofill': { WebkitTextFillColor: `${theme.dashboardTheme?.colors?.inputText || theme.palette.text.primary} !important`, WebkitBoxShadow: `0 0 0 1000px ${theme.dashboardTheme?.colors?.background?.paper || '#ffffff'} inset !important`, }, }}
               />
 
-              {/* Entity Description */}
               <TextField
                 label="Entity Description"
                 fullWidth
@@ -351,23 +435,28 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
 
               <Divider sx={{ my: 3 }} />
 
-              {/* Attributes Section */}
-              {fields.map((attribute, index) => {
-                return (
-                  <Box
-                    key={attribute.id}
-                    sx={{
-                      mb: 3,
-                      pointerEvents: fileUploadLoader ? "none" : "auto", // Disable interactions when isPending is true
-                      opacity: fileUploadLoader ? 0.5 : 1,
-                    }}
-                  >
-                    <Typography variant="h6" mb={2}>
-                      Attribute {index + 1}
-                    </Typography>
-                    <Stack spacing={2}>
-                      {/* Attribute Name */}
-                      <TextField
+              {fields.map((attribute, index) => (
+                <Box
+                  key={attribute.id}
+                  sx={{
+                    mb: 3,
+                    pointerEvents: fileUploadLoader ? "none" : "auto",
+                    opacity: fileUploadLoader ? 0.5 : 1,
+                  }}
+                >
+
+
+{/* <Typography variant="h6" mb={2}> */}
+                     
+                    
+
+
+
+                  <Typography variant="h6" mb={2}>
+                    Attribute {index + 1}
+                  </Typography>
+                  <Stack spacing={2}>
+                     <TextField
                         label="Attribute Name"
                         fullWidth
                         {...register(`attributes.${index}.name`, {
@@ -377,7 +466,8 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
                         helperText={errors.attributes?.[index]?.name?.message}
                         sx={{ '& .MuiOutlinedInput-root': { borderRadius: STYLE_GUIDE.SPACING.s2, alignItems: 'flex-start', paddingRight: STYLE_GUIDE.SPACING.s2, fontSize: '14px', backgroundColor: theme.dashboardTheme?.colors?.background?.paper || '#ffffff', '& fieldset': { borderColor: theme.dashboardTheme?.colors?.inputBorder || STYLE_GUIDE.COLORS.darkBackground, }, '&:hover fieldset': { borderColor: theme.dashboardTheme?.colors?.borderHover || STYLE_GUIDE.COLORS.darkBorderHover, }, '&.Mui-focused fieldset': { borderColor: theme.dashboardTheme?.components?.input?.focusBorderColor || theme.dashboardTheme?.components?.input?.focusBorderColorFallback || STYLE_GUIDE.COLORS.inputFocusFallback, }, }, '& .MuiInputLabel-root': { color: theme.dashboardTheme?.colors?.text?.secondary || STYLE_GUIDE.COLORS.darkBorderFocus, }, '& .MuiInputLabel-root.Mui-focused': { color: theme.dashboardTheme?.components?.input?.focusBorderColor || theme.dashboardTheme?.components?.input?.focusBorderColorFallback || STYLE_GUIDE.COLORS.inputFocusFallback, }, '& .MuiInputBase-input': { color: `${theme.dashboardTheme?.colors?.inputText || theme.palette.text.primary} !important`, }, '& .MuiInputBase-input::placeholder': { color: `${theme.dashboardTheme?.colors?.text?.secondary || '#666'} !important`, }, '& .MuiInputBase-input:-webkit-autofill': { WebkitTextFillColor: `${theme.dashboardTheme?.colors?.inputText || theme.palette.text.primary} !important`, WebkitBoxShadow: `0 0 0 1000px ${theme.dashboardTheme?.colors?.background?.paper || '#ffffff'} inset !important`, }, }}
                       />
-                      <TextField
+                  
+                    <TextField
                         label="File Attribute Name"
                         fullWidth
                         {...register(`attributes.${index}.mappingName`, {
@@ -390,86 +480,133 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
                         sx={{ '& .MuiOutlinedInput-root': { borderRadius: STYLE_GUIDE.SPACING.s2, alignItems: 'flex-start', paddingRight: STYLE_GUIDE.SPACING.s2, fontSize: '14px', backgroundColor: theme.dashboardTheme?.colors?.background?.paper || '#ffffff', '& fieldset': { borderColor: theme.dashboardTheme?.colors?.inputBorder || STYLE_GUIDE.COLORS.darkBackground, }, '&:hover fieldset': { borderColor: theme.dashboardTheme?.colors?.borderHover || STYLE_GUIDE.COLORS.darkBorderHover, }, '&.Mui-focused fieldset': { borderColor: theme.dashboardTheme?.components?.input?.focusBorderColor || theme.dashboardTheme?.components?.input?.focusBorderColorFallback || STYLE_GUIDE.COLORS.inputFocusFallback, }, }, '& .MuiInputLabel-root': { color: theme.dashboardTheme?.colors?.text?.secondary || STYLE_GUIDE.COLORS.darkBorderFocus, }, '& .MuiInputLabel-root.Mui-focused': { color: theme.dashboardTheme?.components?.input?.focusBorderColor || theme.dashboardTheme?.components?.input?.focusBorderColorFallback || STYLE_GUIDE.COLORS.inputFocusFallback, }, '& .MuiInputBase-input': { color: `${theme.dashboardTheme?.colors?.inputText || theme.palette.text.primary} !important`, }, '& .MuiInputBase-input::placeholder': { color: `${theme.dashboardTheme?.colors?.text?.secondary || '#666'} !important`, }, '& .MuiInputBase-input:-webkit-autofill': { WebkitTextFillColor: `${theme.dashboardTheme?.colors?.inputText || theme.palette.text.primary} !important`, WebkitBoxShadow: `0 0 0 1000px ${theme.dashboardTheme?.colors?.background?.paper || '#ffffff'} inset !important`, }, }}
                       />
 
-                      <CommonSelect
-                        control={control}
-                        name={`attributes.${index}.type`}
-                        label="Attribute Type"
-                        options={[
-                          "number",
-                          "text",
-                          "date",
-                          "boolean",
-                          "richtext",
-                          "url",
-                          "option",
-                          "multioption",
-                          "email",
-                          // 'user',
-                        ]}
-                        defaultValue={attribute.type || ""}
-                        rules={{ required: "Attribute Type is required" }}
-                        error={!!errors.attributes?.[index]?.type}
-                        errorMessage={
-                          (errors.attributes?.[index]?.type as FieldError)
-                            ?.message
-                        }
-                      />
+                    <CommonSelect
+                      control={control}
+                      name={`attributes.${index}.type`}
+                      label="Attribute Type"
+                      options={[
+                        "number",
+                        "text",
+                        "date",
+                        "boolean",
+                        "richtext",
+                        "url",
+                        "option",
+                        "multioption",
+                        "email",
+                      ]}
+                      defaultValue={attribute.type || ""}
+                      rules={{ required: "Attribute Type is required" }}
+                      error={!!errors.attributes?.[index]?.type}
+                      errorMessage={
+                        (errors.attributes?.[index]?.type as FieldError)
+                          ?.message
+                      }
+                    />
 
-                      {watch("attributes") &&
-                        ["option", "multioption"].includes(
-                          watch("attributes")?.[index]?.type!
-                        ) && (
-                          <CommonDropdownSearch
-                            control={control}
-                            name={`attributes.${index}.optionAttributeId`}
-                            label="Attribute Options"
-                            apiUrl={`${GET.Attribute_Option_List}`}
-                            labelName="attributeName"
-                            labelValue="_id"
-                            defaultValue={attribute.optionAttributeId || ""}
-                            rules={{ required: "Attribute Option is required" }}
-                            error={
-                              !!errors.attributes?.[index]?.optionAttributeId
-                            }
-                            errorMessage={
-                              (
-                                errors.attributes?.[index]
-                                  ?.optionAttributeId as FieldError
-                              )?.message
-                            }
-                            apiName="attributeOption"
-                            defaultDataUrl={`${GET.Attribute_Option_Get}`}
-                          />
-                        )}
+                    {attributes &&
+                      ["option", "multioption"].includes(
+                        attributes[index]?.type || ""
+                      ) && (
+                        <CommonDropdownSearch
+                          control={control}
+                          name={`attributes.${index}.optionAttributeId`}
+                          label="Attribute Options"
+                          apiUrl={`${GET.Attribute_Option_List}`}
+                          labelName="attributeName"
+                          labelValue="_id"
+                          defaultValue={attribute.optionAttributeId || ""}
+                          rules={{ required: "Attribute Option is required" }}
+                          error={
+                            !!errors.attributes?.[index]?.optionAttributeId
+                          }
+                          errorMessage={
+                            (
+                              errors.attributes?.[index]
+                                ?.optionAttributeId as FieldError
+                            )?.message
+                          }
+                          apiName="attributeOption"
+                          defaultDataUrl={`${GET.Attribute_Option_Get}`}
+                        />
+                      )}
 
-                      <CommonSelect
-                        control={control}
-                        name={`attributes.${index}.required`}
-                        label="Attribute Validation"
-                        options={["Mandatory", "Not Mandatory"]}
-                        defaultValue={"Mandatory"}
-                        rules={{ required: "Attribute Validation is required" }}
-                        error={!!errors.attributes?.[index]?.required}
-                        errorMessage={
-                          (errors.attributes?.[index]?.required as FieldError)
-                            ?.message
-                        }
-                      />
-                    </Stack>
+                    <CommonSelect
+                      control={control}
+                      name={`attributes.${index}.required`}
+                      label="Attribute Validation"
+                      options={["Mandatory", "Not Mandatory"]}
+                      defaultValue={attribute.required || "Not Mandatory"}
+                      rules={{ required: "Attribute Validation is required" }}
+                      error={!!errors.attributes?.[index]?.required}
+                      helperText={
+                        (errors.attributes?.[index]?.required as FieldError)
+                          ?.message
+                      }
+                    />
 
-                    {/* Remove Attribute Button */}
-                    <IconButton
-                      color="error"
-                      onClick={() => remove(index)}
-                      sx={{ mt: 2, display: "flex", alignSelf: "flex-start" }}
-                    >
-                      <RemoveCircleOutlineIcon />
-                    </IconButton>
-                  </Box>
-                );
-              })}
+                    <CommonDropdownSearch
+                      control={control}
+                      name={`attributes.${index}.referenceEntityId`}
+                      label="Reference Entity ID"
+                      apiUrl={`${GET.Entity_List}`}
+                      labelName="name"
+                      labelValue="_id"
+                      defaultValue={attribute.referenceEntityId || ""}
+                      rules={{ required: false }} // Relaxed for debugging
+                      error={!!errors.attributes?.[index]?.referenceEntityId}
+                      errorMessage={
+                        (
+                          errors.attributes?.[index]
+                            ?.referenceEntityId as FieldError
+                        )?.message
+                      }
+                      apiName="entities"
+                      defaultDataUrl={`${GET.Entity_List}`}
+                    />
 
-              {/* Add Attribute Button */}
+                    <CommonSelect
+                      control={control}
+                      name={`attributes.${index}.referenceEntityField`}
+                      label="Reference Entity Field"
+                      options={referenceEntityNames[index] || []}
+                      defaultValue={attribute.referenceEntityField || ""}
+                      rules={{ required: false }} // Relaxed for debugging
+                      error={!!errors.attributes?.[index]?.referenceEntityField}
+                      helperText={
+                        (
+                          errors.attributes?.[index]
+                            ?.referenceEntityField as FieldError
+                        )?.message
+                      }
+                    />
+
+                    <CommonSelect
+                      control={control}
+                      name={`attributes.${index}.referenceRelationType`}
+                      label="Reference Relation Type"
+                      options={["many_to_one", "one_to_one", "self"]}
+                      rules={{ required: false }} // Relaxed for debugging
+                      error={!!errors.attributes?.[index]?.referenceRelationType}
+                      helperText={
+                        (
+                          errors.attributes?.[index]
+                            ?.referenceRelationType as FieldError
+                        )?.message
+                      }
+                    />
+                  </Stack>
+
+                  <IconButton
+                    color="error"
+                    onClick={() => remove(index)}
+                    sx={{ mt: 2, display: "flex", alignSelf: "flex-start" }}
+                  >
+                    <RemoveCircleOutlineIcon />
+                  </IconButton>
+                </Box>
+              ))}
+
               <Button
                 variant="contained"
                 startIcon={<AddCircleOutlineIcon />}
@@ -480,6 +617,9 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
                     type: "",
                     required: "",
                     optionAttributeId: "",
+                    referenceEntityId: "",
+                    referenceEntityField: "",
+                    referenceRelationType: "",
                     validation: [],
                     transformations: [],
                     cleaner: [],
@@ -496,7 +636,6 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
             <ProgressBar />
           ) : (
             <>
-              {" "}
               <Button
                 onClick={handleCancel}
                 color="error"

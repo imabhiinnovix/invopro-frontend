@@ -1,12 +1,25 @@
 export interface Attribute {
   name: string;
   mappingName: string;
-  type: 'number' | 'text' | 'date' | 'boolean' | 'richtext' | 'url' | 'option' | 'multioption' | 'user' | '';
+  type:
+    | "number"
+    | "text"
+    | "date"
+    | "boolean"
+    | "richtext"
+    | "url"
+    | "option"
+    | "multioption"
+    | "user"
+    | "";
   validation?: string[];
   transformations?: string[];
   optionAttributeId?: string;
   cleaner?: string[];
   required: string | boolean;
+  referenceEntityId: string;
+  referenceEntityField: string;
+  referenceRelationType: string;
 }
 
 interface CreatedBy {
