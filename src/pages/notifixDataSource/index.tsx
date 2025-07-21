@@ -1,4 +1,3 @@
-
 import * as React from "react";
 import { useState, useEffect } from "react";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
@@ -16,6 +15,8 @@ import {
   DialogContent,
   DialogActions,
   Tooltip,
+  Select,
+  MenuItem,
 } from "@mui/material";
 import { STYLE_GUIDE } from "../../styles"; // Adjust path as needed
 import SearchIcon from "@mui/icons-material/Search";
@@ -26,13 +27,14 @@ import VisibilityIcon from "@mui/icons-material/Visibility";
 import DeleteIcon from "@mui/icons-material/Delete";
 import axiosInstance from "../../services/axiosInstance"; // Adjust path as needed
 
+
 const generateColumns = (
   sampleRowData: Record<string, any>,
   handleView: (id: string) => void,
   handleEdit: (id: string) => void,
   handleDelete: (id: string) => void,
-  loading: boolean, // Add loading parameter
-  rows: any[] // Add rows parameter
+  loading: boolean,
+  rows: any[]
 ): GridColDef[] => {
   const dynamicColumns = Object.keys(sampleRowData)
     .filter((key) => key !== "_id")
@@ -131,6 +133,166 @@ const generateColumns = (
   return [...dynamicColumns, actionsColumn];
 };
 
+// Custom Pagination Component
+type CustomPaginationProps = {
+  paginationModel: { page: number; pageSize: number };
+  setPaginationModel: (model: { page: number; pageSize: number }) => void;
+  rowCount: number;
+};
+
+const CustomPagination: React.FC<CustomPaginationProps> = ({ paginationModel, setPaginationModel, rowCount }) => {
+  const totalPages = Math.ceil(rowCount / paginationModel.pageSize) || 1; 
+  const pageSizeOptions = [5, 10, 20]; 
+
+  return (
+    <Box
+      sx={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "flex-end",
+        p: 1,
+        backgroundColor: STYLE_GUIDE?.COLORS?.white || "#ffffff",
+        borderTop: `1px solid ${STYLE_GUIDE?.COLORS?.divider || "#e0e0e0"}`,
+      }}
+    >
+      <Box sx={{ display: "flex", alignItems: "center", mr: 2 }}>
+        <Typography sx={{ mr: 1 }}>Rows per page:</Typography>
+        <Select
+          value={paginationModel.pageSize}
+          onChange={(e) =>
+            setPaginationModel({
+              ...paginationModel,
+              pageSize: Number(e.target.value),
+              page: 0, // Reset to first page when page size changes
+            })
+          }
+          size="small"
+          sx={{
+            "& .MuiOutlinedInput-root": {
+              borderRadius: "8px",
+              backgroundColor: STYLE_GUIDE?.COLORS?.white || "#ffffff",
+              "& fieldset": {
+                borderColor: STYLE_GUIDE?.COLORS?.divider || "#e0e0e0",
+              },
+              "&:hover fieldset": {
+                borderColor: STYLE_GUIDE?.COLORS?.primaryDark || "#3f51b5",
+              },
+            },
+          }}
+        >
+          {pageSizeOptions.map((size) => (
+            <MenuItem key={size} value={size}>
+              {size}
+            </MenuItem>
+          ))}
+        </Select>
+      </Box>
+      <Tooltip title="First Page" arrow>
+        <span>
+          <Button
+            disabled={paginationModel.page === 0}
+            onClick={() => setPaginationModel({ ...paginationModel, page: 0 })}
+            sx={{
+              minWidth: "auto",
+              mx: 1,
+              color: STYLE_GUIDE?.COLORS?.primaryDark || "#3f51b5",
+              "&:hover": {
+                backgroundColor: STYLE_GUIDE?.COLORS?.backgroundDefault || "#f1f5f9",
+              },
+              "&.Mui-disabled": {
+                color: STYLE_GUIDE?.COLORS?.divider || "#e0e0e0",
+              },
+            }}
+          >
+            <Typography>{"<<"}</Typography>
+          </Button>
+        </span>
+      </Tooltip>
+      <Tooltip title="Previous Page" arrow>
+        <span>
+          <Button
+            disabled={paginationModel.page === 0}
+            onClick={() =>
+              setPaginationModel({
+                ...paginationModel,
+                page: paginationModel.page - 1,
+              })
+            }
+            sx={{
+              minWidth: "auto",
+              mx: 1,
+              color: STYLE_GUIDE?.COLORS?.primaryDark || "#3f51b5",
+              "&:hover": {
+                backgroundColor: STYLE_GUIDE?.COLORS?.backgroundDefault || "#f1f5f9",
+              },
+              "&.Mui-disabled": {
+                color: STYLE_GUIDE?.COLORS?.divider || "#e0e0e0",
+              },
+            }}
+          >
+            <Typography>{"<"}</Typography>
+          </Button>
+        </span>
+      </Tooltip>
+      <Typography sx={{ mx: 2 }}>
+        Page {paginationModel.page + 1} of {totalPages}
+      </Typography>
+      <Tooltip title="Next Page" arrow>
+        <span>
+          <Button
+            disabled={paginationModel.page >= totalPages - 1}
+            onClick={() =>
+              setPaginationModel({
+                ...paginationModel,
+                page: paginationModel.page + 1,
+              })
+            }
+            sx={{
+              minWidth: "auto",
+              mx: 1,
+              color: STYLE_GUIDE?.COLORS?.primaryDark || "#3f51b5",
+              "&:hover": {
+                backgroundColor: STYLE_GUIDE?.COLORS?.backgroundDefault || "#f1f5f9",
+              },
+              "&.Mui-disabled": {
+                color: STYLE_GUIDE?.COLORS?.divider || "#e0e0e0",
+              },
+            }}
+          >
+            <Typography>{">"}</Typography>
+          </Button>
+        </span>
+      </Tooltip>
+      <Tooltip title="Last Page" arrow>
+        <span>
+          <Button
+            disabled={paginationModel.page >= totalPages - 1}
+            onClick={() =>
+              setPaginationModel({
+                ...paginationModel,
+                page: totalPages - 1,
+              })
+            }
+            sx={{
+              minWidth: "auto",
+              mx: 1,
+              color: STYLE_GUIDE?.COLORS?.primaryDark || "#3f51b5",
+              "&:hover": {
+                backgroundColor: STYLE_GUIDE?.COLORS?.backgroundDefault || "#f1f5f9",
+              },
+              "&.Mui-disabled": {
+                color: STYLE_GUIDE?.COLORS?.divider || "#e0e0e0",
+              },
+            }}
+          >
+            <Typography>{">>"}</Typography>
+          </Button>
+        </span>
+      </Tooltip>
+    </Box>
+  );
+};
+
 export default function NotifixDataSource() {
   const [rows, setRows] = useState<any[]>([]);
   const [rowCount, setRowCount] = useState(0);
@@ -144,24 +306,40 @@ export default function NotifixDataSource() {
   const [formData, setFormData] = useState<Record<string, any>>({ id: "" });
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [searchValue, setSearchValue] = useState("");
+  const [paginationModel, setPaginationModel] = useState({
+    page: 0,
+    pageSize: 10,
+  });
+  const [debouncedSearchValue, setDebouncedSearchValue] = useState(searchValue);
 
-  const dataSourceId = "6878e3cf23a13174f84626c4"; // Replace with actual ID
-  const versionValue = "2025-07"; // Replace with actual version
 
+  const dataSourceId = "6878e3cf23a13174f84626c4";
+  const versionValue = "2025-07";
+
+
+useEffect(() => {
+  const handler = setTimeout(() => {
+    setDebouncedSearchValue(searchValue);
+  }, 500); // ⏱️ Debounce delay (500ms)
+
+  return () => {
+    clearTimeout(handler);
+  };
+}, [searchValue]);
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
       try {
         const response = await axiosInstance.get(
-          `dataSourceVersion/versionData?dataSourceId=${dataSourceId}&versionValue=${versionValue}`
+          `dataSourceVersion/versionData?dataSourceId=${dataSourceId}&versionValue=${versionValue}&page=${
+            paginationModel.page + 1
+          }&limit=${paginationModel.pageSize}&query=${debouncedSearchValue}`
         );
-        console.log("Raw API Response:", response.data);
 
         const rawData = response?.data?.data || [];
-        const totalCount = response?.data?.total || 0;
+        const totalCount = response?.data?.totalCount || 0;
 
         if (!Array.isArray(rawData)) {
-          console.error("Invalid API response: rawData is not an array", rawData);
           setRows([]);
           setRowCount(0);
           setColumns([]);
@@ -169,12 +347,11 @@ export default function NotifixDataSource() {
         }
 
         const formattedRows = rawData.map((item: any) => ({
-          _id: item._id || item.id, // Use reliable ID from API
+          _id: item._id || item.id,
           ...item.rowData,
         }));
 
         setRows(formattedRows);
-        console.log("Formatted Rows:", formattedRows);
         setRowCount(totalCount);
 
         if (formattedRows.length > 0) {
@@ -183,8 +360,8 @@ export default function NotifixDataSource() {
             handleView,
             handleEdit,
             handleDelete,
-            loading, // Pass loading
-            rows // Pass rows
+            loading,
+            rows
           );
           setColumns(dynamicCols);
         } else {
@@ -192,7 +369,6 @@ export default function NotifixDataSource() {
           setColumns([]);
         }
       } catch (error) {
-        console.error("Failed to fetch data:", error);
         setRows([]);
         setColumns([]);
         setRowCount(0);
@@ -202,14 +378,11 @@ export default function NotifixDataSource() {
     };
 
     fetchData();
-  }, []); // Note: `rows` and `loading` are not dependencies here since columns are set only once
+  }, [paginationModel,debouncedSearchValue]);
 
   const handleView = (id: string) => {
-    console.log("Rows:", rows);
-    console.log("Searching for ID:", id);
     const row = rows.find((r) => r._id === id);
     if (row) {
-      console.log("Found row:", row);
       const newFormData: Record<string, any> = { id: row._id };
       Object.keys(row).forEach((key) => {
         if (key !== "_id") {
@@ -268,8 +441,8 @@ export default function NotifixDataSource() {
   };
 
   const handleConfirmDelete = () => {
-    console.log(`Deleting row with ID: ${deleteId}`);
     setRows(rows.filter((row) => row._id !== deleteId));
+    setRowCount((prev) => prev - 1);
     handleCloseDialog();
   };
 
@@ -287,7 +460,6 @@ export default function NotifixDataSource() {
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setSearchValue(value);
-    console.log(`Search value: ${value}`);
   };
 
   const renderModalFields = () => {
@@ -315,7 +487,7 @@ export default function NotifixDataSource() {
     );
   };
 
-  if (loading) {
+  if (loading && rows.length === 0) {
     return <Typography>Loading...</Typography>;
   }
 
@@ -432,13 +604,22 @@ export default function NotifixDataSource() {
               rows={rows}
               columns={columns}
               getRowId={(row) => row._id}
-              initialState={{
-                pagination: { paginationModel: { page: 0, pageSize: 10 } },
-              }}
-              pageSizeOptions={[5, 10]}
-              disableColumnMenu
-              rowCount={rowCount}
               paginationMode="server"
+              rowCount={rowCount}
+              paginationModel={paginationModel}
+              onPaginationModelChange={setPaginationModel}
+              pageSizeOptions={[5, 10, 20]}
+              disableColumnMenu
+              slots={{
+
+                pagination: () => (
+                  <CustomPagination
+                    paginationModel={paginationModel}
+                    setPaginationModel={setPaginationModel}
+                    rowCount={rowCount}
+                  />
+                ),
+              }}
               sx={{
                 border: 0,
                 backgroundColor: STYLE_GUIDE?.COLORS?.white || "#ffffff",
