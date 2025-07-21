@@ -1,12 +1,10 @@
 import React, { useEffect, useLayoutEffect } from "react";
 import {
-  FormControl,
-  InputLabel,
-  Select,
   MenuItem,
   FormHelperText,
 } from "@mui/material";
 import { Controller } from "react-hook-form";
+import StyledSelect from "../../atom/common/StyledSelect";
 
 interface CommonSelectProps {
   control: any; // React Hook Form control
@@ -32,28 +30,33 @@ const CommonSelect: React.FC<CommonSelectProps> = ({
   error = false,
   errorMessage = "",
   disabled = false,
-  setValue,
 }) => {
   return (
-    <FormControl fullWidth error={error} disabled={disabled}>
-      <InputLabel id={`${name}-label`}>{label}</InputLabel>
+    <div>
       <Controller
         name={name}
         control={control}
         defaultValue={defaultValue}
         rules={rules}
         render={({ field }) => (
-          <Select {...field} labelId={`${name}-label`} label={label} id={name}>
+          <StyledSelect
+            {...field}
+            label={label}
+            disabled={disabled}
+            error={error}
+          >
             {options.map((option) => (
               <MenuItem key={option} value={option}>
                 {option}
               </MenuItem>
             ))}
-          </Select>
+          </StyledSelect>
         )}
       />
-      <FormHelperText>{errorMessage}</FormHelperText>
-    </FormControl>
+      {error && errorMessage && (
+        <FormHelperText error>{errorMessage}</FormHelperText>
+      )}
+    </div>
   );
 };
 

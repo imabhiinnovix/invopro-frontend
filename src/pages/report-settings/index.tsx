@@ -1,22 +1,22 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
-    Container,
     Typography,
     Paper,
     Box,
     CircularProgress,
-    FormControl,
-    InputLabel,
-    Select,
     MenuItem,
     Button,
     Divider,
     Alert,
     Stepper,
     Step,
-    StepLabel
+    StepLabel,
+    useTheme,
+    Card,
+    CardContent
 } from "@mui/material";
+import StyledSelect from "../../components/atom/common/StyledSelect";
 import { fetchCustomReportSettings } from "./customReportsActions";
 import { RootState, AppDispatch } from "../../store";
 import CheckIcon from "@mui/icons-material/Check";
@@ -29,12 +29,16 @@ import ConfirmDialog from "./components/ConfirmDialog";
 import type { Report, FilterColumn, ReportSetting } from "./types";
 import { POST } from "../../services/apiRoutes";
 import usePost from "../../hooks/usePost";
+import { useUnifiedTheme } from '../../hooks/useUnifiedTheme';
+import { useComponentTypography } from '../../hooks/useComponentTypography';
 
 
 const ReportSettings: React.FC = () => {
+    const theme = useUnifiedTheme();
+    const { getHeadingSx, getBodySx, getButtonSx, getCardSx, getInputSx } = useComponentTypography();
     const dispatch = useDispatch<AppDispatch>();
     const { settings = [], loading, error } = useSelector((state: RootState) => state.customReports);
-    const [selectedReportId, setSelectedReportId] = useState<string>("");
+    const [selectedReportId, setSelectedReportId] = useState<any>("");
 
     const [editReportName, setEditReportName] = useState<string>("");
     const [isEditingReportName, setIsEditingReportName] = useState(false);
@@ -393,21 +397,21 @@ const ReportSettings: React.FC = () => {
         Object.values(editingColumns).some(Boolean);
 
     return (
-        <Container maxWidth={false} sx={{ bgcolor: STYLE_GUIDE.COLORS.backgroundDefault, minHeight: '100vh' }}>
+        <Box sx={{ backgroundColor: theme.palette.background.paper }}>
             <Paper elevation={3} sx={{
                 p: STYLE_GUIDE.SPACING.s4,
                 mt: STYLE_GUIDE.SPACING.s4,
                 borderRadius: STYLE_GUIDE.SPACING.s1,
-                bgcolor: STYLE_GUIDE.COLORS.backgroundSurface,
-                boxShadow: STYLE_GUIDE.SHADOWS.lg,
+                bgcolor: theme.palette.background.paper,
+                boxShadow: theme.shadows[3],
             }}>
                 <Typography
                     variant="h4"
                     textAlign="center"
                     gutterBottom
                     sx={{
-                        fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.bold,
-                        color: STYLE_GUIDE.COLORS.primary,
+                        ...getHeadingSx(),
+                        color: theme.palette.primary.main,
                         mb: STYLE_GUIDE.SPACING.s8,
                         letterSpacing: 1,
                     }}
@@ -421,8 +425,15 @@ const ReportSettings: React.FC = () => {
                             <StepLabel
                                 sx={{
                                     '& .MuiStepLabel-label': {
-                                        fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.medium,
-                                        color: STYLE_GUIDE.COLORS.textDarkGray,
+                                        ...getBodySx(),
+                                        color: theme.palette.text.secondary,
+                                    },
+                                    '&.Mui-active .MuiStepLabel-label': {
+                                        color: theme.palette.primary.main,
+                                        fontWeight: getHeadingSx().fontWeight,
+                                    },
+                                    '&.Mui-completed .MuiStepLabel-label': {
+                                        color: theme.palette.success.main,
                                     }
                                 }}
                             >
@@ -442,18 +453,28 @@ const ReportSettings: React.FC = () => {
                     <Alert severity="error">{error}</Alert>
                 ) : (
                     <Box>
-                        <Paper elevation={0} sx={{ p: 3, mb: 3, bgcolor: STYLE_GUIDE.COLORS.backgroundGray, borderRadius: 2 }}>
-                            <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
-                                Select Report
-                            </Typography>
-                            <FormControl fullWidth>
-                                <InputLabel id="report-select-label">Select Report to Edit</InputLabel>
-                                <Select
-                                    labelId="report-select-label"
-                                    value={selectedReportId}
+                        <Card sx={{ 
+                            ...getCardSx(),
+                            mb: 3, 
+                            border: `1px solid ${theme.palette.border?.main}`,
+                            backgroundColor: theme.palette.card?.background || STYLE_GUIDE.COLORS.backgroundSurface,
+                            '&:hover': {
+                                boxShadow: theme.shadows[4],
+                                borderColor: `${theme.palette.border?.hover}`,
+                            }
+                        }}>
+                            <CardContent sx={{ p: 3 }}>
+                                <Typography variant="h6" gutterBottom sx={{ 
+                                    ...getHeadingSx(),
+                                    color: theme.palette.text.primary,
+                                }}>
+                                    Select Report
+                                </Typography>
+                                <StyledSelect
                                     label="Select Report to Edit"
-                                    onChange={e => {
-                                        setSelectedReportId(e.target.value);
+                                    value={selectedReportId}
+                                    onChange={(e) => {
+                                        setSelectedReportId(e.target.value as string);
                                         setIsEditingReportName(false);
                                         setIsEditingSheetName(false);
                                     }}
@@ -463,118 +484,168 @@ const ReportSettings: React.FC = () => {
                                             {report.reportName}
                                         </MenuItem>
                                     ))}
-                                </Select>
-                            </FormControl>
-                        </Paper>
+                                </StyledSelect>
+                            </CardContent>
+                        </Card>
 
                         {selectedReport && (
                             <>
-                                <Paper elevation={0} sx={{ p: 3, mb: 3, bgcolor: STYLE_GUIDE.COLORS.backgroundGray, borderRadius: 2 }}>
-                                    <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
-                                        Edit Report Name
-                                    </Typography>
-                                    <ReportNameEditor
-                                        reportName={selectedReport.reportName}
-                                        editReportName={editReportName}
-                                        isEditing={isEditingReportName}
-                                        onEdit={handleEditReportName}
-                                        onChange={setEditReportName}
-                                        onSave={handleSaveReportName}
-                                        onCancel={handleCancelEditReportName}
-                                    />
-                                </Paper>
+                                <Card sx={{ 
+                                    ...getCardSx(),
+                                    mb: 3, 
+                                    border: `1px solid ${theme.palette.border?.main}`,
+                                    backgroundColor: theme.palette.card?.background || STYLE_GUIDE.COLORS.backgroundSurface,
+                                    '&:hover': {
+                                        boxShadow: theme.shadows[4],
+                                        borderColor: `${theme.palette.border?.hover}`,
+                                    }
+                                }}>
+                                    <CardContent sx={{ p: 3 }}>
+                                        <Typography variant="h6" gutterBottom sx={{ 
+                                            ...getHeadingSx(),
+                                            color: theme.palette.text.primary,
+                                        }}>
+                                            Edit Report Name
+                                        </Typography>
+                                        <ReportNameEditor
+                                            reportName={selectedReport.reportName}
+                                            editReportName={editReportName}
+                                            isEditing={isEditingReportName}
+                                            onEdit={handleEditReportName}
+                                            onChange={setEditReportName}
+                                            onSave={handleSaveReportName}
+                                            onCancel={handleCancelEditReportName}
+                                        />
+                                    </CardContent>
+                                </Card>
 
-                                <Paper elevation={0} sx={{ p: 3, mb: 3, bgcolor: STYLE_GUIDE.COLORS.backgroundGray, borderRadius: 2 }}>
-                                    <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
-                                        Select and Edit Sheet Settings
-                                    </Typography>
-                                    <FormControl fullWidth sx={{ mb: 2 }}>
-                                        <InputLabel id="sheet-select-label">Select Sheet to Edit</InputLabel>
-                                        <Select
-                                            labelId="sheet-select-label"
-                                            value={selectedSheetCode}
+                                <Card sx={{ 
+                                    ...getCardSx(),
+                                    mb: 3, 
+                                    border: `1px solid ${theme.palette.border?.main}`,
+                                    backgroundColor: theme.palette.card?.background || STYLE_GUIDE.COLORS.backgroundSurface,
+                                    '&:hover': {
+                                        boxShadow: theme.shadows[4],
+                                        borderColor: `${theme.palette.border?.hover}`,
+                                    }
+                                }}>
+                                    <CardContent sx={{ p: 3 }}>
+                                        <Typography variant="h6" gutterBottom sx={{ 
+                                            ...getHeadingSx(),
+                                            color: theme.palette.text.primary,
+                                        }}>
+                                            Select and Edit Sheet Settings
+                                        </Typography>
+                                        <StyledSelect
                                             label="Select Sheet to Edit"
-                                            onChange={e => setSelectedSheetCode(e.target.value)}
+                                            value={selectedSheetCode}
+                                            onChange={(e) => setSelectedSheetCode(e.target.value as string)}
+                                            sx={{ mb: 2 }}
                                         >
                                             {settings.find(r => r._id === selectedReportId)?.reportSettings.map((sheet: ReportSetting) => (
                                                 <MenuItem key={sheet._id} value={sheet.sheetCode}>
                                                     {sheet.sheetName}
                                                 </MenuItem>
                                             ))}
-                                        </Select>
-                                    </FormControl>
-                                    {selectedSheet && (
-                                        <SheetNameEditor
-                                            sheetCode={selectedSheet.sheetCode}
-                                            sheetName={selectedSheet.sheetName}
-                                            editSheetName={editSheetName}
-                                            isEditing={isEditingSheetName}
-                                            onEdit={handleEditSheetName}
-                                            onChange={setEditSheetName}
-                                            onSave={handleSaveSheetName}
-                                            onCancel={handleCancelEditSheetName}
-                                        />
-                                    )}
-                                </Paper>
+                                        </StyledSelect>
+                                        {selectedSheet && (
+                                            <SheetNameEditor
+                                                sheetCode={selectedSheet.sheetCode}
+                                                sheetName={selectedSheet.sheetName}
+                                                editSheetName={editSheetName}
+                                                isEditing={isEditingSheetName}
+                                                onEdit={handleEditSheetName}
+                                                onChange={setEditSheetName}
+                                                onSave={handleSaveSheetName}
+                                                onCancel={handleCancelEditSheetName}
+                                            />
+                                        )}
+                                    </CardContent>
+                                </Card>
 
                                 {selectedSheetCode && selectedFilters.length > 0 && (
-                                    <Paper elevation={0} sx={{ p: 3, mb: 3, bgcolor: STYLE_GUIDE.COLORS.backgroundGray, borderRadius: 2 }}>
-                                        <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
-                                            Edit Filter Columns for {selectedSheet?.sheetName}
-                                        </Typography>
-                                        <FilterColumnsEditor
-                                            filters={selectedFilters}
-                                            editingColumns={editingColumns}
-                                            editColumnValues={editColumnValues}
-                                            attributeValueInputs={attributeValueInputs}
-                                            onEditColumn={handleEditColumn}
-                                            onCancelEditColumn={handleCancelEditColumn}
-                                            onSaveColumn={handleSaveColumn}
-                                            onDeleteColumn={handleDeleteColumn}
-                                            onRemoveAttributeValue={handleRemoveAttributeValue}
-                                            onAddAttributeValue={(columnId, value) => {
-                                                if (!selectedReportId) return;
-                                                setLocalSettings(prev =>
-                                                    prev.map(report =>
-                                                        report._id === selectedReportId
-                                                            ? {
-                                                                ...report,
-                                                                filters: report.filters.map(filter => ({
-                                                                    ...filter,
-                                                                    columns: filter.columns.map(col =>
-                                                                        col._id === columnId && !col.attributeValues.includes(value)
-                                                                            ? { ...col, attributeValues: [...col.attributeValues, value] }
-                                                                            : col
-                                                                    )
-                                                                }))
-                                                            }
-                                                            : report
-                                                    )
-                                                );
-                                                setAttributeValueInputs(prev => ({
+                                    <Card sx={{ 
+                                        ...getCardSx(),
+                                        mb: 3, 
+                                        border: `1px solid ${theme.palette.border?.main}`,
+                                        backgroundColor: theme.palette.card?.background || STYLE_GUIDE.COLORS.backgroundSurface,
+                                        '&:hover': {
+                                            boxShadow: theme.shadows[4],
+                                            borderColor: `${theme.palette.border?.hover}`,
+                                        }
+                                    }}>
+                                        <CardContent sx={{ p: 3 }}>
+                                            <Typography variant="h6" gutterBottom sx={{ 
+                                                ...getHeadingSx(),
+                                                color: theme.palette.text.primary,
+                                            }}>
+                                                Edit Filter Columns for {selectedSheet?.sheetName}
+                                            </Typography>
+                                            <FilterColumnsEditor
+                                                filters={selectedFilters}
+                                                editingColumns={editingColumns}
+                                                editColumnValues={editColumnValues}
+                                                attributeValueInputs={attributeValueInputs}
+                                                onEditColumn={handleEditColumn}
+                                                onCancelEditColumn={handleCancelEditColumn}
+                                                onSaveColumn={handleSaveColumn}
+                                                onDeleteColumn={handleDeleteColumn}
+                                                onRemoveAttributeValue={handleRemoveAttributeValue}
+                                                onAddAttributeValue={(columnId, value) => {
+                                                    if (!selectedReportId) return;
+                                                    setLocalSettings(prev =>
+                                                        prev.map(report =>
+                                                            report._id === selectedReportId
+                                                                ? {
+                                                                    ...report,
+                                                                    filters: report.filters.map(filter => ({
+                                                                        ...filter,
+                                                                        columns: filter.columns.map(col =>
+                                                                            col._id === columnId && !col.attributeValues.includes(value)
+                                                                                ? { ...col, attributeValues: [...col.attributeValues, value] }
+                                                                                : col
+                                                                        )
+                                                                    }))
+                                                                }
+                                                                : report
+                                                        )
+                                                    );
+                                                    setAttributeValueInputs(prev => ({
+                                                        ...prev,
+                                                        [columnId]: ""
+                                                    }));
+                                                }}
+                                                onChangeEditColumnValue={(columnId, value) => setEditColumnValues(prev => ({
                                                     ...prev,
-                                                    [columnId]: ""
-                                                }));
-                                            }}
-                                            onChangeEditColumnValue={(columnId, value) => setEditColumnValues(prev => ({
-                                                ...prev,
-                                                [columnId]: value
-                                            }))}
-                                            onChangeAttributeValueInput={(columnId, value) => setAttributeValueInputs(prev => ({
-                                                ...prev,
-                                                [columnId]: value
-                                            }))}
-                                            onAddColumn={handleAddColumn}
-                                        />
-                                    </Paper>
+                                                    [columnId]: value
+                                                }))}
+                                                onChangeAttributeValueInput={(columnId, value) => setAttributeValueInputs(prev => ({
+                                                    ...prev,
+                                                    [columnId]: value
+                                                }))}
+                                                onAddColumn={handleAddColumn}
+                                            />
+                                        </CardContent>
+                                    </Card>
                                 )}
 
                                 {selectedSheetCode && selectedFilters.length === 0 && (
-                                    <Paper elevation={0} sx={{ p: 3, mb: 3, bgcolor: STYLE_GUIDE.COLORS.backgroundGray, borderRadius: 2 }}>
-                                        <Alert severity="info">
-                                            No filters found for the selected sheet: {selectedSheet?.sheetName}
-                                        </Alert>
-                                    </Paper>
+                                    <Card sx={{ 
+                                        ...getCardSx(),
+                                        mb: 3, 
+                                        bgcolor: STYLE_GUIDE.COLORS.backgroundGray,
+                                        border: `1px solid ${theme.palette.border?.main}`,
+                                        '&:hover': {
+                                            boxShadow: theme.shadows[4],
+                                            borderColor: `${theme.palette.border?.hover}`,
+                                        }
+                                    }}>
+                                        <CardContent sx={{ p: 3 }}>
+                                            <Alert severity="info">
+                                                No filters found for the selected sheet: {selectedSheet?.sheetName}
+                                            </Alert>
+                                        </CardContent>
+                                    </Card>
                                 )}
 
                                 <Box display="flex" justifyContent="flex-end">
@@ -584,7 +655,19 @@ const ReportSettings: React.FC = () => {
                                         size="large"
                                         onClick={handleSaveAllChanges}
                                         startIcon={<CheckIcon />}
-                                        sx={{ minWidth: 180, fontWeight: 600 }}
+                                        sx={{ 
+                                            ...getButtonSx(),
+                                            minWidth: 180, 
+                                            bgcolor: theme.palette.primary.main,
+                                            color: theme.palette.primary.contrastText,
+                                            '&:hover': {
+                                                bgcolor: theme.palette.primary.dark,
+                                            },
+                                            '&:disabled': {
+                                                bgcolor: theme.palette.action.disabledBackground,
+                                                color: theme.palette.action.disabled,
+                                            }
+                                        }}
                                         disabled={isAnyEditActive}
                                     >
                                         Save All Changes
@@ -610,7 +693,7 @@ const ReportSettings: React.FC = () => {
                 onConfirm={handleConfirmDeleteColumn}
                 onCancel={handleCancelDeleteColumn}
             />
-        </Container>
+        </Box>
     );
 };
 

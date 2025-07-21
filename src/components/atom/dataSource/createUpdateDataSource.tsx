@@ -21,6 +21,8 @@ import CommonDropdownSearch from '../../common/dropdown/searchableDropdown';
 import useGet from '../../../hooks/useGet';
 import usePut from '../../../hooks/usePut';
 import { STYLE_GUIDE } from '../../../styles';
+import { useUnifiedTheme } from '../../../hooks/useUnifiedTheme';
+import { useComponentTypography } from '../../../hooks/useComponentTypography';
 
 interface CreateUpdateDataSourceProps {
   setReload: React.Dispatch<React.SetStateAction<boolean>>;
@@ -30,10 +32,14 @@ interface CreateUpdateDataSourceProps {
 }
 
 const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({ setReload, CustomButton, title, data }) => {
+  const theme = useUnifiedTheme();
+  const { getDialogTitleSx } = useComponentTypography();
   const [open, setOpen] = useState(false);
 
   const [code, setCode] = useState('');
   const [name, setName] = useState('');
+  
+
   const {
     control,
     handleSubmit,
@@ -119,19 +125,70 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({ setRelo
     <>
       <Box onClick={() => setOpen(true)}>{CustomButton}</Box>
 
-      <Dialog fullWidth maxWidth="lg" open={open} onClose={handleCancel}>
+      <Dialog 
+        fullWidth 
+        maxWidth="lg" 
+        open={open} 
+        onClose={handleCancel}
+        PaperProps={{
+          sx: {
+            backgroundColor: theme.palette.dialog?.background || STYLE_GUIDE.COLORS.white,
+            border: `1px solid ${theme.palette.dialog?.border || theme.palette.border?.main || STYLE_GUIDE.COLORS.borderGray}`,
+            borderRadius: theme.palette.dialog?.borderRadius || '8px',
+            boxShadow: theme.palette.dialog?.shadow || STYLE_GUIDE.SHADOWS.lg,
+          }
+        }}
+      >
         <DialogTitle sx={{
-          fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.bold,
-          fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.xl,
-
+          ...getDialogTitleSx(),
+          color: theme.palette.dialog?.titleColor || STYLE_GUIDE.COLORS.textDarkGray,
         }}>
           {title}
         </DialogTitle>
-        <DialogContent dividers>
+        <DialogContent sx={{
+          color: theme.palette.dialog?.contentColor || STYLE_GUIDE.COLORS.textDarkGray,
+          fontSize: theme.palette.dialog?.contentFontSize || '1rem',
+          borderTop: `1px solid ${theme.palette.divider}`,
+          borderBottom: `1px solid ${theme.palette.divider}`,
+        }}>
           <Box component="form" onSubmit={handleSubmit(onSubmit)} noValidate>
             <Stack spacing={3}>
               <TextField
                 label="Data Source Name*"
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    borderRadius: STYLE_GUIDE.SPACING.s2,
+                    alignItems: 'flex-start',
+                    paddingRight: STYLE_GUIDE.SPACING.s2,
+                    fontSize: '14px',
+                    backgroundColor: theme.dashboardTheme?.colors?.background?.paper || '#ffffff',
+                    '& fieldset': {
+                      borderColor: theme.dashboardTheme?.colors?.inputBorder || STYLE_GUIDE.COLORS.darkBackground,
+                    },
+                    '&:hover fieldset': {
+                      borderColor: theme.dashboardTheme?.colors?.borderHover || STYLE_GUIDE.COLORS.darkBorderHover,
+                    },
+                    '&.Mui-focused fieldset': {
+                      borderColor: theme.dashboardTheme?.components?.input?.focusBorderColor || theme.dashboardTheme?.components?.input?.focusBorderColorFallback || STYLE_GUIDE.COLORS.inputFocusFallback,
+                    },
+                  },
+                  '& .MuiInputLabel-root': {
+                    color: theme.dashboardTheme?.colors?.text?.secondary || STYLE_GUIDE.COLORS.darkBorderFocus,
+                  },
+                  '& .MuiInputLabel-root.Mui-focused': {
+                    color: theme.dashboardTheme?.components?.input?.focusBorderColor || theme.dashboardTheme?.components?.input?.focusBorderColorFallback || STYLE_GUIDE.COLORS.inputFocusFallback,
+                  },
+                  '& .MuiInputBase-input': {
+                    color: `${theme.dashboardTheme?.colors?.inputText} !important`,
+                  },
+                  '& .MuiInputBase-input::placeholder': {
+                    color: `${theme.dashboardTheme?.colors?.text?.secondary || '#666'} !important`,
+                  },
+                  '& .MuiInputBase-input:-webkit-autofill': {
+                    WebkitTextFillColor: `${theme.dashboardTheme?.colors?.inputText} !important`,
+                    WebkitBoxShadow: `0 0 0 1000px ${theme.dashboardTheme?.colors?.background?.paper || '#ffffff'} inset !important`,
+                  },
+                }}
                 fullWidth
                 {...register('name', {
                   required: 'Data source name is required',
@@ -169,6 +226,41 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({ setRelo
                 {...register('description')}
                 error={!!errors.description}
                 helperText={errors.description?.message}
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    borderRadius: STYLE_GUIDE.SPACING.s2,
+                    alignItems: 'flex-start',
+                    paddingRight: STYLE_GUIDE.SPACING.s2,
+                    fontSize: '14px',
+                    padding: '12px 16px',
+                    backgroundColor: theme.dashboardTheme?.colors?.background?.paper || '#ffffff',
+                    '& fieldset': {
+                      borderColor: theme.dashboardTheme?.colors?.inputBorder || STYLE_GUIDE.COLORS.darkBackground,
+                    },
+                    '&:hover fieldset': {
+                      borderColor: theme.dashboardTheme?.colors?.borderHover || STYLE_GUIDE.COLORS.darkBorderHover,
+                    },
+                    '&.Mui-focused fieldset': {
+                      borderColor: theme.dashboardTheme?.components?.input?.focusBorderColor || theme.dashboardTheme?.components?.input?.focusBorderColorFallback || STYLE_GUIDE.COLORS.inputFocusFallback,
+                    },
+                  },
+                  '& .MuiInputLabel-root': {
+                    color: theme.dashboardTheme?.colors?.text?.secondary || STYLE_GUIDE.COLORS.darkBorderFocus,
+                  },
+                  '& .MuiInputLabel-root.Mui-focused': {
+                    color: theme.dashboardTheme?.components?.input?.focusBorderColor || theme.dashboardTheme?.components?.input?.focusBorderColorFallback || STYLE_GUIDE.COLORS.inputFocusFallback,
+                  },
+                  '& .MuiInputBase-input': {
+                    color: `${theme.dashboardTheme?.colors?.inputText} !important`,
+                  },
+                  '& .MuiInputBase-input::placeholder': {
+                    color: `${theme.dashboardTheme?.colors?.text?.secondary || '#666'} !important`,
+                  },
+                  '& .MuiInputBase-input:-webkit-autofill': {
+                    WebkitTextFillColor: `${theme.dashboardTheme?.colors?.inputText} !important`,
+                    WebkitBoxShadow: `0 0 0 1000px ${theme.dashboardTheme?.colors?.background?.paper || '#ffffff'} inset !important`,
+                  },
+                }}
               />
               {!data?._id && (
                 <CommonDropdownSearch
@@ -203,6 +295,41 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({ setRelo
 
               <TextField
                 label="Data Source Code(Unique Code)*"
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    borderRadius: STYLE_GUIDE.SPACING.s2,
+                    alignItems: 'flex-start',
+                    paddingRight: STYLE_GUIDE.SPACING.s2,
+                    fontSize: '14px',
+                    padding: '12px 16px',
+                    backgroundColor: theme.dashboardTheme?.colors?.background?.paper || '#ffffff',
+                    '& fieldset': {
+                      borderColor: theme.dashboardTheme?.colors?.inputBorder || STYLE_GUIDE.COLORS.darkBackground,
+                    },
+                    '&:hover fieldset': {
+                      borderColor: theme.dashboardTheme?.colors?.borderHover || STYLE_GUIDE.COLORS.darkBorderHover,
+                    },
+                    '&.Mui-focused fieldset': {
+                      borderColor: theme.dashboardTheme?.components?.input?.focusBorderColor || theme.dashboardTheme?.components?.input?.focusBorderColorFallback || STYLE_GUIDE.COLORS.inputFocusFallback,
+                    },
+                  },
+                  '& .MuiInputLabel-root': {
+                    color: theme.dashboardTheme?.colors?.text?.secondary || STYLE_GUIDE.COLORS.darkBorderFocus,
+                  },
+                  '& .MuiInputLabel-root.Mui-focused': {
+                    color: theme.dashboardTheme?.components?.input?.focusBorderColor || theme.dashboardTheme?.components?.input?.focusBorderColorFallback || STYLE_GUIDE.COLORS.inputFocusFallback,
+                  },
+                  '& .MuiInputBase-input': {
+                    color: `${theme.dashboardTheme?.colors?.inputText} !important`,
+                  },
+                  '& .MuiInputBase-input::placeholder': {
+                    color: `${theme.dashboardTheme?.colors?.text?.secondary || '#666'} !important`,
+                  },
+                  '& .MuiInputBase-input:-webkit-autofill': {
+                    WebkitTextFillColor: `${theme.dashboardTheme?.colors?.inputText} !important`,
+                    WebkitBoxShadow: `0 0 0 1000px ${theme.dashboardTheme?.colors?.background?.paper || '#ffffff'} inset !important`,
+                  },
+                }}
                 fullWidth
                 {...register('code', {
                   required: 'Data source code is required',

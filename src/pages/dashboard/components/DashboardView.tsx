@@ -6,12 +6,10 @@ import {
   Button,
   ButtonGroup,
   Stack,
-  Select,
   MenuItem,
-  FormControl,
-  InputLabel,
   SelectChangeEvent,
 } from '@mui/material';
+import StyledSelect from '../../../components/atom/common/StyledSelect';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import DoneIcon from '@mui/icons-material/Done';
@@ -34,6 +32,8 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { fetchThemeList } from '../../createTheme/themeActions';
 import { STYLE_GUIDE } from '../../../styles';
+import { useUnifiedTheme } from '../../../hooks/useUnifiedTheme';
+import { useComponentTypography } from '../../../hooks/useComponentTypography';
 
 interface DashboardViewProps {
   title: string;
@@ -41,6 +41,8 @@ interface DashboardViewProps {
 }
 
 export const DashboardView: React.FC<DashboardViewProps> = ({ title: initialTitle, onTitleChange }): JSX.Element => {
+  const theme = useUnifiedTheme();
+  const { getHeadingSx, getButtonSx } = useComponentTypography();
   const [isEditMode, setIsEditMode] = useState(false);
   const [editedTitle, setEditedTitle] = useState(initialTitle);
   const [title, setTitle] = useState(initialTitle);
@@ -201,8 +203,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ title: initialTitl
 
   useEffect(() => {
     if (currentDashboard?.widgetThemeId) {
-      dispatch(fetchWidgetTheme(currentDashboard.widgetThemeId));
       setSelectedTheme(currentDashboard.widgetThemeId);
+      dispatch(fetchWidgetTheme(currentDashboard.widgetThemeId));
     }
   }, [currentDashboard?.widgetThemeId, dispatch]);
 
@@ -371,8 +373,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ title: initialTitl
     }
   }, [startDate, endDate, currentDashboard?.settings?.dashboardType, trigger]);
 
-  const handleThemeChange = async (event: SelectChangeEvent) => {
-    const themeId = event.target.value;
+  const handleThemeChange = async (event: SelectChangeEvent<unknown>) => {
+    const themeId = event.target.value as string;
     setSelectedTheme(themeId);
 
     if (dashboardId) {
@@ -381,9 +383,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ title: initialTitl
 
         if (result.success) {
           toast.success('Theme updated successfully!');
-          if (currentDashboard?.widgetThemeId) {
-            dispatch(fetchWidgetTheme(themeId));
-          }
+          dispatch(fetchWidgetTheme(themeId));
         } else {
           toast.error(result.message || 'Failed to update theme');
         }
@@ -427,9 +427,10 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ title: initialTitl
               onKeyDown={handleKeyPress}
               size="small"
               fullWidth
+              sx={{ '& .MuiOutlinedInput-root': { borderRadius: STYLE_GUIDE.SPACING.s2, alignItems: 'flex-start', paddingRight: STYLE_GUIDE.SPACING.s2, fontSize: '14px', backgroundColor: theme.getDropdownBackground(), '& fieldset': { borderColor: theme.getInputBorderColor(), }, '&:hover fieldset': { borderColor: theme.border?.hover || STYLE_GUIDE.COLORS.darkBorderHover, }, '&.Mui-focused fieldset': { borderColor: theme.input?.focusBorder || STYLE_GUIDE.COLORS.inputFocusFallback, }, }, '& .MuiInputLabel-root': { color: theme.palette.text.secondary, }, '& .MuiInputLabel-root.Mui-focused': { color: theme.input?.focusBorder || STYLE_GUIDE.COLORS.inputFocusFallback, }, '& .MuiInputBase-input': { color: `${theme.getInputTextColor()} !important`, }, '& .MuiInputBase-input::placeholder': { color: `${theme.palette.text.secondary} !important`, }, '& .MuiInputBase-input:-webkit-autofill': { WebkitTextFillColor: `${theme.getInputTextColor()} !important`, WebkitBoxShadow: `0 0 0 1000px ${theme.getDropdownBackground()} inset !important`, }, }}
             />
           ) : (
-            <Typography variant="h4" component="h1" fontWeight={STYLE_GUIDE.TYPOGRAPHY.fontWeight.medium} sx={{ mr: STYLE_GUIDE.SPACING.s4 }}>
+            <Typography variant="h4" component="h1" sx={{ ...getHeadingSx(), mr: STYLE_GUIDE.SPACING.s4, fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.medium }}>
               {title}
             </Typography>
           )}
@@ -437,23 +438,19 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ title: initialTitl
 
         <Box sx={{ mr: STYLE_GUIDE.SPACING.s4 }}>
           {isEditMode ? (
-            <FormControl sx={{ minWidth: 200 }}>
-              <InputLabel id="theme-select-label">Theme</InputLabel>
-              <Select
-                labelId="theme-select-label"
-                id="theme-select"
-                value={selectedTheme}
-                label="Theme"
-                onChange={handleThemeChange}
-                size="small"
-              >
-                {themes.map((theme) => (
-                  <MenuItem key={theme._id} value={theme._id}>
-                    {theme.name}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
+            <StyledSelect
+              label="Theme"
+              value={selectedTheme}
+              onChange={handleThemeChange}
+              size="small"
+              sx={{ minWidth: 200 }}
+            >
+              {themes?.map((theme) => (
+                <MenuItem key={theme._id} value={theme._id}>
+                  {theme.name}
+                </MenuItem>
+              ))}
+            </StyledSelect>
           ) : null}
         </Box>
 
@@ -488,7 +485,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ title: initialTitl
                 color="primary"
                 startIcon={<AddIcon />}
                 onClick={() => setIsAddChartModalOpen(true)}
-                sx={{ px: STYLE_GUIDE.SPACING.s6 }}
+                sx={{ ...getButtonSx(), px: STYLE_GUIDE.SPACING.s6 }}
               >
                 Add Chart
               </Button>
@@ -497,7 +494,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ title: initialTitl
                 color="success"
                 variant="contained"
                 startIcon={<DoneIcon />}
-                sx={{ px: STYLE_GUIDE.SPACING.s6 }}
+                sx={{ ...getButtonSx(), px: STYLE_GUIDE.SPACING.s6 }}
               >
                 Save
               </Button>
@@ -553,7 +550,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ title: initialTitl
                   </Stack>
                 ) : null}
               </Box>
-              <Button onClick={handleEditModeToggle} color="primary" variant="contained" startIcon={<EditIcon />}>
+              <Button onClick={handleEditModeToggle} color="primary" variant="contained" startIcon={<EditIcon />} sx={{ ...getButtonSx() }}>
                 Edit
               </Button>
             </>

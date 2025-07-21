@@ -18,6 +18,9 @@ import usePost from '../../../hooks/usePost';
 import { POST, PUT } from '../../../services/apiRoutes';
 import ProgressBar from '../../molecule/progressBar';
 import usePut from '../../../hooks/usePut';
+import { STYLE_GUIDE } from '../../../styles';
+import { useUnifiedTheme } from '../../../hooks/useUnifiedTheme';
+import { useComponentTypography } from '../../../hooks/useComponentTypography';
 
 interface CreateUpdateAttributeOptionProps {
   setAttributeOptionReload: React.Dispatch<React.SetStateAction<boolean>>;
@@ -38,6 +41,9 @@ const CreateUpdateAttributeOption: React.FC<CreateUpdateAttributeOptionProps> = 
   });
 
   const attributeValue = watch('attributeValue');
+  const theme = useUnifiedTheme();
+  const { getDialogTitleSx } = useComponentTypography();
+  
 
   useEffect(() => {
     reset({
@@ -99,7 +105,14 @@ const CreateUpdateAttributeOption: React.FC<CreateUpdateAttributeOptionProps> = 
       <Box onClick={() => setOpen(true)}>{CustomButton}</Box>
 
       <Dialog open={open} onClose={handleFormClose} fullWidth maxWidth="sm">
-        <DialogTitle>{title}</DialogTitle>
+        <DialogTitle
+          sx={{
+            ...getDialogTitleSx(),
+            color: theme.palette.dialog?.titleColor || STYLE_GUIDE.COLORS.textDarkGray,
+          }}
+        >
+          {title}
+        </DialogTitle>
         <DialogContent>
           <Box mt={2}>
             <Controller
@@ -113,6 +126,7 @@ const CreateUpdateAttributeOption: React.FC<CreateUpdateAttributeOptionProps> = 
                   fullWidth
                   error={!!fieldState.error}
                   helperText={fieldState.error?.message}
+                  sx={{ '& .MuiOutlinedInput-root': { borderRadius: STYLE_GUIDE.SPACING.s2, alignItems: 'flex-start', paddingRight: STYLE_GUIDE.SPACING.s2, fontSize: '14px', backgroundColor: theme.dashboardTheme?.colors?.background?.paper || '#ffffff', '& fieldset': { borderColor: theme.dashboardTheme?.colors?.inputBorder || STYLE_GUIDE.COLORS.darkBackground, }, '&:hover fieldset': { borderColor: theme.dashboardTheme?.colors?.borderHover || STYLE_GUIDE.COLORS.darkBorderHover, }, '&.Mui-focused fieldset': { borderColor: theme.dashboardTheme?.components?.input?.focusBorderColor || theme.dashboardTheme?.components?.input?.focusBorderColorFallback || STYLE_GUIDE.COLORS.inputFocusFallback, }, }, '& .MuiInputLabel-root': { color: theme.dashboardTheme?.colors?.text?.secondary || STYLE_GUIDE.COLORS.darkBorderFocus, }, '& .MuiInputLabel-root.Mui-focused': { color: theme.dashboardTheme?.components?.input?.focusBorderColor || theme.dashboardTheme?.components?.input?.focusBorderColorFallback || STYLE_GUIDE.COLORS.inputFocusFallback, }, '& .MuiInputBase-input': { color: `${theme.dashboardTheme?.colors?.inputText || theme.dashboardTheme?.colors?.text?.primary || '#000000'} !important`, }, '& .MuiInputBase-input::placeholder': { color: `${theme.dashboardTheme?.colors?.text?.secondary || '#666'} !important`, }, '& .MuiInputBase-input:-webkit-autofill': { WebkitTextFillColor: `${theme.dashboardTheme?.colors?.inputText || theme.dashboardTheme?.colors?.text?.primary || '#000000'} !important`, WebkitBoxShadow: `0 0 0 1000px ${theme.dashboardTheme?.colors?.background?.paper || '#ffffff'} inset !important`, }, }}
                 />
               )}
             />
@@ -160,12 +174,13 @@ const CreateUpdateAttributeOption: React.FC<CreateUpdateAttributeOptionProps> = 
                                 color="primary"
                                 aria-label="add value"
                               >
-                                <AddIcon />
+                                <AddIcon sx={{ color: theme.getIconColor() }}/>
                               </IconButton>
                             </InputAdornment>
                           ),
                         },
                       }}
+                      sx={{ '& .MuiOutlinedInput-root': { borderRadius: STYLE_GUIDE.SPACING.s2, alignItems: 'center', fontSize: '14px', backgroundColor: theme.dashboardTheme?.colors?.background?.paper || '#ffffff', '& fieldset': { borderColor: theme.dashboardTheme?.colors?.inputBorder || STYLE_GUIDE.COLORS.darkBackground, }, '&:hover fieldset': { borderColor: theme.dashboardTheme?.colors?.borderHover || STYLE_GUIDE.COLORS.darkBorderHover, }, '&.Mui-focused fieldset': { borderColor: theme.dashboardTheme?.components?.input?.focusBorderColor || theme.dashboardTheme?.components?.input?.focusBorderColorFallback || STYLE_GUIDE.COLORS.inputFocusFallback, }, }, '& .MuiInputLabel-root': { color: theme.dashboardTheme?.colors?.text?.secondary || STYLE_GUIDE.COLORS.darkBorderFocus, }, '& .MuiInputLabel-root.Mui-focused': { color: theme.dashboardTheme?.components?.input?.focusBorderColor || theme.dashboardTheme?.components?.input?.focusBorderColorFallback || STYLE_GUIDE.COLORS.inputFocusFallback, }, '& .MuiInputBase-input': { color: `${theme.dashboardTheme?.colors?.inputText || theme.dashboardTheme?.colors?.text?.primary || '#000000'} !important`, }, '& .MuiInputBase-input::placeholder': { color: `${theme.dashboardTheme?.colors?.text?.secondary || '#666'} !important`, }, '& .MuiInputBase-input:-webkit-autofill': { WebkitTextFillColor: `${theme.dashboardTheme?.colors?.inputText || theme.dashboardTheme?.colors?.text?.primary || '#000000'} !important`, WebkitBoxShadow: `0 0 0 1000px ${theme.dashboardTheme?.colors?.background?.paper || '#ffffff'} inset !important`, }, }}
                     />
                   </Box>
                   <Box mt={1} display="flex" flexWrap="wrap" gap={1}>

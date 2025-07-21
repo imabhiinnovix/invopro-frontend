@@ -26,11 +26,9 @@ import {
   Stack,
   Backdrop,
   LinearProgress,
-  Select,
   MenuItem,
-  FormControl,
-  InputLabel,
 } from "@mui/material";
+import StyledSelect from "../common/StyledSelect";
 import UploadFileIcon from "@mui/icons-material/UploadFile";
 import useGet from "../../../hooks/useGet";
 import { GET } from "../../../services/apiRoutes";
@@ -43,6 +41,7 @@ import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import { useUploadCustomReportFile } from "../../../hooks/useFileUpalod";
 import { objectToFormData } from "../../../utils/utils";
 import * as XLSX from "xlsx";
+import { useComponentTypography } from "../../../hooks/useComponentTypography";
 
 interface UploadMultipleFilesProps {
   reportId: string;
@@ -67,8 +66,9 @@ interface ExtendedFile extends File {
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
   [`&.${tableCellClasses.head}`]: {
-    backgroundColor: theme.palette.common.black,
-    color: theme.palette.common.white,
+    backgroundColor: theme.palette.table?.headerBackground || theme.palette.background.default,
+    color: theme.palette.table?.headerText || theme.palette.text.primary,
+    fontWeight: theme.typography.fontWeightMedium,
   },
   [`&.${tableCellClasses.body}`]: {
     fontSize: 14,
@@ -86,9 +86,10 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
   versionValue,
   setReload,
 }) => {
+  const { getTableSx, getDialogTitleSx } = useComponentTypography();
   const [openMappingModal, setOpenMappingModal] = useState(-1);
   const [processingCount, setProcessingCount] = useState(0);
-  const [fileUploads, setFileUploads] = useState<Record<string, File | null>>(
+  const [_fileUploads, setFileUploads] = useState<Record<string, File | null>>(
     {}
   );
   const [fileHeader, setFileHeader] = useState<Record<string, string[] | null>>(
@@ -115,7 +116,7 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
   }>(
     [`versionValue`, String(reportId), String(versionValue)],
     GET?.Custom_Report +
-      `/getVersionValue/?reportRequestId=${reportId}&versionValue=${versionValue}`,
+    `/getVersionValue/?reportRequestId=${reportId}&versionValue=${versionValue}`,
     !!reportId && !!versionValue
   );
 
@@ -399,7 +400,7 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
                     file?.name === keyName &&
                     (!file?.sheetName ||
                       file?.sheetName?.toLowerCase() ===
-                        requiredFile?.sheetName?.toLowerCase())
+                      requiredFile?.sheetName?.toLowerCase())
                 )
               )?.entityId?.attributes;
 
@@ -548,7 +549,7 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
                     file?.name === requiredFile.name &&
                     (!file?.sheetName ||
                       file.sheetName.toLowerCase() ===
-                        requiredFile.sheetName?.toLowerCase())
+                      requiredFile.sheetName?.toLowerCase())
                 );
               });
 
@@ -559,7 +560,7 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
             mappingData.forEach((option) => {
               if (!option?.name || !option?.mappingName) return;
 
-              const matchedHeader = headers.find(
+              const matchedHeader:any = headers.find(
                 (name) =>
                   name
                     ?.replace(/[^a-zA-Z0-9/]/g, "")
@@ -682,7 +683,7 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
         return file;
       }),
     };
-    const formData = objectToFormData(tempData);
+    const formData:any = objectToFormData(tempData);
     mutateReportUpload(formData, {
       onSuccess: () => {
         setOpen(false);
@@ -750,11 +751,16 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
             </Box>
           </Backdrop>
         )}
-        <DialogTitle>Generate Report</DialogTitle>
+        <DialogTitle sx={{
+          ...getDialogTitleSx()
+        }}>Generate Report</DialogTitle>
         <DialogTitle
           display="flex"
           justifyContent="space-between"
           alignItems={"center"}
+          sx={{
+            ...getDialogTitleSx()
+          }}
         >
           <Typography> period: {versionValue} </Typography>
           <Stack>
@@ -788,7 +794,7 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
           </Stack>
         </DialogTitle>
         <DialogContent>
-          <TableContainer component={Paper}>
+          <TableContainer component={Paper} sx={{ ...getTableSx() }}>
             <Table sx={{ width: "100%" }} aria-label="customized table">
               <TableHead>
                 <TableRow>
@@ -833,7 +839,7 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
                               fontWeight={600}
                             >
                               {fileName?.isVersionAvailable ||
-                              watch("files")?.[index]
+                                watch("files")?.[index]
                                 ? "Reupload File"
                                 : "Upload File"}
                             </Typography>
@@ -875,50 +881,47 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
                       <Box
                         sx={{ display: "flex", gap: 1, alignItems: "center" }}
                       >
-                        <FormControl fullWidth>
-                          <InputLabel>Select File</InputLabel>
-                          <Select
-                            value={fileSelections[fileName.extededName] || ""}
-                            onChange={(e) => {
-                              const selectedFile = [
-                                ...unmappedFiles,
-                                ...(watch("files") || []),
-                              ].find((f) => f?.name === e.target.value);
-                              if (selectedFile) {
-                                handleFileSelection(
-                                  selectedFile,
-                                  fileName.extededName
-                                );
-                              }
-                            }}
-                            label="Select File"
-                          >
-                            {(() => {
-                              // Get all files
-                              const allFiles = [
-                                ...unmappedFiles,
-                                ...(watch("files") || []),
-                              ].filter(Boolean);
-
-                              // Create a Map using file names as keys to ensure uniqueness
-                              const uniqueFiles = new Map();
-
-                              allFiles.forEach((file) => {
-                                if (file && !uniqueFiles.has(file.name)) {
-                                  uniqueFiles.set(file.name, file);
-                                }
-                              });
-
-                              return Array.from(uniqueFiles.values()).map(
-                                (file) => (
-                                  <MenuItem key={file.name} value={file.name}>
-                                    {file.name}
-                                  </MenuItem>
-                                )
+                        <StyledSelect
+                          label="Select File"
+                          value={fileSelections[fileName.extededName] || ""}
+                          onChange={(e) => {
+                            const selectedFile = [
+                              ...unmappedFiles,
+                              ...(watch("files") || []),
+                            ].find((f) => f?.name === e.target.value as string);
+                            if (selectedFile) {
+                              handleFileSelection(
+                                selectedFile,
+                                fileName.extededName
                               );
-                            })()}
-                          </Select>
-                        </FormControl>
+                            }
+                          }}
+                        >
+                          {(() => {
+                            // Get all files
+                            const allFiles = [
+                              ...unmappedFiles,
+                              ...(watch("files") || []),
+                            ].filter(Boolean);
+
+                            // Create a Map using file names as keys to ensure uniqueness
+                            const uniqueFiles = new Map();
+
+                            allFiles.forEach((file) => {
+                              if (file && !uniqueFiles.has(file.name)) {
+                                uniqueFiles.set(file.name, file);
+                              }
+                            });
+
+                            return Array.from(uniqueFiles.values()).map(
+                              (file) => (
+                                <MenuItem key={file.name} value={file.name}>
+                                  {file.name}
+                                </MenuItem>
+                              )
+                            );
+                          })()}
+                        </StyledSelect>
                         {fileSelections[fileName.extededName] && (
                           <Button
                             color="error"
@@ -963,9 +966,9 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
                             (errors?.mappings?.message ||
                               errors?.mappings?.root
                                 ?.message) as unknown as Record<
-                              string,
-                              { isError: boolean; msg: string }
-                            >
+                                  string,
+                                  { isError: boolean; msg: string }
+                                >
                           )?.[fileName?.extededName]?.isError ? (
                             <ErrorOutlineIcon color="error" />
                           ) : (

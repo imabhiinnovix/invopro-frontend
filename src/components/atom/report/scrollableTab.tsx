@@ -3,6 +3,8 @@ import type React from 'react';
 import { Box, IconButton } from '@mui/material';
 import { KeyboardArrowLeft, KeyboardArrowRight } from '@mui/icons-material';
 import { useRef, useState, useEffect } from 'react';
+import { useUnifiedTheme } from '../../../hooks/useUnifiedTheme';
+
 
 interface ScrollableTabNavigationProps {
   tabs: { tabName: string }[];
@@ -17,6 +19,7 @@ export default function ScrollableTabNavigation({
   setActiveTab,
   tabStyle,
 }: ScrollableTabNavigationProps) {
+  const theme = useUnifiedTheme();
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [showLeftArrow, setShowLeftArrow] = useState(false);
   const [showRightArrow, setShowRightArrow] = useState(false);
@@ -82,7 +85,7 @@ export default function ScrollableTabNavigation({
         alignItems: 'center',
         width: '100%',
         position: 'relative',
-        borderBottom: '1px solid #ccc',
+        borderBottom: `1px solid ${theme.palette.divider}`,
         mb: 2,
       }}
     >
@@ -93,10 +96,11 @@ export default function ScrollableTabNavigation({
             position: 'absolute',
             left: 0,
             zIndex: 2,
-            backgroundColor: 'white',
-            boxShadow: '2px 0 4px rgba(0,0,0,0.1)',
+            backgroundColor: theme.palette.background.paper,
+            color: theme.palette.text.primary,
+            boxShadow: theme.shadows[2],
             '&:hover': {
-              backgroundColor: '#f5f5f5',
+              backgroundColor: theme.palette.action.hover,
             },
           }}
           size="small"
@@ -147,10 +151,11 @@ export default function ScrollableTabNavigation({
             position: 'absolute',
             right: 0,
             zIndex: 2,
-            backgroundColor: 'white',
-            boxShadow: '-2px 0 4px rgba(0,0,0,0.1)',
+            backgroundColor: theme.palette.background.paper,
+            color: theme.palette.text.primary,
+            boxShadow: theme.shadows[2],
             '&:hover': {
-              backgroundColor: '#f5f5f5',
+              backgroundColor: theme.palette.action.hover,
             },
           }}
           size="small"

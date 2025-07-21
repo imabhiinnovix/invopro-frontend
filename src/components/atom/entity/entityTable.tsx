@@ -24,19 +24,30 @@ import { GET } from '../../../services/apiRoutes';
 import CreateUpdateEntity from './createUpdateEntity';
 import { Attribute, EntityRequestPayload } from './types';
 import { STYLE_GUIDE } from '../../../styles';
+import { useComponentTypography } from '../../../hooks/useComponentTypography';
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
   [`&.${tableCellClasses.head}`]: {
-    backgroundColor: theme.palette.common.black,
-    color: theme.palette.common.white,
+    backgroundColor: theme.palette.table?.headerBackground || STYLE_GUIDE.COLORS.backgroundLightGray,
+    color: theme.palette.table?.headerText || STYLE_GUIDE.COLORS.textGray,
+    fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold,
   },
   [`&.${tableCellClasses.body}`]: {
     fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base,
+    color: theme.palette.table?.rowText || STYLE_GUIDE.COLORS.textDarkGray,
   },
 }));
 
 const StyledTableRow = styled(TableRow)(({ theme }) => ({
-  backgroundColor: theme.palette.action.hover,
+  "&:nth-of-type(odd)": {
+    backgroundColor: theme.palette.table?.rowOddBackground || STYLE_GUIDE.COLORS.backgroundDefault,
+  },
+  "&:nth-of-type(even)": {
+    backgroundColor: theme.palette.table?.rowEvenBackground || STYLE_GUIDE.COLORS.white,
+  },
+  "&:hover": {
+    backgroundColor: theme.palette.table?.rowHoverBackground || STYLE_GUIDE.COLORS.backgroundHover,
+  },
 }));
 
 interface EntityTableProps {
@@ -45,6 +56,7 @@ interface EntityTableProps {
 }
 
 const EntityTable: React.FC<EntityTableProps> = ({ reloadEntity, setReloadEntity }) => {
+  const { getHeadingSx, getTableSx } = useComponentTypography();
   const [entities, setEntities] = useState<EntityRequestPayload[]>([]);
   const [currentPage, setCurrentPage] = useState<number>(1);
 
@@ -152,6 +164,7 @@ const EntityTable: React.FC<EntityTableProps> = ({ reloadEntity, setReloadEntity
         <Typography 
           variant="h4" 
           sx={{
+            ...getHeadingSx(),
             fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.bold,
             color: STYLE_GUIDE.COLORS.textDarkGray,
             fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.xxl,
@@ -164,7 +177,7 @@ const EntityTable: React.FC<EntityTableProps> = ({ reloadEntity, setReloadEntity
   }
 
   return (
-    <TableContainer component={Paper}>
+    <TableContainer component={Paper} sx={{ ...getTableSx() }}>
       <Table sx={{ width: '100%' }} aria-label="customized table">
         <TableHead>
           <TableRow>

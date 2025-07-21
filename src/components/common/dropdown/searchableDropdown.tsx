@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef, useCallback } from "react";
-import { FormControl, TextField, FormHelperText } from "@mui/material";
+import { FormControl, FormHelperText } from "@mui/material";
 import { Controller } from "react-hook-form";
-import Autocomplete from "@mui/material/Autocomplete";
+import StyledAutocomplete from "../../atom/common/StyledAutocomplete";
 import useGet from "../../../hooks/useGet";
 
 interface CommonDropdownSearchProps {
@@ -226,11 +226,13 @@ const CommonDropdownSearch: React.FC<CommonDropdownSearchProps> = ({
             options.find((option) => option.value === field.value) || null;
 
           return (
-            <Autocomplete
+            <StyledAutocomplete
               {...field}
               value={selectedOption} // Use the matched option as the value
               options={options}
-              onInputChange={(_, value, reason) => {
+              label={label}
+              error={error}
+              onInputChange={(_, value: string, reason: string) => {
                 if (reason === "input") {
                   field.onChange(null);
                   setSearchTerm(value);
@@ -244,14 +246,11 @@ const CommonDropdownSearch: React.FC<CommonDropdownSearchProps> = ({
                   setSearchExhausted(false);
                 }
               }}
-              getOptionLabel={(option) => option?.label || ""} // Ensure it handles empty values gracefully
-              onChange={(_, selectedOption) =>
+              getOptionLabel={(option: Option | null) => option?.label || ""} // Ensure it handles empty values gracefully
+              onChange={(_, selectedOption: Option | null) =>
                 field.onChange(selectedOption?.value || null)
               } // Update only the value
-              renderInput={(params) => (
-                <TextField {...params} label={label} error={error} />
-              )}
-              renderOption={(props, option, state) => {
+              renderOption={(props: any, option: Option, state: any) => {
                 const isLast = options.length - 1 === state.index;
                 const { key, ...restProps } = props;
                 return (

@@ -2,6 +2,9 @@ import React from 'react';
 import { Dialog, DialogTitle, DialogContent, DialogActions, Button } from '@mui/material';
 import LoadingButton from '@mui/lab/LoadingButton';
 import { Dashboard } from '../../../../pages/dashboard/types';
+import { STYLE_GUIDE } from '../../../../styles';
+import { useUnifiedTheme } from '../../../../hooks/useUnifiedTheme';
+import { useComponentTypography } from '../../../../hooks/useComponentTypography';
 
 interface DeleteConfirmationModalProps {
   open: boolean;
@@ -18,17 +21,37 @@ export const DeleteConfirmationModal: React.FC<DeleteConfirmationModalProps> = (
   onCancel,
   isDeleting,
 }) => {
+  const theme = useUnifiedTheme();
+  const { getDialogTitleSx } = useComponentTypography();
+
   return (
     <Dialog
       open={open}
       onClose={onCancel}
       aria-labelledby="delete-dialog-title"
       aria-describedby="delete-dialog-description"
+      PaperProps={{
+        sx: {
+          backgroundColor: theme.palette.dialog?.background || STYLE_GUIDE.COLORS.white,
+          border: `1px solid ${theme.palette.dialog?.border || theme.palette.border?.main || STYLE_GUIDE.COLORS.borderGray}`,
+          borderRadius: theme.palette.dialog?.borderRadius || '8px',
+          boxShadow: theme.palette.dialog?.shadow || STYLE_GUIDE.SHADOWS.lg,
+        }
+      }}
     >
-      <DialogTitle id="delete-dialog-title">
+      <DialogTitle 
+        id="delete-dialog-title"
+        sx={{
+          ...getDialogTitleSx(),
+          color: theme.palette.dialog?.titleColor || STYLE_GUIDE.COLORS.textDarkGray,
+        }}
+      >
         Delete Dashboard
       </DialogTitle>
-      <DialogContent>
+      <DialogContent sx={{
+        color: theme.palette.dialog?.contentColor || STYLE_GUIDE.COLORS.textDarkGray,
+        fontSize: theme.palette.dialog?.contentFontSize || '1rem',
+      }}>
         <p>Are you sure you want to delete "{dashboard?.name}"?</p>
       </DialogContent>
       <DialogActions>

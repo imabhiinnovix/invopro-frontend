@@ -21,6 +21,8 @@ import {
   Legend,
 } from "chart.js";
 import { Theme } from "../types";
+import { STYLE_GUIDE } from "../../../styles";
+import { useComponentTypography } from "../../../hooks/useComponentTypography";
 
 ChartJS.register(
   LineController,
@@ -46,6 +48,7 @@ const ThemePreview: React.FC<ThemePreviewProps> = ({
   onDelete,
   onDuplicate,
 }) => {
+  const { getCardSx } = useComponentTypography();
   const chartRef = useRef<HTMLCanvasElement>(null);
   const chartInstance = useRef<ChartJS | null>(null);
   const [menuAnchorEl, setMenuAnchorEl] = useState<null | HTMLElement>(null);
@@ -262,8 +265,14 @@ const ThemePreview: React.FC<ThemePreviewProps> = ({
     };
   }, [theme]);
 
-  return (
-    <Card sx={{ height: "100%", display: "flex", flexDirection: "column" }}>
+      return (
+      <Card sx={{ 
+        ...getCardSx(),
+        height: "100%", 
+        display: "flex", 
+        flexDirection: "column",
+        backgroundColor: STYLE_GUIDE.COLORS.backgroundLightGray,
+      }}>
       <CardContent
         sx={{ flexGrow: 1, display: "flex", flexDirection: "column" }}
       >

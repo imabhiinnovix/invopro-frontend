@@ -3,8 +3,10 @@ import { useState } from 'react';
 import CreateDataSourceVersion from '../../components/atom/dataSourceVerion/createDataSourceVersion';
 import DataSourceVersionTable from '../../components/atom/dataSourceVerion/dataSourceVersionTable';
 import { STYLE_GUIDE } from '../../styles';
+import { useUnifiedTheme } from '../../hooks/useUnifiedTheme';
 
 export default function DataSourceVersion() {
+  const theme = useUnifiedTheme();
   const [reload, setReload] = useState(false);
 
   return (
@@ -15,7 +17,7 @@ export default function DataSourceVersion() {
         p={STYLE_GUIDE.SPACING.s4}
         gap={STYLE_GUIDE.SPACING.s8}
         width="100%"
-        bgcolor={STYLE_GUIDE.COLORS.backgroundGray}
+        bgcolor={theme.palette.background.paper}
         sx={{
           height: 'calc(100vh - 70px)',
           '@media (max-width: 600px)': {

@@ -1,4 +1,4 @@
-import React from "react";
+import React from 'react';
 import {
   Button,
   Box,
@@ -15,6 +15,10 @@ import {
 import { Control, UseFormSetValue, UseFormWatch } from "react-hook-form";
 import CommonSelect from "../../common/dropdown/commonSelect";
 import { CustomReportData } from "../dataSourceVerion/uploadMultipleVersionValue";
+import { useUnifiedTheme } from '../../../hooks/useUnifiedTheme';
+import { STYLE_GUIDE } from '../../../styles';
+import { useComponentTypography } from '../../../hooks';
+
 
 interface CreateDataSourceVersionProps {
   fileName: {
@@ -52,6 +56,7 @@ const ViewMapping: React.FC<CreateDataSourceVersionProps> = ({
   trigger,
   watch,
 }) => {
+  const theme = useUnifiedTheme();
   const watchMapping = watch(`mappings.${fileName.extededName}`);
   const handleCancel = () => {
     trigger();
@@ -92,6 +97,8 @@ const ViewMapping: React.FC<CreateDataSourceVersionProps> = ({
     setOpen(-1);
   };
 
+  const { getDialogTitleSx } = useComponentTypography();
+
   return (
     <div>
       <Box onClick={() => setOpen(index)}>{CustomButton}</Box>
@@ -102,14 +109,33 @@ const ViewMapping: React.FC<CreateDataSourceVersionProps> = ({
           fullWidth
           maxWidth="sm"
         >
-          <DialogTitle>{title}</DialogTitle>
+          <DialogTitle
+            sx={{
+              ...getDialogTitleSx(),
+              color: theme.palette.dialog?.titleColor || STYLE_GUIDE.COLORS.textDarkGray,
+            }}
+          >
+            {title}
+          </DialogTitle>
           <DialogContent>
             <Box component="form" noValidate>
               <Table>
                 <TableHead>
                   <TableRow>
-                    <TableCell>Entity Setting Attribute</TableCell>
-                    <TableCell>{fileName.extededName} Attribute</TableCell>
+                    <TableCell sx={{ 
+                      backgroundColor: theme.palette.table?.headerBackground,
+                      color: theme.palette.table?.headerText,
+                      fontWeight: 'medium'
+                    }}>
+                      Entity Setting Attribute
+                    </TableCell>
+                    <TableCell sx={{ 
+                      backgroundColor: theme.palette.table?.headerBackground,
+                      color: theme.palette.table?.headerText,
+                      fontWeight: 'medium'
+                    }}>
+                      {fileName.extededName} Attribute
+                    </TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>

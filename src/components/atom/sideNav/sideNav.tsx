@@ -17,6 +17,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import SourceIcon from '@mui/icons-material/Source';
 import AssessmentIcon from '@mui/icons-material/Assessment';
 import PaletteIcon from '@mui/icons-material/Palette';
+import BrushIcon from '@mui/icons-material/Brush';
 import { useInfiniteScroll } from '../../../hooks/useInfiniteScroll';
 import { GET } from '../../../services/apiRoutes';
 import { DataSourceListData, DataSourceListPayload } from './types';
@@ -33,8 +34,11 @@ import logo from '../../../assets/ReportiVix-logo.png';
 import { AuthContext } from '../../../context/AuthContext';
 import { clearLocalStorage } from '../../../utils/handleLocalStorage';
 import { Language } from '@mui/icons-material';
+import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import { STYLE_GUIDE } from '../../../styles';
 import SettingsIcon from '@mui/icons-material/Settings';
+import { useUnifiedTheme } from '../../../hooks/useUnifiedTheme';
+import { useComponentTypography } from '../../../hooks/useComponentTypography';
 
 
 interface ErrorResponse {
@@ -79,7 +83,7 @@ const Drawer = styled(MuiDrawer, {
   position: 'static',
   backgroundColor: STYLE_GUIDE.COLORS.white,
   '& .MuiPaper-root': {
-    backgroundColor: STYLE_GUIDE.COLORS.white,
+    backgroundColor: theme.palette.background.paper,
     border: 'none',
     height: '100%',
     position: 'static',
@@ -95,10 +99,10 @@ const Drawer = styled(MuiDrawer, {
   },
   '& .MuiListItemButton-root': {
     '&.Mui-selected, &.Mui-selected:hover': {
-      backgroundColor: STYLE_GUIDE.COLORS.backgroundDefault,
+      backgroundColor: theme.palette.action.hover,
     },
     '&:hover': {
-      backgroundColor: STYLE_GUIDE.COLORS.backgroundDefault,
+      backgroundColor: theme.palette.action.hover,
     },
   },
   variants: [
@@ -134,6 +138,8 @@ interface NavItem {
 }
 
 export default function SideNav() {
+  const theme = useUnifiedTheme();
+  const { getNavigationSx } = useComponentTypography();
   const { openNav } = useNav();
   const [openSettings, setOpenSettings] = React.useState(false);
   const [openDashboard, setOpenDashboard] = React.useState(false);
@@ -155,14 +161,20 @@ export default function SideNav() {
     dispatch(fetchDashboardList());
   }, [dispatch]);
 
-  const handleItemClick = (route: string, hasSubItems: boolean, itemName: string) => {
+
+  const handleItemClick = (
+    route: string,
+    hasSubItems: boolean,
+    itemName: string
+  ) => {
     if (hasSubItems) {
-      if (itemName === 'Dashboards') {
-        setOpenDashboard((prev) => !prev);
+      if (itemName === "Dashboards") {
         if (!openDashboard) {
           setOpenDashboard(true);
+        } else {
+          setOpenDashboard(false);
+          navigate(route);
         }
-        navigate(route);
       } else {
         setOpenSettings((prev) => !prev);
       }
@@ -271,16 +283,27 @@ export default function SideNav() {
     navigate('/login');
   };
 
+  const createIcon = (IconComponent: React.ComponentType<any>, route: string) => {
+    return (
+      <IconComponent 
+        sx={{ 
+          fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base, 
+          color: location.pathname.startsWith(route) ? theme.palette.primary.main : theme.getIconColor() 
+        }} 
+      />
+    );
+  };
+
   const navItems: NavItem[] = useMemo(
     () => [
       {
         name: 'Dashboards',
-        icon: <DashboardIcon sx={{ fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base }} />,
+        icon: createIcon(DashboardIcon, '/dashboard'),
         route: '/dashboard',
         subItems: [
           {
             name: 'Create New Dashboard',
-            icon: <AddIcon sx={{ fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base }} />,
+            icon: <AddIcon sx={{ fontSize: getNavigationSx().fontSize, color: theme.getIconColor() }} />,
             route: '#',
             isCreateButton: true,
           },
@@ -309,30 +332,29 @@ export default function SideNav() {
       },
       {
         name: 'Reports',
-        icon: <AssessmentIcon sx={{ fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base }} />,
+        icon: createIcon(AssessmentIcon, '/reports'),
         route: '/reports',
       },
       {
-        name: 'Data Sources',
-        icon: <SourceIcon sx={{ fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base }} />,
-        route: '/data-source',
+        name: "Data Sources",
+        icon: createIcon(SourceIcon, "/data-source"),
+        route: "/data-source",
         subItems: [
           ...(dataSourceList?.map((item) => ({
-            name: item?.name ?? '',
+            name: item?.name ?? "",
             icon: <></>,
             route: `/data-source/${item?._id}`,
           })) || []),
-
           ...(dataSourceListAPI?.hasNextPage
             ? [
               {
-                name: '',
+                name: "",
                 icon: (
-                  <div ref={lastElementRef} style={{ paddingLeft: '1.5rem' }}>
+                  <div ref={lastElementRef} style={{ paddingLeft: "1.5rem" }}>
                     Loading...
                   </div>
                 ),
-                route: '#',
+                route: "#",
               },
             ]
             : []),
@@ -340,26 +362,49 @@ export default function SideNav() {
       },
       {
         name: 'Create Theme',
-        icon: <PaletteIcon sx={{ fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base }} />,
+        icon: createIcon(PaletteIcon, '/create-theme'),
         route: '/create-theme',
       },
       {
+        name: 'Dashboard Themes',
+        icon: createIcon(BrushIcon, '/themes'),
+        route: '/themes',
+      },
+      {
         name: 'VixAI Chart',
-        icon: <Language sx={{ fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base }} />,
+        icon: createIcon(Language, '/VixAi-Chart'),
         route: '/VixAi-Chart',
       },
       {
         name: 'Report Settings',
-        icon: <SettingsIcon sx={{ fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base }} />,
+        icon: createIcon(SettingsIcon, '/report-settings'),
         route: '/report-settings',
       },
-      // {
-      //   name: 'VixAI Insights',
-      //   icon: <AutoAwesomeIcon sx={{ fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base }}/>,
-      //   route: '/VixAi-Insights',
-      // },
+      // TO BE ADDED LATER
+      {
+        name: 'VixAI Insights',
+        icon: createIcon(AutoAwesomeIcon, '/VixAi-Insights'),
+        route: '/VixAi-Insights',
+      },
+      // TO be removed later
+      {
+        name: 'attribute-option',
+        icon: createIcon(AutoAwesomeIcon, '/attribute-option'),
+        route: '/attribute-option',
+      },
+      {
+        name: 'superadmin',
+        icon: createIcon(AutoAwesomeIcon, '/superadmin/dashboard'),
+        route: '/superadmin/dashboard',
+      },
+      {
+        name: 'entity',
+        icon: createIcon(AutoAwesomeIcon, '/entity'),
+        route: '/entity',
+      },
+
     ],
-    [dataSourceList, dataSourceListAPI?.hasNextPage, dashboards, loading]
+    [dataSourceList, dataSourceListAPI?.hasNextPage, dashboards, loading, location.pathname]
   );
 
   const isRouteActive = (route: string) => {
@@ -384,7 +429,7 @@ export default function SideNav() {
               justifyContent: 'center',
               alignItems: 'center',
               height: '50px',
-              borderBottom: `1px solid ${STYLE_GUIDE.COLORS.divider}`,
+              borderBottom: `1px solid ${theme.palette.divider}`,
             }}
           >
             <Box
@@ -417,13 +462,13 @@ export default function SideNav() {
                       px: 2,
                       borderRadius: '8px',
                       justifyContent: openNav ? 'initial' : 'center',
-                      backgroundColor: isRouteActive(item.route) ? '#f1f5f9' : 'transparent',
-                      color: isRouteActive(item.route) ? '#a136a1' : 'inherit',
+                      backgroundColor: isRouteActive(item.route) ? '#ffffff' : 'transparent',
+                      color: isRouteActive(item.route) ? theme.palette.primary.main : theme.palette.text.primary,
                       '& .MuiListItemIcon-root': {
-                        color: isRouteActive(item.route) ? '#a136a1' : 'inherit',
+                        color: isRouteActive(item.route) ? theme.palette.primary.main : theme.palette.text.primary,
                       },
                       '&:hover': {
-                        backgroundColor: '#f1f5f9',
+                        backgroundColor: isRouteActive(item.route) ? '#ffffff' : theme.palette.action.hover,
                         borderRadius: '8px',
                       },
                     }}
@@ -443,9 +488,8 @@ export default function SideNav() {
                         opacity: openNav ? 1 : 0,
                         m: 0,
                         '& .MuiListItemText-primary': {
-                          fontSize: '0.95rem',
-                          fontWeight: 500,
-                          color: isRouteActive(item.route) ? '#a136a1' : 'inherit',
+                          ...getNavigationSx(),
+                          color: isRouteActive(item.route) ? theme.palette.primary.main : theme.palette.text.primary,
                         },
                       }}
                     />
@@ -454,15 +498,15 @@ export default function SideNav() {
                       ((item.name === 'Dashboards' && openDashboard) || (item.name !== 'Dashboards' && openSettings) ? (
                         <ExpandLessIcon
                           sx={{
-                            fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base,
-                            color: isRouteActive(item.route) ? '#a136a1' : 'inherit',
+                            fontSize: getNavigationSx().fontSize,
+                            color: isRouteActive(item.route) ? theme.palette.primary.main : theme.palette.text.primary,
                           }}
                         />
                       ) : (
                         <ExpandMoreIcon
                           sx={{
-                            fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base,
-                            color: isRouteActive(item.route) ? '#a136a1' : 'inherit',
+                            fontSize: getNavigationSx().fontSize,
+                            color: isRouteActive(item.route) ? theme.palette.primary.main : theme.palette.text.primary,
                           }}
                         />
                       ))}
@@ -494,14 +538,14 @@ export default function SideNav() {
                                 justifyContent: 'center',
                               }}
                             >
-                              <AddIcon sx={{ fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base }} />
+                              <AddIcon sx={{ fontSize: getNavigationSx().fontSize, color: theme.getIconColor() }} />
                             </ListItemIcon>
                             <ListItemText
                               primary="Create New Dashboard"
                               sx={{
                                 m: 0,
                                 '& .MuiListItemText-primary': {
-                                  fontSize: '0.8rem',
+                                  ...getNavigationSx(),
                                 },
                               }}
                             />
@@ -532,8 +576,9 @@ export default function SideNav() {
                 px: STYLE_GUIDE.SPACING.s4,
                 borderRadius: '8px',
                 justifyContent: openNav ? 'initial' : 'center',
+                color: theme.palette.text.primary,
                 '&:hover': {
-                  backgroundColor: STYLE_GUIDE.COLORS.backgroundDefault,
+                  backgroundColor: theme.palette.action.hover,
                 },
               }}
             >
@@ -544,7 +589,7 @@ export default function SideNav() {
                   justifyContent: 'center',
                 }}
               >
-                <LogoutIcon sx={{ fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base }} />
+                <LogoutIcon sx={{ color: theme.getIconColor() }} />
               </ListItemIcon>
               <ListItemText
                 primary="Logout"
@@ -552,7 +597,7 @@ export default function SideNav() {
                   opacity: openNav ? 1 : 0,
                   m: 0,
                   '& .MuiListItemText-primary': {
-                    fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base,
+                    ...getNavigationSx(),
                   },
                 }}
               />

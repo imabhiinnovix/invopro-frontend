@@ -13,6 +13,7 @@ import DataSources from './pages/dataSources';
 import DashboardOverview from './pages/dashboard/overview';
 import DashboardAnalytics from './pages/dashboard/analytics';
 import CreateTheme from './pages/createTheme';
+import DashboardThemePage from './pages/dashboardTheme';
 import { getAuthToken } from './utils/handleLocalStorage';
 import NaturalLanguage from './pages/naturalLanguage/NaturalLanguage';
 import Entity from './pages/entity';
@@ -42,6 +43,7 @@ const AppRoutes = () => {
           <Route path="/dashboard/analytics" element={<DashboardAnalytics />} />
           <Route path="/dashboard/:id" element={<Dashboard />} />
           <Route path="/reports" element={<Report />} />
+          <Route path="/data-source" element={<DataSource />} />
           <Route path="/data-source/:id" element={<DataSources />} />
           <Route path="/entity" element={<Entity />} />
           <Route path="/data-src" element={<DataSource />} />
@@ -64,6 +66,7 @@ const AppRoutes = () => {
       <Route element={<AdminSuperAdminProtect />}>
         <Route element={<CommonLayout />}>
           <Route path="/create-theme" element={<CreateTheme />} />
+          <Route path="/themes" element={<DashboardThemePage />} />
         </Route>
       </Route>
     </Routes>

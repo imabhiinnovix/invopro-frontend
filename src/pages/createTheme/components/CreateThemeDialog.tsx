@@ -31,6 +31,11 @@ import usePost from "../../../hooks/usePost";
 import { POST } from "../../../services/apiRoutes";
 import { useAppDispatch } from "../../../storeHooks";
 import { fetchThemeList } from "../themeActions";
+import { STYLE_GUIDE } from "../../../styles";
+import { useUnifiedTheme } from "../../../hooks/useUnifiedTheme";
+import { useComponentTypography } from "../../../hooks/useComponentTypography";
+
+
 
 const alignOptions = ["start", "center", "end"];
 const positionOptions = ["top", "bottom", "left", "right"];
@@ -104,6 +109,9 @@ const CreateThemeDialog = ({
   theme,
 }: CreateThemeDialogProps) => {
   const dispatch = useAppDispatch();
+  const unifiedTheme = useUnifiedTheme();
+  const { getDialogTitleSx } = useComponentTypography();
+  
   const [themeState, setThemeState] = useState<ThemeData>({
     name: "",
     title: {
@@ -444,7 +452,12 @@ const CreateThemeDialog = ({
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
-      <DialogTitle>
+      <DialogTitle
+        sx={{
+          ...getDialogTitleSx(),
+          color: unifiedTheme.palette.dialog?.titleColor || unifiedTheme.palette.text.primary,
+        }}
+      >
         {theme ? "Update Theme" : "Create New Theme"}
         <IconButton
           aria-label="close"
@@ -472,6 +485,7 @@ const CreateThemeDialog = ({
             onChange={(e) =>
               setThemeState({ ...themeState, name: e.target.value })
             }
+
           />
           <Divider sx={{ my: 2 }} textAlign="left">
             <Typography variant="body2" sx={{ color: "rgba(0, 0, 0, 0.6)" }}>
@@ -625,6 +639,40 @@ const CreateThemeDialog = ({
                   })
                 }
                 {...numberInputStyles}
+                                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      borderRadius: STYLE_GUIDE.SPACING.s2,
+                      alignItems: 'flex-start',
+                      paddingRight: STYLE_GUIDE.SPACING.s2,
+                      fontSize: '14px',
+                      backgroundColor: unifiedTheme.dashboardTheme?.colors?.background?.paper || '#ffffff',
+                      '& fieldset': {
+                        borderColor: unifiedTheme.dashboardTheme?.colors?.inputBorder || STYLE_GUIDE.COLORS.darkBackground,
+                      },
+                      '&:hover fieldset': {
+                        borderColor: unifiedTheme.dashboardTheme?.colors?.borderHover || STYLE_GUIDE.COLORS.darkBorderHover,
+                      },
+                      '&.Mui-focused fieldset': {
+                        borderColor: unifiedTheme.dashboardTheme?.components?.input?.focusBorderColor || STYLE_GUIDE.COLORS.darkBorderFocus,
+                      },
+                    },
+                    '& .MuiInputLabel-root': {
+                      color: unifiedTheme.dashboardTheme?.colors?.text?.secondary || STYLE_GUIDE.COLORS.darkBorderFocus,
+                    },
+                    '& .MuiInputLabel-root.Mui-focused': {
+                      color: unifiedTheme.dashboardTheme?.components?.input?.focusBorderColor || STYLE_GUIDE.COLORS.darkDarker,
+                    },
+                    '& .MuiInputBase-input': {
+                      color: `${unifiedTheme.dashboardTheme?.colors?.inputText} !important`,
+                    },
+                    '& .MuiInputBase-input::placeholder': {
+                      color: `${unifiedTheme.dashboardTheme?.colors?.text?.secondary || '#666'} !important`,
+                    },
+                    '& .MuiInputBase-input:-webkit-autofill': {
+                      WebkitTextFillColor: `${unifiedTheme.dashboardTheme?.colors?.inputText } !important`,
+                      WebkitBoxShadow: `0 0 0 1000px ${unifiedTheme.dashboardTheme?.colors?.background?.paper || '#ffffff'} inset !important`,
+                    },
+                  }}
               />
             </Grid>
 
@@ -860,6 +908,25 @@ const CreateThemeDialog = ({
                   })
                 }
                 {...numberInputStyles}
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    '& fieldset': {
+                      borderColor: inputBorderColor,
+                    },
+                    '&:hover fieldset': {
+                      borderColor: inputFocusBorderColor,
+                    },
+                    '&.Mui-focused fieldset': {
+                      borderColor: inputFocusBorderColor,
+                    },
+                    '& input': {
+                      color: inputTextColor,
+                    },
+                    '& label': {
+                      color: inputTextColor,
+                    },
+                  },
+                }}
               />
             </Grid>
             <Grid size={{ xs: 12, sm: 6 }} component="div">
@@ -3043,10 +3110,10 @@ const CreateThemeDialog = ({
           {createTheme.isPending
             ? "Creating..."
             : updateTheme.isPending
-            ? "Updating..."
-            : theme
-            ? "Update"
-            : "Create"}
+              ? "Updating..."
+              : theme
+                ? "Update"
+                : "Create"}
         </StyledButton>
       </DialogActions>
     </Dialog>

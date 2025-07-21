@@ -25,12 +25,14 @@ import SimCardDownloadIcon from '@mui/icons-material/SimCardDownload';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import { STYLE_GUIDE } from '../../../styles';
 import DownloadForOfflineIcon from '@mui/icons-material/DownloadForOffline';
+import { useUnifiedTheme } from '../../../hooks/useUnifiedTheme';
+import { useComponentTypography } from '../../../hooks/useComponentTypography';
 
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
   [`&.${tableCellClasses.head}`]: {
-    backgroundColor: theme.palette.grey[50],
-    color: theme.palette.text.primary,
+    backgroundColor: theme.palette.table?.headerBackground || STYLE_GUIDE.COLORS.backgroundLightGray,
+    color: theme.palette.table?.headerText || STYLE_GUIDE.COLORS.textGray,
     fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold,
     fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
     height: "48px",
@@ -42,26 +44,42 @@ const StyledTableCell = styled(TableCell)(({ theme }) => ({
     height: "52px",
     padding: "0 16px",
     borderBottom: `1px solid ${theme.palette.divider}`,
-  }}))
+    color: theme.palette.table?.rowText || STYLE_GUIDE.COLORS.textDarkGray,
+  }
+}))
 
 const StyledTableRow = styled(TableRow)(({ theme }) => ({
+  "&:nth-of-type(odd)": {
+    backgroundColor: theme.palette.table?.rowOddBackground || STYLE_GUIDE.COLORS.backgroundDefault,
+  },
+  "&:nth-of-type(even)": {
+    backgroundColor: theme.palette.table?.rowEvenBackground || STYLE_GUIDE.COLORS.white,
+  },
   "&:hover": {
-    backgroundColor: theme.palette.action.hover,
+    backgroundColor: theme.palette.table?.rowHoverBackground || STYLE_GUIDE.COLORS.backgroundHover,
+    transform: 'translateY(-1px)',
+    transition: 'all 0.2s ease-in-out',
+    boxShadow: theme.shadows[1],
   },
 }));
 
 const StyledButton = styled(Button)(({ theme }) => ({
   textTransform: 'none',
-  borderRadius:  STYLE_GUIDE.SPACING.s2,
+  borderRadius: STYLE_GUIDE.SPACING.s2,
   padding: '6px 12px',
   marginRight: '8px',
   fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
   fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.bold,
   minWidth: '80px',
   backgroundColor: theme.palette.primary.main,
-  color: "white",
+  color: theme.palette.primary.contrastText,
   "&:hover": {
     backgroundColor: theme.palette.primary.dark,
+    transform: 'translateY(-1px)',
+    boxShadow: theme.shadows[2],
+  },
+  "&:active": {
+    transform: 'translateY(0)',
   },
 }));
 
@@ -90,6 +108,7 @@ const ReportRequestTable: React.FC<AttributeOptionTableProps> = ({
   setViewReportNameWithVersionValue,
   setAllDetailData,
 }) => {
+
   const [reportRequests, setReportRequests] = useState<ReportRequestResponse[]>(
     []
   );
@@ -100,6 +119,9 @@ const ReportRequestTable: React.FC<AttributeOptionTableProps> = ({
   const [processingRequestCount, setProcessingRequestCount] = useState(0);
   const [downloadRequestId, setDownloadRequestId] = useState("");
   const [intermediateDownloadRequestId, setIntermediateDownloadRequestId] = useState("");
+
+  const theme = useUnifiedTheme();
+  const { getHeadingSx, getTableSx } = useComponentTypography();
 
   const exportFile = useFileDownload<Blob>((data) => {
     const blob = new Blob([data], { type: "application/octet-stream" });
@@ -136,15 +158,15 @@ const ReportRequestTable: React.FC<AttributeOptionTableProps> = ({
   const reportRequestList = useGet<ReportRequestData>(
     [`reportRequestList`, String(currentPage)],
     GET?.Custom_Report +
-      "/listReportRequest" +
-      `?page=${currentPage}&limit=${perPageItem}`,
+    "/listReportRequest" +
+    `?page=${currentPage}&limit=${perPageItem}`,
     !!currentPage
   );
 
   const notProcessingReportRequestDetails = useGet<ReportRequestData>(
     [`notprocesssingReportRequestList`, String(processingRequestCount)],
     GET?.Custom_Report +
-      `/listReportRequest?page=1&limit=10&status=notprocessing`,
+    `/listReportRequest?page=1&limit=10&status=notprocessing`,
     !!processingRequestCount
   );
 
@@ -272,7 +294,7 @@ const ReportRequestTable: React.FC<AttributeOptionTableProps> = ({
         alignContent="center"
         alignItems="center"
       >
-        <Typography variant="h4" fontWeight="bold" gutterBottom>
+        <Typography variant="h4" gutterBottom sx={{ ...getHeadingSx(), fontWeight: "bold" }}>
           No report requests have been made yet.
         </Typography>
       </Box>
@@ -283,6 +305,7 @@ const ReportRequestTable: React.FC<AttributeOptionTableProps> = ({
     <TableContainer
       component={Paper}
       sx={{
+        ...getTableSx(),
         borderRadius: "inherit",
         boxShadow: "none",
         height: "calc(100vh - 250px)",
@@ -310,37 +333,44 @@ const ReportRequestTable: React.FC<AttributeOptionTableProps> = ({
               ref={
                 reportRequests.length === dataIndex + 1 ? lastElementRef : null
               }
+              sx={{
+                backgroundColor: dataIndex % 2 === 0
+                  ? theme.dashboardTheme?.components?.table?.rowOddBackground || '#f1f5f9'
+                  : theme.dashboardTheme?.components?.table?.rowEvenBackground || '#ffffff',
+                '&:hover': {
+                  backgroundColor: theme.dashboardTheme?.components?.table?.rowHoverBackground || '#f0f0f0',
+                }
+              }}
             >
-              <StyledTableCell>
+              <StyledTableCell sx={{ color: theme.dashboardTheme?.components?.table?.rowText || '#34495e' }}>
                 {data.customReportId?.reportName || "-"}
               </StyledTableCell>
-              <StyledTableCell>{data.versionValue || "-"}</StyledTableCell>
+              <StyledTableCell sx={{ color: theme.dashboardTheme?.components?.table?.rowText || '#34495e' }}>{data.versionValue || "-"}</StyledTableCell>
               <StyledTableCell
                 sx={{
                   color:
                     data.status === "completed"
                       ? "success.main"
                       : data.status === "processing"
-                      ? "warning.main"
-                      : data.status === "failed"
-                      ? "error.main"
-                      : "text.primary",
+                        ? "warning.main"
+                        : data.status === "failed"
+                          ? "error.main"
+                          : "text.primary",
                   fontWeight: 500,
                 }}
               >
                 {data.status || "-"}
               </StyledTableCell>
-              <StyledTableCell>
-                {`${data?.createdBy?.firstName || ""}${
-                  data?.createdBy?.lastName ? " " + data.createdBy.lastName : ""
-                }`}
+              <StyledTableCell sx={{ color: theme.dashboardTheme?.components?.table?.rowText || '#34495e' }}>
+                {`${data?.createdBy?.firstName || ""}${data?.createdBy?.lastName ? " " + data.createdBy.lastName : ""
+                  }`}
               </StyledTableCell>
-              <StyledTableCell>
+              <StyledTableCell sx={{ color: theme.dashboardTheme?.components?.table?.rowText || '#34495e' }}>
                 {data.createdAt
                   ? new Date(data.createdAt).toLocaleString()
                   : "-"}
               </StyledTableCell>
-              <StyledTableCell align="right" sx={{display: 'flex'}}>
+              <StyledTableCell align="right" sx={{ display: 'flex' }}>
                 {data.status === "completed" ? (
                   <Box
                     sx={{
@@ -350,8 +380,8 @@ const ReportRequestTable: React.FC<AttributeOptionTableProps> = ({
                     }}
                   >
                     {exportFile.isPending &&
-                    !!downloadRequestId &&
-                    downloadRequestId === data._id ? (
+                      !!downloadRequestId &&
+                      downloadRequestId === data._id ? (
                       <Box
                         sx={{
                           width: 27,
@@ -378,7 +408,7 @@ const ReportRequestTable: React.FC<AttributeOptionTableProps> = ({
                           }}
                           sx={{ mr: 1 }}
                         >
-                          <SimCardDownloadIcon />
+                          <SimCardDownloadIcon sx={{ color: theme.getIconColor() }} />
                         </StyledButton>
                       </Tooltip>
                     )}
@@ -392,7 +422,7 @@ const ReportRequestTable: React.FC<AttributeOptionTableProps> = ({
                           );
                         }}
                       >
-                        <VisibilityIcon />
+                        <VisibilityIcon sx={{ color: theme.getIconColor() }} />
                       </StyledButton>
                     </Tooltip>
                   </Box>
@@ -400,46 +430,46 @@ const ReportRequestTable: React.FC<AttributeOptionTableProps> = ({
                   "-"
                 )}
                 {data.status === "completed" && data.intermediateReportId && (
-                   <Box
-                   sx={{
-                     display: "flex",
-                     justifyContent: "flex-end",
-                     alignItems: "center",
-                   }}
-                 >
-                  {exportFile.isPending &&
-                  !!intermediateDownloadRequestId &&
-                  intermediateDownloadRequestId === data._id ? (
-                    <Box
-                      sx={{
-                        width: 27,
-                        height: 27,
-                        borderRadius: "50%",
-                        border: "3px solid #f3f3f3",
-                        borderTop: "3px solid #3498db",
-                        animation: "spin 1s linear infinite",
-                        "@keyframes spin": {
-                          "0%": { transform: "rotate(0deg)" },
-                          "100%": { transform: "rotate(360deg)" },
-                        },
-                        mr: 1,
-                      }}
-                    />
-                  ) : (
-                    <Tooltip title="Intermediate Download" arrow>
-                      <StyledButton
-                        onClick={() => {
-                          intermediateDownloadFile(
-                            `${data.customReportId?.reportName}-intermediate-${data.versionValue}.xlsx`,
-                            data._id
-                          );
+                  <Box
+                    sx={{
+                      display: "flex",
+                      justifyContent: "flex-end",
+                      alignItems: "center",
+                    }}
+                  >
+                    {exportFile.isPending &&
+                      !!intermediateDownloadRequestId &&
+                      intermediateDownloadRequestId === data._id ? (
+                      <Box
+                        sx={{
+                          width: 27,
+                          height: 27,
+                          borderRadius: "50%",
+                          border: "3px solid #f3f3f3",
+                          borderTop: "3px solid #3498db",
+                          animation: "spin 1s linear infinite",
+                          "@keyframes spin": {
+                            "0%": { transform: "rotate(0deg)" },
+                            "100%": { transform: "rotate(360deg)" },
+                          },
+                          mr: 1,
                         }}
-                        sx={{ mr: 1 }}
-                      >
-                        <DownloadForOfflineIcon />
-                      </StyledButton>
-                    </Tooltip>
-                  )}
+                      />
+                    ) : (
+                      <Tooltip title="Intermediate Download" arrow>
+                        <StyledButton
+                          onClick={() => {
+                            intermediateDownloadFile(
+                              `${data.customReportId?.reportName}-intermediate-${data.versionValue}.xlsx`,
+                              data._id
+                            );
+                          }}
+                          sx={{ mr: 1 }}
+                        >
+                          <DownloadForOfflineIcon sx={{ color: theme.getIconColor() }} />
+                        </StyledButton>
+                      </Tooltip>
+                    )}
                   </Box>
                 )}
               </StyledTableCell>
@@ -448,7 +478,12 @@ const ReportRequestTable: React.FC<AttributeOptionTableProps> = ({
 
           {reportRequestList.isFetching &&
             Array.from({ length: 1 }, (_, index) => (
-              <StyledTableRow key={index}>
+              <StyledTableRow
+                key={index}
+                sx={{
+                  backgroundColor: theme.dashboardTheme?.components?.table?.rowOddBackground || '#f1f5f9',
+                }}
+              >
                 <StyledTableCell colSpan={5}>
                   <Skeleton height={52} />
                 </StyledTableCell>

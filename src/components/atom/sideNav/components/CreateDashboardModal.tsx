@@ -6,14 +6,14 @@ import {
   DialogActions,
   Button,
   TextField,
-  FormControl,
-  InputLabel,
-  Select,
   MenuItem,
-  useTheme,
   alpha,
 } from '@mui/material';
 import { STYLE_GUIDE } from '../../../../styles';
+import StyledSelect from '../../common/StyledSelect';
+import { useUnifiedTheme } from '../../../../hooks/useUnifiedTheme';
+import { useComponentTypography } from '../../../../hooks/useComponentTypography';
+
 
 interface CreateDashboardModalProps {
   open: boolean;
@@ -40,7 +40,9 @@ export const CreateDashboardModal: React.FC<CreateDashboardModalProps> = ({
   timePeriod,
   onTimePeriodChange,
 }) => {
-  const theme = useTheme();
+  const theme = useUnifiedTheme();
+  const { getDialogTitleSx } = useComponentTypography();
+  
 
   return (
     <Dialog
@@ -48,25 +50,31 @@ export const CreateDashboardModal: React.FC<CreateDashboardModalProps> = ({
       onClose={onClose}
       PaperProps={{
         sx: {
-          borderRadius: STYLE_GUIDE.SPACING.s1,
+          borderRadius: theme.palette.dialog?.borderRadius || STYLE_GUIDE.SPACING.s1,
           minWidth: { xs: "90%", sm: "400px" },
           maxWidth: "500px",
+          backgroundColor: theme.palette.dialog?.background || STYLE_GUIDE.COLORS.white,
+          border: `1px solid ${theme.palette.dialog?.border || theme.palette.border?.main || STYLE_GUIDE.COLORS.borderGray}`,
+          boxShadow: theme.palette.dialog?.shadow || STYLE_GUIDE.SHADOWS.lg,
         },
       }}
     >
       <DialogTitle
         sx={{
           backgroundColor: alpha(theme.palette.primary.main, 0.05),
-          color: STYLE_GUIDE.COLORS.bootstrapPrimary,
-          fontFamily: STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary,
-          fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold,
-          fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.large,
+          color: theme.palette.dialog?.titleColor || STYLE_GUIDE.COLORS.bootstrapPrimary,
           py: STYLE_GUIDE.SPACING.s4,
+          ...getDialogTitleSx(),
         }}
       >
         Create New Dashboard
       </DialogTitle>
-      <DialogContent sx={{ mt: STYLE_GUIDE.SPACING.s4, pb: STYLE_GUIDE.SPACING.s2 }}>
+      <DialogContent sx={{ 
+        mt: STYLE_GUIDE.SPACING.s4, 
+        pb: STYLE_GUIDE.SPACING.s2,
+        color: theme.palette.dialog?.contentColor || STYLE_GUIDE.COLORS.textDarkGray,
+        fontSize: theme.palette.dialog?.contentFontSize || '1rem',
+      }}>
         <TextField
           autoFocus
           margin="dense"
@@ -78,81 +86,71 @@ export const CreateDashboardModal: React.FC<CreateDashboardModalProps> = ({
           onChange={(e) => onNameChange(e.target.value)}
           size="small"
           sx={{
-            "& .MuiOutlinedInput-root": {
-              "&:hover fieldset": {
-                borderColor: STYLE_GUIDE.COLORS.bootstrapPrimary,
+            '& .MuiOutlinedInput-root': {
+              borderRadius: STYLE_GUIDE.SPACING.s2,
+              alignItems: 'flex-start',
+              paddingRight: STYLE_GUIDE.SPACING.s2,
+              fontSize: '14px',
+              backgroundColor: theme.dashboardTheme?.colors?.background?.paper || '#ffffff',
+              '& fieldset': {
+                borderColor: theme.dashboardTheme?.colors?.inputBorder || STYLE_GUIDE.COLORS.darkBackground,
               },
-              "&.Mui-focused fieldset": {
-                borderColor: STYLE_GUIDE.COLORS.bootstrapPrimary,
+              '&:hover fieldset': {
+                borderColor: theme.dashboardTheme?.colors?.borderHover || STYLE_GUIDE.COLORS.darkBorderHover,
               },
+              '&.Mui-focused fieldset': {
+                borderColor: theme.dashboardTheme?.components?.input?.focusBorderColor || STYLE_GUIDE.COLORS.darkBorderFocus,
+              },
+            },
+            '& .MuiInputLabel-root': {
+              color: theme.dashboardTheme?.colors?.text?.secondary || STYLE_GUIDE.COLORS.darkBorderFocus,
+            },
+            '& .MuiInputLabel-root.Mui-focused': {
+              color: theme.dashboardTheme?.components?.input?.focusBorderColor || STYLE_GUIDE.COLORS.darkDarker,
+            },
+            '& .MuiInputBase-input': {
+              color: `${theme.dashboardTheme?.colors?.inputText} !important`,
+            },
+            '& .MuiInputBase-input::placeholder': {
+              color: `${theme.dashboardTheme?.colors?.text?.secondary || '#666'} !important`,
+            },
+            '& .MuiInputBase-input:-webkit-autofill': {
+              WebkitTextFillColor: `${theme.dashboardTheme?.colors?.inputText} !important`,
+              WebkitBoxShadow: `0 0 0 1000px ${theme.dashboardTheme?.colors?.background?.paper || '#ffffff'} inset !important`,
             },
           }}
         />
-        <FormControl
-          fullWidth
-          margin="dense"
+        <StyledSelect
+          label="Dashboard Type"
+          value={dashboardType}
+          onChange={(e) => onDashboardTypeChange(e.target.value as "normal" | "trend")}
           size="small"
-          sx={{
-            mt: 2,
-            "& .MuiOutlinedInput-root": {
-              "&:hover fieldset": {
-                borderColor: "primary.main",
-              },
-              "&.Mui-focused fieldset": {
-                borderColor: "primary.main",
-              },
-            },
-          }}
+          sx={{ mt: 2 }}
         >
-          <InputLabel>Dashboard Type</InputLabel>
-          <Select
-            value={dashboardType}
-            label="Dashboard Type"
-            onChange={(e) => onDashboardTypeChange(e.target.value as "normal" | "trend")}
-          >
-            <MenuItem value="normal">Normal</MenuItem>
-            <MenuItem value="trend">Trend</MenuItem>
-          </Select>
-        </FormControl>
+          <MenuItem value="normal">Normal</MenuItem>
+          <MenuItem value="trend">Trend</MenuItem>
+        </StyledSelect>
 
         {dashboardType === "trend" && (
-          <FormControl
-            fullWidth
-            margin="dense"
-            sx={{
-              mt: 2,
-              "& .MuiOutlinedInput-root": {
-                "&:hover fieldset": {
-                  borderColor: "primary.main",
-                },
-                "&.Mui-focused fieldset": {
-                  borderColor: "primary.main",
-                },
-              },
-            }}
+          <StyledSelect
+            label="Time Period"
+            value={timePeriod}
+            onChange={(e) => onTimePeriodChange(e.target.value as string)}
+            size="small"
+            sx={{ mt: 2 }}
           >
-            <InputLabel id="time-period-label">Time Period</InputLabel>
-            <Select
-              labelId="time-period-label"
-              id="time-period-select"
-              value={timePeriod}
-              label="Time Period"
-              onChange={(e) => onTimePeriodChange(e.target.value)}
-              size="small"
-            >
-              <MenuItem value="1m">Last 1 Month</MenuItem>
-              <MenuItem value="3m">Last 3 Months</MenuItem>
-              <MenuItem value="6m">Last 6 Months</MenuItem>
-              <MenuItem value="12m">Last 12 Months</MenuItem>
-            </Select>
-          </FormControl>
+            <MenuItem value="1m">Last 1 Month</MenuItem>
+            <MenuItem value="3m">Last 3 Months</MenuItem>
+            <MenuItem value="6m">Last 6 Months</MenuItem>
+            <MenuItem value="12m">Last 12 Months</MenuItem>
+          </StyledSelect>
         )}
       </DialogContent>
       <DialogActions sx={{ p: STYLE_GUIDE.SPACING.s4, gap: STYLE_GUIDE.SPACING.s2 }}>
         <Button
           onClick={onClose}
           sx={{
-            color:  STYLE_GUIDE.COLORS.darkText,
+            color: STYLE_GUIDE.COLORS.darkText,
             "&:hover": {
               backgroundColor: alpha(theme.palette.grey[500], 0.1),
             },
@@ -167,7 +165,7 @@ export const CreateDashboardModal: React.FC<CreateDashboardModalProps> = ({
           sx={{
             backgroundColor: STYLE_GUIDE.COLORS.bootstrapPrimary,
             "&:hover": {
-              backgroundColor:STYLE_GUIDE.COLORS.bootstrapPrimaryHover
+              backgroundColor: STYLE_GUIDE.COLORS.bootstrapPrimaryHover
             },
             "&.Mui-disabled": {
               backgroundColor: alpha(theme.palette.primary.main, 0.5),

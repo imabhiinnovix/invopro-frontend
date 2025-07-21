@@ -72,6 +72,8 @@ import { AddChartModal, ChartFormData } from './AddChartModal';
 import { resetChartAndWidgetData } from '../dashboardReducer';
 import { SaveWidgetModel } from '../../naturalLanguage/saveWidgetModel';
 import { STYLE_GUIDE } from '../../../styles';
+import { useUnifiedTheme } from '../../../hooks/useUnifiedTheme';
+import { useComponentTypography } from '../../../hooks/useComponentTypography';
 
 // Register ChartJS components
 ChartJS.register(
@@ -619,6 +621,8 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
 }) => {
   const dispatch = useAppDispatch();
   const theme = useTheme();
+  const themeUnified = useUnifiedTheme();
+  const { getTableSx, getCardSx } = useComponentTypography();
   const chartRefs = useRef<{ [key: string]: ChartJS | null }>({});
   const { charts, widgetTypes, temporaryCharts, chartsLoading, chartsError, widgetData, dashboards } = useAppSelector(
     (state) => ({
@@ -1837,7 +1841,12 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
           : [];
 
         return (
-          <TableContainer component={Paper} sx={{ maxHeight: 400, overflow: 'auto' }}>
+          <TableContainer component={Paper} sx={{ 
+            ...getTableSx(),
+            maxHeight: 400, 
+            overflow: 'auto',
+            backgroundColor: themeUnified.palette.background.paper || STYLE_GUIDE.COLORS.white,
+          }}>
             <Table stickyHeader>
               <TableHead>
                 <TableRow>
@@ -1845,11 +1854,11 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
                     <TableCell
                       key={column}
                       sx={{
-                        backgroundColor: '#f1f5f9',
-                        fontWeight: 600,
+                        backgroundColor: themeUnified.palette.table?.headerBackground || STYLE_GUIDE.COLORS.backgroundLightGray,
+                        fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold,
                         fontSize: '14px',
-                        color: theme.palette.text.primary,
-                        borderBottom: `2px solid ${theme.palette.divider}`,
+                        color: themeUnified.palette.table?.headerText || STYLE_GUIDE.COLORS.textGray,
+                        borderBottom: `2px solid ${themeUnified.palette.divider}`,
                         padding: '12px 16px'
                       }}
                     >
@@ -1863,8 +1872,11 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
                   <TableRow
                     key={rowIndex}
                     sx={{
+                      backgroundColor: rowIndex % 2 === 0 
+                        ? themeUnified.palette.table?.rowEvenBackground || STYLE_GUIDE.COLORS.white
+                        : themeUnified.palette.table?.rowOddBackground || STYLE_GUIDE.COLORS.backgroundDefault,
                       '&:hover': {
-                        backgroundColor: theme.palette.action.hover
+                        backgroundColor: themeUnified.palette.table?.rowHoverBackground || STYLE_GUIDE.COLORS.backgroundHover
                       }
                     }}
                   >
@@ -1879,7 +1891,8 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
                           key={`${rowIndex}-${column}`}
                           sx={{
                             padding: '12px 16px',
-                            borderBottom: `1px solid ${theme.palette.divider}`
+                            borderBottom: `1px solid ${themeUnified.palette.divider}`,
+                            color: themeUnified.palette.table?.rowText || STYLE_GUIDE.COLORS.textDarkGray
                           }}
                         >
                           {typeof value === 'number' ? value.toLocaleString() : value}
@@ -1933,12 +1946,16 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
             height: '100%',
           }}
         >
-          <StyledTableContainer sx={{ flex: 1, overflow: 'auto' }}>
+          <StyledTableContainer sx={{ flex: 1, overflow: 'auto', ...getTableSx() }}>
             <DrillDownTable>
               <TableHead>
                 <TableRow>
                   {columns.map((column) => (
-                    <TableCell key={column} sx={{ fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.medium }}>
+                    <TableCell key={column} sx={{ 
+                      fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold,
+                      backgroundColor: themeUnified.palette.table?.headerBackground || STYLE_GUIDE.COLORS.backgroundLightGray,
+                      color: themeUnified.palette.table?.headerText || STYLE_GUIDE.COLORS.textGray
+                    }}>
                       {column}
                     </TableCell>
                   ))}
@@ -1965,9 +1982,21 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
                   ))
                 ) : drillDownData.length > 0 ? (
                   drillDownData.map((row, index) => (
-                    <TableRow key={index}>
+                    <TableRow 
+                      key={index}
+                      sx={{
+                        backgroundColor: index % 2 === 0 
+                          ? themeUnified.palette.table?.rowEvenBackground || STYLE_GUIDE.COLORS.white
+                          : themeUnified.palette.table?.rowOddBackground || STYLE_GUIDE.COLORS.backgroundDefault,
+                        '&:hover': {
+                          backgroundColor: themeUnified.palette.table?.rowHoverBackground || STYLE_GUIDE.COLORS.backgroundHover
+                        }
+                      }}
+                    >
                       {columns.map((column) => (
-                        <TableCell key={column}>
+                        <TableCell key={column} sx={{ 
+                          color: themeUnified.palette.table?.rowText || STYLE_GUIDE.COLORS.textDarkGray 
+                        }}>
                           {typeof row[column] === 'number' ? row[column].toLocaleString() : row[column]}
                         </TableCell>
                       ))}
@@ -2065,7 +2094,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
           },
         }}
       >
-        {allCharts?.map((chart) => (
+        {allCharts?.map((chart:any) => (
           <>
             {isNaturalLangauage && (
               <>
@@ -2164,7 +2193,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
                   setNewSaveChartName={setNewSaveChartName}
                 />
               )}
-              <StyledCard>
+              <StyledCard sx={{ ...getCardSx() }}>
                 <CardContent
                   sx={{
                     flexGrow: 1,

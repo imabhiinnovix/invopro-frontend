@@ -3,6 +3,7 @@ import dataSourceReducer from '../pages/dataSources/dataSourceReducer';
 import dashboardReducer from '../pages/dashboard/dashboardReducer';
 // import naturalLanguageReducer from '../pages/naturalLanguage/naturalLanguageReducer';
 import themeReducer from '../pages/createTheme/themeSlice';
+import dashboardThemeReducer from './dashboardThemeSlice';
 import { configureStore } from '@reduxjs/toolkit';
 import customReportsReducer from '../pages/report-settings/customReportsReducer';
 
@@ -11,6 +12,7 @@ const rootReducer = combineReducers({
   dataSource: dataSourceReducer,
   dashboard: dashboardReducer,
   theme: themeReducer,
+  dashboardTheme: dashboardThemeReducer,
   customReports: customReportsReducer,
   // naturalLanguageReducer: naturalLanguageReducer,
 });

@@ -1,14 +1,12 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import {
   Box,
-  FormControl,
-  InputLabel,
   MenuItem,
-  Select,
   Button,
   type SelectChangeEvent,
   Skeleton,
 } from '@mui/material';
+import StyledSelect from '../common/StyledSelect';
 import useGet from '../../../hooks/useGet';
 import { GET } from '../../../services/apiRoutes';
 import { ReportRequestResponse } from './types';
@@ -84,8 +82,8 @@ export default function ReportSelection({
   }, [versionList?.data]);
 
   // Handle report selection change
-  const handleReportChange = (event: SelectChangeEvent<string>) => {
-    const reportId = event.target.value;
+  const handleReportChange = (event: SelectChangeEvent<unknown>) => {
+    const reportId = event.target.value as string;
     setSelectedReport(reportId);
     setSelectedVersion('');
     setVersions([]);
@@ -93,8 +91,8 @@ export default function ReportSelection({
   };
 
   // Handle version selection change
-  const handleVersionChange = (event: SelectChangeEvent<string>) => {
-    setSelectedVersion(event.target.value);
+  const handleVersionChange = (event: SelectChangeEvent<unknown>) => {
+    setSelectedVersion(event.target.value as string);
   };
 
   // Handle submit button click
@@ -183,64 +181,56 @@ export default function ReportSelection({
         boxShadow: '0px 1px 2px rgba(0, 0, 0, 0.05)',
       }}
     >
-      <FormControl sx={{ minWidth: 200, flex: 1 }}>
-        <InputLabel id="report-select-label">Report Name</InputLabel>
-        <Select
-          labelId="report-select-label"
-          id="report-select"
-          value={selectedReport}
-          label="Report Name"
-          renderValue={() => selectedReportName}
-          onChange={handleReportChange}
-        >
-          {reports.map((report, i) => (
-            <MenuItem key={report._id} value={report._id} ref={i === reports.length - 1 ? lastReportElementRef : null}>
-              {report.reportName}
-            </MenuItem>
-          ))}
-          {reportList.isFetching && (
-            <>
-              {[1, 2, 3].map((i) => (
-                <MenuItem key={`skeleton-report-${i}`} disabled sx={{ opacity: 1 }}>
-                  <Skeleton variant="text" width="100%" height={24} animation="wave" />
-                </MenuItem>
-              ))}
-            </>
-          )}
-        </Select>
-      </FormControl>
+      <StyledSelect
+        label="Report Name"
+        value={selectedReport}
+        renderValue={() => selectedReportName}
+        onChange={handleReportChange}
+        sx={{ minWidth: 200, flex: 1 }}
+      >
+        {reports.map((report, i) => (
+          <MenuItem key={report._id} value={report._id} ref={i === reports.length - 1 ? lastReportElementRef : null}>
+            {report.reportName}
+          </MenuItem>
+        ))}
+        {reportList.isFetching && (
+          <>
+            {[1, 2, 3].map((i) => (
+              <MenuItem key={`skeleton-report-${i}`} disabled sx={{ opacity: 1 }}>
+                <Skeleton variant="text" width="100%" height={24} animation="wave" />
+              </MenuItem>
+            ))}
+          </>
+        )}
+      </StyledSelect>
 
-      <FormControl sx={{ minWidth: 200, flex: 1 }}>
-        <InputLabel id="version-select-label">Version</InputLabel>
-        <Select
-          labelId="version-select-label"
-          id="version-select"
-          value={selectedVersion}
-          label="Version"
-          onChange={handleVersionChange}
-          renderValue={() => selectedVersionValue}
-          disabled={!selectedReport}
-        >
-          {versions.map((version, i) => (
-            <MenuItem
-              key={version._id}
-              value={version._id}
-              ref={i === versions.length - 1 ? lastVersionElementRef : null}
-            >
-              {version.versionValue}
-            </MenuItem>
-          ))}
-          {versionList.isFetching && (
-            <>
-              {[1, 2, 3].map((i) => (
-                <MenuItem key={`skeleton-version-${i}`} disabled sx={{ opacity: 1 }}>
-                  <Skeleton variant="text" width="100%" height={24} animation="wave" />
-                </MenuItem>
-              ))}
-            </>
-          )}
-        </Select>
-      </FormControl>
+      <StyledSelect
+        label="Version"
+        value={selectedVersion}
+        onChange={handleVersionChange}
+        renderValue={() => selectedVersionValue}
+        disabled={!selectedReport}
+        sx={{ minWidth: 200, flex: 1 }}
+      >
+        {versions.map((version, i) => (
+          <MenuItem
+            key={version._id}
+            value={version._id}
+            ref={i === versions.length - 1 ? lastVersionElementRef : null}
+          >
+            {version.versionValue}
+          </MenuItem>
+        ))}
+        {versionList.isFetching && (
+          <>
+            {[1, 2, 3].map((i) => (
+              <MenuItem key={`skeleton-version-${i}`} disabled sx={{ opacity: 1 }}>
+                <Skeleton variant="text" width="100%" height={24} animation="wave" />
+              </MenuItem>
+            ))}
+          </>
+        )}
+      </StyledSelect>
 
       <Button
         variant="contained"

@@ -9,6 +9,8 @@ import {
 } from "@mui/material";
 import WarningAmberIcon from "@mui/icons-material/WarningAmber";
 import { STYLE_GUIDE } from '../../../styles';
+import { useUnifiedTheme } from '../../../hooks/useUnifiedTheme';
+import { useComponentTypography } from '../../../hooks/useComponentTypography';
 
 export interface ConfirmDialogProps {
     open: boolean;
@@ -24,23 +26,37 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
     description,
     onConfirm,
     onCancel,
-}) => (
-    <Dialog open={open} onClose={onCancel}>
-        <DialogTitle sx={{ display: "flex", alignItems: "center", gap: 1, fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.bold }}>
-            <WarningAmberIcon color="warning" /> {title}
-        </DialogTitle>
-        <DialogContent>
-            <DialogContentText>{description}</DialogContentText>
-        </DialogContent>
-        <DialogActions>
-            <Button onClick={onCancel} variant="outlined" sx={{ fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.medium }}>
-                Cancel
-            </Button>
-            <Button onClick={onConfirm} color="error" variant="contained" sx={{ fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.bold }}>
-                Delete
-            </Button>
-        </DialogActions>
-    </Dialog>
-);
+}) => {
+    const theme = useUnifiedTheme();
+    const { getDialogTitleSx } = useComponentTypography();
+    
+    return (
+        <Dialog open={open} onClose={onCancel}>
+            <DialogTitle sx={{ 
+                display: "flex", 
+                alignItems: "center", 
+                gap: 1, 
+                ...getDialogTitleSx(),
+                color: theme.palette.dialog?.titleColor || STYLE_GUIDE.COLORS.textDarkGray,
+            }}>
+                <WarningAmberIcon color="warning" /> {title}
+            </DialogTitle>
+            <DialogContent sx={{
+                color: theme.palette.dialog?.contentColor || STYLE_GUIDE.COLORS.textDarkGray,
+                fontSize: theme.palette.dialog?.contentFontSize || '1rem',
+            }}>
+                <DialogContentText>{description}</DialogContentText>
+            </DialogContent>
+            <DialogActions>
+                <Button onClick={onCancel} variant="outlined" sx={{ fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.medium }}>
+                    Cancel
+                </Button>
+                <Button onClick={onConfirm} color="error" variant="contained" sx={{ fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.bold }}>
+                    Delete
+                </Button>
+            </DialogActions>
+        </Dialog>
+    );
+};
 
 export default ConfirmDialog;

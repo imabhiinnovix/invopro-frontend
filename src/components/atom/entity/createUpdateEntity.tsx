@@ -25,6 +25,9 @@ import CommonSelect from "../../common/dropdown/commonSelect";
 import CommonDropdownSearch from "../../common/dropdown/searchableDropdown";
 import usePut from "../../../hooks/usePut";
 import { toast } from "react-toastify";
+import { STYLE_GUIDE } from '../../../styles';
+import { useUnifiedTheme } from '../../../hooks/useUnifiedTheme';
+import { useComponentTypography } from '../../../hooks/useComponentTypography';
 
 interface CreateUpdateEntityProps {
   setReloadEntity: React.Dispatch<React.SetStateAction<boolean>>;
@@ -38,8 +41,11 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
   title,
   data,
 }) => {
+  
+  const theme = useUnifiedTheme();
+  const { getDialogTitleSx } = useComponentTypography();
   const [open, setOpen] = useState(false);
-  const [file, setFile] = useState<File | null>(null);
+  const [_file, setFile] = useState<File | null>(null);
   const [fileName, setFileName] = useState<string | null>(null);
   const [fileUploadLoader, setFileUploadLoader] = useState(false);
 
@@ -143,10 +149,10 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
           const uniqueNames = new Set<string>(); // Track unique names
 
           // Read the first row (headers) and remove duplicates
-          worksheet.getRow(1).eachCell((cell, colNumber) => {
+          worksheet.getRow(1).eachCell((cell, _colNumber) => {
             if (cell.value) {
-              let actualHeaderName = cell.value.toString().trim();
-              let cleanedName = cell.value
+              const actualHeaderName = cell.value.toString().trim();
+              const cleanedName = cell.value
                 .toString()
                 .replace(/[^a-zA-Z0-9/]/g, "") // Remove special characters except '/'
                 .replace(/\//g, " or ") // Replace '/' with ' or '
@@ -275,11 +281,34 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
     <>
       <Box onClick={() => setOpen(true)}>{CustomButton}</Box>
 
-      <Dialog fullWidth maxWidth="lg" open={open} onClose={handleCancel}>
-        <DialogTitle fontWeight="bold" fontSize={20}>
+      <Dialog 
+        fullWidth 
+        maxWidth="lg" 
+        open={open} 
+        onClose={handleCancel}
+        PaperProps={{
+          sx: {
+            backgroundColor: theme.palette.dialog?.background || STYLE_GUIDE.COLORS.white,
+            border: `1px solid ${theme.palette.dialog?.border || theme.palette.border?.main || STYLE_GUIDE.COLORS.borderGray}`,
+            borderRadius: theme.palette.dialog?.borderRadius || '8px',
+            boxShadow: theme.palette.dialog?.shadow || STYLE_GUIDE.SHADOWS.lg,
+          }
+        }}
+      >
+        <DialogTitle 
+          sx={{
+            ...getDialogTitleSx(),
+            color: theme.palette.dialog?.titleColor || STYLE_GUIDE.COLORS.textDarkGray,
+          }}
+        >
           {title}
         </DialogTitle>
-        <DialogContent dividers>
+        <DialogContent sx={{
+          color: theme.palette.dialog?.contentColor || STYLE_GUIDE.COLORS.textDarkGray,
+          fontSize: theme.palette.dialog?.contentFontSize || '1rem',
+          borderTop: `1px solid ${theme.palette.divider}`,
+          borderBottom: `1px solid ${theme.palette.divider}`,
+        }}>
           <Box component="form" onSubmit={handleSubmit(onSubmit)} noValidate>
             <Stack spacing={3}>
               {/* Entity Name */}
@@ -295,6 +324,7 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
                 })}
                 error={!!errors.name}
                 helperText={errors.name?.message}
+                sx={{ '& .MuiOutlinedInput-root': { borderRadius: STYLE_GUIDE.SPACING.s2, alignItems: 'flex-start', paddingRight: STYLE_GUIDE.SPACING.s2, fontSize: '14px', backgroundColor: theme.dashboardTheme?.colors?.background?.paper || '#ffffff', '& fieldset': { borderColor: theme.dashboardTheme?.colors?.inputBorder || STYLE_GUIDE.COLORS.darkBackground, }, '&:hover fieldset': { borderColor: theme.dashboardTheme?.colors?.borderHover || STYLE_GUIDE.COLORS.darkBorderHover, }, '&.Mui-focused fieldset': { borderColor: theme.dashboardTheme?.components?.input?.focusBorderColor || theme.dashboardTheme?.components?.input?.focusBorderColorFallback || STYLE_GUIDE.COLORS.inputFocusFallback, }, }, '& .MuiInputLabel-root': { color: theme.dashboardTheme?.colors?.text?.secondary || STYLE_GUIDE.COLORS.darkBorderFocus, }, '& .MuiInputLabel-root.Mui-focused': { color: theme.dashboardTheme?.components?.input?.focusBorderColor || theme.dashboardTheme?.components?.input?.focusBorderColorFallback || STYLE_GUIDE.COLORS.inputFocusFallback, }, '& .MuiInputBase-input': { color: `${theme.dashboardTheme?.colors?.inputText || theme.palette.text.primary} !important`, }, '& .MuiInputBase-input::placeholder': { color: `${theme.dashboardTheme?.colors?.text?.secondary || '#666'} !important`, }, '& .MuiInputBase-input:-webkit-autofill': { WebkitTextFillColor: `${theme.dashboardTheme?.colors?.inputText || theme.palette.text.primary} !important`, WebkitBoxShadow: `0 0 0 1000px ${theme.dashboardTheme?.colors?.background?.paper || '#ffffff'} inset !important`, }, }}
               />
 
               {/* Entity Description */}
@@ -306,6 +336,7 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
                 {...register("description")}
                 error={!!errors.description}
                 helperText={errors.description?.message}
+               sx={{ '& .MuiOutlinedInput-root': { borderRadius: STYLE_GUIDE.SPACING.s2, alignItems: 'flex-start', paddingRight: STYLE_GUIDE.SPACING.s2, fontSize: '14px', backgroundColor: theme.dashboardTheme?.colors?.background?.paper || '#ffffff', '& fieldset': { borderColor: theme.dashboardTheme?.colors?.inputBorder || STYLE_GUIDE.COLORS.darkBackground, }, '&:hover fieldset': { borderColor: theme.dashboardTheme?.colors?.borderHover || STYLE_GUIDE.COLORS.darkBorderHover, }, '&.Mui-focused fieldset': { borderColor: theme.dashboardTheme?.components?.input?.focusBorderColor || theme.dashboardTheme?.components?.input?.focusBorderColorFallback || STYLE_GUIDE.COLORS.inputFocusFallback, }, }, '& .MuiInputLabel-root': { color: theme.dashboardTheme?.colors?.text?.secondary || STYLE_GUIDE.COLORS.darkBorderFocus, }, '& .MuiInputLabel-root.Mui-focused': { color: theme.dashboardTheme?.components?.input?.focusBorderColor || theme.dashboardTheme?.components?.input?.focusBorderColorFallback || STYLE_GUIDE.COLORS.inputFocusFallback, }, '& .MuiInputBase-input': { color: `${theme.dashboardTheme?.colors?.inputText || theme.palette.text.primary} !important`, }, '& .MuiInputBase-input::placeholder': { color: `${theme.dashboardTheme?.colors?.text?.secondary || '#666'} !important`, }, '& .MuiInputBase-input:-webkit-autofill': { WebkitTextFillColor: `${theme.dashboardTheme?.colors?.inputText || theme.palette.text.primary} !important`, WebkitBoxShadow: `0 0 0 1000px ${theme.dashboardTheme?.colors?.background?.paper || '#ffffff'} inset !important`, }, }}
               />
 
               {fileUploadLoader ? (
@@ -344,6 +375,7 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
                         })}
                         error={!!errors.attributes?.[index]?.name}
                         helperText={errors.attributes?.[index]?.name?.message}
+                        sx={{ '& .MuiOutlinedInput-root': { borderRadius: STYLE_GUIDE.SPACING.s2, alignItems: 'flex-start', paddingRight: STYLE_GUIDE.SPACING.s2, fontSize: '14px', backgroundColor: theme.dashboardTheme?.colors?.background?.paper || '#ffffff', '& fieldset': { borderColor: theme.dashboardTheme?.colors?.inputBorder || STYLE_GUIDE.COLORS.darkBackground, }, '&:hover fieldset': { borderColor: theme.dashboardTheme?.colors?.borderHover || STYLE_GUIDE.COLORS.darkBorderHover, }, '&.Mui-focused fieldset': { borderColor: theme.dashboardTheme?.components?.input?.focusBorderColor || theme.dashboardTheme?.components?.input?.focusBorderColorFallback || STYLE_GUIDE.COLORS.inputFocusFallback, }, }, '& .MuiInputLabel-root': { color: theme.dashboardTheme?.colors?.text?.secondary || STYLE_GUIDE.COLORS.darkBorderFocus, }, '& .MuiInputLabel-root.Mui-focused': { color: theme.dashboardTheme?.components?.input?.focusBorderColor || theme.dashboardTheme?.components?.input?.focusBorderColorFallback || STYLE_GUIDE.COLORS.inputFocusFallback, }, '& .MuiInputBase-input': { color: `${theme.dashboardTheme?.colors?.inputText || theme.palette.text.primary} !important`, }, '& .MuiInputBase-input::placeholder': { color: `${theme.dashboardTheme?.colors?.text?.secondary || '#666'} !important`, }, '& .MuiInputBase-input:-webkit-autofill': { WebkitTextFillColor: `${theme.dashboardTheme?.colors?.inputText || theme.palette.text.primary} !important`, WebkitBoxShadow: `0 0 0 1000px ${theme.dashboardTheme?.colors?.background?.paper || '#ffffff'} inset !important`, }, }}
                       />
                       <TextField
                         label="File Attribute Name"
@@ -355,6 +387,7 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
                         helperText={
                           errors.attributes?.[index]?.mappingName?.message
                         }
+                        sx={{ '& .MuiOutlinedInput-root': { borderRadius: STYLE_GUIDE.SPACING.s2, alignItems: 'flex-start', paddingRight: STYLE_GUIDE.SPACING.s2, fontSize: '14px', backgroundColor: theme.dashboardTheme?.colors?.background?.paper || '#ffffff', '& fieldset': { borderColor: theme.dashboardTheme?.colors?.inputBorder || STYLE_GUIDE.COLORS.darkBackground, }, '&:hover fieldset': { borderColor: theme.dashboardTheme?.colors?.borderHover || STYLE_GUIDE.COLORS.darkBorderHover, }, '&.Mui-focused fieldset': { borderColor: theme.dashboardTheme?.components?.input?.focusBorderColor || theme.dashboardTheme?.components?.input?.focusBorderColorFallback || STYLE_GUIDE.COLORS.inputFocusFallback, }, }, '& .MuiInputLabel-root': { color: theme.dashboardTheme?.colors?.text?.secondary || STYLE_GUIDE.COLORS.darkBorderFocus, }, '& .MuiInputLabel-root.Mui-focused': { color: theme.dashboardTheme?.components?.input?.focusBorderColor || theme.dashboardTheme?.components?.input?.focusBorderColorFallback || STYLE_GUIDE.COLORS.inputFocusFallback, }, '& .MuiInputBase-input': { color: `${theme.dashboardTheme?.colors?.inputText || theme.palette.text.primary} !important`, }, '& .MuiInputBase-input::placeholder': { color: `${theme.dashboardTheme?.colors?.text?.secondary || '#666'} !important`, }, '& .MuiInputBase-input:-webkit-autofill': { WebkitTextFillColor: `${theme.dashboardTheme?.colors?.inputText || theme.palette.text.primary} !important`, WebkitBoxShadow: `0 0 0 1000px ${theme.dashboardTheme?.colors?.background?.paper || '#ffffff'} inset !important`, }, }}
                       />
 
                       <CommonSelect

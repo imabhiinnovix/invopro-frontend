@@ -18,6 +18,8 @@ import { useAppDispatch, useAppSelector } from '../../../../storeHooks';
 import { fetchDashboardShareUsers, shareDashboard } from '../../../../pages/dashboard/dashboardActions';
 import { toast } from 'react-toastify';
 import { STYLE_GUIDE } from '../../../../styles';
+import { useUnifiedTheme } from '../../../../hooks/useUnifiedTheme';
+import { useComponentTypography } from '../../../../hooks/useComponentTypography';
 
 interface ShareDashboardModalProps {
   open: boolean;
@@ -41,7 +43,11 @@ export const ShareDashboardModal: React.FC<ShareDashboardModalProps> = ({
     shareUsersLoading: state.dashboard.shareUsersLoading,
     shareUsersError: state.dashboard.shareUsersError,
   }));
-
+ 
+  const theme = useUnifiedTheme();
+  const { getDialogTitleSx } = useComponentTypography();
+  
+  
   useEffect(() => {
     if (open && dashboard?._id) {
       dispatch(fetchDashboardShareUsers(dashboard._id));
@@ -85,16 +91,35 @@ export const ShareDashboardModal: React.FC<ShareDashboardModalProps> = ({
   };
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-      <DialogTitle>
+    <Dialog 
+      open={open} 
+      onClose={onClose} 
+      maxWidth="sm" 
+      fullWidth
+      PaperProps={{
+        sx: {
+          backgroundColor: theme.palette.dialog?.background || STYLE_GUIDE.COLORS.white,
+          border: `1px solid ${theme.palette.dialog?.border || theme.palette.border?.main || STYLE_GUIDE.COLORS.borderGray}`,
+          borderRadius: theme.palette.dialog?.borderRadius || '8px',
+          boxShadow: theme.palette.dialog?.shadow || STYLE_GUIDE.SHADOWS.lg,
+        }
+      }}
+    >
+      <DialogTitle sx={{
+        ...getDialogTitleSx(),
+        color: theme.palette.dialog?.titleColor || STYLE_GUIDE.COLORS.textDarkGray,
+      }}>
         Share Dashboard
       </DialogTitle>
-      <DialogContent>
+      <DialogContent sx={{
+        color: theme.palette.dialog?.contentColor || STYLE_GUIDE.COLORS.textDarkGray,
+        fontSize: theme.palette.dialog?.contentFontSize || '1rem',
+      }}>
         <Box sx={{ mt: STYLE_GUIDE.SPACING.s2 }}>
           <Typography variant="subtitle1" sx={{ mb: STYLE_GUIDE.SPACING.s2 }}>
             {dashboard?.name}
           </Typography>
-          
+
           <FormControlLabel
             control={
               <Checkbox
@@ -114,7 +139,7 @@ export const ShareDashboardModal: React.FC<ShareDashboardModalProps> = ({
             ) : shareUsersError ? (
               <Typography color="error" variant="body2">
                 {shareUsersError}
-        </Typography>
+              </Typography>
             ) : (
               <Autocomplete
                 multiple
@@ -123,10 +148,11 @@ export const ShareDashboardModal: React.FC<ShareDashboardModalProps> = ({
                 value={selectedUsers}
                 onChange={(_, newValue) => setSelectedUsers(newValue)}
                 renderInput={(params) => (
-        <TextField
+                  <TextField
                     {...params}
                     label="Select users"
                     placeholder="Choose users to share with"
+                    sx={{ '& .MuiOutlinedInput-root': { borderRadius: STYLE_GUIDE.SPACING.s2, alignItems: 'center', fontSize: '14px', backgroundColor: theme.dashboardTheme?.colors?.background?.paper || '#ffffff', '& fieldset': { borderColor: theme.dashboardTheme?.colors?.inputBorder || STYLE_GUIDE.COLORS.darkBackground, }, '&:hover fieldset': { borderColor: theme.dashboardTheme?.colors?.borderHover || STYLE_GUIDE.COLORS.darkBorderHover, }, '&.Mui-focused fieldset': { borderColor: theme.dashboardTheme?.components?.input?.focusBorderColor || theme.dashboardTheme?.components?.input?.focusBorderColorFallback || STYLE_GUIDE.COLORS.inputFocusFallback, }, }, '& .MuiInputLabel-root': { color: theme.dashboardTheme?.components?.input?.focusBorderColor || STYLE_GUIDE.COLORS.darkBorderFocus, }, '& .MuiInputLabel-root.Mui-focused': { color: theme.dashboardTheme?.components?.input?.focusBorderColor || theme.dashboardTheme?.components?.input?.focusBorderColorFallback || STYLE_GUIDE.COLORS.inputFocusFallback, }, '& .MuiInputBase-input': { color: `${theme.dashboardTheme?.components?.input?.focusBorderColor || theme.dashboardTheme?.components?.input?.focusBorderColorFallback || '#000000'} !important`, }, '& .MuiInputBase-input::placeholder': { color: `${theme.dashboardTheme?.components?.input?.focusBorderColor || '#666'} !important`, }, '& .MuiInputBase-input:-webkit-autofill': { WebkitTextFillColor: `${theme.dashboardTheme?.components?.input?.focusBorderColor || '#000000'} !important`, WebkitBoxShadow: `0 0 0 1000px ${theme.dashboardTheme?.colors?.background?.paper || '#ffffff'} inset !important`, }, }}
                   />
                 )}
               />
@@ -137,7 +163,7 @@ export const ShareDashboardModal: React.FC<ShareDashboardModalProps> = ({
       <DialogActions>
         <Button onClick={onClose} disabled={isSubmitting}>Cancel</Button>
         <Button
-          onClick={handleSubmit} 
+          onClick={handleSubmit}
           variant="contained"
           color="primary"
           disabled={(!sharedToAll && selectedUsers.length === 0) || isSubmitting}

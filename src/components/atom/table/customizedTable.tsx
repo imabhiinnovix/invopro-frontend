@@ -12,20 +12,30 @@ import Box from '@mui/material/Box';
 import IconButton from '@mui/material/IconButton';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
+import { STYLE_GUIDE } from '../../../styles';
+import { useComponentTypography } from '../../../hooks/useComponentTypography';
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
   [`&.${tableCellClasses.head}`]: {
-    backgroundColor: theme.palette.common.black,
-    color: theme.palette.common.white,
+    backgroundColor: theme.palette.table?.headerBackground || STYLE_GUIDE.COLORS.backgroundLightGray,
+    color: theme.palette.table?.headerText || STYLE_GUIDE.COLORS.textGray,
+    fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold,
   },
   [`&.${tableCellClasses.body}`]: {
     fontSize: 14,
+    color: theme.palette.table?.rowText || STYLE_GUIDE.COLORS.textDarkGray,
   },
 }));
 
 const StyledTableRow = styled(TableRow)(({ theme }) => ({
   '&:nth-of-type(odd)': {
-    backgroundColor: theme.palette.action.hover,
+    backgroundColor: theme.palette.table?.rowOddBackground || STYLE_GUIDE.COLORS.backgroundDefault,
+  },
+  '&:nth-of-type(even)': {
+    backgroundColor: theme.palette.table?.rowEvenBackground || STYLE_GUIDE.COLORS.white,
+  },
+  '&:hover': {
+    backgroundColor: theme.palette.table?.rowHoverBackground || STYLE_GUIDE.COLORS.backgroundHover,
   },
   // hide last border
   '&:last-child td, &:last-child th': {
@@ -43,6 +53,7 @@ type CustomizedTablesProps = {
 };
 
 const CustomizedTables: React.FC<CustomizedTablesProps> = ({ rows, columns }) => {
+  const { getTableSx } = useComponentTypography();
   const [expandedRows, setExpandedRows] = React.useState<{ [key: number]: boolean }>({});
 
   const toggleRow = (index: number) => {
@@ -83,7 +94,7 @@ const CustomizedTables: React.FC<CustomizedTablesProps> = ({ rows, columns }) =>
   );
 
   return (
-    <TableContainer component={Paper}>
+    <TableContainer component={Paper} sx={{ ...getTableSx() }}>
       <Table sx={{ width: '100%' }} aria-label="customized table">
         <TableHead>
           <TableRow>
