@@ -20,6 +20,7 @@ import { GET } from '../../../services/apiRoutes';
 import { DataSourceType } from './types';
 import CreateUpdateDataSource from './createUpdateDataSource';
 import { STYLE_GUIDE } from '../../../styles';
+import { useComponentTypography } from '../../../hooks/useComponentTypography';
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
   [`&.${tableCellClasses.head}`]: {
@@ -51,6 +52,7 @@ interface AttributeOptionTableProps {
 }
 
 const DataSourceTable: React.FC<AttributeOptionTableProps> = ({ reload, setReload }) => {
+  const { getHeadingSx, getTableSx } = useComponentTypography();
   const [dataSource, setDataSource] = useState<DataSourceType[]>([]);
   const [currentPage, setCurrentPage] = useState<number>(1);
 
@@ -125,6 +127,7 @@ const DataSourceTable: React.FC<AttributeOptionTableProps> = ({ reload, setReloa
         <Typography 
           variant="h4" 
           sx={{
+            ...getHeadingSx(),
             fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.bold,
             color: STYLE_GUIDE.COLORS.textDarkGray,
             fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.xxl,
@@ -138,7 +141,7 @@ const DataSourceTable: React.FC<AttributeOptionTableProps> = ({ reload, setReloa
   }
 
   return (
-    <TableContainer component={Paper}>
+    <TableContainer component={Paper} sx={{ ...getTableSx() }}>
       <Table sx={{ width: '100%' }} aria-label="attribute-option-table">
         <TableHead>
           <TableRow>

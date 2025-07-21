@@ -44,5 +44,49 @@ export const TYPOGRAPHY = {
       wide: '0.025em',
       wider: '0.05em',
       widest: '0.1em'
-    }
+    },
+
+    fontOptions: [
+      {
+        label: 'Inter (Primary)',
+        value: '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+      },
+      {
+        label: 'Roboto (Secondary)',
+        value: '"Roboto", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+      },
+      {
+        label: 'JetBrains Mono (Monospace)',
+        value: '"JetBrains Mono", "Fira Code", "Consolas", monospace',
+      },
+      {
+        label: 'Playfair Display (Serif)',
+        value: '"Playfair Display", "Georgia", "Times New Roman", serif',
+      },
+      {
+        label: 'Poppins (Display)',
+        value: '"Poppins", "Helvetica Neue", Arial, sans-serif',
+      },
+      {
+        label: 'Montserrat',
+        value: '"Montserrat", "Helvetica Neue", Arial, sans-serif',
+      },
+      {
+        label: 'Raleway',
+        value: '"Raleway", "Helvetica Neue", Arial, sans-serif',
+      },
+      {
+        label: 'Pacifico (Handwriting)',
+        value: '"Pacifico", cursive',
+      },
+      {
+        label: 'Dancing Script (Handwriting)',
+        value: '"Dancing Script", cursive',
+      },
+      {
+        label: 'System UI',
+        value: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif',
+      },
+    ]
+    
   };

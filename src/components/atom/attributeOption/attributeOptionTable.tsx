@@ -24,6 +24,7 @@ import { GET } from '../../../services/apiRoutes';
 import { AttributeOptionRequestPayload } from './types';
 import CreateUpdateAttributeOption from './createUpdateAttributeOption';
 import { STYLE_GUIDE } from '../../../styles';
+import { useComponentTypography } from '../../../hooks/useComponentTypography';
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
   [`&.${tableCellClasses.head}`]: {
@@ -58,6 +59,7 @@ const AttributeOptionTable: React.FC<AttributeOptionTableProps> = ({
   attributeOptionReload,
   setAttributeOptionReload,
 }) => {
+  const { getTableSx } = useComponentTypography();
   const [attributes, setAttributes] = useState<AttributeOptionRequestPayload[]>([]);
   const [currentPage, setCurrentPage] = useState<number>(1);
 
@@ -171,7 +173,7 @@ const AttributeOptionTable: React.FC<AttributeOptionTableProps> = ({
   }
 
   return (
-    <TableContainer component={Paper}>
+    <TableContainer component={Paper} sx={{ ...getTableSx() }}>
       <Table sx={{ width: '100%' }} aria-label="attribute-option-table">
         <TableHead>
           <TableRow>

@@ -14,6 +14,7 @@ import React, { useState } from "react";
 import UploadMultipleFiles from "../dataSourceVerion/uploadMultipleVersionValue";
 import { STYLE_GUIDE } from '../../../styles';
 import { useUnifiedTheme } from "../../../hooks/useUnifiedTheme";
+import { useComponentTypography } from "../../../hooks/useComponentTypography";
 
 interface GenerateReportProps {
   setReload: React.Dispatch<React.SetStateAction<boolean>>;
@@ -21,6 +22,7 @@ interface GenerateReportProps {
 
 export default function GenerateReport({ setReload }: GenerateReportProps) {
   const theme = useUnifiedTheme();
+  const { getHeadingSx } = useComponentTypography();
   const {
     control,
     handleSubmit,
@@ -75,6 +77,7 @@ export default function GenerateReport({ setReload }: GenerateReportProps) {
           <Typography
             variant="h6"
             sx={{
+              ...getHeadingSx(),
               fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold,
               color: theme.palette.text.primary,
             }}

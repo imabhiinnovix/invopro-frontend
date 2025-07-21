@@ -20,6 +20,7 @@ import ProgressBar from '../../molecule/progressBar';
 import usePut from '../../../hooks/usePut';
 import { STYLE_GUIDE } from '../../../styles';
 import { useUnifiedTheme } from '../../../hooks/useUnifiedTheme';
+import { useComponentTypography } from '../../../hooks/useComponentTypography';
 
 interface CreateUpdateAttributeOptionProps {
   setAttributeOptionReload: React.Dispatch<React.SetStateAction<boolean>>;
@@ -41,6 +42,7 @@ const CreateUpdateAttributeOption: React.FC<CreateUpdateAttributeOptionProps> = 
 
   const attributeValue = watch('attributeValue');
   const theme = useUnifiedTheme();
+  const { getDialogTitleSx } = useComponentTypography();
   
 
   useEffect(() => {
@@ -103,7 +105,14 @@ const CreateUpdateAttributeOption: React.FC<CreateUpdateAttributeOptionProps> = 
       <Box onClick={() => setOpen(true)}>{CustomButton}</Box>
 
       <Dialog open={open} onClose={handleFormClose} fullWidth maxWidth="sm">
-        <DialogTitle>{title}</DialogTitle>
+        <DialogTitle
+          sx={{
+            ...getDialogTitleSx(),
+            color: theme.palette.dialog?.titleColor || STYLE_GUIDE.COLORS.textDarkGray,
+          }}
+        >
+          {title}
+        </DialogTitle>
         <DialogContent>
           <Box mt={2}>
             <Controller

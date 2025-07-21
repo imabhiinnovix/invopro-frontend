@@ -10,6 +10,7 @@ import {
 import WarningAmberIcon from "@mui/icons-material/WarningAmber";
 import { STYLE_GUIDE } from '../../../styles';
 import { useUnifiedTheme } from '../../../hooks/useUnifiedTheme';
+import { useComponentTypography } from '../../../hooks/useComponentTypography';
 
 export interface ConfirmDialogProps {
     open: boolean;
@@ -27,6 +28,7 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
     onCancel,
 }) => {
     const theme = useUnifiedTheme();
+    const { getDialogTitleSx } = useComponentTypography();
     
     return (
         <Dialog open={open} onClose={onCancel}>
@@ -34,9 +36,8 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
                 display: "flex", 
                 alignItems: "center", 
                 gap: 1, 
-                fontWeight: theme.palette.dialog?.titleFontWeight || STYLE_GUIDE.TYPOGRAPHY.fontWeight.bold,
+                ...getDialogTitleSx(),
                 color: theme.palette.dialog?.titleColor || STYLE_GUIDE.COLORS.textDarkGray,
-                fontSize: theme.palette.dialog?.titleFontSize || '1.25rem',
             }}>
                 <WarningAmberIcon color="warning" /> {title}
             </DialogTitle>

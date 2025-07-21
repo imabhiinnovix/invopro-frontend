@@ -33,6 +33,7 @@ import { useAppDispatch } from "../../../storeHooks";
 import { fetchThemeList } from "../themeActions";
 import { STYLE_GUIDE } from "../../../styles";
 import { useUnifiedTheme } from "../../../hooks/useUnifiedTheme";
+import { useComponentTypography } from "../../../hooks/useComponentTypography";
 
 
 
@@ -109,6 +110,7 @@ const CreateThemeDialog = ({
 }: CreateThemeDialogProps) => {
   const dispatch = useAppDispatch();
   const unifiedTheme = useUnifiedTheme();
+  const { getDialogTitleSx } = useComponentTypography();
   
   const [themeState, setThemeState] = useState<ThemeData>({
     name: "",
@@ -450,7 +452,12 @@ const CreateThemeDialog = ({
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
-      <DialogTitle>
+      <DialogTitle
+        sx={{
+          ...getDialogTitleSx(),
+          color: unifiedTheme.palette.dialog?.titleColor || unifiedTheme.palette.text.primary,
+        }}
+      >
         {theme ? "Update Theme" : "Create New Theme"}
         <IconButton
           aria-label="close"

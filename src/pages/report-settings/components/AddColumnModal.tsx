@@ -17,6 +17,7 @@ import AddIcon from '@mui/icons-material/Add';
 import CloseIcon from '@mui/icons-material/Close';
 import { STYLE_GUIDE } from '../../../styles';
 import { useUnifiedTheme } from '../../../hooks/useUnifiedTheme';
+import { useComponentTypography } from '../../../hooks/useComponentTypography';
 
 interface AddColumnModalProps {
     open: boolean;
@@ -35,6 +36,7 @@ const AddColumnModal: React.FC<AddColumnModalProps> = ({
     filterInfo
 }) => {
     const theme = useUnifiedTheme();
+    const { getDialogTitleSx } = useComponentTypography();
     const [reportHeader, setReportHeader] = useState("");
     const [attributeValueInput, setAttributeValueInput] = useState("");
     const [attributeValues, setAttributeValues] = useState<string[]>([]);
@@ -112,9 +114,8 @@ const AddColumnModal: React.FC<AddColumnModalProps> = ({
             }}
         >
             <DialogTitle sx={{ 
-                fontWeight: theme.palette.dialog?.titleFontWeight || STYLE_GUIDE.TYPOGRAPHY.fontWeight.bold, 
+                ...getDialogTitleSx(),
                 color: theme.palette.dialog?.titleColor || STYLE_GUIDE.COLORS.primary,
-                fontSize: theme.palette.dialog?.titleFontSize || '1.25rem',
             }}>
                 Add New Filter Column
                 <IconButton

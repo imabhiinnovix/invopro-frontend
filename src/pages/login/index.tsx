@@ -29,6 +29,7 @@ import ProgressBar from "../../components/molecule/progressBar";
 import logo from "../../assets/logo.png";
 import { STYLE_GUIDE } from "../../styles";
 import { useUnifiedTheme } from '../../hooks/useUnifiedTheme';
+import { useComponentTypography } from '../../hooks/useComponentTypography';
 
 interface getLoginPayload {
   email: string;
@@ -51,6 +52,7 @@ interface userCredType {
 function Login() {
   
   const theme = useUnifiedTheme();
+  const { getButtonSx } = useComponentTypography();
   const [showPassword, setShowPassword] = useState(false);
   const { setIsAuthUser, userDetails } = useContext(
     AuthContext
@@ -240,7 +242,7 @@ function Login() {
             type="submit"
             color="primary"
             variant="contained"
-            sx={{ fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.bold}}
+            sx={{ ...getButtonSx(), fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.bold}}
           >
             Sign in
           </LoadingButton>

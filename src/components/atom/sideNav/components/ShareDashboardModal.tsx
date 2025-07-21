@@ -19,6 +19,7 @@ import { fetchDashboardShareUsers, shareDashboard } from '../../../../pages/dash
 import { toast } from 'react-toastify';
 import { STYLE_GUIDE } from '../../../../styles';
 import { useUnifiedTheme } from '../../../../hooks/useUnifiedTheme';
+import { useComponentTypography } from '../../../../hooks/useComponentTypography';
 
 interface ShareDashboardModalProps {
   open: boolean;
@@ -44,6 +45,7 @@ export const ShareDashboardModal: React.FC<ShareDashboardModalProps> = ({
   }));
  
   const theme = useUnifiedTheme();
+  const { getDialogTitleSx } = useComponentTypography();
   
   
   useEffect(() => {
@@ -104,9 +106,8 @@ export const ShareDashboardModal: React.FC<ShareDashboardModalProps> = ({
       }}
     >
       <DialogTitle sx={{
+        ...getDialogTitleSx(),
         color: theme.palette.dialog?.titleColor || STYLE_GUIDE.COLORS.textDarkGray,
-        fontSize: theme.palette.dialog?.titleFontSize || '1.25rem',
-        fontWeight: theme.palette.dialog?.titleFontWeight || STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold,
       }}>
         Share Dashboard
       </DialogTitle>

@@ -30,8 +30,9 @@ import CommonSelect from "../../common/dropdown/commonSelect";
 import CommonDropdownSearch from "../../common/dropdown/searchableDropdown";
 import { toast } from "react-toastify";
 import axiosInstance from "../../../services/axiosInstance";
-import { STYLE_GUIDE } from "../../../styles";
-import { useUnifiedTheme } from "../../../hooks/useUnifiedTheme";
+import { STYLE_GUIDE } from '../../../styles';
+import { useUnifiedTheme } from '../../../hooks/useUnifiedTheme';
+import { useComponentTypography } from '../../../hooks/useComponentTypography';
 
 interface CreateUpdateEntityProps {
   setReloadEntity: React.Dispatch<React.SetStateAction<boolean>>;
@@ -48,6 +49,7 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
 }) => {
   console.log("CreateUpdateEntity data:", data);
   const theme = useUnifiedTheme();
+  const { getDialogTitleSx } = useComponentTypography();
   const [open, setOpen] = useState(false);
   const [isFormReady, setIsFormReady] = useState(false);
   const [_file, setFile] = useState<File | null>(null);
@@ -442,13 +444,8 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
       >
         <DialogTitle
           sx={{
-            fontWeight:
-              theme.palette.dialog?.titleFontWeight ||
-              STYLE_GUIDE.TYPOGRAPHY.fontWeight.bold,
-            fontSize: theme.palette.dialog?.titleFontSize || "20px",
-            color:
-              theme.palette.dialog?.titleColor ||
-              STYLE_GUIDE.COLORS.textDarkGray,
+            ...getDialogTitleSx(),
+            color: theme.palette.dialog?.titleColor || STYLE_GUIDE.COLORS.textDarkGray,
           }}
         >
           {title}

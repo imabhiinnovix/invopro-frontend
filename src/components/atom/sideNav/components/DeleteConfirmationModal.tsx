@@ -4,6 +4,7 @@ import LoadingButton from '@mui/lab/LoadingButton';
 import { Dashboard } from '../../../../pages/dashboard/types';
 import { STYLE_GUIDE } from '../../../../styles';
 import { useUnifiedTheme } from '../../../../hooks/useUnifiedTheme';
+import { useComponentTypography } from '../../../../hooks/useComponentTypography';
 
 interface DeleteConfirmationModalProps {
   open: boolean;
@@ -21,6 +22,7 @@ export const DeleteConfirmationModal: React.FC<DeleteConfirmationModalProps> = (
   isDeleting,
 }) => {
   const theme = useUnifiedTheme();
+  const { getDialogTitleSx } = useComponentTypography();
 
   return (
     <Dialog
@@ -40,9 +42,8 @@ export const DeleteConfirmationModal: React.FC<DeleteConfirmationModalProps> = (
       <DialogTitle 
         id="delete-dialog-title"
         sx={{
+          ...getDialogTitleSx(),
           color: theme.palette.dialog?.titleColor || STYLE_GUIDE.COLORS.textDarkGray,
-          fontSize: theme.palette.dialog?.titleFontSize || '1.25rem',
-          fontWeight: theme.palette.dialog?.titleFontWeight || STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold,
         }}
       >
         Delete Dashboard

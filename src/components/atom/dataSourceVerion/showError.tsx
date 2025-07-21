@@ -15,6 +15,7 @@ import {
 import { Close } from '@mui/icons-material';
 import useGet from '../../../hooks/useGet';
 import { GET } from '../../../services/apiRoutes';
+import { useComponentTypography } from '../../../hooks';
 
 interface ErrorDialogProps {
   dataSourceVersionId: string;
@@ -29,7 +30,7 @@ const ErrorDialog: React.FC<ErrorDialogProps> = ({ dataSourceVersionId }) => {
   const errorList = useGet<{ success: boolean; data: any[]; totalCount: number }>(
     [`dataSourceVersionErrorList`, String(currentPage)],
     GET?.Data_Import_Error +
-      `/list?dataSourceVersionId=${dataSourceVersionId}&page=${currentPage}&limit=${perPageItem}`,
+    `/list?dataSourceVersionId=${dataSourceVersionId}&page=${currentPage}&limit=${perPageItem}`,
     !!currentPage
   );
 
@@ -69,13 +70,17 @@ const ErrorDialog: React.FC<ErrorDialogProps> = ({ dataSourceVersionId }) => {
     [errorList.isFetching] // Add the correct dependency
   );
 
+  const { getDialogTitleSx } = useComponentTypography();
+
   return (
     <div>
       <Button variant="outlined" onClick={() => setDialogOpen(true)}>
         Show Errors
       </Button>
       <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} maxWidth="md" fullWidth>
-        <DialogTitle>
+        <DialogTitle sx={{
+          ...getDialogTitleSx(),
+        }}>
           Error Messages
           <IconButton
             aria-label="close"
