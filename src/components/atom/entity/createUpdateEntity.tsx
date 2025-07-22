@@ -751,7 +751,6 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
                         "date",
                         "boolean",
                         "richtext",
-                        "reference",
                         "url",
                         "option",
                         "multioption",

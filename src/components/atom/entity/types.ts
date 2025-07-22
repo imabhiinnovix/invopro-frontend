@@ -11,7 +11,6 @@ export interface Attribute {
     | "option"
     | "multioption"
     | "user"
-    | "reference"
     | "";
   validation?: string[];
   transformations?: string[];
