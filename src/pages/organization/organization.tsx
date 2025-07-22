@@ -1,8 +1,11 @@
 
-import * as React from 'react';
-import { Box, Card, CardContent, Typography, TextField, Button, Grid } from '@mui/material';
+import { useContext } from 'react';
+import { Box, Card, CardContent, Typography, TextField, Button, Grid, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, CircularProgress } from '@mui/material';
 import { useForm, Controller } from 'react-hook-form';
 import { STYLE_GUIDE } from '../../styles';
+import { AuthContext } from '../../context/AuthContext';
+import useGet from '../../hooks/useGet';
+import { GET } from '../../services/apiRoutes';
 
 export default function Organization() {
   const { control, handleSubmit, formState: { errors } } = useForm({
@@ -15,10 +18,17 @@ export default function Organization() {
     },
   });
 
-  const onSubmit = (data) => {
+  const { userDetails } = useContext(AuthContext);
+  console.log('User Details:', userDetails);
+
+  const { data, isLoading, error } = useGet<{ success: boolean; data: any[]; totalCount: number }>(
+    ['organizationList'],
+    GET.Organization_List,
+    true
+  );
+
+  const onSubmit = (data: any) => {
     console.log('Form Data:', data);
-    // Replace with your API call or logic
-    alert('Form submitted successfully!');
   };
 
   return (
@@ -42,139 +52,57 @@ export default function Organization() {
         Organization Details
       </Typography>
 
+      {/* Organization List Table */}
+      <Card sx={{ mb: 4, backgroundColor: STYLE_GUIDE?.COLORS?.white || '#fff' }}>
+        <CardContent>
+          <Typography variant="h6" sx={{ mb: 2 }}>Organization List</Typography>
+          {isLoading ? (
+            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 100 }}>
+              <CircularProgress />
+            </Box>
+          ) : error ? (
+            <Typography color="error">Failed to load organizations.</Typography>
+          ) : (
+            <TableContainer component={Paper}>
+              <Table size="small">
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Name</TableCell>
+                    <TableCell>Code</TableCell>
+                    <TableCell>Status</TableCell>
+                    <TableCell>Owner</TableCell>
+                    <TableCell>Created At</TableCell>
+                    <TableCell>Updated At</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {data?.data?.map((org) => (
+                    <TableRow key={org._id}>
+                      <TableCell>{org.name}</TableCell>
+                      <TableCell>{org.code}</TableCell>
+                      <TableCell>{org.status}</TableCell>
+                      <TableCell>{org.owner?.firstName} {org.owner?.lastName}</TableCell>
+                      <TableCell>{new Date(org.createdAt).toLocaleDateString()}</TableCell>
+                      <TableCell>{new Date(org.updatedAt).toLocaleDateString()}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          )}
+        </CardContent>
+      </Card>
+
       <Card
         sx={{
           backgroundColor: STYLE_GUIDE?.COLORS?.white || '#ffffff',
           boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.1)',
           borderRadius: '8px',
           overflow: 'visible',
-        //   maxWidth: 600,
           mx: 'auto',
         }}
       >
-        <CardContent sx={{ p: 3 }}>
-          <form onSubmit={handleSubmit(onSubmit)}>
-            <Grid container spacing={2}>
-              <Grid item xs={12} sm={6}>
-                <Controller
-                  name="name"
-                  control={control}
-                  rules={{ required: 'Name is required', minLength: { value: 3, message: 'Minimum 3 characters' } }}
-                  render={({ field }) => (
-                    <TextField
-                      {...field}
-                      label="Name"
-                      variant="outlined"
-                      fullWidth
-                      error={!!errors.name}
-                      helperText={errors.name?.message}
-                      sx={{ '& .MuiOutlinedInput-root': { borderRadius: '8px' } }}
-                    />
-                  )}
-                />
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <Controller
-                  name="notificationEmail"
-                  control={control}
-                  rules={{
-                    required: 'Email is required',
-                    pattern: { value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/, message: 'Invalid email format' }
-                  }}
-                  render={({ field }) => (
-                    <TextField
-                      {...field}
-                      label="Notification Email"
-                      variant="outlined"
-                      fullWidth
-                      error={!!errors.notificationEmail}
-                      helperText={errors.notificationEmail?.message}
-                      sx={{ '& .MuiOutlinedInput-root': { borderRadius: '8px' } }}
-                    />
-                  )}
-                />
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <Controller
-                  name="logoUrl"
-                  control={control}
-                  rules={{
-                    pattern: { value: /^(https?:\/\/)?([\w-]+\.)+[\w-]+(\/[\w-./?%&=]*)?$/, message: 'Invalid URL format' }
-                  }}
-                  render={({ field }) => (
-                    <TextField
-                      {...field}
-                      label="Logo URL (Optional)"
-                      variant="outlined"
-                      fullWidth
-                      error={!!errors.logoUrl}
-                      helperText={errors.logoUrl?.message}
-                      sx={{ '& .MuiOutlinedInput-root': { borderRadius: '8px' } }}
-                    />
-                  )}
-                />
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <Controller
-                  name="taxId"
-                  control={control}
-                  rules={{
-                    required: 'Tax ID is required',
-                    pattern: { value: /^[A-Za-z0-9]{8,15}$/, message: 'Tax ID must be 8-15 alphanumeric characters' }
-                  }}
-                  render={({ field }) => (
-                    <TextField
-                      {...field}
-                      label="Tax ID"
-                      variant="outlined"
-                      fullWidth
-                      error={!!errors.taxId}
-                      helperText={errors.taxId?.message}
-                      sx={{ '& .MuiOutlinedInput-root': { borderRadius: '8px' } }}
-                    />
-                  )}
-                />
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <Controller
-                  name="panNumber"
-                  control={control}
-                  rules={{
-                    required: 'PAN Number is required',
-                    pattern: { value: /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/, message: 'Invalid PAN format (e.g., AAAAA9999A)' }
-                  }}
-                  render={({ field }) => (
-                    <TextField
-                      {...field}
-                      label="PAN Number"
-                      variant="outlined"
-                      fullWidth
-                      error={!!errors.panNumber}
-                      helperText={errors.panNumber?.message}
-                      sx={{ '& .MuiOutlinedInput-root': { borderRadius: '8px' } }}
-                    />
-                  )}
-                />
-              </Grid>
-            </Grid>
-            <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1, mt: 3 }}>
-              <Button
-                type="submit"
-                variant="contained"
-                sx={{
-                  borderRadius: '8px',
-                  backgroundColor: STYLE_GUIDE?.COLORS?.primaryDark || '#3f51b5',
-                  color: STYLE_GUIDE?.COLORS?.white || '#ffffff',
-                  '&:hover': {
-                    backgroundColor: STYLE_GUIDE?.COLORS?.primary || '#5c6bc0',
-                  },
-                }}
-              >
-                Save
-              </Button>
-            </Box>
-          </form>
-        </CardContent>
+        
       </Card>
     </Box>
   );

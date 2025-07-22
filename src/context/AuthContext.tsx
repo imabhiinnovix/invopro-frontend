@@ -94,6 +94,7 @@ export interface AuthContextType {
   setIsAuthUser: Dispatch<SetStateAction<boolean>>;
   isAuthUser: boolean;
   clearAuthContext: () => void;
+  refreshUserDetails: () => void;
 }
 
 const defaultAuthContext: AuthContextType = {
@@ -102,6 +103,7 @@ const defaultAuthContext: AuthContextType = {
   setIsAuthUser: () => {},
   isAuthUser: false,
   clearAuthContext: () => {},
+  refreshUserDetails: () => {},
 };
 
 export const AuthContext = createContext<AuthContextType>(defaultAuthContext);
@@ -118,14 +120,28 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
     }
   }, [userDetailsAPI, isAuthUser]);
 
+  useEffect(() => {
+    const isAuthenticated = localStorage.getItem('token') || sessionStorage.getItem('token');
+    if (isAuthenticated && !isAuthUser) {
+      initialization();
+    }
+  }, []);
+
   const initialization = () => {
     setIsAuthUser(true);
+    userDetailsAPI.refetch();
   };
 
   const clearAuthContext = () => {
     setUserDetails(undefined);
     setIsAuthUser(false);
     queryClient.clear();
+  };
+
+  const refreshUserDetails = () => {
+    if (isAuthUser) {
+      userDetailsAPI.refetch();
+    }
   };
 
   return (
@@ -136,6 +152,7 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
         setIsAuthUser,
         clearAuthContext,
         isAuthUser,
+        refreshUserDetails,
       }}
     >
       {children}
