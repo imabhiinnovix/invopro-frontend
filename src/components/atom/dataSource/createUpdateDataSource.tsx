@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { useForm, useFieldArray } from "react-hook-form";
 import {
@@ -38,6 +37,8 @@ import { useComponentTypography } from "../../../hooks/useComponentTypography";
 interface Attribute {
   _id: string;
   name: string;
+  mappingName?: string;
+  type?: string;
 }
 
 interface EntityFieldOption {
@@ -52,7 +53,7 @@ interface Entity {
   _id: string;
   name: string;
   attributes: Attribute[];
-  entityFieldOptions: EntityFieldOption[];
+  entityFieldOptions?: EntityFieldOption[];
 }
 
 interface FieldSetting {
@@ -68,6 +69,7 @@ interface DataSourceRequestPayload {
   code: string;
   description?: string;
   versionType: string;
+  isShowMenu?: boolean; // Made optional to allow undefined
   entityId: string;
   entityAttributes?: string[][];
   entityAttributeIds?: string[][];
@@ -97,14 +99,13 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({
   const theme = useUnifiedTheme();
   const { getDialogTitleSx } = useComponentTypography();
   const [open, setOpen] = useState(false);
-  const [code, setCode] = useState("");
-  const [name, setName] = useState("");
+  const [code, setCode] = useState(data?.code ?? "");
+  const [name, setName] = useState(data?.name ?? "");
   const [entityAttributes, setEntityAttributes] = useState<Attribute[]>([]);
-  const [entityFieldOptions, setEntityFieldOptions] = useState<
-    EntityFieldOption[]
-  >([]);
-  console.log("Data Source Data entityFieldOptions:", entityFieldOptions);
-  const [entityName, setEntityName] = useState<string>("");
+  const [entityFieldOptions, setEntityFieldOptions] = useState<EntityFieldOption[]>([]);
+  const [entityName, setEntityName] = useState<string>(
+    typeof data?.entityId === "string" ? "" : data?.entityId?.name || ""
+  );
   const [isLoadingEntity, setIsLoadingEntity] = useState(false);
   const [isLoadingEntities, setIsLoadingEntities] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -125,18 +126,25 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({
       code: data?.code ?? "",
       description: data?.description ?? "",
       versionType: data?.versionType ?? "",
+      isShowMenu: data?.isShowMenu, // Undefined in create mode, use data.isShowMenu in update mode
       entityId:
         typeof data?.entityId === "string"
           ? data.entityId
-          : (data?.entityId?._id ?? ""),
+          : data?.entityId?._id ?? "",
       entityAttributes: data?.uniqueAttributeRules?.length
         ? data.uniqueAttributeRules.map((rule) => rule.map((attr) => attr.name))
-        : [],
+        : [[""]],
       entityAttributeIds: data?.uniqueAttributeRules?.length
         ? data.uniqueAttributeRules.map((rule) => rule.map((attr) => attr._id))
-        : [],
+        : [[""]],
       fieldSettings: data?.fieldSettings?.length
-        ? data.fieldSettings
+        ? data.fieldSettings.map((setting) => ({
+            attributeId: setting.attributeId,
+            value: setting.label || setting.value || "",
+            filter: setting.isFilterEnable || setting.filter || false,
+            sorting: setting.isSortingEnable || setting.sorting || false,
+            visible: setting.isDisplayEnable || setting.visible || false,
+          }))
         : [
             {
               attributeId: "",
@@ -183,10 +191,7 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({
     axiosInstance
       .get(GET.Entity_List)
       .then((response) => {
-        console.log("Entities API Response:", response.data);
-        const data = Array.isArray(response.data.data)
-          ? response.data.data
-          : [];
+        const data = Array.isArray(response.data.data) ? response.data.data : [];
         setEntities(data);
         if (!data.length) {
           setError("No entities available. Please try again.");
@@ -204,213 +209,156 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({
       });
   }, [open]);
 
-  // // Fetch entity details when entityId changes
-  // useEffect(() => {
-  //   if (!open || !entityId) {
-  //     setEntityAttributes([]);
-  //     setEntityFieldOptions([]);
-  //     setEntityName("");
-  //     replaceAttributes([[""]]);
-  //     replaceSettings([
-  //       {
-  //         attributeId: "",
-  //         value: "",
-  //         filter: false,
-  //         sorting: false,
-  //         visible: false,
-  //       },
-  //     ]);
-  //     return;
-  //   }
-
-  //   if (
-  //     entityName &&
-  //     data?.entityId &&
-  //     (typeof data.entityId === "string"
-  //       ? data.entityId === entityId
-  //       : data.entityId._id === entityId)
-  //   ) {
-  //     return;
-  //   }
-
-  //   setIsLoadingEntity(true);
-  //   setError(null);
-
-  //   axiosInstance
-  //     .get(`/entities/${entityId}`)
-  //     .then((response) => {
-  //       console.log("Entity Details API Response:", response.data);
-  //       if (response.data?.data) {
-  //         setEntityName(response.data.data.name || "");
-  //         setEntityAttributes(
-  //           Array.isArray(response.data.data.attributes)
-  //             ? response.data.data.attributes
-  //             : []
-  //         );
-  //         setEntityFieldOptions(
-  //           Array.isArray(response.data.data.entityFieldOptions)
-  //             ? response.data.data.entityFieldOptions
-  //             : []
-  //         );
-  //         // Reset fields when entity changes
-  //         replaceAttributes([[""]]);
-  //         replaceSettings([
-  //           {
-  //             attributeId: "",
-  //             value: "",
-  //             filter: false,
-  //             sorting: false,
-  //             visible: false,
-  //           },
-  //         ]);
-  //       } else {
-  //         setError("Invalid entity data received.");
-  //       }
-  //     })
-  //     .catch((error) => {
-  //       console.error("Error fetching entity details:", error);
-  //       setError(
-  //         error.response?.data?.message ||
-  //           "Failed to fetch entity details. Please try again."
-  //       );
-  //     })
-  //     .finally(() => {
-  //       setIsLoadingEntity(false);
-  //     });
-  // }, [
-  //   entityId,
-  //   open,
-  //   entityName,
-  //   data?.entityId,
-  //   replaceAttributes,
-  //   replaceSettings,
-  // ]);
-
+  // Fetch entity details
   const entityDetails = useGet<{
-  success: boolean;
-  data: {
-    _id: string;
-    name: string;
-    attributes: Attribute[];
-    entityFieldOptions: EntityFieldOption[];
-  };
-  message?: string;
-}>(
-  [`entityDetails`, entityId], 
-  `/entities/${entityId}`, 
-  !!(open && entityId && !(
-    entityName &&
-    data?.entityId &&
-    (typeof data.entityId === "string"
-      ? data.entityId === entityId
-      : data.entityId._id === entityId)
-  ))
-);
+    success: boolean;
+    data: {
+      _id: string;
+      name: string;
+      attributes: Attribute[];
+      entityFieldOptions?: EntityFieldOption[];
+    };
+    message?: string;
+  }>(
+    [`entityDetails`, entityId],
+    `/entities/${entityId}`,
+    !!(open && entityId)
+  );
 
-// Add this useEffect to handle the response
-useEffect(() => {
-  if (!open || !entityId) {
-    setEntityAttributes([]);
-    setEntityFieldOptions([]);
-    setEntityName("");
-    replaceAttributes([[""]]);
-    replaceSettings([
-      {
-        attributeId: "",
-        value: "",
-        filter: false,
-        sorting: false,
-        visible: false,
-      },
-    ]);
-    return;
-  }
-
-  // Handle entityDetails response
-  if (entityDetails.isSuccess && entityDetails.data?.data) {
-    setEntityName(entityDetails.data.data.name || "");
-    setEntityAttributes(
-      Array.isArray(entityDetails.data.data.attributes)
-        ? entityDetails.data.data.attributes
-        : []
-    );
-    setEntityFieldOptions(
-      Array.isArray(entityDetails.data.data.entityFieldOptions)
-        ? entityDetails.data.data.entityFieldOptions
-        : []
-    );
-    // Reset fields when entity changes
-    replaceAttributes([[""]]);
-    replaceSettings([
-      {
-        attributeId: "",
-        value: "",
-        filter: false,
-        sorting: false,
-        visible: false,
-      },
-    ]);
-  }
-
-  // Handle error
-  if (entityDetails.isError) {
-    console.error("Error fetching entity details:", entityDetails.error);
-    setError(
-      entityDetails.error?.response?.data?.message ||
-        "Failed to fetch entity details. Please try again."
-    );
-  }
-}, [
-  open,
-  entityId,
-  entityDetails.isSuccess,
-  entityDetails.isError,
-  entityDetails.data,
-  entityDetails.error,
-  replaceAttributes,
-  replaceSettings,
-  entityName,
-  data?.entityId,
-]);
-
-  // Initialize form with data
+  // Handle entity details response and derive entityFieldOptions
   useEffect(() => {
-    if (
-      data?.entityId &&
-      typeof data.entityId !== "string" &&
-      data.entityId.name
-    ) {
-      setEntityName(data.entityId.name);
-      setEntityAttributes(
-        Array.isArray(data.entityId.attributes) ? data.entityId.attributes : []
-      );
-      setEntityFieldOptions(
-        Array.isArray(data.entityId.entityFieldOptions)
-          ? data.entityId.entityFieldOptions
-          : []
-      );
-    } else {
-      setEntityName("");
+    if (!open || !entityId) {
       setEntityAttributes([]);
       setEntityFieldOptions([]);
+      if (!data?.entityId) {
+        setEntityName("");
+      }
+      return;
     }
-  }, [data]);
 
-  // Append empty fields when dialog opens
+    if (entityDetails.isSuccess && entityDetails.data?.data) {
+      const entityData = entityDetails.data.data;
+      setEntityName(entityData.name || "");
+      setEntityAttributes(
+        Array.isArray(entityData.attributes) ? entityData.attributes : []
+      );
+
+      // Derive entityFieldOptions from attributes if not provided
+      const derivedFieldOptions = entityData.attributes?.map((attr) => ({
+        label: attr.name || attr.mappingName || "",
+        value: {
+          attributeId: attr._id,
+          refAttributeId: attr.referenceEntitySetting?.refEntityField || null,
+        },
+      })) || [];
+
+      setEntityFieldOptions(
+        Array.isArray(entityData.entityFieldOptions) &&
+        entityData.entityFieldOptions.length > 0
+          ? entityData.entityFieldOptions
+          : derivedFieldOptions
+      );
+
+      // Reset fields only if entityId has changed
+      if (
+        !data?.entityId ||
+        (typeof data.entityId === "string"
+          ? data.entityId !== entityId
+          : data.entityId._id !== entityId)
+      ) {
+        replaceAttributes([[""]]);
+        replaceSettings([
+          {
+            attributeId: "",
+            value: "",
+            filter: false,
+            sorting: false,
+            visible: false,
+          },
+        ]);
+      }
+    }
+
+    if (entityDetails.isError) {
+      console.error("Error fetching entity details:", entityDetails.error);
+      setError(
+        entityDetails.error?.response?.data?.message ||
+          "Failed to fetch entity details. Please try again."
+      );
+    }
+  }, [
+    open,
+    entityId,
+    entityDetails.isSuccess,
+    entityDetails.isError,
+    entityDetails.data,
+    entityDetails.error,
+    replaceAttributes,
+    replaceSettings,
+    data?.entityId,
+  ]);
+
+  // Prefill form when dialog opens
   useEffect(() => {
-    if (open && attributeFields.length === 0) {
-      appendAttribute([""]);
-    }
-    if (open && settingFields.length === 0) {
-      appendSetting({
-        attributeId: "",
-        value: "",
-        filter: false,
-        sorting: false,
-        visible: false,
+    if (open && data) {
+      reset({
+        name: data.name ?? "",
+        code: data.code ?? "",
+        description: data.description ?? "",
+        versionType: data.versionType ?? "",
+        isShowMenu: data.isShowMenu, // Prefill with data.isShowMenu (undefined in create mode)
+        entityId:
+          typeof data.entityId === "string"
+            ? data.entityId
+            : data?.entityId?._id ?? "",
+        entityAttributes: data.uniqueAttributeRules?.length
+          ? data.uniqueAttributeRules.map((rule) => rule.map((attr) => attr.name))
+          : [[""]],
+        entityAttributeIds: data.uniqueAttributeRules?.length
+          ? data.uniqueAttributeRules.map((rule) => rule.map((attr) => attr._id))
+          : [[""]],
+        fieldSettings: data.fieldSettings?.length
+          ? data.fieldSettings.map((setting) => ({
+              attributeId: setting.attributeId,
+              value: setting.label || setting.value || "",
+              filter: setting.isFilterEnable || setting.filter || false,
+              sorting: setting.isSortingEnable || setting.sorting || false,
+              visible: setting.isDisplayEnable || setting.visible || false,
+            }))
+          : [
+              {
+                attributeId: "",
+                value: "",
+                filter: false,
+                sorting: false,
+                visible: false,
+              },
+            ],
       });
+
+      setCode(data.code ?? "");
+      setName(data.name ?? "");
+      setEntityName(
+        typeof data.entityId === "string" ? "" : data.entityId?.name || ""
+      );
+
+      if (data.entityId && typeof data.entityId !== "string") {
+        setEntityAttributes(data.entityId.attributes || []);
+        const derivedFieldOptions = data.entityId.attributes?.map((attr) => ({
+          label: attr.name || attr.mappingName || "",
+          value: {
+            attributeId: attr._id,
+            refAttributeId: attr.referenceEntitySetting?.refEntityField || null,
+          },
+        })) || [];
+        setEntityFieldOptions(
+          data.entityId.entityFieldOptions?.length
+            ? data.entityId.entityFieldOptions
+            : derivedFieldOptions
+        );
+      }
     }
-  }, [open, attributeFields, appendAttribute, settingFields, appendSetting]);
+  }, [open, data, reset]);
 
   const debouncedSetCode = debounce((value: string) => {
     setCode(value);
@@ -427,19 +375,16 @@ useEffect(() => {
   }>(
     [`codeAvailability`, code],
     `${GET?.Data_Source_Code}/${code}`,
-    !!code && /^[a-zA-Z0-9_]+$/.test(code)
+    !!code && /^[a-zA-Z0-9_]+$/.test(code) && !data?.code
   );
 
   const nameAvailability = useGet<{
     success: boolean;
     available: boolean;
     message: string;
-  }>([`nameAvailability`, name], `${GET?.Data_Source_Name}/${name}`, !!name);
+  }>([`nameAvailability`, name], `${GET?.Data_Source_Name}/${name}`, !!name && !data?.name);
 
-  const createDataSource = usePost<
-    DataSourceRequestPayload,
-    DataSourceResponse
-  >(
+  const createDataSource = usePost<DataSourceRequestPayload, DataSourceResponse>(
     ["createDataSource"],
     (response) => {
       if (response?.success) {
@@ -472,25 +417,18 @@ useEffect(() => {
   );
 
   const onSubmit = (formData: DataSourceRequestPayload) => {
-    console.log("Form Data Before Validation:", formData);
-
-    // Validate entityAttributes
     const attributeSets =
       formData.entityAttributes?.map((attributes) => {
-        // Handle both string names and attribute objects
         const attrNames = attributes
           .filter((attr) => attr !== "" && attr !== null && attr !== undefined)
           .map((attr) => {
-            // If attr is an object with name property, use the name
             if (typeof attr === "object" && attr !== null && "name" in attr) {
               return attr.name;
             }
-            // If attr is a string, use it directly
             return typeof attr === "string" ? attr : "";
           })
           .filter((name) => name !== "")
           .sort();
-
         return attrNames.join(",");
       }) || [];
 
@@ -507,7 +445,6 @@ useEffect(() => {
       return;
     }
 
-    // Validate fieldSettings
     const selectedAttributes =
       formData.fieldSettings?.map((setting) => setting.attributeId) || [];
     const uniqueSelectedAttributes = new Set(selectedAttributes);
@@ -528,7 +465,6 @@ useEffect(() => {
       return;
     }
 
-    // Map entityAttributes to entityAttributeIds and uniqueAttributeRules
     const updatedEntityAttributeIds =
       formData.entityAttributes?.map((attributes) => {
         if (!Array.isArray(attributes)) {
@@ -542,7 +478,6 @@ useEffect(() => {
               attribute !== "" && attribute !== null && attribute !== undefined
           )
           .map((attribute) => {
-            // If attribute is already an object with _id, return the _id
             if (
               typeof attribute === "object" &&
               attribute !== null &&
@@ -550,13 +485,10 @@ useEffect(() => {
             ) {
               return attribute._id;
             }
-
-            // If attribute is a string (name), find the corresponding _id
             if (typeof attribute === "string") {
               const attr = entityAttributes.find((a) => a.name === attribute);
               return attr?._id || "";
             }
-
             return "";
           })
           .filter((id) => id !== "" && typeof id === "string");
@@ -573,27 +505,22 @@ useEffect(() => {
               attribute !== "" && attribute !== null && attribute !== undefined
           )
           .map((attribute) => {
-            // If attribute is already an object with _id, return just the _id
             if (
               typeof attribute === "object" &&
               attribute !== null &&
               "_id" in attribute
             ) {
-              return attribute._id;
+              return { _id: attribute._id, name: attribute.name };
             }
-
-            // If attribute is a string (name), find the corresponding _id
             if (typeof attribute === "string") {
               const attr = entityAttributes.find((a) => a.name === attribute);
-              return attr?._id || "";
+              return attr ? { _id: attr._id, name: attr.name } : { _id: "", name: "" };
             }
-
-            return "";
+            return { _id: "", name: "" };
           })
-          .filter((id) => id !== "" && typeof id === "string");
+          .filter((item) => item._id !== "" && item.name !== "");
       }) || [];
 
-    // Map fieldSettings with correct property names
     const updatedFieldSettings =
       formData.fieldSettings?.map((setting) => {
         const option = entityFieldOptions.find(
@@ -604,7 +531,7 @@ useEffect(() => {
 
         return {
           attributeId: option?.value.attributeId || setting.attributeId,
-          refAttributeId: option?.value.refAttributeId || "",
+          refAttributeId: option?.value.refAttributeId || null,
           label: setting.value,
           isFilterEnable: !!setting.filter,
           isSortingEnable: !!setting.sorting,
@@ -617,9 +544,8 @@ useEffect(() => {
       entityAttributeIds: updatedEntityAttributeIds,
       uniqueAttributeRules: updatedUniqueAttributeRules,
       fieldSettings: updatedFieldSettings,
+      isShowMenu: formData.isShowMenu ?? false, // Default to false if undefined
     };
-
-    console.log("Submitting Payload:", updatedFormData);
 
     if (data && data._id) {
       updateDataSource.mutate({
@@ -640,9 +566,7 @@ useEffect(() => {
     setName("");
     setEntityAttributes([]);
     setEntityFieldOptions([]);
-    setEntityName(
-      typeof data?.entityId === "string" ? "" : data?.entityId?.name || ""
-    );
+    setEntityName("");
     setError(null);
     setValidationError(null);
     reset();
@@ -729,10 +653,9 @@ useEffect(() => {
                   setValue("code", sanitizedCode);
                 }}
                 error={!!errors.name}
-                defaultValue={data?.name ?? ""}
                 helperText={
                   errors.name?.message ||
-                  (nameAvailability.isFetched && name.length > 0 ? (
+                  (nameAvailability.isFetched && name.length > 0 && !data?.name ? (
                     nameAvailability.data?.available ? (
                       <Typography
                         sx={{ color: STYLE_GUIDE.COLORS.bootstrapSuccess }}
@@ -873,7 +796,6 @@ useEffect(() => {
                     }}
                   />
                 )}
-                disabled={!!data?._id || isLoadingEntities}
                 loading={isLoadingEntities}
               />
 
@@ -888,24 +810,32 @@ useEffect(() => {
                       <Autocomplete
                         multiple
                         options={entityAttributes}
-                        getOptionLabel={(option) => option.name}
+                        getOptionLabel={(option) => option.name || ""}
                         isOptionEqualToValue={(option, value) =>
                           option._id === value._id
                         }
-                        // value={field.value || []}
+                        value={
+                          Array.isArray(watch(`entityAttributes.${index}`))
+                            ? watch(`entityAttributes.${index}`)
+                                .map((name) =>
+                                  entityAttributes.find((attr) => attr.name === name)
+                                )
+                                .filter((attr): attr is Attribute => attr !== undefined)
+                            : []
+                        }
                         onChange={(event, newValue) => {
-                          setValue(`entityAttributes.${index}`, newValue, {
-                            shouldValidate: true,
-                          });
+                          setValue(
+                            `entityAttributes.${index}`,
+                            newValue.map((attr) => attr.name),
+                            { shouldValidate: true }
+                          );
                         }}
                         renderInput={(params) => (
                           <TextField
                             {...params}
                             label={`Select Unique Attribute ${index + 1}*`}
                             error={!!errors.entityAttributes?.[index]}
-                            helperText={
-                              errors.entityAttributes?.[index]?.message
-                            }
+                            helperText={errors.entityAttributes?.[index]?.message}
                           />
                         )}
                         disabled={!entityId || isLoadingEntity}
@@ -937,24 +867,17 @@ useEffect(() => {
                 Field Settings
               </Typography>
 
-              {/* // Replace the Field Settings section with this fixed version: */}
-
               {settingFields.map((field, index) => {
-                // Get the current value from form state instead of field
-                const currentAttributeId = watch(
-                  `fieldSettings.${index}.attributeId`
-                );
-
-                const selectedOption =
-                  entityFieldOptions.find((opt) => {
-                    const optAttrId =
-                      opt.value.attributeId || opt.value.refAttributeId;
-                    return optAttrId === currentAttributeId;
-                  }) || null;
+                const currentAttributeId = watch(`fieldSettings.${index}.attributeId`);
+                const selectedOption = entityFieldOptions.find(
+                  (opt) =>
+                    opt.value.attributeId === currentAttributeId ||
+                    opt.value.refAttributeId === currentAttributeId
+                ) || null;
 
                 return (
                   <Box
-                    key={field.id || index}
+                    key={field.id}
                     sx={{
                       mb: 3,
                       p: 2,
@@ -984,27 +907,20 @@ useEffect(() => {
                                 newValue?.value?.attributeId ||
                                 newValue?.value?.refAttributeId ||
                                 "";
-                              setValue(
-                                `fieldSettings.${index}.attributeId`,
-                                attributeId
-                              );
+                              setValue(`fieldSettings.${index}.attributeId`, attributeId);
                             }}
                             renderInput={(params) => (
                               <TextField
                                 {...params}
                                 label="Field*"
-                                error={
-                                  !!errors.fieldSettings?.[index]?.attributeId
-                                }
+                                error={!!errors.fieldSettings?.[index]?.attributeId}
                                 helperText={
-                                  errors.fieldSettings?.[index]?.attributeId
-                                    ?.message
+                                  errors.fieldSettings?.[index]?.attributeId?.message
                                 }
                               />
                             )}
                             disabled={!entityId || isLoadingEntity}
                             sx={{ flex: 1 }}
-                            // Add these props to prevent clearing
                             clearOnBlur={false}
                             handleHomeEndKeys={true}
                           />
@@ -1015,9 +931,7 @@ useEffect(() => {
                               required: "Show label is required",
                             })}
                             error={!!errors.fieldSettings?.[index]?.value}
-                            helperText={
-                              errors.fieldSettings?.[index]?.value?.message
-                            }
+                            helperText={errors.fieldSettings?.[index]?.value?.message}
                             sx={{ flex: 1 }}
                           />
                         </Stack>
@@ -1095,10 +1009,10 @@ useEffect(() => {
                   setValue("code", sanitizedCode);
                 }}
                 error={!!errors.code}
-                disabled={data?.code ? true : false}
+                disabled={!!data?.code}
                 helperText={
                   errors.code?.message ||
-                  (codeAvailability.isFetched && code.length > 0 ? (
+                  (codeAvailability.isFetched && code.length > 0 && !data?.code ? (
                     codeAvailability.data?.available ? (
                       <Typography
                         sx={{ color: STYLE_GUIDE.COLORS.bootstrapSuccess }}
@@ -1177,6 +1091,35 @@ useEffect(() => {
                 {errors.versionType && (
                   <Typography color="error">
                     {errors.versionType.message}
+                  </Typography>
+                )}
+              </FormControl>
+
+              <FormControl fullWidth error={!!errors.isShowMenu}>
+                <InputLabel>Show in Menu</InputLabel>
+                <Select
+                  {...register("isShowMenu", {
+                    required: "Show in Menu is required",
+                  })}
+                  value={
+                    watch("isShowMenu") === undefined
+                      ? ""
+                      : watch("isShowMenu")
+                        ? "Yes"
+                        : "No"
+                  }
+                  onChange={(event) =>
+                    setValue("isShowMenu", event.target.value === "Yes")
+                  }
+                  label="Show in Menu"
+                >
+                  <MenuItem value="">Select</MenuItem>
+                  <MenuItem value="Yes">Yes</MenuItem>
+                  <MenuItem value="No">No</MenuItem>
+                </Select>
+                {errors.isShowMenu && (
+                  <Typography color="error">
+                    {errors.isShowMenu.message}
                   </Typography>
                 )}
               </FormControl>
