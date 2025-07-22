@@ -327,16 +327,6 @@ export default function SideNav() {
     navigate("/login");
   };
   console.log("dataSourceList", dataSourceList);
-<<<<<<< HEAD
-
-=======
-  const dataNotivixSourceList = [
-    {
-      name: "IPCounsel",
-      _id: 1
-    }
-  ]
->>>>>>> 1fd3e687d8623c644d6629e33cd960719849331a
   const navItems: NavItem[] = useMemo(() => {
     const createIcon = (IconComponent: React.ElementType, route: string) => {
       return (

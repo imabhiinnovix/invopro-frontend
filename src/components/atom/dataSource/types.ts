@@ -6,7 +6,6 @@ export interface Attribute {
     | "date"
     | "boolean"
     | "richtext"
-    |"reference"
     | "url"
     | "option"
     | "multioption"
