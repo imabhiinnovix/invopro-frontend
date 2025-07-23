@@ -100,15 +100,13 @@ export default function Organization() {
   const handleEditOpen = (org: any) => {
     setSelectedOrg(org);
     setEditOpen(true);
+    setProductAccessOrgId(org._id);
     setValue('name', org.name || '');
     setValue('description', org.description || '');
     setValue('domain', org.domain || '');
     setValue('status', org.status || 'inactive');
     setValue('owner', org.owner?._id || '');
-    const productIds = (org.productSubscriptions || []).map((ps: any) => ps.productId);
-    setValue('productIds', productIds);
-    setValue('productSubscriptions', org.productSubscriptions || []);
-    replace(org.productSubscriptions || []);
+  
   };
 
   const handleEditClose = () => {
@@ -221,6 +219,26 @@ export default function Organization() {
     setProductAccessOrgId(null);
   };
 
+  useEffect(() => {
+    if (
+      editOpen &&
+      selectedOrg &&
+      productAccessData &&
+      Array.isArray(productAccessData.data) &&
+      productAccessOrgId === selectedOrg._id
+    ) {
+      const productSubs = productAccessData.data.map((item: any) => ({
+        productId: item.productId?._id || item.productId,
+        totalLicenses: String(item.totalLicenses || ''),
+        licenseExpiresAt: item.licenseExpiresAt || '',
+      }));
+      const productIds = productSubs.map((ps: any) => ps.productId);
+      setValue('productIds', productIds);
+      setValue('productSubscriptions', productSubs);
+      replace(productSubs);
+    }
+  }, [editOpen, selectedOrg, productAccessData, productAccessOrgId]);
+
   return (
     <Box height="100%">
       <Box
@@ -329,30 +347,9 @@ export default function Organization() {
                     )}
                   />
                 </Grid>
-                <Grid item xs={12}>
-                  <Controller
-                    name="status"
-                    control={control}
-                    defaultValue={selectedOrg.status === 'active' ? 'active' : 'inactive'}
-                    render={({ field: { value, onChange } }) => (
-                      <FormControlLabel
-                        control={
-                          <Switch
-                            checked={value === 'active'}
-                            onChange={(_, checked) => onChange(checked ? 'active' : 'inactive')}
-                            color="primary"
-                          />
-                        }
-                        label={value === 'active' ? 'Active' : 'Inactive'}
-                      />
-                    )}
-                  />
-                </Grid>
-              </Grid>
-              {/* Editable Product Subscriptions */}
               {(fields || []).map((field, idx) => (
                 <Grid container spacing={2} alignItems="flex-end" key={field.id} sx={{ m: 2, width: '100%', border: '1px solid #eee', borderRadius: STYLE_GUIDE.SPACING.s1 }}>
-                  <Grid item xs={4}>
+                  <Grid item xs={3}>
                     <Controller
                       name={`productSubscriptions.${idx}.productId`}
                       control={control}
@@ -374,7 +371,7 @@ export default function Organization() {
                       )}
                     />
                   </Grid>
-                  <Grid item xs={4}>
+                  <Grid item xs={3}>
                     <Controller
                       name={`productSubscriptions.${idx}.totalLicenses`}
                       control={control}
@@ -414,13 +411,32 @@ export default function Organization() {
                       aria-label="Remove"
                       color="error"
                       onClick={() => remove(idx)}
-                      disabled={fields.length === 1} // Optionally prevent removing the last one
-                    >
+                      disabled={fields.length === 1}>
                       <DeleteIcon />
                     </IconButton>
                   </Grid>
                 </Grid>
               ))}
+                <Grid item xs={12}>
+                  <Controller
+                    name="status"
+                    control={control}
+                    defaultValue={selectedOrg.status === 'active' ? 'active' : 'inactive'}
+                    render={({ field: { value, onChange } }) => (
+                      <FormControlLabel
+                        control={
+                          <Switch
+                            checked={value === 'active'}
+                            onChange={(_, checked) => onChange(checked ? 'active' : 'inactive')}
+                            color="primary"
+                          />
+                        }
+                        label={value === 'active' ? 'Active' : 'Inactive'}
+                      />
+                    )}
+                  />
+                </Grid>
+              </Grid>
               <DialogActions>
                 <Button onClick={handleEditClose}>Cancel</Button>
                 <Button type="submit" variant="contained" disabled={formLoading}>
@@ -591,8 +607,6 @@ export default function Organization() {
               {(productAccessData?.data || []).map((item: any) => (
                 <Box key={item._id} sx={{ mb: 2, p: 2, border: '1px solid #eee', borderRadius: 2 }}>
                   <Typography variant="subtitle2">{item.productId?.name || '-'}</Typography>
-                  <Typography variant="body2">Status: {item.status}</Typography>
-                  <Typography variant="body2">Created At: {item.createdAt ? new Date(item.createdAt).toLocaleDateString() : '-'}</Typography>
                   <Typography variant="body2">Total Licenses: {item.totalLicenses}</Typography>
                   <Typography variant="body2">License Expires At: {item.licenseExpiresAt ? new Date(item.licenseExpiresAt).toLocaleDateString() : '-'}</Typography>
                 </Box>
