@@ -5,7 +5,7 @@ import { GET } from '../services/apiRoutes';
 import { queryClient } from '../main';
 import { useDispatch, useSelector } from 'react-redux';
 import type { AppDispatch, RootState } from '../store';
-import { setCurrentUser, clearCurrentUser } from '../reducers/userSlice'; // Adjust path if needed
+import { setCurrentUser, clearCurrentUser } from '../reducers/userSlice'; 
 
 interface AuthProviderProps {
   children: ReactNode;
