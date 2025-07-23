@@ -97,6 +97,17 @@ export default function Organization() {
     refetch();
   }, true);
 
+  const {
+    data: productAccessData,
+    isLoading: productAccessLoading,
+    error: productAccessError,
+    refetch: refetchProductAccess,
+  } = useGet<{ success: boolean; data: any[]; totalCount: number }>(
+    ['productAccess', productAccessOrgId || ''],
+    productAccessOrgId ? `${GET.Product_Subscription_List}?organizationId=${productAccessOrgId}` : '',
+    !!productAccessOrgId
+  );
+
   const handleEditOpen = (org: any) => {
     setSelectedOrg(org);
     setEditOpen(true);
@@ -106,7 +117,7 @@ export default function Organization() {
     setValue('domain', org.domain || '');
     setValue('status', org.status || 'inactive');
     setValue('owner', org.owner?._id || '');
-  
+    refetchProductAccess()
   };
 
   const handleEditClose = () => {
@@ -199,20 +210,10 @@ export default function Organization() {
     replace(newFields);
   }, [selectedProductIds]);
 
-
-  const {
-    data: productAccessData,
-    isLoading: productAccessLoading,
-    error: productAccessError,
-  } = useGet<{ success: boolean; data: any[]; totalCount: number }>(
-    ['productAccess', productAccessOrgId || ''],
-    productAccessOrgId ? `${GET.Product_Subscription_List}?organizationId=${productAccessOrgId}` : '',
-    !!productAccessOrgId 
-  );
-
   const handleProductAccessView = (orgId: string) => {
     setProductAccessOrgId(orgId);
     setProductAccessOpen(true);
+    refetchProductAccess()
   };
 
   const handleProductAccessClose = () => {
@@ -348,76 +349,76 @@ export default function Organization() {
                     )}
                   />
                 </Grid>
-              {(fields || []).map((field, idx) => (
-                <Grid container spacing={2} alignItems="flex-end" key={field.id} sx={{ m: 2, width: '100%', border: '1px solid #eee', borderRadius: STYLE_GUIDE.SPACING.s1 }}>
-                  <Grid item xs={3}>
-                    <Controller
-                      name={`productSubscriptions.${idx}.productId`}
-                      control={control}
-                      rules={{ required: 'Product is required' }}
-                      render={({ field }) => (
-                        <FormControl fullWidth margin="dense">
-                          <InputLabel>Product</InputLabel>
-                          <Select
+                {(fields || []).map((field, idx) => (
+                  <Grid container spacing={2} alignItems="flex-end" key={field.id} sx={{ m: 2, width: '100%', border: '1px solid #eee', borderRadius: STYLE_GUIDE.SPACING.s1 }}>
+                    <Grid item xs={3}>
+                      <Controller
+                        name={`productSubscriptions.${idx}.productId`}
+                        control={control}
+                        rules={{ required: 'Product is required' }}
+                        render={({ field }) => (
+                          <FormControl fullWidth margin="dense">
+                            <InputLabel>Product</InputLabel>
+                            <Select
+                              {...field}
+                              label="Product"
+                            >
+                              {productOptions.map((product) => (
+                                <MenuItem key={product._id} value={product._id}>
+                                  {product.name}
+                                </MenuItem>
+                              ))}
+                            </Select>
+                          </FormControl>
+                        )}
+                      />
+                    </Grid>
+                    <Grid item xs={3}>
+                      <Controller
+                        name={`productSubscriptions.${idx}.totalLicenses`}
+                        control={control}
+                        rules={{ required: 'Total Licenses is required', min: { value: 1, message: 'Must be at least 1' } }}
+                        render={({ field }) => (
+                          <TextField
                             {...field}
-                            label="Product"
-                          >
-                            {productOptions.map((product) => (
-                              <MenuItem key={product._id} value={product._id}>
-                                {product.name}
-                              </MenuItem>
-                            ))}
-                          </Select>
-                        </FormControl>
-                      )}
-                    />
+                            label="Total Licenses"
+                            type="number"
+                            fullWidth
+                            margin="dense"
+                            error={!!errors.productSubscriptions && (errors.productSubscriptions as any)[idx]?.totalLicenses}
+                            helperText={(errors.productSubscriptions && (errors.productSubscriptions as any)[idx]?.totalLicenses?.message) || ''}
+                            inputProps={{ min: 1 }}
+                          />
+                        )}
+                      />
+                    </Grid>
+                    <Grid item xs={4}>
+                      <Controller
+                        name={`productSubscriptions.${idx}.licenseExpiresAt`}
+                        control={control}
+                        rules={{ required: 'License Expiry Date is required' }}
+                        render={({ field }) => (
+                          <CommonDatePicker
+                            {...field}
+                            control={control}
+                            label="License Expiry Date"
+                            views={['year', 'month', 'day']}
+                            sx={{ marginTop: 1 }}
+                          />
+                        )}
+                      />
+                    </Grid>
+                    <Grid item xs={2} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <IconButton
+                        aria-label="Remove"
+                        color="error"
+                        onClick={() => remove(idx)}
+                        disabled={fields.length === 1}>
+                        <DeleteIcon />
+                      </IconButton>
+                    </Grid>
                   </Grid>
-                  <Grid item xs={3}>
-                    <Controller
-                      name={`productSubscriptions.${idx}.totalLicenses`}
-                      control={control}
-                      rules={{ required: 'Total Licenses is required', min: { value: 1, message: 'Must be at least 1' } }}
-                      render={({ field }) => (
-                        <TextField
-                          {...field}
-                          label="Total Licenses"
-                          type="number"
-                          fullWidth
-                          margin="dense"
-                          error={!!errors.productSubscriptions && (errors.productSubscriptions as any)[idx]?.totalLicenses}
-                          helperText={(errors.productSubscriptions && (errors.productSubscriptions as any)[idx]?.totalLicenses?.message) || ''}
-                          inputProps={{ min: 1 }}
-                        />
-                      )}
-                    />
-                  </Grid>
-                  <Grid item xs={4}>
-                    <Controller
-                      name={`productSubscriptions.${idx}.licenseExpiresAt`}
-                      control={control}
-                      rules={{ required: 'License Expiry Date is required' }}
-                      render={({ field }) => (
-                        <CommonDatePicker
-                          {...field}
-                          control={control}
-                          label="License Expiry Date"
-                          views={['year', 'month', 'day']}
-                          sx={{ marginTop: 1 }}
-                        />
-                      )}
-                    />
-                  </Grid>
-                  <Grid item xs={2} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <IconButton
-                      aria-label="Remove"
-                      color="error"
-                      onClick={() => remove(idx)}
-                      disabled={fields.length === 1}>
-                      <DeleteIcon />
-                    </IconButton>
-                  </Grid>
-                </Grid>
-              ))}
+                ))}
                 <Grid item xs={12}>
                   <Controller
                     name="status"
