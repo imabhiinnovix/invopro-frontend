@@ -71,4 +71,5 @@ export const GET = {
   NL_Query: '/nlQuery',
   NL_Query_INSIGHTS: '/nlQuery/insights',
   Report_Settings: '/common/customReports/listSettings?paginate=true',
+  PERMISSION_List: '/common/permission/list',
 };

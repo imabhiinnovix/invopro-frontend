@@ -414,6 +414,11 @@ export default function SideNav() {
         //   ),
         //   route: "/notivix/ip",
         // },
+         {
+          name: "Permissions",
+          icon: createIcon(AssessmentIcon, "/themes"),
+          route: "/notivix/permissions",
+        },
       ];
     }
     return [
