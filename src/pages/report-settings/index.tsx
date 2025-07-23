@@ -12,7 +12,6 @@ import {
     Stepper,
     Step,
     StepLabel,
-    useTheme,
     Card,
     CardContent
 } from "@mui/material";

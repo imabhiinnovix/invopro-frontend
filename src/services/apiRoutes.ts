@@ -72,5 +72,7 @@ export const GET = {
   NL_Query: '/nlQuery',
   NL_Query_INSIGHTS: '/nlQuery/insights',
   Report_Settings: '/common/customReports/listSettings?paginate=true',
-  Organization_List: '/common/organization/list'
+  Organization_List: '/common/organization/list',
+  Product_List: '/common/product/list',
+  Product_Subscription_List: '/common/product-subscription/list'
 };

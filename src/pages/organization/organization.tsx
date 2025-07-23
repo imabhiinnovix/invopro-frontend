@@ -1,109 +1,609 @@
-
-import { useContext } from 'react';
-import { Box, Card, CardContent, Typography, TextField, Button, Grid, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, CircularProgress } from '@mui/material';
-import { useForm, Controller } from 'react-hook-form';
-import { STYLE_GUIDE } from '../../styles';
-import { AuthContext } from '../../context/AuthContext';
+import { Box, Typography, TextField, Button, Grid, CircularProgress, Switch, FormControlLabel, Select, MenuItem, InputLabel, FormControl } from '@mui/material';
+import { useForm, Controller, useFieldArray } from 'react-hook-form';
+import { useUnifiedTheme } from '../../hooks/useUnifiedTheme';
 import useGet from '../../hooks/useGet';
 import { GET } from '../../services/apiRoutes';
+import usePut from '../../hooks/usePut';
+import useDelete from '../../hooks/useDelete';
+import { PUT, DELETE } from '../../services/apiRoutes';
+import Dialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import DialogActions from '@mui/material/DialogActions';
+import IconButton from '@mui/material/IconButton';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
+import { useState } from 'react';
+import { STYLE_GUIDE } from '../../styles';
+import { useComponentTypography } from '../../hooks';
+import ThemeTable from '../../components/atom/table/ThemeTable';
+import usePost from '../../hooks/usePost';
+import { POST } from '../../services/apiRoutes';
+import CommonDatePicker from '../../components/common/datePicker/datePicker';
+import React from 'react';
+import { SelectChangeEvent } from '@mui/material';
+import DialogContentText from '@mui/material/DialogContentText';
+import { useEffect } from 'react';
+
+interface ProductSubscription {
+  productId: string;
+  totalLicenses: string;
+  licenseExpiresAt: string;
+}
+
+interface OrganizationFormValues {
+  name: string;
+  description: string;
+  domain: string;
+  code: string;
+  status: string;
+  owner: string;
+  productIds: string[];
+  productSubscriptions: ProductSubscription[];
+}
 
 export default function Organization() {
-  const { control, handleSubmit, formState: { errors } } = useForm({
+  const { control, handleSubmit, formState: { errors, isValid }, setValue, watch, reset, getValues } = useForm<OrganizationFormValues>({
     defaultValues: {
       name: '',
-      notificationEmail: '',
-      logoUrl: '',
-      taxId: '',
-      panNumber: '',
+      description: '',
+      domain: '',
+      code: '',
+      status: '',
+      owner: '',
+      productIds: [],
+      productSubscriptions: [],
     },
+    mode: 'onChange',
   });
 
-  const { userDetails } = useContext(AuthContext);
-  console.log('User Details:', userDetails);
+  const { fields, replace, remove } = useFieldArray<OrganizationFormValues>({
+    control,
+    name: 'productSubscriptions',
+  });
 
-  const { data, isLoading, error } = useGet<{ success: boolean; data: any[]; totalCount: number }>(
+  const [editOpen, setEditOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [selectedOrg, setSelectedOrg] = useState<any>(null);
+  const [formLoading, setFormLoading] = useState(false);
+  const [createOpen, setCreateOpen] = useState(false);
+  const [createLoading, setCreateLoading] = useState(false);
+  const [selectOpen, setSelectOpen] = React.useState(false);
+  const [productAccessOpen, setProductAccessOpen] = useState(false);
+  const [productAccessOrgId, setProductAccessOrgId] = useState<string | null>(null);
+
+  const theme = useUnifiedTheme();
+
+  const { data, isLoading, error, refetch } = useGet<{ success: boolean; data: any[]; totalCount: number }>(
     ['organizationList'],
     GET.Organization_List,
     true
   );
 
-  const onSubmit = (data: any) => {
-    console.log('Form Data:', data);
+  const deleteOrg = useDelete<any>(['organizationList'], () => {
+    setDeleteOpen(false);
+    setSelectedOrg(null);
+    refetch();
+  }, true);
+
+  const updateOrg = usePut<any, any>(['organizationList'], () => {
+    setEditOpen(false);
+    setSelectedOrg(null);
+    refetch();
+  }, true);
+
+  const createOrg = usePost<any, any>(['organizationList'], () => {
+    setCreateOpen(false);
+    refetch();
+  }, true);
+
+  const handleEditOpen = (org: any) => {
+    setSelectedOrg(org);
+    setEditOpen(true);
+    setValue('name', org.name || '');
+    setValue('description', org.description || '');
+    setValue('domain', org.domain || '');
+    setValue('status', org.status || 'inactive');
+    setValue('owner', org.owner?._id || '');
+    const productIds = (org.productSubscriptions || []).map((ps: any) => ps.productId);
+    setValue('productIds', productIds);
+    setValue('productSubscriptions', org.productSubscriptions || []);
+    replace(org.productSubscriptions || []);
+  };
+
+  const handleEditClose = () => {
+    setEditOpen(false);
+    setSelectedOrg(null);
+  };
+
+  const handleDeleteOpen = (org: any) => {
+    setSelectedOrg(org);
+    setDeleteOpen(true);
+  };
+
+  const handleDeleteClose = () => {
+    setDeleteOpen(false);
+    setSelectedOrg(null);
+  };
+
+  const handleDeleteConfirm = () => {
+    if (selectedOrg?._id) {
+      deleteOrg.mutate({ url: `${DELETE.Delete_Organization}/${selectedOrg._id}` });
+    }
+  };
+
+  const handleEditSubmit = async (formData: any) => {
+    setFormLoading(true);
+    try {
+      await updateOrg.mutateAsync({
+        url: `${PUT.UPDATE_ORGANIZATION}${selectedOrg._id}`,
+        payload: {
+          ...formData,
+          code: selectedOrg.code,
+          status: formData.status === 'active' ? 'active' : 'inactive',
+          owner: formData.owner,
+        },
+      });
+    } finally {
+      setFormLoading(false);
+    }
+  };
+
+  const handleCreateOpen = () => {
+    reset({ name: '', description: '', domain: '', code: '', owner: '', productIds: [], productSubscriptions: [] });
+    setCreateOpen(true);
+  };
+  const handleCreateClose = () => {
+    setCreateOpen(false);
+  };
+
+  const handleCreateSubmit = async (formData: any) => {
+    setCreateLoading(true);
+    try {
+      await createOrg.mutateAsync({
+        url: POST.Create_Organization,
+        payload: {
+          name: formData.name,
+          description: formData.description,
+          domain: formData.domain,
+          code: formData.code,
+          productSubscriptions: formData.productSubscriptions.map((ps: any) => ({
+            productId: ps.productId,
+            totalLicenses: Number(ps.totalLicenses),
+            licenseExpiresAt: ps.licenseExpiresAt,
+          })),
+        },
+      });
+    } finally {
+      setCreateLoading(false);
+    }
+  };
+
+
+  const { getHeadingSx } = useComponentTypography();
+
+  const { data: productListData } = useGet<{ success: boolean; data: any[]; totalCount: number }>([
+    'productList'],
+    GET.Product_List,
+    true
+  );
+  const productOptions = productListData?.data || [];
+
+  const selectedProductIds = watch('productIds') || [];
+  useEffect(() => {
+    const formValues = getValues();
+    const newFields = selectedProductIds.map((id) => {
+      const filled = formValues.productSubscriptions?.find((f: any) => f.productId === id);
+      const existing = fields.find(f => f.productId === id);
+      return filled || existing || { productId: id, totalLicenses: '', licenseExpiresAt: '' };
+    });
+    replace(newFields);
+  }, [selectedProductIds]);
+
+
+  const {
+    data: productAccessData,
+    isLoading: productAccessLoading,
+    error: productAccessError,
+  } = useGet<{ success: boolean; data: any[]; totalCount: number }>(
+    ['productAccess', productAccessOrgId || ''],
+    productAccessOrgId ? `${GET.Product_Subscription_List}?organizationId=${productAccessOrgId}` : '',
+    !!productAccessOrgId 
+  );
+
+  const handleProductAccessView = (orgId: string) => {
+    setProductAccessOrgId(orgId);
+    setProductAccessOpen(true);
+  };
+
+  const handleProductAccessClose = () => {
+    setProductAccessOpen(false);
+    setProductAccessOrgId(null);
   };
 
   return (
-    <Box
-      sx={{
-        flexGrow: 1,
-        p: 3,
-        ml: { xs: 0 },
-        backgroundColor: STYLE_GUIDE?.COLORS?.backgroundLight || '#f5f5f5',
-        minHeight: '100vh',
-      }}
-    >
-      <Typography
-        variant="h4"
+    <Box height="100%">
+      <Box
         sx={{
-          mb: 3,
-          fontWeight: 400,
-          color: STYLE_GUIDE?.COLORS?.primaryDark || '#3f51b5',
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "space-between",
+          alignItems: "flex-start",
+          gap: STYLE_GUIDE.SPACING.s4,
+          p: { xs: STYLE_GUIDE.SPACING.s4, md: STYLE_GUIDE.SPACING.s6 },
+          backgroundColor: theme.palette.background.paper,
+          borderBottom: "1px solid",
+          borderColor: STYLE_GUIDE.COLORS.divider,
         }}
       >
-        Organization Details
-      </Typography>
+        <Box sx={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Typography
+            variant="h4"
+            sx={{
+              ...getHeadingSx(),
+              mb: STYLE_GUIDE?.SPACING?.s1,
+            }}
+          >
+            Organization Details
+          </Typography>
+          <Button variant="contained" color="primary" onClick={handleCreateOpen}>
+            Create
+          </Button>
+        </Box>
+        {isLoading ? (
+          <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 100 }}>
+            <CircularProgress />
+          </Box>
+        ) : error ? (
+          <Typography color="error">Failed to load organizations.</Typography>
+        ) : (
+          <ThemeTable
+            columns={["name", "code", "status", "owner", "description", "createdAt", "updatedAt", "productAccess", "action"]}
+            rows={
+              data?.data?.map((org) => ({
+                name: org.name,
+                code: org.code,
+                status: org.status,
+                owner: org.owner ? `${org.owner.firstName || ''} ${org.owner.lastName || ''}`.trim() : '-',
+                description: org.description,
+                createdAt: new Date(org.createdAt).toLocaleDateString(),
+                updatedAt: new Date(org.updatedAt).toLocaleDateString(),
+                productAccess: (
+                  <Button size="small" variant="outlined" onClick={() => handleProductAccessView(org._id)}>
+                    View
+                  </Button>
+                ),
+                action: (
+                  <>
+                    <IconButton onClick={() => handleEditOpen(org)} size="small" title="Edit">
+                      <EditIcon fontSize="small" />
+                    </IconButton>
+                    <IconButton onClick={() => handleDeleteOpen(org)} size="small" title="Delete">
+                      <DeleteIcon fontSize="small" />
+                    </IconButton>
+                  </>
+                ),
+              })) || []
+            }
+            stickyHeader={true}
+          />
+        )}
+      </Box>
 
-      {/* Organization List Table */}
-      <Card sx={{ mb: 4, backgroundColor: STYLE_GUIDE?.COLORS?.white || '#fff' }}>
-        <CardContent>
-          <Typography variant="h6" sx={{ mb: 2 }}>Organization List</Typography>
-          {isLoading ? (
+      <Dialog open={editOpen} onClose={handleEditClose} maxWidth="sm" fullWidth>
+        <DialogTitle>Edit Organization</DialogTitle>
+        <DialogContent>
+          {selectedOrg && (
+            <form
+              onSubmit={handleSubmit(handleEditSubmit)}
+              style={{ marginTop: 8 }}
+            >
+              <Grid container spacing={2}>
+                <Grid item xs={12}>
+                  <Controller
+                    name="name"
+                    control={control}
+                    defaultValue={selectedOrg.name}
+                    render={({ field }) => (
+                      <TextField {...field} label="Name" fullWidth margin="normal" />
+                    )}
+                  />
+                </Grid>
+                <Grid item xs={12}>
+                  <Controller
+                    name="description"
+                    control={control}
+                    defaultValue={selectedOrg.description || ''}
+                    render={({ field }) => (
+                      <TextField {...field} label="Description" fullWidth margin="normal" />
+                    )}
+                  />
+                </Grid>
+                <Grid item xs={12}>
+                  <Controller
+                    name="domain"
+                    control={control}
+                    defaultValue={selectedOrg.domain || ''}
+                    render={({ field }) => (
+                      <TextField {...field} label="Domain" fullWidth margin="normal" />
+                    )}
+                  />
+                </Grid>
+                <Grid item xs={12}>
+                  <Controller
+                    name="status"
+                    control={control}
+                    defaultValue={selectedOrg.status === 'active' ? 'active' : 'inactive'}
+                    render={({ field: { value, onChange } }) => (
+                      <FormControlLabel
+                        control={
+                          <Switch
+                            checked={value === 'active'}
+                            onChange={(_, checked) => onChange(checked ? 'active' : 'inactive')}
+                            color="primary"
+                          />
+                        }
+                        label={value === 'active' ? 'Active' : 'Inactive'}
+                      />
+                    )}
+                  />
+                </Grid>
+              </Grid>
+              {/* Editable Product Subscriptions */}
+              {(fields || []).map((field, idx) => (
+                <Grid container spacing={2} alignItems="flex-end" key={field.id} sx={{ m: 2, width: '100%', border: '1px solid #eee', borderRadius: STYLE_GUIDE.SPACING.s1 }}>
+                  <Grid item xs={4}>
+                    <Controller
+                      name={`productSubscriptions.${idx}.productId`}
+                      control={control}
+                      rules={{ required: 'Product is required' }}
+                      render={({ field }) => (
+                        <FormControl fullWidth margin="dense">
+                          <InputLabel>Product</InputLabel>
+                          <Select
+                            {...field}
+                            label="Product"
+                          >
+                            {productOptions.map((product) => (
+                              <MenuItem key={product._id} value={product._id}>
+                                {product.name}
+                              </MenuItem>
+                            ))}
+                          </Select>
+                        </FormControl>
+                      )}
+                    />
+                  </Grid>
+                  <Grid item xs={4}>
+                    <Controller
+                      name={`productSubscriptions.${idx}.totalLicenses`}
+                      control={control}
+                      rules={{ required: 'Total Licenses is required', min: { value: 1, message: 'Must be at least 1' } }}
+                      render={({ field }) => (
+                        <TextField
+                          {...field}
+                          label="Total Licenses"
+                          type="number"
+                          fullWidth
+                          margin="dense"
+                          error={!!errors.productSubscriptions && (errors.productSubscriptions as any)[idx]?.totalLicenses}
+                          helperText={(errors.productSubscriptions && (errors.productSubscriptions as any)[idx]?.totalLicenses?.message) || ''}
+                          inputProps={{ min: 1 }}
+                        />
+                      )}
+                    />
+                  </Grid>
+                  <Grid item xs={4}>
+                    <Controller
+                      name={`productSubscriptions.${idx}.licenseExpiresAt`}
+                      control={control}
+                      rules={{ required: 'License Expiry Date is required' }}
+                      render={({ field }) => (
+                        <CommonDatePicker
+                          {...field}
+                          control={control}
+                          label="License Expiry Date"
+                          views={['year', 'month', 'day']}
+                          sx={{ marginTop: 1 }}
+                        />
+                      )}
+                    />
+                  </Grid>
+                  <Grid item xs={2} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <IconButton
+                      aria-label="Remove"
+                      color="error"
+                      onClick={() => remove(idx)}
+                      disabled={fields.length === 1} // Optionally prevent removing the last one
+                    >
+                      <DeleteIcon />
+                    </IconButton>
+                  </Grid>
+                </Grid>
+              ))}
+              <DialogActions>
+                <Button onClick={handleEditClose}>Cancel</Button>
+                <Button type="submit" variant="contained" disabled={formLoading}>
+                  {formLoading ? 'Saving...' : 'Save'}
+                </Button>
+              </DialogActions>
+            </form>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={deleteOpen} onClose={handleDeleteClose}>
+        <DialogTitle>Delete Organization</DialogTitle>
+        <DialogContent>
+          <Typography>Are you sure you want to delete this organization?</Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleDeleteClose}>Cancel</Button>
+          <Button onClick={handleDeleteConfirm} color="error" variant="contained" disabled={deleteOrg.isPending}>
+            {deleteOrg.isPending ? 'Deleting...' : 'Delete'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog open={createOpen} onClose={handleCreateClose} maxWidth="sm" fullWidth>
+        <DialogTitle>Create Organization</DialogTitle>
+        <DialogContent>
+          <form
+            onSubmit={handleSubmit(handleCreateSubmit)}
+            style={{ marginTop: 8 }}
+            noValidate
+          >
+            <Grid container spacing={2}>
+              <Grid item xs={12}>
+                <Controller
+                  name="productIds"
+                  control={control}
+                  rules={{ required: 'At least one product is required' }}
+                  render={({ field }) => (
+                    <FormControl fullWidth margin="normal" error={!!errors.productIds}>
+                      <InputLabel id="product-multiselect-label">Products</InputLabel>
+                      <Select
+                        {...field}
+                        labelId="product-multiselect-label"
+                        multiple
+                        open={selectOpen}
+                        onOpen={() => setSelectOpen(true)}
+                        onClose={() => setSelectOpen(false)}
+                        onChange={(event: SelectChangeEvent<string[]>) => {
+                          const value = event.target.value as string[];
+                          field.onChange(value);
+                          setSelectOpen(false); // close after selection
+                        }}
+                        label="Products"
+                        renderValue={(selected) =>
+                          (selected as string[]).map(
+                            (id) => productOptions.find((p) => p._id === id)?.name || id
+                          ).join(', ')
+                        }
+                      >
+                        {productOptions.map((product) => (
+                          <MenuItem key={product._id} value={product._id}>
+                            {product.name}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                  )}
+                />
+              </Grid>
+              <Grid item xs={12}>
+                <Controller
+                  name="name"
+                  control={control}
+                  rules={{ required: 'Name is required' }}
+                  render={({ field }) => (
+                    <TextField
+                      {...field}
+                      label="Name"
+                      fullWidth
+                      margin="normal"
+                      error={!!errors.name}
+                      helperText={errors.name?.message}
+                    />
+                  )}
+                />
+              </Grid>
+              <Grid item xs={12}>
+                <Controller
+                  name="description"
+                  control={control}
+                  rules={{ required: 'Description is required' }}
+                  render={({ field }) => (
+                    <TextField
+                      {...field}
+                      label="Description"
+                      fullWidth
+                      margin="normal"
+                      error={!!errors.description}
+                      helperText={errors.description?.message}
+                    />
+                  )}
+                />
+              </Grid>
+              <Grid item xs={12}>
+                <Controller
+                  name="domain"
+                  control={control}
+                  rules={{ required: 'Domain is required' }}
+                  render={({ field }) => (
+                    <TextField
+                      {...field}
+                      label="Domain"
+                      fullWidth
+                      margin="normal"
+                      error={!!errors.domain}
+                      helperText={errors.domain?.message}
+                    />
+                  )}
+                />
+              </Grid>
+              <Grid item xs={12}>
+                <Controller
+                  name="code"
+                  control={control}
+                  rules={{ required: 'Code is required' }}
+                  render={({ field }) => (
+                    <TextField
+                      {...field}
+                      label="Code"
+                      fullWidth
+                      margin="normal"
+                      error={!!errors.code}
+                      helperText={errors.code?.message}
+                    />
+                  )}
+                />
+              </Grid>
+            </Grid>
+            <DialogActions>
+              <Button onClick={handleCreateClose}>Cancel</Button>
+              <Button type="submit" variant="contained" disabled={!isValid || createLoading}>
+                {createLoading ? 'Creating...' : 'Create'}
+              </Button>
+            </DialogActions>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Product Access Modal */}
+      <Dialog open={productAccessOpen} onClose={handleProductAccessClose} maxWidth="sm" fullWidth>
+        <DialogTitle>Product Access</DialogTitle>
+        <DialogContent>
+          {productAccessLoading ? (
             <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 100 }}>
               <CircularProgress />
             </Box>
-          ) : error ? (
-            <Typography color="error">Failed to load organizations.</Typography>
+          ) : productAccessError ? (
+            <DialogContentText color="error.main">
+              {typeof productAccessError === 'string'
+                ? productAccessError
+                : 'Failed to fetch product access'}
+            </DialogContentText>
+          ) : !(productAccessData?.data?.length) ? (
+            <DialogContentText>No product access found.</DialogContentText>
           ) : (
-            <TableContainer component={Paper}>
-              <Table size="small">
-                <TableHead>
-                  <TableRow>
-                    <TableCell>Name</TableCell>
-                    <TableCell>Code</TableCell>
-                    <TableCell>Status</TableCell>
-                    <TableCell>Owner</TableCell>
-                    <TableCell>Created At</TableCell>
-                    <TableCell>Updated At</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {data?.data?.map((org) => (
-                    <TableRow key={org._id}>
-                      <TableCell>{org.name}</TableCell>
-                      <TableCell>{org.code}</TableCell>
-                      <TableCell>{org.status}</TableCell>
-                      <TableCell>{org.owner?.firstName} {org.owner?.lastName}</TableCell>
-                      <TableCell>{new Date(org.createdAt).toLocaleDateString()}</TableCell>
-                      <TableCell>{new Date(org.updatedAt).toLocaleDateString()}</TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
+            <Box>
+              {(productAccessData?.data || []).map((item: any) => (
+                <Box key={item._id} sx={{ mb: 2, p: 2, border: '1px solid #eee', borderRadius: 2 }}>
+                  <Typography variant="subtitle2">{item.productId?.name || '-'}</Typography>
+                  <Typography variant="body2">Status: {item.status}</Typography>
+                  <Typography variant="body2">Created At: {item.createdAt ? new Date(item.createdAt).toLocaleDateString() : '-'}</Typography>
+                  <Typography variant="body2">Total Licenses: {item.totalLicenses}</Typography>
+                  <Typography variant="body2">License Expires At: {item.licenseExpiresAt ? new Date(item.licenseExpiresAt).toLocaleDateString() : '-'}</Typography>
+                </Box>
+              ))}
+            </Box>
           )}
-        </CardContent>
-      </Card>
-
-      <Card
-        sx={{
-          backgroundColor: STYLE_GUIDE?.COLORS?.white || '#ffffff',
-          boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.1)',
-          borderRadius: '8px',
-          overflow: 'visible',
-          mx: 'auto',
-        }}
-      >
-        
-      </Card>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleProductAccessClose}>Close</Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }
