@@ -133,13 +133,14 @@ export default function Organization() {
   const handleEditSubmit = async (formData: any) => {
     setFormLoading(true);
     try {
+      const { productIds, ...rest } = formData;
       await updateOrg.mutateAsync({
         url: `${PUT.UPDATE_ORGANIZATION}${selectedOrg._id}`,
         payload: {
-          ...formData,
+          ...rest,
           code: selectedOrg.code,
-          status: formData.status === 'active' ? 'active' : 'inactive',
-          owner: formData.owner,
+          status: rest.status === 'active' ? 'active' : 'inactive',
+          owner: rest.owner,
         },
       });
     } finally {
