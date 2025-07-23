@@ -13,6 +13,10 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import { useUnifiedTheme } from '../../hooks/useUnifiedTheme';
 import { STYLE_GUIDE } from '../../styles';
 
+interface UsersProps {
+  organizationId?: string;
+}
+
 // Mock data as provided by user
 const mockUsers = [
   {
@@ -66,7 +70,7 @@ const columns: GridColDef[] = [
     width: 130, 
     disableColumnMenu: true, 
     resizable: true,
-    valueFormatter: (params) => params.value ? params.value.toString() : '-'
+    valueFormatter: (params: any) => params.value ? params.value.toString() : '-'
   },
   {
     field: 'roleIds',
@@ -74,7 +78,7 @@ const columns: GridColDef[] = [
     width: 200,
     disableColumnMenu: true,
     resizable: true,
-    renderCell: (params) => (
+    renderCell: (params: any) => (
       <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
         {params.value?.map((roleId: string) => (
           <Chip key={roleId} label={roleId.slice(-8)} size="small" variant="outlined" />
@@ -88,7 +92,7 @@ const columns: GridColDef[] = [
     width: 150,
     disableColumnMenu: true,
     resizable: true,
-    renderCell: (params) => params.value ? params.value.slice(-8) : '-',
+    renderCell: (params: any) => params.value ? params.value.slice(-8) : '-',
   },
   {
     field: 'status',
@@ -96,7 +100,7 @@ const columns: GridColDef[] = [
     width: 100,
     disableColumnMenu: true,
     resizable: true,
-    renderCell: (params) => (
+    renderCell: (params: any) => (
       <Chip 
         label={params.value} 
         size="small" 
@@ -111,7 +115,7 @@ const columns: GridColDef[] = [
     width: 100,
     disableColumnMenu: true,
     resizable: true,
-    renderCell: (params) => (
+    renderCell: (params: any) => (
       <Chip 
         label={params.value ? 'Yes' : 'No'} 
         size="small" 
@@ -127,7 +131,7 @@ const columns: GridColDef[] = [
     disableColumnMenu: true,
     sortable: false,
     resizable: false,
-    renderCell: (params) => (
+    renderCell: (params: any) => (
       <Box sx={{ display: 'flex', gap: 1 }}>
         <Tooltip title="Edit" arrow>
           <Button
@@ -163,13 +167,18 @@ const columns: GridColDef[] = [
 
 const paginationModel = { page: 0, pageSize: 10 };
 
-export default function Users() {
+export default function Users({ organizationId }: UsersProps) {
   const theme = useUnifiedTheme();
   const [openModal, setOpenModal] = useState(false);
   const [modalMode, setModalMode] = useState<'add' | 'edit' | 'view' | 'filter' | null>(null);
   const [openDialog, setOpenDialog] = useState(false);
   const [deleteId, setDeleteId] = useState<number | null>(null);
   const [searchValue, setSearchValue] = useState('');
+
+  // Filter users by organization if organizationId is provided
+  const filteredUsers = organizationId 
+    ? usersWithIds.filter(user => user.organizationId === organizationId)
+    : usersWithIds;
 
   // Form data for modal
   const [formData, setFormData] = useState({
@@ -373,7 +382,7 @@ export default function Users() {
 
           {/* Table */}
           <DataGrid
-            rows={usersWithIds.map((user) => ({
+            rows={filteredUsers.map((user) => ({
               ...user,
               handleEdit,
               handleView,

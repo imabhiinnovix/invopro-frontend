@@ -74,5 +74,6 @@ export const GET = {
   Report_Settings: '/common/customReports/listSettings?paginate=true',
   Organization_List: '/common/organization/list',
   Product_List: '/common/product/list',
-  Product_Subscription_List: '/common/product-subscription/list'
+  Product_Subscription_List: '/common/product-subscription/list',
+  User_List: '/common/user/list'
 };
