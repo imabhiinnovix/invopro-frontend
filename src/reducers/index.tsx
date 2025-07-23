@@ -14,7 +14,7 @@ const rootReducer = combineReducers({
   theme: themeReducer,
   dashboardTheme: dashboardThemeReducer,
   customReports: customReportsReducer,
-  user: userReducer,
+  userPermission: userReducer,
   // naturalLanguageReducer: naturalLanguageReducer,
 });
 

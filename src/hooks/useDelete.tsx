@@ -1,3 +1,4 @@
+
 // Third-Party Library
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import axiosInstance from '../services/axiosInstance';
@@ -7,12 +8,12 @@ import axios, { AxiosError } from 'axios';
 type onSuccess<TResponse> = (data: TResponse) => void;
 type onError = (error: AxiosError<{ success: boolean; message?: string }>) => void;
 
-const postFetcher = async <TRequest, TResponse>(url: string, payload: TRequest): Promise<TResponse> => {
-  const response = await axiosInstance.post<TResponse>(url, payload);
+const deleteFetcher = async <TResponse,>(url: string): Promise<TResponse> => {
+  const response = await axiosInstance.delete(url);
   return response.data;
 };
 
-const usePost = <TRequest, TResponse>(
+const useDelete = <TRequest, TResponse>(
   key: string[],
   onSuccess?: onSuccess<TResponse>,
   showToast: boolean = false,
@@ -20,16 +21,16 @@ const usePost = <TRequest, TResponse>(
 ) => {
   const queryClient = useQueryClient();
 
-  return useMutation<TResponse, unknown, { url: string; payload: TRequest }>({
-    mutationFn: async ({ url, payload }) => {
-      return postFetcher<TRequest, TResponse>(url, payload);
+  return useMutation<TResponse, unknown, { url: string; payload: TRequest | null }>({
+    mutationFn: async ({ url }) => {
+      return deleteFetcher<TResponse>(url);
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: key });
-      const successMessage = (data as { message: string }).message;
+      const successMessage = (data as { message?: string }).message;
       if (showToast) {
         setTimeout(() => {
-          toast.success(successMessage);
+          toast.success(successMessage || 'Deleted successfully');
         }, 100);
       }
       if (onSuccess) {
@@ -50,4 +51,4 @@ const usePost = <TRequest, TResponse>(
   });
 };
 
-export default usePost;
+export default useDelete;

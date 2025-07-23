@@ -1,6 +1,5 @@
 
 
-
 import * as React from 'react';
 import { useState, useEffect } from 'react';
 import { DataGrid, GridColDef } from '@mui/x-data-grid';
@@ -16,7 +15,13 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import { useUnifiedTheme } from '../../hooks/useUnifiedTheme';
 import { STYLE_GUIDE } from '../../styles';
 import useGet from '../../hooks/useGet';
-import { GET } from '../../services/apiRoutes';
+import usePost from '../../hooks/usePost';
+import usePut from '../../hooks/usePut';
+
+import { GET, POST, PUT, DELETE } from '../../services/apiRoutes';
+import { useSelector } from 'react-redux';
+import { RootState } from '../../reducers';
+import useDelete from '../../hooks/useDelete';
 
 // Define the expected response type for the API
 interface Permission {
@@ -39,6 +44,25 @@ interface ApiResponse {
   totalCount: number;
 }
 
+// Define response type for POST, PUT, and DELETE APIs// Define response type for POST, PUT, and DELETE APIs
+
+interface PermissionPostResponse {
+  success: boolean;
+  data: any; 
+}
+
+interface PermissionPostPayload {
+  name: string;
+  method: string;
+  dataSourceId: string;
+  resourceType?: string;
+}
+
+interface DataSource {
+  _id: string;
+  name: string;
+}
+
 // Custom Pagination Component
 type CustomPaginationProps = {
   paginationModel: { page: number; pageSize: number };
@@ -47,21 +71,21 @@ type CustomPaginationProps = {
 };
 
 const CustomPagination: React.FC<CustomPaginationProps> = ({ paginationModel, setPaginationModel, rowCount }) => {
-  const totalPages = Math.ceil(rowCount / paginationModel.pageSize) || 1; 
-  const pageSizeOptions = [5, 10, 20]; 
+  const totalPages = Math.ceil(rowCount / paginationModel.pageSize) || 1;
+  const pageSizeOptions = [5, 10, 20];
 
   return (
     <Box
       sx={{
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "flex-end",
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'flex-end',
         p: 1,
-        backgroundColor: STYLE_GUIDE?.COLORS?.white || "#ffffff",
-        borderTop: `1px solid ${STYLE_GUIDE?.COLORS?.divider || "#e0e0e0"}`,
+        backgroundColor: STYLE_GUIDE?.COLORS?.white || '#ffffff',
+        borderTop: `1px solid ${STYLE_GUIDE?.COLORS?.divider || '#e0e0e0'}`,
       }}
     >
-      <Box sx={{ display: "flex", alignItems: "center", mr: 2 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', mr: 2 }}>
         <Typography sx={{ mr: 1 }}>Rows per page:</Typography>
         <Select
           value={paginationModel.pageSize}
@@ -69,19 +93,19 @@ const CustomPagination: React.FC<CustomPaginationProps> = ({ paginationModel, se
             setPaginationModel({
               ...paginationModel,
               pageSize: Number(e.target.value),
-              page: 0, // Reset to first page when page size changes
+              page: 0,
             })
           }
           size="small"
           sx={{
-            "& .MuiOutlinedInput-root": {
-              borderRadius: "8px",
-              backgroundColor: STYLE_GUIDE?.COLORS?.white || "#ffffff",
-              "& fieldset": {
-                borderColor: STYLE_GUIDE?.COLORS?.divider || "#e0e0e0",
+            '& .MuiOutlinedInput-root': {
+              borderRadius: '8px',
+              backgroundColor: STYLE_GUIDE?.COLORS?.white || '#ffffff',
+              '& fieldset': {
+                borderColor: STYLE_GUIDE?.COLORS?.divider || '#e0e0e0',
               },
-              "&:hover fieldset": {
-                borderColor: STYLE_GUIDE?.COLORS?.primaryDark || "#3f51b5",
+              '&:hover fieldset': {
+                borderColor: STYLE_GUIDE?.COLORS?.primaryDark || '#3f51b5',
               },
             },
           }}
@@ -99,18 +123,18 @@ const CustomPagination: React.FC<CustomPaginationProps> = ({ paginationModel, se
             disabled={paginationModel.page === 0}
             onClick={() => setPaginationModel({ ...paginationModel, page: 0 })}
             sx={{
-              minWidth: "auto",
+              minWidth: 'auto',
               mx: 1,
-              color: STYLE_GUIDE?.COLORS?.primaryDark || "#3f51b5",
-              "&:hover": {
-                backgroundColor: STYLE_GUIDE?.COLORS?.backgroundDefault || "#f1f5f9",
+              color: STYLE_GUIDE?.COLORS?.primaryDark || '#3f51b5',
+              '&:hover': {
+                backgroundColor: STYLE_GUIDE?.COLORS?.backgroundDefault || '#f1f5f9',
               },
-              "&.Mui-disabled": {
-                color: STYLE_GUIDE?.COLORS?.divider || "#e0e0e0",
+              '&.Mui-disabled': {
+                color: STYLE_GUIDE?.COLORS?.divider || '#e0e0e0',
               },
             }}
           >
-            <Typography>{"<<"}</Typography>
+            <Typography>{'<<'}</Typography>
           </Button>
         </span>
       </Tooltip>
@@ -125,18 +149,18 @@ const CustomPagination: React.FC<CustomPaginationProps> = ({ paginationModel, se
               })
             }
             sx={{
-              minWidth: "auto",
+              minWidth: 'auto',
               mx: 1,
-              color: STYLE_GUIDE?.COLORS?.primaryDark || "#3f51b5",
-              "&:hover": {
-                backgroundColor: STYLE_GUIDE?.COLORS?.backgroundDefault || "#f1f5f9",
+              color: STYLE_GUIDE?.COLORS?.primaryDark || '#3f51b5',
+              '&:hover': {
+                backgroundColor: STYLE_GUIDE?.COLORS?.backgroundDefault || '#f1f5f9',
               },
-              "&.Mui-disabled": {
-                color: STYLE_GUIDE?.COLORS?.divider || "#e0e0e0",
+              '&.Mui-disabled': {
+                color: STYLE_GUIDE?.COLORS?.divider || '#e0e0e0',
               },
             }}
           >
-            <Typography>{"<"}</Typography>
+            <Typography>{'<'}</Typography>
           </Button>
         </span>
       </Tooltip>
@@ -154,18 +178,18 @@ const CustomPagination: React.FC<CustomPaginationProps> = ({ paginationModel, se
               })
             }
             sx={{
-              minWidth: "auto",
+              minWidth: 'auto',
               mx: 1,
-              color: STYLE_GUIDE?.COLORS?.primaryDark || "#3f51b5",
-              "&:hover": {
-                backgroundColor: STYLE_GUIDE?.COLORS?.backgroundDefault || "#f1f5f9",
+              color: STYLE_GUIDE?.COLORS?.primaryDark || '#3f51b5',
+              '&:hover': {
+                backgroundColor: STYLE_GUIDE?.COLORS?.backgroundDefault || '#f1f5f9',
               },
-              "&.Mui-disabled": {
-                color: STYLE_GUIDE?.COLORS?.divider || "#e0e0e0",
+              '&.Mui-disabled': {
+                color: STYLE_GUIDE?.COLORS?.divider || '#e0e0e0',
               },
             }}
           >
-            <Typography>{">"}</Typography>
+            <Typography>{'>'}</Typography>
           </Button>
         </span>
       </Tooltip>
@@ -180,18 +204,18 @@ const CustomPagination: React.FC<CustomPaginationProps> = ({ paginationModel, se
               })
             }
             sx={{
-              minWidth: "auto",
+              minWidth: 'auto',
               mx: 1,
-              color: STYLE_GUIDE?.COLORS?.primaryDark || "#3f51b5",
-              "&:hover": {
-                backgroundColor: STYLE_GUIDE?.COLORS?.backgroundDefault || "#f1f5f9",
+              color: STYLE_GUIDE?.COLORS?.primaryDark || '#3f51b5',
+              '&:hover': {
+                backgroundColor: STYLE_GUIDE?.COLORS?.backgroundDefault || '#f1f5f9',
               },
-              "&.Mui-disabled": {
-                color: STYLE_GUIDE?.COLORS?.divider || "#e0e0e0",
+              '&.Mui-disabled': {
+                color: STYLE_GUIDE?.COLORS?.divider || '#e0e0e0',
               },
             }}
           >
-            <Typography>{">>"}</Typography>
+            <Typography>{'>>'}</Typography>
           </Button>
         </span>
       </Tooltip>
@@ -199,7 +223,6 @@ const CustomPagination: React.FC<CustomPaginationProps> = ({ paginationModel, se
   );
 };
 
-// Grid columns definition
 const columns: GridColDef[] = [
   { field: 'name', headerName: 'Name', width: 150, disableColumnMenu: true, resizable: true },
   { field: 'resourceType', headerName: 'Resource Type', width: 150, disableColumnMenu: true, resizable: true },
@@ -224,7 +247,7 @@ const columns: GridColDef[] = [
     width: 150,
     disableColumnMenu: true,
     resizable: true,
-    renderCell: (params) => params.value ? params.value.slice(-8) : '-',
+    renderCell: (params) => (params.value ? params.value.slice(-8) : '-'),
   },
   { field: 'method', headerName: 'Method', width: 100, disableColumnMenu: true, resizable: true },
   {
@@ -278,56 +301,91 @@ export default function Permissions() {
   const [searchValue, setSearchValue] = useState('');
   const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: 10 });
   const [debouncedSearchValue, setDebouncedSearchValue] = useState(searchValue);
+  const [permissionReload, setPermissionReload] = useState(false); // State to trigger listing reload
+  const dataSource = useSelector((state: RootState) => state.dataSource.list);
 
+  
+
+  // Debounce search input
   useEffect(() => {
     const handler = setTimeout(() => {
       setDebouncedSearchValue(searchValue);
-    }, 500); 
-  
+    }, 500);
     return () => {
       clearTimeout(handler);
     };
   }, [searchValue]);
+
   // Form data for modal
   const [formData, setFormData] = useState({
+    id: '',
     name: '',
-    resourceType: '',
-    status: 'active' as 'active' | 'inactive',
     dataSourceId: '',
     method: '',
   });
 
-  // API call using useGet hook
+  // API call 
   const perPageItem = paginationModel.pageSize;
   const permissionList = useGet<ApiResponse>(
-    ['permissionList', String(paginationModel.page + 1), debouncedSearchValue],
+    ['permissionList', String(paginationModel.page + 1), debouncedSearchValue, String(permissionReload)],
     `${GET?.PERMISSION_List}?page=${paginationModel.page + 1}&limit=${perPageItem}&search=${encodeURIComponent(debouncedSearchValue)}`,
     true
   );
 
-  // Log the API response data
-  useEffect(() => {
-    if (permissionList?.data) {
-      console.log('Permission List Data:', permissionList.data);
-    }
-    if (permissionList?.error) {
-      console.error('Error fetching permissions:', permissionList.error);
-    }
-  }, [permissionList]);
+  // POST API 
+  const createPermission = usePost<PermissionPostPayload, PermissionPostResponse>(
+    ['createPermission'],
+    (data) => {
+      if (data?.success) {
+        setPermissionReload(true); // Trigger listing reload
+        handleCloseModal();
+      }
+    },
+    true
+  );
 
-  // Process API data for DataGrid
+  // PUT API 
+  const updatePermission = usePut<PermissionPostPayload, PermissionPostResponse>(
+    ['updatePermission'],
+    (data) => {
+      if (data?.success) {
+        setPermissionReload(true); 
+        handleCloseModal();
+      }
+    },
+    true
+  );
+
+  // DELETE API 
+  const deletePermission = useDelete<null, PermissionPostResponse>(
+    ['deletePermission'],
+    (data) => {
+      if (data?.success) {
+        setPermissionReload(true); 
+        handleCloseDialog();
+      }
+    },
+    true
+  );
+
+  useEffect(() => {
+    if (permissionList?.data && permissionReload) {
+      setPermissionReload(false);
+    }
+  }, [permissionList, permissionReload]);
+
+  
   const permissionsWithIds = Array.isArray(permissionList?.data?.data) && permissionList.data.data.length > 0
     ? permissionList.data.data.map((permission) => ({
         ...permission,
-        id: permission._id || `temp-${Math.random().toString(36).substr(2, 9)}`, // Fallback ID if _id is missing
+        id: permission._id || `temp-${Math.random().toString(36).substr(2, 9)}`,
       }))
     : [];
 
   const handleEdit = (row: Permission) => {
     setFormData({
+      id: row._id || '',
       name: row.name || '',
-      resourceType: row.resourceType || '',
-      status: row.status || 'active',
       dataSourceId: row.dataSourceId || '',
       method: row.method || '',
     });
@@ -337,9 +395,8 @@ export default function Permissions() {
 
   const handleView = (row: Permission) => {
     setFormData({
+      id: row._id || '',
       name: row.name || '',
-      resourceType: row.resourceType || '',
-      status: row.status || 'active',
       dataSourceId: row.dataSourceId || '',
       method: row.method || '',
     });
@@ -356,9 +413,8 @@ export default function Permissions() {
 
   const handleAddPermission = () => {
     setFormData({
+      id: '',
       name: '',
-      resourceType: '',
-      status: 'active',
       dataSourceId: '',
       method: '',
     });
@@ -375,9 +431,8 @@ export default function Permissions() {
     setOpenModal(false);
     setModalMode(null);
     setFormData({
+      id: '',
       name: '',
-      resourceType: '',
-      status: 'active',
       dataSourceId: '',
       method: '',
     });
@@ -389,20 +444,55 @@ export default function Permissions() {
   };
 
   const handleConfirmDelete = async () => {
-    console.log(`Deleting permission with ID: ${deleteId}`);
-    handleCloseDialog();
+    if (deleteId) {
+      try {
+        console.log(`Deleting permission with ID: ${deleteId}`);
+        await deletePermission.mutate({
+          url: `${DELETE.PERMISSION_DELETE}/${deleteId}`, 
+          payload: null, 
+        });
+      } catch (error) {
+        console.error('Error deleting permission:', error);
+      }
+    }
   };
 
   const handleSave = async () => {
     try {
       if (modalMode === 'add') {
-        console.log('Add permission:', formData);
+        console.log('Add permission payload:', {
+          name: formData.name,
+          method: formData.method,
+          dataSourceId: formData.dataSourceId,
+        });
+        await createPermission.mutate({
+          url: POST.PERMISSION_CREATE,
+          payload: {
+            name: formData.name,
+            method: formData.method,
+            dataSourceId: formData.dataSourceId,
+          },
+        });
       } else if (modalMode === 'edit') {
-        console.log('Edit permission:', formData);
+        console.log('Edit permission payload:', {
+          id: formData.id,
+          name: formData.name,
+          method: formData.method,
+          dataSourceId: formData.dataSourceId,
+          resourceType: 'Data Source',
+        });
+        await updatePermission.mutate({
+          url: `${PUT.PERMISSION_UPDATE}/${formData.id}`,
+          payload: {
+            name: formData.name,
+            method: formData.method,
+            dataSourceId: formData.dataSourceId,
+            resourceType: 'Data Source',
+          },
+        });
       } else if (modalMode === 'filter') {
         console.log('Apply filter:', formData);
       }
-      handleCloseModal();
     } catch (error) {
       console.error('Error saving permission:', error);
     }
@@ -410,8 +500,15 @@ export default function Permissions() {
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchValue(e.target.value);
-    setPaginationModel({ ...paginationModel, page: 0 }); // Reset to first page on search
+    setPaginationModel({ ...paginationModel, page: 0 });
   };
+
+  const dataSourceOptions: { id: string; name: string }[] = Array.isArray(dataSource)
+    ? dataSource.map((ds: DataSource) => ({
+        id: ds._id,
+        name: ds.name,
+      }))
+    : [];
 
   return (
     <Box
@@ -422,7 +519,6 @@ export default function Permissions() {
         minHeight: '100vh',
       }}
     >
-      {/* Heading */}
       <Typography
         variant="h4"
         sx={{
@@ -433,7 +529,6 @@ export default function Permissions() {
         Permissions
       </Typography>
 
-      {/* Card containing controls and table */}
       <Card
         sx={{
           borderRadius: '8px',
@@ -441,7 +536,6 @@ export default function Permissions() {
         }}
       >
         <CardContent sx={{ p: 3 }}>
-          {/* Controls: Search on left, Filter and Add buttons on right */}
           <Box
             sx={{
               display: 'flex',
@@ -512,7 +606,7 @@ export default function Permissions() {
             sx={{
               overflow: 'visible',
             }}
-            loading={permissionList.isLoading}
+            loading={permissionList.isLoading || createPermission.isLoading || updatePermission.isLoading || deletePermission.isLoading}
             rowCount={permissionList?.data?.totalCount || 0}
             paginationModel={paginationModel}
             onPaginationModelChange={setPaginationModel}
@@ -529,7 +623,7 @@ export default function Permissions() {
         </CardContent>
       </Card>
 
-      {/* Modal for Add/Edit/View/Filter */}
+      {/* Modal */}
       <Modal
         open={openModal}
         onClose={handleCloseModal}
@@ -551,9 +645,13 @@ export default function Permissions() {
           }}
         >
           <Typography variant="h6" sx={{ mb: 2 }}>
-            {modalMode === 'add' ? 'Add Permission' :
-              modalMode === 'edit' ? 'Edit Permission' :
-                modalMode === 'view' ? 'View Permission' : 'Filter Permissions'}
+            {modalMode === 'add'
+              ? 'Add Permission'
+              : modalMode === 'edit'
+                ? 'Edit Permission'
+                : modalMode === 'view'
+                  ? 'View Permission'
+                  : 'Filter Permissions'}
           </Typography>
 
           <Box
@@ -573,48 +671,43 @@ export default function Permissions() {
               required
               sx={{ '& .MuiOutlinedInput-root': { borderRadius: '8px' } }}
             />
-            <TextField
-              label="Resource Type"
-              value={formData.resourceType}
-              onChange={(e) => setFormData({ ...formData, resourceType: e.target.value })}
-              disabled={modalMode === 'view'}
-              variant="outlined"
-              fullWidth
-              required
-              sx={{ '& .MuiOutlinedInput-root': { borderRadius: '8px' } }}
-            />
+
             <FormControl fullWidth sx={{ '& .MuiOutlinedInput-root': { borderRadius: '8px' } }}>
-              <InputLabel>Status</InputLabel>
+              <InputLabel>Data Source</InputLabel>
               <Select
-                value={formData.status}
-                onChange={(e) => setFormData({ ...formData, status: e.target.value as 'active' | 'inactive' })}
+                value={formData.dataSourceId}
+                onChange={(e) => setFormData({ ...formData, dataSourceId: e.target.value })}
                 disabled={modalMode === 'view'}
-                label="Status"
+                label="Data Source"
+                required
               >
-                <MenuItem value="active">Active</MenuItem>
-                <MenuItem value="inactive">Inactive</MenuItem>
+                <MenuItem value="" disabled>
+                  Select Data Source
+                </MenuItem>
+                {dataSourceOptions.map((option) => (
+                  <MenuItem key={option.id} value={option.id}>
+                    {option.name}
+                  </MenuItem>
+                ))}
               </Select>
             </FormControl>
-            <TextField
-              label="Data Source ID"
-              value={formData.dataSourceId}
-              onChange={(e) => setFormData({ ...formData, dataSourceId: e.target.value })}
-              disabled={modalMode === 'view'}
-              variant="outlined"
-              fullWidth
-              required
-              sx={{ '& .MuiOutlinedInput-root': { borderRadius: '8px' } }}
-            />
-            <TextField
-              label="Method"
-              value={formData.method}
-              onChange={(e) => setFormData({ ...formData, method: e.target.value })}
-              disabled={modalMode === 'view'}
-              variant="outlined"
-              fullWidth
-              required
-              sx={{ '& .MuiOutlinedInput-root': { borderRadius: '8px' } }}
-            />
+
+            <FormControl fullWidth sx={{ '& .MuiOutlinedInput-root': { borderRadius: '8px' } }}>
+              <InputLabel>Method</InputLabel>
+              <Select
+                value={formData.method}
+                onChange={(e) => setFormData({ ...formData, method: e.target.value })}
+                disabled={modalMode === 'view'}
+                label="Method"
+                required
+              >
+                <MenuItem value="" disabled>
+                  Select Method
+                </MenuItem>
+                <MenuItem value="GET">GET</MenuItem>
+                <MenuItem value="UPDATE">UPDATE</MenuItem>
+              </Select>
+            </FormControl>
           </Box>
 
           <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1, mt: 3 }}>
@@ -634,6 +727,7 @@ export default function Permissions() {
                 sx={{
                   borderRadius: '8px',
                 }}
+                disabled={!formData.name || !formData.dataSourceId || !formData.method || createPermission.isLoading || updatePermission.isLoading}
               >
                 {modalMode === 'filter' ? 'Apply' : 'Save'}
               </Button>
@@ -652,9 +746,7 @@ export default function Permissions() {
           },
         }}
       >
-        <DialogTitle>
-          Confirm Delete
-        </DialogTitle>
+        <DialogTitle>Confirm Delete</DialogTitle>
         <DialogContent>
           <Typography>
             Are you sure you want to delete the Permission with ID {deleteId?.slice(-8) || 'Unknown'}?
@@ -675,6 +767,7 @@ export default function Permissions() {
             sx={{
               borderRadius: '8px',
             }}
+            disabled={deletePermission.isLoading}
           >
             Yes
           </Button>

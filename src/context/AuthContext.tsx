@@ -5,7 +5,8 @@ import { GET } from '../services/apiRoutes';
 import { queryClient } from '../main';
 import { useDispatch, useSelector } from 'react-redux';
 import type { AppDispatch, RootState } from '../store';
-import { setCurrentUser, clearCurrentUser } from '../reducers/userSlice'; 
+import { setCurrentUser, clearCurrentUser, setPermissions } from '../reducers/userSlice'; 
+import { BackendPermission } from '../utils/utils';
 
 interface AuthProviderProps {
   children: ReactNode;
@@ -42,6 +43,7 @@ type UserResponse = {
       _id: string;
       name: string;
     };
+    permissionIds: string[];
     password: string;
     role: string;
     roleId: number;
@@ -97,21 +99,18 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
   const [isAuthUser, setIsAuthUser] = useState(false);
   const [userDetails, setUserDetails] = useState<UserResponse | undefined>(undefined);
   const dispatch = useDispatch<AppDispatch>();
-  const { currentUser } = useSelector((state: RootState) => state.user);
+  const { currentUser } = useSelector((state: RootState) => state.userPermission);
 
   const userDetailsAPI = useGet<UserResponse>(['userDetails'], GET.USER_DETAILS, !!isAuthUser);
 
   useEffect(() => {
-    console.log('AuthProvider useEffect - isAuthUser:', isAuthUser);
     if (userDetailsAPI.isLoading) {
-      console.log('Fetching user details...');
       return;
     }
     if (userDetailsAPI.isSuccess && userDetailsAPI.data && isAuthUser && !currentUser) {
-      console.log('User details fetched successfully:', userDetailsAPI.data.data);
       setUserDetails(userDetailsAPI.data);
-      // Dispatch the entire userDetailsAPI.data.data to Redux
       dispatch(setCurrentUser(userDetailsAPI.data.data));
+      dispatch(setPermissions(userDetailsAPI.data.data.permissionIds as unknown as BackendPermission[]));
     }
     if (userDetailsAPI.isError) {
       console.error('Failed to fetch user details:', userDetailsAPI.error);

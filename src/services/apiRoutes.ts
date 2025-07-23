@@ -35,10 +35,13 @@ export const POST = {
   DUPLICATE_THEME: '/widgetTheme/duplicate/',
   UPDATE_THEME: '/widgetTheme/update/',
   UPDATE_REPORT_SETTINGS: '/customReports/updateSettings',
+  PERMISSION_CREATE: '/common/permission/create',
 };
 export const PUT = {
   UPDATE_DATA_SOURCE: '/dataSource/update',
   UPDATE_ATTRIBUTE_OPTION: '/attributeOptions/update',
+    PERMISSION_UPDATE: '/common/permission/update',
+
 };
 export const GET = {
   USER_DETAILS: '/common/user/get-current-user',
@@ -73,3 +76,9 @@ export const GET = {
   Report_Settings: '/common/customReports/listSettings?paginate=true',
   PERMISSION_List: '/common/permission/list',
 };
+
+
+export const DELETE ={
+      PERMISSION_DELETE: '/common/permission/delete',
+
+}

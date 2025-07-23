@@ -1,6 +1,9 @@
 
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
+import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { BackendPermission, formatPermissions, PermissionMap } from '../utils/utils'; // Adjust path
+
+// Define the User interface (unchanged)
 export interface User {
   createdAt: string;
   email: string;
@@ -54,14 +57,32 @@ export interface User {
   };
 }
 
+// Define Permission interface for backward compatibility
+interface Permission {
+  _id: string;
+  name: string;
+  resourceType: string;
+  status: 'active' | 'inactive';
+  dataSourceId: string;
+  method: string;
+  organizationId: string;
+  isSuperUser: boolean;
+  createdAt: string;
+  updatedAt: string;
+  __v: number;
+}
+
+// Extend UserState to include permissions as PermissionMap
 interface UserState {
   currentUser: User | null;
+  permissions: PermissionMap | null;
   loading: boolean;
   error: string | null;
 }
 
 const initialState: UserState = {
   currentUser: null,
+  permissions: null,
   loading: false,
   error: null,
 };
@@ -75,9 +96,27 @@ const userSlice = createSlice({
     },
     clearCurrentUser(state) {
       state.currentUser = null;
+      state.permissions = null;
+    },
+    setPermissions(state, action: PayloadAction<BackendPermission[]>) {
+      // Skip if payload is invalid
+      if (!action.payload || !Array.isArray(action.payload)) {
+        state.error = 'Invalid permissions data';
+        return;
+      }
+      state.permissions = formatPermissions(action.payload);
+
+      state.permissions = formatPermissions(action.payload);
+    },
+    setLoading(state, action: PayloadAction<boolean>) {
+      state.loading = action.payload;
+    },
+    setError(state, action: PayloadAction<string | null>) {
+      state.error = action.payload;
     },
   },
 });
 
-export const { setCurrentUser, clearCurrentUser } = userSlice.actions;
+export const { setCurrentUser, clearCurrentUser, setPermissions, setLoading, setError } =
+  userSlice.actions;
 export default userSlice.reducer;
