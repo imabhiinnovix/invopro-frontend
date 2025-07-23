@@ -326,7 +326,6 @@ export default function SideNav() {
     clearLocalStorage();
     navigate("/login");
   };
-  console.log("dataSourceList", dataSourceList);
   const dataNotivixSourceList = [
     {
       name: "IPCounsel",

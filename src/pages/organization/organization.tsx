@@ -1,181 +1,623 @@
-
-import * as React from 'react';
-import { Box, Card, CardContent, Typography, TextField, Button, Grid } from '@mui/material';
-import { useForm, Controller } from 'react-hook-form';
+import { Box, Typography, TextField, Button, Grid, CircularProgress, Switch, FormControlLabel, Select, MenuItem, InputLabel, FormControl } from '@mui/material';
+import { useForm, Controller, useFieldArray } from 'react-hook-form';
+import { useUnifiedTheme } from '../../hooks/useUnifiedTheme';
+import useGet from '../../hooks/useGet';
+import { GET } from '../../services/apiRoutes';
+import usePut from '../../hooks/usePut';
+import useDelete from '../../hooks/useDelete';
+import { PUT, DELETE } from '../../services/apiRoutes';
+import Dialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import DialogActions from '@mui/material/DialogActions';
+import IconButton from '@mui/material/IconButton';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
+import { useState } from 'react';
 import { STYLE_GUIDE } from '../../styles';
+import { useComponentTypography } from '../../hooks';
+import ThemeTable from '../../components/atom/table/ThemeTable';
+import usePost from '../../hooks/usePost';
+import { POST } from '../../services/apiRoutes';
+import CommonDatePicker from '../../components/common/datePicker/datePicker';
+import React from 'react';
+import { SelectChangeEvent } from '@mui/material';
+import DialogContentText from '@mui/material/DialogContentText';
+import { useEffect } from 'react';
+
+interface ProductSubscription {
+  productId: string;
+  totalLicenses: string;
+  licenseExpiresAt: string;
+}
+
+interface OrganizationFormValues {
+  name: string;
+  description: string;
+  domain: string;
+  code: string;
+  status: string;
+  owner: string;
+  productIds: string[];
+  productSubscriptions: ProductSubscription[];
+}
 
 export default function Organization() {
-  const { control, handleSubmit, formState: { errors } } = useForm({
+  const { control, handleSubmit, formState: { errors, isValid }, setValue, watch, reset, getValues } = useForm<OrganizationFormValues>({
     defaultValues: {
       name: '',
-      notificationEmail: '',
-      logoUrl: '',
-      taxId: '',
-      panNumber: '',
+      description: '',
+      domain: '',
+      code: '',
+      status: '',
+      owner: '',
+      productIds: [],
+      productSubscriptions: [],
     },
+    mode: 'onChange',
   });
 
-  const onSubmit = (data) => {
-    console.log('Form Data:', data);
-    // Replace with your API call or logic
-    alert('Form submitted successfully!');
+  const { fields, replace, remove } = useFieldArray<OrganizationFormValues>({
+    control,
+    name: 'productSubscriptions',
+  });
+
+  const [editOpen, setEditOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [selectedOrg, setSelectedOrg] = useState<any>(null);
+  const [formLoading, setFormLoading] = useState(false);
+  const [createOpen, setCreateOpen] = useState(false);
+  const [createLoading, setCreateLoading] = useState(false);
+  const [selectOpen, setSelectOpen] = React.useState(false);
+  const [productAccessOpen, setProductAccessOpen] = useState(false);
+  const [productAccessOrgId, setProductAccessOrgId] = useState<string | null>(null);
+
+  const theme = useUnifiedTheme();
+
+  const { data, isLoading, error, refetch } = useGet<{ success: boolean; data: any[]; totalCount: number }>(
+    ['organizationList'],
+    GET.Organization_List,
+    true
+  );
+
+  const deleteOrg = useDelete<any>(['organizationList'], () => {
+    setDeleteOpen(false);
+    setSelectedOrg(null);
+    refetch();
+  }, true);
+
+  const updateOrg = usePut<any, any>(['organizationList'], () => {
+    setEditOpen(false);
+    setSelectedOrg(null);
+    refetch();
+  }, true);
+
+  const createOrg = usePost<any, any>(['organizationList'], () => {
+    setCreateOpen(false);
+    refetch();
+  }, true);
+
+  const handleEditOpen = (org: any) => {
+    setSelectedOrg(org);
+    setEditOpen(true);
+    setProductAccessOrgId(org._id);
+    setValue('name', org.name || '');
+    setValue('description', org.description || '');
+    setValue('domain', org.domain || '');
+    setValue('status', org.status || 'inactive');
+    setValue('owner', org.owner?._id || '');
+  
   };
 
-  return (
-    <Box
-      sx={{
-        flexGrow: 1,
-        p: 3,
-        ml: { xs: 0 },
-        backgroundColor: STYLE_GUIDE?.COLORS?.backgroundLight || '#f5f5f5',
-        minHeight: '100vh',
-      }}
-    >
-      <Typography
-        variant="h4"
-        sx={{
-          mb: 3,
-          fontWeight: 400,
-          color: STYLE_GUIDE?.COLORS?.primaryDark || '#3f51b5',
-        }}
-      >
-        Organization Details
-      </Typography>
+  const handleEditClose = () => {
+    setEditOpen(false);
+    setSelectedOrg(null);
+  };
 
-      <Card
+  const handleDeleteOpen = (org: any) => {
+    setSelectedOrg(org);
+    setDeleteOpen(true);
+  };
+
+  const handleDeleteClose = () => {
+    setDeleteOpen(false);
+    setSelectedOrg(null);
+  };
+
+  const handleDeleteConfirm = () => {
+    if (selectedOrg?._id) {
+      deleteOrg.mutate({ url: `${DELETE.Delete_Organization}/${selectedOrg._id}` });
+    }
+  };
+
+  const handleEditSubmit = async (formData: any) => {
+    setFormLoading(true);
+    try {
+      await updateOrg.mutateAsync({
+        url: `${PUT.UPDATE_ORGANIZATION}${selectedOrg._id}`,
+        payload: {
+          ...formData,
+          code: selectedOrg.code,
+          status: formData.status === 'active' ? 'active' : 'inactive',
+          owner: formData.owner,
+        },
+      });
+    } finally {
+      setFormLoading(false);
+    }
+  };
+
+  const handleCreateOpen = () => {
+    reset({ name: '', description: '', domain: '', code: '', owner: '', productIds: [], productSubscriptions: [] });
+    setCreateOpen(true);
+  };
+  const handleCreateClose = () => {
+    setCreateOpen(false);
+  };
+
+  const handleCreateSubmit = async (formData: any) => {
+    setCreateLoading(true);
+    try {
+      await createOrg.mutateAsync({
+        url: POST.Create_Organization,
+        payload: {
+          name: formData.name,
+          description: formData.description,
+          domain: formData.domain,
+          code: formData.code,
+          productSubscriptions: formData.productSubscriptions.map((ps: any) => ({
+            productId: ps.productId,
+            totalLicenses: Number(ps.totalLicenses),
+            licenseExpiresAt: ps.licenseExpiresAt,
+          })),
+        },
+      });
+    } finally {
+      setCreateLoading(false);
+    }
+  };
+
+
+  const { getHeadingSx } = useComponentTypography();
+
+  const { data: productListData } = useGet<{ success: boolean; data: any[]; totalCount: number }>([
+    'productList'],
+    GET.Product_List,
+    true
+  );
+  const productOptions = productListData?.data || [];
+
+  const selectedProductIds = watch('productIds') || [];
+  useEffect(() => {
+    const formValues = getValues();
+    const newFields = selectedProductIds.map((id) => {
+      const filled = formValues.productSubscriptions?.find((f: any) => f.productId === id);
+      const existing = fields.find(f => f.productId === id);
+      return filled || existing || { productId: id, totalLicenses: '', licenseExpiresAt: '' };
+    });
+    replace(newFields);
+  }, [selectedProductIds]);
+
+
+  const {
+    data: productAccessData,
+    isLoading: productAccessLoading,
+    error: productAccessError,
+  } = useGet<{ success: boolean; data: any[]; totalCount: number }>(
+    ['productAccess', productAccessOrgId || ''],
+    productAccessOrgId ? `${GET.Product_Subscription_List}?organizationId=${productAccessOrgId}` : '',
+    !!productAccessOrgId 
+  );
+
+  const handleProductAccessView = (orgId: string) => {
+    setProductAccessOrgId(orgId);
+    setProductAccessOpen(true);
+  };
+
+  const handleProductAccessClose = () => {
+    setProductAccessOpen(false);
+    setProductAccessOrgId(null);
+  };
+
+  useEffect(() => {
+    if (
+      editOpen &&
+      selectedOrg &&
+      productAccessData &&
+      Array.isArray(productAccessData.data) &&
+      productAccessOrgId === selectedOrg._id
+    ) {
+      const productSubs = productAccessData.data.map((item: any) => ({
+        productId: item.productId?._id || item.productId,
+        totalLicenses: String(item.totalLicenses || ''),
+        licenseExpiresAt: item.licenseExpiresAt || '',
+      }));
+      const productIds = productSubs.map((ps: any) => ps.productId);
+      setValue('productIds', productIds);
+      setValue('productSubscriptions', productSubs);
+      replace(productSubs);
+    }
+  }, [editOpen, selectedOrg, productAccessData, productAccessOrgId]);
+
+  return (
+    <Box height="100%">
+      <Box
         sx={{
-          backgroundColor: STYLE_GUIDE?.COLORS?.white || '#ffffff',
-          boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.1)',
-          borderRadius: '8px',
-          overflow: 'visible',
-        //   maxWidth: 600,
-          mx: 'auto',
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "space-between",
+          alignItems: "flex-start",
+          gap: STYLE_GUIDE.SPACING.s4,
+          p: { xs: STYLE_GUIDE.SPACING.s4, md: STYLE_GUIDE.SPACING.s6 },
+          backgroundColor: theme.palette.background.paper,
+          borderBottom: "1px solid",
+          borderColor: STYLE_GUIDE.COLORS.divider,
         }}
       >
-        <CardContent sx={{ p: 3 }}>
-          <form onSubmit={handleSubmit(onSubmit)}>
+        <Box sx={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Typography
+            variant="h4"
+            sx={{
+              ...getHeadingSx(),
+              mb: STYLE_GUIDE?.SPACING?.s1,
+            }}
+          >
+            Organization Details
+          </Typography>
+          <Button variant="contained" color="primary" onClick={handleCreateOpen}>
+            Create
+          </Button>
+        </Box>
+        {isLoading ? (
+          <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 100 }}>
+            <CircularProgress />
+          </Box>
+        ) : error ? (
+          <Typography color="error">Failed to load organizations.</Typography>
+        ) : (
+          <ThemeTable
+            columns={["name", "code", "status", "owner", "description", "createdAt", "updatedAt", "productAccess", "action"]}
+            rows={
+              data?.data?.map((org) => ({
+                name: org.name,
+                code: org.code,
+                status: org.status,
+                owner: org.owner ? `${org.owner.firstName || ''} ${org.owner.lastName || ''}`.trim() : '-',
+                description: org.description,
+                createdAt: new Date(org.createdAt).toLocaleDateString(),
+                updatedAt: new Date(org.updatedAt).toLocaleDateString(),
+                productAccess: (
+                  <Button size="small" variant="outlined" onClick={() => handleProductAccessView(org._id)}>
+                    View
+                  </Button>
+                ),
+                action: (
+                  <>
+                    <IconButton onClick={() => handleEditOpen(org)} size="small" title="Edit">
+                      <EditIcon fontSize="small" />
+                    </IconButton>
+                    <IconButton onClick={() => handleDeleteOpen(org)} size="small" title="Delete">
+                      <DeleteIcon fontSize="small" />
+                    </IconButton>
+                  </>
+                ),
+              })) || []
+            }
+            stickyHeader={true}
+          />
+        )}
+      </Box>
+
+      <Dialog open={editOpen} onClose={handleEditClose} maxWidth="sm" fullWidth>
+        <DialogTitle>Edit Organization</DialogTitle>
+        <DialogContent>
+          {selectedOrg && (
+            <form
+              onSubmit={handleSubmit(handleEditSubmit)}
+              style={{ marginTop: 8 }}
+            >
+              <Grid container spacing={2}>
+                <Grid item xs={12}>
+                  <Controller
+                    name="name"
+                    control={control}
+                    defaultValue={selectedOrg.name}
+                    render={({ field }) => (
+                      <TextField {...field} label="Name" fullWidth margin="normal" />
+                    )}
+                  />
+                </Grid>
+                <Grid item xs={12}>
+                  <Controller
+                    name="description"
+                    control={control}
+                    defaultValue={selectedOrg.description || ''}
+                    render={({ field }) => (
+                      <TextField {...field} label="Description" fullWidth margin="normal" />
+                    )}
+                  />
+                </Grid>
+                <Grid item xs={12}>
+                  <Controller
+                    name="domain"
+                    control={control}
+                    defaultValue={selectedOrg.domain || ''}
+                    render={({ field }) => (
+                      <TextField {...field} label="Domain" fullWidth margin="normal" />
+                    )}
+                  />
+                </Grid>
+              {(fields || []).map((field, idx) => (
+                <Grid container spacing={2} alignItems="flex-end" key={field.id} sx={{ m: 2, width: '100%', border: '1px solid #eee', borderRadius: STYLE_GUIDE.SPACING.s1 }}>
+                  <Grid item xs={3}>
+                    <Controller
+                      name={`productSubscriptions.${idx}.productId`}
+                      control={control}
+                      rules={{ required: 'Product is required' }}
+                      render={({ field }) => (
+                        <FormControl fullWidth margin="dense">
+                          <InputLabel>Product</InputLabel>
+                          <Select
+                            {...field}
+                            label="Product"
+                          >
+                            {productOptions.map((product) => (
+                              <MenuItem key={product._id} value={product._id}>
+                                {product.name}
+                              </MenuItem>
+                            ))}
+                          </Select>
+                        </FormControl>
+                      )}
+                    />
+                  </Grid>
+                  <Grid item xs={3}>
+                    <Controller
+                      name={`productSubscriptions.${idx}.totalLicenses`}
+                      control={control}
+                      rules={{ required: 'Total Licenses is required', min: { value: 1, message: 'Must be at least 1' } }}
+                      render={({ field }) => (
+                        <TextField
+                          {...field}
+                          label="Total Licenses"
+                          type="number"
+                          fullWidth
+                          margin="dense"
+                          error={!!errors.productSubscriptions && (errors.productSubscriptions as any)[idx]?.totalLicenses}
+                          helperText={(errors.productSubscriptions && (errors.productSubscriptions as any)[idx]?.totalLicenses?.message) || ''}
+                          inputProps={{ min: 1 }}
+                        />
+                      )}
+                    />
+                  </Grid>
+                  <Grid item xs={4}>
+                    <Controller
+                      name={`productSubscriptions.${idx}.licenseExpiresAt`}
+                      control={control}
+                      rules={{ required: 'License Expiry Date is required' }}
+                      render={({ field }) => (
+                        <CommonDatePicker
+                          {...field}
+                          control={control}
+                          label="License Expiry Date"
+                          views={['year', 'month', 'day']}
+                          sx={{ marginTop: 1 }}
+                        />
+                      )}
+                    />
+                  </Grid>
+                  <Grid item xs={2} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <IconButton
+                      aria-label="Remove"
+                      color="error"
+                      onClick={() => remove(idx)}
+                      disabled={fields.length === 1}>
+                      <DeleteIcon />
+                    </IconButton>
+                  </Grid>
+                </Grid>
+              ))}
+                <Grid item xs={12}>
+                  <Controller
+                    name="status"
+                    control={control}
+                    defaultValue={selectedOrg.status === 'active' ? 'active' : 'inactive'}
+                    render={({ field: { value, onChange } }) => (
+                      <FormControlLabel
+                        control={
+                          <Switch
+                            checked={value === 'active'}
+                            onChange={(_, checked) => onChange(checked ? 'active' : 'inactive')}
+                            color="primary"
+                          />
+                        }
+                        label={value === 'active' ? 'Active' : 'Inactive'}
+                      />
+                    )}
+                  />
+                </Grid>
+              </Grid>
+              <DialogActions>
+                <Button onClick={handleEditClose}>Cancel</Button>
+                <Button type="submit" variant="contained" disabled={formLoading}>
+                  {formLoading ? 'Saving...' : 'Save'}
+                </Button>
+              </DialogActions>
+            </form>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={deleteOpen} onClose={handleDeleteClose}>
+        <DialogTitle>Delete Organization</DialogTitle>
+        <DialogContent>
+          <Typography>Are you sure you want to delete this organization?</Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleDeleteClose}>Cancel</Button>
+          <Button onClick={handleDeleteConfirm} color="error" variant="contained" disabled={deleteOrg.isPending}>
+            {deleteOrg.isPending ? 'Deleting...' : 'Delete'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog open={createOpen} onClose={handleCreateClose} maxWidth="sm" fullWidth>
+        <DialogTitle>Create Organization</DialogTitle>
+        <DialogContent>
+          <form
+            onSubmit={handleSubmit(handleCreateSubmit)}
+            style={{ marginTop: 8 }}
+            noValidate
+          >
             <Grid container spacing={2}>
-              <Grid item xs={12} sm={6}>
+              <Grid item xs={12}>
+                <Controller
+                  name="productIds"
+                  control={control}
+                  rules={{ required: 'At least one product is required' }}
+                  render={({ field }) => (
+                    <FormControl fullWidth margin="normal" error={!!errors.productIds}>
+                      <InputLabel id="product-multiselect-label">Products</InputLabel>
+                      <Select
+                        {...field}
+                        labelId="product-multiselect-label"
+                        multiple
+                        open={selectOpen}
+                        onOpen={() => setSelectOpen(true)}
+                        onClose={() => setSelectOpen(false)}
+                        onChange={(event: SelectChangeEvent<string[]>) => {
+                          const value = event.target.value as string[];
+                          field.onChange(value);
+                          setSelectOpen(false); // close after selection
+                        }}
+                        label="Products"
+                        renderValue={(selected) =>
+                          (selected as string[]).map(
+                            (id) => productOptions.find((p) => p._id === id)?.name || id
+                          ).join(', ')
+                        }
+                      >
+                        {productOptions.map((product) => (
+                          <MenuItem key={product._id} value={product._id}>
+                            {product.name}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                  )}
+                />
+              </Grid>
+              <Grid item xs={12}>
                 <Controller
                   name="name"
                   control={control}
-                  rules={{ required: 'Name is required', minLength: { value: 3, message: 'Minimum 3 characters' } }}
+                  rules={{ required: 'Name is required' }}
                   render={({ field }) => (
                     <TextField
                       {...field}
                       label="Name"
-                      variant="outlined"
                       fullWidth
+                      margin="normal"
                       error={!!errors.name}
                       helperText={errors.name?.message}
-                      sx={{ '& .MuiOutlinedInput-root': { borderRadius: '8px' } }}
                     />
                   )}
                 />
               </Grid>
-              <Grid item xs={12} sm={6}>
+              <Grid item xs={12}>
                 <Controller
-                  name="notificationEmail"
+                  name="description"
                   control={control}
-                  rules={{
-                    required: 'Email is required',
-                    pattern: { value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/, message: 'Invalid email format' }
-                  }}
+                  rules={{ required: 'Description is required' }}
                   render={({ field }) => (
                     <TextField
                       {...field}
-                      label="Notification Email"
-                      variant="outlined"
+                      label="Description"
                       fullWidth
-                      error={!!errors.notificationEmail}
-                      helperText={errors.notificationEmail?.message}
-                      sx={{ '& .MuiOutlinedInput-root': { borderRadius: '8px' } }}
+                      margin="normal"
+                      error={!!errors.description}
+                      helperText={errors.description?.message}
                     />
                   )}
                 />
               </Grid>
-              <Grid item xs={12} sm={6}>
+              <Grid item xs={12}>
                 <Controller
-                  name="logoUrl"
+                  name="domain"
                   control={control}
-                  rules={{
-                    pattern: { value: /^(https?:\/\/)?([\w-]+\.)+[\w-]+(\/[\w-./?%&=]*)?$/, message: 'Invalid URL format' }
-                  }}
+                  rules={{ required: 'Domain is required' }}
                   render={({ field }) => (
                     <TextField
                       {...field}
-                      label="Logo URL (Optional)"
-                      variant="outlined"
+                      label="Domain"
                       fullWidth
-                      error={!!errors.logoUrl}
-                      helperText={errors.logoUrl?.message}
-                      sx={{ '& .MuiOutlinedInput-root': { borderRadius: '8px' } }}
+                      margin="normal"
+                      error={!!errors.domain}
+                      helperText={errors.domain?.message}
                     />
                   )}
                 />
               </Grid>
-              <Grid item xs={12} sm={6}>
+              <Grid item xs={12}>
                 <Controller
-                  name="taxId"
+                  name="code"
                   control={control}
-                  rules={{
-                    required: 'Tax ID is required',
-                    pattern: { value: /^[A-Za-z0-9]{8,15}$/, message: 'Tax ID must be 8-15 alphanumeric characters' }
-                  }}
+                  rules={{ required: 'Code is required' }}
                   render={({ field }) => (
                     <TextField
                       {...field}
-                      label="Tax ID"
-                      variant="outlined"
+                      label="Code"
                       fullWidth
-                      error={!!errors.taxId}
-                      helperText={errors.taxId?.message}
-                      sx={{ '& .MuiOutlinedInput-root': { borderRadius: '8px' } }}
-                    />
-                  )}
-                />
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <Controller
-                  name="panNumber"
-                  control={control}
-                  rules={{
-                    required: 'PAN Number is required',
-                    pattern: { value: /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/, message: 'Invalid PAN format (e.g., AAAAA9999A)' }
-                  }}
-                  render={({ field }) => (
-                    <TextField
-                      {...field}
-                      label="PAN Number"
-                      variant="outlined"
-                      fullWidth
-                      error={!!errors.panNumber}
-                      helperText={errors.panNumber?.message}
-                      sx={{ '& .MuiOutlinedInput-root': { borderRadius: '8px' } }}
+                      margin="normal"
+                      error={!!errors.code}
+                      helperText={errors.code?.message}
                     />
                   )}
                 />
               </Grid>
             </Grid>
-            <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1, mt: 3 }}>
-              <Button
-                type="submit"
-                variant="contained"
-                sx={{
-                  borderRadius: '8px',
-                  backgroundColor: STYLE_GUIDE?.COLORS?.primaryDark || '#3f51b5',
-                  color: STYLE_GUIDE?.COLORS?.white || '#ffffff',
-                  '&:hover': {
-                    backgroundColor: STYLE_GUIDE?.COLORS?.primary || '#5c6bc0',
-                  },
-                }}
-              >
-                Save
+            <DialogActions>
+              <Button onClick={handleCreateClose}>Cancel</Button>
+              <Button type="submit" variant="contained" disabled={!isValid || createLoading}>
+                {createLoading ? 'Creating...' : 'Create'}
               </Button>
-            </Box>
+            </DialogActions>
           </form>
-        </CardContent>
-      </Card>
+        </DialogContent>
+      </Dialog>
+
+      {/* Product Access Modal */}
+      <Dialog open={productAccessOpen} onClose={handleProductAccessClose} maxWidth="sm" fullWidth>
+        <DialogTitle>Product Access</DialogTitle>
+        <DialogContent>
+          {productAccessLoading ? (
+            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 100 }}>
+              <CircularProgress />
+            </Box>
+          ) : productAccessError ? (
+            <DialogContentText color="error.main">
+              {typeof productAccessError === 'string'
+                ? productAccessError
+                : 'Failed to fetch product access'}
+            </DialogContentText>
+          ) : !(productAccessData?.data?.length) ? (
+            <DialogContentText>No product access found.</DialogContentText>
+          ) : (
+            <Box>
+              {(productAccessData?.data || []).map((item: any) => (
+                <Box key={item._id} sx={{ mb: 2, p: 2, border: '1px solid #eee', borderRadius: 2 }}>
+                  <Typography variant="subtitle2">{item.productId?.name || '-'}</Typography>
+                  <Typography variant="body2">Total Licenses: {item.totalLicenses}</Typography>
+                  <Typography variant="body2">License Expires At: {item.licenseExpiresAt ? new Date(item.licenseExpiresAt).toLocaleDateString() : '-'}</Typography>
+                </Box>
+              ))}
+            </Box>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleProductAccessClose}>Close</Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }

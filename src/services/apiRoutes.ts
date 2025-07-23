@@ -12,15 +12,9 @@ export const POST = {
   UPDATE_WIDGET: '/dashboard/widget/update',
   DELETE_WIDGET: '/dashboard/widget/delete',
   SAVE_WIDGETS: '/dashboard/widget/save',
-
   CREATE_USER: 'common/auth/create-user',
   UPDATE_USER: '/common/users/update/',
   DELETE_USER: '/common/users/delete/',
-
-  CREATE_ORGANIZATION: '/organizations/create',
-  UPDATE_ORGANIZATION: '/organizations/update/',
-  DELETE_ORGANIZATION: '/organizations/delete/',
-
   ORGANIZATION_ACTIVE: '/organizations/updateStatus/',
   USER_ACTIVE: '/users/updateStatus/',
   FILE_UPLOAD: '/files/upload',
@@ -35,15 +29,22 @@ export const POST = {
   DUPLICATE_THEME: '/widgetTheme/duplicate/',
   UPDATE_THEME: '/widgetTheme/update/',
   UPDATE_REPORT_SETTINGS: '/customReports/updateSettings',
+  Create_Organization: '/common/organization/create'
 };
+
 export const PUT = {
   UPDATE_DATA_SOURCE: '/dataSource/update',
   UPDATE_ATTRIBUTE_OPTION: '/attributeOptions/update',
+  UPDATE_ORGANIZATION: '/common/organization/update/'
 };
+
+export const DELETE = {
+  Delete_Organization:'/common/organization/delete'
+};
+
 export const GET = {
   USER_DETAILS: '/common/user/get-current-user',
   USER_LIST: '/common/users/list',
-  ORGANIZATION_LIST: '/organizations/list',
   GET_USER: '/common/users/',
   GET_ORGANIZATION: '/organizations/',
   Entity_List: '/entities/list',
@@ -71,4 +72,7 @@ export const GET = {
   NL_Query: '/nlQuery',
   NL_Query_INSIGHTS: '/nlQuery/insights',
   Report_Settings: '/common/customReports/listSettings?paginate=true',
+  Organization_List: '/common/organization/list',
+  Product_List: '/common/product/list',
+  Product_Subscription_List: '/common/product-subscription/list'
 };

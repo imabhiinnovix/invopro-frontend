@@ -80,7 +80,7 @@ const getDefaultTheme = (): DashboardTheme => ({
     fontFamily: TYPOGRAPHY.fontFamily.primary,
     fontSize: TYPOGRAPHY.fontSize.base,
     fontWeight: TYPOGRAPHY.fontWeight.regular,
-    
+
     // Component-specific typography
     headings: {
       fontFamily: TYPOGRAPHY.fontFamily.primary,
@@ -117,6 +117,11 @@ const getDefaultTheme = (): DashboardTheme => ({
       fontSize: TYPOGRAPHY.fontSize.base,
       fontWeight: TYPOGRAPHY.fontWeight.medium,
     },
+    dialog: {
+      fontFamily: '',
+      fontSize: '',
+      fontWeight: ''
+    }
   },
   components: {
     button: {
@@ -167,14 +172,15 @@ const getDefaultTheme = (): DashboardTheme => ({
     dialog: {
       backgroundColor: STYLE_GUIDE.COLORS.white,
       borderColor: STYLE_GUIDE.COLORS.white,
-      boxShadow:STYLE_GUIDE.SHADOWS.sm,
+      boxShadow: STYLE_GUIDE.SHADOWS.sm,
       borderRadius: STYLE_GUIDE.SPACING.s2,
       titleColor: STYLE_GUIDE.COLORS.textDarkGray,
-      titleFontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.hero,
+      titleFontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
       titleFontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.bold,
       contentColor: STYLE_GUIDE.COLORS.textDarkGray,
       contentFontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.hero,
-      overlayColor: STYLE_GUIDE.COLORS.WhiteLight
+      overlayColor: STYLE_GUIDE.COLORS.WhiteLight,
+      titleFontFamily: STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary
     }
   },
   shadows: STYLE_GUIDE.SHADOWS,
@@ -275,6 +281,11 @@ const sampleThemes: DashboardTheme[] = [
           fontSize: TYPOGRAPHY.fontSize.base,
           fontWeight: TYPOGRAPHY.fontWeight.medium,
         },
+        dialog: {
+          fontFamily: TYPOGRAPHY.fontFamily.secondary,
+          fontSize: TYPOGRAPHY.fontSize.base,
+          fontWeight: TYPOGRAPHY.fontWeight.medium,
+        }
       },
     }),
     _id: generateId(),
@@ -367,6 +378,11 @@ const sampleThemes: DashboardTheme[] = [
           fontSize: TYPOGRAPHY.fontSize.base,
           fontWeight: TYPOGRAPHY.fontWeight.medium,
         },
+        dialog: {
+          fontFamily: TYPOGRAPHY.fontFamily.secondary,
+          fontSize: TYPOGRAPHY.fontSize.base,
+          fontWeight: TYPOGRAPHY.fontWeight.medium,
+        }
       },
     }),
     _id: generateId(),
