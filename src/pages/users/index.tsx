@@ -8,10 +8,11 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { useUnifiedTheme } from '../../hooks/useUnifiedTheme';
 import { STYLE_GUIDE } from '../../styles';
-import { GET, POST, PUT } from '../../services/apiRoutes';
+import { GET, POST, PUT, DELETE } from '../../services/apiRoutes';
 import useGet from '../../hooks/useGet';
 import usePost from '../../hooks/usePost';
 import usePut from '../../hooks/usePut';
+import useDelete from '../../hooks/useDelete';
 import { UserListResponse, User, CreateUserPayload, CreateUserResponse, RoleListResponse, ProductSubscriptionListResponse } from './types';
 
 interface UsersProps {
@@ -39,13 +40,13 @@ interface UserRowData {
 
 const columns: GridColDef[] = [
   // { field: 'id', headerName: 'ID', width: 70, disableColumnMenu: true, resizable: true },
-  { field: 'firstName', headerName: 'First Name', width: 130, disableColumnMenu: true, resizable: true },
-  { field: 'lastName', headerName: 'Last Name', width: 130, disableColumnMenu: true, resizable: true },
+  { field: 'firstName', headerName: 'First Name', width: 200, disableColumnMenu: true, resizable: true },
+  { field: 'lastName', headerName: 'Last Name', width: 200, disableColumnMenu: true, resizable: true },
   { field: 'email', headerName: 'Email', width: 200, disableColumnMenu: true, resizable: true },
   { 
     field: 'mobile', 
     headerName: 'Mobile', 
-    width: 130, 
+    width: 200, 
     disableColumnMenu: true, 
     resizable: true,
     valueFormatter: (params: { value: unknown }) => params?.value ? params?.value.toString() : '-'
@@ -187,6 +188,15 @@ export default function Users({ organizationId }: UsersProps) {
     true
   );
 
+  const deleteUserMutation = useDelete<any>(
+    ['users', organizationId || 'all'],
+    () => {
+      usersQuery.refetch();
+      handleCloseDialog();
+    },
+    true
+  );
+
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -275,8 +285,14 @@ export default function Users({ organizationId }: UsersProps) {
   };
 
   const handleConfirmDelete = async () => {
-    console.log(`Deleting user with ID: ${userIdForEdit}`);
-    handleCloseDialog();
+    if (userIdForEdit) {
+      deleteUserMutation.mutate({
+        url: `${DELETE.Delete_User}/${userIdForEdit}`,
+        payload: { organizationId: organizationId || '' },
+      });
+    } else {
+      handleCloseDialog();
+    }
   };
 
   const handleSave = async () => {
@@ -606,8 +622,9 @@ export default function Users({ organizationId }: UsersProps) {
             sx={{
               borderRadius: '8px',
             }}
+            disabled={deleteUserMutation.isPending}
           >
-            Yes
+            {deleteUserMutation.isPending ? <CircularProgress size={20} /> : 'Yes'}
           </Button>
         </DialogActions>
       </Dialog>
