@@ -1,17 +1,16 @@
-import * as React from 'react';
 import { useState } from 'react';
 import { DataGrid, GridColDef } from '@mui/x-data-grid';
 import {
-  Box, Card, CardContent, Typography, TextField, Button, InputAdornment, Modal, Dialog, DialogTitle, DialogContent, DialogActions, Tooltip, Chip, FormControl, InputLabel, Select, MenuItem, Switch, FormControlLabel,
+  Box, Card, CardContent, Typography, TextField, Button, Modal, Dialog, DialogTitle, DialogContent, DialogActions, Tooltip, Chip, FormControl, InputLabel, Select, MenuItem, Switch, FormControlLabel, CircularProgress,
 } from '@mui/material';
-import SearchIcon from '@mui/icons-material/Search';
-import FilterListIcon from '@mui/icons-material/FilterList';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
-import VisibilityIcon from '@mui/icons-material/Visibility';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { useUnifiedTheme } from '../../hooks/useUnifiedTheme';
 import { STYLE_GUIDE } from '../../styles';
+import { GET } from '../../services/apiRoutes';
+import useGet from '../../hooks/useGet';
+import { UserListResponse, User } from './types';
 
 interface UsersProps {
   organizationId?: string;
@@ -20,7 +19,7 @@ interface UsersProps {
 
 
 const columns: GridColDef[] = [
-  { field: 'id', headerName: 'ID', width: 70, disableColumnMenu: true, resizable: true },
+  // { field: 'id', headerName: 'ID', width: 70, disableColumnMenu: true, resizable: true },
   { field: 'firstName', headerName: 'First Name', width: 130, disableColumnMenu: true, resizable: true },
   { field: 'lastName', headerName: 'Last Name', width: 130, disableColumnMenu: true, resizable: true },
   { field: 'email', headerName: 'Email', width: 200, disableColumnMenu: true, resizable: true },
@@ -33,27 +32,27 @@ const columns: GridColDef[] = [
     valueFormatter: (params: any) => params.value ? params.value.toString() : '-'
   },
   {
-    field: 'roleIds',
+    field: 'roleNames',
     headerName: 'Roles',
     width: 200,
     disableColumnMenu: true,
     resizable: true,
     renderCell: (params: any) => (
       <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
-        {params.value?.map((roleId: string) => (
-          <Chip key={roleId} label={roleId.slice(-8)} size="small" variant="outlined" />
+        {params.value?.map((roleName: string) => (
+          <Chip key={roleName} label={roleName} size="small" variant="outlined" />
         )) || '-'}
       </Box>
     ),
   },
-  {
-    field: 'organizationId',
-    headerName: 'Organization',
-    width: 150,
-    disableColumnMenu: true,
-    resizable: true,
-    renderCell: (params: any) => params.value ? params.value.slice(-8) : '-',
-  },
+  // {
+  //   field: 'organizationId',
+  //   headerName: 'Organization',
+  //   width: 150,
+  //   disableColumnMenu: true,
+  //   resizable: true,
+  //   renderCell: (params: any) => params.value ? params.value.slice(-8) : '-',
+  // },
   {
     field: 'status',
     headerName: 'Status',
@@ -102,7 +101,7 @@ const columns: GridColDef[] = [
             <EditIcon />
           </Button>
         </Tooltip>
-        <Tooltip title="View" arrow>
+        {/* <Tooltip title="View" arrow>
           <Button
             variant="text"
             onClick={() => params.row.handleView(params.row)}
@@ -110,7 +109,7 @@ const columns: GridColDef[] = [
           >
             <VisibilityIcon />
           </Button>
-        </Tooltip>
+        </Tooltip> */}
         <Tooltip title="Delete" arrow>
           <Button
             variant="text"
@@ -129,12 +128,15 @@ const columns: GridColDef[] = [
 export default function Users({ organizationId }: UsersProps) {
   const theme = useUnifiedTheme();
   const [openModal, setOpenModal] = useState(false);
-  const [modalMode, setModalMode] = useState<'add' | 'edit' | 'view' | 'filter' | null>(null);
+  const [modalMode, setModalMode] = useState<'add' | 'edit' | 'view' | null>(null);
   const [openDialog, setOpenDialog] = useState(false);
   const [deleteId, setDeleteId] = useState<number | null>(null);
-  const [searchValue, setSearchValue] = useState('');
+  const usersQuery = useGet<UserListResponse>(
+    ['users', organizationId || 'all'],
+    organizationId ? `${GET.User_List}?organizationId=${organizationId}` : GET.User_List,
+    true
+  );
 
-  console.log('Users component received organizationId:', organizationId);
     
   const [formData, setFormData] = useState({
     firstName: '',
@@ -201,10 +203,7 @@ export default function Users({ organizationId }: UsersProps) {
     setOpenModal(true);
   };
 
-  const handleFilter = () => {
-    setModalMode('filter');
-    setOpenModal(true);
-  };
+
 
   const handleCloseModal = () => {
     setOpenModal(false);
@@ -232,24 +231,28 @@ export default function Users({ organizationId }: UsersProps) {
     handleCloseDialog();
   };
 
-  const handleSave = async () => {
-    try {
-      if (modalMode === 'add') {
-        console.log('Add user:', formData);
-      } else if (modalMode === 'edit') {
-        console.log('Edit user:', formData);
-      } else if (modalMode === 'filter') {
-        console.log('Apply filter:', formData);
-      }
-      handleCloseModal();
-    } catch (error) {
-      console.error('Error saving user:', error);
-    }
+    const handleSave = async () => {
+    handleCloseModal();
   };
 
-  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchValue(e.target.value);
-  };
+  const transformedUsers = usersQuery.data?.data?.map((user: User) => ({
+    id: user._id,
+    firstName: user.firstName,
+    lastName: user.lastName,
+    email: user.email,
+    mobile: '',
+    organizationId: user.organizationId,
+    roleIds: user.roleIds.map(role => role._id),
+    roleNames: user.roleIds.map(role => role.name),
+    organizationProductSubscriptionIds: user.organizationProductSubscriptionIds.map(sub => sub._id),
+    isVerified: user.isVerified,
+    status: user.status,
+    handleEdit,
+    handleView,
+    handleDelete,
+  }));
+
+
 
   return (
     <Box
@@ -260,16 +263,6 @@ export default function Users({ organizationId }: UsersProps) {
         minHeight: '100vh',
       }}
     >
-      <Typography
-        variant="h4"
-        sx={{
-          mb: 3,
-          fontWeight: 400,
-        }}
-      >
-        Users
-      </Typography>
-
       <Card
         sx={{
           borderRadius: '8px',
@@ -280,73 +273,50 @@ export default function Users({ organizationId }: UsersProps) {
           <Box
             sx={{
               display: 'flex',
-              justifyContent: 'space-between',
+              justifyContent: 'flex-end',
               alignItems: 'center',
               mb: 2,
             }}
           >
-            <TextField
-              placeholder="Search users..."
-              variant="outlined"
-              size="small"
-              value={searchValue}
-              onChange={handleSearchChange}
+            <Button
+              variant="contained"
+              startIcon={<AddIcon />}
+              onClick={handleAddUser}
               sx={{
-                width: '300px',
-                '& .MuiOutlinedInput-root': {
-                  borderRadius: '8px',
-                },
+                borderRadius: '8px',
               }}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <SearchIcon />
-                  </InputAdornment>
-                ),
-              }}
-            />
-
-            <Box sx={{ display: 'flex', gap: 1 }}>
-              <Button
-                variant="outlined"
-                startIcon={<FilterListIcon />}
-                onClick={handleFilter}
-                sx={{
-                  borderRadius: '8px',
-                }}
-              >
-                Filter
-              </Button>
-              <Button
-                variant="contained"
-                startIcon={<AddIcon />}
-                onClick={handleAddUser}
-                sx={{
-                  borderRadius: '8px',
-                }}
-              >
-                Add User
-              </Button>
-            </Box>
+            >
+              Add User
+            </Button>
           </Box>
 
-          {/* {(
+          {usersQuery.isLoading ? (
+            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', py: 4 }}>
+              <CircularProgress />
+              <Typography sx={{ ml: 2 }}>Loading users...</Typography>
+            </Box>
+          ) : usersQuery.error ? (
+            <Box sx={{ textAlign: 'center', py: 3 }}>
+              <Typography color="error" sx={{ mb: 2 }}>
+                {usersQuery.error instanceof Error ? usersQuery.error.message : 'Failed to fetch users'}
+              </Typography>
+            </Box>
+          ) : !transformedUsers || transformedUsers.length === 0 ? (
+            <Box sx={{ textAlign: 'center', py: 4 }}>
+              <Typography variant="body1" color="text.secondary">
+                No users found.
+              </Typography>
+            </Box>
+          ) : (
             <DataGrid
-              rows={usersWithIds.map((user) => ({
-                ...user,
-                handleEdit,
-                handleView,
-                handleDelete,
-              }))}
+              rows={transformedUsers}
               columns={columns}
-              initialState={{ pagination: { paginationModel } }}
-              pageSizeOptions={[5, 10]}
               disableColumnMenu
               sx={{
                 overflow: 'visible',
               }}
             />
-          )} */}
+          )}
         </CardContent>
       </Card>
 
@@ -372,8 +342,7 @@ export default function Users({ organizationId }: UsersProps) {
         >
           <Typography variant="h6" sx={{ mb: 2 }}>
             {modalMode === 'add' ? 'Add User' :
-              modalMode === 'edit' ? 'Edit User' :
-                modalMode === 'view' ? 'View User' : 'Filter Users'}
+              modalMode === 'edit' ? 'Edit User' : 'View User'}
           </Typography>
           
           <Box
@@ -493,7 +462,7 @@ export default function Users({ organizationId }: UsersProps) {
                   borderRadius: '8px',
                 }}
               >
-                {modalMode === 'filter' ? 'Apply' : 'Save'}
+                 Save
               </Button>
             )}
           </Box>
