@@ -62,7 +62,7 @@ export default function Organization() {
     mode: 'onChange',
   });
 
-  const { fields, replace, remove } = useFieldArray<OrganizationFormValues>({
+  const { fields, replace, remove, append } = useFieldArray<OrganizationFormValues>({
     control,
     name: 'productSubscriptions',
   });
@@ -423,9 +423,17 @@ export default function Organization() {
                       <Controller
                         name="name"
                         control={control}
+                        rules={{ required: 'Name is required' }}
                         defaultValue={selectedOrg.name}
                         render={({ field }) => (
-                          <TextField {...field} label="Name" fullWidth margin="normal" />
+                          <TextField
+                            {...field}
+                            label="Name"
+                            fullWidth
+                            margin="normal"
+                            error={!!errors.name}
+                            helperText={errors.name?.message}
+                          />
                         )}
                       />
                     </Grid>
@@ -443,12 +451,56 @@ export default function Organization() {
                       <Controller
                         name="domain"
                         control={control}
+                        rules={{ required: 'Domain is required' }}
                         defaultValue={selectedOrg.domain || ''}
                         render={({ field }) => (
-                          <TextField {...field} label="Domain" fullWidth margin="normal" />
+                          <TextField
+                            {...field}
+                            label="Domain"
+                            fullWidth
+                            margin="normal"
+                            error={!!errors.domain}
+                            helperText={errors.domain?.message}
+                          />
                         )}
                       />
                     </Grid>
+
+                    <Grid item xs={12}>
+                      {(() => {
+                        const usedProductIds = fields.map(f => f.productId);
+                        const availableProducts = productOptions.filter(
+                          p => !usedProductIds.includes(p._id)
+                        );
+                        if (availableProducts.length === 0) return null;
+                        return (
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+                            <FormControl sx={{ minWidth: 200 }} size="small">
+                              <InputLabel id="add-product-label">Add Product</InputLabel>
+                              <Select
+                                labelId="add-product-label"
+                                value={''}
+                                label="Add Product"
+                                onChange={e => {
+                                  const productId = e.target.value;
+                                  if (!productId) return;
+                                  append({ productId, totalLicenses: '', licenseExpiresAt: '' });
+                                }}
+                              >
+                                <MenuItem value="" disabled>Select product to add</MenuItem>
+                                {availableProducts.map(product => (
+                                  <MenuItem key={product._id} value={product._id}>{product.name}</MenuItem>
+                                ))}
+                              </Select>
+                            </FormControl>
+                            <Typography variant="body2" color="textSecondary">
+                              Add a new product subscription
+                            </Typography>
+                          </Box>
+                        );
+                      })()}
+                    </Grid>
+
                     {(fields || []).map((field, idx) => (
                       <Grid container spacing={2} alignItems="flex-end" key={field.id} sx={{ m: 2, width: '100%', border: '1px solid #eee', borderRadius: STYLE_GUIDE.SPACING.s1 }}>
                         <Grid item xs={3}>
@@ -541,7 +593,14 @@ export default function Organization() {
                   </Grid>
                   <DialogActions>
                     <Button onClick={handleEditClose}>Cancel</Button>
-                    <Button type="submit" variant="contained" disabled={formLoading}>
+                    <Button
+                      type="submit"
+                      variant="contained"
+                      disabled={!isValid || fields.length === 0 || fields.some((f, idx) => {
+                        const err = errors.productSubscriptions && (errors.productSubscriptions as any)[idx];
+                        return err && (err.totalLicenses || err.licenseExpiresAt);
+                      })}
+                    >
                       {formLoading ? 'Saving...' : 'Save'}
                     </Button>
                   </DialogActions>
