@@ -29,17 +29,20 @@ export const POST = {
   DUPLICATE_THEME: '/widgetTheme/duplicate/',
   UPDATE_THEME: '/widgetTheme/update/',
   UPDATE_REPORT_SETTINGS: '/customReports/updateSettings',
-  Create_Organization: '/common/organization/create'
+  Create_Organization: '/common/organization/create',
+  Create_User: '/common/user/create',
 };
 
 export const PUT = {
   UPDATE_DATA_SOURCE: '/dataSource/update',
   UPDATE_ATTRIBUTE_OPTION: '/attributeOptions/update',
-  UPDATE_ORGANIZATION: '/common/organization/update/'
+  UPDATE_ORGANIZATION: '/common/organization/update/',
+  UPDATE_USER: '/common/user/update/'
 };
 
 export const DELETE = {
-  Delete_Organization:'/common/organization/delete'
+  Delete_Organization:'/common/organization/delete',
+  Delete_User:'/common/user/delete'
 };
 
 export const GET = {
@@ -75,5 +78,6 @@ export const GET = {
   Organization_List: '/common/organization/list',
   Product_List: '/common/product/list',
   Product_Subscription_List: '/common/product-subscription/list',
-  User_List: '/common/user/list'
+  User_List: '/common/user/list',
+  Roles_List: '/common/role/list',
 };
