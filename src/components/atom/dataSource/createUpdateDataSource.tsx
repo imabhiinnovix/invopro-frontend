@@ -102,7 +102,9 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({
   const [code, setCode] = useState(data?.code ?? "");
   const [name, setName] = useState(data?.name ?? "");
   const [entityAttributes, setEntityAttributes] = useState<Attribute[]>([]);
-  const [entityFieldOptions, setEntityFieldOptions] = useState<EntityFieldOption[]>([]);
+  const [entityFieldOptions, setEntityFieldOptions] = useState<
+    EntityFieldOption[]
+  >([]);
   const [entityName, setEntityName] = useState<string>(
     typeof data?.entityId === "string" ? "" : data?.entityId?.name || ""
   );
@@ -130,7 +132,7 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({
       entityId:
         typeof data?.entityId === "string"
           ? data.entityId
-          : data?.entityId?._id ?? "",
+          : (data?.entityId?._id ?? ""),
       entityAttributes: data?.uniqueAttributeRules?.length
         ? data.uniqueAttributeRules.map((rule) => rule.map((attr) => attr.name))
         : [[""]],
@@ -191,7 +193,9 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({
     axiosInstance
       .get(GET.Entity_List)
       .then((response) => {
-        const data = Array.isArray(response.data.data) ? response.data.data : [];
+        const data = Array.isArray(response.data.data)
+          ? response.data.data
+          : [];
         setEntities(data);
         if (!data.length) {
           setError("No entities available. Please try again.");
@@ -221,7 +225,7 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({
     message?: string;
   }>(
     [`entityDetails`, entityId],
-    `/entities/${entityId}`,
+    `${GET.Get_Entity_By_Id}/${entityId}`,
     !!(open && entityId)
   );
 
@@ -244,17 +248,18 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({
       );
 
       // Derive entityFieldOptions from attributes if not provided
-      const derivedFieldOptions = entityData.attributes?.map((attr) => ({
-        label: attr.name || attr.mappingName || "",
-        value: {
-          attributeId: attr._id,
-          refAttributeId: attr.referenceEntitySetting?.refEntityField || null,
-        },
-      })) || [];
+      const derivedFieldOptions =
+        entityData.attributes?.map((attr) => ({
+          label: attr.name || attr.mappingName || "",
+          value: {
+            attributeId: attr._id,
+            refAttributeId: attr.referenceEntitySetting?.refEntityField || null,
+          },
+        })) || [];
 
       setEntityFieldOptions(
         Array.isArray(entityData.entityFieldOptions) &&
-        entityData.entityFieldOptions.length > 0
+          entityData.entityFieldOptions.length > 0
           ? entityData.entityFieldOptions
           : derivedFieldOptions
       );
@@ -310,12 +315,16 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({
         entityId:
           typeof data.entityId === "string"
             ? data.entityId
-            : data?.entityId?._id ?? "",
+            : (data?.entityId?._id ?? ""),
         entityAttributes: data.uniqueAttributeRules?.length
-          ? data.uniqueAttributeRules.map((rule) => rule.map((attr) => attr.name))
+          ? data.uniqueAttributeRules.map((rule) =>
+              rule.map((attr) => attr.name)
+            )
           : [[""]],
         entityAttributeIds: data.uniqueAttributeRules?.length
-          ? data.uniqueAttributeRules.map((rule) => rule.map((attr) => attr._id))
+          ? data.uniqueAttributeRules.map((rule) =>
+              rule.map((attr) => attr._id)
+            )
           : [[""]],
         fieldSettings: data.fieldSettings?.length
           ? data.fieldSettings.map((setting) => ({
@@ -344,13 +353,15 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({
 
       if (data.entityId && typeof data.entityId !== "string") {
         setEntityAttributes(data.entityId.attributes || []);
-        const derivedFieldOptions = data.entityId.attributes?.map((attr) => ({
-          label: attr.name || attr.mappingName || "",
-          value: {
-            attributeId: attr._id,
-            refAttributeId: attr.referenceEntitySetting?.refEntityField || null,
-          },
-        })) || [];
+        const derivedFieldOptions =
+          data.entityId.attributes?.map((attr) => ({
+            label: attr.name || attr.mappingName || "",
+            value: {
+              attributeId: attr._id,
+              refAttributeId:
+                attr.referenceEntitySetting?.refEntityField || null,
+            },
+          })) || [];
         setEntityFieldOptions(
           data.entityId.entityFieldOptions?.length
             ? data.entityId.entityFieldOptions
@@ -382,9 +393,16 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({
     success: boolean;
     available: boolean;
     message: string;
-  }>([`nameAvailability`, name], `${GET?.Data_Source_Name}/${name}`, !!name && !data?.name);
+  }>(
+    [`nameAvailability`, name],
+    `${GET?.Data_Source_Name}/${name}`,
+    !!name && !data?.name
+  );
 
-  const createDataSource = usePost<DataSourceRequestPayload, DataSourceResponse>(
+  const createDataSource = usePost<
+    DataSourceRequestPayload,
+    DataSourceResponse
+  >(
     ["createDataSource"],
     (response) => {
       if (response?.success) {
@@ -494,32 +512,30 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({
           .filter((id) => id !== "" && typeof id === "string");
       }) || [];
 
-    const updatedUniqueAttributeRules =
-      formData.entityAttributes?.map((attributes) => {
-        if (!Array.isArray(attributes)) {
-          return [];
+   const updatedUniqueAttributeRules =
+  (formData.entityAttributes || []).map((attributes) => {
+    if (!Array.isArray(attributes)) {
+      return [];
+    }
+
+    return attributes
+      .filter(
+        (attribute) =>
+          attribute !== "" && attribute !== null && attribute !== undefined
+      )
+      .map((attribute) => {
+        if (typeof attribute === "object" && attribute !== null && "_id" in attribute) {
+          return attribute._id;
         }
-        return attributes
-          .filter(
-            (attribute) =>
-              attribute !== "" && attribute !== null && attribute !== undefined
-          )
-          .map((attribute) => {
-            if (
-              typeof attribute === "object" &&
-              attribute !== null &&
-              "_id" in attribute
-            ) {
-              return { _id: attribute._id, name: attribute.name };
-            }
-            if (typeof attribute === "string") {
-              const attr = entityAttributes.find((a) => a.name === attribute);
-              return attr ? { _id: attr._id, name: attr.name } : { _id: "", name: "" };
-            }
-            return { _id: "", name: "" };
-          })
-          .filter((item) => item._id !== "" && item.name !== "");
-      }) || [];
+        if (typeof attribute === "string") {
+          const attr = entityAttributes.find((a) => a.name === attribute);
+          return attr?._id || "";
+        }
+        return "";
+      })
+      .filter((id) => typeof id === "string" && id !== "");
+  });
+
 
     const updatedFieldSettings =
       formData.fieldSettings?.map((setting) => {
@@ -544,7 +560,7 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({
       entityAttributeIds: updatedEntityAttributeIds,
       uniqueAttributeRules: updatedUniqueAttributeRules,
       fieldSettings: updatedFieldSettings,
-      isShowMenu: formData.isShowMenu ?? false, // Default to false if undefined
+      isShowMenu: formData.isShowMenu === "true" ? true : false, // Default to false if undefined
     };
 
     if (data && data._id) {
@@ -655,7 +671,9 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({
                 error={!!errors.name}
                 helperText={
                   errors.name?.message ||
-                  (nameAvailability.isFetched && name.length > 0 && !data?.name ? (
+                  (nameAvailability.isFetched &&
+                  name.length > 0 &&
+                  !data?.name ? (
                     nameAvailability.data?.available ? (
                       <Typography
                         sx={{ color: STYLE_GUIDE.COLORS.bootstrapSuccess }}
@@ -818,9 +836,14 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({
                           Array.isArray(watch(`entityAttributes.${index}`))
                             ? watch(`entityAttributes.${index}`)
                                 .map((name) =>
-                                  entityAttributes.find((attr) => attr.name === name)
+                                  entityAttributes.find(
+                                    (attr) => attr.name === name
+                                  )
                                 )
-                                .filter((attr): attr is Attribute => attr !== undefined)
+                                .filter(
+                                  (attr): attr is Attribute =>
+                                    attr !== undefined
+                                )
                             : []
                         }
                         onChange={(event, newValue) => {
@@ -835,7 +858,9 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({
                             {...params}
                             label={`Select Unique Attribute ${index + 1}*`}
                             error={!!errors.entityAttributes?.[index]}
-                            helperText={errors.entityAttributes?.[index]?.message}
+                            helperText={
+                              errors.entityAttributes?.[index]?.message
+                            }
                           />
                         )}
                         disabled={!entityId || isLoadingEntity}
@@ -868,12 +893,15 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({
               </Typography>
 
               {settingFields.map((field, index) => {
-                const currentAttributeId = watch(`fieldSettings.${index}.attributeId`);
-                const selectedOption = entityFieldOptions.find(
-                  (opt) =>
-                    opt.value.attributeId === currentAttributeId ||
-                    opt.value.refAttributeId === currentAttributeId
-                ) || null;
+                const currentAttributeId = watch(
+                  `fieldSettings.${index}.attributeId`
+                );
+                const selectedOption =
+                  entityFieldOptions.find(
+                    (opt) =>
+                      opt.value.attributeId === currentAttributeId ||
+                      opt.value.refAttributeId === currentAttributeId
+                  ) || null;
 
                 return (
                   <Box
@@ -907,15 +935,21 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({
                                 newValue?.value?.attributeId ||
                                 newValue?.value?.refAttributeId ||
                                 "";
-                              setValue(`fieldSettings.${index}.attributeId`, attributeId);
+                              setValue(
+                                `fieldSettings.${index}.attributeId`,
+                                attributeId
+                              );
                             }}
                             renderInput={(params) => (
                               <TextField
                                 {...params}
                                 label="Field*"
-                                error={!!errors.fieldSettings?.[index]?.attributeId}
+                                error={
+                                  !!errors.fieldSettings?.[index]?.attributeId
+                                }
                                 helperText={
-                                  errors.fieldSettings?.[index]?.attributeId?.message
+                                  errors.fieldSettings?.[index]?.attributeId
+                                    ?.message
                                 }
                               />
                             )}
@@ -931,7 +965,9 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({
                               required: "Show label is required",
                             })}
                             error={!!errors.fieldSettings?.[index]?.value}
-                            helperText={errors.fieldSettings?.[index]?.value?.message}
+                            helperText={
+                              errors.fieldSettings?.[index]?.value?.message
+                            }
                             sx={{ flex: 1 }}
                           />
                         </Stack>
@@ -1012,7 +1048,9 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({
                 disabled={!!data?.code}
                 helperText={
                   errors.code?.message ||
-                  (codeAvailability.isFetched && code.length > 0 && !data?.code ? (
+                  (codeAvailability.isFetched &&
+                  code.length > 0 &&
+                  !data?.code ? (
                     codeAvailability.data?.available ? (
                       <Typography
                         sx={{ color: STYLE_GUIDE.COLORS.bootstrapSuccess }}
@@ -1105,17 +1143,17 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({
                     watch("isShowMenu") === undefined
                       ? ""
                       : watch("isShowMenu")
-                        ? "Yes"
-                        : "No"
+                        ? "true"
+                        : "false"
                   }
                   onChange={(event) =>
-                    setValue("isShowMenu", event.target.value === "Yes")
+                    setValue("isShowMenu", event.target.value === "true")
                   }
                   label="Show in Menu"
                 >
                   <MenuItem value="">Select</MenuItem>
-                  <MenuItem value="Yes">Yes</MenuItem>
-                  <MenuItem value="No">No</MenuItem>
+                  <MenuItem value="true">Yes</MenuItem>
+                  <MenuItem value="false">No</MenuItem>
                 </Select>
                 {errors.isShowMenu && (
                   <Typography color="error">

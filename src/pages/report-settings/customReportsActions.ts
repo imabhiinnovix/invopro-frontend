@@ -7,7 +7,7 @@ export const fetchCustomReportSettings = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const { data } = await axiosInstance.get<CustomReportSettingsResponse>(
-        '/customReports/listSettings?paginate=true'
+        '/common/customReports/listSettings?paginate=true'
       );
       if (!data.success) {
         return rejectWithValue(data.message || 'Failed to fetch report settings');

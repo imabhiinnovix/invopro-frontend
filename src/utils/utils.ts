@@ -34,6 +34,7 @@ export interface BackendPermission {
   resourceId: string; 
   resourceType: string; 
   allowed: boolean; 
+  dataSourceId:string
 }
 
 export interface PermissionMap {
@@ -43,6 +44,7 @@ export interface PermissionMap {
       _id: string;
       resourceType: string;
       permissionId: string;
+      dataSourceId?: string; 
     };
   };
 }
@@ -53,7 +55,7 @@ export const formatPermissions = (
   const permissionMap: PermissionMap = {};
 
   backendPermissions.forEach((perm, index) => {
-    const { permissionId, method, resourceId, resourceType,allowed } = perm;
+    const { permissionId, method, resourceId, resourceType,allowed,dataSourceId } = perm;
 
     // Validate fields
     if (!permissionId || !method || !resourceId || !resourceType) {
@@ -97,6 +99,7 @@ export const formatPermissions = (
       _id: permissionId,
       resourceType,
       permissionId,
+      dataSourceId,
     };
   });
 
