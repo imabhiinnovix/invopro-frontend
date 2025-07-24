@@ -14,7 +14,7 @@ import IconButton from '@mui/material/IconButton';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import { useState } from 'react';
+import { useState, useContext } from 'react';
 import { STYLE_GUIDE } from '../../styles';
 import { useComponentTypography } from '../../hooks';
 import ThemeTable from '../../components/atom/table/ThemeTable';
@@ -26,6 +26,7 @@ import { SelectChangeEvent } from '@mui/material';
 import DialogContentText from '@mui/material/DialogContentText';
 import { useEffect } from 'react';
 import Users from '../users';
+import { AuthContext } from '../../context/AuthContext';
 
 interface ProductSubscription {
   productId: string;
@@ -45,6 +46,8 @@ interface OrganizationFormValues {
 }
 
 export default function Organization() {
+  const { isSuperUser } = useContext(AuthContext);
+  
   const { control, handleSubmit, formState: { errors, isValid }, setValue, watch, reset, getValues } = useForm<OrganizationFormValues>({
     defaultValues: {
       name: '',
@@ -245,8 +248,15 @@ export default function Organization() {
     }
   }, [editOpen, selectedOrg, productAccessData, productAccessOrgId]);
 
-  const handleRowClick = (org: any, rowIndex: number) => {
-    setSelectedOrganizationForUsers(org);
+  const handleRowClick = (org: any, _rowIndex: number) => {
+    const isUserSuperUser = isSuperUser();
+    
+    const organizationIdForUsers = isUserSuperUser ? org._id : null;
+    
+    setSelectedOrganizationForUsers({
+      ...org,
+      organizationIdForUsers
+    });
     setShowUsers(true);
   };
 
@@ -289,7 +299,7 @@ export default function Organization() {
               </Box>
             </Box>
           </Box>
-          <Users organizationId={selectedOrganizationForUsers?._id} />
+          <Users organizationId={selectedOrganizationForUsers?.organizationIdForUsers} />
         </Box>
       ) : (
         <>
@@ -331,6 +341,7 @@ export default function Organization() {
                 columns={["name", "code", "status", "owner", "description", "createdAt", "updatedAt", "productAccess", "action"]}
                 rows={
                   data?.data?.map((org) => ({
+                    _id: org._id,
                     name: org.name,
                     code: org.code,
                     status: org.status,

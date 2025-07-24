@@ -17,47 +17,7 @@ interface UsersProps {
   organizationId?: string;
 }
 
-// Mock data as provided by user
-const mockUsers = [
-  {
-    organizationId: '64e5a4d23a2b2d001234abcd',
-    email: 'johndoe@example.com',
-    roleIds: [
-      '64e5a4d23a2b2d00aaaabbbb',
-      '64e5a4d23a2b2d00ccccdddd'
-    ],
-    firstName: 'John',
-    lastName: 'Doe',
-    mobile: 9876543210,
-    isVerified: true,
-    status: 'active',
-    organizationProductSubscriptionIds: [
-      '64e5a4d23a2b2d00eeeeffff',
-      '64e5a4d23a2b2d00gggghhhh'
-    ]
-  },
-  {
-    organizationId: '64e5a4d23a2b2d0099998888',
-    email: 'janedoe@example.com',
-    roleIds: [
-      '64e5a4d23a2b2d00ddddaaaa'
-    ],
-    firstName: 'Jane',
-    lastName: 'Doe',
-    mobile: 9123456789,
-    isVerified: false,
-    status: 'inactive',
-    organizationProductSubscriptionIds: [
-      '64e5a4d23a2b2d00hhhhiiii'
-    ]
-  }
-];
 
-// Add unique IDs for DataGrid
-const usersWithIds = mockUsers.map((user, index) => ({
-  ...user,
-  id: index + 1, // DataGrid requires unique id field
-}));
 
 const columns: GridColDef[] = [
   { field: 'id', headerName: 'ID', width: 70, disableColumnMenu: true, resizable: true },
@@ -165,7 +125,6 @@ const columns: GridColDef[] = [
   },
 ];
 
-const paginationModel = { page: 0, pageSize: 10 };
 
 export default function Users({ organizationId }: UsersProps) {
   const theme = useUnifiedTheme();
@@ -175,12 +134,8 @@ export default function Users({ organizationId }: UsersProps) {
   const [deleteId, setDeleteId] = useState<number | null>(null);
   const [searchValue, setSearchValue] = useState('');
 
-  // Filter users by organization if organizationId is provided
-  const filteredUsers = organizationId 
-    ? usersWithIds.filter(user => user.organizationId === organizationId)
-    : usersWithIds;
-
-  // Form data for modal
+  console.log('Users component received organizationId:', organizationId);
+    
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -305,7 +260,6 @@ export default function Users({ organizationId }: UsersProps) {
         minHeight: '100vh',
       }}
     >
-      {/* Heading */}
       <Typography
         variant="h4"
         sx={{
@@ -316,7 +270,6 @@ export default function Users({ organizationId }: UsersProps) {
         Users
       </Typography>
 
-      {/* Card containing controls and table */}
       <Card
         sx={{
           borderRadius: '8px',
@@ -324,7 +277,6 @@ export default function Users({ organizationId }: UsersProps) {
         }}
       >
         <CardContent sx={{ p: 3 }}>
-          {/* Controls: Search on left, Filter and Add buttons on right */}
           <Box
             sx={{
               display: 'flex',
@@ -333,7 +285,6 @@ export default function Users({ organizationId }: UsersProps) {
               mb: 2,
             }}
           >
-            {/* Search Bar */}
             <TextField
               placeholder="Search users..."
               variant="outlined"
@@ -355,7 +306,6 @@ export default function Users({ organizationId }: UsersProps) {
               }}
             />
 
-            {/* Filter and Add Buttons */}
             <Box sx={{ display: 'flex', gap: 1 }}>
               <Button
                 variant="outlined"
@@ -380,26 +330,26 @@ export default function Users({ organizationId }: UsersProps) {
             </Box>
           </Box>
 
-          {/* Table */}
-          <DataGrid
-            rows={filteredUsers.map((user) => ({
-              ...user,
-              handleEdit,
-              handleView,
-              handleDelete,
-            }))}
-            columns={columns}
-            initialState={{ pagination: { paginationModel } }}
-            pageSizeOptions={[5, 10]}
-            disableColumnMenu
-            sx={{
-              overflow: 'visible',
-            }}
-          />
+          {/* {(
+            <DataGrid
+              rows={usersWithIds.map((user) => ({
+                ...user,
+                handleEdit,
+                handleView,
+                handleDelete,
+              }))}
+              columns={columns}
+              initialState={{ pagination: { paginationModel } }}
+              pageSizeOptions={[5, 10]}
+              disableColumnMenu
+              sx={{
+                overflow: 'visible',
+              }}
+            />
+          )} */}
         </CardContent>
       </Card>
 
-      {/* Modal for Add/Edit/View/Filter */}
       <Modal
         open={openModal}
         onClose={handleCloseModal}
@@ -550,7 +500,6 @@ export default function Users({ organizationId }: UsersProps) {
         </Box>
       </Modal>
 
-      {/* Delete Confirmation Dialog */}
       <Dialog
         open={openDialog}
         onClose={handleCloseDialog}

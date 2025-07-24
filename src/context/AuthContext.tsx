@@ -41,6 +41,11 @@ type UserResponse = {
     password: string;
     role: string;
     roleId: number;
+    roleIds: Array<{
+      _id: string;
+      name: string;
+      isSuperUser?: boolean;
+    }>;
     settings: {
       RPPos: 'left' | 'right' | 'bottom' | 'top';
       showOccurrenceCount: boolean;
@@ -95,6 +100,8 @@ export interface AuthContextType {
   isAuthUser: boolean;
   clearAuthContext: () => void;
   refreshUserDetails: () => void;
+  isSuperUser: () => boolean;
+  getOrganizationIdForUsers: () => string | null;
 }
 
 const defaultAuthContext: AuthContextType = {
@@ -104,6 +111,8 @@ const defaultAuthContext: AuthContextType = {
   isAuthUser: false,
   clearAuthContext: () => {},
   refreshUserDetails: () => {},
+  isSuperUser: () => false,
+  getOrganizationIdForUsers: () => null,
 };
 
 export const AuthContext = createContext<AuthContextType>(defaultAuthContext);
@@ -144,6 +153,15 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
     }
   };
 
+  const isSuperUser = () => {
+    const hasSuperUserRole = userDetails?.data?.roleIds?.some(role => role.isSuperUser === true) || false;
+    return hasSuperUserRole;
+  };
+
+  const getOrganizationIdForUsers = () => {
+    return userDetails?.data?.organizationId?._id || null;
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -153,6 +171,8 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
         clearAuthContext,
         isAuthUser,
         refreshUserDetails,
+        isSuperUser,
+        getOrganizationIdForUsers,
       }}
     >
       {children}
