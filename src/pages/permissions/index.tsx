@@ -503,9 +503,11 @@ export default function Permissions() {
             initialState={{ pagination: { paginationModel } }}
             pageSizeOptions={[5, 10, 20]}
             disableColumnMenu
+            paginationMode="server"
             sx={{
               overflow: "visible",
             }}
+
             loading={
               permissionList.isLoading ||
               createPermission.isLoading ||
@@ -514,6 +516,7 @@ export default function Permissions() {
             }
             rowCount={permissionList?.data?.totalCount || 0}
             paginationModel={paginationModel}
+            paginationMode="server"
             onPaginationModelChange={setPaginationModel}
             slots={{
               pagination: () => (

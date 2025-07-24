@@ -24,7 +24,7 @@ export const CustomPagination: React.FC<CustomPaginationProps> = ({
   rowCount,
 }) => {
   const totalPages = Math.ceil(rowCount / paginationModel.pageSize) || 1;
-  const pageSizeOptions = [5, 10, 20];
+  const pageSizeOptions = [10, 20];
 
   return (
     <Box

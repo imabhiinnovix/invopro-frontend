@@ -348,6 +348,7 @@ export default function NotificationSettings() {
             initialState={{ pagination: { paginationModel } }}
             pageSizeOptions={[5, 10]}
             disableColumnMenu
+            paginationMode="server"
             sx={{
               border: 0,
               backgroundColor: STYLE_GUIDE?.COLORS?.white || "#ffffff",

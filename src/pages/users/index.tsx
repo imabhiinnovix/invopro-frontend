@@ -379,6 +379,7 @@ export default function Users() {
               handleView,
               handleDelete,
             }))}
+            paginationMode="server"
             columns={columns}
             initialState={{ pagination: { paginationModel } }}
             pageSizeOptions={[5, 10]}

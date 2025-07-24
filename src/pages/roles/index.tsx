@@ -2373,6 +2373,7 @@ export default function Roles() {
             initialState={{ pagination: { paginationModel } }}
             pageSizeOptions={[5, 10, 20]}
             disableColumnMenu
+            paginationMode="server"
             sx={{
               overflow: "visible",
             }}

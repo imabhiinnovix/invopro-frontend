@@ -144,7 +144,7 @@ type CustomPaginationProps = {
 
 const CustomPagination: React.FC<CustomPaginationProps> = ({ paginationModel, setPaginationModel, rowCount }) => {
   const totalPages = Math.ceil(rowCount / paginationModel.pageSize) || 1; 
-  const pageSizeOptions = [5, 10, 20]; 
+  const pageSizeOptions = [10, 20]; 
 
   return (
     <Box
@@ -612,6 +612,7 @@ useEffect(() => {
               onPaginationModelChange={setPaginationModel}
               pageSizeOptions={[5, 10, 20]}
               disableColumnMenu
+              paginationMode="server"
               slots={{
 
                 pagination: () => (
