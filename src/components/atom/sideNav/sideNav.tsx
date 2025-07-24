@@ -505,7 +505,7 @@ export default function SideNav() {
         route: "/create-theme",
       },
       {
-        name: "Dashboard Themes",
+        name: "Layout Themes",
         icon: createIcon(BrushIcon, "/themes"),
         route: "/themes",
       },
@@ -978,6 +978,20 @@ export default function SideNav() {
                               ? "/notivix/settings/roles"
                               : "/settings/roles",
                         },
+                        // {
+                        //   name: "Users",
+                        //   icon: (
+                        //     <PeopleIcon
+                        //       sx={{
+                        //         fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base,
+                        //       }}
+                        //     />
+                        //   ),
+                        //   route:
+                        //     activeTab === "Notifix"
+                        //       ? "/notivix/settings/users"
+                        //       : "/settings/users",
+                        // },
                         {
                           name: "Permissions",
                           icon: (

@@ -99,6 +99,12 @@ const AppRoutes = () => {
       <Route element={<AdminSuperAdminProtect />}>
         <Route element={<CommonLayout />}>
           <Route path="/create-theme" element={<CreateTheme />} />
+        </Route>
+      </Route>
+
+      {/* User Protected Routes - Themes */}
+      <Route element={<AuthProtect />}>
+        <Route element={<CommonLayout />}>
           <Route path="/themes" element={<DashboardThemePage />} />
         </Route>
       </Route>
