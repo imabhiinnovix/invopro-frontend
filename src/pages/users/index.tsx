@@ -58,7 +58,7 @@ const columns: GridColDef[] = [
     disableColumnMenu: true,
     resizable: true,
     renderCell: (params: GridRenderCellParams) => (
-      <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
+      <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap', width: '100%', height: '100%', alignItems: 'center' }}>
         {(params.value as string[])?.map((roleName: string) => (
           <Chip key={roleName} label={roleName} size="small" variant="outlined" />
         )) || '-'}
@@ -604,7 +604,7 @@ export default function Users({ organizationId }: UsersProps) {
         </DialogTitle>
         <DialogContent>
           <Typography>
-            Are you sure you want to delete the user with ID {userIdForEdit}?
+            Are you sure you want to delete the user?
           </Typography>
         </DialogContent>
         <DialogActions>
