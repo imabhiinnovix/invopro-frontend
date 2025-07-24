@@ -187,7 +187,7 @@ export default function Permissions() {
       filterValues.dataSourceId,
       filterValues.resourceType,
     ],
-    `${GET?.PERMISSION_List}?page=${paginationModel.page + 1}&limit=${perPageItem}&search=${encodeURIComponent(debouncedSearchValue)}&name=${encodeURIComponent(filterValues.name)}&dataSourceId=${encodeURIComponent(filterValues.dataSourceId)}&resourceType=${encodeURIComponent(filterValues.resourceType)}`,
+    `${GET?.PERMISSION_LIST}?page=${paginationModel.page + 1}&limit=${perPageItem}&search=${encodeURIComponent(debouncedSearchValue)}&name=${encodeURIComponent(filterValues.name)}&dataSourceId=${encodeURIComponent(filterValues.dataSourceId)}&resourceType=${encodeURIComponent(filterValues.resourceType)}`,
     true
   );
 
@@ -327,7 +327,7 @@ export default function Permissions() {
     if (deleteId) {
       try {
         await deletePermission.mutate({
-          url: `${DELETE.PERMISSION_DELETE}/${deleteId}`,
+          url: `${DELETE.DELETE_PERMISSION}/${deleteId}`,
           payload: null,
         });
       } catch (error) {
@@ -359,7 +359,7 @@ export default function Permissions() {
     try {
       if (modalMode === "add") {
         await createPermission.mutate({
-          url: POST.PERMISSION_CREATE,
+          url: POST.CREATE_PERMISSION,
           payload: {
             name: formData.name,
             method: formData.method,
@@ -368,7 +368,7 @@ export default function Permissions() {
         });
       } else if (modalMode === "edit") {
         await updatePermission.mutate({
-          url: `${PUT.PERMISSION_UPDATE}/${formData.id}`,
+          url: `${PUT.UPDATE_PERMISSION}/${formData.id}`,
           payload: {
             name: formData.name,
             method: formData.method,

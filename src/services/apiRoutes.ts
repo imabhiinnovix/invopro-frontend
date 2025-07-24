@@ -29,16 +29,18 @@ export const POST = {
   DUPLICATE_THEME: "/widgetTheme/duplicate/",
   UPDATE_THEME: "/widgetTheme/update/",
   UPDATE_REPORT_SETTINGS: "/customReports/updateSettings",
-  PERMISSION_CREATE: "/common/permission/create",
+  CREATE_PERMISSION: "/common/permission/create",
   Create_Organization: "/common/organization/create",
+  CREATE_ROLE: "/common/role/create",
 };
 
 export const PUT = {
   UPDATE_DATA_SOURCE: "/dataSource/update",
   UPDATE_ATTRIBUTE_OPTION: "/attributeOptions/update",
-  PERMISSION_UPDATE: "/common/permission/update",
+  UPDATE_PERMISSION: "/common/permission/update",
 
   UPDATE_ORGANIZATION: "/common/organization/update/",
+  UPDATE_ROLE: "/common/role/update/",
 };
 
 export const GET = {
@@ -71,13 +73,15 @@ export const GET = {
   NL_Query: "/nlQuery",
   NL_Query_INSIGHTS: "/nlQuery/insights",
   Report_Settings: "/common/customReports/listSettings?paginate=true",
-  PERMISSION_List: "/common/permission/list",
+  PERMISSION_LIST: "/common/permission/list",
   Organization_List: "/common/organization/list",
   Product_List: "/common/product/list",
   Product_Subscription_List: "/common/product-subscription/list",
+  ROLE_LIST: "/common/role/list",
 };
 
 export const DELETE = {
-  PERMISSION_DELETE: "/common/permission/delete",
+  DELETE_PERMISSION: "/common/permission/delete",
   Delete_Organization: "/common/organization/delete",
+  DELETE_ROLE: "/common/role/delete",
 };
