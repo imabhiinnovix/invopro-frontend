@@ -942,20 +942,20 @@ export default function SideNav() {
                   >
                     <List component="div" disablePadding>
                       {[
-                        {
-                          name: "Users",
-                          icon: (
-                            <PeopleIcon
-                              sx={{
-                                fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base,
-                              }}
-                            />
-                          ),
-                          route:
-                            activeTab === "Notifix"
-                              ? "/notivix/settings/users"
-                              : "/settings/users",
-                        },
+                        // {
+                        //   name: "Users",
+                        //   icon: (
+                        //     <PeopleIcon
+                        //       sx={{
+                        //         fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base,
+                        //       }}
+                        //     />
+                        //   ),
+                        //   route:
+                        //     activeTab === "Notifix"
+                        //       ? "/notivix/settings/users"
+                        //       : "/settings/users",
+                        // },
                         {
                           name: "Organization Setting",
                           icon: (

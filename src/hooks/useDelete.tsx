@@ -8,8 +8,8 @@ import axios, { AxiosError } from 'axios';
 type onSuccess<TResponse> = (data: TResponse) => void;
 type onError = (error: AxiosError<{ success: boolean; message?: string }>) => void;
 
-async function deleteFetcher<TResponse>(url: string): Promise<TResponse> {
-  const response = await axiosInstance.delete<TResponse>(url);
+async function deleteFetcher<TResponse>(url: string, payload?: any): Promise<TResponse> {
+  const response = await axiosInstance.delete<TResponse>(url, { data: payload });
   return response.data;
 }
 
@@ -21,9 +21,9 @@ function useDelete<TResponse>(
 ) {
   const queryClient = useQueryClient();
 
-  return useMutation<TResponse, unknown, { url: string }>({
-    mutationFn: async ({ url }) => {
-      return deleteFetcher<TResponse>(url);
+  return useMutation<TResponse, unknown, { url: string; payload?: any }>({
+    mutationFn: async ({ url, payload }) => {
+      return deleteFetcher<TResponse>(url, payload);
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: key });

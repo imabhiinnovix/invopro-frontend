@@ -1,106 +1,89 @@
-import * as React from 'react';
 import { useState } from 'react';
-import { DataGrid, GridColDef } from '@mui/x-data-grid';
+import { DataGrid, GridColDef, GridRenderCellParams } from '@mui/x-data-grid';
 import {
-  Box, Card, CardContent, Typography, TextField, Button, InputAdornment, Modal, Dialog, DialogTitle, DialogContent, DialogActions, Tooltip, Chip, FormControl, InputLabel, Select, MenuItem, Switch, FormControlLabel,
+  Box, Card, CardContent, Typography, TextField, Button, Modal, Dialog, DialogTitle, DialogContent, DialogActions, Tooltip, Chip, FormControl, InputLabel, Select, MenuItem, Switch, FormControlLabel, CircularProgress,
 } from '@mui/material';
-import SearchIcon from '@mui/icons-material/Search';
-import FilterListIcon from '@mui/icons-material/FilterList';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
-import VisibilityIcon from '@mui/icons-material/Visibility';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { useUnifiedTheme } from '../../hooks/useUnifiedTheme';
 import { STYLE_GUIDE } from '../../styles';
+import { GET, POST, PUT, DELETE } from '../../services/apiRoutes';
+import useGet from '../../hooks/useGet';
+import usePost from '../../hooks/usePost';
+import usePut from '../../hooks/usePut';
+import useDelete from '../../hooks/useDelete';
+import { UserListResponse, User, CreateUserPayload, CreateUserResponse, RoleListResponse, ProductSubscriptionListResponse } from './types';
 
-// Mock data as provided by user
-const mockUsers = [
-  {
-    organizationId: '64e5a4d23a2b2d001234abcd',
-    email: 'johndoe@example.com',
-    roleIds: [
-      '64e5a4d23a2b2d00aaaabbbb',
-      '64e5a4d23a2b2d00ccccdddd'
-    ],
-    firstName: 'John',
-    lastName: 'Doe',
-    mobile: 9876543210,
-    isVerified: true,
-    status: 'active',
-    organizationProductSubscriptionIds: [
-      '64e5a4d23a2b2d00eeeeffff',
-      '64e5a4d23a2b2d00gggghhhh'
-    ]
-  },
-  {
-    organizationId: '64e5a4d23a2b2d0099998888',
-    email: 'janedoe@example.com',
-    roleIds: [
-      '64e5a4d23a2b2d00ddddaaaa'
-    ],
-    firstName: 'Jane',
-    lastName: 'Doe',
-    mobile: 9123456789,
-    isVerified: false,
-    status: 'inactive',
-    organizationProductSubscriptionIds: [
-      '64e5a4d23a2b2d00hhhhiiii'
-    ]
-  }
-];
+interface UsersProps {
+  organizationId?: string;
+}
 
-// Add unique IDs for DataGrid
-const usersWithIds = mockUsers.map((user, index) => ({
-  ...user,
-  id: index + 1, // DataGrid requires unique id field
-}));
+interface UserRowData {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  mobile: string;
+  organizationId: string;
+  roleIds: string[];
+  roleNames: string[];
+  organizationProductSubscriptionIds: string[];
+  isVerified: boolean;
+  status: 'active' | 'inactive';
+  handleEdit: (row: UserRowData) => void;
+  handleView: (row: UserRowData) => void;
+  handleDelete: (id: string) => void;
+}
+
+
 
 const columns: GridColDef[] = [
-  { field: 'id', headerName: 'ID', width: 70, disableColumnMenu: true, resizable: true },
-  { field: 'firstName', headerName: 'First Name', width: 130, disableColumnMenu: true, resizable: true },
-  { field: 'lastName', headerName: 'Last Name', width: 130, disableColumnMenu: true, resizable: true },
+  // { field: 'id', headerName: 'ID', width: 70, disableColumnMenu: true, resizable: true },
+  { field: 'firstName', headerName: 'First Name', width: 200, disableColumnMenu: true, resizable: true },
+  { field: 'lastName', headerName: 'Last Name', width: 200, disableColumnMenu: true, resizable: true },
   { field: 'email', headerName: 'Email', width: 200, disableColumnMenu: true, resizable: true },
   { 
     field: 'mobile', 
     headerName: 'Mobile', 
-    width: 130, 
+    width: 200, 
     disableColumnMenu: true, 
     resizable: true,
-    valueFormatter: (params) => params.value ? params.value.toString() : '-'
+    valueFormatter: (params: { value: unknown }) => params?.value ? params?.value.toString() : '-'
   },
   {
-    field: 'roleIds',
+    field: 'roleNames',
     headerName: 'Roles',
     width: 200,
     disableColumnMenu: true,
     resizable: true,
-    renderCell: (params) => (
-      <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
-        {params.value?.map((roleId: string) => (
-          <Chip key={roleId} label={roleId.slice(-8)} size="small" variant="outlined" />
+    renderCell: (params: GridRenderCellParams) => (
+      <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap', width: '100%', height: '100%', alignItems: 'center' }}>
+        {(params.value as string[])?.map((roleName: string) => (
+          <Chip key={roleName} label={roleName} size="small" variant="outlined" />
         )) || '-'}
       </Box>
     ),
   },
-  {
-    field: 'organizationId',
-    headerName: 'Organization',
-    width: 150,
-    disableColumnMenu: true,
-    resizable: true,
-    renderCell: (params) => params.value ? params.value.slice(-8) : '-',
-  },
+  // {
+  //   field: 'organizationId',
+  //   headerName: 'Organization',
+  //   width: 150,
+  //   disableColumnMenu: true,
+  //   resizable: true,
+  //   renderCell: (params: any) => params.value ? params.value.slice(-8) : '-',
+  // },
   {
     field: 'status',
     headerName: 'Status',
     width: 100,
     disableColumnMenu: true,
     resizable: true,
-    renderCell: (params) => (
+    renderCell: (params: GridRenderCellParams) => (
       <Chip 
-        label={params.value} 
+        label={params.value as string} 
         size="small" 
-        color={params.value === 'active' ? 'success' : 'error'}
+        color={(params.value as string) === 'active' ? 'success' : 'error'}
         variant="outlined"
       />
     ),
@@ -111,11 +94,11 @@ const columns: GridColDef[] = [
     width: 100,
     disableColumnMenu: true,
     resizable: true,
-    renderCell: (params) => (
+    renderCell: (params: GridRenderCellParams) => (
       <Chip 
-        label={params.value ? 'Yes' : 'No'} 
+        label={(params.value as boolean) ? 'Yes' : 'No'} 
         size="small" 
-        color={params.value ? 'success' : 'warning'}
+        color={(params.value as boolean) ? 'success' : 'warning'}
         variant="outlined"
       />
     ),
@@ -127,18 +110,18 @@ const columns: GridColDef[] = [
     disableColumnMenu: true,
     sortable: false,
     resizable: false,
-    renderCell: (params) => (
+    renderCell: (params: GridRenderCellParams) => (
       <Box sx={{ display: 'flex', gap: 1 }}>
         <Tooltip title="Edit" arrow>
           <Button
             variant="text"
-            onClick={() => params.row.handleEdit(params.row)}
+            onClick={() => (params.row as UserRowData).handleEdit(params.row as UserRowData)}
             sx={{ minWidth: 'auto' }}
           >
             <EditIcon />
           </Button>
         </Tooltip>
-        <Tooltip title="View" arrow>
+        {/* <Tooltip title="View" arrow>
           <Button
             variant="text"
             onClick={() => params.row.handleView(params.row)}
@@ -146,11 +129,11 @@ const columns: GridColDef[] = [
           >
             <VisibilityIcon />
           </Button>
-        </Tooltip>
+        </Tooltip> */}
         <Tooltip title="Delete" arrow>
           <Button
             variant="text"
-            onClick={() => params.row.handleDelete(params.row.id)}
+            onClick={() => (params.row as UserRowData).handleDelete((params.row as UserRowData).id)}
             sx={{ minWidth: 'auto', color: 'error.main' }}
           >
             <DeleteIcon />
@@ -161,63 +144,106 @@ const columns: GridColDef[] = [
   },
 ];
 
-const paginationModel = { page: 0, pageSize: 10 };
 
-export default function Users() {
+export default function Users({ organizationId }: UsersProps) {
   const theme = useUnifiedTheme();
   const [openModal, setOpenModal] = useState(false);
-  const [modalMode, setModalMode] = useState<'add' | 'edit' | 'view' | 'filter' | null>(null);
+  const [modalMode, setModalMode] = useState<'add' | 'edit' | 'view' | null>(null);
   const [openDialog, setOpenDialog] = useState(false);
-  const [deleteId, setDeleteId] = useState<number | null>(null);
-  const [searchValue, setSearchValue] = useState('');
+  const [userIdForEdit, setUserIdForEdit] = useState<string | null>(null);
+  
+  const usersQuery = useGet<UserListResponse>(
+    ['users', organizationId || 'all'],
+    organizationId ? `${GET.User_List}?organizationId=${organizationId}` : GET.User_List,
+    true
+  );
 
-  // Form data for modal
+  const rolesQuery = useGet<RoleListResponse>(
+    ['roles', organizationId || 'all'],
+    organizationId ? `${GET.Roles_List}?organizationId=${organizationId}` : GET.Roles_List,
+    true
+  );
+
+  const productSubscriptionsQuery = useGet<ProductSubscriptionListResponse>(
+    ['productSubscriptions', organizationId || 'all'],
+    organizationId ? `${GET.Product_Subscription_List}?organizationId=${organizationId}` : GET.Product_Subscription_List,
+    true
+  );
+
+  const createUserMutation = usePost<CreateUserPayload, CreateUserResponse>(
+    ['users', organizationId || 'all'],
+    () => {
+      usersQuery.refetch();
+      handleCloseModal();
+    },
+    true
+  );
+    
+  const updateUserMutation = usePut<CreateUserPayload, CreateUserResponse>(
+    ['users', organizationId || 'all'],
+    () => {
+      usersQuery.refetch();
+      handleCloseModal();
+    },
+    true
+  );
+
+  const deleteUserMutation = useDelete<any>(
+    ['users', organizationId || 'all'],
+    () => {
+      usersQuery.refetch();
+      handleCloseDialog();
+    },
+    true
+  );
+
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
     email: '',
+    password: '',
     mobile: '',
     organizationId: '',
     roleIds: [] as string[],
     organizationProductSubscriptionIds: [] as string[],
-    isVerified: false,
     status: 'active' as 'active' | 'inactive',
   });
 
-  const handleEdit = (row: any) => {
+  const handleEdit = (row: UserRowData) => {
     setFormData({
       firstName: row.firstName,
-      lastName: row.lastName || '',
+      lastName: row.lastName === '-' ? '' : row.lastName,
       email: row.email,
+      password: '',
       mobile: row.mobile?.toString() || '',
       organizationId: row.organizationId || '',
       roleIds: row.roleIds,
       organizationProductSubscriptionIds: row.organizationProductSubscriptionIds,
-      isVerified: row.isVerified,
       status: row.status,
     });
     setModalMode('edit');
+    setUserIdForEdit(row.id);
     setOpenModal(true);
   };
 
-  const handleView = (row: any) => {
+  const handleView = (row: UserRowData) => {
     setFormData({
       firstName: row.firstName,
       lastName: row.lastName || '',
       email: row.email,
+      password: '',
       mobile: row.mobile?.toString() || '',
       organizationId: row.organizationId || '',
       roleIds: row.roleIds,
       organizationProductSubscriptionIds: row.organizationProductSubscriptionIds,
-      isVerified: row.isVerified,
       status: row.status,
     });
     setModalMode('view');
     setOpenModal(true);
   };
 
-  const handleDelete = (id: number) => {
-    setDeleteId(id);
+  const handleDelete = (id: string) => {
+    setUserIdForEdit(id);
     setOpenDialog(true);
   };
 
@@ -226,19 +252,14 @@ export default function Users() {
       firstName: '',
       lastName: '',
       email: '',
+      password: '',
       mobile: '',
       organizationId: '',
       roleIds: [],
       organizationProductSubscriptionIds: [],
-      isVerified: false,
       status: 'active',
     });
     setModalMode('add');
-    setOpenModal(true);
-  };
-
-  const handleFilter = () => {
-    setModalMode('filter');
     setOpenModal(true);
   };
 
@@ -249,43 +270,92 @@ export default function Users() {
       firstName: '',
       lastName: '',
       email: '',
+      password: '',
       mobile: '',
       organizationId: '',
       roleIds: [],
       organizationProductSubscriptionIds: [],
-      isVerified: false,
       status: 'active',
     });
   };
 
   const handleCloseDialog = () => {
     setOpenDialog(false);
-    setDeleteId(null);
+    setUserIdForEdit(null);
   };
 
   const handleConfirmDelete = async () => {
-    console.log(`Deleting user with ID: ${deleteId}`);
-    handleCloseDialog();
-  };
-
-  const handleSave = async () => {
-    try {
-      if (modalMode === 'add') {
-        console.log('Add user:', formData);
-      } else if (modalMode === 'edit') {
-        console.log('Edit user:', formData);
-      } else if (modalMode === 'filter') {
-        console.log('Apply filter:', formData);
-      }
-      handleCloseModal();
-    } catch (error) {
-      console.error('Error saving user:', error);
+    if (userIdForEdit) {
+      deleteUserMutation.mutate({
+        url: `${DELETE.Delete_User}/${userIdForEdit}`,
+        payload: { organizationId: organizationId || '' },
+      });
+    } else {
+      handleCloseDialog();
     }
   };
 
-  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchValue(e.target.value);
+  const handleSave = async () => {
+    if (modalMode === 'add') {
+      const payload: CreateUserPayload = {
+        email: formData.email,
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        password: formData.password,
+        roleIds: formData.roleIds,
+        organizationProductSubscriptionIds: formData.organizationProductSubscriptionIds,
+        mobile: formData.mobile,
+        organizationId: organizationId || undefined,
+      };
+      createUserMutation.mutate({
+        url: POST.Create_User,
+        payload,
+      });
+    } else if (modalMode === 'edit' && userIdForEdit) {
+      const updatePayload: any = {
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        organizationId: organizationId || undefined,
+        roleIds: formData.roleIds,
+        organizationProductSubscriptionIds: formData.organizationProductSubscriptionIds,
+        mobile: formData.mobile,
+      };
+      if (formData.password) {
+        updatePayload.password = formData.password;
+      }
+      updateUserMutation.mutate({
+        url: `${PUT.UPDATE_USER}${userIdForEdit}`,
+        payload: updatePayload,
+      });
+    } else {
+      handleCloseModal();
+    }
   };
+
+  const transformedUsers: UserRowData[] = usersQuery.data?.data?.map((user: User) => ({
+    id: user._id,
+    firstName: user.firstName,
+    lastName: user.lastName === "" ? '-' : user.lastName,
+    email: user.email,
+    mobile: user.mobile === "" ? '-' : user.mobile,
+    organizationId: user.organizationId,
+    roleIds: user.roleIds.map(role => role._id),
+    roleNames: user.roleIds.map(role => role.name),
+    organizationProductSubscriptionIds: user.organizationProductSubscriptionIds.map(sub => sub._id),
+    isVerified: user.isVerified,
+    status: user.status as 'active' | 'inactive',
+    handleEdit,
+    handleView,
+    handleDelete,
+  })) || [];
+
+  const isAddMode = modalMode === 'add';
+  const isFormValid =
+    !!formData.firstName.trim() &&
+    !!formData.email.trim() &&
+    (!isAddMode || !!formData.password.trim()) &&
+    formData.roleIds.length > 0 &&
+    formData.organizationProductSubscriptionIds.length > 0;
 
   return (
     <Box
@@ -296,18 +366,6 @@ export default function Users() {
         minHeight: '100vh',
       }}
     >
-      {/* Heading */}
-      <Typography
-        variant="h4"
-        sx={{
-          mb: 3,
-          fontWeight: 400,
-        }}
-      >
-        Users
-      </Typography>
-
-      {/* Card containing controls and table */}
       <Card
         sx={{
           borderRadius: '8px',
@@ -315,82 +373,56 @@ export default function Users() {
         }}
       >
         <CardContent sx={{ p: 3 }}>
-          {/* Controls: Search on left, Filter and Add buttons on right */}
           <Box
             sx={{
               display: 'flex',
-              justifyContent: 'space-between',
+              justifyContent: 'flex-end',
               alignItems: 'center',
               mb: 2,
             }}
           >
-            {/* Search Bar */}
-            <TextField
-              placeholder="Search users..."
-              variant="outlined"
-              size="small"
-              value={searchValue}
-              onChange={handleSearchChange}
+            <Button
+              variant="contained"
+              startIcon={<AddIcon />}
+              onClick={handleAddUser}
               sx={{
-                width: '300px',
-                '& .MuiOutlinedInput-root': {
-                  borderRadius: '8px',
-                },
+                borderRadius: '8px',
               }}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <SearchIcon />
-                  </InputAdornment>
-                ),
-              }}
-            />
-
-            {/* Filter and Add Buttons */}
-            <Box sx={{ display: 'flex', gap: 1 }}>
-              <Button
-                variant="outlined"
-                startIcon={<FilterListIcon />}
-                onClick={handleFilter}
-                sx={{
-                  borderRadius: '8px',
-                }}
-              >
-                Filter
-              </Button>
-              <Button
-                variant="contained"
-                startIcon={<AddIcon />}
-                onClick={handleAddUser}
-                sx={{
-                  borderRadius: '8px',
-                }}
-              >
-                Add User
-              </Button>
-            </Box>
+            >
+              Add User
+            </Button>
           </Box>
 
-          {/* Table */}
-          <DataGrid
-            rows={usersWithIds.map((user) => ({
-              ...user,
-              handleEdit,
-              handleView,
-              handleDelete,
-            }))}
-            columns={columns}
-            initialState={{ pagination: { paginationModel } }}
-            pageSizeOptions={[5, 10]}
-            disableColumnMenu
-            sx={{
-              overflow: 'visible',
-            }}
-          />
+          {usersQuery.isLoading ? (
+            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', py: 4 }}>
+              <CircularProgress />
+              <Typography sx={{ ml: 2 }}>Loading users...</Typography>
+            </Box>
+          ) : usersQuery.error ? (
+            <Box sx={{ textAlign: 'center', py: 3 }}>
+              <Typography color="error" sx={{ mb: 2 }}>
+                {usersQuery.error instanceof Error ? usersQuery.error.message : 'Failed to fetch users'}
+              </Typography>
+            </Box>
+          ) : !transformedUsers || transformedUsers.length === 0 ? (
+            <Box sx={{ textAlign: 'center', py: 4 }}>
+              <Typography variant="body1" color="text.secondary">
+                No users found.
+              </Typography>
+            </Box>
+          ) : (
+            <DataGrid
+              rows={transformedUsers}
+              columns={columns}
+              disableColumnMenu
+              sx={{
+                overflow: 'visible',
+              }}
+            />
+          )}
         </CardContent>
       </Card>
 
-      {/* Modal for Add/Edit/View/Filter */}
       <Modal
         open={openModal}
         onClose={handleCloseModal}
@@ -413,8 +445,7 @@ export default function Users() {
         >
           <Typography variant="h6" sx={{ mb: 2 }}>
             {modalMode === 'add' ? 'Add User' :
-              modalMode === 'edit' ? 'Edit User' :
-                modalMode === 'view' ? 'View User' : 'Filter Users'}
+              modalMode === 'edit' ? 'Edit User' : 'View User'}
           </Typography>
           
           <Box
@@ -454,6 +485,18 @@ export default function Users() {
               type="email"
               sx={{ '& .MuiOutlinedInput-root': { borderRadius: '8px' } }}
             />
+            {modalMode === 'add' && (
+              <TextField
+                label="Password"
+                value={formData.password}
+                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                variant="outlined"
+                fullWidth
+                required
+                type="password"
+                sx={{ '& .MuiOutlinedInput-root': { borderRadius: '8px' } }}
+              />
+            )}
             <TextField
               label="Mobile"
               value={formData.mobile}
@@ -464,16 +507,18 @@ export default function Users() {
               type="tel"
               sx={{ '& .MuiOutlinedInput-root': { borderRadius: '8px' } }}
             />
-            <TextField
-              label="Organization ID"
-              value={formData.organizationId}
-              onChange={(e) => setFormData({ ...formData, organizationId: e.target.value })}
-              disabled={modalMode === 'view'}
-              variant="outlined"
-              fullWidth
-              sx={{ '& .MuiOutlinedInput-root': { borderRadius: '8px' } }}
-            />
-            <FormControl fullWidth sx={{ '& .MuiOutlinedInput-root': { borderRadius: '8px' } }}>
+            {!organizationId && (
+              <TextField
+                label="Organization ID"
+                value={formData.organizationId}
+                onChange={(e) => setFormData({ ...formData, organizationId: e.target.value })}
+                disabled={modalMode === 'view'}
+                variant="outlined"
+                fullWidth
+                sx={{ '& .MuiOutlinedInput-root': { borderRadius: '8px' } }}
+              />
+            )}
+            <FormControl fullWidth required sx={{ '& .MuiOutlinedInput-root': { borderRadius: '8px' } }}>
               <InputLabel>Status</InputLabel>
               <Select
                 value={formData.status}
@@ -485,35 +530,38 @@ export default function Users() {
                 <MenuItem value="inactive">Inactive</MenuItem>
               </Select>
             </FormControl>
-            <TextField
-              label="Role IDs (comma separated)"
-              value={formData.roleIds.join(', ')}
-              onChange={(e) => setFormData({ ...formData, roleIds: e.target.value.split(',').map(id => id.trim()).filter(Boolean) })}
-              disabled={modalMode === 'view'}
-              variant="outlined"
-              fullWidth
-              sx={{ '& .MuiOutlinedInput-root': { borderRadius: '8px' } }}
-            />
-            <TextField
-              label="Subscription IDs (comma separated)"
-              value={formData.organizationProductSubscriptionIds.join(', ')}
-              onChange={(e) => setFormData({ ...formData, organizationProductSubscriptionIds: e.target.value.split(',').map(id => id.trim()).filter(Boolean) })}
-              disabled={modalMode === 'view'}
-              variant="outlined"
-              fullWidth
-              sx={{ '& .MuiOutlinedInput-root': { borderRadius: '8px' } }}
-            />
-            <FormControlLabel
-              control={
-                <Switch
-                  checked={formData.isVerified}
-                  onChange={(e) => setFormData({ ...formData, isVerified: e.target.checked })}
-                  disabled={modalMode === 'view'}
-                />
-              }
-              label="Verified"
-              sx={{ gridColumn: 'span 2' }}
-            />
+            <FormControl fullWidth required sx={{ '& .MuiOutlinedInput-root': { borderRadius: '8px' } }}>
+              <InputLabel>Roles</InputLabel>
+              <Select
+                multiple
+                value={formData.roleIds}
+                onChange={(e) => setFormData({ ...formData, roleIds: e.target.value as string[] })}
+                disabled={modalMode === 'view'}
+                label="Roles"
+              >
+                {rolesQuery.data?.data?.map((role) => (
+                  <MenuItem key={role._id} value={role._id}>
+                    {role.name}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+            <FormControl fullWidth required sx={{ '& .MuiOutlinedInput-root': { borderRadius: '8px' } }}>
+              <InputLabel>Product Subscriptions</InputLabel>
+              <Select
+                multiple
+                value={formData.organizationProductSubscriptionIds}
+                onChange={(e) => setFormData({ ...formData, organizationProductSubscriptionIds: e.target.value as string[] })}
+                disabled={modalMode === 'view'}
+                label="Product Subscriptions"
+              >
+                {productSubscriptionsQuery.data?.data?.map((subscription) => (
+                  <MenuItem key={subscription._id} value={subscription._id}>
+                    {subscription.productId.name}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
           </Box>
           
           <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1, mt: 3 }}>
@@ -530,18 +578,18 @@ export default function Users() {
               <Button
                 variant="contained"
                 onClick={handleSave}
+                disabled={createUserMutation.isPending || updateUserMutation.isPending || !isFormValid}
                 sx={{
                   borderRadius: '8px',
                 }}
               >
-                {modalMode === 'filter' ? 'Apply' : 'Save'}
+                {createUserMutation.isPending || updateUserMutation.isPending ? <CircularProgress size={20} /> : 'Save'}
               </Button>
             )}
           </Box>
         </Box>
       </Modal>
 
-      {/* Delete Confirmation Dialog */}
       <Dialog
         open={openDialog}
         onClose={handleCloseDialog}
@@ -556,7 +604,7 @@ export default function Users() {
         </DialogTitle>
         <DialogContent>
           <Typography>
-            Are you sure you want to delete the user with ID {deleteId}?
+            Are you sure you want to delete the user?
           </Typography>
         </DialogContent>
         <DialogActions>
@@ -574,8 +622,9 @@ export default function Users() {
             sx={{
               borderRadius: '8px',
             }}
+            disabled={deleteUserMutation.isPending}
           >
-            Yes
+            {deleteUserMutation.isPending ? <CircularProgress size={20} /> : 'Yes'}
           </Button>
         </DialogActions>
       </Dialog>

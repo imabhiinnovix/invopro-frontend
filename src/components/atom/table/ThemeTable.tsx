@@ -44,6 +44,7 @@ interface ThemeTableProps {
   stickyHeader?: boolean;
   maxHeight?: string | number;
   sx?: any;
+  onRowClick?: (row: any, rowIndex: number) => void;
 }
 
 const ThemeTable: React.FC<ThemeTableProps> = ({
@@ -52,6 +53,7 @@ const ThemeTable: React.FC<ThemeTableProps> = ({
   stickyHeader = false,
   maxHeight,
   sx = {},
+  onRowClick,
 }) => {
   return (
     <TableContainer 
@@ -74,7 +76,18 @@ const ThemeTable: React.FC<ThemeTableProps> = ({
         </TableHead>
         <TableBody>
           {rows.map((row, rowIndex) => (
-            <StyledTableRow key={rowIndex}>
+            <StyledTableRow 
+              key={rowIndex}
+              onClick={() => onRowClick?.(row, rowIndex)}
+              sx={{
+                cursor: onRowClick ? 'pointer' : 'default',
+                '&:hover': {
+                  backgroundColor: onRowClick 
+                    ? (theme) => theme.palette.table?.rowHoverBackground || STYLE_GUIDE.COLORS.backgroundHover
+                    : 'inherit',
+                },
+              }}
+            >
               {columns.map((column) => (
                 <StyledTableCell key={column} align="center">
                   {column === 'description' && typeof row[column] === 'string' && row[column]?.length > 15 ? (

@@ -13,7 +13,8 @@ import DialogActions from '@mui/material/DialogActions';
 import IconButton from '@mui/material/IconButton';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { useState } from 'react';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import { useState, useContext } from 'react';
 import { STYLE_GUIDE } from '../../styles';
 import { useComponentTypography } from '../../hooks';
 import ThemeTable from '../../components/atom/table/ThemeTable';
@@ -24,6 +25,8 @@ import React from 'react';
 import { SelectChangeEvent } from '@mui/material';
 import DialogContentText from '@mui/material/DialogContentText';
 import { useEffect } from 'react';
+import Users from '../users';
+import { AuthContext } from '../../context/AuthContext';
 
 interface ProductSubscription {
   productId: string;
@@ -43,6 +46,8 @@ interface OrganizationFormValues {
 }
 
 export default function Organization() {
+  const { isSuperUser } = useContext(AuthContext);
+  
   const { control, handleSubmit, formState: { errors, isValid }, setValue, watch, reset, getValues } = useForm<OrganizationFormValues>({
     defaultValues: {
       name: '',
@@ -71,6 +76,8 @@ export default function Organization() {
   const [selectOpen, setSelectOpen] = React.useState(false);
   const [productAccessOpen, setProductAccessOpen] = useState(false);
   const [productAccessOrgId, setProductAccessOrgId] = useState<string | null>(null);
+  const [showUsers, setShowUsers] = useState(false);
+  const [selectedOrganizationForUsers, setSelectedOrganizationForUsers] = useState<any>(null);
 
   const theme = useUnifiedTheme();
 
@@ -97,6 +104,17 @@ export default function Organization() {
     refetch();
   }, true);
 
+  const {
+    data: productAccessData,
+    isLoading: productAccessLoading,
+    error: productAccessError,
+    refetch: refetchProductAccess,
+  } = useGet<{ success: boolean; data: any[]; totalCount: number }>(
+    ['productAccess', productAccessOrgId || ''],
+    productAccessOrgId ? `${GET.Product_Subscription_List}?organizationId=${productAccessOrgId}` : '',
+    !!productAccessOrgId
+  );
+
   const handleEditOpen = (org: any) => {
     setSelectedOrg(org);
     setEditOpen(true);
@@ -106,7 +124,7 @@ export default function Organization() {
     setValue('domain', org.domain || '');
     setValue('status', org.status || 'inactive');
     setValue('owner', org.owner?._id || '');
-  
+    refetchProductAccess()
   };
 
   const handleEditClose = () => {
@@ -199,20 +217,10 @@ export default function Organization() {
     replace(newFields);
   }, [selectedProductIds]);
 
-
-  const {
-    data: productAccessData,
-    isLoading: productAccessLoading,
-    error: productAccessError,
-  } = useGet<{ success: boolean; data: any[]; totalCount: number }>(
-    ['productAccess', productAccessOrgId || ''],
-    productAccessOrgId ? `${GET.Product_Subscription_List}?organizationId=${productAccessOrgId}` : '',
-    !!productAccessOrgId 
-  );
-
   const handleProductAccessView = (orgId: string) => {
     setProductAccessOrgId(orgId);
     setProductAccessOpen(true);
+    refetchProductAccess()
   };
 
   const handleProductAccessClose = () => {
@@ -240,127 +248,339 @@ export default function Organization() {
     }
   }, [editOpen, selectedOrg, productAccessData, productAccessOrgId]);
 
+  const handleRowClick = (org: any, _rowIndex: number) => {
+    const isUserSuperUser = isSuperUser();
+    
+    const organizationIdForUsers = isUserSuperUser ? org._id : null;
+    
+    setSelectedOrganizationForUsers({
+      ...org,
+      organizationIdForUsers
+    });
+    setShowUsers(true);
+  };
+
+  const handleBackToOrganizations = () => {
+    setShowUsers(false);
+    setSelectedOrganizationForUsers(null);
+  };
+
   return (
     <Box height="100%">
-      <Box
-        sx={{
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "space-between",
-          alignItems: "flex-start",
-          gap: STYLE_GUIDE.SPACING.s4,
-          p: { xs: STYLE_GUIDE.SPACING.s4, md: STYLE_GUIDE.SPACING.s6 },
-          backgroundColor: theme.palette.background.paper,
-          borderBottom: "1px solid",
-          borderColor: STYLE_GUIDE.COLORS.divider,
-        }}
-      >
-        <Box sx={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <Typography
-            variant="h4"
+      {showUsers ? (
+        <Box>
+          <Box
             sx={{
-              ...getHeadingSx(),
-              mb: STYLE_GUIDE?.SPACING?.s1,
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "space-between",
+              alignItems: "flex-start",
+              gap: STYLE_GUIDE.SPACING.s4,
+              p: { xs: STYLE_GUIDE.SPACING.s4, md: STYLE_GUIDE.SPACING.s6 },
+              backgroundColor: theme.palette.background.paper,
+              borderBottom: "1px solid",
+              borderColor: STYLE_GUIDE.COLORS.divider,
             }}
           >
-            Organization Details
-          </Typography>
-          <Button variant="contained" color="primary" onClick={handleCreateOpen}>
-            Create
-          </Button>
-        </Box>
-        {isLoading ? (
-          <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 100 }}>
-            <CircularProgress />
+            <Box sx={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                <IconButton onClick={handleBackToOrganizations} sx={{ color: theme.palette.primary.main }}>
+                  <ArrowBackIcon />
+                </IconButton>
+                <Typography
+                  variant="h4"
+                  sx={{
+                    ...getHeadingSx(),
+                    mb: STYLE_GUIDE?.SPACING?.s1,
+                  }}
+                >
+                  User Details
+                </Typography>
+              </Box>
+            </Box>
           </Box>
-        ) : error ? (
-          <Typography color="error">Failed to load organizations.</Typography>
-        ) : (
-          <ThemeTable
-            columns={["name", "code", "status", "owner", "description", "createdAt", "updatedAt", "productAccess", "action"]}
-            rows={
-              data?.data?.map((org) => ({
-                name: org.name,
-                code: org.code,
-                status: org.status,
-                owner: org.owner ? `${org.owner.firstName || ''} ${org.owner.lastName || ''}`.trim() : '-',
-                description: org.description,
-                createdAt: new Date(org.createdAt).toLocaleDateString(),
-                updatedAt: new Date(org.updatedAt).toLocaleDateString(),
-                productAccess: (
-                  <Button size="small" variant="outlined" onClick={() => handleProductAccessView(org._id)}>
-                    View
-                  </Button>
-                ),
-                action: (
-                  <>
-                    <IconButton onClick={() => handleEditOpen(org)} size="small" title="Edit">
-                      <EditIcon fontSize="small" />
-                    </IconButton>
-                    <IconButton onClick={() => handleDeleteOpen(org)} size="small" title="Delete">
-                      <DeleteIcon fontSize="small" />
-                    </IconButton>
-                  </>
-                ),
-              })) || []
-            }
-            stickyHeader={true}
-          />
-        )}
-      </Box>
+          <Users organizationId={selectedOrganizationForUsers?.organizationIdForUsers} />
+        </Box>
+      ) : (
+        <>
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "space-between",
+              alignItems: "flex-start",
+              gap: STYLE_GUIDE.SPACING.s4,
+              p: { xs: STYLE_GUIDE.SPACING.s4, md: STYLE_GUIDE.SPACING.s6 },
+              backgroundColor: theme.palette.background.paper,
+              borderBottom: "1px solid",
+              borderColor: STYLE_GUIDE.COLORS.divider,
+            }}
+          >
+            <Box sx={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <Typography
+                variant="h4"
+                sx={{
+                  ...getHeadingSx(),
+                  mb: STYLE_GUIDE?.SPACING?.s1,
+                }}
+              >
+                Organization Details
+              </Typography>
+              <Button variant="contained" color="primary" onClick={handleCreateOpen}>
+                Create
+              </Button>
+            </Box>
+            {isLoading ? (
+              <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 100 }}>
+                <CircularProgress />
+              </Box>
+            ) : error ? (
+              <Typography color="error">Failed to load organizations.</Typography>
+            ) : (
+              <ThemeTable
+                columns={["name", "code", "status", "owner", "description", "createdAt", "updatedAt", "productAccess", "action"]}
+                rows={
+                  data?.data?.map((org) => ({
+                    _id: org._id,
+                    name: org.name,
+                    code: org.code,
+                    status: org.status,
+                    owner: org.owner ? `${org.owner.firstName || ''} ${org.owner.lastName || ''}`.trim() : '-',
+                    description: org.description,
+                    createdAt: new Date(org.createdAt).toLocaleDateString(),
+                    updatedAt: new Date(org.updatedAt).toLocaleDateString(),
+                    productAccess: (
+                      <Button 
+                        size="small" 
+                        variant="outlined" 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleProductAccessView(org._id);
+                        }}
+                      >
+                        View
+                      </Button>
+                    ),
+                    action: (
+                      <>
+                        <IconButton 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleEditOpen(org);
+                          }} 
+                          size="small" 
+                          title="Edit"
+                        >
+                          <EditIcon fontSize="small" />
+                        </IconButton>
+                        <IconButton 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeleteOpen(org);
+                          }} 
+                          size="small" 
+                          title="Delete"
+                        >
+                          <DeleteIcon fontSize="small" />
+                        </IconButton>
+                      </>
+                    ),
+                  })) || []
+                }
+                stickyHeader={true}
+                onRowClick={handleRowClick}
+              />
+            )}
+          </Box>
 
-      <Dialog open={editOpen} onClose={handleEditClose} maxWidth="sm" fullWidth>
-        <DialogTitle>Edit Organization</DialogTitle>
-        <DialogContent>
-          {selectedOrg && (
-            <form
-              onSubmit={handleSubmit(handleEditSubmit)}
-              style={{ marginTop: 8 }}
-            >
-              <Grid container spacing={2}>
-                <Grid item xs={12}>
-                  <Controller
-                    name="name"
-                    control={control}
-                    defaultValue={selectedOrg.name}
-                    render={({ field }) => (
-                      <TextField {...field} label="Name" fullWidth margin="normal" />
-                    )}
-                  />
-                </Grid>
-                <Grid item xs={12}>
-                  <Controller
-                    name="description"
-                    control={control}
-                    defaultValue={selectedOrg.description || ''}
-                    render={({ field }) => (
-                      <TextField {...field} label="Description" fullWidth margin="normal" />
-                    )}
-                  />
-                </Grid>
-                <Grid item xs={12}>
-                  <Controller
-                    name="domain"
-                    control={control}
-                    defaultValue={selectedOrg.domain || ''}
-                    render={({ field }) => (
-                      <TextField {...field} label="Domain" fullWidth margin="normal" />
-                    )}
-                  />
-                </Grid>
-              {(fields || []).map((field, idx) => (
-                <Grid container spacing={2} alignItems="flex-end" key={field.id} sx={{ m: 2, width: '100%', border: '1px solid #eee', borderRadius: STYLE_GUIDE.SPACING.s1 }}>
-                  <Grid item xs={3}>
+          <Dialog open={editOpen} onClose={handleEditClose} maxWidth="sm" fullWidth>
+            <DialogTitle>Edit Organization</DialogTitle>
+            <DialogContent>
+              {selectedOrg && (
+                <form
+                  onSubmit={handleSubmit(handleEditSubmit)}
+                  style={{ marginTop: 8 }}
+                >
+                  <Grid container spacing={2}>
+                    <Grid item xs={12}>
+                      <Controller
+                        name="name"
+                        control={control}
+                        defaultValue={selectedOrg.name}
+                        render={({ field }) => (
+                          <TextField {...field} label="Name" fullWidth margin="normal" />
+                        )}
+                      />
+                    </Grid>
+                    <Grid item xs={12}>
+                      <Controller
+                        name="description"
+                        control={control}
+                        defaultValue={selectedOrg.description || ''}
+                        render={({ field }) => (
+                          <TextField {...field} label="Description" fullWidth margin="normal" />
+                        )}
+                      />
+                    </Grid>
+                    <Grid item xs={12}>
+                      <Controller
+                        name="domain"
+                        control={control}
+                        defaultValue={selectedOrg.domain || ''}
+                        render={({ field }) => (
+                          <TextField {...field} label="Domain" fullWidth margin="normal" />
+                        )}
+                      />
+                    </Grid>
+                    {(fields || []).map((field, idx) => (
+                      <Grid container spacing={2} alignItems="flex-end" key={field.id} sx={{ m: 2, width: '100%', border: '1px solid #eee', borderRadius: STYLE_GUIDE.SPACING.s1 }}>
+                        <Grid item xs={3}>
+                          <Controller
+                            name={`productSubscriptions.${idx}.productId`}
+                            control={control}
+                            rules={{ required: 'Product is required' }}
+                            render={({ field }) => (
+                              <FormControl fullWidth margin="dense">
+                                <InputLabel>Product</InputLabel>
+                                <Select
+                                  {...field}
+                                  label="Product"
+                                >
+                                  {productOptions.map((product) => (
+                                    <MenuItem key={product._id} value={product._id}>
+                                      {product.name}
+                                    </MenuItem>
+                                  ))}
+                                </Select>
+                              </FormControl>
+                            )}
+                          />
+                        </Grid>
+                        <Grid item xs={3}>
+                          <Controller
+                            name={`productSubscriptions.${idx}.totalLicenses`}
+                            control={control}
+                            rules={{ required: 'Total Licenses is required', min: { value: 1, message: 'Must be at least 1' } }}
+                            render={({ field }) => (
+                              <TextField
+                                {...field}
+                                label="Total Licenses"
+                                type="number"
+                                fullWidth
+                                margin="dense"
+                                error={!!errors.productSubscriptions && (errors.productSubscriptions as any)[idx]?.totalLicenses}
+                                helperText={(errors.productSubscriptions && (errors.productSubscriptions as any)[idx]?.totalLicenses?.message) || ''}
+                                inputProps={{ min: 1 }}
+                              />
+                            )}
+                          />
+                        </Grid>
+                        <Grid item xs={4}>
+                          <Controller
+                            name={`productSubscriptions.${idx}.licenseExpiresAt`}
+                            control={control}
+                            rules={{ required: 'License Expiry Date is required' }}
+                            render={({ field }) => (
+                              <CommonDatePicker
+                                {...field}
+                                control={control}
+                                label="License Expiry Date"
+                                views={['year', 'month', 'day']}
+                                sx={{ marginTop: 1 }}
+                              />
+                            )}
+                          />
+                        </Grid>
+                        <Grid item xs={2} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <IconButton
+                            aria-label="Remove"
+                            color="error"
+                            onClick={() => remove(idx)}
+                            disabled={fields.length === 1}>
+                            <DeleteIcon />
+                          </IconButton>
+                        </Grid>
+                      </Grid>
+                    ))}
+                    <Grid item xs={12}>
+                      <Controller
+                        name="status"
+                        control={control}
+                        defaultValue={selectedOrg.status === 'active' ? 'active' : 'inactive'}
+                        render={({ field: { value, onChange } }) => (
+                          <FormControlLabel
+                            control={
+                              <Switch
+                                checked={value === 'active'}
+                                onChange={(_, checked) => onChange(checked ? 'active' : 'inactive')}
+                                color="primary"
+                              />
+                            }
+                            label={value === 'active' ? 'Active' : 'Inactive'}
+                          />
+                        )}
+                      />
+                    </Grid>
+                  </Grid>
+                  <DialogActions>
+                    <Button onClick={handleEditClose}>Cancel</Button>
+                    <Button type="submit" variant="contained" disabled={formLoading}>
+                      {formLoading ? 'Saving...' : 'Save'}
+                    </Button>
+                  </DialogActions>
+                </form>
+              )}
+            </DialogContent>
+          </Dialog>
+
+          <Dialog open={deleteOpen} onClose={handleDeleteClose}>
+            <DialogTitle>Delete Organization</DialogTitle>
+            <DialogContent>
+              <Typography>Are you sure you want to delete this organization?</Typography>
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={handleDeleteClose}>Cancel</Button>
+              <Button onClick={handleDeleteConfirm} color="error" variant="contained" disabled={deleteOrg.isPending}>
+                {deleteOrg.isPending ? 'Deleting...' : 'Delete'}
+              </Button>
+            </DialogActions>
+          </Dialog>
+
+          <Dialog open={createOpen} onClose={handleCreateClose} maxWidth="sm" fullWidth>
+            <DialogTitle>Create Organization</DialogTitle>
+            <DialogContent>
+              <form
+                onSubmit={handleSubmit(handleCreateSubmit)}
+                style={{ marginTop: 8 }}
+                noValidate
+              >
+                <Grid container spacing={2}>
+                  <Grid item xs={12}>
                     <Controller
-                      name={`productSubscriptions.${idx}.productId`}
+                      name="productIds"
                       control={control}
-                      rules={{ required: 'Product is required' }}
+                      rules={{ required: 'At least one product is required' }}
                       render={({ field }) => (
-                        <FormControl fullWidth margin="dense">
-                          <InputLabel>Product</InputLabel>
+                        <FormControl fullWidth margin="normal" error={!!errors.productIds}>
+                          <InputLabel id="product-multiselect-label">Products</InputLabel>
                           <Select
                             {...field}
-                            label="Product"
+                            labelId="product-multiselect-label"
+                            multiple
+                            open={selectOpen}
+                            onOpen={() => setSelectOpen(true)}
+                            onClose={() => setSelectOpen(false)}
+                            onChange={(event: SelectChangeEvent<string[]>) => {
+                              const value = event.target.value as string[];
+                              field.onChange(value);
+                              setSelectOpen(false); // close after selection
+                            }}
+                            label="Products"
+                            renderValue={(selected) =>
+                              (selected as string[]).map(
+                                (id) => productOptions.find((p) => p._id === id)?.name || id
+                              ).join(', ')
+                            }
                           >
                             {productOptions.map((product) => (
                               <MenuItem key={product._id} value={product._id}>
@@ -372,253 +592,119 @@ export default function Organization() {
                       )}
                     />
                   </Grid>
-                  <Grid item xs={3}>
+                  <Grid item xs={12}>
                     <Controller
-                      name={`productSubscriptions.${idx}.totalLicenses`}
+                      name="name"
                       control={control}
-                      rules={{ required: 'Total Licenses is required', min: { value: 1, message: 'Must be at least 1' } }}
+                      rules={{ required: 'Name is required' }}
                       render={({ field }) => (
                         <TextField
                           {...field}
-                          label="Total Licenses"
-                          type="number"
+                          label="Name"
                           fullWidth
-                          margin="dense"
-                          error={!!errors.productSubscriptions && (errors.productSubscriptions as any)[idx]?.totalLicenses}
-                          helperText={(errors.productSubscriptions && (errors.productSubscriptions as any)[idx]?.totalLicenses?.message) || ''}
-                          inputProps={{ min: 1 }}
+                          margin="normal"
+                          error={!!errors.name}
+                          helperText={errors.name?.message}
                         />
                       )}
                     />
                   </Grid>
-                  <Grid item xs={4}>
+                  <Grid item xs={12}>
                     <Controller
-                      name={`productSubscriptions.${idx}.licenseExpiresAt`}
+                      name="description"
                       control={control}
-                      rules={{ required: 'License Expiry Date is required' }}
+                      rules={{ required: 'Description is required' }}
                       render={({ field }) => (
-                        <CommonDatePicker
+                        <TextField
                           {...field}
-                          control={control}
-                          label="License Expiry Date"
-                          views={['year', 'month', 'day']}
-                          sx={{ marginTop: 1 }}
+                          label="Description"
+                          fullWidth
+                          margin="normal"
+                          error={!!errors.description}
+                          helperText={errors.description?.message}
                         />
                       )}
                     />
                   </Grid>
-                  <Grid item xs={2} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <IconButton
-                      aria-label="Remove"
-                      color="error"
-                      onClick={() => remove(idx)}
-                      disabled={fields.length === 1}>
-                      <DeleteIcon />
-                    </IconButton>
+                  <Grid item xs={12}>
+                    <Controller
+                      name="domain"
+                      control={control}
+                      rules={{ required: 'Domain is required' }}
+                      render={({ field }) => (
+                        <TextField
+                          {...field}
+                          label="Domain"
+                          fullWidth
+                          margin="normal"
+                          error={!!errors.domain}
+                          helperText={errors.domain?.message}
+                        />
+                      )}
+                    />
+                  </Grid>
+                  <Grid item xs={12}>
+                    <Controller
+                      name="code"
+                      control={control}
+                      rules={{ required: 'Code is required' }}
+                      render={({ field }) => (
+                        <TextField
+                          {...field}
+                          label="Code"
+                          fullWidth
+                          margin="normal"
+                          error={!!errors.code}
+                          helperText={errors.code?.message}
+                        />
+                      )}
+                    />
                   </Grid>
                 </Grid>
-              ))}
-                <Grid item xs={12}>
-                  <Controller
-                    name="status"
-                    control={control}
-                    defaultValue={selectedOrg.status === 'active' ? 'active' : 'inactive'}
-                    render={({ field: { value, onChange } }) => (
-                      <FormControlLabel
-                        control={
-                          <Switch
-                            checked={value === 'active'}
-                            onChange={(_, checked) => onChange(checked ? 'active' : 'inactive')}
-                            color="primary"
-                          />
-                        }
-                        label={value === 'active' ? 'Active' : 'Inactive'}
-                      />
-                    )}
-                  />
-                </Grid>
-              </Grid>
-              <DialogActions>
-                <Button onClick={handleEditClose}>Cancel</Button>
-                <Button type="submit" variant="contained" disabled={formLoading}>
-                  {formLoading ? 'Saving...' : 'Save'}
-                </Button>
-              </DialogActions>
-            </form>
-          )}
-        </DialogContent>
-      </Dialog>
+                <DialogActions>
+                  <Button onClick={handleCreateClose}>Cancel</Button>
+                  <Button type="submit" variant="contained" disabled={!isValid || createLoading}>
+                    {createLoading ? 'Creating...' : 'Create'}
+                  </Button>
+                </DialogActions>
+              </form>
+            </DialogContent>
+          </Dialog>
 
-      <Dialog open={deleteOpen} onClose={handleDeleteClose}>
-        <DialogTitle>Delete Organization</DialogTitle>
-        <DialogContent>
-          <Typography>Are you sure you want to delete this organization?</Typography>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleDeleteClose}>Cancel</Button>
-          <Button onClick={handleDeleteConfirm} color="error" variant="contained" disabled={deleteOrg.isPending}>
-            {deleteOrg.isPending ? 'Deleting...' : 'Delete'}
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      <Dialog open={createOpen} onClose={handleCreateClose} maxWidth="sm" fullWidth>
-        <DialogTitle>Create Organization</DialogTitle>
-        <DialogContent>
-          <form
-            onSubmit={handleSubmit(handleCreateSubmit)}
-            style={{ marginTop: 8 }}
-            noValidate
-          >
-            <Grid container spacing={2}>
-              <Grid item xs={12}>
-                <Controller
-                  name="productIds"
-                  control={control}
-                  rules={{ required: 'At least one product is required' }}
-                  render={({ field }) => (
-                    <FormControl fullWidth margin="normal" error={!!errors.productIds}>
-                      <InputLabel id="product-multiselect-label">Products</InputLabel>
-                      <Select
-                        {...field}
-                        labelId="product-multiselect-label"
-                        multiple
-                        open={selectOpen}
-                        onOpen={() => setSelectOpen(true)}
-                        onClose={() => setSelectOpen(false)}
-                        onChange={(event: SelectChangeEvent<string[]>) => {
-                          const value = event.target.value as string[];
-                          field.onChange(value);
-                          setSelectOpen(false); // close after selection
-                        }}
-                        label="Products"
-                        renderValue={(selected) =>
-                          (selected as string[]).map(
-                            (id) => productOptions.find((p) => p._id === id)?.name || id
-                          ).join(', ')
-                        }
-                      >
-                        {productOptions.map((product) => (
-                          <MenuItem key={product._id} value={product._id}>
-                            {product.name}
-                          </MenuItem>
-                        ))}
-                      </Select>
-                    </FormControl>
-                  )}
-                />
-              </Grid>
-              <Grid item xs={12}>
-                <Controller
-                  name="name"
-                  control={control}
-                  rules={{ required: 'Name is required' }}
-                  render={({ field }) => (
-                    <TextField
-                      {...field}
-                      label="Name"
-                      fullWidth
-                      margin="normal"
-                      error={!!errors.name}
-                      helperText={errors.name?.message}
-                    />
-                  )}
-                />
-              </Grid>
-              <Grid item xs={12}>
-                <Controller
-                  name="description"
-                  control={control}
-                  rules={{ required: 'Description is required' }}
-                  render={({ field }) => (
-                    <TextField
-                      {...field}
-                      label="Description"
-                      fullWidth
-                      margin="normal"
-                      error={!!errors.description}
-                      helperText={errors.description?.message}
-                    />
-                  )}
-                />
-              </Grid>
-              <Grid item xs={12}>
-                <Controller
-                  name="domain"
-                  control={control}
-                  rules={{ required: 'Domain is required' }}
-                  render={({ field }) => (
-                    <TextField
-                      {...field}
-                      label="Domain"
-                      fullWidth
-                      margin="normal"
-                      error={!!errors.domain}
-                      helperText={errors.domain?.message}
-                    />
-                  )}
-                />
-              </Grid>
-              <Grid item xs={12}>
-                <Controller
-                  name="code"
-                  control={control}
-                  rules={{ required: 'Code is required' }}
-                  render={({ field }) => (
-                    <TextField
-                      {...field}
-                      label="Code"
-                      fullWidth
-                      margin="normal"
-                      error={!!errors.code}
-                      helperText={errors.code?.message}
-                    />
-                  )}
-                />
-              </Grid>
-            </Grid>
-            <DialogActions>
-              <Button onClick={handleCreateClose}>Cancel</Button>
-              <Button type="submit" variant="contained" disabled={!isValid || createLoading}>
-                {createLoading ? 'Creating...' : 'Create'}
-              </Button>
-            </DialogActions>
-          </form>
-        </DialogContent>
-      </Dialog>
-
-      {/* Product Access Modal */}
-      <Dialog open={productAccessOpen} onClose={handleProductAccessClose} maxWidth="sm" fullWidth>
-        <DialogTitle>Product Access</DialogTitle>
-        <DialogContent>
-          {productAccessLoading ? (
-            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 100 }}>
-              <CircularProgress />
-            </Box>
-          ) : productAccessError ? (
-            <DialogContentText color="error.main">
-              {typeof productAccessError === 'string'
-                ? productAccessError
-                : 'Failed to fetch product access'}
-            </DialogContentText>
-          ) : !(productAccessData?.data?.length) ? (
-            <DialogContentText>No product access found.</DialogContentText>
-          ) : (
-            <Box>
-              {(productAccessData?.data || []).map((item: any) => (
-                <Box key={item._id} sx={{ mb: 2, p: 2, border: '1px solid #eee', borderRadius: 2 }}>
-                  <Typography variant="subtitle2">{item.productId?.name || '-'}</Typography>
-                  <Typography variant="body2">Total Licenses: {item.totalLicenses}</Typography>
-                  <Typography variant="body2">License Expires At: {item.licenseExpiresAt ? new Date(item.licenseExpiresAt).toLocaleDateString() : '-'}</Typography>
+          {/* Product Access Modal */}
+          <Dialog open={productAccessOpen} onClose={handleProductAccessClose} maxWidth="sm" fullWidth>
+            <DialogTitle>Product Access</DialogTitle>
+            <DialogContent>
+              {productAccessLoading ? (
+                <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 100 }}>
+                  <CircularProgress />
                 </Box>
-              ))}
-            </Box>
-          )}
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleProductAccessClose}>Close</Button>
-        </DialogActions>
-      </Dialog>
+              ) : productAccessError ? (
+                <DialogContentText color="error.main">
+                  {typeof productAccessError === 'string'
+                    ? productAccessError
+                    : 'Failed to fetch product access'}
+                </DialogContentText>
+              ) : !(productAccessData?.data?.length) ? (
+                <DialogContentText>No product access found.</DialogContentText>
+              ) : (
+                <Box>
+                  {(productAccessData?.data || []).map((item: any) => (
+                    <Box key={item._id} sx={{ mb: 2, p: 2, border: '1px solid #eee', borderRadius: 2 }}>
+                      <Typography variant="subtitle2">{item.productId?.name || '-'}</Typography>
+                      <Typography variant="body2">Total Licenses: {item.totalLicenses}</Typography>
+                      <Typography variant="body2">License Expires At: {item.licenseExpiresAt ? new Date(item.licenseExpiresAt).toLocaleDateString() : '-'}</Typography>
+                    </Box>
+                  ))}
+                </Box>
+              )}
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={handleProductAccessClose}>Close</Button>
+            </DialogActions>
+          </Dialog>
+        </>
+      )}
     </Box>
   );
 }
