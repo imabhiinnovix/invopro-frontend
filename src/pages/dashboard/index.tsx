@@ -192,12 +192,9 @@ const Dashboard = () => {
           <Typography
             variant="h4"
             sx={{
-              ...getHeadingSx(),
-  
-              fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold,
-              color: STYLE_GUIDE.COLORS.black,
-              fontSize: { xs: STYLE_GUIDE.TYPOGRAPHY.fontSize.large, md: STYLE_GUIDE.TYPOGRAPHY.fontSize.xxl },
-            }}
+            ...getHeadingSx(),
+            // color: theme.palette.primary.dark,
+          }}
           >
             Dashboards
           </Typography>

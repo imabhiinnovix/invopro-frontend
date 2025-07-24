@@ -8,47 +8,43 @@ import axios, { AxiosError } from 'axios';
 type onSuccess<TResponse> = (data: TResponse) => void;
 type onError = (error: AxiosError<{ success: boolean; message?: string }>) => void;
 
-const deleteFetcher = async <TResponse,>(url: string): Promise<TResponse> => {
-  const response = await axiosInstance.delete(url);
+async function deleteFetcher<TResponse>(url: string): Promise<TResponse> {
+  const response = await axiosInstance.delete<TResponse>(url);
   return response.data;
-};
+}
 
-const useDelete = <TRequest, TResponse>(
+function useDelete<TResponse>(
   key: string[],
   onSuccess?: onSuccess<TResponse>,
   showToast: boolean = false,
   onError?: onError
-) => {
+) {
   const queryClient = useQueryClient();
 
-  return useMutation<TResponse, unknown, { url: string; payload: TRequest | null }>({
+  return useMutation<TResponse, unknown, { url: string }>({
     mutationFn: async ({ url }) => {
       return deleteFetcher<TResponse>(url);
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: key });
       const successMessage = (data as { message?: string }).message;
-      if (showToast) {
+      if (showToast && successMessage) {
         setTimeout(() => {
-          toast.success(successMessage || 'Deleted successfully');
+          toast.success(successMessage);
         }, 100);
       }
-      if (onSuccess) {
-        onSuccess(data);
-      }
+      onSuccess && onSuccess(data);
     },
     onError: (error) => {
       if (axios.isAxiosError(error) && error.response) {
         const errorMessage = error.response.data?.message;
         toast.error(errorMessage ? errorMessage : 'Something went wrong');
-        if (onError) {
-          onError(error);
-        }
+        onError && onError(error);
       } else {
         toast.error('An unexpected error occurred');
       }
     },
   });
-};
+}
 
-export default useDelete;
+export default useDelete; 
