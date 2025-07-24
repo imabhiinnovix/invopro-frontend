@@ -31,18 +31,21 @@ export const POST = {
   UPDATE_REPORT_SETTINGS: '/customReports/updateSettings',
   Create_Organization: '/common/organization/create',
   Create_User: '/common/user/create',
+  PERMISSION_CREATE: "/common/permission/create",
 };
 
 export const PUT = {
   UPDATE_DATA_SOURCE: '/dataSource/update',
   UPDATE_ATTRIBUTE_OPTION: '/attributeOptions/update',
   UPDATE_ORGANIZATION: '/common/organization/update/',
-  UPDATE_USER: '/common/user/update/'
+  UPDATE_USER: '/common/user/update/',
+  PERMISSION_UPDATE: "/common/permission/update",
 };
 
 export const DELETE = {
   Delete_Organization:'/common/organization/delete',
-  Delete_User:'/common/user/delete'
+  Delete_User:'/common/user/delete',
+  PERMISSION_DELETE: "/common/permission/delete",
 };
 
 export const GET = {
@@ -80,4 +83,5 @@ export const GET = {
   Product_Subscription_List: '/common/product-subscription/list',
   User_List: '/common/user/list',
   Roles_List: '/common/role/list',
+  PERMISSION_List: "/common/permission/list",
 };

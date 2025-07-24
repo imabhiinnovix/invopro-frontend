@@ -70,7 +70,7 @@ export const COLORS = {
   blackBorder: "rgba(0, 0, 0, 0.12)",
   blackBackground: "rgba(0, 0, 0, 0.1)",
   WhiteLight: "rgba(25, 118, 210, 0.08)",
-  error: "d32f2",
+  error: "#b71c1c",
   inputFocusFallback: "#1976d2",
   inputFocusFallbackHover: "#1565c0",
 };

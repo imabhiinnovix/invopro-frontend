@@ -17,9 +17,11 @@ export interface Attribute {
   optionAttributeId?: string;
   cleaner?: string[];
   required: string | boolean;
-  referenceEntityId: string;
-  referenceEntityField: string;
-  referenceRelationType: string;
+   referenceEntitySetting?: {
+    refEntityId?: string;
+    refEntityField?: string;
+    relationType?: string;
+  };
 }
 
 interface CreatedBy {

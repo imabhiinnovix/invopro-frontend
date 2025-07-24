@@ -26,6 +26,7 @@ import Users from "./pages/users";
 import Roles from "./pages/roles";
 import Organization from "./pages/organization/organization";
 import NotifixDataSource from './pages/notifixDataSource';
+import Permissions from './pages/permissions';
 
 const AppRoutes = () => {
   const token = getAuthToken();
@@ -69,6 +70,10 @@ const AppRoutes = () => {
             path="/notivix/settings/users"
             element={<Users />}
           />
+           <Route
+            path="/notivix/permissions"
+            element={<Permissions />}
+          />
           <Route
             path="/notivix/settings/roles"
             element={<Roles />}
@@ -77,7 +82,7 @@ const AppRoutes = () => {
             path="/notivix/settings/organization"
             element={<Organization />}
           />
-                    <Route path="/notivix/data-source/:id" element={<NotifixDataSource />} />
+          <Route path="/notivix/data-source/:id" element={<NotifixDataSource />} />
 
         </Route>
       </Route>

@@ -1,7 +1,12 @@
+
 import { createContext, Dispatch, ReactNode, SetStateAction, useEffect, useState } from 'react';
 import useGet from '../hooks/useGet';
 import { GET } from '../services/apiRoutes';
 import { queryClient } from '../main';
+import { useDispatch, useSelector } from 'react-redux';
+import type { AppDispatch, RootState } from '../store';
+import { setCurrentUser, clearCurrentUser, setPermissions } from '../reducers/userSlice'; 
+import { BackendPermission } from '../utils/utils';
 
 interface AuthProviderProps {
   children: ReactNode;
@@ -38,6 +43,7 @@ type UserResponse = {
       _id: string;
       name: string;
     };
+    permissionIds: string[];
     password: string;
     role: string;
     roleId: number;
@@ -51,32 +57,15 @@ type UserResponse = {
       showOccurrenceCount: boolean;
       showOccurrenceCountTerm: boolean;
       RPDimensions: {
-        left: {
-          width: string;
-          height: string;
-          _id: string;
-        };
-        right: {
-          width: string;
-          height: string;
-          _id: string;
-        };
-        bottom: {
-          width: string;
-          height: string;
-          _id: string;
-        };
-        top: {
-          width: string;
-          height: string;
-          _id: string;
-        };
+        left: { width: string; height: string; _id: string };
+        right: { width: string; height: string; _id: string };
+        bottom: { width: string; height: string; _id: string };
+        top: { width: string; height: string; _id: string };
       };
     };
     updatedAt: string;
     __v: number;
     _id: string;
-
     lastSearchHistoryId: {
       _id: string;
       userId: string;
@@ -120,14 +109,24 @@ export const AuthContext = createContext<AuthContextType>(defaultAuthContext);
 const AuthProvider = ({ children }: AuthProviderProps) => {
   const [isAuthUser, setIsAuthUser] = useState(false);
   const [userDetails, setUserDetails] = useState<UserResponse | undefined>(undefined);
+  const dispatch = useDispatch<AppDispatch>();
+  const { currentUser } = useSelector((state: RootState) => state.userPermission);
 
   const userDetailsAPI = useGet<UserResponse>(['userDetails'], GET.USER_DETAILS, !!isAuthUser);
 
   useEffect(() => {
-    if (userDetailsAPI.isSuccess && userDetailsAPI.data && isAuthUser) {
-      setUserDetails(userDetailsAPI.data);
+    if (userDetailsAPI.isLoading) {
+      return;
     }
-  }, [userDetailsAPI, isAuthUser]);
+    if (userDetailsAPI.isSuccess && userDetailsAPI.data && isAuthUser && !currentUser) {
+      setUserDetails(userDetailsAPI.data);
+      dispatch(setCurrentUser(userDetailsAPI.data.data));
+      dispatch(setPermissions(userDetailsAPI.data.data.permissionIds as unknown as BackendPermission[]));
+    }
+    if (userDetailsAPI.isError) {
+      console.error('Failed to fetch user details:', userDetailsAPI.error);
+    }
+  }, [userDetailsAPI, isAuthUser, dispatch, currentUser]);
 
   useEffect(() => {
     const isAuthenticated = localStorage.getItem('token') || sessionStorage.getItem('token');
@@ -144,6 +143,7 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
   const clearAuthContext = () => {
     setUserDetails(undefined);
     setIsAuthUser(false);
+    dispatch(clearCurrentUser());
     queryClient.clear();
   };
 

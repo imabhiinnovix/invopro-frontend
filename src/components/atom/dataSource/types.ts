@@ -1,12 +1,26 @@
 export interface Attribute {
   name: string;
-  type: 'number' | 'text' | 'date' | 'boolean' | 'richtext' | 'url' | 'option' | 'multioption' | 'user' | '';
+  type:
+    | "number"
+    | "text"
+    | "date"
+    | "boolean"
+    | "richtext"
+    | "url"
+    | "option"
+    | "multioption"
+    | "user"
+    | "";
   validation?: string[];
   transformations?: string[];
   optionAttributeId?: string;
   cleaner?: string[];
+  referenceEntitySetting?: {
+   refEntityId?: string;
+    refEntityField?: string;
+    relationType?: string;
+  };
 }
-
 interface CreatedBy {
   _id: string;
   firstName: string;
@@ -26,7 +40,7 @@ export interface DataSourceRequestPayload {
   code?: string;
   description?: string;
   isActive?: boolean;
-  versionType?: 'monthly' | 'number' | ''; // Optional array of attributes
+  versionType?: "monthly" | "number" | ""; // Optional array of attributes
   createdBy?: CreatedBy;
   updatedBy?: UpdatedBy;
   createdAt?: string;
@@ -40,7 +54,7 @@ export interface DataSourceType {
   code?: string;
   description?: string;
   isActive?: boolean;
-  versionType?: 'monthly' | 'number' | ''; // Optional array of attributes
+  versionType?: "monthly" | "number" | ""; // Optional array of attributes
   createdBy?: CreatedBy;
   updatedBy?: UpdatedBy;
   createdAt?: string;

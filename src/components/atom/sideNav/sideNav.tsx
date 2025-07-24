@@ -326,12 +326,7 @@ export default function SideNav() {
     clearLocalStorage();
     navigate("/login");
   };
-  const dataNotivixSourceList = [
-    {
-      name: "IPCounsel",
-      _id: 1
-    }
-  ]
+  console.log("dataSourceList", dataSourceList);
   const navItems: NavItem[] = useMemo(() => {
     const createIcon = (IconComponent: React.ElementType, route: string) => {
       return (
@@ -353,43 +348,34 @@ export default function SideNav() {
           icon: createIcon(AssessmentIcon, "/themes"),
           route: "/notivix/dashboard",
         },
-        {
-          name: "Users",
-          icon: (
-            <AssessmentIcon
-              sx={{ fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base }}
-            />
-          ),
-          route: "/notivix/settings/users",
-        },
-        {
-          name: "Data Sources",
-          icon: createIcon(SourceIcon, "/data-source"),
-          route: "/data-source",
-          subItems: [
-            ...(dataNotivixSourceList?.map((item) => ({
-              name: item?.name ?? "",
-              icon: <></>,
-              route: `/notivix/data-source/${item?._id}`,
-            })) || []),
-            ...(dataSourceListAPI?.hasNextPage
-              ? [
-                {
-                  name: "",
-                  icon: (
-                    <div
-                      ref={lastElementRef}
-                      style={{ paddingLeft: "1.5rem" }}
-                    >
-                      Loading...
-                    </div>
-                  ),
-                  route: "#",
-                },
-              ]
-              : []),
-          ] as SubNavItem[],
-        },
+        // {
+        //   name: "Users",
+        //   icon: (
+        //     <AssessmentIcon
+        //       sx={{ fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base }}
+        //     />
+        //   ),
+        //   route: "/notivix/users",
+        // },
+       
+        ...(dataSourceList?.map((item) => ({
+        name: item?.name ?? "",
+        icon: createIcon(SourceIcon, `/notivix/data-source/${item?._id}`),
+        route: `/notivix/data-source/${item?._id}`,
+      })) || []),
+      ...(dataSourceListAPI?.hasNextPage
+        ? [
+            {
+              name: "Loading...",
+              icon: (
+                <div ref={lastElementRef} style={{ paddingLeft: "1.5rem" }}>
+                  Loading...
+                </div>
+              ),
+              route: "#",
+            },
+          ]
+        : []),
         {
           name: "Notification Settings",
           icon: (
@@ -419,19 +405,19 @@ export default function SideNav() {
             },
           ],
         },
-        {
-          name: "IP",
-          icon: (
-            <AssessmentIcon
-              sx={{ fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base }}
-            />
-          ),
-          route: "/notivix/ip",
-        },
-        {
-          name: "Dashboard Themes",
-          icon: createIcon(BrushIcon, "/themes"),
-          route: "/themes",
+        // {
+        //   name: "IP",
+        //   icon: (
+        //     <AssessmentIcon
+        //       sx={{ fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base }}
+        //     />
+        //   ),
+        //   route: "/notivix/ip",
+        // },
+         {
+          name: "Permissions",
+          icon: createIcon(AssessmentIcon, "/themes"),
+          route: "/notivix/permissions",
         },
       ];
     }

@@ -1,3 +1,7 @@
+
+
+
+
 import React, { useEffect, useState, useRef } from "react";
 import { useForm, useFieldArray, FieldError } from "react-hook-form";
 import ExcelJS from "exceljs";
@@ -43,14 +47,14 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
   title,
   data,
 }) => {
-  
+  console.log("CreateUpdateEntity data:", data);
   const theme = useUnifiedTheme();
   const { getDialogTitleSx } = useComponentTypography();
   const [open, setOpen] = useState(false);
+  const [isFormReady, setIsFormReady] = useState(false);
   const [_file, setFile] = useState<File | null>(null);
   const [fileName, setFileName] = useState<string | null>(null);
   const [fileUploadLoader, setFileUploadLoader] = useState(false);
-
   const {
     control,
     handleSubmit,
@@ -62,16 +66,28 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
     defaultValues: {
       name: data?.name ?? "",
       description: data?.description ?? "",
-      attributes: data?.attributes ?? [
+      attributes: data?.attributes?.map((attr) => ({
+        name: attr.name ?? "",
+        mappingName: attr.mappingName ?? "",
+        type: attr.type ?? "",
+        required: attr.required ?? "Not Mandatory",
+        optionAttributeId: attr.optionAttributeId ?? "",
+        refEntityId: "",
+        refEntityField: "",
+        relationType: "",
+        validation: attr.validation ?? [],
+        transformations: attr.transformations ?? [],
+        cleaner: attr.cleaner ?? [],
+      })) ?? [
         {
           name: "",
           mappingName: "",
           type: "",
           required: "",
           optionAttributeId: "",
-          referenceEntityId: "",
-          referenceEntityField: "",
-          referenceRelationType: "",
+          refEntityId: "",
+          refEntityField: "",
+          relationType: "",
           validation: [],
           transformations: [],
           cleaner: [],
@@ -84,23 +100,45 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
     reset({
       name: data?.name ?? "",
       description: data?.description ?? "",
-      attributes: data?.attributes ?? [
+      attributes: data?.attributes?.map((attr) => ({
+        name: attr.name ?? "",
+        mappingName: attr.mappingName ?? "",
+        type: attr.type ?? "",
+        required: attr.required ? "Mandatory" : "Not Mandatory",
+        optionAttributeId: attr.optionAttributeId ?? "",
+        refEntityId: attr.referenceEntitySetting?.refEntityId?._id ?? "",
+        refEntityField: attr.referenceEntitySetting?.refEntityField?.name ?? "", // Use name instead of _id
+        relationType: attr.referenceEntitySetting?.relationType ?? "",
+        validation: attr.validation ?? [],
+        transformations: attr.transformations ?? [],
+        cleaner: attr.cleaner ?? [],
+      })) ?? [
         {
           name: "",
           mappingName: "",
           type: "",
           required: "",
           optionAttributeId: "",
-          referenceEntityId: "",
-          referenceEntityField: "",
-          referenceRelationType: "",
+          refEntityId: "",
+          refEntityField: "",
+          relationType: "",
           validation: [],
           transformations: [],
           cleaner: [],
         },
       ],
     });
+    console.log("Form reset with refEntityId:", data?.attributes?.[0]?.referenceEntitySetting?.refEntityId?._id);
+    console.log("Form reset with refEntityField:", data?.attributes?.[0]?.referenceEntitySetting?.refEntityField?.name);
   }, [data, reset]);
+
+  useEffect(() => {
+    if (open) {
+      setIsFormReady(true);
+    } else {
+      setIsFormReady(false);
+    }
+  }, [open]);
 
   const { fields, append, remove, replace } = useFieldArray({
     control,
@@ -109,48 +147,63 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
   const [referenceEntityNames, setReferenceEntityNames] = useState<{
     [key: number]: string[];
   }>({});
+  console.log("referenceEntityNames:", referenceEntityNames);
   const [referenceEntityTypes, setReferenceEntityTypes] = useState<{
     [key: number]: string[];
   }>({});
-
-  // Watch attributes explicitly to ensure updates are captured
   const attributes = watch("attributes");
+  const prevEntityIdsRef = useRef<string[]>([]);
 
-
-
-  const prevEntityIdRef = useRef<string | undefined>(undefined);
+  const referenceEntityIdsString = attributes?.map((attr) => attr.refEntityId).join(",") || "";
 
   useEffect(() => {
-    const entityId = attributes?.[0]?.referenceEntityId;
-    if (!entityId || entityId === prevEntityIdRef.current) return;
+    if (open && isFormReady) {
+      console.log("Fetching reference entities for attributes:", attributes);
+      attributes?.forEach((attribute, index) => {
+        const entityId = attribute?.refEntityId;
+        console.log(`Processing entityId: ${entityId} for index: ${index}`);
+        
+        if (
+          !entityId ||
+          entityId === prevEntityIdsRef.current[index] ||
+          !/^[a-f\d]{24}$/i.test(entityId)
+        ) {
+          console.log(`Skipping fetch for entityId: ${entityId}, index: ${index}`);
+          setReferenceEntityNames((prev) => ({ ...prev, [index]: [] }));
+          setReferenceEntityTypes((prev) => ({ ...prev, [index]: [] }));
+          return;
+        }
 
-    axiosInstance
-      .get(`/entities/${entityId}`)
-      .then((res) => {
-        const namesArr =
-          res.data?.data?.attributes?.map((f: any) => f.name) || [];
-        const typesArr =
-          res.data?.data?.attributes?.map((f: any) => f._id) || [];
-        setReferenceEntityNames((prev) => {
-          if (JSON.stringify(prev[0]) !== JSON.stringify(namesArr)) {
-            return { ...prev, 0: namesArr };
-          }
-          return prev;
-        });
-        setReferenceEntityTypes((prev) => {
-          if (JSON.stringify(prev[0]) !== JSON.stringify(typesArr)) {
-            return { ...prev, 0: typesArr };
-          }
-          return prev;
-        });
-      })
-      .catch(() => {
-        setReferenceEntityNames((prev) => ({ ...prev, 0: [] }));
-        setReferenceEntityTypes((prev) => ({ ...prev, 0: [] }));
+        console.log(`Fetching entity data for ID: ${entityId}`);
+        axiosInstance
+          .get(`/entities/${entityId}`)
+          .then((res) => {
+            console.log(`Response for entityId ${entityId}:`, res.data);
+            const namesArr = res.data?.data?.attributes?.map((f: any) => f.name) || [];
+            const typesArr = res.data?.data?.attributes?.map((f: any) => f._id) || [];
+
+            console.log(`Setting names for index ${index}:`, namesArr);
+            console.log(`Setting types for index ${index}:`, typesArr);
+            setReferenceEntityNames((prev) => ({
+              ...prev,
+              [index]: namesArr,
+            }));
+            setReferenceEntityTypes((prev) => ({
+              ...prev,
+              [index]: typesArr,
+            }));
+          })
+          .catch((error) => {
+            console.error(`Failed to fetch entity ${entityId}:`, error);
+            toast.error(`Failed to load reference entity data for ID ${entityId}`);
+            setReferenceEntityNames((prev) => ({ ...prev, [index]: [] }));
+            setReferenceEntityTypes((prev) => ({ ...prev, [index]: [] }));
+          });
       });
 
-    prevEntityIdRef.current = entityId;
-  }, [attributes?.[0]?.referenceEntityId]);
+      prevEntityIdsRef.current = attributes?.map((attr) => attr.refEntityId) || [];
+    }
+  }, [open, isFormReady, attributes, referenceEntityIdsString]);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files?.[0]) {
@@ -203,9 +256,9 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
             mappingName: string;
             type: string;
             optionAttributeId: string;
-            referenceEntityId: string;
-            referenceEntityField: string;
-            referenceRelationType: string;
+            refEntityId: string;
+            refEntityField: string;
+            relationType: string;
             validation: unknown[];
             transformations: unknown[];
             cleaner: unknown[];
@@ -213,7 +266,6 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
           }[] = [];
           const uniqueNames = new Set<string>();
 
-          // Read the first row (headers) and remove duplicates
           worksheet.getRow(1).eachCell((cell, _colNumber) => {
             if (cell.value) {
               const actualHeaderName = cell.value.toString().trim();
@@ -231,9 +283,9 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
                   mappingName: actualHeaderName,
                   type: "text",
                   optionAttributeId: "",
-                  referenceEntityId: "",
-                  referenceEntityField: "",
-                  referenceRelationType: "",
+                  refEntityId: "",
+                  refEntityField: "",
+                  relationType: "",
                   validation: [],
                   transformations: [],
                   cleaner: [],
@@ -308,13 +360,19 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
   );
 
   const onSubmit = (formData: EntityRequestPayload) => {
+    console.log("Form Data123:", formData);
+
+    const isReferenceDataLoaded = attributes.every(
+      (_, index) => referenceEntityNames[index] && referenceEntityTypes[index]
+    );
+
+    if (!isReferenceDataLoaded) {
+      toast.error("Reference entity data is still loading. Please wait.");
+      return;
+    }
+
     const newAttributes = formData.attributes?.map((data, index) => {
-      const {
-        referenceEntityId,
-        referenceEntityField,
-        referenceRelationType,
-        ...rest
-      } = data;
+      const { refEntityId, refEntityField, relationType, ...rest } = data;
 
       const updated = {
         ...rest,
@@ -325,8 +383,8 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
         updated.optionAttributeId = "";
       }
 
-      if (referenceEntityId && referenceEntityField && referenceRelationType) {
-        const selectedName = referenceEntityField;
+      if (refEntityId && refEntityField && relationType) {
+        const selectedName = refEntityField;
         const typeIndex = referenceEntityNames[index]?.indexOf(selectedName);
         const selectedType =
           typeIndex !== -1 && typeIndex !== undefined
@@ -334,9 +392,9 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
             : "";
 
         updated.referenceEntitySetting = {
-          refEntityId: referenceEntityId,
+          refEntityId,
           refEntityField: selectedType,
-          relationType: referenceRelationType,
+          relationType,
         };
       }
 
@@ -344,8 +402,10 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
     });
 
     const newFormData = { ...formData, attributes: newAttributes };
+    console.log("newFormData:", newFormData);
 
     if (data && data._id) {
+      console.log("Updating entity with ID:", data._id);
       updateEntity.mutate({
         url: `${POST.UPDATE_ENTITY}/${data._id}`,
         payload: newFormData,
@@ -367,21 +427,22 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
     <>
       <Box onClick={() => setOpen(true)}>{CustomButton}</Box>
 
-      <Dialog 
-        fullWidth 
-        maxWidth="lg" 
-        open={open} 
+      <Dialog
+        fullWidth
+        maxWidth="lg"
+        open={open}
         onClose={handleCancel}
         PaperProps={{
           sx: {
-            backgroundColor: theme.palette.dialog?.background || STYLE_GUIDE.COLORS.white,
+            backgroundColor:
+              theme.palette.dialog?.background || STYLE_GUIDE.COLORS.white,
             border: `1px solid ${theme.palette.dialog?.border || theme.palette.border?.main || STYLE_GUIDE.COLORS.borderGray}`,
-            borderRadius: theme.palette.dialog?.borderRadius || '8px',
+            borderRadius: theme.palette.dialog?.borderRadius || "8px",
             boxShadow: theme.palette.dialog?.shadow || STYLE_GUIDE.SHADOWS.lg,
-          }
+          },
         }}
       >
-        <DialogTitle 
+        <DialogTitle
           sx={{
             ...getDialogTitleSx(),
             color: theme.palette.dialog?.titleColor || STYLE_GUIDE.COLORS.textDarkGray,
@@ -389,12 +450,16 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
         >
           {title}
         </DialogTitle>
-        <DialogContent sx={{
-          color: theme.palette.dialog?.contentColor || STYLE_GUIDE.COLORS.textDarkGray,
-          fontSize: theme.palette.dialog?.contentFontSize || '1rem',
-          borderTop: `1px solid ${theme.palette.divider}`,
-          borderBottom: `1px solid ${theme.palette.divider}`,
-        }}>
+        <DialogContent
+          sx={{
+            color:
+              theme.palette.dialog?.contentColor ||
+              STYLE_GUIDE.COLORS.textDarkGray,
+            fontSize: theme.palette.dialog?.contentFontSize || "1rem",
+            borderTop: `1px solid ${theme.palette.divider}`,
+            borderBottom: `1px solid ${theme.palette.divider}`,
+          }}
+        >
           <Box component="form" onSubmit={handleSubmit(onSubmit)} noValidate>
             <Stack spacing={3}>
               <TextField
@@ -409,7 +474,58 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
                 })}
                 error={!!errors.name}
                 helperText={errors.name?.message}
-                sx={{ '& .MuiOutlinedInput-root': { borderRadius: STYLE_GUIDE.SPACING.s2, alignItems: 'flex-start', paddingRight: STYLE_GUIDE.SPACING.s2, fontSize: '14px', backgroundColor: theme.dashboardTheme?.colors?.background?.paper || '#ffffff', '& fieldset': { borderColor: theme.dashboardTheme?.colors?.inputBorder || STYLE_GUIDE.COLORS.darkBackground, }, '&:hover fieldset': { borderColor: theme.dashboardTheme?.colors?.borderHover || STYLE_GUIDE.COLORS.darkBorderHover, }, '&.Mui-focused fieldset': { borderColor: theme.dashboardTheme?.components?.input?.focusBorderColor || theme.dashboardTheme?.components?.input?.focusBorderColorFallback || STYLE_GUIDE.COLORS.inputFocusFallback, }, }, '& .MuiInputLabel-root': { color: theme.dashboardTheme?.colors?.text?.secondary || STYLE_GUIDE.COLORS.darkBorderFocus, }, '& .MuiInputLabel-root.Mui-focused': { color: theme.dashboardTheme?.components?.input?.focusBorderColor || theme.dashboardTheme?.components?.input?.focusBorderColorFallback || STYLE_GUIDE.COLORS.inputFocusFallback, }, '& .MuiInputBase-input': { color: `${theme.dashboardTheme?.colors?.inputText || theme.palette.text.primary} !important`, }, '& .MuiInputBase-input::placeholder': { color: `${theme.dashboardTheme?.colors?.text?.secondary || '#666'} !important`, }, '& .MuiInputBase-input:-webkit-autofill': { WebkitTextFillColor: `${theme.dashboardTheme?.colors?.inputText || theme.palette.text.primary} !important`, WebkitBoxShadow: `0 0 0 1000px ${theme.dashboardTheme?.colors?.background?.paper || '#ffffff'} inset !important`, }, }}
+                sx={{
+                  "& .MuiOutlinedInput-root": {
+                    borderRadius: STYLE_GUIDE.SPACING.s2,
+                    alignItems: "flex-start",
+                    paddingRight: STYLE_GUIDE.SPACING.s2,
+                    fontSize: "14px",
+                    backgroundColor:
+                      theme.dashboardTheme?.colors?.background?.paper ||
+                      "#ffffff",
+                    "& fieldset": {
+                      borderColor:
+                        theme.dashboardTheme?.colors?.inputBorder ||
+                        STYLE_GUIDE.COLORS.darkBackground,
+                    },
+                    "&:hover fieldset": {
+                      borderColor:
+                        theme.dashboardTheme?.colors?.borderHover ||
+                        STYLE_GUIDE.COLORS.darkBorderHover,
+                    },
+                    "&.Mui-focused fieldset": {
+                      borderColor:
+                        theme.dashboardTheme?.components?.input
+                          ?.focusBorderColor ||
+                        theme.dashboardTheme?.components?.input
+                          ?.focusBorderColorFallback ||
+                        STYLE_GUIDE.COLORS.inputFocusFallback,
+                    },
+                  },
+                  "& .MuiInputLabel-root": {
+                    color:
+                      theme.dashboardTheme?.colors?.text?.secondary ||
+                      STYLE_GUIDE.COLORS.darkBorderFocus,
+                  },
+                  "& .MuiInputLabel-root.Mui-focused": {
+                    color:
+                      theme.dashboardTheme?.components?.input
+                        ?.focusBorderColor ||
+                      theme.dashboardTheme?.components?.input
+                        ?.focusBorderColorFallback ||
+                      STYLE_GUIDE.COLORS.inputFocusFallback,
+                  },
+                  "& .MuiInputBase-input": {
+                    color: `${theme.dashboardTheme?.colors?.inputText || theme.palette.text.primary} !important`,
+                  },
+                  "& .MuiInputBase-input::placeholder": {
+                    color: `${theme.dashboardTheme?.colors?.text?.secondary || "#666"} !important`,
+                  },
+                  "& .MuiInputBase-input:-webkit-autofill": {
+                    WebkitTextFillColor: `${theme.dashboardTheme?.colors?.inputText || theme.palette.text.primary} !important`,
+                    WebkitBoxShadow: `0 0 0 1000px ${theme.dashboardTheme?.colors?.background?.paper || "#ffffff"} inset !important`,
+                  },
+                }}
               />
 
               <TextField
@@ -420,7 +536,58 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
                 {...register("description")}
                 error={!!errors.description}
                 helperText={errors.description?.message}
-               sx={{ '& .MuiOutlinedInput-root': { borderRadius: STYLE_GUIDE.SPACING.s2, alignItems: 'flex-start', paddingRight: STYLE_GUIDE.SPACING.s2, fontSize: '14px', backgroundColor: theme.dashboardTheme?.colors?.background?.paper || '#ffffff', '& fieldset': { borderColor: theme.dashboardTheme?.colors?.inputBorder || STYLE_GUIDE.COLORS.darkBackground, }, '&:hover fieldset': { borderColor: theme.dashboardTheme?.colors?.borderHover || STYLE_GUIDE.COLORS.darkBorderHover, }, '&.Mui-focused fieldset': { borderColor: theme.dashboardTheme?.components?.input?.focusBorderColor || theme.dashboardTheme?.components?.input?.focusBorderColorFallback || STYLE_GUIDE.COLORS.inputFocusFallback, }, }, '& .MuiInputLabel-root': { color: theme.dashboardTheme?.colors?.text?.secondary || STYLE_GUIDE.COLORS.darkBorderFocus, }, '& .MuiInputLabel-root.Mui-focused': { color: theme.dashboardTheme?.components?.input?.focusBorderColor || theme.dashboardTheme?.components?.input?.focusBorderColorFallback || STYLE_GUIDE.COLORS.inputFocusFallback, }, '& .MuiInputBase-input': { color: `${theme.dashboardTheme?.colors?.inputText || theme.palette.text.primary} !important`, }, '& .MuiInputBase-input::placeholder': { color: `${theme.dashboardTheme?.colors?.text?.secondary || '#666'} !important`, }, '& .MuiInputBase-input:-webkit-autofill': { WebkitTextFillColor: `${theme.dashboardTheme?.colors?.inputText || theme.palette.text.primary} !important`, WebkitBoxShadow: `0 0 0 1000px ${theme.dashboardTheme?.colors?.background?.paper || '#ffffff'} inset !important`, }, }}
+                sx={{
+                  "& .MuiOutlinedInput-root": {
+                    borderRadius: STYLE_GUIDE.SPACING.s2,
+                    alignItems: "flex-start",
+                    paddingRight: STYLE_GUIDE.SPACING.s2,
+                    fontSize: "14px",
+                    backgroundColor:
+                      theme.dashboardTheme?.colors?.background?.paper ||
+                      "#ffffff",
+                    "& fieldset": {
+                      borderColor:
+                        theme.dashboardTheme?.colors?.inputBorder ||
+                        STYLE_GUIDE.COLORS.darkBackground,
+                    },
+                    "&:hover fieldset": {
+                      borderColor:
+                        theme.dashboardTheme?.colors?.borderHover ||
+                        STYLE_GUIDE.COLORS.darkBorderHover,
+                    },
+                    "&.Mui-focused fieldset": {
+                      borderColor:
+                        theme.dashboardTheme?.components?.input
+                          ?.focusBorderColor ||
+                        theme.dashboardTheme?.components?.input
+                          ?.focusBorderColorFallback ||
+                        STYLE_GUIDE.COLORS.inputFocusFallback,
+                    },
+                  },
+                  "& .MuiInputLabel-root": {
+                    color:
+                      theme.dashboardTheme?.colors?.text?.secondary ||
+                      STYLE_GUIDE.COLORS.darkBorderFocus,
+                  },
+                  "& .MuiInputLabel-root.Mui-focused": {
+                    color:
+                      theme.dashboardTheme?.components?.input
+                        ?.focusBorderColor ||
+                      theme.dashboardTheme?.components?.input
+                        ?.focusBorderColorFallback ||
+                      STYLE_GUIDE.COLORS.inputFocusFallback,
+                  },
+                  "& .MuiInputBase-input": {
+                    color: `${theme.dashboardTheme?.colors?.inputText || theme.palette.text.primary} !important`,
+                  },
+                  "& .MuiInputBase-input::placeholder": {
+                    color: `${theme.dashboardTheme?.colors?.text?.secondary || "#666"} !important`,
+                  },
+                  "& .MuiInputBase-input:-webkit-autofill": {
+                    WebkitTextFillColor: `${theme.dashboardTheme?.colors?.inputText || theme.palette.text.primary} !important`,
+                    WebkitBoxShadow: `0 0 0 1000px ${theme.dashboardTheme?.colors?.background?.paper || "#ffffff"} inset !important`,
+                  },
+                }}
               />
 
               {fileUploadLoader ? (
@@ -444,41 +611,135 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
                     opacity: fileUploadLoader ? 0.5 : 1,
                   }}
                 >
-
-
-{/* <Typography variant="h6" mb={2}> */}
-                     
-                    
-
-
-
                   <Typography variant="h6" mb={2}>
                     Attribute {index + 1}
                   </Typography>
                   <Stack spacing={2}>
-                     <TextField
-                        label="Attribute Name"
-                        fullWidth
-                        {...register(`attributes.${index}.name`, {
-                          required: "Attribute Name is required",
-                        })}
-                        error={!!errors.attributes?.[index]?.name}
-                        helperText={errors.attributes?.[index]?.name?.message}
-                        sx={{ '& .MuiOutlinedInput-root': { borderRadius: STYLE_GUIDE.SPACING.s2, alignItems: 'flex-start', paddingRight: STYLE_GUIDE.SPACING.s2, fontSize: '14px', backgroundColor: theme.dashboardTheme?.colors?.background?.paper || '#ffffff', '& fieldset': { borderColor: theme.dashboardTheme?.colors?.inputBorder || STYLE_GUIDE.COLORS.darkBackground, }, '&:hover fieldset': { borderColor: theme.dashboardTheme?.colors?.borderHover || STYLE_GUIDE.COLORS.darkBorderHover, }, '&.Mui-focused fieldset': { borderColor: theme.dashboardTheme?.components?.input?.focusBorderColor || theme.dashboardTheme?.components?.input?.focusBorderColorFallback || STYLE_GUIDE.COLORS.inputFocusFallback, }, }, '& .MuiInputLabel-root': { color: theme.dashboardTheme?.colors?.text?.secondary || STYLE_GUIDE.COLORS.darkBorderFocus, }, '& .MuiInputLabel-root.Mui-focused': { color: theme.dashboardTheme?.components?.input?.focusBorderColor || theme.dashboardTheme?.components?.input?.focusBorderColorFallback || STYLE_GUIDE.COLORS.inputFocusFallback, }, '& .MuiInputBase-input': { color: `${theme.dashboardTheme?.colors?.inputText || theme.palette.text.primary} !important`, }, '& .MuiInputBase-input::placeholder': { color: `${theme.dashboardTheme?.colors?.text?.secondary || '#666'} !important`, }, '& .MuiInputBase-input:-webkit-autofill': { WebkitTextFillColor: `${theme.dashboardTheme?.colors?.inputText || theme.palette.text.primary} !important`, WebkitBoxShadow: `0 0 0 1000px ${theme.dashboardTheme?.colors?.background?.paper || '#ffffff'} inset !important`, }, }}
-                      />
-                  
                     <TextField
-                        label="File Attribute Name"
-                        fullWidth
-                        {...register(`attributes.${index}.mappingName`, {
-                          required: "File Attribute Name is required",
-                        })}
-                        error={!!errors.attributes?.[index]?.mappingName}
-                        helperText={
-                          errors.attributes?.[index]?.mappingName?.message
-                        }
-                        sx={{ '& .MuiOutlinedInput-root': { borderRadius: STYLE_GUIDE.SPACING.s2, alignItems: 'flex-start', paddingRight: STYLE_GUIDE.SPACING.s2, fontSize: '14px', backgroundColor: theme.dashboardTheme?.colors?.background?.paper || '#ffffff', '& fieldset': { borderColor: theme.dashboardTheme?.colors?.inputBorder || STYLE_GUIDE.COLORS.darkBackground, }, '&:hover fieldset': { borderColor: theme.dashboardTheme?.colors?.borderHover || STYLE_GUIDE.COLORS.darkBorderHover, }, '&.Mui-focused fieldset': { borderColor: theme.dashboardTheme?.components?.input?.focusBorderColor || theme.dashboardTheme?.components?.input?.focusBorderColorFallback || STYLE_GUIDE.COLORS.inputFocusFallback, }, }, '& .MuiInputLabel-root': { color: theme.dashboardTheme?.colors?.text?.secondary || STYLE_GUIDE.COLORS.darkBorderFocus, }, '& .MuiInputLabel-root.Mui-focused': { color: theme.dashboardTheme?.components?.input?.focusBorderColor || theme.dashboardTheme?.components?.input?.focusBorderColorFallback || STYLE_GUIDE.COLORS.inputFocusFallback, }, '& .MuiInputBase-input': { color: `${theme.dashboardTheme?.colors?.inputText || theme.palette.text.primary} !important`, }, '& .MuiInputBase-input::placeholder': { color: `${theme.dashboardTheme?.colors?.text?.secondary || '#666'} !important`, }, '& .MuiInputBase-input:-webkit-autofill': { WebkitTextFillColor: `${theme.dashboardTheme?.colors?.inputText || theme.palette.text.primary} !important`, WebkitBoxShadow: `0 0 0 1000px ${theme.dashboardTheme?.colors?.background?.paper || '#ffffff'} inset !important`, }, }}
-                      />
+                      label="Attribute Name"
+                      fullWidth
+                      {...register(`attributes.${index}.name`, {
+                        required: "Attribute Name is required",
+                      })}
+                      error={!!errors.attributes?.[index]?.name}
+                      helperText={errors.attributes?.[index]?.name?.message}
+                      sx={{
+                        "& .MuiOutlinedInput-root": {
+                          borderRadius: STYLE_GUIDE.SPACING.s2,
+                          alignItems: "flex-start",
+                          paddingRight: STYLE_GUIDE.SPACING.s2,
+                          fontSize: "14px",
+                          backgroundColor:
+                            theme.dashboardTheme?.colors?.background?.paper ||
+                            "#ffffff",
+                          "& fieldset": {
+                            borderColor:
+                              theme.dashboardTheme?.colors?.inputBorder ||
+                              STYLE_GUIDE.COLORS.darkBackground,
+                          },
+                          "&:hover fieldset": {
+                            borderColor:
+                              theme.dashboardTheme?.colors?.borderHover ||
+                              STYLE_GUIDE.COLORS.darkBorderHover,
+                          },
+                          "&.Mui-focused fieldset": {
+                            borderColor:
+                              theme.dashboardTheme?.components?.input
+                                ?.focusBorderColor ||
+                              theme.dashboardTheme?.components?.input
+                                ?.focusBorderColorFallback ||
+                              STYLE_GUIDE.COLORS.inputFocusFallback,
+                          },
+                        },
+                        "& .MuiInputLabel-root": {
+                          color:
+                            theme.dashboardTheme?.colors?.text?.secondary ||
+                            STYLE_GUIDE.COLORS.darkBorderFocus,
+                        },
+                        "& .MuiInputLabel-root.Mui-focused": {
+                          color:
+                            theme.dashboardTheme?.components?.input
+                              ?.focusBorderColor ||
+                            theme.dashboardTheme?.components?.input
+                              ?.focusBorderColorFallback ||
+                            STYLE_GUIDE.COLORS.inputFocusFallback,
+                        },
+                        "& .MuiInputBase-input": {
+                          color: `${theme.dashboardTheme?.colors?.inputText || theme.palette.text.primary} !important`,
+                        },
+                        "& .MuiInputBase-input::placeholder": {
+                          color: `${theme.dashboardTheme?.colors?.text?.secondary || "#666"} !important`,
+                        },
+                        "& .MuiInputBase-input:-webkit-autofill": {
+                          WebkitTextFillColor: `${theme.dashboardTheme?.colors?.inputText || theme.palette.text.primary} !important`,
+                          WebkitBoxShadow: `0 0 0 1000px ${theme.dashboardTheme?.colors?.background?.paper || "#ffffff"} inset !important`,
+                        },
+                      }}
+                    />
+
+                    <TextField
+                      label="File Attribute Name"
+                      fullWidth
+                      {...register(`attributes.${index}.mappingName`, {
+                        required: "File Attribute Name is required",
+                      })}
+                      error={!!errors.attributes?.[index]?.mappingName}
+                      helperText={
+                        errors.attributes?.[index]?.mappingName?.message
+                      }
+                      sx={{
+                        "& .MuiOutlinedInput-root": {
+                          borderRadius: STYLE_GUIDE.SPACING.s2,
+                          alignItems: "flex-start",
+                          paddingRight: STYLE_GUIDE.SPACING.s2,
+                          fontSize: "14px",
+                          backgroundColor:
+                            theme.dashboardTheme?.colors?.background?.paper ||
+                            "#ffffff",
+                          "& fieldset": {
+                            borderColor:
+                              theme.dashboardTheme?.colors?.inputBorder ||
+                              STYLE_GUIDE.COLORS.darkBackground,
+                          },
+                          "&:hover fieldset": {
+                            borderColor:
+                              theme.dashboardTheme?.colors?.borderHover ||
+                              STYLE_GUIDE.COLORS.darkBorderHover,
+                          },
+                          "&.Mui-focused fieldset": {
+                            borderColor:
+                              theme.dashboardTheme?.components?.input
+                                ?.focusBorderColor ||
+                              theme.dashboardTheme?.components?.input
+                                ?.focusBorderColorFallback ||
+                              STYLE_GUIDE.COLORS.inputFocusFallback,
+                          },
+                        },
+                        "& .MuiInputLabel-root": {
+                          color:
+                            theme.dashboardTheme?.colors?.text?.secondary ||
+                            STYLE_GUIDE.COLORS.darkBorderFocus,
+                        },
+                        "& .MuiInputLabel-root.Mui-focused": {
+                          color:
+                            theme.dashboardTheme?.components?.input
+                              ?.focusBorderColor ||
+                            theme.dashboardTheme?.components?.input
+                              ?.focusBorderColorFallback ||
+                              STYLE_GUIDE.COLORS.inputFocusFallback,
+                        },
+                        "& .MuiInputBase-input": {
+                          color: `${theme.dashboardTheme?.colors?.inputText || theme.palette.text.primary} !important`,
+                        },
+                        "& .MuiInputBase-input::placeholder": {
+                          color: `${theme.dashboardTheme?.colors?.text?.secondary || "#666"} !important`,
+                        },
+                        "& .MuiInputBase-input:-webkit-autofill": {
+                          WebkitTextFillColor: `${theme.dashboardTheme?.colors?.inputText || theme.palette.text.primary} !important`,
+                          WebkitBoxShadow: `0 0 0 1000px ${theme.dashboardTheme?.colors?.background?.paper || "#ffffff"} inset !important`,
+                        },
+                      }}
+                    />
 
                     <CommonSelect
                       control={control}
@@ -499,8 +760,7 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
                       rules={{ required: "Attribute Type is required" }}
                       error={!!errors.attributes?.[index]?.type}
                       errorMessage={
-                        (errors.attributes?.[index]?.type as FieldError)
-                          ?.message
+                        (errors.attributes?.[index]?.type as FieldError)?.message
                       }
                     />
 
@@ -547,18 +807,18 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
 
                     <CommonDropdownSearch
                       control={control}
-                      name={`attributes.${index}.referenceEntityId`}
+                      name={`attributes.${index}.refEntityId`}
                       label="Reference Entity ID"
                       apiUrl={`${GET.Entity_List}`}
                       labelName="name"
                       labelValue="_id"
-                      defaultValue={attribute.referenceEntityId || ""}
-                      rules={{ required: false }} // Relaxed for debugging
-                      error={!!errors.attributes?.[index]?.referenceEntityId}
+                      defaultValue={attribute.refEntityId || ""}
+                      rules={{ required: false }}
+                      error={!!errors.attributes?.[index]?.refEntityId}
                       errorMessage={
                         (
                           errors.attributes?.[index]
-                            ?.referenceEntityId as FieldError
+                            ?.refEntityId as FieldError
                         )?.message
                       }
                       apiName="entities"
@@ -567,31 +827,32 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
 
                     <CommonSelect
                       control={control}
-                      name={`attributes.${index}.referenceEntityField`}
+                      name={`attributes.${index}.refEntityField`}
                       label="Reference Entity Field"
-                      options={referenceEntityNames[index] || []}
-                      defaultValue={attribute.referenceEntityField || ""}
-                      rules={{ required: false }} // Relaxed for debugging
-                      error={!!errors.attributes?.[index]?.referenceEntityField}
+                      options={referenceEntityNames[index]?.length ? referenceEntityNames[index] : ["No fields available"]}
+                      defaultValue={attribute.refEntityField || ""}
+                      rules={{ required: false }}
+                      error={!!errors.attributes?.[index]?.refEntityField}
                       helperText={
-                        (
-                          errors.attributes?.[index]
-                            ?.referenceEntityField as FieldError
-                        )?.message
+                        referenceEntityNames[index]?.length
+                          ? (errors.attributes?.[index]?.refEntityField as FieldError)?.message
+                          : "No reference fields available for this entity"
                       }
+                      disabled={!referenceEntityNames[index]?.length}
                     />
 
                     <CommonSelect
                       control={control}
-                      name={`attributes.${index}.referenceRelationType`}
+                      name={`attributes.${index}.relationType`}
                       label="Reference Relation Type"
                       options={["many_to_one", "one_to_one", "self"]}
-                      rules={{ required: false }} // Relaxed for debugging
-                      error={!!errors.attributes?.[index]?.referenceRelationType}
+                      defaultValue={attribute.relationType || ""}
+                      rules={{ required: false }}
+                      error={!!errors.attributes?.[index]?.relationType}
                       helperText={
                         (
                           errors.attributes?.[index]
-                            ?.referenceRelationType as FieldError
+                            ?.relationType as FieldError
                         )?.message
                       }
                     />
@@ -610,21 +871,24 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
               <Button
                 variant="contained"
                 startIcon={<AddCircleOutlineIcon />}
-                onClick={() =>
+                onClick={() => {
+                  const newIndex = fields.length;
                   append({
                     name: "",
                     mappingName: "",
                     type: "",
                     required: "",
                     optionAttributeId: "",
-                    referenceEntityId: "",
-                    referenceEntityField: "",
-                    referenceRelationType: "",
+                    refEntityId: "",
+                    refEntityField: "",
+                    relationType: "",
                     validation: [],
                     transformations: [],
                     cleaner: [],
-                  })
-                }
+                  });
+                  setReferenceEntityNames((prev) => ({ ...prev, [newIndex]: [] }));
+                  setReferenceEntityTypes((prev) => ({ ...prev, [newIndex]: [] }));
+                }}
               >
                 Add Attribute
               </Button>
@@ -661,3 +925,5 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
 };
 
 export default CreateUpdateEntity;
+
+

@@ -6,7 +6,7 @@ import themeReducer from '../pages/createTheme/themeSlice';
 import dashboardThemeReducer from './dashboardThemeSlice';
 import { configureStore } from '@reduxjs/toolkit';
 import customReportsReducer from '../pages/report-settings/customReportsReducer';
-
+import userReducer from '../reducers/userSlice'; 
 // 👇 Explicitly define the shape of your Redux state
 const rootReducer = combineReducers({
   dataSource: dataSourceReducer,
@@ -14,6 +14,7 @@ const rootReducer = combineReducers({
   theme: themeReducer,
   dashboardTheme: dashboardThemeReducer,
   customReports: customReportsReducer,
+  userPermission: userReducer,
   // naturalLanguageReducer: naturalLanguageReducer,
 });
 

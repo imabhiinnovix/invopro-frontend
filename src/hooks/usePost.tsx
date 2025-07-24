@@ -32,13 +32,17 @@ const usePost = <TRequest, TResponse>(
           toast.success(successMessage);
         }, 100);
       }
-      onSuccess && onSuccess(data);
+      if (onSuccess) {
+        onSuccess(data);
+      }
     },
     onError: (error) => {
       if (axios.isAxiosError(error) && error.response) {
         const errorMessage = error.response.data?.message;
         toast.error(errorMessage ? errorMessage : 'Something went wrong');
-        onError && onError(error);
+        if (onError) {
+          onError(error);
+        }
       } else {
         toast.error('An unexpected error occurred');
       }
