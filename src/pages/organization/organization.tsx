@@ -574,106 +574,6 @@ export default function Organization() {
                 <Grid container spacing={2}>
                   <Grid item xs={12}>
                     <Controller
-                      name="productIds"
-                      control={control}
-                      rules={{ required: 'At least one product is required' }}
-                      render={({ field }) => (
-                        <FormControl fullWidth margin="normal" error={!!errors.productIds}>
-                          <InputLabel id="product-multiselect-label">Products</InputLabel>
-                          <Select
-                            {...field}
-                            labelId="product-multiselect-label"
-                            multiple
-                            open={selectOpen}
-                            onOpen={() => setSelectOpen(true)}
-                            onClose={() => setSelectOpen(false)}
-                            onChange={(event: SelectChangeEvent<string[]>) => {
-                              const value = event.target.value as string[];
-                              field.onChange(value);
-                              setSelectOpen(false); // close after selection
-                            }}
-                            label="Products"
-                            renderValue={(selected) =>
-                              (selected as string[]).map(
-                                (id) => productOptions.find((p) => p._id === id)?.name || id
-                              ).join(', ')
-                            }
-                          >
-                            {productOptions.map((product) => (
-                              <MenuItem key={product._id} value={product._id}>
-                                {product.name}
-                              </MenuItem>
-                            ))}
-                          </Select>
-                        </FormControl>
-                      )}
-                    />
-                  </Grid>
-                  {/* Add productSubscriptions fields for each selected product */}
-                  {(fields || []).map((field, idx) => (
-                    <Grid container spacing={2} alignItems="flex-end" key={field.id} sx={{ m: 2, width: '100%', border: '1px solid #eee', borderRadius: STYLE_GUIDE.SPACING.s1 }}>
-                      <Grid item xs={3}>
-                        <Controller
-                          name={`productSubscriptions.${idx}.productId`}
-                          control={control}
-                          rules={{ required: 'Product is required' }}
-                          render={({ field }) => (
-                            <FormControl fullWidth margin="dense">
-                              <InputLabel>Product</InputLabel>
-                              <Select
-                                {...field}
-                                label="Product"
-                                disabled
-                              >
-                                {productOptions.map((product) => (
-                                  <MenuItem key={product._id} value={product._id}>
-                                    {product.name}
-                                  </MenuItem>
-                                ))}
-                              </Select>
-                            </FormControl>
-                          )}
-                        />
-                      </Grid>
-                      <Grid item xs={3}>
-                        <Controller
-                          name={`productSubscriptions.${idx}.totalLicenses`}
-                          control={control}
-                          rules={{ required: 'Total Licenses is required', min: { value: 1, message: 'Must be at least 1' } }}
-                          render={({ field }) => (
-                            <TextField
-                              {...field}
-                              label="Total Licenses"
-                              type="number"
-                              fullWidth
-                              margin="dense"
-                              error={!!errors.productSubscriptions && (errors.productSubscriptions as any)[idx]?.totalLicenses}
-                              helperText={(errors.productSubscriptions && (errors.productSubscriptions as any)[idx]?.totalLicenses?.message) || ''}
-                              inputProps={{ min: 1 }}
-                            />
-                          )}
-                        />
-                      </Grid>
-                      <Grid item xs={4}>
-                        <Controller
-                          name={`productSubscriptions.${idx}.licenseExpiresAt`}
-                          control={control}
-                          rules={{ required: 'License Expiry Date is required' }}
-                          render={({ field }) => (
-                            <CommonDatePicker
-                              {...field}
-                              control={control}
-                              label="License Expiry Date"
-                              views={['year', 'month', 'day']}
-                              sx={{ marginTop: 1 }}
-                            />
-                          )}
-                        />
-                      </Grid>
-                    </Grid>
-                  ))}
-                  <Grid item xs={12}>
-                    <Controller
                       name="name"
                       control={control}
                       rules={{ required: 'Name is required' }}
@@ -740,6 +640,105 @@ export default function Organization() {
                       )}
                     />
                   </Grid>
+                   <Grid item xs={12}>
+                    <Controller
+                      name="productIds"
+                      control={control}
+                      rules={{ required: 'At least one product is required' }}
+                      render={({ field }) => (
+                        <FormControl fullWidth margin="normal" error={!!errors.productIds}>
+                          <InputLabel id="product-multiselect-label">Products</InputLabel>
+                          <Select
+                            {...field}
+                            labelId="product-multiselect-label"
+                            multiple
+                            open={selectOpen}
+                            onOpen={() => setSelectOpen(true)}
+                            onClose={() => setSelectOpen(false)}
+                            onChange={(event: SelectChangeEvent<string[]>) => {
+                              const value = event.target.value as string[];
+                              field.onChange(value);
+                              setSelectOpen(false); // close after selection
+                            }}
+                            label="Products"
+                            renderValue={(selected) =>
+                              (selected as string[]).map(
+                                (id) => productOptions.find((p) => p._id === id)?.name || id
+                              ).join(', ')
+                            }
+                          >
+                            {productOptions.map((product) => (
+                              <MenuItem key={product._id} value={product._id}>
+                                {product.name}
+                              </MenuItem>
+                            ))}
+                          </Select>
+                        </FormControl>
+                      )}
+                    />
+                  </Grid>
+                  {(fields || []).map((field, idx) => (
+                    <Grid container spacing={2} alignItems="flex-end" key={field.id} sx={{ m: 2, width: '100%', border: '1px solid #eee', borderRadius: STYLE_GUIDE.SPACING.s1 }}>
+                      <Grid item xs={3}>
+                        <Controller
+                          name={`productSubscriptions.${idx}.productId`}
+                          control={control}
+                          rules={{ required: 'Product is required' }}
+                          render={({ field }) => (
+                            <FormControl fullWidth margin="dense">
+                              <InputLabel>Product</InputLabel>
+                              <Select
+                                {...field}
+                                label="Product"
+                                disabled
+                              >
+                                {productOptions.map((product) => (
+                                  <MenuItem key={product._id} value={product._id}>
+                                    {product.name}
+                                  </MenuItem>
+                                ))}
+                              </Select>
+                            </FormControl>
+                          )}
+                        />
+                      </Grid>
+                      <Grid item xs={3}>
+                        <Controller
+                          name={`productSubscriptions.${idx}.totalLicenses`}
+                          control={control}
+                          rules={{ required: 'Total Licenses is required', min: { value: 1, message: 'Must be at least 1' } }}
+                          render={({ field }) => (
+                            <TextField
+                              {...field}
+                              label="Total Licenses"
+                              type="number"
+                              fullWidth
+                              margin="dense"
+                              error={!!errors.productSubscriptions && (errors.productSubscriptions as any)[idx]?.totalLicenses}
+                              helperText={(errors.productSubscriptions && (errors.productSubscriptions as any)[idx]?.totalLicenses?.message) || ''}
+                              inputProps={{ min: 1 }}
+                            />
+                          )}
+                        />
+                      </Grid>
+                      <Grid item xs={4}>
+                        <Controller
+                          name={`productSubscriptions.${idx}.licenseExpiresAt`}
+                          control={control}
+                          rules={{ required: 'License Expiry Date is required' }}
+                          render={({ field }) => (
+                            <CommonDatePicker
+                              {...field}
+                              control={control}
+                              label="License Expiry Date"
+                              views={['year', 'month', 'day']}
+                              sx={{ marginTop: 1 }}
+                            />
+                          )}
+                        />
+                      </Grid>
+                    </Grid>
+                  ))}
                 </Grid>
                 <DialogActions>
                   <Button onClick={handleCreateClose}>Cancel</Button>
