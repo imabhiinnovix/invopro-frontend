@@ -21,12 +21,11 @@ import ThemeTable from '../../components/atom/table/ThemeTable';
 import usePost from '../../hooks/usePost';
 import { POST } from '../../services/apiRoutes';
 import CommonDatePicker from '../../components/common/datePicker/datePicker';
-import React from 'react';
-import { SelectChangeEvent } from '@mui/material';
 import DialogContentText from '@mui/material/DialogContentText';
 import { useEffect } from 'react';
 import Users from '../users';
 import { AuthContext } from '../../context/AuthContext';
+import Autocomplete from '@mui/material/Autocomplete';
 
 interface ProductSubscription {
   productId: string;
@@ -73,7 +72,6 @@ export default function Organization() {
   const [formLoading, setFormLoading] = useState(false);
   const [createOpen, setCreateOpen] = useState(false);
   const [createLoading, setCreateLoading] = useState(false);
-  const [selectOpen, setSelectOpen] = React.useState(false);
   const [productAccessOpen, setProductAccessOpen] = useState(false);
   const [productAccessOrgId, setProductAccessOrgId] = useState<string | null>(null);
   const [showUsers, setShowUsers] = useState(false);
@@ -705,34 +703,25 @@ export default function Organization() {
                       control={control}
                       rules={{ required: 'At least one product is required' }}
                       render={({ field }) => (
-                        <FormControl fullWidth margin="normal" error={!!errors.productIds}>
-                          <InputLabel id="product-multiselect-label">Products</InputLabel>
-                          <Select
-                            {...field}
-                            labelId="product-multiselect-label"
-                            multiple
-                            open={selectOpen}
-                            onOpen={() => setSelectOpen(true)}
-                            onClose={() => setSelectOpen(false)}
-                            onChange={(event: SelectChangeEvent<string[]>) => {
-                              const value = event.target.value as string[];
-                              field.onChange(value);
-                              setSelectOpen(false); // close after selection
-                            }}
-                            label="Products"
-                            renderValue={(selected) =>
-                              (selected as string[]).map(
-                                (id) => productOptions.find((p) => p._id === id)?.name || id
-                              ).join(', ')
-                            }
-                          >
-                            {productOptions.map((product) => (
-                              <MenuItem key={product._id} value={product._id}>
-                                {product.name}
-                              </MenuItem>
-                            ))}
-                          </Select>
-                        </FormControl>
+                        <Autocomplete
+                          multiple
+                          options={productOptions}
+                          getOptionLabel={(option) => option.name}
+                          value={productOptions.filter(option => field.value?.includes(option._id))}
+                          onChange={(_, newValue) => {
+                            field.onChange(newValue.map(option => option._id));
+                          }}
+                          isOptionEqualToValue={(option, value) => option._id === value._id}
+                          renderInput={(params) => (
+                            <TextField
+                              {...params}
+                              label="Products"
+                              margin="normal"
+                              error={!!errors.productIds}
+                              helperText={errors.productIds?.message}
+                            />
+                          )}
+                        />
                       )}
                     />
                   </Grid>
