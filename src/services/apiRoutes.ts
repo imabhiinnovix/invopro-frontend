@@ -65,7 +65,7 @@ export const GET = {
   Data_Source_Name: '/dataSource/name',
   Data_Import_Error: 'dataImportError',
   Custom_Report: '/customReports',
-  DATA_SOURCE_LIST: '/dataSource/list',
+  DATA_SOURCE_LIST: '/common/dataSource/list',
   ATTRIBUTE_OPTIONS_LIST: '/attributeOptions/get/',
   SOURCE_VERSION_DATA: '/dataSourceVersion/versionData',
   DASHBOARD_LIST: '/common/dashboard/list',
