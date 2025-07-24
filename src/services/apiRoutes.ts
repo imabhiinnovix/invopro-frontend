@@ -85,6 +85,6 @@ export const GET = {
   Product_Subscription_List: '/common/product-subscription/list',
   User_List: '/common/user/list',
   Roles_List: '/common/role/list',
-  PERMISSION_List: "/common/permission/list",
+  PERMISSION_LIST: "/common/permission/list",
   ROLE_LIST: "/common/role/list"
 };

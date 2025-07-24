@@ -1018,20 +1018,20 @@ export default function SideNav() {
                               ? "/notivix/settings/organization"
                               : "/settings/organization",
                         },
-                        {
-                          name: "Users",
-                          icon: (
-                            <PeopleIcon
-                              sx={{
-                                fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base,
-                              }}
-                            />
-                          ),
-                          route:
-                            activeTab === "Notifix"
-                              ? "/notivix/settings/users"
-                              : "/settings/users",
-                        },
+                        // {
+                        //   name: "Users",
+                        //   icon: (
+                        //     <PeopleIcon
+                        //       sx={{
+                        //         fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base,
+                        //       }}
+                        //     />
+                        //   ),
+                        //   route:
+                        //     activeTab === "Notifix"
+                        //       ? "/notivix/settings/users"
+                        //       : "/settings/users",
+                        // },
                       ].map((subItem) => (
                         <ListItem
                           key={subItem.name}
