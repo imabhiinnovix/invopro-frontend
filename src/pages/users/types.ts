@@ -31,6 +31,7 @@ export interface User {
   roleIds: Role[];
   firstName: string;
   lastName: string;
+  mobile: string;  
   isVerified: boolean;
   status: string;
   organizationProductSubscriptionIds: OrganizationProductSubscription[];

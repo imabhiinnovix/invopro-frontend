@@ -48,7 +48,7 @@ const columns: GridColDef[] = [
     width: 130, 
     disableColumnMenu: true, 
     resizable: true,
-    valueFormatter: (params: { value: unknown }) => params.value ? params.value.toString() : '-'
+    valueFormatter: (params: { value: unknown }) => params?.value ? params?.value.toString() : '-'
   },
   {
     field: 'roleNames',
@@ -321,7 +321,7 @@ export default function Users({ organizationId }: UsersProps) {
     firstName: user.firstName,
     lastName: user.lastName === "" ? '-' : user.lastName,
     email: user.email,
-    mobile: '',
+    mobile: user.mobile === "" ? '-' : user.mobile,
     organizationId: user.organizationId,
     roleIds: user.roleIds.map(role => role._id),
     roleNames: user.roleIds.map(role => role.name),
@@ -333,7 +333,6 @@ export default function Users({ organizationId }: UsersProps) {
     handleDelete,
   })) || [];
 
-  // Helper to check if required fields are filled
   const isAddMode = modalMode === 'add';
   const isFormValid =
     !!formData.firstName.trim() &&
