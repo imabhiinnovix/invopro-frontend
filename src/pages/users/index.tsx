@@ -3,7 +3,6 @@ import { DataGrid, GridColDef, GridRenderCellParams } from '@mui/x-data-grid';
 import {
   Box, Card, CardContent, Typography, TextField, Button, Modal, Dialog, DialogTitle, DialogContent, DialogActions, Tooltip, Chip, FormControl, InputLabel, Select, MenuItem, Switch, FormControlLabel, CircularProgress,
 } from '@mui/material';
-import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { useUnifiedTheme } from '../../hooks/useUnifiedTheme';
@@ -43,11 +42,11 @@ const columns: GridColDef[] = [
   { field: 'firstName', headerName: 'First Name', width: 200, disableColumnMenu: true, resizable: true },
   { field: 'lastName', headerName: 'Last Name', width: 200, disableColumnMenu: true, resizable: true },
   { field: 'email', headerName: 'Email', width: 200, disableColumnMenu: true, resizable: true },
-  { 
-    field: 'mobile', 
-    headerName: 'Mobile', 
-    width: 200, 
-    disableColumnMenu: true, 
+  {
+    field: 'mobile',
+    headerName: 'Mobile',
+    width: 200,
+    disableColumnMenu: true,
     resizable: true,
     valueFormatter: (params: { value: unknown }) => params?.value ? params?.value.toString() : '-'
   },
@@ -58,7 +57,7 @@ const columns: GridColDef[] = [
     disableColumnMenu: true,
     resizable: true,
     renderCell: (params: GridRenderCellParams) => (
-      <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap', width: '100%', height: '100%', alignItems: 'center' }}>
+      <Box sx={{ display: 'flex', gap: STYLE_GUIDE.SPACING.s1, flexWrap: 'wrap', width: '100%', height: '100%', alignItems: 'center' }}>
         {(params.value as string[])?.map((roleName: string) => (
           <Chip key={roleName} label={roleName} size="small" variant="outlined" />
         )) || '-'}
@@ -80,9 +79,9 @@ const columns: GridColDef[] = [
     disableColumnMenu: true,
     resizable: true,
     renderCell: (params: GridRenderCellParams) => (
-      <Chip 
-        label={params.value as string} 
-        size="small" 
+      <Chip
+        label={params.value as string}
+        size="small"
         color={(params.value as string) === 'active' ? 'success' : 'error'}
         variant="outlined"
       />
@@ -95,9 +94,9 @@ const columns: GridColDef[] = [
     disableColumnMenu: true,
     resizable: true,
     renderCell: (params: GridRenderCellParams) => (
-      <Chip 
-        label={(params.value as boolean) ? 'Yes' : 'No'} 
-        size="small" 
+      <Chip
+        label={(params.value as boolean) ? 'Yes' : 'No'}
+        size="small"
         color={(params.value as boolean) ? 'success' : 'warning'}
         variant="outlined"
       />
@@ -111,7 +110,7 @@ const columns: GridColDef[] = [
     sortable: false,
     resizable: false,
     renderCell: (params: GridRenderCellParams) => (
-      <Box sx={{ display: 'flex', gap: 1 }}>
+      <Box sx={{ display: 'flex', gap: STYLE_GUIDE.SPACING.s2 }}>
         <Tooltip title="Edit" arrow>
           <Button
             variant="text"
@@ -151,7 +150,7 @@ export default function Users({ organizationId }: UsersProps) {
   const [modalMode, setModalMode] = useState<'add' | 'edit' | 'view' | null>(null);
   const [openDialog, setOpenDialog] = useState(false);
   const [userIdForEdit, setUserIdForEdit] = useState<string | null>(null);
-  
+
   const usersQuery = useGet<UserListResponse>(
     ['users', organizationId || 'all'],
     organizationId ? `${GET.User_List}?organizationId=${organizationId}` : GET.User_List,
@@ -178,7 +177,7 @@ export default function Users({ organizationId }: UsersProps) {
     },
     true
   );
-    
+
   const updateUserMutation = usePut<CreateUserPayload, CreateUserResponse>(
     ['users', organizationId || 'all'],
     () => {
@@ -360,33 +359,30 @@ export default function Users({ organizationId }: UsersProps) {
   return (
     <Box
       sx={{
-        flexGrow: 1,
-        p: 3,
-        ml: { xs: 0 },
-        minHeight: '100vh',
+        p: STYLE_GUIDE.SPACING.s6,
+        ml: { xs: STYLE_GUIDE.SPACING.s0 },
       }}
     >
       <Card
         sx={{
-          borderRadius: '8px',
+          borderRadius: STYLE_GUIDE.SPACING.s2,
           overflow: 'visible',
         }}
       >
-        <CardContent sx={{ p: 3 }}>
+        <CardContent sx={{ p: STYLE_GUIDE.SPACING.s6 }}>
           <Box
             sx={{
               display: 'flex',
               justifyContent: 'flex-end',
               alignItems: 'center',
-              mb: 2,
+              mb: STYLE_GUIDE.SPACING.s3,
             }}
           >
             <Button
               variant="contained"
-              startIcon={<AddIcon />}
               onClick={handleAddUser}
               sx={{
-                borderRadius: '8px',
+                borderRadius: STYLE_GUIDE.SPACING.s2,
               }}
             >
               Add User
@@ -394,18 +390,18 @@ export default function Users({ organizationId }: UsersProps) {
           </Box>
 
           {usersQuery.isLoading ? (
-            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', py: 4 }}>
+            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', py: STYLE_GUIDE.SPACING.s8 }}>
               <CircularProgress />
-              <Typography sx={{ ml: 2 }}>Loading users...</Typography>
+              <Typography sx={{ ml: STYLE_GUIDE.SPACING.s3 }}>Loading users...</Typography>
             </Box>
           ) : usersQuery.error ? (
-            <Box sx={{ textAlign: 'center', py: 3 }}>
-              <Typography color="error" sx={{ mb: 2 }}>
+            <Box sx={{ textAlign: 'center', py: STYLE_GUIDE.SPACING.s6 }}>
+              <Typography color="error" sx={{ mb: STYLE_GUIDE.SPACING.s3 }}>
                 {usersQuery.error instanceof Error ? usersQuery.error.message : 'Failed to fetch users'}
               </Typography>
             </Box>
           ) : !transformedUsers || transformedUsers.length === 0 ? (
-            <Box sx={{ textAlign: 'center', py: 4 }}>
+            <Box sx={{ textAlign: 'center', py: STYLE_GUIDE.SPACING.s8 }}>
               <Typography variant="body1" color="text.secondary">
                 No users found.
               </Typography>
@@ -415,6 +411,7 @@ export default function Users({ organizationId }: UsersProps) {
               rows={transformedUsers}
               columns={columns}
               disableColumnMenu
+              hideFooter={true}
               sx={{
                 overflow: 'visible',
               }}
@@ -435,24 +432,25 @@ export default function Users({ organizationId }: UsersProps) {
         <Box
           sx={{
             backgroundColor: theme.palette.background.paper || STYLE_GUIDE.COLORS.white,
-            borderRadius: '8px',
-            p: 3,
+            borderRadius: STYLE_GUIDE.SPACING.s2,
+            p: STYLE_GUIDE.SPACING.s3,
             width: '700px',
             maxWidth: '90%',
             maxHeight: '90vh',
             overflow: 'auto',
           }}
         >
-          <Typography variant="h6" sx={{ mb: 2 }}>
+          <Typography variant="h6" sx={{ mb: STYLE_GUIDE.SPACING.s3 }}>
             {modalMode === 'add' ? 'Add User' :
               modalMode === 'edit' ? 'Edit User' : 'View User'}
           </Typography>
-          
+
           <Box
             sx={{
               display: 'grid',
-              gridTemplateColumns: '1fr 1fr',
-              gap: 2,
+              gridTemplateColumns: '2fr 2fr',
+              gap: STYLE_GUIDE.SPACING.s6,
+              padding: STYLE_GUIDE.SPACING.s4,
             }}
           >
             <TextField
@@ -463,7 +461,7 @@ export default function Users({ organizationId }: UsersProps) {
               variant="outlined"
               fullWidth
               required
-              sx={{ '& .MuiOutlinedInput-root': { borderRadius: '8px' } }}
+              sx={{ '& .MuiOutlinedInput-root': { borderRadius: STYLE_GUIDE.SPACING.s2 } }}
             />
             <TextField
               label="Last Name"
@@ -472,7 +470,7 @@ export default function Users({ organizationId }: UsersProps) {
               disabled={modalMode === 'view'}
               variant="outlined"
               fullWidth
-              sx={{ '& .MuiOutlinedInput-root': { borderRadius: '8px' } }}
+              sx={{ '& .MuiOutlinedInput-root': { borderRadius: STYLE_GUIDE.SPACING.s2 } }}
             />
             <TextField
               label="Email"
@@ -483,7 +481,7 @@ export default function Users({ organizationId }: UsersProps) {
               fullWidth
               required
               type="email"
-              sx={{ '& .MuiOutlinedInput-root': { borderRadius: '8px' } }}
+              sx={{ '& .MuiOutlinedInput-root': { borderRadius: STYLE_GUIDE.SPACING.s2 } }}
             />
             {modalMode === 'add' && (
               <TextField
@@ -494,7 +492,7 @@ export default function Users({ organizationId }: UsersProps) {
                 fullWidth
                 required
                 type="password"
-                sx={{ '& .MuiOutlinedInput-root': { borderRadius: '8px' } }}
+                sx={{ '& .MuiOutlinedInput-root': { borderRadius: STYLE_GUIDE.SPACING.s2 } }}
               />
             )}
             <TextField
@@ -505,7 +503,7 @@ export default function Users({ organizationId }: UsersProps) {
               variant="outlined"
               fullWidth
               type="tel"
-              sx={{ '& .MuiOutlinedInput-root': { borderRadius: '8px' } }}
+              sx={{ '& .MuiOutlinedInput-root': { borderRadius: STYLE_GUIDE.SPACING.s2 } }}
             />
             {!organizationId && (
               <TextField
@@ -515,10 +513,10 @@ export default function Users({ organizationId }: UsersProps) {
                 disabled={modalMode === 'view'}
                 variant="outlined"
                 fullWidth
-                sx={{ '& .MuiOutlinedInput-root': { borderRadius: '8px' } }}
+                sx={{ '& .MuiOutlinedInput-root': { borderRadius: STYLE_GUIDE.SPACING.s2 } }}
               />
             )}
-            <FormControl fullWidth required sx={{ '& .MuiOutlinedInput-root': { borderRadius: '8px' } }}>
+            <FormControl fullWidth required sx={{ '& .MuiOutlinedInput-root': { borderRadius: STYLE_GUIDE.SPACING.s2 } }}>
               <InputLabel>Status</InputLabel>
               <Select
                 value={formData.status}
@@ -530,7 +528,7 @@ export default function Users({ organizationId }: UsersProps) {
                 <MenuItem value="inactive">Inactive</MenuItem>
               </Select>
             </FormControl>
-            <FormControl fullWidth required sx={{ '& .MuiOutlinedInput-root': { borderRadius: '8px' } }}>
+            <FormControl fullWidth required sx={{ '& .MuiOutlinedInput-root': { borderRadius: STYLE_GUIDE.SPACING.s2 } }}>
               <InputLabel>Roles</InputLabel>
               <Select
                 multiple
@@ -546,7 +544,7 @@ export default function Users({ organizationId }: UsersProps) {
                 ))}
               </Select>
             </FormControl>
-            <FormControl fullWidth required sx={{ '& .MuiOutlinedInput-root': { borderRadius: '8px' } }}>
+            <FormControl fullWidth required sx={{ '& .MuiOutlinedInput-root': { borderRadius: STYLE_GUIDE.SPACING.s2 } }}>
               <InputLabel>Product Subscriptions</InputLabel>
               <Select
                 multiple
@@ -563,13 +561,13 @@ export default function Users({ organizationId }: UsersProps) {
               </Select>
             </FormControl>
           </Box>
-          
-          <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1, mt: 3 }}>
+
+          <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: STYLE_GUIDE.SPACING.s2, mt: STYLE_GUIDE.SPACING.s6 }}>
             <Button
               variant="outlined"
               onClick={handleCloseModal}
               sx={{
-                borderRadius: '8px',
+                borderRadius: STYLE_GUIDE.SPACING.s2,
               }}
             >
               Cancel
@@ -580,7 +578,7 @@ export default function Users({ organizationId }: UsersProps) {
                 onClick={handleSave}
                 disabled={createUserMutation.isPending || updateUserMutation.isPending || !isFormValid}
                 sx={{
-                  borderRadius: '8px',
+                  borderRadius: STYLE_GUIDE.SPACING.s2,
                 }}
               >
                 {createUserMutation.isPending || updateUserMutation.isPending ? <CircularProgress size={20} /> : 'Save'}
@@ -595,7 +593,7 @@ export default function Users({ organizationId }: UsersProps) {
         onClose={handleCloseDialog}
         sx={{
           '& .MuiDialog-paper': {
-            borderRadius: '8px',
+            borderRadius: STYLE_GUIDE.SPACING.s2,
           },
         }}
       >
@@ -611,7 +609,7 @@ export default function Users({ organizationId }: UsersProps) {
           <Button
             onClick={handleCloseDialog}
             sx={{
-              borderRadius: '8px',
+              borderRadius: STYLE_GUIDE.SPACING.s2,
             }}
           >
             No
@@ -620,7 +618,7 @@ export default function Users({ organizationId }: UsersProps) {
             onClick={handleConfirmDelete}
             color="error"
             sx={{
-              borderRadius: '8px',
+              borderRadius: STYLE_GUIDE.SPACING.s2,
             }}
             disabled={deleteUserMutation.isPending}
           >

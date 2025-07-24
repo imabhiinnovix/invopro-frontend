@@ -38,8 +38,13 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
   },
 }));
 
+interface ThemeTableColumn {
+  key: string;
+  label: string;
+}
+
 interface ThemeTableProps {
-  columns: string[];
+  columns: ThemeTableColumn[];
   rows: Array<{ [key: string]: any }>;
   stickyHeader?: boolean;
   maxHeight?: string | number;
@@ -68,8 +73,8 @@ const ThemeTable: React.FC<ThemeTableProps> = ({
         <TableHead>
           <TableRow>
             {columns.map((column) => (
-              <StyledTableCell key={column} align="center">
-                {column.toUpperCase()}
+              <StyledTableCell key={column.key} align="center">
+                {column.label}
               </StyledTableCell>
             ))}
           </TableRow>
@@ -89,20 +94,20 @@ const ThemeTable: React.FC<ThemeTableProps> = ({
               }}
             >
               {columns.map((column) => (
-                <StyledTableCell key={column} align="center">
-                  {column === 'description' && typeof row[column] === 'string' && row[column]?.length > 15 ? (
-                    <Tooltip title={row[column]} placement="top">
+                <StyledTableCell key={column.key} align="center">
+                  {column.key === 'description' && typeof row[column.key] === 'string' && row[column.key]?.length > 15 ? (
+                    <Tooltip title={row[column.key]} placement="top">
                       <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        {row[column].slice(0, 21)}
+                        {row[column.key].slice(0, 21)}
                         <MoreHorizIcon fontSize="small" style={{ marginLeft: 4 }} />
                       </span>
                     </Tooltip>
-                  ) : React.isValidElement(row[column])
-                    ? row[column]
-                    : row[column] === null
+                  ) : React.isValidElement(row[column.key])
+                    ? row[column.key]
+                    : row[column.key] === null
                       ? '-'
-                      : row[column] !== undefined && row[column] !== 'undefined'
-                        ? row[column].toString()
+                      : row[column.key] !== undefined && row[column.key] !== 'undefined'
+                        ? row[column.key].toString()
                         : '-'}
                 </StyledTableCell>
               ))}

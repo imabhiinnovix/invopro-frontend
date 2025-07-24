@@ -47,7 +47,7 @@ interface OrganizationFormValues {
 
 export default function Organization() {
   const { isSuperUser } = useContext(AuthContext);
-  
+
   const { control, handleSubmit, formState: { errors, isValid }, setValue, watch, reset, getValues } = useForm<OrganizationFormValues>({
     defaultValues: {
       name: '',
@@ -250,9 +250,9 @@ export default function Organization() {
 
   const handleRowClick = (org: any, _rowIndex: number) => {
     const isUserSuperUser = isSuperUser();
-    
+
     const organizationIdForUsers = isUserSuperUser ? org._id : null;
-    
+
     setSelectedOrganizationForUsers({
       ...org,
       organizationIdForUsers
@@ -266,7 +266,14 @@ export default function Organization() {
   };
 
   return (
-    <Box height="100%">
+    <Box
+      sx={{
+        p: { xs: STYLE_GUIDE.SPACING.s4, md: STYLE_GUIDE.SPACING.s6 },
+        backgroundColor: theme.palette.background.paper,
+        borderBottom: "1px solid",
+        borderColor: STYLE_GUIDE.COLORS.divider,
+      }}
+    >
       {showUsers ? (
         <Box>
           <Box
@@ -338,7 +345,17 @@ export default function Organization() {
               <Typography color="error">Failed to load organizations.</Typography>
             ) : (
               <ThemeTable
-                columns={["name", "code", "status", "owner", "description", "createdAt", "updatedAt", "productAccess", "action"]}
+                columns={[
+                  { key: 'name', label: 'Name' },
+                  { key: 'code', label: 'Code' },
+                  { key: 'status', label: 'Status' },
+                  { key: 'owner', label: 'Owner' },
+                  { key: 'description', label: 'Description' },
+                  { key: 'createdAt', label: 'Created At' },
+                  { key: 'updatedAt', label: 'Updated At' },
+                  { key: 'productAccess', label: 'Product Access' },
+                  { key: 'action', label: 'Action' },
+                ]}
                 rows={
                   data?.data?.map((org) => ({
                     _id: org._id,
@@ -350,9 +367,9 @@ export default function Organization() {
                     createdAt: new Date(org.createdAt).toLocaleDateString(),
                     updatedAt: new Date(org.updatedAt).toLocaleDateString(),
                     productAccess: (
-                      <Button 
-                        size="small" 
-                        variant="outlined" 
+                      <Button
+                        size="small"
+                        variant="outlined"
                         onClick={(e) => {
                           e.stopPropagation();
                           handleProductAccessView(org._id);
@@ -363,22 +380,22 @@ export default function Organization() {
                     ),
                     action: (
                       <>
-                        <IconButton 
+                        <IconButton
                           onClick={(e) => {
                             e.stopPropagation();
                             handleEditOpen(org);
-                          }} 
-                          size="small" 
+                          }}
+                          size="small"
                           title="Edit"
                         >
                           <EditIcon fontSize="small" />
                         </IconButton>
-                        <IconButton 
+                        <IconButton
                           onClick={(e) => {
                             e.stopPropagation();
                             handleDeleteOpen(org);
-                          }} 
-                          size="small" 
+                          }}
+                          size="small"
                           title="Delete"
                         >
                           <DeleteIcon fontSize="small" />
@@ -592,6 +609,69 @@ export default function Organization() {
                       )}
                     />
                   </Grid>
+                  {/* Add productSubscriptions fields for each selected product */}
+                  {(fields || []).map((field, idx) => (
+                    <Grid container spacing={2} alignItems="flex-end" key={field.id} sx={{ m: 2, width: '100%', border: '1px solid #eee', borderRadius: STYLE_GUIDE.SPACING.s1 }}>
+                      <Grid item xs={3}>
+                        <Controller
+                          name={`productSubscriptions.${idx}.productId`}
+                          control={control}
+                          rules={{ required: 'Product is required' }}
+                          render={({ field }) => (
+                            <FormControl fullWidth margin="dense">
+                              <InputLabel>Product</InputLabel>
+                              <Select
+                                {...field}
+                                label="Product"
+                                disabled
+                              >
+                                {productOptions.map((product) => (
+                                  <MenuItem key={product._id} value={product._id}>
+                                    {product.name}
+                                  </MenuItem>
+                                ))}
+                              </Select>
+                            </FormControl>
+                          )}
+                        />
+                      </Grid>
+                      <Grid item xs={3}>
+                        <Controller
+                          name={`productSubscriptions.${idx}.totalLicenses`}
+                          control={control}
+                          rules={{ required: 'Total Licenses is required', min: { value: 1, message: 'Must be at least 1' } }}
+                          render={({ field }) => (
+                            <TextField
+                              {...field}
+                              label="Total Licenses"
+                              type="number"
+                              fullWidth
+                              margin="dense"
+                              error={!!errors.productSubscriptions && (errors.productSubscriptions as any)[idx]?.totalLicenses}
+                              helperText={(errors.productSubscriptions && (errors.productSubscriptions as any)[idx]?.totalLicenses?.message) || ''}
+                              inputProps={{ min: 1 }}
+                            />
+                          )}
+                        />
+                      </Grid>
+                      <Grid item xs={4}>
+                        <Controller
+                          name={`productSubscriptions.${idx}.licenseExpiresAt`}
+                          control={control}
+                          rules={{ required: 'License Expiry Date is required' }}
+                          render={({ field }) => (
+                            <CommonDatePicker
+                              {...field}
+                              control={control}
+                              label="License Expiry Date"
+                              views={['year', 'month', 'day']}
+                              sx={{ marginTop: 1 }}
+                            />
+                          )}
+                        />
+                      </Grid>
+                    </Grid>
+                  ))}
                   <Grid item xs={12}>
                     <Controller
                       name="name"
