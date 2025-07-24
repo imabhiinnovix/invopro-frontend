@@ -333,7 +333,7 @@ useEffect(() => {
       setLoading(true);
       try {
         const response = await axiosInstance.get(
-          `dataSourceVersion/versionData?dataSourceId=${dataSourceId}&versionValue=${versionValue}&page=${
+          `/common/dataSourceVersion/versionData?dataSourceId=${dataSourceId}&versionValue=${versionValue}&page=${
             paginationModel.page + 1
           }&limit=${paginationModel.pageSize}&query=${debouncedSearchValue}`
         );

@@ -1,7 +1,9 @@
-
-
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { BackendPermission, formatPermissions, PermissionMap } from '../utils/utils'; // Adjust path
+import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import {
+  BackendPermission,
+  formatPermissions,
+  PermissionMap,
+} from "../utils/utils"; // Adjust path
 
 // Define the User interface (unchanged)
 export interface User {
@@ -20,8 +22,10 @@ export interface User {
   };
   role: string;
   roleId: number;
+
+  permissionIds: [];
   settings: {
-    RPPos: 'left' | 'right' | 'bottom' | 'top';
+    RPPos: "left" | "right" | "bottom" | "top";
     showOccurrenceCount: boolean;
     showOccurrenceCountTerm: boolean;
     RPDimensions: {
@@ -41,7 +45,7 @@ export interface User {
     searchTerms: {
       query: string;
       colorCode?: string;
-      matchType: 'partial' | 'exact';
+      matchType: "partial" | "exact";
       count?: number;
       proximity: boolean;
       proximityInfo: { type: string; value: string };
@@ -62,7 +66,7 @@ interface Permission {
   _id: string;
   name: string;
   resourceType: string;
-  status: 'active' | 'inactive';
+  status: "active" | "inactive";
   dataSourceId: string;
   method: string;
   organizationId: string;
@@ -88,7 +92,7 @@ const initialState: UserState = {
 };
 
 const userSlice = createSlice({
-  name: 'user',
+  name: "user",
   initialState,
   reducers: {
     setCurrentUser(state, action: PayloadAction<User | null>) {
@@ -101,7 +105,7 @@ const userSlice = createSlice({
     setPermissions(state, action: PayloadAction<BackendPermission[]>) {
       // Skip if payload is invalid
       if (!action.payload || !Array.isArray(action.payload)) {
-        state.error = 'Invalid permissions data';
+        state.error = "Invalid permissions data";
         return;
       }
       state.permissions = formatPermissions(action.payload);
@@ -117,6 +121,11 @@ const userSlice = createSlice({
   },
 });
 
-export const { setCurrentUser, clearCurrentUser, setPermissions, setLoading, setError } =
-  userSlice.actions;
+export const {
+  setCurrentUser,
+  clearCurrentUser,
+  setPermissions,
+  setLoading,
+  setError,
+} = userSlice.actions;
 export default userSlice.reducer;

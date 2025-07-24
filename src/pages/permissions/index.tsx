@@ -37,9 +37,13 @@ import { GET, POST, PUT, DELETE } from "../../services/apiRoutes";
 import { useSelector } from "react-redux";
 import { RootState } from "../../reducers";
 import { CustomPagination } from "../../components/common/pagination/customPagination";
-import { ApiResponse, DataSource, Permission, PermissionPostPayload, PermissionPostResponse } from "../../types/permissions";
-
-
+import {
+  ApiResponse,
+  DataSource,
+  Permission,
+  PermissionPostPayload,
+  PermissionPostResponse,
+} from "../../types/permissions";
 
 const columns: GridColDef[] = [
   {
@@ -590,7 +594,6 @@ export default function Permissions() {
                 label="Data Source"
                 required={modalMode === "add" || modalMode === "edit"}
               >
-               
                 {dataSourceOptions.map((option) => (
                   <MenuItem key={option.id} value={option.id}>
                     {option.name}
@@ -616,8 +619,11 @@ export default function Permissions() {
                   label="Method"
                   required={modalMode === "add" || modalMode === "edit"}
                 >
-                  <MenuItem value="GET">GET</MenuItem>
+                  <MenuItem value="LIST">LIST</MenuItem>
+                  <MenuItem value="CREATE">CREATE</MenuItem>
+                  <MenuItem value="DELETE">DELETE</MenuItem>
                   <MenuItem value="UPDATE">UPDATE</MenuItem>
+                  <MenuItem value="VIEW">VIEW</MenuItem>
                 </Select>
               </FormControl>
             )}
@@ -636,7 +642,6 @@ export default function Permissions() {
                   disabled={modalMode === "view"}
                   label="Resource Type"
                 >
-                 
                   {resourceTypeOptions.map((option) => (
                     <MenuItem key={option} value={option}>
                       {option}
