@@ -496,7 +496,7 @@ export default function SideNav() {
         route: "/create-theme",
       },
       {
-        name: "Dashboard Themes",
+        name: "Layout Themes",
         icon: createIcon(BrushIcon, "/themes"),
         route: "/themes",
       },
