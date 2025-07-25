@@ -5,6 +5,7 @@ export interface Permission {
   status: "active" | "inactive";
   dataSourceId: { _id: string; name: string } | null;
   method: string;
+  methodName?: string; // Optional field for method name
   organizationId: string;
   isSuperUser: boolean;
   createdAt: string;
@@ -28,9 +29,12 @@ export interface PermissionPostPayload {
   method: string;
   dataSourceId: string;
   resourceType?: string;
+  code?: string; 
+  methodName?: string; 
 }
 
 export interface DataSource {
   _id: string;
   name: string;
+  code?: string;
 }
