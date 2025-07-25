@@ -433,7 +433,6 @@ export default function Permissions() {
   const dataSourceOptions: { id: string; name: string; code: string }[] =
     Array.isArray(dataSource)
       ? dataSource.map((ds: DataSource) => {
-          console.log("Mapping dataSource item:", ds);
           return {
             id: ds._id,
             name: ds.name,

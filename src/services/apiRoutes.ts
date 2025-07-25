@@ -40,7 +40,7 @@ export const PUT = {
   UPDATE_ORGANIZATION: '/common/organization/update/',
   UPDATE_USER: '/common/user/update/',
   UPDATE_PERMISSION: "/common/permission/update",
-  UPDATE_ROLE: "/common/role/update/",
+  UPDATE_ROLE: "/common/role/update",
 };
 
 export const DELETE = {
