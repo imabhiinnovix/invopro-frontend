@@ -502,7 +502,7 @@ export const fetchWidgetTheme = createAsyncThunk(
 export const selectDashboardTheme = createAsyncThunk(
   'dashboard/selectTheme',
   async ({ dashboardId, widgetThemeId }: { dashboardId: string; widgetThemeId: string }) => {
-    const { data } = await axiosInstance.post(`/dashboard/selectTheme/${dashboardId}`, { widgetThemeId });
+    const { data } = await axiosInstance.post(`/common/dashboard/selectTheme/${dashboardId}`, { widgetThemeId });
     return data;
   }
 );

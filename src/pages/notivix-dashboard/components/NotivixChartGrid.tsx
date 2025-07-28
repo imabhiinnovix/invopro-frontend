@@ -187,7 +187,7 @@ const NotivixChartGrid: React.FC = () => {
           color: theme.palette.text.primary,
           font: {
             size: 16,
-            weight: 'bold',
+            weight: 'bold' as const,
           },
         },
         tooltip: {
