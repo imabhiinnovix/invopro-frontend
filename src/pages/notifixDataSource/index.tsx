@@ -748,7 +748,6 @@ export default function NotifixDataSource() {
     pageSize: 10,
   });
 
-  const dataSourceId = "6878e3cf23a13174f84626c4";
   const { id: valueId } = useParams<{ id: string }>();
 
   useEffect(() => {
@@ -977,6 +976,8 @@ export default function NotifixDataSource() {
     }
   }, [sourceVersionData.error]);
 
+  console.log("Source Version Data:", sourceVersionData);
+
   // Handle successful data processing
   useEffect(() => {
     if (sourceVersionData.isLoading || sourceVersionData.error) {
@@ -1129,7 +1130,7 @@ export default function NotifixDataSource() {
           color: STYLE_GUIDE?.COLORS?.primaryDark || "#3f51b5",
         }}
       >
-        Case List (ID: {dataSourceId})
+        
       </Typography>
 
       <Card
@@ -1321,7 +1322,7 @@ export default function NotifixDataSource() {
                   opacity: 0.6,
                 }}
               >
-                No records found for this data source. Try adding new data or check your search criteria.
+                No records found.
               </Typography>
             </Box>
           )}
