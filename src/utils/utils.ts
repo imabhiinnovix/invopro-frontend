@@ -81,6 +81,63 @@ export interface PermissionMap {
   };
 }
 
+// export const formatPermissions = (
+//   backendPermissions: BackendPermission[]
+// ): PermissionMap => {
+//   const permissionMap: PermissionMap = {};
+
+//   backendPermissions.forEach((perm, index) => {
+//     const isOriginalStructure = 'permissionId' in perm && 'allowed' in perm;
+//     const permissionId = isOriginalStructure ? perm.permissionId : perm._id;
+//     const resourceType = perm.resourceType;
+//     const resourceCode = perm.resourceCode;
+//     const allowed = isOriginalStructure ? perm.allowed : true; 
+//     const dataSourceId = isOriginalStructure ? perm.dataSourceId : undefined;
+
+//     // Validate required fields
+//     if (!permissionId || !resourceType || !resourceCode) {
+//       console.warn(`Invalid permission at index ${index}:`, perm);
+//       return;
+//     }
+
+//     // Split resourceCode to get method name
+//     const resourceCodeParts = resourceCode.split('__');
+//     if (resourceCodeParts.length < 2) {
+//       console.warn(`Invalid resourceCode format at index ${index}: ${resourceCode}`);
+//       return;
+//     }
+
+//     // Handle method name: take all parts after the first one
+//     const methodName = resourceCodeParts.slice(1).join('_');
+
+//     // Capitalize each word and join with a space
+//     const formattedMethodName = methodName
+//       .split('_')
+//       .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+//       .join(' ');
+
+//     // Initialize resourceType in permissionMap
+//     if (!permissionMap[resourceType]) {
+//       permissionMap[resourceType] = {};
+//     }
+
+//     // Assign permission details
+//     permissionMap[resourceType][formattedMethodName] = {
+//       allowed,
+//       _id: permissionId,
+//       resourceType,
+//       permissionId,
+//       ...(dataSourceId && { dataSourceId }), 
+//     };
+//   });
+
+//   localStorage.setItem('permissions', JSON.stringify(permissionMap));
+//   window.dispatchEvent(new Event('storage'));
+
+//   return permissionMap;
+// };
+
+
 export const formatPermissions = (
   backendPermissions: BackendPermission[]
 ): PermissionMap => {
@@ -91,24 +148,26 @@ export const formatPermissions = (
     const permissionId = isOriginalStructure ? perm.permissionId : perm._id;
     const resourceType = perm.resourceType;
     const resourceCode = perm.resourceCode;
-    const allowed = isOriginalStructure ? perm.allowed : true; 
+    const allowed = isOriginalStructure ? perm.allowed : true;
     const dataSourceId = isOriginalStructure ? perm.dataSourceId : undefined;
 
     // Validate required fields
     if (!permissionId || !resourceType || !resourceCode) {
-      console.warn(`Invalid permission at index ${index}:`, perm);
+      console.warn(`Invalid permission at index ${index}:`, JSON.stringify(perm, null, 2));
       return;
     }
 
-    // Split resourceCode to get method name
+    // Split resourceCode on '__'
     const resourceCodeParts = resourceCode.split('__');
+
+    // Skip if resourceCode does not contain '__'
     if (resourceCodeParts.length < 2) {
-      console.warn(`Invalid resourceCode format at index ${index}: ${resourceCode}`);
+      console.warn(`Skipping invalid resourceCode format at index ${index}: ${resourceCode}`);
       return;
     }
 
-    // Handle method name: take all parts after the first one
-    const methodName = resourceCodeParts.slice(1).join('_');
+    // Extract method name (everything after the last '__')
+    const methodName = resourceCodeParts[resourceCodeParts.length - 1];
 
     // Capitalize each word and join with a space
     const formattedMethodName = methodName
@@ -127,7 +186,7 @@ export const formatPermissions = (
       _id: permissionId,
       resourceType,
       permissionId,
-      ...(dataSourceId && { dataSourceId }), 
+      ...(dataSourceId && { dataSourceId }),
     };
   });
 

@@ -347,6 +347,7 @@ export default function SideNav() {
         />
       );
     };
+    console.log("dataSourceList", dataSourceList);
 
     if (activeTab === "Notifix") {
       return [

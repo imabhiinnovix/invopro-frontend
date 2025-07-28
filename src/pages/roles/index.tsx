@@ -924,7 +924,7 @@ export default function Roles() {
         <DialogTitle>Confirm Delete</DialogTitle>
         <DialogContent>
           <Typography>
-            Are you sure you want to delete the role with ID {deleteId?.slice(-8) || "Unknown"}?
+            Are you sure you want to delete this? 
           </Typography>
         </DialogContent>
         <DialogActions>
