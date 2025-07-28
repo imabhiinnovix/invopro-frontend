@@ -63,6 +63,7 @@ const AppRoutes = () => {
           <Route path="/report-settings" element={<ReportSettings />} />
           {/* // Notivix routes */}
           <Route path="/notivix/dashboard" element={<NotivixDashboard />} />
+          <Route path="/notivix/dashboard/:id" element={<NotivixDashboard />} />
           <Route
             path="/notivix/notification-settings"
             element={<NotificationSettings />}

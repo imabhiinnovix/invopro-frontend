@@ -161,7 +161,7 @@ export const CreateDashboardModal: React.FC<CreateDashboardModalProps> = ({
         <Button
           onClick={onCreate}
           variant="contained"
-          disabled={!newDashboardName.trim() || isCreating}
+          disabled={!newDashboardName?.trim() || isCreating}
           sx={{
             backgroundColor: STYLE_GUIDE.COLORS.bootstrapPrimary,
             "&:hover": {

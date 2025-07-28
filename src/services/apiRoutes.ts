@@ -32,7 +32,14 @@ export const POST = {
   Create_Organization: '/common/organization/create',
   Create_User: '/common/user/create',
   CREATE_PERMISSION: "/common/permission/create",
-  CREATE_ROLE: "/common/role/create",};
+  CREATE_ROLE: "/common/role/create",
+  // Notivix-specific routes
+  CREATE_NOTIVIX_DASHBOARD: '/dashboard/create',
+  UPDATE_NOTIVIX_DASHBOARD: '/dashboard/update',
+  DELETE_NOTIVIX_DASHBOARD: '/dashboard/delete',
+  NOTIVIX_DASHBOARD_WIDGET: '/dashboard/widget',
+  NOTIVIX_DASHBOARD_THEME: '/dashboard/theme',
+};
 
 export const PUT = {
   UPDATE_DATA_SOURCE: '/common/dataSource/update',
@@ -88,4 +95,8 @@ export const GET = {
   PERMISSION_LIST: "/common/permission/list",
   ROLE_LIST: "/common/role/list",
   ROLE_DETAIL: "/common/role",
+  // Notivix-specific routes
+  NOTIVIX_DASHBOARD_LIST: '/dashboard/list',
+  NOTIVIX_DASHBOARD_WIDGET_GET_CHART_DATA: '/dashboard/widget/getWidgets',
+  NOTIVIX_DASHBOARD_WIDGET_DATA: '/dashboard/widget/getWidgetData',
 };
