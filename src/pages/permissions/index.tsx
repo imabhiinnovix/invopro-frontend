@@ -1,3 +1,5 @@
+
+
 import * as React from "react";
 import { useState, useEffect } from "react";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
@@ -20,6 +22,7 @@ import {
   InputLabel,
   Select,
   MenuItem,
+  SelectChangeEvent,
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import FilterListIcon from "@mui/icons-material/FilterList";
@@ -84,11 +87,12 @@ const columns: GridColDef[] = [
     renderCell: (params) => params.value?.name || "-",
   },
   {
-    field: "method",
+    field: "methodName",
     headerName: "Method",
     width: 100,
     disableColumnMenu: true,
     resizable: true,
+    renderCell: (params) => params.row.methodName || params.row.method || "-", // Prioritize methodName, fallback to method
   },
   {
     field: "actions",
@@ -160,7 +164,6 @@ export default function Permissions() {
   });
   const dataSource = useSelector((state: RootState) => state.dataSource.list);
 
-  // Debounce search input
   useEffect(() => {
     const handler = setTimeout(() => {
       setDebouncedSearchValue(searchValue);
@@ -170,16 +173,16 @@ export default function Permissions() {
     };
   }, [searchValue]);
 
-  // Form data for modal
   const [formData, setFormData] = useState({
     id: "",
     name: "",
     dataSourceId: "",
     method: "",
+    methodName: "", 
     resourceType: "",
+    code: "",
   });
 
-  // API call for listing permissions
   const perPageItem = paginationModel.pageSize;
   const permissionList = useGet<ApiResponse>(
     [
@@ -195,7 +198,7 @@ export default function Permissions() {
     true
   );
 
-  // POST API for creating a permission
+  // POST API 
   const createPermission = usePost<
     PermissionPostPayload,
     PermissionPostResponse
@@ -210,7 +213,7 @@ export default function Permissions() {
     true
   );
 
-  // PUT API for updating a permission
+  // PUT API 
   const updatePermission = usePut<
     PermissionPostPayload,
     PermissionPostResponse
@@ -225,7 +228,7 @@ export default function Permissions() {
     true
   );
 
-  // DELETE API for deleting a permission
+  // DELETE API 
   const deletePermission = useDelete<null, PermissionPostResponse>(
     ["deletePermission"],
     (data) => {
@@ -237,7 +240,7 @@ export default function Permissions() {
     true
   );
 
-  // Reset permissionReload after listing is fetched
+  // Reset permissionReload 
   useEffect(() => {
     if (permissionList?.data && permissionReload) {
       setPermissionReload(false);
@@ -261,7 +264,9 @@ export default function Permissions() {
       name: row.name || "",
       dataSourceId: row.dataSourceId?._id || "",
       method: row.method || "",
+      methodName: row.methodName || row.method || "", 
       resourceType: row.resourceType || "",
+      code: row.dataSourceId?.code || "",
     });
     setModalMode("edit");
     setOpenModal(true);
@@ -273,7 +278,9 @@ export default function Permissions() {
       name: row.name || "",
       dataSourceId: row.dataSourceId?._id || "",
       method: row.method || "",
+      methodName: row.methodName || row.method || "",
       resourceType: row.resourceType || "",
+      code: row.dataSourceId?.code || "",
     });
     setModalMode("view");
     setOpenModal(true);
@@ -292,7 +299,9 @@ export default function Permissions() {
       name: "",
       dataSourceId: "",
       method: "",
+      methodName: "",
       resourceType: "",
+      code: "",
     });
     setModalMode("add");
     setOpenModal(true);
@@ -305,6 +314,8 @@ export default function Permissions() {
       dataSourceId: filterValues.dataSourceId,
       resourceType: filterValues.resourceType,
       method: "",
+      methodName: "",
+      code: "",
     });
     setModalMode("filter");
     setOpenModal(true);
@@ -318,7 +329,9 @@ export default function Permissions() {
       name: "",
       dataSourceId: "",
       method: "",
+      methodName: "",
       resourceType: "",
+      code: "",
     });
   };
 
@@ -332,7 +345,6 @@ export default function Permissions() {
       try {
         await deletePermission.mutate({
           url: `${DELETE.DELETE_PERMISSION}/${deleteId}`,
-          payload: null,
         });
       } catch (error) {
         console.error("Error deleting permission:", error);
@@ -346,6 +358,9 @@ export default function Permissions() {
       name: "",
       dataSourceId: "",
       resourceType: "",
+      method: "",
+      methodName: "",
+      code: "",
     });
   };
 
@@ -366,8 +381,10 @@ export default function Permissions() {
           url: POST.CREATE_PERMISSION,
           payload: {
             name: formData.name,
-            method: formData.method,
+            method: formData.methodName || formData.method, 
+            methodName: formData.methodName || formData.method, 
             dataSourceId: formData.dataSourceId,
+            code: formData.code,
           },
         });
       } else if (modalMode === "edit") {
@@ -375,9 +392,10 @@ export default function Permissions() {
           url: `${PUT.UPDATE_PERMISSION}/${formData.id}`,
           payload: {
             name: formData.name,
-            method: formData.method,
+            method: formData.methodName || formData.method, 
+            methodName: formData.methodName || formData.method, 
             dataSourceId: formData.dataSourceId,
-            resourceType: "Data Source",
+            code: formData.code,
           },
         });
       } else if (modalMode === "filter") {
@@ -393,14 +411,35 @@ export default function Permissions() {
     setPaginationModel({ ...paginationModel, page: 0 });
   };
 
-  const dataSourceOptions: { id: string; name: string }[] = Array.isArray(
-    dataSource
-  )
-    ? dataSource.map((ds: DataSource) => ({
-        id: ds._id,
-        name: ds.name,
-      }))
-    : [];
+  const handleDataSourceChange = (e: SelectChangeEvent<string>) => {
+    const selectedDataSource = dataSourceOptions.find(
+      (option) => option.id === e.target.value
+    );
+    setFormData({
+      ...formData,
+      dataSourceId: e.target.value,
+      code: selectedDataSource?.code || "",
+    });
+  };
+
+  const handleMethodChange = (e: SelectChangeEvent<string>) => {
+    setFormData({
+      ...formData,
+      method: e.target.value.toUpperCase(), 
+      methodName: e.target.value, 
+    });
+  };
+
+  const dataSourceOptions: { id: string; name: string; code: string }[] =
+    Array.isArray(dataSource)
+      ? dataSource.map((ds: DataSource) => {
+          return {
+            id: ds._id,
+            name: ds.name,
+            code: ds.code || "",
+          };
+        })
+      : [];
 
   const resourceTypeOptions = Array.isArray(permissionList?.data?.data)
     ? [
@@ -444,7 +483,6 @@ export default function Permissions() {
               mb: 2,
             }}
           >
-            {/* Search Bar */}
             <TextField
               placeholder="Search ..."
               variant="outlined"
@@ -466,7 +504,6 @@ export default function Permissions() {
               }}
             />
 
-            {/* Filter and Add Buttons */}
             <Box sx={{ display: "flex", gap: 1 }}>
               <Button
                 variant="outlined"
@@ -491,7 +528,6 @@ export default function Permissions() {
             </Box>
           </Box>
 
-          {/* Table */}
           <DataGrid
             rows={permissionsWithIds.map((permission) => ({
               ...permission,
@@ -507,7 +543,6 @@ export default function Permissions() {
             sx={{
               overflow: "visible",
             }}
-
             loading={
               permissionList.isLoading ||
               createPermission.isLoading ||
@@ -516,7 +551,6 @@ export default function Permissions() {
             }
             rowCount={permissionList?.data?.totalCount || 0}
             paginationModel={paginationModel}
-            paginationMode="server"
             onPaginationModelChange={setPaginationModel}
             slots={{
               pagination: () => (
@@ -531,7 +565,6 @@ export default function Permissions() {
         </CardContent>
       </Card>
 
-      {/* Modal for Add/Edit/View/Filter */}
       <Modal
         open={openModal}
         onClose={handleCloseModal}
@@ -555,12 +588,12 @@ export default function Permissions() {
         >
           <Typography variant="h6" sx={{ mb: 2 }}>
             {modalMode === "add"
-              ? "Add "
+              ? "Add Permission"
               : modalMode === "edit"
-                ? "Edit"
+                ? "Edit Permission"
                 : modalMode === "view"
-                  ? "View "
-                  : "Filter "}
+                  ? "View Permission"
+                  : "Filter Permissions"}
           </Typography>
 
           <Box
@@ -590,9 +623,7 @@ export default function Permissions() {
               <InputLabel>Data Source</InputLabel>
               <Select
                 value={formData.dataSourceId}
-                onChange={(e) =>
-                  setFormData({ ...formData, dataSourceId: e.target.value })
-                }
+                onChange={handleDataSourceChange}
                 disabled={modalMode === "view"}
                 label="Data Source"
                 required={modalMode === "add" || modalMode === "edit"}
@@ -614,45 +645,22 @@ export default function Permissions() {
               >
                 <InputLabel>Method</InputLabel>
                 <Select
-                  value={formData.method}
-                  onChange={(e) =>
-                    setFormData({ ...formData, method: e.target.value })
-                  }
+                  value={formData.methodName} // Use methodName for display
+                  onChange={handleMethodChange}
                   disabled={modalMode === "view"}
                   label="Method"
                   required={modalMode === "add" || modalMode === "edit"}
                 >
-                  <MenuItem value="LIST">LIST</MenuItem>
-                  <MenuItem value="CREATE">CREATE</MenuItem>
-                  <MenuItem value="DELETE">DELETE</MenuItem>
-                  <MenuItem value="UPDATE">UPDATE</MenuItem>
-                  <MenuItem value="VIEW">VIEW</MenuItem>
+                  <MenuItem value="list">LIST</MenuItem>
+                  <MenuItem value="create">CREATE</MenuItem>
+                  <MenuItem value="delete">DELETE</MenuItem>
+                  <MenuItem value="update">UPDATE</MenuItem>
+                  <MenuItem value="view">VIEW</MenuItem>
                 </Select>
               </FormControl>
             )}
 
-            {(modalMode === "filter" || modalMode === "view") && (
-              <FormControl
-                fullWidth
-                sx={{ "& .MuiOutlinedInput-root": { borderRadius: "8px" } }}
-              >
-                <InputLabel>Resource Type</InputLabel>
-                <Select
-                  value={formData.resourceType}
-                  onChange={(e) =>
-                    setFormData({ ...formData, resourceType: e.target.value })
-                  }
-                  disabled={modalMode === "view"}
-                  label="Resource Type"
-                >
-                  {resourceTypeOptions.map((option) => (
-                    <MenuItem key={option} value={option}>
-                      {option}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            )}
+          
           </Box>
 
           <Box
@@ -707,7 +715,7 @@ export default function Permissions() {
                     disabled={
                       !formData.name ||
                       !formData.dataSourceId ||
-                      !formData.method ||
+                      !formData.methodName ||
                       createPermission.isLoading ||
                       updatePermission.isLoading
                     }
@@ -721,7 +729,6 @@ export default function Permissions() {
         </Box>
       </Modal>
 
-      {/* Delete Confirmation Dialog */}
       <Dialog
         open={openDialog}
         onClose={handleCloseDialog}

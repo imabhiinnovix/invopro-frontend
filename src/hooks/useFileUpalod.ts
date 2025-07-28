@@ -3,7 +3,7 @@ import axiosInstance from "../services/axiosInstance";
 import { toast } from "react-toastify";
 
 export const uploadCustomReportFile = async (formData) => {
-  const response = await axiosInstance.post("/files/upload", formData, {
+  const response = await axiosInstance.post("/common/files/upload", formData, {
     headers: {
       "Content-Type": "multipart/form-data",
     },

@@ -17,11 +17,11 @@ export const POST = {
   DELETE_USER: '/common/users/delete/',
   ORGANIZATION_ACTIVE: '/organizations/updateStatus/',
   USER_ACTIVE: '/users/updateStatus/',
-  FILE_UPLOAD: '/files/upload',
+  FILE_UPLOAD: '/common/files/upload',
   CREATE_ENTITY: '/entities/create',
   UPDATE_ENTITY: '/entities/update',
   CREATE_ATTRIBUTE_OPTION: '/attributeOptions/create',
-  CREATE_DATA_SOURCE: '/dataSource/create',
+  CREATE_DATA_SOURCE: '/common/dataSource/create',
   Custom_Report: '/customReports',
   DATA_SOURCE_VERSION_CREATE: '/dataSourceVersion/create',
   CREATE_THEME: '/common/widgetTheme/create',
@@ -35,12 +35,12 @@ export const POST = {
   CREATE_ROLE: "/common/role/create",};
 
 export const PUT = {
-  UPDATE_DATA_SOURCE: '/dataSource/update',
+  UPDATE_DATA_SOURCE: '/common/dataSource/update',
   UPDATE_ATTRIBUTE_OPTION: '/attributeOptions/update',
   UPDATE_ORGANIZATION: '/common/organization/update/',
   UPDATE_USER: '/common/user/update/',
   UPDATE_PERMISSION: "/common/permission/update",
-  UPDATE_ROLE: "/common/role/update/",
+  UPDATE_ROLE: "/common/role/update",
 };
 
 export const DELETE = {
@@ -55,9 +55,9 @@ export const GET = {
   USER_LIST: '/common/users/list',
   GET_USER: '/common/users/',
   GET_ORGANIZATION: '/organizations/',
-  Entity_List: '/entities/list',
-  Get_Entity: '/entities',
-  Get_Entity_By_Id: '/entities:entityId',
+  Entity_List: '/common/entities/list',
+  Get_Entity: '/common/entities',
+  Get_Entity_By_Id: 'common/entities',
   Attribute_Option_List: 'attributeOptions/list',
   Attribute_Option_Get: 'attributeOptions/get',
   Data_Source_List: '/common/dataSource/list',
@@ -86,5 +86,6 @@ export const GET = {
   User_List: '/common/user/list',
   Roles_List: '/common/role/list',
   PERMISSION_LIST: "/common/permission/list",
-  ROLE_LIST: "/common/role/list"
+  ROLE_LIST: "/common/role/list",
+  ROLE_DETAIL: "/common/role",
 };
