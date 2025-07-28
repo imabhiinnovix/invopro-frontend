@@ -65,7 +65,7 @@ export const GET = {
   Data_Source_Version: '/common/dataSourceVersion',
   Data_Source: '/dataSource/dataSourceId',
   Data_Source_Name: '/dataSource/name',
-  Data_Import_Error: 'dataImportError',
+  Data_Import_Error: '/common/dataImportError',
   Custom_Report: '/reportivix/customReports',
   DATA_SOURCE_LIST: '/common/dataSource/list',
   ATTRIBUTE_OPTIONS_LIST: '/attributeOptions/get/',
