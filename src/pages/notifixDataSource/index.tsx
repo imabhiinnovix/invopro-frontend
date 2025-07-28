@@ -1028,57 +1028,56 @@ export default function NotifixDataSource() {
       return;
     }
 
-    // const actionsColumn: GridColDef = {
-    //   field: "actions",
-    //   headerName: "Actions",
-    //   flex: 1,
-    //   sortable: false,
-    //   renderHeader: () => <Typography>Actions</Typography>,
-    //   renderCell: (params: any) => (
-    //     <Box sx={{ display: "flex", gap: 1 }}>
-    //       <Tooltip title="View" arrow>
-    //         <Button
-    //           size="small"
-    //           onClick={() => handleView(params.row._id)}
-    //           sx={{
-    //             minWidth: "auto",
-    //             color: STYLE_GUIDE?.COLORS?.primaryDark || "#3f51b5",
-    //           }}
-    //         >
-    //           <VisibilityIcon />
-    //         </Button>
-    //       </Tooltip>
-    //       <Tooltip title="Edit" arrow>
-    //         <Button
-    //           size="small"
-    //           onClick={() => handleEdit(params.row._id)}
-    //           sx={{
-    //             minWidth: "auto",
-    //             color: STYLE_GUIDE?.COLORS?.primaryDark || "#3f51b5",
-    //           }}
-    //         >
-    //           <EditIcon />
-    //         </Button>
-    //       </Tooltip>
-    //       <Tooltip title="Delete" arrow>
-    //         <Button
-    //           size="small"
-    //           onClick={() => handleDelete(params.row._id)}
-    //           sx={{
-    //             minWidth: "auto",
-    //             color: STYLE_GUIDE?.COLORS?.error || "#d32f2f",
-    //           }}
-    //         >
-    //           <DeleteIcon />
-    //         </Button>
-    //       </Tooltip>
-    //     </Box>
-    //   ),
-    // };
+    const actionsColumn: GridColDef = {
+      field: "actions",
+      headerName: "Actions",
+      flex: 1,
+      sortable: false,
+      renderHeader: () => <Typography>Actions</Typography>,
+      renderCell: (params: any) => (
+        // <Box sx={{ display: "flex", gap: 1 }}>
+        //   <Tooltip title="View" arrow>
+        //     <Button
+        //       size="small"
+        //       onClick={() => handleView(params.row._id)}
+        //       sx={{
+        //         minWidth: "auto",
+        //         color: STYLE_GUIDE?.COLORS?.primaryDark || "#3f51b5",
+        //       }}
+        //     >
+        //       <VisibilityIcon />
+        //     </Button>
+        //   </Tooltip>
+        //   <Tooltip title="Edit" arrow>
+        //     <Button
+        //       size="small"
+        //       onClick={() => handleEdit(params.row._id)}
+        //       sx={{
+        //         minWidth: "auto",
+        //         color: STYLE_GUIDE?.COLORS?.primaryDark || "#3f51b5",
+        //       }}
+        //     >
+        //       <EditIcon />
+        //     </Button>
+        //   </Tooltip>
+        //   <Tooltip title="Delete" arrow>
+        //     <Button
+        //       size="small"
+        //       onClick={() => handleDelete(params.row._id)}
+        //       sx={{
+        //         minWidth: "auto",
+        //         color: STYLE_GUIDE?.COLORS?.error || "#d32f2f",
+        //       }}
+        //     >
+        //       <DeleteIcon />
+        //     </Button>
+        //   </Tooltip>
+        // </Box>
+        <p></p>
+      ),
+    };
     
-    setColumns(prev => [...prev,
-      //  actionsColumn
-      ]);
+    setColumns(prev => [...prev, actionsColumn]);
   }, [columns, handleView, handleEdit, handleDelete]);
 
 
@@ -1132,7 +1131,7 @@ export default function NotifixDataSource() {
           color: STYLE_GUIDE?.COLORS?.primaryDark || "#3f51b5",
         }}
       >
-        
+         
       </Typography>
 
       <Card
