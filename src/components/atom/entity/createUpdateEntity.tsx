@@ -176,7 +176,7 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
 
         console.log(`Fetching entity data for ID: ${entityId}`);
         axiosInstance
-          .get(`/entities/${entityId}`)
+          .get(`/common/entities/${entityId}`)
           .then((res) => {
             console.log(`Response for entityId ${entityId}:`, res.data);
             const namesArr = res.data?.data?.attributes?.map((f: any) => f.name) || [];
