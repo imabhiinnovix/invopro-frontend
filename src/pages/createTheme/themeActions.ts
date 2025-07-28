@@ -5,7 +5,7 @@ import { ThemeListResponse } from './types';
 export const fetchThemeList = createAsyncThunk(
   'theme/fetchList',
   async () => {
-    const { data } = await axiosInstance.get<ThemeListResponse>('/widgetTheme/list');
+    const { data } = await axiosInstance.get<ThemeListResponse>('/common/widgetTheme/list');
     return data;
   }
 ); 

@@ -27,6 +27,7 @@ import Roles from "./pages/roles";
 import Organization from "./pages/organization/organization";
 import NotifixDataSource from './pages/notifixDataSource';
 import Permissions from './pages/permissions';
+import NotivixDashboard from './pages/notivix-dashboard';
 
 const AppRoutes = () => {
   const token = getAuthToken();
@@ -61,7 +62,7 @@ const AppRoutes = () => {
           <Route path="/VixAi-Chart" element={<NaturalLanguage />} />
           <Route path="/report-settings" element={<ReportSettings />} />
           {/* // Notivix routes */}
-          <Route path="/notivix/dashboard" element={<ReportSettings />} />
+          <Route path="/notivix/dashboard" element={<NotivixDashboard />} />
           <Route
             path="/notivix/notification-settings"
             element={<NotificationSettings />}
@@ -98,7 +99,7 @@ const AppRoutes = () => {
       {/* Admin and Super Admin Protected Routes */}
       <Route element={<AdminSuperAdminProtect />}>
         <Route element={<CommonLayout />}>
-          <Route path="/create-theme" element={<CreateTheme />} />
+        <Route path="/create-theme" element={<CreateTheme />} />
         </Route>
       </Route>
 
@@ -106,6 +107,7 @@ const AppRoutes = () => {
       <Route element={<AuthProtect />}>
         <Route element={<CommonLayout />}>
           <Route path="/themes" element={<DashboardThemePage />} />
+           {/* <Route path="/create-theme" element={<CreateTheme />} /> */}
         </Route>
       </Route>
     </Routes>
