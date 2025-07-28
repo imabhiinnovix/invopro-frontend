@@ -628,7 +628,7 @@ export default function Roles() {
               }}
             />
             <Box sx={{ display: "flex", gap: 1 }}>
-              <Button
+              {/* <Button
                 variant="outlined"
                 startIcon={<FilterListIcon />}
                 onClick={handleFilter}
@@ -637,7 +637,7 @@ export default function Roles() {
                 }}
               >
                 Filter
-              </Button>
+              </Button> */}
               <Button
                 variant="contained"
                 startIcon={<AddIcon />}
