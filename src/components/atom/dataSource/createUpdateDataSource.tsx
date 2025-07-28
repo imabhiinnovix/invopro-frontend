@@ -558,7 +558,8 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({
     const updatedFormData = {
       ...formData,
       entityAttributeIds: updatedEntityAttributeIds,
-      uniqueAttributeRules: updatedUniqueAttributeRules,
+      uniqueAttributeRules: updatedUniqueAttributeRules.filter((rule) => rule.length > 0),
+
       fieldSettings: updatedFieldSettings,
       isShowMenu: formData.isShowMenu === "true" ? true : false, // Default to false if undefined
     };

@@ -76,7 +76,7 @@ export const GET = {
   Custom_Report: '/reportivix/customReports',
   DATA_SOURCE_LIST: '/common/dataSource/list',
   ATTRIBUTE_OPTIONS_LIST: '/attributeOptions/get/',
-  SOURCE_VERSION_DATA: '/dataSourceVersion/versionData',
+  SOURCE_VERSION_DATA: 'common/dataSourceVersion/versionData',
   DASHBOARD_LIST: '/common/dashboard/list',
   WIDGET_TYPE_LIST: '/widgetType/list',
   DASHBOARD_WIDGET_GET_CHART_DATA: '/common/dashboard/widget/getWidgets',

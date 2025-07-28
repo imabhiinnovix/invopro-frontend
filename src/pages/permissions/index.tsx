@@ -588,12 +588,12 @@ export default function Permissions() {
         >
           <Typography variant="h6" sx={{ mb: 2 }}>
             {modalMode === "add"
-              ? "Add Permission"
+              ? "Add "
               : modalMode === "edit"
-                ? "Edit Permission"
+                ? "Edit "
                 : modalMode === "view"
-                  ? "View Permission"
-                  : "Filter Permissions"}
+                  ? "View "
+                  : "Filter "}
           </Typography>
 
           <Box
@@ -741,8 +741,7 @@ export default function Permissions() {
         <DialogTitle>Confirm Delete</DialogTitle>
         <DialogContent>
           <Typography>
-            Are you sure you want to delete the Permission with ID{" "}
-            {deleteId?.slice(-8) || "Unknown"}?
+            Are you sure you want to delete the Permission ?
           </Typography>
         </DialogContent>
         <DialogActions>
