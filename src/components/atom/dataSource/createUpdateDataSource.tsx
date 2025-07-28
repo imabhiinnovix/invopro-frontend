@@ -128,7 +128,7 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({
       code: data?.code ?? "",
       description: data?.description ?? "",
       versionType: data?.versionType ?? "",
-      isShowMenu: data?.isShowMenu, // Undefined in create mode, use data.isShowMenu in update mode
+      isShowMenu: data ? data.isShowMenu : undefined, // Explicitly undefined in create mode
       entityId:
         typeof data?.entityId === "string"
           ? data.entityId
@@ -311,7 +311,7 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({
         code: data.code ?? "",
         description: data.description ?? "",
         versionType: data.versionType ?? "",
-        isShowMenu: data.isShowMenu, // Prefill with data.isShowMenu (undefined in create mode)
+        isShowMenu: data ? data.isShowMenu : undefined, // Explicitly undefined in create mode
         entityId:
           typeof data.entityId === "string"
             ? data.entityId
@@ -561,7 +561,7 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({
       uniqueAttributeRules: updatedUniqueAttributeRules.filter((rule) => rule.length > 0),
 
       fieldSettings: updatedFieldSettings,
-      isShowMenu: formData.isShowMenu === "true" ? true : false, // Default to false if undefined
+      isShowMenu: formData.isShowMenu === true ? true : false, // Handle boolean value properly
     };
 
     if (data && data._id) {
@@ -586,7 +586,25 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({
     setEntityName("");
     setError(null);
     setValidationError(null);
-    reset();
+    reset({
+      name: "",
+      code: "",
+      description: "",
+      versionType: "",
+      isShowMenu: undefined,
+      entityId: "",
+      entityAttributes: [[""]],
+      entityAttributeIds: [[""]],
+      fieldSettings: [
+        {
+          attributeId: "",
+          value: "",
+          filter: false,
+          sorting: false,
+          visible: false,
+        },
+      ],
+    });
   };
 
   const handleAddMoreAttribute = () => {
@@ -1134,25 +1152,22 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({
                 )}
               </FormControl>
 
-              <FormControl fullWidth error={!!errors.isShowMenu}>
+              <FormControl fullWidth error={!!errors.isShowMenu} required>
                 <InputLabel>Show in Menu</InputLabel>
                 <Select
                   {...register("isShowMenu", {
                     required: "Show in Menu is required",
                   })}
-                  value={
-                    watch("isShowMenu") === undefined
-                      ? ""
-                      : watch("isShowMenu")
-                        ? "true"
-                        : "false"
-                  }
-                  onChange={(event) =>
-                    setValue("isShowMenu", event.target.value === "true")
-                  }
+                  onChange={(event) => {
+                    const value = event.target.value;
+                    setValue("isShowMenu", value === "" ? undefined : value === "true");
+                  }}
                   label="Show in Menu"
+                  displayEmpty
                 >
-                  <MenuItem value="">Select</MenuItem>
+                  <MenuItem value="" disabled>
+                    Please select
+                  </MenuItem>
                   <MenuItem value="true">Yes</MenuItem>
                   <MenuItem value="false">No</MenuItem>
                 </Select>
