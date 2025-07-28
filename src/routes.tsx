@@ -27,7 +27,7 @@ import Roles from "./pages/roles";
 import Organization from "./pages/organization/organization";
 import NotifixDataSource from './pages/notifixDataSource';
 import Permissions from './pages/permissions';
-import NotivixDashboard from './pages/notivix-dashboard';
+import NotivixDashboard from './pages/notivixDashboard';
 
 const AppRoutes = () => {
   const token = getAuthToken();
