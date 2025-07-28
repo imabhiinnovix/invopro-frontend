@@ -333,7 +333,7 @@ export default function SideNav() {
     clearLocalStorage();
     navigate("/login");
   };
-  console.log("dataSourceList", dataSourceList);
+  // console.log("dataSourceList", dataSourceList);
   const navItems: NavItem[] = useMemo(() => {
     const createIcon = (IconComponent: React.ElementType, route: string) => {
       return (

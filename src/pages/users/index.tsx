@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { DataGrid, GridColDef, GridRenderCellParams } from '@mui/x-data-grid';
 import {
-  Box, Card, CardContent, Typography, TextField, Button, Modal, Dialog, DialogTitle, DialogContent, DialogActions, Tooltip, Chip, FormControl, InputLabel, Select, MenuItem, Switch, FormControlLabel, CircularProgress,
+  Box, Card, CardContent, Typography, TextField, Button, Modal, Dialog, DialogTitle, DialogContent, DialogActions, Tooltip, Chip, FormControl, InputLabel, Select, MenuItem,CircularProgress, Autocomplete,
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -528,38 +528,40 @@ export default function Users({ organizationId }: UsersProps) {
                 <MenuItem value="inactive">Inactive</MenuItem>
               </Select>
             </FormControl>
-            <FormControl fullWidth required sx={{ '& .MuiOutlinedInput-root': { borderRadius: STYLE_GUIDE.SPACING.s2 } }}>
-              <InputLabel>Roles</InputLabel>
-              <Select
-                multiple
-                value={formData.roleIds}
-                onChange={(e) => setFormData({ ...formData, roleIds: e.target.value as string[] })}
-                disabled={modalMode === 'view'}
-                label="Roles"
-              >
-                {rolesQuery.data?.data?.map((role) => (
-                  <MenuItem key={role._id} value={role._id}>
-                    {role.name}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-            <FormControl fullWidth required sx={{ '& .MuiOutlinedInput-root': { borderRadius: STYLE_GUIDE.SPACING.s2 } }}>
-              <InputLabel>Product Subscriptions</InputLabel>
-              <Select
-                multiple
-                value={formData.organizationProductSubscriptionIds}
-                onChange={(e) => setFormData({ ...formData, organizationProductSubscriptionIds: e.target.value as string[] })}
-                disabled={modalMode === 'view'}
-                label="Product Subscriptions"
-              >
-                {productSubscriptionsQuery.data?.data?.map((subscription) => (
-                  <MenuItem key={subscription._id} value={subscription._id}>
-                    {subscription.productId.name}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
+            <Autocomplete
+              multiple
+              options={rolesQuery.data?.data || []}
+              getOptionLabel={(option) => option.name}
+              value={rolesQuery.data?.data?.filter(role => formData.roleIds.includes(role._id)) || []}
+              onChange={(_, newValue) => setFormData({ ...formData, roleIds: newValue.map(role => role._id) })}
+              disabled={modalMode === 'view'}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  label="Roles"
+                  required
+                  variant="outlined"
+                  sx={{ '& .MuiOutlinedInput-root': { borderRadius: STYLE_GUIDE.SPACING.s2 } }}
+                />
+              )}
+            />
+            <Autocomplete
+              multiple
+              options={productSubscriptionsQuery.data?.data || []}
+              getOptionLabel={(option) => option.productId.name}
+              value={productSubscriptionsQuery.data?.data?.filter(sub => formData.organizationProductSubscriptionIds.includes(sub._id)) || []}
+              onChange={(_, newValue) => setFormData({ ...formData, organizationProductSubscriptionIds: newValue.map(sub => sub._id) })}
+              disabled={modalMode === 'view'}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  label="Product Subscriptions"
+                  required
+                  variant="outlined"
+                  sx={{ '& .MuiOutlinedInput-root': { borderRadius: STYLE_GUIDE.SPACING.s2 } }}
+                />
+              )}
+            />
           </Box>
 
           <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: STYLE_GUIDE.SPACING.s2, mt: STYLE_GUIDE.SPACING.s6 }}>
