@@ -1035,45 +1035,44 @@ export default function NotifixDataSource() {
       sortable: false,
       renderHeader: () => <Typography>Actions</Typography>,
       renderCell: (params: any) => (
-        // <Box sx={{ display: "flex", gap: 1 }}>
-        //   <Tooltip title="View" arrow>
-        //     <Button
-        //       size="small"
-        //       onClick={() => handleView(params.row._id)}
-        //       sx={{
-        //         minWidth: "auto",
-        //         color: STYLE_GUIDE?.COLORS?.primaryDark || "#3f51b5",
-        //       }}
-        //     >
-        //       <VisibilityIcon />
-        //     </Button>
-        //   </Tooltip>
-        //   <Tooltip title="Edit" arrow>
-        //     <Button
-        //       size="small"
-        //       onClick={() => handleEdit(params.row._id)}
-        //       sx={{
-        //         minWidth: "auto",
-        //         color: STYLE_GUIDE?.COLORS?.primaryDark || "#3f51b5",
-        //       }}
-        //     >
-        //       <EditIcon />
-        //     </Button>
-        //   </Tooltip>
-        //   <Tooltip title="Delete" arrow>
-        //     <Button
-        //       size="small"
-        //       onClick={() => handleDelete(params.row._id)}
-        //       sx={{
-        //         minWidth: "auto",
-        //         color: STYLE_GUIDE?.COLORS?.error || "#d32f2f",
-        //       }}
-        //     >
-        //       <DeleteIcon />
-        //     </Button>
-        //   </Tooltip>
-        // </Box>
-        <p></p>
+        <Box sx={{ display: "flex", gap: 1 }}>
+          <Tooltip title="View" arrow>
+            <Button
+              size="small"
+              onClick={() => handleView(params.row._id)}
+              sx={{
+                minWidth: "auto",
+                color: STYLE_GUIDE?.COLORS?.primaryDark || "#3f51b5",
+              }}
+            >
+              <VisibilityIcon />
+            </Button>
+          </Tooltip>
+          <Tooltip title="Edit" arrow>
+            <Button
+              size="small"
+              onClick={() => handleEdit(params.row._id)}
+              sx={{
+                minWidth: "auto",
+                color: STYLE_GUIDE?.COLORS?.primaryDark || "#3f51b5",
+              }}
+            >
+              <EditIcon />
+            </Button>
+          </Tooltip>
+          <Tooltip title="Delete" arrow>
+            <Button
+              size="small"
+              onClick={() => handleDelete(params.row._id)}
+              sx={{
+                minWidth: "auto",
+                color: STYLE_GUIDE?.COLORS?.error || "#d32f2f",
+              }}
+            >
+              <DeleteIcon />
+            </Button>
+          </Tooltip>
+        </Box>
       ),
     };
     
@@ -1183,7 +1182,7 @@ export default function NotifixDataSource() {
               }}
             />
 
-            {/* <Box sx={{ display: "flex", gap: 1 }}>
+          <Box sx={{ display: "flex", gap: 1 }}>
               <Button
                 variant="outlined"
                 startIcon={<FilterListIcon />}
@@ -1217,7 +1216,7 @@ export default function NotifixDataSource() {
               >
                 Add
               </Button>
-            </Box> */}
+            </Box> 
           </Box>
 
           {rows.length > 0 ? (
@@ -1241,59 +1240,59 @@ export default function NotifixDataSource() {
                   />
                 ),
               }}
-              sx={{
-                border: 0,
-                backgroundColor: STYLE_GUIDE?.COLORS?.white || "#ffffff",
-                overflow: "visible",
-                "& .MuiDataGrid-columnHeaders": {
-                  backgroundColor:
-                    STYLE_GUIDE?.COLORS?.backgroundLight || "#f5f5f5",
-                  color: STYLE_GUIDE?.COLORS?.black || "#000000",
-                  fontWeight: 600,
-                  fontSize: "1rem",
-                  position: "relative",
-                  zIndex: 1,
-                },
-                "& .MuiDataGrid-columnHeaderTitle": {
-                  fontWeight: 600,
-                  color: STYLE_GUIDE?.COLORS?.black || "#000000",
-                },
-                "& .MuiDataGrid-columnHeader": {
-                  outline: "none",
-                  "&:focus, &:focus-within": {
-                    outline: "none",
-                  },
-                  "& .MuiDataGrid-columnSeparator": {
-                    color: STYLE_GUIDE?.COLORS?.primaryDark || "#3f51b5",
-                    "&:hover": {
-                      color: STYLE_GUIDE?.COLORS?.primary || "#5c6bc0",
-                    },
-                  },
-                },
-                "& .MuiDataGrid-cell": {
-                  backgroundColor: STYLE_GUIDE?.COLORS?.white || "#ffffff",
-                  color: STYLE_GUIDE?.COLORS?.black || "#000000",
-                  borderBottom: `1px solid ${
-                    STYLE_GUIDE?.COLORS?.divider || "#e0e0e0"
-                  }`,
-                  borderRight: "none",
-                  outline: "none",
-                  "&:focus, &:focus-within": {
-                    outline: "none",
-                  },
-                },
-                "& .MuiDataGrid-row:hover": {
-                  backgroundColor:
-                    STYLE_GUIDE?.COLORS?.backgroundDefault || "#f1f5f9",
-                },
-                "& .MuiDataGrid-footerContainer": {
-                  backgroundColor: STYLE_GUIDE?.COLORS?.white || "#ffffff",
-                  borderTop: `1px solid ${
-                    STYLE_GUIDE?.COLORS?.divider || "#e0e0e0"
-                  }`,
-                  color: STYLE_GUIDE?.COLORS?.black || "#000000",
-                },
-              }}
+              // sx={{
+              //   border: 0,
+              //   backgroundColor: STYLE_GUIDE?.COLORS?.white || "#ffffff",
+              //   overflow: "visible",
+              //   "& .MuiDataGrid-columnHeaders": {
+              //     backgroundColor:
+              //       STYLE_GUIDE?.COLORS?.backgroundLight || "#f5f5f5",
+              //     color: STYLE_GUIDE?.COLORS?.black || "#000000",
+              //     fontWeight: 600,
+              //     fontSize: "1rem",
+              //     position: "relative",
+              //     zIndex: 1,
+              //   },
+              //   "& .MuiDataGrid-columnHeaderTitle": {
+              //     fontWeight: 600,
+              //     color: STYLE_GUIDE?.COLORS?.black || "#000000",
+              //   },
+              //   "& .MuiDataGrid-columnHeader": {
+              //     outline: "none",
+              //     "&:focus, &:focus-within": {
+              //       outline: "none",
+              //     },
+              //     "& .MuiDataGrid-columnSeparator": {
+              //       color: STYLE_GUIDE?.COLORS?.primaryDark || "#3f51b5",
+              //       "&:hover": {
+              //         color: STYLE_GUIDE?.COLORS?.primary || "#5c6bc0",
+              //       },
+              //     },
+              //   },
+              //   "& .MuiDataGrid-cell": {
+              //     backgroundColor: STYLE_GUIDE?.COLORS?.white || "#ffffff",
+              //     color: STYLE_GUIDE?.COLORS?.black || "#000000",
+              //     borderBottom: `1px solid ${
+              //       STYLE_GUIDE?.COLORS?.divider || "#e0e0e0"
+              //     }`,
+              //     borderRight: "none",
+              //     outline: "none",
+              //     "&:focus, &:focus-within": {
+              //       outline: "none",
+              //     },
+              //   },
+              //   "& .MuiDataGrid-row:hover": {
+              //     backgroundColor:
+              //       STYLE_GUIDE?.COLORS?.backgroundDefault || "#f1f5f9",
+              //   },
+              //   "& .MuiDataGrid-footerContainer": {
+              //     backgroundColor: STYLE_GUIDE?.COLORS?.white || "#ffffff",
+              //     borderTop: `1px solid ${
+              //       STYLE_GUIDE?.COLORS?.divider || "#e0e0e0"
+              //     }`,
+              //     color: STYLE_GUIDE?.COLORS?.black || "#000000",
+              //   },
+              // }}
             />
           ) : (
             <Box

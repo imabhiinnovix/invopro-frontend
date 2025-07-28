@@ -43,7 +43,12 @@ import { CustomPagination } from "../../components/common/pagination/customPagin
 import { DELETE, GET, POST, PUT } from "../../services/apiRoutes";
 import { RootState } from "../../reducers";
 import { useSelector } from "react-redux";
-import { BackendPermission, formatPermissionName, formatPermissions, PermissionMap } from "../../utils/utils";
+import {
+  BackendPermission,
+  formatPermissionName,
+  formatPermissions,
+  PermissionMap,
+} from "../../utils/utils";
 import { useQueryClient } from "@tanstack/react-query";
 
 // Define types
@@ -107,23 +112,16 @@ interface RolePostResponse {
 
 const columns: GridColDef[] = [
   {
-    field: "organizationId",
-    headerName: "Organization ID",
-    width: 150,
-    disableColumnMenu: true,
-    resizable: true,
-  },
-  {
     field: "name",
     headerName: "Name",
-    width: 150,
+    width: 250,
     disableColumnMenu: true,
     resizable: true,
   },
   {
     field: "status",
     headerName: "Status",
-    width: 100,
+    width: 250,
     disableColumnMenu: true,
     resizable: true,
     renderCell: (params) => (
@@ -138,7 +136,7 @@ const columns: GridColDef[] = [
   {
     field: "actions",
     headerName: "Actions",
-    width: 150,
+    width: 250,
     disableColumnMenu: true,
     sortable: false,
     resizable: false,
@@ -180,9 +178,13 @@ const columns: GridColDef[] = [
 export default function Roles() {
   const theme = useUnifiedTheme();
   const queryClient = useQueryClient();
-  const { permissions } = useSelector((state: RootState) => state.userPermission);
+  const { permissions } = useSelector(
+    (state: RootState) => state.userPermission
+  );
   const [openModal, setOpenModal] = useState(false);
-  const [modalMode, setModalMode] = useState<"add" | "edit" | "view" | "filter" | null>(null);
+  const [modalMode, setModalMode] = useState<
+    "add" | "edit" | "view" | "filter" | null
+  >(null);
   const [openDialog, setOpenDialog] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [editRoleId, setEditRoleId] = useState<string | null>(null);
@@ -207,20 +209,28 @@ export default function Roles() {
     message: "",
     severity: "error",
   });
-  const [formattedPermissions, setFormattedPermissions] = useState<PermissionMap>({});
+  const [formattedPermissions, setFormattedPermissions] =
+    useState<PermissionMap>({});
   const [isInitialLoad, setIsInitialLoad] = useState(true);
   const [isLoadingWithDelay, setIsLoadingWithDelay] = useState(false);
   const [fetchTimestamp, setFetchTimestamp] = useState(Date.now());
 
-  const initialPermissions = Object.keys(permissions ?? {}).reduce((acc, resourceType: string) => ({
-    ...acc,
-    [resourceType]: Object.keys(permissions[resourceType] ?? {}).reduce((permAcc, permKey: string) => ({
-      ...permAcc,
-      [permKey]: false,
-    }), {} as Record<string, boolean>),
-  }), {} as Record<string, Record<string, boolean>>);
+  const initialPermissions = Object.keys(permissions ?? {}).reduce(
+    (acc, resourceType: string) => ({
+      ...acc,
+      [resourceType]: Object.keys(permissions[resourceType] ?? {}).reduce(
+        (permAcc, permKey: string) => ({
+          ...permAcc,
+          [permKey]: false,
+        }),
+        {} as Record<string, boolean>
+      ),
+    }),
+    {} as Record<string, Record<string, boolean>>
+  );
 
-  const [selectedPermissions, setSelectedPermissions] = useState(initialPermissions);
+  const [selectedPermissions, setSelectedPermissions] =
+    useState(initialPermissions);
 
   const { control, handleSubmit, reset, watch } = useForm<RolePostPayload>({
     defaultValues: {
@@ -247,38 +257,51 @@ export default function Roles() {
       isInitialLoad &&
       roleDetail.data?.success &&
       Array.isArray(roleDetail.data?.data) &&
-      Object.keys(formattedPermissions).length > 0 
+      Object.keys(formattedPermissions).length > 0
     ) {
-      const permissionsValue: BackendPermission[] = roleDetail.data.data.map(perm => perm.permissionId);
+      const permissionsValue: BackendPermission[] = roleDetail.data.data.map(
+        (perm) => perm.permissionId
+      );
       const formatted = formatPermissions(permissionsValue);
       setFormattedPermissions(formatted);
 
       const permState = { ...initialPermissions };
       Object.keys(permState).forEach((resourceType) => {
         Object.keys(permState[resourceType]).forEach((permKey) => {
-          permState[resourceType][permKey] = formatted[resourceType]?.[permKey]?.allowed || false;
+          permState[resourceType][permKey] =
+            formatted[resourceType]?.[permKey]?.allowed || false;
         });
       });
       setSelectedPermissions(permState);
       setIsInitialLoad(false);
-      setIsLoadingWithDelay(false); 
-     
-    } else if (roleDetail.isError || (roleDetail.data && !roleDetail.data.success)) {
+      setIsLoadingWithDelay(false);
+    } else if (
+      roleDetail.isError ||
+      (roleDetail.data && !roleDetail.data.success)
+    ) {
       setFormattedPermissions({});
       setSelectedPermissions(initialPermissions);
       setIsInitialLoad(false);
       setIsLoadingWithDelay(false);
-    } else if (roleDetail.data?.success && Array.isArray(roleDetail.data?.data)) {
-      const permissionsValue: BackendPermission[] = roleDetail.data.data.map(perm => perm.permissionId);
+    } else if (
+      roleDetail.data?.success &&
+      Array.isArray(roleDetail.data?.data)
+    ) {
+      const permissionsValue: BackendPermission[] = roleDetail.data.data.map(
+        (perm) => perm.permissionId
+      );
       const formatted = formatPermissions(permissionsValue);
       setFormattedPermissions(formatted);
-      setIsLoadingWithDelay(false); 
+      setIsLoadingWithDelay(false);
     }
   }, [roleDetail, permissions, isInitialLoad, formattedPermissions]);
 
   // Enforce loader until data is fetched and permissions are processed
   useEffect(() => {
-    if (roleDetail.isLoading && (modalMode === "edit" || modalMode === "view")) {
+    if (
+      roleDetail.isLoading &&
+      (modalMode === "edit" || modalMode === "view")
+    ) {
       setIsLoadingWithDelay(true);
     }
   }, [roleDetail.isLoading, modalMode]);
@@ -293,7 +316,7 @@ export default function Roles() {
     };
   }, [searchValue]);
 
-  // API call 
+  // API call
   const perPageItem = paginationModel.pageSize;
   const roleList = useGet<ApiResponse>(
     [
@@ -309,22 +332,30 @@ export default function Roles() {
     true
   );
 
-  // POST API 
+  // POST API
   const createRole = usePost<RolePostPayload, RolePostResponse>(
     ["createRole"],
     (data) => {
       if (data?.success) {
         setRoleReload(true);
         handleCloseModal();
-        setSnackbar({ open: true, message: "Role created successfully!", severity: "success" });
+        setSnackbar({
+          open: true,
+          message: "Role created successfully!",
+          severity: "success",
+        });
       } else {
-        setSnackbar({ open: true, message: "Failed to create role multilple linesrole.", severity: "error" });
+        setSnackbar({
+          open: true,
+          message: "Failed to create role multilple linesrole.",
+          severity: "error",
+        });
       }
     },
     true
   );
 
-  // PUT API 
+  // PUT API
   const updateRole = usePut<RolePostPayload, RolePostResponse>(
     ["updateRole"],
     (data) => {
@@ -332,26 +363,40 @@ export default function Roles() {
         queryClient.invalidateQueries(["roleDetail", editRoleId]);
         setRoleReload(true);
         handleCloseModal();
-        setSnackbar({ open: true, message: "Role updated successfully!", severity: "success" });
+        setSnackbar({
+          open: true,
+          message: "Role updated successfully!",
+          severity: "success",
+        });
       } else {
-        setSnackbar({ open: true, message: "Failed to update role.", severity: "error" });
+        setSnackbar({
+          open: true,
+          message: "Failed to update role.",
+          severity: "error",
+        });
       }
     },
     true
   );
 
-
-
-  // DELETE API 
+  // DELETE API
   const deleteRole = useDelete<null, RolePostResponse>(
     ["deleteRole"],
     (data) => {
       if (data?.success) {
         setRoleReload(true);
         handleCloseDialog();
-        setSnackbar({ open: true, message: "Role deleted successfully!", severity: "success" });
+        setSnackbar({
+          open: true,
+          message: "Role deleted successfully!",
+          severity: "success",
+        });
       } else {
-        setSnackbar({ open: true, message: "Failed to delete role.", severity: "error" });
+        setSnackbar({
+          open: true,
+          message: "Failed to delete role.",
+          severity: "error",
+        });
       }
     },
     true
@@ -380,7 +425,7 @@ export default function Roles() {
     setSelectedPermissions(initialPermissions);
     setIsInitialLoad(true);
     setIsLoadingWithDelay(true);
-    setFetchTimestamp(Date.now()); 
+    setFetchTimestamp(Date.now());
     setOpenModal(true);
     reset({
       name: row.name || "",
@@ -396,7 +441,7 @@ export default function Roles() {
     setSelectedPermissions(initialPermissions);
     setIsInitialLoad(true);
     setIsLoadingWithDelay(true);
-    setFetchTimestamp(Date.now()); 
+    setFetchTimestamp(Date.now());
     setOpenModal(true);
     reset({
       name: row.name || "",
@@ -468,7 +513,11 @@ export default function Roles() {
         });
       } catch (error) {
         console.error("Error deleting role:", error);
-        setSnackbar({ open: true, message: "Failed to delete role.", severity: "error" });
+        setSnackbar({
+          open: true,
+          message: "Failed to delete role.",
+          severity: "error",
+        });
       }
     }
   };
@@ -534,7 +583,6 @@ export default function Roles() {
           }
         });
       });
-
 
       let payload: RolePostPayload;
       if (modalMode === "add") {
@@ -712,17 +760,21 @@ export default function Roles() {
             {modalMode === "add"
               ? "Add Role"
               : modalMode === "edit"
-              ? "Edit Role"
-              : modalMode === "view"
-              ? "View Role"
-              : "Filter Roles"}
+                ? "Edit Role"
+                : modalMode === "view"
+                  ? "View Role"
+                  : "Filter Roles"}
           </Typography>
-          {(roleDetail.isLoading || isLoadingWithDelay) && (modalMode === "edit" || modalMode === "view") ? (
+          {(roleDetail.isLoading || isLoadingWithDelay) &&
+          (modalMode === "edit" || modalMode === "view") ? (
             <Box sx={{ display: "flex", justifyContent: "center", py: 4 }}>
               <CircularProgress />
             </Box>
-          ) : roleDetail.isError && (modalMode === "edit" || modalMode === "view") ? (
-            <Typography color="error">Failed to load role details. Please try again.</Typography>
+          ) : roleDetail.isError &&
+            (modalMode === "edit" || modalMode === "view") ? (
+            <Typography color="error">
+              Failed to load role details. Please try again.
+            </Typography>
           ) : (
             <form onSubmit={handleSubmit(onSubmit)}>
               <Grid container spacing={2}>
@@ -739,7 +791,11 @@ export default function Roles() {
                         fullWidth
                         disabled={modalMode === "view"}
                         error={!isNameValid && field.value !== ""}
-                        helperText={!isNameValid && field.value !== "" ? "Name must be longer than 1 character" : " "}
+                        helperText={
+                          !isNameValid && field.value !== ""
+                            ? "Name must be longer than 1 character"
+                            : " "
+                        }
                         sx={{
                           "& .MuiOutlinedInput-root": { borderRadius: "8px" },
                         }}
@@ -760,7 +816,9 @@ export default function Roles() {
                             variant="outlined"
                             fullWidth
                             sx={{
-                              "& .MuiOutlinedInput-root": { borderRadius: "8px" },
+                              "& .MuiOutlinedInput-root": {
+                                borderRadius: "8px",
+                              },
                             }}
                           />
                         )}
@@ -783,7 +841,13 @@ export default function Roles() {
                             <Select
                               {...field}
                               label="Status"
-                              onChange={(e) => field.onChange(e.target.value === "" ? undefined : e.target.value)}
+                              onChange={(e) =>
+                                field.onChange(
+                                  e.target.value === ""
+                                    ? undefined
+                                    : e.target.value
+                                )
+                              }
                             >
                               <MenuItem value="">All</MenuItem>
                               <MenuItem value="active">Active</MenuItem>
@@ -795,7 +859,9 @@ export default function Roles() {
                     </Grid>
                   </>
                 )}
-                {(modalMode === "add" || modalMode === "edit" || modalMode === "view") && (
+                {(modalMode === "add" ||
+                  modalMode === "edit" ||
+                  modalMode === "view") && (
                   <Grid item xs={12}>
                     <Typography variant="subtitle1" sx={{ mb: 2, mt: 2 }}>
                       Permissions
@@ -820,32 +886,43 @@ export default function Roles() {
                             {resourceType}
                           </Typography>
                           <Grid container spacing={2}>
-                            {Object.keys(selectedPermissions[resourceType]).map((permKey) => (
-                              <Grid item xs={12} sm={6} md={4} key={permKey}>
-                                <FormControlLabel
-                                  control={
-                                    <Checkbox
-                                      checked={selectedPermissions[resourceType][permKey]}
-                                      onChange={() => handleCheckboxChange(resourceType, permKey)}
-                                      disabled={modalMode === "view"}
-                                      sx={{
-                                        color: theme.palette.primary.dark,
-                                        "&.Mui-checked": {
+                            {Object.keys(selectedPermissions[resourceType]).map(
+                              (permKey) => (
+                                <Grid item xs={12} sm={6} md={4} key={permKey}>
+                                  <FormControlLabel
+                                    control={
+                                      <Checkbox
+                                        checked={
+                                          selectedPermissions[resourceType][
+                                            permKey
+                                          ]
+                                        }
+                                        onChange={() =>
+                                          handleCheckboxChange(
+                                            resourceType,
+                                            permKey
+                                          )
+                                        }
+                                        disabled={modalMode === "view"}
+                                        sx={{
                                           color: theme.palette.primary.dark,
-                                        },
-                                      }}
-                                    />
-                                  }
-                                  label={formatPermissionName(permKey)}
-                                  sx={{
-                                    "& .MuiFormControlLabel-label": {
-                                      whiteSpace: "normal",
-                                      wordBreak: "break-word",
-                                    },
-                                  }}
-                                />
-                              </Grid>
-                            ))}
+                                          "&.Mui-checked": {
+                                            color: theme.palette.primary.dark,
+                                          },
+                                        }}
+                                      />
+                                    }
+                                    label={formatPermissionName(permKey)}
+                                    sx={{
+                                      "& .MuiFormControlLabel-label": {
+                                        whiteSpace: "normal",
+                                        wordBreak: "break-word",
+                                      },
+                                    }}
+                                  />
+                                </Grid>
+                              )
+                            )}
                           </Grid>
                         </Box>
                       ))
@@ -881,7 +958,11 @@ export default function Roles() {
                       type="submit"
                       variant="contained"
                       sx={{ borderRadius: "8px" }}
-                      disabled={!filterValues.name && !filterValues.organizationId && !filterValues.status}
+                      disabled={
+                        !filterValues.name &&
+                        !filterValues.organizationId &&
+                        !filterValues.status
+                      }
                     >
                       Apply
                     </Button>
@@ -900,7 +981,11 @@ export default function Roles() {
                         type="submit"
                         variant="contained"
                         sx={{ borderRadius: "8px" }}
-                        disabled={!isNameValid || createRole.isLoading || updateRole.isLoading}
+                        disabled={
+                          !isNameValid ||
+                          createRole.isLoading ||
+                          updateRole.isLoading
+                        }
                       >
                         Save
                       </Button>
@@ -923,9 +1008,7 @@ export default function Roles() {
       >
         <DialogTitle>Confirm Delete</DialogTitle>
         <DialogContent>
-          <Typography>
-            Are you sure you want to delete this? 
-          </Typography>
+          <Typography>Are you sure you want to delete this?</Typography>
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCloseDialog} sx={{ borderRadius: "8px" }}>
