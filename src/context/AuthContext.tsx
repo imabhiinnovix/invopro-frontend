@@ -6,7 +6,7 @@ import { queryClient } from '../main';
 import { useDispatch, useSelector } from 'react-redux';
 import type { AppDispatch, RootState } from '../store';
 import { setCurrentUser, clearCurrentUser, setPermissions } from '../reducers/userSlice'; 
-import { BackendPermission } from '../utils/utils';
+import { NewBackendPermission } from '../utils/utils';
 
 interface AuthProviderProps {
   children: ReactNode;
@@ -121,7 +121,7 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
     if (userDetailsAPI.isSuccess && userDetailsAPI.data && isAuthUser && !currentUser) {
       setUserDetails(userDetailsAPI.data);
       dispatch(setCurrentUser(userDetailsAPI.data.data));
-      dispatch(setPermissions(userDetailsAPI.data.data.permissionIds as unknown as BackendPermission[]));
+      dispatch(setPermissions(userDetailsAPI.data.data.permissionIds as unknown as NewBackendPermission[]));
     }
     if (userDetailsAPI.isError) {
       console.error('Failed to fetch user details:', userDetailsAPI.error);
