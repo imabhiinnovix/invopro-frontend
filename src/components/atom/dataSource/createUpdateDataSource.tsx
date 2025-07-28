@@ -677,15 +677,17 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({
                   required: "Data source name is required",
                 })}
                 onChange={(event) => {
-                  debouncedSetName(event.target.value);
-                  setValue("name", event.target.value);
-                }}
-                onBlur={(event) => {
-                  const sanitizedCode = event.target.value
-                    .toLowerCase()
-                    .replace(/[^a-zA-Z0-9_]/g, "");
-                  debouncedSetCode(sanitizedCode);
-                  setValue("code", sanitizedCode);
+                  const nameValue = event.target.value;
+                  debouncedSetName(nameValue);
+                  setValue("name", nameValue);
+                  
+                  if (!data?.code) {
+                    const sanitizedCode = nameValue
+                      .toLowerCase()
+                      .replace(/[^a-zA-Z0-9_]/g, "");
+                    debouncedSetCode(sanitizedCode);
+                    setValue("code", sanitizedCode);
+                  }
                 }}
                 error={!!errors.name}
                 helperText={
@@ -1056,6 +1058,7 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({
                       'Data source code should not contain special characters, null characters, space or restricted prefixes (e.g., "system." or ".system.")',
                   },
                 })}
+                value={code}
                 onChange={(event) => {
                   const sanitizedCode = event.target.value
                     .toLowerCase()
