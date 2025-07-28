@@ -107,6 +107,19 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({
     versionType: yup.string().required("Version type is required"),
     isShowMenu: yup.boolean().required("Show in Menu is required"),
     entityId: yup.string().required("Entity is required"),
+    fieldSettings: yup.array().of(
+      yup.object().shape({
+        attributeId: yup.string().required("Field is required"),
+        value: yup.string()
+          .required("Show label is required")
+          .min(1, "Show label must be at least 1 characters long")
+          .max(50, "Show label must not exceed 50 characters")
+          .trim(),
+        filter: yup.boolean(),
+        sorting: yup.boolean(),
+        visible: yup.boolean(),
+      })
+    ),
   });
   const [open, setOpen] = useState(false);
   const [code, setCode] = useState(data?.code ?? "");
@@ -825,7 +838,7 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({
                     : null
                 }
                 onChange={(event, newValue) => {
-                  setValue("entityId", newValue?._id || "");
+                  setValue("entityId", newValue?._id || "", { shouldValidate: true });
                 }}
                 renderInput={(params) => (
                   <TextField
@@ -969,7 +982,8 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({
                                 "";
                               setValue(
                                 `fieldSettings.${index}.attributeId`,
-                                attributeId
+                                attributeId,
+                                { shouldValidate: true }
                               );
                             }}
                             renderInput={(params) => (
