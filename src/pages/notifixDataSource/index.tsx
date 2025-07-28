@@ -1,698 +1,3 @@
-import * as React from "react";
-import { useState, useEffect, useCallback, useMemo } from "react";
-import { DataGrid, GridColDef } from "@mui/x-data-grid";
-import {
-  Box,
-  Card,
-  CardContent,
-  Typography,
-  TextField,
-  Button,
-  InputAdornment,
-  Modal,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Tooltip,
-} from "@mui/material";
-import { STYLE_GUIDE } from "../../styles"; // Adjust path as needed
-import SearchIcon from "@mui/icons-material/Search";
-import FilterListIcon from "@mui/icons-material/FilterList";
-import AddIcon from "@mui/icons-material/Add";
-import EditIcon from "@mui/icons-material/Edit";
-import VisibilityIcon from "@mui/icons-material/Visibility";
-import DeleteIcon from "@mui/icons-material/Delete";
-import { GET } from "../../services/apiRoutes";
-import useGet from "../../hooks/useGet";
-import { CustomPagination } from "../../components/common/pagination/customPagination";
-import { useLocation, useParams } from "react-router-dom";
-
-interface ApiResponse {
-  data: any[];
-  totalCount: number;
-}
-
-const generateColumns = (
-  sampleRowData: Record<string, any>,
-  handleView: (id: string) => void,
-  handleEdit: (id: string) => void,
-  handleDelete: (id: string) => void,
-  loading: boolean,
-  rows: any[]
-): GridColDef[] => {
-  const dynamicColumns = Object.keys(sampleRowData)
-    .filter((key) => key !== "_id")
-    .map((key) => ({
-      field: key,
-      headerName: key
-        .replace(/([A-Z])/g, " $1")
-        .replace(/^./, (str) => str.toUpperCase()),
-      flex: 1,
-      renderHeader: (params) => {
-        const headerText = params.colDef.headerName || "";
-        return headerText.length > 10 ? (
-          <Tooltip title={headerText} arrow>
-            <Typography
-              sx={{
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-                whiteSpace: "nowrap",
-              }}
-            >
-              {headerText}
-            </Typography>
-          </Tooltip>
-        ) : (
-          <Typography>{headerText}</Typography>
-        );
-      },
-      renderCell: (params) => {
-        const cellValue = params.value != null ? String(params.value) : "";
-        return cellValue.length > 10 ? (
-          <Tooltip title={cellValue} arrow>
-            <Typography
-              sx={{
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-                whiteSpace: "nowrap",
-              }}
-            >
-              {cellValue}
-            </Typography>
-          </Tooltip>
-        ) : (
-          <Typography>{cellValue}</Typography>
-        );
-      },
-    }));
-
-  const actionsColumn: GridColDef = {
-    field: "actions",
-    headerName: "Actions",
-    flex: 1,
-    sortable: false,
-    renderHeader: () => <Typography>Actions</Typography>,
-    renderCell: (params) => (
-      <Box sx={{ display: "flex", gap: 1 }}>
-        <Tooltip title="View" arrow>
-          <Button
-            size="small"
-            onClick={() => handleView(params.row._id)}
-            sx={{
-              minWidth: "auto",
-              color: STYLE_GUIDE?.COLORS?.primaryDark || "#3f51b5",
-            }}
-          >
-            <VisibilityIcon />
-          </Button>
-        </Tooltip>
-        <Tooltip title="Edit" arrow>
-          <Button
-            size="small"
-            onClick={() => handleEdit(params.row._id)}
-            sx={{
-              minWidth: "auto",
-              color: STYLE_GUIDE?.COLORS?.primaryDark || "#3f51b5",
-            }}
-          >
-            <EditIcon />
-          </Button>
-        </Tooltip>
-        <Tooltip title="Delete" arrow>
-          <Button
-            size="small"
-            onClick={() => handleDelete(params.row._id)}
-            sx={{
-              minWidth: "auto",
-              color: STYLE_GUIDE?.COLORS?.error || "#d32f2f",
-            }}
-          >
-            <DeleteIcon />
-          </Button>
-        </Tooltip>
-      </Box>
-    ),
-  };
-
-  return [...dynamicColumns, actionsColumn];
-};
-
-export default function NotifixDataSource() {
-  const [rows, setRows] = useState<any[]>([]);
-  const [rowCount, setRowCount] = useState(0);
-  const [columns, setColumns] = useState<GridColDef[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [openModal, setOpenModal] = useState(false);
-  const [modalMode, setModalMode] = useState<
-    "add" | "edit" | "view" | "filter" | null
-  >(null);
-  const [openDialog, setOpenDialog] = useState(false);
-  const [formData, setFormData] = useState<Record<string, any>>({ id: "" });
-  const [deleteId, setDeleteId] = useState<string | null>(null);
-  const [searchValue, setSearchValue] = useState("");
-  const [debouncedSearchValue, setDebouncedSearchValue] = useState(searchValue);
-  const [paginationModel, setPaginationModel] = useState({
-    page: 0,
-    pageSize: 10,
-  });
-
-    const dataSourceId = "6878e3cf23a13174f84626c4";
-
-    const {id:valueId} = useParams<{id: string}>();
-// console.log("DataSource ID0---:", valueId);
-
-useEffect(() => {
-    console.log("DataSource ID0---:", valueId);
-  }, [valueId]);
-  // Debounce search input
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      setDebouncedSearchValue(searchValue);
-    }, 500);
-    return () => {
-      clearTimeout(handler);
-    };
-  }, [searchValue]);
-
-  // Memoize paginationModel
-  const paginationModelMemo = useMemo(
-    () => ({
-      page: paginationModel.page,
-      pageSize: paginationModel.pageSize,
-    }),
-    [paginationModel.page, paginationModel.pageSize]
-  );
-
-  // Memoize handler functions
-  const handleView = useCallback(
-    (id: string) => {
-      const row = rows.find((r) => r._id === id);
-      if (row) {
-        const newFormData: Record<string, any> = { id: row._id };
-        Object.keys(row).forEach((key) => {
-          if (key !== "_id") {
-            newFormData[key] = row[key] != null ? String(row[key]) : "";
-          }
-        });
-        setFormData(newFormData);
-        setModalMode("view");
-        setOpenModal(true);
-      } else {
-        console.error(`Row with ID ${id} not found`);
-      }
-    },
-    [rows]
-  );
-
-  const handleEdit = useCallback(
-    (id: string) => {
-      const row = rows.find((r) => r._id === id);
-      if (row) {
-        const newFormData: Record<string, any> = { id: row._id };
-        Object.keys(row).forEach((key) => {
-          if (key !== "_id") {
-            newFormData[key] = row[key] != null ? String(row[key]) : "";
-          }
-        });
-        setFormData(newFormData);
-        setModalMode("edit");
-        setOpenModal(true);
-      }
-    },
-    [rows]
-  );
-
-  const handleDelete = useCallback((id: string) => {
-    setDeleteId(id);
-    setOpenDialog(true);
-  }, []);
-
-  const handleAddNotification = useCallback(() => {
-    setFormData({ id: "" });
-    setModalMode("add");
-    setOpenModal(true);
-  }, []);
-
-  const handleFilter = useCallback(() => {
-    setFormData({ id: "" });
-    setModalMode("filter");
-    setOpenModal(true);
-  }, []);
-
-  const handleCloseModal = useCallback(() => {
-    setOpenModal(false);
-    setModalMode(null);
-    setFormData({ id: "" });
-  }, []);
-
-  const handleCloseDialog = useCallback(() => {
-    setOpenDialog(false);
-    setDeleteId(null);
-  }, []);
-
-  const handleConfirmDelete = useCallback(() => {
-    setRows((prevRows) => prevRows.filter((row) => row._id !== deleteId));
-    setRowCount((prev) => prev - 1);
-    handleCloseDialog();
-  }, [deleteId, handleCloseDialog]);
-
-  const handleSave = useCallback(() => {
-    if (modalMode === "add") {
-      console.log("Adding new:", formData);
-    } else if (modalMode === "edit") {
-      console.log("Saving edited row:", formData);
-    } else if (modalMode === "filter") {
-      console.log("Applying filter:", formData);
-    }
-    handleCloseModal();
-  }, [formData, modalMode, handleCloseModal]);
-
-  const handleSearchChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      const value = e.target.value.slice(0, 200); // Limit to 200 characters
-      setSearchValue(value);
-    },
-    []
-  );
-
-  const sourceVersionData = useGet<ApiResponse>(
-    [
-      "sourceVersionData",
-      String(paginationModelMemo.page + 1),
-      debouncedSearchValue,
-      valueId,
-    ],
-    `${GET.SOURCE_VERSION_DATA}?dataSourceId=${encodeURIComponent(
-      valueId??""
-    )}&page=${paginationModelMemo.page + 1}&limit=${
-      paginationModelMemo.pageSize
-    }&query=${encodeURIComponent(debouncedSearchValue)}`,
-    !!valueId,
-    { retry: false, staleTime: 0, cacheTime: 0 }
-  );
-
-  useEffect(() => {
-    if (sourceVersionData.isLoading) {
-      setLoading(true);
-      return;
-    }
-
-    if (sourceVersionData.error) {
-      console.error("API error:", sourceVersionData.error);
-      setLoading(false);
-      setRows([]);
-      setRowCount(0);
-      setColumns([]);
-      return;
-    }
-
-    setLoading(false);
-
-    const rawData = sourceVersionData?.data?.data || [];
-    const totalCount = sourceVersionData?.data?.totalCount || 0;
-
-    if (!Array.isArray(rawData)) {
-      setRows([]);
-      setRowCount(0);
-      setColumns([]);
-      return;
-    }
-
-    const formattedRows = rawData.map((item: any) => ({
-      _id: item._id || item.id,
-      ...item.rowData,
-    }));
-
-    setRows(formattedRows);
-    setRowCount(totalCount);
-
-    if (formattedRows.length > 0) {
-      const dynamicCols = generateColumns(
-        formattedRows[0],
-        handleView,
-        handleEdit,
-        handleDelete,
-        loading,
-        formattedRows
-      );
-      setColumns(dynamicCols);
-    } else {
-      console.warn("No data available to generate columns");
-      setColumns([]);
-    }
-  }, [sourceVersionData, handleView, handleEdit, handleDelete, loading]);
-
-  const renderModalFields = () => {
-    const fields = columns
-      .filter((col) => col.field !== "actions" && col.field !== "_id")
-      .map((col) => (
-        <TextField
-          key={col.field}
-          label={col.headerName}
-          value={formData[col.field] || ""}
-          onChange={(e) =>
-            setFormData((prev) => ({ ...prev, [col.field]: e.target.value }))
-          }
-          disabled={modalMode === "view"}
-          variant="outlined"
-          fullWidth
-          sx={{ "& .MuiOutlinedInput-root": { borderRadius: "8px" } }}
-        />
-      ));
-
-    return fields.length > 0 ? (
-      fields
-    ) : (
-      <Typography>No fields available to display.</Typography>
-    );
-  };
-
-  // Debug re-renders
-  useEffect(() => {
-    console.log("NotifixDataSource rendered");
-  }, []);
-
-  if (loading && rows.length === 0) {
-    return <Typography>Loading...</Typography>;
-  }
-
-  return (
-    <Box
-      sx={{
-        flexGrow: 1,
-        p: 3,
-        ml: { xs: 0 },
-        backgroundColor: STYLE_GUIDE?.COLORS?.backgroundLight || "#f5f5f5",
-        minHeight: "100vh",
-      }}
-    >
-      <Typography
-        variant="h4"
-        sx={{
-          mb: 3,
-          fontWeight: 400,
-          color: STYLE_GUIDE?.COLORS?.primaryDark || "#3f51b5",
-        }}
-      >
-        Case List (ID: {dataSourceId})
-      </Typography>
-
-      <Card
-        sx={{
-          backgroundColor: STYLE_GUIDE?.COLORS?.white || "#ffffff",
-          boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.1)",
-          borderRadius: "8px",
-          overflow: "visible",
-        }}
-      >
-        <CardContent sx={{ p: 3 }}>
-          <Box
-            sx={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              mb: 2,
-            }}
-          >
-            <TextField
-              placeholder="Search..."
-              variant="outlined"
-              size="small"
-              value={searchValue}
-              onChange={handleSearchChange}
-              sx={{
-                width: "300px",
-                "& .MuiOutlinedInput-root": {
-                  borderRadius: "8px",
-                  backgroundColor: STYLE_GUIDE?.COLORS?.white || "#ffffff",
-                  "& fieldset": {
-                    borderColor: STYLE_GUIDE?.COLORS?.divider || "#e0e0e0",
-                  },
-                  "&:hover fieldset": {
-                    borderColor: STYLE_GUIDE?.COLORS?.primaryDark || "#3f51b5",
-                  },
-                },
-              }}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <SearchIcon
-                      sx={{
-                        color: STYLE_GUIDE?.COLORS?.primaryDark || "#3f51b5",
-                      }}
-                    />
-                  </InputAdornment>
-                ),
-              }}
-            />
-
-            <Box sx={{ display: "flex", gap: 1 }}>
-              <Button
-                variant="outlined"
-                startIcon={<FilterListIcon />}
-                onClick={handleFilter}
-                sx={{
-                  borderRadius: "8px",
-                  borderColor: STYLE_GUIDE?.COLORS?.divider || "#e0e0e0",
-                  color: STYLE_GUIDE?.COLORS?.primaryDark || "#3f51b5",
-                  "&:hover": {
-                    backgroundColor:
-                      STYLE_GUIDE?.COLORS?.backgroundDefault || "#f1f5f9",
-                    borderColor: STYLE_GUIDE?.COLORS?.primaryDark || "#3f51b5",
-                  },
-                }}
-              >
-                Filter
-              </Button>
-              <Button
-                variant="contained"
-                startIcon={<AddIcon />}
-                onClick={handleAddNotification}
-                sx={{
-                  borderRadius: "8px",
-                  backgroundColor:
-                    STYLE_GUIDE?.COLORS?.primaryDark || "#3f51b5",
-                  color: STYLE_GUIDE?.COLORS?.white || "#ffffff",
-                  "&:hover": {
-                    backgroundColor: STYLE_GUIDE?.COLORS?.primary || "#5c6bc0",
-                  },
-                }}
-              >
-                Add
-              </Button>
-            </Box>
-          </Box>
-
-          {rows.length > 0 ? (
-            <DataGrid
-              loading={loading}
-              rows={rows}
-              columns={columns}
-              getRowId={(row) => row._id}
-              paginationMode="server"
-              rowCount={rowCount}
-              paginationModel={paginationModelMemo}
-              onPaginationModelChange={setPaginationModel}
-              pageSizeOptions={[5, 10, 20]}
-              disableColumnMenu
-              slots={{
-                pagination: () => (
-                  <CustomPagination
-                    paginationModel={paginationModelMemo}
-                    setPaginationModel={setPaginationModel}
-                    rowCount={rowCount}
-                  />
-                ),
-              }}
-              sx={{
-                border: 0,
-                backgroundColor: STYLE_GUIDE?.COLORS?.white || "#ffffff",
-                overflow: "visible",
-                "& .MuiDataGrid-columnHeaders": {
-                  backgroundColor:
-                    STYLE_GUIDE?.COLORS?.backgroundLight || "#f5f5f5",
-                  color: STYLE_GUIDE?.COLORS?.black || "#000000",
-                  fontWeight: 600,
-                  fontSize: "1rem",
-                  position: "relative",
-                  zIndex: 1,
-                },
-                "& .MuiDataGrid-columnHeaderTitle": {
-                  fontWeight: 600,
-                  color: STYLE_GUIDE?.COLORS?.black || "#000000",
-                },
-                "& .MuiDataGrid-columnHeader": {
-                  outline: "none",
-                  "&:focus, &:focus-within": {
-                    outline: "none",
-                  },
-                  "& .MuiDataGrid-columnSeparator": {
-                    color: STYLE_GUIDE?.COLORS?.primaryDark || "#3f51b5",
-                    "&:hover": {
-                      color: STYLE_GUIDE?.COLORS?.primary || "#5c6bc0",
-                    },
-                  },
-                },
-                "& .MuiDataGrid-cell": {
-                  backgroundColor: STYLE_GUIDE?.COLORS?.white || "#ffffff",
-                  color: STYLE_GUIDE?.COLORS?.black || "#000000",
-                  borderBottom: `1px solid ${
-                    STYLE_GUIDE?.COLORS?.divider || "#e0e0e0"
-                  }`,
-                  borderRight: "none",
-                  outline: "none",
-                  "&:focus, &:focus-within": {
-                    outline: "none",
-                  },
-                },
-                "& .MuiDataGrid-row:hover": {
-                  backgroundColor:
-                    STYLE_GUIDE?.COLORS?.backgroundDefault || "#f1f5f9",
-                },
-                "& .MuiDataGrid-footerContainer": {
-                  backgroundColor: STYLE_GUIDE?.COLORS?.white || "#ffffff",
-                  borderTop: `1px solid ${
-                    STYLE_GUIDE?.COLORS?.divider || "#e0e0e0"
-                  }`,
-                  color: STYLE_GUIDE?.COLORS?.black || "#000000",
-                },
-              }}
-            />
-          ) : (
-            <Typography>No data available</Typography>
-          )}
-        </CardContent>
-      </Card>
-
-      <Modal
-        open={openModal}
-        onClose={handleCloseModal}
-        sx={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-        }}
-      >
-        <Box
-          sx={{
-            backgroundColor: STYLE_GUIDE?.COLORS?.white || "#ffffff",
-            borderRadius: "8px",
-            boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.2)",
-            p: 3,
-            width: "600px",
-            maxWidth: "90%",
-            maxHeight: "600px",
-            overflowY: "auto",
-          }}
-        >
-          <Typography
-            variant="h6"
-            sx={{ mb: 2, color: STYLE_GUIDE?.COLORS?.primaryDark || "#3f51b5" }}
-          >
-            {modalMode === "add"
-              ? "Add"
-              : modalMode === "edit"
-              ? "Edit"
-              : modalMode === "view"
-              ? "View"
-              : "Filter"}
-          </Typography>
-          <Box
-            sx={{
-              display: "grid",
-              gridTemplateColumns: "1fr 1fr",
-              gap: 2,
-            }}
-          >
-            {renderModalFields()}
-          </Box>
-          <Box
-            sx={{ display: "flex", justifyContent: "flex-end", gap: 1, mt: 3 }}
-          >
-            <Button
-              variant="outlined"
-              onClick={handleCloseModal}
-              sx={{
-                borderRadius: "8px",
-                borderColor: STYLE_GUIDE?.COLORS?.divider || "#e0e0e0",
-                color: STYLE_GUIDE?.COLORS?.primaryDark || "#3f51b5",
-              }}
-            >
-              Cancel
-            </Button>
-            {modalMode !== "view" && (
-              <Button
-                variant="contained"
-                onClick={handleSave}
-                sx={{
-                  borderRadius: "8px",
-                  backgroundColor:
-                    STYLE_GUIDE?.COLORS?.primaryDark || "#3f51b5",
-                  color: STYLE_GUIDE?.COLORS?.white || "#ffffff",
-                  "&:hover": {
-                    backgroundColor: STYLE_GUIDE?.COLORS?.primary || "#5c6bc0",
-                  },
-                }}
-              >
-                {modalMode === "filter" ? "Apply" : "Save"}
-              </Button>
-            )}
-          </Box>
-        </Box>
-      </Modal>
-
-      <Dialog
-        open={openDialog}
-        onClose={handleCloseDialog}
-        sx={{
-          "& .MuiDialog-paper": {
-            borderRadius: "8px",
-            backgroundColor: STYLE_GUIDE?.COLORS?.white || "#ffffff",
-          },
-        }}
-      >
-        <DialogTitle
-          sx={{ color: STYLE_GUIDE?.COLORS?.primaryDark || "#3f51b5" }}
-        >
-          Confirm Delete
-        </DialogTitle>
-        <DialogContent>
-          <Typography>
-            Are you sure you want to delete the notification with ID {deleteId}?
-          </Typography>
-        </DialogContent>
-        <DialogActions>
-          <Button
-            onClick={handleCloseDialog}
-            sx={{
-              borderRadius: "8px",
-              color: STYLE_GUIDE?.COLORS?.primaryDark || "#3f51b5",
-            }}
-          >
-            No
-          </Button>
-          <Button
-            onClick={handleConfirmDelete}
-            sx={{
-              borderRadius: "8px",
-              backgroundColor: STYLE_GUIDE?.COLORS?.error || "#d32f2f",
-              color: "#ffffff",
-              "&:hover": {
-                backgroundColor: STYLE_GUIDE?.COLORS?.error || "#b71c1c",
-              },
-            }}
-          >
-            Yes
-          </Button>
-        </DialogActions>
-      </Dialog>
-    </Box>
-  );
-}
-
-
-
 // import * as React from "react";
 // import { useState, useEffect, useCallback, useMemo } from "react";
 // import { DataGrid, GridColDef } from "@mui/x-data-grid";
@@ -721,12 +26,117 @@ useEffect(() => {
 // import { GET } from "../../services/apiRoutes";
 // import useGet from "../../hooks/useGet";
 // import { CustomPagination } from "../../components/common/pagination/customPagination";
-// import { useParams } from "react-router-dom";
+// import { useLocation, useParams } from "react-router-dom";
 
 // interface ApiResponse {
 //   data: any[];
 //   totalCount: number;
 // }
+
+// const generateColumns = (
+//   sampleRowData: Record<string, any>,
+//   handleView: (id: string) => void,
+//   handleEdit: (id: string) => void,
+//   handleDelete: (id: string) => void,
+//   loading: boolean,
+//   rows: any[]
+// ): GridColDef[] => {
+//   const dynamicColumns = Object.keys(sampleRowData)
+//     .filter((key) => key !== "_id")
+//     .map((key) => ({
+//       field: key,
+//       headerName: key
+//         .replace(/([A-Z])/g, " $1")
+//         .replace(/^./, (str) => str.toUpperCase()),
+//       flex: 1,
+//       renderHeader: (params) => {
+//         const headerText = params.colDef.headerName || "";
+//         return headerText.length > 10 ? (
+//           <Tooltip title={headerText} arrow>
+//             <Typography
+//               sx={{
+//                 overflow: "hidden",
+//                 textOverflow: "ellipsis",
+//                 whiteSpace: "nowrap",
+//               }}
+//             >
+//               {headerText}
+//             </Typography>
+//           </Tooltip>
+//         ) : (
+//           <Typography>{headerText}</Typography>
+//         );
+//       },
+//       renderCell: (params) => {
+//         const cellValue = params.value != null ? String(params.value) : "";
+//         return cellValue.length > 10 ? (
+//           <Tooltip title={cellValue} arrow>
+//             <Typography
+//               sx={{
+//                 overflow: "hidden",
+//                 textOverflow: "ellipsis",
+//                 whiteSpace: "nowrap",
+//               }}
+//             >
+//               {cellValue}
+//             </Typography>
+//           </Tooltip>
+//         ) : (
+//           <Typography>{cellValue}</Typography>
+//         );
+//       },
+//     }));
+
+//   const actionsColumn: GridColDef = {
+//     field: "actions",
+//     headerName: "Actions",
+//     flex: 1,
+//     sortable: false,
+//     renderHeader: () => <Typography>Actions</Typography>,
+//     renderCell: (params) => (
+//       <Box sx={{ display: "flex", gap: 1 }}>
+//         <Tooltip title="View" arrow>
+//           <Button
+//             size="small"
+//             onClick={() => handleView(params.row._id)}
+//             sx={{
+//               minWidth: "auto",
+//               color: STYLE_GUIDE?.COLORS?.primaryDark || "#3f51b5",
+//             }}
+//           >
+//             <VisibilityIcon />
+//           </Button>
+//         </Tooltip>
+//         <Tooltip title="Edit" arrow>
+//           <Button
+//             size="small"
+//             onClick={() => handleEdit(params.row._id)}
+//             sx={{
+//               minWidth: "auto",
+//               color: STYLE_GUIDE?.COLORS?.primaryDark || "#3f51b5",
+//             }}
+//           >
+//             <EditIcon />
+//           </Button>
+//         </Tooltip>
+//         <Tooltip title="Delete" arrow>
+//           <Button
+//             size="small"
+//             onClick={() => handleDelete(params.row._id)}
+//             sx={{
+//               minWidth: "auto",
+//               color: STYLE_GUIDE?.COLORS?.error || "#d32f2f",
+//             }}
+//           >
+//             <DeleteIcon />
+//           </Button>
+//         </Tooltip>
+//       </Box>
+//     ),
+//   };
+
+//   return [...dynamicColumns, actionsColumn];
+// };
 
 // export default function NotifixDataSource() {
 //   const [rows, setRows] = useState<any[]>([]);
@@ -747,122 +157,14 @@ useEffect(() => {
 //     pageSize: 10,
 //   });
 
-//   const dataSourceId = "6878e3cf23a13174f84626c4";
-//   const { id: valueId } = useParams<{ id: string }>();
+//     const dataSourceId = "6878e3cf23a13174f84626c4";
 
-//   useEffect(() => {
+//     const {id:valueId} = useParams<{id: string}>();
+// // console.log("DataSource ID0---:", valueId);
+
+// useEffect(() => {
 //     console.log("DataSource ID0---:", valueId);
 //   }, [valueId]);
-
-//   // Define generateColumns inside the component with useCallback
-//   const generateColumns = useCallback(
-//     (
-//       sampleRowData: Record<string, any>,
-//       handleView: (id: string) => void,
-//       handleEdit: (id: string) => void,
-//       handleDelete: (id: string) => void,
-//       loading: boolean,
-//       rows: any[]
-//     ): GridColDef[] => {
-//       const dynamicColumns = Object.keys(sampleRowData)
-//         .filter((key) => key !== "_id")
-//         .map((key) => ({
-//           field: key,
-//           headerName: key
-//             .replace(/([A-Z])/g, " $1")
-//             .replace(/^./, (str) => str.toUpperCase()),
-//           flex: 1,
-//           renderHeader: (params) => {
-//             const headerText = params.colDef.headerName || "";
-//             return headerText.length > 10 ? (
-//               <Tooltip title={headerText} arrow>
-//                 <Typography
-//                   sx={{
-//                     overflow: "hidden",
-//                     textOverflow: "ellipsis",
-//                     whiteSpace: "nowrap",
-//                   }}
-//                 >
-//                   {headerText}
-//                 </Typography>
-//               </Tooltip>
-//             ) : (
-//               <Typography>{headerText}</Typography>
-//             );
-//           },
-//           renderCell: (params) => {
-//             const cellValue = params.value != null ? String(params.value) : "";
-//             return cellValue.length > 10 ? (
-//               <Tooltip title={cellValue} arrow>
-//                 <Typography
-//                   sx={{
-//                     overflow: "hidden",
-//                     textOverflow: "ellipsis",
-//                     whiteSpace: "nowrap",
-//                   }}
-//                 >
-//                   {cellValue}
-//                 </Typography>
-//               </Tooltip>
-//             ) : (
-//               <Typography>{cellValue}</Typography>
-//             );
-//           },
-//         }));
-
-//       const actionsColumn: GridColDef = {
-//         field: "actions",
-//         headerName: "Actions",
-//         flex: 1,
-//         sortable: false,
-//         renderHeader: () => <Typography>Actions</Typography>,
-//         renderCell: (params) => (
-//           <Box sx={{ display: "flex", gap: 1 }}>
-//             <Tooltip title="View" arrow>
-//               <Button
-//                 size="small"
-//                 onClick={() => handleView(params.row._id)}
-//                 sx={{
-//                   minWidth: "auto",
-//                   color: STYLE_GUIDE?.COLORS?.primaryDark || "#3f51b5",
-//                 }}
-//               >
-//                 <VisibilityIcon />
-//               </Button>
-//             </Tooltip>
-//             <Tooltip title="Edit" arrow>
-//               <Button
-//                 size="small"
-//                 onClick={() => handleEdit(params.row._id)}
-//                 sx={{
-//                   minWidth: "auto",
-//                   color: STYLE_GUIDE?.COLORS?.primaryDark || "#3f51b5",
-//                 }}
-//               >
-//                 <EditIcon />
-//               </Button>
-//             </Tooltip>
-//             <Tooltip title="Delete" arrow>
-//               <Button
-//                 size="small"
-//                 onClick={() => handleDelete(params.row._id)}
-//                 sx={{
-//                   minWidth: "auto",
-//                   color: STYLE_GUIDE?.COLORS?.error || "#d32f2f",
-//                 }}
-//               >
-//                 <DeleteIcon />
-//               </Button>
-//             </Tooltip>
-//           </Box>
-//         ),
-//       };
-
-//       return [...dynamicColumns, actionsColumn];
-//     },
-//     [] // Empty dependency array since no external dependencies are used
-//   );
-
 //   // Debounce search input
 //   useEffect(() => {
 //     const handler = setTimeout(() => {
@@ -885,10 +187,6 @@ useEffect(() => {
 //   // Memoize handler functions
 //   const handleView = useCallback(
 //     (id: string) => {
-//       if (rows.length === 0) {
-//         console.warn("Cannot view: No data available");
-//         return;
-//       }
 //       const row = rows.find((r) => r._id === id);
 //       if (row) {
 //         const newFormData: Record<string, any> = { id: row._id };
@@ -909,10 +207,6 @@ useEffect(() => {
 
 //   const handleEdit = useCallback(
 //     (id: string) => {
-//       if (rows.length === 0) {
-//         console.warn("Cannot edit: No data available");
-//         return;
-//       }
 //       const row = rows.find((r) => r._id === id);
 //       if (row) {
 //         const newFormData: Record<string, any> = { id: row._id };
@@ -976,7 +270,7 @@ useEffect(() => {
 
 //   const handleSearchChange = useCallback(
 //     (e: React.ChangeEvent<HTMLInputElement>) => {
-//       const value = e.target.value.slice(0, 200);
+//       const value = e.target.value.slice(0, 200); // Limit to 200 characters
 //       setSearchValue(value);
 //     },
 //     []
@@ -990,12 +284,12 @@ useEffect(() => {
 //       valueId,
 //     ],
 //     `${GET.SOURCE_VERSION_DATA}?dataSourceId=${encodeURIComponent(
-//       valueId ?? ""
+//       valueId??""
 //     )}&page=${paginationModelMemo.page + 1}&limit=${
 //       paginationModelMemo.pageSize
 //     }&query=${encodeURIComponent(debouncedSearchValue)}`,
 //     !!valueId,
-//     { retry: false, staleTime: 1000 * 60, cacheTime: 1000 * 60 }
+//     { retry: false, staleTime: 0, cacheTime: 0 }
 //   );
 
 //   useEffect(() => {
@@ -1039,7 +333,7 @@ useEffect(() => {
 //         handleView,
 //         handleEdit,
 //         handleDelete,
-//         false,
+//         loading,
 //         formattedRows
 //       );
 //       setColumns(dynamicCols);
@@ -1047,38 +341,9 @@ useEffect(() => {
 //       console.warn("No data available to generate columns");
 //       setColumns([]);
 //     }
-//   }, [sourceVersionData, handleView, handleEdit, handleDelete]);
-
-//   useEffect(() => {
-//     if (openModal && modalMode) {
-//       if (modalMode === "add" || modalMode === "filter") {
-//         const newFormData: Record<string, any> = { id: "" };
-//         columns
-//           .filter((col) => col.field !== "actions" && col.field !== "_id")
-//           .forEach((col) => {
-//             newFormData[col.field] = "";
-//           });
-//         setFormData(newFormData);
-//       } else if (modalMode === "view" || modalMode === "edit") {
-//         const row = rows.find((r) => r._id === formData.id);
-//         if (row) {
-//           const newFormData: Record<string, any> = { id: row._id };
-//           columns
-//             .filter((col) => col.field !== "actions" && col.field !== "_id")
-//             .forEach((col) => {
-//               newFormData[col.field] = row[col.field] != null ? String(row[col.field]) : "";
-//             });
-//           setFormData(newFormData);
-//         }
-//       }
-//     }
-//   }, [columns, openModal, modalMode, rows]);
+//   }, [sourceVersionData, handleView, handleEdit, handleDelete, loading]);
 
 //   const renderModalFields = () => {
-//     if (columns.length === 0) {
-//       return <Typography>No fields available to display.</Typography>;
-//     }
-
 //     const fields = columns
 //       .filter((col) => col.field !== "actions" && col.field !== "_id")
 //       .map((col) => (
@@ -1096,7 +361,11 @@ useEffect(() => {
 //         />
 //       ));
 
-//     return fields.length > 0 ? fields : <Typography>No fields available to display.</Typography>;
+//     return fields.length > 0 ? (
+//       fields
+//     ) : (
+//       <Typography>No fields available to display.</Typography>
+//     );
 //   };
 
 //   // Debug re-renders
@@ -1291,9 +560,7 @@ useEffect(() => {
 //               }}
 //             />
 //           ) : (
-//             <Typography>
-//               No data available. Please try a different query or add new data.
-//             </Typography>
+//             <Typography>No data available</Typography>
 //           )}
 //         </CardContent>
 //       </Card>
@@ -1423,3 +690,766 @@ useEffect(() => {
 //     </Box>
 //   );
 // }
+
+
+
+import * as React from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
+import { DataGrid, GridColDef } from "@mui/x-data-grid";
+import {
+  Box,
+  Card,
+  CardContent,
+  Typography,
+  TextField,
+  Button,
+  InputAdornment,
+  Modal,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Tooltip,
+} from "@mui/material";
+import { STYLE_GUIDE } from "../../styles"; // Adjust path as needed
+import SearchIcon from "@mui/icons-material/Search";
+import FilterListIcon from "@mui/icons-material/FilterList";
+import AddIcon from "@mui/icons-material/Add";
+import EditIcon from "@mui/icons-material/Edit";
+import VisibilityIcon from "@mui/icons-material/Visibility";
+import DeleteIcon from "@mui/icons-material/Delete";
+import { GET } from "../../services/apiRoutes";
+import useGet from "../../hooks/useGet";
+import { CustomPagination } from "../../components/common/pagination/customPagination";
+import { useParams } from "react-router-dom";
+
+interface ApiResponse {
+  data: any[];
+  totalCount: number;
+}
+
+export default function NotifixDataSource() {
+  const [rows, setRows] = useState<any[]>([]);
+  const rowsRef = useRef<any[]>([]);
+  const [rowCount, setRowCount] = useState(0);
+  const [columns, setColumns] = useState<GridColDef[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [openModal, setOpenModal] = useState(false);
+  const [modalMode, setModalMode] = useState<
+    "add" | "edit" | "view" | "filter" | null
+  >(null);
+  const [openDialog, setOpenDialog] = useState(false);
+  const [formData, setFormData] = useState<Record<string, any>>({ id: "" });
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [searchValue, setSearchValue] = useState("");
+  const [debouncedSearchValue, setDebouncedSearchValue] = useState(searchValue);
+  const [paginationModel, setPaginationModel] = useState({
+    page: 0,
+    pageSize: 10,
+  });
+
+  const dataSourceId = "6878e3cf23a13174f84626c4";
+  const { id: valueId } = useParams<{ id: string }>();
+
+  useEffect(() => {
+    console.log("DataSource ID0---:", valueId);
+  }, [valueId]);
+
+  // Define generateColumns inside the component with useCallback
+  const generateColumns = useCallback(
+    (
+      sampleRowData: Record<string, any>
+    ): GridColDef[] => {
+      const dynamicColumns = Object.keys(sampleRowData)
+        .filter((key) => key !== "_id")
+        .map((key) => ({
+          field: key,
+          headerName: key
+            .replace(/([A-Z])/g, " $1")
+            .replace(/^./, (str) => str.toUpperCase()),
+          flex: 1,
+          renderHeader: (params: any) => {
+            const headerText = params.colDef.headerName || "";
+            return headerText.length > 10 ? (
+              <Tooltip title={headerText} arrow>
+                <Typography
+                  sx={{
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  {headerText}
+                </Typography>
+              </Tooltip>
+            ) : (
+              <Typography>{headerText}</Typography>
+            );
+          },
+          renderCell: (params: any) => {
+            const cellValue = params.value != null ? String(params.value) : "";
+            return cellValue.length > 10 ? (
+              <Tooltip title={cellValue} arrow>
+                <Typography
+                  sx={{
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  {cellValue}
+                </Typography>
+              </Tooltip>
+            ) : (
+              <Typography>{cellValue}</Typography>
+            );
+          },
+        }));
+
+      return dynamicColumns;
+    },
+    [] // Empty dependency array since no external dependencies are used
+  );
+
+  // Debounce search input
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearchValue(searchValue);
+    }, 500);
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [searchValue]);
+
+  // Memoize paginationModel
+  const paginationModelMemo = useMemo(
+    () => ({
+      page: paginationModel.page,
+      pageSize: paginationModel.pageSize,
+    }),
+    [paginationModel.page, paginationModel.pageSize]
+  );
+
+  // Memoize handler functions
+  const handleView = useCallback(
+    (id: string) => {
+      const currentRows = rowsRef.current;
+      if (currentRows.length === 0) {
+        console.warn("Cannot view: No data available");
+        return;
+      }
+      const row = currentRows.find((r) => r._id === id);
+      if (row) {
+        const newFormData: Record<string, any> = { id: row._id };
+        Object.keys(row).forEach((key) => {
+          if (key !== "_id") {
+            newFormData[key] = row[key] != null ? String(row[key]) : "";
+          }
+        });
+        setFormData(newFormData);
+        setModalMode("view");
+        setOpenModal(true);
+      } else {
+        console.error(`Row with ID ${id} not found`);
+      }
+    },
+    []
+  );
+
+  const handleEdit = useCallback(
+    (id: string) => {
+      const currentRows = rowsRef.current;
+      if (currentRows.length === 0) {
+        console.warn("Cannot edit: No data available");
+        return;
+      }
+      const row = currentRows.find((r) => r._id === id);
+      if (row) {
+        const newFormData: Record<string, any> = { id: row._id };
+        Object.keys(row).forEach((key) => {
+          if (key !== "_id") {
+            newFormData[key] = row[key] != null ? String(row[key]) : "";
+          }
+        });
+        setFormData(newFormData);
+        setModalMode("edit");
+        setOpenModal(true);
+      }
+    },
+    []
+  );
+
+  const handleDelete = useCallback((id: string) => {
+    setDeleteId(id);
+    setOpenDialog(true);
+  }, []);
+
+  const handleAddNotification = useCallback(() => {
+    const newFormData: Record<string, any> = { id: "" };
+    // Initialize form data with empty values for all columns
+    columns
+      .filter((col) => col.field !== "actions" && col.field !== "_id")
+      .forEach((col) => {
+        newFormData[col.field] = "";
+      });
+    setFormData(newFormData);
+    setModalMode("add");
+    setOpenModal(true);
+  }, [columns]);
+
+  const handleFilter = useCallback(() => {
+    const newFormData: Record<string, any> = { id: "" };
+    // Initialize form data with empty values for all columns
+    columns
+      .filter((col) => col.field !== "actions" && col.field !== "_id")
+      .forEach((col) => {
+        newFormData[col.field] = "";
+      });
+    setFormData(newFormData);
+    setModalMode("filter");
+    setOpenModal(true);
+  }, [columns]);
+
+  const handleCloseModal = useCallback(() => {
+    setOpenModal(false);
+    setModalMode(null);
+    setFormData({ id: "" });
+  }, []);
+
+  const handleCloseDialog = useCallback(() => {
+    setOpenDialog(false);
+    setDeleteId(null);
+  }, []);
+
+  const handleConfirmDelete = useCallback(() => {
+    setRows((prevRows) => prevRows.filter((row) => row._id !== deleteId));
+    setRowCount((prev) => prev - 1);
+    handleCloseDialog();
+  }, [deleteId, handleCloseDialog]);
+
+  const handleSave = useCallback(() => {
+    if (modalMode === "add") {
+      console.log("Adding new:", formData);
+    } else if (modalMode === "edit") {
+      console.log("Saving edited row:", formData);
+    } else if (modalMode === "filter") {
+      console.log("Applying filter:", formData);
+    }
+    handleCloseModal();
+  }, [formData, modalMode, handleCloseModal]);
+
+  const handleSearchChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const value = e.target.value.slice(0, 200);
+      setSearchValue(value);
+    },
+    []
+  );
+
+  const sourceVersionData = useGet<ApiResponse>(
+    [
+      "sourceVersionData",
+      String(paginationModelMemo.page + 1),
+      debouncedSearchValue,
+      valueId || "",
+    ],
+    `${GET.SOURCE_VERSION_DATA}?dataSourceId=${encodeURIComponent(
+      valueId || ""
+    )}&page=${paginationModelMemo.page + 1}&limit=${
+      paginationModelMemo.pageSize
+    }&query=${encodeURIComponent(debouncedSearchValue || "")}`,
+    !!valueId
+  );
+
+  // Handle loading state
+  useEffect(() => {
+    setLoading(sourceVersionData.isLoading);
+  }, [sourceVersionData.isLoading]);
+
+  // Handle error state and reset data
+  useEffect(() => {
+    if (sourceVersionData.error) {
+      console.error("API error:", sourceVersionData.error);
+      setRows([]);
+      rowsRef.current = [];
+      setRowCount(0);
+      setColumns([]);
+    }
+  }, [sourceVersionData.error]);
+
+  // Handle successful data processing
+  useEffect(() => {
+    if (sourceVersionData.isLoading || sourceVersionData.error) {
+      return;
+    }
+
+    const rawData = sourceVersionData?.data?.data || [];
+    const totalCount = sourceVersionData?.data?.totalCount || 0;
+
+    if (!Array.isArray(rawData)) {
+      setRows([]);
+      rowsRef.current = [];
+      setRowCount(0);
+      setColumns([]);
+      return;
+    }
+
+    const formattedRows = rawData.map((item: any) => ({
+      _id: item._id || item.id,
+      ...item.rowData,
+    }));
+
+    setRows(formattedRows);
+    rowsRef.current = formattedRows;
+    setRowCount(totalCount);
+  }, [sourceVersionData.data]);
+
+  // Generate dynamic columns when rows change
+  useEffect(() => {
+    if (rows.length === 0) {
+      setColumns([]);
+      return;
+    }
+
+    const dynamicCols = generateColumns(rows[0]);
+    setColumns(dynamicCols);
+  }, [rows, generateColumns]);
+
+  // Add actions column separately to avoid circular dependency
+  useEffect(() => {
+    if (columns.length === 0) {
+      return;
+    }
+
+    // Check if actions column already exists
+    const hasActionsColumn = columns.some(col => col.field === 'actions');
+    if (hasActionsColumn) {
+      return;
+    }
+
+    const actionsColumn: GridColDef = {
+      field: "actions",
+      headerName: "Actions",
+      flex: 1,
+      sortable: false,
+      renderHeader: () => <Typography>Actions</Typography>,
+      renderCell: (params: any) => (
+        <Box sx={{ display: "flex", gap: 1 }}>
+          <Tooltip title="View" arrow>
+            <Button
+              size="small"
+              onClick={() => handleView(params.row._id)}
+              sx={{
+                minWidth: "auto",
+                color: STYLE_GUIDE?.COLORS?.primaryDark || "#3f51b5",
+              }}
+            >
+              <VisibilityIcon />
+            </Button>
+          </Tooltip>
+          <Tooltip title="Edit" arrow>
+            <Button
+              size="small"
+              onClick={() => handleEdit(params.row._id)}
+              sx={{
+                minWidth: "auto",
+                color: STYLE_GUIDE?.COLORS?.primaryDark || "#3f51b5",
+              }}
+            >
+              <EditIcon />
+            </Button>
+          </Tooltip>
+          <Tooltip title="Delete" arrow>
+            <Button
+              size="small"
+              onClick={() => handleDelete(params.row._id)}
+              sx={{
+                minWidth: "auto",
+                color: STYLE_GUIDE?.COLORS?.error || "#d32f2f",
+              }}
+            >
+              <DeleteIcon />
+            </Button>
+          </Tooltip>
+        </Box>
+      ),
+    };
+    
+    setColumns(prev => [...prev, actionsColumn]);
+  }, [columns, handleView, handleEdit, handleDelete]);
+
+
+
+  const renderModalFields = () => {
+    if (columns.length === 0) {
+      return <Typography>No fields available to display.</Typography>;
+    }
+
+    const fields = columns
+      .filter((col) => col.field !== "actions" && col.field !== "_id")
+      .map((col) => (
+        <TextField
+          key={col.field}
+          label={col.headerName}
+          value={formData[col.field] || ""}
+          onChange={(e) =>
+            setFormData((prev) => ({ ...prev, [col.field]: e.target.value }))
+          }
+          disabled={modalMode === "view"}
+          variant="outlined"
+          fullWidth
+          sx={{ "& .MuiOutlinedInput-root": { borderRadius: "8px" } }}
+        />
+      ));
+
+    return fields.length > 0 ? fields : <Typography>No fields available to display.</Typography>;
+  };
+
+
+
+  if (loading && rows.length === 0) {
+    return <Typography>Loading...</Typography>;
+  }
+
+  return (
+    <Box
+      sx={{
+        flexGrow: 1,
+        p: 3,
+        ml: { xs: 0 },
+        backgroundColor: STYLE_GUIDE?.COLORS?.backgroundLight || "#f5f5f5",
+        minHeight: "100vh",
+      }}
+    >
+      <Typography
+        variant="h4"
+        sx={{
+          mb: 3,
+          fontWeight: 400,
+          color: STYLE_GUIDE?.COLORS?.primaryDark || "#3f51b5",
+        }}
+      >
+        Case List (ID: {dataSourceId})
+      </Typography>
+
+      <Card
+        sx={{
+          backgroundColor: STYLE_GUIDE?.COLORS?.white || "#ffffff",
+          boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.1)",
+          borderRadius: "8px",
+          overflow: "visible",
+        }}
+      >
+        <CardContent sx={{ p: 3 }}>
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              mb: 2,
+            }}
+          >
+            <TextField
+              placeholder="Search..."
+              variant="outlined"
+              size="small"
+              value={searchValue}
+              onChange={handleSearchChange}
+              sx={{
+                width: "300px",
+                "& .MuiOutlinedInput-root": {
+                  borderRadius: "8px",
+                  backgroundColor: STYLE_GUIDE?.COLORS?.white || "#ffffff",
+                  "& fieldset": {
+                    borderColor: STYLE_GUIDE?.COLORS?.divider || "#e0e0e0",
+                  },
+                  "&:hover fieldset": {
+                    borderColor: STYLE_GUIDE?.COLORS?.primaryDark || "#3f51b5",
+                  },
+                },
+              }}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchIcon
+                      sx={{
+                        color: STYLE_GUIDE?.COLORS?.primaryDark || "#3f51b5",
+                      }}
+                    />
+                  </InputAdornment>
+                ),
+              }}
+            />
+
+            <Box sx={{ display: "flex", gap: 1 }}>
+              <Button
+                variant="outlined"
+                startIcon={<FilterListIcon />}
+                onClick={handleFilter}
+                sx={{
+                  borderRadius: "8px",
+                  borderColor: STYLE_GUIDE?.COLORS?.divider || "#e0e0e0",
+                  color: STYLE_GUIDE?.COLORS?.primaryDark || "#3f51b5",
+                  "&:hover": {
+                    backgroundColor:
+                      STYLE_GUIDE?.COLORS?.backgroundDefault || "#f1f5f9",
+                    borderColor: STYLE_GUIDE?.COLORS?.primaryDark || "#3f51b5",
+                  },
+                }}
+              >
+                Filter
+              </Button>
+              <Button
+                variant="contained"
+                startIcon={<AddIcon />}
+                onClick={handleAddNotification}
+                sx={{
+                  borderRadius: "8px",
+                  backgroundColor:
+                    STYLE_GUIDE?.COLORS?.primaryDark || "#3f51b5",
+                  color: STYLE_GUIDE?.COLORS?.white || "#ffffff",
+                  "&:hover": {
+                    backgroundColor: STYLE_GUIDE?.COLORS?.primary || "#5c6bc0",
+                  },
+                }}
+              >
+                Add
+              </Button>
+            </Box>
+          </Box>
+
+          {rows.length > 0 ? (
+            <DataGrid
+              loading={loading}
+              rows={rows}
+              columns={columns}
+              getRowId={(row) => row._id}
+              paginationMode="server"
+              rowCount={rowCount}
+              paginationModel={paginationModelMemo}
+              onPaginationModelChange={setPaginationModel}
+              pageSizeOptions={[5, 10, 20]}
+              disableColumnMenu
+              slots={{
+                pagination: () => (
+                  <CustomPagination
+                    paginationModel={paginationModelMemo}
+                    setPaginationModel={setPaginationModel}
+                    rowCount={rowCount}
+                  />
+                ),
+              }}
+              sx={{
+                border: 0,
+                backgroundColor: STYLE_GUIDE?.COLORS?.white || "#ffffff",
+                overflow: "visible",
+                "& .MuiDataGrid-columnHeaders": {
+                  backgroundColor:
+                    STYLE_GUIDE?.COLORS?.backgroundLight || "#f5f5f5",
+                  color: STYLE_GUIDE?.COLORS?.black || "#000000",
+                  fontWeight: 600,
+                  fontSize: "1rem",
+                  position: "relative",
+                  zIndex: 1,
+                },
+                "& .MuiDataGrid-columnHeaderTitle": {
+                  fontWeight: 600,
+                  color: STYLE_GUIDE?.COLORS?.black || "#000000",
+                },
+                "& .MuiDataGrid-columnHeader": {
+                  outline: "none",
+                  "&:focus, &:focus-within": {
+                    outline: "none",
+                  },
+                  "& .MuiDataGrid-columnSeparator": {
+                    color: STYLE_GUIDE?.COLORS?.primaryDark || "#3f51b5",
+                    "&:hover": {
+                      color: STYLE_GUIDE?.COLORS?.primary || "#5c6bc0",
+                    },
+                  },
+                },
+                "& .MuiDataGrid-cell": {
+                  backgroundColor: STYLE_GUIDE?.COLORS?.white || "#ffffff",
+                  color: STYLE_GUIDE?.COLORS?.black || "#000000",
+                  borderBottom: `1px solid ${
+                    STYLE_GUIDE?.COLORS?.divider || "#e0e0e0"
+                  }`,
+                  borderRight: "none",
+                  outline: "none",
+                  "&:focus, &:focus-within": {
+                    outline: "none",
+                  },
+                },
+                "& .MuiDataGrid-row:hover": {
+                  backgroundColor:
+                    STYLE_GUIDE?.COLORS?.backgroundDefault || "#f1f5f9",
+                },
+                "& .MuiDataGrid-footerContainer": {
+                  backgroundColor: STYLE_GUIDE?.COLORS?.white || "#ffffff",
+                  borderTop: `1px solid ${
+                    STYLE_GUIDE?.COLORS?.divider || "#e0e0e0"
+                  }`,
+                  color: STYLE_GUIDE?.COLORS?.black || "#000000",
+                },
+              }}
+            />
+          ) : (
+            <Box
+              sx={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "center",
+                py: 4,
+                textAlign: "center",
+              }}
+            >
+              <Typography
+                variant="h6"
+                sx={{
+                  color: STYLE_GUIDE?.COLORS?.black || "#000000",
+                  mb: 1,
+                  opacity: 0.6,
+                }}
+              >
+                No Data Available
+              </Typography>
+              <Typography
+                variant="body2"
+                sx={{
+                  color: STYLE_GUIDE?.COLORS?.black || "#000000",
+                  opacity: 0.6,
+                }}
+              >
+                No records found for this data source. Try adding new data or check your search criteria.
+              </Typography>
+            </Box>
+          )}
+        </CardContent>
+      </Card>
+
+      <Modal
+        open={openModal}
+        onClose={handleCloseModal}
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        <Box
+          sx={{
+            backgroundColor: STYLE_GUIDE?.COLORS?.white || "#ffffff",
+            borderRadius: "8px",
+            boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.2)",
+            p: 3,
+            width: "600px",
+            maxWidth: "90%",
+            maxHeight: "600px",
+            overflowY: "auto",
+          }}
+        >
+          <Typography
+            variant="h6"
+            sx={{ mb: 2, color: STYLE_GUIDE?.COLORS?.primaryDark || "#3f51b5" }}
+          >
+            {modalMode === "add"
+              ? "Add"
+              : modalMode === "edit"
+              ? "Edit"
+              : modalMode === "view"
+              ? "View"
+              : "Filter"}
+          </Typography>
+          <Box
+            sx={{
+              display: "grid",
+              gridTemplateColumns: "1fr 1fr",
+              gap: 2,
+            }}
+          >
+            {renderModalFields()}
+          </Box>
+          <Box
+            sx={{ display: "flex", justifyContent: "flex-end", gap: 1, mt: 3 }}
+          >
+            <Button
+              variant="outlined"
+              onClick={handleCloseModal}
+              sx={{
+                borderRadius: "8px",
+                borderColor: STYLE_GUIDE?.COLORS?.divider || "#e0e0e0",
+                color: STYLE_GUIDE?.COLORS?.primaryDark || "#3f51b5",
+              }}
+            >
+              Cancel
+            </Button>
+            {modalMode !== "view" && (
+              <Button
+                variant="contained"
+                onClick={handleSave}
+                sx={{
+                  borderRadius: "8px",
+                  backgroundColor:
+                    STYLE_GUIDE?.COLORS?.primaryDark || "#3f51b5",
+                  color: STYLE_GUIDE?.COLORS?.white || "#ffffff",
+                  "&:hover": {
+                    backgroundColor: STYLE_GUIDE?.COLORS?.primary || "#5c6bc0",
+                  },
+                }}
+              >
+                {modalMode === "filter" ? "Apply" : "Save"}
+              </Button>
+            )}
+          </Box>
+        </Box>
+      </Modal>
+
+      <Dialog
+        open={openDialog}
+        onClose={handleCloseDialog}
+        sx={{
+          "& .MuiDialog-paper": {
+            borderRadius: "8px",
+            backgroundColor: STYLE_GUIDE?.COLORS?.white || "#ffffff",
+          },
+        }}
+      >
+        <DialogTitle
+          sx={{ color: STYLE_GUIDE?.COLORS?.primaryDark || "#3f51b5" }}
+        >
+          Confirm Delete
+        </DialogTitle>
+        <DialogContent>
+          <Typography>
+            Are you sure you want to delete the notification with ID {deleteId}?
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={handleCloseDialog}
+            sx={{
+              borderRadius: "8px",
+              color: STYLE_GUIDE?.COLORS?.primaryDark || "#3f51b5",
+            }}
+          >
+            No
+          </Button>
+          <Button
+            onClick={handleConfirmDelete}
+            sx={{
+              borderRadius: "8px",
+              backgroundColor: STYLE_GUIDE?.COLORS?.error || "#d32f2f",
+              color: "#ffffff",
+              "&:hover": {
+                backgroundColor: STYLE_GUIDE?.COLORS?.error || "#b71c1c",
+              },
+            }}
+          >
+            Yes
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </Box>
+  );
+}
