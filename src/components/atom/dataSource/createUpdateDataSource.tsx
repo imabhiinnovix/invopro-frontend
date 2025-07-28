@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useForm, useFieldArray } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+import * as yup from "yup";
 import {
   Box,
   Button,
@@ -98,6 +100,14 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({
 }) => {
   const theme = useUnifiedTheme();
   const { getDialogTitleSx } = useComponentTypography();
+
+  const validationSchema = yup.object().shape({
+    name: yup.string().required("Data source name is required"),
+    code: yup.string().required("Data source code is required"),
+    versionType: yup.string().required("Version type is required"),
+    isShowMenu: yup.boolean().required("Show in Menu is required"),
+    entityId: yup.string().required("Entity is required"),
+  });
   const [open, setOpen] = useState(false);
   const [code, setCode] = useState(data?.code ?? "");
   const [name, setName] = useState(data?.name ?? "");
@@ -123,6 +133,7 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({
     watch,
     formState: { errors },
   } = useForm<DataSourceRequestPayload>({
+    resolver: yupResolver(validationSchema),
     defaultValues: {
       name: data?.name ?? "",
       code: data?.code ?? "",
@@ -679,14 +690,14 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({
                 onChange={(event) => {
                   const nameValue = event.target.value;
                   debouncedSetName(nameValue);
-                  setValue("name", nameValue);
+                  setValue("name", nameValue, { shouldValidate: true });
                   
                   if (!data?.code) {
                     const sanitizedCode = nameValue
                       .toLowerCase()
                       .replace(/[^a-zA-Z0-9_]/g, "");
                     debouncedSetCode(sanitizedCode);
-                    setValue("code", sanitizedCode);
+                    setValue("code", sanitizedCode, { shouldValidate: true });
                   }
                 }}
                 error={!!errors.name}
@@ -1064,7 +1075,7 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({
                     .toLowerCase()
                     .replace(/[^a-zA-Z0-9_]/g, "");
                   debouncedSetCode(sanitizedCode);
-                  setValue("code", sanitizedCode);
+                  setValue("code", sanitizedCode, { shouldValidate: true });
                 }}
                 error={!!errors.code}
                 disabled={!!data?.code}
@@ -1141,7 +1152,7 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({
                   })}
                   value={watch("versionType") || ""}
                   onChange={(event) =>
-                    setValue("versionType", event.target.value)
+                    setValue("versionType", event.target.value, { shouldValidate: true })
                   }
                   label="Version Type"
                 >
@@ -1158,19 +1169,15 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({
               <FormControl fullWidth error={!!errors.isShowMenu} required>
                 <InputLabel>Show in Menu</InputLabel>
                 <Select
-                  {...register("isShowMenu", {
-                    required: "Show in Menu is required",
-                  })}
+                  value={watch("isShowMenu") === undefined ? "" : watch("isShowMenu") ? "true" : "false"}
                   onChange={(event) => {
                     const value = event.target.value;
-                    setValue("isShowMenu", value === "" ? undefined : value === "true");
+                    const booleanValue = value === "" ? undefined : value === "true";
+                    setValue("isShowMenu", booleanValue, { shouldValidate: true });
                   }}
                   label="Show in Menu"
                   displayEmpty
                 >
-                  <MenuItem value="" disabled>
-                    Please select
-                  </MenuItem>
                   <MenuItem value="true">Yes</MenuItem>
                   <MenuItem value="false">No</MenuItem>
                 </Select>
