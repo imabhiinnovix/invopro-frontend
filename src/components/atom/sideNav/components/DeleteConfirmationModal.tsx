@@ -1,5 +1,5 @@
 import React from 'react';
-import { Dialog, DialogTitle, DialogContent, DialogActions, Button } from '@mui/material';
+import { Dialog, DialogTitle, DialogContent, DialogActions, Button, Typography } from '@mui/material';
 import LoadingButton from '@mui/lab/LoadingButton';
 import { Dashboard } from '../../../../pages/dashboard/types';
 import { STYLE_GUIDE } from '../../../../styles';
@@ -52,7 +52,7 @@ export const DeleteConfirmationModal: React.FC<DeleteConfirmationModalProps> = (
         color: theme.palette.dialog?.contentColor || STYLE_GUIDE.COLORS.textDarkGray,
         fontSize: theme.palette.dialog?.contentFontSize || '1rem',
       }}>
-        <p>Are you sure you want to delete "{dashboard?.name}"?</p>
+        <Typography>Are you sure you want to delete "{dashboard?.name}"?</Typography>
       </DialogContent>
       <DialogActions>
         <Button onClick={onCancel}>Cancel</Button>
