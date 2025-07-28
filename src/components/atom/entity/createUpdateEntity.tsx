@@ -41,6 +41,27 @@ interface CreateUpdateEntityProps {
   data?: EntityRequestPayload;
 }
 
+// Extended form interface to handle reference entity fields as direct properties for easier form handling
+interface FormAttribute {
+  name: string;
+  mappingName: string;
+  type: "" | "number" | "text" | "date" | "boolean" | "richtext" | "url" | "option" | "multioption" | "user";
+  required: string;
+  optionAttributeId: string;
+  refEntityId: string;
+  refEntityField: string;
+  relationType: string;
+  validation: string[];
+  transformations: string[];
+  cleaner: string[];
+}
+
+interface FormEntityRequestPayload {
+  name: string;
+  description: string;
+  attributes: FormAttribute[];
+}
+
 const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
   setReloadEntity,
   CustomButton,
@@ -62,7 +83,7 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
     reset,
     watch,
     formState: { errors },
-  } = useForm<EntityRequestPayload>({
+  } = useForm<FormEntityRequestPayload>({
     defaultValues: {
       name: data?.name ?? "",
       description: data?.description ?? "",
@@ -70,11 +91,11 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
         name: attr.name ?? "",
         mappingName: attr.mappingName ?? "",
         type: attr.type ?? "",
-        required: attr.required ?? "Not Mandatory",
+        required: attr.required ? "Mandatory" : "Not Mandatory",
         optionAttributeId: attr.optionAttributeId ?? "",
-        refEntityId: "",
-        refEntityField: "",
-        relationType: "",
+        refEntityId: attr.referenceEntitySetting?.refEntityId ?? "",
+        refEntityField: attr.referenceEntitySetting?.refEntityField ?? "",
+        relationType: attr.referenceEntitySetting?.relationType ?? "",
         validation: attr.validation ?? [],
         transformations: attr.transformations ?? [],
         cleaner: attr.cleaner ?? [],
@@ -83,7 +104,7 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
           name: "",
           mappingName: "",
           type: "",
-          required: "",
+          required: "Not Mandatory",
           optionAttributeId: "",
           refEntityId: "",
           refEntityField: "",
@@ -106,8 +127,8 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
         type: attr.type ?? "",
         required: attr.required ? "Mandatory" : "Not Mandatory",
         optionAttributeId: attr.optionAttributeId ?? "",
-        refEntityId: attr.referenceEntitySetting?.refEntityId?._id ?? "",
-        refEntityField: attr.referenceEntitySetting?.refEntityField?.name ?? "", // Use name instead of _id
+        refEntityId: attr.referenceEntitySetting?.refEntityId ?? "",
+        refEntityField: attr.referenceEntitySetting?.refEntityField ?? "",
         relationType: attr.referenceEntitySetting?.relationType ?? "",
         validation: attr.validation ?? [],
         transformations: attr.transformations ?? [],
@@ -117,7 +138,7 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
           name: "",
           mappingName: "",
           type: "",
-          required: "",
+          required: "Not Mandatory",
           optionAttributeId: "",
           refEntityId: "",
           refEntityField: "",
@@ -128,8 +149,6 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
         },
       ],
     });
-    console.log("Form reset with refEntityId:", data?.attributes?.[0]?.referenceEntitySetting?.refEntityId?._id);
-    console.log("Form reset with refEntityField:", data?.attributes?.[0]?.referenceEntitySetting?.refEntityField?.name);
   }, [data, reset]);
 
   useEffect(() => {
@@ -169,8 +188,13 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
           !/^[a-f\d]{24}$/i.test(entityId)
         ) {
           console.log(`Skipping fetch for entityId: ${entityId}, index: ${index}`);
-          setReferenceEntityNames((prev) => ({ ...prev, [index]: [] }));
-          setReferenceEntityTypes((prev) => ({ ...prev, [index]: [] }));
+          // Don't reset existing data if we're skipping
+          if (!referenceEntityNames[index]) {
+            setReferenceEntityNames((prev) => ({ ...prev, [index]: [] }));
+          }
+          if (!referenceEntityTypes[index]) {
+            setReferenceEntityTypes((prev) => ({ ...prev, [index]: [] }));
+          }
           return;
         }
 
@@ -251,19 +275,7 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
           }
 
           const worksheet = workbook.worksheets[0];
-          const headers: {
-            name: string;
-            mappingName: string;
-            type: string;
-            optionAttributeId: string;
-            refEntityId: string;
-            refEntityField: string;
-            relationType: string;
-            validation: unknown[];
-            transformations: unknown[];
-            cleaner: unknown[];
-            required: string;
-          }[] = [];
+          const headers: FormAttribute[] = [];
           const uniqueNames = new Set<string>();
 
           worksheet.getRow(1).eachCell((cell, _colNumber) => {
@@ -298,7 +310,7 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
           worksheet.getRow(2).eachCell((cell, colNumber) => {
             if (headers[colNumber - 1] != undefined) {
               const firstValue = cell.value;
-              let type = "text";
+              let type: FormAttribute['type'] = "text";
               if (typeof firstValue === "number") {
                 type = "number";
               } else if (firstValue instanceof Date) {
@@ -359,10 +371,10 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
     true
   );
 
-  const onSubmit = (formData: EntityRequestPayload) => {
+  const onSubmit = (formData: FormEntityRequestPayload) => {
     console.log("Form Data123:", formData);
 
-    const isReferenceDataLoaded = attributes.every(
+    const isReferenceDataLoaded = attributes?.every(
       (_, index) => referenceEntityNames[index] && referenceEntityTypes[index]
     );
 
@@ -374,7 +386,7 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
     const newAttributes = formData.attributes?.map((data, index) => {
       const { refEntityId, refEntityField, relationType, ...rest } = data;
 
-      const updated = {
+      const updated: any = {
         ...rest,
         required: data.required === "Mandatory" ? true : false,
       };
@@ -726,7 +738,7 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
                               ?.focusBorderColor ||
                             theme.dashboardTheme?.components?.input
                               ?.focusBorderColorFallback ||
-                              STYLE_GUIDE.COLORS.inputFocusFallback,
+                            STYLE_GUIDE.COLORS.inputFocusFallback,
                         },
                         "& .MuiInputBase-input": {
                           color: `${theme.dashboardTheme?.colors?.inputText || theme.palette.text.primary} !important`,
@@ -796,10 +808,10 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
                       name={`attributes.${index}.required`}
                       label="Attribute Validation"
                       options={["Mandatory", "Not Mandatory"]}
-                      defaultValue={attribute.required || "Not Mandatory"}
+                      defaultValue={String(attribute.required) || "Not Mandatory"}
                       rules={{ required: "Attribute Validation is required" }}
                       error={!!errors.attributes?.[index]?.required}
-                      helperText={
+                      errorMessage={
                         (errors.attributes?.[index]?.required as FieldError)
                           ?.message
                       }
@@ -833,7 +845,7 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
                       defaultValue={attribute.refEntityField || ""}
                       rules={{ required: false }}
                       error={!!errors.attributes?.[index]?.refEntityField}
-                      helperText={
+                      errorMessage={
                         referenceEntityNames[index]?.length
                           ? (errors.attributes?.[index]?.refEntityField as FieldError)?.message
                           : "No reference fields available for this entity"
@@ -849,7 +861,7 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
                       defaultValue={attribute.relationType || ""}
                       rules={{ required: false }}
                       error={!!errors.attributes?.[index]?.relationType}
-                      helperText={
+                      errorMessage={
                         (
                           errors.attributes?.[index]
                             ?.relationType as FieldError
@@ -877,7 +889,7 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
                     name: "",
                     mappingName: "",
                     type: "",
-                    required: "",
+                    required: "Not Mandatory",
                     optionAttributeId: "",
                     refEntityId: "",
                     refEntityField: "",
@@ -886,6 +898,7 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
                     transformations: [],
                     cleaner: [],
                   });
+                  // Only initialize empty arrays for the new index, don't reset existing ones
                   setReferenceEntityNames((prev) => ({ ...prev, [newIndex]: [] }));
                   setReferenceEntityTypes((prev) => ({ ...prev, [newIndex]: [] }));
                 }}
