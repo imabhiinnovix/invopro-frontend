@@ -101,6 +101,7 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({
   const theme = useUnifiedTheme();
   const { getDialogTitleSx } = useComponentTypography();
 
+  console.log("data",data)
   const validationSchema = yup.object().shape({
     name: yup.string().required("Data source name is required"),
     code: yup.string().required("Data source code is required"),
@@ -204,6 +205,7 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({
   });
 
   const entityId = watch("entityId");
+  console.log("Entity ID:", entityId);
 
   // Fetch entities for dropdown
   useEffect(() => {
