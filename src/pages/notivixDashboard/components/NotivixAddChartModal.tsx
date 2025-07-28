@@ -222,6 +222,8 @@ export const NotivixAddChartModal: React.FC<AddChartModalProps> = ({
     (state) => state.dashboard
   );
 
+  // console.log('widgetTypes:', widgetTypes);
+
   const [formData, setFormData] = useState<ChartFormData>({
     name: initialData?.name || '',
     dimensions: Array.isArray(initialData?.dimensions) ? initialData.dimensions.join(', ') : '',
@@ -1071,14 +1073,14 @@ export const NotivixAddChartModal: React.FC<AddChartModalProps> = ({
                   borderColor: theme.border?.hover || STYLE_GUIDE.COLORS.darkBorderHover,
                 },
                 '&.Mui-focused fieldset': {
-                  borderColor: theme.input?.focusBorder || theme.input?.focusBorderFallback || STYLE_GUIDE.COLORS.inputFocusFallback,
+                  borderColor: theme.input?.focusBorder || STYLE_GUIDE.COLORS.inputFocusFallback,
                 },
               },
               '& .MuiInputLabel-root': {
                 color: theme.palette.text.secondary || STYLE_GUIDE.COLORS.darkBorderFocus,
               },
               '& .MuiInputLabel-root.Mui-focused': {
-                color: theme.input?.focusBorder || theme.input?.focusBorderFallback || STYLE_GUIDE.COLORS.inputFocusFallback,
+                color: theme.input?.focusBorder || STYLE_GUIDE.COLORS.inputFocusFallback,
               },
               '& .MuiInputBase-input': {
                 color: `${theme.getInputTextColor() || theme.palette.text.primary} !important`,
@@ -1336,14 +1338,14 @@ export const NotivixAddChartModal: React.FC<AddChartModalProps> = ({
                                 borderColor: theme.border?.hover || STYLE_GUIDE.COLORS.darkBorderHover,
                               },
                               '&.Mui-focused fieldset': {
-                                borderColor: theme.input?.focusBorder || theme.input?.focusBorderFallback || STYLE_GUIDE.COLORS.inputFocusFallback,
+                                borderColor: theme.input?.focusBorder || STYLE_GUIDE.COLORS.inputFocusFallback,
                               },
                             },
                             '& .MuiInputLabel-root': {
                               color: theme.palette.text.secondary || STYLE_GUIDE.COLORS.darkBorderFocus,
                             },
                             '& .MuiInputLabel-root.Mui-focused': {
-                              color: theme.input?.focusBorder || theme.input?.focusBorderFallback || STYLE_GUIDE.COLORS.inputFocusFallback,
+                              color: theme.input?.focusBorder || STYLE_GUIDE.COLORS.inputFocusFallback,
                             },
                             '& .MuiInputBase-input': {
                               color: `${theme.getInputTextColor() || theme.palette.text.primary} !important`,
@@ -1385,14 +1387,14 @@ export const NotivixAddChartModal: React.FC<AddChartModalProps> = ({
                                 borderColor: theme.border?.hover || STYLE_GUIDE.COLORS.darkBorderHover,
                               },
                               '&.Mui-focused fieldset': {
-                                borderColor: theme.input?.focusBorder || theme.input?.focusBorderFallback || STYLE_GUIDE.COLORS.inputFocusFallback,
+                                borderColor: theme.input?.focusBorder || STYLE_GUIDE.COLORS.inputFocusFallback,
                               },
                             },
                             '& .MuiInputLabel-root': {
                               color: theme.palette.text.secondary || STYLE_GUIDE.COLORS.darkBorderFocus,
                             },
                             '& .MuiInputLabel-root.Mui-focused': {
-                              color: theme.input?.focusBorder || theme.input?.focusBorderFallback || STYLE_GUIDE.COLORS.inputFocusFallback,
+                              color: theme.input?.focusBorder || STYLE_GUIDE.COLORS.inputFocusFallback,
                             },
                             '& .MuiInputBase-input': {
                               color: `${theme.getInputTextColor() || theme.palette.text.primary} !important`,
