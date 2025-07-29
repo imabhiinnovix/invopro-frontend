@@ -25,7 +25,7 @@ export const createDashboard = createAsyncThunk(
   async (
     payload: {
       name: string;
-      dashboardType: 'normal' | 'trend';
+      dashboardType: 'normal' | 'trend' | 'fixed';
       dynamicVersionValue: string;
     },
     { rejectWithValue }

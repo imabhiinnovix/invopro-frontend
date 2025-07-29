@@ -14,8 +14,9 @@ interface DashboardCreationFormProps {
   onCreate: () => void;
   onCancel: () => void;
   isCreatingLoading: boolean;
-  dashboardType: 'normal' | 'trend';
-  onDashboardTypeChange: (type: 'normal' | 'trend') => void;
+  dashboardType: 'normal' | 'trend' | 'fixed';
+  onDashboardTypeChange: (type: 'normal' | 'trend' | 'fixed') => void;
+  activeTab?: 'ReportiVix' | 'Notifix';
 }
 
 export const DashboardCreationForm: React.FC<DashboardCreationFormProps> = ({
@@ -26,6 +27,7 @@ export const DashboardCreationForm: React.FC<DashboardCreationFormProps> = ({
   isCreatingLoading,
   dashboardType,
   onDashboardTypeChange,
+  activeTab,
 }) => {
   
   const theme = useUnifiedTheme();
@@ -51,12 +53,15 @@ export const DashboardCreationForm: React.FC<DashboardCreationFormProps> = ({
         <StyledSelect
           label="Dashboard Type"
           value={dashboardType}
-          onChange={(e) => onDashboardTypeChange(e.target.value as 'normal' | 'trend')}
+          onChange={(e) => onDashboardTypeChange(e.target.value as 'normal' | 'trend' | 'fixed')}
           size="small"
           sx={{ mb: 1, minWidth: 150 }}
         >
           <MenuItem value="normal">Normal</MenuItem>
           <MenuItem value="trend">Trend</MenuItem>
+          {activeTab === "Notifix" && (
+            <MenuItem value="fixed">Fixed</MenuItem>
+          )}
         </StyledSelect>
         <LoadingButton
           size="small"

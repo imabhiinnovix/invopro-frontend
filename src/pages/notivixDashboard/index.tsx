@@ -48,7 +48,7 @@ const NotivixDashboard = () => {
     useState<DashboardType | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [dashboardType, setDashboardType] = useState<"normal" | "trend">(
+  const [dashboardType, setDashboardType] = useState<"normal" | "trend" | "fixed">(
     "normal"
   );
   const [timePeriod, setTimePeriod] = useState<string>("1m");
@@ -357,6 +357,7 @@ const NotivixDashboard = () => {
           onTimePeriodChange={setTimePeriod}
           onCreate={handleCreateDashboard}
           isCreating={isCreating}
+          activeTab="Notifix"
         />
 
         {/* Delete Confirmation Modal */}

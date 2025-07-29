@@ -20,6 +20,7 @@ const StyledSelect: React.FC<StyledSelectProps> = ({
   const selectSx = {
     '& .MuiOutlinedInput-root': {
       backgroundColor: theme.palette.dropdown?.background || theme.palette.background.paper,
+      marginTop: '0 !important',
       '& fieldset': {
         borderColor: theme.palette.input?.border || theme.palette.divider,
       },
@@ -29,6 +30,9 @@ const StyledSelect: React.FC<StyledSelectProps> = ({
       '&.Mui-focused fieldset': {
         borderColor: theme.palette.dropdown?.focusedBorder || theme.palette.primary.main,
       },
+    },
+    '&.MuiInputBase-root.MuiOutlinedInput-root.MuiSelect-root': {
+      marginTop: '0 !important',
     },
     '& .MuiInputLabel-root': {
       color: theme.palette.dropdown?.labelColor || theme.palette.text.secondary,

@@ -161,7 +161,7 @@ export default function SideNav() {
     React.useState(false);
   const [openGlobalSettings, setOpenGlobalSettings] = React.useState(false);
   const [newDashboardName, setNewDashboardName] = React.useState("");
-  const [dashboardType, setDashboardType] = React.useState<"normal" | "trend">(
+  const [dashboardType, setDashboardType] = React.useState<"normal" | "trend" | "fixed">(
     "normal"
   );
   const [timePeriod, setTimePeriod] = React.useState<string>("1m");
@@ -333,7 +333,6 @@ export default function SideNav() {
     clearLocalStorage();
     navigate("/login");
   };
-  // console.log("dataSourceList", dataSourceList);
   const navItems: NavItem[] = useMemo(() => {
     const createIcon = (IconComponent: React.ElementType, route: string) => {
       return (
@@ -347,7 +346,6 @@ export default function SideNav() {
         />
       );
     };
-    console.log("dataSourceList", dataSourceList);
 
     if (activeTab === "Notifix") {
       return [
@@ -1134,6 +1132,7 @@ export default function SideNav() {
         onDashboardTypeChange={setDashboardType}
         timePeriod={timePeriod}
         onTimePeriodChange={setTimePeriod}
+        activeTab={activeTab}
       />
 
       <DeleteConfirmationModal

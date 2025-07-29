@@ -48,7 +48,7 @@ const Dashboard = () => {
     useState<DashboardType | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [dashboardType, setDashboardType] = useState<"normal" | "trend">(
+  const [dashboardType, setDashboardType] = useState<"normal" | "trend" | "fixed">(
     "normal"
   );
   const [timePeriod, setTimePeriod] = useState<string>("1m");
@@ -361,6 +361,7 @@ const Dashboard = () => {
           onDashboardTypeChange={setDashboardType}
           timePeriod={timePeriod}
           onTimePeriodChange={setTimePeriod}
+          activeTab="ReportiVix"
         />
 
         {/* Delete Confirmation Modal */}

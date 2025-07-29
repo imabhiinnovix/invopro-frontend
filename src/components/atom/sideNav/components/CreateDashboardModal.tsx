@@ -22,10 +22,11 @@ interface CreateDashboardModalProps {
   onNameChange: (name: string) => void;
   onCreate: () => void;
   isCreating: boolean;
-  dashboardType: 'normal' | 'trend';
-  onDashboardTypeChange: (type: 'normal' | 'trend') => void;
+  dashboardType: 'normal' | 'trend' | 'fixed';
+  onDashboardTypeChange: (type: 'normal' | 'trend' | 'fixed') => void;
   timePeriod: string;
   onTimePeriodChange: (period: string) => void;
+  activeTab?: 'ReportiVix' | 'Notifix';
 }
 
 export const CreateDashboardModal: React.FC<CreateDashboardModalProps> = ({
@@ -39,6 +40,7 @@ export const CreateDashboardModal: React.FC<CreateDashboardModalProps> = ({
   onDashboardTypeChange,
   timePeriod,
   onTimePeriodChange,
+  activeTab,
 }) => {
   const theme = useUnifiedTheme();
   const { getDialogTitleSx } = useComponentTypography();
@@ -123,12 +125,13 @@ export const CreateDashboardModal: React.FC<CreateDashboardModalProps> = ({
         <StyledSelect
           label="Dashboard Type"
           value={dashboardType}
-          onChange={(e) => onDashboardTypeChange(e.target.value as "normal" | "trend")}
+          onChange={(e) => onDashboardTypeChange(e.target.value as "normal" | "trend" | "fixed")}
           size="small"
           sx={{ mt: 2 }}
         >
           <MenuItem value="normal">Normal</MenuItem>
           <MenuItem value="trend">Trend</MenuItem>
+          {activeTab === "Notifix" && (<MenuItem value="fixed">Fixed</MenuItem>)}
         </StyledSelect>
 
         {dashboardType === "trend" && (
