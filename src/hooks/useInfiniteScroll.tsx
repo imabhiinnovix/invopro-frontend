@@ -82,7 +82,7 @@ export const useInfiniteScroll = <TRequest, TResponse>(
     initialPageParam: 1,
     getNextPageParam: (lastPage, allPages) => {
       const totalPages = Math.ceil((lastPage?.totalCount || 0) / limit);
-      return allPages.length < totalPages ? allPages.length + 1 : undefined;
+      return allPages?.length < totalPages ? allPages?.length + 1 : undefined;
     },
     enabled: enabled,
   });
