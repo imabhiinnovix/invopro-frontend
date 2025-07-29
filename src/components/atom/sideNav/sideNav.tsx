@@ -159,18 +159,14 @@ export default function SideNav() {
   const { openNav } = useNav();
   const [openSettings, setOpenSettings] = React.useState(false);
   const [openDashboard, setOpenDashboard] = React.useState(false);
-  const [openNotificationSettings, setOpenNotificationSettings] =
-    React.useState(false);
+  const [openNotificationSettings, setOpenNotificationSettings] = React.useState(false);
   const [openGlobalSettings, setOpenGlobalSettings] = React.useState(false);
   const [newDashboardName, setNewDashboardName] = React.useState("");
-  const [dashboardType, setDashboardType] = React.useState<"normal" | "trend">(
-    "normal"
-  );
+  const [dashboardType, setDashboardType] = React.useState<"normal" | "trend">("normal");
   const [timePeriod, setTimePeriod] = React.useState<string>("1m");
   const [isCreatingLoading, setIsCreatingLoading] = React.useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = React.useState(false);
-  const [dashboardToDelete, setDashboardToDelete] =
-    React.useState<DashboardType | null>(null);
+  const [dashboardToDelete, setDashboardToDelete] = React.useState<DashboardType | null>(null);
   const [isDeleting, setIsDeleting] = React.useState(false);
   const navigate = useNavigate();
   const location = useLocation();
@@ -180,15 +176,20 @@ export default function SideNav() {
   const [openCreateModal, setOpenCreateModal] = useState(false);
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
-  const [activeTab, setActiveTab] = React.useState<"ReportiVix" | "Notifix">(
-    "ReportiVix"
-  );
-  const permissions = useSelector(
-    (state: RootState) => state.userPermission?.permissions
-  );
-  // const dataSourcePermissions = permissions?.['Data Source'] || {};
-  console.log('permissions',permissions);
-  // Sync activeTab with URL
+  const [activeTab, setActiveTab] = React.useState<"ReportiVix" | "Notifix">("ReportiVix");
+  const permissions = useSelector((state: RootState) => state.userPermission?.permissions);
+
+  const dataSourcePermissions = permissions?.['Data Source'] || {};
+  const validPermissionIds = Object.entries(dataSourcePermissions)
+    .filter(([key, permission]) => {
+      return (
+        permission.allowed === true &&
+        // permission.methodName === "list" &&
+        permission.dataSourceId?._id
+      );
+    })
+    .map(([key, permission]) => permission.dataSourceId._id);
+
   useEffect(() => {
     const path = location.pathname;
     if (path.includes("/notivix")) {
@@ -209,18 +210,14 @@ export default function SideNav() {
   }, [dispatch, activeTab]);
 
   // Fetch data sources for ReportiVix
-  const { infiniteQuery: dataSourceListAPI, lastElementRef } =
-    useInfiniteScroll<DataSourceListPayload, DataSourceListData>(
-      ["dataSourceList"],
-      GET?.DATA_SOURCE_LIST + `?canEditInline=true`,
-      10,
-      "get",
-      true
-    );
+  const { infiniteQuery: dataSourceListAPI, lastElementRef } = useInfiniteScroll<
+    DataSourceListPayload,
+    DataSourceListData
+  >(["dataSourceList"], GET?.DATA_SOURCE_LIST + `?canEditInline=true`, 10, "get", true);
 
   // Fetch data sources for Notifix
   const dataSourceNotivixListAPI = useGet<DataSourceListPayload>(
-    ["dataSourceNotivixList"], // Unique query key
+    ["dataSourceNotivixList"],
     GET?.DATA_SOURCE_LIST + `?isShowMenu=true`
   );
 
@@ -233,22 +230,20 @@ export default function SideNav() {
     return dataSourceNotivixListAPI?.data?.data || [];
   }, [dataSourceNotivixListAPI?.data]);
 
-  console.log("Data dataSourceNotivixList List:", dataSourceNotivixList);
-  // Log API responses for debugging
-  useEffect(() => {
-    console.log("dataSourceListAPI:", dataSourceListAPI);
-    console.log("dataSourceNotivixListAPI:", dataSourceNotivixListAPI);
-  }, [dataSourceListAPI, dataSourceNotivixListAPI]);
+  const matchedDataSources = useMemo(() => {
+    console.log("Matched Data Sources:", dataSourceNotivixList?.filter(
+      (dataSource) => validPermissionIds.includes(dataSource._id) && dataSource.isShowMenu === true
+    ));
+    return dataSourceNotivixList?.filter(
+      (dataSource) => validPermissionIds.includes(dataSource._id) && dataSource.isShowMenu === true
+    );
+  }, [dataSourceNotivixList, validPermissionIds]);
 
   useEffect(() => {
     if (dataSourceList.length > 0) dispatch(setDataSourceList(dataSourceList));
   }, [dataSourceList, dispatch]);
 
-  const handleItemClick = (
-    route: string,
-    hasSubItems: boolean,
-    itemName: string
-  ) => {
+  const handleItemClick = (route: string, hasSubItems: boolean, itemName: string) => {
     if (hasSubItems) {
       if (itemName === "Dashboards") {
         if (!openDashboard) {
@@ -295,9 +290,7 @@ export default function SideNav() {
             state: { enableEditMode: true },
           });
         }
-      } catch (error:
-        | { payload?: { message: string }; message?: string }
-        | unknown) {
+      } catch (error: | { payload?: { message: string }; message?: string } | unknown) {
         const errorMessage =
           error && typeof error === "object" && "payload" in error
             ? (error.payload as { message?: string })?.message
@@ -338,10 +331,7 @@ export default function SideNav() {
         setDashboardToDelete(null);
       } catch (error) {
         const errorResponse = error as ErrorResponse;
-        toast.error(
-          errorResponse.message ||
-            "Failed to delete dashboard. Please try again."
-        );
+        toast.error(errorResponse.message || "Failed to delete dashboard. Please try again.");
       } finally {
         setIsDeleting(false);
       }
@@ -374,17 +364,22 @@ export default function SideNav() {
     };
 
     if (activeTab === "Notifix") {
+      const dataSourceItems = matchedDataSources?.map((item) => {
+        console.log("Data Source Item:", item); // Log each data source item
+        return {
+          name: item?.name ?? "Unknown",
+          icon: createIcon(SourceIcon, `/notivix/data-source/${item?._id}`),
+          route: `/notivix/data-source/${item?._id}`,
+        };
+      }) || [];
+      console.log("Notifix navItems:", dataSourceItems);
       return [
         {
           name: "Dashboard",
           icon: createIcon(AssessmentIcon, "/notivix/dashboard"),
           route: "/notivix/dashboard",
         },
-        ...(dataSourceNotivixList?.map((item) => ({
-          name: item?.name ?? "",
-          icon: createIcon(SourceIcon, `/notivix/data-source/${item?._id}`),
-          route: `/notivix/data-source/${item?._id}`,
-        })) || []),
+        ...dataSourceItems,
         ...(dataSourceNotivixListAPI?.isLoading
           ? [
               {
@@ -551,7 +546,7 @@ export default function SideNav() {
     loading,
     dashboards,
     dataSourceList,
-    dataSourceNotivixList,
+    matchedDataSources,
     dataSourceListAPI?.hasNextPage,
     dataSourceNotivixListAPI?.isLoading,
     lastElementRef,

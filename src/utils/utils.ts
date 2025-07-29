@@ -82,92 +82,6 @@ export interface PermissionMap {
   };
 }
 
-// export const formatPermissions = (
-//   backendPermissions: BackendPermission[]
-// ): PermissionMap => {
-//   const permissionMap: PermissionMap = {};
-
-//   backendPermissions.forEach((perm, index) => {
-//     const isOriginalStructure = 'permissionId' in perm && 'allowed' in perm;
-//     const permissionId = isOriginalStructure ? perm.permissionId : perm._id;
-//     const resourceType = perm.resourceType;
-//     const resourceCode = perm.resourceCode;
-//     const allowed = isOriginalStructure ? perm.allowed : true;
-//     const dataSourceId = isOriginalStructure ? perm.dataSourceId : undefined;
-
-//     // Validate required fields
-//     if (!permissionId || !resourceType || !resourceCode) {
-//       console.warn(`Invalid permission at index ${index}:`, JSON.stringify(perm, null, 2));
-//       return;
-//     }
-
-//     // Split resourceCode on '__'
-//     const resourceCodeParts = resourceCode.split('__');
-
-//     // Skip if resourceCode does not contain '__'
-//     if (resourceCodeParts.length < 2) {
-//       console.warn(`Skipping invalid resourceCode format at index ${index}: ${resourceCode}`);
-//       return;
-//     }
-
-//     // Initialize resourceType in permissionMap
-//     if (!permissionMap[resourceType]) {
-//       permissionMap[resourceType] = {};
-//     }
-
-//     if (resourceType === 'Custom Report') {
-//       // For Custom Report: Use the part after 'customReport__' as the key
-//       const methodName = resourceCodeParts[1]; // e.g., 'get_design_details'
-
-//       permissionMap[resourceType][methodName] = {
-//         allowed,
-//         _id: permissionId,
-//         resourceType,
-//         permissionId,
-//         methodName, 
-//         ...(dataSourceId && { dataSourceId }),
-//       };
-//     } else if (resourceType === 'Data Source' && resourceCodeParts.length >= 3) {
-//       // For Data Source with nested structure: Use second and third parts
-//       const nestedKey = resourceCodeParts[1]; // e.g., 'caseess'
-//       const method = resourceCodeParts[2]; // e.g., 'create'
-//       const methodName = `${nestedKey}_${method}`; // e.g., 'caseess_create'
-
-//       permissionMap[resourceType][methodName] = {
-//         allowed,
-//         _id: permissionId,
-//         resourceType,
-//         permissionId,
-//         methodName, 
-//         ...(dataSourceId && { dataSourceId }),
-//       };
-//     } else {
-//       // Original logic for other resource types or Data Source with 2 parts
-//       const methodNameRaw = resourceCodeParts[resourceCodeParts.length - 1]; // Last part
-
-//       // Capitalize each word and join with a space for formatted key
-//       const formattedMethodName = methodNameRaw
-//         .split('_')
-//         .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-//         .join(' ');
-
-//       permissionMap[resourceType][formattedMethodName] = {
-//         allowed,
-//         _id: permissionId,
-//         resourceType,
-//         permissionId,
-//         methodName: formattedMethodName, 
-//         ...(dataSourceId && { dataSourceId }),
-//       };
-//     }
-//   });
-
-//   localStorage.setItem('permissions', JSON.stringify(permissionMap));
-//   window.dispatchEvent(new Event('storage'));
-
-//   return permissionMap;
-// };
-
 
 export const formatPermissions = (
   backendPermissions: BackendPermission[]
@@ -181,7 +95,6 @@ export const formatPermissions = (
     const resourceCode = perm.resourceCode;
     const allowed = isOriginalStructure ? perm.allowed : true;
     const dataSourceId = isOriginalStructure ? perm.dataSourceId : undefined;
-
     // Validate required fields
     if (!permissionId || !resourceType || !resourceCode) {
       console.warn(`Invalid permission at index ${index}:`, JSON.stringify(perm, null, 2));
@@ -226,7 +139,7 @@ export const formatPermissions = (
       _id: permissionId,
       resourceType,
       permissionId,
-      methodName,
+      // methodName,
       ...(dataSourceId && { dataSourceId }),
     };
   });
