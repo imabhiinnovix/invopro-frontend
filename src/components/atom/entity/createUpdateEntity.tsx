@@ -173,13 +173,19 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
   const attributes = watch("attributes");
   const prevEntityIdsRef = useRef<string[]>([]);
 
-  const referenceEntityIdsString = attributes?.map((attr) => attr.refEntityId).join(",") || "";
+  const referenceEntityIdsString = attributes?.map((attr) => 
+    typeof attr.refEntityId === 'object' 
+      ? (attr.refEntityId as any)?._id 
+      : attr.refEntityId
+  ).join(",") || "";
 
   useEffect(() => {
     if (open && isFormReady) {
       console.log("Fetching reference entities for attributes:", attributes);
       attributes?.forEach((attribute, index) => {
-        const entityId = attribute?.refEntityId;
+        const entityId = typeof attribute?.refEntityId === 'object' 
+          ? (attribute?.refEntityId as any)?._id 
+          : attribute?.refEntityId;
         console.log(`Processing entityId: ${entityId} for index: ${index}`);
         
         if (
@@ -225,7 +231,11 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
           });
       });
 
-      prevEntityIdsRef.current = attributes?.map((attr) => attr.refEntityId) || [];
+      prevEntityIdsRef.current = attributes?.map((attr) => 
+        typeof attr.refEntityId === 'object' 
+          ? (attr.refEntityId as any)?._id 
+          : attr.refEntityId
+      ) || [];
     }
   }, [open, isFormReady, attributes, referenceEntityIdsString]);
 
@@ -824,7 +834,9 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
                       apiUrl={`${GET.Entity_List}`}
                       labelName="name"
                       labelValue="_id"
-                      defaultValue={attribute.refEntityId || ""}
+                      defaultValue={typeof attribute.refEntityId === 'object' 
+                        ? (attribute.refEntityId as any)?._id || ""
+                        : attribute.refEntityId || ""}
                       rules={{ required: false }}
                       error={!!errors.attributes?.[index]?.refEntityId}
                       errorMessage={
@@ -842,7 +854,9 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
                       name={`attributes.${index}.refEntityField`}
                       label="Reference Entity Field"
                       options={referenceEntityNames[index]?.length ? referenceEntityNames[index] : ["No fields available"]}
-                      defaultValue={attribute.refEntityField || ""}
+                      defaultValue={typeof attribute.refEntityField === 'object'
+                        ? (attribute.refEntityField as any)?.name || ""
+                        : attribute.refEntityField || ""}
                       rules={{ required: false }}
                       error={!!errors.attributes?.[index]?.refEntityField}
                       errorMessage={
