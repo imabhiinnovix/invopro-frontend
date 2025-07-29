@@ -27,17 +27,20 @@ export const createDashboard = createAsyncThunk(
       name: string;
       dashboardType: 'normal' | 'trend' | 'fixed';
       dynamicVersionValue: string;
+      dataSourceId?: string;
     },
     { rejectWithValue }
   ) => {
     try {
-      const { data } = await axiosInstance.post<DashboardListResponse>(POST.CREATE_DASHBOARD, {
+      const requestPayload = {
         name: payload.name,
         settings: {
           dashboardType: payload.dashboardType,
           dynamicVersionValue: payload.dynamicVersionValue,
+          ...(payload.dashboardType === 'fixed' && { dataSourceId: payload.dataSourceId || '' }),
         },
-      });
+      };
+      const { data } = await axiosInstance.post<DashboardListResponse>(POST.CREATE_DASHBOARD, requestPayload);
       if (!data.success) {
         return rejectWithValue({
           message: data.message || 'Failed to create dashboard',

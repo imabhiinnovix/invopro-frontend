@@ -27,6 +27,7 @@ export const createDashboard = createAsyncThunk(
       name: string;
       dashboardType: 'normal' | 'trend' | 'fixed';
       dynamicVersionValue: string;
+      dataSourceId?: string;
     },
     { rejectWithValue }
   ) => {
@@ -36,6 +37,7 @@ export const createDashboard = createAsyncThunk(
         settings: {
           dashboardType: payload.dashboardType,
           dynamicVersionValue: payload.dynamicVersionValue,
+          ...(payload.dashboardType === 'fixed' && { dataSourceId: payload.dataSourceId || '' }),
         },
       });
       if (!data.success) {
