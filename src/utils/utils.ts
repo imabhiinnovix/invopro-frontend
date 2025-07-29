@@ -77,6 +77,7 @@ export interface PermissionMap {
       resourceType: string;
       permissionId: string;
       dataSourceId?: string;
+      methodName?: string; 
     };
   };
 }
@@ -91,44 +92,74 @@ export interface PermissionMap {
 //     const permissionId = isOriginalStructure ? perm.permissionId : perm._id;
 //     const resourceType = perm.resourceType;
 //     const resourceCode = perm.resourceCode;
-//     const allowed = isOriginalStructure ? perm.allowed : true; 
+//     const allowed = isOriginalStructure ? perm.allowed : true;
 //     const dataSourceId = isOriginalStructure ? perm.dataSourceId : undefined;
 
 //     // Validate required fields
 //     if (!permissionId || !resourceType || !resourceCode) {
-//       console.warn(`Invalid permission at index ${index}:`, perm);
+//       console.warn(`Invalid permission at index ${index}:`, JSON.stringify(perm, null, 2));
 //       return;
 //     }
 
-//     // Split resourceCode to get method name
+//     // Split resourceCode on '__'
 //     const resourceCodeParts = resourceCode.split('__');
+
+//     // Skip if resourceCode does not contain '__'
 //     if (resourceCodeParts.length < 2) {
-//       console.warn(`Invalid resourceCode format at index ${index}: ${resourceCode}`);
+//       console.warn(`Skipping invalid resourceCode format at index ${index}: ${resourceCode}`);
 //       return;
 //     }
-
-//     // Handle method name: take all parts after the first one
-//     const methodName = resourceCodeParts.slice(1).join('_');
-
-//     // Capitalize each word and join with a space
-//     const formattedMethodName = methodName
-//       .split('_')
-//       .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-//       .join(' ');
 
 //     // Initialize resourceType in permissionMap
 //     if (!permissionMap[resourceType]) {
 //       permissionMap[resourceType] = {};
 //     }
 
-//     // Assign permission details
-//     permissionMap[resourceType][formattedMethodName] = {
-//       allowed,
-//       _id: permissionId,
-//       resourceType,
-//       permissionId,
-//       ...(dataSourceId && { dataSourceId }), 
-//     };
+//     if (resourceType === 'Custom Report') {
+//       // For Custom Report: Use the part after 'customReport__' as the key
+//       const methodName = resourceCodeParts[1]; // e.g., 'get_design_details'
+
+//       permissionMap[resourceType][methodName] = {
+//         allowed,
+//         _id: permissionId,
+//         resourceType,
+//         permissionId,
+//         methodName, 
+//         ...(dataSourceId && { dataSourceId }),
+//       };
+//     } else if (resourceType === 'Data Source' && resourceCodeParts.length >= 3) {
+//       // For Data Source with nested structure: Use second and third parts
+//       const nestedKey = resourceCodeParts[1]; // e.g., 'caseess'
+//       const method = resourceCodeParts[2]; // e.g., 'create'
+//       const methodName = `${nestedKey}_${method}`; // e.g., 'caseess_create'
+
+//       permissionMap[resourceType][methodName] = {
+//         allowed,
+//         _id: permissionId,
+//         resourceType,
+//         permissionId,
+//         methodName, 
+//         ...(dataSourceId && { dataSourceId }),
+//       };
+//     } else {
+//       // Original logic for other resource types or Data Source with 2 parts
+//       const methodNameRaw = resourceCodeParts[resourceCodeParts.length - 1]; // Last part
+
+//       // Capitalize each word and join with a space for formatted key
+//       const formattedMethodName = methodNameRaw
+//         .split('_')
+//         .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+//         .join(' ');
+
+//       permissionMap[resourceType][formattedMethodName] = {
+//         allowed,
+//         _id: permissionId,
+//         resourceType,
+//         permissionId,
+//         methodName: formattedMethodName, 
+//         ...(dataSourceId && { dataSourceId }),
+//       };
+//     }
 //   });
 
 //   localStorage.setItem('permissions', JSON.stringify(permissionMap));
@@ -166,26 +197,36 @@ export const formatPermissions = (
       return;
     }
 
-    // Extract method name (everything after the last '__')
-    const methodName = resourceCodeParts[resourceCodeParts.length - 1];
-
-    // Capitalize each word and join with a space
-    const formattedMethodName = methodName
-      .split('_')
-      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-      .join(' ');
-
     // Initialize resourceType in permissionMap
     if (!permissionMap[resourceType]) {
       permissionMap[resourceType] = {};
     }
 
-    // Assign permission details
-    permissionMap[resourceType][formattedMethodName] = {
+    let methodName: string;
+    let formattedKey: string;
+
+    if (resourceCodeParts.length === 2) {
+      // Case: resourceType__method (e.g., customReport__get_design_details)
+      methodName = resourceCodeParts[1]; // e.g., 'get_design_details'
+      formattedKey = methodName; // Use as-is
+    } else if (resourceCodeParts.length >= 3) {
+      // Case: resourceType__nested__method (e.g., dataSource__caseess__create)
+      const nestedKey = resourceCodeParts[1]; // e.g., 'caseess'
+      const method = resourceCodeParts[2]; // e.g., 'create'
+      methodName = `${nestedKey}_${method}`; // e.g., 'caseess_create'
+      formattedKey = methodName; // Use combined key
+    } else {
+      // Fallback for unexpected cases (shouldn't occur due to earlier validation)
+      console.warn(`Unexpected resourceCode format at index ${index}: ${resourceCode}`);
+      return;
+    }
+
+    permissionMap[resourceType][formattedKey] = {
       allowed,
       _id: permissionId,
       resourceType,
       permissionId,
+      methodName,
       ...(dataSourceId && { dataSourceId }),
     };
   });

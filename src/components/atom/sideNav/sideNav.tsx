@@ -49,12 +49,13 @@ import { useComponentTypography } from "../../../hooks/useComponentTypography";
 import reportivixIcon from "../../../../public/Reportivix-fav-32.png";
 import notivixIcon from "../../../../public/NotiVix-fav-32.png";
 import NotificationsIcon from "@mui/icons-material/Notifications";
-import PeopleIcon from "@mui/icons-material/People";
 import BusinessIcon from "@mui/icons-material/Business";
 import AssignmentIndIcon from "@mui/icons-material/AssignmentInd";
 import GridViewIcon from "@mui/icons-material/GridView";
 import NotivixLogo from "../../../assets/NotiVix-Logo-TRANS-V1.png";
 import useGet from "../../../hooks/useGet";
+import { useSelector } from "react-redux";
+import { RootState } from "../../../reducers";
 
 interface ErrorResponse {
   success: boolean;
@@ -158,14 +159,18 @@ export default function SideNav() {
   const { openNav } = useNav();
   const [openSettings, setOpenSettings] = React.useState(false);
   const [openDashboard, setOpenDashboard] = React.useState(false);
-  const [openNotificationSettings, setOpenNotificationSettings] = React.useState(false);
+  const [openNotificationSettings, setOpenNotificationSettings] =
+    React.useState(false);
   const [openGlobalSettings, setOpenGlobalSettings] = React.useState(false);
   const [newDashboardName, setNewDashboardName] = React.useState("");
-  const [dashboardType, setDashboardType] = React.useState<"normal" | "trend">("normal");
+  const [dashboardType, setDashboardType] = React.useState<"normal" | "trend">(
+    "normal"
+  );
   const [timePeriod, setTimePeriod] = React.useState<string>("1m");
   const [isCreatingLoading, setIsCreatingLoading] = React.useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = React.useState(false);
-  const [dashboardToDelete, setDashboardToDelete] = React.useState<DashboardType | null>(null);
+  const [dashboardToDelete, setDashboardToDelete] =
+    React.useState<DashboardType | null>(null);
   const [isDeleting, setIsDeleting] = React.useState(false);
   const navigate = useNavigate();
   const location = useLocation();
@@ -175,8 +180,14 @@ export default function SideNav() {
   const [openCreateModal, setOpenCreateModal] = useState(false);
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
-  const [activeTab, setActiveTab] = React.useState<"ReportiVix" | "Notifix">("ReportiVix");
-
+  const [activeTab, setActiveTab] = React.useState<"ReportiVix" | "Notifix">(
+    "ReportiVix"
+  );
+  const permissions = useSelector(
+    (state: RootState) => state.userPermission?.permissions
+  );
+  // const dataSourcePermissions = permissions?.['Data Source'] || {};
+  console.log('permissions',permissions);
   // Sync activeTab with URL
   useEffect(() => {
     const path = location.pathname;
@@ -198,10 +209,14 @@ export default function SideNav() {
   }, [dispatch, activeTab]);
 
   // Fetch data sources for ReportiVix
-  const { infiniteQuery: dataSourceListAPI, lastElementRef } = useInfiniteScroll<
-    DataSourceListPayload,
-    DataSourceListData
-  >(["dataSourceList"], GET?.DATA_SOURCE_LIST + `?canEditInline=true`, 10, "get", true);
+  const { infiniteQuery: dataSourceListAPI, lastElementRef } =
+    useInfiniteScroll<DataSourceListPayload, DataSourceListData>(
+      ["dataSourceList"],
+      GET?.DATA_SOURCE_LIST + `?canEditInline=true`,
+      10,
+      "get",
+      true
+    );
 
   // Fetch data sources for Notifix
   const dataSourceNotivixListAPI = useGet<DataSourceListPayload>(
@@ -218,27 +233,22 @@ export default function SideNav() {
     return dataSourceNotivixListAPI?.data?.data || [];
   }, [dataSourceNotivixListAPI?.data]);
 
+  console.log("Data dataSourceNotivixList List:", dataSourceNotivixList);
   // Log API responses for debugging
   useEffect(() => {
     console.log("dataSourceListAPI:", dataSourceListAPI);
     console.log("dataSourceNotivixListAPI:", dataSourceNotivixListAPI);
   }, [dataSourceListAPI, dataSourceNotivixListAPI]);
 
-  // Handle errors
-  useEffect(() => {
-    if (dataSourceListAPI.error) {
-      toast.error("Failed to load ReportiVix data sources.");
-    }
-    if (dataSourceNotivixListAPI.error) {
-      toast.error("Failed to load Notifix data sources.");
-    }
-  }, [dataSourceListAPI.error, dataSourceNotivixListAPI.error]);
-
   useEffect(() => {
     if (dataSourceList.length > 0) dispatch(setDataSourceList(dataSourceList));
   }, [dataSourceList, dispatch]);
 
-  const handleItemClick = (route: string, hasSubItems: boolean, itemName: string) => {
+  const handleItemClick = (
+    route: string,
+    hasSubItems: boolean,
+    itemName: string
+  ) => {
     if (hasSubItems) {
       if (itemName === "Dashboards") {
         if (!openDashboard) {
@@ -285,13 +295,15 @@ export default function SideNav() {
             state: { enableEditMode: true },
           });
         }
-      } catch (error: | { payload?: { message: string }; message?: string } | unknown) {
+      } catch (error:
+        | { payload?: { message: string }; message?: string }
+        | unknown) {
         const errorMessage =
           error && typeof error === "object" && "payload" in error
             ? (error.payload as { message?: string })?.message
             : error && typeof error === "object" && "message" in error
-            ? (error as { message?: string })?.message
-            : "Failed to create dashboard. Please try again.";
+              ? (error as { message?: string })?.message
+              : "Failed to create dashboard. Please try again.";
         toast.error(errorMessage);
       } finally {
         setIsCreatingLoading(false);
@@ -326,7 +338,10 @@ export default function SideNav() {
         setDashboardToDelete(null);
       } catch (error) {
         const errorResponse = error as ErrorResponse;
-        toast.error(errorResponse.message || "Failed to delete dashboard. Please try again.");
+        toast.error(
+          errorResponse.message ||
+            "Failed to delete dashboard. Please try again."
+        );
       } finally {
         setIsDeleting(false);
       }
@@ -698,14 +713,18 @@ export default function SideNav() {
                   }}
                 >
                   <ListItemButton
-                    onClick={() => handleItemClick(item.route, !!item.subItems, item.name)}
+                    onClick={() =>
+                      handleItemClick(item.route, !!item.subItems, item.name)
+                    }
                     sx={{
                       minHeight: 42,
                       mx: 1.5,
                       px: 2,
                       borderRadius: "8px",
                       justifyContent: openNav ? "initial" : "center",
-                      backgroundColor: isRouteActive(item.route) ? "#ffffff" : "transparent",
+                      backgroundColor: isRouteActive(item.route)
+                        ? "#ffffff"
+                        : "transparent",
                       color: isRouteActive(item.route)
                         ? theme.palette.primary.main
                         : theme.palette.text.primary,
@@ -747,8 +766,11 @@ export default function SideNav() {
                     {item.subItems &&
                       openNav &&
                       ((item.name === "Dashboards" && openDashboard) ||
-                      (item.name === "Notification" && openNotificationSettings) ||
-                      (item.name !== "Dashboards" && item.name !== "Notification" && openSettings) ? (
+                      (item.name === "Notification" &&
+                        openNotificationSettings) ||
+                      (item.name !== "Dashboards" &&
+                        item.name !== "Notification" &&
+                        openSettings) ? (
                         <ExpandLessIcon
                           sx={{
                             fontSize: getNavigationSx().fontSize,
@@ -776,8 +798,8 @@ export default function SideNav() {
                       item.name === "Dashboards"
                         ? openDashboard
                         : item.name === "Notification"
-                        ? openNotificationSettings
-                        : openSettings
+                          ? openNotificationSettings
+                          : openSettings
                     }
                     timeout="auto"
                     unmountOnExit
@@ -797,7 +819,8 @@ export default function SideNav() {
                               borderRadius: "8px",
                               mx: STYLE_GUIDE.SPACING.s3,
                               "&:hover": {
-                                backgroundColor: STYLE_GUIDE.COLORS.backgroundDefault,
+                                backgroundColor:
+                                  STYLE_GUIDE.COLORS.backgroundDefault,
                               },
                             }}
                           >
@@ -829,7 +852,9 @@ export default function SideNav() {
                       )}
 
                       <SubItemsList
-                        subItems={item.subItems.filter((subItem) => !subItem.isCreateButton)}
+                        subItems={item.subItems.filter(
+                          (subItem) => !subItem.isCreateButton
+                        )}
                         openNav={openNav}
                         parentName={item.name}
                         dashboards={dashboards}
@@ -861,16 +886,19 @@ export default function SideNav() {
                       borderRadius: "8px",
                       justifyContent: openNav ? "initial" : "center",
                       backgroundColor:
-                        isRouteActive("/notivix/settings") || isRouteActive("/settings")
+                        isRouteActive("/notivix/settings") ||
+                        isRouteActive("/settings")
                           ? "#f1f5f9"
                           : "transparent",
                       color:
-                        isRouteActive("/notivix/settings") || isRouteActive("/settings")
+                        isRouteActive("/notivix/settings") ||
+                        isRouteActive("/settings")
                           ? `${STYLE_GUIDE.COLORS.primaryDark}`
                           : "inherit",
                       "& .MuiListItemIcon-root": {
                         color:
-                          isRouteActive("/notivix/settings") || isRouteActive("/settings")
+                          isRouteActive("/notivix/settings") ||
+                          isRouteActive("/settings")
                             ? `${STYLE_GUIDE.COLORS.primaryDark}`
                             : "inherit",
                       },
@@ -900,7 +928,8 @@ export default function SideNav() {
                           fontSize: "0.95rem",
                           fontWeight: 500,
                           color:
-                            isRouteActive("/notivix/settings") || isRouteActive("/settings")
+                            isRouteActive("/notivix/settings") ||
+                            isRouteActive("/settings")
                               ? `${STYLE_GUIDE.COLORS.primaryDark}`
                               : "inherit",
                         },
@@ -912,7 +941,8 @@ export default function SideNav() {
                           sx={{
                             fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base,
                             color:
-                              isRouteActive("/notivix/settings") || isRouteActive("/settings")
+                              isRouteActive("/notivix/settings") ||
+                              isRouteActive("/settings")
                                 ? `${STYLE_GUIDE.COLORS.primaryDark}`
                                 : "inherit",
                           }}
@@ -922,7 +952,8 @@ export default function SideNav() {
                           sx={{
                             fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base,
                             color:
-                              isRouteActive("/notivix/settings") || isRouteActive("/settings")
+                              isRouteActive("/notivix/settings") ||
+                              isRouteActive("/settings")
                                 ? `${STYLE_GUIDE.COLORS.primaryDark}`
                                 : "inherit",
                           }}
@@ -931,7 +962,11 @@ export default function SideNav() {
                   </ListItemButton>
                 </ListItem>
                 {openNav && (
-                  <Collapse in={openGlobalSettings} timeout="auto" unmountOnExit>
+                  <Collapse
+                    in={openGlobalSettings}
+                    timeout="auto"
+                    unmountOnExit
+                  >
                     <List component="div" disablePadding>
                       {[
                         {
@@ -991,7 +1026,8 @@ export default function SideNav() {
                                 ? "#f1f5f9"
                                 : "transparent",
                               "&:hover": {
-                                backgroundColor: STYLE_GUIDE.COLORS.backgroundDefault,
+                                backgroundColor:
+                                  STYLE_GUIDE.COLORS.backgroundDefault,
                               },
                             }}
                           >
