@@ -779,11 +779,7 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
                         "email",
                       ]}
                       defaultValue={attribute.type || ""}
-                      rules={{ required: "Attribute Type is required" }}
-                      error={!!errors.attributes?.[index]?.type}
-                      errorMessage={
-                        (errors.attributes?.[index]?.type as FieldError)?.message
-                      }
+                     
                     />
 
                     {attributes &&
