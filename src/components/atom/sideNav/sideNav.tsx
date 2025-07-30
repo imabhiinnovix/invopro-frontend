@@ -231,11 +231,9 @@ export default function SideNav() {
   }, [dataSourceNotivixListAPI?.data]);
 
   const matchedDataSources = useMemo(() => {
-    console.log("Matched Data Sources:", dataSourceNotivixList?.filter(
-      (dataSource) => validPermissionIds.includes(dataSource._id) && dataSource.isShowMenu === true
-    ));
+
     return dataSourceNotivixList?.filter(
-      (dataSource) => validPermissionIds.includes(dataSource._id) && dataSource.isShowMenu === true
+      (dataSource:any) => validPermissionIds.includes(dataSource._id) && dataSource.isShowMenu === true
     );
   }, [dataSourceNotivixList, validPermissionIds]);
 
@@ -365,14 +363,13 @@ export default function SideNav() {
 
     if (activeTab === "Notifix") {
       const dataSourceItems = matchedDataSources?.map((item) => {
-        console.log("Data Source Item:", item); // Log each data source item
+  
         return {
-          name: item?.name ?? "Unknown",
+          name: item?.name ?? " ",
           icon: createIcon(SourceIcon, `/notivix/data-source/${item?._id}`),
           route: `/notivix/data-source/${item?._id}`,
         };
       }) || [];
-      console.log("Notifix navItems:", dataSourceItems);
       return [
         {
           name: "Dashboard",
@@ -401,26 +398,26 @@ export default function SideNav() {
             />
           ),
           route: "/notivix/notification-settings",
-          subItems: [
-            {
-              name: "Settings",
-              icon: (
-                <SettingsIcon
-                  sx={{ fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base }}
-                />
-              ),
-              route: "/notivix/notification-settings/settings",
-            },
-            {
-              name: "Notification",
-              icon: (
-                <NotificationsIcon
-                  sx={{ fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base }}
-                />
-              ),
-              route: "/notivix/notification-settings/notification",
-            },
-          ],
+          // subItems: [
+          //   {
+          //     name: "Settings",
+          //     icon: (
+          //       <SettingsIcon
+          //         sx={{ fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base }}
+          //       />
+          //     ),
+          //     route: "/notivix/notification-settings/settings",
+          //   },
+          //   {
+          //     name: "Notification",
+          //     icon: (
+          //       <NotificationsIcon
+          //         sx={{ fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base }}
+          //       />
+          //     ),
+          //     route: "/notivix/notification-settings/notification",
+          //   },
+          // ],
         },
       ];
     }
