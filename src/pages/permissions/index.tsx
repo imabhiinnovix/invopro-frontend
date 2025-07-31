@@ -1,5 +1,3 @@
-
-
 import * as React from "react";
 import { useState, useEffect } from "react";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
@@ -177,7 +175,7 @@ export default function Permissions() {
     name: "",
     dataSourceId: "",
     method: "",
-    methodName: "", 
+    methodName: "",
     resourceType: "",
     code: "",
   });
@@ -187,6 +185,7 @@ export default function Permissions() {
     [
       "permissionList",
       String(paginationModel.page + 1),
+      String(paginationModel.pageSize),
       debouncedSearchValue,
       filterValues.name,
       filterValues.dataSourceId,
@@ -196,7 +195,7 @@ export default function Permissions() {
     true
   );
 
-  // POST API 
+  // POST API
   const createPermission = usePost<
     PermissionPostPayload,
     PermissionPostResponse
@@ -212,7 +211,7 @@ export default function Permissions() {
     true
   );
 
-  // PUT API 
+  // PUT API
   const updatePermission = usePut<
     PermissionPostPayload,
     PermissionPostResponse
@@ -228,7 +227,7 @@ export default function Permissions() {
     true
   );
 
-  // DELETE API 
+  // DELETE API
   const deletePermission = useDelete<PermissionPostResponse>(
     ["deletePermission"],
     (data) => {
@@ -240,8 +239,6 @@ export default function Permissions() {
     },
     true
   );
-
-
 
   // Process API data for DataGrid
   const permissionsWithIds =
@@ -260,7 +257,7 @@ export default function Permissions() {
       name: row.name || "",
       dataSourceId: row.dataSourceId?._id || "",
       method: row.method || "",
-      methodName: row.methodName || row.method || "", 
+      methodName: row.methodName || row.method || "",
       resourceType: row.resourceType || "",
       code: (row.dataSourceId as any)?.code || "",
     });
@@ -377,8 +374,8 @@ export default function Permissions() {
           url: POST.CREATE_PERMISSION,
           payload: {
             name: formData.name,
-            method: formData.methodName || formData.method, 
-            methodName: formData.methodName || formData.method, 
+            method: formData.methodName || formData.method,
+            methodName: formData.methodName || formData.method,
             dataSourceId: formData.dataSourceId,
             code: formData.code,
           },
@@ -388,8 +385,8 @@ export default function Permissions() {
           url: `${PUT.UPDATE_PERMISSION}/${formData.id}`,
           payload: {
             name: formData.name,
-            method: formData.methodName || formData.method, 
-            methodName: formData.methodName || formData.method, 
+            method: formData.methodName || formData.method,
+            methodName: formData.methodName || formData.method,
             dataSourceId: formData.dataSourceId,
             code: formData.code,
           },
@@ -421,8 +418,8 @@ export default function Permissions() {
   const handleMethodChange = (e: SelectChangeEvent<string>) => {
     setFormData({
       ...formData,
-      method: e.target.value.toUpperCase(), 
-      methodName: e.target.value, 
+      method: e.target.value.toUpperCase(),
+      methodName: e.target.value,
     });
   };
 
@@ -654,8 +651,6 @@ export default function Permissions() {
                 </Select>
               </FormControl>
             )}
-
-          
           </Box>
 
           <Box

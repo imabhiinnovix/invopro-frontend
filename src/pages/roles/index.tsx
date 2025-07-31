@@ -322,6 +322,7 @@ export default function Roles() {
     [
       "roleList",
       String(paginationModel.page + 1),
+      String(paginationModel.pageSize),
       debouncedSearchValue,
       String(roleReload),
       filterValues.name,
@@ -707,7 +708,7 @@ export default function Roles() {
             }))}
             columns={columns}
             initialState={{ pagination: { paginationModel } }}
-            pageSizeOptions={[5, 10, 20]}
+            pageSizeOptions={[10, 20]}
             disableColumnMenu
             paginationMode="server"
             sx={{

@@ -22,7 +22,7 @@ import {
   FormControl,
   InputLabel,
 } from "@mui/material";
-import { STYLE_GUIDE } from "../../styles"; 
+import { STYLE_GUIDE } from "../../styles";
 import SearchIcon from "@mui/icons-material/Search";
 import FilterListIcon from "@mui/icons-material/FilterList";
 import AddIcon from "@mui/icons-material/Add";
@@ -90,6 +90,8 @@ export default function NotifixDataSource() {
     [
       "sourceVersionData",
       String(paginationModelMemo.page + 1),
+      String(paginationModel.pageSize),
+
       debouncedSearchValue,
       valueId || "",
     ],
@@ -115,7 +117,8 @@ export default function NotifixDataSource() {
         const dataSource = row.rowData || row;
         Object.keys(dataSource).forEach((key) => {
           if (key !== "_id" && key !== "id") {
-            newFormData[key] = dataSource[key] != null ? String(dataSource[key]) : "";
+            newFormData[key] =
+              dataSource[key] != null ? String(dataSource[key]) : "";
           }
         });
         setFormData(newFormData);
@@ -141,7 +144,8 @@ export default function NotifixDataSource() {
         const dataSource = row.rowData || row;
         Object.keys(dataSource).forEach((key) => {
           if (key !== "_id" && key !== "id") {
-            newFormData[key] = dataSource[key] != null ? String(dataSource[key]) : "";
+            newFormData[key] =
+              dataSource[key] != null ? String(dataSource[key]) : "";
           }
         });
         setFormData(newFormData);
@@ -174,9 +178,10 @@ export default function NotifixDataSource() {
   const handleFilter = useCallback(() => {
     const newFormData: Record<string, any> = { id: "" };
     // Initialize form data with default values based on field type
-    const filterFields = listCurrentData?.fieldSettings?.filter(
-      (field) => field.isFilterEnable && field.mappedAttributeName
-    ) || [];
+    const filterFields =
+      listCurrentData?.fieldSettings?.filter(
+        (field) => field.isFilterEnable && field.mappedAttributeName
+      ) || [];
     filterFields.forEach((field) => {
       const fieldName = field.mappedAttributeName;
       if (field.type === "boolean") {
@@ -264,9 +269,10 @@ export default function NotifixDataSource() {
     }
 
     // Filter fieldSettings to include only those with isDisplayEnable: true
-    const displayFields = listCurrentData?.fieldSettings?.filter(
-      (field) => field.isDisplayEnable && field.mappedAttributeName
-    ) || [];
+    const displayFields =
+      listCurrentData?.fieldSettings?.filter(
+        (field) => field.isDisplayEnable && field.mappedAttributeName
+      ) || [];
 
     // Create columns for the table
     const columns = displayFields.map((field) => ({
@@ -426,9 +432,10 @@ export default function NotifixDataSource() {
       );
     } else if (modalMode === "filter") {
       // For filter, use fields where isFilterEnable is true
-      const filterFields = listCurrentData?.fieldSettings?.filter(
-        (field) => field.isFilterEnable && field.mappedAttributeName
-      ) || [];
+      const filterFields =
+        listCurrentData?.fieldSettings?.filter(
+          (field) => field.isFilterEnable && field.mappedAttributeName
+        ) || [];
 
       const fields = filterFields.map((field) => {
         const fieldName = field.mappedAttributeName;
@@ -460,8 +467,8 @@ export default function NotifixDataSource() {
           const options = Array.from(
             new Set(
               rawData
-                .map((item) =>
-                  item.rowData?.[fieldName] || item[fieldName] || ""
+                .map(
+                  (item) => item.rowData?.[fieldName] || item[fieldName] || ""
                 )
                 .filter((value) => value !== "")
             )
@@ -478,7 +485,10 @@ export default function NotifixDataSource() {
               <Select
                 value={formData[fieldName] || ""}
                 onChange={(e) =>
-                  setFormData((prev) => ({ ...prev, [fieldName]: e.target.value }))
+                  setFormData((prev) => ({
+                    ...prev,
+                    [fieldName]: e.target.value,
+                  }))
                 }
                 label={fieldLabel}
               >
@@ -501,7 +511,10 @@ export default function NotifixDataSource() {
               label={fieldLabel}
               value={formData[fieldName] || ""}
               onChange={(e) =>
-                setFormData((prev) => ({ ...prev, [fieldName]: e.target.value }))
+                setFormData((prev) => ({
+                  ...prev,
+                  [fieldName]: e.target.value,
+                }))
               }
               variant="outlined"
               fullWidth
@@ -738,10 +751,10 @@ export default function NotifixDataSource() {
             {modalMode === "add"
               ? "Add"
               : modalMode === "edit"
-              ? "Edit"
-              : modalMode === "view"
-              ? "View"
-              : "Filter"}
+                ? "Edit"
+                : modalMode === "view"
+                  ? "View"
+                  : "Filter"}
           </Typography>
           <Box
             sx={{
