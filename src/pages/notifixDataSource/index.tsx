@@ -15,8 +15,14 @@ import {
   DialogContent,
   DialogActions,
   Tooltip,
+  Checkbox,
+  FormControlLabel,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
 } from "@mui/material";
-import { STYLE_GUIDE } from "../../styles"; // Adjust path as needed
+import { STYLE_GUIDE } from "../../styles"; 
 import SearchIcon from "@mui/icons-material/Search";
 import FilterListIcon from "@mui/icons-material/FilterList";
 import AddIcon from "@mui/icons-material/Add";
@@ -56,65 +62,10 @@ export default function NotifixDataSource() {
     pageSize: 10,
   });
 
-  const {list} = useSelector((state: RootState) => state.dataSource);
- 
-  const listCurrentData=list.find((item) => item._id === valueId)
+  const { list } = useSelector((state: RootState) => state.dataSource);
+  const listCurrentData = list.find((item) => item._id === valueId);
 
- console.log("List Current Data:", listCurrentData);
-
-  // Define generateColumns inside the component with useCallback
-  const generateColumns = useCallback(
-    (sampleRowData: Record<string, any>): GridColDef[] => {
-      const dynamicColumns = Object.keys(sampleRowData)
-        .filter((key) => key !== "_id")
-        .map((key) => ({
-          field: key,
-          headerName: key
-            .replace(/([A-Z])/g, " $1")
-            .replace(/^./, (str) => str.toUpperCase()),
-          flex: 1,
-          renderHeader: (params: any) => {
-            const headerText = params.colDef.headerName || "";
-            return headerText.length > 10 ? (
-              <Tooltip title={headerText} arrow>
-                <Typography
-                  sx={{
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                    whiteSpace: "nowrap",
-                  }}
-                >
-                  {headerText}
-                </Typography>
-              </Tooltip>
-            ) : (
-              <Typography>{headerText}</Typography>
-            );
-          },
-          renderCell: (params: any) => {
-            const cellValue = params.value != null ? String(params.value) : "";
-            return cellValue.length > 10 ? (
-              <Tooltip title={cellValue} arrow>
-                <Typography
-                  sx={{
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                    whiteSpace: "nowrap",
-                  }}
-                >
-                  {cellValue}
-                </Typography>
-              </Tooltip>
-            ) : (
-              <Typography>{cellValue}</Typography>
-            );
-          },
-        }));
-
-      return dynamicColumns;
-    },
-    [] // Empty dependency array since no external dependencies are used
-  );
+  console.log("List Current Data:", listCurrentData?.fieldSettings);
 
   // Debounce search input
   useEffect(() => {
@@ -135,48 +86,73 @@ export default function NotifixDataSource() {
     [paginationModel.page, paginationModel.pageSize]
   );
 
-  // Memoize handler functions
-  const handleView = useCallback((id: string) => {
-    const currentRows = rowsRef.current;
-    if (currentRows.length === 0) {
-      console.warn("Cannot view: No data available");
-      return;
-    }
-    const row = currentRows.find((r) => r._id === id);
-    if (row) {
-      const newFormData: Record<string, any> = { id: row._id };
-      Object.keys(row).forEach((key) => {
-        if (key !== "_id") {
-          newFormData[key] = row[key] != null ? String(row[key]) : "";
-        }
-      });
-      setFormData(newFormData);
-      setModalMode("view");
-      setOpenModal(true);
-    } else {
-      console.error(`Row with ID ${id} not found`);
-    }
-  }, []);
+  const sourceVersionData = useGet<ApiResponse>(
+    [
+      "sourceVersionData",
+      String(paginationModelMemo.page + 1),
+      debouncedSearchValue,
+      valueId || "",
+    ],
+    `${GET.SOURCE_VERSION_DATA}?dataSourceId=${encodeURIComponent(
+      valueId || ""
+    )}&page=${paginationModelMemo.page + 1}&limit=${
+      paginationModelMemo.pageSize
+    }&query=${encodeURIComponent(debouncedSearchValue || "")}`,
+    !!valueId
+  );
 
-  const handleEdit = useCallback((id: string) => {
-    const currentRows = rowsRef.current;
-    if (currentRows.length === 0) {
-      console.warn("Cannot edit: No data available");
-      return;
-    }
-    const row = currentRows.find((r) => r._id === id);
-    if (row) {
-      const newFormData: Record<string, any> = { id: row._id };
-      Object.keys(row).forEach((key) => {
-        if (key !== "_id") {
-          newFormData[key] = row[key] != null ? String(row[key]) : "";
-        }
-      });
-      setFormData(newFormData);
-      setModalMode("edit");
-      setOpenModal(true);
-    }
-  }, []);
+  // Memoize handler functions
+  const handleView = useCallback(
+    (id: string) => {
+      const rawData = sourceVersionData?.data?.data || [];
+      if (rawData.length === 0) {
+        console.warn("Cannot view: No data available");
+        return;
+      }
+      const row = rawData.find((r) => r._id === id || r.id === id);
+      if (row) {
+        const newFormData: Record<string, any> = { id: row._id || row.id };
+        const dataSource = row.rowData || row;
+        Object.keys(dataSource).forEach((key) => {
+          if (key !== "_id" && key !== "id") {
+            newFormData[key] = dataSource[key] != null ? String(dataSource[key]) : "";
+          }
+        });
+        setFormData(newFormData);
+        setModalMode("view");
+        setOpenModal(true);
+      } else {
+        console.error(`Row with ID ${id} not found`);
+      }
+    },
+    [sourceVersionData.data]
+  );
+
+  const handleEdit = useCallback(
+    (id: string) => {
+      const rawData = sourceVersionData?.data?.data || [];
+      if (rawData.length === 0) {
+        console.warn("Cannot edit: No data available");
+        return;
+      }
+      const row = rawData.find((r) => r._id === id || r.id === id);
+      if (row) {
+        const newFormData: Record<string, any> = { id: row._id || row.id };
+        const dataSource = row.rowData || row;
+        Object.keys(dataSource).forEach((key) => {
+          if (key !== "_id" && key !== "id") {
+            newFormData[key] = dataSource[key] != null ? String(dataSource[key]) : "";
+          }
+        });
+        setFormData(newFormData);
+        setModalMode("edit");
+        setOpenModal(true);
+      } else {
+        console.error(`Row with ID ${id} not found`);
+      }
+    },
+    [sourceVersionData.data]
+  );
 
   const handleDelete = useCallback((id: string) => {
     setDeleteId(id);
@@ -185,7 +161,6 @@ export default function NotifixDataSource() {
 
   const handleAddNotification = useCallback(() => {
     const newFormData: Record<string, any> = { id: "" };
-    // Initialize form data with empty values for all columns
     columns
       .filter((col) => col.field !== "actions" && col.field !== "_id")
       .forEach((col) => {
@@ -198,16 +173,24 @@ export default function NotifixDataSource() {
 
   const handleFilter = useCallback(() => {
     const newFormData: Record<string, any> = { id: "" };
-    // Initialize form data with empty values for all columns
-    columns
-      .filter((col) => col.field !== "actions" && col.field !== "_id")
-      .forEach((col) => {
-        newFormData[col.field] = "";
-      });
+    // Initialize form data with default values based on field type
+    const filterFields = listCurrentData?.fieldSettings?.filter(
+      (field) => field.isFilterEnable && field.mappedAttributeName
+    ) || [];
+    filterFields.forEach((field) => {
+      const fieldName = field.mappedAttributeName;
+      if (field.type === "boolean") {
+        newFormData[fieldName] = false; // Default for boolean
+      } else if (field.type === "option" || field.type === "multioption") {
+        newFormData[fieldName] = ""; // Default for dropdown
+      } else {
+        newFormData[fieldName] = ""; // Default for text
+      }
+    });
     setFormData(newFormData);
     setModalMode("filter");
     setOpenModal(true);
-  }, [columns]);
+  }, [listCurrentData?.fieldSettings]);
 
   const handleCloseModal = useCallback(() => {
     setOpenModal(false);
@@ -226,6 +209,14 @@ export default function NotifixDataSource() {
     handleCloseDialog();
   }, [deleteId, handleCloseDialog]);
 
+  const handleSearchChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const value = e.target.value.slice(0, 200);
+      setSearchValue(value);
+    },
+    []
+  );
+
   const handleSave = useCallback(() => {
     if (modalMode === "add") {
       console.log("Adding new:", formData);
@@ -236,29 +227,6 @@ export default function NotifixDataSource() {
     }
     handleCloseModal();
   }, [formData, modalMode, handleCloseModal]);
-
-  const handleSearchChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      const value = e.target.value.slice(0, 200);
-      setSearchValue(value);
-    },
-    []
-  );
-
-  const sourceVersionData = useGet<ApiResponse>(
-    [
-      "sourceVersionData",
-      String(paginationModelMemo.page + 1),
-      debouncedSearchValue,
-      valueId || "",
-    ],
-    `${GET.SOURCE_VERSION_DATA}?dataSourceId=${encodeURIComponent(
-      valueId || ""
-    )}&page=${paginationModelMemo.page + 1}&limit=${
-      paginationModelMemo.pageSize
-    }&query=${encodeURIComponent(debouncedSearchValue || "")}`,
-    !!valueId
-  );
 
   // Handle loading state
   useEffect(() => {
@@ -278,7 +246,7 @@ export default function NotifixDataSource() {
 
   console.log("Source Version Data:", sourceVersionData);
 
-  // Handle successful data processing
+  // Handle data processing
   useEffect(() => {
     if (sourceVersionData.isLoading || sourceVersionData.error) {
       return;
@@ -295,26 +263,75 @@ export default function NotifixDataSource() {
       return;
     }
 
-    const formattedRows = rawData.map((item: any) => ({
-      _id: item._id || item.id,
-      ...item.rowData,
+    // Filter fieldSettings to include only those with isDisplayEnable: true
+    const displayFields = listCurrentData?.fieldSettings?.filter(
+      (field) => field.isDisplayEnable && field.mappedAttributeName
+    ) || [];
+
+    // Create columns for the table
+    const columns = displayFields.map((field) => ({
+      field: field.mappedAttributeName,
+      headerName: field.label,
+      flex: 1,
+      sortable: field.isSortingEnable,
+      renderHeader: (params: any) => {
+        const headerText = params.colDef.headerName || "";
+        return headerText.length > 10 ? (
+          <Tooltip title={headerText} arrow>
+            <Typography
+              sx={{
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap",
+              }}
+            >
+              {headerText}
+            </Typography>
+          </Tooltip>
+        ) : (
+          <Typography>{headerText}</Typography>
+        );
+      },
+      renderCell: (params: any) => {
+        const cellValue = params.value != null ? String(params.value) : "";
+        return cellValue.length > 10 ? (
+          <Tooltip title={cellValue} arrow>
+            <Typography
+              sx={{
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap",
+              }}
+            >
+              {cellValue}
+            </Typography>
+          </Tooltip>
+        ) : (
+          <Typography>{cellValue}</Typography>
+        );
+      },
     }));
+
+    // Format rows to include only the fields that are display-enabled
+    const formattedRows = rawData.map((item) => {
+      const row = { _id: item._id || item.id };
+      displayFields.forEach((field) => {
+        row[field.mappedAttributeName] =
+          item.rowData?.[field.mappedAttributeName] ||
+          item[field.mappedAttributeName] ||
+          "";
+      });
+      return row;
+    });
+
+    console.log("Formatted Rows:", formattedRows);
+    console.log("Columns:", columns);
 
     setRows(formattedRows);
     rowsRef.current = formattedRows;
     setRowCount(totalCount);
-  }, [sourceVersionData.data]);
-
-  // Generate dynamic columns when rows change
-  useEffect(() => {
-    if (rows.length === 0) {
-      setColumns([]);
-      return;
-    }
-
-    const dynamicCols = generateColumns(rows[0]);
-    setColumns(dynamicCols);
-  }, [rows, generateColumns]);
+    setColumns(columns);
+  }, [sourceVersionData.data, listCurrentData?.fieldSettings]);
 
   // Add actions column separately to avoid circular dependency
   useEffect(() => {
@@ -379,33 +396,150 @@ export default function NotifixDataSource() {
     setColumns((prev) => [...prev, actionsColumn]);
   }, [columns, handleView, handleEdit, handleDelete]);
 
+  // Render Modal Fields
   const renderModalFields = () => {
-    if (columns.length === 0) {
-      return <Typography>No fields available to display.</Typography>;
+    if (modalMode === "view" || modalMode === "edit") {
+      // For view and edit, show all fields in formData
+      const fields = Object.keys(formData)
+        .filter((key) => key !== "id" && key !== "_id")
+        .map((key) => (
+          <TextField
+            key={key}
+            label={key
+              .replace(/([A-Z])/g, " $1")
+              .replace(/^./, (str) => str.toUpperCase())}
+            value={formData[key] || ""}
+            onChange={(e) =>
+              setFormData((prev) => ({ ...prev, [key]: e.target.value }))
+            }
+            disabled={modalMode === "view"}
+            variant="outlined"
+            fullWidth
+            sx={{ "& .MuiOutlinedInput-root": { borderRadius: "8px" } }}
+          />
+        ));
+
+      return fields.length > 0 ? (
+        fields
+      ) : (
+        <Typography>No fields available to display.</Typography>
+      );
+    } else if (modalMode === "filter") {
+      // For filter, use fields where isFilterEnable is true
+      const filterFields = listCurrentData?.fieldSettings?.filter(
+        (field) => field.isFilterEnable && field.mappedAttributeName
+      ) || [];
+
+      const fields = filterFields.map((field) => {
+        const fieldName = field.mappedAttributeName;
+        const fieldLabel = field.label;
+
+        if (field.type === "boolean") {
+          return (
+            <FormControlLabel
+              key={fieldName}
+              control={
+                <Checkbox
+                  checked={!!formData[fieldName]}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      [fieldName]: e.target.checked,
+                    }))
+                  }
+                  sx={{ color: STYLE_GUIDE?.COLORS?.primaryDark || "#3f51b5" }}
+                />
+              }
+              label={fieldLabel}
+              sx={{ mb: 1 }}
+            />
+          );
+        } else if (field.type === "option" || field.type === "multioption") {
+          // Collect unique values from data for dropdown options
+          const rawData = sourceVersionData?.data?.data || [];
+          const options = Array.from(
+            new Set(
+              rawData
+                .map((item) =>
+                  item.rowData?.[fieldName] || item[fieldName] || ""
+                )
+                .filter((value) => value !== "")
+            )
+          );
+
+          return (
+            <FormControl
+              key={fieldName}
+              variant="outlined"
+              fullWidth
+              sx={{ "& .MuiOutlinedInput-root": { borderRadius: "8px" } }}
+            >
+              <InputLabel>{fieldLabel}</InputLabel>
+              <Select
+                value={formData[fieldName] || ""}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, [fieldName]: e.target.value }))
+                }
+                label={fieldLabel}
+              >
+                <MenuItem value="">
+                  <em>None</em>
+                </MenuItem>
+                {options.map((option) => (
+                  <MenuItem key={option} value={option}>
+                    {option}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          );
+        } else {
+          // Default to text input
+          return (
+            <TextField
+              key={fieldName}
+              label={fieldLabel}
+              value={formData[fieldName] || ""}
+              onChange={(e) =>
+                setFormData((prev) => ({ ...prev, [fieldName]: e.target.value }))
+              }
+              variant="outlined"
+              fullWidth
+              sx={{ "& .MuiOutlinedInput-root": { borderRadius: "8px" } }}
+            />
+          );
+        }
+      });
+
+      return fields.length > 0 ? (
+        fields
+      ) : (
+        <Typography>No filterable fields available.</Typography>
+      );
+    } else {
+      // For add, use columns based on fieldSettings
+      const fields = columns
+        .filter((col) => col.field !== "actions" && col.field !== "_id")
+        .map((col) => (
+          <TextField
+            key={col.field}
+            label={col.headerName}
+            value={formData[col.field] || ""}
+            onChange={(e) =>
+              setFormData((prev) => ({ ...prev, [col.field]: e.target.value }))
+            }
+            variant="outlined"
+            fullWidth
+            sx={{ "& .MuiOutlinedInput-root": { borderRadius: "8px" } }}
+          />
+        ));
+
+      return fields.length > 0 ? (
+        fields
+      ) : (
+        <Typography>No fields available to display.</Typography>
+      );
     }
-
-    const fields = columns
-      .filter((col) => col.field !== "actions" && col.field !== "_id")
-      .map((col) => (
-        <TextField
-          key={col.field}
-          label={col.headerName}
-          value={formData[col.field] || ""}
-          onChange={(e) =>
-            setFormData((prev) => ({ ...prev, [col.field]: e.target.value }))
-          }
-          disabled={modalMode === "view"}
-          variant="outlined"
-          fullWidth
-          sx={{ "& .MuiOutlinedInput-root": { borderRadius: "8px" } }}
-        />
-      ));
-
-    return fields.length > 0 ? (
-      fields
-    ) : (
-      <Typography>No fields available to display.</Typography>
-    );
   };
 
   if (loading && rows.length === 0) {
@@ -430,7 +564,7 @@ export default function NotifixDataSource() {
           color: STYLE_GUIDE?.COLORS?.primaryDark || "#3f51b5",
         }}
       >
-        {listCurrentData&&listCurrentData?.name}
+        {listCurrentData && listCurrentData?.name}
       </Typography>
 
       <Card
@@ -500,7 +634,7 @@ export default function NotifixDataSource() {
               >
                 Filter
               </Button>
-              <Button
+              {/* <Button
                 variant="contained"
                 startIcon={<AddIcon />}
                 onClick={handleAddNotification}
@@ -515,7 +649,7 @@ export default function NotifixDataSource() {
                 }}
               >
                 Add
-              </Button>
+              </Button> */}
             </Box>
           </Box>
 
@@ -604,10 +738,10 @@ export default function NotifixDataSource() {
             {modalMode === "add"
               ? "Add"
               : modalMode === "edit"
-                ? "Edit"
-                : modalMode === "view"
-                  ? "View"
-                  : "Filter"}
+              ? "Edit"
+              : modalMode === "view"
+              ? "View"
+              : "Filter"}
           </Typography>
           <Box
             sx={{

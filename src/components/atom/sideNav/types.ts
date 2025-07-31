@@ -7,6 +7,18 @@ export interface DataSourceListResponse {
   data: DataSourceListData[];
 }
 
+export interface DataSourceListFieldSettings {
+  attributeId: string;
+  isDisplayEnable: boolean;
+  isFilterEnable: boolean;
+  isSortingEnable: boolean;
+  label: string;
+  mappedAttributeName: string;
+  refAttributeId: string | null;
+  totalCount: number;
+  data: DataSourceListData[];
+}
+
 export interface DataSourceListData {
   _id: string;
   organizationId: string;
@@ -28,6 +40,7 @@ export interface DataSourceListData {
   createdAt: string;
   updatedAt: string;
   __v: 0;
+  fieldSettings: DataSourceListFieldSettings[];
   canEditInline: true;
   uniqueAttributeName: string[];
 }
