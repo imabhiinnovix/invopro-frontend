@@ -82,6 +82,7 @@ export const GET = {
   DASHBOARD_WIDGET_GET_CHART_DATA: '/common/dashboard/widget/getWidgets',
   DASHBOARD_WIDGET: '/dashboard/widget',
   DASHBOARD_WIDGET_DATA: '/common/dashboard/widget/getWidgetData',
+  FIXED_DASHBOARD_WIDGET_DATA: '/common/dataSourceVersion/chartData',
   OPERATOR_LIST: '/common/operator/list',
   WIDGET_THEME: '/common/widgetTheme',
   NL_Query: '/nlQuery',
@@ -96,7 +97,7 @@ export const GET = {
   ROLE_LIST: "/common/role/list",
   ROLE_DETAIL: "/common/role",
   // Notivix-specific routes
-  NOTIVIX_DASHBOARD_LIST: '/dashboard/list',
-  NOTIVIX_DASHBOARD_WIDGET_GET_CHART_DATA: '/dashboard/widget/getWidgets',
-  NOTIVIX_DASHBOARD_WIDGET_DATA: '/dashboard/widget/getWidgetData',
+  NOTIVIX_DASHBOARD_LIST: '/common/dashboard/list',
+  NOTIVIX_DASHBOARD_WIDGET_GET_CHART_DATA: '/common/dashboard/widget/getWidgets',
+  NOTIVIX_DASHBOARD_WIDGET_DATA: '/common/dashboard/widget/getWidgetData',
 };

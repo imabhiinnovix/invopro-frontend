@@ -230,11 +230,28 @@ export const fetchChartData = createAsyncThunk(
       dashboardType?: string;
       dynamicVersionValue?: string;
     },
-    { dispatch }
+    { dispatch, getState }
   ) => {
-    const response = await axiosInstance.get<ChartDataResponse>(
-      `${GET.DASHBOARD_WIDGET_GET_CHART_DATA}/${dashboardId}`
-    );
+    const isFixedDashboard = dashboardType === 'fixed';
+    
+    let dataSourceId: string | undefined;
+    if (isFixedDashboard) {
+      const state = getState() as any;
+      const currentDashboard = state.dashboard.dashboards.find((d: any) => d._id === dashboardId);
+      dataSourceId = currentDashboard?.settings?.dataSourceId;
+    }
+    
+    const chartDataEndpoint = isFixedDashboard 
+      ? GET.FIXED_DASHBOARD_WIDGET_DATA 
+      : GET.NOTIVIX_DASHBOARD_WIDGET_GET_CHART_DATA;
+
+
+    const url = isFixedDashboard 
+      ? `${chartDataEndpoint}?dataSourceId=${dataSourceId}`
+      : `${chartDataEndpoint}/${dashboardId}`;
+
+    const response = await axiosInstance.get<ChartDataResponse>(url);
+
 
     // Make additional API calls for each chart
     if (response.data.success && response.data.data) {
@@ -242,13 +259,26 @@ export const fetchChartData = createAsyncThunk(
       const batchSize = 3;
       const charts = response.data.data;
 
+
       for (let i = 0; i < charts.length; i += batchSize) {
         const batch = charts.slice(i, i + batchSize);
         await Promise.all(
           batch.map(async (chart) => {
             try {
-              const widgetResponse = await axiosInstance.post<WidgetDataResponse>(GET.DASHBOARD_WIDGET_DATA, {
-                dataSourceId: chart.dataSourceId?._id,
+              const widgetDataEndpoint = isFixedDashboard 
+                ? GET.FIXED_DASHBOARD_WIDGET_DATA 
+                : GET.DASHBOARD_WIDGET_DATA;
+
+              let dataSourceId = chart.dataSourceId?._id;
+              
+              if (isFixedDashboard) {
+                const state = getState() as any;
+                const currentDashboard = state.dashboard.dashboards.find((d: any) => d._id === dashboardId);
+                dataSourceId = currentDashboard?.settings?.dataSourceId || chart.dataSourceId?._id;
+              }
+
+              const widgetResponse = await axiosInstance.post<WidgetDataResponse>(widgetDataEndpoint, {
+                dataSourceId: dataSourceId,
                 entityId: chart.dataSourceId?.entityId,
                 dimensions: chart.dimensions,
                 groupBy: chart.groupBy,

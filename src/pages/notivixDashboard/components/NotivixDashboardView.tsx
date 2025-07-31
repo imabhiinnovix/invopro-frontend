@@ -171,6 +171,16 @@ export const NotivixDashboardView: React.FC<DashboardViewProps> = ({ title: init
             dashboardType: currentDashboard?.settings?.dashboardType,
           })
         );
+      } else if (currentDashboard?.settings?.dashboardType === 'fixed') {
+        dispatch(
+          fetchChartData({
+            dashboardId,
+            dashboardType: 'fixed',
+            startVersionValue: startVersionValue || undefined,
+            endVersionValue: endVersionValue || undefined,
+            versionValue: versionValue || undefined,
+          })
+        );
       }
     }
   }, [
