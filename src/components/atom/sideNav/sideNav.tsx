@@ -397,27 +397,27 @@ export default function SideNav() {
               sx={{ fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base }}
             />
           ),
-          route: "/notivix/notification-settings",
-          // subItems: [
-          //   {
-          //     name: "Settings",
-          //     icon: (
-          //       <SettingsIcon
-          //         sx={{ fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base }}
-          //       />
-          //     ),
-          //     route: "/notivix/notification-settings/settings",
-          //   },
-          //   {
-          //     name: "Notification",
-          //     icon: (
-          //       <NotificationsIcon
-          //         sx={{ fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base }}
-          //       />
-          //     ),
-          //     route: "/notivix/notification-settings/notification",
-          //   },
-          // ],
+          route: "/notivix/notification",
+          subItems: [
+            {
+              name: "Settings",
+              icon: (
+                <SettingsIcon
+                  sx={{ fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base }}
+                />
+              ),
+              route: "/notivix/notification-settings",
+            },
+            {
+              name: "Notification",
+              icon: (
+                <NotificationsIcon
+                  sx={{ fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base }}
+                />
+              ),
+              // route: "/notivix/notification-settings/notification",
+            },
+          ],
         },
       ];
     }
