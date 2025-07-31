@@ -232,25 +232,9 @@ export const fetchChartData = createAsyncThunk(
     },
     { dispatch, getState }
   ) => {
-    const isFixedDashboard = dashboardType === 'fixed';
-    
-    let dataSourceId: string | undefined;
-    if (isFixedDashboard) {
-      const state = getState() as any;
-      const currentDashboard = state.dashboard.dashboards.find((d: any) => d._id === dashboardId);
-      dataSourceId = currentDashboard?.settings?.dataSourceId;
-    }
-    
-    const chartDataEndpoint = isFixedDashboard 
-      ? GET.FIXED_DASHBOARD_WIDGET_DATA 
-      : GET.NOTIVIX_DASHBOARD_WIDGET_GET_CHART_DATA;
-
-
-    const url = isFixedDashboard 
-      ? `${chartDataEndpoint}?dataSourceId=${dataSourceId}`
-      : `${chartDataEndpoint}/${dashboardId}`;
-
-    const response = await axiosInstance.get<ChartDataResponse>(url);
+    const response = await axiosInstance.get<ChartDataResponse>(
+      `${GET.NOTIVIX_DASHBOARD_WIDGET_GET_CHART_DATA}/${dashboardId}`
+    );
 
 
     // Make additional API calls for each chart
@@ -265,17 +249,9 @@ export const fetchChartData = createAsyncThunk(
         await Promise.all(
           batch.map(async (chart) => {
             try {
-              const widgetDataEndpoint = isFixedDashboard 
-                ? GET.FIXED_DASHBOARD_WIDGET_DATA 
-                : GET.DASHBOARD_WIDGET_DATA;
+              const widgetDataEndpoint = GET.DASHBOARD_WIDGET_DATA;
 
-              let dataSourceId = chart.dataSourceId?._id;
-              
-              if (isFixedDashboard) {
-                const state = getState() as any;
-                const currentDashboard = state.dashboard.dashboards.find((d: any) => d._id === dashboardId);
-                dataSourceId = currentDashboard?.settings?.dataSourceId || chart.dataSourceId?._id;
-              }
+              const dataSourceId = chart.dataSourceId?._id;
 
               const widgetResponse = await axiosInstance.post<WidgetDataResponse>(widgetDataEndpoint, {
                 dataSourceId: dataSourceId,
