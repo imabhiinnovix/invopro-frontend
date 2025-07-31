@@ -807,16 +807,16 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
                           labelName="attributeName"
                           labelValue="_id"
                           defaultValue={attribute.optionAttributeId || ""}
-                          rules={{ required: "Attribute Option is required" }}
-                          error={
-                            !!errors.attributes?.[index]?.optionAttributeId
-                          }
-                          errorMessage={
-                            (
-                              errors.attributes?.[index]
-                                ?.optionAttributeId as FieldError
-                            )?.message
-                          }
+                          // rules={{ required: "Attribute Option is required" }}
+                          // error={
+                          //   !!errors.attributes?.[index]?.optionAttributeId
+                          // }
+                          // errorMessage={
+                          //   (
+                          //     errors.attributes?.[index]
+                          //       ?.optionAttributeId as FieldError
+                          //   )?.message
+                          // }
                           apiName="attributeOption"
                           defaultDataUrl={`${GET.Attribute_Option_Get}`}
                         />
