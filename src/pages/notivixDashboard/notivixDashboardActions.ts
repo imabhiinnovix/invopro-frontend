@@ -236,7 +236,6 @@ export const fetchChartData = createAsyncThunk(
       `${GET.NOTIVIX_DASHBOARD_WIDGET_GET_CHART_DATA}/${dashboardId}`
     );
 
-
     // Make additional API calls for each chart
     if (response.data.success && response.data.data) {
       // Process charts in batches of 3 to avoid overwhelming the system
