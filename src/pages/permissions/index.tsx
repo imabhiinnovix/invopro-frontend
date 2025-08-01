@@ -1,5 +1,3 @@
-
-
 import * as React from "react";
 import { useState, useEffect } from "react";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
@@ -156,7 +154,6 @@ export default function Permissions() {
     pageSize: 10,
   });
   const [debouncedSearchValue, setDebouncedSearchValue] = useState(searchValue);
-  const [permissionReload, setPermissionReload] = useState(false);
   const [filterValues, setFilterValues] = useState({
     name: "",
     dataSourceId: "",
@@ -178,7 +175,7 @@ export default function Permissions() {
     name: "",
     dataSourceId: "",
     method: "",
-    methodName: "", 
+    methodName: "",
     resourceType: "",
     code: "",
   });
@@ -188,8 +185,8 @@ export default function Permissions() {
     [
       "permissionList",
       String(paginationModel.page + 1),
+      String(paginationModel.pageSize),
       debouncedSearchValue,
-      String(permissionReload),
       filterValues.name,
       filterValues.dataSourceId,
       filterValues.resourceType,
@@ -198,7 +195,7 @@ export default function Permissions() {
     true
   );
 
-  // POST API 
+  // POST API
   const createPermission = usePost<
     PermissionPostPayload,
     PermissionPostResponse
@@ -206,14 +203,15 @@ export default function Permissions() {
     ["createPermission"],
     (data) => {
       if (data?.success) {
-        setPermissionReload(true);
+        setPaginationModel({ ...paginationModel, page: 0 });
+        permissionList.refetch();
         handleCloseModal();
       }
     },
     true
   );
 
-  // PUT API 
+  // PUT API
   const updatePermission = usePut<
     PermissionPostPayload,
     PermissionPostResponse
@@ -221,31 +219,26 @@ export default function Permissions() {
     ["updatePermission"],
     (data) => {
       if (data?.success) {
-        setPermissionReload(true);
+        setPaginationModel({ ...paginationModel, page: 0 });
+        permissionList.refetch();
         handleCloseModal();
       }
     },
     true
   );
 
-  // DELETE API 
-  const deletePermission = useDelete<null, PermissionPostResponse>(
+  // DELETE API
+  const deletePermission = useDelete<PermissionPostResponse>(
     ["deletePermission"],
     (data) => {
       if (data?.success) {
-        setPermissionReload(true);
+        setPaginationModel({ ...paginationModel, page: 0 });
+        permissionList.refetch();
         handleCloseDialog();
       }
     },
     true
   );
-
-  // Reset permissionReload 
-  useEffect(() => {
-    if (permissionList?.data && permissionReload) {
-      setPermissionReload(false);
-    }
-  }, [permissionList, permissionReload]);
 
   // Process API data for DataGrid
   const permissionsWithIds =
@@ -264,9 +257,9 @@ export default function Permissions() {
       name: row.name || "",
       dataSourceId: row.dataSourceId?._id || "",
       method: row.method || "",
-      methodName: row.methodName || row.method || "", 
+      methodName: row.methodName || row.method || "",
       resourceType: row.resourceType || "",
-      code: row.dataSourceId?.code || "",
+      code: (row.dataSourceId as any)?.code || "",
     });
     setModalMode("edit");
     setOpenModal(true);
@@ -280,7 +273,7 @@ export default function Permissions() {
       method: row.method || "",
       methodName: row.methodName || row.method || "",
       resourceType: row.resourceType || "",
-      code: row.dataSourceId?.code || "",
+      code: (row.dataSourceId as any)?.code || "",
     });
     setModalMode("view");
     setOpenModal(true);
@@ -381,8 +374,8 @@ export default function Permissions() {
           url: POST.CREATE_PERMISSION,
           payload: {
             name: formData.name,
-            method: formData.methodName || formData.method, 
-            methodName: formData.methodName || formData.method, 
+            method: formData.methodName || formData.method,
+            methodName: formData.methodName || formData.method,
             dataSourceId: formData.dataSourceId,
             code: formData.code,
           },
@@ -392,8 +385,8 @@ export default function Permissions() {
           url: `${PUT.UPDATE_PERMISSION}/${formData.id}`,
           payload: {
             name: formData.name,
-            method: formData.methodName || formData.method, 
-            methodName: formData.methodName || formData.method, 
+            method: formData.methodName || formData.method,
+            methodName: formData.methodName || formData.method,
             dataSourceId: formData.dataSourceId,
             code: formData.code,
           },
@@ -425,14 +418,14 @@ export default function Permissions() {
   const handleMethodChange = (e: SelectChangeEvent<string>) => {
     setFormData({
       ...formData,
-      method: e.target.value.toUpperCase(), 
-      methodName: e.target.value, 
+      method: e.target.value.toUpperCase(),
+      methodName: e.target.value,
     });
   };
 
   const dataSourceOptions: { id: string; name: string; code: string }[] =
     Array.isArray(dataSource)
-      ? dataSource.map((ds: DataSource) => {
+      ? dataSource.map((ds: any) => {
           return {
             id: ds._id,
             name: ds.name,
@@ -545,13 +538,12 @@ export default function Permissions() {
             }}
             loading={
               permissionList.isLoading ||
-              createPermission.isLoading ||
-              updatePermission.isLoading ||
-              deletePermission.isLoading
+              createPermission.isPending ||
+              updatePermission.isPending ||
+              deletePermission.isPending
             }
             rowCount={permissionList?.data?.totalCount || 0}
             paginationModel={paginationModel}
-            onPaginationModelChange={setPaginationModel}
             slots={{
               pagination: () => (
                 <CustomPagination
@@ -659,8 +651,6 @@ export default function Permissions() {
                 </Select>
               </FormControl>
             )}
-
-          
           </Box>
 
           <Box
@@ -716,8 +706,8 @@ export default function Permissions() {
                       !formData.name ||
                       !formData.dataSourceId ||
                       !formData.methodName ||
-                      createPermission.isLoading ||
-                      updatePermission.isLoading
+                      createPermission.isPending ||
+                      updatePermission.isPending
                     }
                   >
                     Save
@@ -752,7 +742,7 @@ export default function Permissions() {
             onClick={handleConfirmDelete}
             color="error"
             sx={{ borderRadius: "8px" }}
-            disabled={deletePermission.isLoading}
+            disabled={deletePermission.isPending}
           >
             Yes
           </Button>

@@ -1,3 +1,5 @@
+
+
 import * as React from "react";
 import { useState } from "react";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
@@ -23,6 +25,7 @@ import AddIcon from "@mui/icons-material/Add";
 import EditIcon from "@mui/icons-material/Edit";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import DeleteIcon from "@mui/icons-material/Delete";
+import { useNavigate } from "react-router-dom";
 
 const columns: GridColDef[] = [
   {
@@ -133,7 +136,8 @@ const rows: NotificationRow[] = [
 
 const paginationModel = { page: 0, pageSize: 10 };
 
-export default function NotificationSettings() {
+export default function AddNotificationTypes() {
+  const Navigate = useNavigate();
   const [openModal, setOpenModal] = useState(false);
   const [modalMode, setModalMode] = useState<
     "add" | "edit" | "view" | "filter" | null
@@ -176,9 +180,10 @@ export default function NotificationSettings() {
   };
 
   const handleAddNotification = () => {
-    setFormData({ id: "", firstName: "", lastName: "", age: "" });
-    setModalMode("add");
-    setOpenModal(true);
+    Navigate("/notivix/notification-types/add");
+    // setFormData({ id: "", firstName: "", lastName: "", age: "" });
+    // setModalMode("add");
+    // setOpenModal(true);
   };
 
   const handleFilter = () => {
@@ -243,7 +248,7 @@ export default function NotificationSettings() {
           color: STYLE_GUIDE?.COLORS?.primaryDark || "#3f51b5",
         }}
       >
-        Notification Settings
+       Add Notification Types
       </Typography>
 
       {/* Card containing controls and table */}
@@ -331,7 +336,7 @@ export default function NotificationSettings() {
                   },
                 }}
               >
-                Add Notification
+                Add
               </Button>
             </Box>
           </Box>
@@ -426,9 +431,8 @@ export default function NotificationSettings() {
             variant="h6"
             sx={{ mb: 2, color: STYLE_GUIDE?.COLORS?.primaryDark || "#3f51b5" }}
           >
-            {modalMode === "add"
-              ? "Add Notification"
-              : modalMode === "edit"
+            {modalMode === "edit"
+             
                 ? "Edit Notification"
                 : modalMode === "view"
                   ? "View Notification"

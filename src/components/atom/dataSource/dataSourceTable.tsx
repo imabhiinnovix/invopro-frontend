@@ -14,7 +14,6 @@ import {
   Typography,
   tableCellClasses,
 } from '@mui/material';
-
 import useGet from '../../../hooks/useGet';
 import { GET } from '../../../services/apiRoutes';
 import { DataSourceType } from './types';
@@ -35,19 +34,19 @@ const StyledTableCell = styled(TableCell)(({ theme }) => ({
 }));
 
 const StyledTableRow = styled(TableRow)(({ theme }) => ({
-  "&:nth-of-type(odd)": {
+  '&:nth-of-type(odd)': {
     backgroundColor: theme.palette.table?.rowOddBackground || STYLE_GUIDE.COLORS.backgroundDefault,
   },
-  "&:nth-of-type(even)": {
+  '&:nth-of-type(even)': {
     backgroundColor: theme.palette.table?.rowEvenBackground || STYLE_GUIDE.COLORS.white,
   },
-  "&:hover": {
+  '&:hover': {
     backgroundColor: theme.palette.table?.rowHoverBackground || STYLE_GUIDE.COLORS.backgroundHover,
   },
 }));
 
 interface AttributeOptionTableProps {
-  reload: boolean; // reload is now a boolean
+  reload: boolean;
   setReload: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
@@ -55,67 +54,134 @@ const DataSourceTable: React.FC<AttributeOptionTableProps> = ({ reload, setReloa
   const { getHeadingSx, getTableSx } = useComponentTypography();
   const [dataSource, setDataSource] = useState<DataSourceType[]>([]);
   const [currentPage, setCurrentPage] = useState<number>(1);
-
+  const [loading, setLoading] = useState<boolean>(false);
+  const [hasMore, setHasMore] = useState<boolean>(true);
   const perPageItem = 10;
 
   const dataSourceList = useGet<{ success: boolean; data: DataSourceType[]; totalCount: number }>(
-    [`dataSourceList`, String(currentPage)],
+    [`dataSourceList-${currentPage}`],
     GET?.Data_Source_List + `?page=${currentPage}&limit=${perPageItem}`,
-    !!currentPage
+    true // Pass enabled as boolean
   );
 
+  // Handle onSuccess logic
   useEffect(() => {
-    setCurrentPage(1);
-  }, [reload]);
+    if (dataSourceList.data) {
+      console.log('API response:', dataSourceList.data);
+    }
+  }, [dataSourceList.data]);
+
+  const loadMoreData = useCallback(async () => {
+    if (loading || !hasMore) return;
+    
+    console.log(`Loading page ${currentPage + 1}`);
+    setLoading(true);
+    setCurrentPage(prev => {
+      console.log('Incrementing page to', prev + 1);
+      return prev + 1;
+    });
+  }, [loading, hasMore, currentPage]);
 
   useEffect(() => {
-    if (currentPage === 1 && reload) {
-      dataSourceList.refetch();
+    if (dataSourceList?.data?.success && dataSourceList?.data?.data) {
+      const newData = dataSourceList.data.data;
+      const totalCount = dataSourceList.data.totalCount;
+
+      console.log('New data received:', newData, 'Total count:', totalCount);
+
+      if (currentPage === 1) {
+        setDataSource(newData);
+      } else {
+        setDataSource(prev => {
+          const existingIds = new Set(prev.map(item => item._id));
+          const filteredNewData = newData.filter(item => !existingIds.has(item._id));
+          console.log('Appending new data:', filteredNewData);
+          return [...prev, ...filteredNewData];
+        });
+      }
+
+      const totalLoaded = currentPage * perPageItem;
+      if (totalLoaded >= totalCount || newData.length < perPageItem) {
+        setHasMore(false);
+        console.log('No more data to load');
+      }
+
+      setLoading(false);
+    }
+  }, [dataSourceList?.data, currentPage]);
+
+  useEffect(() => {
+    if (dataSourceList.isFetching && currentPage > 1) {
+      setLoading(true);
+    } else if (!dataSourceList.isFetching) {
+      setLoading(false);
+    }
+    if (dataSourceList.error) {
+      console.error('API error:', dataSourceList.error);
+      setLoading(false);
+    }
+  }, [dataSourceList.isFetching, dataSourceList.error, currentPage]);
+
+  useEffect(() => {
+    if (reload) {
+      console.log('Reloading data');
+      setDataSource([]);
+      setCurrentPage(1);
+      setLoading(false);
+      setHasMore(true);
       setReload(false);
     }
-  }, [currentPage, reload]);
+  }, [reload, setReload]);
 
-  useEffect(() => {
-    if (dataSourceList?.data?.data) {
-      if (currentPage === 1) {
-        setDataSource([...dataSourceList?.data?.data]);
-      } else {
-        setDataSource((prev) => [...prev, ...dataSourceList?.data?.data]);
-      }
-    }
-  }, [dataSourceList?.data?.data]);
-
-  useEffect(() => {
-    setCurrentPage(currentPage);
-  }, [currentPage]);
-
-  const lastRowRef = useRef<IntersectionObserver | null>(null);
-
+  const observer = useRef<IntersectionObserver>();
   const lastElementRef = useCallback(
     (node: HTMLTableRowElement | null) => {
-      if (dataSourceList.isFetching || dataSource.length >= dataSourceList?.data?.totalCount!) return;
+      if (loading || !hasMore) return;
+      if (observer.current) observer.current.disconnect();
 
-      // Disconnect the previous observer if it exists
-      if (lastRowRef.current) {
-        lastRowRef.current.disconnect();
-      }
-
-      // Create a new IntersectionObserver
-      lastRowRef.current = new IntersectionObserver((entries) => {
-        if (entries[0].isIntersecting) {
-          setCurrentPage((prevPage) => prevPage + 1);
+      observer.current = new IntersectionObserver(
+        entries => {
+          if (entries[0].isIntersecting && hasMore && !loading) {
+            console.log('Triggering load more');
+            loadMoreData();
+          }
+        },
+        {
+          root: null,
+          rootMargin: '0px 0px 100px 0px',
+          threshold: 0.1,
         }
-      });
+      );
 
-      // Observe the new node if it exists
-      if (node) {
-        lastRowRef.current.observe(node);
-      }
+      if (node) observer.current.observe(node);
     },
-    [dataSourceList.isFetching] // Add the correct dependency
+    [loading, hasMore, loadMoreData]
   );
 
-  if (!dataSourceList.isFetching && !dataSource.length) {
+  useEffect(() => {
+    console.log({
+      currentPage,
+      dataLength: dataSource.length,
+      loading,
+      hasMore,
+      isFetching: dataSourceList.isFetching,
+    });
+  }, [currentPage, dataSource.length, loading, hasMore, dataSourceList.isFetching]);
+
+  if (dataSourceList.isFetching && currentPage === 1 && dataSource.length === 0) {
+    return (
+      <TableContainer component={Paper} sx={{ ...getTableSx() }}>
+        <Box sx={{ p: 4, textAlign: 'center' }}>
+          <Skeleton variant="rectangular" height={50} sx={{ mb: 2 }} />
+          <Skeleton variant="rectangular" height={40} sx={{ mb: 1 }} />
+          <Skeleton variant="rectangular" height={40} sx={{ mb: 1 }} />
+          <Skeleton variant="rectangular" height={40} />
+        </Box>
+      </TableContainer>
+    );
+  }
+
+  if (!dataSourceList.isFetching && dataSource.length === 0) {
     return (
       <Box
         display="flex"
@@ -124,8 +190,8 @@ const DataSourceTable: React.FC<AttributeOptionTableProps> = ({ reload, setReloa
         alignContent="center"
         alignItems="center"
       >
-        <Typography 
-          variant="h4" 
+        <Typography
+          variant="h4"
           sx={{
             ...getHeadingSx(),
             fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.bold,
@@ -134,15 +200,22 @@ const DataSourceTable: React.FC<AttributeOptionTableProps> = ({ reload, setReloa
           }}
           gutterBottom
         >
-          No data source have been created yet. Please create a data source to display it here.
+          No data sources have been created yet. Please create a data source to display it here.
         </Typography>
       </Box>
     );
   }
 
   return (
-    <TableContainer component={Paper} sx={{ ...getTableSx() }}>
-      <Table sx={{ width: '100%' }} aria-label="attribute-option-table">
+    <TableContainer
+      component={Paper}
+      sx={{
+        ...getTableSx(),
+        maxHeight: '600px',
+        overflowY: 'auto',
+      }}
+    >
+      <Table sx={{ width: '100%' }} aria-label="data-source-table" stickyHeader>
         <TableHead>
           <TableRow>
             <StyledTableCell>NAME</StyledTableCell>
@@ -159,73 +232,79 @@ const DataSourceTable: React.FC<AttributeOptionTableProps> = ({ reload, setReloa
           </TableRow>
         </TableHead>
         <TableBody>
-          {dataSource.map((data, dataIndex) => (
-            <React.Fragment key={data._id}>
-              <StyledTableRow ref={dataSource.length === dataIndex + 1 ? lastElementRef : null}>
-                <StyledTableCell>{data.name || '-'}</StyledTableCell>
-                <StyledTableCell>{data.description || '-'}</StyledTableCell>
-                <StyledTableCell>{data.code || '-'}</StyledTableCell>
-                <StyledTableCell>{data.versionType || '-'}</StyledTableCell>
-                <StyledTableCell>{data.entityId?.name! || '-'}</StyledTableCell>
-
-                <StyledTableCell>
-                  {data.createdBy ? `${data.createdBy.firstName} ${data.createdBy.lastName}` : '-'}
-                </StyledTableCell>
-
-                <StyledTableCell>
-                  {data.updatedBy ? `${data.updatedBy.firstName} ${data.updatedBy.lastName}` : '-'}
-                </StyledTableCell>
-
-                <StyledTableCell>{data.createdAt ? new Date(data.createdAt).toLocaleString() : '-'}</StyledTableCell>
-
-                <StyledTableCell>
-                  {data.updatedBy && data.updatedAt ? new Date(data.updatedAt).toLocaleString() : '-'}
-                </StyledTableCell>
-                <StyledTableCell>
-                  {/* <Switch checked={data.isActive} /> */}
-
-                  {data.isActive ? (
-                    <Typography 
-                      sx={{
-                        color: STYLE_GUIDE.COLORS.bootstrapSuccess,
-                        fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
-                      }}
-                      component="span"
-                    >
-                      ACTIVE
-                    </Typography>
-                  ) : (
-                    <Typography 
-                      sx={{
-                        color: STYLE_GUIDE.COLORS.bootstrapDanger,
-                        fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
-                      }}
-                      component="span"
-                    >
-                      INACTIVE
-                    </Typography>
-                  )}
-                </StyledTableCell>
-                <StyledTableCell title="Edit Attribute Option">
-                  <CreateUpdateDataSource
-                    setReload={setReload}
-                    title="Update Attribute Option"
-                    CustomButton={<Button>Edit</Button>}
-                    data={data}
-                  />
-                </StyledTableCell>
-              </StyledTableRow>
-            </React.Fragment>
+          {dataSource.map((data, index) => (
+            <StyledTableRow
+              key={data._id}
+              ref={index === dataSource.length - 1 ? lastElementRef : null}
+            >
+              <StyledTableCell>{data.name || '-'}</StyledTableCell>
+              <StyledTableCell>{data.description || '-'}</StyledTableCell>
+              <StyledTableCell>{data.code || '-'}</StyledTableCell>
+              <StyledTableCell>{data.versionType || '-'}</StyledTableCell>
+              <StyledTableCell>{data.entityId?.name || '-'}</StyledTableCell>
+              <StyledTableCell>
+                {data.createdBy ? `${data.createdBy.firstName} ${data.createdBy.lastName}` : '-'}
+              </StyledTableCell>
+              <StyledTableCell>
+                {data.updatedBy ? `${data.updatedBy.firstName} ${data.updatedBy.lastName}` : '-'}
+              </StyledTableCell>
+              <StyledTableCell>{data.createdAt ? new Date(data.createdAt).toLocaleString() : '-'}</StyledTableCell>
+              <StyledTableCell>{data.updatedAt ? new Date(data.updatedAt).toLocaleString() : '-'}</StyledTableCell>
+              <StyledTableCell>
+                {data.isActive ? (
+                  <Typography
+                    sx={{
+                      color: STYLE_GUIDE.COLORS.bootstrapSuccess,
+                      fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
+                    }}
+                    component="span"
+                  >
+                    ACTIVE
+                  </Typography>
+                ) : (
+                  <Typography
+                    sx={{
+                      color: STYLE_GUIDE.COLORS.bootstrapDanger,
+                      fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
+                    }}
+                    component="span"
+                  >
+                    INACTIVE
+                  </Typography>
+                )}
+              </StyledTableCell>
+              <StyledTableCell title="Edit Data Source">
+                <CreateUpdateDataSource
+                  setReload={setReload}
+                  title="Update Data Source"
+                  CustomButton={<Button>Edit</Button>}
+                  data={data}
+                />
+              </StyledTableCell>
+            </StyledTableRow>
           ))}
 
-          {dataSourceList.isFetching &&
-            Array.from({ length: 1 }, (_, index) => (
-              <StyledTableRow key={index}>
-                <StyledTableCell colSpan={9}>
-                  <Skeleton height={40} />
-                </StyledTableCell>
-              </StyledTableRow>
-            ))}
+          {loading && (
+            <StyledTableRow>
+              <StyledTableCell colSpan={11}>
+                <Box sx={{ display: 'flex', justifyContent: 'center', p: 2 }}>
+                  <Skeleton width="100%" height={40} />
+                </Box>
+              </StyledTableCell>
+            </StyledTableRow>
+          )}
+
+          {!hasMore && dataSource.length > 0 && (
+            <StyledTableRow>
+              <StyledTableCell colSpan={11}>
+                <Box sx={{ textAlign: 'center', p: 2 }}>
+                  <Typography variant="body2" color="text.secondary">
+                    All data loaded ({dataSource.length} items)
+                  </Typography>
+                </Box>
+              </StyledTableCell>
+            </StyledTableRow>
+          )}
         </TableBody>
       </Table>
     </TableContainer>

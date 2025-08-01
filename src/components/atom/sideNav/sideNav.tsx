@@ -49,11 +49,13 @@ import { useComponentTypography } from "../../../hooks/useComponentTypography";
 import reportivixIcon from "../../../../public/Reportivix-fav-32.png";
 import notivixIcon from "../../../../public/NotiVix-fav-32.png";
 import NotificationsIcon from "@mui/icons-material/Notifications";
-import PeopleIcon from "@mui/icons-material/People";
 import BusinessIcon from "@mui/icons-material/Business";
 import AssignmentIndIcon from "@mui/icons-material/AssignmentInd";
 import GridViewIcon from "@mui/icons-material/GridView";
 import NotivixLogo from "../../../assets/NotiVix-Logo-TRANS-V1.png";
+import useGet from "../../../hooks/useGet";
+import { useSelector } from "react-redux";
+import { RootState } from "../../../reducers";
 
 interface ErrorResponse {
   success: boolean;
@@ -157,8 +159,7 @@ export default function SideNav() {
   const { openNav } = useNav();
   const [openSettings, setOpenSettings] = React.useState(false);
   const [openDashboard, setOpenDashboard] = React.useState(false);
-  const [openNotificationSettings, setOpenNotificationSettings] =
-    React.useState(false);
+  const [openNotificationSettings, setOpenNotificationSettings] = React.useState(false);
   const [openGlobalSettings, setOpenGlobalSettings] = React.useState(false);
   const [newDashboardName, setNewDashboardName] = React.useState("");
   const [dashboardType, setDashboardType] = React.useState<"normal" | "trend" | "fixed">(
@@ -168,8 +169,7 @@ export default function SideNav() {
   const [dataSourceId, setDataSourceId] = React.useState<string>("");
   const [isCreatingLoading, setIsCreatingLoading] = React.useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = React.useState(false);
-  const [dashboardToDelete, setDashboardToDelete] =
-    React.useState<DashboardType | null>(null);
+  const [dashboardToDelete, setDashboardToDelete] = React.useState<DashboardType | null>(null);
   const [isDeleting, setIsDeleting] = React.useState(false);
   const navigate = useNavigate();
   const location = useLocation();
@@ -179,11 +179,20 @@ export default function SideNav() {
   const [openCreateModal, setOpenCreateModal] = useState(false);
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
-  const [activeTab, setActiveTab] = React.useState<"ReportiVix" | "Notifix">(
-    "ReportiVix"
-  );
+  const [activeTab, setActiveTab] = React.useState<"ReportiVix" | "Notifix">("ReportiVix");
+  const permissions = useSelector((state: RootState) => state.userPermission?.permissions);
 
-  // Sync activeTab with URL
+  const dataSourcePermissions = permissions?.['Data Source'] || {};
+  const validPermissionIds = Object.entries(dataSourcePermissions)
+    .filter(([key, permission]) => {
+      return (
+        permission.allowed === true &&
+        // permission.methodName === "list" &&
+        permission.dataSourceId?._id
+      );
+    })
+    .map(([key, permission]) => permission.dataSourceId._id);
+
   useEffect(() => {
     const path = location.pathname;
     if (path.includes("/notivix")) {
@@ -203,11 +212,39 @@ export default function SideNav() {
     }
   }, [dispatch, activeTab]);
 
-  const handleItemClick = (
-    route: string,
-    hasSubItems: boolean,
-    itemName: string
-  ) => {
+  // Fetch data sources for ReportiVix
+  const { infiniteQuery: dataSourceListAPI, lastElementRef } = useInfiniteScroll<
+    DataSourceListPayload,
+    DataSourceListData
+  >(["dataSourceList"], GET?.DATA_SOURCE_LIST + `?canEditInline=true`, 10, "get", true);
+
+  // Fetch data sources for Notifix
+  const dataSourceNotivixListAPI = useGet<DataSourceListPayload>(
+    ["dataSourceNotivixList"],
+    GET?.DATA_SOURCE_LIST + `?isShowMenu=true`
+  );
+
+  // Process data sources
+  const dataSourceList = useMemo(() => {
+    return dataSourceListAPI?.data?.pages?.flatMap((page) => page?.data) || [];
+  }, [dataSourceListAPI?.data?.pages]);
+
+  const dataSourceNotivixList = useMemo(() => {
+    return dataSourceNotivixListAPI?.data?.data || [];
+  }, [dataSourceNotivixListAPI?.data]);
+
+  const matchedDataSources = useMemo(() => {
+
+    return dataSourceNotivixList?.filter(
+      (dataSource:any) => validPermissionIds.includes(dataSource._id) && dataSource.isShowMenu === true
+    );
+  }, [dataSourceNotivixList, validPermissionIds]);
+
+  useEffect(() => {
+    if (dataSourceList.length > 0) dispatch(setDataSourceList(dataSourceList));
+  }, [dataSourceList, dispatch]);
+
+  const handleItemClick = (route: string, hasSubItems: boolean, itemName: string) => {
     if (hasSubItems) {
       if (itemName === "Dashboards") {
         if (!openDashboard) {
@@ -260,9 +297,7 @@ export default function SideNav() {
             state: { enableEditMode: true },
           });
         }
-      } catch (error:
-        | { payload?: { message: string }; message?: string }
-        | unknown) {
+      } catch (error: | { payload?: { message: string }; message?: string } | unknown) {
         const errorMessage =
           error && typeof error === "object" && "payload" in error
             ? (error.payload as { message?: string })?.message
@@ -284,23 +319,6 @@ export default function SideNav() {
     setDataSourceId("");
   };
 
-  const { infiniteQuery: dataSourceListAPI, lastElementRef } =
-    useInfiniteScroll<DataSourceListPayload, DataSourceListData>(
-      ["dataSourceList"],
-      GET?.DATA_SOURCE_LIST + `?canEditInline=true`,
-      10,
-      "get",
-      true
-    );
-
-  const dataSourceList = useMemo(() => {
-    return dataSourceListAPI?.data?.pages?.flatMap((page) => page?.data) || [];
-  }, [dataSourceListAPI?.data?.pages]);
-
-  useEffect(() => {
-    if (dataSourceList.length > 0) dispatch(setDataSourceList(dataSourceList));
-  }, [dataSourceList, dispatch]);
-
   const handleDeleteClick = (e: React.MouseEvent, dashboard: DashboardType) => {
     e.stopPropagation();
     setDashboardToDelete(dashboard);
@@ -321,10 +339,7 @@ export default function SideNav() {
         setDashboardToDelete(null);
       } catch (error) {
         const errorResponse = error as ErrorResponse;
-        toast.error(
-          errorResponse.message ||
-            "Failed to delete dashboard. Please try again."
-        );
+        toast.error(errorResponse.message || "Failed to delete dashboard. Please try again.");
       } finally {
         setIsDeleting(false);
       }
@@ -356,28 +371,22 @@ export default function SideNav() {
     };
 
     if (activeTab === "Notifix") {
+      const dataSourceItems = matchedDataSources?.map((item) => {
+  
+        return {
+          name: item?.name ?? " ",
+          icon: createIcon(SourceIcon, `/notivix/data-source/${item?._id}`),
+          route: `/notivix/data-source/${item?._id}`,
+        };
+      }) || [];
       return [
         {
           name: "Dashboard",
-          icon: createIcon(AssessmentIcon, "/themes"),
+          icon: createIcon(AssessmentIcon, "/notivix/dashboard"),
           route: "/notivix/dashboard",
         },
-        // {
-        //   name: "Users",
-        //   icon: (
-        //     <AssessmentIcon
-        //       sx={{ fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base }}
-        //     />
-        //   ),
-        //   route: "/notivix/users",
-        // },
-
-        ...(dataSourceList?.map((item) => ({
-          name: item?.name ?? "",
-          icon: createIcon(SourceIcon, `/notivix/data-source/${item?._id}`),
-          route: `/notivix/data-source/${item?._id}`,
-        })) || []),
-        ...(dataSourceListAPI?.hasNextPage
+        ...dataSourceItems,
+        ...(dataSourceNotivixListAPI?.isLoading
           ? [
               {
                 name: "Loading...",
@@ -391,22 +400,22 @@ export default function SideNav() {
             ]
           : []),
         {
-          name: "Notification ",
+          name: "Notification",
           icon: (
             <SettingsIcon
               sx={{ fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base }}
             />
           ),
-          route: "/notivix/notification-settings",
+          route: "/notivix/notification",
           subItems: [
             {
-              name: "Settings",
+              name: "Types",
               icon: (
                 <SettingsIcon
                   sx={{ fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base }}
                 />
               ),
-              route: "/notivix/notification-settings/settings",
+              route: "/notivix/notification-types",
             },
             {
               name: "Notification",
@@ -415,19 +424,10 @@ export default function SideNav() {
                   sx={{ fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base }}
                 />
               ),
-              route: "/notivix/notification-settings/notification",
+              // route: "/notivix/notification-settings/notification",
             },
           ],
         },
-        // {
-        //   name: "IP",
-        //   icon: (
-        //     <AssessmentIcon
-        //       sx={{ fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base }}
-        //     />
-        //   ),
-        //   route: "/notivix/ip",
-        // },
       ];
     }
     return [
@@ -474,7 +474,7 @@ export default function SideNav() {
                   isMoreLink: true,
                 },
               ]),
-        ] as SubNavItem[],
+        ],
       },
       {
         name: "Reports",
@@ -504,7 +504,7 @@ export default function SideNav() {
                 },
               ]
             : []),
-        ] as SubNavItem[],
+        ],
       },
       {
         name: "Create Theme",
@@ -552,7 +552,9 @@ export default function SideNav() {
     loading,
     dashboards,
     dataSourceList,
+    matchedDataSources,
     dataSourceListAPI?.hasNextPage,
+    dataSourceNotivixListAPI?.isLoading,
     lastElementRef,
   ]);
 
@@ -597,7 +599,6 @@ export default function SideNav() {
               alignItems: "center",
               height: "50px",
               marginRight: "108px",
-
               borderBottom: `1px solid ${theme.palette.divider}`,
             }}
           >
@@ -766,10 +767,10 @@ export default function SideNav() {
                     {item.subItems &&
                       openNav &&
                       ((item.name === "Dashboards" && openDashboard) ||
-                      (item.name === "Notification Settings" &&
+                      (item.name === "Notification" &&
                         openNotificationSettings) ||
                       (item.name !== "Dashboards" &&
-                        item.name !== "Notification Settings" &&
+                        item.name !== "Notification" &&
                         openSettings) ? (
                         <ExpandLessIcon
                           sx={{
@@ -797,7 +798,7 @@ export default function SideNav() {
                     in={
                       item.name === "Dashboards"
                         ? openDashboard
-                        : item.name === "Notification Settings"
+                        : item.name === "Notification"
                           ? openNotificationSettings
                           : openSettings
                     }
@@ -969,8 +970,6 @@ export default function SideNav() {
                   >
                     <List component="div" disablePadding>
                       {[
-                       
-                       
                         {
                           name: "Roles",
                           icon: (
@@ -985,20 +984,6 @@ export default function SideNav() {
                               ? "/notivix/settings/roles"
                               : "/settings/roles",
                         },
-                        // {
-                        //   name: "Users",
-                        //   icon: (
-                        //     <PeopleIcon
-                        //       sx={{
-                        //         fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base,
-                        //       }}
-                        //     />
-                        //   ),
-                        //   route:
-                        //     activeTab === "Notifix"
-                        //       ? "/notivix/settings/users"
-                        //       : "/settings/users",
-                        // },
                         {
                           name: "Permissions",
                           icon: (
@@ -1010,8 +995,7 @@ export default function SideNav() {
                           ),
                           route: "/notivix/permissions",
                         },
-                         
-                         {
+                        {
                           name: "Organization Setting",
                           icon: (
                             <BusinessIcon
@@ -1025,20 +1009,6 @@ export default function SideNav() {
                               ? "/notivix/settings/organization"
                               : "/settings/organization",
                         },
-                        // {
-                        //   name: "Users",
-                        //   icon: (
-                        //     <PeopleIcon
-                        //       sx={{
-                        //         fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base,
-                        //       }}
-                        //     />
-                        //   ),
-                        //   route:
-                        //     activeTab === "Notifix"
-                        //       ? "/notivix/settings/users"
-                        //       : "/settings/users",
-                        // },
                       ].map((subItem) => (
                         <ListItem
                           key={subItem.name}

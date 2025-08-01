@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useForm, useFieldArray } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+import * as yup from "yup";
 import {
   Box,
   Button,
@@ -98,6 +100,28 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({
 }) => {
   const theme = useUnifiedTheme();
   const { getDialogTitleSx } = useComponentTypography();
+
+  console.log("data",data)
+  const validationSchema = yup.object().shape({
+    name: yup.string().required("Data source name is required"),
+    code: yup.string().required("Data source code is required"),
+    versionType: yup.string().required("Version type is required"),
+    isShowMenu: yup.boolean().required("Show in Menu is required"),
+    entityId: yup.string().required("Entity is required"),
+    fieldSettings: yup.array().of(
+      yup.object().shape({
+        attributeId: yup.string().required("Field is required"),
+        value: yup.string()
+          .required("Show label is required")
+          .min(1, "Show label must be at least 1 characters long")
+          .max(50, "Show label must not exceed 50 characters")
+          .trim(),
+        filter: yup.boolean(),
+        sorting: yup.boolean(),
+        visible: yup.boolean(),
+      })
+    ),
+  });
   const [open, setOpen] = useState(false);
   const [code, setCode] = useState(data?.code ?? "");
   const [name, setName] = useState(data?.name ?? "");
@@ -123,12 +147,13 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({
     watch,
     formState: { errors },
   } = useForm<DataSourceRequestPayload>({
+    resolver: yupResolver(validationSchema),
     defaultValues: {
       name: data?.name ?? "",
       code: data?.code ?? "",
       description: data?.description ?? "",
       versionType: data?.versionType ?? "",
-      isShowMenu: data?.isShowMenu, // Undefined in create mode, use data.isShowMenu in update mode
+      isShowMenu: data ? data.isShowMenu : undefined, // Explicitly undefined in create mode
       entityId:
         typeof data?.entityId === "string"
           ? data.entityId
@@ -180,6 +205,7 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({
   });
 
   const entityId = watch("entityId");
+  console.log("Entity ID:", entityId);
 
   // Fetch entities for dropdown
   useEffect(() => {
@@ -311,7 +337,7 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({
         code: data.code ?? "",
         description: data.description ?? "",
         versionType: data.versionType ?? "",
-        isShowMenu: data.isShowMenu, // Prefill with data.isShowMenu (undefined in create mode)
+        isShowMenu: data ? data.isShowMenu : undefined, // Explicitly undefined in create mode
         entityId:
           typeof data.entityId === "string"
             ? data.entityId
@@ -561,7 +587,7 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({
       uniqueAttributeRules: updatedUniqueAttributeRules.filter((rule) => rule.length > 0),
 
       fieldSettings: updatedFieldSettings,
-      isShowMenu: formData.isShowMenu === "true" ? true : false, // Default to false if undefined
+      isShowMenu: formData.isShowMenu === true ? true : false, // Handle boolean value properly
     };
 
     if (data && data._id) {
@@ -586,7 +612,25 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({
     setEntityName("");
     setError(null);
     setValidationError(null);
-    reset();
+    reset({
+      name: "",
+      code: "",
+      description: "",
+      versionType: "",
+      isShowMenu: undefined,
+      entityId: "",
+      entityAttributes: [[""]],
+      entityAttributeIds: [[""]],
+      fieldSettings: [
+        {
+          attributeId: "",
+          value: "",
+          filter: false,
+          sorting: false,
+          visible: false,
+        },
+      ],
+    });
   };
 
   const handleAddMoreAttribute = () => {
@@ -659,15 +703,17 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({
                   required: "Data source name is required",
                 })}
                 onChange={(event) => {
-                  debouncedSetName(event.target.value);
-                  setValue("name", event.target.value);
-                }}
-                onBlur={(event) => {
-                  const sanitizedCode = event.target.value
-                    .toLowerCase()
-                    .replace(/[^a-zA-Z0-9_]/g, "");
-                  debouncedSetCode(sanitizedCode);
-                  setValue("code", sanitizedCode);
+                  const nameValue = event.target.value;
+                  debouncedSetName(nameValue);
+                  setValue("name", nameValue, { shouldValidate: true });
+                  
+                  if (!data?.code) {
+                    const sanitizedCode = nameValue
+                      .toLowerCase()
+                      .replace(/[^a-zA-Z0-9_]/g, "");
+                    debouncedSetCode(sanitizedCode);
+                    setValue("code", sanitizedCode, { shouldValidate: true });
+                  }
                 }}
                 error={!!errors.name}
                 helperText={
@@ -794,7 +840,7 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({
                     : null
                 }
                 onChange={(event, newValue) => {
-                  setValue("entityId", newValue?._id || "");
+                  setValue("entityId", newValue?._id || "", { shouldValidate: true });
                 }}
                 renderInput={(params) => (
                   <TextField
@@ -938,7 +984,8 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({
                                 "";
                               setValue(
                                 `fieldSettings.${index}.attributeId`,
-                                attributeId
+                                attributeId,
+                                { shouldValidate: true }
                               );
                             }}
                             renderInput={(params) => (
@@ -1038,12 +1085,13 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({
                       'Data source code should not contain special characters, null characters, space or restricted prefixes (e.g., "system." or ".system.")',
                   },
                 })}
+                value={code}
                 onChange={(event) => {
                   const sanitizedCode = event.target.value
                     .toLowerCase()
                     .replace(/[^a-zA-Z0-9_]/g, "");
                   debouncedSetCode(sanitizedCode);
-                  setValue("code", sanitizedCode);
+                  setValue("code", sanitizedCode, { shouldValidate: true });
                 }}
                 error={!!errors.code}
                 disabled={!!data?.code}
@@ -1120,7 +1168,7 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({
                   })}
                   value={watch("versionType") || ""}
                   onChange={(event) =>
-                    setValue("versionType", event.target.value)
+                    setValue("versionType", event.target.value, { shouldValidate: true })
                   }
                   label="Version Type"
                 >
@@ -1134,25 +1182,18 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({
                 )}
               </FormControl>
 
-              <FormControl fullWidth error={!!errors.isShowMenu}>
+              <FormControl fullWidth error={!!errors.isShowMenu} required>
                 <InputLabel>Show in Menu</InputLabel>
                 <Select
-                  {...register("isShowMenu", {
-                    required: "Show in Menu is required",
-                  })}
-                  value={
-                    watch("isShowMenu") === undefined
-                      ? ""
-                      : watch("isShowMenu")
-                        ? "true"
-                        : "false"
-                  }
-                  onChange={(event) =>
-                    setValue("isShowMenu", event.target.value === "true")
-                  }
+                  value={watch("isShowMenu") === undefined ? "" : watch("isShowMenu") ? "true" : "false"}
+                  onChange={(event) => {
+                    const value = event.target.value;
+                    const booleanValue = value === "" ? undefined : value === "true";
+                    setValue("isShowMenu", booleanValue, { shouldValidate: true });
+                  }}
                   label="Show in Menu"
+                  displayEmpty
                 >
-                  <MenuItem value="">Select</MenuItem>
                   <MenuItem value="true">Yes</MenuItem>
                   <MenuItem value="false">No</MenuItem>
                 </Select>
