@@ -48,6 +48,7 @@ export const DELETE = {
   Delete_User:'/common/user/delete',
   DELETE_PERMISSION: "/common/permission/delete",
   DELETE_ROLE: "/common/role/delete",
+  DELETE_NOTIFICATION_TYPE: 'notivix/notification-setting/type/delete',
 };
 
 export const GET = {
@@ -88,4 +89,6 @@ export const GET = {
   PERMISSION_LIST: "/common/permission/list",
   ROLE_LIST: "/common/role/list",
   ROLE_DETAIL: "/common/role",
+  NOTIFICATION_TYPE_LIST: '/notivix/notification-setting/type/list',
+
 };
