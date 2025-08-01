@@ -32,7 +32,10 @@ export const POST = {
   Create_Organization: '/common/organization/create',
   Create_User: '/common/user/create',
   CREATE_PERMISSION: "/common/permission/create",
-  CREATE_ROLE: "/common/role/create",};
+  CREATE_ROLE: "/common/role/create",
+    OPERATOR_LIST: '/common/operator/list',
+
+};
 
 export const PUT = {
   UPDATE_DATA_SOURCE: '/common/dataSource/update',
@@ -76,7 +79,7 @@ export const GET = {
   DASHBOARD_WIDGET_GET_CHART_DATA: '/dashboard/widget/getWidgets',
   DASHBOARD_WIDGET: '/dashboard/widget',
   DASHBOARD_WIDGET_DATA: '/dashboard/widget/getWidgetData',
-  OPERATOR_LIST: '/operator/list',
+  OPERATOR_LIST: '/common/operator/list',
   WIDGET_THEME: '/widgetTheme',
   NL_Query: '/nlQuery',
   NL_Query_INSIGHTS: '/nlQuery/insights',
