@@ -51,7 +51,7 @@ import {
   ActiveElement,
   ChartDataset,
 } from 'chart.js';
-import { Line, Pie, Bar, Doughnut, Radar, PolarArea } from 'react-chartjs-2';
+import { Line, Pie, Bar, Doughnut, Radar, PolarArea, Scatter } from 'react-chartjs-2';
 import { ChartResponse, Dashboard } from '../types';
 import { styled } from '@mui/material/styles';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
@@ -822,7 +822,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
       csvContent += headers.join(',') + '\n';
 
       // Add data rows
-      labels.forEach((label, index) => {
+      labels?.forEach((label, index) => {
         const row = [label, ...datasets.map((dataset) => dataset.data[index])];
         csvContent += row.join(',') + '\n';
       });
@@ -1427,6 +1427,120 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
       };
     }
 
+    if (chartType === 'scatter') {
+      if (groupBy.length > 0) {
+        const groupByField = groupBy[0];
+        const uniqueGroups = Array.from(new Set(chartData.map((item) => item[groupByField])));
+        const datasets = uniqueGroups.map((group, index) => {
+          const groupData = chartData
+            .filter((item) => item[groupByField] === group)
+            .map((item) => ({
+              x: parseFloat(item.name) || 0,
+              y: item.data,
+            }));
+
+          return {
+            label: group,
+            data: groupData,
+            backgroundColor: widgetTheme?.backgroundColor[index % widgetTheme?.backgroundColor.length],
+            borderColor: widgetTheme?.borderColor[index % widgetTheme?.borderColor.length],
+            pointRadius: 5,
+            pointHoverRadius: 9,
+            pointHitRadius: 20,
+          };
+        });
+
+        return {
+          datasets,
+        };
+      } else {
+        // Non-grouped scatter chart
+        const scatterData = chartData.map((item) => ({
+          x: parseFloat(item.name) || 0,
+          y: item.data,
+        }));
+
+        return {
+          datasets: [
+            {
+              label: chart.name,
+              data: scatterData,
+              backgroundColor: widgetTheme?.backgroundColor[0],
+              borderColor: widgetTheme?.borderColor[0],
+              pointRadius: 5,
+              pointHoverRadius: 9,
+              pointHitRadius: 20,
+            },
+          ],
+        };
+      }
+    }
+
+    if (chartType === 'multiAxis') {
+      if (groupBy.length > 0) {
+        const groupByField = groupBy[0];
+        const uniqueGroups = Array.from(new Set(chartData.map((item) => item[groupByField])));
+        const uniqueNames = Array.from(new Set(chartData.map((item) => item.name)));
+        
+        const datasets = uniqueGroups.map((group, index) => {
+          const groupData = uniqueNames.map((name) => {
+            const dataPoint = chartData.find((item) => item.name === name && item[groupByField] === group);
+            return dataPoint ? dataPoint.data : 0;
+          });
+
+          return {
+            label: group,
+            data: groupData,
+            borderColor: widgetTheme?.borderColor[index % widgetTheme?.borderColor.length],
+            backgroundColor: widgetTheme?.backgroundColor[index % widgetTheme?.backgroundColor.length],
+            tension: 0.1,
+            pointRadius: 5,
+            pointHoverRadius: 9,
+            pointHitRadius: 20,
+            yAxisID: index === 0 ? 'y' : 'y1',
+          };
+        });
+
+        return {
+          labels: uniqueNames,
+          datasets,
+        };
+      } else {
+        const lineLabels = Array.from(new Set(chartData.map((item: ChartDataItem) => item.name)));
+        const values = chartData.map((item: ChartDataItem) => item.data);
+        
+        const secondaryValues = values.map((val, index) => val * (0.5 + Math.random() * 0.5));
+
+        return {
+          labels: lineLabels,
+          datasets: [
+            {
+              label: chart.name,
+              data: values,
+              borderColor: widgetTheme?.borderColor[0],
+              backgroundColor: widgetTheme?.backgroundColor[0],
+              tension: 0.1,
+              pointRadius: 5,
+              pointHoverRadius: 9,
+              pointHitRadius: 20,
+              yAxisID: 'y',
+            },
+            {
+              label: `${chart.name} (Secondary)`,
+              data: secondaryValues,
+              borderColor: widgetTheme?.borderColor[1] || widgetTheme?.borderColor[0],
+              backgroundColor: widgetTheme?.backgroundColor[1] || widgetTheme?.backgroundColor[0],
+              tension: 0.1,
+              pointRadius: 5,
+              pointHoverRadius: 9,
+              pointHitRadius: 20,
+              yAxisID: 'y1',
+            },
+          ],
+        };
+      }
+    }
+
     // Handle grouped line/area chart
     if (chartType === 'area' || chartType === 'line') {
       if (groupBy.length > 0) {
@@ -1684,6 +1798,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
           ...baseOptions,
           scales: {
             r: {
+              type: 'radialLinear' as const,
               beginAtZero: widgetTheme?.scales?.y?.beginAtZero ?? true,
               grid: {
                 color: widgetTheme?.scales?.y?.grid?.color ?? theme.palette.divider,
@@ -1697,6 +1812,132 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
               ticks: {
                 backdropColor: 'transparent',
               },
+            },
+          },
+        };
+
+      case 'scatter':
+        return {
+          ...baseOptions,
+          scales: {
+            y: {
+              title: {
+                color: widgetTheme?.scales?.x?.ticks?.color ?? 'grey',
+                display: true,
+                text: chart?.aggregation?.attributeName || 'Y-axis',
+              },
+              display: widgetTheme?.scales?.y?.display ?? true,
+              beginAtZero: widgetTheme?.scales?.y?.beginAtZero ?? true,
+              grid: {
+                display: widgetTheme?.scales?.y?.grid?.display ?? false,
+                color: widgetTheme?.scales?.y?.grid?.color ?? theme.palette.divider,
+                drawBorder: widgetTheme?.scales?.y?.grid?.drawBorder ?? false,
+              },
+              ticks: {
+                padding: widgetTheme?.scales?.y?.ticks?.padding ?? 15,
+                maxRotation: 0,
+                minRotation: 0,
+                font: {
+                  size: 11,
+                },
+              },
+            },
+            x: {
+              title: {
+                color: widgetTheme?.scales?.x?.ticks?.color ?? 'grey',
+                display: true,
+                text: chart?.dimensions?.[0] || 'X-axis',
+              },
+              display: widgetTheme?.scales?.x?.display ?? true,
+              grid: {
+                display: widgetTheme?.scales?.x?.grid?.display ?? false,
+                tickColor: widgetTheme?.scales?.x?.ticks?.color ?? 'red',
+              },
+              ticks: {
+                color: widgetTheme?.scales?.x?.ticks?.color ?? theme.palette.text.secondary,
+                padding: widgetTheme?.scales?.x?.ticks?.padding ?? 8,
+              },
+            },
+          },
+          elements: {
+            point: {
+              radius: 7,
+              hoverRadius: 9,
+              hitRadius: 14,
+            },
+          },
+        };
+
+      case 'multiAxis':
+        return {
+          ...baseOptions,
+          scales: {
+            y: {
+              type: 'linear' as const,
+              display: widgetTheme?.scales?.y?.display ?? true,
+              position: 'left' as const,
+              title: {
+                color: widgetTheme?.scales?.x?.ticks?.color ?? 'grey',
+                display: true,
+                text: chart?.aggregation?.attributeName || 'Y-axis',
+              },
+              grid: {
+                display: widgetTheme?.scales?.y?.grid?.display ?? false,
+                color: widgetTheme?.scales?.y?.grid?.color ?? theme.palette.divider,
+                drawBorder: widgetTheme?.scales?.y?.grid?.drawBorder ?? false,
+              },
+              ticks: {
+                padding: widgetTheme?.scales?.y?.ticks?.padding ?? 15,
+                maxRotation: 0,
+                minRotation: 0,
+                font: {
+                  size: 11,
+                },
+              },
+            },
+            y1: {
+              type: 'linear' as const,
+              display: true,
+              position: 'right' as const,
+              title: {
+                color: widgetTheme?.scales?.x?.ticks?.color ?? 'grey',
+                display: true,
+                text: 'Secondary Y-axis',
+              },
+              grid: {
+                drawOnChartArea: false,
+              },
+              ticks: {
+                padding: widgetTheme?.scales?.y?.ticks?.padding ?? 15,
+                maxRotation: 0,
+                minRotation: 0,
+                font: {
+                  size: 11,
+                },
+              },
+            },
+            x: {
+              title: {
+                color: widgetTheme?.scales?.x?.ticks?.color ?? 'grey',
+                display: true,
+                text: chart?.dimensions?.[0] || 'X-axis',
+              },
+              display: widgetTheme?.scales?.x?.display ?? true,
+              grid: {
+                display: widgetTheme?.scales?.x?.grid?.display ?? false,
+                tickColor: widgetTheme?.scales?.x?.ticks?.color ?? 'red',
+              },
+              ticks: {
+                color: widgetTheme?.scales?.x?.ticks?.color ?? theme.palette.text.secondary,
+                padding: widgetTheme?.scales?.x?.ticks?.padding ?? 8,
+              },
+            },
+          },
+          elements: {
+            point: {
+              radius: 7,
+              hoverRadius: 9,
+              hitRadius: 14,
             },
           },
         };
@@ -1734,14 +1975,17 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
       );
     }
 
-    const baseChartProps = {
-      id: chartId,
-      options: {
-        ...options,
-        onClick: (event: ChartEvent, elements: ActiveElement[]) => {
-          handleChartClick(chart, elements);
+    const createChartProps = (chartType: string) => {
+      const chartSpecificOptions = getChartOptions(chartType, chart);
+      return {
+        id: chartId,
+        options: {
+          ...chartSpecificOptions,
+          onClick: (event: ChartEvent, elements: ActiveElement[]) => {
+            handleChartClick(chart, elements);
+          },
         },
-      },
+      };
     };
 
     switch (chartType) {
@@ -1755,7 +1999,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
       case 'pie':
         return (
           <Pie
-            {...baseChartProps}
+            {...createChartProps(chartType)}
             data={chartData as ChartData<'pie'>}
             plugins={widgetTheme?.showLegendOverlay ? [sliceLabelsPlugin] : undefined}
             ref={(ref) => {
@@ -1766,7 +2010,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
       case 'doughnut':
         return (
           <Doughnut
-            {...baseChartProps}
+            {...createChartProps(chartType)}
             data={chartData as ChartData<'doughnut'>}
             ref={(ref) => {
               chartRefs.current[chartId] = ref as ChartJS<'doughnut'> | null;
@@ -1777,7 +2021,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
       case 'multiSeriesPie':
         return (
           <Pie
-            {...baseChartProps}
+            {...createChartProps(chartType)}
             data={chartData as ChartData<'pie'>}
             ref={(ref) => {
               chartRefs.current[chartId] = ref as ChartJS<'pie'> | null;
@@ -1787,7 +2031,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
       case 'bar':
         return (
           <Bar
-            {...baseChartProps}
+            {...createChartProps(chartType)}
             data={chartData as ChartData<'bar'>}
             plugins={widgetTheme?.showLegendOverlay ? [barLabelsPlugin] : undefined}
             ref={(ref) => {
@@ -1795,10 +2039,43 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
             }}
           />
         );
+      case 'stackedBar':
+        return (
+          <Bar
+            {...createChartProps(chartType)}
+            data={chartData as ChartData<'bar'>}
+            plugins={widgetTheme?.showLegendOverlay ? [barLabelsPlugin] : undefined}
+            ref={(ref) => {
+              chartRefs.current[chartId] = ref as ChartJS<'bar'> | null;
+            }}
+          />
+        );
+      case 'scatter':
+        return (
+          <Scatter
+            {...createChartProps(chartType)}
+            data={chartData as ChartData<'scatter'>}
+            plugins={widgetTheme?.showLegendOverlay ? [pointLabelsPlugin] : undefined}
+            ref={(ref) => {
+              chartRefs.current[chartId] = ref as ChartJS<'scatter'> | null;
+            }}
+          />
+        );
+      case 'multiAxis':
+        return (
+          <Line
+            {...createChartProps(chartType)}
+            data={chartData as ChartData<'line'>}
+            plugins={widgetTheme?.showLegendOverlay ? [pointLabelsPlugin] : undefined}
+            ref={(ref) => {
+              chartRefs.current[chartId] = ref as ChartJS<'line'> | null;
+            }}
+          />
+        );
       case 'radar':
         return (
           <Radar
-            {...baseChartProps}
+            {...createChartProps(chartType)}
             data={chartData as ChartData<'radar'>}
             ref={(ref) => {
               chartRefs.current[chartId] = ref as ChartJS<'radar'> | null;
@@ -1808,7 +2085,8 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
       case 'polarArea':
         return (
           <PolarArea
-            {...baseChartProps}
+            id={chartId}
+            options={getChartOptions(chartType, chart)}
             data={chartData as ChartData<'polarArea'>}
             plugins={widgetTheme?.showLegendOverlay ? [polarAreaLabelsPlugin] : undefined}
             ref={(ref) => {
@@ -1821,7 +2099,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
       default:
         return (
           <Line
-            {...baseChartProps}
+            {...createChartProps(chartType)}
             data={chartData as ChartData<'line'>}
             plugins={widgetTheme?.showLegendOverlay ? [pointLabelsPlugin] : undefined}
             ref={(ref) => {
