@@ -14,6 +14,7 @@ import {
   CardContent,
   Card,
   FormHelperText,
+  Autocomplete,
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import AddIcon from '@mui/icons-material/Add';
@@ -21,6 +22,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import ClearIcon from '@mui/icons-material/Clear';
 import { useAppDispatch, useAppSelector } from '../../../storeHooks';
 import { fetchWidgetTypes, fetchAllDataSources, saveWidgets, fetchChartData } from '../notivixDashboardActions';
+import useGet from '../../../hooks/useGet';
 import {
   ChartResponse,
   DataSource,
@@ -65,6 +67,14 @@ export interface ChartFormData {
   widgetTypeId: string;
   dashboardId: string;
   isIncremental: boolean;
+}
+
+interface EntityFieldOption {
+  label: string;
+  value: {
+    attributeId?: string;
+    refAttributeId?: string;
+  };
 }
 
 interface AddChartModalProps {
@@ -249,6 +259,22 @@ export const NotivixAddChartModal: React.FC<AddChartModalProps> = ({
   const [operators, setOperators] = useState<OperatorType[]>([]);
   const [fieldTypes, setFieldTypes] = useState<{ [key: string]: string }>({});
   const [fieldErrors, setFieldErrors] = useState<{ [key: string]: string }>({});
+  const [entityFieldOptions, setEntityFieldOptions] = useState<EntityFieldOption[]>([]);
+
+  const entityDetails = useGet<{
+    success: boolean;
+    data: {
+      _id: string;
+      name: string;
+      attributes: DataSourceAttribute[];
+      entityFieldOptions?: EntityFieldOption[];
+    };
+    message?: string;
+  }>(
+    [`entityDetails`, selectedDataSource?.entityId?._id || ''],
+    `${GET.Get_Entity_By_Id}/${selectedDataSource?.entityId?._id || ''}`,
+    !!(open && selectedDataSource?.entityId?._id)
+  );
 
   useEffect(() => {
     if (open && initialData) {
@@ -330,13 +356,29 @@ export const NotivixAddChartModal: React.FC<AddChartModalProps> = ({
   }, [isTrend, open, formData.dataSourceId]);
 
   useEffect(() => {
-    if (open && currentDashboard?.settings?.dashboardType === 'fixed' && currentDashboard?.settings?.dataSourceId) {
+    if (open && currentDashboard?.settings?.dashboardType === 'fixed' && (currentDashboard?.settings as any)?.dataSourceId) {
       setFormData((prev) => ({
         ...prev,
-        dataSourceId: currentDashboard.settings.dataSourceId,
+        dataSourceId: (currentDashboard.settings as any).dataSourceId,
       }));
     }
   }, [open, currentDashboard]);
+
+  useEffect(() => {
+    if (entityDetails.data?.data?.entityFieldOptions) {
+      setEntityFieldOptions(entityDetails.data.data.entityFieldOptions);
+    } else if (entityDetails.data?.data?.attributes) {
+      const derivedFieldOptions = entityDetails.data.data.attributes.map((attr: DataSourceAttribute) => ({
+        label: attr.name,
+        value: {
+          attributeId: attr.name,
+          refAttributeId: attr.name,
+        },
+      }));
+      setEntityFieldOptions(derivedFieldOptions);
+    }
+
+  }, [entityDetails.data]);
 
   const handleChange = (
     field: keyof ChartFormData,
@@ -609,6 +651,13 @@ export const NotivixAddChartModal: React.FC<AddChartModalProps> = ({
   const getAttributeOptions = (): DataSourceAttribute[] => {
     return selectedDataSource?.entityId.attributes || [];
   };
+
+  const getSelectedAutocompleteOption = (value: string) => {
+    if (!value) return null;
+    return entityFieldOptions.find(option => option.label === value) || null;
+  };
+
+
 
   const handleClearDimension = () => {
     handleChange('dimensions', '');
@@ -1065,7 +1114,7 @@ export const NotivixAddChartModal: React.FC<AddChartModalProps> = ({
             label="Chart Name"
             value={formData.name}
             onChange={(e) => handleChange('name', e.target.value)}
-            disabled={isSubmitting || currentDashboard?.settings?.dashboardType === 'fixed'}
+            disabled={isSubmitting}
             size="small"
             sx={{
               '& .MuiOutlinedInput-root': {
@@ -1163,73 +1212,135 @@ export const NotivixAddChartModal: React.FC<AddChartModalProps> = ({
               <>
                 <FormSection>
                   <FormRow>
-                    <FormControl fullWidth size="small">
-                      <InputLabel>Dimensions</InputLabel>
-                      <StyledSelect
-                        value={formData.dimensions}
-                        label="Dimensions"
-                        onChange={handleDimensionChange}
+                    {currentDashboard?.settings?.dashboardType === 'fixed' ? (
+                      <Autocomplete
+                        options={entityFieldOptions}
+                        getOptionLabel={(option) => option.label || ""}
+                        isOptionEqualToValue={(option, value) => {
+                          if (!option || !value) return false;
+                          const optionId = option.value?.attributeId || option.value?.refAttributeId;
+                          const valueId = value.value?.attributeId || value.value?.refAttributeId;
+                          return optionId === valueId;
+                        }}
+                        value={getSelectedAutocompleteOption(formData.dimensions)}
+                        onChange={(event, newValue) => {
+                          const attributeId = newValue?.value?.attributeId || newValue?.value?.refAttributeId || "";
+                          handleChange('dimensions', attributeId);
+                        }}
+                        renderInput={(params) => (
+                          <TextField
+                            {...params}
+                            label="Dimensions"
+                            error={!!fieldErrors['Dimension']}
+                            helperText={fieldErrors['Dimension']}
+                            size="small"
+                          />
+                        )}
                         disabled={isSubmitting || isTrend}
-                        error={!!fieldErrors['Dimension']}
-                        endAdornment={
-                          formData.dimensions && (
-                            <InputAdornment position="end">
-                              <IconButton
-                                size="small"
-                                onClick={handleClearDimension}
-                                edge="end"
-                                sx={{ mr: 1 }}
-                                disabled={isTrend}
-                              >
-                                <ClearIcon fontSize="small" />
-                              </IconButton>
-                            </InputAdornment>
-                          )
-                        }
-                      >
-                        {isTrend ? (
-                          <MenuItem value="versionValue">Period</MenuItem>
-                        ) : (
-                          getAttributeOptions().map((attr) => (
-                            <MenuItem key={attr.name} value={attr.name} disabled={attr.name === formData.groupBy}>
+                        sx={{ flex: 1 }}
+                        clearOnBlur={false}
+                        handleHomeEndKeys={true}
+                      />
+                    ) : (
+                      <FormControl fullWidth size="small">
+                        <InputLabel>Dimensions</InputLabel>
+                        <StyledSelect
+                          value={formData.dimensions}
+                          label="Dimensions"
+                          onChange={handleDimensionChange}
+                          disabled={isSubmitting || isTrend}
+                          error={!!fieldErrors['Dimension']}
+                          endAdornment={
+                            formData.dimensions && (
+                              <InputAdornment position="end">
+                                <IconButton
+                                  size="small"
+                                  onClick={handleClearDimension}
+                                  edge="end"
+                                  sx={{ mr: 1 }}
+                                  disabled={isTrend}
+                                >
+                                  <ClearIcon fontSize="small" />
+                                </IconButton>
+                              </InputAdornment>
+                            )
+                          }
+                        >
+                          {isTrend ? (
+                            <MenuItem value="versionValue">Period</MenuItem>
+                          ) : (
+                            getAttributeOptions().map((attr) => (
+                              <MenuItem key={attr.name} value={attr.name} disabled={attr.name === formData.groupBy}>
+                                {attr.name}
+                              </MenuItem>
+                            ))
+                          )}
+                        </StyledSelect>
+                        {fieldErrors['Dimension'] && (
+                          <FormHelperText error>{fieldErrors['Dimension']}</FormHelperText>
+                        )}
+                      </FormControl>
+                    )}
+
+                    {currentDashboard?.settings?.dashboardType === 'fixed' ? (
+                      <Autocomplete
+                        options={entityFieldOptions}
+                        getOptionLabel={(option) => option.label || ""}
+                        isOptionEqualToValue={(option, value) => {
+                          if (!option || !value) return false;
+                          const optionId = option.value?.attributeId || option.value?.refAttributeId;
+                          const valueId = value.value?.attributeId || value.value?.refAttributeId;
+                          return optionId === valueId;
+                        }}
+                        value={getSelectedAutocompleteOption(formData.groupBy)}
+                        onChange={(event, newValue) => {
+                          const attributeId = newValue?.value?.attributeId || newValue?.value?.refAttributeId || "";
+                          handleChange('groupBy', attributeId);
+                        }}
+                        renderInput={(params) => (
+                          <TextField
+                            {...params}
+                            label="Group By"
+                            error={!!fieldErrors['GroupBy']}
+                            helperText={fieldErrors['GroupBy']}
+                            size="small"
+                          />
+                        )}
+                        disabled={isSubmitting}
+                        sx={{ flex: 1 }}
+                        clearOnBlur={false}
+                        handleHomeEndKeys={true}
+                      />
+                    ) : (
+                      <FormControl fullWidth size="small">
+                        <InputLabel>Group By</InputLabel>
+                        <StyledSelect
+                          value={formData.groupBy}
+                          label="Group By"
+                          onChange={handleGroupByChange}
+                          disabled={isSubmitting}
+                          error={!!fieldErrors['GroupBy']}
+                          endAdornment={
+                            formData.groupBy && (
+                              <InputAdornment position="end">
+                                <IconButton size="small" onClick={handleClearGroupBy} edge="end" sx={{ mr: 1 }}>
+                                  <ClearIcon fontSize="small" />
+                                </IconButton>
+                              </InputAdornment>
+                            )
+                          }
+                        >
+                          {getAttributeOptions().map((attr) => (
+                            <MenuItem key={attr.name} value={attr.name} disabled={attr.name === formData.dimensions}>
                               {attr.name}
                             </MenuItem>
-                          ))
+                          ))}
+                        </StyledSelect>
+                        {fieldErrors['GroupBy'] && (
+                          <FormHelperText error>{fieldErrors['GroupBy']}</FormHelperText>
                         )}
-                      </StyledSelect>
-                      {fieldErrors['Dimension'] && (
-                        <FormHelperText error>{fieldErrors['Dimension']}</FormHelperText>
-                      )}
-                    </FormControl>
-
-                    <FormControl fullWidth size="small">
-                      <InputLabel>Group By</InputLabel>
-                      <StyledSelect
-                        value={formData.groupBy}
-                        label="Group By"
-                        onChange={handleGroupByChange}
-                        disabled={isSubmitting}
-                        error={!!fieldErrors['GroupBy']}
-                        endAdornment={
-                          formData.groupBy && (
-                            <InputAdornment position="end">
-                              <IconButton size="small" onClick={handleClearGroupBy} edge="end" sx={{ mr: 1 }}>
-                                <ClearIcon fontSize="small" />
-                              </IconButton>
-                            </InputAdornment>
-                          )
-                        }
-                      >
-                        {getAttributeOptions().map((attr) => (
-                          <MenuItem key={attr.name} value={attr.name} disabled={attr.name === formData.dimensions}>
-                            {attr.name}
-                          </MenuItem>
-                        ))}
-                      </StyledSelect>
-                      {fieldErrors['GroupBy'] && (
-                        <FormHelperText error>{fieldErrors['GroupBy']}</FormHelperText>
-                      )}
-                    </FormControl>
+                      </FormControl>
+                    )}
                   </FormRow>
                 </FormSection>
 
@@ -1250,21 +1361,50 @@ export const NotivixAddChartModal: React.FC<AddChartModalProps> = ({
                       </StyledSelect>
                     </FormControl>
 
-                    <FormControl fullWidth size="small">
-                      <InputLabel>Attribute Name</InputLabel>
-                      <StyledSelect
-                        value={formData.aggregation.attributeName}
-                        label="Attribute Name"
-                        onChange={handleAggregationAttributeChange}
+                    {currentDashboard?.settings?.dashboardType === 'fixed' ? (
+                      <Autocomplete
+                        options={entityFieldOptions}
+                        getOptionLabel={(option) => option.label || ""}
+                        isOptionEqualToValue={(option, value) => {
+                          if (!option || !value) return false;
+                          const optionId = option.value?.attributeId || option.value?.refAttributeId;
+                          const valueId = value.value?.attributeId || value.value?.refAttributeId;
+                          return optionId === valueId;
+                        }}
+                        value={getSelectedAutocompleteOption(formData.aggregation.attributeName)}
+                        onChange={(event, newValue) => {
+                          const attributeId = newValue?.value?.attributeId || newValue?.value?.refAttributeId || "";
+                          handleAggregationChange('attributeName', attributeId);
+                        }}
+                        renderInput={(params) => (
+                          <TextField
+                            {...params}
+                            label="Attribute Name"
+                            size="small"
+                          />
+                        )}
                         disabled={isSubmitting}
-                      >
-                        {getAttributeOptions().map((attr) => (
-                          <MenuItem key={attr.name} value={attr.name}>
-                            {attr.name}
-                          </MenuItem>
-                        ))}
-                      </StyledSelect>
-                    </FormControl>
+                        sx={{ flex: 1 }}
+                        clearOnBlur={false}
+                        handleHomeEndKeys={true}
+                      />
+                    ) : (
+                      <FormControl fullWidth size="small">
+                        <InputLabel>Attribute Name</InputLabel>
+                        <StyledSelect
+                          value={formData.aggregation.attributeName}
+                          label="Attribute Name"
+                          onChange={handleAggregationAttributeChange}
+                          disabled={isSubmitting}
+                        >
+                          {getAttributeOptions().map((attr) => (
+                            <MenuItem key={attr.name} value={attr.name}>
+                              {attr.name}
+                            </MenuItem>
+                          ))}
+                        </StyledSelect>
+                      </FormControl>
+                    )}
                   </FormRow>
                 </FormSection>
 
