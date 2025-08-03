@@ -329,6 +329,15 @@ export const NotivixAddChartModal: React.FC<AddChartModalProps> = ({
     }
   }, [isTrend, open, formData.dataSourceId]);
 
+  useEffect(() => {
+    if (open && currentDashboard?.settings?.dashboardType === 'fixed' && currentDashboard?.settings?.dataSourceId) {
+      setFormData((prev) => ({
+        ...prev,
+        dataSourceId: currentDashboard.settings.dataSourceId,
+      }));
+    }
+  }, [open, currentDashboard]);
+
   const handleChange = (
     field: keyof ChartFormData,
     value: string | boolean | number | Position | Aggregation | Condition[]
@@ -1056,7 +1065,7 @@ export const NotivixAddChartModal: React.FC<AddChartModalProps> = ({
             label="Chart Name"
             value={formData.name}
             onChange={(e) => handleChange('name', e.target.value)}
-            disabled={isSubmitting}
+            disabled={isSubmitting || currentDashboard?.settings?.dashboardType === 'fixed'}
             size="small"
             sx={{
               '& .MuiOutlinedInput-root': {
@@ -1121,7 +1130,7 @@ export const NotivixAddChartModal: React.FC<AddChartModalProps> = ({
                 value={formData.dataSourceId}
                 onChange={handleDataSourceChange}
                 label="Data Source"
-                disabled={dataSourcesLoading}
+                disabled={dataSourcesLoading || currentDashboard?.settings?.dashboardType === 'fixed'}
               >
                 {dataSources.map((source) => (
                   <MenuItem key={source._id} value={source._id}>
