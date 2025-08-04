@@ -682,10 +682,13 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
       if (isNaturalLangauage) {
         dispatch(resetChartAndWidgetData());
       } else {
-        dispatch(fetchChartData({ dashboardId }));
+        dispatch(fetchChartData({ 
+          dashboardId,
+          dashboardType: currentDashboard?.settings?.dashboardType
+        }));
       }
     }
-  }, [dispatch, dashboardId]);
+  }, [dispatch, dashboardId, currentDashboard?.settings?.dashboardType]);
 
   const handleMenuClick = (event: React.MouseEvent<HTMLElement>, chart: ChartResponse) => {
     event.stopPropagation();
@@ -712,7 +715,10 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
 
       if (result.success) {
         toast.success('Chart deleted successfully!');
-        dispatch(fetchChartData({ dashboardId }));
+        dispatch(fetchChartData({ 
+          dashboardId,
+          dashboardType: currentDashboard?.settings?.dashboardType
+        }));
       } else {
         toast.error(result.message || 'Failed to delete chart');
       }
