@@ -16,13 +16,16 @@ import DoneIcon from '@mui/icons-material/Done';
 import PauseIcon from '@mui/icons-material/Pause';
 import ViewColumnIcon from '@mui/icons-material/ViewColumn';
 import SquareIcon from '@mui/icons-material/Square';
+import FilterListIcon from '@mui/icons-material/FilterList';
 import { useParams, useLocation } from 'react-router-dom';
 import { ChartGrid } from './NotivixChartGrid';
 import { NotivixAddChartModal, ChartFormData } from './NotivixAddChartModal';
+import NotivixFiltersModal, { FilterOptions } from './NotivixFiltersModal';
 import { useAppDispatch, useAppSelector } from '../../../storeHooks';
-import { updateWidget, saveWidgets, fetchWidgetTheme, fetchChartData, selectDashboardTheme } from '../notivixDashboardActions';
+import { updateWidget, saveWidgets, fetchWidgetTheme, fetchChartData, selectDashboardTheme, fetchDataSourceDetails } from '../notivixDashboardActions';
 import { toast } from 'react-toastify';
 import { ChartResponse, TemporaryChart, Dashboard } from '../types';
+import axiosInstance from '../../../services/axiosInstance';
 import usePost from '../../../hooks/usePost';
 import { POST } from '../../../services/apiRoutes';
 import CommonDatePicker from '../../../components/common/datePicker/datePicker';
@@ -51,6 +54,8 @@ export const NotivixDashboardView: React.FC<DashboardViewProps> = ({ title: init
   const [selectedChart, setSelectedChart] = useState<ChartResponse | null>(null);
   const [gridColumns, setGridColumns] = useState(2);
   const [selectedTheme, setSelectedTheme] = useState<string>('');
+  const [isFiltersModalOpen, setIsFiltersModalOpen] = useState(false);
+  const [currentFilters, setCurrentFilters] = useState<FilterOptions>({});
 
   const inputRef = useRef<HTMLInputElement>(null);
   const { id: dashboardId } = useParams();
@@ -59,6 +64,7 @@ export const NotivixDashboardView: React.FC<DashboardViewProps> = ({ title: init
   const temporaryCharts = useAppSelector((state) => state.dashboard.temporaryCharts);
   const dashboards = useAppSelector((state) => state.dashboard.dashboards);
   const currentDashboard = dashboards.find((d) => d._id === dashboardId);
+  const { dataSourceDetails, dataSourceDetailsLoading } = useAppSelector((state) => state.notivixDashboard);
 
   const { themes } = useAppSelector((state) => state.theme);
 
@@ -383,6 +389,7 @@ export const NotivixDashboardView: React.FC<DashboardViewProps> = ({ title: init
     }
   }, [startDate, endDate, currentDashboard?.settings?.dashboardType, trigger]);
 
+
   const handleThemeChange = async (event: SelectChangeEvent<unknown>) => {
     const themeId = event.target.value as string;
     setSelectedTheme(themeId);
@@ -404,6 +411,86 @@ export const NotivixDashboardView: React.FC<DashboardViewProps> = ({ title: init
           toast.error('Failed to update theme');
         }
       }
+    }
+  };
+
+  const handleOpenFiltersModal = async () => {
+    if (currentDashboard?.settings?.dashboardType === 'fixed' && currentDashboard?.settings?.dataSource?._id) {
+      try {
+        await dispatch(fetchDataSourceDetails(currentDashboard.settings.dataSource._id)).unwrap();
+        setIsFiltersModalOpen(true);
+      } catch (error) {
+        console.error('Failed to fetch data source details:', error);
+        toast.error('Failed to load filters. Please try again.');
+      }
+    } else {
+      setIsFiltersModalOpen(true);
+    }
+  };
+
+  const handleCloseFiltersModal = () => {
+    setIsFiltersModalOpen(false);
+  };
+
+  const handleApplyFilters = async (filters: FilterOptions) => {
+    setCurrentFilters(filters);
+    
+    const filtersPayload: Record<string, any> = {};
+    
+    Object.keys(filters).forEach(key => {
+      if (key !== 'searchText' && key !== 'dateRange' && filters[key as keyof FilterOptions]) {
+        const value = filters[key as keyof FilterOptions];
+        if (value && value !== '') {
+          const fieldSetting = dataSourceDetails?.fieldSettings?.find(
+            (field) => field.attributeId === key
+          );
+          
+          if (fieldSetting) {
+            const attribute = dataSourceDetails?.entityId?.attributes?.find(
+              (attr) => attr._id === fieldSetting.attributeId
+            );
+            
+            if (attribute?.type === 'multioption') {
+              filtersPayload[fieldSetting.label] = Array.isArray(value) ? value : [value];
+            } else {
+              filtersPayload[fieldSetting.label] = Array.isArray(value) ? value[0] : value;
+            }
+          }
+        }
+      }
+    });
+
+    const charts = useAppSelector((state) => state.notivixDashboard.charts);
+    const currentChart = charts.find((chart) => chart.dashboardId === dashboardId);
+    
+    if (!currentChart) {
+      toast.error('No chart data found for this dashboard');
+      return;
+    }
+
+    const apiPayload = {
+      dataSourceId: currentDashboard?.settings?.dataSource?._id,
+      dimension: currentChart.dimensions?.[0] || "SBU",
+      aggregation: currentChart.aggregation || {
+        type: "Count",
+        attributeName: "SBU"
+      },
+      groupBy: currentChart.groupBy || [],
+      widgetType: currentChart.widgetTypeId?.chartType || "number",
+      conditions: currentChart.conditions || [],
+      ...(Object.keys(filtersPayload).length > 0 && { filters: filtersPayload })
+    };
+
+    console.log('API Payload:', apiPayload);
+    
+    // Make the API call to /common/dataSourceVersion/chartData
+    try {
+      const response = await axiosInstance.post('/common/dataSourceVersion/chartData', apiPayload);
+      console.log('API Response:', response.data);
+      toast.success('Filters applied successfully');
+    } catch (error) {
+      console.error('Error applying filters:', error);
+      toast.error('Failed to apply filters. Please try again.');
     }
   };
 
@@ -560,6 +647,24 @@ export const NotivixDashboardView: React.FC<DashboardViewProps> = ({ title: init
                   </Stack>
                 ) : null}
               </Box>
+              {currentDashboard?.settings?.dashboardType === 'fixed' && (
+                <Button 
+                  onClick={handleOpenFiltersModal} 
+                  color="secondary" 
+                  variant="outlined" 
+                  startIcon={<FilterListIcon />} 
+                  sx={{ 
+                    ...getButtonSx(),
+                    borderColor: theme.getInputBorderColor(),
+                    color: theme.palette.text.primary,
+                    '&:hover': {
+                      borderColor: theme.border?.hover || STYLE_GUIDE.COLORS.darkBorderHover,
+                    },
+                  }}
+                >
+                  Filters
+                </Button>
+              )}
               <Button onClick={handleEditModeToggle} color="primary" variant="contained" startIcon={<EditIcon />} sx={{ ...getButtonSx() }}>
                 Edit
               </Button>
@@ -674,6 +779,30 @@ export const NotivixDashboardView: React.FC<DashboardViewProps> = ({ title: init
           </Box>
         )}
       </Box>
+
+      <NotivixFiltersModal
+        open={isFiltersModalOpen}
+        onClose={handleCloseFiltersModal}
+        onApplyFilters={handleApplyFilters}
+        currentFilters={currentFilters}
+        availableFilters={dataSourceDetails?.fieldSettings
+          ?.filter((field) => field.isDashboardFilter)
+          .map((field) => {
+            // Find the corresponding attribute to get the type
+            const attribute = dataSourceDetails.entityId.attributes.find(
+              (attr) => attr._id === field.attributeId
+            );
+            return {
+              attributeId: field.attributeId,
+              label: field.label,
+              type: 'text', // Default type
+              isDashboardFilter: field.isDashboardFilter,
+              attributeType: attribute?.type || 'text',
+              optionAttributeId: attribute?.optionAttributeId || null,
+            };
+          }) || []}
+        isLoading={dataSourceDetailsLoading}
+      />
     </Box>
   );
 };

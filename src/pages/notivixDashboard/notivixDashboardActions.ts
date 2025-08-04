@@ -8,6 +8,7 @@ import {
   WidgetDataResponse,
   CombinedWidgetData,
   ChartResponse,
+  DataSourceDetailsResponse,
 } from './types';
 import { CreateWidgetResponse } from '../../types/dashboard';
 import { Theme } from '../createTheme/types';
@@ -512,5 +513,27 @@ export const selectDashboardTheme = createAsyncThunk(
   async ({ dashboardId, widgetThemeId }: { dashboardId: string; widgetThemeId: string }) => {
     const { data } = await axiosInstance.post(`/common/dashboard/selectTheme/${dashboardId}`, { widgetThemeId });
     return data;
+  }
+);
+
+export const fetchDataSourceDetails = createAsyncThunk(
+  'dashboard/fetchDataSourceDetails',
+  async (dataSourceId: string, { rejectWithValue }) => {
+    try {
+      const { data } = await axiosInstance.get<DataSourceDetailsResponse>(`${GET.Data_Source}/${dataSourceId}`);
+      if (!data.success) {
+        return rejectWithValue({
+          message: data.message || 'Failed to fetch data source details',
+        });
+      }
+      return data;
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response?.data) {
+        return rejectWithValue(error.response.data);
+      }
+      return rejectWithValue({
+        message: 'Failed to fetch data source details. Please try again.',
+      });
+    }
   }
 );

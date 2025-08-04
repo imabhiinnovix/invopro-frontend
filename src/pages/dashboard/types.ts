@@ -18,6 +18,7 @@ export interface Dashboard {
     endVersionValue: string;
     startVersionValue: string;
     versionValue: string;
+    dataSource: any
   };
   createdAt: string;
   updatedAt: string;

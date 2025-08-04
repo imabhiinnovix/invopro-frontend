@@ -10,6 +10,7 @@ import {
   Dashboard,
   WidgetType,
   DataSource,
+  DataSourceDetailsResponse,
 } from './types';
 import { Theme } from '../createTheme/types';
 import {
@@ -26,6 +27,7 @@ import {
   fetchDashboardShareUsers,
   fetchWidgetTheme,
   fetchWidgetSettingBasedOnNaturalLanguage,
+  fetchDataSourceDetails,
 } from './notivixDashboardActions';
 import { WritableDraft } from 'immer';
 
@@ -60,6 +62,9 @@ interface DashboardSliceState {
   widgetTheme: Theme | null;
   widgetThemeLoading: boolean;
   widgetThemeError: string | null;
+  dataSourceDetails: DataSourceDetailsResponse['data'] | null;
+  dataSourceDetailsLoading: boolean;
+  dataSourceDetailsError: string | null;
 }
 
 const initialState: DashboardSliceState = {
@@ -86,6 +91,9 @@ const initialState: DashboardSliceState = {
   widgetTheme: null,
   widgetThemeLoading: false,
   widgetThemeError: null,
+  dataSourceDetails: null,
+  dataSourceDetailsLoading: false,
+  dataSourceDetailsError: null,
 };
 
 const dashboardSlice = createSlice({
@@ -391,6 +399,18 @@ const dashboardSlice = createSlice({
       .addCase(fetchWidgetTheme.rejected, (state, action) => {
         state.widgetThemeLoading = false;
         state.widgetThemeError = action.error.message || 'Failed to fetch widget theme';
+      })
+      .addCase(fetchDataSourceDetails.pending, (state) => {
+        state.dataSourceDetailsLoading = true;
+        state.dataSourceDetailsError = null;
+      })
+      .addCase(fetchDataSourceDetails.fulfilled, (state, action) => {
+        state.dataSourceDetailsLoading = false;
+        state.dataSourceDetails = action.payload.data;
+      })
+      .addCase(fetchDataSourceDetails.rejected, (state, action) => {
+        state.dataSourceDetailsLoading = false;
+        state.dataSourceDetailsError = action.error.message || 'Failed to fetch data source details';
       });
   },
 });
