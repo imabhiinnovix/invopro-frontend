@@ -163,6 +163,8 @@ export default function Users({ organizationId }: UsersProps) {
     true
   );
 
+  console.log('rolesQuery:', rolesQuery.data?.data);
+
   const productSubscriptionsQuery = useGet<ProductSubscriptionListResponse>(
     ['productSubscriptions', organizationId || 'all'],
     organizationId ? `${GET.Product_Subscription_List}?organizationId=${organizationId}` : GET.Product_Subscription_List,
