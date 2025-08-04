@@ -181,10 +181,8 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
                           },
                         }}
                       >
-                        <MenuItem value="">All {filter.label}</MenuItem>
-                        <MenuItem value="option1">Option 1</MenuItem>
-                        <MenuItem value="option2">Option 2</MenuItem>
-                        <MenuItem value="option3">Option 3</MenuItem>
+                        {/* <MenuItem value="">All {filter.label}</MenuItem> */}
+                        <MenuItem value="option1">No Option there</MenuItem>
                       </Select>
                     </FormControl>
                   );
