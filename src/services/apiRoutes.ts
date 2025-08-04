@@ -11,7 +11,7 @@ export const POST = {
   CREATE_WIDGET: '/dashboard/widget/create',
   UPDATE_WIDGET: '/dashboard/widget/update',
   DELETE_WIDGET: '/dashboard/widget/delete',
-  SAVE_WIDGETS: '/dashboard/widget/save',
+  SAVE_WIDGETS: '/common/dashboard/widget/save',
   CREATE_USER: 'common/auth/create-user',
   UPDATE_USER: '/common/users/update/',
   DELETE_USER: '/common/users/delete/',

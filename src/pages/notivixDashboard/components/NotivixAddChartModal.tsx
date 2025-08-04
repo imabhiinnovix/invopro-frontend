@@ -536,7 +536,9 @@ export const NotivixAddChartModal: React.FC<AddChartModalProps> = ({
         });
       } else {
         // Get widget data using getWidgetData API
-        const widgetResponse = await axiosInstance.post<WidgetDataResponse>(GET.DASHBOARD_WIDGET_DATA, {
+        console .log(currentDashboard?.settings?.dashboardType, 'currentDashboard?.settings?.dashboardType');
+        const endpoint =  currentDashboard?.settings?.dashboardType === 'fixed' ? GET.FIXED_DASHBOARD_WIDGET_DATA : GET.NOTIVIX_DASHBOARD_WIDGET_DATA ;
+        const widgetResponse = await axiosInstance.post<WidgetDataResponse>(endpoint, {
           dataSourceId: formData.dataSourceId,
           entityId: selectedDataSource?.entityId._id,
           dimensions: [dimensionsToSend],

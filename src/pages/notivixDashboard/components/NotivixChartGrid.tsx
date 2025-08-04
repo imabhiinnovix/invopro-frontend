@@ -1012,7 +1012,10 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
     };
 
     console.log('newFormData', newFormData, widgetTypes);
-    await dispatch(fetchIndividualWidgetData(newFormData));
+    await dispatch(fetchIndividualWidgetData({ 
+      chart: newFormData, 
+      dashboardType: currentDashboard?.settings?.dashboardType 
+    }));
 
     // if (!selectedChart) return;
     // try {
