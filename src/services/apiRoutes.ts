@@ -33,12 +33,14 @@ export const POST = {
   Create_User: '/common/user/create',
   CREATE_PERMISSION: "/common/permission/create",
   CREATE_ROLE: "/common/role/create",
-  // Notivix-specific routes
   CREATE_NOTIVIX_DASHBOARD: '/common/dashboard/create',
   UPDATE_NOTIVIX_DASHBOARD: '/common/dashboard/update',
   DELETE_NOTIVIX_DASHBOARD: '/common/dashboard/delete',
   NOTIVIX_DASHBOARD_WIDGET: '/dashboard/widget',
   NOTIVIX_DASHBOARD_THEME: '/dashboard/theme',
+  OPERATOR_LIST: '/common/operator/list',
+  CREATE_NOTIFICATION_TYPE: '/notivix/notification-setting/type/create',
+  CREATE_FREQUENCY: '/notivix/notification-setting/frequency/create',
 };
 
 export const PUT = {
@@ -55,6 +57,7 @@ export const DELETE = {
   Delete_User:'/common/user/delete',
   DELETE_PERMISSION: "/common/permission/delete",
   DELETE_ROLE: "/common/role/delete",
+  DELETE_NOTIFICATION_TYPE: 'notivix/notification-setting/type/delete',
 };
 
 export const GET = {
@@ -96,8 +99,10 @@ export const GET = {
   PERMISSION_LIST: "/common/permission/list",
   ROLE_LIST: "/common/role/list",
   ROLE_DETAIL: "/common/role",
-  // Notivix-specific routes
   NOTIVIX_DASHBOARD_LIST: '/common/dashboard/list',
   NOTIVIX_DASHBOARD_WIDGET_GET_CHART_DATA: '/common/dashboard/widget/getWidgets',
   NOTIVIX_DASHBOARD_WIDGET_DATA: '/common/dashboard/widget/getWidgetData',
+  NOTIFICATION_TYPE_LIST: '/notivix/notification-setting/type/list',
+  TEMPLATE_LIST:'/notivix/notification-setting/template/list',
+  MEDIUM_LIST:'/notivix/notification-setting/medium/list',
 };

@@ -1,3 +1,7 @@
+
+
+
+
 import React, { useEffect, useState } from "react";
 import { useForm, useFieldArray } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
@@ -48,6 +52,7 @@ interface EntityFieldOption {
   value: {
     attributeId: string;
     refAttributeId?: string | null;
+    type?: string;
   };
 }
 
@@ -71,7 +76,7 @@ interface DataSourceRequestPayload {
   code: string;
   description?: string;
   versionType: string;
-  isShowMenu?: boolean; // Made optional to allow undefined
+  isShowMenu?: boolean;
   entityId: string;
   entityAttributes?: string[][];
   entityAttributeIds?: string[][];
@@ -101,7 +106,8 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({
   const theme = useUnifiedTheme();
   const { getDialogTitleSx } = useComponentTypography();
 
-  console.log("data",data)
+  console.log("data", data);
+  
   const validationSchema = yup.object().shape({
     name: yup.string().required("Data source name is required"),
     code: yup.string().required("Data source code is required"),
@@ -122,13 +128,12 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({
       })
     ),
   });
+  
   const [open, setOpen] = useState(false);
   const [code, setCode] = useState(data?.code ?? "");
   const [name, setName] = useState(data?.name ?? "");
   const [entityAttributes, setEntityAttributes] = useState<Attribute[]>([]);
-  const [entityFieldOptions, setEntityFieldOptions] = useState<
-    EntityFieldOption[]
-  >([]);
+  const [entityFieldOptions, setEntityFieldOptions] = useState<EntityFieldOption[]>([]);
   const [entityName, setEntityName] = useState<string>(
     typeof data?.entityId === "string" ? "" : data?.entityId?.name || ""
   );
@@ -153,7 +158,7 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({
       code: data?.code ?? "",
       description: data?.description ?? "",
       versionType: data?.versionType ?? "",
-      isShowMenu: data ? data.isShowMenu : undefined, // Explicitly undefined in create mode
+      isShowMenu: data ? data.isShowMenu : undefined,
       entityId:
         typeof data?.entityId === "string"
           ? data.entityId
@@ -337,7 +342,7 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({
         code: data.code ?? "",
         description: data.description ?? "",
         versionType: data.versionType ?? "",
-        isShowMenu: data ? data.isShowMenu : undefined, // Explicitly undefined in create mode
+        isShowMenu: data ? data.isShowMenu : undefined,
         entityId:
           typeof data.entityId === "string"
             ? data.entityId
@@ -461,6 +466,7 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({
   );
 
   const onSubmit = (formData: DataSourceRequestPayload) => {
+    console.log("Form Data:", formData);
     const attributeSets =
       formData.entityAttributes?.map((attributes) => {
         const attrNames = attributes
@@ -538,42 +544,43 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({
           .filter((id) => id !== "" && typeof id === "string");
       }) || [];
 
-   const updatedUniqueAttributeRules =
-  (formData.entityAttributes || []).map((attributes) => {
-    if (!Array.isArray(attributes)) {
-      return [];
-    }
-
-    return attributes
-      .filter(
-        (attribute) =>
-          attribute !== "" && attribute !== null && attribute !== undefined
-      )
-      .map((attribute) => {
-        if (typeof attribute === "object" && attribute !== null && "_id" in attribute) {
-          return attribute._id;
+    const updatedUniqueAttributeRules =
+      (formData.entityAttributes || []).map((attributes) => {
+        if (!Array.isArray(attributes)) {
+          return [];
         }
-        if (typeof attribute === "string") {
-          const attr = entityAttributes.find((a) => a.name === attribute);
-          return attr?._id || "";
-        }
-        return "";
-      })
-      .filter((id) => typeof id === "string" && id !== "");
-  });
 
+        return attributes
+          .filter(
+            (attribute) =>
+              attribute !== "" && attribute !== null && attribute !== undefined
+          )
+          .map((attribute) => {
+            if (typeof attribute === "object" && attribute !== null && "_id" in attribute) {
+              return attribute._id;
+            }
+            if (typeof attribute === "string") {
+              const attr = entityAttributes.find((a) => a.name === attribute);
+              return attr?._id || "";
+            }
+            return "";
+          })
+          .filter((id) => typeof id === "string" && id !== "");
+      });
 
     const updatedFieldSettings =
       formData.fieldSettings?.map((setting) => {
         const option = entityFieldOptions.find(
-          (opt) =>
-            opt.value.attributeId === setting.attributeId ||
-            opt.value.refAttributeId === setting.attributeId
+          (opt) => {
+            const optionKey = `${opt.value.attributeId}-${opt.value.refAttributeId || 'null'}`;
+            return optionKey === setting.attributeId;
+          }
         );
 
         return {
-          attributeId: option?.value.attributeId || setting.attributeId,
-          refAttributeId: option?.value.refAttributeId || null,
+          attributeId: option?.value.attributeId || setting.attributeId.split('-')[0],
+          refAttributeId: option?.value.refAttributeId || (setting.attributeId.includes('-') && setting.attributeId.split('-')[1] !== 'null' ? setting.attributeId.split('-')[1] : null),
+          type: option?.value.type || null, 
           label: setting.value,
           isFilterEnable: !!setting.filter,
           isSortingEnable: !!setting.sorting,
@@ -585,9 +592,8 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({
       ...formData,
       entityAttributeIds: updatedEntityAttributeIds,
       uniqueAttributeRules: updatedUniqueAttributeRules.filter((rule) => rule.length > 0),
-
       fieldSettings: updatedFieldSettings,
-      isShowMenu: formData.isShowMenu === true ? true : false, // Handle boolean value properly
+      isShowMenu: formData.isShowMenu === true ? true : false,
     };
 
     if (data && data._id) {
@@ -943,12 +949,14 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({
                 const currentAttributeId = watch(
                   `fieldSettings.${index}.attributeId`
                 );
-                const selectedOption =
-                  entityFieldOptions.find(
-                    (opt) =>
-                      opt.value.attributeId === currentAttributeId ||
-                      opt.value.refAttributeId === currentAttributeId
-                  ) || null;
+                
+                // Find the selected option using the unique key
+                const selectedOption = entityFieldOptions.find(
+                  (opt) => {
+                    const optionKey = `${opt.value.attributeId}-${opt.value.refAttributeId || 'null'}`;
+                    return optionKey === currentAttributeId;
+                  }
+                ) || null;
 
                 return (
                   <Box
@@ -966,25 +974,23 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({
                           <Autocomplete
                             options={entityFieldOptions}
                             getOptionLabel={(option) => option.label || ""}
+                            // Fixed isOptionEqualToValue function
                             isOptionEqualToValue={(option, value) => {
                               if (!option || !value) return false;
-                              const optionId =
-                                option.value?.attributeId ||
-                                option.value?.refAttributeId;
-                              const valueId =
-                                value.value?.attributeId ||
-                                value.value?.refAttributeId;
-                              return optionId === valueId;
+                              const optionKey = `${option.value.attributeId}-${option.value.refAttributeId || 'null'}`;
+                              const valueKey = `${value.value.attributeId}-${value.value.refAttributeId || 'null'}`;
+                              return optionKey === valueKey;
                             }}
                             value={selectedOption}
                             onChange={(event, newValue) => {
-                              const attributeId =
-                                newValue?.value?.attributeId ||
-                                newValue?.value?.refAttributeId ||
-                                "";
+                              // Create unique identifier for the selected option
+                              const uniqueKey = newValue 
+                                ? `${newValue.value.attributeId}-${newValue.value.refAttributeId || 'null'}`
+                                : "";
+                              
                               setValue(
                                 `fieldSettings.${index}.attributeId`,
-                                attributeId,
+                                uniqueKey,
                                 { shouldValidate: true }
                               );
                             }}
