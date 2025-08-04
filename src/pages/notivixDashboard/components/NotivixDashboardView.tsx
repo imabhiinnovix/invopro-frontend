@@ -65,6 +65,7 @@ export const NotivixDashboardView: React.FC<DashboardViewProps> = ({ title: init
   const dashboards = useAppSelector((state) => state.dashboard.dashboards);
   const currentDashboard = dashboards.find((d) => d._id === dashboardId);
   const { dataSourceDetails, dataSourceDetailsLoading } = useAppSelector((state) => state.notivixDashboard);
+  const charts = useAppSelector((state) => state.dashboard.charts);
 
   const { themes } = useAppSelector((state) => state.theme);
 
@@ -158,7 +159,7 @@ export const NotivixDashboardView: React.FC<DashboardViewProps> = ({ title: init
             dashboardType: 'normal',
             startVersionValue,
             endVersionValue,
-            versionValue,
+            versionValue: versionValue || undefined,
           })
         );
       } else if (
@@ -420,7 +421,6 @@ export const NotivixDashboardView: React.FC<DashboardViewProps> = ({ title: init
         await dispatch(fetchDataSourceDetails(currentDashboard.settings.dataSource._id)).unwrap();
         setIsFiltersModalOpen(true);
       } catch (error) {
-        console.error('Failed to fetch data source details:', error);
         toast.error('Failed to load filters. Please try again.');
       }
     } else {
@@ -460,36 +460,30 @@ export const NotivixDashboardView: React.FC<DashboardViewProps> = ({ title: init
       }
     });
 
-    const charts = useAppSelector((state) => state.notivixDashboard.charts);
-    const currentChart = charts.find((chart) => chart.dashboardId === dashboardId);
+    const firstChart = charts[0];
     
-    if (!currentChart) {
-      toast.error('No chart data found for this dashboard');
+    if (!firstChart) {
+      toast.error('No charts found in the dashboard');
       return;
     }
 
     const apiPayload = {
       dataSourceId: currentDashboard?.settings?.dataSource?._id,
-      dimension: currentChart.dimensions?.[0] || "SBU",
-      aggregation: currentChart.aggregation || {
-        type: "Count",
-        attributeName: "SBU"
+      dimension: firstChart.dimensions[0] || firstChart.aggregation.attributeName,
+      aggregation: {
+        type: firstChart.aggregation.type,
+        attributeName: firstChart.aggregation.attributeName
       },
-      groupBy: currentChart.groupBy || [],
-      widgetType: currentChart.widgetTypeId?.chartType || "number",
-      conditions: currentChart.conditions || [],
+      groupBy: firstChart.groupBy,
+      widgetType: firstChart.widgetTypeId?.chartType || 'number',
+      conditions: firstChart.conditions,
       ...(Object.keys(filtersPayload).length > 0 && { filters: filtersPayload })
     };
 
-    console.log('API Payload:', apiPayload);
-    
-    // Make the API call to /common/dataSourceVersion/chartData
     try {
       const response = await axiosInstance.post('/common/dataSourceVersion/chartData', apiPayload);
-      console.log('API Response:', response.data);
       toast.success('Filters applied successfully');
     } catch (error) {
-      console.error('Error applying filters:', error);
       toast.error('Failed to apply filters. Please try again.');
     }
   };
@@ -767,7 +761,25 @@ export const NotivixDashboardView: React.FC<DashboardViewProps> = ({ title: init
                 onClose={handleCloseEditModal}
                 isSubmitting={false}
                 dashboardId={dashboardId || ''}
-                initialData={selectedChart}
+                initialData={{
+                  _id: selectedChart._id,
+                  name: selectedChart.name,
+                  dimensions: selectedChart.dimensions,
+                  groupBy: selectedChart.groupBy,
+                  aggregation: selectedChart.aggregation,
+                  position: selectedChart.position || { x: 0, y: 0, index: 0 },
+                  conditions: selectedChart.conditions,
+                  dataSourceId: {
+                    _id: selectedChart.dataSourceId?._id || '',
+                    name: selectedChart.dataSourceId?.name || ''
+                  },
+                  widgetTypeId: {
+                    _id: selectedChart.widgetTypeId?._id || '',
+                    name: selectedChart.widgetTypeId?.name || '',
+                    chartType: selectedChart.widgetTypeId?.chartType || 'line'
+                  },
+                  isIncremental: selectedChart.isIncremental || false
+                } as any}
                 onSave={handleChartUpdate}
                 isTrend={currentDashboard?.settings?.dashboardType === 'trend'}
                 currentDashboard={currentDashboard}
@@ -798,7 +810,6 @@ export const NotivixDashboardView: React.FC<DashboardViewProps> = ({ title: init
               type: 'text', // Default type
               isDashboardFilter: field.isDashboardFilter,
               attributeType: attribute?.type || 'text',
-              optionAttributeId: attribute?.optionAttributeId || null,
             };
           }) || []}
         isLoading={dataSourceDetailsLoading}

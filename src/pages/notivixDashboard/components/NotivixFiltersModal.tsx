@@ -225,8 +225,7 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
               })}
 
 
-            {/* Active Filters Display */}
-            {hasActiveFilters && (
+            {/* {hasActiveFilters && (
               <Box>
                 <Typography variant="subtitle2" sx={{ mb: STYLE_GUIDE.SPACING.s2, color: theme.palette.text.secondary }}>
                   Active Filters:
@@ -273,7 +272,7 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
                   )}
                 </Stack>
               </Box>
-            )}
+            )} */}
           </Stack>
         )}
       </DialogContent>
