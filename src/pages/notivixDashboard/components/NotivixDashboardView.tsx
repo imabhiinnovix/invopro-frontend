@@ -1,0 +1,819 @@
+import React, { useState, useRef, useEffect, useMemo } from 'react';
+import {
+  Box,
+  Typography,
+  TextField,
+  Button,
+  ButtonGroup,
+  Stack,
+  MenuItem,
+  SelectChangeEvent,
+} from '@mui/material';
+import StyledSelect from '../../../components/atom/common/StyledSelect';
+import AddIcon from '@mui/icons-material/Add';
+import EditIcon from '@mui/icons-material/Edit';
+import DoneIcon from '@mui/icons-material/Done';
+import PauseIcon from '@mui/icons-material/Pause';
+import ViewColumnIcon from '@mui/icons-material/ViewColumn';
+import SquareIcon from '@mui/icons-material/Square';
+import FilterListIcon from '@mui/icons-material/FilterList';
+import { useParams, useLocation } from 'react-router-dom';
+import { ChartGrid } from './NotivixChartGrid';
+import { NotivixAddChartModal, ChartFormData } from './NotivixAddChartModal';
+import NotivixFiltersModal, { FilterOptions } from './NotivixFiltersModal';
+import { useAppDispatch, useAppSelector } from '../../../storeHooks';
+import { updateWidget, saveWidgets, fetchWidgetTheme, fetchChartData, selectDashboardTheme, fetchDataSourceDetails } from '../notivixDashboardActions';
+import { toast } from 'react-toastify';
+import { ChartResponse, TemporaryChart, Dashboard } from '../types';
+import axiosInstance from '../../../services/axiosInstance';
+import usePost from '../../../hooks/usePost';
+import { POST } from '../../../services/apiRoutes';
+import CommonDatePicker from '../../../components/common/datePicker/datePicker';
+import { useForm } from 'react-hook-form';
+import { DateTime } from 'luxon';
+import { yupResolver } from '@hookform/resolvers/yup';
+import * as yup from 'yup';
+import { fetchThemeList } from '../../createTheme/themeActions';
+import { STYLE_GUIDE } from '../../../styles';
+import { useUnifiedTheme } from '../../../hooks/useUnifiedTheme';
+import { useComponentTypography } from '../../../hooks/useComponentTypography';
+
+interface DashboardViewProps {
+  title: string;
+  onTitleChange: (newTitle: string) => void;
+}
+
+export const NotivixDashboardView: React.FC<DashboardViewProps> = ({ title: initialTitle, onTitleChange }): JSX.Element => {
+  const theme = useUnifiedTheme();
+  const { getHeadingSx, getButtonSx } = useComponentTypography();
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [editedTitle, setEditedTitle] = useState(initialTitle);
+  const [title, setTitle] = useState(initialTitle);
+  const [isAddChartModalOpen, setIsAddChartModalOpen] = useState(false);
+  const [isEditChartModalOpen, setIsEditChartModalOpen] = useState(false);
+  const [selectedChart, setSelectedChart] = useState<ChartResponse | null>(null);
+  const [gridColumns, setGridColumns] = useState(2);
+  const [selectedTheme, setSelectedTheme] = useState<string>('');
+  const [isFiltersModalOpen, setIsFiltersModalOpen] = useState(false);
+  const [currentFilters, setCurrentFilters] = useState<FilterOptions>({});
+
+  const inputRef = useRef<HTMLInputElement>(null);
+  const { id: dashboardId } = useParams();
+  const location = useLocation();
+  const dispatch = useAppDispatch();
+  const temporaryCharts = useAppSelector((state) => state.dashboard.temporaryCharts);
+  const dashboards = useAppSelector((state) => state.dashboard.dashboards);
+  const currentDashboard = dashboards.find((d) => d._id === dashboardId);
+  const { dataSourceDetails, dataSourceDetailsLoading } = useAppSelector((state) => state.notivixDashboard);
+  const charts = useAppSelector((state) => state.dashboard.charts);
+
+  const { themes } = useAppSelector((state) => state.theme);
+
+  const postGridColumns = usePost(['']);
+
+  const validationSchema = yup.object({
+    versionValue: yup.string().nullable().optional(),
+    startDate: yup
+      .string()
+      .nullable()
+      .when('$isDashboardTrend', ([isDashboardTrend]) => {
+        if (isDashboardTrend) {
+          return yup.string().nullable().required('Start date is required');
+        }
+        return yup.string().nullable().optional();
+      }),
+    endDate: yup
+      .string()
+      .nullable()
+      .when(['$isDashboardTrend', 'startDate'], ([isDashboardTrend, startDate]) => {
+        if (isDashboardTrend && startDate) {
+          return yup
+            .string()
+            .nullable()
+            .required('End date is required')
+            .test('is-after-start', 'End date must be after or equal to start date', function (value) {
+              const { startDate } = this.parent;
+              if (!value || !startDate) return true;
+
+              try {
+                const startDateTime = DateTime.fromISO(startDate);
+                const endDateTime = DateTime.fromISO(value);
+                return endDateTime >= startDateTime;
+              } catch {
+                return false;
+              }
+            });
+        }
+        return yup.string().nullable().optional();
+      }),
+  });
+
+  const {
+    control,
+    watch,
+    setValue,
+    formState: { errors },
+    trigger,
+  } = useForm<{
+    versionValue?: string | null | undefined;
+    startDate?: string | null | undefined;
+    endDate?: string | null | undefined;
+  }>({
+    resolver: yupResolver(validationSchema),
+    defaultValues: {
+      versionValue: null,
+      startDate: null,
+      endDate: DateTime.now().toISO(),
+    },
+    context: {
+      isDashboardTrend: currentDashboard?.settings?.dashboardType === 'trend',
+    },
+  });
+
+  const versionValue = watch('versionValue');
+  const formattedVersionValue = versionValue ? DateTime.fromISO(versionValue).toFormat('yyyy-LL') : undefined;
+
+  const startDate = watch('startDate');
+  const startVersionValue = startDate ? DateTime.fromISO(startDate).toFormat('yyyy-LL') : undefined;
+
+  const endDate = watch('endDate');
+  const endVersionValue = endDate ? DateTime.fromISO(endDate).toFormat('yyyy-LL') : undefined;
+
+  useEffect(() => {
+    if (dashboards.length > 0) {
+      setGridColumns(dashboards.find((dashboard) => dashboard?._id === dashboardId)?.settings?.gridColumns || 2);
+    }
+  }, [dashboards, dashboardId]);
+
+  const hasErrors = useMemo(() => {
+    return !!errors.startDate || !!errors.endDate;
+  }, [errors.startDate, errors.endDate]);
+
+  useEffect(() => {
+    if (dashboardId) {
+      if (currentDashboard?.settings?.dashboardType === 'normal') {
+        dispatch(
+          fetchChartData({
+            dashboardId,
+            // versionValue: formattedVersionValue || "",
+            dashboardType: 'normal',
+            startVersionValue,
+            endVersionValue,
+            versionValue: versionValue || undefined,
+          })
+        );
+      } else if (
+        currentDashboard?.settings?.dashboardType === 'trend' &&
+        startVersionValue &&
+        endVersionValue &&
+        DateTime.fromISO(startVersionValue) < DateTime.fromISO(endVersionValue) &&
+        !hasErrors
+      ) {
+        dispatch(
+          fetchChartData({
+            dashboardId,
+            versionValue: undefined,
+            startVersionValue,
+            endVersionValue,
+            dashboardType: currentDashboard?.settings?.dashboardType,
+          })
+        );
+      } else if (currentDashboard?.settings?.dashboardType === 'fixed') {
+        dispatch(
+          fetchChartData({
+            dashboardId,
+            dashboardType: 'fixed',
+            startVersionValue: startVersionValue || undefined,
+            endVersionValue: endVersionValue || undefined,
+            versionValue: versionValue || undefined,
+          })
+        );
+      }
+    }
+  }, [
+    currentDashboard?.settings?.dashboardType,
+    dashboardId,
+    dispatch,
+    endVersionValue,
+    formattedVersionValue,
+    hasErrors,
+    startVersionValue,
+  ]);
+
+  useEffect(() => {
+    setIsEditMode(false);
+    if (location.state?.enableEditMode) {
+      setIsEditMode(true);
+    }
+  }, [location.state]);
+
+  useEffect(() => {
+    if (isEditMode && inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, [isEditMode]);
+
+  useEffect(() => {
+    setEditedTitle(initialTitle);
+    setTitle(initialTitle);
+  }, [initialTitle]);
+
+  useEffect(() => {
+    if (currentDashboard?.widgetThemeId) {
+      setSelectedTheme(currentDashboard.widgetThemeId);
+      dispatch(fetchWidgetTheme(currentDashboard.widgetThemeId));
+    }
+  }, [currentDashboard?.widgetThemeId, dispatch]);
+
+  useEffect(() => {
+    dispatch(fetchThemeList());
+  }, [dispatch]);
+
+  useEffect(() => {
+    if (currentDashboard?.settings) {
+      setValue('versionValue', null);
+
+      const currentDate = DateTime.now();
+      setValue('endDate', currentDate.toISO());
+
+      if (currentDashboard.settings.dynamicVersionValue) {
+        const period = currentDashboard.settings.dynamicVersionValue;
+        let monthsToSubtract = 1;
+
+        switch (period) {
+          case '1m':
+            monthsToSubtract = 1;
+            break;
+          case '3m':
+            monthsToSubtract = 3;
+            break;
+          case '6m':
+            monthsToSubtract = 6;
+            break;
+          case '12m':
+            monthsToSubtract = 12;
+            break;
+        }
+
+        const startDate = currentDate.minus({ months: monthsToSubtract });
+        setValue('startDate', startDate.toISO());
+      } else {
+        setValue('startDate', currentDate.minus({ months: 1 }).toISO());
+      }
+    }
+  }, [currentDashboard?.settings, setValue]);
+
+  const handleGridColumns = (columns: number) => {
+    setGridColumns(columns);
+    postGridColumns.mutate({
+      url: `${POST.UPDATE_DASHBOARD}/${dashboardId}`,
+      payload: {
+        gridColumns: columns,
+      },
+    });
+  };
+
+  const handleEditModeToggle = async () => {
+    if (isEditMode) {
+      // Save title first if it has changed
+      if (editedTitle !== title) {
+        onTitleChange(editedTitle);
+        setTitle(editedTitle);
+      }
+
+      // Save temporary charts only if there are any
+      if (temporaryCharts.length > 0) {
+        try {
+          const result = await dispatch(
+            saveWidgets({
+              widgets: temporaryCharts.map((chart: TemporaryChart) => ({
+                dashboardId: chart.dashboardId,
+                widgetTypeId: chart.widgetTypeId?._id || '',
+                name: chart.name,
+                dimensions: chart.dimensions.join(','),
+                groupBy: chart.groupBy,
+                aggregation: chart.aggregation,
+                position: chart.position,
+                conditions: chart.conditions,
+                dataSourceId: chart.dataSourceId?._id || '',
+                entityId: chart.dataSourceId?.entityId || '',
+                isIncremental: chart.isIncremental || false,
+              })),
+            })
+          ).unwrap();
+
+          if (result.success) {
+            toast.success('Charts saved successfully!');
+          } else {
+            toast.error(result.message || 'Failed to save charts');
+          }
+        } catch (error) {
+          if (typeof error === 'object' && error !== null && 'message' in error) {
+            toast.error(error.message as string);
+          } else {
+            toast.error('Failed to save charts');
+          }
+        }
+      }
+
+      setIsEditMode(false);
+    } else {
+      setIsEditMode(!isEditMode);
+    }
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      onTitleChange(editedTitle);
+      setIsEditMode(false);
+    }
+  };
+
+  const handleCloseModal = () => {
+    setIsAddChartModalOpen(false);
+  };
+
+  const handleEditChart = (chart: ChartResponse) => {
+    setSelectedChart(chart);
+    setIsEditChartModalOpen(true);
+  };
+
+  const handleCloseEditModal = () => {
+    setIsEditChartModalOpen(false);
+    setSelectedChart(null);
+  };
+
+  const handleChartUpdate = async (formData: ChartFormData) => {
+    if (!selectedChart) return;
+
+    try {
+      const result = await dispatch(
+        updateWidget({
+          ...formData,
+          _id: selectedChart._id,
+          dashboardId: dashboardId || '',
+        })
+      ).unwrap();
+
+      if (result.success) {
+        toast.success('Chart updated successfully!');
+        handleCloseEditModal();
+
+        // Fetch updated chart data
+        if (dashboardId) {
+          dispatch(
+            fetchChartData({
+              dashboardId,
+              dashboardType: currentDashboard?.settings?.dashboardType || 'normal',
+              startVersionValue,
+              endVersionValue,
+              versionValue: formattedVersionValue || '',
+            })
+          );
+        }
+      } else {
+        toast.error(result.message || 'Failed to update chart');
+      }
+    } catch (error) {
+      if (typeof error === 'object' && error !== null && 'message' in error) {
+        toast.error(error.message as string);
+      } else {
+        toast.error('Failed to update chart');
+      }
+    }
+  };
+
+  useEffect(() => {
+    if (startDate && endDate && currentDashboard?.settings?.dashboardType === 'trend') {
+      trigger('endDate');
+      trigger('startDate');
+    }
+  }, [startDate, endDate, currentDashboard?.settings?.dashboardType, trigger]);
+
+
+  const handleThemeChange = async (event: SelectChangeEvent<unknown>) => {
+    const themeId = event.target.value as string;
+    setSelectedTheme(themeId);
+
+    if (dashboardId) {
+      try {
+        const result = await dispatch(selectDashboardTheme({ dashboardId, widgetThemeId: themeId })).unwrap();
+
+        if (result.success) {
+          toast.success('Theme updated successfully!');
+          dispatch(fetchWidgetTheme(themeId));
+        } else {
+          toast.error(result.message || 'Failed to update theme');
+        }
+      } catch (error) {
+        if (typeof error === 'object' && error !== null && 'message' in error) {
+          toast.error(error.message as string);
+        } else {
+          toast.error('Failed to update theme');
+        }
+      }
+    }
+  };
+
+  const handleOpenFiltersModal = async () => {
+    if (currentDashboard?.settings?.dashboardType === 'fixed' && currentDashboard?.settings?.dataSource?._id) {
+      try {
+        await dispatch(fetchDataSourceDetails(currentDashboard.settings.dataSource._id)).unwrap();
+        setIsFiltersModalOpen(true);
+      } catch (error) {
+        toast.error('Failed to load filters. Please try again.');
+      }
+    } else {
+      setIsFiltersModalOpen(true);
+    }
+  };
+
+  const handleCloseFiltersModal = () => {
+    setIsFiltersModalOpen(false);
+  };
+
+  const handleApplyFilters = async (filters: FilterOptions) => {
+    setCurrentFilters(filters);
+    
+    const filtersPayload: Record<string, any> = {};
+    
+    Object.keys(filters).forEach(key => {
+      if (key !== 'searchText' && key !== 'dateRange' && filters[key as keyof FilterOptions]) {
+        const value = filters[key as keyof FilterOptions];
+        if (value && value !== '') {
+          const fieldSetting = dataSourceDetails?.fieldSettings?.find(
+            (field) => field.attributeId === key
+          );
+          
+          if (fieldSetting) {
+            const attribute = dataSourceDetails?.entityId?.attributes?.find(
+              (attr) => attr._id === fieldSetting.attributeId
+            );
+            
+            if (attribute?.type === 'multioption') {
+              filtersPayload[fieldSetting.label] = Array.isArray(value) ? value : [value];
+            } else {
+              filtersPayload[fieldSetting.label] = Array.isArray(value) ? value[0] : value;
+            }
+          }
+        }
+      }
+    });
+
+    const firstChart = charts[0];
+    
+    if (!firstChart) {
+      toast.error('No charts found in the dashboard');
+      return;
+    }
+
+    const apiPayload = {
+      dataSourceId: currentDashboard?.settings?.dataSource?._id,
+      dimension: firstChart.dimensions[0] || firstChart.aggregation.attributeName,
+      aggregation: {
+        type: firstChart.aggregation.type,
+        attributeName: firstChart.aggregation.attributeName
+      },
+      groupBy: firstChart.groupBy,
+      widgetType: firstChart.widgetTypeId?.chartType || 'number',
+      conditions: firstChart.conditions,
+      ...(Object.keys(filtersPayload).length > 0 && { filters: filtersPayload })
+    };
+
+    try {
+      const response = await axiosInstance.post('/common/dataSourceVersion/chartData', apiPayload);
+      toast.success('Filters applied successfully');
+    } catch (error) {
+      toast.error('Failed to apply filters. Please try again.');
+    }
+  };
+
+  return (
+    <Box
+      sx={{
+        height: '100%',
+        display: 'flex',
+        flexDirection: 'column',
+        overflow: 'hidden',
+      }}
+    >
+      <Box
+        sx={{
+          p: STYLE_GUIDE.SPACING.s6,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          flexShrink: 0,
+          gap: STYLE_GUIDE.SPACING.s4,
+          borderBottom: 1,
+          borderColor: 'divider',
+        }}
+      >
+        <Box sx={{ flex: 1, mr: STYLE_GUIDE.SPACING.s4 }}>
+          {isEditMode ? (
+            <TextField
+              inputRef={inputRef}
+              value={editedTitle}
+              onChange={(e) => setEditedTitle(e.target.value)}
+              onKeyDown={handleKeyPress}
+              size="small"
+              fullWidth
+              sx={{ '& .MuiOutlinedInput-root': { borderRadius: STYLE_GUIDE.SPACING.s2, alignItems: 'flex-start', paddingRight: STYLE_GUIDE.SPACING.s2, fontSize: '14px', backgroundColor: theme.getDropdownBackground(), '& fieldset': { borderColor: theme.getInputBorderColor(), }, '&:hover fieldset': { borderColor: theme.border?.hover || STYLE_GUIDE.COLORS.darkBorderHover, }, '&.Mui-focused fieldset': { borderColor: theme.input?.focusBorder || STYLE_GUIDE.COLORS.inputFocusFallback, }, }, '& .MuiInputLabel-root': { color: theme.palette.text.secondary, }, '& .MuiInputLabel-root.Mui-focused': { color: theme.input?.focusBorder || STYLE_GUIDE.COLORS.inputFocusFallback, }, '& .MuiInputBase-input': { color: `${theme.getInputTextColor()} !important`, }, '& .MuiInputBase-input::placeholder': { color: `${theme.palette.text.secondary} !important`, }, '& .MuiInputBase-input:-webkit-autofill': { WebkitTextFillColor: `${theme.getInputTextColor()} !important`, WebkitBoxShadow: `0 0 0 1000px ${theme.getDropdownBackground()} inset !important`, }, }}
+            />
+          ) : (
+            <Typography variant="h4" component="h1" sx={{ ...getHeadingSx(), mr: STYLE_GUIDE.SPACING.s4, fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.medium }}>
+              {title}
+            </Typography>
+          )}
+        </Box>
+
+        <Box sx={{ mr: STYLE_GUIDE.SPACING.s4 }}>
+          {isEditMode ? (
+            <StyledSelect
+              label="Theme"
+              value={selectedTheme}
+              onChange={handleThemeChange}
+              size="small"
+              sx={{ minWidth: 200 }}
+            >
+              {themes?.map((theme) => (
+                <MenuItem key={theme._id} value={theme._id}>
+                  {theme.name}
+                </MenuItem>
+              ))}
+            </StyledSelect>
+          ) : null}
+        </Box>
+
+        <Box sx={{ display: 'flex', gap: STYLE_GUIDE.SPACING.s4 }}>
+          {isEditMode ? (
+            <>
+              <ButtonGroup variant="outlined" aria-label="grid columns" size="small">
+                <Button
+                  onClick={() => handleGridColumns(1)}
+                  variant={gridColumns === 1 ? 'contained' : 'outlined'}
+                  sx={{ px: STYLE_GUIDE.SPACING.s6 }}
+                >
+                  <SquareIcon />
+                </Button>
+                <Button
+                  onClick={() => handleGridColumns(2)}
+                  variant={gridColumns === 2 ? 'contained' : 'outlined'}
+                  sx={{ px: STYLE_GUIDE.SPACING.s6 }}
+                >
+                  <PauseIcon />
+                </Button>
+                <Button
+                  onClick={() => handleGridColumns(3)}
+                  variant={gridColumns === 3 ? 'contained' : 'outlined'}
+                  sx={{ px: STYLE_GUIDE.SPACING.s6 }}
+                >
+                  <ViewColumnIcon />
+                </Button>
+              </ButtonGroup>
+              <Button
+                variant="contained"
+                color="primary"
+                startIcon={<AddIcon />}
+                onClick={() => setIsAddChartModalOpen(true)}
+                sx={{ ...getButtonSx(), px: STYLE_GUIDE.SPACING.s6 }}
+              >
+                Add Chart
+              </Button>
+              <Button
+                onClick={handleEditModeToggle}
+                color="success"
+                variant="contained"
+                startIcon={<DoneIcon />}
+                sx={{ ...getButtonSx(), px: STYLE_GUIDE.SPACING.s6 }}
+              >
+                Save
+              </Button>
+            </>
+          ) : (
+            <>
+              <Box>
+                {currentDashboard?.settings?.dashboardType === 'normal' ? (
+                  <Box>
+                    <CommonDatePicker
+                      name="versionValue"
+                      control={control}
+                      views={['year', 'month']}
+                      label="Period"
+                      rules={{ required: 'Period is required' }}
+                      sx={{
+                        '& .MuiInputBase-input': {
+                          py: 1.1,
+                        },
+                        '& .MuiFormLabel-root': {
+                          top: '-6px',
+                        },
+                      }}
+                    />
+                  </Box>
+                ) : currentDashboard?.settings?.dashboardType === 'trend' ? (
+                  <Stack direction="row" spacing={STYLE_GUIDE.SPACING.s6}>
+                    <CommonDatePicker
+                      name="startDate"
+                      control={control}
+                      views={['year', 'month']}
+                      label="Start Date"
+                      rules={{ required: 'Start date is required' }}
+                      sx={{
+                        '& .MuiInputBase-input': {
+                          py: 1.1,
+                        },
+                      }}
+                    />
+
+                    <CommonDatePicker
+                      name="endDate"
+                      control={control}
+                      views={['year', 'month']}
+                      label="End Date"
+                      rules={{ required: 'End date is required' }}
+                      sx={{
+                        '& .MuiInputBase-input': {
+                          py: 1.1,
+                        },
+                      }}
+                    />
+                  </Stack>
+                ) : null}
+              </Box>
+              {currentDashboard?.settings?.dashboardType === 'fixed' && (
+                <Button 
+                  onClick={handleOpenFiltersModal} 
+                  color="secondary" 
+                  variant="outlined" 
+                  startIcon={<FilterListIcon />} 
+                  sx={{ 
+                    ...getButtonSx(),
+                    borderColor: theme.getInputBorderColor(),
+                    color: theme.palette.text.primary,
+                    '&:hover': {
+                      borderColor: theme.border?.hover || STYLE_GUIDE.COLORS.darkBorderHover,
+                    },
+                  }}
+                >
+                  Filters
+                </Button>
+              )}
+              <Button onClick={handleEditModeToggle} color="primary" variant="contained" startIcon={<EditIcon />} sx={{ ...getButtonSx() }}>
+                Edit
+              </Button>
+            </>
+          )}
+        </Box>
+      </Box>
+
+      <Box
+        sx={{
+          display: 'flex',
+          flex: 1,
+          overflow: 'hidden',
+          gap: STYLE_GUIDE.SPACING.s6,
+          height: 'calc(100% - 100px)',
+        }}
+      >
+        <Box
+          sx={{
+            flex: 1,
+            overflow: 'auto',
+            display: 'grid',
+            gridTemplateColumns: {
+              xs: '1fr',
+              sm: 'repeat(auto-fit, minmax(400px, 1fr))',
+              md: 'repeat(auto-fit, minmax(450px, 1fr))',
+              lg: 'repeat(auto-fit, minmax(500px, 1fr))',
+            },
+            gap: STYLE_GUIDE.SPACING.s4,
+            p: STYLE_GUIDE.SPACING.s4,
+
+            transition: 'all 0.3s ease',
+            ...((isAddChartModalOpen || isEditChartModalOpen) && {
+              flex: '1 1 70%',
+            }),
+            '&::-webkit-scrollbar': {
+              width: '8px',
+              height: '8px',
+            },
+            '&::-webkit-scrollbar-thumb': {
+              backgroundColor: 'rgba(0, 0, 0, 0.1)',
+              borderRadius: '4px',
+            },
+            '&::-webkit-scrollbar-track': {
+              backgroundColor: 'transparent',
+            },
+          }}
+        >
+          {dashboardId && (
+            <ChartGrid
+              dashboardId={dashboardId}
+              isEditMode={isEditMode}
+              onEditChart={handleEditChart}
+              isAddChartModalOpen={isAddChartModalOpen}
+              isEditChartModalOpen={isEditChartModalOpen}
+              gridColumns={gridColumns}
+              currentDashboard={currentDashboard as Dashboard}
+              startVersionValue={currentDashboard?.settings?.dashboardType === 'normal' ? '' : startVersionValue || ''}
+              endVersionValue={currentDashboard?.settings?.dashboardType === 'normal' ? '' : endVersionValue || ''}
+              versionValue={versionValue || ''}
+              isTrend={currentDashboard?.settings?.dashboardType === 'trend'}
+            />
+          )}
+        </Box>
+
+        {(isAddChartModalOpen || isEditChartModalOpen) && (
+          <Box
+            sx={{
+              width: {
+                xs: '100%',
+                sm: '400px',
+                md: '450px',
+                lg: '500px',
+              },
+              flexShrink: 0,
+              display: 'flex',
+              flexDirection: 'column',
+              borderLeft: '1px solid',
+              borderColor: 'divider',
+              overflow: 'hidden',
+              height: '100%',
+            }}
+          >
+            {isAddChartModalOpen && (
+              <NotivixAddChartModal
+                open={isAddChartModalOpen}
+                onClose={handleCloseModal}
+                isSubmitting={false}
+                dashboardId={dashboardId || ''}
+                isTrend={currentDashboard?.settings?.dashboardType === 'trend'}
+                currentDashboard={currentDashboard}
+                startVersionValue={startVersionValue}
+                endVersionValue={endVersionValue}
+                versionValue={formattedVersionValue}
+              />
+            )}
+            {isEditChartModalOpen && selectedChart && (
+              <NotivixAddChartModal
+                open={isEditChartModalOpen}
+                onClose={handleCloseEditModal}
+                isSubmitting={false}
+                dashboardId={dashboardId || ''}
+                initialData={{
+                  _id: selectedChart._id,
+                  name: selectedChart.name,
+                  dimensions: selectedChart.dimensions,
+                  groupBy: selectedChart.groupBy,
+                  aggregation: selectedChart.aggregation,
+                  position: selectedChart.position || { x: 0, y: 0, index: 0 },
+                  conditions: selectedChart.conditions,
+                  dataSourceId: {
+                    _id: selectedChart.dataSourceId?._id || '',
+                    name: selectedChart.dataSourceId?.name || ''
+                  },
+                  widgetTypeId: {
+                    _id: selectedChart.widgetTypeId?._id || '',
+                    name: selectedChart.widgetTypeId?.name || '',
+                    chartType: selectedChart.widgetTypeId?.chartType || 'line'
+                  },
+                  isIncremental: selectedChart.isIncremental || false
+                } as any}
+                onSave={handleChartUpdate}
+                isTrend={currentDashboard?.settings?.dashboardType === 'trend'}
+                currentDashboard={currentDashboard}
+                startVersionValue={startVersionValue}
+                endVersionValue={endVersionValue}
+                versionValue={formattedVersionValue}
+              />
+            )}
+          </Box>
+        )}
+      </Box>
+
+      <NotivixFiltersModal
+        open={isFiltersModalOpen}
+        onClose={handleCloseFiltersModal}
+        onApplyFilters={handleApplyFilters}
+        currentFilters={currentFilters}
+        availableFilters={dataSourceDetails?.fieldSettings
+          ?.filter((field) => field.isDashboardFilter)
+          .map((field) => {
+            // Find the corresponding attribute to get the type
+            const attribute = dataSourceDetails.entityId.attributes.find(
+              (attr) => attr._id === field.attributeId
+            );
+            return {
+              attributeId: field.attributeId,
+              label: field.label,
+              type: 'text', // Default type
+              isDashboardFilter: field.isDashboardFilter,
+              attributeType: attribute?.type || 'text',
+            };
+          }) || []}
+        isLoading={dataSourceDetailsLoading}
+      />
+    </Box>
+  );
+};

@@ -48,10 +48,11 @@ const Dashboard = () => {
     useState<DashboardType | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [dashboardType, setDashboardType] = useState<"normal" | "trend">(
+  const [dashboardType, setDashboardType] = useState<"normal" | "trend" | "fixed">(
     "normal"
   );
   const [timePeriod, setTimePeriod] = useState<string>("1m");
+  const [dataSourceId, setDataSourceId] = useState<string>("");
 
   useEffect(() => {
     if (!dashboards.length) {
@@ -119,6 +120,10 @@ const Dashboard = () => {
 
   const handleCreateDashboard = async () => {
     if (newDashboardName.trim()) {
+      if (dashboardType === "fixed" && !dataSourceId.trim()) {
+        toast.error("Please select a data source for fixed dashboard type");
+        return;
+      }
       try {
         setIsCreating(true);
         const response = (await dispatch(
@@ -126,6 +131,7 @@ const Dashboard = () => {
             name: newDashboardName.trim(),
             dashboardType,
             dynamicVersionValue: timePeriod,
+            ...(dashboardType === "fixed" && { dataSourceId: dataSourceId }),
           })
         ).unwrap()) as DashboardListResponse;
         await dispatch(fetchDashboardList());
@@ -165,6 +171,8 @@ const Dashboard = () => {
     setOpenCreateModal(false);
     setNewDashboardName("");
     setDashboardType("normal");
+    setTimePeriod("1m");
+    setDataSourceId("");
   };
 
   // If no ID is provided, show the dashboard list view
@@ -361,6 +369,9 @@ const Dashboard = () => {
           onDashboardTypeChange={setDashboardType}
           timePeriod={timePeriod}
           onTimePeriodChange={setTimePeriod}
+          dataSourceId={dataSourceId}
+          onDataSourceChange={setDataSourceId}
+          activeTab="ReportiVix"
         />
 
         {/* Delete Confirmation Modal */}

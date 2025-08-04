@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import {
   Dialog,
   DialogTitle,
@@ -13,6 +13,8 @@ import { STYLE_GUIDE } from '../../../../styles';
 import StyledSelect from '../../common/StyledSelect';
 import { useUnifiedTheme } from '../../../../hooks/useUnifiedTheme';
 import { useComponentTypography } from '../../../../hooks/useComponentTypography';
+import { useAppSelector, useAppDispatch } from '../../../../storeHooks';
+import { fetchAllDataSources } from '../../../../pages/dashboard/dashboardActions';
 
 
 interface CreateDashboardModalProps {
@@ -22,10 +24,13 @@ interface CreateDashboardModalProps {
   onNameChange: (name: string) => void;
   onCreate: () => void;
   isCreating: boolean;
-  dashboardType: 'normal' | 'trend';
-  onDashboardTypeChange: (type: 'normal' | 'trend') => void;
+  dashboardType: 'normal' | 'trend' | 'fixed';
+  onDashboardTypeChange: (type: 'normal' | 'trend' | 'fixed') => void;
   timePeriod: string;
   onTimePeriodChange: (period: string) => void;
+  dataSourceId: string;
+  onDataSourceChange: (dataSourceId: string) => void;
+  activeTab?: 'ReportiVix' | 'Notifix';
 }
 
 export const CreateDashboardModal: React.FC<CreateDashboardModalProps> = ({
@@ -39,10 +44,24 @@ export const CreateDashboardModal: React.FC<CreateDashboardModalProps> = ({
   onDashboardTypeChange,
   timePeriod,
   onTimePeriodChange,
+  dataSourceId,
+  onDataSourceChange,
+  activeTab,
 }) => {
   const theme = useUnifiedTheme();
+  const dispatch = useAppDispatch();
+
   const { getDialogTitleSx } = useComponentTypography();
-  
+
+  const {dataSources,dataSourcesLoading } = useAppSelector(
+    (state) => state.dashboard
+  );
+
+  useEffect(() => {
+    if (open && dashboardType === "fixed") {
+      dispatch(fetchAllDataSources());
+    }
+  }, [open, dashboardType, dispatch]);
 
   return (
     <Dialog
@@ -69,8 +88,8 @@ export const CreateDashboardModal: React.FC<CreateDashboardModalProps> = ({
       >
         Create New Dashboard
       </DialogTitle>
-      <DialogContent sx={{ 
-        mt: STYLE_GUIDE.SPACING.s4, 
+      <DialogContent sx={{
+        mt: STYLE_GUIDE.SPACING.s4,
         pb: STYLE_GUIDE.SPACING.s2,
         color: theme.palette.dialog?.contentColor || STYLE_GUIDE.COLORS.textDarkGray,
         fontSize: theme.palette.dialog?.contentFontSize || '1rem',
@@ -123,13 +142,32 @@ export const CreateDashboardModal: React.FC<CreateDashboardModalProps> = ({
         <StyledSelect
           label="Dashboard Type"
           value={dashboardType}
-          onChange={(e) => onDashboardTypeChange(e.target.value as "normal" | "trend")}
+          onChange={(e) => onDashboardTypeChange(e.target.value as "normal" | "trend" | "fixed")}
           size="small"
           sx={{ mt: 2 }}
         >
           <MenuItem value="normal">Normal</MenuItem>
           <MenuItem value="trend">Trend</MenuItem>
+          {activeTab === "Notifix" && (<MenuItem value="fixed">Fixed</MenuItem>)}
         </StyledSelect>
+
+        {dashboardType === "fixed" && (
+            <StyledSelect
+              labelId="data-source-label"
+              value={dataSourceId}
+              onChange={(e) => onDataSourceChange(e.target.value as string)}
+              label="Data Source *"
+              disabled={dataSourcesLoading}
+              size="small"
+              sx={{ mt: 2 }}
+            >
+              {dataSources.map((source) => (
+                <MenuItem key={source._id} value={source._id}>
+                  {source.name}
+                </MenuItem>
+              ))}
+            </StyledSelect>
+        )}
 
         {dashboardType === "trend" && (
           <StyledSelect
@@ -161,7 +199,7 @@ export const CreateDashboardModal: React.FC<CreateDashboardModalProps> = ({
         <Button
           onClick={onCreate}
           variant="contained"
-          disabled={!newDashboardName.trim() || isCreating}
+          disabled={!newDashboardName?.trim() || isCreating || (dashboardType === "fixed" && !dataSourceId?.trim())}
           sx={{
             backgroundColor: STYLE_GUIDE.COLORS.bootstrapPrimary,
             "&:hover": {

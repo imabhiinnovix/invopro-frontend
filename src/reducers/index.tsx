@@ -6,7 +6,8 @@ import themeReducer from '../pages/createTheme/themeSlice';
 import dashboardThemeReducer from './dashboardThemeSlice';
 import { configureStore } from '@reduxjs/toolkit';
 import customReportsReducer from '../pages/report-settings/customReportsReducer';
-import userReducer from '../reducers/userSlice'; 
+import userReducer from '../reducers/userSlice';
+import notivixDashboardReducer from '../pages/notivixDashboard/notivixDashboardReducer'; 
 // 👇 Explicitly define the shape of your Redux state
 const rootReducer = combineReducers({
   dataSource: dataSourceReducer,
@@ -15,6 +16,7 @@ const rootReducer = combineReducers({
   dashboardTheme: dashboardThemeReducer,
   customReports: customReportsReducer,
   userPermission: userReducer,
+  notivixDashboard: notivixDashboardReducer,
   // naturalLanguageReducer: naturalLanguageReducer,
 });
 

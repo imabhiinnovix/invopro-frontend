@@ -164,10 +164,11 @@ export default function SideNav() {
     React.useState(false);
   const [openGlobalSettings, setOpenGlobalSettings] = React.useState(false);
   const [newDashboardName, setNewDashboardName] = React.useState("");
-  const [dashboardType, setDashboardType] = React.useState<"normal" | "trend">(
+  const [dashboardType, setDashboardType] = React.useState<"normal" | "trend" | "fixed">(
     "normal"
   );
   const [timePeriod, setTimePeriod] = React.useState<string>("1m");
+  const [dataSourceId, setDataSourceId] = React.useState<string>("");
   const [isCreatingLoading, setIsCreatingLoading] = React.useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = React.useState(false);
   const [dashboardToDelete, setDashboardToDelete] =
@@ -284,6 +285,11 @@ export default function SideNav() {
 
   const handleCreateDashboard = async () => {
     if (newDashboardName.trim()) {
+      // Validate that dataSourceId is selected for fixed dashboard type
+      if (dashboardType === "fixed" && !dataSourceId.trim()) {
+        toast.error("Please select a data source for fixed dashboard type");
+        return;
+      }
       try {
         setIsCreatingLoading(true);
         const response = (await dispatch(
@@ -291,6 +297,7 @@ export default function SideNav() {
             name: newDashboardName.trim(),
             dashboardType,
             dynamicVersionValue: timePeriod,
+            dataSourceId: dashboardType === "fixed" ? dataSourceId : undefined,
           })
         ).unwrap()) as DashboardListResponse;
         await dispatch(fetchDashboardList());
@@ -327,6 +334,7 @@ export default function SideNav() {
     setNewDashboardName("");
     setDashboardType("normal");
     setTimePeriod("1m");
+    setDataSourceId("");
   };
 
   const handleDeleteClick = (e: React.MouseEvent, dashboard: DashboardType) => {
@@ -369,7 +377,6 @@ export default function SideNav() {
     clearLocalStorage();
     navigate("/login");
   };
-
   const navItems: NavItem[] = useMemo(() => {
     const createIcon = (IconComponent: React.ElementType, route: string) => {
       return (
@@ -1140,6 +1147,9 @@ export default function SideNav() {
         onDashboardTypeChange={setDashboardType}
         timePeriod={timePeriod}
         onTimePeriodChange={setTimePeriod}
+        dataSourceId={dataSourceId}
+        onDataSourceChange={setDataSourceId}
+        activeTab={activeTab}
       />
 
       <DeleteConfirmationModal

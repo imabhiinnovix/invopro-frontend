@@ -18,7 +18,9 @@ export interface Dashboard {
     endVersionValue: string;
     startVersionValue: string;
     versionValue: string;
-    dataSource: any
+    dataSource?: {
+      _id: string;
+    };
   };
   createdAt: string;
   updatedAt: string;
@@ -370,4 +372,47 @@ export interface FetchChartDataPayload {
   startVersionValue?: string;
   endVersionValue?: string;
   dashboardType?: string;
+}
+
+export interface FieldSetting {
+  attributeId: string;
+  refAttributeId: string | null;
+  label: string;
+  isFilterEnable: boolean;
+  isDashboardFilter: boolean;
+  isSortingEnable: boolean;
+  isDisplayEnable: boolean;
+  isDerived: boolean;
+}
+
+export interface DataSourceDetailsResponse {
+  success: boolean;
+  message: string;
+  data: {
+    _id: string;
+    organizationId: string;
+    entityId: {
+      _id: string;
+      name: string;
+      description: string;
+      attributes: Array<{
+        _id: string;
+        name: string;
+        mappingName: string;
+        type: string;
+        required: string;
+        validation: any[];
+        transformations: any[];
+        cleaner: any[];
+      }>;
+    };
+    name: string;
+    description: string;
+    code: string;
+    versionType: string;
+    isActive: boolean;
+    fieldSettings: FieldSetting[];
+    createdAt: string;
+    updatedAt: string;
+  };
 }

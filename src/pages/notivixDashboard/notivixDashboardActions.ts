@@ -8,12 +8,13 @@ import {
   WidgetDataResponse,
   CombinedWidgetData,
   ChartResponse,
+  DataSourceDetailsResponse,
 } from './types';
 import { CreateWidgetResponse } from '../../types/dashboard';
 import { Theme } from '../createTheme/types';
 import axiosInstance from '../../services/axiosInstance';
 import axios from 'axios';
-import { updateChartsData } from './dashboardReducer';
+import { updateChartsData } from './notivixDashboardReducer';
 
 export const fetchDashboardList = createAsyncThunk('dashboard/fetchList', async () => {
   const { data } = await axiosInstance.get<DashboardListResponse>(GET.DASHBOARD_LIST);
@@ -32,15 +33,14 @@ export const createDashboard = createAsyncThunk(
     { rejectWithValue }
   ) => {
     try {
-      const requestPayload = {
+      const { data } = await axiosInstance.post<DashboardListResponse>(POST.CREATE_DASHBOARD, {
         name: payload.name,
         settings: {
           dashboardType: payload.dashboardType,
           dynamicVersionValue: payload.dynamicVersionValue,
           ...(payload.dashboardType === 'fixed' && { dataSourceId: payload.dataSourceId || '' }),
         },
-      };
-      const { data } = await axiosInstance.post<DashboardListResponse>(POST.CREATE_DASHBOARD, requestPayload);
+      });
       if (!data.success) {
         return rejectWithValue({
           message: data.message || 'Failed to create dashboard',
@@ -231,10 +231,10 @@ export const fetchChartData = createAsyncThunk(
       dashboardType?: string;
       dynamicVersionValue?: string;
     },
-    { dispatch }
+    { dispatch, getState }
   ) => {
     const response = await axiosInstance.get<ChartDataResponse>(
-      `${GET.DASHBOARD_WIDGET_GET_CHART_DATA}/${dashboardId}`
+      `${GET.NOTIVIX_DASHBOARD_WIDGET_GET_CHART_DATA}/${dashboardId}`
     );
 
     // Make additional API calls for each chart
@@ -243,13 +243,18 @@ export const fetchChartData = createAsyncThunk(
       const batchSize = 3;
       const charts = response.data.data;
 
+
       for (let i = 0; i < charts.length; i += batchSize) {
         const batch = charts.slice(i, i + batchSize);
         await Promise.all(
           batch.map(async (chart) => {
             try {
-              const widgetResponse = await axiosInstance.post<WidgetDataResponse>(GET.DASHBOARD_WIDGET_DATA, {
-                dataSourceId: chart.dataSourceId?._id,
+              const widgetDataEndpoint = dashboardType === 'fixed' ? GET.FIXED_DASHBOARD_WIDGET_DATA : GET.NOTIVIX_DASHBOARD_WIDGET_DATA;
+
+              const dataSourceId = chart.dataSourceId?._id;
+
+              const widgetResponse = await axiosInstance.post<WidgetDataResponse>(widgetDataEndpoint, {
+                dataSourceId: dataSourceId,
                 entityId: chart.dataSourceId?.entityId,
                 dimensions: chart.dimensions,
                 groupBy: chart.groupBy,
@@ -260,7 +265,7 @@ export const fetchChartData = createAsyncThunk(
                   startVersionValue: dashboardType === 'trend' ? startVersionValue || '' : '',
                   endVersionValue: dashboardType === 'trend' ? endVersionValue || '' : '',
                   versionValue: dashboardType === 'trend' ? '' : versionValue || '',
-                  dynamicVersionValue: dashboardType === 'trend' ? '' : versionValue ? '' : '1m',
+                  dynamicVersionValue: dashboardType === 'trend' ? '' : (dashboardType === 'fixed' ? '' : (versionValue ? '' : '1m')),
                 },
                 dashBoardType: dashboardType || 'normal',
                 isIncremental: chart.isIncremental,
@@ -309,9 +314,10 @@ export const fetchChartData = createAsyncThunk(
 
 export const fetchIndividualWidgetData = createAsyncThunk(
   'nlQuery/getIndividualData',
-  async (chart: any, { rejectWithValue, dispatch }) => {
+  async ({ chart, dashboardType }: { chart: any; dashboardType?: string }, { rejectWithValue, dispatch }) => {
     try {
-      const widgetResponse = await axiosInstance.post<WidgetDataResponse>(GET.DASHBOARD_WIDGET_DATA, {
+      const widgetDataEndpoint = dashboardType === 'fixed' ? GET.FIXED_DASHBOARD_WIDGET_DATA : GET.NOTIVIX_DASHBOARD_WIDGET_DATA;
+      const widgetResponse = await axiosInstance.post<WidgetDataResponse>(widgetDataEndpoint, {
         dataSourceId: chart.dataSourceId,
         entityId: chart.entityId,
         dimensions: [chart.dimensions],
@@ -507,5 +513,27 @@ export const selectDashboardTheme = createAsyncThunk(
   async ({ dashboardId, widgetThemeId }: { dashboardId: string; widgetThemeId: string }) => {
     const { data } = await axiosInstance.post(`/common/dashboard/selectTheme/${dashboardId}`, { widgetThemeId });
     return data;
+  }
+);
+
+export const fetchDataSourceDetails = createAsyncThunk(
+  'dashboard/fetchDataSourceDetails',
+  async (dataSourceId: string, { rejectWithValue }) => {
+    try {
+      const { data } = await axiosInstance.get<DataSourceDetailsResponse>(`${GET.Data_Source}/${dataSourceId}`);
+      if (!data.success) {
+        return rejectWithValue({
+          message: data.message || 'Failed to fetch data source details',
+        });
+      }
+      return data;
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response?.data) {
+        return rejectWithValue(error.response.data);
+      }
+      return rejectWithValue({
+        message: 'Failed to fetch data source details. Please try again.',
+      });
+    }
   }
 );
