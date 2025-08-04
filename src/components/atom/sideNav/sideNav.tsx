@@ -56,6 +56,7 @@ import NotivixLogo from "../../../assets/NotiVix-Logo-TRANS-V1.png";
 import useGet from "../../../hooks/useGet";
 import { useSelector } from "react-redux";
 import { RootState } from "../../../reducers";
+import { ArrowDropDownIcon } from "@mui/x-date-pickers/icons";
 
 interface ErrorResponse {
   success: boolean;
@@ -159,14 +160,18 @@ export default function SideNav() {
   const { openNav } = useNav();
   const [openSettings, setOpenSettings] = React.useState(false);
   const [openDashboard, setOpenDashboard] = React.useState(false);
-  const [openNotificationSettings, setOpenNotificationSettings] = React.useState(false);
+  const [openNotificationSettings, setOpenNotificationSettings] =
+    React.useState(false);
   const [openGlobalSettings, setOpenGlobalSettings] = React.useState(false);
   const [newDashboardName, setNewDashboardName] = React.useState("");
-  const [dashboardType, setDashboardType] = React.useState<"normal" | "trend">("normal");
+  const [dashboardType, setDashboardType] = React.useState<"normal" | "trend">(
+    "normal"
+  );
   const [timePeriod, setTimePeriod] = React.useState<string>("1m");
   const [isCreatingLoading, setIsCreatingLoading] = React.useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = React.useState(false);
-  const [dashboardToDelete, setDashboardToDelete] = React.useState<DashboardType | null>(null);
+  const [dashboardToDelete, setDashboardToDelete] =
+    React.useState<DashboardType | null>(null);
   const [isDeleting, setIsDeleting] = React.useState(false);
   const navigate = useNavigate();
   const location = useLocation();
@@ -176,10 +181,14 @@ export default function SideNav() {
   const [openCreateModal, setOpenCreateModal] = useState(false);
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
-  const [activeTab, setActiveTab] = React.useState<"ReportiVix" | "Notifix">("ReportiVix");
-  const permissions = useSelector((state: RootState) => state.userPermission?.permissions);
+  const [activeTab, setActiveTab] = React.useState<"ReportiVix" | "Notifix">(
+    "ReportiVix"
+  );
+  const permissions = useSelector(
+    (state: RootState) => state.userPermission?.permissions
+  );
 
-  const dataSourcePermissions = permissions?.['Data Source'] || {};
+  const dataSourcePermissions = permissions?.["Data Source"] || {};
   const validPermissionIds = Object.entries(dataSourcePermissions)
     .filter(([key, permission]) => {
       return (
@@ -210,10 +219,14 @@ export default function SideNav() {
   }, [dispatch, activeTab]);
 
   // Fetch data sources for ReportiVix
-  const { infiniteQuery: dataSourceListAPI, lastElementRef } = useInfiniteScroll<
-    DataSourceListPayload,
-    DataSourceListData
-  >(["dataSourceList"], GET?.DATA_SOURCE_LIST + `?canEditInline=true`, 10, "get", true);
+  const { infiniteQuery: dataSourceListAPI, lastElementRef } =
+    useInfiniteScroll<DataSourceListPayload, DataSourceListData>(
+      ["dataSourceList"],
+      GET?.DATA_SOURCE_LIST + `?canEditInline=true`,
+      10,
+      "get",
+      true
+    );
 
   // Fetch data sources for Notifix
   const dataSourceNotivixListAPI = useGet<DataSourceListPayload>(
@@ -231,9 +244,10 @@ export default function SideNav() {
   }, [dataSourceNotivixListAPI?.data]);
 
   const matchedDataSources = useMemo(() => {
-
     return dataSourceNotivixList?.filter(
-      (dataSource:any) => validPermissionIds.includes(dataSource._id) && dataSource.isShowMenu === true
+      (dataSource: any) =>
+        validPermissionIds.includes(dataSource._id) &&
+        dataSource.isShowMenu === true
     );
   }, [dataSourceNotivixList, validPermissionIds]);
 
@@ -241,7 +255,11 @@ export default function SideNav() {
     if (dataSourceList.length > 0) dispatch(setDataSourceList(dataSourceList));
   }, [dataSourceList, dispatch]);
 
-  const handleItemClick = (route: string, hasSubItems: boolean, itemName: string) => {
+  const handleItemClick = (
+    route: string,
+    hasSubItems: boolean,
+    itemName: string
+  ) => {
     if (hasSubItems) {
       if (itemName === "Dashboards") {
         if (!openDashboard) {
@@ -288,7 +306,9 @@ export default function SideNav() {
             state: { enableEditMode: true },
           });
         }
-      } catch (error: | { payload?: { message: string }; message?: string } | unknown) {
+      } catch (error:
+        | { payload?: { message: string }; message?: string }
+        | unknown) {
         const errorMessage =
           error && typeof error === "object" && "payload" in error
             ? (error.payload as { message?: string })?.message
@@ -329,7 +349,10 @@ export default function SideNav() {
         setDashboardToDelete(null);
       } catch (error) {
         const errorResponse = error as ErrorResponse;
-        toast.error(errorResponse.message || "Failed to delete dashboard. Please try again.");
+        toast.error(
+          errorResponse.message ||
+            "Failed to delete dashboard. Please try again."
+        );
       } finally {
         setIsDeleting(false);
       }
@@ -362,14 +385,14 @@ export default function SideNav() {
     };
 
     if (activeTab === "Notifix") {
-      const dataSourceItems = matchedDataSources?.map((item) => {
-  
-        return {
-          name: item?.name ?? " ",
-          icon: createIcon(SourceIcon, `/notivix/data-source/${item?._id}`),
-          route: `/notivix/data-source/${item?._id}`,
-        };
-      }) || [];
+      const dataSourceItems =
+        matchedDataSources?.map((item) => {
+          return {
+            name: item?.name ?? " ",
+            icon: createIcon(SourceIcon, `/notivix/data-source/${item?._id}`),
+            route: `/notivix/data-source/${item?._id}`,
+          };
+        }) || [];
       return [
         {
           name: "Dashboard",
@@ -603,14 +626,30 @@ export default function SideNav() {
                   aria-haspopup="true"
                   onClick={handleMenuClick}
                 >
+                 
                   <Tooltip title="Tab Switch" placement="top">
-                    <GridViewIcon
+                    <Box
+                      display="flex"
+                      alignItems="center"
                       sx={{
                         color: STYLE_GUIDE.COLORS.black,
-                        fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base,
-                        boxShadow: STYLE_GUIDE.SHADOWS.cardPrimary,
+                        padding: "4px 8px",
+                        borderRadius: "6px",
+                        cursor: "pointer",
                       }}
-                    />
+                    >
+                      <GridViewIcon
+                        sx={{
+                          fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base,
+                        }}
+                      />
+                      <ArrowDropDownIcon
+                        sx={{
+                          fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base,
+                          marginLeft: "2px",
+                        }}
+                      />
+                    </Box>
                   </Tooltip>
                 </IconButton>
                 <Menu

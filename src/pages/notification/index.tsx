@@ -1,4 +1,3 @@
-
 import * as React from "react";
 import { useState, useEffect } from "react";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
@@ -127,7 +126,7 @@ const columns: GridColDef[] = [
     disableColumnMenu: true,
     resizable: true,
     renderCell: (params) => (
-     <Chip
+      <Chip
         label={params.row.isActive ? "Active" : "Inactive"} // Map isActive to Active/Inactive
         size="small"
         color={params.row.isActive ? "success" : "error"} // Use isActive for color logic
@@ -179,7 +178,7 @@ const columns: GridColDef[] = [
 
 export default function NotificationTypes() {
   const theme = useUnifiedTheme();
-     const Navigate = useNavigate();
+  const Navigate = useNavigate();
 
   const queryClient = useQueryClient();
   const { permissions } = useSelector(
@@ -191,7 +190,9 @@ export default function NotificationTypes() {
   >(null);
   const [openDialog, setOpenDialog] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
-  const [editNotificationTypeId, setEditNotificationTypeId] = useState<string | null>(null);
+  const [editNotificationTypeId, setEditNotificationTypeId] = useState<
+    string | null
+  >(null);
   const [searchValue, setSearchValue] = useState("");
   const [paginationModel, setPaginationModel] = useState({
     page: 0,
@@ -236,22 +237,25 @@ export default function NotificationTypes() {
   const [selectedPermissions, setSelectedPermissions] =
     useState(initialPermissions);
 
-  const { control, handleSubmit, reset, watch } = useForm<NotificationTypePostPayload>({
-    defaultValues: {
-      name: "",
-      organizationId: "",
-      status: "",
-      permissionIds: [],
-    },
-    mode: "onChange",
-  });
+  const { control, handleSubmit, reset, watch } =
+    useForm<NotificationTypePostPayload>({
+      defaultValues: {
+        name: "",
+        organizationId: "",
+        status: "",
+        permissionIds: [],
+      },
+      mode: "onChange",
+    });
 
   const nameValue = watch("name");
   const isNameValid = nameValue?.trim().length > 0;
 
   const notificationTypeDetail = useGet<NotificationTypeDetailResponse>(
     ["notificationTypeDetail", editNotificationTypeId, fetchTimestamp],
-    editNotificationTypeId ? `${GET.NOTIFICATION_TYPE_DETAIL}/${editNotificationTypeId}` : null,
+    editNotificationTypeId
+      ? `${GET.NOTIFICATION_TYPE_DETAIL}/${editNotificationTypeId}`
+      : null,
     !!editNotificationTypeId,
     { refetchOnWindowFocus: false }
   );
@@ -263,9 +267,8 @@ export default function NotificationTypes() {
       Array.isArray(notificationTypeDetail.data?.data) &&
       Object.keys(formattedPermissions).length > 0
     ) {
-      const permissionsValue: BackendPermission[] = notificationTypeDetail.data.data.map(
-        (perm) => perm.permissionId
-      );
+      const permissionsValue: BackendPermission[] =
+        notificationTypeDetail.data.data.map((perm) => perm.permissionId);
       const formatted = formatPermissions(permissionsValue);
       setFormattedPermissions(formatted);
 
@@ -291,14 +294,18 @@ export default function NotificationTypes() {
       notificationTypeDetail.data?.success &&
       Array.isArray(notificationTypeDetail.data?.data)
     ) {
-      const permissionsValue: BackendPermission[] = notificationTypeDetail.data.data.map(
-        (perm) => perm.permissionId
-      );
+      const permissionsValue: BackendPermission[] =
+        notificationTypeDetail.data.data.map((perm) => perm.permissionId);
       const formatted = formatPermissions(permissionsValue);
       setFormattedPermissions(formatted);
       setIsLoadingWithDelay(false);
     }
-  }, [notificationTypeDetail, permissions, isInitialLoad, formattedPermissions]);
+  }, [
+    notificationTypeDetail,
+    permissions,
+    isInitialLoad,
+    formattedPermissions,
+  ]);
 
   // Enforce loader until data is fetched and permissions are processed
   useEffect(() => {
@@ -333,20 +340,18 @@ export default function NotificationTypes() {
       filterValues.organizationId,
       filterValues.status,
     ],
-    
+
     `${GET.NOTIFICATION_TYPE_LIST}?page=${paginationModel.page + 1}&limit=${perPageItem}&search=${encodeURIComponent(debouncedSearchValue)}&name=${encodeURIComponent(filterValues.name)}&organizationId=${encodeURIComponent(filterValues.organizationId)}&status=${encodeURIComponent(filterValues.status)}`,
     true
   );
 
-  // Log the API data to console
-  useEffect(() => {
-    if (notificationTypeList.data) {
-      console.log("Notification Type List Data:", notificationTypeList.data);
-    }
-  }, [notificationTypeList.data]);
+  
 
   // POST API
-  const createNotificationType = usePost<NotificationTypePostPayload, NotificationTypePostResponse>(
+  const createNotificationType = usePost<
+    NotificationTypePostPayload,
+    NotificationTypePostResponse
+  >(
     ["createNotificationType"],
     (data) => {
       if (data?.success) {
@@ -369,11 +374,17 @@ export default function NotificationTypes() {
   );
 
   // PUT API
-  const updateNotificationType = usePut<NotificationTypePostPayload, NotificationTypePostResponse>(
+  const updateNotificationType = usePut<
+    NotificationTypePostPayload,
+    NotificationTypePostResponse
+  >(
     ["updateNotificationType"],
     (data) => {
       if (data?.success) {
-        queryClient.invalidateQueries(["notificationTypeDetail", editNotificationTypeId]);
+        queryClient.invalidateQueries([
+          "notificationTypeDetail",
+          editNotificationTypeId,
+        ]);
         setNotificationTypeReload(true);
         handleCloseModal();
         setSnackbar({
@@ -424,10 +435,13 @@ export default function NotificationTypes() {
 
   // Process API data for DataGrid
   const notificationTypesWithIds =
-    Array.isArray(notificationTypeList?.data?.data) && notificationTypeList.data.data.length > 0
+    Array.isArray(notificationTypeList?.data?.data) &&
+    notificationTypeList.data.data.length > 0
       ? notificationTypeList.data.data.map((notificationType) => ({
           ...notificationType,
-          id: notificationType._id || `temp-${Math.random().toString(36).substr(2, 9)}`,
+          id:
+            notificationType._id ||
+            `temp-${Math.random().toString(36).substr(2, 9)}`,
           permissions: notificationType.permissions || [],
         }))
       : [];
@@ -484,12 +498,12 @@ export default function NotificationTypes() {
   //   setOpenModal(true);
   // };
 
-   const handleAddNotificationType = () => {
-   Navigate("/notivix/notification-types/add");
-     // setFormData({ id: "", firstName: "", lastName: "", age: "" });
-     // setModalMode("add");
-     // setOpenModal(true);
-   };
+  const handleAddNotificationType = () => {
+    Navigate("/notivix/notification-types/add");
+    // setFormData({ id: "", firstName: "", lastName: "", age: "" });
+    // setModalMode("add");
+    // setOpenModal(true);
+  };
   const handleFilter = () => {
     reset({
       name: filterValues.name,
@@ -726,7 +740,6 @@ export default function NotificationTypes() {
             }))}
             columns={columns}
             initialState={{ pagination: { paginationModel } }}
-            pageSizeOptions={[10, 20]}
             disableColumnMenu
             paginationMode="server"
             sx={{
@@ -739,7 +752,7 @@ export default function NotificationTypes() {
               deleteNotificationType.isLoading ||
               notificationTypeDetail.isLoading
             }
-            rowCount={notificationTypeList?.data?.totalCount || 0}
+            rowCount={notificationTypeList?.data?.pagination?.totalRecords || 0}
             paginationModel={paginationModel}
             onPaginationModelChange={setPaginationModel}
             slots={{
@@ -747,7 +760,9 @@ export default function NotificationTypes() {
                 <CustomPagination
                   paginationModel={paginationModel}
                   setPaginationModel={setPaginationModel}
-                  rowCount={notificationTypeList?.data?.totalCount || 0}
+                  rowCount={
+                    notificationTypeList?.data?.pagination?.totalRecords || 0
+                  }
                 />
               ),
             }}

@@ -33,8 +33,9 @@ export const POST = {
   Create_User: '/common/user/create',
   CREATE_PERMISSION: "/common/permission/create",
   CREATE_ROLE: "/common/role/create",
-    OPERATOR_LIST: '/common/operator/list',
-
+  OPERATOR_LIST: '/common/operator/list',
+  CREATE_NOTIFICATION_TYPE: '/notivix/notification-setting/type/create',
+  CREATE_FREQUENCY: '/notivix/notification-setting/frequency/create',
 };
 
 export const PUT = {
@@ -93,5 +94,6 @@ export const GET = {
   ROLE_LIST: "/common/role/list",
   ROLE_DETAIL: "/common/role",
   NOTIFICATION_TYPE_LIST: '/notivix/notification-setting/type/list',
-
+  TEMPLATE_LIST:'/notivix/notification-setting/template/list',
+  MEDIUM_LIST:'/notivix/notification-setting/medium/list',
 };
