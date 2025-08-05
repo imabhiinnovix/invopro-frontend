@@ -153,6 +153,8 @@ export default function Organization() {
     
     setOrganizationIdForMedium(organizationIdForUsers);
     
+    replaceMedium([]);
+    
     if (org.mediumSettings && Array.isArray(org.mediumSettings)) {
       setValue('mediumSettings', org.mediumSettings);
       replaceMedium(org.mediumSettings);
@@ -167,6 +169,7 @@ export default function Organization() {
     setShowMediumDropdown(false);
     setOrganizationIdForMedium(null);
     setEditingMediumId(null);
+    replaceMedium([]);
   };
 
   const handleDeleteOpen = (org: any) => {
@@ -220,6 +223,8 @@ export default function Organization() {
           });
         }
       }
+      
+      replaceMedium([]);
     } finally {
       setFormLoading(false);
     }
@@ -229,10 +234,14 @@ export default function Organization() {
     reset({ name: '', description: '', domain: '', code: '', owner: '', productIds: [], productSubscriptions: [], mediumSettings: [] });
     setCreateOpen(true);
     setShowMediumDropdown(false);
+    // Ensure medium fields are cleared
+    replaceMedium([]);
   };
   const handleCreateClose = () => {
     setCreateOpen(false);
     setShowMediumDropdown(false);
+    // Clear medium fields when closing
+    replaceMedium([]);
   };
 
   const handleCreateSubmit = async (formData: any) => {
@@ -282,6 +291,9 @@ export default function Organization() {
           });
         }
       }
+      
+      replaceMedium([]);
+      setShowMediumDropdown(false);
     } finally {
       setCreateLoading(false);
     }
@@ -509,7 +521,7 @@ export default function Organization() {
             )}
           </Box>
 
-          <Dialog open={editOpen} onClose={handleEditClose} maxWidth="sm" fullWidth>
+          <Dialog open={editOpen} onClose={handleEditClose} maxWidth="md" fullWidth>
             <DialogTitle>Edit Organization</DialogTitle>
             <DialogContent>
               {selectedOrg && (
@@ -984,7 +996,7 @@ export default function Organization() {
             </DialogActions>
           </Dialog>
 
-          <Dialog open={createOpen} onClose={handleCreateClose} maxWidth="sm" fullWidth>
+          <Dialog open={createOpen} onClose={handleCreateClose} maxWidth="md" fullWidth>
             <DialogTitle>Create Organization</DialogTitle>
             <DialogContent>
               <form
