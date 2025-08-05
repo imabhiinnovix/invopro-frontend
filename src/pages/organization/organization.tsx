@@ -95,6 +95,7 @@ export default function Organization() {
   const [showMediumDropdown, setShowMediumDropdown] = useState(false);
   const [editingMediumId, setEditingMediumId] = useState<string | null>(null);
   const [organizationIdForMedium, setOrganizationIdForMedium] = useState<string | null>(null);
+  const [_forceUpdate, setForceUpdate] = useState(0);
 
   const theme = useUnifiedTheme();
 
@@ -191,7 +192,7 @@ export default function Organization() {
   const handleEditSubmit = async (formData: any) => {
     setFormLoading(true);
     try {
-      const { productIds, ...rest } = formData;
+      const { productIds, mediumSettings, ...rest } = formData;
       await updateOrg.mutateAsync({
         url: `${PUT.UPDATE_ORGANIZATION}${selectedOrg._id}`,
         payload: {
@@ -259,13 +260,6 @@ export default function Organization() {
             totalLicenses: Number(ps.totalLicenses),
             licenseExpiresAt: ps.licenseExpiresAt,
           })),
-          mediumSettings: formData.mediumSettings.map((ms: any) => ({
-            medium: ms.medium,
-            fromAddress: ms.fromAddress,
-            serviceName: ms.serviceName,
-            apiKey: ms.apiKey,
-            enabled: ms.enabled,
-          })),
         },
       });
 
@@ -293,7 +287,6 @@ export default function Organization() {
       }
       
       replaceMedium([]);
-      setShowMediumDropdown(false);
     } finally {
       setCreateLoading(false);
     }
@@ -731,6 +724,12 @@ export default function Organization() {
                                           fullWidth
                                           margin="dense"
                                           disabled={!isEditing}
+                                          onChange={(e) => {
+                                            if (isEditing) {
+                                              medium.fromAddress = e.target.value;
+                                              setForceUpdate(prev => prev + 1);
+                                            }
+                                          }}
                                         />
                                       </Grid>
                                       <Grid item xs={3}>
@@ -740,6 +739,12 @@ export default function Organization() {
                                           fullWidth
                                           margin="dense"
                                           disabled={!isEditing}
+                                          onChange={(e) => {
+                                            if (isEditing) {
+                                              medium.serviceName = e.target.value;
+                                              setForceUpdate(prev => prev + 1);
+                                            }
+                                          }}
                                         />
                                       </Grid>
                                       <Grid item xs={3}>
@@ -750,14 +755,68 @@ export default function Organization() {
                                           fullWidth
                                           margin="dense"
                                           disabled={!isEditing}
+                                          onChange={(e) => {
+                                            if (isEditing) {
+                                              medium.apiKey = e.target.value;
+                                              setForceUpdate(prev => prev + 1);
+                                            }
+                                          }}
                                         />
                                       </Grid>
                                       <Grid item xs={1} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                         <IconButton
                                           aria-label={isEditing ? "Save" : "Edit"}
                                           color={isEditing ? "default" : "primary"}
-                                          onClick={() => {
+                                          onClick={async () => {
                                             if (isEditing) {
+                                              const currentMediumSettings = getValues('mediumSettings') || [];
+                                              const updatedMediumSettings = currentMediumSettings.map((ms: any, idx: number) => {
+                                                if (idx === Number(mediumIdx)) {
+                                                  return {
+                                                    ...ms,
+                                                    fromAddress: medium.fromAddress,
+                                                    serviceName: medium.serviceName,
+                                                    apiKey: medium.apiKey,
+                                                    enabled: medium.enabled,
+                                                  };
+                                                }
+                                                return ms;
+                                              });
+                                              setValue('mediumSettings', updatedMediumSettings);
+                                              
+                                              const existingMediums = mediumListDataWithOrg?.data?.[0]?.mediumSettings || [];
+                                              const newMediums = getValues('mediumSettings') || [];
+                                              
+                                              const allMediums = [...existingMediums];
+                                              newMediums.forEach((newMedium: any) => {
+                                                const existingIndex = allMediums.findIndex((em: any) => em.medium === newMedium.medium);
+                                                if (existingIndex >= 0) {
+                                                  allMediums[existingIndex] = newMedium;
+                                                } else {
+                                                  allMediums.push(newMedium);
+                                                }
+                                              });
+                                              
+                                              const notivixProduct = getValues('productSubscriptions')?.find((ps: any) => {
+                                                const product = productOptions.find(p => p._id === ps.productId);
+                                                return product && product.name?.toLowerCase() === 'notivix';
+                                              });
+                                              
+                                              if (notivixProduct) {
+                                                await updateMedium.mutateAsync({
+                                                  url: `${PUT.UPDATE_MEDIUM}/${notivixProduct.productId}`,
+                                                  payload: {
+                                                    mediumSettings: allMediums.map((ms: any) => ({
+                                                      medium: ms.medium,
+                                                      fromAddress: ms.fromAddress,
+                                                      serviceName: ms.serviceName,
+                                                      apiKey: ms.apiKey,
+                                                      enabled: ms.enabled,
+                                                    })),
+                                                  },
+                                                });
+                                              }
+                                              
                                               console.log('Save medium:', medium);
                                               setEditingMediumId(null);
                                             } else {
@@ -775,6 +834,12 @@ export default function Organization() {
                                               checked={medium.enabled}
                                               disabled={!isEditing}
                                               color="primary"
+                                              onChange={(e) => {
+                                                if (isEditing) {
+                                                  medium.enabled = e.target.checked;
+                                                  setForceUpdate(prev => prev + 1);
+                                                }
+                                              }}
                                             />
                                           }
                                           label="Enabled"
