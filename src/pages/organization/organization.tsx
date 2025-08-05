@@ -309,12 +309,11 @@ export default function Organization() {
   );
   const productOptions = productListData?.data || [];
 
-  const { data: mediumListData } = useGet<any>(["mediumList"], `${GET.MEDIUM_LIST}`, true);
 
   const { data: mediumListDataWithOrg } = useGet<any>(
     ["mediumList", organizationIdForMedium || ''],
-    organizationIdForMedium ? `${GET.MEDIUM_LIST}?organizationId=${organizationIdForMedium}` : '',
-    !!organizationIdForMedium
+    organizationIdForMedium ? `${GET.MEDIUM_LIST}?organizationId=${organizationIdForMedium}` : `${GET.MEDIUM_LIST}`,
+    Boolean(editOpen && selectedOrg)
   );
 
   const selectedProductIds = watch('productIds') || [];
