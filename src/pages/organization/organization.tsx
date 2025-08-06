@@ -305,7 +305,7 @@ export default function Organization() {
 
   const { data: mediumListDataWithOrg } = useGet<any>(
     ["mediumList", organizationIdForMedium || ''],
-    organizationIdForMedium ? `${GET.MEDIUM_LIST}?organizationId=${organizationIdForMedium}` : `${GET.MEDIUM_LIST}`,
+    organizationIdForMedium ? `${GET.MEDIUM_LIST}?organizationId=${organizationIdForMedium}&productId=6870c9e335f4e90221de9ed1` : `${GET.MEDIUM_LIST}`,
     Boolean(editOpen && selectedOrg)
   );
 
@@ -784,38 +784,17 @@ export default function Organization() {
                                               });
                                               setValue('mediumSettings', updatedMediumSettings);
                                               
-                                              const existingMediums = mediumListDataWithOrg?.data?.[0]?.mediumSettings || [];
-                                              const newMediums = getValues('mediumSettings') || [];
-                                              
-                                              const allMediums = [...existingMediums];
-                                              newMediums.forEach((newMedium: any) => {
-                                                const existingIndex = allMediums.findIndex((em: any) => em.medium === newMedium.medium);
-                                                if (existingIndex >= 0) {
-                                                  allMediums[existingIndex] = newMedium;
-                                                } else {
-                                                  allMediums.push(newMedium);
-                                                }
+                                              await updateMedium.mutateAsync({
+                                                url: `${PUT.UPDATE_MEDIUM}/${item._id}`,
+                                                payload: {
+                                                  productId: "6870c9e335f4e90221de9ed1",
+                                                  medium: medium.medium,
+                                                  fromAddress: medium.fromAddress,
+                                                  serviceName: medium.serviceName,
+                                                  apiKey: medium.apiKey,
+                                                  enabled: medium.enabled,
+                                                },
                                               });
-                                              
-                                              const notivixProduct = getValues('productSubscriptions')?.find((ps: any) => {
-                                                const product = productOptions.find(p => p._id === ps.productId);
-                                                return product && product.name?.toLowerCase() === 'notivix';
-                                              });
-                                              
-                                              if (notivixProduct) {
-                                                await updateMedium.mutateAsync({
-                                                  url: `${PUT.UPDATE_MEDIUM}/${notivixProduct.productId}`,
-                                                  payload: {
-                                                    mediumSettings: allMediums.map((ms: any) => ({
-                                                      medium: ms.medium,
-                                                      fromAddress: ms.fromAddress,
-                                                      serviceName: ms.serviceName,
-                                                      apiKey: ms.apiKey,
-                                                      enabled: ms.enabled,
-                                                    })),
-                                                  },
-                                                });
-                                              }
                                               
                                               console.log('Save medium:', medium);
                                               setEditingMediumId(null);
