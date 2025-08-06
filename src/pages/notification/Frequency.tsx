@@ -1,5 +1,6 @@
 
 
+
 import React, { useState, useEffect } from "react";
 import {
   Autocomplete,
@@ -10,8 +11,6 @@ import {
   FormControlLabel,
   Box,
   Typography,
-  Card,
-  CardContent,
   FormControl,
   FormLabel,
   RadioGroup,
@@ -20,9 +19,21 @@ import {
   MenuItem,
   Chip,
   IconButton,
+  InputLabel,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Tooltip,
+  Snackbar,
 } from "@mui/material";
 import { STYLE_GUIDE } from "../../styles";
-import { GridDeleteIcon } from "@mui/x-data-grid";
+import { GridCloseIcon, GridDeleteIcon } from "@mui/x-data-grid";
+import EditIcon from '@mui/icons-material/Edit';
+import useGet from "../../hooks/useGet";
+import usePost from "../../hooks/usePost";
+import useDelete from "../../hooks/useDelete";
+import { GET, POST, DELETE } from "../../services/apiRoutes";
 
 // Constants
 const MONTHS = [
@@ -87,14 +98,14 @@ const styles = {
   },
   chip: (selected) => ({
     backgroundColor: selected
-      ? STYLE_GUIDE.COLORS.materialBlue
+      ? STYLE_GUIDE.COLORS.primaryLight
       : STYLE_GUIDE.COLORS.white,
     color: selected ? STYLE_GUIDE.COLORS.white : STYLE_GUIDE.COLORS.black,
     fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
     transition: "all 0.3s",
     "&:hover": {
       backgroundColor: selected
-        ? STYLE_GUIDE.COLORS.materialBlue
+        ? STYLE_GUIDE.COLORS.primaryDark
         : STYLE_GUIDE.COLORS.backgroundGray,
     },
   }),
@@ -141,7 +152,15 @@ const styles = {
 };
 
 // RRuleGenerator Component
-const RRuleGenerator = ({ onChange, value, config = {} }) => {
+const RRuleGenerator = ({
+  onChange,
+  value,
+  config = {},
+  fieldOptions = [],
+  notificationTypeId,
+}) => {
+  console.log("Frequency component fieldOptions333333:", notificationTypeId);
+
   const defaultConfig = {
     repeat: ["Yearly", "Monthly", "Weekly", "Daily"],
     yearly: "on",
@@ -220,6 +239,53 @@ const RRuleGenerator = ({ onChange, value, config = {} }) => {
   const [acknowledgeChecked, setAcknowledgeChecked] = useState(false);
   const [attachedChecked, setAttachedChecked] = useState(false);
   const [time, setTime] = useState("");
+  const [dropdownRows, setDropdownRows] = useState([
+    { id: Date.now(), template: "", method: "", recipients: [] },
+  ]);
+  const [openDialog, setOpenDialog] = useState(false);
+  const [selectedReminderId, setSelectedReminderId] = useState(null);
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: "",
+    severity: "info",
+  });
+
+  // API Hooks
+  const templateList = useGet(["templateList"], `${GET.TEMPLATE_LIST}`, true);
+  const mediumList = useGet(["mediumList"], `${GET.MEDIUM_LIST}`, true);
+  const createFrequency = usePost(["createFrequency"]);
+  const deleteFrequency = useDelete(
+    ["deleteFrequency"],
+    (data) => {
+      if (data?.success) {
+        refetch();
+        handleCloseDialog();
+        setSnackbar({
+          open: true,
+          message: "Reminder deleted successfully!",
+          severity: "success",
+        });
+      } else {
+        setSnackbar({
+          open: true,
+          message: "Failed to delete reminder.",
+          severity: "error",
+        });
+      }
+    },
+    true
+  );
+  const { data: frequencyListData, refetch } = useGet(
+    ["frequencyList"],
+    `${GET.Frequency_List}`,
+    true
+  );
+
+  useEffect(() => {
+    refetch();
+  }, [refetch]);
+
+  console.log("frequencyList", frequencyListData?.data);
 
   // Handlers
   const handleWeeklyDayToggle = (day) => {
@@ -235,11 +301,42 @@ const RRuleGenerator = ({ onChange, value, config = {} }) => {
     });
   };
 
-  const handleAddReminder = () => {
-    const rrule = generateRRule();
-    if (!rrule) return; // Prevent adding invalid RRules
+  const addDropdownRow = () => {
+    setDropdownRows((prev) => [
+      ...prev,
+      { id: Date.now(), template: "", method: "", recipients: [] },
+    ]);
+  };
 
-    // Construct backend payload
+  const removeDropdownRow = (rowId) => {
+    setDropdownRows((prev) => prev.filter((row) => row.id !== rowId));
+  };
+
+  const updateDropdownRow = (rowId, updatedFields) => {
+    setDropdownRows((prev) =>
+      prev.map((row) => (row.id === rowId ? { ...row, ...updatedFields } : row))
+    );
+  };
+
+  const handleAddReminder = async () => {
+    const rrule = generateRRule();
+    if (!rrule) {
+      setSuccessMessage("Please select valid options to generate an RRule.");
+      setTimeout(() => setSuccessMessage(null), 3000);
+      return;
+    }
+
+    const validRows = dropdownRows.filter(
+      (row) => row.template && row.method && row.recipients.length > 0
+    );
+    if (validRows.length === 0) {
+      setSuccessMessage(
+        "Please select a template, notification method, and at least one recipient."
+      );
+      setTimeout(() => setSuccessMessage(null), 3000);
+      return;
+    }
+
     const daysOfWeek =
       repeatType === "Weekly"
         ? weeklyDays
@@ -248,50 +345,89 @@ const RRuleGenerator = ({ onChange, value, config = {} }) => {
         : [];
 
     const payload = {
-      notificationTypeId: "688b6f5cf132ba976670bec9",
+      notificationTypeId,
       frequency: repeatType.toLowerCase(),
       schedulerStartDate: startDate,
-      schedulerEndDate: endType === "On date" ? endDate : null,
-      interval: interval,
-      daysOfWeek: daysOfWeek,
+      ...(endType === "On date" && { schedulerEndDate: endDate }),
+      interval,
+      daysOfWeek,
       repeatAnnually: repeatType === "Yearly",
       acknowledgeRequired: acknowledgeChecked,
       attachmentRequired: attachedChecked,
-      recipients: [
-        {
-          attributeId: "64fe1a3c6b7e2a4c5d123456",
-          referenceAttributeId: "64fe1a3c6b7e2a4c5d654321",
-        },
-        {
-          attributeId: "64fe1a3c6b7e2a4c5d789012",
-        },
-      ],
-      medium: "688cc48ed9b9b226b6c9fa74",
-      templateId: "688cbb33ae49efcf4814c09e",
-      time: time || "",
-      occurance: endType === "After" ? endAfter.toString() : "",
+      recipients: validRows[0].recipients.map((id) => {
+        const recipient = fieldOptions.find(
+          (option) => option.attributeId === id
+        );
+        return {
+          attributeId: id,
+          ...(recipient?.referenceAttributeId && {
+            referenceAttributeId: recipient.referenceAttributeId,
+          }),
+        };
+      }),
+      medium: validRows[0].method,
+      templateId: validRows[0].template,
+      triggerTime: time || "",
+      ...(endType === "After" && { maxOccurrences: endAfter.toString() }),
     };
 
-    // Log the payload to the console
+    try {
+      const response = await createFrequency.mutateAsync({
+        url: `${POST.CREATE_FREQUENCY}`,
+        payload,
+      });
+
+      console.log("Notification created successfully:", response);
+
+      if (response.success && response.data?._id) {
+        setSnackbar({
+          open: true,
+          message: response.message,
+          severity: "success",
+        });
+        refetch();
+      } else {
+        throw new Error("Creation failed");
+      }
+    } catch (error) {
+      console.error("Error creating:", error);
+      setSnackbar({
+        open: true,
+        message: "Failed to create reminder.",
+        severity: "error",
+      });
+    }
+
     console.log("Backend Payload:", JSON.stringify(payload, null, 2));
-
-    // Add reminder to local state
-    const newReminder = {
-      rrule,
-      startDate,
-      endDate: endType === "On date" ? endDate : null,
-      acknowledgeRequired: acknowledgeChecked,
-      attachmentRequired: attachedChecked,
-      time: time || "",
-    };
-    setReminders((prev) => [...prev, newReminder]);
-
-    // Show success message
-    setSuccessMessage("Reminder added successfully!");
-    setTimeout(() => setSuccessMessage(null), 3000);
   };
 
-  // Log checkbox states
+  const handleDeleteReminder = (reminderId) => {
+    setSelectedReminderId(reminderId);
+    setOpenDialog(true);
+  };
+
+  const handleCloseDialog = () => {
+    setOpenDialog(false);
+    setSelectedReminderId(null);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (selectedReminderId) {
+      try {
+        await deleteFrequency.mutate({
+          url: `${DELETE.DELETE_FREQUENCY}/${selectedReminderId}`,
+        });
+      } catch (error) {
+        console.error("Error deleting reminder:", error);
+        setSnackbar({
+          open: true,
+          message: "Failed to delete reminder.",
+          severity: "error",
+        });
+      }
+    }
+  };
+
   useEffect(() => {
     console.log("Checkbox States:", { acknowledgeChecked, attachedChecked });
   }, [acknowledgeChecked, attachedChecked]);
@@ -523,7 +659,7 @@ const RRuleGenerator = ({ onChange, value, config = {} }) => {
           color="primary"
           onClick={handleAddReminder}
           aria-label="Add reminder with current settings"
-          disabled={!generateRRule()}
+          disabled={!generateRRule() || notificationTypeId === null}
         >
           Add Reminder
         </Button>
@@ -990,6 +1126,7 @@ const RRuleGenerator = ({ onChange, value, config = {} }) => {
                   fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.medium,
                   color: STYLE_GUIDE.COLORS.textDarkGray,
                   fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
+                  marginTop: STYLE_GUIDE.SPACING.s2,
                 }}
               >
                 Repeat every
@@ -1031,89 +1168,18 @@ const RRuleGenerator = ({ onChange, value, config = {} }) => {
         }}
       />
 
-      {/* End Section */}
+      {/* End, Recipients, and Checkboxes Section */}
       <Box
         sx={{
           ...styles.formRow,
           display: "flex",
           justifyContent: "space-between",
           alignItems: "flex-start",
+          gap: STYLE_GUIDE.SPACING.s4,
         }}
       >
-        {/* <FormControl>
-          <FormLabel
-            sx={{
-              marginBottom: STYLE_GUIDE.SPACING.s2,
-              fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.medium,
-              color: STYLE_GUIDE.COLORS.textDarkGray,
-              fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
-            }}
-          >
-            End
-          </FormLabel>
-          <Select
-          size="small"
-            value={endType}
-            onChange={(e) => setEndType(e.target.value)}
-            sx={styles.select}
-            variant="outlined"
-            aria-label="Select end condition"
-          >
-            {defaultConfig.end.map((option) => (
-              <MenuItem key={option} value={option}>
-                {option}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-        {endType === "After" && (
-          <FormControl>
-            <FormLabel
-              sx={{
-                marginBottom: STYLE_GUIDE.SPACING.s2,
-                fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.medium,
-                color: STYLE_GUIDE.COLORS.textDarkGray,
-                fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
-              }}
-            >
-              Occurrences
-            </FormLabel>
-            <TextField
-              type="number"
-              value={endAfter}
-              onChange={(e) =>
-                setEndAfter(Math.max(1, parseInt(e.target.value) || 1))
-              }
-              inputProps={{ min: 1 }}
-              sx={{ ...styles.textField, width: "100px" }}
-              variant="outlined"
-              aria-label="Set number of occurrences"
-            />
-          </FormControl>
-        )}
-        {endType === "On date" && (
-          <FormControl>
-            <FormLabel
-              sx={{
-                marginBottom: STYLE_GUIDE.SPACING.s2,
-                fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.medium,
-                color: STYLE_GUIDE.COLORS.textDarkGray,
-                fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
-              }}
-            >
-              End Date
-            </FormLabel>
-            <TextField
-              type="date"
-              value={endDate}
-              onChange={(e) => setEndDate(e.target.value)}
-              sx={{ ...styles.textField, width: "150px" }}
-              variant="outlined"
-              aria-label="Select end date"
-            />
-          </FormControl>
-        )} */}
-        <Box sx={{ display: "flex", gap: STYLE_GUIDE.SPACING.s4 }}>
+        {/* End Section */}
+        <Box sx={{ display: "flex", gap: STYLE_GUIDE.SPACING.s4, flex: 1 }}>
           <FormControl>
             <FormLabel
               sx={{
@@ -1192,7 +1258,59 @@ const RRuleGenerator = ({ onChange, value, config = {} }) => {
             </FormControl>
           )}
         </Box>
-        <Box sx={{ display: "flex", gap: STYLE_GUIDE.SPACING.s4 }}>
+
+        {/* Recipients Section */}
+        <Box sx={{ flex: 1 }}>
+          <FormControl fullWidth size="small">
+            <Autocomplete
+              multiple
+              size="small"
+              id="recipients-autocomplete"
+              options={fieldOptions.filter(option => option.type === "email")}
+              getOptionLabel={(option) => option.label}
+              isOptionEqualToValue={(option, value) =>
+                option.attributeId === value.attributeId
+              }
+              value={fieldOptions.filter((option) =>
+                dropdownRows[0].recipients.includes(option.attributeId) &&
+                option.type === "email"
+              )}
+              onChange={(event, newValue) =>
+                updateDropdownRow(dropdownRows[0].id, {
+                  recipients: newValue.map((option) => option.attributeId),
+                })
+              }
+              sx={{ marginTop: "30px" }}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  variant="outlined"
+                  label="Recipients"
+                  aria-label="Select recipients"
+                />
+              )}
+              renderTags={(value, getTagProps) =>
+                value.map((option, index) => (
+                  <Chip
+                    label={option.label}
+                    {...getTagProps({ index })}
+                    size="small"
+                  />
+                ))
+              }
+            />
+          </FormControl>
+        </Box>
+
+        {/* Checkboxes Section */}
+        <Box
+          sx={{
+            display: "flex",
+            gap: STYLE_GUIDE.SPACING.s4,
+            flex: 1,
+            justifyContent: "flex-end",
+          }}
+        >
           <FormControlLabel
             control={
               <Checkbox
@@ -1226,6 +1344,87 @@ const RRuleGenerator = ({ onChange, value, config = {} }) => {
         </Box>
       </Box>
 
+      {/* Template and Notification Methods Section */}
+      <Box sx={{ mb: 3 }}>
+        <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 2 }}>
+          <Button
+            variant="contained"
+            color="primary"
+            size="small"
+            onClick={addDropdownRow}
+            aria-label="Add new template and notification method row"
+            disabled={notificationTypeId === null}
+          >
+            Add More
+          </Button>
+        </Box>
+        {dropdownRows.map((row) => (
+          <Box
+            key={row.id}
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              gap: 2,
+              mb: 2,
+              p: 2,
+              bgcolor: "background.paper",
+              border: 1,
+              borderColor: "grey.300",
+              borderRadius: 2,
+            }}
+          >
+            <FormControl fullWidth size="small">
+              <InputLabel>Template</InputLabel>
+              <Select
+                value={row.template}
+                onChange={(e) =>
+                  updateDropdownRow(row.id, { template: e.target.value })
+                }
+                label="Template"
+                aria-label="Select template"
+              >
+                <MenuItem value="">Select Template...</MenuItem>
+                {templateList.data?.data?.map((option) => (
+                  <MenuItem key={option._id} value={option._id}>
+                    {option.name}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+            <FormControl fullWidth size="small">
+              <InputLabel>Notification Method</InputLabel>
+              <Select
+                value={row.method}
+                onChange={(e) =>
+                  updateDropdownRow(row.id, { method: e.target.value })
+                }
+                label="Notification Method"
+                renderValue={(selected) =>
+                  mediumList.data?.data?.find(
+                    (medium) => medium._id === selected
+                  )?.medium || selected
+                }
+                aria-label="Select notification method"
+              >
+                <MenuItem value="">Select Method...</MenuItem>
+                {mediumList.data?.data?.map((option) => (
+                  <MenuItem key={option._id} value={option._id}>
+                    {option.medium}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+            <IconButton
+              onClick={() => removeDropdownRow(row.id)}
+              color="error"
+              aria-label="Remove dropdown row"
+            >
+              <GridCloseIcon />
+            </IconButton>
+          </Box>
+        ))}
+      </Box>
+
       <Box
         component="hr"
         sx={{
@@ -1235,8 +1434,36 @@ const RRuleGenerator = ({ onChange, value, config = {} }) => {
         }}
       />
 
+      {/* Generated RRule */}
+      {/* <Box sx={{ marginBottom: STYLE_GUIDE.SPACING.s6 }}>
+        <Typography
+          variant="h6"
+          sx={{
+            marginBottom: STYLE_GUIDE.SPACING.s3,
+            color: STYLE_GUIDE.COLORS.materialBlue,
+            fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold,
+          }}
+        >
+          Generated RRule:
+        </Typography>
+        <Box sx={styles.output}>
+          {generateRRule() ||
+            "Please select valid options to generate an RRule"}
+        </Box>
+        {successMessage && (
+          <Alert
+            severity={
+              successMessage.includes("successfully") ? "success" : "error"
+            }
+            sx={{ marginTop: STYLE_GUIDE.SPACING.s4 }}
+          >
+            {successMessage}
+          </Alert>
+        )}
+      </Box> */}
+
       {/* Reminders List */}
-      {reminders.length > 0 && (
+      {frequencyListData?.data?.length > 0 && (
         <Box sx={styles.reminderContainer}>
           <Typography
             variant="h6"
@@ -1255,36 +1482,42 @@ const RRuleGenerator = ({ onChange, value, config = {} }) => {
               gap: STYLE_GUIDE.SPACING.s2,
             }}
           >
-            {reminders.map((reminder, index) => (
+            {frequencyListData.data.map((reminder, index) => (
               <Box
-                key={index}
+                key={reminder._id || index}
                 sx={{
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "space-between",
                   padding: STYLE_GUIDE.SPACING.s3,
                   border: `1px solid ${STYLE_GUIDE.COLORS.borderGray}`,
-                  borderRadius: STYLE_GUIDE.SPACING.s11,
+                  borderRadius: STYLE_GUIDE.SPACING.s1,
                   backgroundColor: STYLE_GUIDE.COLORS.white,
                 }}
               >
-                {/* LEFT SIDE - Reminder Info */}
                 <Box
                   sx={{ display: "flex", flexDirection: "column", gap: "4px" }}
                 >
                   <Typography variant="body2" sx={styles.reminderText}>
-                    <strong>RRule:</strong> {reminder.rrule}
+                    <strong>Frequency:</strong>{" "}
+                    {reminder.frequency || "Not set"}
                   </Typography>
                   <Typography variant="body2" sx={styles.reminderText}>
-                    <strong>Start Date:</strong> {reminder.startDate}
+                    <strong>Start Date:</strong>{" "}
+                    {reminder.schedulerStartDate
+                      ? new Date(
+                          reminder.schedulerStartDate
+                        ).toLocaleDateString()
+                      : "Not set"}
                   </Typography>
-                  {reminder.endDate && (
+                  {reminder.schedulerEndDate && (
                     <Typography variant="body2" sx={styles.reminderText}>
-                      <strong>End Date:</strong> {reminder.endDate}
+                      <strong>End Date:</strong>{" "}
+                      {new Date(reminder.schedulerEndDate).toLocaleDateString()}
                     </Typography>
                   )}
                   <Typography variant="body2" sx={styles.reminderText}>
-                    <strong>Time:</strong> {reminder.time || "Not set"}
+                    <strong>Time:</strong> {reminder.triggerTime || "Not set"}
                   </Typography>
                   <Typography variant="body2" sx={styles.reminderText}>
                     <strong>Acknowledge Required:</strong>{" "}
@@ -1294,48 +1527,130 @@ const RRuleGenerator = ({ onChange, value, config = {} }) => {
                     <strong>Attachment Required:</strong>{" "}
                     {reminder.attachmentRequired ? "Yes" : "No"}
                   </Typography>
+                  <Typography variant="body2" sx={styles.reminderText}>
+                    <strong>Template:</strong>{" "}
+                    {reminder.templateId?.name ||
+                      reminder.templateId?._id ||
+                      "Not set"}
+                  </Typography>
+                  <Typography variant="body2" sx={styles.reminderText}>
+                    <strong>Notification Method:</strong>{" "}
+                    {reminder.medium?.medium ||
+                      reminder.medium?._id ||
+                      "Not set"}
+                  </Typography>
+                  <Typography variant="body2" sx={styles.reminderText}>
+                    <strong>Recipients:</strong>{" "}
+                    {reminder.recipients?.length > 0
+                      ? reminder.recipients
+                          .map(
+                            (recipient) =>
+                              fieldOptions.find(
+                                (option) =>
+                                  option.attributeId ===
+                                  (recipient.attributeId || recipient)
+                              )?.label ||
+                              recipient.attributeId ||
+                              recipient
+                          )
+                          .join(", ")
+                      : "None"}
+                  </Typography>
                 </Box>
-
-                {/* RIGHT SIDE - Action Buttons */}
                 <Box sx={{ display: "flex", gap: STYLE_GUIDE.SPACING.s2 }}>
                   <IconButton
                     color="primary"
                     aria-label="edit reminder"
-                    // onClick={() => handleEditReminder(index)}
+                    // onClick={() => handleEditReminder(reminder)}
                   >
-                    {/* <GridEditIcon /> */}
-                    Edit
+                    <EditIcon />
                   </IconButton>
-                  <IconButton
-                    color="error"
-                    aria-label="delete reminder"
-                    // onClick={() => handleDeleteReminder(index)}
-                  >
-                    {/* <GridDeleteIcon /> */}
-                    Delete
-                  </IconButton>
+                  <Tooltip title="Delete Reminder" placement="top">
+                    <IconButton
+                      color="error"
+                      aria-label="delete reminder"
+                      onClick={() => handleDeleteReminder(reminder._id)}
+                    >
+                      <GridDeleteIcon />
+                    </IconButton>
+                  </Tooltip>
                 </Box>
               </Box>
             ))}
           </Box>
         </Box>
       )}
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog
+        open={openDialog}
+        onClose={handleCloseDialog}
+        sx={{
+          "& .MuiDialog-paper": {
+            borderRadius: "8px",
+          },
+        }}
+      >
+        <DialogTitle>Confirm Delete</DialogTitle>
+        <DialogContent>
+          <Typography>Are you sure you want to delete this?</Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseDialog} sx={{ borderRadius: "8px" }}>
+            No
+          </Button>
+          <Button
+            onClick={handleConfirmDelete}
+            color="error"
+            sx={{ borderRadius: "8px" }}
+            disabled={deleteFrequency.isLoading}
+          >
+            Yes
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Snackbar for Notifications */}
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={6000}
+        onClose={() => setSnackbar({ ...snackbar, open: false })}
+        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+      >
+        <Alert
+          onClose={() => setSnackbar({ ...snackbar, open: false })}
+          severity={snackbar.severity}
+          sx={{ width: "100%" }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };
 
 // Example Components
-const SimpleRender = () => (
+const SimpleRender = ({ fieldOptions, notificationTypeId }) => (
   <RRuleGenerator
     onChange={(rrule) => console.log(`RRule changed, now it's ${rrule}`)}
+    fieldOptions={fieldOptions}
+    notificationTypeId={notificationTypeId}
   />
 );
 
 // App Component
-const Frequency = () => {
+const Frequency = ({ fieldOptions, notificationTypeId }) => {
+  console.log(
+    "Frequency component fieldOptions222222:",
+    fieldOptions,
+    notificationTypeId
+  );
   return (
     <Box>
-      <SimpleRender />
+      <SimpleRender
+        fieldOptions={fieldOptions}
+        notificationTypeId={notificationTypeId}
+      />
     </Box>
   );
 };
