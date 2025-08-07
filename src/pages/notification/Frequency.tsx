@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import {
   Autocomplete,
@@ -30,8 +29,9 @@ import { GridCloseIcon, GridDeleteIcon } from "@mui/x-data-grid";
 import EditIcon from "@mui/icons-material/Edit";
 import useGet from "../../hooks/useGet";
 import usePost from "../../hooks/usePost";
+import usePut from "../../hooks/usePut"; // Added usePut hook
 import useDelete from "../../hooks/useDelete";
-import { GET, POST, DELETE } from "../../services/apiRoutes";
+import { GET, POST, PUT, DELETE } from "../../services/apiRoutes";
 
 // Constants
 const MONTHS = [
@@ -211,23 +211,23 @@ const RRuleGenerator = ({
       };
 
   // State
-  const [startDate, setStartDate] = useState("2019-03-02");
-  const [repeatType, setRepeatType] = useState("Yearly");
+  const [startDate, setStartDate] = useState("");
+  const [repeatType, setRepeatType] = useState("");
   const [yearlyType, setYearlyType] = useState(
     defaultConfig.yearly === "on the" ? "onthe" : "on"
   );
-  const [yearlyMonths, setYearlyMonths] = useState(["Jan"]);
-  const [yearlyDays, setYearlyDays] = useState(["1"]);
-  const [yearlyWeeks, setYearlyWeeks] = useState(["First"]);
-  const [yearlyWeekDays, setYearlyWeekDays] = useState(["Monday"]);
-  const [yearlyWeekMonths, setYearlyWeekMonths] = useState(["Jan"]);
+  const [yearlyMonths, setYearlyMonths] = useState([""]);
+  const [yearlyDays, setYearlyDays] = useState([""]);
+  const [yearlyWeeks, setYearlyWeeks] = useState([""]);
+  const [yearlyWeekDays, setYearlyWeekDays] = useState([""]);
+  const [yearlyWeekMonths, setYearlyWeekMonths] = useState([""]);
   const [monthlyType, setMonthlyType] = useState(
     defaultConfig.monthly === "on the" ? "onthe" : "on"
   );
-  const [monthlyDays, setMonthlyDays] = useState(["1"]);
-  const [monthlyWeeks, setMonthlyWeeks] = useState(["First"]);
-  const [monthlyWeekDays, setMonthlyWeekDays] = useState(["Monday"]);
-  const [weeklyDays, setWeeklyDays] = useState(["Monday"]);
+  const [monthlyDays, setMonthlyDays] = useState([""]);
+  const [monthlyWeeks, setMonthlyWeeks] = useState([""]);
+  const [monthlyWeekDays, setMonthlyWeekDays] = useState([""]);
+  const [weeklyDays, setWeeklyDays] = useState([""]);
   const [interval, setInterval] = useState(1);
   const [endType, setEndType] = useState("Never");
   const [endDate, setEndDate] = useState("");
@@ -242,6 +242,8 @@ const RRuleGenerator = ({
   ]);
   const [openDialog, setOpenDialog] = useState(false);
   const [selectedReminderId, setSelectedReminderId] = useState(null);
+  const [editMode, setEditMode] = useState(false); // Added for edit mode
+  const [editingReminderId, setEditingReminderId] = useState(null); // Added for editing reminder ID
   const [snackbar, setSnackbar] = useState({
     open: false,
     message: "",
@@ -252,6 +254,7 @@ const RRuleGenerator = ({
   const templateList = useGet(["templateList"], `${GET.TEMPLATE_LIST}`, true);
   const mediumList = useGet(["mediumList"], `${GET.MEDIUM_LIST}`, true);
   const createFrequency = usePost(["createFrequency"]);
+  const updateFrequency = usePut(["updateFrequency"]); // Added for updating reminders
   const deleteFrequency = useDelete(
     ["deleteFrequency"],
     (data) => {
@@ -273,19 +276,141 @@ const RRuleGenerator = ({
     },
     true
   );
- const { data: frequencyListData, refetch } = useGet(
-  ["frequencyList", notificationTypeId,frequencyApiSuccess], // dependency array mein notificationTypeId bhi include karein
-  frequencyApiSuccess ? `${GET.Frequency_List}?notificationTypeId=${notificationTypeId}` : "",
-  !!frequencyApiSuccess // agar notificationTypeId truthy hai tabhi API call enable ho
-);
+  const { data: frequencyListData, refetch } = useGet(
+    ["frequencyList", notificationTypeId, frequencyApiSuccess],
+    frequencyApiSuccess
+      ? `${GET.FREQUENCY_LIST}?notificationTypeId=${notificationTypeId}`
+      : "",
+    !!frequencyApiSuccess
+  );
+  const { data: reminderData, refetch: refetchReminder } = useGet(
+    ["reminder", editingReminderId],
+    editingReminderId ? `${GET.FREQUENCY_DETAIL}/${editingReminderId}` : "",
+    !!editingReminderId
+  );
 
-useEffect(() => {
-  if (notificationTypeId && frequencyApiSuccess) {
-    refetch();
-  }
-}, [notificationTypeId, frequencyApiSuccess,refetch]);
+  useEffect(() => {
+    if (notificationTypeId && frequencyApiSuccess) {
+      refetch();
+    }
+  }, [notificationTypeId, frequencyApiSuccess, refetch]);
 
-  console.log("frequencyList", frequencyListData?.data);
+  // Pre-fill form when editing
+  useEffect(() => {
+    if (reminderData?.data && editMode) {
+      const data = reminderData.data;
+      setStartDate(
+        data.schedulerStartDate
+          ? new Date(data.schedulerStartDate).toISOString().split("T")[0]
+          : ""
+      );
+      setRepeatType(
+        data.frequency
+          ? data.frequency.charAt(0).toUpperCase() + data.frequency.slice(1)
+          : "Yearly"
+      );
+      setInterval(data.interval || 1);
+      setAcknowledgeChecked(data.acknowledgeRequired || false);
+      setAttachedChecked(data.attachmentRequired || false);
+      setTime(data.triggerTime || "");
+      setDropdownRows([
+        {
+          id: Date.now(),
+          template: data.templateId?._id || "",
+          method: data.medium?._id || "",
+          recipients: data.recipients?.map((r) => r.attributeId) || [],
+        },
+      ]);
+
+      // Handle end conditions
+      if (data.maxOccurrences) {
+        setEndType("After");
+        setEndAfter(parseInt(data.maxOccurrences) || 1);
+      } else if (data.schedulerEndDate) {
+        setEndType("On date");
+        setEndDate(
+          new Date(data.schedulerEndDate).toISOString().split("T")[0] || ""
+        );
+      } else {
+        setEndType("Never");
+      }
+
+      // Handle recurrence details
+      if (data.frequency === "yearly" && data.dayOfMonth?.length > 0) {
+        setYearlyType("on");
+        setYearlyMonths(
+          data.monthOfYear?.length > 0
+            ? data.monthOfYear.map((m) => MONTHS[m - 1]?.id || "Jan")
+            : ["Jan"]
+        );
+        setYearlyDays(
+          data.dayOfMonth?.length > 0
+            ? data.dayOfMonth.map((d) => d.toString())
+            : ["1"]
+        );
+      } else if (data.frequency === "yearly" && data.weekOfMonth?.length > 0) {
+        setYearlyType("onthe");
+        setYearlyWeeks(
+          data.weekOfMonth?.length > 0
+            ? data.weekOfMonth.map((w) =>
+                w === -1 ? "Last" : WEEK_OPTIONS[w - 1]?.id || "First"
+              )
+            : ["First"]
+        );
+        setYearlyWeekDays(
+          data.daysOfWeek?.length > 0
+            ? data.daysOfWeek
+                .map(
+                  (d) =>
+                    weekdays[defaultConfig.weekStartsOnSunday ? d : d % 7]?.id
+                )
+                .filter((d) => d)
+            : ["Monday"]
+        );
+        setYearlyWeekMonths(
+          data.monthOfYear?.length > 0
+            ? data.monthOfYear.map((m) => MONTHS[m - 1]?.id || "Jan")
+            : ["Jan"]
+        );
+      }
+      if (data.frequency === "monthly" && data.dayOfMonth?.length > 0) {
+        setMonthlyType("on");
+        setMonthlyDays(
+          data.dayOfMonth?.length > 0
+            ? data.dayOfMonth.map((d) => d.toString())
+            : ["1"]
+        );
+      } else if (data.frequency === "monthly" && data.weekOfMonth?.length > 0) {
+        setMonthlyType("onthe");
+        setMonthlyWeeks(
+          data.weekOfMonth?.length > 0
+            ? data.weekOfMonth.map((w) =>
+                w === -1 ? "Last" : WEEK_OPTIONS[w - 1]?.id || "First"
+              )
+            : ["First"]
+        );
+        setMonthlyWeekDays(
+          data.daysOfWeek?.length > 0
+            ? data.daysOfWeek
+                .map(
+                  (d) =>
+                    weekdays[defaultConfig.weekStartsOnSunday ? d : d % 7]?.id
+                )
+                .filter((d) => d)
+            : ["Monday"]
+        );
+      }
+      if (data.frequency === "weekly" && data.daysOfWeek?.length > 0) {
+        setWeeklyDays(
+          data.daysOfWeek
+            .map(
+              (d) => weekdays[defaultConfig.weekStartsOnSunday ? d : d % 7]?.id
+            )
+            .filter((d) => d) || ["Monday"]
+        );
+      }
+    }
+  }, [reminderData, editMode]);
 
   // Handlers
   const handleWeeklyDayToggle = (day) => {
@@ -316,6 +441,41 @@ useEffect(() => {
     setDropdownRows((prev) =>
       prev.map((row) => (row.id === rowId ? { ...row, ...updatedFields } : row))
     );
+  };
+
+  const handleEditReminder = (reminder) => {
+    setEditingReminderId(reminder._id);
+    setEditMode(true);
+    refetchReminder();
+  };
+
+  const handleCancelEdit = () => {
+    setEditMode(false);
+    setEditingReminderId(null);
+    // Reset form to default values
+    setStartDate("");
+    setRepeatType("Yearly");
+    setYearlyType(defaultConfig.yearly === "on the" ? "onthe" : "on");
+    setYearlyMonths(["Jan"]);
+    setYearlyDays(["1"]);
+    setYearlyWeeks(["First"]);
+    setYearlyWeekDays(["Monday"]);
+    setYearlyWeekMonths(["Jan"]);
+    setMonthlyType(defaultConfig.monthly === "on the" ? "onthe" : "on");
+    setMonthlyDays(["1"]);
+    setMonthlyWeeks(["First"]);
+    setMonthlyWeekDays(["Monday"]);
+    setWeeklyDays(["Monday"]);
+    setInterval(1);
+    setEndType("Never");
+    setEndDate("");
+    setEndAfter(1);
+    setAcknowledgeChecked(false);
+    setAttachedChecked(false);
+    setTime("");
+    setDropdownRows([
+      { id: Date.now(), template: "", method: "", recipients: [] },
+    ]);
   };
 
   const handleAddReminder = async () => {
@@ -372,34 +532,55 @@ useEffect(() => {
     };
 
     try {
-      const response = await createFrequency.mutateAsync({
-        url: `${POST.CREATE_FREQUENCY}`,
-        payload,
-      });
-
-      console.log("Notification created successfully:", response);
-
-      if (response.success && response.data?._id) {
-        setFrequencyApiSuccess(response.success)
-        setSnackbar({
-          open: true,
-          message: response.message,
-          severity: "success",
+      if (editMode) {
+        console.log("edit mode", editMode);
+        // Update existing reminder
+        const response = await updateFrequency.mutateAsync({
+          url: `${PUT.UPDATE_FREQUENCY}/${editingReminderId}`,
+          payload,
         });
-        refetch();
+
+        if (response.success && response.data?._id) {
+          setSnackbar({
+            open: true,
+            message: "Reminder updated successfully!",
+            severity: "success",
+          });
+          setEditMode(false);
+          setEditingReminderId(null);
+          refetch();
+        } else {
+          throw new Error("Update failed");
+        }
       } else {
-        throw new Error("Creation failed");
+        // Create new reminder
+        const response = await createFrequency.mutateAsync({
+          url: `${POST.CREATE_FREQUENCY}`,
+          payload,
+        });
+
+        if (response.success && response.data?._id) {
+          setFrequencyApiSuccess(response.success);
+          setSnackbar({
+            open: true,
+            message: response.message,
+            severity: "success",
+          });
+          refetch();
+        } else {
+          throw new Error("Creation failed");
+        }
       }
     } catch (error) {
-      console.error("Error creating:", error);
+      console.error("Error:", error);
       setSnackbar({
         open: true,
-        message: "Failed to create reminder.",
+        message: editMode
+          ? "Failed to update reminder."
+          : "Failed to create reminder.",
         severity: "error",
       });
     }
-
-    console.log("Backend Payload:", JSON.stringify(payload, null, 2));
   };
 
   const handleDeleteReminder = (reminderId) => {
@@ -428,10 +609,6 @@ useEffect(() => {
       }
     }
   };
-
-  useEffect(() => {
-    console.log("Checkbox States:", { acknowledgeChecked, attachedChecked });
-  }, [acknowledgeChecked, attachedChecked]);
 
   const parseRRule = (rruleString) => {
     try {
@@ -653,7 +830,7 @@ useEffect(() => {
 
   return (
     <Box sx={{ padding: STYLE_GUIDE.SPACING.s4 }}>
-      {/* Header Row - Remove Add Reminder Button */}
+      {/* Header Row */}
       <Box sx={{ marginBottom: STYLE_GUIDE.SPACING.s6 }}>
         <Typography variant="h2">Reminder</Typography>
       </Box>
@@ -694,6 +871,7 @@ useEffect(() => {
           </FormLabel>
           <Select
             size="small"
+            aria-placeholder="select"
             value={repeatType}
             onChange={(e) => setRepeatType(e.target.value)}
             sx={styles.select}
@@ -1245,168 +1423,200 @@ useEffect(() => {
         }}
       />
 
-<Box
-  sx={{
-    display: "flex",
-    alignItems: "flex-start",
-    gap: STYLE_GUIDE.SPACING.s2,
-    marginBottom: STYLE_GUIDE.SPACING.s4,
-    "@media (max-width: 1200px)": {
-      flexDirection: "column",
-      alignItems: "stretch",
-    },
-  }}
->
-  {/* Recipients Section */}
-  <Box sx={{ flex: 1, minWidth: "150px" }}>
-    <FormControl fullWidth size="small">
-      <Autocomplete
-        multiple
-        size="small"
-        id="recipients-autocomplete"
-        options={fieldOptions.filter((option) => option.type === "email")}
-        getOptionLabel={(option) => option.label}
-        isOptionEqualToValue={(option, value) =>
-          option.attributeId === value.attributeId
-        }
-        value={fieldOptions.filter(
-          (option) =>
-            dropdownRows[0].recipients.includes(option.attributeId) &&
-            option.type === "email"
-        )}
-        onChange={(event, newValue) =>
-          updateDropdownRow(dropdownRows[0].id, {
-            recipients: newValue.map((option) => option.attributeId),
-          })
-        }
-        renderInput={(params) => (
-          <TextField
-            {...params}
-            variant="outlined"
-            label="Recipients"
-            aria-label="Select recipients"
-          />
-        )}
-        renderTags={(value, getTagProps) =>
-          value.map((option, index) => (
-            <Chip
-              key={option.attributeId}
-              label={option.label}
-              {...getTagProps({ index })}
+      {/* Recipients, Template, Method, and Checkboxes */}
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "flex-start",
+          gap: STYLE_GUIDE.SPACING.s2,
+          marginBottom: STYLE_GUIDE.SPACING.s4,
+          "@media (max-width: 1200px)": {
+            flexDirection: "column",
+            alignItems: "stretch",
+          },
+        }}
+      >
+        {/* Recipients Section */}
+        <Box sx={{ flex: 1, minWidth: "150px" }}>
+          <FormControl fullWidth size="small">
+            <Autocomplete
+              multiple
               size="small"
+              id="recipients-autocomplete"
+              options={fieldOptions.filter((option) => option.type === "email")}
+              getOptionLabel={(option) => option.label}
+              isOptionEqualToValue={(option, value) =>
+                option.attributeId === value.attributeId
+              }
+              value={fieldOptions.filter(
+                (option) =>
+                  dropdownRows[0].recipients.includes(option.attributeId) &&
+                  option.type === "email"
+              )}
+              onChange={(event, newValue) =>
+                updateDropdownRow(dropdownRows[0].id, {
+                  recipients: newValue.map((option) => option.attributeId),
+                })
+              }
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  variant="outlined"
+                  label="Recipients"
+                  aria-label="Select recipients"
+                />
+              )}
+              renderTags={(value, getTagProps) =>
+                value.map((option, index) => (
+                  <Chip
+                    key={option.attributeId}
+                    label={option.label}
+                    {...getTagProps({ index })}
+                    size="small"
+                  />
+                ))
+              }
             />
-          ))
-        }
-      />
-    </FormControl>
-  </Box>
+          </FormControl>
+        </Box>
 
-  {/* Template Section */}
-  <Box sx={{ flex: 1, minWidth: "120px" }}>
-    {dropdownRows.map((row) => (
-      <FormControl key={row.id} size="small" fullWidth>
-        <InputLabel>Template</InputLabel>
-        <Select
-          value={row.template}
-          onChange={(e) =>
-            updateDropdownRow(row.id, { template: e.target.value })
-          }
-          label="Template"
-          aria-label="Select template"
-        >
-          <MenuItem value="">Select Template...</MenuItem>
-          {templateList.data?.data?.map((option) => (
-            <MenuItem key={option._id} value={option._id}>
-              {option.name}
-            </MenuItem>
+        {/* Template Section */}
+        <Box sx={{ flex: 1, minWidth: "120px" }}>
+          {dropdownRows.map((row) => (
+            <FormControl key={row.id} size="small" fullWidth>
+              <InputLabel>Template</InputLabel>
+              <Select
+                value={row.template}
+                onChange={(e) =>
+                  updateDropdownRow(row.id, { template: e.target.value })
+                }
+                label="Template"
+                aria-label="Select template"
+              >
+                <MenuItem value="">Select Template...</MenuItem>
+                {templateList.data?.data?.map((option) => (
+                  <MenuItem key={option._id} value={option._id}>
+                    {option.name}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
           ))}
-        </Select>
-      </FormControl>
-    ))}
-  </Box>
+        </Box>
 
-  {/* Notification Method Section */}
-  <Box sx={{ flex: 1, minWidth: "120px" }}>
-    {dropdownRows.map((row) => (
-      <FormControl key={row.id} size="small" fullWidth>
-        <InputLabel>Method</InputLabel>
-        <Select
-          value={row.method}
-          onChange={(e) =>
-            updateDropdownRow(row.id, { method: e.target.value })
-          }
-          label="Method"
-          renderValue={(selected) =>
-            mediumList.data?.data?.find(
-              (medium) => medium._id === selected
-            )?.medium || selected
-          }
-          aria-label="Select notification method"
-        >
-          <MenuItem value="">Select Method...</MenuItem>
-          {mediumList.data?.data?.map((option) => (
-            <MenuItem key={option._id} value={option._id}>
-              {option.medium}
-            </MenuItem>
+        {/* Notification Method Section */}
+        <Box sx={{ flex: 1, minWidth: "120px" }}>
+          {dropdownRows.map((row) => (
+            <FormControl key={row.id} size="small" fullWidth>
+              <InputLabel>Method</InputLabel>
+              <Select
+                value={row.method}
+                onChange={(e) =>
+                  updateDropdownRow(row.id, { method: e.target.value })
+                }
+                label="Method"
+                renderValue={(selected) =>
+                  mediumList.data?.data?.find(
+                    (medium) => medium._id === selected
+                  )?.medium || selected
+                }
+                aria-label="Select notification method"
+              >
+                <MenuItem value="">Select Method...</MenuItem>
+                {mediumList.data?.data?.map((option) => (
+                  <MenuItem key={option._id} value={option._id}>
+                    {option.medium}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
           ))}
-        </Select>
-      </FormControl>
-    ))}
-  </Box>
+        </Box>
 
-  {/* Acknowledge Checkbox */}
-  <Box sx={{ flex: 0.6, minWidth: "100px", display: "flex", alignItems: "center" }}>
-    <FormControlLabel
-      control={
-        <Checkbox
-          checked={acknowledgeChecked}
-          onChange={(e) => setAcknowledgeChecked(e.target.checked)}
+        {/* Acknowledge Checkbox */}
+        <Box
+          sx={{
+            flex: 0.6,
+            minWidth: "100px",
+            display: "flex",
+            alignItems: "center",
+          }}
+        >
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={acknowledgeChecked}
+                onChange={(e) => setAcknowledgeChecked(e.target.checked)}
+                color="primary"
+              />
+            }
+            label="Acknowledge"
+            sx={{
+              fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
+              color: STYLE_GUIDE.COLORS.textDarkGray,
+            }}
+          />
+        </Box>
+
+        {/* Attached Checkbox */}
+        <Box
+          sx={{
+            flex: 0.6,
+            minWidth: "90px",
+            display: "flex",
+            alignItems: "center",
+          }}
+        >
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={attachedChecked}
+                onChange={(e) => setAttachedChecked(e.target.checked)}
+                color="primary"
+              />
+            }
+            label="Attached"
+            sx={{
+              fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
+              color: STYLE_GUIDE.COLORS.textDarkGray,
+            }}
+          />
+        </Box>
+      </Box>
+
+      {/* Action Buttons */}
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "flex-end",
+          gap: STYLE_GUIDE.SPACING.s2,
+          marginBottom: STYLE_GUIDE.SPACING.s4,
+        }}
+      >
+        {editMode && (
+          <Button
+            variant="outlined"
+            color="secondary"
+            onClick={handleCancelEdit}
+            aria-label="Cancel editing reminder"
+          >
+            Cancel
+          </Button>
+        )}
+        <Button
+          variant="contained"
           color="primary"
-        />
-      }
-      label="Acknowledge"
-      sx={{
-        fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
-        color: STYLE_GUIDE.COLORS.textDarkGray,
-        // marginTop: "8px",
-      }}
-    />
-  </Box>
-
-  {/* Attached Checkbox */}
-  <Box sx={{ flex: 0.6, minWidth: "90px", display: "flex", alignItems: "center" }}>
-    <FormControlLabel
-      control={
-        <Checkbox
-          checked={attachedChecked}
-          onChange={(e) => setAttachedChecked(e.target.checked)}
-          color="primary"
-        />
-      }
-      label="Attached"
-      sx={{
-        fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
-        color: STYLE_GUIDE.COLORS.textDarkGray,
-        // marginTop: "8px",
-      }}
-    />
-  </Box>
-</Box>
-
-{/* Add Reminder Button - Moved Below */}
-<Box sx={{ display: "flex", justifyContent: "flex-end", marginBottom: STYLE_GUIDE.SPACING.s4 }}>
-  <Button
-    variant="contained"
-    color="primary"
-    onClick={handleAddReminder}
-    aria-label="Add reminder with current settings"
-    disabled={!generateRRule() || notificationTypeId === null}
-  >
-    Add Reminder
-  </Button>
-</Box>
-
-     
+          onClick={handleAddReminder}
+          aria-label={
+            editMode
+              ? "Save changes to reminder"
+              : "Add reminder with current settings"
+          }
+          disabled={!generateRRule() || notificationTypeId === null}
+        >
+          {editMode ? "Save Changes" : "Add Reminder"}
+        </Button>
+      </Box>
 
       <Box
         component="hr"
@@ -1416,8 +1626,6 @@ useEffect(() => {
           borderTop: `1px solid ${STYLE_GUIDE.COLORS.divider}`,
         }}
       />
-
-   
 
       {/* Reminders List */}
       {frequencyListData?.data?.length > 0 && (
@@ -1515,13 +1723,15 @@ useEffect(() => {
                   </Typography>
                 </Box>
                 <Box sx={{ display: "flex", gap: STYLE_GUIDE.SPACING.s2 }}>
-                  <IconButton
-                    color="primary"
-                    aria-label="edit reminder"
-                    // onClick={() => handleEditReminder(reminder)}
-                  >
-                    <EditIcon />
-                  </IconButton>
+                  <Tooltip title="Edit Reminder" placement="top">
+                    <IconButton
+                      color="primary"
+                      aria-label="edit reminder"
+                      onClick={() => handleEditReminder(reminder)}
+                    >
+                      <EditIcon />
+                    </IconButton>
+                  </Tooltip>
                   <Tooltip title="Delete Reminder" placement="top">
                     <IconButton
                       color="error"
