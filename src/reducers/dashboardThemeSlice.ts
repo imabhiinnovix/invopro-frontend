@@ -4,10 +4,8 @@ import { STYLE_GUIDE } from '../styles';
 import { TYPOGRAPHY } from '../styles/typography';
 import { createCompleteTheme } from '../utils/themeUtils';
 
-// Helper function to generate unique ID
 const generateId = () => Math.random().toString(36).substr(2, 9);
 
-// Helper function to get theme from localStorage
 const getThemeFromStorage = (): string | null => {
   try {
     return localStorage.getItem('dashboardThemeName');
@@ -17,18 +15,14 @@ const getThemeFromStorage = (): string | null => {
   }
 };
 
-// Helper function to save theme to localStorage
 const saveThemeToStorage = (themeName: string): void => {
   try {
     localStorage.setItem('dashboardThemeName', themeName);
   } catch (error) {
-    console.error('Error saving theme to localStorage:', error);
+    console.error('Error');
   }
 };
 
-
-
-// Default theme based on style guide
 const getDefaultTheme = (): DashboardTheme => ({
   _id: generateId(),
   name: 'Default Theme',
@@ -45,7 +39,6 @@ const getDefaultTheme = (): DashboardTheme => ({
       dark: '#1565c0',
       contrastText: STYLE_GUIDE.COLORS.white,
     },
-    // New input and dropdown colors
     inputText: STYLE_GUIDE.COLORS.textDarkGray,
     inputBorder: STYLE_GUIDE.COLORS.borderGray,
     dropdownBg: STYLE_GUIDE.COLORS.white,
@@ -76,12 +69,10 @@ const getDefaultTheme = (): DashboardTheme => ({
     borderHover: STYLE_GUIDE.COLORS.materialPurpleDark,
   },
   typography: {
-    // Global typography (fallback)
     fontFamily: TYPOGRAPHY.fontFamily.primary,
     fontSize: TYPOGRAPHY.fontSize.base,
     fontWeight: TYPOGRAPHY.fontWeight.regular,
 
-    // Component-specific typography
     headings: {
       fontFamily: TYPOGRAPHY.fontFamily.primary,
       fontSize: TYPOGRAPHY.fontSize.xxl,
@@ -194,206 +185,10 @@ const getDefaultTheme = (): DashboardTheme => ({
   updatedAt: new Date().toISOString(),
 });
 
-// Sample themes for testing - using createCompleteTheme to ensure all properties are set
 const sampleThemes: DashboardTheme[] = [
   getDefaultTheme(),
-  {
-    ...createCompleteTheme({
-      name: 'Dark Theme',
-      description: 'A dark theme for better contrast',
-      colors: {
-        primary: {
-          main: '#bb86fc',
-          light: '#d4a4fc',
-          contrastText: '#000000',
-        },
-        secondary: {
-          main: '#dc004e',
-          light: '#ff5983',
-          dark: '#9a0036',
-          contrastText: '#ffffff',
-        },
-        background: {
-          default: '#121212',
-          paper: '#1e1e1e',
-          surface: '#2d2d2d',
-          hover: '#3d3d3d',
-          card: '#2d2d2d',
-          dropdown: '#1e1e1e',
-        },
-        text: {
-          primary: '#ffffff',
-          secondary: '#b3b3b3',
-          disabled: '#666666',
-          hint: '#888888',
-        },
-        divider: '#333333',
-        border: '#444444',
-        borderHover: '#555555',
-        inputText: '#ffffff',
-        inputBorder: '#666666',
-        dropdownBg: '#1e1e1e',
-        dropdownBorder: '#666666',
-        dropdownOptionBg: '#2d2d2d',
-        dropdownOptionText: '#ffffff',
-        dropdownSelectedText: '#bb86fc',
-        dropdownLabelColor: '#b3b3b3',
-        dropdownFocusedBorder: '#bb86fc',
-        dropdownFocusedLabel: '#bb86fc',
-        iconPrimary: '#ffffff',
-      },
-      typography: {
-        fontFamily: TYPOGRAPHY.fontFamily.secondary,
-        fontSize: TYPOGRAPHY.fontSize.base,
-        fontWeight: TYPOGRAPHY.fontWeight.regular,
-        headings: {
-          fontFamily: TYPOGRAPHY.fontFamily.secondary,
-          fontSize: TYPOGRAPHY.fontSize.xxl,
-          fontWeight: TYPOGRAPHY.fontWeight.bold,
-        },
-        body: {
-          fontFamily: TYPOGRAPHY.fontFamily.secondary,
-          fontSize: TYPOGRAPHY.fontSize.base,
-          fontWeight: TYPOGRAPHY.fontWeight.regular,
-        },
-        buttons: {
-          fontFamily: TYPOGRAPHY.fontFamily.secondary,
-          fontSize: TYPOGRAPHY.fontSize.base,
-          fontWeight: TYPOGRAPHY.fontWeight.medium,
-        },
-        cards: {
-          fontFamily: TYPOGRAPHY.fontFamily.secondary,
-          fontSize: TYPOGRAPHY.fontSize.base,
-          fontWeight: TYPOGRAPHY.fontWeight.regular,
-        },
-        inputs: {
-          fontFamily: TYPOGRAPHY.fontFamily.secondary,
-          fontSize: TYPOGRAPHY.fontSize.base,
-          fontWeight: TYPOGRAPHY.fontWeight.regular,
-        },
-        tables: {
-          fontFamily: TYPOGRAPHY.fontFamily.secondary,
-          fontSize: TYPOGRAPHY.fontSize.base,
-          fontWeight: TYPOGRAPHY.fontWeight.regular,
-        },
-        navigation: {
-          fontFamily: TYPOGRAPHY.fontFamily.secondary,
-          fontSize: TYPOGRAPHY.fontSize.base,
-          fontWeight: TYPOGRAPHY.fontWeight.medium,
-        },
-        dialog: {
-          fontFamily: TYPOGRAPHY.fontFamily.secondary,
-          fontSize: TYPOGRAPHY.fontSize.base,
-          fontWeight: TYPOGRAPHY.fontWeight.medium,
-        }
-      },
-    }),
-    _id: generateId(),
-    isDefault: false,
-    isActive: false,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-  {
-    ...createCompleteTheme({
-      name: 'Blue Theme',
-      description: 'Professional blue theme for corporate use',
-      colors: {
-        primary: {
-          main: '#1976d2',
-          light: '#42a5f5',
-          contrastText: '#ffffff',
-        },
-        secondary: {
-          main: '#dc004e',
-          light: '#ff5983',
-          dark: '#9a0036',
-          contrastText: '#ffffff',
-        },
-        inputText: '#1565c0',
-        inputBorder: '#1976d2',
-        dropdownBg: '#f8f9ff',
-        dropdownBorder: '#1976d2',
-        dropdownOptionBg: '#e3f2fd',
-        dropdownOptionText: '#1565c0',
-        dropdownSelectedText: '#1976d2',
-        dropdownLabelColor: '#666666',
-        dropdownFocusedBorder: '#1976d2',
-        dropdownFocusedLabel: '#1976d2',
-        iconPrimary: '#1976d2',
-        border: '#1976d2',
-        borderHover: '#1565c0',
-        background: {
-          default: STYLE_GUIDE.COLORS.backgroundDefault,
-          paper: STYLE_GUIDE.COLORS.white,
-          surface: STYLE_GUIDE.COLORS.backgroundSurface,
-          hover: STYLE_GUIDE.COLORS.backgroundHover,
-          card: STYLE_GUIDE.COLORS.backgroundSurface,
-          dropdown: STYLE_GUIDE.COLORS.white,
-        },
-        text: {
-          primary: STYLE_GUIDE.COLORS.textDarkGray,
-          secondary: STYLE_GUIDE.COLORS.textMediumGray,
-          disabled: STYLE_GUIDE.COLORS.textGray,
-          hint: STYLE_GUIDE.COLORS.textMediumGray,
-        },
-        divider: STYLE_GUIDE.COLORS.divider,
-      },
-      typography: {
-        fontFamily: TYPOGRAPHY.fontFamily.primary,
-        fontSize: TYPOGRAPHY.fontSize.base,
-        fontWeight: TYPOGRAPHY.fontWeight.regular,
-        headings: {
-          fontFamily: TYPOGRAPHY.fontFamily.primary,
-          fontSize: TYPOGRAPHY.fontSize.xxl,
-          fontWeight: TYPOGRAPHY.fontWeight.semiBold,
-        },
-        body: {
-          fontFamily: TYPOGRAPHY.fontFamily.primary,
-          fontSize: TYPOGRAPHY.fontSize.base,
-          fontWeight: TYPOGRAPHY.fontWeight.regular,
-        },
-        buttons: {
-          fontFamily: TYPOGRAPHY.fontFamily.primary,
-          fontSize: TYPOGRAPHY.fontSize.base,
-          fontWeight: TYPOGRAPHY.fontWeight.medium,
-        },
-        cards: {
-          fontFamily: TYPOGRAPHY.fontFamily.primary,
-          fontSize: TYPOGRAPHY.fontSize.base,
-          fontWeight: TYPOGRAPHY.fontWeight.regular,
-        },
-        inputs: {
-          fontFamily: TYPOGRAPHY.fontFamily.primary,
-          fontSize: TYPOGRAPHY.fontSize.base,
-          fontWeight: TYPOGRAPHY.fontWeight.regular,
-        },
-        tables: {
-          fontFamily: TYPOGRAPHY.fontFamily.primary,
-          fontSize: TYPOGRAPHY.fontSize.base,
-          fontWeight: TYPOGRAPHY.fontWeight.regular,
-        },
-        navigation: {
-          fontFamily: TYPOGRAPHY.fontFamily.primary,
-          fontSize: TYPOGRAPHY.fontSize.base,
-          fontWeight: TYPOGRAPHY.fontWeight.medium,
-        },
-        dialog: {
-          fontFamily: TYPOGRAPHY.fontFamily.secondary,
-          fontSize: TYPOGRAPHY.fontSize.base,
-          fontWeight: TYPOGRAPHY.fontWeight.medium,
-        }
-      },
-    }),
-    _id: generateId(),
-    isDefault: false,
-    isActive: false,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
 ];
 
-// Organization theme info
 interface OrganizationThemeInfo {
   organizationId: string;
   organizationName: string;
@@ -401,7 +196,6 @@ interface OrganizationThemeInfo {
   isDefault: boolean;
 }
 
-// Initial state
 interface DashboardThemeState {
   themes: DashboardTheme[];
   dashboardTheme: DashboardTheme | null;
@@ -412,19 +206,16 @@ interface DashboardThemeState {
   success: string | null;
 }
 
-// Helper function to get initial current theme
 const getInitialCurrentTheme = (): DashboardTheme => {
   const savedThemeName = getThemeFromStorage();
   
   if (savedThemeName) {
-    // Find the saved theme by name
     const savedTheme = sampleThemes.find(theme => theme.name === savedThemeName);
     if (savedTheme) {
       return savedTheme;
     }
   }
   
-  // Return default theme if no saved theme found or theme doesn't exist
   return sampleThemes[0];
 };
 
@@ -438,7 +229,6 @@ const initialState: DashboardThemeState = {
   success: null,
 };
 
-// Slice
 const dashboardThemeSlice = createSlice({
   name: 'dashboardTheme',
   initialState,
@@ -452,7 +242,6 @@ const dashboardThemeSlice = createSlice({
     setCurrentTheme: (state, action: PayloadAction<DashboardTheme | null>) => {
       state.dashboardTheme = action.payload;
     },
-    // Local actions for theme management
     createDashboardTheme: (state, action: PayloadAction<Partial<DashboardTheme>>) => {
       const newTheme: DashboardTheme = {
         ...createCompleteTheme(action.payload),
@@ -474,7 +263,6 @@ const dashboardThemeSlice = createSlice({
         };
         state.themes[index] = updatedTheme;
         
-        // If the updated theme is the current theme, update dashboardTheme as well
         if (state.dashboardTheme && state.dashboardTheme._id === id) {
           state.dashboardTheme = updatedTheme;
         }
@@ -509,7 +297,6 @@ const dashboardThemeSlice = createSlice({
       const themeToApply = state.themes.find(theme => theme._id === themeId);
       if (themeToApply) {
         state.dashboardTheme = themeToApply;
-        // Save theme name to localStorage
         saveThemeToStorage(themeToApply.name);
         state.success = 'Theme applied successfully';
       }
@@ -518,14 +305,12 @@ const dashboardThemeSlice = createSlice({
       const defaultTheme = state.themes.find(theme => theme.isDefault) || state.themes[0];
       state.dashboardTheme = defaultTheme;
       state.currentTheme = defaultTheme;
-      // Save default theme name to localStorage
       saveThemeToStorage(defaultTheme.name);
       state.success = 'Reset to default theme successfully';
     },
     setDashboardTheme: (state, action: PayloadAction<DashboardTheme>) => {
       state.currentTheme = action.payload;
       state.dashboardTheme = action.payload;
-      // Save theme name to localStorage
       saveThemeToStorage(action.payload.name);
       state.success = 'Theme applied successfully';
     },

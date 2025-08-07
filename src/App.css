@@ -5,7 +5,6 @@ body {
   box-sizing: border-box;
 }
 
-/* Set default font family - removed to allow theme typography to work */
 body,
 html,
 #root {
@@ -19,7 +18,6 @@ html,
   box-sizing: inherit;
 }
 
-/* Force typography font family override for Material-UI components */
 .MuiTypography-root,
 .MuiTypography-h1,
 .MuiTypography-h2,
@@ -39,12 +37,12 @@ html,
 
 
 input[type="number"] {
-  appearance: textfield; /* Standard property for compatibility */
-  -moz-appearance: textfield; /* Specific for Firefox */
+  appearance: textfield;
+  -moz-appearance: textfield;
 }
 
 input[type="number"]::-webkit-outer-spin-button,
 input[type="number"]::-webkit-inner-spin-button {
-  -webkit-appearance: none; /* Remove spin buttons for WebKit browsers */
+  -webkit-appearance: none;
   margin: 0;
 }

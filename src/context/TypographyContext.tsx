@@ -27,7 +27,7 @@ const TypographyContext = createContext<TypographyContextType | undefined>(undef
 export const useTypography = () => {
   const context = useContext(TypographyContext);
   if (!context) {
-    throw new Error('useTypography must be used within a TypographyProvider');
+    throw new Error('ERROR');
   }
   return context;
 };

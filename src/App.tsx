@@ -1,8 +1,6 @@
 import { BrowserRouter } from "react-router-dom";
 import { Provider } from "react-redux";
 import store from "./store";
-// import { ThemeProvider } from "@mui/material/styles";
-// import { theme } from "./theme/theme";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { NavProvider } from "./context/NavContext";
@@ -14,7 +12,6 @@ function App() {
   return (
     <Provider store={store}>
       <UnifiedThemeProvider>
-        {/* <ThemeProvider theme={theme}> */}
         <BrowserRouter>
           <AuthProvider>
             <NavProvider>
@@ -23,7 +20,6 @@ function App() {
             </NavProvider>
           </AuthProvider>
         </BrowserRouter>
-        {/* </ThemeProvider> */}
       </UnifiedThemeProvider>
     </Provider>
   );

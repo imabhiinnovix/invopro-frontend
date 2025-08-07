@@ -60,6 +60,7 @@ export const DELETE = {
   DELETE_PERMISSION: "/common/permission/delete",
   DELETE_ROLE: "/common/role/delete",
   DELETE_NOTIFICATION_TYPE: 'notivix/notification-setting/type/delete',
+  DELETE_MEDIUM: "/notivix/notification-setting/medium/delete",
 };
 
 export const GET = {

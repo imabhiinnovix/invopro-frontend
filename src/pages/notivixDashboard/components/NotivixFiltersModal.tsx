@@ -221,56 +221,6 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
                   );
                 }
               })}
-
-
-            {/* {hasActiveFilters && (
-              <Box>
-                <Typography variant="subtitle2" sx={{ mb: STYLE_GUIDE.SPACING.s2, color: theme.palette.text.secondary }}>
-                  Active Filters:
-                </Typography>
-                <Stack direction="row" spacing={STYLE_GUIDE.SPACING.s1} flexWrap="wrap" useFlexGap>
-                  {filters.searchText && (
-                    <Chip
-                      label={`Search: ${filters.searchText}`}
-                      size="small"
-                      onDelete={() => handleFilterChange('searchText', '')}
-                      sx={{
-                        backgroundColor: theme.palette.primary.main,
-                        color: theme.palette.primary.contrastText,
-                      }}
-                    />
-                  )}
-                  {availableFilters
-                    .filter((filter) => filter.isDashboardFilter)
-                    .map((filter) => {
-                      const filterValue = filters[filter.attributeId as keyof FilterOptions];
-                      return filterValue ? (
-                        <Chip
-                          key={filter.attributeId}
-                          label={`${filter.label}: ${filterValue}`}
-                          size="small"
-                          onDelete={() => handleFilterChange(filter.attributeId as keyof FilterOptions, '')}
-                          sx={{
-                            backgroundColor: theme.palette.secondary.main,
-                            color: theme.palette.secondary.contrastText,
-                          }}
-                        />
-                      ) : null;
-                    })}
-                  {filters.dateRange?.startDate && filters.dateRange?.endDate && (
-                    <Chip
-                      label={`Date: ${filters.dateRange.startDate} - ${filters.dateRange.endDate}`}
-                      size="small"
-                      onDelete={() => handleFilterChange('dateRange', { startDate: '', endDate: '' })}
-                      sx={{
-                        backgroundColor: theme.palette.success.main,
-                        color: theme.palette.success.contrastText,
-                      }}
-                    />
-                  )}
-                </Stack>
-              </Box>
-            )} */}
           </Stack>
         )}
       </DialogContent>

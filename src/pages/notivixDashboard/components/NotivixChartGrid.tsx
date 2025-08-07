@@ -75,7 +75,6 @@ import { STYLE_GUIDE } from '../../../styles';
 import { useUnifiedTheme } from '../../../hooks/useUnifiedTheme';
 import { useComponentTypography } from '../../../hooks/useComponentTypography';
 
-// Register ChartJS components
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -292,7 +291,6 @@ const NumberLabel = styled(Typography)(({ theme }) => ({
   textAlign: 'center',
 }));
 
-// Add new styled components for drill-down dialog
 const DrillDownDialog = styled(Dialog)({
   '& .MuiDialog-paper': {
     width: 'calc(100% - 32px)',
@@ -353,24 +351,18 @@ const sliceLabelsPlugin = {
       const value = dataset.data[index] as number;
       const label = chart.data.labels?.[index] ?? '';
       const percent = value / total;
-      // if (percent < 0.05) return; // skip small slices
 
       const { x, y } = point.tooltipPosition(Boolean(chart.chartArea));
       const text = `${label}: ${value}`;
-
       ctx.save();
       ctx.font = percent < 0.1 ? 'bold 10px sans-serif' : 'bold 12px sans-serif';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-
-      // Measure text
       const paddingX = 8;
       const paddingY = 4;
       const textMetrics = ctx.measureText(text);
       const textWidth = textMetrics.width;
       const textHeight = 16;
-
-      // Draw rounded rectangle
       const rectX = x - textWidth / 2 - paddingX;
       const rectY = y - textHeight / 2 - paddingY;
       const rectWidth = textWidth + paddingX * 2;
@@ -396,8 +388,6 @@ const sliceLabelsPlugin = {
       ctx.strokeStyle = '#888';
       ctx.lineWidth = 1;
       ctx.stroke();
-
-      // Draw text
       ctx.fillStyle = '#000';
       ctx.fillText(text, x, y);
       ctx.restore();
@@ -422,30 +412,22 @@ const pointLabelsPlugin = {
       const { x, y } = point.tooltipPosition(Boolean(chart.chartArea));
       const value = datasets[0].data[index] as number;
       const text = `${value}`;
-
       ctx.save();
       ctx.font = 'bold 12px sans-serif';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-
-      // Move label above the point
       const offset = 18;
       const labelY = y - offset;
-
-      // Measure text
       const paddingX = 8;
       const paddingY = 4;
       const textMetrics = ctx.measureText(text);
       const textWidth = textMetrics.width;
       const textHeight = 16;
-
-      // Draw rounded rectangle above the point
       const rectX = x - textWidth / 2 - paddingX;
       const rectY = labelY - textHeight / 2 - paddingY;
       const rectWidth = textWidth + paddingX * 2;
       const rectHeight = textHeight + paddingY * 2;
       const radius = 6;
-
       ctx.beginPath();
       ctx.moveTo(rectX + radius, rectY);
       ctx.lineTo(rectX + rectWidth - radius, rectY);
@@ -457,7 +439,6 @@ const pointLabelsPlugin = {
       ctx.lineTo(rectX, rectY + radius);
       ctx.quadraticCurveTo(rectX, rectY, rectX + radius, rectY);
       ctx.closePath();
-
       ctx.fillStyle = '#fff';
       ctx.globalAlpha = 0.85;
       ctx.fill();
@@ -465,8 +446,6 @@ const pointLabelsPlugin = {
       ctx.strokeStyle = '#888';
       ctx.lineWidth = 1;
       ctx.stroke();
-
-      // Draw text above the point
       ctx.fillStyle = '#000';
       ctx.fillText(text, x, labelY);
       ctx.restore();
@@ -492,25 +471,18 @@ const barLabelsPlugin = {
       ctx.font = 'bold 12px sans-serif';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-
-      // Move label above the bar
       const offset = 18;
       const labelY = y - offset;
-
-      // Measure text
       const paddingX = 8;
       const paddingY = 4;
       const textMetrics = ctx.measureText(text);
       const textWidth = textMetrics.width;
       const textHeight = 16;
-
-      // Draw rounded rectangle above the bar
       const rectX = x - textWidth / 2 - paddingX;
       const rectY = labelY - textHeight / 2 - paddingY;
       const rectWidth = textWidth + paddingX * 2;
       const rectHeight = textHeight + paddingY * 2;
       const radius = 6;
-
       ctx.beginPath();
       ctx.moveTo(rectX + radius, rectY);
       ctx.lineTo(rectX + rectWidth - radius, rectY);
@@ -522,7 +494,6 @@ const barLabelsPlugin = {
       ctx.lineTo(rectX, rectY + radius);
       ctx.quadraticCurveTo(rectX, rectY, rectX + radius, rectY);
       ctx.closePath();
-
       ctx.fillStyle = '#fff';
       ctx.globalAlpha = 0.85;
       ctx.fill();
@@ -530,8 +501,6 @@ const barLabelsPlugin = {
       ctx.strokeStyle = '#888';
       ctx.lineWidth = 1;
       ctx.stroke();
-
-      // Draw text above the bar
       ctx.fillStyle = '#000';
       ctx.fillText(text, x, labelY);
       ctx.restore();
@@ -553,30 +522,22 @@ const polarAreaLabelsPlugin = {
       const value = datasets[0].data[index] as number;
       const label = chart.data.labels?.[index] ?? '';
       const text = `${label}: ${value}`;
-
       ctx.save();
       ctx.font = 'bold 12px sans-serif';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-
-      // Move label above the arc
       const offset = 18;
       const labelY = y - offset;
-
-      // Measure text
       const paddingX = 8;
       const paddingY = 4;
       const textMetrics = ctx.measureText(text);
       const textWidth = textMetrics.width;
       const textHeight = 16;
-
-      // Draw rounded rectangle above the arc
       const rectX = x - textWidth / 2 - paddingX;
       const rectY = labelY - textHeight / 2 - paddingY;
       const rectWidth = textWidth + paddingX * 2;
       const rectHeight = textHeight + paddingY * 2;
       const radius = 6;
-
       ctx.beginPath();
       ctx.moveTo(rectX + radius, rectY);
       ctx.lineTo(rectX + rectWidth - radius, rectY);
@@ -588,7 +549,6 @@ const polarAreaLabelsPlugin = {
       ctx.lineTo(rectX, rectY + radius);
       ctx.quadraticCurveTo(rectX, rectY, rectX + radius, rectY);
       ctx.closePath();
-
       ctx.fillStyle = '#fff';
       ctx.globalAlpha = 0.85;
       ctx.fill();
@@ -596,8 +556,6 @@ const polarAreaLabelsPlugin = {
       ctx.strokeStyle = '#888';
       ctx.lineWidth = 1;
       ctx.stroke();
-
-      // Draw text above the arc
       ctx.fillStyle = '#000';
       ctx.fillText(text, x, labelY);
       ctx.restore();
@@ -650,7 +608,6 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
   const [, setTotalRecords] = useState(0);
   const [isDrillDownLoading, setIsDrillDownLoading] = useState(false);
   const [drillDownPayload, setDrillDownPayload] = useState<DrillDownPayload | null>(null);
-
   const [openSaveChart, setOpenSaveChart] = useState(false);
   const [chartSaveSettingData, setChartSaveSettingData] = useState<any>({});
   const [chartSaveDashboardId, setChartSaveDashboardId] = useState('');
@@ -658,7 +615,6 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
   const [isChartSaving, setIsChartSaving] = useState(false);
   const itemsPerPage = 10;
 
-  // Combine permanent and temporary charts
   const allCharts = [...charts, ...temporaryCharts];
 
   const bottomRef: any = isNaturalLangauage ? useRef<HTMLDivElement | null>(null) : '';
@@ -815,10 +771,8 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
       const chartData = getChartData(selectedChart);
       const { labels, datasets } = chartData;
 
-      // Create CSV content
       let csvContent = 'data:text/csv;charset=utf-8,';
 
-      // Add header row
       const headers = [
         'Category',
         ...datasets.map((dataset, i) =>
@@ -827,13 +781,11 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
       ];
       csvContent += headers.join(',') + '\n';
 
-      // Add data rows
       labels?.forEach((label, index) => {
         const row = [label, ...datasets.map((dataset) => dataset.data[index])];
         csvContent += row.join(',') + '\n';
       });
 
-      // Create download link
       const encodedUri = encodeURI(csvContent);
       const link = document.createElement('a');
       link.setAttribute('href', encodedUri);
@@ -872,7 +824,6 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
     const clickedElement = elements[0];
     const chartData = widgetData[chart._id]?.data?.widgetData || chart.data || [];
 
-    // Get the clicked data point details
     const clickedData = chartData.find((item: ChartDataItem) => {
       const dataIndex = clickedElement.index;
       if (dataIndex >= 0 && dataIndex < chartData.length) {
@@ -882,14 +833,12 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
     });
 
     if (clickedData) {
-      // Open modal immediately
       setDrillDownTitle(`${chart.name} - ${clickedData.name}`);
       setDrillDownOpen(true);
       setCurrentPage(1);
       setIsDrillDownLoading(true);
 
       try {
-        // Prepare the request payload
         const dimensions = chart.dimensions
           ? Array.isArray(chart.dimensions)
             ? chart.dimensions.map((dim) => ({ [dim]: clickedData.name }))
@@ -926,10 +875,8 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
           dashBoardType: currentDashboard?.settings?.dashboardType,
         };
 
-        // Save the payload for pagination
         setDrillDownPayload(payload);
 
-        // Make the API call
         const response = await axiosInstance.post('/dataSource/getWidgetDataByFilter', payload);
 
         if (response.data.success) {
@@ -959,7 +906,6 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
     if (!selectedChart || !drillDownPayload) return;
 
     try {
-      // Use the saved payload and just update the page number
       const payload = {
         ...drillDownPayload,
         page: value,
@@ -1022,29 +968,6 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
       chart: newFormData, 
       dashboardType: currentDashboard?.settings?.dashboardType 
     }));
-
-    // if (!selectedChart) return;
-    // try {
-    //   const result = await dispatch(
-    //     updateWidget({
-    //       ...formData,
-    //       _id: selectedChart._id,
-    //       dashboardId: dashboardId || '',
-    //     })
-    //   ).unwrap();
-    //   if (result.success) {
-    //     toast.success('Chart updated successfully!');
-    //     handleCloseEditModal();
-    //   } else {
-    //     toast.error(result.message || 'Failed to update chart');
-    //   }
-    // } catch (error) {
-    //   if (typeof error === 'object' && error !== null && 'message' in error) {
-    //     toast.error(error.message as string);
-    //   } else {
-    //     toast.error('Failed to update chart');
-    //   }
-    // }
   };
 
   const handleSaveWidget = async () => {
@@ -1060,8 +983,8 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
               name: newSaveChartName,
               dimensions: chartSaveSettingData.dimensions.join(','),
               groupBy: chartSaveSettingData.groupBy,
-              aggregation: chartSaveSettingData.aggregation, //not
-              position: chartSaveSettingData.position || { x: 0, y: 0, index: 0 }, //not there
+              aggregation: chartSaveSettingData.aggregation,
+              position: chartSaveSettingData.position || { x: 0, y: 0, index: 0 },
               conditions: chartSaveSettingData.conditions,
               dataSourceId: chartSaveSettingData.dataSourceId?._id || chartSaveSettingData.dataSourceId,
               entityId: chartSaveSettingData.dataSourceId?.entityId || chartSaveSettingData.entityId,
@@ -1101,29 +1024,23 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
       pointHoverRadius: 9,
       pointHitRadius: 20,
     });
-
-    // Get widget data from the store
     const chartData = widgetData[chart._id]?.data?.widgetData || chart.data || [];
 
-    // Check if widgetData is empty or has no meaningful data
     if (!chartData.length || chartData.every((item: ChartDataItem) => item.data === 0)) {
       return {
         labels: [],
         datasets: [createDefaultDataset()],
-        isEmpty: true, // Add a flag to indicate empty data
+        isEmpty: true,
       };
     }
-
     const chartType = chart.widgetTypeId?.chartType || 'line';
     const groupBy = chart.groupBy || [];
 
-    // Handle polar area chart with grouping
     if (chartType === 'polarArea' && groupBy.length > 0) {
       const groupByField = groupBy[0];
       const uniqueGroups = Array.from(new Set(chartData.map((item: ChartDataItem) => item[groupByField] as string)));
       const uniqueNames = Array.from(new Set(chartData.map((item: ChartDataItem) => item.name)));
       let uniqueNameDataMap: any = {};
-      // Create a dataset for each unique group
       const datasets = uniqueGroups.map((group, index) => {
         let totalDataBasedOnGroup = 0;
         const groupData = uniqueNames.map((name) => {
@@ -1157,7 +1074,6 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
       };
     }
 
-    // Handle non-grouped polar area chart
     if (chartType === 'polarArea') {
       const polarLabels = Array.from(new Set(chartData.map((item: ChartDataItem) => `${item.name}-${item.data}`)));
       const values = chartData.map((item: ChartDataItem) => item.data);
@@ -1179,13 +1095,11 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
       };
     }
 
-    // Handle grouped horizontal bar chart
     if (chartType === 'horizontalBar' && groupBy.length > 0) {
       const groupByField = groupBy[0];
       const uniqueGroups = Array.from(new Set(chartData.map((item) => item[groupByField] as string)));
       const uniqueNames = Array.from(new Set(chartData.map((item) => item.name)));
       let uniqueNameDataMap: any = {};
-      // Create a dataset for each unique group
       const datasets = uniqueGroups.map((group, index) => {
         let totalDataBasedOnGroup = 0;
         const groupData = uniqueNames.map((name) => {
@@ -1219,7 +1133,6 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
       };
     }
 
-    // Handle non-grouped horizontal bar chart
     if (chartType === 'horizontalBar') {
       const labels = chartData.map((item: ChartDataItem) => `${item.name}-${item.data}`);
       const values = chartData.map((item: ChartDataItem) => item.data);
@@ -1242,7 +1155,6 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
       };
     }
 
-    // Handle vertical bar chart (both grouped and non-grouped)
     if (chartType === 'verticalBar' || chartType === 'stackedBar' || chartType === 'multiSeriesPie') {
       const barLabels = Array.from(new Set(chartData.map((item: ChartDataItem) => item.name)));
 
@@ -1280,7 +1192,6 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
         return { labels: barLabels, datasets };
       }
 
-      // Handle non-grouped data
       const values = Array.from(new Set(chartData.map((item: ChartDataItem) => item.data)));
       const barLabelsName = Array.from(
         new Set(chartData.map((item: ChartDataItem) => `${item.name}(Total:${item.data})`))
@@ -1303,18 +1214,15 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
       };
     }
 
-    // Handle pie chart or doughnut chart
     if (chartType === 'pie' || chartType === 'doughnut') {
       const pieLabels = Array.from(new Set(chartData.map((item: ChartDataItem) => `${item.name}(Total:${item.data})`)));
       const values = chartData.map((item: ChartDataItem) => item.data);
 
-      // Handle grouped data
       if (groupBy.length > 0) {
-        const groupByField = groupBy[0]; // Take the first groupBy field
+        const groupByField = groupBy[0];
         const uniqueGroups = Array.from(new Set(chartData.map((item) => item[groupByField] as string)));
         const uniqueNames = Array.from(new Set(chartData.map((item) => item.name)));
         let uniqueNameDataMap: any = {};
-        // Create datasets for each group
         const datasets = uniqueGroups.map((group, index) => {
           let totalDataBasedOnGroup = 0;
           const groupData = uniqueNames.map((name) => {
@@ -1347,7 +1255,6 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
         };
       }
 
-      // Handle non-grouped data
       return {
         labels: pieLabels,
         datasets: [
@@ -1364,18 +1271,16 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
       };
     }
 
-    // Handle radar chart
     if (chartType === 'radar') {
       const radarLabels = Array.from(
         new Set(chartData.map((item: ChartDataItem) => `${item.name}(Total:${item.data})`))
       );
 
       if (groupBy.length > 0) {
-        const groupByField = groupBy[0]; // Take the first groupBy field
+        const groupByField = groupBy[0];
         const uniqueGroups = Array.from(new Set(chartData.map((item) => item[groupByField] as string)));
         const uniqueNames = Array.from(new Set(chartData.map((item) => item.name)));
         let uniqueNameDataMap: any = {};
-        // Create a dataset for each unique group
         const datasets = uniqueGroups.map((group, index) => {
           let totalDataBasedOnGroup = 0;
           const groupData = uniqueNames.map((name) => {
@@ -1413,7 +1318,6 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
         };
       }
 
-      // Handle non-grouped data
       const values = chartData.map((item: ChartDataItem) => item.data);
       return {
         labels: radarLabels,
@@ -1463,7 +1367,6 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
           datasets,
         };
       } else {
-        // Non-grouped scatter chart
         const scatterData = chartData.map((item) => ({
           x: parseFloat(item.name) || 0,
           y: item.data,
@@ -1550,7 +1453,6 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
       }
     }
 
-    // Handle grouped line/area chart
     if (chartType === 'area' || chartType === 'line') {
       if (groupBy.length > 0) {
         const groupByField = groupBy[0];
@@ -1589,7 +1491,6 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
           datasets,
         };
       } else {
-        // Non-grouped line/area chart
         const lineLabels = Array.from(
           new Set(chartData.map((item: ChartDataItem) => `${item.name}(Total:${item.data})`))
         );
@@ -1614,7 +1515,6 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
       }
     }
 
-    // Default single line/area chart (no grouping)
     const defaultLabels = Array.from(new Set(chartData.map((item: ChartDataItem) => item.name)));
     const values = chartData.map((item: ChartDataItem) => item.data);
 
@@ -1671,19 +1571,8 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
           bottom: widgetTheme?.layout?.padding?.bottom ?? 10,
         },
       },
-      // interaction: {
-      //   mode: (widgetTheme?.interaction?.mode ?? "nearest") as
-      //     | "nearest"
-      //     | "y"
-      //     | "x"
-      //     | "index"
-      //     | "dataset"
-      //     | "point",
-      //   intersect: widgetTheme?.interaction?.intersect ?? false,
-      // },
     };
 
-    // Apply chart type specific options
     switch (chartType) {
       case 'pie':
       case 'doughnut':

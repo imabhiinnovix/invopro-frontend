@@ -128,6 +128,10 @@ export default function Organization() {
   const updateMedium = usePut<any, any>(['organizationList'], () => {
   }, true);
 
+  const deleteMedium = useDelete<any>(['organizationList'], () => {
+    refetch();
+  }, true);
+
   const {
     data: productAccessData,
     isLoading: productAccessLoading,
@@ -804,6 +808,17 @@ export default function Organization() {
                                           }}
                                         >
                                           {isEditing ? <SaveIcon /> : <EditIcon />}
+                                        </IconButton>
+                                        <IconButton
+                                          aria-label="Delete"
+                                          color="error"
+                                          onClick={() => {
+                                            deleteMedium.mutate({
+                                              url: `/notivix/notification-setting/medium/delete/${item._id}`
+                                            });
+                                          }}
+                                        >
+                                          <DeleteIcon />
                                         </IconButton>
                                       </Grid>
                                       <Grid item xs={12} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mt: 1 }}>

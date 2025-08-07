@@ -8,7 +8,6 @@ export interface DynamicThemeOptions {
   fontWeight?: string;
 }
 
-// Define common values for reuse
 const commonValues = {
   boxShadow: STYLE_GUIDE.SHADOWS.sm,
   colors: {
@@ -70,7 +69,6 @@ export const createDynamicTheme = (typographyOptions: DynamicThemeOptions = {}):
     typography: {
       fontFamily,
       fontSize: parseInt(fontSize),
-      // Override specific typography variants to use the selected font
       h1: {
         fontFamily,
         fontWeight: parseInt(fontWeight),
