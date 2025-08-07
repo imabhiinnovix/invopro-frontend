@@ -835,6 +835,7 @@ export default function AddNotificationTypes() {
       if (response.success && response.data?._id) {
         setNotificationTypeId(response.data?._id);
         toast.success("Notification created successfully!");
+        setExpanded((prev) => ({ ...prev, condition: false }));
         // navigate("/notivix/notification");
       } else {
         throw new Error("Notification creation failed or no ID returned");

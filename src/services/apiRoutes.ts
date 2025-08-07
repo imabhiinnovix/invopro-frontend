@@ -50,7 +50,8 @@ export const PUT = {
   UPDATE_USER: "/common/user/update/",
   UPDATE_PERMISSION: "/common/permission/update",
   UPDATE_ROLE: "/common/role/update",
-  UPDATE_FREQUENCY:"notivix/notification-setting/frequency/update"
+  UPDATE_FREQUENCY: "notivix/notification-setting/frequency/update",
+  UPDATE_NOTIFICATION_TYPE: " notivix/notification-setting/type/update",
 };
 
 export const DELETE = {
@@ -109,5 +110,6 @@ export const GET = {
   TEMPLATE_LIST: "/notivix/notification-setting/template/list",
   MEDIUM_LIST: "/notivix/notification-setting/medium/list",
   FREQUENCY_LIST: "notivix/notification-setting/frequency/list",
-  FREQUENCY_DETAIL:"notivix/notification-setting/frequency"
+  FREQUENCY_DETAIL: "notivix/notification-setting/frequency",
+  NOTIFICATION_TYPE_DETAIL: "/notivix/notification-setting/type",
 };

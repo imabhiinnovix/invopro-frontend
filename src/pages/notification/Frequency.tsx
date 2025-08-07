@@ -157,7 +157,7 @@ const RRuleGenerator = ({
   fieldOptions = [],
   notificationTypeId,
 }) => {
-  console.log("Frequency component fieldOptions333333:", notificationTypeId);
+  // console.log("Frequency component fieldOptions333333:", notificationTypeId);
 
   const defaultConfig = {
     repeat: ["Yearly", "Monthly", "Weekly", "Daily"],
@@ -1799,7 +1799,7 @@ const RRuleGenerator = ({
 // Example Components
 const SimpleRender = ({ fieldOptions, notificationTypeId }) => (
   <RRuleGenerator
-    onChange={(rrule) => console.log(`RRule changed, now it's ${rrule}`)}
+    // onChange={(rrule) => console.log(`RRule changed, now it's ${rrule}`)}
     fieldOptions={fieldOptions}
     notificationTypeId={notificationTypeId}
   />
@@ -1807,11 +1807,11 @@ const SimpleRender = ({ fieldOptions, notificationTypeId }) => (
 
 // App Component
 const Frequency = ({ fieldOptions, notificationTypeId }) => {
-  console.log(
-    "Frequency component fieldOptions222222:",
-    fieldOptions,
-    notificationTypeId
-  );
+  // console.log(
+  //   "Frequency component fieldOptions222222:",
+  //   fieldOptions,
+  //   notificationTypeId
+  // );
   return (
     <Box>
       <SimpleRender

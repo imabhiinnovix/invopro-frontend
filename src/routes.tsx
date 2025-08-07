@@ -30,6 +30,7 @@ import Permissions from './pages/permissions';
 import NotivixDashboard from './pages/notivixDashboard';
 import AddNotificationTypes from './pages/notification/AddNotificationTypes';
 import Notification from './pages/notification';
+import EditNotificationTypes from './pages/notification/EditNotificationTypes';
 
 const AppRoutes = () => {
   const token = getAuthToken();
@@ -77,6 +78,10 @@ const AppRoutes = () => {
             <Route
             path="/notivix/notification-types/add"
             element={<AddNotificationTypes />}
+          />
+           <Route
+            path="/notivix/notification-types/edit/:id"
+            element={<EditNotificationTypes />}
           />
            <Route
             path="/notivix/settings/users"
