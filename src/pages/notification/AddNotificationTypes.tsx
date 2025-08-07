@@ -1,5 +1,3 @@
-
-
 import * as React from "react";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
@@ -211,7 +209,7 @@ const ConditionRuleBuilder = ({
             </Select>
             {validateValue(rule) && (
               <Typography color="error" variant="caption">
-                Value is required 
+                Value is required
               </Typography>
             )}
           </FormControl>
@@ -236,7 +234,7 @@ const ConditionRuleBuilder = ({
               </Select>
               {validateValue(rule) && (
                 <Typography color="error" variant="caption">
-                  Value is required 
+                  Value is required
                 </Typography>
               )}
             </FormControl>
@@ -257,7 +255,7 @@ const ConditionRuleBuilder = ({
               </Select>
               {validateValue(rule) && (
                 <Typography color="error" variant="caption">
-                  Value is required 
+                  Value is required
                 </Typography>
               )}
             </FormControl>
@@ -282,7 +280,7 @@ const ConditionRuleBuilder = ({
               </Select>
               {validateValue(rule) && (
                 <Typography color="error" variant="caption">
-                  Value is required 
+                  Value is required
                 </Typography>
               )}
             </FormControl>
@@ -303,7 +301,7 @@ const ConditionRuleBuilder = ({
               </Select>
               {validateValue(rule) && (
                 <Typography color="error" variant="caption">
-                  Value is required 
+                  Value is required
                 </Typography>
               )}
             </FormControl>
@@ -328,7 +326,7 @@ const ConditionRuleBuilder = ({
               </Select>
               {validateValue(rule) && (
                 <Typography color="error" variant="caption">
-                  Value is required 
+                  Value is required
                 </Typography>
               )}
             </FormControl>
@@ -349,7 +347,7 @@ const ConditionRuleBuilder = ({
               </Select>
               {validateValue(rule) && (
                 <Typography color="error" variant="caption">
-                  Value is required 
+                  Value is required
                 </Typography>
               )}
             </FormControl>
@@ -725,54 +723,56 @@ const ConditionRuleBuilder = ({
 
   return (
     <>
-    <Box
-      sx={{
-        maxWidth: "1200px",
-        mx: "auto",
-        p: 4,
-        bgcolor: "background.paper",
-        borderRadius: 2,
-      }}
-    >
-      <Box sx={{ mb: 4, p: 3, bgcolor: "grey.50", borderRadius: 2 }}>
-        <Grid container spacing={2}>
-          <Grid item xs={12} sm={4}>
-            <TextField
-              fullWidth
-              label="Name"
-              value={notification.name}
-              onChange={(e) =>
-                setNotification({ ...notification, name: e.target.value })
-              }
-              variant="outlined"
-              size="small"
-            />
-          </Grid>
-          <Grid item xs={12} sm={4}>
-            <FormControl fullWidth size="small">
-              <InputLabel>Entity</InputLabel>
-              <Select
-                value={notification.entityId}
+      <Box
+        sx={{
+          maxWidth: "1200px",
+          mx: "auto",
+          p: 4,
+          bgcolor: "background.paper",
+          borderRadius: 2,
+        }}
+      >
+        <Box sx={{ mb: 4, p: 3, bgcolor: "grey.50", borderRadius: 2 }}>
+          <Grid container spacing={2}>
+            <Grid item xs={12} sm={4}>
+              <TextField
+                fullWidth
+                label="Name"
+                value={notification.name}
                 onChange={(e) =>
-                  setNotification({ ...notification, entityId: e.target.value })
+                  setNotification({ ...notification, name: e.target.value })
                 }
-                label="Entity"
-              >
-                <MenuItem value="">Select Entity...</MenuItem>
-                {notificationTypeList.data?.data?.map((entity) => (
-                  <MenuItem key={entity._id} value={entity._id}>
-                    {entity.name}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-          </Grid>
+                variant="outlined"
+                size="small"
+              />
+            </Grid>
+            <Grid item xs={12} sm={4}>
+              <FormControl fullWidth size="small">
+                <InputLabel>Entity</InputLabel>
+                <Select
+                  value={notification.entityId}
+                  onChange={(e) =>
+                    setNotification({
+                      ...notification,
+                      entityId: e.target.value,
+                    })
+                  }
+                  label="Entity"
+                >
+                  <MenuItem value="">Select Entity...</MenuItem>
+                  {notificationTypeList.data?.data?.map((entity) => (
+                    <MenuItem key={entity._id} value={entity._id}>
+                      {entity.name}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
           </Grid>
         </Box>
       </Box>
       <GroupComponent group={notification.conditionGroup} isRoot={true} />
-    
-  </>
+    </>
   );
 };
 
@@ -781,7 +781,7 @@ export default function AddNotificationTypes() {
   const [expanded, setExpanded] = useState({ condition: true, reminder: true });
   const [notificationData, setNotificationData] = useState({});
   const [fieldOptions, setFieldOptions] = useState([]);
-    const [notificationTypeId,setNotificationTypeId]=useState(null)
+  const [notificationTypeId, setNotificationTypeId] = useState(null);
 
   const notificationTypeList = useGet(
     ["notificationTypeList"],
@@ -795,8 +795,6 @@ export default function AddNotificationTypes() {
   const handleAccordionChange = (panel) => (event, isExpanded) => {
     setExpanded((prev) => ({ ...prev, [panel]: isExpanded }));
   };
-
- 
 
   useEffect(() => {
     if (notificationData.entityId && notificationTypeList.data?.data) {
@@ -835,7 +833,7 @@ export default function AddNotificationTypes() {
       console.log("Notification created successfully:", response);
 
       if (response.success && response.data?._id) {
-        setNotificationTypeId(response.data?._id)
+        setNotificationTypeId(response.data?._id);
         toast.success("Notification created successfully!");
         // navigate("/notivix/notification");
       } else {
@@ -878,7 +876,9 @@ export default function AddNotificationTypes() {
             <Box sx={{ mb: 2 }} />
             <Accordion
               expanded={expanded.condition}
-              onChange={(event, isExpanded) => handleAccordionChange("condition")(event, isExpanded)}
+              onChange={(event, isExpanded) =>
+                handleAccordionChange("condition")(event, isExpanded)
+              }
               sx={{ mb: 2, borderRadius: 2, boxShadow: 1 }}
             >
               <AccordionSummary
@@ -920,9 +920,12 @@ export default function AddNotificationTypes() {
               </AccordionDetails>
             </Accordion>
             <Accordion
-              expanded={expanded.reminder}
-              onChange={(event, isExpanded) => handleAccordionChange("reminder")(event, isExpanded)}
+              expanded={expanded.reminder && notificationTypeId !== null}
+              onChange={(event, isExpanded) =>
+                handleAccordionChange("reminder")(event, isExpanded)
+              }
               sx={{ mb: 2, borderRadius: 2, boxShadow: 1 }}
+              disabled={notificationTypeId === null}
             >
               <AccordionSummary
                 expandIcon={<ExpandMoreIcon />}
