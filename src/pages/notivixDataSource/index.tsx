@@ -41,7 +41,7 @@ interface ApiResponse {
   totalCount: number;
 }
 
-export default function NotifixDataSource() {
+export default function NotivixDataSource() {
   const { id: valueId } = useParams<{ id: string }>();
   const [rows, setRows] = useState<any[]>([]);
   const rowsRef = useRef<any[]>([]);

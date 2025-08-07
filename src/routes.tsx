@@ -21,15 +21,14 @@ import DataSource from './pages/dataSource';
 import AIInsightPage from './pages/aiInsight';
 import DataSourceVersion from './pages/dataSourceVersion';
 import ReportSettings from './pages/report-settings';
-import NotificationSettings from "./pages/notification";
 import Users from "./pages/users";
 import Roles from "./pages/roles";
 import Organization from "./pages/organization/organization";
-import NotifixDataSource from './pages/notifixDataSource';
 import Permissions from './pages/permissions';
 import NotivixDashboard from './pages/notivixDashboard';
 import AddNotificationTypes from './pages/notification/AddNotificationTypes';
 import Notification from './pages/notification';
+import NotivixDataSource from './pages/notivixDataSource';
 
 const AppRoutes = () => {
   const token = getAuthToken();
@@ -94,7 +93,7 @@ const AppRoutes = () => {
             path="/notivix/settings/organization"
             element={<Organization />}
           />
-          <Route path="/notivix/data-source/:id" element={<NotifixDataSource />} />
+          <Route path="/notivix/data-source/:id" element={<NotivixDataSource />} />
 
         </Route>
       </Route>
