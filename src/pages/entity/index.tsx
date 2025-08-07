@@ -1,15 +1,12 @@
-// import Typography from '@mui/material/Typography';
 import { Box, Button } from '@mui/material';
 import CreateUpdateEntity from '../../components/atom/entity/createUpdateEntity';
 import EntityTable from '../../components/atom/entity/entityTable';
 import { useState } from 'react';
 import { STYLE_GUIDE } from '../../styles';
 import { useUnifiedTheme } from '../../hooks/useUnifiedTheme';
-// import { useComponentTypography } from '../../hooks/useComponentTypography';
 
 export default function Entity() {
   const theme = useUnifiedTheme();
-  // const { getHeadingSx } = useComponentTypography();
   const [reloadEntity, setReloadEntity] = useState(false);
   return (
     <>

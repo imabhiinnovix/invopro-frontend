@@ -17,7 +17,6 @@ export const getDefaultDashboardTheme = (): DashboardTheme => ({
       dark: '#1565c0',
       contrastText: STYLE_GUIDE.COLORS.white,
     },
-    // New customizations
     inputText: STYLE_GUIDE.COLORS.textDarkGray,
     inputBorder: STYLE_GUIDE.COLORS.borderGray,
     dropdownBg: STYLE_GUIDE.COLORS.white,
@@ -48,12 +47,10 @@ export const getDefaultDashboardTheme = (): DashboardTheme => ({
     borderHover: STYLE_GUIDE.COLORS.materialPurpleDark,
   },
   typography: {
-    // Global typography (fallback)
     fontFamily: STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary,
     fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base,
     fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.regular,
     
-    // Component-specific typography
     headings: {
       fontFamily: STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary,
       fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.large,
@@ -157,7 +154,6 @@ export const getDefaultDashboardTheme = (): DashboardTheme => ({
   customFonts: [],
 });
 
-// Convert dashboard theme to MUI theme
 export const createMuiThemeFromDashboardTheme = (dashboardTheme: DashboardTheme) => {
   return createTheme({
     palette: {
@@ -174,7 +170,6 @@ export const createMuiThemeFromDashboardTheme = (dashboardTheme: DashboardTheme)
         disabled: dashboardTheme.colors.text.disabled,
       },
       divider: dashboardTheme.colors.divider,
-      // Custom palette properties
       border: {
         main: dashboardTheme.colors.border,
         hover: dashboardTheme.colors.borderHover,
@@ -212,7 +207,6 @@ export const createMuiThemeFromDashboardTheme = (dashboardTheme: DashboardTheme)
         overlayColor: dashboardTheme.components.dialog.overlayColor,
       },
     },
-    // Include the full dashboard theme for backward compatibility
     dashboardTheme,
     components: {
       MuiCard: {

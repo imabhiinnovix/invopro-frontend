@@ -15,7 +15,6 @@ export interface DashboardTheme {
   createdAt?: string;
   updatedAt?: string;
   
-  // Color Palette
   colors: {
     primary: {
       main: string;
@@ -28,7 +27,6 @@ export interface DashboardTheme {
       dark: string;
       contrastText: string;
     };
-    // New customizations
     inputText: string;
     inputBorder: string;
     dropdownBg: string;
@@ -40,7 +38,6 @@ export interface DashboardTheme {
     dropdownFocusedBorder: string;
     dropdownFocusedLabel: string;
     
-    // Icon colors
     iconPrimary: string;
 
     background: {
@@ -62,14 +59,10 @@ export interface DashboardTheme {
     borderHover: string;
   };
 
-  // Typography Settings
   typography: {
-    // Global typography (fallback)
     fontFamily: string;
     fontSize: string;
     fontWeight: string;
-    
-    // Component-specific typography
     headings: {
       fontFamily: string;
       fontSize: string;
@@ -112,7 +105,6 @@ export interface DashboardTheme {
     };
   };
 
-  // Component Styles (without spacing properties)
   components: {
     button: {
       textTransform: 'none' | 'capitalize' | 'uppercase' | 'lowercase';
@@ -174,7 +166,6 @@ export interface DashboardTheme {
     };
   };
 
-  // Shadows
   shadows: {
     sm: string;
     md: string;
@@ -183,12 +174,10 @@ export interface DashboardTheme {
     xxl: string;
   };
 
-  // Layout
   layout: {
     maxWidth: string;
   };
 
-  // Custom Fonts
   customFonts?: FontOption[];
 }
 

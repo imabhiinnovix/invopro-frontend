@@ -5,7 +5,6 @@ export const useComponentTypography = () => {
   const { dashboardTheme } = useAppSelector((state) => state.dashboardTheme);
   const { typographySettings } = useTypographySettings();
 
-  // Helper function to get component-specific typography
   const getComponentTypography = (componentType: 'headings' | 'body' | 'buttons' | 'cards' | 'inputs' | 'tables' | 'navigation' | 'dialog') => {
     if (!dashboardTheme?.typography) {
       return typographySettings;
@@ -28,31 +27,24 @@ export const useComponentTypography = () => {
   };
 
 
-
-  // Get sx props for components
   const getHeadingSx = () => {
     const typography = getComponentTypography('headings');
     return {
       fontFamily: `${typography.fontFamily} !important`,
       fontSize: typography.fontSize,
       fontWeight: parseInt(typography.fontWeight),
-      // Maximum specificity overrides
       '&.MuiTypography-root': {
         fontFamily: `${typography.fontFamily} !important`,
       },
-      // Additional specificity for different Typography variants
       '&.MuiTypography-h1, &.MuiTypography-h2, &.MuiTypography-h3, &.MuiTypography-h4, &.MuiTypography-h5, &.MuiTypography-h6': {
         fontFamily: `${typography.fontFamily} !important`,
       },
-      // Override any inline styles
       '&[style*="font-family"]': {
         fontFamily: `${typography.fontFamily} !important`,
       },
-      // Override theme styleOverrides
       '&.MuiTypography-root[style*="font-family"]': {
         fontFamily: `${typography.fontFamily} !important`,
       },
-      // Force on all child elements
       '& *': {
         fontFamily: `${typography.fontFamily} !important`,
       },
@@ -65,22 +57,18 @@ export const useComponentTypography = () => {
       fontFamily: `${typography.fontFamily} !important`,
       fontSize: typography.fontSize,
       fontWeight: parseInt(typography.fontWeight),
-      // Maximum specificity overrides
       '&.MuiTypography-root': {
         fontFamily: `${typography.fontFamily} !important`,
       },
       '&.MuiTypography-body1, &.MuiTypography-body2': {
         fontFamily: `${typography.fontFamily} !important`,
       },
-      // Override any inline styles
       '&[style*="font-family"]': {
         fontFamily: `${typography.fontFamily} !important`,
       },
-      // Override theme styleOverrides
       '&.MuiTypography-root[style*="font-family"]': {
         fontFamily: `${typography.fontFamily} !important`,
       },
-      // Force on all child elements
       '& *': {
         fontFamily: `${typography.fontFamily} !important`,
       },
@@ -93,7 +81,6 @@ export const useComponentTypography = () => {
       fontFamily: `${typography.fontFamily} !important`,
       fontSize: typography.fontSize,
       fontWeight: parseInt(typography.fontWeight),
-      // Maximum specificity overrides
       '&.MuiButton-root': {
         fontFamily: `${typography.fontFamily} !important`,
       },
@@ -106,15 +93,12 @@ export const useComponentTypography = () => {
       '&.MuiButton-contained': {
         fontFamily: `${typography.fontFamily} !important`,
       },
-      // Override any inline styles
       '&[style*="font-family"]': {
         fontFamily: `${typography.fontFamily} !important`,
       },
-      // Override theme styleOverrides
       '&.MuiButton-root[style*="font-family"]': {
         fontFamily: `${typography.fontFamily} !important`,
       },
-      // Force on all child elements
       '& *': {
         fontFamily: `${typography.fontFamily} !important`,
       },
@@ -127,7 +111,6 @@ export const useComponentTypography = () => {
       fontFamily: `${typography.fontFamily} !important`,
       fontSize: typography.fontSize,
       fontWeight: parseInt(typography.fontWeight),
-      // Maximum specificity overrides
       '&.MuiCard-root': {
         fontFamily: `${typography.fontFamily} !important`,
       },
@@ -137,15 +120,12 @@ export const useComponentTypography = () => {
       '&.MuiCardHeader-root': {
         fontFamily: `${typography.fontFamily} !important`,
       },
-      // Override any inline styles
       '&[style*="font-family"]': {
         fontFamily: `${typography.fontFamily} !important`,
       },
-      // Override theme styleOverrides
       '&.MuiCard-root[style*="font-family"]': {
         fontFamily: `${typography.fontFamily} !important`,
       },
-      // Force on all child elements
       '& *': {
         fontFamily: `${typography.fontFamily} !important`,
       },
@@ -158,7 +138,6 @@ export const useComponentTypography = () => {
       fontFamily: `${typography.fontFamily} !important`,
       fontSize: typography.fontSize,
       fontWeight: parseInt(typography.fontWeight),
-      // Maximum specificity overrides
       '&.MuiInputBase-root': {
         fontFamily: `${typography.fontFamily} !important`,
       },
@@ -171,15 +150,12 @@ export const useComponentTypography = () => {
       '&.MuiFilledInput-root': {
         fontFamily: `${typography.fontFamily} !important`,
       },
-      // Override any inline styles
       '&[style*="font-family"]': {
         fontFamily: `${typography.fontFamily} !important`,
       },
-      // Override theme styleOverrides
       '&.MuiInputBase-root[style*="font-family"]': {
         fontFamily: `${typography.fontFamily} !important`,
       },
-      // Force on all child elements
       '& *': {
         fontFamily: `${typography.fontFamily} !important`,
       },
@@ -192,7 +168,6 @@ export const useComponentTypography = () => {
       fontFamily: `${typography.fontFamily} !important`,
       fontSize: typography.fontSize,
       fontWeight: parseInt(typography.fontWeight),
-      // Maximum specificity overrides for all table components
       '&.MuiTable-root': {
         fontFamily: `${typography.fontFamily} !important`,
       },
@@ -208,7 +183,6 @@ export const useComponentTypography = () => {
       '&.MuiTableCell-root': {
         fontFamily: `${typography.fontFamily} !important`,
       },
-      // Override styled components specifically
       '& .MuiTableCell-root': {
         fontFamily: `${typography.fontFamily} !important`,
       },
@@ -221,36 +195,30 @@ export const useComponentTypography = () => {
       '& .MuiTableRow-root .MuiTableCell-root': {
         fontFamily: `${typography.fontFamily} !important`,
       },
-      // Override theme styleOverrides with maximum specificity
       '& .MuiTableHead-root .MuiTableCell-root[class*="MuiTableCell-head"]': {
         fontFamily: `${typography.fontFamily} !important`,
       },
       '& .MuiTableBody-root .MuiTableCell-root[class*="MuiTableCell-body"]': {
         fontFamily: `${typography.fontFamily} !important`,
       },
-      // Override any inline styles
       '&[style*="font-family"]': {
         fontFamily: `${typography.fontFamily} !important`,
       },
       '& .MuiTableCell-root[style*="font-family"]': {
         fontFamily: `${typography.fontFamily} !important`,
       },
-      // Override theme styleOverrides
       '&.MuiTable-root[style*="font-family"]': {
         fontFamily: `${typography.fontFamily} !important`,
       },
-      // Force on all child elements with maximum specificity
       '& *': {
         fontFamily: `${typography.fontFamily} !important`,
       },
       '& .MuiTableCell-root *': {
         fontFamily: `${typography.fontFamily} !important`,
       },
-      // Override styled components with maximum specificity
       '& .MuiTableCell-root[class*="MuiTableCell"]': {
         fontFamily: `${typography.fontFamily} !important`,
       },
-      // Additional specificity for styled components
       '& .MuiTableContainer-root .MuiTable-root .MuiTableHead-root .MuiTableRow-root .MuiTableCell-root': {
         fontFamily: `${typography.fontFamily} !important`,
       },
@@ -266,7 +234,6 @@ export const useComponentTypography = () => {
       fontFamily: `${typography.fontFamily} !important`,
       fontSize: typography.fontSize,
       fontWeight: parseInt(typography.fontWeight),
-      // Maximum specificity overrides
       '&.MuiListItemText-primary': {
         fontFamily: `${typography.fontFamily} !important`,
       },
@@ -279,15 +246,12 @@ export const useComponentTypography = () => {
       '&.MuiDrawer-root': {
         fontFamily: `${typography.fontFamily} !important`,
       },
-      // Override any inline styles
       '&[style*="font-family"]': {
         fontFamily: `${typography.fontFamily} !important`,
       },
-      // Override theme styleOverrides
       '&.MuiListItemText-primary[style*="font-family"]': {
         fontFamily: `${typography.fontFamily} !important`,
       },
-      // Force on all child elements
       '& *': {
         fontFamily: `${typography.fontFamily} !important`,
       },
@@ -300,7 +264,6 @@ export const useComponentTypography = () => {
       fontFamily: `${typography.fontFamily} !important`,
       fontSize: typography.fontSize,
       fontWeight: parseInt(typography.fontWeight),
-      // Maximum specificity overrides for DialogTitle
       '&.MuiDialogTitle-root': {
         fontFamily: `${typography.fontFamily} !important`,
         fontSize: `${typography.fontSize} !important`,
@@ -311,7 +274,6 @@ export const useComponentTypography = () => {
         fontSize: `${typography.fontSize} !important`,
         fontWeight: `${typography.fontWeight} !important`,
       },
-      // Override any inline styles
       '&[style*="font-family"]': {
         fontFamily: `${typography.fontFamily} !important`,
       },
@@ -321,7 +283,6 @@ export const useComponentTypography = () => {
       '&[style*="font-weight"]': {
         fontWeight: `${typography.fontWeight} !important`,
       },
-      // Override theme styleOverrides with maximum specificity
       '&.MuiDialogTitle-root[style*="font-family"]': {
         fontFamily: `${typography.fontFamily} !important`,
       },
@@ -331,19 +292,16 @@ export const useComponentTypography = () => {
       '&.MuiDialogTitle-root[style*="font-weight"]': {
         fontWeight: `${typography.fontWeight} !important`,
       },
-      // Force on all child elements
       '& *': {
         fontFamily: `${typography.fontFamily} !important`,
         fontSize: `${typography.fontSize} !important`,
         fontWeight: `${typography.fontWeight} !important`,
       },
-      // Additional specificity for nested elements
       '& .MuiTypography-root': {
         fontFamily: `${typography.fontFamily} !important`,
         fontSize: `${typography.fontSize} !important`,
         fontWeight: `${typography.fontWeight} !important`,
       },
-      // Override any Material-UI theme overrides
       '&.MuiDialogTitle-root.MuiTypography-root': {
         fontFamily: `${typography.fontFamily} !important`,
         fontSize: `${typography.fontSize} !important`,
@@ -357,10 +315,7 @@ export const useComponentTypography = () => {
 
 
   return {
-    // Raw typography objects
     getComponentTypography,
-    
-    // Sx props for components
     getHeadingSx,
     getBodySx,
     getButtonSx,
@@ -369,8 +324,6 @@ export const useComponentTypography = () => {
     getTableSx,
     getNavigationSx,
     getDialogTitleSx,
-    
-    // Current theme info
     hasDashboardTheme: !!dashboardTheme?.typography,
     currentTheme: dashboardTheme,
   };

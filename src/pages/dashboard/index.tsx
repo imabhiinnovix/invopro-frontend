@@ -201,7 +201,6 @@ const Dashboard = () => {
             variant="h4"
             sx={{
             ...getHeadingSx(),
-            // color: theme.palette.primary.dark,
           }}
           >
             Dashboards

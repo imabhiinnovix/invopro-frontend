@@ -456,7 +456,6 @@ const CreateDashboardThemeDialog: React.FC<CreateDashboardThemeDialogProps> = ({
               Component-Specific Typography Settings
             </Typography>
             
-            {/* Global Typography */}
             <Paper elevation={2} sx={{ p: 3, mb: 3 }}>
               <Typography variant="h6" sx={{ mb: 2, fontWeight: 700 }}>
                 Global Typography
@@ -518,7 +517,6 @@ const CreateDashboardThemeDialog: React.FC<CreateDashboardThemeDialogProps> = ({
               </Grid>
             </Paper>
 
-            {/* Headings Typography */}
             <Paper elevation={2} sx={{ p: 3, mb: 3 }}>
               <Typography variant="h6" sx={{ mb: 2, fontWeight: 700 }}>
                 Headings Typography
@@ -580,7 +578,6 @@ const CreateDashboardThemeDialog: React.FC<CreateDashboardThemeDialogProps> = ({
               </Grid>
             </Paper>
 
-            {/* Body Text Typography */}
             <Paper elevation={2} sx={{ p: 3, mb: 3 }}>
               <Typography variant="h6" sx={{ mb: 2, fontWeight: 700 }}>
                 Body Text Typography
@@ -642,7 +639,6 @@ const CreateDashboardThemeDialog: React.FC<CreateDashboardThemeDialogProps> = ({
               </Grid>
             </Paper>
 
-            {/* Buttons Typography */}
             <Paper elevation={2} sx={{ p: 3, mb: 3 }}>
               <Typography variant="h6" sx={{ mb: 2, fontWeight: 700 }}>
                 Buttons Typography
@@ -704,7 +700,6 @@ const CreateDashboardThemeDialog: React.FC<CreateDashboardThemeDialogProps> = ({
               </Grid>
             </Paper>
 
-            {/* Cards Typography */}
             <Paper elevation={2} sx={{ p: 3, mb: 3 }}>
               <Typography variant="h6" sx={{ mb: 2, fontWeight: 700 }}>
                 Cards Typography
@@ -766,7 +761,6 @@ const CreateDashboardThemeDialog: React.FC<CreateDashboardThemeDialogProps> = ({
               </Grid>
             </Paper>
 
-            {/* Inputs Typography */}
             <Paper elevation={2} sx={{ p: 3, mb: 3 }}>
               <Typography variant="h6" sx={{ mb: 2, fontWeight: 700 }}>
                 Inputs Typography
@@ -828,7 +822,6 @@ const CreateDashboardThemeDialog: React.FC<CreateDashboardThemeDialogProps> = ({
               </Grid>
             </Paper>
 
-            {/* Tables Typography */}
             <Paper elevation={2} sx={{ p: 3, mb: 3 }}>
               <Typography variant="h6" sx={{ mb: 2, fontWeight: 700 }}>
                 Tables Typography
@@ -890,7 +883,6 @@ const CreateDashboardThemeDialog: React.FC<CreateDashboardThemeDialogProps> = ({
               </Grid>
             </Paper>
 
-            {/* Navigation Typography */}
             <Paper elevation={2} sx={{ p: 3, mb: 3 }}>
               <Typography variant="h6" sx={{ mb: 2, fontWeight: 700 }}>
                 Navigation Typography
@@ -952,7 +944,6 @@ const CreateDashboardThemeDialog: React.FC<CreateDashboardThemeDialogProps> = ({
               </Grid>
             </Paper>
 
-            {/* Dialog Typography */}
             <Paper elevation={2} sx={{ p: 3, mb: 3 }}>
               <Typography variant="h6" sx={{ mb: 2, fontWeight: 700 }}>
                 Dialog Typography
@@ -1014,7 +1005,6 @@ const CreateDashboardThemeDialog: React.FC<CreateDashboardThemeDialogProps> = ({
               </Grid>
             </Paper>
 
-            {/* Custom Font Upload */}
             <Paper elevation={2} sx={{ p: 3, mb: 3 }}>
               <Typography variant="h6" sx={{ mb: 2, fontWeight: 700 }}>
                 Custom Font Upload
@@ -1045,7 +1035,6 @@ const CreateDashboardThemeDialog: React.FC<CreateDashboardThemeDialogProps> = ({
                     onChange={(e) => {
                       const file = e.target.files?.[0];
                       if (file && (file.type === 'font/ttf' || file.name.toLowerCase().endsWith('.ttf'))) {
-                        // Extract font name from file name (remove .ttf extension)
                         const fontName = file.name.replace(/\.ttf$/i, '');
                         const fontValue = `"${fontName}", sans-serif`;
                         

@@ -155,7 +155,6 @@ export const NotivixDashboardView: React.FC<DashboardViewProps> = ({ title: init
         dispatch(
           fetchChartData({
             dashboardId,
-            // versionValue: formattedVersionValue || "",
             dashboardType: 'normal',
             startVersionValue,
             endVersionValue,
@@ -275,13 +274,11 @@ export const NotivixDashboardView: React.FC<DashboardViewProps> = ({ title: init
 
   const handleEditModeToggle = async () => {
     if (isEditMode) {
-      // Save title first if it has changed
       if (editedTitle !== title) {
         onTitleChange(editedTitle);
         setTitle(editedTitle);
       }
 
-      // Save temporary charts only if there are any
       if (temporaryCharts.length > 0) {
         try {
           const result = await dispatch(

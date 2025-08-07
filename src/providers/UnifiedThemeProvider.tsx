@@ -15,14 +15,12 @@ const UnifiedThemeProviderInner: React.FC<UnifiedThemeProviderProps> = ({ childr
   }));
   const { typographySettings } = useTypography();
 
-  // Determine effective typography settings
   const effectiveTypographySettings = dashboardTheme?.typography ? {
     fontFamily: dashboardTheme.typography.fontFamily,
     fontSize: dashboardTheme.typography.fontSize,
     fontWeight: dashboardTheme.typography.fontWeight,
   } : typographySettings;
 
-  // Helper function to get component-specific typography
   const getComponentTypography = (componentType: 'headings' | 'body' | 'buttons' | 'cards' | 'inputs' | 'tables' | 'navigation' | 'dialog') => {
     if (!dashboardTheme?.typography) {
       return effectiveTypographySettings;
@@ -44,7 +42,6 @@ const UnifiedThemeProviderInner: React.FC<UnifiedThemeProviderProps> = ({ childr
     };
   };
 
-  // Create a unified theme that combines the base MUI theme with the dashboard theme and typography settings
   const unifiedTheme = React.useMemo(() => {
     const baseThemeWithTypography = {
       ...baseTheme,
@@ -52,7 +49,6 @@ const UnifiedThemeProviderInner: React.FC<UnifiedThemeProviderProps> = ({ childr
         ...baseTheme.typography,
         fontFamily: effectiveTypographySettings.fontFamily,
         fontSize: parseInt(effectiveTypographySettings.fontSize),
-        // Override specific typography variants to use the selected font
         h1: {
           ...baseTheme.typography.h1,
           fontFamily: getComponentTypography('headings').fontFamily,
@@ -130,7 +126,7 @@ const UnifiedThemeProviderInner: React.FC<UnifiedThemeProviderProps> = ({ childr
         primary: {
           main: dashboardTheme.colors.primary.main,
           light: dashboardTheme.colors.primary.light,
-          dark: dashboardTheme.colors.primary.main, // Use main as dark fallback
+          dark: dashboardTheme.colors.primary.main,
           contrastText: dashboardTheme.colors.primary.contrastText,
         },
         secondary: {
@@ -149,7 +145,6 @@ const UnifiedThemeProviderInner: React.FC<UnifiedThemeProviderProps> = ({ childr
           disabled: dashboardTheme.colors.text.disabled,
         },
         divider: dashboardTheme.colors.divider,
-        // Custom palette properties
         border: {
           main: dashboardTheme.colors.border,
           hover: dashboardTheme.colors.borderHover,
@@ -536,7 +531,6 @@ const UnifiedThemeProviderInner: React.FC<UnifiedThemeProviderProps> = ({ childr
           },
         },
       },
-      // Add dashboard theme for backward compatibility
       dashboardTheme,
     });
   }, [dashboardTheme, typographySettings, effectiveTypographySettings, getComponentTypography]);
