@@ -588,7 +588,7 @@ export default function Permissions() {
                   : "Filter "}
           </Typography>
 
-          <Box
+          {/* <Box
             sx={{
               display: "grid",
               gridTemplateColumns: "1fr",
@@ -650,6 +650,147 @@ export default function Permissions() {
                   <MenuItem value="view">VIEW</MenuItem>
                 </Select>
               </FormControl>
+            )}
+          </Box> */}
+          <Box
+            sx={{
+              display: "grid",
+              gridTemplateColumns: "1fr",
+              gap: 2,
+            }}
+          >
+            {modalMode === "view" ? (
+              <>
+                {/* Name */}
+                <div>
+                  <label
+                    style={{
+                      display: "block",
+                      marginBottom: "4px",
+                      fontSize: "14px",
+                      color: "#666",
+                      fontWeight: 500,
+                    }}
+                  >
+                    Name
+                  </label>
+                  <div
+                    style={{
+                      padding: "14px 12px",
+                      borderRadius: "8px",
+                      backgroundColor: "#ebe8e8ff",
+                      color: "#3f3e3eff",
+                    }}
+                  >
+                    {formData.name?.trim() || "-"}
+                  </div>
+                </div>
+
+                {/* Data Source */}
+                <div>
+                  <label
+                    style={{
+                      display: "block",
+                      marginBottom: "4px",
+                      fontSize: "14px",
+                      color: "#666",
+                      fontWeight: 500,
+                    }}
+                  >
+                    Data Source
+                  </label>
+                  <div
+                    style={{
+                      padding: "14px 12px",
+                      borderRadius: "8px",
+                      backgroundColor: "#ebe8e8ff",
+                      color: "#3f3e3eff",
+                    }}
+                  >
+                    {dataSourceOptions.find(
+                      (option) => option.id === formData.dataSourceId
+                    )?.name || "-"}
+                  </div>
+                </div>
+
+                {/* Method */}
+                <div>
+                  <label
+                    style={{
+                      display: "block",
+                      marginBottom: "4px",
+                      fontSize: "14px",
+                      color: "#666",
+                      fontWeight: 500,
+                    }}
+                  >
+                    Method
+                  </label>
+                  <div
+                    style={{
+                      padding: "14px 12px",
+                      borderRadius: "8px",
+                      backgroundColor: "#ebe8e8ff",
+                      textTransform: "uppercase",
+                      color: "#3f3e3eff",
+                    }}
+                  >
+                    {formData.methodName || "-"}
+                  </div>
+                </div>
+              </>
+            ) : (
+              <>
+                <TextField
+                  label="Name"
+                  value={formData.name}
+                  onChange={(e) =>
+                    setFormData({ ...formData, name: e.target.value })
+                  }
+                  variant="outlined"
+                  fullWidth
+                  required
+                  sx={{ "& .MuiOutlinedInput-root": { borderRadius: "8px" } }}
+                />
+
+                <FormControl
+                  fullWidth
+                  sx={{ "& .MuiOutlinedInput-root": { borderRadius: "8px" } }}
+                >
+                  <InputLabel>Data Source</InputLabel>
+                  <Select
+                    value={formData.dataSourceId}
+                    onChange={handleDataSourceChange}
+                    label="Data Source"
+                    required
+                  >
+                    {dataSourceOptions.map((option) => (
+                      <MenuItem key={option.id} value={option.id}>
+                        {option.name}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+
+                <FormControl
+                  fullWidth
+                  sx={{ "& .MuiOutlinedInput-root": { borderRadius: "8px" } }}
+                >
+                  <InputLabel>Method</InputLabel>
+                  <Select
+                    value={formData.methodName}
+                    onChange={handleMethodChange}
+                    label="Method"
+                    required
+                  >
+                    <MenuItem value="list">LIST</MenuItem>
+                    <MenuItem value="create">CREATE</MenuItem>
+                    <MenuItem value="delete">DELETE</MenuItem>
+                    <MenuItem value="update">UPDATE</MenuItem>
+                    <MenuItem value="view">VIEW</MenuItem>
+                  </Select>
+                </FormControl>
+              </>
             )}
           </Box>
 

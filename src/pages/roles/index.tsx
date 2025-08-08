@@ -780,29 +780,56 @@ export default function Roles() {
             <form onSubmit={handleSubmit(onSubmit)}>
               <Grid container spacing={2}>
                 <Grid item xs={12}>
-                  <Controller
-                    name="name"
-                    control={control}
-                    render={({ field }) => (
-                      <TextField
-                        {...field}
-                        label="Name *"
-                        placeholder="Enter role name"
-                        variant="outlined"
-                        fullWidth
-                        disabled={modalMode === "view"}
-                        error={!isNameValid && field.value !== ""}
-                        helperText={
-                          !isNameValid && field.value !== ""
-                            ? "Name must be longer than 1 character"
-                            : " "
-                        }
-                        sx={{
-                          "& .MuiOutlinedInput-root": { borderRadius: "8px" },
+                  {modalMode === "view" ? (
+                    <>
+                      <label
+                        style={{
+                          display: "block",
+                          marginBottom: "4px",
+                          fontSize: "14px",
+                          color: "#666",
+                          fontWeight: 500,
                         }}
-                      />
-                    )}
-                  />
+                      >
+                        Name
+                      </label>
+                      <div
+                        style={{
+                          padding: "14px 12px",
+                          borderRadius: "8px",
+                          display: "flex",
+                          alignItems: "center",
+                          backgroundColor: "#ebe8e8ff",
+                          color: "#3f3e3eff",
+                        }}
+                      >
+                        {control._formValues?.name || "-"}
+                      </div>
+                    </>
+                  ) : (
+                    <Controller
+                      name="name"
+                      control={control}
+                      render={({ field }) => (
+                        <TextField
+                          {...field}
+                          label="Name *"
+                          placeholder="Enter role name"
+                          variant="outlined"
+                          fullWidth
+                          error={!isNameValid && field.value !== ""}
+                          helperText={
+                            !isNameValid && field.value !== ""
+                              ? "Name must be longer than 1 character"
+                              : " "
+                          }
+                          sx={{
+                            "& .MuiOutlinedInput-root": { borderRadius: "8px" },
+                          }}
+                        />
+                      )}
+                    />
+                  )}
                 </Grid>
                 {modalMode === "filter" && (
                   <>
