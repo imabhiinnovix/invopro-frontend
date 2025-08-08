@@ -290,6 +290,12 @@ const RRuleGenerator = ({
   );
 
   useEffect(() => {
+    if (notificationTypeId) {
+      setFrequencyApiSuccess(true); // Ensure API success flag is set
+      refetch(); // Trigger the API call
+    }
+  }, [notificationTypeId, refetch]);
+  useEffect(() => {
     if (notificationTypeId && frequencyApiSuccess) {
       refetch();
     }
