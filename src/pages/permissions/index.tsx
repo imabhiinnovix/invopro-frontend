@@ -159,8 +159,6 @@ export default function Permissions() {
     dataSourceId: "",
     resourceType: "",
   });
-  const dataSource = useSelector((state: RootState) => state.dataSource.list);
-
   useEffect(() => {
     const handler = setTimeout(() => {
       setDebouncedSearchValue(searchValue);
@@ -194,6 +192,13 @@ export default function Permissions() {
     `${GET?.PERMISSION_LIST}?page=${paginationModel.page + 1}&limit=${perPageItem}&search=${encodeURIComponent(debouncedSearchValue)}&name=${encodeURIComponent(filterValues.name)}&dataSourceId=${encodeURIComponent(filterValues.dataSourceId)}&resourceType=${encodeURIComponent(filterValues.resourceType)}`,
     true
   );
+// Get Datasource
+  const dataSourceApiList = useGet<any>(
+    ["dataSourceApiList"],
+    `${GET?.DATASOURCE_API_LIST}?isAllowPermission=true&paginate=false`,
+    true
+  );
+  const dataSource = dataSourceApiList?.data?.data;
 
   // POST API
   const createPermission = usePost<

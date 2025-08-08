@@ -108,4 +108,5 @@ export const GET = {
   NOTIFICATION_TYPE_LIST: '/notivix/notification-setting/type/list',
   TEMPLATE_LIST:'/notivix/notification-setting/template/list',
   MEDIUM_LIST:'/notivix/notification-setting/medium/list',
+  DATASOURCE_API_LIST:"/common/dataSource/list"
 };
