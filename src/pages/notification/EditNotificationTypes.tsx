@@ -413,7 +413,7 @@ const RuleComponent = React.memo(
           value={rule.field}
           onChange={handleFieldChange}
           options={[
-            { value: "", label: "Select field..." },
+            { value: "", label: "" },
             ...fieldOptions_formatted,
           ]}
           sx={{ minWidth: 200 }}
@@ -423,7 +423,7 @@ const RuleComponent = React.memo(
           value={rule.operator}
           onChange={handleOperatorChange}
           options={[
-            { value: "", label: "Select operator..." },
+            { value: "", label: "" },
             ...operatorOptions,
           ]}
           disabled={!rule.field}
@@ -545,7 +545,7 @@ const GroupComponent = React.memo(
                 "&:hover": { transform: "scale(1.05)" },
               }}
             >
-              Rule
+              Condition 
             </Button>
             <Button
               variant="contained"
@@ -562,7 +562,7 @@ const GroupComponent = React.memo(
                 "&:hover": { transform: "scale(1.05)" },
               }}
             >
-              Group
+              Group condition
             </Button>
             {!isRoot && (
               <IconButton

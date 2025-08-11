@@ -592,7 +592,7 @@ const ConditionRuleBuilder = ({
                 "&:hover": { transform: "scale(1.05)" },
               }}
             >
-              Rule
+              Condition{" "}
             </Button>
             <Button
               variant="contained"
@@ -609,7 +609,7 @@ const ConditionRuleBuilder = ({
                 "&:hover": { transform: "scale(1.05)" },
               }}
             >
-              Group
+              Group Condition
             </Button>
             {!isRoot && (
               <IconButton
