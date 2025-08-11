@@ -562,7 +562,7 @@ const GroupComponent = React.memo(
                 "&:hover": { transform: "scale(1.05)" },
               }}
             >
-              Group condition
+              Group Condition
             </Button>
             {!isRoot && (
               <IconButton
