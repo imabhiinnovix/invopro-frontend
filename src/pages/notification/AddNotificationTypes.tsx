@@ -209,7 +209,7 @@ const ConditionRuleBuilder = ({
             </Select>
             {validateValue(rule) && (
               <Typography color="error" variant="caption">
-                Value is required
+                Required
               </Typography>
             )}
           </FormControl>
@@ -234,7 +234,7 @@ const ConditionRuleBuilder = ({
               </Select>
               {validateValue(rule) && (
                 <Typography color="error" variant="caption">
-                  Value is required
+                  Required
                 </Typography>
               )}
             </FormControl>
@@ -255,7 +255,7 @@ const ConditionRuleBuilder = ({
               </Select>
               {validateValue(rule) && (
                 <Typography color="error" variant="caption">
-                  Value is required
+                Required
                 </Typography>
               )}
             </FormControl>
@@ -280,7 +280,7 @@ const ConditionRuleBuilder = ({
               </Select>
               {validateValue(rule) && (
                 <Typography color="error" variant="caption">
-                  Value is required
+                  Required
                 </Typography>
               )}
             </FormControl>
@@ -301,7 +301,7 @@ const ConditionRuleBuilder = ({
               </Select>
               {validateValue(rule) && (
                 <Typography color="error" variant="caption">
-                  Value is required
+                  Required
                 </Typography>
               )}
             </FormControl>
@@ -326,7 +326,7 @@ const ConditionRuleBuilder = ({
               </Select>
               {validateValue(rule) && (
                 <Typography color="error" variant="caption">
-                  Value is required
+                  Required
                 </Typography>
               )}
             </FormControl>
@@ -347,7 +347,7 @@ const ConditionRuleBuilder = ({
               </Select>
               {validateValue(rule) && (
                 <Typography color="error" variant="caption">
-                  Value is required
+                  Required
                 </Typography>
               )}
             </FormControl>
@@ -369,7 +369,7 @@ const ConditionRuleBuilder = ({
             />
             {validateValue(rule) && (
               <Typography color="error" variant="caption">
-                Value is required
+                Required
               </Typography>
             )}
           </FormControl>
@@ -394,7 +394,7 @@ const ConditionRuleBuilder = ({
               />
               {validateValue(rule) && (
                 <Typography color="error" variant="caption">
-                  Value is required
+                  Required
                 </Typography>
               )}
             </FormControl>
@@ -432,7 +432,7 @@ const ConditionRuleBuilder = ({
             />
             {validateValue(rule) && (
               <Typography color="error" variant="caption">
-                Value is required
+                Required
               </Typography>
             )}
           </FormControl>

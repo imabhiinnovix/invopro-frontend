@@ -176,24 +176,30 @@ const DateTimeInput = React.memo(
     ];
 
     return (
-      <Box sx={{ display: "flex", gap: 2, alignItems: "flex-start" }}>
+      <Box
+        sx={{
+          display: "flex",
+          gap: 2,
+          alignItems: "flex-start",
+        }}
+      >
         <TextField
-          type="date"
+          type="text"
           label="Select Date"
           value={dateValue}
           onChange={(e) => onDateChange(e.target.value)}
           error={error}
           helperText={helperText}
-          fullWidth
           size="small"
           InputLabelProps={{ shrink: true }}
+          sx={{ flex: "0 0 70px" }}
         />
         <MUISelect
           label="Time Unit"
           value={timeUnit}
           onChange={(e) => onTimeUnitChange(e.target.value)}
           options={timeUnitOptions}
-          sx={{ minWidth: 150 }}
+          sx={{ minWidth: 90 }}
         />
       </Box>
     );
@@ -296,7 +302,7 @@ const ValueInput = React.memo(
 
     const commonProps = {
       error: hasError,
-      helperText: hasError ? "Value is required" : "",
+      helperText: hasError ? "Required" : "",
     };
 
     switch (field.type) {
@@ -412,20 +418,14 @@ const RuleComponent = React.memo(
           label="Select Field"
           value={rule.field}
           onChange={handleFieldChange}
-          options={[
-            { value: "", label: "" },
-            ...fieldOptions_formatted,
-          ]}
+          options={[{ value: "", label: "" }, ...fieldOptions_formatted]}
           sx={{ minWidth: 200 }}
         />
         <MUISelect
           label="Select Operator"
           value={rule.operator}
           onChange={handleOperatorChange}
-          options={[
-            { value: "", label: "" },
-            ...operatorOptions,
-          ]}
+          options={[{ value: "", label: "" }, ...operatorOptions]}
           disabled={!rule.field}
           loading={operatorList.isLoading}
           sx={{ minWidth: 180 }}
@@ -545,7 +545,7 @@ const GroupComponent = React.memo(
                 "&:hover": { transform: "scale(1.05)" },
               }}
             >
-              Condition 
+              Condition
             </Button>
             <Button
               variant="contained"
@@ -586,7 +586,7 @@ const GroupComponent = React.memo(
                 {index > 0 && (
                   <Box sx={{ py: 1, textAlign: "left" }}>
                     <Chip
-                      label={group.logic==="AND"?"ALL":"ANY"}
+                      label={group.logic === "AND" ? "ALL" : "ANY"}
                       size="small"
                       sx={{
                         fontSize: "0.75rem",
@@ -1250,4 +1250,3 @@ export default function EditNotificationTypes() {
     </Box>
   );
 }
-
