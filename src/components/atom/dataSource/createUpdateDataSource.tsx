@@ -1,7 +1,3 @@
-
-
-
-
 import React, { useEffect, useState } from "react";
 import { useForm, useFieldArray } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
@@ -69,6 +65,7 @@ interface FieldSetting {
   filter: boolean;
   sorting: boolean;
   visible: boolean;
+  isDerived:boolean
 }
 
 interface DataSourceRequestPayload {
@@ -171,11 +168,12 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({
         : [[""]],
       fieldSettings: data?.fieldSettings?.length
         ? data.fieldSettings.map((setting) => ({
-            attributeId: setting.attributeId,
+            attributeId: `${setting.attributeId}-${setting.refAttributeId || 'null'}`,
             value: setting.label || setting.value || "",
             filter: setting.isFilterEnable || setting.filter || false,
             sorting: setting.isSortingEnable || setting.sorting || false,
             visible: setting.isDisplayEnable || setting.visible || false,
+            isDerived:setting.isDerived 
           }))
         : [
             {
@@ -184,6 +182,7 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({
               filter: false,
               sorting: false,
               visible: false,
+              isDerived:false,
             },
           ],
     },
@@ -358,13 +357,15 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({
             )
           : [[""]],
         fieldSettings: data.fieldSettings?.length
-          ? data.fieldSettings.map((setting) => ({
-              attributeId: setting.attributeId,
+          ? data.fieldSettings.map((setting) => {
+console.log("settings",setting)
+           return {
+              attributeId: `${setting.attributeId}-${setting.refAttributeId || 'null'}`,
               value: setting.label || setting.value || "",
               filter: setting.isFilterEnable || setting.filter || false,
               sorting: setting.isSortingEnable || setting.sorting || false,
               visible: setting.isDisplayEnable || setting.visible || false,
-            }))
+            }})
           : [
               {
                 attributeId: "",
@@ -437,6 +438,7 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({
     ["createDataSource"],
     (response) => {
       if (response?.success) {
+
         setCode("");
         setName("");
         setReload(true);
@@ -585,6 +587,7 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({
           isFilterEnable: !!setting.filter,
           isSortingEnable: !!setting.sorting,
           isDisplayEnable: !!setting.visible,
+          isDerived:option?.value?.isDerived,
         };
       }) || [];
 

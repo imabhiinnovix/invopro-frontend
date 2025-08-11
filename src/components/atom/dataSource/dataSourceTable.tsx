@@ -51,6 +51,7 @@ interface AttributeOptionTableProps {
 }
 
 const DataSourceTable: React.FC<AttributeOptionTableProps> = ({ reload, setReload }) => {
+  console.log("reeeeload",reload)
   const { getHeadingSx, getTableSx } = useComponentTypography();
   const [dataSource, setDataSource] = useState<DataSourceType[]>([]);
   const [currentPage, setCurrentPage] = useState<number>(1);
