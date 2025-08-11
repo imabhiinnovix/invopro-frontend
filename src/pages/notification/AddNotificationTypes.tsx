@@ -381,7 +381,7 @@ const ConditionRuleBuilder = ({
               <TextField
                 fullWidth
                 size="small"
-                type="date"
+                type="text"
                 value={rule.value}
                 onChange={(e) => updateValue(e.target.value)}
                 placeholder="Select date"
