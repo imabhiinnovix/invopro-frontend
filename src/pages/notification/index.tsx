@@ -1172,7 +1172,7 @@ const columns: GridColDef[] = [
             <EditIcon />
           </Button>
         </Tooltip>
-        <Tooltip title="View" arrow>
+        {/* <Tooltip title="View" arrow>
           <Button
             variant="text"
             onClick={() => params.row.handleView(params.row)}
@@ -1180,7 +1180,7 @@ const columns: GridColDef[] = [
           >
             <VisibilityIcon />
           </Button>
-        </Tooltip>
+        </Tooltip> */}
         <Tooltip title="Delete" arrow>
           <Button
             variant="text"
