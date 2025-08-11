@@ -430,7 +430,7 @@ export default function SideNav() {
           route: "/notivix/notification",
           subItems: [
             {
-              name: "Types",
+              name: "Settings",
               icon: (
                 <SettingsIcon
                   sx={{ fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base }}
