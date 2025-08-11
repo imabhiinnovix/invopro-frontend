@@ -53,7 +53,7 @@ export const PUT = {
   UPDATE_ROLE: "/common/role/update",
   UPDATE_MEDIUM: "/notivix/notification-setting/medium/update",
   UPDATE_FREQUENCY: "notivix/notification-setting/frequency/update",
-  UPDATE_NOTIFICATION_TYPE: " notivix/notification-setting/type/update",
+  UPDATE_NOTIFICATION_TYPE: "notivix/notification-setting/type/update",
 };
 
 export const DELETE = {
