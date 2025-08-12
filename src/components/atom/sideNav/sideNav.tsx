@@ -253,8 +253,8 @@ export default function SideNav() {
   }, [dataSourceNotivixList, validPermissionIds]);
 
   useEffect(() => {
-    if (dataSourceList.length > 0) dispatch(setDataSourceList(dataSourceList));
-  }, [dataSourceList, dispatch]);
+    if (dataSourceNotivixList.length > 0) dispatch(setDataSourceList(dataSourceNotivixList));
+  }, [dataSourceNotivixList, dispatch]);
 
   const handleItemClick = (
     route: string,

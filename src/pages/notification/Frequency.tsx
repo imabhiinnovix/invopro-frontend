@@ -24,16 +24,18 @@ import {
   Tooltip,
   Snackbar,
 } from "@mui/material";
-import { STYLE_GUIDE } from "../../styles";
+import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import { GridCloseIcon, GridDeleteIcon } from "@mui/x-data-grid";
 import EditIcon from "@mui/icons-material/Edit";
 import useGet from "../../hooks/useGet";
 import usePost from "../../hooks/usePost";
-import usePut from "../../hooks/usePut"; // Added usePut hook
+import usePut from "../../hooks/usePut";
 import useDelete from "../../hooks/useDelete";
 import { GET, POST, PUT, DELETE } from "../../services/apiRoutes";
+import { STYLE_GUIDE } from "../../styles";
 
-// Constants
+
+// Constants remain the same
 const MONTHS = [
   { id: "Jan", label: "January" },
   { id: "Feb", label: "February" },
@@ -48,10 +50,12 @@ const MONTHS = [
   { id: "Nov", label: "November" },
   { id: "Dec", label: "December" },
 ];
+
 const DAYS = Array.from({ length: 31 }, (_, i) => ({
   id: (i + 1).toString(),
   label: (i + 1).toString(),
 }));
+
 const WEEK_OPTIONS = [
   { id: "First", label: "First" },
   { id: "Second", label: "Second" },
@@ -60,7 +64,7 @@ const WEEK_OPTIONS = [
   { id: "Last", label: "Last" },
 ];
 
-// Styles
+// Styles remain the same
 const styles = {
   formRow: {
     display: "flex",
@@ -123,23 +127,15 @@ const styles = {
     flexDirection: "column",
     gap: STYLE_GUIDE.SPACING.s3,
   },
-  reminderCard: {
-    minWidth: "200px",
-    maxWidth: "300px",
-    border: `1px solid ${STYLE_GUIDE.COLORS.borderPrimary}`,
-    borderRadius: STYLE_GUIDE.SPACING.s1,
-    backgroundColor: STYLE_GUIDE.COLORS.backgroundGray,
-    transition: "transform 0.2s",
-    "&:hover": {
-      transform: "scale(1.02)",
+  dataGridContainer: {
+    width: '100%',
+    '& .MuiDataGrid-cell': {
+      fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
     },
-    "@media (max-width: 600px)": {
-      maxWidth: "100%",
+    '& .MuiDataGrid-columnHeader': {
+      fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
+      fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.medium,
     },
-  },
-  reminderText: {
-    fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
-    margin: `0 0 ${STYLE_GUIDE.SPACING.s1} 0`,
   },
   headerRow: {
     display: "flex",
@@ -157,8 +153,6 @@ const RRuleGenerator = ({
   fieldOptions = [],
   notificationTypeId,
 }) => {
-  // console.log("Frequency component fieldOptions333333:", notificationTypeId);
-
   const defaultConfig = {
     repeat: ["Yearly", "Monthly", "Weekly", "Daily"],
     yearly: "on",
@@ -190,6 +184,7 @@ const RRuleGenerator = ({
       ];
 
   const dayAbbrevs = ["SU", "MO", "TU", "WE", "TH", "FR", "SA"];
+
   const backendDayIndices = defaultConfig.weekStartsOnSunday
     ? {
         Sunday: 0,
@@ -216,20 +211,20 @@ const RRuleGenerator = ({
   const [yearlyType, setYearlyType] = useState(
     defaultConfig.yearly === "on the" ? "onthe" : "on"
   );
-  const [yearlyMonths, setYearlyMonths] = useState([""]);
-  const [yearlyDays, setYearlyDays] = useState([""]);
-  const [yearlyWeeks, setYearlyWeeks] = useState([""]);
-  const [yearlyWeekDays, setYearlyWeekDays] = useState([""]);
-  const [yearlyWeekMonths, setYearlyWeekMonths] = useState([""]);
+  const [yearlyMonths, setYearlyMonths] = useState([]);
+  const [yearlyDays, setYearlyDays] = useState([]);
+  const [yearlyWeeks, setYearlyWeeks] = useState([]);
+  const [yearlyWeekDays, setYearlyWeekDays] = useState([]);
+  const [yearlyWeekMonths, setYearlyWeekMonths] = useState([]);
   const [monthlyType, setMonthlyType] = useState(
     defaultConfig.monthly === "on the" ? "onthe" : "on"
   );
-  const [monthlyDays, setMonthlyDays] = useState([""]);
-  const [monthlyWeeks, setMonthlyWeeks] = useState([""]);
-  const [monthlyWeekDays, setMonthlyWeekDays] = useState([""]);
-  const [weeklyDays, setWeeklyDays] = useState([""]);
+  const [monthlyDays, setMonthlyDays] = useState([]);
+  const [monthlyWeeks, setMonthlyWeeks] = useState([]);
+  const [monthlyWeekDays, setMonthlyWeekDays] = useState([]);
+  const [weeklyDays, setWeeklyDays] = useState([]);
   const [interval, setInterval] = useState(1);
-  const [endType, setEndType] = useState("Never");
+  const [endType, setEndType] = useState("");
   const [endDate, setEndDate] = useState("");
   const [endAfter, setEndAfter] = useState(1);
   const [frequencyApiSuccess, setFrequencyApiSuccess] = useState(false);
@@ -237,24 +232,56 @@ const RRuleGenerator = ({
   const [acknowledgeChecked, setAcknowledgeChecked] = useState(false);
   const [attachedChecked, setAttachedChecked] = useState(false);
   const [time, setTime] = useState("");
-  const [dropdownRows, setDropdownRows] = useState([
-    { id: Date.now(), template: "", method: "", recipients: [] },
-  ]);
+  
+  // Updated state for recipients
+  const [template, setTemplate] = useState("");
+  const [method, setMethod] = useState("");
+  const [toRecipients, setToRecipients] = useState([]);
+  const [ccRecipients, setCcRecipients] = useState([]);
+  
   const [openDialog, setOpenDialog] = useState(false);
   const [selectedReminderId, setSelectedReminderId] = useState(null);
-  const [editMode, setEditMode] = useState(false); // Added for edit mode
-  const [editingReminderId, setEditingReminderId] = useState(null); // Added for editing reminder ID
+  const [editMode, setEditMode] = useState(false);
+  const [editingReminderId, setEditingReminderId] = useState(null);
   const [snackbar, setSnackbar] = useState({
     open: false,
     message: "",
     severity: "info",
   });
 
+  // Reset form function
+  const resetForm = () => {
+    setStartDate("");
+    setRepeatType("");
+    setYearlyType(defaultConfig.yearly === "on the" ? "onthe" : "on");
+    setYearlyMonths([]);
+    setYearlyDays([]);
+    setYearlyWeeks([]);
+    setYearlyWeekDays([]);
+    setYearlyWeekMonths([]);
+    setMonthlyType(defaultConfig.monthly === "on the" ? "onthe" : "on");
+    setMonthlyDays([]);
+    setMonthlyWeeks([]);
+    setMonthlyWeekDays([]);
+    setWeeklyDays([]);
+    setInterval(1);
+    setEndType("");
+    setEndDate("");
+    setEndAfter(1);
+    setAcknowledgeChecked(false);
+    setAttachedChecked(false);
+    setTime("");
+    setTemplate("");
+    setMethod("");
+    setToRecipients([]);
+    setCcRecipients([]);
+  };
+
   // API Hooks
   const templateList = useGet(["templateList"], `${GET.TEMPLATE_LIST}`, true);
   const mediumList = useGet(["mediumList"], `${GET.MEDIUM_LIST}`, true);
   const createFrequency = usePost(["createFrequency"]);
-  const updateFrequency = usePut(["updateFrequency"]); // Added for updating reminders
+  const updateFrequency = usePut(["updateFrequency"]);
   const deleteFrequency = useDelete(
     ["deleteFrequency"],
     (data) => {
@@ -276,6 +303,7 @@ const RRuleGenerator = ({
     },
     true
   );
+
   const { data: frequencyListData, refetch } = useGet(
     ["frequencyList", notificationTypeId, frequencyApiSuccess],
     frequencyApiSuccess
@@ -283,6 +311,7 @@ const RRuleGenerator = ({
       : "",
     !!frequencyApiSuccess
   );
+
   const { data: reminderData, refetch: refetchReminder } = useGet(
     ["reminder", editingReminderId],
     editingReminderId ? `${GET.FREQUENCY_DETAIL}/${editingReminderId}` : "",
@@ -291,10 +320,11 @@ const RRuleGenerator = ({
 
   useEffect(() => {
     if (notificationTypeId) {
-      setFrequencyApiSuccess(true); // Ensure API success flag is set
-      refetch(); // Trigger the API call
+      setFrequencyApiSuccess(true);
+      refetch();
     }
   }, [notificationTypeId, refetch]);
+
   useEffect(() => {
     if (notificationTypeId && frequencyApiSuccess) {
       refetch();
@@ -313,20 +343,59 @@ const RRuleGenerator = ({
       setRepeatType(
         data.frequency
           ? data.frequency.charAt(0).toUpperCase() + data.frequency.slice(1)
-          : "Yearly"
+          : ""
       );
       setInterval(data.interval || 1);
       setAcknowledgeChecked(data.acknowledgeRequired || false);
       setAttachedChecked(data.attachmentRequired || false);
       setTime(data.triggerTime || "");
-      setDropdownRows([
-        {
-          id: Date.now(),
-          template: data.templateId?._id || "",
-          method: data.medium?._id || "",
-          recipients: data.recipients?.map((r) => r.attributeId) || [],
-        },
-      ]);
+      
+      // Set template and method
+      setTemplate(data.templateId?._id || "");
+      setMethod(data.medium?._id || "");
+      
+      // Set TO and CC recipients
+      const toRecipients = [];
+      const ccRecipients = [];
+      
+      // Process recipients_to
+      if (data.recipients_to && Array.isArray(data.recipients_to)) {
+        data.recipients_to.forEach(recipient => {
+          if (recipient.customEmails && Array.isArray(recipient.customEmails)) {
+            recipient.customEmails.forEach(email => {
+              toRecipients.push(email); // Keep as string
+            });
+          } else if (recipient.attributeId) {
+            const fieldOption = fieldOptions.find(opt => opt.attributeId === recipient.attributeId);
+            if (fieldOption) {
+              toRecipients.push(fieldOption); // Keep as object
+            } else {
+              toRecipients.push(recipient.attributeId); // Fallback to string if not found
+            }
+          }
+        });
+      }
+      
+      // Process recipients_cc
+      if (data.recipients_cc && Array.isArray(data.recipients_cc)) {
+        data.recipients_cc.forEach(recipient => {
+          if (recipient.customEmails && Array.isArray(recipient.customEmails)) {
+            recipient.customEmails.forEach(email => {
+              ccRecipients.push(email); // Keep as string
+            });
+          } else if (recipient.attributeId) {
+            const fieldOption = fieldOptions.find(opt => opt.attributeId === recipient.attributeId);
+            if (fieldOption) {
+              ccRecipients.push(fieldOption); // Keep as object
+            } else {
+              ccRecipients.push(recipient.attributeId); // Fallback to string if not found
+            }
+          }
+        });
+      }
+      
+      setToRecipients(toRecipients);
+      setCcRecipients(ccRecipients);
 
       // Handle end conditions
       if (data.maxOccurrences) {
@@ -347,12 +416,12 @@ const RRuleGenerator = ({
         setYearlyMonths(
           data.monthOfYear?.length > 0
             ? data.monthOfYear.map((m) => MONTHS[m - 1]?.id || "Jan")
-            : ["Jan"]
+            : []
         );
         setYearlyDays(
           data.dayOfMonth?.length > 0
             ? data.dayOfMonth.map((d) => d.toString())
-            : ["1"]
+            : []
         );
       } else if (data.frequency === "yearly" && data.weekOfMonth?.length > 0) {
         setYearlyType("onthe");
@@ -361,7 +430,7 @@ const RRuleGenerator = ({
             ? data.weekOfMonth.map((w) =>
                 w === -1 ? "Last" : WEEK_OPTIONS[w - 1]?.id || "First"
               )
-            : ["First"]
+            : []
         );
         setYearlyWeekDays(
           data.daysOfWeek?.length > 0
@@ -371,20 +440,21 @@ const RRuleGenerator = ({
                     weekdays[defaultConfig.weekStartsOnSunday ? d : d % 7]?.id
                 )
                 .filter((d) => d)
-            : ["Monday"]
+            : []
         );
         setYearlyWeekMonths(
           data.monthOfYear?.length > 0
             ? data.monthOfYear.map((m) => MONTHS[m - 1]?.id || "Jan")
-            : ["Jan"]
+            : []
         );
       }
+
       if (data.frequency === "monthly" && data.dayOfMonth?.length > 0) {
         setMonthlyType("on");
         setMonthlyDays(
           data.dayOfMonth?.length > 0
             ? data.dayOfMonth.map((d) => d.toString())
-            : ["1"]
+            : []
         );
       } else if (data.frequency === "monthly" && data.weekOfMonth?.length > 0) {
         setMonthlyType("onthe");
@@ -393,7 +463,7 @@ const RRuleGenerator = ({
             ? data.weekOfMonth.map((w) =>
                 w === -1 ? "Last" : WEEK_OPTIONS[w - 1]?.id || "First"
               )
-            : ["First"]
+            : []
         );
         setMonthlyWeekDays(
           data.daysOfWeek?.length > 0
@@ -403,20 +473,21 @@ const RRuleGenerator = ({
                     weekdays[defaultConfig.weekStartsOnSunday ? d : d % 7]?.id
                 )
                 .filter((d) => d)
-            : ["Monday"]
+            : []
         );
       }
+
       if (data.frequency === "weekly" && data.daysOfWeek?.length > 0) {
         setWeeklyDays(
           data.daysOfWeek
             .map(
               (d) => weekdays[defaultConfig.weekStartsOnSunday ? d : d % 7]?.id
             )
-            .filter((d) => d) || ["Monday"]
+            .filter((d) => d) || []
         );
       }
     }
-  }, [reminderData, editMode]);
+  }, [reminderData, editMode, fieldOptions]);
 
   // Handlers
   const handleWeeklyDayToggle = (day) => {
@@ -432,23 +503,6 @@ const RRuleGenerator = ({
     });
   };
 
-  const addDropdownRow = () => {
-    setDropdownRows((prev) => [
-      ...prev,
-      { id: Date.now(), template: "", method: "", recipients: [] },
-    ]);
-  };
-
-  const removeDropdownRow = (rowId) => {
-    setDropdownRows((prev) => prev.filter((row) => row.id !== rowId));
-  };
-
-  const updateDropdownRow = (rowId, updatedFields) => {
-    setDropdownRows((prev) =>
-      prev.map((row) => (row.id === rowId ? { ...row, ...updatedFields } : row))
-    );
-  };
-
   const handleEditReminder = (reminder) => {
     setEditingReminderId(reminder._id);
     setEditMode(true);
@@ -458,30 +512,7 @@ const RRuleGenerator = ({
   const handleCancelEdit = () => {
     setEditMode(false);
     setEditingReminderId(null);
-    // Reset form to default values
-    setStartDate("");
-    setRepeatType("Yearly");
-    setYearlyType(defaultConfig.yearly === "on the" ? "onthe" : "on");
-    setYearlyMonths(["Jan"]);
-    setYearlyDays(["1"]);
-    setYearlyWeeks(["First"]);
-    setYearlyWeekDays(["Monday"]);
-    setYearlyWeekMonths(["Jan"]);
-    setMonthlyType(defaultConfig.monthly === "on the" ? "onthe" : "on");
-    setMonthlyDays(["1"]);
-    setMonthlyWeeks(["First"]);
-    setMonthlyWeekDays(["Monday"]);
-    setWeeklyDays(["Monday"]);
-    setInterval(1);
-    setEndType("Never");
-    setEndDate("");
-    setEndAfter(1);
-    setAcknowledgeChecked(false);
-    setAttachedChecked(false);
-    setTime("");
-    setDropdownRows([
-      { id: Date.now(), template: "", method: "", recipients: [] },
-    ]);
+    resetForm();
   };
 
   const handleAddReminder = async () => {
@@ -492,13 +523,8 @@ const RRuleGenerator = ({
       return;
     }
 
-    const validRows = dropdownRows.filter(
-      (row) => row.template && row.method && row.recipients.length > 0
-    );
-    if (validRows.length === 0) {
-      setSuccessMessage(
-        "Please select a template, notification method, and at least one recipient."
-      );
+    if (!template || !method) {
+      setSuccessMessage("Please select a template and notification method.");
       setTimeout(() => setSuccessMessage(null), 3000);
       return;
     }
@@ -510,6 +536,43 @@ const RRuleGenerator = ({
             .filter((idx) => idx !== undefined)
         : [];
 
+    // Format recipients according to backend requirements
+    const formatRecipients = (recipients) => {
+      const result = [];
+      const customEmails = [];
+      const attributeIds = [];
+      
+      recipients.forEach(recipient => {
+        if (typeof recipient === 'string') {
+          // Check if it's an email format (contains '@')
+          if (recipient.includes('@')) {
+            customEmails.push(recipient);
+          } else {
+            attributeIds.push(recipient);
+          }
+        } else {
+          // For objects, check if the label contains '@'
+          if (recipient.label && recipient.label.includes('@')) {
+            customEmails.push(recipient.label);
+          } else {
+            attributeIds.push(recipient.attributeId);
+          }
+        }
+      });
+      
+      // Add all custom emails as a single object with array
+      if (customEmails.length > 0) {
+        result.push({ customEmails });
+      }
+      
+      // Add each attribute ID as a separate object
+      attributeIds.forEach(id => {
+        result.push({ attributeId: id });
+      });
+      
+      return result;
+    };
+
     const payload = {
       notificationTypeId,
       frequency: repeatType.toLowerCase(),
@@ -520,32 +583,24 @@ const RRuleGenerator = ({
       repeatAnnually: repeatType === "Yearly",
       acknowledgeRequired: acknowledgeChecked,
       attachmentRequired: attachedChecked,
-      recipients: validRows[0].recipients.map((id) => {
-        const recipient = fieldOptions.find(
-          (option) => option.attributeId === id
-        );
-        return {
-          attributeId: id,
-          ...(recipient?.referenceAttributeId && {
-            referenceAttributeId: recipient.referenceAttributeId,
-          }),
-        };
-      }),
-      medium: validRows[0].method,
-      templateId: validRows[0].template,
+      recipients_to: formatRecipients(toRecipients),
+      recipients_cc: formatRecipients(ccRecipients),
+      medium: method,
+      templateId: template,
       triggerTime: time || "",
       ...(endType === "After" && { maxOccurrences: endAfter.toString() }),
     };
 
+    // Log the formatted payload for debugging
+    console.log("Formatted payload:", JSON.stringify(payload, null, 2));
+    
     try {
       if (editMode) {
-        console.log("edit mode", editMode);
-        // Update existing reminder
+        console.log("Updating reminder with ID:", editingReminderId);
         const response = await updateFrequency.mutateAsync({
           url: `${PUT.UPDATE_FREQUENCY}/${editingReminderId}`,
           payload,
         });
-
         if (response.success && response.data?._id) {
           setSnackbar({
             open: true,
@@ -555,16 +610,16 @@ const RRuleGenerator = ({
           setEditMode(false);
           setEditingReminderId(null);
           refetch();
+          resetForm();
         } else {
           throw new Error("Update failed");
         }
       } else {
-        // Create new reminder
+        console.log("Creating new reminder");
         const response = await createFrequency.mutateAsync({
           url: `${POST.CREATE_FREQUENCY}`,
           payload,
         });
-
         if (response.success && response.data?._id) {
           setFrequencyApiSuccess(response.success);
           setSnackbar({
@@ -572,7 +627,9 @@ const RRuleGenerator = ({
             message: response.message,
             severity: "success",
           });
+          
           refetch();
+          resetForm();
         } else {
           throw new Error("Creation failed");
         }
@@ -623,7 +680,7 @@ const RRuleGenerator = ({
         const [key, val] = part.split("=");
         return { ...acc, [key]: val };
       }, {});
-
+      
       if (rules.FREQ) {
         setRepeatType(rules.FREQ.charAt(0) + rules.FREQ.slice(1).toLowerCase());
       }
@@ -645,14 +702,14 @@ const RRuleGenerator = ({
         const months = monthIndices
           .map((index) => MONTHS[index - 1]?.id)
           .filter((id) => id);
-        setYearlyMonths(months.length > 0 ? months : ["Jan"]);
-        setYearlyWeekMonths(months.length > 0 ? months : ["Jan"]);
+        setYearlyMonths(months.length > 0 ? months : []);
+        setYearlyWeekMonths(months.length > 0 ? months : []);
       }
       if (rules.FREQ === "YEARLY" && rules.BYMONTHDAY) {
         const days = rules.BYMONTHDAY.split(",").filter((day) =>
           DAYS.some((d) => d.id === day)
         );
-        setYearlyDays(days.length > 0 ? days : ["1"]);
+        setYearlyDays(days.length > 0 ? days : []);
       }
       if (rules.FREQ === "YEARLY" && rules.BYDAY) {
         const byDayRules = rules.BYDAY.split(",");
@@ -671,14 +728,14 @@ const RRuleGenerator = ({
             if (day && !weekDays.includes(day)) weekDays.push(day);
           }
         });
-        setYearlyWeeks(weeks.length > 0 ? weeks : ["First"]);
-        setYearlyWeekDays(weekDays.length > 0 ? weekDays : ["Monday"]);
+        setYearlyWeeks(weeks.length > 0 ? weeks : []);
+        setYearlyWeekDays(weekDays.length > 0 ? weekDays : []);
       }
       if (rules.FREQ === "MONTHLY" && rules.BYMONTHDAY) {
         const days = rules.BYMONTHDAY.split(",").filter((day) =>
           DAYS.some((d) => d.id === day)
         );
-        setMonthlyDays(days.length > 0 ? days : ["1"]);
+        setMonthlyDays(days.length > 0 ? days : []);
       }
       if (rules.FREQ === "MONTHLY" && rules.BYDAY) {
         const byDayRules = rules.BYDAY.split(",");
@@ -697,8 +754,8 @@ const RRuleGenerator = ({
             if (day && !weekDays.includes(day)) weekDays.push(day);
           }
         });
-        setMonthlyWeeks(weeks.length > 0 ? weeks : ["First"]);
-        setMonthlyWeekDays(weekDays.length > 0 ? weekDays : ["Monday"]);
+        setMonthlyWeeks(weeks.length > 0 ? weeks : []);
+        setMonthlyWeekDays(weekDays.length > 0 ? weekDays : []);
       }
       if (rules.FREQ === "WEEKLY" && rules.BYDAY) {
         const days = rules.BYDAY.split(",")
@@ -707,7 +764,7 @@ const RRuleGenerator = ({
             return weekdays[dayIndex]?.id;
           })
           .filter((id) => id);
-        setWeeklyDays(days.length > 0 ? days : ["Monday"]);
+        setWeeklyDays(days.length > 0 ? days : []);
       }
     } catch (error) {
       if (!defaultConfig.hideError) {
@@ -717,8 +774,9 @@ const RRuleGenerator = ({
   };
 
   const generateRRule = () => {
+    if (!repeatType) return "";
+    
     let rrule = `FREQ=${repeatType.toUpperCase()}`;
-
     switch (repeatType) {
       case "Yearly":
         if (yearlyType === "on") {
@@ -791,17 +849,14 @@ const RRuleGenerator = ({
       default:
         break;
     }
-
     if (interval > 1) {
       rrule += `;INTERVAL=${interval}`;
     }
-
     if (endType === "After") {
       rrule += `;COUNT=${endAfter}`;
     } else if (endType === "On date" && endDate) {
       rrule += `;UNTIL=${endDate.replace(/-/g, "")}T235959Z`;
     }
-
     return rrule;
   };
 
@@ -834,13 +889,91 @@ const RRuleGenerator = ({
     endAfter,
   ]);
 
+  // Define columns for DataGrid
+  const columns: GridColDef[] = [
+    {
+      field: 'frequency',
+      headerName: 'Frequency',
+      width: 120,
+      valueGetter: (params) => params || "-",
+    },
+    {
+      field: 'schedulerStartDate',
+      headerName: 'Start Date',
+      width: 150,
+      valueGetter: (params) => {
+        const date = params;
+        return date ? new Date(date).toLocaleDateString() : "Not set";
+      },
+    },
+    {
+      field: 'acknowledgeRequired',
+      headerName: 'Acknowledge Required',
+      width: 150,
+      valueGetter: (params) => params ? "Yes" : "No",
+    },
+    {
+      field: 'attachmentRequired',
+      headerName: 'Attachment Required',
+      width: 150,
+      valueGetter: (params) => params ? "Yes" : "No",
+    },
+    {
+      field: 'templateId',
+      headerName: 'Template',
+      width: 180,
+      valueGetter: (params) => {
+        const template = params?.name;
+        return template || "-";
+      },
+    },
+    {
+      field: 'medium',
+      headerName: 'Notification Method',
+      width: 180,
+      valueGetter: (params) => {
+
+        const medium = params?.medium;
+        return medium || "-";
+      },
+    },
+    {
+      field: 'actions',
+      headerName: 'Actions',
+      width: 120,
+      sortable: false,
+      renderCell: (params) => (
+        <Box sx={{ display: 'flex', gap: 1 }}>
+          <Tooltip title="Edit Reminder" placement="top">
+            <IconButton
+              color="primary"
+              aria-label="edit reminder"
+              onClick={() => handleEditReminder(params.row)}
+            >
+              <EditIcon />
+            </IconButton>
+          </Tooltip>
+          <Tooltip title="Delete Reminder" placement="top">
+            <IconButton
+              color="error"
+              aria-label="delete reminder"
+              onClick={() => handleDeleteReminder(params.row._id)}
+            >
+              <GridDeleteIcon />
+            </IconButton>
+          </Tooltip>
+        </Box>
+      ),
+    },
+  ];
+
   return (
     <Box sx={{ padding: STYLE_GUIDE.SPACING.s4 }}>
       {/* Header Row */}
       <Box sx={{ marginBottom: STYLE_GUIDE.SPACING.s6 }}>
         <Typography variant="h2">Reminder</Typography>
       </Box>
-
+      
       {/* Start and Repeat Section */}
       <Box sx={styles.formRow}>
         <FormControl>
@@ -900,7 +1033,7 @@ const RRuleGenerator = ({
               marginBottom: STYLE_GUIDE.SPACING.s2,
             }}
           >
-            Time
+            Time (Optional)
           </FormLabel>
           <TextField
             size="small"
@@ -910,10 +1043,14 @@ const RRuleGenerator = ({
             variant="outlined"
             sx={styles.textField}
             aria-label="Select time for reminder"
+            inputProps={{
+              // Allow empty value
+              "aria-required": "false"
+            }}
           />
         </FormControl>
       </Box>
-
+      
       {/* Repeat Details Section */}
       <Box sx={{ marginBottom: STYLE_GUIDE.SPACING.s6 }}>
         {repeatType === "Yearly" && (
@@ -1296,7 +1433,7 @@ const RRuleGenerator = ({
           </Box>
         )}
       </Box>
-
+      
       {/* Repeat Every and End Section - Single Row */}
       <Box sx={styles.formRow}>
         {repeatType !== "Daily" && (
@@ -1339,7 +1476,6 @@ const RRuleGenerator = ({
             </Typography>
           </>
         )}
-
         {/* End Section */}
         <FormControl>
           <FormLabel
@@ -1367,7 +1503,6 @@ const RRuleGenerator = ({
             ))}
           </Select>
         </FormControl>
-
         {endType === "After" && (
           <FormControl>
             <FormLabel
@@ -1394,7 +1529,6 @@ const RRuleGenerator = ({
             />
           </FormControl>
         )}
-
         {endType === "On date" && (
           <FormControl>
             <FormLabel
@@ -1419,7 +1553,7 @@ const RRuleGenerator = ({
           </FormControl>
         )}
       </Box>
-
+      
       <Box
         component="hr"
         sx={{
@@ -1428,7 +1562,7 @@ const RRuleGenerator = ({
           borderTop: `1px solid ${STYLE_GUIDE.COLORS.divider}`,
         }}
       />
-
+      
       {/* Recipients, Template, Method, and Checkboxes */}
       <Box
         sx={{
@@ -1436,47 +1570,51 @@ const RRuleGenerator = ({
           alignItems: "flex-start",
           gap: STYLE_GUIDE.SPACING.s2,
           marginBottom: STYLE_GUIDE.SPACING.s4,
-          "@media (max-width: 1200px)": {
+          "@media (max-width: 1100px)": {
             flexDirection: "column",
             alignItems: "stretch",
           },
         }}
       >
-        {/* Recipients Section */}
-        <Box sx={{ flex: 1, minWidth: "150px" }}>
+        {/* TO Recipients Section */}
+        <Box sx={{ flex: 0.7, minWidth: "120px" }}>
           <FormControl fullWidth size="small">
             <Autocomplete
               multiple
+              freeSolo
               size="small"
-              id="recipients-autocomplete"
+              id="to-recipients-autocomplete"
               options={fieldOptions.filter((option) => option.type === "email")}
-              getOptionLabel={(option) => option.label}
-              isOptionEqualToValue={(option, value) =>
-                option.attributeId === value.attributeId
+              getOptionLabel={(option) =>
+                typeof option === "string" ? option : option.label
               }
-              value={fieldOptions.filter(
-                (option) =>
-                  dropdownRows[0].recipients.includes(option.attributeId) &&
-                  option.type === "email"
-              )}
-              onChange={(event, newValue) =>
-                updateDropdownRow(dropdownRows[0].id, {
-                  recipients: newValue.map((option) => option.attributeId),
-                })
-              }
+              isOptionEqualToValue={(option, value) => {
+                if (typeof option === "string" && typeof value === "string") {
+                  return option === value;
+                }
+                if (typeof option !== "string" && typeof value !== "string") {
+                  return option.attributeId === value.attributeId;
+                }
+                return false;
+              }}
+              value={toRecipients}
+              onChange={(event, newValue) => {
+                // Keep strings as strings and objects as objects
+                setToRecipients(newValue);
+              }}
               renderInput={(params) => (
                 <TextField
                   {...params}
                   variant="outlined"
-                  label="Recipients"
-                  aria-label="Select recipients"
+                  label="TO Recipients"
+                  placeholder="Type or select"
                 />
               )}
               renderTags={(value, getTagProps) =>
                 value.map((option, index) => (
                   <Chip
-                    key={option.attributeId}
-                    label={option.label}
+                    key={typeof option === "string" ? option : option.attributeId}
+                    label={typeof option === "string" ? option : option.label}
                     {...getTagProps({ index })}
                     size="small"
                   />
@@ -1485,60 +1623,100 @@ const RRuleGenerator = ({
             />
           </FormControl>
         </Box>
-
+        
+        {/* CC Recipients Section */}
+        <Box sx={{ flex: 0.7, minWidth: "120px" }}>
+          <FormControl fullWidth size="small">
+            <Autocomplete
+              multiple
+              freeSolo
+              size="small"
+              id="cc-recipients-autocomplete"
+              options={fieldOptions.filter((option) => option.type === "email")}
+              getOptionLabel={(option) =>
+                typeof option === "string" ? option : option.label
+              }
+              isOptionEqualToValue={(option, value) => {
+                if (typeof option === "string" && typeof value === "string") {
+                  return option === value;
+                }
+                if (typeof option !== "string" && typeof value !== "string") {
+                  return option.attributeId === value.attributeId;
+                }
+                return false;
+              }}
+              value={ccRecipients}
+              onChange={(event, newValue) => {
+                // Keep strings as strings and objects as objects
+                setCcRecipients(newValue);
+              }}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  variant="outlined"
+                  label="CC Recipients"
+                  placeholder="Type or select"
+                />
+              )}
+              renderTags={(value, getTagProps) =>
+                value.map((option, index) => (
+                  <Chip
+                    key={typeof option === "string" ? option : option.attributeId}
+                    label={typeof option === "string" ? option : option.label}
+                    {...getTagProps({ index })}
+                    size="small"
+                  />
+                ))
+              }
+            />
+          </FormControl>
+        </Box>
+        
         {/* Template Section */}
-        <Box sx={{ flex: 1, minWidth: "120px" }}>
-          {dropdownRows.map((row) => (
-            <FormControl key={row.id} size="small" fullWidth>
-              <InputLabel>Template</InputLabel>
-              <Select
-                value={row.template}
-                onChange={(e) =>
-                  updateDropdownRow(row.id, { template: e.target.value })
-                }
-                label="Template"
-                aria-label="Select template"
-              >
-                <MenuItem value="">Select Template...</MenuItem>
-                {templateList.data?.data?.map((option) => (
-                  <MenuItem key={option._id} value={option._id}>
-                    {option.name}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-          ))}
+        <Box sx={{ flex: 0.7, minWidth: "120px" }}>
+          <FormControl size="small" fullWidth>
+            <InputLabel>Template</InputLabel>
+            <Select
+              value={template}
+              onChange={(e) => setTemplate(e.target.value)}
+              label="Template"
+              aria-label="Select template"
+            >
+              <MenuItem value="">Select Template...</MenuItem>
+              {templateList.data?.data?.map((option) => (
+                <MenuItem key={option._id} value={option._id}>
+                  {option.name}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
         </Box>
-
+        
         {/* Notification Method Section */}
-        <Box sx={{ flex: 1, minWidth: "120px" }}>
-          {dropdownRows.map((row) => (
-            <FormControl key={row.id} size="small" fullWidth>
-              <InputLabel>Method</InputLabel>
-              <Select
-                value={row.method}
-                onChange={(e) =>
-                  updateDropdownRow(row.id, { method: e.target.value })
-                }
-                label="Method"
-                renderValue={(selected) =>
-                  mediumList.data?.data?.find(
-                    (medium) => medium._id === selected
-                  )?.medium || selected
-                }
-                aria-label="Select notification method"
-              >
-                <MenuItem value="">Select Method...</MenuItem>
-                {mediumList.data?.data?.map((option) => (
-                  <MenuItem key={option._id} value={option._id}>
-                    {option.medium}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-          ))}
+        <Box sx={{ flex: 0.7, minWidth: "120px" }}>
+          <FormControl size="small" fullWidth>
+            <InputLabel>Method</InputLabel>
+            <Select
+              value={method}
+              onChange={(e) => setMethod(e.target.value)}
+              label="Method"
+              renderValue={(selected) =>
+                mediumList.data?.data?.find(
+                  (medium) => medium._id === selected
+                )?.medium || selected
+              }
+              aria-label="Select notification method"
+            >
+              <MenuItem value="">Select Method...</MenuItem>
+              {mediumList.data?.data?.map((option) => (
+                <MenuItem key={option._id} value={option._id}>
+                  {option.medium}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
         </Box>
-
+        
         {/* Acknowledge Checkbox */}
         <Box
           sx={{
@@ -1563,7 +1741,7 @@ const RRuleGenerator = ({
             }}
           />
         </Box>
-
+        
         {/* Attached Checkbox */}
         <Box
           sx={{
@@ -1589,7 +1767,7 @@ const RRuleGenerator = ({
           />
         </Box>
       </Box>
-
+      
       {/* Action Buttons */}
       <Box
         sx={{
@@ -1623,7 +1801,7 @@ const RRuleGenerator = ({
           {editMode ? "Save Changes" : "Add Reminder"}
         </Button>
       </Box>
-
+      
       <Box
         component="hr"
         sx={{
@@ -1632,8 +1810,8 @@ const RRuleGenerator = ({
           borderTop: `1px solid ${STYLE_GUIDE.COLORS.divider}`,
         }}
       />
-
-      {/* Reminders List */}
+      
+      {/* Reminders List - Data Grid */}
       {frequencyListData?.data?.length > 0 && (
         <Box sx={styles.reminderContainer}>
           <Typography
@@ -1646,114 +1824,19 @@ const RRuleGenerator = ({
           >
             Added Reminders:
           </Typography>
-          <Box
-            sx={{
-              display: "flex",
-              flexDirection: "column",
-              gap: STYLE_GUIDE.SPACING.s2,
-            }}
-          >
-            {frequencyListData.data.map((reminder, index) => (
-              <Box
-                key={reminder._id || index}
-                sx={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  padding: STYLE_GUIDE.SPACING.s3,
-                  border: `1px solid ${STYLE_GUIDE.COLORS.borderGray}`,
-                  borderRadius: STYLE_GUIDE.SPACING.s1,
-                  backgroundColor: STYLE_GUIDE.COLORS.white,
-                }}
-              >
-                <Box
-                  sx={{ display: "flex", flexDirection: "column", gap: "4px" }}
-                >
-                  <Typography variant="body2" sx={styles.reminderText}>
-                    <strong>Frequency:</strong>{" "}
-                    {reminder.frequency || "Not set"}
-                  </Typography>
-                  <Typography variant="body2" sx={styles.reminderText}>
-                    <strong>Start Date:</strong>{" "}
-                    {reminder.schedulerStartDate
-                      ? new Date(
-                          reminder.schedulerStartDate
-                        ).toLocaleDateString()
-                      : "Not set"}
-                  </Typography>
-                  {reminder.schedulerEndDate && (
-                    <Typography variant="body2" sx={styles.reminderText}>
-                      <strong>End Date:</strong>{" "}
-                      {new Date(reminder.schedulerEndDate).toLocaleDateString()}
-                    </Typography>
-                  )}
-                  <Typography variant="body2" sx={styles.reminderText}>
-                    <strong>Time:</strong> {reminder.triggerTime || "Not set"}
-                  </Typography>
-                  <Typography variant="body2" sx={styles.reminderText}>
-                    <strong>Acknowledge Required:</strong>{" "}
-                    {reminder.acknowledgeRequired ? "Yes" : "No"}
-                  </Typography>
-                  <Typography variant="body2" sx={styles.reminderText}>
-                    <strong>Attachment Required:</strong>{" "}
-                    {reminder.attachmentRequired ? "Yes" : "No"}
-                  </Typography>
-                  <Typography variant="body2" sx={styles.reminderText}>
-                    <strong>Template:</strong>{" "}
-                    {reminder.templateId?.name ||
-                      reminder.templateId?._id ||
-                      "Not set"}
-                  </Typography>
-                  <Typography variant="body2" sx={styles.reminderText}>
-                    <strong>Notification Method:</strong>{" "}
-                    {reminder.medium?.medium ||
-                      reminder.medium?._id ||
-                      "Not set"}
-                  </Typography>
-                  <Typography variant="body2" sx={styles.reminderText}>
-                    <strong>Recipients:</strong>{" "}
-                    {reminder.recipients?.length > 0
-                      ? reminder.recipients
-                          .map(
-                            (recipient) =>
-                              fieldOptions.find(
-                                (option) =>
-                                  option.attributeId ===
-                                  (recipient.attributeId || recipient)
-                              )?.label ||
-                              recipient.attributeId ||
-                              recipient
-                          )
-                          .join(", ")
-                      : "None"}
-                  </Typography>
-                </Box>
-                <Box sx={{ display: "flex", gap: STYLE_GUIDE.SPACING.s2 }}>
-                  <Tooltip title="Edit Reminder" placement="top">
-                    <IconButton
-                      color="primary"
-                      aria-label="edit reminder"
-                      onClick={() => handleEditReminder(reminder)}
-                    >
-                      <EditIcon />
-                    </IconButton>
-                  </Tooltip>
-                  <Tooltip title="Delete Reminder" placement="top">
-                    <IconButton
-                      color="error"
-                      aria-label="delete reminder"
-                      onClick={() => handleDeleteReminder(reminder._id)}
-                    >
-                      <GridDeleteIcon />
-                    </IconButton>
-                  </Tooltip>
-                </Box>
-              </Box>
-            ))}
+          <Box sx={styles.dataGridContainer}>
+            <DataGrid
+              rows={frequencyListData?.data ||[]}
+              columns={columns}
+              getRowId={(row) => row._id}
+              autoHeight
+              // pagination={null}
+              disableRowSelectionOnClick
+            />
           </Box>
         </Box>
       )}
-
+      
       {/* Delete Confirmation Dialog */}
       <Dialog
         open={openDialog}
@@ -1782,7 +1865,7 @@ const RRuleGenerator = ({
           </Button>
         </DialogActions>
       </Dialog>
-
+      
       {/* Snackbar for Notifications */}
       <Snackbar
         open={snackbar.open}
@@ -1805,7 +1888,6 @@ const RRuleGenerator = ({
 // Example Components
 const SimpleRender = ({ fieldOptions, notificationTypeId }) => (
   <RRuleGenerator
-    // onChange={(rrule) => console.log(`RRule changed, now it's ${rrule}`)}
     fieldOptions={fieldOptions}
     notificationTypeId={notificationTypeId}
   />
@@ -1813,11 +1895,6 @@ const SimpleRender = ({ fieldOptions, notificationTypeId }) => (
 
 // App Component
 const Frequency = ({ fieldOptions, notificationTypeId }) => {
-  // console.log(
-  //   "Frequency component fieldOptions222222:",
-  //   fieldOptions,
-  //   notificationTypeId
-  // );
   return (
     <Box>
       <SimpleRender
