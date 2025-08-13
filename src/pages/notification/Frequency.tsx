@@ -1214,7 +1214,7 @@ useEffect(() => {
                 marginBottom: STYLE_GUIDE.SPACING.s2,
               }}
             >
-              Repeat
+              Select Frequency
             </FormLabel>
             <Select
               size="small"
@@ -1227,7 +1227,7 @@ useEffect(() => {
               aria-label="Select repeat frequency"
             >
               <MenuItem value="" disabled>
-                Select
+                Select Frequency
               </MenuItem>
               {defaultConfig.repeat.map((option) => (
                 <MenuItem key={option} value={option}>
