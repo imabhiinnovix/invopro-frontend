@@ -341,7 +341,6 @@ const RRuleGenerator = ({
     !!viewingReminderId
   );
 
-  console.log("time", time);
   useEffect(() => {
     if (notificationTypeId) {
       setFrequencyApiSuccess(true);
