@@ -1,5 +1,9 @@
+
+
+
+
 import * as React from "react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import {
@@ -36,15 +40,12 @@ class ErrorBoundary extends React.Component {
     super(props);
     this.state = { hasError: false };
   }
-
   static getDerivedStateFromError(error) {
     return { hasError: true };
   }
-
   componentDidCatch(error, errorInfo) {
     console.error('Error Boundary caught an error:', error, errorInfo);
   }
-
   render() {
     if (this.state.hasError) {
       return (
@@ -59,6 +60,67 @@ class ErrorBoundary extends React.Component {
   }
 }
 
+// Custom Input Component that maintains focus
+const FocusAwareInput = React.memo(({ 
+  value, 
+  onChange, 
+  error, 
+  placeholder, 
+  type = "text",
+  ...props 
+}) => {
+  const inputRef = useRef(null);
+  const [localValue, setLocalValue] = useState(value);
+  const isFocused = useRef(false);
+  
+  // Update local value when prop changes
+  useEffect(() => {
+    if (!isFocused.current) {
+      setLocalValue(value);
+    }
+  }, [value]);
+  
+  // Handle focus
+  const handleFocus = useCallback(() => {
+    isFocused.current = true;
+  }, []);
+  
+  // Handle blur
+  const handleBlur = useCallback(() => {
+    isFocused.current = false;
+    onChange(localValue);
+  }, [localValue, onChange]);
+  
+  // Handle change
+  const handleChange = useCallback((e) => {
+    setLocalValue(e.target.value);
+  }, []);
+  
+  // Handle key down to prevent default behavior if needed
+  const handleKeyDown = useCallback((e) => {
+    // Prevent any default behavior that might cause focus loss
+    if (e.key === 'Enter') {
+      e.preventDefault();
+    }
+  }, []);
+  
+  return (
+    <TextField
+      {...props}
+      inputRef={inputRef}
+      value={localValue}
+      onChange={handleChange}
+      onFocus={handleFocus}
+      onBlur={handleBlur}
+      onKeyDown={handleKeyDown}
+      placeholder={placeholder}
+      type={type}
+      variant="outlined"
+      error={error}
+    />
+  );
+});
+
 // ConditionRuleBuilder Component
 const ConditionRuleBuilder = ({
   onChange,
@@ -70,7 +132,6 @@ const ConditionRuleBuilder = ({
   const organizationId = useSelector(
     (state) => state.userPermission?.currentUser?.organizationId?._id
   );
-
   const [notification, setNotification] = useState({
     name: "",
     entityId: "",
@@ -79,9 +140,27 @@ const ConditionRuleBuilder = ({
       rules: [],
     },
   });
-
   const { list } = useSelector((state) => state.dataSource);
   const operatorList = usePost(["operatorList"]);
+  
+  // Refs to maintain stable references
+  const notificationRef = useRef(notification);
+  const fieldOptionsRef = useRef(fieldOptions);
+  const operatorListRef = useRef(operatorList);
+  const activeInputRef = useRef(null);
+  
+  // Update refs when state changes
+  useEffect(() => {
+    notificationRef.current = notification;
+  }, [notification]);
+  
+  useEffect(() => {
+    fieldOptionsRef.current = fieldOptions;
+  }, [fieldOptions]);
+  
+  useEffect(() => {
+    operatorListRef.current = operatorList;
+  }, [operatorList]);
 
   // Load operators on component mount
   useEffect(() => {
@@ -104,7 +183,6 @@ const ConditionRuleBuilder = ({
             attributeId: setting.attributeId,
             type: setting?.type,
           }));
-
         setFieldOptions(newFieldOptions);
       } else {
         setFieldOptions([]);
@@ -124,7 +202,6 @@ const ConditionRuleBuilder = ({
     "filing requested",
     "submitted",
   ];
-
   const caseTypeOptions = ["PRI", "PRO", "TRA", "DES"];
   const countryCodeOptions = ["EP", "IN", "WO", "FAM", "US", "CN", "JP"];
   const timeUnitOptions = [
@@ -135,26 +212,20 @@ const ConditionRuleBuilder = ({
 
   // Utility functions
   const generateId = () => Math.random().toString(36).substr(2, 9);
-
-  const getGroupByPath = (root, path) => {
+  
+  // Helper function to get group by path
+  const getGroupByPath = useCallback((root, path) => {
     if (path.length === 0) return root;
     let current = root;
     for (const index of path) {
+      if (!current.rules) return null;
       current = current.rules[index];
     }
     return current;
-  };
-
-  const validateValue = (rule) => {
-    if (!rule.field || !rule.operator) return false;
-    const field = fieldOptions.find((f) => f.value === rule.field);
-    const operators = operatorList.data?.data?.find((op) => op.fieldType === field?.type)?.operators || [];
-    const selectedOperator = operators?.find((op) => op.operatorKey === rule.operator);
-    return selectedOperator?.valueRequired && !rule.value;
-  };
+  }, []);
 
   // Rule and group management functions
-  const addRule = (groupPath) => {
+  const addRule = useCallback((groupPath) => {
     const newRule = {
       id: generateId(),
       field: "",
@@ -162,72 +233,103 @@ const ConditionRuleBuilder = ({
       value: "",
       timeUnit: "",
     };
-    const updatedNotification = { ...notification };
-    const group = getGroupByPath(updatedNotification.conditionGroup, groupPath);
-    group.rules.push(newRule);
-    setNotification(updatedNotification);
-  };
+    
+    setNotification(prev => {
+      // Create a deep copy to avoid mutation
+      const updatedNotification = JSON.parse(JSON.stringify(prev));
+      const group = getGroupByPath(updatedNotification.conditionGroup, groupPath);
+      if (group) {
+        group.rules.push(newRule);
+      }
+      return updatedNotification;
+    });
+  }, [getGroupByPath]);
 
-  const addGroup = (groupPath) => {
+  const addGroup = useCallback((groupPath) => {
     const newGroup = {
       id: generateId(),
       logic: "AND",
       rules: [],
     };
-    const updatedNotification = { ...notification };
-    const group = getGroupByPath(updatedNotification.conditionGroup, groupPath);
-    group.rules.push(newGroup);
-    setNotification(updatedNotification);
-  };
-
-  const removeItem = (groupPath, index) => {
-    const updatedNotification = { ...notification };
-    const group = getGroupByPath(updatedNotification.conditionGroup, groupPath);
-    group.rules.splice(index, 1);
-    setNotification(updatedNotification);
-  };
-
-  const updateRule = (groupPath, index, field, value) => {
-    const updatedNotification = { ...notification };
-    const group = getGroupByPath(updatedNotification.conditionGroup, groupPath);
-    group.rules[index][field] = value;
     
-    // Clear dependent fields when operator changes
-    if (field === "operator") {
-      const selectedField = fieldOptions.find((f) => f.value === group.rules[index].field);
-      const operators = operatorList.data?.data?.find((op) => op.fieldType === selectedField?.type)?.operators;
-      const selectedOperator = operators?.find((op) => op.operatorKey === value);
-      if (selectedOperator && !selectedOperator.valueRequired) {
-        group.rules[index].value = "";
-        group.rules[index].timeUnit = "";
+    setNotification(prev => {
+      const updatedNotification = JSON.parse(JSON.stringify(prev));
+      const group = getGroupByPath(updatedNotification.conditionGroup, groupPath);
+      if (group) {
+        group.rules.push(newGroup);
       }
-    }
-    
-    setNotification(updatedNotification);
-  };
+      return updatedNotification;
+    });
+  }, [getGroupByPath]);
 
-  const updateGroupLogic = (groupPath, logic) => {
-    const updatedNotification = { ...notification };
-    const group = getGroupByPath(updatedNotification.conditionGroup, groupPath);
-    group.logic = logic;
-    setNotification(updatedNotification);
-  };
+  const removeItem = useCallback((groupPath, index) => {
+    setNotification(prev => {
+      const updatedNotification = JSON.parse(JSON.stringify(prev));
+      const group = getGroupByPath(updatedNotification.conditionGroup, groupPath);
+      if (group && group.rules) {
+        group.rules.splice(index, 1);
+      }
+      return updatedNotification;
+    });
+  }, [getGroupByPath]);
+
+  const updateRule = useCallback((groupPath, index, field, value) => {
+    setNotification(prev => {
+      const updatedNotification = JSON.parse(JSON.stringify(prev));
+      const group = getGroupByPath(updatedNotification.conditionGroup, groupPath);
+      
+      if (group && group.rules && group.rules[index]) {
+        // Update the rule
+        group.rules[index][field] = value;
+        
+        // Clear dependent fields when operator changes
+        if (field === "operator") {
+          const selectedField = fieldOptionsRef.current.find((f) => f.value === group.rules[index].field);
+          const operators = operatorListRef.current.data?.data?.find((op) => op.fieldType === selectedField?.type)?.operators;
+          const selectedOperator = operators?.find((op) => op.operatorKey === value);
+          if (selectedOperator && !selectedOperator.valueRequired) {
+            group.rules[index].value = "";
+            group.rules[index].timeUnit = "";
+          }
+        }
+      }
+      
+      return updatedNotification;
+    });
+  }, [getGroupByPath]);
+
+  const updateGroupLogic = useCallback((groupPath, logic) => {
+    setNotification(prev => {
+      const updatedNotification = JSON.parse(JSON.stringify(prev));
+      const group = getGroupByPath(updatedNotification.conditionGroup, groupPath);
+      if (group) {
+        group.logic = logic;
+      }
+      return updatedNotification;
+    });
+  }, [getGroupByPath]);
+
+  const validateValue = useCallback((rule) => {
+    if (!rule.field || !rule.operator) return false;
+    const field = fieldOptionsRef.current.find((f) => f.value === rule.field);
+    const operators = operatorListRef.current.data?.data?.find((op) => op.fieldType === field?.type)?.operators || [];
+    const selectedOperator = operators?.find((op) => op.operatorKey === rule.operator);
+    return selectedOperator?.valueRequired && !rule.value;
+  }, []);
 
   // Render value input based on field type
-  const renderValueInput = (rule, groupPath, index) => {
-    const field = fieldOptions.find((f) => f.value === rule.field);
+  const renderValueInput = useCallback((rule, groupPath, index) => {
+    const field = fieldOptionsRef.current.find((f) => f.value === rule.field);
     if (!field) return null;
-
-    const operators = operatorList.data?.data?.find((op) => op.fieldType === field?.type)?.operators || [];
+    const operators = operatorListRef.current.data?.data?.find((op) => op.fieldType === field?.type)?.operators || [];
     const selectedOperator = operators?.find((op) => op.operatorKey === rule.operator);
     const valueRequired = selectedOperator?.valueRequired ?? true;
     
     if (!valueRequired) return null;
-
     const updateValue = (value) => updateRule(groupPath, index, "value", value);
     const updateTimeUnit = (value) => updateRule(groupPath, index, "timeUnit", value);
     const hasError = validateValue(rule);
-
+    
     switch (field.type) {
       case "boolean":
         return (
@@ -243,31 +345,27 @@ const ConditionRuleBuilder = ({
               <MenuItem value="false">False</MenuItem>
             </Select>
             {hasError && (
-              <Typography color="error" variant="caption">Required</Typography>
+              <Typography color="error" variant="caption">Required </Typography>
             )}
           </FormControl>
         );
-
       case "select":
         return renderSelectField(rule, updateValue, hasError);
-
       case "date":
         return (
           <Box sx={{ display: "flex", gap: 2, alignItems: "center" }}>
             <FormControl fullWidth size="small" error={hasError}>
-              <TextField
+              <FocusAwareInput
                 fullWidth
                 size="small"
                 type="text"
                 value={rule.value}
-                onChange={(e) => updateValue(e.target.value)}
+                onChange={updateValue}
                 placeholder="Select date"
-                variant="outlined"
-                InputLabelProps={{ shrink: true }}
                 error={hasError}
               />
               {hasError && (
-                <Typography color="error" variant="caption">Required</Typography>
+                <Typography color="error" variant="caption">Required </Typography>
               )}
             </FormControl>
             <FormControl fullWidth size="small">
@@ -287,29 +385,27 @@ const ConditionRuleBuilder = ({
             </FormControl>
           </Box>
         );
-
       default:
         return (
           <FormControl fullWidth size="small" error={hasError}>
-            <TextField
+            <FocusAwareInput
               fullWidth
               size="small"
               value={rule.value}
-              onChange={(e) => updateValue(e.target.value)}
+              onChange={updateValue}
               placeholder="Value"
-              variant="outlined"
               error={hasError}
             />
             {hasError && (
-              <Typography color="error" variant="caption">Required</Typography>
+              <Typography color="error" variant="caption">Required </Typography>
             )}
           </FormControl>
         );
     }
-  };
+  }, [updateRule, validateValue]);
 
   // Helper function to render select fields
-  const renderSelectField = (rule, updateValue, hasError) => {
+  const renderSelectField = useCallback((rule, updateValue, hasError) => {
     const getOptions = () => {
       switch (rule.field) {
         case "status": return statusOptions;
@@ -318,10 +414,8 @@ const ConditionRuleBuilder = ({
         default: return [];
       }
     };
-
     const options = getOptions();
     const isMultiple = rule.operator === "in";
-
     return (
       <FormControl fullWidth size="small" error={hasError}>
         <InputLabel>Select...</InputLabel>
@@ -340,17 +434,17 @@ const ConditionRuleBuilder = ({
           ))}
         </Select>
         {hasError && (
-          <Typography color="error" variant="caption">Required</Typography>
+          <Typography color="error" variant="caption">Required 4</Typography>
         )}
       </FormControl>
     );
-  };
+  }, []);
 
-  // Rule Component
-  const RuleComponent = ({ rule, groupPath, index }) => {
-    const selectedField = fieldOptions.find((f) => f.value === rule.field);
-    const operators = operatorList.data?.data?.find((op) => op.fieldType === selectedField?.type)?.operators || [];
-
+  // Rule Component with memoization
+  const RuleComponent = React.memo(({ rule, groupPath, index }) => {
+    const selectedField = fieldOptionsRef.current.find((f) => f.value === rule.field);
+    const operators = operatorListRef.current.data?.data?.find((op) => op.fieldType === selectedField?.type)?.operators || [];
+    
     return (
       <Box
         sx={{
@@ -375,14 +469,13 @@ const ConditionRuleBuilder = ({
             label="Select field..."
           >
             <MenuItem value="">Select field...</MenuItem>
-            {fieldOptions.map((option) => (
+            {fieldOptionsRef.current.map((option) => (
               <MenuItem key={option.value} value={option.value}>
                 {option.label}
               </MenuItem>
             ))}
           </Select>
         </FormControl>
-
         <FormControl fullWidth size="small" disabled={!rule.field}>
           <InputLabel>Select operator...</InputLabel>
           <Select
@@ -391,7 +484,7 @@ const ConditionRuleBuilder = ({
             label="Select operator..."
           >
             <MenuItem value="">Select operator...</MenuItem>
-            {operatorList.isLoading ? (
+            {operatorListRef.current.isLoading ? (
               <MenuItem disabled>Loading operators...</MenuItem>
             ) : (
               operators.map((op) => (
@@ -402,9 +495,7 @@ const ConditionRuleBuilder = ({
             )}
           </Select>
         </FormControl>
-
         {renderValueInput(rule, groupPath, index)}
-
         <IconButton
           onClick={() => removeItem(groupPath, index)}
           color="error"
@@ -414,12 +505,12 @@ const ConditionRuleBuilder = ({
         </IconButton>
       </Box>
     );
-  };
+  });
 
-  // Group Component
-  const GroupComponent = ({ group, groupPath = [], isRoot = false }) => {
+  // Group Component with memoization
+  const GroupComponent = React.memo(({ group, groupPath = [], isRoot = false }) => {
     const [collapsed, setCollapsed] = useState(false);
-
+    
     return (
       <Box
         sx={{
@@ -477,7 +568,6 @@ const ConditionRuleBuilder = ({
               </Select>
             </FormControl>
           </Box>
-
           <Box sx={{ display: "flex", gap: 1 }}>
             <Button
               variant="contained"
@@ -528,7 +618,6 @@ const ConditionRuleBuilder = ({
             )}
           </Box>
         </Box>
-
         {!collapsed && (
           <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
             {group.rules.map((rule, index) => (
@@ -572,7 +661,7 @@ const ConditionRuleBuilder = ({
         )}
       </Box>
     );
-  };
+  });
 
   // Transform notification data for API
   useEffect(() => {
@@ -582,7 +671,6 @@ const ConditionRuleBuilder = ({
           group_operator: group.logic,
           conditions: [],
         };
-
         group.rules.forEach((rule) => {
           if (rule.logic) {
             // Handle nested group
@@ -592,7 +680,7 @@ const ConditionRuleBuilder = ({
             }
           } else {
             // Handle rule
-            const fieldOption = fieldOptions.find((f) => f.value === rule.field);
+            const fieldOption = fieldOptionsRef.current.find((f) => f.value === rule.field);
             if (fieldOption && rule.field && rule.operator) {
               const condition = {
                 attributeId: fieldOption.attributeId,
@@ -606,25 +694,21 @@ const ConditionRuleBuilder = ({
             }
           }
         });
-
         return result.conditions.length > 0 ? result : null;
       };
-
-      const conditionGroup = transformGroup(notification.conditionGroup);
-
+      const conditionGroup = transformGroup(notificationRef.current.conditionGroup);
       return {
-        name: notification.name || "",
+        name: notificationRef.current.name || "",
         organizationId: organizationId || "",
-        dataSourceId: notification.entityId || "",
+        dataSourceId: notificationRef.current.entityId || "",
         triggerFieldId: "",
         isActive: true,
         conditionGroups: conditionGroup ? [conditionGroup] : [],
       };
     };
-
     const transformedData = transformNotificationData();
     onChange(transformedData);
-  }, [notification, fieldOptions, onChange, organizationId]);
+  }, [notification, onChange, organizationId]);
 
   return (
     <>
@@ -694,15 +778,14 @@ export default function AddNotificationTypes() {
   
   const { list } = useSelector((state) => state.dataSource);
   const updatedList = list ? list.filter(item => item?.isShowMenu === true) : [];
-
   const createNotification = usePost(["createNotification"]);
   const notificationResponse = usePost(["notificationResponse"]);
   const navigate = useNavigate();
-
+  
   const handleAccordionChange = (panel) => (event, isExpanded) => {
     setExpanded((prev) => ({ ...prev, [panel]: isExpanded }));
   };
-
+  
   const handleSubmit = async (event) => {
     event.preventDefault();
     
@@ -712,21 +795,16 @@ export default function AddNotificationTypes() {
       toast.error("Name field is required");
       return;
     }
-
     const formData = {
       notification: notificationData,
     };
-
     console.log("Form Submission Data:", JSON.stringify(formData, null, 2));
-
     try {
       const response = await createNotification.mutateAsync({
         url: `${POST.CREATE_NOTIFICATION_TYPE}`,
         payload: notificationData,
       });
-
       console.log("Notification created successfully:", response);
-
       if (response.success && response.data?._id) {
         setNotificationTypeId(response.data?._id);
         toast.success("Notification created successfully!");
@@ -739,7 +817,7 @@ export default function AddNotificationTypes() {
       toast.error(error.message || "Failed to create notification. Please try again.");
     }
   };
-
+  
   return (
     <ErrorBoundary>
       <Box
@@ -815,7 +893,6 @@ export default function AddNotificationTypes() {
                   </Box>
                 </AccordionDetails>
               </Accordion>
-
               {/* Frequency Accordion */}
               <Accordion
                 expanded={expanded.reminder && notificationTypeId !== null}
@@ -856,6 +933,3 @@ export default function AddNotificationTypes() {
     </ErrorBoundary>
   );
 }
-
-
-

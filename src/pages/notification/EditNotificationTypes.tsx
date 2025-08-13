@@ -59,35 +59,66 @@ class ErrorBoundary extends React.Component {
   }
 }
 
-// Stable Input Component to maintain focus
-const StableInput = ({ value, onChange, ...props }) => {
-  const [internalValue, setInternalValue] = React.useState(value);
-  const inputRef = React.useRef(null);
-  const isUpdatingRef = React.useRef(false);
+// FocusAwareInput Component that maintains focus
+const FocusAwareInput = React.memo(({ 
+  value, 
+  onChange, 
+  error, 
+  placeholder, 
+  type = "text",
+  ...props 
+}) => {
+  const inputRef = useRef(null);
+  const [localValue, setLocalValue] = useState(value);
+  const isFocused = useRef(false);
   
-  React.useEffect(() => {
-    if (!isUpdatingRef.current) {
-      setInternalValue(value);
+  // Update local value when prop changes (but only when not focused)
+  useEffect(() => {
+    if (!isFocused.current) {
+      setLocalValue(value);
     }
-    isUpdatingRef.current = false;
   }, [value]);
-
-  const handleChange = (e) => {
-    const newValue = e.target.value;
-    setInternalValue(newValue);
-    isUpdatingRef.current = true;
-    onChange(newValue);
-  };
-
+  
+  // Handle focus
+  const handleFocus = useCallback(() => {
+    isFocused.current = true;
+  }, []);
+  
+  // Handle blur
+  const handleBlur = useCallback(() => {
+    isFocused.current = false;
+    onChange(localValue);
+  }, [localValue, onChange]);
+  
+  // Handle change
+  const handleChange = useCallback((e) => {
+    setLocalValue(e.target.value);
+  }, []);
+  
+  // Handle key down to prevent default behavior if needed
+  const handleKeyDown = useCallback((e) => {
+    // Prevent any default behavior that might cause focus loss
+    if (e.key === 'Enter') {
+      e.preventDefault();
+    }
+  }, []);
+  
   return (
     <TextField
-      ref={inputRef}
-      value={internalValue}
-      onChange={handleChange}
       {...props}
+      inputRef={inputRef}
+      value={localValue}
+      onChange={handleChange}
+      onFocus={handleFocus}
+      onBlur={handleBlur}
+      onKeyDown={handleKeyDown}
+      placeholder={placeholder}
+      type={type}
+      variant="outlined"
+      error={error}
     />
   );
-};
+});
 
 // ConditionRuleBuilder Component
 const ConditionRuleBuilder = ({
@@ -104,6 +135,25 @@ const ConditionRuleBuilder = ({
   const [notification, setNotification] = useState(initialNotification);
   const { list } = useSelector((state:RootState) => state.dataSource);
   const operatorList = usePost(["operatorList"]);
+  
+  // Refs to maintain stable references
+  const notificationRef = useRef(notification);
+  const fieldOptionsRef = useRef(fieldOptions);
+  const operatorListRef = useRef(operatorList);
+  const [operatorsLoaded, setOperatorsLoaded] = useState(false);
+  
+  // Update refs when state changes
+  useEffect(() => {
+    notificationRef.current = notification;
+  }, [notification]);
+  
+  useEffect(() => {
+    fieldOptionsRef.current = fieldOptions;
+  }, [fieldOptions]);
+  
+  useEffect(() => {
+    operatorListRef.current = operatorList;
+  }, [operatorList]);
 
   // Update internal state when initialNotification changes
   useEffect(() => {
@@ -119,6 +169,13 @@ const ConditionRuleBuilder = ({
       payload: { fieldType: "all" },
     });
   }, []);
+
+  // Track when operators are loaded
+  useEffect(() => {
+    if (operatorList.data && !operatorList.isLoading) {
+      setOperatorsLoaded(true);
+    }
+  }, [operatorList.data, operatorList.isLoading]);
 
   // Update field options when entity changes
   useEffect(() => {
@@ -174,8 +231,8 @@ const ConditionRuleBuilder = ({
   
   const validateValue = (rule) => {
     if (!rule.field || !rule.operator) return false;
-    const field = fieldOptions.find((f) => f.value === rule.field);
-    const operators = operatorList.data?.data?.find((op) => op.fieldType === field?.type)?.operators || [];
+    const field = fieldOptionsRef.current.find((f) => f.value === rule.field);
+    const operators = operatorListRef.current.data?.data?.find((op) => op.fieldType === field?.type)?.operators || [];
     const selectedOperator = operators?.find((op) => op.operatorKey === rule.operator);
     return selectedOperator?.valueRequired && !rule.value;
   };
@@ -224,46 +281,46 @@ const ConditionRuleBuilder = ({
 
   const updateRule = useCallback((groupPath, index, field, value) => {
     setNotification(prev => {
-      // Create a new object only for the specific rule being updated
-      const updatedNotification = {
-        ...prev,
-        conditionGroup: {
-          ...prev.conditionGroup,
-          rules: prev.conditionGroup.rules.map((rule, i) => 
-            i === index ? { ...rule, [field]: value } : rule
-          )
-        }
-      };
+      // Create a deep copy to avoid mutation issues
+      const updatedNotification = JSON.parse(JSON.stringify(prev));
+      const group = getGroupByPath(updatedNotification.conditionGroup, groupPath);
       
-      // Clear dependent fields when operator changes
-      if (field === "operator") {
-        const selectedField = fieldOptions.find((f) => f.value === updatedNotification.conditionGroup.rules[index].field);
-        const operators = operatorList.data?.data?.find((op) => op.fieldType === selectedField?.type)?.operators;
-        const selectedOperator = operators?.find((op) => op.operatorKey === value);
-        if (selectedOperator && !selectedOperator.valueRequired) {
-          updatedNotification.conditionGroup.rules[index].value = "";
-          updatedNotification.conditionGroup.rules[index].timeUnit = "";
+      if (group && group.rules && group.rules[index]) {
+        // Update the rule
+        group.rules[index][field] = value;
+        
+        // Clear dependent fields when operator changes
+        if (field === "operator") {
+          const selectedField = fieldOptionsRef.current.find((f) => f.value === group.rules[index].field);
+          const operators = operatorListRef.current.data?.data?.find((op) => op.fieldType === selectedField?.type)?.operators;
+          const selectedOperator = operators?.find((op) => op.operatorKey === value);
+          if (selectedOperator && !selectedOperator.valueRequired) {
+            group.rules[index].value = "";
+            group.rules[index].timeUnit = "";
+          }
         }
       }
       
       return updatedNotification;
     });
-  }, [fieldOptions, operatorList.data]);
+  }, []);
 
   const updateGroupLogic = useCallback((groupPath, logic) => {
     setNotification(prev => {
       const updatedNotification = JSON.parse(JSON.stringify(prev));
       const group = getGroupByPath(updatedNotification.conditionGroup, groupPath);
-      group.logic = logic;
+      if (group) {
+        group.logic = logic;
+      }
       return updatedNotification;
     });
   }, []);
 
   // Render value input based on field type
-  const renderValueInput = (rule, groupPath, index) => {
-    const field = fieldOptions.find((f) => f.value === rule.field);
+  const renderValueInput = useCallback((rule, groupPath, index) => {
+    const field = fieldOptionsRef.current.find((f) => f.value === rule.field);
     if (!field) return null;
-    const operators = operatorList.data?.data?.find((op) => op.fieldType === field?.type)?.operators || [];
+    const operators = operatorListRef.current.data?.data?.find((op) => op.fieldType === field?.type)?.operators || [];
     const selectedOperator = operators?.find((op) => op.operatorKey === rule.operator);
     const valueRequired = selectedOperator?.valueRequired ?? true;
     
@@ -271,7 +328,7 @@ const ConditionRuleBuilder = ({
     const updateValue = (value) => updateRule(groupPath, index, "value", value);
     const updateTimeUnit = (value) => updateRule(groupPath, index, "timeUnit", value);
     const hasError = validateValue(rule);
-
+    
     switch (field.type) {
       case "boolean":
         return (
@@ -297,7 +354,7 @@ const ConditionRuleBuilder = ({
         return (
           <Box sx={{ display: "flex", gap: 2, alignItems: "center" }}>
             <FormControl fullWidth size="small" error={hasError}>
-              <StableInput
+              <FocusAwareInput
                 key={`input-${rule.id || index}`}
                 fullWidth
                 size="small"
@@ -305,8 +362,6 @@ const ConditionRuleBuilder = ({
                 value={rule.value}
                 onChange={updateValue}
                 placeholder="Select date"
-                variant="outlined"
-                InputLabelProps={{ shrink: true }}
                 error={hasError}
               />
               {hasError && (
@@ -333,14 +388,13 @@ const ConditionRuleBuilder = ({
       default:
         return (
           <FormControl fullWidth size="small" error={hasError}>
-            <StableInput
+            <FocusAwareInput
               key={`input-${rule.id || index}`}
               fullWidth
               size="small"
               value={rule.value}
               onChange={updateValue}
               placeholder="Value"
-              variant="outlined"
               error={hasError}
             />
             {hasError && (
@@ -349,10 +403,10 @@ const ConditionRuleBuilder = ({
           </FormControl>
         );
     }
-  };
+  }, [updateRule, validateValue]);
 
   // Helper function to render select fields
-  const renderSelectField = (rule, updateValue, hasError) => {
+  const renderSelectField = useCallback((rule, updateValue, hasError) => {
     const getOptions = () => {
       switch (rule.field) {
         case "status": return statusOptions;
@@ -385,12 +439,13 @@ const ConditionRuleBuilder = ({
         )}
       </FormControl>
     );
-  };
+  }, []);
 
   // Rule Component
   const RuleComponent = memo(({ rule, groupPath, index }) => {
-    const selectedField = fieldOptions.find((f) => f.value === rule.field);
-    const operators = operatorList.data?.data?.find((op) => op.fieldType === selectedField?.type)?.operators || [];
+    const selectedField = fieldOptionsRef.current.find((f) => f.value === rule.field);
+    // Get operators from the ref, which will be updated when operatorList loads
+    const operators = operatorListRef.current.data?.data?.find((op) => op.fieldType === selectedField?.type)?.operators || [];
     
     return (
       <Box
@@ -416,7 +471,7 @@ const ConditionRuleBuilder = ({
             label="Select field..."
           >
             <MenuItem value="">Select field...</MenuItem>
-            {fieldOptions.map((option) => (
+            {fieldOptionsRef.current.map((option) => (
               <MenuItem key={option.value} value={option.value}>
                 {option.label}
               </MenuItem>
@@ -431,7 +486,7 @@ const ConditionRuleBuilder = ({
             label="Select operator..."
           >
             <MenuItem value="">Select operator...</MenuItem>
-            {operatorList.isLoading ? (
+            {operatorListRef.current.isLoading ? (
               <MenuItem disabled>Loading operators...</MenuItem>
             ) : (
               operators.map((op) => (
@@ -451,6 +506,13 @@ const ConditionRuleBuilder = ({
           <CloseIcon />
         </IconButton>
       </Box>
+    );
+  }, (prevProps, nextProps) => {
+    // Custom comparison to prevent unnecessary re-renders
+    return (
+      prevProps.rule === nextProps.rule &&
+      prevProps.groupPath === nextProps.groupPath &&
+      prevProps.index === nextProps.index
     );
   });
 
@@ -627,7 +689,7 @@ const ConditionRuleBuilder = ({
             }
           } else {
             // Handle rule
-            const fieldOption = fieldOptions.find((f) => f.value === rule.field);
+            const fieldOption = fieldOptionsRef.current.find((f) => f.value === rule.field);
             if (fieldOption && rule.field && rule.operator) {
               const condition = {
                 attributeId: fieldOption.attributeId,
@@ -643,24 +705,24 @@ const ConditionRuleBuilder = ({
         });
         return result.conditions.length > 0 ? result : null;
       };
-
-      const conditionGroup = transformGroup(notification.conditionGroup);
+      const conditionGroup = transformGroup(notificationRef.current.conditionGroup);
       return {
-        name: notification.name || "",
+        name: notificationRef.current.name || "",
         organizationId: organizationId || "",
-        dataSourceId: notification.entityId || "",
+        dataSourceId: notificationRef.current.entityId || "",
         triggerFieldId: "",
         isActive: true,
         conditionGroups: conditionGroup ? [conditionGroup] : [],
       };
     };
-
-    // Only transform if we have valid data
-    if (notification && notification.conditionGroup && notification.conditionGroup.rules.length > 0) {
+    
+    // Only transform if we have valid data and operators are loaded
+    if (notificationRef.current && notificationRef.current.conditionGroup && 
+        notificationRef.current.conditionGroup.rules.length > 0 && operatorsLoaded) {
       const transformedData = transformNotificationData();
       onChange(transformedData);
     }
-  }, [notification, fieldOptions, onChange, organizationId]);
+  }, [notification, onChange, organizationId, operatorsLoaded]);
 
   return (
     <>
@@ -762,7 +824,7 @@ export default function EditNotificationTypes() {
           }));
       }
       setFieldOptions(newFieldOptions);
-
+      
       // Now, transform the conditions to rules using the newFieldOptions
       const transformConditions = (conditions) => {
         return conditions.map((condition, index) => {
@@ -786,7 +848,7 @@ export default function EditNotificationTypes() {
           }
         });
       };
-
+      
       // Get the first condition group
       const firstGroup = backendData.conditionGroups[0];
       if (firstGroup) {
@@ -805,7 +867,7 @@ export default function EditNotificationTypes() {
       }
     }
   }, [notificationDataFetch.data, list]);
-
+  
   // Handle errors
   useEffect(() => {
     if (notificationDataFetch.error) {
@@ -813,11 +875,11 @@ export default function EditNotificationTypes() {
       console.error("Error fetching notification:", notificationDataFetch.error);
     }
   }, [notificationDataFetch.error]);
-
+  
   const handleAccordionChange = (panel) => (event, isExpanded) => {
     setExpanded((prev) => ({ ...prev, [panel]: isExpanded }));
   };
-
+  
   const handleSubmit = async (event) => {
     event.preventDefault();
     
@@ -842,7 +904,7 @@ export default function EditNotificationTypes() {
       toast.error(error.message || "Failed to update notification. Please try again.");
     }
   };
-
+  
   // Show loading state while data is being fetched
   if (notificationDataFetch.isLoading || !initialNotification) {
     return (
@@ -859,7 +921,7 @@ export default function EditNotificationTypes() {
       </Box>
     );
   }
-
+  
   return (
     <ErrorBoundary>
       <Box
