@@ -22,10 +22,10 @@ import {
   DialogContent,
   DialogActions,
   Tooltip,
-  Snackbar,
+  Modal,
 } from "@mui/material";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
-import { GridCloseIcon, GridDeleteIcon } from "@mui/x-data-grid";
+import { GridDeleteIcon } from "@mui/x-data-grid";
 import EditIcon from "@mui/icons-material/Edit";
 import useGet from "../../hooks/useGet";
 import usePost from "../../hooks/usePost";
@@ -33,7 +33,12 @@ import usePut from "../../hooks/usePut";
 import useDelete from "../../hooks/useDelete";
 import { GET, POST, PUT, DELETE } from "../../services/apiRoutes";
 import { STYLE_GUIDE } from "../../styles";
-
+import { toast } from "react-toastify";
+import VisibilityIcon from "@mui/icons-material/Visibility";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import dayjs from "dayjs";
+import { TimePicker } from "@mui/x-date-pickers/TimePicker";
 
 // Constants remain the same
 const MONTHS = [
@@ -50,18 +55,17 @@ const MONTHS = [
   { id: "Nov", label: "November" },
   { id: "Dec", label: "December" },
 ];
-
 const DAYS = Array.from({ length: 31 }, (_, i) => ({
   id: (i + 1).toString(),
   label: (i + 1).toString(),
 }));
-
 const WEEK_OPTIONS = [
   { id: "First", label: "First" },
   { id: "Second", label: "Second" },
   { id: "Third", label: "Third" },
   { id: "Fourth", label: "Fourth" },
   { id: "Last", label: "Last" },
+  { id: "All", label: "All" },
 ];
 
 // Styles remain the same
@@ -128,11 +132,11 @@ const styles = {
     gap: STYLE_GUIDE.SPACING.s3,
   },
   dataGridContainer: {
-    width: '100%',
-    '& .MuiDataGrid-cell': {
+    width: "100%",
+    "& .MuiDataGrid-cell": {
       fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
     },
-    '& .MuiDataGrid-columnHeader': {
+    "& .MuiDataGrid-columnHeader": {
       fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
       fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.medium,
     },
@@ -142,6 +146,25 @@ const styles = {
     justifyContent: "space-between",
     alignItems: "center",
     marginBottom: STYLE_GUIDE.SPACING.s6,
+  },
+  viewDialogContent: {
+    display: "flex",
+    flexDirection: "column",
+    gap: STYLE_GUIDE.SPACING.s3,
+  },
+  viewDetailRow: {
+    display: "flex",
+    borderBottom: `1px solid ${STYLE_GUIDE.COLORS.borderLight}`,
+    paddingBottom: STYLE_GUIDE.SPACING.s2,
+    marginBottom: STYLE_GUIDE.SPACING.s2,
+  },
+  viewDetailLabel: {
+    fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.medium,
+    minWidth: "180px",
+    color: STYLE_GUIDE.COLORS.textDarkGray,
+  },
+  viewDetailValue: {
+    color: STYLE_GUIDE.COLORS.textPrimary,
   },
 };
 
@@ -162,7 +185,6 @@ const RRuleGenerator = ({
     hideError: false,
     ...config,
   };
-
   const weekdays = defaultConfig.weekStartsOnSunday
     ? [
         { id: "Sunday", label: "Sunday" },
@@ -182,9 +204,7 @@ const RRuleGenerator = ({
         { id: "Saturday", label: "Saturday" },
         { id: "Sunday", label: "Sunday" },
       ];
-
   const dayAbbrevs = ["SU", "MO", "TU", "WE", "TH", "FR", "SA"];
-
   const backendDayIndices = defaultConfig.weekStartsOnSunday
     ? {
         Sunday: 0,
@@ -232,22 +252,20 @@ const RRuleGenerator = ({
   const [acknowledgeChecked, setAcknowledgeChecked] = useState(false);
   const [attachedChecked, setAttachedChecked] = useState(false);
   const [time, setTime] = useState("");
-  
   // Updated state for recipients
   const [template, setTemplate] = useState("");
   const [method, setMethod] = useState("");
   const [toRecipients, setToRecipients] = useState([]);
   const [ccRecipients, setCcRecipients] = useState([]);
-  
   const [openDialog, setOpenDialog] = useState(false);
   const [selectedReminderId, setSelectedReminderId] = useState(null);
   const [editMode, setEditMode] = useState(false);
   const [editingReminderId, setEditingReminderId] = useState(null);
-  const [snackbar, setSnackbar] = useState({
-    open: false,
-    message: "",
-    severity: "info",
-  });
+
+  // New states for view functionality
+  const [openViewDialog, setOpenViewDialog] = useState(false);
+  const [viewingReminderId, setViewingReminderId] = useState(null);
+  const [viewingReminderData, setViewingReminderData] = useState(null);
 
   // Reset form function
   const resetForm = () => {
@@ -303,7 +321,6 @@ const RRuleGenerator = ({
     },
     true
   );
-
   const { data: frequencyListData, refetch } = useGet(
     ["frequencyList", notificationTypeId, frequencyApiSuccess],
     frequencyApiSuccess
@@ -311,28 +328,41 @@ const RRuleGenerator = ({
       : "",
     !!frequencyApiSuccess
   );
-
   const { data: reminderData, refetch: refetchReminder } = useGet(
     ["reminder", editingReminderId],
     editingReminderId ? `${GET.FREQUENCY_DETAIL}/${editingReminderId}` : "",
     !!editingReminderId
   );
 
+  // New API hook for viewing reminder details
+  const { data: viewReminderData, refetch: refetchViewReminder } = useGet(
+    ["viewReminder", viewingReminderId],
+    viewingReminderId ? `${GET.FREQUENCY_DETAIL}/${viewingReminderId}` : "",
+    !!viewingReminderId
+  );
+
+  console.log("time", time);
   useEffect(() => {
     if (notificationTypeId) {
       setFrequencyApiSuccess(true);
       refetch();
     }
   }, [notificationTypeId, refetch]);
-
   useEffect(() => {
     if (notificationTypeId && frequencyApiSuccess) {
       refetch();
     }
   }, [notificationTypeId, frequencyApiSuccess, refetch]);
 
-  // Pre-fill form when editing
+  // Effect to handle view reminder data
   useEffect(() => {
+    if (viewReminderData?.data && openViewDialog) {
+      setViewingReminderData(viewReminderData.data);
+    }
+  }, [viewReminderData, openViewDialog]);
+
+ 
+useEffect(() => {
     if (reminderData?.data && editMode) {
       const data = reminderData.data;
       setStartDate(
@@ -349,54 +379,66 @@ const RRuleGenerator = ({
       setAcknowledgeChecked(data.acknowledgeRequired || false);
       setAttachedChecked(data.attachmentRequired || false);
       setTime(data.triggerTime || "");
-      
       // Set template and method
       setTemplate(data.templateId?._id || "");
       setMethod(data.medium?._id || "");
-      
       // Set TO and CC recipients
       const toRecipients = [];
       const ccRecipients = [];
-      
       // Process recipients_to
       if (data.recipients_to && Array.isArray(data.recipients_to)) {
-        data.recipients_to.forEach(recipient => {
+        data.recipients_to.forEach((recipient) => {
           if (recipient.customEmails && Array.isArray(recipient.customEmails)) {
-            recipient.customEmails.forEach(email => {
-              toRecipients.push(email); // Keep as string
+            recipient.customEmails.forEach((email) => {
+              toRecipients.push({
+                value: email,
+                label: email,
+                isCustom: true,
+              });
             });
           } else if (recipient.attributeId) {
-            const fieldOption = fieldOptions.find(opt => opt.attributeId === recipient.attributeId);
+            const fieldOption = fieldOptions.find(
+              (opt) => opt.attributeId === recipient.attributeId
+            );
             if (fieldOption) {
-              toRecipients.push(fieldOption); // Keep as object
+              toRecipients.push(fieldOption);
             } else {
-              toRecipients.push(recipient.attributeId); // Fallback to string if not found
+              toRecipients.push({
+                value: recipient.attributeId,
+                label: recipient.attributeId,
+              });
             }
           }
         });
       }
-      
       // Process recipients_cc
       if (data.recipients_cc && Array.isArray(data.recipients_cc)) {
-        data.recipients_cc.forEach(recipient => {
+        data.recipients_cc.forEach((recipient) => {
           if (recipient.customEmails && Array.isArray(recipient.customEmails)) {
-            recipient.customEmails.forEach(email => {
-              ccRecipients.push(email); // Keep as string
+            recipient.customEmails.forEach((email) => {
+              ccRecipients.push({
+                value: email,
+                label: email,
+                isCustom: true,
+              });
             });
           } else if (recipient.attributeId) {
-            const fieldOption = fieldOptions.find(opt => opt.attributeId === recipient.attributeId);
+            const fieldOption = fieldOptions.find(
+              (opt) => opt.attributeId === recipient.attributeId
+            );
             if (fieldOption) {
-              ccRecipients.push(fieldOption); // Keep as object
+              ccRecipients.push(fieldOption);
             } else {
-              ccRecipients.push(recipient.attributeId); // Fallback to string if not found
+              ccRecipients.push({
+                value: recipient.attributeId,
+                label: recipient.attributeId,
+              });
             }
           }
         });
       }
-      
       setToRecipients(toRecipients);
       setCcRecipients(ccRecipients);
-
       // Handle end conditions
       if (data.maxOccurrences) {
         setEndType("After");
@@ -409,7 +451,6 @@ const RRuleGenerator = ({
       } else {
         setEndType("Never");
       }
-
       // Handle recurrence details
       if (data.frequency === "yearly" && data.dayOfMonth?.length > 0) {
         setYearlyType("on");
@@ -448,35 +489,47 @@ const RRuleGenerator = ({
             : []
         );
       }
-
-      if (data.frequency === "monthly" && data.dayOfMonth?.length > 0) {
-        setMonthlyType("on");
-        setMonthlyDays(
-          data.dayOfMonth?.length > 0
-            ? data.dayOfMonth.map((d) => d.toString())
-            : []
-        );
-      } else if (data.frequency === "monthly" && data.weekOfMonth?.length > 0) {
-        setMonthlyType("onthe");
-        setMonthlyWeeks(
-          data.weekOfMonth?.length > 0
-            ? data.weekOfMonth.map((w) =>
-                w === -1 ? "Last" : WEEK_OPTIONS[w - 1]?.id || "First"
-              )
-            : []
-        );
-        setMonthlyWeekDays(
-          data.daysOfWeek?.length > 0
-            ? data.daysOfWeek
-                .map(
-                  (d) =>
-                    weekdays[defaultConfig.weekStartsOnSunday ? d : d % 7]?.id
-                )
-                .filter((d) => d)
-            : []
-        );
+      // Updated monthly recurrence handling
+      if (data.frequency === "monthly") {
+        // Prioritize "on" pattern if dayOfMonth exists
+        if (data.dayOfMonth && data.dayOfMonth.length > 0) {
+          setMonthlyType("on");
+          setMonthlyDays(
+            data.dayOfMonth.map((d) => d.toString())
+          );
+          // Clear the "on the" related states
+          setMonthlyWeeks([]);
+          setMonthlyWeekDays([]);
+        } 
+        // Use "on the" pattern if weekOfMonth exists
+        else if (data.weekOfMonth && data.weekOfMonth.length > 0) {
+          setMonthlyType("onthe");
+          setMonthlyWeeks(
+            data.weekOfMonth.map((w) =>
+              w === -1 ? "Last" : WEEK_OPTIONS[w - 1]?.id || "First"
+            )
+          );
+          setMonthlyWeekDays(
+            data.daysOfWeek?.length > 0
+              ? data.daysOfWeek
+                  .map(
+                    (d) =>
+                      weekdays[defaultConfig.weekStartsOnSunday ? d : d % 7]?.id
+                  )
+                  .filter((d) => d)
+              : []
+          );
+          // Clear the "on" related state
+          setMonthlyDays([]);
+        }
+        // Fallback if neither exists
+        else {
+          setMonthlyType("on");
+          setMonthlyDays([]);
+          setMonthlyWeeks([]);
+          setMonthlyWeekDays([]);
+        }
       }
-
       if (data.frequency === "weekly" && data.daysOfWeek?.length > 0) {
         setWeeklyDays(
           data.daysOfWeek
@@ -488,7 +541,6 @@ const RRuleGenerator = ({
       }
     }
   }, [reminderData, editMode, fieldOptions]);
-
   // Handlers
   const handleWeeklyDayToggle = (day) => {
     setWeeklyDays((prev) => {
@@ -515,6 +567,19 @@ const RRuleGenerator = ({
     resetForm();
   };
 
+  // New handler for view button
+  const handleViewReminder = (reminder) => {
+    setViewingReminderId(reminder._id);
+    setOpenViewDialog(true);
+    refetchViewReminder();
+  };
+
+  const handleCloseViewDialog = () => {
+    setOpenViewDialog(false);
+    setViewingReminderId(null);
+    setViewingReminderData(null);
+  };
+
   const handleAddReminder = async () => {
     const rrule = generateRRule();
     if (!rrule) {
@@ -522,64 +587,99 @@ const RRuleGenerator = ({
       setTimeout(() => setSuccessMessage(null), 3000);
       return;
     }
-
     if (!template || !method) {
       setSuccessMessage("Please select a template and notification method.");
       setTimeout(() => setSuccessMessage(null), 3000);
       return;
     }
 
-    const daysOfWeek =
-      repeatType === "Weekly"
-        ? weeklyDays
-            .map((day) => backendDayIndices[day])
-            .filter((idx) => idx !== undefined)
-        : [];
+    let dayOfMonth = [];
+    let weekOfMonth = [];
+    let daysOfWeek = [];
+    let monthOfYear = [];
+
+    if (repeatType === "Monthly") {
+      if (monthlyType === "on") {
+        // Convert selected days to numbers
+        dayOfMonth = monthlyDays.map((day) => parseInt(day));
+      } else if (monthlyType === "onthe") {
+        // Convert week selections to numbers (First=1, Second=2, etc., Last=-1)
+        weekOfMonth = monthlyWeeks.map((week) => {
+          if (week === "Last") return -1;
+          return WEEK_OPTIONS.findIndex((opt) => opt.id === week) + 1;
+        });
+        // Convert weekday names to numbers using backend indices
+        daysOfWeek = monthlyWeekDays
+          .map((day) => backendDayIndices[day])
+          .filter((idx) => idx !== undefined);
+      }
+    } else if (repeatType === "Weekly") {
+      daysOfWeek = weeklyDays
+        .map((day) => backendDayIndices[day])
+        .filter((idx) => idx !== undefined);
+    } else if (repeatType === "Yearly") {
+      if (yearlyType === "on") {
+        dayOfMonth = yearlyDays.map((day) => parseInt(day));
+        monthOfYear = yearlyMonths.map(
+          (m) => MONTHS.findIndex((month) => month.id === m) + 1
+        );
+      } else if (yearlyType === "onthe") {
+        weekOfMonth = yearlyWeeks.map((week) => {
+          if (week === "Last") return -1;
+          return WEEK_OPTIONS.findIndex((opt) => opt.id === week) + 1;
+        });
+        daysOfWeek = yearlyWeekDays
+          .map((day) => backendDayIndices[day])
+          .filter((idx) => idx !== undefined);
+        monthOfYear = yearlyWeekMonths.map(
+          (m) => MONTHS.findIndex((month) => month.id === m) + 1
+        );
+      }
+    }
 
     // Format recipients according to backend requirements
     const formatRecipients = (recipients) => {
       const result = [];
       const customEmails = [];
       const attributeIds = [];
-      
-      recipients.forEach(recipient => {
-        if (typeof recipient === 'string') {
+      recipients.forEach((recipient) => {
+        if (typeof recipient === "string") {
           // Check if it's an email format (contains '@')
-          if (recipient.includes('@')) {
+          if (recipient.includes("@")) {
             customEmails.push(recipient);
           } else {
             attributeIds.push(recipient);
           }
         } else {
           // For objects, check if the label contains '@'
-          if (recipient.label && recipient.label.includes('@')) {
+          if (recipient.label && recipient.label.includes("@")) {
             customEmails.push(recipient.label);
           } else {
             attributeIds.push(recipient.attributeId);
           }
         }
       });
-      
       // Add all custom emails as a single object with array
       if (customEmails.length > 0) {
         result.push({ customEmails });
       }
-      
       // Add each attribute ID as a separate object
-      attributeIds.forEach(id => {
+      attributeIds.forEach((id) => {
         result.push({ attributeId: id });
       });
-      
       return result;
     };
-
     const payload = {
       notificationTypeId,
       frequency: repeatType.toLowerCase(),
       schedulerStartDate: startDate,
       ...(endType === "On date" && { schedulerEndDate: endDate }),
       interval,
-      daysOfWeek,
+
+      ...(dayOfMonth.length > 0 && { dayOfMonth }),
+      ...(weekOfMonth.length > 0 && { weekOfMonth }),
+      ...(daysOfWeek.length > 0 && { daysOfWeek }),
+      ...(monthOfYear.length > 0 && { monthOfYear }),
       repeatAnnually: repeatType === "Yearly",
       acknowledgeRequired: acknowledgeChecked,
       attachmentRequired: attachedChecked,
@@ -590,10 +690,8 @@ const RRuleGenerator = ({
       triggerTime: time || "",
       ...(endType === "After" && { maxOccurrences: endAfter.toString() }),
     };
-
     // Log the formatted payload for debugging
     console.log("Formatted payload:", JSON.stringify(payload, null, 2));
-    
     try {
       if (editMode) {
         console.log("Updating reminder with ID:", editingReminderId);
@@ -602,11 +700,7 @@ const RRuleGenerator = ({
           payload,
         });
         if (response.success && response.data?._id) {
-          setSnackbar({
-            open: true,
-            message: "Reminder updated successfully!",
-            severity: "success",
-          });
+          toast.success(response.message);
           setEditMode(false);
           setEditingReminderId(null);
           refetch();
@@ -622,15 +716,11 @@ const RRuleGenerator = ({
         });
         if (response.success && response.data?._id) {
           setFrequencyApiSuccess(response.success);
-          setSnackbar({
-            open: true,
-            message: response.message,
-            severity: "success",
-          });
-          
+          toast.success(response.message);
           refetch();
           resetForm();
         } else {
+          toast.error(response.message);
           throw new Error("Creation failed");
         }
       }
@@ -680,7 +770,6 @@ const RRuleGenerator = ({
         const [key, val] = part.split("=");
         return { ...acc, [key]: val };
       }, {});
-      
       if (rules.FREQ) {
         setRepeatType(rules.FREQ.charAt(0) + rules.FREQ.slice(1).toLowerCase());
       }
@@ -775,7 +864,6 @@ const RRuleGenerator = ({
 
   const generateRRule = () => {
     if (!repeatType) return "";
-    
     let rrule = `FREQ=${repeatType.toUpperCase()}`;
     switch (repeatType) {
       case "Yearly":
@@ -889,17 +977,129 @@ const RRuleGenerator = ({
     endAfter,
   ]);
 
+  // Helper function to format recipients for display
+  const formatRecipientsForDisplay = (recipients) => {
+    if (!recipients || recipients.length === 0) return "None";
+
+    return recipients
+      .map((recipient) => {
+        if (recipient.customEmails) {
+          return recipient.customEmails.join(", ");
+        } else if (recipient.attributeId) {
+          const fieldOption = fieldOptions.find(
+            (opt) => opt.attributeId === recipient.attributeId
+          );
+          return fieldOption ? fieldOption.label : recipient.attributeId;
+        }
+        return "Unknown";
+      })
+      .join(", ");
+  };
+
+  // Helper function to format recurrence details for display
+  const formatRecurrenceDetails = (data) => {
+    if (!data.frequency) return "Not set";
+
+    let details =
+      data.frequency.charAt(0).toUpperCase() + data.frequency.slice(1);
+
+    if (data.interval && data.interval > 1) {
+      details += ` (every ${data.interval} `;
+      details +=
+        data.frequency === "weekly"
+          ? "weeks"
+          : data.frequency === "monthly"
+            ? "months"
+            : data.frequency === "yearly"
+              ? "years"
+              : "";
+      details += ")";
+    }
+
+    if (
+      data.frequency === "yearly" &&
+      data.monthOfYear &&
+      data.monthOfYear.length > 0
+    ) {
+      const months = data.monthOfYear
+        .map((m) => MONTHS[m - 1]?.label)
+        .filter((m) => m)
+        .join(", ");
+      details += ` in ${months}`;
+
+      if (data.dayOfMonth && data.dayOfMonth.length > 0) {
+        details += ` on day(s) ${data.dayOfMonth.join(", ")}`;
+      } else if (data.weekOfMonth && data.daysOfWeek) {
+        const weeks = data.weekOfMonth
+          .map((w) => (w === -1 ? "Last" : WEEK_OPTIONS[w - 1]?.label))
+          .filter((w) => w)
+          .join(", ");
+
+        const days = data.daysOfWeek
+          .map(
+            (d) => weekdays[defaultConfig.weekStartsOnSunday ? d : d % 7]?.label
+          )
+          .filter((d) => d)
+          .join(", ");
+
+        details += ` on the ${weeks} ${days}`;
+      }
+    }
+
+    if (
+      data.frequency === "monthly" &&
+      data.dayOfMonth &&
+      data.dayOfMonth.length > 0
+    ) {
+      details += ` on day(s) ${data.dayOfMonth.join(", ")}`;
+    } else if (
+      data.frequency === "monthly" &&
+      data.weekOfMonth &&
+      data.daysOfWeek
+    ) {
+      const weeks = data.weekOfMonth
+        .map((w) => (w === -1 ? "Last" : WEEK_OPTIONS[w - 1]?.label))
+        .filter((w) => w)
+        .join(", ");
+
+      const days = data.daysOfWeek
+        .map(
+          (d) => weekdays[defaultConfig.weekStartsOnSunday ? d : d % 7]?.label
+        )
+        .filter((d) => d)
+        .join(", ");
+
+      details += ` on the ${weeks} ${days}`;
+    }
+
+    if (
+      data.frequency === "weekly" &&
+      data.daysOfWeek &&
+      data.daysOfWeek.length > 0
+    ) {
+      const days = data.daysOfWeek
+        .map(
+          (d) => weekdays[defaultConfig.weekStartsOnSunday ? d : d % 7]?.label
+        )
+        .filter((d) => d)
+        .join(", ");
+      details += ` on ${days}`;
+    }
+
+    return details;
+  };
+
   // Define columns for DataGrid
   const columns: GridColDef[] = [
     {
-      field: 'frequency',
-      headerName: 'Frequency',
+      field: "frequency",
+      headerName: "Frequency",
       width: 120,
       valueGetter: (params) => params || "-",
     },
     {
-      field: 'schedulerStartDate',
-      headerName: 'Start Date',
+      field: "schedulerStartDate",
+      headerName: "Start Date",
       width: 150,
       valueGetter: (params) => {
         const date = params;
@@ -907,20 +1107,20 @@ const RRuleGenerator = ({
       },
     },
     {
-      field: 'acknowledgeRequired',
-      headerName: 'Acknowledge Required',
+      field: "acknowledgeRequired",
+      headerName: "Acknowledge Required",
       width: 150,
-      valueGetter: (params) => params ? "Yes" : "No",
+      valueGetter: (params) => (params ? "Yes" : "No"),
     },
     {
-      field: 'attachmentRequired',
-      headerName: 'Attachment Required',
+      field: "attachmentRequired",
+      headerName: "Attachment Required",
       width: 150,
-      valueGetter: (params) => params ? "Yes" : "No",
+      valueGetter: (params) => (params ? "Yes" : "No"),
     },
     {
-      field: 'templateId',
-      headerName: 'Template',
+      field: "templateId",
+      headerName: "Template",
       width: 180,
       valueGetter: (params) => {
         const template = params?.name;
@@ -928,22 +1128,21 @@ const RRuleGenerator = ({
       },
     },
     {
-      field: 'medium',
-      headerName: 'Notification Method',
+      field: "medium",
+      headerName: "Notification Method",
       width: 180,
       valueGetter: (params) => {
-
         const medium = params?.medium;
         return medium || "-";
       },
     },
     {
-      field: 'actions',
-      headerName: 'Actions',
-      width: 120,
+      field: "actions",
+      headerName: "Actions",
+      width: 200,
       sortable: false,
       renderCell: (params) => (
-        <Box sx={{ display: 'flex', gap: 1 }}>
+        <Box sx={{ display: "flex", gap: 1 }}>
           <Tooltip title="Edit Reminder" placement="top">
             <IconButton
               color="primary"
@@ -951,6 +1150,15 @@ const RRuleGenerator = ({
               onClick={() => handleEditReminder(params.row)}
             >
               <EditIcon />
+            </IconButton>
+          </Tooltip>
+          <Tooltip title="View Reminder" placement="top">
+            <IconButton
+              color="primary"
+              aria-label="view reminder"
+              onClick={() => handleViewReminder(params.row)}
+            >
+              <VisibilityIcon />
             </IconButton>
           </Tooltip>
           <Tooltip title="Delete Reminder" placement="top">
@@ -973,84 +1181,100 @@ const RRuleGenerator = ({
       <Box sx={{ marginBottom: STYLE_GUIDE.SPACING.s6 }}>
         <Typography variant="h2">Reminder</Typography>
       </Box>
-      
-      {/* Start and Repeat Section */}
-      <Box sx={styles.formRow}>
-        <FormControl>
-          <FormLabel
-            sx={{
-              fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.medium,
-              color: STYLE_GUIDE.COLORS.textDarkGray,
-              fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
-              marginBottom: STYLE_GUIDE.SPACING.s2,
-            }}
-          >
-            Start Date
-          </FormLabel>
-          <TextField
-            size="small"
-            type="date"
-            value={startDate}
-            onChange={(e) => setStartDate(e.target.value)}
-            sx={styles.textField}
-            variant="outlined"
-            aria-label="Select start date"
-          />
-        </FormControl>
-        <FormControl>
-          <FormLabel
-            sx={{
-              fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.medium,
-              color: STYLE_GUIDE.COLORS.textDarkGray,
-              fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
-              marginBottom: STYLE_GUIDE.SPACING.s2,
-            }}
-          >
-            Repeat
-          </FormLabel>
-          <Select
-            size="small"
-            aria-placeholder="select"
-            value={repeatType}
-            onChange={(e) => setRepeatType(e.target.value)}
-            sx={styles.select}
-            variant="outlined"
-            aria-label="Select repeat frequency"
-          >
-            {defaultConfig.repeat.map((option) => (
-              <MenuItem key={option} value={option}>
-                {option}
+      <LocalizationProvider dateAdapter={AdapterDayjs}>
+        {/* Start and Repeat Section */}
+        <Box sx={styles.formRow}>
+          <FormControl>
+            <FormLabel
+              sx={{
+                fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.medium,
+                color: STYLE_GUIDE.COLORS.textDarkGray,
+                fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
+                marginBottom: STYLE_GUIDE.SPACING.s2,
+              }}
+            >
+              Start Date
+            </FormLabel>
+            <TextField
+              size="small"
+              type="date"
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+              sx={styles.textField}
+              variant="outlined"
+              aria-label="Select start date"
+            />
+          </FormControl>
+          <FormControl>
+            <FormLabel
+              sx={{
+                fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.medium,
+                color: STYLE_GUIDE.COLORS.textDarkGray,
+                fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
+                marginBottom: STYLE_GUIDE.SPACING.s2,
+              }}
+            >
+              Repeat
+            </FormLabel>
+            <Select
+              size="small"
+              aria-placeholder="select"
+              value={repeatType}
+              onChange={(e) => setRepeatType(e.target.value)}
+              sx={styles.select}
+              variant="outlined"
+              displayEmpty
+              aria-label="Select repeat frequency"
+            >
+              <MenuItem value="" disabled>
+                Select
               </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-        <FormControl>
-          <FormLabel
-            sx={{
-              fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.medium,
-              color: STYLE_GUIDE.COLORS.textDarkGray,
-              fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
-              marginBottom: STYLE_GUIDE.SPACING.s2,
-            }}
-          >
-            Time (Optional)
-          </FormLabel>
-          <TextField
-            size="small"
-            type="time"
-            value={time}
-            onChange={(e) => setTime(e.target.value)}
-            variant="outlined"
-            sx={styles.textField}
-            aria-label="Select time for reminder"
-            inputProps={{
-              // Allow empty value
-              "aria-required": "false"
-            }}
-          />
-        </FormControl>
-      </Box>
-      
+              {defaultConfig.repeat.map((option) => (
+                <MenuItem key={option} value={option}>
+                  {option}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+          <FormControl>
+            <FormLabel
+              sx={{
+                fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.medium,
+                color: STYLE_GUIDE.COLORS.textDarkGray,
+                fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
+                marginBottom: STYLE_GUIDE.SPACING.s2,
+              }}
+            >
+              Time (Optional)
+            </FormLabel>
+            <TimePicker
+              value={time ? dayjs(time, "hh:mm A") : null}
+              onChange={(newValue) => {
+                if (newValue) {
+                  // ✅ Send with AM/PM to backend
+                  setTime(newValue.format("hh:mm A"));
+                } else {
+                  setTime("");
+                }
+              }}
+              format="hh:mm a" // ✅ Show AM/PM in UI
+              slotProps={{
+                actionBar: {
+                  actions: [],
+                },
+                textField: {
+                  size: "small",
+                  variant: "outlined",
+                  inputProps: {
+                    "aria-required": "false",
+                  },
+                  "aria-label": "Select time for reminder",
+                },
+              }}
+            />
+          </FormControl>
+        </Box>
+      </LocalizationProvider>
       {/* Repeat Details Section */}
       <Box sx={{ marginBottom: STYLE_GUIDE.SPACING.s6 }}>
         {repeatType === "Yearly" && (
@@ -1433,7 +1657,6 @@ const RRuleGenerator = ({
           </Box>
         )}
       </Box>
-      
       {/* Repeat Every and End Section - Single Row */}
       <Box sx={styles.formRow}>
         {repeatType !== "Daily" && (
@@ -1447,7 +1670,7 @@ const RRuleGenerator = ({
                   marginBottom: STYLE_GUIDE.SPACING.s2,
                 }}
               >
-                Repeat every
+                Every
               </FormLabel>
               <TextField
                 size="small"
@@ -1471,7 +1694,13 @@ const RRuleGenerator = ({
                 marginTop: "24px",
               }}
             >
-              {repeatType.toLowerCase()}
+              {repeatType === "Weekly"
+                ? "week(s)"
+                : repeatType === "Monthly"
+                  ? "month(s)"
+                  : repeatType === "Yearly"
+                    ? "year(s)"
+                    : ""}{" "}
               {interval > 1 ? "s" : ""}
             </Typography>
           </>
@@ -1494,8 +1723,12 @@ const RRuleGenerator = ({
             onChange={(e) => setEndType(e.target.value)}
             sx={styles.select}
             variant="outlined"
+            displayEmpty
             aria-label="Select end condition"
           >
+            <MenuItem value="" disabled>
+              Select
+            </MenuItem>
             {defaultConfig.end.map((option) => (
               <MenuItem key={option} value={option}>
                 {option}
@@ -1553,7 +1786,6 @@ const RRuleGenerator = ({
           </FormControl>
         )}
       </Box>
-      
       <Box
         component="hr"
         sx={{
@@ -1562,7 +1794,6 @@ const RRuleGenerator = ({
           borderTop: `1px solid ${STYLE_GUIDE.COLORS.divider}`,
         }}
       />
-      
       {/* Recipients, Template, Method, and Checkboxes */}
       <Box
         sx={{
@@ -1577,7 +1808,7 @@ const RRuleGenerator = ({
         }}
       >
         {/* TO Recipients Section */}
-        <Box sx={{ flex: 0.7, minWidth: "120px" }}>
+        <Box sx={{ flex: 0.5, minWidth: "120px" }}>
           <FormControl fullWidth size="small">
             <Autocomplete
               multiple
@@ -1613,7 +1844,9 @@ const RRuleGenerator = ({
               renderTags={(value, getTagProps) =>
                 value.map((option, index) => (
                   <Chip
-                    key={typeof option === "string" ? option : option.attributeId}
+                    key={
+                      typeof option === "string" ? option : option.attributeId
+                    }
                     label={typeof option === "string" ? option : option.label}
                     {...getTagProps({ index })}
                     size="small"
@@ -1623,7 +1856,6 @@ const RRuleGenerator = ({
             />
           </FormControl>
         </Box>
-        
         {/* CC Recipients Section */}
         <Box sx={{ flex: 0.7, minWidth: "120px" }}>
           <FormControl fullWidth size="small">
@@ -1661,7 +1893,9 @@ const RRuleGenerator = ({
               renderTags={(value, getTagProps) =>
                 value.map((option, index) => (
                   <Chip
-                    key={typeof option === "string" ? option : option.attributeId}
+                    key={
+                      typeof option === "string" ? option : option.attributeId
+                    }
                     label={typeof option === "string" ? option : option.label}
                     {...getTagProps({ index })}
                     size="small"
@@ -1671,7 +1905,6 @@ const RRuleGenerator = ({
             />
           </FormControl>
         </Box>
-        
         {/* Template Section */}
         <Box sx={{ flex: 0.7, minWidth: "120px" }}>
           <FormControl size="small" fullWidth>
@@ -1691,9 +1924,8 @@ const RRuleGenerator = ({
             </Select>
           </FormControl>
         </Box>
-        
         {/* Notification Method Section */}
-        <Box sx={{ flex: 0.7, minWidth: "120px" }}>
+        <Box sx={{ flex: 0.5, minWidth: "120px" }}>
           <FormControl size="small" fullWidth>
             <InputLabel>Method</InputLabel>
             <Select
@@ -1701,9 +1933,8 @@ const RRuleGenerator = ({
               onChange={(e) => setMethod(e.target.value)}
               label="Method"
               renderValue={(selected) =>
-                mediumList.data?.data?.find(
-                  (medium) => medium._id === selected
-                )?.medium || selected
+                mediumList.data?.data?.find((medium) => medium._id === selected)
+                  ?.medium || selected
               }
               aria-label="Select notification method"
             >
@@ -1716,7 +1947,6 @@ const RRuleGenerator = ({
             </Select>
           </FormControl>
         </Box>
-        
         {/* Acknowledge Checkbox */}
         <Box
           sx={{
@@ -1741,7 +1971,6 @@ const RRuleGenerator = ({
             }}
           />
         </Box>
-        
         {/* Attached Checkbox */}
         <Box
           sx={{
@@ -1767,7 +1996,6 @@ const RRuleGenerator = ({
           />
         </Box>
       </Box>
-      
       {/* Action Buttons */}
       <Box
         sx={{
@@ -1780,7 +2008,7 @@ const RRuleGenerator = ({
         {editMode && (
           <Button
             variant="outlined"
-            color="secondary"
+            color="primary"
             onClick={handleCancelEdit}
             aria-label="Cancel editing reminder"
           >
@@ -1796,12 +2024,11 @@ const RRuleGenerator = ({
               ? "Save changes to reminder"
               : "Add reminder with current settings"
           }
-          disabled={!generateRRule() || notificationTypeId === null}
+          disabled={notificationTypeId === null}
         >
-          {editMode ? "Save Changes" : "Add Reminder"}
+          {editMode ? "Update Reminder" : "Add Reminder"}
         </Button>
       </Box>
-      
       <Box
         component="hr"
         sx={{
@@ -1810,7 +2037,6 @@ const RRuleGenerator = ({
           borderTop: `1px solid ${STYLE_GUIDE.COLORS.divider}`,
         }}
       />
-      
       {/* Reminders List - Data Grid */}
       {frequencyListData?.data?.length > 0 && (
         <Box sx={styles.reminderContainer}>
@@ -1826,17 +2052,18 @@ const RRuleGenerator = ({
           </Typography>
           <Box sx={styles.dataGridContainer}>
             <DataGrid
-              rows={frequencyListData?.data ||[]}
+              rows={frequencyListData?.data || []}
               columns={columns}
               getRowId={(row) => row._id}
               autoHeight
-              // pagination={null}
+              disableColumnMenu
               disableRowSelectionOnClick
+              hideFooterPagination
+              hideFooterSelectedRowCount
             />
           </Box>
         </Box>
       )}
-      
       {/* Delete Confirmation Dialog */}
       <Dialog
         open={openDialog}
@@ -1865,22 +2092,142 @@ const RRuleGenerator = ({
           </Button>
         </DialogActions>
       </Dialog>
-      
-      {/* Snackbar for Notifications */}
-      <Snackbar
-        open={snackbar.open}
-        autoHideDuration={6000}
-        onClose={() => setSnackbar({ ...snackbar, open: false })}
-        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+
+      {/* View Reminder Dialog */}
+      <Modal
+        open={openViewDialog}
+        onClose={handleCloseViewDialog}
+        aria-labelledby="reminder-details-title"
+        sx={{
+          display: "flex",
+          alignItems: "flex-start",
+          justifyContent: "center",
+          mt: 4,
+        }}
       >
-        <Alert
-          onClose={() => setSnackbar({ ...snackbar, open: false })}
-          severity={snackbar.severity}
-          sx={{ width: "100%" }}
+        <Box
+          sx={{
+            backgroundColor: "background.paper",
+            borderRadius: "8px",
+            maxWidth: "800px",
+            width: "100%",
+            boxShadow: 24,
+            p: 3,
+            outline: "none",
+          }}
         >
-          {snackbar.message}
-        </Alert>
-      </Snackbar>
+          <Typography id="reminder-details-title" variant="h6" mb={2}>
+            Reminder Details
+          </Typography>
+
+          {viewingReminderData ? (
+            <div style={{ display: "flex", flexWrap: "wrap", gap: "16px" }}>
+              {[
+                {
+                  label: "Frequency",
+                  value: formatRecurrenceDetails(viewingReminderData),
+                },
+                {
+                  label: "Start Date",
+                  value: viewingReminderData.schedulerStartDate
+                    ? new Date(
+                        viewingReminderData.schedulerStartDate
+                      ).toLocaleDateString()
+                    : "Not set",
+                },
+                viewingReminderData.schedulerEndDate && {
+                  label: "End Date",
+                  value: new Date(
+                    viewingReminderData.schedulerEndDate
+                  ).toLocaleDateString(),
+                },
+                viewingReminderData.maxOccurrences && {
+                  label: "Max Occurrences",
+                  value: viewingReminderData.maxOccurrences,
+                },
+                viewingReminderData.triggerTime && {
+                  label: "Trigger Time",
+                  value: viewingReminderData.triggerTime,
+                },
+                {
+                  label: "Acknowledge Required",
+                  value: viewingReminderData.acknowledgeRequired ? "Yes" : "No",
+                },
+                {
+                  label: "Attachment Required",
+                  value: viewingReminderData.attachmentRequired ? "Yes" : "No",
+                },
+                {
+                  label: "Template",
+                  value: viewingReminderData.templateId?.name || "Not set",
+                },
+                {
+                  label: "Notification Method",
+                  value: viewingReminderData.medium?.medium || "Not set",
+                },
+                {
+                  label: "TO Recipients",
+                  value: formatRecipientsForDisplay(
+                    viewingReminderData.recipients_to
+                  ),
+                },
+                {
+                  label: "CC Recipients",
+                  value: formatRecipientsForDisplay(
+                    viewingReminderData.recipients_cc
+                  ),
+                },
+              ]
+                .filter(Boolean)
+                .map((item, idx) => (
+                  <div
+                    key={idx}
+                    style={{
+                      flex: "1 1 calc(50% - 16px)", // Mimics Grid's xs={12} sm={6}
+                      minWidth: "200px", // Ensures responsiveness
+                    }}
+                  >
+                    <label
+                      style={{
+                        display: "block",
+                        marginBottom: "4px",
+                        fontSize: "14px",
+                        color: "#666",
+                        fontWeight: 500,
+                      }}
+                    >
+                      {item.label}
+                    </label>
+                    <div
+                      style={{
+                        padding: "14px 12px",
+                        borderRadius: "8px",
+                        backgroundColor: "#ebe8e8ff",
+                        textTransform: "uppercase",
+                        color: "#3f3e3eff",
+                      }}
+                    >
+                      {item.value || "-"}
+                    </div>
+                  </div>
+                ))}
+            </div>
+          ) : (
+            <div>Loading reminder details...</div>
+          )}
+
+          <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 3 }}>
+            <Button
+              variant="outlined"
+              color="primary"
+              onClick={handleCloseViewDialog}
+              aria-label="Cancel editing reminder"
+            >
+              Close
+            </Button>
+          </Box>
+        </Box>
+      </Modal>
     </Box>
   );
 };
