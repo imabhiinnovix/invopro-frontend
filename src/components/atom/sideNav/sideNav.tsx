@@ -431,24 +431,34 @@ export default function SideNav() {
           subItems: [
             {
               name: "Settings",
-              icon: (
-                <SettingsIcon
-                  sx={{ fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base }}
-                />
-              ),
+              // icon: (
+              //   <SettingsIcon
+              //     sx={{ fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base }}
+              //   />
+              // ),
               route: "/notivix/notification-types",
             },
-            {
-              name: "Notification",
-              icon: (
-                <NotificationsIcon
-                  sx={{ fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base }}
-                />
-              ),
-              // route: "/notivix/notification-settings/notification",
-            },
+            // {
+            //   name: "Notification",
+            //   icon: (
+            //     <NotificationsIcon
+            //       sx={{ fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base }}
+            //     />
+            //   ),
+            //   // route: "/notivix/notification-settings/notification",
+            // },
           ],
         },
+        //  {
+        //   name: "Validation Errors",
+        //   icon: (
+        //     <SettingsIcon
+        //       sx={{ fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base }}
+        //     />
+        //   ),
+        //   route: "/notivix/validation-errors",
+          
+        // },
       ];
     }
     return [

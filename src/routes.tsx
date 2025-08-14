@@ -30,6 +30,8 @@ import AddNotificationTypes from './pages/notification/AddNotificationTypes';
 import Notification from './pages/notification';
 import NotivixDataSource from './pages/notivixDataSource';
 import EditNotificationTypes from './pages/notification/EditNotificationTypes';
+import { ValidationError } from 'yup';
+import ValidationErrors from './pages/validationErrors';
 
 const AppRoutes = () => {
   const token = getAuthToken();
@@ -99,6 +101,8 @@ const AppRoutes = () => {
             element={<Organization />}
           />
           <Route path="/notivix/data-source/:id" element={<NotivixDataSource />} />
+                    <Route path="/notivix/validation-errors" element={<ValidationErrors />} />
+
 
         </Route>
       </Route>

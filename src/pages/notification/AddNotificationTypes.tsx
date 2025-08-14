@@ -148,7 +148,7 @@ const ConditionRuleBuilder = ({
   const fieldOptionsRef = useRef(fieldOptions);
   const operatorListRef = useRef(operatorList);
   const activeInputRef = useRef(null);
-  
+
   // Update refs when state changes
   useEffect(() => {
     notificationRef.current = notification;
@@ -182,6 +182,8 @@ const ConditionRuleBuilder = ({
             value: setting.mappedAttributeName,
             attributeId: setting.attributeId,
             type: setting?.type,
+            refAttributeId:setting?.refAttributeId
+
           }));
         setFieldOptions(newFieldOptions);
       } else {
@@ -686,6 +688,8 @@ const ConditionRuleBuilder = ({
                 attributeId: fieldOption.attributeId,
                 operator: rule.operator,
                 value: rule.value || "",
+                refAttributeId:fieldOption.refAttributeId
+
               };
               if (fieldOption.type === "date" && rule.timeUnit) {
                 condition.timeUnit = rule.timeUnit;
@@ -789,7 +793,6 @@ export default function AddNotificationTypes() {
   const handleSubmit = async (event) => {
     event.preventDefault();
     
-    console.log("nooooooooooooooooooooo",notificationData.name)
     // Validate required fields
     if (!notificationData.name) {
       toast.error("Name field is required");
@@ -813,7 +816,6 @@ export default function AddNotificationTypes() {
         throw new Error("Notification creation failed or no ID returned");
       }
     } catch (error) {
-      console.error("Error creating notification:", error);
       toast.error(error.message || "Failed to create notification. Please try again.");
     }
   };
@@ -914,7 +916,7 @@ export default function AddNotificationTypes() {
                     variant="h6"
                     sx={{ fontWeight: "bold", color: "text.primary" }}
                   >
-                    Frequency {!notificationTypeId && "(Save condition first)"}
+                    Frequency {!notificationTypeId}
                   </Typography>
                 </AccordionSummary>
                 <AccordionDetails>

@@ -1020,7 +1020,7 @@ export default function EditNotificationTypes() {
                     variant="h6"
                     sx={{ fontWeight: "bold", color: "text.primary" }}
                   >
-                    Frequency {!notificationTypeId && "(Save condition first)"}
+                    Frequency {!notificationTypeId }
                   </Typography>
                 </AccordionSummary>
                 <AccordionDetails>
