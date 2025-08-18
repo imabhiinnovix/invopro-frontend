@@ -112,6 +112,7 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
           type: attr.type ?? "",
           required: attr.required ? "Mandatory" : "Not Mandatory",
           optionAttributeId: attr.optionAttributeId ?? "",
+          _id: attr._id ?? "",
           refEntityId:
             typeof attr.referenceEntitySetting?.refEntityId === 'object'
               ? (attr.referenceEntitySetting?.refEntityId as any)?._id ?? ""
@@ -407,7 +408,7 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
       toast.error("Reference entity data is still loading. Please wait.");
       return;
     }
-
+console.log("Form data before processing222222222222:", formData);
     const newAttributes = formData.attributes?.map((data, index) => {
       const { refEntityId, refEntityField, relationType, ...rest } = data;
 
