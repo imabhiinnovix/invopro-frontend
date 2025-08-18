@@ -104,7 +104,6 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({
   const theme = useUnifiedTheme();
   const { getDialogTitleSx } = useComponentTypography();
 
-  console.log("data", data);
 
   const validationSchema = yup.object().shape({
     name: yup.string().required("Data source name is required"),
@@ -138,7 +137,6 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({
   const [entityName, setEntityName] = useState<string>(
     typeof data?.entityId === "string" ? "" : data?.entityId?.name || ""
   );
-  console.log("entitytyt list", entityFieldOptions);
   const [isLoadingEntity, setIsLoadingEntity] = useState(false);
   const [isLoadingEntities, setIsLoadingEntities] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -214,7 +212,6 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({
   });
 
   const entityId = watch("entityId");
-  console.log("Entity ID:", entityId);
 
   // Fetch entities for dropdown
   useEffect(() => {
@@ -237,7 +234,6 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({
         }
       })
       .catch((error) => {
-        console.error("Error fetching entities:", error);
         setError(
           error.response?.data?.message ||
             "Failed to fetch entities. Please try again."
@@ -277,7 +273,6 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({
 
     if (entityDetails.isSuccess && entityDetails.data?.data) {
       const entityData = entityDetails.data.data;
-      console.log("eeeeeeeeeee", entityData);
       setEntityName(entityData.name || "");
       setEntityAttributes(
         Array.isArray(entityData.attributes) ? entityData.attributes : []
@@ -322,7 +317,6 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({
     }
 
     if (entityDetails.isError) {
-      console.error("Error fetching entity details:", entityDetails.error);
       setError(
         entityDetails.error?.response?.data?.message ||
           "Failed to fetch entity details. Please try again."
@@ -365,7 +359,6 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({
           : [[""]],
         fieldSettings: data.fieldSettings?.length
           ? data.fieldSettings.map((setting) => {
-              console.log("settings", setting);
               return {
                 attributeId: `${setting.attributeId}-${setting.refAttributeId || "null"}`,
                 value: setting.label || setting.value || "",
@@ -476,7 +469,6 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({
   );
 
   const onSubmit = (formData: DataSourceRequestPayload) => {
-    console.log("Form Data:", formData);
     const attributeSets =
       formData.entityAttributes?.map((attributes) => {
         const attrNames = attributes
@@ -583,38 +575,13 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({
       }
     );
 
-    // const updatedFieldSettings =
-    //   formData.fieldSettings?.map((setting) => {
-    //     const option = entityFieldOptions.find((opt) => {
-    //       const optionKey = `${opt.value.attributeId}-${opt.value.refAttributeId || "null"}`;
-    //       return optionKey === setting.attributeId;
-    //     });
-    //     console.log("optionss", option, setting);
-
-    //     return {
-    //       attributeId:
-    //         option?.value.attributeId || setting.attributeId.split("-")[0],
-    //       refAttributeId:
-    //         option?.value.refAttributeId ||
-    //         (setting.attributeId.includes("-") &&
-    //         setting.attributeId.split("-")[1] !== "null"
-    //           ? setting.attributeId.split("-")[1]
-    //           : null),
-    //       type: option?.value.type,
-    //       label: setting.value,
-    //       isFilterEnable: !!setting.filter,
-    //       isSortingEnable: !!setting.sorting,
-    //       isDisplayEnable: !!setting.visible,
-    //       isDerived: option?.value?.isDerived,
-    //     };
-    //   }) || [];
+    
     const updatedFieldSettings =
   formData.fieldSettings?.map((setting) => {
     const option = entityFieldOptions.find((opt) => {
       const optionKey = `${opt.value.attributeId}-${opt.value.refAttributeId || "null"}`;
       return optionKey === setting.attributeId;
     });
-    console.log("optionss", option, setting);
 
     // --- Always Array for refAttributeId ---
     let refIds = [];

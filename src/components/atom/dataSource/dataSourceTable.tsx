@@ -51,7 +51,6 @@ interface AttributeOptionTableProps {
 }
 
 const DataSourceTable: React.FC<AttributeOptionTableProps> = ({ reload, setReload }) => {
-  console.log("reeeeload",reload)
   const { getHeadingSx, getTableSx } = useComponentTypography();
   const [dataSource, setDataSource] = useState<DataSourceType[]>([]);
   const [currentPage, setCurrentPage] = useState<number>(1);
@@ -65,12 +64,7 @@ const DataSourceTable: React.FC<AttributeOptionTableProps> = ({ reload, setReloa
     true // Pass enabled as boolean
   );
 
-  // Handle onSuccess logic
-  useEffect(() => {
-    if (dataSourceList.data) {
-      console.log('API response:', dataSourceList.data);
-    }
-  }, [dataSourceList.data]);
+  
 
   const loadMoreData = useCallback(async () => {
     if (loading || !hasMore) return;
