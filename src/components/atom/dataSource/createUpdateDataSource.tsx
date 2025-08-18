@@ -66,7 +66,7 @@ interface FieldSetting {
   sorting: boolean;
   visible: boolean;
   isDerived: boolean;
-  type:string|boolean
+  type: string | boolean;
 }
 
 interface DataSourceRequestPayload {
@@ -103,7 +103,6 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({
 }) => {
   const theme = useUnifiedTheme();
   const { getDialogTitleSx } = useComponentTypography();
-
 
   const validationSchema = yup.object().shape({
     name: yup.string().required("Data source name is required"),
@@ -336,6 +335,7 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({
 
   // Prefill form when dialog opens
   useEffect(() => {
+    console.log("refill form withP data:", open, data);
     if (open && data) {
       reset({
         name: data.name ?? "",
@@ -575,48 +575,46 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({
       }
     );
 
-    
     const updatedFieldSettings =
-  formData.fieldSettings?.map((setting) => {
-    const option = entityFieldOptions.find((opt) => {
-      const optionKey = `${opt.value.attributeId}-${opt.value.refAttributeId || "null"}`;
-      return optionKey === setting.attributeId;
-    });
+      formData.fieldSettings?.map((setting) => {
+        const option = entityFieldOptions.find((opt) => {
+          const optionKey = `${opt.value.attributeId}-${opt.value.refAttributeId || "null"}`;
+          return optionKey === setting.attributeId;
+        });
 
-    // --- Always Array for refAttributeId ---
-    let refIds = [];
+        // --- Always Array for refAttributeId ---
+        let refIds = [];
 
-    if (Array.isArray(option?.value?.refAttributeId)) {
-      refIds = [...option.value.refAttributeId];
-    } else if (option?.value?.refAttributeId) {
-      refIds = [option.value.refAttributeId];
-    }
+        if (Array.isArray(option?.value?.refAttributeId)) {
+          refIds = [...option.value.refAttributeId];
+        } else if (option?.value?.refAttributeId) {
+          refIds = [option.value.refAttributeId];
+        }
 
-    if (
-      setting.attributeId.includes("-") &&
-      setting.attributeId.split("-")[1] !== "null"
-    ) {
-      refIds.push(setting.attributeId.split("-")[1]);
-    }
+        if (
+          setting.attributeId.includes("-") &&
+          setting.attributeId.split("-")[1] !== "null"
+        ) {
+          const ids = setting.attributeId.split("-")[1].split(",");
+          refIds.push(...ids);
+        }
 
-    // remove duplicates
-    // refIds = [...new Set(refIds)];
+        // remove duplicates
+
         refIds = [...new Set(refIds)].filter((id) => id && id !== "null");
 
-
-    return {
-      attributeId:
-        option?.value.attributeId || setting.attributeId.split("-")[0],
-      refAttributeId: refIds, // ✅ Always Array
-      type: option?.value.type,
-      label: setting.value,
-      isFilterEnable: !!setting.filter,
-      isSortingEnable: !!setting.sorting,
-      isDisplayEnable: !!setting.visible,
-      isDerived: option?.value?.isDerived,
-    };
-  }) || [];
-
+        return {
+          attributeId:
+            option?.value.attributeId || setting.attributeId.split("-")[0],
+          refAttributeId: refIds, // ✅ Always Array
+          type: option?.value.type,
+          label: setting.value,
+          isFilterEnable: !!setting.filter,
+          isSortingEnable: !!setting.sorting,
+          isDisplayEnable: !!setting.visible,
+          isDerived: option?.value?.isDerived,
+        };
+      }) || [];
 
     const updatedFormData = {
       ...formData,
@@ -1048,7 +1046,6 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({
                                 uniqueKey,
                                 { shouldValidate: true }
                               );
-
                             }}
                             renderInput={(params) => (
                               <TextField
