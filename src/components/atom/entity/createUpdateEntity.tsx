@@ -863,6 +863,7 @@ console.log("Form data before processing222222222222:", formData);
                       }
                       disabled={isLoadingReferences[index] || !referenceEntityNames[index]?.length}
                       helperText={isLoadingReferences[index] ? "Loading fields..." : undefined}
+                       clearable 
                     />
 
                     <CommonSelect

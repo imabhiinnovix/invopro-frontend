@@ -42,6 +42,7 @@ export const POST = {
   CREATE_NOTIFICATION_TYPE: "/notivix/notification-setting/type/create",
   CREATE_FREQUENCY: "/notivix/notification-setting/frequency/create",
   CREATE_MEDIUM: "/notivix/notification-setting/medium/create",
+  CREATE_VERSION_ROW:"/common/dataSourceVersion/versionData/create"
 };
 
 export const PUT = {
@@ -54,6 +55,7 @@ export const PUT = {
   UPDATE_MEDIUM: "/notivix/notification-setting/medium/update",
   UPDATE_FREQUENCY: "notivix/notification-setting/frequency/update",
   UPDATE_NOTIFICATION_TYPE: "notivix/notification-setting/type/update",
+  UPDATE_VERSION_ROW: "/common/dataSourceVersion/versionData/update",
 };
 
 export const DELETE = {
@@ -64,6 +66,7 @@ export const DELETE = {
   DELETE_NOTIFICATION_TYPE: "notivix/notification-setting/type/delete",
   DELETE_MEDIUM: "/notivix/notification-setting/medium/delete",
   DELETE_FREQUENCY: "/notivix/notification-setting/frequency/delete",
+  DELETE_VERSION_ROW: "/common/dataSourceVersion/versionData/delete",
 };
 
 export const GET = {

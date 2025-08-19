@@ -7,7 +7,7 @@ import {
   Typography,
   Button,
 } from "@mui/material";
-import { STYLE_GUIDE } from "../../styles";
+import { STYLE_GUIDE } from "../../../styles";
 
 interface DeleteConfirmationDialogProps {
   open: boolean;
@@ -40,7 +40,9 @@ export const DeleteConfirmationDialog: React.FC<DeleteConfirmationDialogProps> =
       </DialogTitle>
       <DialogContent>
         <Typography>
-          Are you sure you want to delete the notification with ID {deleteId}?
+          {deleteId
+            ? `Are you sure you want to delete this?`
+            : "Are you sure you want to delete this?"}
         </Typography>
       </DialogContent>
       <DialogActions>
@@ -60,8 +62,8 @@ export const DeleteConfirmationDialog: React.FC<DeleteConfirmationDialogProps> =
             backgroundColor: STYLE_GUIDE?.COLORS?.error || "#d32f2f",
             color: "#ffffff",
             "&:hover": {
-              backgroundColor: STYLE_GUIDE?.COLORS?.error || "#b71c1c",
-            },
+              backgroundColor: STYLE_GUIDE?.COLORS?.error || "#b71c1c", 
+            }, 
           }}
         >
           Yes
