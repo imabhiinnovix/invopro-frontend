@@ -26,9 +26,9 @@ import CommonSelect from "../../common/dropdown/commonSelect";
 import CommonDropdownSearch from "../../common/dropdown/searchableDropdown";
 import { toast } from "react-toastify";
 import axiosInstance from "../../../services/axiosInstance";
-import { STYLE_GUIDE } from '../../../styles';
-import { useUnifiedTheme } from '../../../hooks/useUnifiedTheme';
-import { useComponentTypography } from '../../../hooks/useComponentTypography';
+import { STYLE_GUIDE } from "../../../styles";
+import { useUnifiedTheme } from "../../../hooks/useUnifiedTheme";
+import { useComponentTypography } from "../../../hooks/useComponentTypography";
 
 interface CreateUpdateEntityProps {
   setReloadEntity: React.Dispatch<React.SetStateAction<boolean>>;
@@ -40,7 +40,18 @@ interface CreateUpdateEntityProps {
 interface FormAttribute {
   name: string;
   mappingName: string;
-  type: "" | "number" | "text" | "date" | "boolean" | "richtext" | "url" | "option" | "multioption" | "user";
+  type:
+    | ""
+    | "number"
+    | "text"
+    | "date"
+    | "boolean"
+    | "richtext"
+    | "text-with-option"
+    | "url"
+    | "option"
+    | "multioption"
+    | "user";
   required: string;
   optionAttributeId: string;
   refEntityId: string;
@@ -114,13 +125,14 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
           optionAttributeId: attr.optionAttributeId ?? "",
           _id: attr._id ?? "",
           refEntityId:
-            typeof attr.referenceEntitySetting?.refEntityId === 'object'
-              ? (attr.referenceEntitySetting?.refEntityId as any)?._id ?? ""
-              : attr.referenceEntitySetting?.refEntityId ?? "",
+            typeof attr.referenceEntitySetting?.refEntityId === "object"
+              ? ((attr.referenceEntitySetting?.refEntityId as any)?._id ?? "")
+              : (attr.referenceEntitySetting?.refEntityId ?? ""),
           refEntityField:
-            typeof attr.referenceEntitySetting?.refEntityField === 'object'
-              ? (attr.referenceEntitySetting?.refEntityField as any)?.name ?? ""
-              : attr.referenceEntitySetting?.refEntityField ?? "",
+            typeof attr.referenceEntitySetting?.refEntityField === "object"
+              ? ((attr.referenceEntitySetting?.refEntityField as any)?.name ??
+                "")
+              : (attr.referenceEntitySetting?.refEntityField ?? ""),
           relationType: attr.referenceEntitySetting?.relationType ?? "",
           validation: attr.validation ?? [],
           transformations: attr.transformations ?? [],
@@ -141,7 +153,10 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
           },
         ],
       });
-      console.log("Form reset complete, attributes length:", data?.attributes?.length || 1);
+      console.log(
+        "Form reset complete, attributes length:",
+        data?.attributes?.length || 1
+      );
     }
   }, [open, data, reset]);
 
@@ -193,19 +208,20 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
   const attributes = watch("attributes");
   const prevEntityIdsRef = useRef<string[]>([]);
 
-  const referenceEntityIdsString = attributes
-    ?.map((attr) =>
-      typeof attr.refEntityId === 'object'
-        ? (attr.refEntityId as any)?._id
-        : attr.refEntityId
-    )
-    .join(",") || "";
+  const referenceEntityIdsString =
+    attributes
+      ?.map((attr) =>
+        typeof attr.refEntityId === "object"
+          ? (attr.refEntityId as any)?._id
+          : attr.refEntityId
+      )
+      .join(",") || "";
 
   useEffect(() => {
     if (open && isFormReady) {
       attributes?.forEach((attribute, index) => {
         const entityId =
-          typeof attribute?.refEntityId === 'object'
+          typeof attribute?.refEntityId === "object"
             ? (attribute?.refEntityId as any)?._id
             : attribute?.refEntityId;
         if (
@@ -227,8 +243,10 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
         axiosInstance
           .get(`/common/entities/${entityId}`)
           .then((res) => {
-            const namesArr = res.data?.data?.attributes?.map((f: any) => f.name || "") || [];
-            const typesArr = res.data?.data?.attributes?.map((f: any) => f._id || "") || [];
+            const namesArr =
+              res.data?.data?.attributes?.map((f: any) => f.name || "") || [];
+            const typesArr =
+              res.data?.data?.attributes?.map((f: any) => f._id || "") || [];
             setReferenceEntityNames((prev) => ({
               ...prev,
               [index]: namesArr,
@@ -240,7 +258,9 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
           })
           .catch((error) => {
             console.error(`Failed to fetch entity ${entityId}:`, error);
-            toast.error(`Failed to load reference entity data for ID ${entityId}`);
+            toast.error(
+              `Failed to load reference entity data for ID ${entityId}`
+            );
             setReferenceEntityNames((prev) => ({ ...prev, [index]: [] }));
             setReferenceEntityTypes((prev) => ({ ...prev, [index]: [] }));
           })
@@ -249,11 +269,12 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
           });
       });
 
-      prevEntityIdsRef.current = attributes?.map((attr) =>
-        typeof attr.refEntityId === 'object'
-          ? (attr.refEntityId as any)?._id
-          : attr.refEntityId
-      ) || [];
+      prevEntityIdsRef.current =
+        attributes?.map((attr) =>
+          typeof attr.refEntityId === "object"
+            ? (attr.refEntityId as any)?._id
+            : attr.refEntityId
+        ) || [];
     }
   }, [open, isFormReady, attributes, referenceEntityIdsString]);
 
@@ -338,7 +359,7 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
           worksheet.getRow(2).eachCell((cell, colNumber) => {
             if (headers[colNumber - 1] != undefined) {
               const firstValue = cell.value;
-              let type: FormAttribute['type'] = "text";
+              let type: FormAttribute["type"] = "text";
               if (typeof firstValue === "number") {
                 type = "number";
               } else if (firstValue instanceof Date) {
@@ -408,7 +429,7 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
       toast.error("Reference entity data is still loading. Please wait.");
       return;
     }
-console.log("Form data before processing222222222222:", formData);
+    console.log("Form data before processing222222222222:", formData);
     const newAttributes = formData.attributes?.map((data, index) => {
       const { refEntityId, refEntityField, relationType, ...rest } = data;
 
@@ -482,7 +503,9 @@ console.log("Form data before processing222222222222:", formData);
         <DialogTitle
           sx={{
             ...getDialogTitleSx(),
-            color: theme.palette.dialog?.titleColor || STYLE_GUIDE.COLORS.textDarkGray,
+            color:
+              theme.palette.dialog?.titleColor ||
+              STYLE_GUIDE.COLORS.textDarkGray,
           }}
         >
           {title}
@@ -699,7 +722,7 @@ console.log("Form data before processing222222222222:", formData);
                               ?.focusBorderColor ||
                             theme.dashboardTheme?.components?.input
                               ?.focusBorderColorFallback ||
-                              STYLE_GUIDE.COLORS.inputFocusFallback,
+                            STYLE_GUIDE.COLORS.inputFocusFallback,
                         },
                         "& .MuiInputBase-input": {
                           color: `${theme.dashboardTheme?.colors?.inputText || theme.palette.text.primary} !important`,
@@ -763,7 +786,7 @@ console.log("Form data before processing222222222222:", formData);
                               ?.focusBorderColor ||
                             theme.dashboardTheme?.components?.input
                               ?.focusBorderColorFallback ||
-                              STYLE_GUIDE.COLORS.inputFocusFallback,
+                            STYLE_GUIDE.COLORS.inputFocusFallback,
                         },
                         "& .MuiInputBase-input": {
                           color: `${theme.dashboardTheme?.colors?.inputText || theme.palette.text.primary} !important`,
@@ -788,6 +811,7 @@ console.log("Form data before processing222222222222:", formData);
                         "date",
                         "boolean",
                         "richtext",
+                        "text-with-option",
                         "url",
                         "option",
                         "multioption",
@@ -797,7 +821,7 @@ console.log("Form data before processing222222222222:", formData);
                     />
 
                     {attributes &&
-                      ["option", "multioption"].includes(
+                      ["option", "multioption","text-with-option"].includes(
                         attributes[index]?.type || ""
                       ) && (
                         <CommonDropdownSearch
@@ -808,7 +832,6 @@ console.log("Form data before processing222222222222:", formData);
                           labelName="attributeName"
                           labelValue="_id"
                           defaultValue={attribute.optionAttributeId || ""}
-                          
                           apiName="attributeOption"
                           defaultDataUrl={`${GET.Attribute_Option_Get}`}
                         />
@@ -839,10 +862,8 @@ console.log("Form data before processing222222222222:", formData);
                       rules={{ required: false }}
                       error={!!errors.attributes?.[index]?.refEntityId}
                       errorMessage={
-                        (
-                          errors.attributes?.[index]
-                            ?.refEntityId as FieldError
-                        )?.message
+                        (errors.attributes?.[index]?.refEntityId as FieldError)
+                          ?.message
                       }
                       apiName="entities"
                       defaultDataUrl={`${GET.Entity_List}`}
@@ -852,18 +873,32 @@ console.log("Form data before processing222222222222:", formData);
                       control={control}
                       name={`attributes.${index}.refEntityField`}
                       label="Reference Entity Field"
-                      options={referenceEntityNames[index]?.length ? referenceEntityNames[index] : ["No fields available"]}
+                      options={
+                        referenceEntityNames[index]?.length
+                          ? referenceEntityNames[index]
+                          : ["No fields available"]
+                      }
                       defaultValue={attribute.refEntityField || ""}
                       rules={{ required: false }}
                       error={!!errors.attributes?.[index]?.refEntityField}
                       errorMessage={
                         referenceEntityNames[index]?.length
-                          ? (errors.attributes?.[index]?.refEntityField as FieldError)?.message
+                          ? (
+                              errors.attributes?.[index]
+                                ?.refEntityField as FieldError
+                            )?.message
                           : "No reference fields available for this entity"
                       }
-                      disabled={isLoadingReferences[index] || !referenceEntityNames[index]?.length}
-                      helperText={isLoadingReferences[index] ? "Loading fields..." : undefined}
-                       clearable 
+                      disabled={
+                        isLoadingReferences[index] ||
+                        !referenceEntityNames[index]?.length
+                      }
+                      helperText={
+                        isLoadingReferences[index]
+                          ? "Loading fields..."
+                          : undefined
+                      }
+                      clearable
                     />
 
                     <CommonSelect
@@ -875,10 +910,8 @@ console.log("Form data before processing222222222222:", formData);
                       rules={{ required: false }}
                       error={!!errors.attributes?.[index]?.relationType}
                       errorMessage={
-                        (
-                          errors.attributes?.[index]
-                            ?.relationType as FieldError
-                        )?.message
+                        (errors.attributes?.[index]?.relationType as FieldError)
+                          ?.message
                       }
                     />
                   </Stack>
@@ -911,9 +944,18 @@ console.log("Form data before processing222222222222:", formData);
                     transformations: [],
                     cleaner: [],
                   });
-                  setReferenceEntityNames((prev) => ({ ...prev, [newIndex]: [] }));
-                  setReferenceEntityTypes((prev) => ({ ...prev, [newIndex]: [] }));
-                  setIsLoadingReferences((prev) => ({ ...prev, [newIndex]: false }));
+                  setReferenceEntityNames((prev) => ({
+                    ...prev,
+                    [newIndex]: [],
+                  }));
+                  setReferenceEntityTypes((prev) => ({
+                    ...prev,
+                    [newIndex]: [],
+                  }));
+                  setIsLoadingReferences((prev) => ({
+                    ...prev,
+                    [newIndex]: false,
+                  }));
                 }}
               >
                 Add Attribute
@@ -939,7 +981,9 @@ console.log("Form data before processing222222222222:", formData);
                 variant="contained"
                 color="primary"
                 sx={{ fontSize: 18, fontWeight: "bold", p: 1, pl: 2, pr: 2 }}
-                disabled={attributes?.some((_, index) => isLoadingReferences[index])}
+                disabled={attributes?.some(
+                  (_, index) => isLoadingReferences[index]
+                )}
               >
                 Save Entity
               </Button>

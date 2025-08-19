@@ -220,7 +220,6 @@ export default function NotivixDataSource() {
     }
     
     try {
-      // Call delete API
       await deleteVersionRow.mutateAsync({
         url: `${DELETE.DELETE_VERSION_ROW}`, 
         payload: {

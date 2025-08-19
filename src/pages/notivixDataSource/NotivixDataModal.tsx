@@ -7,7 +7,6 @@ import {
   Tooltip,
   Checkbox,
   FormControlLabel,
- 
   Autocomplete,
   IconButton,
   Chip,
@@ -20,7 +19,7 @@ import dayjs from "dayjs";
 import { FilterNotivixDataModal } from "./FilterNotivixDataModal";
 import CloseIcon from "@mui/icons-material/Close";
 import usePost from "../../hooks/usePost";
-import { POST, PUT,  } from "../../services/apiRoutes";
+import { POST, PUT } from "../../services/apiRoutes";
 import { toast } from "react-toastify";
 import usePut from "../../hooks/usePut";
 import { DeleteConfirmationDialog } from "../../components/common/deleteConfirmationDialog/DeleteConfirmationDialog";
@@ -67,13 +66,13 @@ export const NotivixDataModal: React.FC<ModelSectionProps> = ({
   console.log("Modal Open:", listCurrentData);
   const createVersionRow = usePost(["createVersionRow"]);
   const updateVersionRow = usePut(["updateVersionRow"]);
-  
+
   // Function to validate email format
   const isValidEmail = (email: string) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
   };
-  
+
   // Function to validate number format
   const isValidNumber = (value: string) => {
     const numberRegex = /^[0-9]*$/;
@@ -85,10 +84,10 @@ export const NotivixDataModal: React.FC<ModelSectionProps> = ({
       (attr) => attr._id === attributeId
     );
     if (!attribute || !Array.isArray(attribute.attributeValue)) return [];
-    
+
     return attribute.attributeValue.map((value: string) => ({
-      id: value, 
-      label: value, 
+      id: value,
+      label: value,
     }));
   };
 
@@ -96,7 +95,7 @@ export const NotivixDataModal: React.FC<ModelSectionProps> = ({
     const rowData: Record<string, any> = {};
     const attributes = listCurrentData?.entityId?.attributes || [];
     attributes.forEach((attribute: any) => {
-      const fieldName = attribute.mappingName;
+      const fieldName = attribute.name;
       const fieldType = attribute.type;
       const value = formData[fieldName];
       if (value !== undefined && value !== null && value !== "") {
@@ -121,12 +120,12 @@ export const NotivixDataModal: React.FC<ModelSectionProps> = ({
         const attributes = listCurrentData?.entityId?.attributes || [];
         let isValid = true;
         let errorMessage = "";
-        
+
         for (const attribute of attributes) {
-          const fieldName = attribute.mappingName;
+          const fieldName = attribute.name;
           const fieldType = attribute.type;
           const value = formData[fieldName];
-          
+
           if (value !== undefined && value !== null && value !== "") {
             if (fieldType === "email" && !isValidEmail(value)) {
               isValid = false;
@@ -139,40 +138,40 @@ export const NotivixDataModal: React.FC<ModelSectionProps> = ({
             }
           }
         }
-        
+
         if (!isValid) {
-        toast.error(errorMessage); 
+          toast.error(errorMessage);
           return;
         }
-        
+
         const payload = convertToPayload();
         console.log("Payload to be sent:", payload);
-        
+
         if (modalMode === "edit" && formData.id) {
           payload.rowId = formData.id;
         }
-        
-        let response;
+
         if (modalMode === "add") {
-          response = await createVersionRow.mutateAsync({
+          await createVersionRow.mutateAsync({
             url: `${POST.CREATE_VERSION_ROW}`,
             payload,
           });
         } else if (modalMode === "edit") {
-          response = await updateVersionRow.mutateAsync({
+          await updateVersionRow.mutateAsync({
             url: `${PUT.UPDATE_VERSION_ROW}/${formData.id}`,
             payload,
           });
         }
-        
+
         handleSave(payload);
-        
+
         refreshData();
-        
-        const successMessage = modalMode === "add" 
-          ? "Record added successfully!" 
-          : "Record updated successfully!";
-      toast.success(successMessage); 
+
+        const successMessage =
+          modalMode === "add"
+            ? "Record added successfully!"
+            : "Record updated successfully!";
+        toast.success(successMessage);
       } else if (modalMode === "filter") {
         console.log("Applying filter:", formData);
         handleSave(formData);
@@ -180,12 +179,14 @@ export const NotivixDataModal: React.FC<ModelSectionProps> = ({
       handleCloseModal();
     } catch (error) {
       console.error("Error saving data:", error);
-    toast.error(`Error: ${error.message || "Something went wrong. Please try again."}`); 
+      toast.error(
+        `Error: ${error.message || "Something went wrong. Please try again."}`
+      );
     }
   };
 
   const renderViewField = (attribute: any) => {
-    const fieldName = attribute.mappingName;
+    const fieldName = attribute.name;
     const fieldLabel = attribute.name;
     const value = formData[fieldName] || "-";
     return (
@@ -235,7 +236,7 @@ export const NotivixDataModal: React.FC<ModelSectionProps> = ({
       if (attributes.length === 0) {
         return <Typography>No attributes available to display.</Typography>;
       }
-      
+
       if (modalMode === "view") {
         const attributePairs = [];
         for (let i = 0; i < attributes.length; i += 2) {
@@ -256,7 +257,7 @@ export const NotivixDataModal: React.FC<ModelSectionProps> = ({
           </Box>
         );
       }
-      
+
       // Split attributes into two arrays for two-column layout (for edit and add modes)
       const firstColumnAttributes = attributes.filter(
         (_, index) => index % 2 === 0
@@ -264,13 +265,13 @@ export const NotivixDataModal: React.FC<ModelSectionProps> = ({
       const secondColumnAttributes = attributes.filter(
         (_, index) => index % 2 === 1
       );
-      
+
       const renderAttributeField = (attribute: any) => {
-        const fieldName = attribute.mappingName;
+        const fieldName = attribute.name;
         const fieldLabel = attribute.name;
         const fieldType = attribute.type;
         const isDisabled = modalMode === "view";
-        
+
         switch (fieldType) {
           case "boolean":
             return (
@@ -294,7 +295,7 @@ export const NotivixDataModal: React.FC<ModelSectionProps> = ({
                 sx={{ mb: 1 }}
               />
             );
-            
+
           case "option":
             const optionOptions = getOptionsForAttribute(
               attribute.optionAttributeId
@@ -323,7 +324,7 @@ export const NotivixDataModal: React.FC<ModelSectionProps> = ({
                   } else if (value && value.id) {
                     setFormData((prev) => ({
                       ...prev,
-                      [fieldName]: value.id, 
+                      [fieldName]: value.id,
                     }));
                   } else {
                     setFormData((prev) => ({
@@ -368,7 +369,7 @@ export const NotivixDataModal: React.FC<ModelSectionProps> = ({
                 }}
               />
             );
-            
+
           case "multioption":
             const multioptionOptions = getOptionsForAttribute(
               attribute.optionAttributeId
@@ -378,7 +379,7 @@ export const NotivixDataModal: React.FC<ModelSectionProps> = ({
               : [];
             const selectedOptions = selectedValues.map((val) => {
               const option = multioptionOptions.find((opt) => opt.id === val);
-              return option || { id: val, label: val }; 
+              return option || { id: val, label: val };
             });
             return (
               <Autocomplete
@@ -396,9 +397,9 @@ export const NotivixDataModal: React.FC<ModelSectionProps> = ({
                 onChange={(e, value) => {
                   const values = value.map((item) => {
                     if (typeof item === "string") {
-                      return item; 
+                      return item;
                     }
-                    return item.id; 
+                    return item.id;
                   });
                   setFormData((prev) => ({
                     ...prev,
@@ -428,7 +429,7 @@ export const NotivixDataModal: React.FC<ModelSectionProps> = ({
                 }
               />
             );
-            
+
           case "date":
             return (
               <LocalizationProvider key={fieldName} dateAdapter={AdapterDayjs}>
@@ -456,7 +457,7 @@ export const NotivixDataModal: React.FC<ModelSectionProps> = ({
                 />
               </LocalizationProvider>
             );
-            
+
           case "number":
             return (
               <TextField
@@ -476,16 +477,20 @@ export const NotivixDataModal: React.FC<ModelSectionProps> = ({
                 variant="outlined"
                 fullWidth
                 disabled={isDisabled}
-                error={formData[fieldName] !== "" && !isValidNumber(formData[fieldName])}
+                error={
+                  formData[fieldName] !== "" &&
+                  !isValidNumber(formData[fieldName])
+                }
                 helperText={
-                  formData[fieldName] !== "" && !isValidNumber(formData[fieldName])
+                  formData[fieldName] !== "" &&
+                  !isValidNumber(formData[fieldName])
                     ? "Please enter a valid number"
                     : ""
                 }
                 sx={{ "& .MuiOutlinedInput-root": { borderRadius: "8px" } }}
               />
             );
-            
+
           case "email":
             return (
               <TextField
@@ -502,16 +507,20 @@ export const NotivixDataModal: React.FC<ModelSectionProps> = ({
                 variant="outlined"
                 fullWidth
                 disabled={isDisabled}
-                error={formData[fieldName] !== "" && !isValidEmail(formData[fieldName])}
+                error={
+                  formData[fieldName] !== "" &&
+                  !isValidEmail(formData[fieldName])
+                }
                 helperText={
-                  formData[fieldName] !== "" && !isValidEmail(formData[fieldName])
+                  formData[fieldName] !== "" &&
+                  !isValidEmail(formData[fieldName])
                     ? "Please enter a valid email address"
                     : ""
                 }
                 sx={{ "& .MuiOutlinedInput-root": { borderRadius: "8px" } }}
               />
             );
-            
+
           default:
             return (
               <TextField
@@ -532,7 +541,7 @@ export const NotivixDataModal: React.FC<ModelSectionProps> = ({
             );
         }
       };
-      
+
       return (
         <>
           {/* First column */}
@@ -693,7 +702,7 @@ export const NotivixDataModal: React.FC<ModelSectionProps> = ({
           </Box>
         </Box>
       )}
-      
+
       <FilterNotivixDataModal
         open={openModal && modalMode === "filter"}
         onClose={handleCloseModal}
@@ -703,7 +712,7 @@ export const NotivixDataModal: React.FC<ModelSectionProps> = ({
         sourceVersionData={sourceVersionData}
         setFormData={setFormData}
       />
-      
+
       <DeleteConfirmationDialog
         open={openDialog}
         onClose={handleCloseDialog}

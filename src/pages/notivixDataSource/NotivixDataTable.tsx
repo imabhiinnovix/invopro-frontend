@@ -14,9 +14,6 @@ import { STYLE_GUIDE } from "../../styles";
 import SearchIcon from "@mui/icons-material/Search";
 import FilterListIcon from "@mui/icons-material/FilterList";
 import AddIcon from "@mui/icons-material/Add";
-import EditIcon from "@mui/icons-material/Edit";
-import VisibilityIcon from "@mui/icons-material/Visibility";
-import DeleteIcon from "@mui/icons-material/Delete";
 import { CustomPagination } from "../../components/common/pagination/customPagination";
 
 interface TableSectionProps {
@@ -47,12 +44,8 @@ export const NotivixDataTable: React.FC<TableSectionProps> = ({
   setPaginationModel,
   searchValue,
   handleSearchChange,
-  handleView,
-  handleEdit,
-  handleDelete,
   handleAddNotification,
   handleFilter,
-  listCurrentData,
 }) => {
   const paginationModelMemo = React.useMemo(
     () => ({
@@ -135,16 +128,30 @@ export const NotivixDataTable: React.FC<TableSectionProps> = ({
               onClick={handleAddNotification}
               sx={{
                 borderRadius: "8px",
-                backgroundColor:
-                  STYLE_GUIDE?.COLORS?.primaryDark || "#3f51b5",
+                backgroundColor: STYLE_GUIDE?.COLORS?.primaryDark || "#3f51b5",
                 color: STYLE_GUIDE?.COLORS?.white || "#ffffff",
                 "&:hover": {
                   backgroundColor: STYLE_GUIDE?.COLORS?.primary || "#5c6bc0",
                 },
               }}
             >
-              Add 
+              Add
             </Button>
+            {/* <Button
+              variant="contained"
+              startIcon={<AddIcon />}
+              onClick={handleAddNotification}
+              sx={{
+                borderRadius: "8px",
+                backgroundColor: STYLE_GUIDE?.COLORS?.primaryDark || "#3f51b5",
+                color: STYLE_GUIDE?.COLORS?.white || "#ffffff",
+                "&:hover": {
+                  backgroundColor: STYLE_GUIDE?.COLORS?.primary || "#5c6bc0",
+                },
+              }}
+            >
+              Import{" "}
+            </Button> */}
           </Box>
         </Box>
         {rows.length > 0 ? (
