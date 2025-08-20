@@ -137,7 +137,7 @@ export const NotivixDataTable: React.FC<TableSectionProps> = ({
             >
               Add
             </Button>
-            {/* <Button
+            <Button
               variant="contained"
               startIcon={<AddIcon />}
               onClick={handleAddNotification}
@@ -151,7 +151,7 @@ export const NotivixDataTable: React.FC<TableSectionProps> = ({
               }}
             >
               Import{" "}
-            </Button> */}
+            </Button>
           </Box>
         </Box>
         {rows.length > 0 ? (

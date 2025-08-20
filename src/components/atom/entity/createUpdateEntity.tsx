@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
-import { useForm, useFieldArray, FieldError } from "react-hook-form";
+import { useForm, useFieldArray, FieldError, useWatch } from "react-hook-form";
 import ExcelJS from "exceljs";
 import {
   Box,
@@ -68,13 +68,281 @@ interface FormEntityRequestPayload {
   attributes: FormAttribute[];
 }
 
+interface AttributeFieldProps {
+  index: number;
+  attribute: any;
+  control: any;
+  register: any;
+  errors: any;
+  remove: (index: number) => void;
+  referenceEntityNames: { [key: number]: string[] };
+  referenceEntityTypes: { [key: number]: string[] };
+  isLoadingReferences: { [key: number]: boolean };
+  setValue: any;
+  fileUploadLoader: boolean;
+}
+
+const AttributeField: React.FC<AttributeFieldProps> = ({
+  index,
+  attribute,
+  control,
+  register,
+  errors,
+  remove,
+  referenceEntityNames,
+  referenceEntityTypes,
+  isLoadingReferences,
+  setValue,
+  fileUploadLoader,
+}) => {
+  const refEntityId = useWatch({
+    control,
+    name: `attributes.${index}.refEntityId`,
+  });
+
+  useEffect(() => {
+    if (!refEntityId) {
+      setValue(`attributes.${index}.refEntityField`, "");
+    }
+  }, [refEntityId, index, setValue]);
+
+  return (
+    <Box
+      sx={{
+        mb: 3,
+        pointerEvents: fileUploadLoader ? "none" : "auto",
+        opacity: fileUploadLoader ? 0.5 : 1,
+      }}
+    >
+      <Typography variant="h6" mb={2}>
+        Attribute {index + 1}
+      </Typography>
+      <Stack spacing={2}>
+        <TextField
+          label="Attribute Name"
+          fullWidth
+          {...register(`attributes.${index}.name`, {
+            required: "Attribute Name is required",
+          })}
+          error={!!errors.attributes?.[index]?.name}
+          helperText={errors.attributes?.[index]?.name?.message}
+          sx={{
+            "& .MuiOutlinedInput-root": {
+              borderRadius: STYLE_GUIDE.SPACING.s2,
+              alignItems: "flex-start",
+              paddingRight: STYLE_GUIDE.SPACING.s2,
+              fontSize: "14px",
+              backgroundColor:
+                STYLE_GUIDE.COLORS.white,
+              "& fieldset": {
+                borderColor:
+                  STYLE_GUIDE.COLORS.darkBackground,
+              },
+              "&:hover fieldset": {
+                borderColor:
+                  STYLE_GUIDE.COLORS.darkBorderHover,
+              },
+              "&.Mui-focused fieldset": {
+                borderColor:
+                  STYLE_GUIDE.COLORS.inputFocusFallback,
+              },
+            },
+            "& .MuiInputLabel-root": {
+              color:
+                STYLE_GUIDE.COLORS.darkBorderFocus,
+            },
+            "& .MuiInputLabel-root.Mui-focused": {
+              color:
+                STYLE_GUIDE.COLORS.inputFocusFallback,
+            },
+            "& .MuiInputBase-input": {
+              color: `${STYLE_GUIDE.COLORS.textDarkGray} !important`,
+            },
+            "& .MuiInputBase-input::placeholder": {
+              color: `${STYLE_GUIDE.COLORS.textSecondary} !important`,
+            },
+            "& .MuiInputBase-input:-webkit-autofill": {
+              WebkitTextFillColor: `${STYLE_GUIDE.COLORS.textDarkGray} !important`,
+              WebkitBoxShadow: `0 0 0 1000px ${STYLE_GUIDE.COLORS.white} inset !important`,
+            },
+          }}
+        />
+        <TextField
+          label="File Attribute Name"
+          fullWidth
+          {...register(`attributes.${index}.mappingName`, {
+            required: "File Attribute Name is required",
+          })}
+          error={!!errors.attributes?.[index]?.mappingName}
+          helperText={
+            errors.attributes?.[index]?.mappingName?.message
+          }
+          sx={{
+            "& .MuiOutlinedInput-root": {
+              borderRadius: STYLE_GUIDE.SPACING.s2,
+              alignItems: "flex-start",
+              paddingRight: STYLE_GUIDE.SPACING.s2,
+              fontSize: "14px",
+              backgroundColor:
+                STYLE_GUIDE.COLORS.white,
+              "& fieldset": {
+                borderColor:
+                  STYLE_GUIDE.COLORS.darkBackground,
+              },
+              "&:hover fieldset": {
+                borderColor:
+                  STYLE_GUIDE.COLORS.darkBorderHover,
+              },
+              "&.Mui-focused fieldset": {
+                borderColor:
+                  STYLE_GUIDE.COLORS.inputFocusFallback,
+              },
+            },
+            "& .MuiInputLabel-root": {
+              color:
+                STYLE_GUIDE.COLORS.darkBorderFocus,
+            },
+            "& .MuiInputLabel-root.Mui-focused": {
+              color:
+                STYLE_GUIDE.COLORS.inputFocusFallback,
+            },
+            "& .MuiInputBase-input": {
+              color: `${STYLE_GUIDE.COLORS.textDarkGray} !important`,
+            },
+            "& .MuiInputBase-input::placeholder": {
+              color: `${STYLE_GUIDE.COLORS.textSecondary} !important`,
+            },
+            "& .MuiInputBase-input:-webkit-autofill": {
+              WebkitTextFillColor: `${STYLE_GUIDE.COLORS.textDarkGray} !important`,
+              WebkitBoxShadow: `0 0 0 1000px ${STYLE_GUIDE.COLORS.white} inset !important`,
+            },
+          }}
+        />
+        <CommonSelect
+          control={control}
+          name={`attributes.${index}.type`}
+          label="Attribute Type"
+          options={[
+            "number",
+            "text",
+            "date",
+            "boolean",
+            "richtext",
+            "text-with-option",
+            "url",
+            "option",
+            "multioption",
+            "email",
+          ]}
+          defaultValue={attribute.type || ""}
+        />
+        {["option", "multioption", "text-with-option"].includes(
+          attribute.type || ""
+        ) && (
+          <CommonDropdownSearch
+            control={control}
+            name={`attributes.${index}.optionAttributeId`}
+            label="Attribute Options"
+            apiUrl={`${GET.Attribute_Option_List}`}
+            labelName="attributeName"
+            labelValue="_id"
+            defaultValue={attribute.optionAttributeId || ""}
+            apiName="attributeOption"
+            defaultDataUrl={`${GET.Attribute_Option_Get}`}
+          />
+        )}
+        <CommonSelect
+          control={control}
+          name={`attributes.${index}.required`}
+          label="Attribute Validation"
+          options={["Mandatory", "Not Mandatory"]}
+          defaultValue={attribute.required || "Not Mandatory"}
+          rules={{ required: "Attribute Validation is required" }}
+          error={!!errors.attributes?.[index]?.required}
+          errorMessage={
+            (errors.attributes?.[index]?.required as FieldError)
+              ?.message
+          }
+        />
+        <CommonDropdownSearch
+          control={control}
+          name={`attributes.${index}.refEntityId`}
+          label="Reference Entity ID"
+          apiUrl={`${GET.Entity_List}`}
+          labelName="name"
+          labelValue="_id"
+          defaultValue={attribute.refEntityId || ""}
+          rules={{ required: false }}
+          error={!!errors.attributes?.[index]?.refEntityId}
+          errorMessage={
+            (errors.attributes?.[index]?.refEntityId as FieldError)
+              ?.message
+          }
+          apiName="entities"
+          defaultDataUrl={`${GET.Entity_List}`}
+        />
+        <CommonSelect
+          control={control}
+          name={`attributes.${index}.refEntityField`}
+          label="Reference Entity Field"
+          options={
+            referenceEntityNames[index]?.length
+              ? referenceEntityNames[index]
+              : ["No fields available"]
+          }
+          defaultValue={attribute.refEntityField || ""}
+          rules={{ required: false }}
+          error={!!errors.attributes?.[index]?.refEntityField}
+          errorMessage={
+            referenceEntityNames[index]?.length
+              ? (
+                  errors.attributes?.[index]
+                    ?.refEntityField as FieldError
+                )?.message
+              : "No reference fields available for this entity"
+          }
+          disabled={
+            isLoadingReferences[index] ||
+            !referenceEntityNames[index]?.length
+          }
+          helperText={
+            isLoadingReferences[index]
+              ? "Loading fields..."
+              : undefined
+          }
+          clearable
+        />
+        <CommonSelect
+          control={control}
+          name={`attributes.${index}.relationType`}
+          label="Reference Relation Type"
+          options={["many_to_one", "one_to_one", "self"]}
+          defaultValue={attribute.relationType || ""}
+          rules={{ required: false }}
+          error={!!errors.attributes?.[index]?.relationType}
+          errorMessage={
+            (errors.attributes?.[index]?.relationType as FieldError)
+              ?.message
+          }
+        />
+      </Stack>
+      <IconButton
+        color="error"
+        onClick={() => remove(index)}
+        sx={{ mt: 2, display: "flex", alignSelf: "flex-start" }}
+      >
+        <RemoveCircleOutlineIcon />
+      </IconButton>
+    </Box>
+  );
+};
+
 const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
   setReloadEntity,
   CustomButton,
   title,
   data,
 }) => {
-  console.log("CreateUpdateEntity data1111:", data);
   const theme = useUnifiedTheme();
   const { getDialogTitleSx } = useComponentTypography();
   const [open, setOpen] = useState(false);
@@ -88,6 +356,7 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
     register,
     reset,
     watch,
+    setValue,
     formState: { errors },
   } = useForm<FormEntityRequestPayload>({
     defaultValues: {
@@ -207,7 +476,6 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
   }>({});
   const attributes = watch("attributes");
   const prevEntityIdsRef = useRef<string[]>([]);
-
   const referenceEntityIdsString =
     attributes
       ?.map((attr) =>
@@ -238,7 +506,6 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
           setIsLoadingReferences((prev) => ({ ...prev, [index]: false }));
           return;
         }
-
         setIsLoadingReferences((prev) => ({ ...prev, [index]: true }));
         axiosInstance
           .get(`/common/entities/${entityId}`)
@@ -268,7 +535,6 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
             setIsLoadingReferences((prev) => ({ ...prev, [index]: false }));
           });
       });
-
       prevEntityIdsRef.current =
         attributes?.map((attr) =>
           typeof attr.refEntityId === "object"
@@ -283,7 +549,6 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
       const selectedFile = event.target.files[0];
       setFile(selectedFile);
       setFileName(selectedFile.name);
-
       if (
         !selectedFile.name.endsWith(".xlsx") &&
         !selectedFile.name.endsWith(".xls")
@@ -294,14 +559,11 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
         setFileUploadLoader(false);
         return;
       }
-
       const reader = new FileReader();
       setFileUploadLoader(true);
-
       reader.onload = async (e) => {
         try {
           const arrayBuffer = e.target?.result as ArrayBuffer;
-
           const workbook = new ExcelJS.Workbook();
           try {
             await workbook.xlsx.load(arrayBuffer);
@@ -314,7 +576,6 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
             setFileUploadLoader(false);
             return;
           }
-
           if (!workbook.worksheets || workbook.worksheets.length === 0) {
             toast.error("No sheets found in the Excel file.");
             setFileName(null);
@@ -322,11 +583,9 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
             setFileUploadLoader(false);
             return;
           }
-
           const worksheet = workbook.worksheets[0];
           const headers: FormAttribute[] = [];
           const uniqueNames = new Set<string>();
-
           worksheet.getRow(1).eachCell((cell, _colNumber) => {
             if (cell.value) {
               const actualHeaderName = cell.value.toString().trim();
@@ -336,7 +595,6 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
                 .replace(/\//g, " or ")
                 .replace(/\s+/g, " ")
                 .trim();
-
               if (!uniqueNames.has(cleanedName)) {
                 uniqueNames.add(cleanedName);
                 headers.push({
@@ -355,7 +613,6 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
               }
             }
           });
-
           worksheet.getRow(2).eachCell((cell, colNumber) => {
             if (headers[colNumber - 1] != undefined) {
               const firstValue = cell.value;
@@ -368,7 +625,6 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
               headers[colNumber - 1].type = type;
             }
           });
-
           if (headers.length > 0) {
             replace(headers);
           } else {
@@ -387,7 +643,6 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
           return;
         }
       };
-
       reader.readAsArrayBuffer(selectedFile);
     }
   };
@@ -424,7 +679,6 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
     const isReferenceDataLoaded = attributes?.every(
       (_, index) => referenceEntityNames[index] && referenceEntityTypes[index]
     );
-
     if (!isReferenceDataLoaded) {
       toast.error("Reference entity data is still loading. Please wait.");
       return;
@@ -432,16 +686,13 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
     console.log("Form data before processing222222222222:", formData);
     const newAttributes = formData.attributes?.map((data, index) => {
       const { refEntityId, refEntityField, relationType, ...rest } = data;
-
       const updated: any = {
         ...rest,
         required: data.required === "Mandatory" ? true : false,
       };
-
       if (!["option", "multioption"].includes(data.type)) {
         updated.optionAttributeId = "";
       }
-
       if (refEntityId && refEntityField && relationType) {
         const selectedName = refEntityField;
         const typeIndex = referenceEntityNames[index]?.indexOf(selectedName);
@@ -455,13 +706,10 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
           relationType,
         };
       }
-
       return updated;
     });
-
     const newFormData = { ...formData, attributes: newAttributes };
     console.log("newFormData:", newFormData);
-
     if (data && data._id) {
       console.log("Updating entity with ID:", data._id);
       updateEntity.mutate({
@@ -484,7 +732,6 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
   return (
     <>
       <Box onClick={() => setOpen(true)}>{CustomButton}</Box>
-
       <Dialog
         fullWidth
         maxWidth="lg"
@@ -541,53 +788,40 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
                     paddingRight: STYLE_GUIDE.SPACING.s2,
                     fontSize: "14px",
                     backgroundColor:
-                      theme.dashboardTheme?.colors?.background?.paper ||
-                      "#ffffff",
+                      STYLE_GUIDE.COLORS.white,
                     "& fieldset": {
                       borderColor:
-                        theme.dashboardTheme?.colors?.inputBorder ||
                         STYLE_GUIDE.COLORS.darkBackground,
                     },
                     "&:hover fieldset": {
                       borderColor:
-                        theme.dashboardTheme?.colors?.borderHover ||
                         STYLE_GUIDE.COLORS.darkBorderHover,
                     },
                     "&.Mui-focused fieldset": {
                       borderColor:
-                        theme.dashboardTheme?.components?.input
-                          ?.focusBorderColor ||
-                        theme.dashboardTheme?.components?.input
-                          ?.focusBorderColorFallback ||
                         STYLE_GUIDE.COLORS.inputFocusFallback,
                     },
                   },
                   "& .MuiInputLabel-root": {
                     color:
-                      theme.dashboardTheme?.colors?.text?.secondary ||
                       STYLE_GUIDE.COLORS.darkBorderFocus,
                   },
                   "& .MuiInputLabel-root.Mui-focused": {
                     color:
-                      theme.dashboardTheme?.components?.input
-                        ?.focusBorderColor ||
-                      theme.dashboardTheme?.components?.input
-                        ?.focusBorderColorFallback ||
                       STYLE_GUIDE.COLORS.inputFocusFallback,
                   },
                   "& .MuiInputBase-input": {
-                    color: `${theme.dashboardTheme?.colors?.inputText || theme.palette.text.primary} !important`,
+                    color: `${STYLE_GUIDE.COLORS.textDarkGray} !important`,
                   },
                   "& .MuiInputBase-input::placeholder": {
-                    color: `${theme.dashboardTheme?.colors?.text?.secondary || "#666"} !important`,
+                    color: `${STYLE_GUIDE.COLORS.textSecondary} !important`,
                   },
                   "& .MuiInputBase-input:-webkit-autofill": {
-                    WebkitTextFillColor: `${theme.dashboardTheme?.colors?.inputText || theme.palette.text.primary} !important`,
-                    WebkitBoxShadow: `0 0 0 1000px ${theme.dashboardTheme?.colors?.background?.paper || "#ffffff"} inset !important`,
+                    WebkitTextFillColor: `${STYLE_GUIDE.COLORS.textDarkGray} !important`,
+                    WebkitBoxShadow: `0 0 0 1000px ${STYLE_GUIDE.COLORS.white} inset !important`,
                   },
                 }}
               />
-
               <TextField
                 label="Entity Description"
                 fullWidth
@@ -603,53 +837,40 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
                     paddingRight: STYLE_GUIDE.SPACING.s2,
                     fontSize: "14px",
                     backgroundColor:
-                      theme.dashboardTheme?.colors?.background?.paper ||
-                      "#ffffff",
+                      STYLE_GUIDE.COLORS.white,
                     "& fieldset": {
                       borderColor:
-                        theme.dashboardTheme?.colors?.inputBorder ||
                         STYLE_GUIDE.COLORS.darkBackground,
                     },
                     "&:hover fieldset": {
                       borderColor:
-                        theme.dashboardTheme?.colors?.borderHover ||
                         STYLE_GUIDE.COLORS.darkBorderHover,
                     },
                     "&.Mui-focused fieldset": {
                       borderColor:
-                        theme.dashboardTheme?.components?.input
-                          ?.focusBorderColor ||
-                        theme.dashboardTheme?.components?.input
-                          ?.focusBorderColorFallback ||
                         STYLE_GUIDE.COLORS.inputFocusFallback,
                     },
                   },
                   "& .MuiInputLabel-root": {
                     color:
-                      theme.dashboardTheme?.colors?.text?.secondary ||
                       STYLE_GUIDE.COLORS.darkBorderFocus,
                   },
                   "& .MuiInputLabel-root.Mui-focused": {
                     color:
-                      theme.dashboardTheme?.components?.input
-                        ?.focusBorderColor ||
-                      theme.dashboardTheme?.components?.input
-                        ?.focusBorderColorFallback ||
                       STYLE_GUIDE.COLORS.inputFocusFallback,
                   },
                   "& .MuiInputBase-input": {
-                    color: `${theme.dashboardTheme?.colors?.inputText || theme.palette.text.primary} !important`,
+                    color: `${STYLE_GUIDE.COLORS.textDarkGray} !important`,
                   },
                   "& .MuiInputBase-input::placeholder": {
-                    color: `${theme.dashboardTheme?.colors?.text?.secondary || "#666"} !important`,
+                    color: `${STYLE_GUIDE.COLORS.textSecondary} !important`,
                   },
                   "& .MuiInputBase-input:-webkit-autofill": {
-                    WebkitTextFillColor: `${theme.dashboardTheme?.colors?.inputText || theme.palette.text.primary} !important`,
-                    WebkitBoxShadow: `0 0 0 1000px ${theme.dashboardTheme?.colors?.background?.paper || "#ffffff"} inset !important`,
+                    WebkitTextFillColor: `${STYLE_GUIDE.COLORS.textDarkGray} !important`,
+                    WebkitBoxShadow: `0 0 0 1000px ${STYLE_GUIDE.COLORS.white} inset !important`,
                   },
                 }}
               />
-
               {fileUploadLoader ? (
                 <ProgressBar />
               ) : (
@@ -659,273 +880,23 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
                   buttonName={"Upload File"}
                 />
               )}
-
               <Divider sx={{ my: 3 }} />
-
               {fields.map((attribute, index) => (
-                <Box
+                <AttributeField
                   key={attribute.id}
-                  sx={{
-                    mb: 3,
-                    pointerEvents: fileUploadLoader ? "none" : "auto",
-                    opacity: fileUploadLoader ? 0.5 : 1,
-                  }}
-                >
-                  <Typography variant="h6" mb={2}>
-                    Attribute {index + 1}
-                  </Typography>
-                  <Stack spacing={2}>
-                    <TextField
-                      label="Attribute Name"
-                      fullWidth
-                      {...register(`attributes.${index}.name`, {
-                        required: "Attribute Name is required",
-                      })}
-                      error={!!errors.attributes?.[index]?.name}
-                      helperText={errors.attributes?.[index]?.name?.message}
-                      sx={{
-                        "& .MuiOutlinedInput-root": {
-                          borderRadius: STYLE_GUIDE.SPACING.s2,
-                          alignItems: "flex-start",
-                          paddingRight: STYLE_GUIDE.SPACING.s2,
-                          fontSize: "14px",
-                          backgroundColor:
-                            theme.dashboardTheme?.colors?.background?.paper ||
-                            "#ffffff",
-                          "& fieldset": {
-                            borderColor:
-                              theme.dashboardTheme?.colors?.inputBorder ||
-                              STYLE_GUIDE.COLORS.darkBackground,
-                          },
-                          "&:hover fieldset": {
-                            borderColor:
-                              theme.dashboardTheme?.colors?.borderHover ||
-                              STYLE_GUIDE.COLORS.darkBorderHover,
-                          },
-                          "&.Mui-focused fieldset": {
-                            borderColor:
-                              theme.dashboardTheme?.components?.input
-                                ?.focusBorderColor ||
-                              theme.dashboardTheme?.components?.input
-                                ?.focusBorderColorFallback ||
-                              STYLE_GUIDE.COLORS.inputFocusFallback,
-                          },
-                        },
-                        "& .MuiInputLabel-root": {
-                          color:
-                            theme.dashboardTheme?.colors?.text?.secondary ||
-                            STYLE_GUIDE.COLORS.darkBorderFocus,
-                        },
-                        "& .MuiInputLabel-root.Mui-focused": {
-                          color:
-                            theme.dashboardTheme?.components?.input
-                              ?.focusBorderColor ||
-                            theme.dashboardTheme?.components?.input
-                              ?.focusBorderColorFallback ||
-                            STYLE_GUIDE.COLORS.inputFocusFallback,
-                        },
-                        "& .MuiInputBase-input": {
-                          color: `${theme.dashboardTheme?.colors?.inputText || theme.palette.text.primary} !important`,
-                        },
-                        "& .MuiInputBase-input::placeholder": {
-                          color: `${theme.dashboardTheme?.colors?.text?.secondary || "#666"} !important`,
-                        },
-                        "& .MuiInputBase-input:-webkit-autofill": {
-                          WebkitTextFillColor: `${theme.dashboardTheme?.colors?.inputText || theme.palette.text.primary} !important`,
-                          WebkitBoxShadow: `0 0 0 1000px ${theme.dashboardTheme?.colors?.background?.paper || "#ffffff"} inset !important`,
-                        },
-                      }}
-                    />
-
-                    <TextField
-                      label="File Attribute Name"
-                      fullWidth
-                      {...register(`attributes.${index}.mappingName`, {
-                        required: "File Attribute Name is required",
-                      })}
-                      error={!!errors.attributes?.[index]?.mappingName}
-                      helperText={
-                        errors.attributes?.[index]?.mappingName?.message
-                      }
-                      sx={{
-                        "& .MuiOutlinedInput-root": {
-                          borderRadius: STYLE_GUIDE.SPACING.s2,
-                          alignItems: "flex-start",
-                          paddingRight: STYLE_GUIDE.SPACING.s2,
-                          fontSize: "14px",
-                          backgroundColor:
-                            theme.dashboardTheme?.colors?.background?.paper ||
-                            "#ffffff",
-                          "& fieldset": {
-                            borderColor:
-                              theme.dashboardTheme?.colors?.inputBorder ||
-                              STYLE_GUIDE.COLORS.darkBackground,
-                          },
-                          "&:hover fieldset": {
-                            borderColor:
-                              theme.dashboardTheme?.colors?.borderHover ||
-                              STYLE_GUIDE.COLORS.darkBorderHover,
-                          },
-                          "&.Mui-focused fieldset": {
-                            borderColor:
-                              theme.dashboardTheme?.components?.input
-                                ?.focusBorderColor ||
-                              theme.dashboardTheme?.components?.input
-                                ?.focusBorderColorFallback ||
-                              STYLE_GUIDE.COLORS.inputFocusFallback,
-                          },
-                        },
-                        "& .MuiInputLabel-root": {
-                          color:
-                            theme.dashboardTheme?.colors?.text?.secondary ||
-                            STYLE_GUIDE.COLORS.darkBorderFocus,
-                        },
-                        "& .MuiInputLabel-root.Mui-focused": {
-                          color:
-                            theme.dashboardTheme?.components?.input
-                              ?.focusBorderColor ||
-                            theme.dashboardTheme?.components?.input
-                              ?.focusBorderColorFallback ||
-                            STYLE_GUIDE.COLORS.inputFocusFallback,
-                        },
-                        "& .MuiInputBase-input": {
-                          color: `${theme.dashboardTheme?.colors?.inputText || theme.palette.text.primary} !important`,
-                        },
-                        "& .MuiInputBase-input::placeholder": {
-                          color: `${theme.dashboardTheme?.colors?.text?.secondary || "#666"} !important`,
-                        },
-                        "& .MuiInputBase-input:-webkit-autofill": {
-                          WebkitTextFillColor: `${theme.dashboardTheme?.colors?.inputText || theme.palette.text.primary} !important`,
-                          WebkitBoxShadow: `0 0 0 1000px ${theme.dashboardTheme?.colors?.background?.paper || "#ffffff"} inset !important`,
-                        },
-                      }}
-                    />
-
-                    <CommonSelect
-                      control={control}
-                      name={`attributes.${index}.type`}
-                      label="Attribute Type"
-                      options={[
-                        "number",
-                        "text",
-                        "date",
-                        "boolean",
-                        "richtext",
-                        "text-with-option",
-                        "url",
-                        "option",
-                        "multioption",
-                        "email",
-                      ]}
-                      defaultValue={attribute.type || ""}
-                    />
-
-                    {attributes &&
-                      ["option", "multioption","text-with-option"].includes(
-                        attributes[index]?.type || ""
-                      ) && (
-                        <CommonDropdownSearch
-                          control={control}
-                          name={`attributes.${index}.optionAttributeId`}
-                          label="Attribute Options"
-                          apiUrl={`${GET.Attribute_Option_List}`}
-                          labelName="attributeName"
-                          labelValue="_id"
-                          defaultValue={attribute.optionAttributeId || ""}
-                          apiName="attributeOption"
-                          defaultDataUrl={`${GET.Attribute_Option_Get}`}
-                        />
-                      )}
-
-                    <CommonSelect
-                      control={control}
-                      name={`attributes.${index}.required`}
-                      label="Attribute Validation"
-                      options={["Mandatory", "Not Mandatory"]}
-                      defaultValue={attribute.required || "Not Mandatory"}
-                      rules={{ required: "Attribute Validation is required" }}
-                      error={!!errors.attributes?.[index]?.required}
-                      errorMessage={
-                        (errors.attributes?.[index]?.required as FieldError)
-                          ?.message
-                      }
-                    />
-
-                    <CommonDropdownSearch
-                      control={control}
-                      name={`attributes.${index}.refEntityId`}
-                      label="Reference Entity ID"
-                      apiUrl={`${GET.Entity_List}`}
-                      labelName="name"
-                      labelValue="_id"
-                      defaultValue={attribute.refEntityId || ""}
-                      rules={{ required: false }}
-                      error={!!errors.attributes?.[index]?.refEntityId}
-                      errorMessage={
-                        (errors.attributes?.[index]?.refEntityId as FieldError)
-                          ?.message
-                      }
-                      apiName="entities"
-                      defaultDataUrl={`${GET.Entity_List}`}
-                    />
-
-                    <CommonSelect
-                      control={control}
-                      name={`attributes.${index}.refEntityField`}
-                      label="Reference Entity Field"
-                      options={
-                        referenceEntityNames[index]?.length
-                          ? referenceEntityNames[index]
-                          : ["No fields available"]
-                      }
-                      defaultValue={attribute.refEntityField || ""}
-                      rules={{ required: false }}
-                      error={!!errors.attributes?.[index]?.refEntityField}
-                      errorMessage={
-                        referenceEntityNames[index]?.length
-                          ? (
-                              errors.attributes?.[index]
-                                ?.refEntityField as FieldError
-                            )?.message
-                          : "No reference fields available for this entity"
-                      }
-                      disabled={
-                        isLoadingReferences[index] ||
-                        !referenceEntityNames[index]?.length
-                      }
-                      helperText={
-                        isLoadingReferences[index]
-                          ? "Loading fields..."
-                          : undefined
-                      }
-                      clearable
-                    />
-
-                    <CommonSelect
-                      control={control}
-                      name={`attributes.${index}.relationType`}
-                      label="Reference Relation Type"
-                      options={["many_to_one", "one_to_one", "self"]}
-                      defaultValue={attribute.relationType || ""}
-                      rules={{ required: false }}
-                      error={!!errors.attributes?.[index]?.relationType}
-                      errorMessage={
-                        (errors.attributes?.[index]?.relationType as FieldError)
-                          ?.message
-                      }
-                    />
-                  </Stack>
-
-                  <IconButton
-                    color="error"
-                    onClick={() => remove(index)}
-                    sx={{ mt: 2, display: "flex", alignSelf: "flex-start" }}
-                  >
-                    <RemoveCircleOutlineIcon />
-                  </IconButton>
-                </Box>
+                  index={index}
+                  attribute={attribute}
+                  control={control}
+                  register={register}
+                  errors={errors}
+                  remove={remove}
+                  referenceEntityNames={referenceEntityNames}
+                  referenceEntityTypes={referenceEntityTypes}
+                  isLoadingReferences={isLoadingReferences}
+                  setValue={setValue}
+                  fileUploadLoader={fileUploadLoader}
+                />
               ))}
-
               <Button
                 variant="contained"
                 startIcon={<AddCircleOutlineIcon />}
