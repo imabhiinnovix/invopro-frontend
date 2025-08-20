@@ -54,114 +54,76 @@ const DataSourceTable: React.FC<AttributeOptionTableProps> = ({ reload, setReloa
   const { getHeadingSx, getTableSx } = useComponentTypography();
   const [dataSource, setDataSource] = useState<DataSourceType[]>([]);
   const [currentPage, setCurrentPage] = useState<number>(1);
-  const [loading, setLoading] = useState<boolean>(false);
-  const [hasMore, setHasMore] = useState<boolean>(true);
   const perPageItem = 10;
-
+  const observer = useRef<IntersectionObserver>();
+  
   const dataSourceList = useGet<{ success: boolean; data: DataSourceType[]; totalCount: number }>(
     [`dataSourceList-${currentPage}`],
-    GET?.Data_Source_List + `?page=${currentPage}&limit=${perPageItem}`,
-    true // Pass enabled as boolean
+    GET?.Data_Source_List +`?page=${currentPage}&limit=${perPageItem}`,
+    !!currentPage 
   );
-
-  
-
-  const loadMoreData = useCallback(async () => {
-    if (loading || !hasMore) return;
-    
-    console.log(`Loading page ${currentPage + 1}`);
-    setLoading(true);
-    setCurrentPage(prev => {
-      console.log('Incrementing page to', prev + 1);
-      return prev + 1;
-    });
-  }, [loading, hasMore, currentPage]);
-
-  useEffect(() => {
-    if (dataSourceList?.data?.success && dataSourceList?.data?.data) {
-      const newData = dataSourceList.data.data;
-      const totalCount = dataSourceList.data.totalCount;
-
-      console.log('New data received:', newData, 'Total count:', totalCount);
-
-      if (currentPage === 1) {
-        setDataSource(newData);
-      } else {
-        setDataSource(prev => {
-          const existingIds = new Set(prev.map(item => item._id));
-          const filteredNewData = newData.filter(item => !existingIds.has(item._id));
-          console.log('Appending new data:', filteredNewData);
-          return [...prev, ...filteredNewData];
-        });
-      }
-
-      const totalLoaded = currentPage * perPageItem;
-      if (totalLoaded >= totalCount || newData.length < perPageItem) {
-        setHasMore(false);
-        console.log('No more data to load');
-      }
-
-      setLoading(false);
-    }
-  }, [dataSourceList?.data, currentPage]);
-
-  useEffect(() => {
-    if (dataSourceList.isFetching && currentPage > 1) {
-      setLoading(true);
-    } else if (!dataSourceList.isFetching) {
-      setLoading(false);
-    }
-    if (dataSourceList.error) {
-      console.error('API error:', dataSourceList.error);
-      setLoading(false);
-    }
-  }, [dataSourceList.isFetching, dataSourceList.error, currentPage]);
 
   useEffect(() => {
     if (reload) {
-      console.log('Reloading data');
-      setDataSource([]);
       setCurrentPage(1);
-      setLoading(false);
-      setHasMore(true);
-      setReload(false);
+      setDataSource([]); 
+      dataSourceList.refetch(); 
+      setReload(false); 
     }
-  }, [reload, setReload]);
+  }, [reload, dataSourceList, setReload]);
 
-  const observer = useRef<IntersectionObserver>();
+  // Update data when API response changes
+  useEffect(() => {
+    if (dataSourceList?.data?.success && dataSourceList?.data?.data) {
+      if (currentPage === 1) {
+        setDataSource([...dataSourceList.data.data]);
+      } else {
+        setDataSource(prev => {
+          const existingIds = new Set(prev.map(item => item._id));
+          const newData = dataSourceList.data.data.filter(item => !existingIds.has(item._id));
+          return [...prev, ...newData];
+        });
+      }
+    }
+  }, [dataSourceList?.data, currentPage]);
+
+  const hasMoreData = dataSource.length < (dataSourceList?.data?.totalCount || 0);
+
   const lastElementRef = useCallback(
     (node: HTMLTableRowElement | null) => {
-      if (loading || !hasMore) return;
-      if (observer.current) observer.current.disconnect();
-
-      observer.current = new IntersectionObserver(
-        entries => {
-          if (entries[0].isIntersecting && hasMore && !loading) {
-            console.log('Triggering load more');
-            loadMoreData();
-          }
-        },
-        {
-          root: null,
-          rootMargin: '0px 0px 100px 0px',
-          threshold: 0.1,
+      if (dataSourceList.isFetching || !hasMoreData) return;
+      
+      if (observer.current) {
+        observer.current.disconnect();
+      }
+      
+      // Create a new IntersectionObserver
+      observer.current = new IntersectionObserver(entries => {
+        if (entries[0].isIntersecting && hasMoreData) {
+          setCurrentPage(prevPage => prevPage + 1);
         }
-      );
-
-      if (node) observer.current.observe(node);
+      }, {
+        root: null,
+        rootMargin: "0px 0px 100px 0px",
+        threshold: 0.1
+      });
+      
+      if (node) {
+        observer.current.observe(node);
+      }
     },
-    [loading, hasMore, loadMoreData]
+    [dataSourceList.isFetching, hasMoreData]
   );
 
   useEffect(() => {
     console.log({
       currentPage,
-      dataLength: dataSource.length,
-      loading,
-      hasMore,
-      isFetching: dataSourceList.isFetching,
+      dataSourceLength: dataSource.length,
+      totalCount: dataSourceList?.data?.totalCount,
+      hasMoreData,
+      isFetching: dataSourceList.isFetching
     });
-  }, [currentPage, dataSource.length, loading, hasMore, dataSourceList.isFetching]);
+  }, [currentPage, dataSource.length, dataSourceList?.data?.totalCount, hasMoreData, dataSourceList.isFetching]);
 
   if (dataSourceList.isFetching && currentPage === 1 && dataSource.length === 0) {
     return (
@@ -278,8 +240,7 @@ const DataSourceTable: React.FC<AttributeOptionTableProps> = ({ reload, setReloa
               </StyledTableCell>
             </StyledTableRow>
           ))}
-
-          {loading && (
+          {dataSourceList.isFetching && currentPage > 1 && (
             <StyledTableRow>
               <StyledTableCell colSpan={11}>
                 <Box sx={{ display: 'flex', justifyContent: 'center', p: 2 }}>
@@ -288,13 +249,12 @@ const DataSourceTable: React.FC<AttributeOptionTableProps> = ({ reload, setReloa
               </StyledTableCell>
             </StyledTableRow>
           )}
-
-          {!hasMore && dataSource.length > 0 && (
+          {!hasMoreData && dataSource.length > 0 && (
             <StyledTableRow>
               <StyledTableCell colSpan={11}>
                 <Box sx={{ textAlign: 'center', p: 2 }}>
                   <Typography variant="body2" color="text.secondary">
-                    All data loaded ({dataSource.length} items)
+                    All data loaded ({dataSource.length} of {dataSourceList?.data?.totalCount} items)
                   </Typography>
                 </Box>
               </StyledTableCell>

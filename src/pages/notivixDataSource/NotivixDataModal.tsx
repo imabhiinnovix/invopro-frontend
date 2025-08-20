@@ -303,9 +303,11 @@ export const NotivixDataModal: React.FC<ModelSectionProps> = ({
             const selectedOption = optionOptions.find(
               (option) => option.id === formData[fieldName]
             );
+            const isReference = !!attribute.referenceEntitySetting; // agar referenceEntitySetting hai to true
+
             return (
               <Autocomplete
-                freeSolo
+                freeSolo={!isReference}
                 key={fieldName}
                 options={optionOptions}
                 getOptionLabel={(option) => {
@@ -341,7 +343,9 @@ export const NotivixDataModal: React.FC<ModelSectionProps> = ({
                     fullWidth
                     disabled={isDisabled}
                     sx={{ "& .MuiOutlinedInput-root": { borderRadius: "8px" } }}
-                    placeholder="Type or select"
+                    placeholder={
+                      isReference ? "Select option" : "Type or select"
+                    }
                   />
                 )}
                 renderOption={(props, option) => {
@@ -374,6 +378,8 @@ export const NotivixDataModal: React.FC<ModelSectionProps> = ({
             const multioptionOptions = getOptionsForAttribute(
               attribute.optionAttributeId
             );
+            const isReferenceMulti = !!attribute.referenceEntitySetting; // agar referenceEntitySetting hai to true
+
             const selectedValues = formData[fieldName]
               ? formData[fieldName].split(",").map((val: string) => val.trim())
               : [];
@@ -381,10 +387,11 @@ export const NotivixDataModal: React.FC<ModelSectionProps> = ({
               const option = multioptionOptions.find((opt) => opt.id === val);
               return option || { id: val, label: val };
             });
+            // const isReference = !!attribute.referenceEntitySetting;
             return (
               <Autocomplete
                 multiple
-                freeSolo
+                freeSolo={!isReferenceMulti}
                 key={fieldName}
                 options={multioptionOptions}
                 getOptionLabel={(option) => {
@@ -414,7 +421,9 @@ export const NotivixDataModal: React.FC<ModelSectionProps> = ({
                     fullWidth
                     disabled={isDisabled}
                     sx={{ "& .MuiOutlinedInput-root": { borderRadius: "8px" } }}
-                    placeholder="Type or select"
+                    placeholder={
+                      isReferenceMulti ? "Select option" : "Type or select"
+                    }
                   />
                 )}
                 renderTags={(value, getTagProps) =>

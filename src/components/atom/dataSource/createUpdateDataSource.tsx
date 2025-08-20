@@ -1235,6 +1235,8 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({
                 >
                   <MenuItem value="monthly">Monthly</MenuItem>
                   <MenuItem value="number">Number</MenuItem>
+                  <MenuItem value="constant">Constant</MenuItem>
+
                 </Select>
                 {errors.versionType && (
                   <Typography color="error">
