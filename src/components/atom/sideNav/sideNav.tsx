@@ -10,7 +10,14 @@ import { useNav } from "../../../context/NavContext";
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import AddIcon from "@mui/icons-material/Add";
 import React, { useEffect, useMemo, useContext, useState } from "react";
-import { Collapse, IconButton, Menu, MenuItem, Tooltip } from "@mui/material";
+import {
+  Collapse,
+  IconButton,
+  LinearProgress,
+  Menu,
+  MenuItem,
+  Tooltip,
+} from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -164,9 +171,9 @@ export default function SideNav() {
     React.useState(false);
   const [openGlobalSettings, setOpenGlobalSettings] = React.useState(false);
   const [newDashboardName, setNewDashboardName] = React.useState("");
-  const [dashboardType, setDashboardType] = React.useState<"normal" | "trend" | "fixed">(
-    "normal"
-  );
+  const [dashboardType, setDashboardType] = React.useState<
+    "normal" | "trend" | "fixed"
+  >("normal");
   const [timePeriod, setTimePeriod] = React.useState<string>("1m");
   const [dataSourceId, setDataSourceId] = React.useState<string>("");
   const [isCreatingLoading, setIsCreatingLoading] = React.useState(false);
@@ -253,7 +260,8 @@ export default function SideNav() {
   }, [dataSourceNotivixList, validPermissionIds]);
 
   useEffect(() => {
-    if (dataSourceNotivixList.length > 0) dispatch(setDataSourceList(dataSourceNotivixList));
+    if (dataSourceNotivixList.length > 0)
+      dispatch(setDataSourceList(dataSourceNotivixList));
   }, [dataSourceNotivixList, dispatch]);
 
   const handleItemClick = (
@@ -410,10 +418,11 @@ export default function SideNav() {
         ...(dataSourceNotivixListAPI?.isLoading
           ? [
               {
-                name: "Loading...",
+                name: "",
                 icon: (
                   <div ref={lastElementRef} style={{ paddingLeft: "1.5rem" }}>
                     Loading...
+                    <LinearProgress />{" "}
                   </div>
                 ),
                 route: "#",
@@ -457,7 +466,7 @@ export default function SideNav() {
         //     />
         //   ),
         //   route: "/notivix/validation-errors",
-          
+
         // },
       ];
     }
@@ -643,7 +652,6 @@ export default function SideNav() {
                   aria-haspopup="true"
                   onClick={handleMenuClick}
                 >
-                 
                   <Tooltip title="Tab Switch" placement="top">
                     <Box
                       display="flex"
