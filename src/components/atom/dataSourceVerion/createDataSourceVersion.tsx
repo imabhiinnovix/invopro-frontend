@@ -32,7 +32,7 @@ import { useUnifiedTheme } from "../../../hooks/useUnifiedTheme";
 import { useComponentTypography } from "../../../hooks";
 
 interface CreateDataSourceVersionProps {
-  setReload: React.Dispatch<React.SetStateAction<boolean>>;
+  setReload?: React.Dispatch<React.SetStateAction<boolean>>;
   CustomButton: React.ReactElement;
   title: string;
 }
@@ -288,6 +288,7 @@ const CreateDataSourceVersion: React.FC<CreateDataSourceVersionProps> = ({
       setFileUploadLoader(true);
 
       reader.onload = async (e) => {
+        console.log("File loaded:", e.target?.result);
         try {
           const arrayBuffer = e.target?.result as ArrayBuffer;
 
@@ -502,6 +503,8 @@ const CreateDataSourceVersion: React.FC<CreateDataSourceVersionProps> = ({
                   buttonName={"Upload File"}
                 />
               )}
+            {console.log("fileHeader", fileHeader)}
+
 
               {fileHeader.length > 0 &&
                 settingAttribute.length > 0 &&
@@ -520,7 +523,7 @@ const CreateDataSourceVersion: React.FC<CreateDataSourceVersionProps> = ({
                             fontWeight: "medium",
                           }}
                         >
-                          Entity Setting Attribute 2344
+                          Entity Setting Attribute
                         </TableCell>
                         <TableCell
                           sx={{
@@ -535,7 +538,7 @@ const CreateDataSourceVersion: React.FC<CreateDataSourceVersionProps> = ({
                       </TableRow>
                     </TableHead>
                     <TableBody>
-                     
+
                       {settingAttributeOption.map((option, index) => {
                         const normalize = (str) =>
                           str.replace(/\s+/g, "").toLowerCase();
@@ -544,6 +547,8 @@ const CreateDataSourceVersion: React.FC<CreateDataSourceVersionProps> = ({
                           (header) => normalize(header) === normalize(option)
                         );
 
+                        console.log("option34", option);
+                          console.log("matchedHeader", matchedHeader);
                         return (
                           <TableRow key={index}>
                             <TableCell>{option}</TableCell>

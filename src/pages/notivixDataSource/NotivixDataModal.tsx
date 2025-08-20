@@ -63,7 +63,6 @@ export const NotivixDataModal: React.FC<ModelSectionProps> = ({
   dataSourceId,
   refreshData,
 }) => {
-  console.log("Modal Open:", listCurrentData);
   const createVersionRow = usePost(["createVersionRow"]);
   const updateVersionRow = usePut(["updateVersionRow"]);
 
@@ -145,7 +144,6 @@ export const NotivixDataModal: React.FC<ModelSectionProps> = ({
         }
 
         const payload = convertToPayload();
-        console.log("Payload to be sent:", payload);
 
         if (modalMode === "edit" && formData.id) {
           payload.rowId = formData.id;
@@ -173,12 +171,10 @@ export const NotivixDataModal: React.FC<ModelSectionProps> = ({
             : "Record updated successfully!";
         toast.success(successMessage);
       } else if (modalMode === "filter") {
-        console.log("Applying filter:", formData);
         handleSave(formData);
       }
       handleCloseModal();
     } catch (error) {
-      console.error("Error saving data:", error);
       toast.error(
         `Error: ${error.message || "Something went wrong. Please try again."}`
       );

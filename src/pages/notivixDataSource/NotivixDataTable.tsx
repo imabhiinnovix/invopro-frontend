@@ -15,6 +15,7 @@ import SearchIcon from "@mui/icons-material/Search";
 import FilterListIcon from "@mui/icons-material/FilterList";
 import AddIcon from "@mui/icons-material/Add";
 import { CustomPagination } from "../../components/common/pagination/customPagination";
+import ImportFile from "../../components/common/importFile/ImportFile";
 
 interface TableSectionProps {
   rows: any[];
@@ -33,6 +34,7 @@ interface TableSectionProps {
   handleAddNotification: () => void;
   handleFilter: () => void;
   listCurrentData: any;
+  dataSourceId: string;
 }
 
 export const NotivixDataTable: React.FC<TableSectionProps> = ({
@@ -46,6 +48,7 @@ export const NotivixDataTable: React.FC<TableSectionProps> = ({
   handleSearchChange,
   handleAddNotification,
   handleFilter,
+  dataSourceId,
 }) => {
   const paginationModelMemo = React.useMemo(
     () => ({
@@ -54,7 +57,7 @@ export const NotivixDataTable: React.FC<TableSectionProps> = ({
     }),
     [paginationModel.page, paginationModel.pageSize]
   );
-
+console.log("dataSourceIdin table comp", dataSourceId);
   return (
     <Card
       sx={{
@@ -137,21 +140,29 @@ export const NotivixDataTable: React.FC<TableSectionProps> = ({
             >
               Add
             </Button>
-            <Button
-              variant="contained"
-              startIcon={<AddIcon />}
-              onClick={handleAddNotification}
-              sx={{
-                borderRadius: "8px",
-                backgroundColor: STYLE_GUIDE?.COLORS?.primaryDark || "#3f51b5",
-                color: STYLE_GUIDE?.COLORS?.white || "#ffffff",
-                "&:hover": {
-                  backgroundColor: STYLE_GUIDE?.COLORS?.primary || "#5c6bc0",
-                },
-              }}
-            >
-              Import{" "}
-            </Button>
+
+            <ImportFile
+              title="Import"
+              dataSourceId={dataSourceId}
+              CustomButton={
+                <Button
+                  startIcon={<AddIcon />}
+                  variant="contained"
+                  sx={{
+                    borderRadius: "8px",
+                    backgroundColor:
+                      STYLE_GUIDE?.COLORS?.primaryDark || "#3f51b5",
+                    color: STYLE_GUIDE?.COLORS?.white || "#ffffff",
+                    "&:hover": {
+                      backgroundColor:
+                        STYLE_GUIDE?.COLORS?.primary || "#5c6bc0",
+                    },
+                  }}
+                >
+                  Import
+                </Button>
+              }
+            />
           </Box>
         </Box>
         {rows.length > 0 ? (

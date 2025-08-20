@@ -5,7 +5,7 @@ import { useSelector } from "react-redux";
 import { RootState } from "../../store";
 import { DELETE, GET } from "../../services/apiRoutes";
 import useGet from "../../hooks/useGet";
-import useDelete from "../../hooks/useDelete"; 
+import useDelete from "../../hooks/useDelete";
 import { STYLE_GUIDE } from "../../styles";
 import { NotivixDataTable } from "./NotivixDataTable";
 import { Box, Button, Tooltip, Typography } from "@mui/material";
@@ -15,7 +15,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import { AttributeOptionRequestPayload } from "../../components/atom/attributeOption/types";
 import { NotivixDataModal } from "./NotivixDataModal";
 import { useQueryClient } from "@tanstack/react-query";
-import { toast } from "react-toastify"; 
+import { toast } from "react-toastify";
 
 interface ApiResponse {
   data: any[];
@@ -25,7 +25,7 @@ interface ApiResponse {
 export default function NotivixDataSource() {
   const { id: valueId } = useParams<{ id: string }>();
   const queryClient = useQueryClient();
-  
+console.log("valueId3333", valueId);
   const [rows, setRows] = useState<any[]>([]);
   const [rowCount, setRowCount] = useState(0);
   const [columns, setColumns] = useState<any[]>([]);
@@ -43,13 +43,13 @@ export default function NotivixDataSource() {
     page: 0,
     pageSize: 10,
   });
-  
+
   const { list } = useSelector((state: RootState) => state.dataSource);
   const listCurrentData = list.find((item) => item._id === valueId);
-  
+
   // Create delete API hook
   const deleteVersionRow = useDelete(["deleteVersionRow"]);
-  
+
   // Debounce search input
   useEffect(() => {
     const handler = setTimeout(() => {
@@ -59,7 +59,7 @@ export default function NotivixDataSource() {
       clearTimeout(handler);
     };
   }, [searchValue]);
-  
+
   // Memoize paginationModel
   const paginationModelMemo = useMemo(
     () => ({
@@ -68,7 +68,7 @@ export default function NotivixDataSource() {
     }),
     [paginationModel.page, paginationModel.pageSize]
   );
-  
+
   const sourceVersionData = useGet<ApiResponse>(
     [
       "sourceVersionData",
@@ -84,14 +84,13 @@ export default function NotivixDataSource() {
     }&query=${encodeURIComponent(debouncedSearchValue || "")}`,
     !!valueId
   );
-  
-  const attributeList = useGet<{ success: boolean; data: AttributeOptionRequestPayload[]; }>(
-    [`attributeList`],
-    GET?.Attribute_Option_List + `?paginate=true`,
-  );
-  
-  console.log("Attribute List Data:", attributeList.data);
-  
+
+  const attributeList = useGet<{
+    success: boolean;
+    data: AttributeOptionRequestPayload[];
+  }>([`attributeList`], GET?.Attribute_Option_List + `?paginate=true`);
+
+
   // Function to refresh data after successful save
   const refreshData = useCallback(() => {
     queryClient.invalidateQueries([
@@ -102,12 +101,12 @@ export default function NotivixDataSource() {
       valueId || "",
     ]);
   }, [queryClient, paginationModelMemo, debouncedSearchValue, valueId]);
-  
+
   // Function to switch to edit mode from view mode
   const switchToEditMode = useCallback(() => {
     setModalMode("edit");
   }, []);
-  
+
   // Handler functions
   const handleView = useCallback(
     (id: string) => {
@@ -135,7 +134,7 @@ export default function NotivixDataSource() {
     },
     [sourceVersionData.data]
   );
-  
+
   const handleEdit = useCallback(
     (id: string) => {
       const rawData = sourceVersionData?.data?.data || [];
@@ -162,12 +161,12 @@ export default function NotivixDataSource() {
     },
     [sourceVersionData.data]
   );
-  
+
   const handleDelete = useCallback((id: string) => {
     setDeleteId(id);
     setOpenDialog(true);
   }, []);
-  
+
   const handleAddNotification = useCallback(() => {
     const newFormData: Record<string, any> = { id: "" };
     columns
@@ -179,7 +178,7 @@ export default function NotivixDataSource() {
     setModalMode("add");
     setOpenModal(true);
   }, [columns]);
-  
+
   const handleFilter = useCallback(() => {
     const newFormData: Record<string, any> = { id: "" };
     const filterFields =
@@ -200,45 +199,45 @@ export default function NotivixDataSource() {
     setModalMode("filter");
     setOpenModal(true);
   }, [listCurrentData?.fieldSettings]);
-  
+
   const handleCloseModal = useCallback(() => {
     setOpenModal(false);
     setModalMode(null);
     setFormData({ id: "" });
   }, []);
-  
+
   const handleCloseDialog = useCallback(() => {
     setOpenDialog(false);
     setDeleteId(null);
   }, []);
-  
+
   // Updated handleConfirmDelete to call delete API
   const handleConfirmDelete = useCallback(async () => {
     if (!deleteId || !valueId) {
       toast.error("Missing required information for deletion");
       return;
     }
-    
+
     try {
       await deleteVersionRow.mutateAsync({
-        url: `${DELETE.DELETE_VERSION_ROW}`, 
+        url: `${DELETE.DELETE_VERSION_ROW}`,
         payload: {
           dataSourceId: valueId,
-          ids: [deleteId]
-        }
+          ids: [deleteId],
+        },
       });
-      
+
       toast.success("Record deleted successfully!");
-      
+
       refreshData();
-      
+
       handleCloseDialog();
     } catch (error) {
       console.error("Error deleting record:", error);
       toast.error(`Error: ${error.message || "Failed to delete record"}`);
     }
   }, [deleteId, valueId, refreshData, handleCloseDialog, deleteVersionRow]);
-  
+
   const handleSearchChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const value = e.target.value.slice(0, 200);
@@ -246,7 +245,7 @@ export default function NotivixDataSource() {
     },
     []
   );
-  
+
   const handleSave = useCallback(() => {
     if (modalMode === "add") {
       console.log("Adding new:", formData);
@@ -257,11 +256,11 @@ export default function NotivixDataSource() {
     }
     handleCloseModal();
   }, [formData, modalMode, handleCloseModal]);
-  
+
   useEffect(() => {
     setLoading(sourceVersionData.isLoading);
   }, [sourceVersionData.isLoading]);
-  
+
   useEffect(() => {
     if (sourceVersionData.error) {
       console.error("API error:", sourceVersionData.error);
@@ -270,7 +269,7 @@ export default function NotivixDataSource() {
       setColumns([]);
     }
   }, [sourceVersionData.error]);
-  
+
   useEffect(() => {
     if (sourceVersionData.isLoading || sourceVersionData.error) {
       return;
@@ -343,7 +342,7 @@ export default function NotivixDataSource() {
     setRowCount(totalCount);
     setColumns(columns);
   }, [sourceVersionData.data, listCurrentData?.fieldSettings]);
-  
+
   useEffect(() => {
     if (columns.length === 0) return;
     const hasActionsColumn = columns.some((col) => col.field === "actions");
@@ -397,11 +396,11 @@ export default function NotivixDataSource() {
     };
     setColumns((prev) => [...prev, actionsColumn]);
   }, [columns, handleView, handleEdit, handleDelete]);
-  
+
   if (loading && rows.length === 0) {
     return <Typography>Loading...</Typography>;
   }
-  
+
   return (
     <Box
       sx={{
@@ -422,7 +421,7 @@ export default function NotivixDataSource() {
       >
         {listCurrentData && listCurrentData?.name}
       </Typography>
-      
+
       <NotivixDataTable
         rows={rows}
         columns={columns}
@@ -438,8 +437,9 @@ export default function NotivixDataSource() {
         handleAddNotification={handleAddNotification}
         handleFilter={handleFilter}
         listCurrentData={listCurrentData}
+        dataSourceId={valueId || ""}
       />
-      
+
       <NotivixDataModal
         openModal={openModal}
         modalMode={modalMode}
