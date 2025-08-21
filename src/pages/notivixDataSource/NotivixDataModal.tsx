@@ -65,6 +65,10 @@ export const NotivixDataModal: React.FC<ModelSectionProps> = ({
 }) => {
   const createVersionRow = usePost(["createVersionRow"]);
   const updateVersionRow = usePut(["updateVersionRow"]);
+  const [fieldErrors, setFieldErrors] = React.useState<Record<string, string>>({});
+  const [submitAttempted, setSubmitAttempted] = React.useState(false);
+
+  console.log("formData in modal", listCurrentData);
 
   // Function to validate email format
   const isValidEmail = (email: string) => {
@@ -83,7 +87,6 @@ export const NotivixDataModal: React.FC<ModelSectionProps> = ({
       (attr) => attr._id === attributeId
     );
     if (!attribute || !Array.isArray(attribute.attributeValue)) return [];
-
     return attribute.attributeValue.map((value: string) => ({
       id: value,
       label: value,
@@ -94,7 +97,7 @@ export const NotivixDataModal: React.FC<ModelSectionProps> = ({
     const rowData: Record<string, any> = {};
     const attributes = listCurrentData?.entityId?.attributes || [];
     attributes.forEach((attribute: any) => {
-      const fieldName = attribute.name;
+      const fieldName = attribute.mappingName;
       const fieldType = attribute.type;
       const value = formData[fieldName];
       if (value !== undefined && value !== null && value !== "") {
@@ -113,18 +116,96 @@ export const NotivixDataModal: React.FC<ModelSectionProps> = ({
     };
   };
 
+  const validateRequiredFields = () => {
+    const attributes = listCurrentData?.entityId?.attributes || [];
+    const errors: Record<string, string> = {};
+    
+    attributes.forEach((attribute: any) => {
+      if (attribute.required) {
+        const fieldName = attribute.mappingName;
+        const value = formData[fieldName];
+        
+        // Check if field is empty
+        if (
+          value === undefined || 
+          value === null || 
+          value === "" || 
+          (Array.isArray(value) && value.length === 0) ||
+          (typeof value === 'string' && value.trim() === "")
+        ) {
+          errors[fieldName] = `${attribute.name} is required`;
+        }
+      }
+    });
+    
+    setFieldErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  // Validate a specific field and update errors
+  const validateField = (fieldName: string, value: any) => {
+    const attributes = listCurrentData?.entityId?.attributes || [];
+    const attribute = attributes.find((attr: any) => attr.mappingName === fieldName);
+    
+    if (!attribute) return;
+    
+    const errors = { ...fieldErrors };
+    
+    // Check if field is required and empty
+    if (attribute.required) {
+      if (
+        value === undefined || 
+        value === null || 
+        value === "" || 
+        (Array.isArray(value) && value.length === 0) ||
+        (typeof value === 'string' && value.trim() === "")
+      ) {
+        errors[fieldName] = `${attribute.name} is required`;
+      } else {
+        // Remove error if field is now filled
+        delete errors[fieldName];
+      }
+    }
+    
+    // Check field type validation
+    if (value !== undefined && value !== null && value !== "") {
+      if (attribute.type === "email" && !isValidEmail(value)) {
+        errors[fieldName] = `Please enter a valid email address`;
+      } else if (attribute.type === "number" && !isValidNumber(value)) {
+        errors[fieldName] = `Please enter a valid number`;
+      } else if (attribute.type === "email" && isValidEmail(value) && errors[fieldName]?.includes("email")) {
+        // Remove email error if it's now valid
+        delete errors[fieldName];
+      } else if (attribute.type === "number" && isValidNumber(value) && errors[fieldName]?.includes("number")) {
+        // Remove number error if it's now valid
+        delete errors[fieldName];
+      }
+    }
+    
+    setFieldErrors(errors);
+  };
+
   const handleSaveClick = async () => {
     try {
+      setSubmitAttempted(true);
+      
       if (modalMode === "add" || modalMode === "edit") {
         const attributes = listCurrentData?.entityId?.attributes || [];
         let isValid = true;
         let errorMessage = "";
-
+        
+        // First validate required fields
+        if (!validateRequiredFields()) {
+          toast.error("Please fill in all required fields");
+          return;
+        }
+        
+        // Then validate field types
         for (const attribute of attributes) {
-          const fieldName = attribute.name;
+          const fieldName = attribute.mappingName;
           const fieldType = attribute.type;
           const value = formData[fieldName];
-
+          
           if (value !== undefined && value !== null && value !== "") {
             if (fieldType === "email" && !isValidEmail(value)) {
               isValid = false;
@@ -137,18 +218,17 @@ export const NotivixDataModal: React.FC<ModelSectionProps> = ({
             }
           }
         }
-
+        
         if (!isValid) {
           toast.error(errorMessage);
           return;
         }
-
+        
         const payload = convertToPayload();
-
         if (modalMode === "edit" && formData.id) {
           payload.rowId = formData.id;
         }
-
+        
         if (modalMode === "add") {
           await createVersionRow.mutateAsync({
             url: `${POST.CREATE_VERSION_ROW}`,
@@ -160,11 +240,9 @@ export const NotivixDataModal: React.FC<ModelSectionProps> = ({
             payload,
           });
         }
-
+        
         handleSave(payload);
-
         refreshData();
-
         const successMessage =
           modalMode === "add"
             ? "Record added successfully!"
@@ -173,6 +251,7 @@ export const NotivixDataModal: React.FC<ModelSectionProps> = ({
       } else if (modalMode === "filter") {
         handleSave(formData);
       }
+      
       handleCloseModal();
     } catch (error) {
       toast.error(
@@ -181,10 +260,18 @@ export const NotivixDataModal: React.FC<ModelSectionProps> = ({
     }
   };
 
+  const handleCancel = () => {
+    // Reset validation states when closing the modal
+    setFieldErrors({});
+    setSubmitAttempted(false);
+    handleCloseModal();
+  };
+
   const renderViewField = (attribute: any) => {
-    const fieldName = attribute.name;
+    const fieldName = attribute.mappingName;
     const fieldLabel = attribute.name;
     const value = formData[fieldName] || "-";
+    
     return (
       <Box
         key={fieldName}
@@ -206,6 +293,11 @@ export const NotivixDataModal: React.FC<ModelSectionProps> = ({
           }}
         >
           {fieldLabel}
+          {attribute.required && (
+            <Typography component="span" sx={{ color: STYLE_GUIDE?.COLORS?.primaryDark }}>
+              {" *"}
+            </Typography>
+          )}
         </Typography>
         <Box
           sx={{
@@ -226,13 +318,278 @@ export const NotivixDataModal: React.FC<ModelSectionProps> = ({
     );
   };
 
+  const renderAttributeField = (attribute: any) => {
+    const fieldName = attribute.mappingName;
+    const fieldLabel = attribute.name;
+    const fieldType = attribute.type;
+    const isRequired = attribute.required;
+    const isDisabled = modalMode === "view";
+    const hasError = fieldErrors[fieldName];
+    
+    // Helper function to render label with required indicator
+    const renderLabel = (label: string) => (
+      <React.Fragment>
+        {label}
+        {isRequired && (
+          <Typography component="span" sx={{ color: STYLE_GUIDE?.COLORS?.primaryDark }}>
+            {" *"}
+          </Typography>
+        )}
+      </React.Fragment>
+    );
+
+    // Handle field change with validation
+    const handleFieldChange = (value: any) => {
+      setFormData((prev) => ({
+        ...prev,
+        [fieldName]: value,
+      }));
+      
+      // Validate field on change if submit was attempted
+      if (submitAttempted) {
+        validateField(fieldName, value);
+      }
+    };
+
+    switch (fieldType) {
+      case "boolean":
+        return (
+          <FormControlLabel
+            key={fieldName}
+            control={
+              <Checkbox
+                checked={!!formData[fieldName]}
+                onChange={(e) => handleFieldChange(e.target.checked)}
+                sx={{
+                  color: STYLE_GUIDE?.COLORS?.primaryDark || "#3f51b5",
+                }}
+              />
+            }
+            label={renderLabel(fieldLabel)}
+            sx={{ mb: 1 }}
+          />
+        );
+        
+      case "option":
+        const optionOptions = getOptionsForAttribute(
+          attribute.optionAttributeId
+        );
+        const selectedOption = optionOptions.find(
+          (option) => option.id === formData[fieldName]
+        );
+        const isReference = !!attribute.referenceEntitySetting; 
+        return (
+          <Autocomplete
+            freeSolo={!isReference}
+            key={fieldName}
+            options={optionOptions}
+            getOptionLabel={(option) => {
+              if (typeof option === "string") {
+                return option;
+              }
+              return option.label || "";
+            }}
+            value={selectedOption || formData[fieldName] || ""}
+            onChange={(e, value) => {
+              if (typeof value === "string") {
+                handleFieldChange(value);
+              } else if (value && value.id) {
+                handleFieldChange(value.id);
+              } else {
+                handleFieldChange("");
+              }
+            }}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label={renderLabel(fieldLabel)}
+                variant="outlined"
+                fullWidth
+                disabled={isDisabled}
+                error={!!fieldErrors[fieldName]}
+                helperText={fieldErrors[fieldName] || ""}
+                sx={{ "& .MuiOutlinedInput-root": { borderRadius: "8px" } }}
+                placeholder={
+                  isReference ? "Select option" : "Type or select"
+                }
+              />
+            )}
+            renderOption={(props, option) => {
+              return (
+                <li {...props}>
+                  {typeof option === "string" ? option : option.label}
+                </li>
+              );
+            }}
+            renderTags={(value, getTagProps) => {
+              if (!value) return null;
+              return (
+                <Chip
+                  label={typeof value === "string" ? value : value.label}
+                  {...getTagProps({})}
+                  size="small"
+                  onDelete={() => {
+                    handleFieldChange("");
+                  }}
+                />
+              );
+            }}
+          />
+        );
+        
+      case "multioption":
+        const multioptionOptions = getOptionsForAttribute(
+          attribute.optionAttributeId
+        );
+        const isReferenceMulti = !!attribute.referenceEntitySetting; 
+        const selectedValues = formData[fieldName]
+          ? formData[fieldName].split(",").map((val: string) => val.trim())
+          : [];
+        const selectedOptions = selectedValues.map((val) => {
+          const option = multioptionOptions.find((opt) => opt.id === val);
+          return option || { id: val, label: val };
+        });
+        return (
+          <Autocomplete
+            multiple
+            freeSolo={!isReferenceMulti}
+            key={fieldName}
+            options={multioptionOptions}
+            getOptionLabel={(option) => {
+              if (typeof option === "string") {
+                return option;
+              }
+              return option.label || "";
+            }}
+            value={selectedOptions}
+            onChange={(e, value) => {
+              const values = value.map((item) => {
+                if (typeof item === "string") {
+                  return item;
+                }
+                return item.id;
+              });
+              handleFieldChange(values.join(","));
+            }}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label={renderLabel(fieldLabel)}
+                variant="outlined"
+                fullWidth
+                disabled={isDisabled}
+                error={!!fieldErrors[fieldName]}
+                helperText={fieldErrors[fieldName] || ""}
+                sx={{ "& .MuiOutlinedInput-root": { borderRadius: "8px" } }}
+                placeholder={
+                  isReferenceMulti ? "Select option" : "Type or select"
+                }
+              />
+            )}
+            renderTags={(value, getTagProps) =>
+              value.map((option, index) => (
+                <Chip
+                  key={typeof option === "string" ? option : option.id}
+                  label={typeof option === "string" ? option : option.label}
+                  {...getTagProps({ index })}
+                  size="small"
+                />
+              ))
+            }
+          />
+        );
+        
+      case "date":
+        return (
+          <LocalizationProvider key={fieldName} dateAdapter={AdapterDayjs}>
+            <DatePicker
+              label={renderLabel(fieldLabel)}
+              value={
+                formData[fieldName] ? dayjs(formData[fieldName]) : null
+              }
+              onChange={(date) =>
+                handleFieldChange(date ? date.toISOString() : "")
+              }
+              disabled={isDisabled}
+              slotProps={{
+                textField: {
+                  variant: "outlined",
+                  fullWidth: true,
+                  error: !!fieldErrors[fieldName],
+                  helperText: fieldErrors[fieldName] || "",
+                  sx: {
+                    "& .MuiOutlinedInput-root": { borderRadius: "8px" },
+                  },
+                },
+              }}
+            />
+          </LocalizationProvider>
+        );
+        
+      case "number":
+        return (
+          <TextField
+            key={fieldName}
+            label={renderLabel(fieldLabel)}
+            type="number"
+            value={formData[fieldName] || ""}
+            onChange={(e) => {
+              const value = e.target.value;
+              if (value === "" || isValidNumber(value)) {
+                handleFieldChange(value);
+              }
+            }}
+            variant="outlined"
+            fullWidth
+            disabled={isDisabled}
+            error={!!fieldErrors[fieldName]}
+            helperText={fieldErrors[fieldName] || ""}
+            sx={{ "& .MuiOutlinedInput-root": { borderRadius: "8px" } }}
+          />
+        );
+        
+      case "email":
+        return (
+          <TextField
+            key={fieldName}
+            label={renderLabel(fieldLabel)}
+            type="email"
+            value={formData[fieldName] || ""}
+            onChange={(e) => handleFieldChange(e.target.value)}
+            variant="outlined"
+            fullWidth
+            disabled={isDisabled}
+            error={!!fieldErrors[fieldName]}
+            helperText={fieldErrors[fieldName] || ""}
+            sx={{ "& .MuiOutlinedInput-root": { borderRadius: "8px" } }}
+          />
+        );
+        
+      default:
+        return (
+          <TextField
+            key={fieldName}
+            label={renderLabel(fieldLabel)}
+            value={formData[fieldName] || ""}
+            onChange={(e) => handleFieldChange(e.target.value)}
+            variant="outlined"
+            fullWidth
+            disabled={isDisabled}
+            error={!!fieldErrors[fieldName]}
+            helperText={fieldErrors[fieldName] || ""}
+            sx={{ "& .MuiOutlinedInput-root": { borderRadius: "8px" } }}
+          />
+        );
+    }
+  };
+
   const renderModalFields = () => {
     if (modalMode === "view" || modalMode === "edit" || modalMode === "add") {
       const attributes = listCurrentData?.entityId?.attributes || [];
       if (attributes.length === 0) {
         return <Typography>No attributes available to display.</Typography>;
       }
-
+      
       if (modalMode === "view") {
         const attributePairs = [];
         for (let i = 0; i < attributes.length; i += 2) {
@@ -253,7 +610,7 @@ export const NotivixDataModal: React.FC<ModelSectionProps> = ({
           </Box>
         );
       }
-
+      
       // Split attributes into two arrays for two-column layout (for edit and add modes)
       const firstColumnAttributes = attributes.filter(
         (_, index) => index % 2 === 0
@@ -261,292 +618,7 @@ export const NotivixDataModal: React.FC<ModelSectionProps> = ({
       const secondColumnAttributes = attributes.filter(
         (_, index) => index % 2 === 1
       );
-
-      const renderAttributeField = (attribute: any) => {
-        const fieldName = attribute.name;
-        const fieldLabel = attribute.name;
-        const fieldType = attribute.type;
-        const isDisabled = modalMode === "view";
-
-        switch (fieldType) {
-          case "boolean":
-            return (
-              <FormControlLabel
-                key={fieldName}
-                control={
-                  <Checkbox
-                    checked={!!formData[fieldName]}
-                    onChange={(e) =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        [fieldName]: e.target.checked,
-                      }))
-                    }
-                    sx={{
-                      color: STYLE_GUIDE?.COLORS?.primaryDark || "#3f51b5",
-                    }}
-                  />
-                }
-                label={fieldLabel}
-                sx={{ mb: 1 }}
-              />
-            );
-
-          case "option":
-            const optionOptions = getOptionsForAttribute(
-              attribute.optionAttributeId
-            );
-            const selectedOption = optionOptions.find(
-              (option) => option.id === formData[fieldName]
-            );
-            const isReference = !!attribute.referenceEntitySetting; // agar referenceEntitySetting hai to true
-
-            return (
-              <Autocomplete
-                freeSolo={!isReference}
-                key={fieldName}
-                options={optionOptions}
-                getOptionLabel={(option) => {
-                  if (typeof option === "string") {
-                    return option;
-                  }
-                  return option.label || "";
-                }}
-                value={selectedOption || formData[fieldName] || ""}
-                onChange={(e, value) => {
-                  if (typeof value === "string") {
-                    setFormData((prev) => ({
-                      ...prev,
-                      [fieldName]: value,
-                    }));
-                  } else if (value && value.id) {
-                    setFormData((prev) => ({
-                      ...prev,
-                      [fieldName]: value.id,
-                    }));
-                  } else {
-                    setFormData((prev) => ({
-                      ...prev,
-                      [fieldName]: "",
-                    }));
-                  }
-                }}
-                renderInput={(params) => (
-                  <TextField
-                    {...params}
-                    label={fieldLabel}
-                    variant="outlined"
-                    fullWidth
-                    disabled={isDisabled}
-                    sx={{ "& .MuiOutlinedInput-root": { borderRadius: "8px" } }}
-                    placeholder={
-                      isReference ? "Select option" : "Type or select"
-                    }
-                  />
-                )}
-                renderOption={(props, option) => {
-                  return (
-                    <li {...props}>
-                      {typeof option === "string" ? option : option.label}
-                    </li>
-                  );
-                }}
-                renderTags={(value, getTagProps) => {
-                  if (!value) return null;
-                  return (
-                    <Chip
-                      label={typeof value === "string" ? value : value.label}
-                      {...getTagProps({})}
-                      size="small"
-                      onDelete={() => {
-                        setFormData((prev) => ({
-                          ...prev,
-                          [fieldName]: "",
-                        }));
-                      }}
-                    />
-                  );
-                }}
-              />
-            );
-
-          case "multioption":
-            const multioptionOptions = getOptionsForAttribute(
-              attribute.optionAttributeId
-            );
-            const isReferenceMulti = !!attribute.referenceEntitySetting; // agar referenceEntitySetting hai to true
-
-            const selectedValues = formData[fieldName]
-              ? formData[fieldName].split(",").map((val: string) => val.trim())
-              : [];
-            const selectedOptions = selectedValues.map((val) => {
-              const option = multioptionOptions.find((opt) => opt.id === val);
-              return option || { id: val, label: val };
-            });
-            // const isReference = !!attribute.referenceEntitySetting;
-            return (
-              <Autocomplete
-                multiple
-                freeSolo={!isReferenceMulti}
-                key={fieldName}
-                options={multioptionOptions}
-                getOptionLabel={(option) => {
-                  if (typeof option === "string") {
-                    return option;
-                  }
-                  return option.label || "";
-                }}
-                value={selectedOptions}
-                onChange={(e, value) => {
-                  const values = value.map((item) => {
-                    if (typeof item === "string") {
-                      return item;
-                    }
-                    return item.id;
-                  });
-                  setFormData((prev) => ({
-                    ...prev,
-                    [fieldName]: values.join(","),
-                  }));
-                }}
-                renderInput={(params) => (
-                  <TextField
-                    {...params}
-                    label={fieldLabel}
-                    variant="outlined"
-                    fullWidth
-                    disabled={isDisabled}
-                    sx={{ "& .MuiOutlinedInput-root": { borderRadius: "8px" } }}
-                    placeholder={
-                      isReferenceMulti ? "Select option" : "Type or select"
-                    }
-                  />
-                )}
-                renderTags={(value, getTagProps) =>
-                  value.map((option, index) => (
-                    <Chip
-                      key={typeof option === "string" ? option : option.id}
-                      label={typeof option === "string" ? option : option.label}
-                      {...getTagProps({ index })}
-                      size="small"
-                    />
-                  ))
-                }
-              />
-            );
-
-          case "date":
-            return (
-              <LocalizationProvider key={fieldName} dateAdapter={AdapterDayjs}>
-                <DatePicker
-                  label={fieldLabel}
-                  value={
-                    formData[fieldName] ? dayjs(formData[fieldName]) : null
-                  }
-                  onChange={(date) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      [fieldName]: date ? date.toISOString() : "",
-                    }))
-                  }
-                  disabled={isDisabled}
-                  slotProps={{
-                    textField: {
-                      variant: "outlined",
-                      fullWidth: true,
-                      sx: {
-                        "& .MuiOutlinedInput-root": { borderRadius: "8px" },
-                      },
-                    },
-                  }}
-                />
-              </LocalizationProvider>
-            );
-
-          case "number":
-            return (
-              <TextField
-                key={fieldName}
-                label={fieldLabel}
-                type="number"
-                value={formData[fieldName] || ""}
-                onChange={(e) => {
-                  const value = e.target.value;
-                  if (value === "" || isValidNumber(value)) {
-                    setFormData((prev) => ({
-                      ...prev,
-                      [fieldName]: value,
-                    }));
-                  }
-                }}
-                variant="outlined"
-                fullWidth
-                disabled={isDisabled}
-                error={
-                  formData[fieldName] !== "" &&
-                  !isValidNumber(formData[fieldName])
-                }
-                helperText={
-                  formData[fieldName] !== "" &&
-                  !isValidNumber(formData[fieldName])
-                    ? "Please enter a valid number"
-                    : ""
-                }
-                sx={{ "& .MuiOutlinedInput-root": { borderRadius: "8px" } }}
-              />
-            );
-
-          case "email":
-            return (
-              <TextField
-                key={fieldName}
-                label={fieldLabel}
-                type="email"
-                value={formData[fieldName] || ""}
-                onChange={(e) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    [fieldName]: e.target.value,
-                  }))
-                }
-                variant="outlined"
-                fullWidth
-                disabled={isDisabled}
-                error={
-                  formData[fieldName] !== "" &&
-                  !isValidEmail(formData[fieldName])
-                }
-                helperText={
-                  formData[fieldName] !== "" &&
-                  !isValidEmail(formData[fieldName])
-                    ? "Please enter a valid email address"
-                    : ""
-                }
-                sx={{ "& .MuiOutlinedInput-root": { borderRadius: "8px" } }}
-              />
-            );
-
-          default:
-            return (
-              <TextField
-                key={fieldName}
-                label={fieldLabel}
-                value={formData[fieldName] || ""}
-                onChange={(e) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    [fieldName]: e.target.value,
-                  }))
-                }
-                variant="outlined"
-                fullWidth
-                disabled={isDisabled}
-                sx={{ "& .MuiOutlinedInput-root": { borderRadius: "8px" } }}
-              />
-            );
-        }
-      };
-
+      
       return (
         <>
           {/* First column */}
@@ -599,7 +671,7 @@ export const NotivixDataModal: React.FC<ModelSectionProps> = ({
             justifyContent: "center",
             zIndex: 1300,
           }}
-          onClick={handleCloseModal}
+          onClick={handleCancel}
         >
           <Box
             sx={{
@@ -647,7 +719,7 @@ export const NotivixDataModal: React.FC<ModelSectionProps> = ({
                 )} */}
               </Box>
               <IconButton
-                onClick={handleCloseModal}
+                onClick={handleCancel}
                 sx={{
                   color: STYLE_GUIDE?.COLORS?.textSecondary || "#666",
                 }}
@@ -676,7 +748,7 @@ export const NotivixDataModal: React.FC<ModelSectionProps> = ({
             >
               <Button
                 variant="outlined"
-                onClick={handleCloseModal}
+                onClick={handleCancel}
                 sx={{
                   borderRadius: "8px",
                   borderColor: STYLE_GUIDE?.COLORS?.divider || "#e0e0e0",
@@ -707,17 +779,15 @@ export const NotivixDataModal: React.FC<ModelSectionProps> = ({
           </Box>
         </Box>
       )}
-
       <FilterNotivixDataModal
         open={openModal && modalMode === "filter"}
-        onClose={handleCloseModal}
+        onClose={handleCancel}
         onApply={handleSaveClick}
         formData={formData}
         listCurrentData={listCurrentData}
         sourceVersionData={sourceVersionData}
         setFormData={setFormData}
       />
-
       <DeleteConfirmationDialog
         open={openDialog}
         onClose={handleCloseDialog}
