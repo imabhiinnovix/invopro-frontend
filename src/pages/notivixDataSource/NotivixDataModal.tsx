@@ -97,7 +97,7 @@ export const NotivixDataModal: React.FC<ModelSectionProps> = ({
     const rowData: Record<string, any> = {};
     const attributes = listCurrentData?.entityId?.attributes || [];
     attributes.forEach((attribute: any) => {
-      const fieldName = attribute.mappingName;
+      const fieldName = attribute.name;
       const fieldType = attribute.type;
       const value = formData[fieldName];
       if (value !== undefined && value !== null && value !== "") {
@@ -122,7 +122,7 @@ export const NotivixDataModal: React.FC<ModelSectionProps> = ({
     
     attributes.forEach((attribute: any) => {
       if (attribute.required) {
-        const fieldName = attribute.mappingName;
+        const fieldName = attribute.name;
         const value = formData[fieldName];
         
         // Check if field is empty
@@ -145,7 +145,7 @@ export const NotivixDataModal: React.FC<ModelSectionProps> = ({
   // Validate a specific field and update errors
   const validateField = (fieldName: string, value: any) => {
     const attributes = listCurrentData?.entityId?.attributes || [];
-    const attribute = attributes.find((attr: any) => attr.mappingName === fieldName);
+    const attribute = attributes.find((attr: any) => attr.name === fieldName);
     
     if (!attribute) return;
     
@@ -202,7 +202,7 @@ export const NotivixDataModal: React.FC<ModelSectionProps> = ({
         
         // Then validate field types
         for (const attribute of attributes) {
-          const fieldName = attribute.mappingName;
+          const fieldName = attribute.name;
           const fieldType = attribute.type;
           const value = formData[fieldName];
           
@@ -268,7 +268,7 @@ export const NotivixDataModal: React.FC<ModelSectionProps> = ({
   };
 
   const renderViewField = (attribute: any) => {
-    const fieldName = attribute.mappingName;
+    const fieldName = attribute.name;
     const fieldLabel = attribute.name;
     const value = formData[fieldName] || "-";
     
@@ -319,7 +319,7 @@ export const NotivixDataModal: React.FC<ModelSectionProps> = ({
   };
 
   const renderAttributeField = (attribute: any) => {
-    const fieldName = attribute.mappingName;
+    const fieldName = attribute.name;
     const fieldLabel = attribute.name;
     const fieldType = attribute.type;
     const isRequired = attribute.required;
