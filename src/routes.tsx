@@ -1,37 +1,37 @@
-import { Route, Routes, Navigate } from 'react-router-dom';
-import Login from './pages/login';
-import SendOTP from './pages/loginOTP/sendOTP';
-import VerifyOTP from './pages/loginOTP/verifyOTP';
-import AuthProtect from './Auth/AuthProtect';
-import SuperAdminProtect from './Auth/SuperAdminProtect';
-import AdminSuperAdminProtect from './Auth/AdminSuperAdminProtect';
-import Dashboard from './pages/dashboard';
-import CommonLayout from './components/molecule/layout/commonLayout';
-import AttributeOption from './pages/attributeOption';
-import Report from './pages/report';
-import DataSources from './pages/dataSources';
-import DashboardOverview from './pages/dashboard/overview';
-import DashboardAnalytics from './pages/dashboard/analytics';
-import CreateTheme from './pages/createTheme';
-import DashboardThemePage from './pages/dashboardTheme';
-import { getAuthToken } from './utils/handleLocalStorage';
-import NaturalLanguage from './pages/naturalLanguage/NaturalLanguage';
-import Entity from './pages/entity';
-import DataSource from './pages/dataSource';
-import AIInsightPage from './pages/aiInsight';
-import DataSourceVersion from './pages/dataSourceVersion';
-import ReportSettings from './pages/report-settings';
+import { Route, Routes, Navigate } from "react-router-dom";
+import Login from "./pages/login";
+import SendOTP from "./pages/loginOTP/sendOTP";
+import VerifyOTP from "./pages/loginOTP/verifyOTP";
+import AuthProtect from "./Auth/AuthProtect";
+import SuperAdminProtect from "./Auth/SuperAdminProtect";
+import AdminSuperAdminProtect from "./Auth/AdminSuperAdminProtect";
+import Dashboard from "./pages/dashboard";
+import CommonLayout from "./components/molecule/layout/commonLayout";
+import AttributeOption from "./pages/attributeOption";
+import Report from "./pages/report";
+import DataSources from "./pages/dataSources";
+import DashboardOverview from "./pages/dashboard/overview";
+import DashboardAnalytics from "./pages/dashboard/analytics";
+import CreateTheme from "./pages/createTheme";
+import DashboardThemePage from "./pages/dashboardTheme";
+import { getAuthToken } from "./utils/handleLocalStorage";
+import NaturalLanguage from "./pages/naturalLanguage/NaturalLanguage";
+import Entity from "./pages/entity";
+import DataSource from "./pages/dataSource";
+import AIInsightPage from "./pages/aiInsight";
+import DataSourceVersion from "./pages/dataSourceVersion";
+import ReportSettings from "./pages/report-settings";
 import Users from "./pages/users";
 import Roles from "./pages/roles";
 import Organization from "./pages/organization/organization";
-import Permissions from './pages/permissions';
-import NotivixDashboard from './pages/notivixDashboard';
-import AddNotificationTypes from './pages/notification/AddNotificationTypes';
-import Notification from './pages/notification';
-import NotivixDataSource from './pages/notivixDataSource';
-import EditNotificationTypes from './pages/notification/EditNotificationTypes';
-import { ValidationError } from 'yup';
-import ValidationErrors from './pages/validationErrors';
+import Permissions from "./pages/permissions";
+import NotivixDashboard from "./pages/notivixDashboard";
+import AddNotificationTypes from "./pages/notification/AddNotificationTypes";
+import Notification from "./pages/notification";
+import NotivixDataSource from "./pages/notivixDataSource";
+import EditNotificationTypes from "./pages/notification/EditNotificationTypes";
+import { ValidationError } from "yup";
+import ValidationErrors from "./pages/validationErrors";
 
 const AppRoutes = () => {
   const token = getAuthToken();
@@ -68,42 +68,34 @@ const AppRoutes = () => {
           {/* // Notivix routes */}
           <Route path="/notivix/dashboard" element={<NotivixDashboard />} />
           <Route path="/notivix/dashboard/:id" element={<NotivixDashboard />} />
-           <Route
-            path="/notivix/notification"
-            element={<Notification />}
-          />
+          <Route path="/notivix/notification" element={<Notification />} />
           <Route
             path="/notivix/notification-types"
             element={<Notification />}
           />
-            <Route
+          <Route
             path="/notivix/notification-types/add"
             element={<AddNotificationTypes />}
           />
-           <Route
+          <Route
             path="/notivix/notification-types/edit/:id"
             element={<EditNotificationTypes />}
           />
-           <Route
-            path="/notivix/settings/users"
-            element={<Users />}
-          />
-           <Route
-            path="/notivix/permissions"
-            element={<Permissions />}
-          />
-          <Route
-            path="/notivix/settings/roles"
-            element={<Roles />}
-          />
+          <Route path="/notivix/settings/users" element={<Users />} />
+          <Route path="/notivix/permissions" element={<Permissions />} />
+          <Route path="/notivix/settings/roles" element={<Roles />} />
           <Route
             path="/notivix/settings/organization"
             element={<Organization />}
           />
-          <Route path="/notivix/data-source/:id" element={<NotivixDataSource />} />
-                    <Route path="/notivix/validation-errors" element={<ValidationErrors />} />
-
-
+          <Route
+            path="/notivix/data-source/:id"
+            element={<NotivixDataSource />}
+          />
+          <Route
+            path="/notivix/validation-errors"
+            element={<ValidationErrors />}
+          />
         </Route>
       </Route>
 
@@ -118,7 +110,7 @@ const AppRoutes = () => {
       {/* Admin and Super Admin Protected Routes */}
       <Route element={<AdminSuperAdminProtect />}>
         <Route element={<CommonLayout />}>
-        <Route path="/create-theme" element={<CreateTheme />} />
+          <Route path="/create-theme" element={<CreateTheme />} />
         </Route>
       </Route>
 
