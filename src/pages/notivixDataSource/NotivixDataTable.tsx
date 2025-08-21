@@ -141,7 +141,7 @@ console.log("dataSourceIdin table comp", dataSourceId);
               Add
             </Button>
 
-            <ImportFile
+            {/* <ImportFile
               title="Import"
               dataSourceId={dataSourceId}
               CustomButton={
@@ -162,7 +162,7 @@ console.log("dataSourceIdin table comp", dataSourceId);
                   Import
                 </Button>
               }
-            />
+            /> */}
           </Box>
         </Box>
         {rows.length > 0 ? (
