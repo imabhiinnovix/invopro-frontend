@@ -68,7 +68,6 @@ export const NotivixDataModal: React.FC<ModelSectionProps> = ({
   const [fieldErrors, setFieldErrors] = React.useState<Record<string, string>>({});
   const [submitAttempted, setSubmitAttempted] = React.useState(false);
 
-  console.log("formData in modal", listCurrentData);
 
   // Function to validate email format
   const isValidEmail = (email: string) => {

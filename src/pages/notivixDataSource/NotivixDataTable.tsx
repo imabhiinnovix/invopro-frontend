@@ -57,7 +57,6 @@ export const NotivixDataTable: React.FC<TableSectionProps> = ({
     }),
     [paginationModel.page, paginationModel.pageSize]
   );
-console.log("dataSourceIdin table comp", dataSourceId);
   return (
     <Card
       sx={{
