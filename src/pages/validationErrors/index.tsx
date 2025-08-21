@@ -14,7 +14,6 @@ import {
 import SearchIcon from "@mui/icons-material/Search";
 import AddIcon from "@mui/icons-material/Add";
 
-import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -144,8 +143,7 @@ export default function ValidationErrors() {
   const [modalMode, setModalMode] = useState<
     "add" | "edit" | "view" | "filter" | null
   >(null);
-  const [editRoleId, setEditRoleId] = useState<string | null>(null);
-  const [deleteId, setDeleteId] = useState<string | null>(null);
+
   const [searchValue, setSearchValue] = useState("");
   const [paginationModel, setPaginationModel] = useState({
     page: 0,

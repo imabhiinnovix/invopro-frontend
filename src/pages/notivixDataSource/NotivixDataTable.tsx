@@ -140,7 +140,7 @@ export const NotivixDataTable: React.FC<TableSectionProps> = ({
               Add
             </Button>
 
-            {/* <ImportFile
+            <ImportFile
               title="Import"
               dataSourceId={dataSourceId}
               CustomButton={
@@ -161,7 +161,7 @@ export const NotivixDataTable: React.FC<TableSectionProps> = ({
                   Import
                 </Button>
               }
-            /> */}
+            />
           </Box>
         </Box>
         {rows.length > 0 ? (

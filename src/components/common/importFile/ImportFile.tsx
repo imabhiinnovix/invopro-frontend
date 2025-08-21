@@ -334,7 +334,7 @@ const ImportFile: React.FC<ImportFileProps> = ({
     setOpen(false);
   };
 
-  const onSubmit = (formData: FormValues) => {
+  const onSubmit = async(formData: FormValues) => {
     const reverseMap: Record<string, string[]> = {};
     Object.entries(formData.mappings).forEach(([key, values]) => {
       if (Array.isArray(values)) {
@@ -394,10 +394,20 @@ const ImportFile: React.FC<ImportFileProps> = ({
       };
      
       
-      mutate({
-        url: `${POST.FILE_UPLOAD}`,
-        payload,
-      });
+   
+    try {
+    const response = await mutate({
+      url: `${POST.FILE_UPLOAD}`,
+      payload,
+    });
+
+    console.log("✅ Upload Response:", response);
+
+    toast.success("File uploaded successfully!");
+  } catch (error) {
+    console.error("❌ Upload Error:", error);
+    toast.error("Upload failed!");
+  }
     }
   };
 
