@@ -1,6 +1,3 @@
-
-
-
 import React, { useEffect, useState } from "react";
 import {
   Button,
@@ -49,7 +46,7 @@ interface FormValues {
   versionValue: string;
   versionName: string;
   files: FileList | null;
-  mappings: { [key: string]: string[] }; // Changed to string[] for multiple selections
+  mappings: { [key: string]: string[] }; 
   separator: { [key: string]: string };
 }
 
@@ -257,22 +254,19 @@ const ImportFile: React.FC<ImportFileProps> = ({
       dataSourceId: dataSourceId || "",
       versionName: "",
       files: null,
-      mappings: {}, // Initialize as empty object
+      mappings: {}, 
       separator: {},
     },
   });
 
-  // Set dataSourceId when dialog opens or when dataSourceId prop changes
   useEffect(() => {
     if (open && dataSourceId) {
       setValue("dataSourceId", dataSourceId);
     }
   }, [open, dataSourceId, setValue]);
 
-  // Reset all state when dialog closes
   useEffect(() => {
     if (!open) {
-      // Clear all state variables
       setVersionName("");
       setFiles([]);
       setFileNames([]);
@@ -281,7 +275,6 @@ const ImportFile: React.FC<ImportFileProps> = ({
       setSettingAttribute([]);
       setSettingAttributeOption([]);
       
-      // Reset form
       reset({
         dataSourceId: dataSourceId || "",
         versionName: "",
@@ -342,7 +335,6 @@ const ImportFile: React.FC<ImportFileProps> = ({
   };
 
   const onSubmit = (formData: FormValues) => {
-    // Check for duplicate mappings
     const reverseMap: Record<string, string[]> = {};
     Object.entries(formData.mappings).forEach(([key, values]) => {
       if (Array.isArray(values)) {
@@ -356,12 +348,7 @@ const ImportFile: React.FC<ImportFileProps> = ({
       }
     });
     
-    // const duplicateEntries = Object.entries(reverseMap)
-    //   .filter(([, keys]) => keys.length > 1)
-    //   .map(
-    //     ([value, keys]) =>
-    //       `Value "${value}" is mapped to multiple attributes: ${keys.join(", ")}`
-    //   );
+  
     
     const mandatoryAttributes = settingAttribute
       .filter((attr) => attr.required === "Mandatory")
@@ -370,12 +357,7 @@ const ImportFile: React.FC<ImportFileProps> = ({
     const missingMandatoryAttributes = mandatoryAttributes.filter(
       (attr) => !formData.mappings[attr] || formData.mappings[attr].length === 0
     );
-    
-    // if (duplicateEntries.length > 0) {
-    //   duplicateEntries.forEach((message) => {
-    //     toast.error(message);
-    //   });
-    // }
+  
     
     if (missingMandatoryAttributes.length > 0) {
       missingMandatoryAttributes.forEach((attr) => {
@@ -387,8 +369,7 @@ const ImportFile: React.FC<ImportFileProps> = ({
     
     if (
       missingMandatoryAttributes.length === 0 
-      // &&
-      // duplicateEntries.length === 0
+   
     ) {
       if (files.length === 0) {
         toast.error("Please upload at least one file");
@@ -399,13 +380,11 @@ const ImportFile: React.FC<ImportFileProps> = ({
       const formattedVersion =
         DateTime.fromISO(versionValue).toFormat("yyyy-LL");
       
-      // Create a FileList-like object for the files
       const dataTransfer = new DataTransfer();
       files.forEach(file => dataTransfer.items.add(file));
       const fileList = dataTransfer.files;
       
       const payload = {
-        files: files,
         operation: "dataSourceVersion",
         ...formData,
         files: fileList,
@@ -413,9 +392,7 @@ const ImportFile: React.FC<ImportFileProps> = ({
         separator: JSON.stringify(formData.separator),
         versionValue: formattedVersion,
       };
-      
-      // Log the payload to console
-      console.log("Payload to be sent:", payload);
+     
       
       mutate({
         url: `${POST.FILE_UPLOAD}`,
@@ -433,11 +410,9 @@ const ImportFile: React.FC<ImportFileProps> = ({
     newFileNames.splice(index, 1);
     setFileNames(newFileNames);
     
-    // If no files left, clear headers
     if (newFiles.length === 0) {
       setFileHeaders([]);
     } else {
-      // Re-process headers for remaining files
       processFilesForHeaders(newFiles);
     }
   };
@@ -501,18 +476,15 @@ const ImportFile: React.FC<ImportFileProps> = ({
     processFilesForHeaders(excelFiles);
   };
 
-  // Auto-match headers to attributes when fileHeaders are updated
   useEffect(() => {
     if (fileHeaders.length > 0 && settingAttributeOption.length > 0) {
       const currentMappings = watch("mappings") || {};
       
       settingAttributeOption.forEach(attr => {
-        // Skip if already mapped
         if (currentMappings[attr] && currentMappings[attr].length > 0) {
           return;
         }
         
-        // Try to find a matching header
         const normalize = (str: string) => str.replace(/\s+/g, "").toLowerCase();
         const matchedHeader = fileHeaders.find(
           (header) => normalize(header) === normalize(attr)
