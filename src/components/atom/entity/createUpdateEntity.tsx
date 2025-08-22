@@ -95,6 +95,12 @@ const AttributeField: React.FC<AttributeFieldProps> = ({
   setValue,
   fileUploadLoader,
 }) => {
+   const watchedType = useWatch({
+    control,
+    name: `attributes.${index}.type`,
+    defaultValue: attribute.type || ""
+  });
+
   const refEntityId = useWatch({
     control,
     name: `attributes.${index}.refEntityId`,
@@ -237,7 +243,7 @@ const AttributeField: React.FC<AttributeFieldProps> = ({
           defaultValue={attribute.type || ""}
         />
         {["option", "multioption", "text-with-option"].includes(
-          attribute.type || ""
+        watchedType
         ) && (
           <CommonDropdownSearch
             control={control}
