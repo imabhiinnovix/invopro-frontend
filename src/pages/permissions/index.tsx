@@ -35,7 +35,7 @@ import usePost from "../../hooks/usePost";
 import usePut from "../../hooks/usePut";
 import useDelete from "../../hooks/useDelete";
 import { GET, POST, PUT, DELETE } from "../../services/apiRoutes";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../reducers";
 import { CustomPagination } from "../../components/common/pagination/customPagination";
 import {
@@ -45,6 +45,9 @@ import {
   PermissionPostPayload,
   PermissionPostResponse,
 } from "../../types/permissions";
+import { UserResponse } from "../../context/AuthContext";
+import { useQueryClient } from "@tanstack/react-query";
+import { setPermissions } from "../../reducers/userSlice";
 
 const columns: GridColDef[] = [
   {
@@ -153,6 +156,8 @@ export default function Permissions() {
     page: 0,
     pageSize: 10,
   });
+  const queryClient = useQueryClient();
+  const dispatch = useDispatch();
   const [debouncedSearchValue, setDebouncedSearchValue] = useState(searchValue);
   const [filterValues, setFilterValues] = useState({
     name: "",
@@ -192,7 +197,7 @@ export default function Permissions() {
     `${GET?.PERMISSION_LIST}?page=${paginationModel.page + 1}&limit=${perPageItem}&search=${encodeURIComponent(debouncedSearchValue)}&name=${encodeURIComponent(filterValues.name)}&dataSourceId=${encodeURIComponent(filterValues.dataSourceId)}&resourceType=${encodeURIComponent(filterValues.resourceType)}`,
     true
   );
-// Get Datasource
+  // Get Datasource
   const dataSourceApiList = useGet<any>(
     ["dataSourceApiList"],
     `${GET?.DATASOURCE_API_LIST}?isAllowPermission=true&paginate=false`,
@@ -200,16 +205,29 @@ export default function Permissions() {
   );
   const dataSource = dataSourceApiList?.data?.data;
 
+  const userDetailsAPI = useGet<UserResponse>(
+    ["userDetails"],
+    GET.USER_DETAILS
+  );
+
   // POST API
   const createPermission = usePost<
     PermissionPostPayload,
     PermissionPostResponse
   >(
     ["createPermission"],
-    (data) => {
+    async (data) => {
       if (data?.success) {
         setPaginationModel({ ...paginationModel, page: 0 });
         permissionList.refetch();
+
+        queryClient.invalidateQueries({ queryKey: ["userDetails"] });
+
+        const res = await userDetailsAPI.refetch();
+        if (res.data?.success) {
+          dispatch(setPermissions(res.data.data.permissionIds));
+        }
+
         handleCloseModal();
       }
     },
@@ -222,10 +240,17 @@ export default function Permissions() {
     PermissionPostResponse
   >(
     ["updatePermission"],
-    (data) => {
+    async (data) => {
       if (data?.success) {
         setPaginationModel({ ...paginationModel, page: 0 });
         permissionList.refetch();
+
+        queryClient.invalidateQueries({ queryKey: ["userDetails"] });
+
+        const res = await userDetailsAPI.refetch();
+        if (res.data?.success) {
+          dispatch(setPermissions(res.data.data.permissionIds));
+        }
         handleCloseModal();
       }
     },
@@ -235,10 +260,16 @@ export default function Permissions() {
   // DELETE API
   const deletePermission = useDelete<PermissionPostResponse>(
     ["deletePermission"],
-    (data) => {
+    async (data) => {
       if (data?.success) {
         setPaginationModel({ ...paginationModel, page: 0 });
         permissionList.refetch();
+        queryClient.invalidateQueries({ queryKey: ["userDetails"] });
+
+        const res = await userDetailsAPI.refetch();
+        if (res.data?.success) {
+          dispatch(setPermissions(res.data.data.permissionIds));
+        }
         handleCloseDialog();
       }
     },

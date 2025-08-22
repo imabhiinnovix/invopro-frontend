@@ -119,4 +119,5 @@ export const GET = {
   FREQUENCY_LIST: "notivix/notification-setting/frequency/list",
   FREQUENCY_DETAIL: "notivix/notification-setting/frequency",
   NOTIFICATION_SETTING_TYPE_DETAIL: "/notivix/notification-setting/type",
+  GET_DATA_SOURCE_VERSION_BY_ID:"/common/dataSourceVersion/"
 };
