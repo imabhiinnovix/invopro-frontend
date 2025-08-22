@@ -18,6 +18,7 @@ import {
 import { STYLE_GUIDE } from '../../../styles';
 import { useUnifiedTheme } from '../../../hooks/useUnifiedTheme';
 import { useComponentTypography } from '../../../hooks/useComponentTypography';
+import useGet from '../../../hooks/useGet';
 
 interface NotivixFiltersModalProps {
   open: boolean;
@@ -54,9 +55,16 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
   availableFilters = [],
   isLoading = false,
 }) => {
+  // const productSubscriptionsQuery = useGet<ProductSubscriptionListResponse>(
+  //   ['productSubscriptions', organizationId || 'all'],
+  //   organizationId
+  //     ? `${GET.Product_Subscription_List}?organizationId=${organizationId}`
+  //     : GET.Product_Subscription_List,
+  //   true
+  // );
   const theme = useUnifiedTheme();
   const { getButtonSx } = useComponentTypography();
-  
+
   const [filters, setFilters] = useState<FilterOptions>(currentFilters);
 
   const handleApplyFilters = () => {
@@ -71,18 +79,18 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
   };
 
   const handleFilterChange = (key: keyof FilterOptions, value: any) => {
-    setFilters(prev => ({
+    setFilters((prev) => ({
       ...prev,
       [key]: value,
     }));
   };
 
-
-  const hasActiveFilters = Object.values(filters).some(value => 
-    value !== undefined && value !== '' && 
-    (typeof value !== 'object' || Object.values(value).some(v => v !== undefined && v !== ''))
+  const hasActiveFilters = Object.values(filters).some(
+    (value) =>
+      value !== undefined &&
+      value !== '' &&
+      (typeof value !== 'object' || Object.values(value).some((v) => v !== undefined && v !== ''))
   );
-
 
   return (
     <Dialog
@@ -117,7 +125,6 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
           </Box>
         ) : (
           <Stack spacing={STYLE_GUIDE.SPACING.s4}>
-
             {/* Dynamic Filters based on available filters */}
             {availableFilters
               .filter((filter) => filter.isDashboardFilter)
@@ -126,7 +133,10 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
                 if (filter.attributeType === 'boolean') {
                   return (
                     <Box key={filter.attributeId}>
-                      <Typography variant="subtitle2" sx={{ mb: STYLE_GUIDE.SPACING.s2, color: theme.palette.text.secondary }}>
+                      <Typography
+                        variant="subtitle2"
+                        sx={{ mb: STYLE_GUIDE.SPACING.s2, color: theme.palette.text.secondary }}
+                      >
                         {filter.label}
                       </Typography>
                       <FormControl component="fieldset">
@@ -137,7 +147,9 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
                               name={filter.attributeId}
                               value="true"
                               checked={filters[filter.attributeId as keyof FilterOptions] === 'true'}
-                              onChange={(e) => handleFilterChange(filter.attributeId as keyof FilterOptions, e.target.value)}
+                              onChange={(e) =>
+                                handleFilterChange(filter.attributeId as keyof FilterOptions, e.target.value)
+                              }
                               style={{ accentColor: theme.palette.primary.main }}
                             />
                             <span style={{ color: theme.palette.text.primary }}>True</span>
@@ -148,7 +160,9 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
                               name={filter.attributeId}
                               value="false"
                               checked={filters[filter.attributeId as keyof FilterOptions] === 'false'}
-                              onChange={(e) => handleFilterChange(filter.attributeId as keyof FilterOptions, e.target.value)}
+                              onChange={(e) =>
+                                handleFilterChange(filter.attributeId as keyof FilterOptions, e.target.value)
+                              }
                               style={{ accentColor: theme.palette.primary.main }}
                             />
                             <span style={{ color: theme.palette.text.primary }}>False</span>
@@ -274,4 +288,4 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
   );
 };
 
-export default NotivixFiltersModal; 
+export default NotivixFiltersModal;
