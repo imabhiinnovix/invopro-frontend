@@ -1,796 +1,3 @@
-// import React, { useEffect, useState } from "react";
-// import {
-//   Button,
-//   TextField,
-//   Box,
-//   Typography,
-//   Table,
-//   TableBody,
-//   TableCell,
-//   TableHead,
-//   TableRow,
-//   Dialog,
-//   DialogContent,
-//   Stack,
-//   DialogActions,
-//   IconButton,
-//   Autocomplete,
-//   Chip,
-// } from "@mui/material";
-// import { useForm } from "react-hook-form";
-// import { Controller } from "react-hook-form";
-// import { GET, POST } from "../../../services/apiRoutes";
-// import CommonDatePicker from "../datePicker/datePicker";
-// import ProgressBar from "../../molecule/progressBar";
-// import useGet from "../../../hooks/useGet";
-// import { DateTime } from "luxon";
-// import ExcelJS from "exceljs";
-// import { toast } from "react-toastify";
-// import useFilePostData from "../../../hooks/usePostMultipart";
-// import { STYLE_GUIDE } from "../../../styles";
-// import { useUnifiedTheme } from "../../../hooks/useUnifiedTheme";
-// import { useComponentTypography } from "../../../hooks/useComponentTypography";
-// import { useDropzone } from "react-dropzone";
-// import { GridCloseIcon } from "@mui/x-data-grid";
-// import CloudUploadIcon from '@mui/icons-material/CloudUpload';
-
-// interface ImportFileProps {
-//   setReload?: React.Dispatch<React.SetStateAction<boolean>>;
-//   CustomButton: React.ReactElement;
-//   title: string;
-//   dataSourceId?: string;
-// }
-
-// interface FormValues {
-//   dataSourceId: string;
-//   versionValue: string;
-//   versionName: string;
-//   files: FileList | null;
-//   mappings: { [key: string]: string[] }; 
-//   separator: { [key: string]: string };
-// }
-
-// interface Attribute {
-//   name: string;
-//   type: string;
-//   required: string;
-// }
-
-// interface FileDropzoneProps {
-//   fileNames: string[];
-//   onFileChange: (files: File[]) => void;
-//   onFileRemove?: (index: number) => void;
-//   buttonName: string;
-// }
-
-// const FileDropzone: React.FC<FileDropzoneProps> = ({ 
-//   fileNames, 
-//   onFileChange, 
-//   onFileRemove, 
-//   buttonName 
-// }) => {
-//   const [isDragActive, setIsDragActive] = useState(false);
-  
-//   const onDrop = (acceptedFiles: File[]) => {
-//     setIsDragActive(false);
-//     if (acceptedFiles.length > 0) {
-//       onFileChange(acceptedFiles);
-//     }
-//   };
-  
-//   const { getRootProps, getInputProps } = useDropzone({
-//     onDrop,
-//     onDragEnter: () => setIsDragActive(true),
-//     onDragLeave: () => setIsDragActive(false),
-//     accept: {
-//       'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': ['.xlsx'],
-//       'application/vnd.ms-excel': ['.xls']
-//     },
-//     onDropRejected: (fileRejections) => {
-//       setIsDragActive(false);
-//       fileRejections.forEach(rejection => {
-//         rejection.errors.forEach(error => {
-//           if (error.code === 'file-invalid-type') {
-//             toast.error('Please upload valid Excel files (.xlsx or .xls)');
-//           } else {
-//             toast.error(error.message);
-//           }
-//         });
-//       });
-//     }
-//   });
-  
-//   return (
-//     <Box display="flex" flexDirection="column" gap={STYLE_GUIDE.SPACING.s2}>
-//       <Box
-//         {...getRootProps()}
-//         sx={{
-//           position: 'relative',
-//           display: 'inline-block',
-//         }}
-//       >
-//         <Button
-//           variant="contained"
-//           color="primary"
-//           startIcon={<CloudUploadIcon />}
-//           sx={{
-//             borderRadius: STYLE_GUIDE.SPACING.s1,
-//             fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.medium,
-//             padding: STYLE_GUIDE.SPACING.s3,
-//             backgroundColor: isDragActive 
-//               ? STYLE_GUIDE.COLORS.primaryDark 
-//               : STYLE_GUIDE.COLORS.primaryDark,
-//             '&:hover': {
-//               backgroundColor: STYLE_GUIDE.COLORS.primary,
-//             },
-//             transition: 'background-color 0.2s ease',
-//           }}
-//         >
-//           {buttonName}
-//         </Button>
-        
-//         <input {...getInputProps()} style={{ display: 'none' }} />
-        
-//         {isDragActive && (
-//           <Box
-//             sx={{
-//               position: 'absolute',
-//               top: 0,
-//               left: 0,
-//               right: 0,
-//               bottom: 0,
-//               backgroundColor: 'rgba(0, 0, 0, 0.1)',
-//               border: `2px dashed ${STYLE_GUIDE.COLORS.bootstrapPrimary}`,
-//               borderRadius: STYLE_GUIDE.SPACING.s1,
-//               display: 'flex',
-//               alignItems: 'center',
-//               justifyContent: 'center',
-//               zIndex: 1,
-//             }}
-//           >
-//             <Typography 
-//               variant="body1" 
-//               sx={{ 
-//                 fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.bold,
-//                 color: STYLE_GUIDE.COLORS.bootstrapPrimary,
-//                 backgroundColor: 'rgba(255, 255, 255, 0.8)',
-//                 padding: STYLE_GUIDE.SPACING.s2,
-//                 borderRadius: STYLE_GUIDE.SPACING.s1,
-//               }}
-//             >
-//               Drop files here
-//             </Typography>
-//           </Box>
-//         )}
-//       </Box>
-      
-//       {fileNames.length > 0 && (
-//         <Box 
-//           display="flex" 
-//           flexDirection="column"
-//           gap={STYLE_GUIDE.SPACING.s1}
-//           sx={{
-//             backgroundColor: STYLE_GUIDE.COLORS.backgroundLightGray + '40',
-//             borderRadius: STYLE_GUIDE.SPACING.s1,
-//             padding: STYLE_GUIDE.SPACING.s2,
-//             border: `1px solid ${STYLE_GUIDE.COLORS.borderGray}`,
-//             maxWidth: '100%',
-//             marginTop:"8px"
-//           }}
-//         >
-//           <Typography variant="body2" sx={{ fontWeight: 'bold', mb: 1 }}>
-//             Selected Files:
-//           </Typography>
-//           {fileNames.map((fileName, index) => (
-//             <Box 
-//               key={index}
-//               display="flex" 
-//               alignItems="center" 
-//               gap={STYLE_GUIDE.SPACING.s1}
-//             >
-//               <Box 
-//                 component="span" 
-//                 sx={{ 
-//                   fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base,
-//                   color: STYLE_GUIDE.COLORS.darkText,
-//                   fontFamily: STYLE_GUIDE.TYPOGRAPHY.fontFamily,
-//                   overflow: 'hidden',
-//                   textOverflow: 'ellipsis',
-//                   whiteSpace: 'nowrap',
-//                   flexGrow: 1,
-//                 }}
-//                 title={fileName}
-//               >
-//                 {fileName}
-//               </Box>
-//               <IconButton 
-//                 onClick={() => onFileRemove && onFileRemove(index)}
-//                 size="small"
-//                 sx={{
-//                   color: STYLE_GUIDE.COLORS.textSecondary,
-//                   '&:hover': {
-//                     color: STYLE_GUIDE.COLORS.error,
-//                     backgroundColor: STYLE_GUIDE.COLORS.error + '10',
-//                   },
-//                 }}
-//               >
-//                 <GridCloseIcon fontSize="small" />
-//               </IconButton>
-//             </Box>
-//           ))}
-//         </Box>
-//       )}
-//     </Box>
-//   );
-// };
-
-// const ImportFile: React.FC<ImportFileProps> = ({
-//   setReload,
-//   CustomButton,
-//   title,
-//   dataSourceId
-// }) => {
-//   const theme = useUnifiedTheme();
-//   const [open, setOpen] = useState(false);
-//   const [versionName, setVersionName] = useState("");
-//   const [files, setFiles] = useState<File[]>([]);
-//   const [fileNames, setFileNames] = useState<string[]>([]);
-//   const [fileHeaders, setFileHeaders] = useState<string[]>([]);
-//   const [fileUploadLoader, setFileUploadLoader] = useState(false);
-//   const [settingAttribute, setSettingAttribute] = useState<Attribute[]>([]);
-//   const [settingAttributeOption, setSettingAttributeOption] = useState<string[]>([]);
-//   const { getDialogTitleSx } = useComponentTypography();
-  
-//   const {
-//     control,
-//     handleSubmit,
-//     register,
-//     watch,
-//     reset,
-//     setValue,
-//     formState: { errors },
-//   } = useForm<FormValues>({
-//     defaultValues: {
-//       dataSourceId: dataSourceId || "",
-//       versionName: "",
-//       files: null,
-//       mappings: {}, 
-//       separator: {},
-//     },
-//   });
-
-//   useEffect(() => {
-//     if (open && dataSourceId) {
-//       setValue("dataSourceId", dataSourceId);
-//     }
-//   }, [open, dataSourceId, setValue]);
-
-//   useEffect(() => {
-//     if (!open) {
-//       setVersionName("");
-//       setFiles([]);
-//       setFileNames([]);
-//       setFileHeaders([]);
-//       setFileUploadLoader(false);
-//       setSettingAttribute([]);
-//       setSettingAttributeOption([]);
-      
-//       reset({
-//         dataSourceId: dataSourceId || "",
-//         versionName: "",
-//         files: null,
-//         mappings: {},
-//         separator: {},
-//       });
-//     }
-//   }, [open, reset, dataSourceId]);
-
-//   const handleCancel = () => {
-//     setOpen(false);
-//   };
-
-//   const dataSourceDetails = useGet<{
-//     success: boolean;
-//     available: boolean;
-//     data: { entityId: { attributes: Attribute[] } };
-//   }>(
-//     [`dataSourceDetails`, watch("dataSourceId")],
-//     GET?.Data_Source + `/${watch("dataSourceId")}`,
-//     !!watch("dataSourceId")
-//   );
-
-//   const { mutate, isPending } = useFilePostData<
-//     { files: File[]; operation: string },
-//     { message: string; data?: any }
-//   >(
-//     ["uploadedFiles"],
-//     (data) => {
-//       if (setReload) setReload(true);
-//       handleCancel();
-//       console.log("File upload successful:", data);
-//       if(data?.status === "pending") {
-
-//         toast.success("File uploaded successfully!");
-//       }
-//     },
-//     { showToast: true }
-//   );
-
-//   useEffect(() => {
-//     if (
-//       !dataSourceDetails.isFetching &&
-//       dataSourceDetails.isSuccess &&
-//       dataSourceDetails.data
-//     ) {
-//       setSettingAttribute(dataSourceDetails.data.data.entityId.attributes);
-//       setSettingAttributeOption([
-//         ...dataSourceDetails.data.data.entityId.attributes.map(
-//           (data: Attribute) => data.name
-//         ),
-//       ]);
-//     }
-//   }, [
-//     dataSourceDetails.isFetching,
-//     dataSourceDetails.isSuccess,
-//     dataSourceDetails.data,
-//   ]);
-
-//   const handleFormClose = () => {
-//     setOpen(false);
-//   };
-
-//   // const onSubmit = async(formData: FormValues) => {
-//   //   const reverseMap: Record<string, string[]> = {};
-//   //   Object.entries(formData.mappings).forEach(([key, values]) => {
-//   //     if (Array.isArray(values)) {
-//   //       values.forEach(value => {
-//   //         if (!reverseMap[value]) {
-//   //           reverseMap[value] = [];
-//   //         }
-//   //         if (!["Extra-Attribute-Ignore"].includes(value))
-//   //           reverseMap[value].push(key);
-//   //       });
-//   //     }
-//   //   });
-    
-  
-    
-//   //   const mandatoryAttributes = settingAttribute
-//   //     .filter((attr) => attr.required === "Mandatory")
-//   //     .map((attr) => attr.name);
-    
-//   //   const missingMandatoryAttributes = mandatoryAttributes.filter(
-//   //     (attr) => !formData.mappings[attr] || formData.mappings[attr].length === 0
-//   //   );
-  
-    
-//   //   if (missingMandatoryAttributes.length > 0) {
-//   //     missingMandatoryAttributes.forEach((attr) => {
-//   //       toast.error(
-//   //         `Mandatory attribute is not mapped: ${attr}`
-//   //       );
-//   //     });
-//   //   }
-    
-//   //   if (
-//   //     missingMandatoryAttributes.length === 0 
-   
-//   //   ) {
-//   //     if (files.length === 0) {
-//   //       toast.error("Please upload at least one file");
-//   //       return;
-//   //     }
-      
-//   //     const versionValue = watch("versionValue");
-//   //     const formattedVersion =
-//   //       DateTime.fromISO(versionValue).toFormat("yyyy-LL");
-      
-//   //     const dataTransfer = new DataTransfer();
-//   //     files.forEach(file => dataTransfer.items.add(file));
-//   //     const fileList = dataTransfer.files;
-      
-//   //     const payload = {
-//   //       operation: "dataSourceVersion",
-//   //       ...formData,
-//   //       files: fileList,
-//   //       mappings: JSON.stringify(formData.mappings),
-//   //       separator: JSON.stringify(formData.separator),
-//   //       versionValue: formattedVersion,
-//   //     };
-     
-      
-   
-//   //   try {
-//   //   const response = await mutate({
-//   //     url: `${POST.FILE_UPLOAD}`,
-//   //     payload,
-//   //   });
-
-//   //   console.log("✅ Upload Response:", response);
-
-//   //   toast.success("File uploaded successfully!");
-//   // } catch (error) {
-//   //   console.error("❌ Upload Error:", error);
-//   //   toast.error("Upload failed!");
-//   // }
-//   //   }
-//   // };
-
-//   const onSubmit = async (formData: FormValues) => {
-//   const reverseMap: Record<string, string[]> = {};
-//   Object.entries(formData.mappings).forEach(([key, values]) => {
-//     if (Array.isArray(values)) {
-//       values.forEach((value) => {
-//         if (!reverseMap[value]) {
-//           reverseMap[value] = [];
-//         }
-//         if (!["Extra-Attribute-Ignore"].includes(value)) {
-//           reverseMap[value].push(key);
-//         }
-//       });
-//     }
-//   });
-
-//   const mandatoryAttributes = settingAttribute
-//     .filter((attr) => attr.required === "Mandatory")
-//     .map((attr) => attr.name);
-
-//   const missingMandatoryAttributes = mandatoryAttributes.filter(
-//     (attr) => !formData.mappings[attr] || formData.mappings[attr].length === 0
-//   );
-
-//   if (missingMandatoryAttributes.length > 0) {
-//     missingMandatoryAttributes.forEach((attr) => {
-//       toast.error(`Mandatory attribute is not mapped: ${attr}`);
-//     });
-//     return;
-//   }
-
-//   if (files.length === 0) {
-//     toast.error("Please upload at least one file");
-//     return;
-//   }
-
-//   const versionValue = watch("versionValue");
-//   const formattedVersion = DateTime.fromISO(versionValue).toFormat("yyyy-LL");
-
-//   const dataTransfer = new DataTransfer();
-//   files.forEach((file) => dataTransfer.items.add(file));
-//   const fileList = dataTransfer.files;
-
-//   const payload = {
-//     operation: "dataSourceVersion",
-//     ...formData,
-//     files: fileList,
-//     mappings: JSON.stringify(formData.mappings),
-//     separator: JSON.stringify(formData.separator),
-//     versionValue: formattedVersion,
-//   };
-
-//   console.log("Payload:", payload); // Debug payload
-
-//   try {
-//     const response = await mutate({
-//       url: `${POST.FILE_UPLOAD}`,
-//       payload,
-//     });
-
-//     console.log("✅ Upload Response:", response); // Log response
-//     toast.success("File uploaded successfully!");
-//     if (setReload) setReload(true);
-//     handleCancel();
-//   } catch (error) {
-//     console.error("❌ Upload Error:", error);
-//     toast.error("Upload failed!");
-//   }
-// };
-//   const handleFileRemove = (index: number) => {
-//     const newFiles = [...files];
-//     newFiles.splice(index, 1);
-//     setFiles(newFiles);
-    
-//     const newFileNames = [...fileNames];
-//     newFileNames.splice(index, 1);
-//     setFileNames(newFileNames);
-    
-//     if (newFiles.length === 0) {
-//       setFileHeaders([]);
-//     } else {
-//       processFilesForHeaders(newFiles);
-//     }
-//   };
-
-//   const processFilesForHeaders = async (filesToProcess: File[]) => {
-//     if (filesToProcess.length === 0) {
-//       setFileHeaders([]);
-//       return;
-//     }
-    
-//     setFileUploadLoader(true);
-//     const allHeaders: string[] = [];
-    
-//     try {
-//       for (const file of filesToProcess) {
-//         const arrayBuffer = await file.arrayBuffer();
-//         const workbook = new ExcelJS.Workbook();
-//         await workbook.xlsx.load(arrayBuffer);
-        
-//         if (!workbook.worksheets || workbook.worksheets.length === 0) {
-//           toast.error(`No sheets found in the Excel file: ${file.name}`);
-//           continue;
-//         }
-        
-//         const worksheet = workbook.worksheets[0];
-//         const headers: string[] = [];
-        
-//         worksheet.getRow(1).eachCell((cell) => {
-//           headers.push(cell.value?.toString() || "");
-//         });
-        
-//         allHeaders.push(...headers);
-//       }
-      
-//       // Remove duplicate headers
-//       const uniqueHeaders = [...new Set(allHeaders)];
-//       setFileHeaders([...uniqueHeaders, "Extra-Attribute-Ignore"]);
-//     } catch (error) {
-//       toast.error("Error processing files. Please try again.");
-//       console.error("Error processing files:", error);
-//     } finally {
-//       setFileUploadLoader(false);
-//     }
-//   };
-
-//   const handleFileChange = (acceptedFiles: File[]) => {
-//     // Filter out non-Excel files
-//     const excelFiles = acceptedFiles.filter(file => 
-//       file.name.endsWith(".xlsx") || file.name.endsWith(".xls")
-//     );
-    
-//     if (excelFiles.length === 0) {
-//       toast.error("Please upload valid Excel files (.xlsx or .xls)");
-//       return;
-//     }
-    
-//     setFiles(excelFiles);
-//     setFileNames(excelFiles.map(file => file.name));
-    
-//     // Process files to extract headers
-//     processFilesForHeaders(excelFiles);
-//   };
-
-//   useEffect(() => {
-//     if (fileHeaders.length > 0 && settingAttributeOption.length > 0) {
-//       const currentMappings = watch("mappings") || {};
-      
-//       settingAttributeOption.forEach(attr => {
-//         if (currentMappings[attr] && currentMappings[attr].length > 0) {
-//           return;
-//         }
-        
-//         const normalize = (str: string) => str.replace(/\s+/g, "").toLowerCase();
-//         const matchedHeader = fileHeaders.find(
-//           (header) => normalize(header) === normalize(attr)
-//         );
-        
-//         if (matchedHeader && matchedHeader !== "Extra-Attribute-Ignore") {
-//           setValue(`mappings.${attr}`, [matchedHeader]);
-//         }
-//       });
-//     }
-//   }, [fileHeaders, settingAttributeOption, setValue, watch]);
-
-//   return (
-//     <div>
-//       <Box onClick={() => setOpen(true)}>{CustomButton}</Box>
-//       <Dialog 
-//         open={open} 
-//         onClose={handleFormClose} 
-//         fullWidth 
-//         maxWidth="md"
-//         sx={{
-//           '& .MuiDialog-paper': {
-//             width: '800px',
-//             maxWidth: '800px',
-//           }
-//         }}
-//       >
-//         <Typography
-//           variant="h6"
-//           sx={{
-//             color: STYLE_GUIDE?.COLORS?.primaryDark || "#3f51b5",
-//             paddingTop: STYLE_GUIDE.SPACING.s5,
-//             paddingLeft: STYLE_GUIDE.SPACING.s5,
-//           }}
-//         >
-//           {title}
-//         </Typography>
-//         <DialogContent>
-//           <Box component="form" onSubmit={handleSubmit(onSubmit)} noValidate>
-//             <Stack spacing={3}>
-//               <CommonDatePicker
-//                 name={"versionValue"}
-//                 control={control}
-//                 views={["year", "month"]}
-//                 label="Period*"
-//                 rules={{ required: "Period is required" }}
-//               />
-//               <TextField
-//                 label="Version Name*"
-//                 fullWidth
-//                 {...register("versionName", {
-//                   required: "Version name is required",
-//                 })}
-//                 onChange={(event) => {
-//                   setVersionName(event.target.value);
-//                 }}
-//                 error={!!errors.versionName}
-//                 defaultValue={""}
-//                 helperText={errors.versionName?.message}
-//               />
-//               {fileUploadLoader ? (
-//                 <ProgressBar />
-//               ) : (
-//                 <FileDropzone
-//                   fileNames={fileNames}
-//                   onFileChange={handleFileChange}
-//                   onFileRemove={handleFileRemove}
-//                   buttonName={"Upload Files"}
-//                 />
-//               )}
-//               {fileHeaders.length > 0 &&
-//                 settingAttribute.length > 0 &&
-//                 settingAttributeOption.length > 0 &&
-//                 !dataSourceDetails.isFetching && (
-//                   <>
-//                     <Typography variant="body2" sx={{ mt: 2, fontWeight: 'bold' }}>
-//                       Map file headers to entity attributes:
-//                     </Typography>
-//                     <Table>
-//                       <TableHead>
-//                         <TableRow>
-//                           <TableCell
-//                             sx={{
-//                               backgroundColor:
-//                                 theme.palette.table?.headerBackground,
-//                               color: theme.palette.table?.headerText,
-//                               fontWeight: "medium",
-//                             }}
-//                           >
-//                             Entity Setting Attribute
-//                           </TableCell>
-//                           <TableCell
-//                             sx={{
-//                               backgroundColor:
-//                                 theme.palette.table?.headerBackground,
-//                               color: theme.palette.table?.headerText,
-//                               fontWeight: "medium",
-//                             }}
-//                           >
-//                             File Headers
-//                           </TableCell>
-//                         </TableRow>
-//                       </TableHead>
-//                       <TableBody>
-//                         {settingAttributeOption.map((option, index) => {
-//                           return (
-//                             <TableRow key={index}>
-//                               <TableCell>{option}</TableCell>
-//                               <TableCell>
-//                                 <Controller
-//                                   name={`mappings.${option}`}
-//                                   control={control}
-//                                   defaultValue={[]}
-//                                   rules={{ required: "Please select at least one header" }}
-//                                   render={({ field }) => (
-//                                     <Autocomplete
-//                                       {...field}
-//                                       multiple
-//                                       options={fileHeaders}
-//                                       getOptionLabel={(option) => option}
-//                                       renderTags={(value, getTagProps) =>
-//                                         value.map((option, index) => (
-//                                           <Chip
-//                                             key={index}
-//                                             variant="outlined"
-//                                             label={option}
-//                                             {...getTagProps({ index })}
-//                                             size="small"
-//                                           />
-//                                         ))
-//                                       }
-//                                       renderInput={(params) => (
-//                                         <TextField
-//                                           {...params}
-//                                           variant="outlined"
-//                                           label="Map to headers"
-//                                           placeholder="Select headers"
-//                                           error={!!errors.mappings?.[option]}
-//                                           helperText={
-//                                             errors.mappings?.[option]?.message || 
-//                                             `Select one or more headers to map with ${option}`
-//                                           }
-//                                         />
-//                                       )}
-//                                       onChange={(_, data) => {
-//                                         field.onChange(data);
-//                                       }}
-//                                     />
-//                                   )}
-//                                 />
-//                                 {!!watch(`mappings.${option}`)?.length &&
-//                                   settingAttribute.some(
-//                                     (attr) =>
-//                                       attr.name === option &&
-//                                       attr.type === "multioption"
-//                                   ) && (
-//                                     <TextField
-//                                       label="Separate Multioption*"
-//                                       fullWidth
-//                                       {...register(`separator.${option}`, {
-//                                         required: "Separator is required",
-//                                       })}
-//                                       error={!!errors.separator?.[option]}
-//                                       helperText={
-//                                         errors.separator?.[option]?.message
-//                                       }
-//                                     />
-//                                   )}
-//                               </TableCell>
-//                             </TableRow>
-//                           );
-//                         })}
-//                       </TableBody>
-//                     </Table>
-//                   </>
-//                 )}
-//             </Stack>
-//           </Box>
-//         </DialogContent>
-//         <DialogActions>
-//           {isPending ? (
-//             <ProgressBar />
-//           ) : (
-//             <Box>
-//               <Button
-//                 variant="outlined"
-//                 onClick={handleCancel}
-//                 sx={{
-//                   borderRadius: "8px",
-//                   marginRight: STYLE_GUIDE.SPACING.s2,
-//                   borderColor: STYLE_GUIDE?.COLORS?.divider || "#e0e0e0",
-//                   color: STYLE_GUIDE?.COLORS?.primaryDark || "#3f51b5",
-//                 }}
-//               >
-//                 Cancel
-//               </Button>
-//               <Button
-//                 variant="contained"
-//                 onClick={handleSubmit(onSubmit)}
-//                 sx={{
-//                   borderRadius: "8px",
-//                   backgroundColor:
-//                     STYLE_GUIDE?.COLORS?.primaryDark || "#3f51b5",
-//                   color: STYLE_GUIDE?.COLORS?.white || "#ffffff",
-//                   "&:hover": {
-//                     backgroundColor: STYLE_GUIDE?.COLORS?.primary || "#5c6bc0",
-//                   },
-//                 }}
-//               >
-//                 Save
-//               </Button>
-//             </Box>
-//           )}
-//         </DialogActions>
-//       </Dialog>
-//     </div>
-//   );
-// };
-
-// export default ImportFile;
-
-
-
 // import React, { useEffect, useState, useRef } from "react";
 // import { useNavigate } from "react-router-dom";
 // import {
@@ -1034,7 +241,9 @@
 //   const [fileUploadLoader, setFileUploadLoader] = useState(false);
 //   const [settingAttribute, setSettingAttribute] = useState<Attribute[]>([]);
 //   const [settingAttributeOption, setSettingAttributeOption] = useState<string[]>([]);
-//   const pollingTimerRef = useRef<NodeJS.Timeout | null>(null);
+//   const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
+//   const [pollingVersionId, setPollingVersionId] = useState<string | null>(null);
+//   const [pollingStatus, setPollingStatus] = useState<string | null>(null);
 //   const { getDialogTitleSx } = useComponentTypography();
   
 //   const {
@@ -1055,11 +264,11 @@
 //     },
 //   });
 
-//   // Clean up polling timer on unmount
+//   // Clean up polling interval on unmount
 //   useEffect(() => {
 //     return () => {
-//       if (pollingTimerRef.current) {
-//         clearTimeout(pollingTimerRef.current);
+//       if (pollingIntervalRef.current) {
+//         clearInterval(pollingIntervalRef.current);
 //       }
 //     };
 //   }, []);
@@ -1072,6 +281,7 @@
 
 //   useEffect(() => {
 //     if (!open) {
+//       // Reset all state when dialog closes
 //       setVersionName("");
 //       setFiles([]);
 //       setFileNames([]);
@@ -1079,6 +289,14 @@
 //       setFileUploadLoader(false);
 //       setSettingAttribute([]);
 //       setSettingAttributeOption([]);
+      
+//       // Clear polling
+//       if (pollingIntervalRef.current) {
+//         clearInterval(pollingIntervalRef.current);
+//         pollingIntervalRef.current = null;
+//       }
+//       setPollingVersionId(null);
+//       setPollingStatus(null);
       
 //       reset({
 //         dataSourceId: dataSourceId || "",
@@ -1104,57 +322,101 @@
 //     !!watch("dataSourceId")
 //   );
 
-//   const startStatusPolling = (dataSourceVersionId: string) => {
-//     const checkStatus = async () => {
-//       try {
-//         const response = await fetch(`/common/dataSourceVersion/${dataSourceVersionId}`, {
-//           credentials: 'include'
-//         });
+//   // Status check using useGet hook
+//   const statusCheck = useGet<{
+//     success: boolean;
+//     message: string;
+//     data: {
+//       _id: string;
+//       status: string;
+//       // ... other properties from the response
+//     };
+//   }>(
+//     [`dataSourceVersionStatus`, pollingVersionId, pollingStatus],
+//     pollingVersionId ? `/common/dataSourceVersion/${pollingVersionId}` : '',
+//     !!pollingVersionId
+//   );
+
+//   // Handle successful status check
+//   useEffect(() => {
+//     if (statusCheck.isSuccess && statusCheck.data) {
+//       console.log("Status Check Result1111:", statusCheck.data);
+//       const result = statusCheck.data;
+      
+//       if (result.success && result.data) {
+//           console.log("Status Check Result22222:", statusCheck.data);
+//         const status = result.data.status;
+//               console.log("Status Check Result22222:", status);
+//         setPollingStatus(status); // Update the status for the next poll
         
-//         if (!response.ok) {
-//           throw new Error(`HTTP error! status: ${response.status}`);
-//         }
-        
-//         const result = await response.json();
-        
-//         if (result.success && result.data) {
-//           const status = result.data.status;
-          
-//           if (status === "completed") {
-//             toast.success("File processing completed successfully!");
-//             if (pollingTimerRef.current) {
-//               clearTimeout(pollingTimerRef.current);
-//               pollingTimerRef.current = null;
-//             }
-//           } else if (status === "failed") {
-//             navigate('/notivix/validation-errors');
-//             if (pollingTimerRef.current) {
-//               clearTimeout(pollingTimerRef.current);
-//               pollingTimerRef.current = null;
-//             }
-//           } else if (status === "pending") {
-//             // Continue polling every 2 seconds
-//             pollingTimerRef.current = setTimeout(checkStatus, 2000);
+//         if (status === "completed") {
+//           toast.success("File processing completed successfully!");
+//           if (pollingIntervalRef.current) {
+//             clearInterval(pollingIntervalRef.current);
+//             pollingIntervalRef.current = null;
 //           }
-//         } else {
-//           toast.error("Failed to check processing status");
-//           if (pollingTimerRef.current) {
-//             clearTimeout(pollingTimerRef.current);
-//             pollingTimerRef.current = null;
+//           setPollingVersionId(null);
+//         } else if (status === "failed") {
+//           navigate('/notivix/validation-errors');
+//           if (pollingIntervalRef.current) {
+//             clearInterval(pollingIntervalRef.current);
+//             pollingIntervalRef.current = null;
 //           }
+//           setPollingVersionId(null);
 //         }
-//       } catch (error) {
-//         console.error("Error checking status:", error);
-//         toast.error("Error checking processing status");
-//         if (pollingTimerRef.current) {
-//           clearTimeout(pollingTimerRef.current);
-//           pollingTimerRef.current = null;
+//         // For "processing" status, we continue polling - no action needed here
+//       } else {
+//         toast.error(result.message || "Failed to check processing status");
+//         if (pollingIntervalRef.current) {
+//           clearInterval(pollingIntervalRef.current);
+//           pollingIntervalRef.current = null;
 //         }
+//         setPollingVersionId(null);
+//       }
+//     }
+//   }, [statusCheck.data, statusCheck.isSuccess, navigate]);
+
+//   // Handle status check errors
+//   useEffect(() => {
+//     if (statusCheck.isError) {
+//       toast.error("Error checking processing status");
+//       if (pollingIntervalRef.current) {
+//         clearInterval(pollingIntervalRef.current);
+//         pollingIntervalRef.current = null;
+//       }
+//       setPollingVersionId(null);
+//     }
+//   }, [statusCheck.isError]);
+
+//   // Setup continuous polling when pollingVersionId is set
+//   useEffect(() => {
+//     if (pollingVersionId) {
+//       // Clear any existing interval
+//       if (pollingIntervalRef.current) {
+//         clearInterval(pollingIntervalRef.current);
+//       }
+      
+//       // Set up continuous polling every 2 seconds
+//       pollingIntervalRef.current = setInterval(() => {
+//         // Force a re-render by updating the pollingStatus
+//         setPollingStatus(prev => prev ? `${prev}_` : "polling");
+//       }, 2000);
+      
+//       // Initial status check
+//       setPollingStatus("initial");
+//     }
+    
+//     return () => {
+//       if (pollingIntervalRef.current) {
+//         clearInterval(pollingIntervalRef.current);
+//         pollingIntervalRef.current = null;
 //       }
 //     };
-    
-//     // Start polling after 2 seconds
-//     pollingTimerRef.current = setTimeout(checkStatus, 2000);
+//   }, [pollingVersionId]);
+
+//   const startStatusPolling = (dataSourceVersionId: string) => {
+//     console.log("Starting polling for version ID:", dataSourceVersionId);
+//     setPollingVersionId(dataSourceVersionId);
 //   };
 
 //   const { mutate, isPending } = useFilePostData<
@@ -1168,6 +430,7 @@
 //       console.log("File upload successful:", data);
       
 //       if (data?.status === "pending" && data?.dataSourceVersionId) {
+//         console.log("Starting polling for version:", data.dataSourceVersionId);
 //         toast.success("File uploaded successfully! Processing in progress...");
 //         startStatusPolling(data.dataSourceVersionId);
 //       } else if (data?.status === "completed") {
@@ -1571,7 +834,6 @@
 // export default ImportFile;
 
 
-
 import React, { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -1815,9 +1077,9 @@ const ImportFile: React.FC<ImportFileProps> = ({
   const [fileUploadLoader, setFileUploadLoader] = useState(false);
   const [settingAttribute, setSettingAttribute] = useState<Attribute[]>([]);
   const [settingAttributeOption, setSettingAttributeOption] = useState<string[]>([]);
-  const pollingTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const [pollingVersionId, setPollingVersionId] = useState<string | null>(null);
-  const [pollCount, setPollCount] = useState(0);
+  const [pollingStatus, setPollingStatus] = useState<string | null>(null);
   const { getDialogTitleSx } = useComponentTypography();
   
   const {
@@ -1838,11 +1100,12 @@ const ImportFile: React.FC<ImportFileProps> = ({
     },
   });
 
-  // Clean up polling timer on unmount
+  // Clean up polling interval on unmount
   useEffect(() => {
     return () => {
-      if (pollingTimerRef.current) {
-        clearTimeout(pollingTimerRef.current);
+      if (pollingIntervalRef.current) {
+        clearInterval(pollingIntervalRef.current);
+        console.log("Polling cleared on component unmount");
       }
     };
   }, []);
@@ -1855,6 +1118,7 @@ const ImportFile: React.FC<ImportFileProps> = ({
 
   useEffect(() => {
     if (!open) {
+      // Reset all state when dialog closes
       setVersionName("");
       setFiles([]);
       setFileNames([]);
@@ -1862,8 +1126,15 @@ const ImportFile: React.FC<ImportFileProps> = ({
       setFileUploadLoader(false);
       setSettingAttribute([]);
       setSettingAttributeOption([]);
+      
+      // Clear polling
+      if (pollingIntervalRef.current) {
+        clearInterval(pollingIntervalRef.current);
+        pollingIntervalRef.current = null;
+        console.log("Polling cleared on dialog close");
+      }
       setPollingVersionId(null);
-      setPollCount(0);
+      setPollingStatus(null);
       
       reset({
         dataSourceId: dataSourceId || "",
@@ -1899,44 +1170,55 @@ const ImportFile: React.FC<ImportFileProps> = ({
       // ... other properties from the response
     };
   }>(
-    [`dataSourceVersionStatus`, pollingVersionId, pollCount],
+    [`dataSourceVersionStatus`, pollingVersionId, pollingStatus],
     pollingVersionId ? `/common/dataSourceVersion/${pollingVersionId}` : '',
     !!pollingVersionId
   );
 
   // Handle successful status check
   useEffect(() => {
+    console.log("Status check effect triggered");
+    console.log("statusCheck.isSuccess:", statusCheck.isSuccess);
+    console.log("statusCheck.data:", statusCheck.data);
+    
     if (statusCheck.isSuccess && statusCheck.data) {
       const result = statusCheck.data;
+      console.log("Status check result:", result);
       
       if (result.success && result.data) {
         const status = result.data.status;
+        console.log("Current status:", status);
+        setPollingStatus(status); // Update the status for the next poll
         
         if (status === "completed") {
+          console.log("Processing completed successfully");
           toast.success("File processing completed successfully!");
-          if (pollingTimerRef.current) {
-            clearTimeout(pollingTimerRef.current);
-            pollingTimerRef.current = null;
+          if (pollingIntervalRef.current) {
+            clearInterval(pollingIntervalRef.current);
+            pollingIntervalRef.current = null;
+            console.log("Polling stopped - status completed");
           }
           setPollingVersionId(null);
         } else if (status === "failed") {
+          console.log("Processing failed");
           navigate('/notivix/validation-errors');
-          if (pollingTimerRef.current) {
-            clearTimeout(pollingTimerRef.current);
-            pollingTimerRef.current = null;
+          if (pollingIntervalRef.current) {
+            clearInterval(pollingIntervalRef.current);
+            pollingIntervalRef.current = null;
+            console.log("Polling stopped - status failed");
           }
           setPollingVersionId(null);
         } else if (status === "processing") {
-          // Continue polling every 2 seconds
-          pollingTimerRef.current = setTimeout(() => {
-            setPollCount(prev => prev + 1);
-          }, 2000);
+          console.log("Still processing, will poll again");
+          // Continue polling - no action needed here
         }
       } else {
+        console.error("Status check failed:", result.message);
         toast.error(result.message || "Failed to check processing status");
-        if (pollingTimerRef.current) {
-          clearTimeout(pollingTimerRef.current);
-          pollingTimerRef.current = null;
+        if (pollingIntervalRef.current) {
+          clearInterval(pollingIntervalRef.current);
+          pollingIntervalRef.current = null;
+          console.log("Polling stopped - API returned failure");
         }
         setPollingVersionId(null);
       }
@@ -1946,24 +1228,52 @@ const ImportFile: React.FC<ImportFileProps> = ({
   // Handle status check errors
   useEffect(() => {
     if (statusCheck.isError) {
+      console.error("Status check error:", statusCheck.error);
       toast.error("Error checking processing status");
-      if (pollingTimerRef.current) {
-        clearTimeout(pollingTimerRef.current);
-        pollingTimerRef.current = null;
+      if (pollingIntervalRef.current) {
+        clearInterval(pollingIntervalRef.current);
+        pollingIntervalRef.current = null;
+        console.log("Polling stopped - API error");
       }
       setPollingVersionId(null);
     }
-  }, [statusCheck.isError]);
+  }, [statusCheck.isError, statusCheck.error]);
+
+  // Setup continuous polling when pollingVersionId is set
+  useEffect(() => {
+    if (pollingVersionId) {
+      console.log("Setting up polling for version ID:", pollingVersionId);
+      
+      // Clear any existing interval
+      if (pollingIntervalRef.current) {
+        clearInterval(pollingIntervalRef.current);
+        console.log("Cleared existing polling interval");
+      }
+      
+      // Set up continuous polling every 2 seconds
+      pollingIntervalRef.current = setInterval(() => {
+        console.log("Polling triggered - updating status to force API call");
+        // Force a re-render by updating the pollingStatus
+        setPollingStatus(prev => prev ? `${prev}_` : "polling");
+      }, 2000);
+      
+      // Initial status check
+      console.log("Triggering initial status check");
+      setPollingStatus("initial");
+    }
+    
+    return () => {
+      if (pollingIntervalRef.current) {
+        clearInterval(pollingIntervalRef.current);
+        pollingIntervalRef.current = null;
+        console.log("Polling cleared in effect cleanup");
+      }
+    };
+  }, [pollingVersionId]);
 
   const startStatusPolling = (dataSourceVersionId: string) => {
     console.log("Starting polling for version ID:", dataSourceVersionId);
     setPollingVersionId(dataSourceVersionId);
-    setPollCount(0); // Reset poll count
-    
-    // Start the first poll after 2 seconds
-    pollingTimerRef.current = setTimeout(() => {
-      setPollCount(prev => prev + 1);
-    }, 2000);
   };
 
   const { mutate, isPending } = useFilePostData<
@@ -1972,20 +1282,22 @@ const ImportFile: React.FC<ImportFileProps> = ({
   >(
     ["uploadedFiles"],
     (data) => {
+      console.log("Upload response received:", data);
       if (setReload) setReload(true);
       handleCancel();
-      console.log("File upload successful:", data);
       
       if (data?.status === "pending" && data?.dataSourceVersionId) {
-            console.log("Starting", data);
-
+        console.log("Starting polling for version:", data.dataSourceVersionId);
         toast.success("File uploaded successfully! Processing in progress...");
         startStatusPolling(data.dataSourceVersionId);
       } else if (data?.status === "completed") {
+        console.log("Processing completed immediately");
         toast.success("File processed successfully!");
       } else if (data?.status === "failed") {
+        console.log("Processing failed immediately");
         navigate('/notivix/validation-errors');
       } else {
+        console.log("Upload successful with unknown status");
         toast.success("File uploaded successfully!");
       }
     },
@@ -2016,6 +1328,7 @@ const ImportFile: React.FC<ImportFileProps> = ({
   };
 
   const onSubmit = async (formData: FormValues) => {
+    console.log("Form submitted with data:", formData);
     const reverseMap: Record<string, string[]> = {};
     Object.entries(formData.mappings).forEach(([key, values]) => {
       if (Array.isArray(values)) {
@@ -2066,7 +1379,7 @@ const ImportFile: React.FC<ImportFileProps> = ({
       versionValue: formattedVersion,
     };
     
-    console.log("Payload:", payload);
+    console.log("Payload being sent:", payload);
     
     try {
       const response = await mutate({
