@@ -16,6 +16,7 @@ import FilterListIcon from "@mui/icons-material/FilterList";
 import AddIcon from "@mui/icons-material/Add";
 import { CustomPagination } from "../../components/common/pagination/customPagination";
 import ImportFile from "../../components/common/importFile/ImportFile";
+import dayjs from "dayjs"; 
 
 interface TableSectionProps {
   rows: any[];
@@ -57,7 +58,35 @@ export const NotivixDataTable: React.FC<TableSectionProps> = ({
     }),
     [paginationModel.page, paginationModel.pageSize]
   );
-console.log("dataSourceIdin table comp", dataSourceId);
+
+  console.log("dataSourceIdin table comp", dataSourceId);
+
+  // Format columns to handle date fields
+  const formattedColumns = React.useMemo(() => {
+    return columns.map((column) => {
+      // Check if this column is a date field
+      if (column.field.toLowerCase().includes('date')) {
+        return {
+          ...column,
+          renderCell: (params: any) => {
+            const value = params.value;
+            if (value) {
+              try {
+                // Format the date to DD-MMM-YYYY
+                return dayjs(value).format('DD-MMM-YYYY');
+              } catch (error) {
+                console.error('Error formatting date:', error);
+                return value;
+              }
+            }
+            return value;
+          }
+        };
+      }
+      return column;
+    });
+  }, [columns]);
+
   return (
     <Card
       sx={{
@@ -140,7 +169,6 @@ console.log("dataSourceIdin table comp", dataSourceId);
             >
               Add
             </Button>
-
             {/* <ImportFile
               title="Import"
               dataSourceId={dataSourceId}
@@ -169,7 +197,7 @@ console.log("dataSourceIdin table comp", dataSourceId);
           <DataGrid
             loading={loading}
             rows={rows}
-            columns={columns}
+            columns={formattedColumns} // Use formatted columns instead of original columns
             getRowId={(row) => row._id}
             paginationMode="server"
             rowCount={rowCount}
