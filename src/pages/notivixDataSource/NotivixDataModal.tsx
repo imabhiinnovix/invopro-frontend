@@ -148,7 +148,7 @@ export const NotivixDataModal: React.FC<ModelSectionProps> = ({
   const validateField = (fieldName: string, value: any) => {
     const attributes = listCurrentData?.entityId?.attributes || [];
     const attribute = attributes.find((attr: any) => attr.name === fieldName);
-    
+
     if (!attribute) return;
 
     const errors = { ...fieldErrors };
@@ -338,6 +338,27 @@ export const NotivixDataModal: React.FC<ModelSectionProps> = ({
     );
   };
 
+  function normalizeMultiOptionValue(
+    raw: any,
+    options: { id: string; label: string }[]
+  ) {
+    let values: string[] = [];
+
+    if (Array.isArray(raw)) {
+      values = raw;
+    } else if (typeof raw === "string") {
+      values = raw
+        .split(",")
+        .map((v) => v.trim())
+        .filter(Boolean);
+    }
+
+    return values.map((val) => {
+      const match = options.find((opt) => opt.id === val);
+      return match || { id: val, label: val };
+    });
+  }
+
   const renderAttributeField = (attribute: any) => {
     const fieldName = attribute.name;
     const fieldLabel = attribute.name;
@@ -346,7 +367,6 @@ export const NotivixDataModal: React.FC<ModelSectionProps> = ({
     const isDisabled = modalMode === "view";
     const hasError = fieldErrors[fieldName];
 
-    // Helper function to render label with required indicator
     const renderLabel = (label: string) => (
       <React.Fragment>
         {label}
@@ -361,14 +381,12 @@ export const NotivixDataModal: React.FC<ModelSectionProps> = ({
       </React.Fragment>
     );
 
-    // Handle field change with validation
     const handleFieldChange = (value: any) => {
       setFormData((prev) => ({
         ...prev,
         [fieldName]: value,
       }));
 
-      // Validate field on change if submit was attempted
       if (submitAttempted) {
         validateField(fieldName, value);
       }
@@ -463,34 +481,27 @@ export const NotivixDataModal: React.FC<ModelSectionProps> = ({
           attribute.optionAttributeId
         );
         const isReferenceMulti = !!attribute.referenceEntitySetting;
-        const selectedValues = formData[fieldName]
-          ? formData[fieldName].split(",").map((val: string) => val.trim())
-          : [];
-        const selectedOptions = selectedValues.map((val) => {
-          const option = multioptionOptions.find((opt) => opt.id === val);
-          return option || { id: val, label: val };
-        });
+
+        const selectedOptions = normalizeMultiOptionValue(
+          formData[fieldName],
+          multioptionOptions
+        );
+
         return (
           <Autocomplete
             multiple
             freeSolo={!isReferenceMulti}
             key={fieldName}
             options={multioptionOptions}
-            getOptionLabel={(option) => {
-              if (typeof option === "string") {
-                return option;
-              }
-              return option.label || "";
-            }}
+            getOptionLabel={(option) =>
+              typeof option === "string" ? option : option.label || ""
+            }
             value={selectedOptions}
             onChange={(e, value) => {
-              const values = value.map((item) => {
-                if (typeof item === "string") {
-                  return item;
-                }
-                return item.id;
-              });
-              handleFieldChange(values.join(","));
+              const values = value.map((item) =>
+                typeof item === "string" ? item : item.id
+              );
+              handleFieldChange(values);
             }}
             renderInput={(params) => (
               <TextField
@@ -530,7 +541,7 @@ export const NotivixDataModal: React.FC<ModelSectionProps> = ({
                 handleFieldChange(date ? date.toISOString() : "")
               }
               disabled={isDisabled}
-               format="DD/MM/YYYY" 
+              format="DD/MM/YYYY"
               slotProps={{
                 textField: {
                   variant: "outlined",
