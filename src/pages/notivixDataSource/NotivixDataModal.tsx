@@ -829,8 +829,6 @@
 //   );
 // };
 
-
-
 import * as React from "react";
 import {
   Box,
@@ -1085,9 +1083,9 @@ export const NotivixDataModal: React.FC<ModelSectionProps> = ({
   // Replace the existing renderViewField function with this:
   const renderViewField = (attribute: any) => {
     const fieldName = attribute.name;
-    const fieldLabel = attribute.name;
+    const fieldLabel = attribute.label || attribute.name;
     let value = formData[fieldName] || "-";
-    
+
     // Handle date formatting (only for non-array values)
     if (attribute.type === "date" && value !== "-" && !Array.isArray(value)) {
       try {
@@ -1097,7 +1095,7 @@ export const NotivixDataModal: React.FC<ModelSectionProps> = ({
         console.error("Error formatting date:", error);
       }
     }
-    
+
     // Function to render value content - handles arrays and single values
     const renderValueContent = (val: any) => {
       if (val === "-") {
@@ -1105,17 +1103,17 @@ export const NotivixDataModal: React.FC<ModelSectionProps> = ({
           <Typography
             variant="body2"
             sx={{
-              fontSize: '0.875rem',
+              fontSize: "0.875rem",
               lineHeight: 1.4,
               color: STYLE_GUIDE?.COLORS?.textSecondary || "#666",
-              fontStyle: 'italic'
+              fontStyle: "italic",
             }}
           >
             {val}
           </Typography>
         );
       }
-      
+
       // Check if value is an array
       if (Array.isArray(val)) {
         if (val.length === 0) {
@@ -1123,32 +1121,34 @@ export const NotivixDataModal: React.FC<ModelSectionProps> = ({
             <Typography
               variant="body2"
               sx={{
-                fontSize: '0.875rem',
+                fontSize: "0.875rem",
                 color: STYLE_GUIDE?.COLORS?.textSecondary || "#666",
-                fontStyle: 'italic'
+                fontStyle: "italic",
               }}
             >
               No data
             </Typography>
           );
         }
-        
+
         return (
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, py: 0.5 }}>
+          <Box
+            sx={{ display: "flex", flexDirection: "column", gap: 0.5, py: 0.5 }}
+          >
             {val.map((item, index) => (
-              <Typography 
+              <Typography
                 key={index}
                 variant="body2"
-                sx={{ 
-                  fontSize: '0.875rem',
+                sx={{
+                  fontSize: "0.875rem",
                   lineHeight: 1.4,
-                  wordBreak: 'break-word',
+                  wordBreak: "break-word",
                   color: STYLE_GUIDE?.COLORS?.textPrimary || "#333",
-                  '&:not(:last-child)': {
+                  "&:not(:last-child)": {
                     borderBottom: `1px solid ${STYLE_GUIDE?.COLORS?.divider || "#f0f0f0"}`,
-                    paddingBottom: '4px',
-                    marginBottom: '4px'
-                  }
+                    paddingBottom: "4px",
+                    marginBottom: "4px",
+                  },
                 }}
               >
                 {String(item)}
@@ -1157,23 +1157,23 @@ export const NotivixDataModal: React.FC<ModelSectionProps> = ({
           </Box>
         );
       }
-      
+
       // For single values
       return (
         <Typography
           variant="body2"
           sx={{
-            fontSize: '0.875rem',
+            fontSize: "0.875rem",
             lineHeight: 1.4,
-            wordBreak: 'break-word',
-            color: STYLE_GUIDE?.COLORS?.textPrimary || "#333"
+            wordBreak: "break-word",
+            color: STYLE_GUIDE?.COLORS?.textPrimary || "#333",
           }}
         >
           {String(val)}
         </Typography>
       );
     };
-    
+
     return (
       <Box
         key={fieldName}
@@ -1217,7 +1217,7 @@ export const NotivixDataModal: React.FC<ModelSectionProps> = ({
             ...(Array.isArray(value) && {
               alignItems: "stretch",
               py: 1,
-            })
+            }),
           }}
         >
           {renderValueContent(value)}
@@ -1246,10 +1246,13 @@ export const NotivixDataModal: React.FC<ModelSectionProps> = ({
   }
   const renderAttributeField = (attribute: any) => {
     const fieldName = attribute.name;
-    const fieldLabel = attribute.name;
+    const fieldLabel =attribute.label || attribute.name;
     const fieldType = attribute.type;
     const isRequired = attribute.required;
     const isDisabled = modalMode === "view";
+    const isFieldEditable = attribute.isEditable && modalMode !== "view";
+    if (modalMode === "edit" && !attribute.isEditable) return null;
+
     const hasError = fieldErrors[fieldName];
     const renderLabel = (label: string) => (
       <React.Fragment>
@@ -1285,6 +1288,7 @@ export const NotivixDataModal: React.FC<ModelSectionProps> = ({
                 sx={{
                   color: STYLE_GUIDE?.COLORS?.primaryDark || "#3f51b5",
                 }}
+                disabled={!isFieldEditable}
               />
             }
             label={renderLabel(fieldLabel)}
@@ -1320,6 +1324,7 @@ export const NotivixDataModal: React.FC<ModelSectionProps> = ({
                 handleFieldChange("");
               }
             }}
+            disabled={!isFieldEditable}
             renderInput={(params) => (
               <TextField
                 {...params}
@@ -1380,6 +1385,7 @@ export const NotivixDataModal: React.FC<ModelSectionProps> = ({
               );
               handleFieldChange(values);
             }}
+            disabled={!isFieldEditable}
             renderInput={(params) => (
               <TextField
                 {...params}
@@ -1416,7 +1422,8 @@ export const NotivixDataModal: React.FC<ModelSectionProps> = ({
               onChange={(date) =>
                 handleFieldChange(date ? date.toISOString() : "")
               }
-              disabled={isDisabled}
+              // disabled={isDisabled}
+              disabled={!isFieldEditable}
               format="DD/MM/YYYY"
               slotProps={{
                 textField: {
@@ -1447,7 +1454,8 @@ export const NotivixDataModal: React.FC<ModelSectionProps> = ({
             }}
             variant="outlined"
             fullWidth
-            disabled={isDisabled}
+            disabled={!isFieldEditable}
+            // disabled={isDisabled}
             error={!!fieldErrors[fieldName]}
             helperText={fieldErrors[fieldName] || ""}
             sx={{ "& .MuiOutlinedInput-root": { borderRadius: "8px" } }}
@@ -1463,7 +1471,8 @@ export const NotivixDataModal: React.FC<ModelSectionProps> = ({
             onChange={(e) => handleFieldChange(e.target.value)}
             variant="outlined"
             fullWidth
-            disabled={isDisabled}
+            // disabled={isDisabled}
+            disabled={!isFieldEditable}
             error={!!fieldErrors[fieldName]}
             helperText={fieldErrors[fieldName] || ""}
             sx={{ "& .MuiOutlinedInput-root": { borderRadius: "8px" } }}
@@ -1478,7 +1487,8 @@ export const NotivixDataModal: React.FC<ModelSectionProps> = ({
             onChange={(e) => handleFieldChange(e.target.value)}
             variant="outlined"
             fullWidth
-            disabled={isDisabled}
+            // disabled={isDisabled}
+            disabled={!isFieldEditable}
             error={!!fieldErrors[fieldName]}
             helperText={fieldErrors[fieldName] || ""}
             sx={{ "& .MuiOutlinedInput-root": { borderRadius: "8px" } }}

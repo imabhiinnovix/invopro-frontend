@@ -60,6 +60,7 @@ interface FormAttribute {
   validation: string[];
   transformations: string[];
   cleaner: string[];
+  isEditable: boolean | "True" | "False";
 }
 
 interface FormEntityRequestPayload {
@@ -95,10 +96,10 @@ const AttributeField: React.FC<AttributeFieldProps> = ({
   setValue,
   fileUploadLoader,
 }) => {
-   const watchedType = useWatch({
+  const watchedType = useWatch({
     control,
     name: `attributes.${index}.type`,
-    defaultValue: attribute.type || ""
+    defaultValue: attribute.type || "",
   });
 
   const refEntityId = useWatch({
@@ -138,28 +139,22 @@ const AttributeField: React.FC<AttributeFieldProps> = ({
               alignItems: "flex-start",
               paddingRight: STYLE_GUIDE.SPACING.s2,
               fontSize: "14px",
-              backgroundColor:
-                STYLE_GUIDE.COLORS.white,
+              backgroundColor: STYLE_GUIDE.COLORS.white,
               "& fieldset": {
-                borderColor:
-                  STYLE_GUIDE.COLORS.darkBackground,
+                borderColor: STYLE_GUIDE.COLORS.darkBackground,
               },
               "&:hover fieldset": {
-                borderColor:
-                  STYLE_GUIDE.COLORS.darkBorderHover,
+                borderColor: STYLE_GUIDE.COLORS.darkBorderHover,
               },
               "&.Mui-focused fieldset": {
-                borderColor:
-                  STYLE_GUIDE.COLORS.inputFocusFallback,
+                borderColor: STYLE_GUIDE.COLORS.inputFocusFallback,
               },
             },
             "& .MuiInputLabel-root": {
-              color:
-                STYLE_GUIDE.COLORS.darkBorderFocus,
+              color: STYLE_GUIDE.COLORS.darkBorderFocus,
             },
             "& .MuiInputLabel-root.Mui-focused": {
-              color:
-                STYLE_GUIDE.COLORS.inputFocusFallback,
+              color: STYLE_GUIDE.COLORS.inputFocusFallback,
             },
             "& .MuiInputBase-input": {
               color: `${STYLE_GUIDE.COLORS.textDarkGray} !important`,
@@ -180,37 +175,29 @@ const AttributeField: React.FC<AttributeFieldProps> = ({
             required: "File Attribute Name is required",
           })}
           error={!!errors.attributes?.[index]?.mappingName}
-          helperText={
-            errors.attributes?.[index]?.mappingName?.message
-          }
+          helperText={errors.attributes?.[index]?.mappingName?.message}
           sx={{
             "& .MuiOutlinedInput-root": {
               borderRadius: STYLE_GUIDE.SPACING.s2,
               alignItems: "flex-start",
               paddingRight: STYLE_GUIDE.SPACING.s2,
               fontSize: "14px",
-              backgroundColor:
-                STYLE_GUIDE.COLORS.white,
+              backgroundColor: STYLE_GUIDE.COLORS.white,
               "& fieldset": {
-                borderColor:
-                  STYLE_GUIDE.COLORS.darkBackground,
+                borderColor: STYLE_GUIDE.COLORS.darkBackground,
               },
               "&:hover fieldset": {
-                borderColor:
-                  STYLE_GUIDE.COLORS.darkBorderHover,
+                borderColor: STYLE_GUIDE.COLORS.darkBorderHover,
               },
               "&.Mui-focused fieldset": {
-                borderColor:
-                  STYLE_GUIDE.COLORS.inputFocusFallback,
+                borderColor: STYLE_GUIDE.COLORS.inputFocusFallback,
               },
             },
             "& .MuiInputLabel-root": {
-              color:
-                STYLE_GUIDE.COLORS.darkBorderFocus,
+              color: STYLE_GUIDE.COLORS.darkBorderFocus,
             },
             "& .MuiInputLabel-root.Mui-focused": {
-              color:
-                STYLE_GUIDE.COLORS.inputFocusFallback,
+              color: STYLE_GUIDE.COLORS.inputFocusFallback,
             },
             "& .MuiInputBase-input": {
               color: `${STYLE_GUIDE.COLORS.textDarkGray} !important`,
@@ -243,7 +230,7 @@ const AttributeField: React.FC<AttributeFieldProps> = ({
           defaultValue={attribute.type || ""}
         />
         {["option", "multioption", "text-with-option"].includes(
-        watchedType
+          watchedType
         ) && (
           <CommonDropdownSearch
             control={control}
@@ -266,9 +253,20 @@ const AttributeField: React.FC<AttributeFieldProps> = ({
           rules={{ required: "Attribute Validation is required" }}
           error={!!errors.attributes?.[index]?.required}
           errorMessage={
-            (errors.attributes?.[index]?.required as FieldError)
-              ?.message
+            (errors.attributes?.[index]?.required as FieldError)?.message
           }
+        />
+        <CommonSelect
+          control={control}
+          name={`attributes.${index}.isEditable`}
+          label="Editable"
+          options={["True", "False"]}
+          defaultValue={"True"}
+          rules={{ required: "Editable is required" }}
+          // error={!!errors.attributes?.[index]?.isEditable}
+          // errorMessage={
+          //   (errors.attributes?.[index]?.isEditable as FieldError)?.message
+          // }
         />
         <CommonDropdownSearch
           control={control}
@@ -281,8 +279,7 @@ const AttributeField: React.FC<AttributeFieldProps> = ({
           rules={{ required: false }}
           error={!!errors.attributes?.[index]?.refEntityId}
           errorMessage={
-            (errors.attributes?.[index]?.refEntityId as FieldError)
-              ?.message
+            (errors.attributes?.[index]?.refEntityId as FieldError)?.message
           }
           apiName="entities"
           defaultDataUrl={`${GET.Entity_List}`}
@@ -301,20 +298,15 @@ const AttributeField: React.FC<AttributeFieldProps> = ({
           error={!!errors.attributes?.[index]?.refEntityField}
           errorMessage={
             referenceEntityNames[index]?.length
-              ? (
-                  errors.attributes?.[index]
-                    ?.refEntityField as FieldError
-                )?.message
+              ? (errors.attributes?.[index]?.refEntityField as FieldError)
+                  ?.message
               : "No reference fields available for this entity"
           }
           disabled={
-            isLoadingReferences[index] ||
-            !referenceEntityNames[index]?.length
+            isLoadingReferences[index] || !referenceEntityNames[index]?.length
           }
           helperText={
-            isLoadingReferences[index]
-              ? "Loading fields..."
-              : undefined
+            isLoadingReferences[index] ? "Loading fields..." : undefined
           }
           clearable
         />
@@ -322,13 +314,18 @@ const AttributeField: React.FC<AttributeFieldProps> = ({
           control={control}
           name={`attributes.${index}.relationType`}
           label="Reference Relation Type"
-          options={["many_to_one", "one_to_one", "self", "mapping_one_to_one", "mapping_many_to_one"]}
+          options={[
+            "many_to_one",
+            "one_to_one",
+            "self",
+            "mapping_one_to_one",
+            "mapping_many_to_one",
+          ]}
           defaultValue={attribute.relationType || ""}
           rules={{ required: false }}
           error={!!errors.attributes?.[index]?.relationType}
           errorMessage={
-            (errors.attributes?.[index]?.relationType as FieldError)
-              ?.message
+            (errors.attributes?.[index]?.relationType as FieldError)?.message
           }
         />
       </Stack>
@@ -381,6 +378,7 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
           validation: [],
           transformations: [],
           cleaner: [],
+                    isEditable: "True",
         },
       ],
     },
@@ -412,6 +410,7 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
           validation: attr.validation ?? [],
           transformations: attr.transformations ?? [],
           cleaner: attr.cleaner ?? [],
+          isEditable: attr.isEditable ? "True" : "False",
         })) ?? [
           {
             name: "",
@@ -425,6 +424,7 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
             validation: [],
             transformations: [],
             cleaner: [],
+                    isEditable: "True",
           },
         ],
       });
@@ -456,6 +456,7 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
             validation: [],
             transformations: [],
             cleaner: [],
+                    isEditable: "True",
           },
         ],
       });
@@ -615,6 +616,7 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
                   transformations: [],
                   cleaner: [],
                   required: "Not Mandatory",
+                    isEditable: "True",
                 });
               }
             }
@@ -695,7 +697,10 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
       const updated: any = {
         ...rest,
         required: data.required === "Mandatory" ? true : false,
+        isEditable: data.isEditable === "True" ? true : false,
       };
+      console.log("2222:", updated);
+
       if (!["option", "multioption"].includes(data.type)) {
         updated.optionAttributeId = "";
       }
@@ -793,28 +798,22 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
                     alignItems: "flex-start",
                     paddingRight: STYLE_GUIDE.SPACING.s2,
                     fontSize: "14px",
-                    backgroundColor:
-                      STYLE_GUIDE.COLORS.white,
+                    backgroundColor: STYLE_GUIDE.COLORS.white,
                     "& fieldset": {
-                      borderColor:
-                        STYLE_GUIDE.COLORS.darkBackground,
+                      borderColor: STYLE_GUIDE.COLORS.darkBackground,
                     },
                     "&:hover fieldset": {
-                      borderColor:
-                        STYLE_GUIDE.COLORS.darkBorderHover,
+                      borderColor: STYLE_GUIDE.COLORS.darkBorderHover,
                     },
                     "&.Mui-focused fieldset": {
-                      borderColor:
-                        STYLE_GUIDE.COLORS.inputFocusFallback,
+                      borderColor: STYLE_GUIDE.COLORS.inputFocusFallback,
                     },
                   },
                   "& .MuiInputLabel-root": {
-                    color:
-                      STYLE_GUIDE.COLORS.darkBorderFocus,
+                    color: STYLE_GUIDE.COLORS.darkBorderFocus,
                   },
                   "& .MuiInputLabel-root.Mui-focused": {
-                    color:
-                      STYLE_GUIDE.COLORS.inputFocusFallback,
+                    color: STYLE_GUIDE.COLORS.inputFocusFallback,
                   },
                   "& .MuiInputBase-input": {
                     color: `${STYLE_GUIDE.COLORS.textDarkGray} !important`,
@@ -842,28 +841,22 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
                     alignItems: "flex-start",
                     paddingRight: STYLE_GUIDE.SPACING.s2,
                     fontSize: "14px",
-                    backgroundColor:
-                      STYLE_GUIDE.COLORS.white,
+                    backgroundColor: STYLE_GUIDE.COLORS.white,
                     "& fieldset": {
-                      borderColor:
-                        STYLE_GUIDE.COLORS.darkBackground,
+                      borderColor: STYLE_GUIDE.COLORS.darkBackground,
                     },
                     "&:hover fieldset": {
-                      borderColor:
-                        STYLE_GUIDE.COLORS.darkBorderHover,
+                      borderColor: STYLE_GUIDE.COLORS.darkBorderHover,
                     },
                     "&.Mui-focused fieldset": {
-                      borderColor:
-                        STYLE_GUIDE.COLORS.inputFocusFallback,
+                      borderColor: STYLE_GUIDE.COLORS.inputFocusFallback,
                     },
                   },
                   "& .MuiInputLabel-root": {
-                    color:
-                      STYLE_GUIDE.COLORS.darkBorderFocus,
+                    color: STYLE_GUIDE.COLORS.darkBorderFocus,
                   },
                   "& .MuiInputLabel-root.Mui-focused": {
-                    color:
-                      STYLE_GUIDE.COLORS.inputFocusFallback,
+                    color: STYLE_GUIDE.COLORS.inputFocusFallback,
                   },
                   "& .MuiInputBase-input": {
                     color: `${STYLE_GUIDE.COLORS.textDarkGray} !important`,
@@ -920,6 +913,7 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
                     validation: [],
                     transformations: [],
                     cleaner: [],
+                    isEditable: "True",
                   });
                   setReferenceEntityNames((prev) => ({
                     ...prev,
