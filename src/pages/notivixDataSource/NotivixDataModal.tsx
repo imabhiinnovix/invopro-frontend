@@ -1931,10 +1931,10 @@ export const NotivixDataModal: React.FC<ModelSectionProps> = ({
         let isValid = true;
         let errorMessage = "";
         // First validate required fields
-        if (!validateRequiredFields()) {
-          toast.error("Please fill in all required fields");
-          return;
-        }
+        // if (!validateRequiredFields()) {
+        //   toast.error("Please fill in all required fields");
+        //   return;
+        // }
         // Then validate field types
         for (const attribute of attributes) {
           const fieldName = attribute.name;
@@ -2018,17 +2018,27 @@ export const NotivixDataModal: React.FC<ModelSectionProps> = ({
   const renderAttributeField = (attribute: any, isViewMode = false) => {
     // Hide field if isReferenceEditable is HIDE
     const shouldHideField = () => {
-      if (attribute.isReferenceEditable === "HIDE") return true;
-      if (attribute.name.includes(".") && attribute.isReferenceEditable === "HIDE")
+       if (attribute.name.includes(".") && attribute.isReferenceEditable === "HIDE") {
         return true;
-      return false;
+      }
+      return false; // default
     };
     if (shouldHideField()) return null;
     
     const fieldName = attribute.name;
     const fieldLabel = attribute.label || attribute.name;
     const isRequired = attribute.required;
-    const isFieldEditable = !isViewMode && attribute.isReferenceEditable === "EDIT";
+    const hasDot = attribute.name.includes(".");
+
+    let isFieldEditable: boolean;
+    if (hasDot) {
+      // Nested reference fields → follow isReferenceEditable
+      isFieldEditable = !isViewMode && attribute.isReferenceEditable === "EDIT";
+    } else {
+      // Top-level fields → normal rule
+      isFieldEditable = !isViewMode;
+    }
+    // const isFieldEditable = !isViewMode && attribute.isReferenceEditable === "EDIT";
     const value = formData[fieldName];
     
     const renderLabel = (label: string) => (
