@@ -1,14 +1,5 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
-import {
-  Box,
-  Typography,
-  TextField,
-  Button,
-  ButtonGroup,
-  Stack,
-  MenuItem,
-  SelectChangeEvent,
-} from '@mui/material';
+import { Box, Typography, TextField, Button, ButtonGroup, Stack, MenuItem, SelectChangeEvent } from '@mui/material';
 import StyledSelect from '../../../components/atom/common/StyledSelect';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
@@ -20,9 +11,16 @@ import FilterListIcon from '@mui/icons-material/FilterList';
 import { useParams, useLocation } from 'react-router-dom';
 import { ChartGrid } from './NotivixChartGrid';
 import { NotivixAddChartModal, ChartFormData } from './NotivixAddChartModal';
-import NotivixFiltersModal, { FilterOptions } from './NotivixFiltersModal';
+import NotivixFiltersModal from './NotivixFiltersModal';
 import { useAppDispatch, useAppSelector } from '../../../storeHooks';
-import { updateWidget, saveWidgets, fetchWidgetTheme, fetchChartData, selectDashboardTheme, fetchDataSourceDetails } from '../notivixDashboardActions';
+import {
+  updateWidget,
+  saveWidgets,
+  fetchWidgetTheme,
+  fetchChartData,
+  selectDashboardTheme,
+  fetchDataSourceDetails,
+} from '../notivixDashboardActions';
 import { toast } from 'react-toastify';
 import { ChartResponse, TemporaryChart, Dashboard } from '../types';
 import axiosInstance from '../../../services/axiosInstance';
@@ -43,7 +41,10 @@ interface DashboardViewProps {
   onTitleChange: (newTitle: string) => void;
 }
 
-export const NotivixDashboardView: React.FC<DashboardViewProps> = ({ title: initialTitle, onTitleChange }): JSX.Element => {
+export const NotivixDashboardView: React.FC<DashboardViewProps> = ({
+  title: initialTitle,
+  onTitleChange,
+}): JSX.Element => {
   const theme = useUnifiedTheme();
   const { getHeadingSx, getButtonSx } = useComponentTypography();
   const [isEditMode, setIsEditMode] = useState(false);
@@ -55,7 +56,7 @@ export const NotivixDashboardView: React.FC<DashboardViewProps> = ({ title: init
   const [gridColumns, setGridColumns] = useState(2);
   const [selectedTheme, setSelectedTheme] = useState<string>('');
   const [isFiltersModalOpen, setIsFiltersModalOpen] = useState(false);
-  const [currentFilters, setCurrentFilters] = useState<FilterOptions>({});
+  // const [currentFilters, setCurrentFilters] = useState<FilterOptions>({});
 
   const inputRef = useRef<HTMLInputElement>(null);
   const { id: dashboardId } = useParams();
@@ -387,7 +388,6 @@ export const NotivixDashboardView: React.FC<DashboardViewProps> = ({ title: init
     }
   }, [startDate, endDate, currentDashboard?.settings?.dashboardType, trigger]);
 
-
   const handleThemeChange = async (event: SelectChangeEvent<unknown>) => {
     const themeId = event.target.value as string;
     setSelectedTheme(themeId);
@@ -429,60 +429,59 @@ export const NotivixDashboardView: React.FC<DashboardViewProps> = ({ title: init
     setIsFiltersModalOpen(false);
   };
 
-  const handleApplyFilters = async (filters: FilterOptions) => {
-    setCurrentFilters(filters);
-    
-    const filtersPayload: Record<string, any> = {};
-    
-    Object.keys(filters).forEach(key => {
-      if (key !== 'searchText' && key !== 'dateRange' && filters[key as keyof FilterOptions]) {
-        const value = filters[key as keyof FilterOptions];
-        if (value && value !== '') {
-          const fieldSetting = dataSourceDetails?.fieldSettings?.find(
-            (field) => field.attributeId === key
-          );
-          
-          if (fieldSetting) {
-            const attribute = dataSourceDetails?.entityId?.attributes?.find(
-              (attr) => attr._id === fieldSetting.attributeId
-            );
-            
-            if (attribute?.type === 'multioption') {
-              filtersPayload[fieldSetting.label] = Array.isArray(value) ? value : [value];
-            } else {
-              filtersPayload[fieldSetting.label] = Array.isArray(value) ? value[0] : value;
-            }
-          }
-        }
-      }
-    });
+  const handleApplyFilters = async (filters: any) => {
+    console.log(filters);
+    // setCurrentFilters(filters);
 
-    const firstChart = charts[0];
-    
-    if (!firstChart) {
-      toast.error('No charts found in the dashboard');
-      return;
-    }
+    // const filtersPayload: Record<string, any> = {};
 
-    const apiPayload = {
-      dataSourceId: currentDashboard?.settings?.dataSource?._id,
-      dimension: firstChart.dimensions[0] || firstChart.aggregation.attributeName,
-      aggregation: {
-        type: firstChart.aggregation.type,
-        attributeName: firstChart.aggregation.attributeName
-      },
-      groupBy: firstChart.groupBy,
-      widgetType: firstChart.widgetTypeId?.chartType || 'number',
-      conditions: firstChart.conditions,
-      ...(Object.keys(filtersPayload).length > 0 && { filters: filtersPayload })
-    };
+    // Object.keys(filters).forEach((key) => {
+    //   if (key !== 'searchText' && key !== 'dateRange' && filters[key as keyof FilterOptions]) {
+    //     const value = filters[key as keyof FilterOptions];
+    //     if (value && value !== '') {
+    //       const fieldSetting = dataSourceDetails?.fieldSettings?.find((field) => field.attributeId === key);
 
-    try {
-      const response = await axiosInstance.post('/common/dataSourceVersion/chartData', apiPayload);
-      toast.success('Filters applied successfully');
-    } catch (error) {
-      toast.error('Failed to apply filters. Please try again.');
-    }
+    //       if (fieldSetting) {
+    //         const attribute = dataSourceDetails?.entityId?.attributes?.find(
+    //           (attr) => attr._id === fieldSetting.attributeId
+    //         );
+
+    //         if (attribute?.type === 'multioption') {
+    //           filtersPayload[fieldSetting.label] = Array.isArray(value) ? value : [value];
+    //         } else {
+    //           filtersPayload[fieldSetting.label] = Array.isArray(value) ? value[0] : value;
+    //         }
+    //       }
+    //     }
+    //   }
+    // });
+
+    // const firstChart = charts[0];
+
+    // if (!firstChart) {
+    //   toast.error('No charts found in the dashboard');
+    //   return;
+    // }
+
+    // const apiPayload = {
+    //   dataSourceId: currentDashboard?.settings?.dataSource?._id,
+    //   dimension: firstChart.dimensions[0] || firstChart.aggregation.attributeName,
+    //   aggregation: {
+    //     type: firstChart.aggregation.type,
+    //     attributeName: firstChart.aggregation.attributeName,
+    //   },
+    //   groupBy: firstChart.groupBy,
+    //   widgetType: firstChart.widgetTypeId?.chartType || 'number',
+    //   conditions: firstChart.conditions,
+    //   ...(Object.keys(filtersPayload).length > 0 && { filters: filtersPayload }),
+    // };
+
+    // try {
+    //   const response = await axiosInstance.post('/common/dataSourceVersion/chartData', apiPayload);
+    //   toast.success('Filters applied successfully');
+    // } catch (error) {
+    //   toast.error('Failed to apply filters. Please try again.');
+    // }
   };
 
   return (
@@ -515,10 +514,41 @@ export const NotivixDashboardView: React.FC<DashboardViewProps> = ({ title: init
               onKeyDown={handleKeyPress}
               size="small"
               fullWidth
-              sx={{ '& .MuiOutlinedInput-root': { borderRadius: STYLE_GUIDE.SPACING.s2, alignItems: 'flex-start', paddingRight: STYLE_GUIDE.SPACING.s2, fontSize: '14px', backgroundColor: theme.getDropdownBackground(), '& fieldset': { borderColor: theme.getInputBorderColor(), }, '&:hover fieldset': { borderColor: theme.border?.hover || STYLE_GUIDE.COLORS.darkBorderHover, }, '&.Mui-focused fieldset': { borderColor: theme.input?.focusBorder || STYLE_GUIDE.COLORS.inputFocusFallback, }, }, '& .MuiInputLabel-root': { color: theme.palette.text.secondary, }, '& .MuiInputLabel-root.Mui-focused': { color: theme.input?.focusBorder || STYLE_GUIDE.COLORS.inputFocusFallback, }, '& .MuiInputBase-input': { color: `${theme.getInputTextColor()} !important`, }, '& .MuiInputBase-input::placeholder': { color: `${theme.palette.text.secondary} !important`, }, '& .MuiInputBase-input:-webkit-autofill': { WebkitTextFillColor: `${theme.getInputTextColor()} !important`, WebkitBoxShadow: `0 0 0 1000px ${theme.getDropdownBackground()} inset !important`, }, }}
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  borderRadius: STYLE_GUIDE.SPACING.s2,
+                  alignItems: 'flex-start',
+                  paddingRight: STYLE_GUIDE.SPACING.s2,
+                  fontSize: '14px',
+                  backgroundColor: theme.getDropdownBackground(),
+                  '& fieldset': { borderColor: theme.getInputBorderColor() },
+                  '&:hover fieldset': { borderColor: theme.border?.hover || STYLE_GUIDE.COLORS.darkBorderHover },
+                  '&.Mui-focused fieldset': {
+                    borderColor: theme.input?.focusBorder || STYLE_GUIDE.COLORS.inputFocusFallback,
+                  },
+                },
+                '& .MuiInputLabel-root': { color: theme.palette.text.secondary },
+                '& .MuiInputLabel-root.Mui-focused': {
+                  color: theme.input?.focusBorder || STYLE_GUIDE.COLORS.inputFocusFallback,
+                },
+                '& .MuiInputBase-input': { color: `${theme.getInputTextColor()} !important` },
+                '& .MuiInputBase-input::placeholder': { color: `${theme.palette.text.secondary} !important` },
+                '& .MuiInputBase-input:-webkit-autofill': {
+                  WebkitTextFillColor: `${theme.getInputTextColor()} !important`,
+                  WebkitBoxShadow: `0 0 0 1000px ${theme.getDropdownBackground()} inset !important`,
+                },
+              }}
             />
           ) : (
-            <Typography variant="h4" component="h1" sx={{ ...getHeadingSx(), mr: STYLE_GUIDE.SPACING.s4, fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.medium }}>
+            <Typography
+              variant="h4"
+              component="h1"
+              sx={{
+                ...getHeadingSx(),
+                mr: STYLE_GUIDE.SPACING.s4,
+                fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.medium,
+              }}
+            >
               {title}
             </Typography>
           )}
@@ -639,12 +669,12 @@ export const NotivixDashboardView: React.FC<DashboardViewProps> = ({ title: init
                 ) : null}
               </Box>
               {currentDashboard?.settings?.dashboardType === 'fixed' && (
-                <Button 
-                  onClick={handleOpenFiltersModal} 
-                  color="secondary" 
-                  variant="outlined" 
-                  startIcon={<FilterListIcon />} 
-                  sx={{ 
+                <Button
+                  onClick={handleOpenFiltersModal}
+                  color="secondary"
+                  variant="outlined"
+                  startIcon={<FilterListIcon />}
+                  sx={{
                     ...getButtonSx(),
                     borderColor: theme.getInputBorderColor(),
                     color: theme.palette.text.primary,
@@ -656,7 +686,13 @@ export const NotivixDashboardView: React.FC<DashboardViewProps> = ({ title: init
                   Filters
                 </Button>
               )}
-              <Button onClick={handleEditModeToggle} color="primary" variant="contained" startIcon={<EditIcon />} sx={{ ...getButtonSx() }}>
+              <Button
+                onClick={handleEditModeToggle}
+                color="primary"
+                variant="contained"
+                startIcon={<EditIcon />}
+                sx={{ ...getButtonSx() }}
+              >
                 Edit
               </Button>
             </>
@@ -758,25 +794,27 @@ export const NotivixDashboardView: React.FC<DashboardViewProps> = ({ title: init
                 onClose={handleCloseEditModal}
                 isSubmitting={false}
                 dashboardId={dashboardId || ''}
-                initialData={{
-                  _id: selectedChart._id,
-                  name: selectedChart.name,
-                  dimensions: selectedChart.dimensions,
-                  groupBy: selectedChart.groupBy,
-                  aggregation: selectedChart.aggregation,
-                  position: selectedChart.position || { x: 0, y: 0, index: 0 },
-                  conditions: selectedChart.conditions,
-                  dataSourceId: {
-                    _id: selectedChart.dataSourceId?._id || '',
-                    name: selectedChart.dataSourceId?.name || ''
-                  },
-                  widgetTypeId: {
-                    _id: selectedChart.widgetTypeId?._id || '',
-                    name: selectedChart.widgetTypeId?.name || '',
-                    chartType: selectedChart.widgetTypeId?.chartType || 'line'
-                  },
-                  isIncremental: selectedChart.isIncremental || false
-                } as any}
+                initialData={
+                  {
+                    _id: selectedChart._id,
+                    name: selectedChart.name,
+                    dimensions: selectedChart.dimensions,
+                    groupBy: selectedChart.groupBy,
+                    aggregation: selectedChart.aggregation,
+                    position: selectedChart.position || { x: 0, y: 0, index: 0 },
+                    conditions: selectedChart.conditions,
+                    dataSourceId: {
+                      _id: selectedChart.dataSourceId?._id || '',
+                      name: selectedChart.dataSourceId?.name || '',
+                    },
+                    widgetTypeId: {
+                      _id: selectedChart.widgetTypeId?._id || '',
+                      name: selectedChart.widgetTypeId?.name || '',
+                      chartType: selectedChart.widgetTypeId?.chartType || 'line',
+                    },
+                    isIncremental: selectedChart.isIncremental || false,
+                  } as any
+                }
                 onSave={handleChartUpdate}
                 isTrend={currentDashboard?.settings?.dashboardType === 'trend'}
                 currentDashboard={currentDashboard}
@@ -793,22 +831,9 @@ export const NotivixDashboardView: React.FC<DashboardViewProps> = ({ title: init
         open={isFiltersModalOpen}
         onClose={handleCloseFiltersModal}
         onApplyFilters={handleApplyFilters}
-        currentFilters={currentFilters}
-        availableFilters={dataSourceDetails?.fieldSettings
-          ?.filter((field) => field.isDashboardFilter)
-          .map((field) => {
-            // Find the corresponding attribute to get the type
-            const attribute = dataSourceDetails.entityId.attributes.find(
-              (attr) => attr._id === field.attributeId
-            );
-            return {
-              attributeId: field.attributeId,
-              label: field.label,
-              type: 'text', // Default type
-              isDashboardFilter: field.isDashboardFilter,
-              attributeType: attribute?.type || 'text',
-            };
-          }) || []}
+        // currentFilters={currentFilters}
+        dataSourceId={currentDashboard?.settings?.dataSource?._id} // Pass your dataSourceId here
+        filterFlag="isDashboardFilter" // Specify which flag to use for filtering
         isLoading={dataSourceDetailsLoading}
       />
     </Box>
