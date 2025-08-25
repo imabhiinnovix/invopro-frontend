@@ -1246,13 +1246,24 @@ export const NotivixDataModal: React.FC<ModelSectionProps> = ({
   }
   const renderAttributeField = (attribute: any) => {
     const fieldName = attribute.name;
-    const fieldLabel =attribute.label || attribute.name;
+    const fieldLabel = attribute.label || attribute.name;
     const fieldType = attribute.type;
     const isRequired = attribute.required;
     const isDisabled = modalMode === "view";
-    const isFieldEditable = attribute.isEditable && modalMode !== "view";
+    // const isFieldEditable = attribute.isEditable && modalMode !== "view";
     // if (modalMode === "edit" && !attribute.isEditable) return null;
+    if (attribute.referenceEntitySetting) {
+      if (attribute.isReferenceEditable === "HIDE") {
+        return null; // hide field completely
+      }
+    }
+    let isFieldEditable = false;
 
+    if (attribute.isReferenceEditable === "EDIT" && modalMode !== "view") {
+      isFieldEditable = true; // sirf add/edit mode me enable
+    } else if (attribute.isReferenceEditable === "VIEW") {
+      isFieldEditable = false; // readonly
+    }
     const hasError = fieldErrors[fieldName];
     const renderLabel = (label: string) => (
       <React.Fragment>
@@ -1352,7 +1363,7 @@ export const NotivixDataModal: React.FC<ModelSectionProps> = ({
                   label={typeof value === "string" ? value : value.label}
                   {...getTagProps({})}
                   size="small"
-                  sx={{color: STYLE_GUIDE?.COLORS?.textPrimary || "#333"}}
+                  sx={{ color: STYLE_GUIDE?.COLORS?.textPrimary || "#333" }}
                   onDelete={() => {
                     handleFieldChange("");
                   }}

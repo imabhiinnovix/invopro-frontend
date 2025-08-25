@@ -60,7 +60,7 @@ interface FormAttribute {
   validation: string[];
   transformations: string[];
   cleaner: string[];
-  isEditable: boolean | "True" | "False";
+  isReferenceEditable: boolean | "HIDE" | "VIEW" | "EDIT";
 }
 
 interface FormEntityRequestPayload {
@@ -258,15 +258,11 @@ const AttributeField: React.FC<AttributeFieldProps> = ({
         />
         <CommonSelect
           control={control}
-          name={`attributes.${index}.isEditable`}
+          name={`attributes.${index}.isReferenceEditable`}
           label="Reference Editable"
-          options={["True", "False"]}
-          defaultValue={"False"}
-          rules={{ required: "Editable is required" }}
-          // error={!!errors.attributes?.[index]?.isEditable}
-          // errorMessage={
-          //   (errors.attributes?.[index]?.isEditable as FieldError)?.message
-          // }
+          options={["EDIT", "VIEW", "HIDE"]}
+          defaultValue={attribute.isReferenceEditable || "HIDE"}
+          // rules={{ required: "Editable is required" }}
         />
         <CommonDropdownSearch
           control={control}
@@ -378,7 +374,7 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
           validation: [],
           transformations: [],
           cleaner: [],
-          isEditable: "False",
+          isReferenceEditable: "HIDE",
         },
       ],
     },
@@ -410,7 +406,7 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
           validation: attr.validation ?? [],
           transformations: attr.transformations ?? [],
           cleaner: attr.cleaner ?? [],
-          isEditable: attr.isEditable ? "True" : "False",
+          isReferenceEditable: attr.isReferenceEditable || "HIDE"
         })) ?? [
           {
             name: "",
@@ -424,7 +420,7 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
             validation: [],
             transformations: [],
             cleaner: [],
-                    isEditable: "False",
+            isReferenceEditable: "HIDE",
           },
         ],
       });
@@ -456,7 +452,7 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
             validation: [],
             transformations: [],
             cleaner: [],
-                    isEditable: "False",
+            isReferenceEditable: "HIDE",
           },
         ],
       });
@@ -616,7 +612,7 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
                   transformations: [],
                   cleaner: [],
                   required: "Not Mandatory",
-                    isEditable: "False",
+                  isReferenceEditable: "HIDE",
                 });
               }
             }
@@ -697,7 +693,7 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
       const updated: any = {
         ...rest,
         required: data.required === "Mandatory" ? true : false,
-        isEditable: data.isEditable === "True" ? true : false,
+        isReferenceEditable: data.isReferenceEditable || "HIDE"
       };
       console.log("2222:", updated);
 
@@ -913,7 +909,7 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
                     validation: [],
                     transformations: [],
                     cleaner: [],
-                    isEditable: "False",
+                    isReferenceEditable: "HIDE",
                   });
                   setReferenceEntityNames((prev) => ({
                     ...prev,
