@@ -107,33 +107,36 @@ export default function NotivixDataSource() {
   }, []);
 
   // Handler functions
+ 
   const handleView = useCallback(
-    (id: string) => {
-      const rawData = sourceVersionData?.data?.data || [];
-      if (rawData.length === 0) {
-        console.warn("Cannot view: No data available");
-        return;
-      }
-      const row = rawData.find((r) => r._id === id || r.id === id);
-      if (row) {
-        const newFormData: Record<string, any> = { id: row._id || row.id };
-        const dataSource = row.rowData || row;
-        Object.keys(dataSource).forEach((key) => {
-          if (key !== "_id" && key !== "id") {
-            newFormData[key] =
-              dataSource[key] != null ? String(dataSource[key]) : "";
-          }
-        });
-        setFormData(newFormData);
-        setModalMode("view");
-        setOpenModal(true);
-      } else {
-        console.error(`Row with ID ${id} not found`);
-      }
-    },
-    [sourceVersionData.data]
-  );
+  (id: string) => {
+    const rawData = sourceVersionData?.data?.data || [];
+    if (rawData.length === 0) {
+      console.warn("Cannot edit: No data available");
+      return;
+    }
+    const row = rawData.find((r) => r._id === id || r.id === id);
+    if (row) {
+      const newFormData: Record<string, any> = { id: row._id || row.id };
+      const dataSource = row.rowData || {};
+      console.log("rdataSource", dataSource);
 
+      Object.keys(dataSource).forEach((key) => {
+        if (key !== "_id" && key !== "id") {
+          const value = dataSource[key];
+          newFormData[key] = Array.isArray(value) ? value : value != null ? String(value) : "";
+        }
+      });
+
+      setFormData(newFormData);
+      setModalMode("view");
+      setOpenModal(true);
+    } else {
+      console.error(`Row with ID ${id} not found`);
+    }
+  },
+  [sourceVersionData?.data]
+);
   // const handleEdit = useCallback(
   //   (id: string) => {
   //     const rawData = sourceVersionData?.data?.data || [];
@@ -180,7 +183,6 @@ export default function NotivixDataSource() {
       Object.keys(dataSource).forEach((key) => {
         if (key !== "_id" && key !== "id") {
           const value = dataSource[key];
-          // ✅ agar array hai, use as-is, nahi to string me convert karo
           newFormData[key] = Array.isArray(value) ? value : value != null ? String(value) : "";
         }
       });
