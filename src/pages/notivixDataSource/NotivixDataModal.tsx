@@ -1352,6 +1352,7 @@ export const NotivixDataModal: React.FC<ModelSectionProps> = ({
                   label={typeof value === "string" ? value : value.label}
                   {...getTagProps({})}
                   size="small"
+                  sx={{color: STYLE_GUIDE?.COLORS?.textPrimary || "#333"}}
                   onDelete={() => {
                     handleFieldChange("");
                   }}
