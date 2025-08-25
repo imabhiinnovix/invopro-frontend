@@ -1251,7 +1251,7 @@ export const NotivixDataModal: React.FC<ModelSectionProps> = ({
     const isRequired = attribute.required;
     const isDisabled = modalMode === "view";
     const isFieldEditable = attribute.isEditable && modalMode !== "view";
-    if (modalMode === "edit" && !attribute.isEditable) return null;
+    // if (modalMode === "edit" && !attribute.isEditable) return null;
 
     const hasError = fieldErrors[fieldName];
     const renderLabel = (label: string) => (
