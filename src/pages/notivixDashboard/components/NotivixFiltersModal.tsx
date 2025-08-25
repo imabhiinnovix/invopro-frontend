@@ -24,6 +24,7 @@ import { STYLE_GUIDE } from '../../../styles';
 import { useUnifiedTheme } from '../../../hooks/useUnifiedTheme';
 import { useComponentTypography } from '../../../hooks/useComponentTypography';
 import useGet from '../../../hooks/useGet';
+import axiosInstance from '../../../services/axiosInstance';
 
 interface NotivixFiltersModalProps {
   open: boolean;
@@ -41,6 +42,7 @@ interface FieldSetting {
   type: string;
   isDashboardFilter: boolean;
   isFilterEnable: boolean;
+  isDerived?: boolean;
   optionAttributeId?: string;
 }
 
@@ -54,9 +56,45 @@ interface EntityFieldOption {
 
 interface DataSourceResponse {
   success: boolean;
+  message: string;
   data: {
+    _id: string;
+    code: string;
+    name: string;
+    description: string;
+    entityId: {
+      _id: string;
+      name: string;
+      description: string;
+      attributes: EntityAttribute[];
+    };
     fieldSettings: FieldSetting[];
     entityFieldOptions: EntityFieldOption[];
+    isActive: boolean;
+    isShowMenu: boolean;
+    isVisible: boolean;
+    versionType: string;
+    createdAt: string;
+    updatedAt: string;
+    createdBy: string;
+    updatedBy: string;
+  };
+}
+interface EntityAttribute {
+  _id: string;
+  name: string;
+  mappingName: string;
+  type: string;
+  required: string;
+  validation: any[];
+  transformations: any[];
+  optionAttributeId: string | null;
+  cleaner: any[];
+  isReferenceEdit: boolean;
+  referenceEntitySetting?: {
+    refEntityId: string;
+    refEntityField: string;
+    relationType: string;
   };
 }
 
@@ -64,6 +102,26 @@ interface AttributeOptionsResponse {
   success: boolean;
   data: {
     attributeValue: string[];
+  };
+}
+
+interface DerivedFieldResponse {
+  success: boolean;
+  message: string;
+  data: {
+    _id: string;
+    name: string;
+    type: string;
+    valueRules: Array<{
+      value: string;
+      conditionOperator: string;
+      conditions: Array<{
+        fieldId: string;
+        operator: string;
+        matchValues: any[];
+      }>;
+      _id: string;
+    }>;
   };
 }
 
@@ -80,6 +138,7 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
   const { getButtonSx } = useComponentTypography();
   const [filters, setFilters] = useState<Record<string, any>>(currentFilters);
   const [optionsCache, setOptionsCache] = useState<Record<string, string[]>>({});
+  const [derivedFieldsCache, setDerivedFieldsCache] = useState<Record<string, string[]>>({});
 
   // Fetch data source details
   const dataSourceQuery = useGet<DataSourceResponse>(
@@ -101,15 +160,27 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
     return map;
   }, [dataSourceQuery.data]);
 
+  const entityAttributeOptionMap = React.useMemo(() => {
+    const attrMap: Record<string, string | null> = {};
+
+    dataSourceQuery.data?.data?.entityId?.attributes?.forEach((attr) => {
+      attrMap[attr._id] = attr.optionAttributeId;
+    });
+
+    return attrMap;
+  }, [dataSourceQuery.data]);
+
   // Fetch attribute options for option/multioption fields
   const fetchAttributeOptions = async (optionAttributeId: string) => {
+    console.log('optionsCache', optionsCache);
     if (optionsCache[optionAttributeId]) {
       return optionsCache[optionAttributeId];
     }
 
     try {
-      const response = await fetch(`/common/attributeOptions/get/${optionAttributeId}`);
-      const data: AttributeOptionsResponse = await response.json();
+      const { data } = await axiosInstance.get<AttributeOptionsResponse>(
+        `/common/attributeOptions/get/${optionAttributeId}`
+      );
 
       if (data.success && data.data.attributeValue) {
         setOptionsCache((prev) => ({
@@ -125,11 +196,42 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
     return [];
   };
 
+  // Fetch derived field options
+  const fetchDerivedFieldOptions = async (attributeId: string) => {
+    if (derivedFieldsCache[attributeId]) {
+      return derivedFieldsCache[attributeId];
+    }
+
+    try {
+      const { data } = await axiosInstance.get<DerivedFieldResponse>(`/common/derivedField/${attributeId}`);
+
+      if (data.success && data.data.valueRules) {
+        const options = data.data.valueRules.map((rule) => rule.value);
+        setDerivedFieldsCache((prev) => ({
+          ...prev,
+          [attributeId]: options,
+        }));
+        return options;
+      }
+    } catch (error) {
+      console.error('Error fetching derived field options:', error);
+    }
+
+    return [];
+  };
+
   // Load options for option/multioption fields
   useEffect(() => {
     filteredFieldSettings.forEach(async (field) => {
-      if ((field.type === 'option' || field.type === 'multioption') && field.optionAttributeId) {
-        await fetchAttributeOptions(field.optionAttributeId);
+      console.log(entityAttributeOptionMap[field.attributeId]);
+      if (field.type === 'option' || field.type === 'multioption') {
+        if (field.isDerived) {
+          // Fetch derived field options
+          await fetchDerivedFieldOptions(field.attributeId);
+        } else if (!!entityAttributeOptionMap[field.attributeId]) {
+          // Fetch regular attribute options
+          await fetchAttributeOptions(entityAttributeOptionMap[field.attributeId]!);
+        }
       }
     });
   }, [filteredFieldSettings]);
@@ -172,7 +274,16 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
   );
 
   const renderFilterField = (field: FieldSetting) => {
-    const options = field.optionAttributeId ? optionsCache[field.optionAttributeId] || [] : [];
+    // Get options based on field type
+    let options: string[] = [];
+    if (field.type === 'option' || field.type === 'multioption') {
+      if (field.isDerived) {
+        options = derivedFieldsCache[field.attributeId] || [];
+      } else if (entityAttributeOptionMap[field.attributeId]) {
+        options = optionsCache[entityAttributeOptionMap[field.attributeId]!] || [];
+      }
+    }
+
     const currentValue = filters[field.attributeId];
 
     switch (field.type) {
@@ -300,11 +411,13 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
       case 'option':
         return (
           <FormControl key={field.attributeId} fullWidth size="small">
-            <InputLabel sx={{ color: theme.palette.text.secondary }}>{field.label}</InputLabel>
+            <InputLabel sx={{ color: theme.palette.text.secondary }}>
+              {field.label} {field.isDerived && '(Derived)'}
+            </InputLabel>
             <Select
               value={currentValue || ''}
               onChange={(e) => handleFilterChange(field.attributeId, e.target.value)}
-              label={field.label}
+              label={`${field.label}${field.isDerived ? ' (Derived)' : ''}`}
               sx={{
                 backgroundColor: theme.getDropdownBackground(),
                 '& .MuiOutlinedInput-notchedOutline': {
@@ -331,12 +444,14 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
       case 'multioption':
         return (
           <FormControl key={field.attributeId} fullWidth size="small">
-            <InputLabel sx={{ color: theme.palette.text.secondary }}>{field.label}</InputLabel>
+            <InputLabel sx={{ color: theme.palette.text.secondary }}>
+              {field.label} {field.isDerived && '(Derived)'}
+            </InputLabel>
             <Select
               multiple
               value={currentValue || []}
               onChange={(e) => handleFilterChange(field.attributeId, e.target.value)}
-              label={field.label}
+              label={`${field.label}${field.isDerived ? ' (Derived)' : ''}`}
               renderValue={(selected) => (
                 <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
                   {(selected as string[]).map((value) => (
