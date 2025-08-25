@@ -259,9 +259,9 @@ const AttributeField: React.FC<AttributeFieldProps> = ({
         <CommonSelect
           control={control}
           name={`attributes.${index}.isEditable`}
-          label="Editable"
+          label="Reference Editable"
           options={["True", "False"]}
-          defaultValue={"True"}
+          defaultValue={"False"}
           rules={{ required: "Editable is required" }}
           // error={!!errors.attributes?.[index]?.isEditable}
           // errorMessage={
@@ -378,7 +378,7 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
           validation: [],
           transformations: [],
           cleaner: [],
-                    isEditable: "True",
+          isEditable: "False",
         },
       ],
     },
@@ -424,7 +424,7 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
             validation: [],
             transformations: [],
             cleaner: [],
-                    isEditable: "True",
+                    isEditable: "False",
           },
         ],
       });
@@ -456,7 +456,7 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
             validation: [],
             transformations: [],
             cleaner: [],
-                    isEditable: "True",
+                    isEditable: "False",
           },
         ],
       });
@@ -616,7 +616,7 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
                   transformations: [],
                   cleaner: [],
                   required: "Not Mandatory",
-                    isEditable: "True",
+                    isEditable: "False",
                 });
               }
             }
@@ -913,7 +913,7 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
                     validation: [],
                     transformations: [],
                     cleaner: [],
-                    isEditable: "True",
+                    isEditable: "False",
                   });
                   setReferenceEntityNames((prev) => ({
                     ...prev,
