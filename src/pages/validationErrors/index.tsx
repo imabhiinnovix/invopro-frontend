@@ -69,7 +69,7 @@ const columns: GridColDef[] = [
     resizable: true,
   },
   {
-    field: "attributeValue",
+    field: "fileAttributeValue",
     headerName: "Attribute Value",
     width: 250,
     disableColumnMenu: true,
@@ -180,7 +180,8 @@ export default function ValidationErrors() {
       filterValues.organizationId,
       filterValues.status,
     ],
-    `${GET.VALIDATION_ERROR_LIST}?page=${paginationModel.page + 1}&limit=${perPageItem}&search=${encodeURIComponent(debouncedSearchValue)}&name=${encodeURIComponent(filterValues.name)}&organizationId=${encodeURIComponent(filterValues.organizationId)}&status=${encodeURIComponent(filterValues.status)}`,
+    // dataSourceVersionId=68ac0427aee06f47a5d96da0
+    `${GET.VALIDATION_ERROR_LIST}?dataSourceVersionId=68ac0427aee06f47a5d96da0&page=${paginationModel.page + 1}&limit=${perPageItem}&search=${encodeURIComponent(debouncedSearchValue)}&name=${encodeURIComponent(filterValues.name)}&organizationId=${encodeURIComponent(filterValues.organizationId)}&status=${encodeURIComponent(filterValues.status)}`,
     true
   );
 
