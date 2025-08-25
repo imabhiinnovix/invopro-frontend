@@ -375,64 +375,135 @@ const ImportFile: React.FC<ImportFileProps> = ({
     }
   };
 
+  // const onSubmit = async (formData: FormValues) => {
+  //   const reverseMap: Record<string, string[]> = {};
+  //   Object.entries(formData.mappings).forEach(([key, values]) => {
+  //     if (Array.isArray(values)) {
+  //       values.forEach((value) => {
+  //         if (!reverseMap[value]) {
+  //           reverseMap[value] = [];
+  //         }
+  //         if (!["Extra-Attribute-Ignore"].includes(value)) {
+  //           reverseMap[value].push(key);
+  //         }
+  //       });
+  //     }
+  //   });
+
+  //   const mandatoryAttributes = settingAttribute
+  //     .filter((attr) => attr.required === "Mandatory")
+  //     .map((attr) => attr.name);
+  //   const missingMandatoryAttributes = mandatoryAttributes.filter(
+  //     (attr) => !formData.mappings[attr] || formData.mappings[attr].length === 0
+  //   );
+
+  //   if (missingMandatoryAttributes.length > 0) {
+  //     missingMandatoryAttributes.forEach((attr) => {
+  //       toast.error(`Mandatory attribute is not mapped: ${attr}`);
+  //     });
+  //     return;
+  //   }
+
+  //   if (files.length === 0) {
+  //     toast.error("Please upload at least one file");
+  //     return;
+  //   }
+
+  //   const versionValue = watch("versionValue");
+  //   const formattedVersion = DateTime.fromISO(versionValue).toFormat("yyyy-LL");
+  //   const dataTransfer = new DataTransfer();
+  //   files.forEach((file) => dataTransfer.items.add(file));
+  //   const fileList = dataTransfer.files;
+
+  //   const payload = {
+  //     operation: "dataSourceVersion",
+  //     ...formData,
+  //     files: fileList,
+  //     mappings: JSON.stringify(formData.mappings),
+  //     separator: JSON.stringify(formData.separator),
+  //     versionValue: formattedVersion,
+  //   };
+
+  //   try {
+  //     await mutate({
+  //       url: `${POST.FILE_UPLOAD}`,
+  //       payload,
+  //     });
+  //   } catch (error) {
+  //     toast.error("Upload failed!");
+  //   }
+  // };
+
+
   const onSubmit = async (formData: FormValues) => {
-    const reverseMap: Record<string, string[]> = {};
-    Object.entries(formData.mappings).forEach(([key, values]) => {
-      if (Array.isArray(values)) {
-        values.forEach((value) => {
-          if (!reverseMap[value]) {
-            reverseMap[value] = [];
-          }
-          if (!["Extra-Attribute-Ignore"].includes(value)) {
-            reverseMap[value].push(key);
-          }
-        });
-      }
+  const reverseMap: Record<string, string[]> = {};
+  Object.entries(formData.mappings).forEach(([key, values]) => {
+    if (Array.isArray(values)) {
+      values.forEach((value) => {
+        if (!reverseMap[value]) {
+          reverseMap[value] = [];
+        }
+        if (!["Extra-Attribute-Ignore"].includes(value)) {
+          reverseMap[value].push(key);
+        }
+      });
+    }
+  });
+
+  const mandatoryAttributes = settingAttribute
+    .filter((attr) => attr.required === "Mandatory")
+    .map((attr) => attr.name);
+  const missingMandatoryAttributes = mandatoryAttributes.filter(
+    (attr) => !formData.mappings[attr] || formData.mappings[attr].length === 0
+  );
+
+  if (missingMandatoryAttributes.length > 0) {
+    missingMandatoryAttributes.forEach((attr) => {
+      toast.error(`Mandatory attribute is not mapped: ${attr}`);
     });
+    return;
+  }
 
-    const mandatoryAttributes = settingAttribute
-      .filter((attr) => attr.required === "Mandatory")
-      .map((attr) => attr.name);
-    const missingMandatoryAttributes = mandatoryAttributes.filter(
-      (attr) => !formData.mappings[attr] || formData.mappings[attr].length === 0
-    );
+  if (files.length === 0) {
+    toast.error("Please upload at least one file");
+    return;
+  }
 
-    if (missingMandatoryAttributes.length > 0) {
-      missingMandatoryAttributes.forEach((attr) => {
-        toast.error(`Mandatory attribute is not mapped: ${attr}`);
-      });
-      return;
+  const versionValue = watch("versionValue");
+  const formattedVersion = DateTime.fromISO(versionValue).toFormat("yyyy-LL");
+
+  // ✅ Use FormData for binary files
+  const formDataToSend = new FormData();
+  formDataToSend.append("operation", "dataSourceVersion");
+  formDataToSend.append("mappings", JSON.stringify(formData.mappings));
+  formDataToSend.append("separator", JSON.stringify(formData.separator));
+  formDataToSend.append("versionValue", formattedVersion);
+
+  // append other text fields (agar aur hai to)
+  Object.keys(formData).forEach((key) => {
+    if (key !== "mappings" && key !== "separator") {
+      // avoid overwriting JSON.stringify fields
+      formDataToSend.append(key, (formData as any)[key]);
     }
+  });
 
-    if (files.length === 0) {
-      toast.error("Please upload at least one file");
-      return;
-    }
+  // ✅ multiple files append karna hai
+  files.forEach((file) => {
+    formDataToSend.append("files", file); // multiple allowed
+  });
 
-    const versionValue = watch("versionValue");
-    const formattedVersion = DateTime.fromISO(versionValue).toFormat("yyyy-LL");
-    const dataTransfer = new DataTransfer();
-    files.forEach((file) => dataTransfer.items.add(file));
-    const fileList = dataTransfer.files;
-
-    const payload = {
-      operation: "dataSourceVersion",
-      ...formData,
-      files: fileList,
-      mappings: JSON.stringify(formData.mappings),
-      separator: JSON.stringify(formData.separator),
-      versionValue: formattedVersion,
-    };
-
-    try {
-      await mutate({
-        url: `${POST.FILE_UPLOAD}`,
-        payload,
-      });
-    } catch (error) {
-      toast.error("Upload failed!");
-    }
-  };
+  try {
+    await mutate({
+      url: `${POST.FILE_UPLOAD}`,
+      payload: formDataToSend, // ✅ now correct
+      headers: {
+        "Content-Type": "multipart/form-data", // important
+      },
+    });
+  } catch (error) {
+    toast.error("Upload failed!");
+  }
+};
 
   const handleFileRemove = (index: number) => {
     const newFiles = [...files];

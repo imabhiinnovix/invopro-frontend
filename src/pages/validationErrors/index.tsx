@@ -32,7 +32,7 @@ import RunCircleIcon from "@mui/icons-material/RunCircle";
 import RocketLaunchIcon from "@mui/icons-material/RocketLaunch";
 import TaskIcon from "@mui/icons-material/Task";
 
-interface Role {
+interface Validation {
   _id: string;
   organizationId: string;
   name: string;
@@ -42,7 +42,7 @@ interface Role {
 
 interface ApiResponse {
   success: boolean;
-  data: Role[];
+  data: Validation[];
   totalCount: number;
 }
 
@@ -150,7 +150,7 @@ export default function ValidationErrors() {
     pageSize: 10,
   });
   const [debouncedSearchValue, setDebouncedSearchValue] = useState(searchValue);
-  const [roleReload, setRoleReload] = useState(false);
+  const [validationReload, setValidationReload] = useState(false);
   const [filterValues, setFilterValues] = useState({
     name: "",
     organizationId: "",
@@ -169,35 +169,35 @@ export default function ValidationErrors() {
 
   // API call
   const perPageItem = paginationModel.pageSize;
-  const roleList = useGet<ApiResponse>(
+  const validationList = useGet<ApiResponse>(
     [
-      "roleList",
+      "validationList",
       String(paginationModel.page + 1),
       String(paginationModel.pageSize),
       debouncedSearchValue,
-      String(roleReload),
+      String(validationReload),
       filterValues.name,
       filterValues.organizationId,
       filterValues.status,
     ],
-    `${GET.ROLE_LIST}?page=${paginationModel.page + 1}&limit=${perPageItem}&search=${encodeURIComponent(debouncedSearchValue)}&name=${encodeURIComponent(filterValues.name)}&organizationId=${encodeURIComponent(filterValues.organizationId)}&status=${encodeURIComponent(filterValues.status)}`,
+    `${GET.VALIDATION_ERROR_LIST}?page=${paginationModel.page + 1}&limit=${perPageItem}&search=${encodeURIComponent(debouncedSearchValue)}&name=${encodeURIComponent(filterValues.name)}&organizationId=${encodeURIComponent(filterValues.organizationId)}&status=${encodeURIComponent(filterValues.status)}`,
     true
   );
 
   // Process API data for DataGrid
-  const rolesWithIds =
-    Array.isArray(roleList?.data?.data) && roleList.data.data.length > 0
-      ? roleList.data.data.map((role) => ({
-          ...role,
-          id: role._id || `temp-${Math.random().toString(36).substr(2, 9)}`,
-          permissions: role.permissions || [],
-          handleEdit: (row: Role) => {
-            setEditRoleId(row._id);
+  const validationsWithIds =
+    Array.isArray(validationList?.data?.data) && validationList.data.data.length > 0
+      ? validationList.data.data.map((validation) => ({
+          ...validation,
+          id: validation._id || `temp-${Math.random().toString(36).substr(2, 9)}`,
+          permissions: validation.permissions || [],
+          handleEdit: (row: Validation) => {
+            setEditValidationId(row._id);
             setModalMode("edit");
             setOpenModal(true);
           },
-          handleView: (row: Role) => {
-            setEditRoleId(row._id);
+          handleView: (row: Validation) => {
+            setEditValidationId(row._id);
             setModalMode("view");
             setOpenModal(true);
           },
@@ -209,7 +209,7 @@ export default function ValidationErrors() {
         }))
       : [];
 
-  const handleAddRole = () => {
+  const handleAddValidation = () => {
     setModalMode("add");
     setOpenModal(true);
   };
@@ -277,7 +277,7 @@ export default function ValidationErrors() {
               <Button
                 variant="contained"
                 startIcon={<AddIcon />}
-                onClick={handleAddRole}
+                onClick={handleAddValidation}
                 sx={{
                   borderRadius: "8px",
                 }}
@@ -287,7 +287,7 @@ export default function ValidationErrors() {
             </Box>
           </Box>
           <DataGrid
-            rows={rolesWithIds}
+            rows={validationsWithIds}
             columns={columns}
             initialState={{ pagination: { paginationModel } }}
             pageSizeOptions={[10, 20]}
@@ -296,8 +296,8 @@ export default function ValidationErrors() {
             sx={{
               overflow: "visible",
             }}
-            loading={roleList.isLoading}
-            rowCount={roleList?.data?.totalCount || 0}
+            loading={validationList.isLoading}
+            rowCount={validationList?.data?.totalCount || 0}
             paginationModel={paginationModel}
             onPaginationModelChange={setPaginationModel}
             slots={{
@@ -305,7 +305,7 @@ export default function ValidationErrors() {
                 <CustomPagination
                   paginationModel={paginationModel}
                   setPaginationModel={setPaginationModel}
-                  rowCount={roleList?.data?.totalCount || 0}
+                  rowCount={validationList?.data?.totalCount || 0}
                 />
               ),
             }}
