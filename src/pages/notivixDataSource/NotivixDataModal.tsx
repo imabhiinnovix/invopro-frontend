@@ -1250,7 +1250,7 @@
 //     const fieldType = attribute.type;
 //     const isRequired = attribute.required;
 //     const isDisabled = modalMode === "view";
-    
+
 //     // Determine if the field should be hidden
 //     const shouldHideField = () => {
 //       // hide if isReferenceEditable is HIDE
@@ -1733,8 +1733,6 @@
 //   );
 // };
 
-
-
 import * as React from "react";
 import {
   Box,
@@ -1931,10 +1929,10 @@ export const NotivixDataModal: React.FC<ModelSectionProps> = ({
         let isValid = true;
         let errorMessage = "";
         // First validate required fields
-        // if (!validateRequiredFields()) {
-        //   toast.error("Please fill in all required fields");
-        //   return;
-        // }
+        if (!validateRequiredFields()) {
+          toast.error("Please fill in all required fields");
+          return;
+        }
         // Then validate field types
         for (const attribute of attributes) {
           const fieldName = attribute.name;
@@ -2018,13 +2016,16 @@ export const NotivixDataModal: React.FC<ModelSectionProps> = ({
   const renderAttributeField = (attribute: any, isViewMode = false) => {
     // Hide field if isReferenceEditable is HIDE
     const shouldHideField = () => {
-       if (attribute.name.includes(".") && attribute.isReferenceEditable === "HIDE") {
+      if (
+        attribute.name.includes(".") &&
+        attribute.isReferenceEditable === "HIDE"
+      ) {
         return true;
       }
       return false; // default
     };
     if (shouldHideField()) return null;
-    
+
     const fieldName = attribute.name;
     const fieldLabel = attribute.label || attribute.name;
     const isRequired = attribute.required;
@@ -2040,54 +2041,111 @@ export const NotivixDataModal: React.FC<ModelSectionProps> = ({
     }
     // const isFieldEditable = !isViewMode && attribute.isReferenceEditable === "EDIT";
     const value = formData[fieldName];
-    
+
     const renderLabel = (label: string) => (
       <>
         {label}
-        {isRequired && <span style={{ color: STYLE_GUIDE?.COLORS?.primaryDark }}> *</span>}
+        {isRequired && (
+          <span style={{ color: STYLE_GUIDE?.COLORS?.primaryDark }}> *</span>
+        )}
       </>
     );
-    
+
     // In view mode, just display value
+    // if (isViewMode) {
+    //   let displayValue = value ?? "-";
+    //   // Handle dates
+    //   if (attribute.type === "date" && displayValue !== "-") {
+    //     displayValue = dayjs(displayValue).format("DD-MMM-YYYY");
+    //   }
+    //   // Handle array
+    //   if (Array.isArray(displayValue) && displayValue.length === 0) {
+    //     displayValue = "No data";
+    //   } else if (Array.isArray(displayValue)) {
+    //     displayValue = displayValue.join(", ");
+    //   }
+    //   return (
+    //     <Box key={fieldName} sx={{ mb: 2 }}>
+    //       <Typography variant="body2" sx={{ mb: 0.5, fontWeight: 500, color: STYLE_GUIDE?.COLORS?.primaryDark }}>
+    //         {renderLabel(fieldLabel)}
+    //       </Typography>
+    //       <Box
+    //         sx={{
+    //           p: 1.5,
+    //           borderRadius: "8px",
+    //           backgroundColor: STYLE_GUIDE?.COLORS?.backgroundLight || "#f5f5f5",
+    //           minHeight: "40px",
+    //         }}
+    //       >
+    //         <Typography variant="body2" sx={{ wordBreak: "break-word", color: STYLE_GUIDE?.COLORS?.textPrimary || "#333" }}>
+    //           {displayValue}
+    //         </Typography>
+    //       </Box>
+    //     </Box>
+    //   );
+    // }
+
     if (isViewMode) {
-      let displayValue = value ?? "-";
+      let displayValue: any = value ?? "-";
+
       // Handle dates
       if (attribute.type === "date" && displayValue !== "-") {
         displayValue = dayjs(displayValue).format("DD-MMM-YYYY");
       }
+
       // Handle array
-      if (Array.isArray(displayValue) && displayValue.length === 0) {
-        displayValue = "No data";
-      } else if (Array.isArray(displayValue)) {
-        displayValue = displayValue.join(", ");
+      if (Array.isArray(displayValue)) {
+        if (displayValue.length === 0) {
+          displayValue = ["No data"];
+        }
+      } else {
+        displayValue = [displayValue]; // single value ko bhi array bana do
       }
+
       return (
         <Box key={fieldName} sx={{ mb: 2 }}>
-          <Typography variant="body2" sx={{ mb: 0.5, fontWeight: 500, color: STYLE_GUIDE?.COLORS?.primaryDark }}>
+          <Typography
+            variant="body2"
+            sx={{
+              mb: 0.5,
+              fontWeight: 500,
+              color: STYLE_GUIDE?.COLORS?.primaryDark,
+            }}
+          >
             {renderLabel(fieldLabel)}
           </Typography>
           <Box
             sx={{
               p: 1.5,
               borderRadius: "8px",
-              backgroundColor: STYLE_GUIDE?.COLORS?.backgroundLight || "#f5f5f5",
+              backgroundColor:
+                STYLE_GUIDE?.COLORS?.backgroundLight || "#f5f5f5",
               minHeight: "40px",
             }}
           >
-            <Typography variant="body2" sx={{ wordBreak: "break-word", color: STYLE_GUIDE?.COLORS?.textPrimary || "#333" }}>
-              {displayValue}
-            </Typography>
+            {displayValue.map((item: string, idx: number) => (
+              <Typography
+                key={idx}
+                variant="body2"
+                sx={{
+                  wordBreak: "break-word",
+                  color: STYLE_GUIDE?.COLORS?.textPrimary || "#333",
+                }}
+              >
+                {item}
+              </Typography>
+            ))}
           </Box>
         </Box>
       );
     }
-    
+
     // Handle editable input fields (add/edit)
     const handleFieldChange = (val: any) => {
       setFormData((prev) => ({ ...prev, [fieldName]: val }));
       if (submitAttempted) validateField(fieldName, val);
     };
-    
+
     switch (attribute.type) {
       case "boolean":
         return (
@@ -2115,7 +2173,9 @@ export const NotivixDataModal: React.FC<ModelSectionProps> = ({
             key={fieldName}
             options={options}
             value={selectedOption || value || ""}
-            onChange={(e, val) => handleFieldChange(typeof val === "string" ? val : val?.id || "")}
+            onChange={(e, val) =>
+              handleFieldChange(typeof val === "string" ? val : val?.id || "")
+            }
             disabled={!isFieldEditable}
             renderInput={(params) => (
               <TextField
@@ -2132,43 +2192,186 @@ export const NotivixDataModal: React.FC<ModelSectionProps> = ({
           />
         );
       }
-      case "multioption": {
-        const options = getOptionsForAttribute(attribute.optionAttributeId);
-        const selectedOptions = normalizeMultiOptionValue(value, options);
-        const isReferenceMulti = !!attribute.referenceEntitySetting;
-        return (
-          <Autocomplete
-            multiple
-            freeSolo={!isReferenceMulti}
-            key={fieldName}
-            options={options}
-            value={selectedOptions}
-            onChange={(e, val) =>
-              handleFieldChange(val.map((item) => (typeof item === "string" ? item : item.id)))
-            }
-            disabled={!isFieldEditable}
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                label={renderLabel(fieldLabel)}
-                variant="outlined"
-                fullWidth
-                error={!!fieldErrors[fieldName]}
-                helperText={fieldErrors[fieldName] || ""}
-                sx={{ "& .MuiOutlinedInput-root": { borderRadius: "8px" } }}
-                placeholder={isReferenceMulti ? "Select option" : "Type or select"}
-              />
-            )}
-          />
-        );
+      // case "multioption": {
+      //   const options = getOptionsForAttribute(attribute.optionAttributeId);
+      //   const selectedOptions = normalizeMultiOptionValue(value, options);
+      //   const isReferenceMulti = !!attribute.referenceEntitySetting;
+      //   return (
+      //     <Autocomplete
+      //       multiple
+      //       freeSolo={!isReferenceMulti}
+      //       key={fieldName}
+      //       options={options}
+      //       value={selectedOptions}
+      //       onChange={(e, val) =>
+      //         handleFieldChange(
+      //           val.map((item) => (typeof item === "string" ? item : item.id))
+      //         )
+      //       }
+      //       disabled={!isFieldEditable}
+      //       sx={{
+      //         "& .MuiChip-label": {
+      //           color: "#313031ff", // Changes the chip text color to red
+      //           fontWeight: 600,
+      //           opacity: 1,
+      //         },
+      //       }}
+      //       renderInput={(params) => (
+      //         <TextField
+      //           {...params}
+      //           label={renderLabel(fieldLabel)}
+      //           variant="outlined"
+      //           fullWidth
+      //           error={!!fieldErrors[fieldName]}
+      //           helperText={fieldErrors[fieldName] || ""}
+      //           sx={{ "& .MuiOutlinedInput-root": { borderRadius: "8px" } }}
+      //           placeholder={
+      //             !isFieldEditable
+      //               ? ""
+      //               : isReferenceMulti
+      //                 ? "Select option"
+      //                 : "Type or select"
+      //           }
+      //         />
+      //       )}
+      //     />
+      //   );
+      // }
+    // case "multioption": {
+    //     const options = getOptionsForAttribute(attribute.optionAttributeId);
+    //     const selectedOptions = normalizeMultiOptionValue(value, options);
+    //     const isReferenceMulti = !!attribute.referenceEntitySetting;
+
+    //     return (
+    //       <Autocomplete
+    //         multiple
+    //         freeSolo={!isReferenceMulti}
+    //         key={fieldName}
+    //         options={options}
+    //         value={selectedOptions}
+    //         onChange={(e, val) =>
+    //           handleFieldChange(
+    //             val.map((item) => (typeof item === "string" ? item : item.id))
+    //           )
+    //         }
+    //         disabled={!isFieldEditable}
+    //         renderTags={(value, getTagProps) =>
+    //           value.map((option, index) => (
+    //             <Chip
+    //               key={index}
+    //               label={typeof option === "string" ? option : option.label} // ✅ yaha fix
+    //               {...getTagProps({ index })}
+    //               // Style differently if disabled
+    //               sx={{
+    //                 color: !isFieldEditable ? "#000000ff" : "#4b4949ff", // darker text when disabled
+    //                 fontWeight: 600,
+    //                 opacity: !isFieldEditable ? 1 : 0.9, // remove fade
+    //                 pointerEvents: "none", // disable hover/click on chips
+    //                 "& .MuiChip-deleteIcon": {
+    //                   display: !isFieldEditable ? "none" : "block", // hide X if disabled
+    //                 },
+    //                 backgroundColor: !isFieldEditable ? "#fdeeeeff" : undefined,
+    //               }}
+    //             />
+    //           ))
+    //         }
+    //         sx={{
+    //           "& .MuiOutlinedInput-root": {
+    //             borderRadius: "8px",
+    //           },
+    //         }}
+    //         renderInput={(params) => (
+    //           <TextField
+    //             {...params}
+    //             label={renderLabel(fieldLabel)}
+    //             variant="outlined"
+    //             fullWidth
+    //             error={!!fieldErrors[fieldName]}
+    //             helperText={fieldErrors[fieldName] || ""}
+    //             placeholder={
+    //               !isFieldEditable
+    //                 ? ""
+    //                 : isReferenceMulti
+    //                   ? "Select option"
+    //                   : "Type or select"
+    //             }
+    //           />
+    //         )}
+    //       />
+    //     );
+    //   }  
+    case "multioption": {
+  const options = getOptionsForAttribute(attribute.optionAttributeId);
+  const selectedOptions = normalizeMultiOptionValue(value, options);
+  const isReferenceMulti = !!attribute.referenceEntitySetting;
+
+  return (
+    <Autocomplete
+      multiple
+      freeSolo={!isReferenceMulti}
+      key={fieldName}
+      options={options}
+      value={selectedOptions}
+      onChange={(e, val) =>
+        handleFieldChange(
+          val.map((item) => (typeof item === "string" ? item : item.id))
+        )
       }
+      disabled={!isFieldEditable}
+      renderTags={(value, getTagProps) =>
+        value.map((option, index) => (
+          <Chip
+            key={index}
+            label={typeof option === "string" ? option : option.label}
+            {...getTagProps({ index })}
+            sx={{
+              color: "#000000ff",             // Dark text
+              fontWeight: 500,
+              opacity: 1,                   // No fade
+              pointerEvents: !isFieldEditable ? "none" : "auto",
+              "& .MuiChip-deleteIcon": {
+                display: !isFieldEditable ? "none" : "block", // Hide X
+              },
+              backgroundColor: !isFieldEditable ? "#cfcfcf" : "#fdeeee", // Solid fill when disabled
+              border: !isFieldEditable ? "1px solid #b3b3b3" : "none",
+            }}
+          />
+        ))
+      }
+      sx={{
+        "& .MuiOutlinedInput-root": { borderRadius: "8px" },
+      }}
+      renderInput={(params) => (
+        <TextField
+          {...params}
+          label={renderLabel(fieldLabel)}
+          variant="outlined"
+          fullWidth
+          error={!!fieldErrors[fieldName]}
+          helperText={fieldErrors[fieldName] || ""}
+          placeholder={
+            !isFieldEditable
+              ? ""
+              : isReferenceMulti
+                ? "Select option"
+                : "Type or select"
+          }
+        />
+      )}
+    />
+  );
+}
+
+
       case "date":
         return (
           <LocalizationProvider key={fieldName} dateAdapter={AdapterDayjs}>
             <DatePicker
               label={renderLabel(fieldLabel)}
               value={value ? dayjs(value) : null}
-              onChange={(date) => handleFieldChange(date ? date.toISOString() : "")}
+              onChange={(date) =>
+                handleFieldChange(date ? date.toISOString() : "")
+              }
               disabled={!isFieldEditable}
               format="DD/MM/YYYY"
               slotProps={{
@@ -2190,7 +2393,13 @@ export const NotivixDataModal: React.FC<ModelSectionProps> = ({
             label={renderLabel(fieldLabel)}
             type="number"
             value={value || ""}
-            onChange={(e) => handleFieldChange(e.target.value === "" || isValidNumber(e.target.value) ? e.target.value : value)}
+            onChange={(e) =>
+              handleFieldChange(
+                e.target.value === "" || isValidNumber(e.target.value)
+                  ? e.target.value
+                  : value
+              )
+            }
             variant="outlined"
             fullWidth
             disabled={!isFieldEditable}
@@ -2235,19 +2444,24 @@ export const NotivixDataModal: React.FC<ModelSectionProps> = ({
 
   const renderModalFields = () => {
     const attributes = listCurrentData?.entityId?.attributes || [];
-    if (attributes.length === 0) return <Typography>No attributes available.</Typography>;
-    
+    if (attributes.length === 0)
+      return <Typography>No attributes available.</Typography>;
+
     // Two-column layout for add/edit/view
     const firstColumn = attributes.filter((_, i) => i % 2 === 0);
     const secondColumn = attributes.filter((_, i) => i % 2 === 1);
-    
+
     return (
       <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 2 }}>
         <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-          {firstColumn.map((attr) => renderAttributeField(attr, modalMode === "view"))}
+          {firstColumn.map((attr) =>
+            renderAttributeField(attr, modalMode === "view")
+          )}
         </Box>
         <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-          {secondColumn.map((attr) => renderAttributeField(attr, modalMode === "view"))}
+          {secondColumn.map((attr) =>
+            renderAttributeField(attr, modalMode === "view")
+          )}
         </Box>
       </Box>
     );

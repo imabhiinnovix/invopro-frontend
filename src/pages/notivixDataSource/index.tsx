@@ -89,7 +89,6 @@ export default function NotivixDataSource() {
     data: AttributeOptionRequestPayload[];
   }>([`attributeList`], GET?.Attribute_Option_List + `?paginate=true`);
 
-
   // Function to refresh data after successful save
   const refreshData = useCallback(() => {
     queryClient.invalidateQueries([
@@ -107,36 +106,40 @@ export default function NotivixDataSource() {
   }, []);
 
   // Handler functions
- 
+
   const handleView = useCallback(
-  (id: string) => {
-    const rawData = sourceVersionData?.data?.data || [];
-    if (rawData.length === 0) {
-      console.warn("Cannot edit: No data available");
-      return;
-    }
-    const row = rawData.find((r) => r._id === id || r.id === id);
-    if (row) {
-      const newFormData: Record<string, any> = { id: row._id || row.id };
-      const dataSource = row.rowData || {};
-      console.log("rdataSource", dataSource);
+    (id: string) => {
+      const rawData = sourceVersionData?.data?.data || [];
+      if (rawData.length === 0) {
+        console.warn("Cannot edit: No data available");
+        return;
+      }
+      const row = rawData.find((r) => r._id === id || r.id === id);
+      if (row) {
+        const newFormData: Record<string, any> = { id: row._id || row.id };
+        const dataSource = row.rowData || {};
+        console.log("rdataSource", dataSource);
 
-      Object.keys(dataSource).forEach((key) => {
-        if (key !== "_id" && key !== "id") {
-          const value = dataSource[key];
-          newFormData[key] = Array.isArray(value) ? value : value != null ? String(value) : "";
-        }
-      });
+        Object.keys(dataSource).forEach((key) => {
+          if (key !== "_id" && key !== "id") {
+            const value = dataSource[key];
+            newFormData[key] = Array.isArray(value)
+              ? value
+              : value != null
+                ? String(value)
+                : "";
+          }
+        });
 
-      setFormData(newFormData);
-      setModalMode("view");
-      setOpenModal(true);
-    } else {
-      console.error(`Row with ID ${id} not found`);
-    }
-  },
-  [sourceVersionData?.data]
-);
+        setFormData(newFormData);
+        setModalMode("view");
+        setOpenModal(true);
+      } else {
+        console.error(`Row with ID ${id} not found`);
+      }
+    },
+    [sourceVersionData?.data]
+  );
   // const handleEdit = useCallback(
   //   (id: string) => {
   //     const rawData = sourceVersionData?.data?.data || [];
@@ -168,34 +171,38 @@ export default function NotivixDataSource() {
   // );
 
   const handleEdit = useCallback(
-  (id: string) => {
-    const rawData = sourceVersionData?.data?.data || [];
-    if (rawData.length === 0) {
-      console.warn("Cannot edit: No data available");
-      return;
-    }
-    const row = rawData.find((r) => r._id === id || r.id === id);
-    if (row) {
-      const newFormData: Record<string, any> = { id: row._id || row.id };
-      const dataSource = row.rowData || {};
-      console.log("rdataSource", dataSource);
+    (id: string) => {
+      const rawData = sourceVersionData?.data?.data || [];
+      if (rawData.length === 0) {
+        console.warn("Cannot edit: No data available");
+        return;
+      }
+      const row = rawData.find((r) => r._id === id || r.id === id);
+      if (row) {
+        const newFormData: Record<string, any> = { id: row._id || row.id };
+        const dataSource = row.rowData || {};
+        console.log("rdataSource", dataSource);
 
-      Object.keys(dataSource).forEach((key) => {
-        if (key !== "_id" && key !== "id") {
-          const value = dataSource[key];
-          newFormData[key] = Array.isArray(value) ? value : value != null ? String(value) : "";
-        }
-      });
+        Object.keys(dataSource).forEach((key) => {
+          if (key !== "_id" && key !== "id") {
+            const value = dataSource[key];
+            newFormData[key] = Array.isArray(value)
+              ? value
+              : value != null
+                ? String(value)
+                : "";
+          }
+        });
 
-      setFormData(newFormData);
-      setModalMode("edit");
-      setOpenModal(true);
-    } else {
-      console.error(`Row with ID ${id} not found`);
-    }
-  },
-  [sourceVersionData?.data]
-);
+        setFormData(newFormData);
+        setModalMode("edit");
+        setOpenModal(true);
+      } else {
+        console.error(`Row with ID ${id} not found`);
+      }
+    },
+    [sourceVersionData?.data]
+  );
 
   const handleDelete = useCallback((id: string) => {
     setDeleteId(id);
