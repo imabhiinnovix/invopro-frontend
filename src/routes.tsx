@@ -93,7 +93,7 @@ const AppRoutes = () => {
             element={<NotivixDataSource />}
           />
           <Route
-            path="/notivix/validation-errors"
+            path="/notivix/validation-errors/:id"
             element={<ValidationErrors />}
           />
         </Route>
