@@ -290,7 +290,7 @@ const ImportFile: React.FC<ImportFileProps> = ({
         toast.success("File processed successfully!");
         handleCancel();
       } else if (data?.status === "failed") {
-        navigate(`/notivix/validation-errors?${data?.dataSourceVersionId}`);
+        navigate(`/notivix/validation-errors/${data?.dataSourceVersionId}`);
         handleCancel();
       } else {
         toast.success("File uploaded successfully!");
@@ -464,7 +464,7 @@ const ImportFile: React.FC<ImportFileProps> = ({
             toast.success("File processed successfully!");
             handleCancel();
           } else if (data?.status === "failed") {
-            navigate(`/notivix/validation-errors?${data?.dataSourceVersionId}`);
+            navigate(`/notivix/validation-errors/${data?.dataSourceVersionId}`);
             handleCancel();
           } else {
             toast.success("File uploaded successfully!");
@@ -570,12 +570,12 @@ const ImportFile: React.FC<ImportFileProps> = ({
         } else if (status === "failed") {
           setIsPolling(false);
           toast.error("Processing failed. Redirecting to validation errors...");
-          navigate(`/notivix/validation-errors?${pollingId}`);
+          navigate(`/notivix/validation-errors/${pollingId}`);
           handleCancel();
         } else {
           timer = setTimeout(() => {
             setPollingTimestamp(Date.now());
-          }, 3000);
+          }, 8000);
         }
       } else if (pollingData.isError) {
         setIsPolling(false);
