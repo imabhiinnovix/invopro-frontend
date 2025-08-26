@@ -36,6 +36,7 @@ import { useComponentTypography } from "../../../hooks/useComponentTypography";
 import { useDropzone } from "react-dropzone";
 import { GridCloseIcon } from "@mui/x-data-grid";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
+import { useUploadCustomReportFile } from "../../../hooks/useFileUpalod";
 
 interface ImportFileProps {
   setReload?: React.Dispatch<React.SetStateAction<boolean>>;
@@ -73,14 +74,12 @@ const FileDropzone: React.FC<FileDropzoneProps> = ({
   buttonName,
 }) => {
   const [isDragActive, setIsDragActive] = useState(false);
-
   const onDrop = (acceptedFiles: File[]) => {
     setIsDragActive(false);
     if (acceptedFiles.length > 0) {
       onFileChange(acceptedFiles);
     }
   };
-
   const { getRootProps, getInputProps } = useDropzone({
     onDrop,
     onDragEnter: () => setIsDragActive(true),
@@ -104,7 +103,6 @@ const FileDropzone: React.FC<FileDropzoneProps> = ({
       });
     },
   });
-
   return (
     <Box display="flex" flexDirection="column" gap={STYLE_GUIDE.SPACING.s2}>
       <Box
@@ -247,6 +245,7 @@ const ImportFile: React.FC<ImportFileProps> = ({
   const [isPolling, setIsPolling] = useState(false);
   const [pollingId, setPollingId] = useState<string | null>(null);
   const [pollingTimestamp, setPollingTimestamp] = useState(Date.now());
+  const [isFormValid, setIsFormValid] = useState(false);
   const { getDialogTitleSx } = useComponentTypography();
 
   const {
@@ -266,6 +265,51 @@ const ImportFile: React.FC<ImportFileProps> = ({
       separator: {},
     },
   });
+
+  // Use the upload custom report file hook
+  const { mutate: mutateReportUpload, isPending: isLoadingReportUpload } = useUploadCustomReportFile();
+  
+  // Use the original file post data hook for polling
+  const { mutate, isPending } = useFilePostData<
+    { files: File[]; operation: string },
+    {
+      message: string;
+      data?: any;
+      status?: string;
+      dataSourceVersionId?: string;
+    }
+  >(
+    ["uploadedFiles"],
+    (data) => {
+      if (setReload) setReload(true);
+      if (data?.status === "pending" && data?.dataSourceVersionId) {
+        setIsPolling(true);
+        setPollingId(data.dataSourceVersionId);
+        setPollingTimestamp(Date.now());
+      } else if (data?.status === "completed") {
+        toast.success("File processed successfully!");
+        handleCancel();
+      } else if (data?.status === "failed") {
+        navigate(`/notivix/validation-errors/${data?.dataSourceVersionId}`);
+        handleCancel();
+      } else {
+        toast.success("File uploaded successfully!");
+        handleCancel();
+      }
+    },
+    { showToast: true }
+  );
+
+  // Check form validity
+  useEffect(() => {
+    const isValid = 
+      watch("versionValue") && 
+      watch("versionName") && 
+      files.length > 0 &&
+      Object.keys(errors).length === 0 &&
+      !fileUploadLoader;
+    setIsFormValid(isValid);
+  }, [watch, errors, files, fileUploadLoader]);
 
   useEffect(() => {
     if (open && dataSourceId) {
@@ -310,7 +354,6 @@ const ImportFile: React.FC<ImportFileProps> = ({
     !!watch("dataSourceId")
   );
 
-
   const pollingData = useGet<{
     success: boolean;
     data: { status: string };
@@ -318,36 +361,6 @@ const ImportFile: React.FC<ImportFileProps> = ({
     [`pollingStatus`, pollingId, pollingTimestamp],
     `${GET?.GET_DATA_SOURCE_VERSION_BY_ID}${pollingId}`,
     !!pollingId && isPolling
-  );
-
-  const { mutate, isPending } = useFilePostData<
-    { files: File[]; operation: string },
-    {
-      message: string;
-      data?: any;
-      status?: string;
-      dataSourceVersionId?: string;
-    }
-  >(
-    ["uploadedFiles"],
-    (data) => {
-      if (setReload) setReload(true);
-      if (data?.status === "pending" && data?.dataSourceVersionId) {
-        setIsPolling(true);
-        setPollingId(data.dataSourceVersionId);
-        setPollingTimestamp(Date.now()); 
-      } else if (data?.status === "completed") {
-        toast.success("File processed successfully!");
-        handleCancel();
-      } else if (data?.status === "failed") {
-        navigate("/notivix/validation-errors");
-        handleCancel();
-      } else {
-        toast.success("File uploaded successfully!");
-        handleCancel();
-      }
-    },
-    { showToast: true }
   );
 
   useEffect(() => {
@@ -375,6 +388,25 @@ const ImportFile: React.FC<ImportFileProps> = ({
     }
   };
 
+  const objectToFormData = (obj: any, form?: FormData, namespace?: string): FormData => {
+    const fd = form || new FormData();
+    for (const property in obj) {
+      if (!obj.hasOwnProperty(property)) continue;
+      const formKey = namespace ? `${namespace}[${property}]` : property;
+      const value = obj[property];
+      if (Array.isArray(value) && value.length > 0 && value[0] instanceof File) {
+        value.forEach((file: File) => {
+          fd.append("files", file);
+        });
+      } else if (typeof value === "object" && value !== null && !(value instanceof File)) {
+        objectToFormData(value, fd, formKey);
+      } else if (value !== undefined && value !== null) {
+        fd.append(formKey, value);
+      }
+    }
+    return fd;
+  };
+
   const onSubmit = async (formData: FormValues) => {
     const reverseMap: Record<string, string[]> = {};
     Object.entries(formData.mappings).forEach(([key, values]) => {
@@ -389,45 +421,59 @@ const ImportFile: React.FC<ImportFileProps> = ({
         });
       }
     });
-
     const mandatoryAttributes = settingAttribute
       .filter((attr) => attr.required === "Mandatory")
       .map((attr) => attr.name);
     const missingMandatoryAttributes = mandatoryAttributes.filter(
       (attr) => !formData.mappings[attr] || formData.mappings[attr].length === 0
     );
-
     if (missingMandatoryAttributes.length > 0) {
       missingMandatoryAttributes.forEach((attr) => {
         toast.error(`Mandatory attribute is not mapped: ${attr}`);
       });
       return;
     }
-
     if (files.length === 0) {
       toast.error("Please upload at least one file");
       return;
     }
-
     const versionValue = watch("versionValue");
     const formattedVersion = DateTime.fromISO(versionValue).toFormat("yyyy-LL");
-    const dataTransfer = new DataTransfer();
-    files.forEach((file) => dataTransfer.items.add(file));
-    const fileList = dataTransfer.files;
-
+    
+    // Create FormData for file upload
     const payload = {
+      dataSourceId: formData.dataSourceId,
+      versionValue: formattedVersion,
+      versionName: formData.versionName,
       operation: "dataSourceVersion",
-      ...formData,
-      files: fileList,
       mappings: JSON.stringify(formData.mappings),
       separator: JSON.stringify(formData.separator),
-      versionValue: formattedVersion,
+      files: files,
     };
-
+    
+    const formDataToSend = objectToFormData(payload);
+    
     try {
-      await mutate({
-        url: `${POST.FILE_UPLOAD}`,
-        payload,
+      await mutateReportUpload(formDataToSend, {
+        onSuccess: (data: any) => {
+          if (data?.status === "pending" && data?.dataSourceVersionId) {
+            setIsPolling(true);
+            setPollingId(data.dataSourceVersionId);
+            setPollingTimestamp(Date.now());
+          } else if (data?.status === "completed") {
+            toast.success("File processed successfully!");
+            handleCancel();
+          } else if (data?.status === "failed") {
+            navigate(`/notivix/validation-errors/${data?.dataSourceVersionId}`);
+            handleCancel();
+          } else {
+            toast.success("File uploaded successfully!");
+            handleCancel();
+          }
+        },
+        onError: (error: any) => {
+          toast.error(`Upload failed: ${error.response?.data?.message || error.message}`);
+        }
       });
     } catch (error) {
       toast.error("Upload failed!");
@@ -514,11 +560,9 @@ const ImportFile: React.FC<ImportFileProps> = ({
 
   useEffect(() => {
     let timer: NodeJS.Timeout;
-
     if (isPolling && pollingId) {
       if (pollingData.isSuccess) {
         const status = pollingData.data.data?.status;
-
         if (status === "completed") {
           setIsPolling(false);
           toast.success("File processed successfully!");
@@ -526,19 +570,18 @@ const ImportFile: React.FC<ImportFileProps> = ({
         } else if (status === "failed") {
           setIsPolling(false);
           toast.error("Processing failed. Redirecting to validation errors...");
-          navigate("/notivix/validation-errors");
+          navigate(`/notivix/validation-errors/${pollingId}`);
           handleCancel();
         } else {
           timer = setTimeout(() => {
             setPollingTimestamp(Date.now());
-          }, 3000);
+          }, 8000);
         }
       } else if (pollingData.isError) {
         setIsPolling(false);
         toast.error("Error checking processing status");
       }
     }
-
     return () => {
       if (timer) clearTimeout(timer);
     };
@@ -582,7 +625,6 @@ const ImportFile: React.FC<ImportFileProps> = ({
             </Typography>
           </Box>
         </Backdrop>
-
         <Typography
           variant="h6"
           sx={{
@@ -743,7 +785,7 @@ const ImportFile: React.FC<ImportFileProps> = ({
           </Box>
         </DialogContent>
         <DialogActions>
-          {isPending || isPolling ? (
+          {isLoadingReportUpload || isPolling ? (
             <ProgressBar />
           ) : (
             <Box>
@@ -762,6 +804,7 @@ const ImportFile: React.FC<ImportFileProps> = ({
               <Button
                 variant="contained"
                 onClick={handleSubmit(onSubmit)}
+                disabled={!isFormValid || fileUploadLoader || isLoadingReportUpload || isPolling}
                 sx={{
                   borderRadius: "8px",
                   backgroundColor:
@@ -769,6 +812,10 @@ const ImportFile: React.FC<ImportFileProps> = ({
                   color: STYLE_GUIDE?.COLORS?.white || "#ffffff",
                   "&:hover": {
                     backgroundColor: STYLE_GUIDE?.COLORS?.primary || "#5c6bc0",
+                  },
+                  "&.Mui-disabled": {
+                    backgroundColor: STYLE_GUIDE?.COLORS?.disabled || "#cccccc",
+                    color: STYLE_GUIDE?.COLORS?.disabledText || "#666666",
                   },
                 }}
               >

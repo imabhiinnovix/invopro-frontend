@@ -462,15 +462,16 @@ export default function SideNav() {
             // },
           ],
         },
-        {
-          name: "Validation Errors",
-          icon: (
-            <SettingsIcon
-              sx={{ fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base }}
-            />
-          ),
-          route: "/notivix/validation-errors",
-        },
+        //  {
+        //   name: "Validation Errors",
+        //   icon: (
+        //     <SettingsIcon
+        //       sx={{ fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base }}
+        //     />
+        //   ),
+        //   route: "/notivix/validation-errors",
+
+        // },
       ];
     }
     return [

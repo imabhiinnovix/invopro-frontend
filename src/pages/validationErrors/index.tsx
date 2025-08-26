@@ -1,84 +1,66 @@
 import * as React from "react";
 import { useState, useEffect } from "react";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
-
 import {
   Box,
   Card,
   CardContent,
   Typography,
   TextField,
-  InputAdornment,
   Button,
+  InputAdornment,
+  Tooltip,
+  Chip,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
-import AddIcon from "@mui/icons-material/Add";
-
-
+import EditIcon from "@mui/icons-material/Edit";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import DeleteIcon from "@mui/icons-material/Delete";
-import Tooltip from "@mui/material/Tooltip";
-import Chip from "@mui/material/Chip";
-import { useUnifiedTheme } from "../../hooks/useUnifiedTheme";
+import DownloadIcon from "@mui/icons-material/Download";
+import DeleteSweepIcon from "@mui/icons-material/DeleteSweep";
 import useGet from "../../hooks/useGet";
-import { CustomPagination } from "../../components/common/pagination/customPagination";
 import { GET } from "../../services/apiRoutes";
-import { useSelector } from "react-redux";
-import { RootState } from "../../reducers";
-import ModalValidation from "./ModalValidation";
-import FlashOnIcon from "@mui/icons-material/FlashOn";
-import BoltIcon from "@mui/icons-material/Bolt";
-import RunCircleIcon from "@mui/icons-material/RunCircle";
-import RocketLaunchIcon from "@mui/icons-material/RocketLaunch";
-import TaskIcon from "@mui/icons-material/Task";
-
-interface Role {
-  _id: string;
-  organizationId: string;
-  name: string;
-  status: string;
-  permissions?: string[];
-}
-
-interface ApiResponse {
-  success: boolean;
-  data: Role[];
-  totalCount: number;
-}
+import { CustomPagination } from "../../components/common/pagination/customPagination";
+import { useParams } from "react-router-dom";
 
 const columns: GridColDef[] = [
   {
     field: "rowNumber",
-    headerName: "Row Number",
-    width: 250,
+    headerName: "RowNumber",
+    width: 150,
     disableColumnMenu: true,
     resizable: true,
   },
   {
     field: "errorCode",
-    headerName: "Error Code",
-    width: 250,
+    headerName: "Resource Type",
+    width: 150,
     disableColumnMenu: true,
     resizable: true,
   },
   {
     field: "errorMessage",
     headerName: "Error Message",
-    width: 250,
+    width: 100,
     disableColumnMenu: true,
     resizable: true,
   },
   {
-    field: "attributeValue",
+    field: "fileAttributeValue",
     headerName: "Attribute Value",
-    width: 250,
+    width: 150,
     disableColumnMenu: true,
     resizable: true,
   },
   {
     field: "status",
     headerName: "Status",
-    width: 250,
+    width: 100,
     disableColumnMenu: true,
     resizable: true,
     renderCell: (params) => (
@@ -93,71 +75,61 @@ const columns: GridColDef[] = [
   {
     field: "actions",
     headerName: "Actions",
-    width: 250,
+    width: 150,
     disableColumnMenu: true,
     sortable: false,
     resizable: false,
-    renderCell: (params) => (
-      <Box sx={{ display: "flex", gap: 1 }}>
-        <Tooltip title="Edit" arrow>
-          <Button
-            variant="text"
-            onClick={() => params.row.handleEdit(params.row)}
-            sx={{ minWidth: "auto" }}
-          >
-            {/* Power Action */}
-            <RunCircleIcon /> {/* Run Action */}
-          
-          </Button>
-        </Tooltip>
-        <Tooltip title="View" arrow>
-          <Button
-            variant="text"
-            onClick={() => params.row.handleView(params.row)}
-            sx={{ minWidth: "auto" }}
-          >
-            <VisibilityIcon />
-          </Button>
-        </Tooltip>
-        <Tooltip title="Delete" arrow>
-          <Button
-            variant="text"
-            onClick={() => params.row.handleDelete(params.row._id)}
-            sx={{ minWidth: "auto", color: "error.main" }}
-            disabled={!params.row._id}
-          >
-            <DeleteIcon />
-          </Button>
-        </Tooltip>
-      </Box>
-    ),
+    renderCell: (params) => {
+      const hasDataSourceName = !!params.row.dataSourceId?.name;
+      return (
+        <Box sx={{ display: "flex", gap: 1 }}>
+          <Tooltip title="Edit" arrow>
+            <Button
+              variant="text"
+              onClick={() =>
+                hasDataSourceName && params.row.handleEdit(params.row)
+              }
+              sx={{ minWidth: "auto" }}
+              disabled={!hasDataSourceName}
+            >
+              <EditIcon />
+            </Button>
+          </Tooltip>
+          <Tooltip title="View" arrow>
+            <Button
+              variant="text"
+              onClick={() => params.row.handleView(params.row)}
+              sx={{ minWidth: "auto" }}
+            >
+              <VisibilityIcon />
+            </Button>
+          </Tooltip>
+          <Tooltip title="Delete" arrow>
+            <Button
+              variant="text"
+              onClick={() => params.row.handleDelete(params.row._id)}
+              sx={{ minWidth: "auto", color: "error.main" }}
+              disabled={!params.row._id}
+            >
+              <DeleteIcon />
+            </Button>
+          </Tooltip>
+        </Box>
+      );
+    },
   },
 ];
 
 export default function ValidationErrors() {
-  const theme = useUnifiedTheme();
-  const { permissions } = useSelector(
-    (state: RootState) => state.userPermission
-  );
-  const [openModal, setOpenModal] = useState(false);
-  const [modalMode, setModalMode] = useState<
-    "add" | "edit" | "view" | "filter" | null
-  >(null);
-
+  const { id } = useParams<{ id: string }>();
   const [searchValue, setSearchValue] = useState("");
   const [paginationModel, setPaginationModel] = useState({
     page: 0,
     pageSize: 10,
   });
   const [debouncedSearchValue, setDebouncedSearchValue] = useState(searchValue);
-  const [roleReload, setRoleReload] = useState(false);
-  const [filterValues, setFilterValues] = useState({
-    name: "",
-    organizationId: "",
-    status: "",
-  });
+  const [openDialog, setOpenDialog] = useState(false);
 
-  // Debounce search input
   useEffect(() => {
     const handler = setTimeout(() => {
       setDebouncedSearchValue(searchValue);
@@ -167,56 +139,45 @@ export default function ValidationErrors() {
     };
   }, [searchValue]);
 
-  // API call
   const perPageItem = paginationModel.pageSize;
-  const roleList = useGet<ApiResponse>(
+  console.log("id", id);
+  const validationErrorList = useGet<any>(
     [
-      "roleList",
+      "validationErrorList",
       String(paginationModel.page + 1),
       String(paginationModel.pageSize),
       debouncedSearchValue,
-      String(roleReload),
-      filterValues.name,
-      filterValues.organizationId,
-      filterValues.status,
     ],
-    `${GET.ROLE_LIST}?page=${paginationModel.page + 1}&limit=${perPageItem}&search=${encodeURIComponent(debouncedSearchValue)}&name=${encodeURIComponent(filterValues.name)}&organizationId=${encodeURIComponent(filterValues.organizationId)}&status=${encodeURIComponent(filterValues.status)}`,
+    `${GET?.VALIDATION_ERROR_LIST}?page=${paginationModel.page + 1}&limit=${perPageItem}&dataSourceVersionId=${id}&search=${encodeURIComponent(debouncedSearchValue)}`,
     true
   );
 
   // Process API data for DataGrid
-  const rolesWithIds =
-    Array.isArray(roleList?.data?.data) && roleList.data.data.length > 0
-      ? roleList.data.data.map((role) => ({
-          ...role,
-          id: role._id || `temp-${Math.random().toString(36).substr(2, 9)}`,
-          permissions: role.permissions || [],
-          handleEdit: (row: Role) => {
-            setEditRoleId(row._id);
-            setModalMode("edit");
-            setOpenModal(true);
-          },
-          handleView: (row: Role) => {
-            setEditRoleId(row._id);
-            setModalMode("view");
-            setOpenModal(true);
-          },
-          handleDelete: (id: string) => {
-            if (id) {
-              setDeleteId(id);
-            }
-          },
+  const validationErrorWithIds =
+    Array.isArray(validationErrorList?.data?.data) &&
+    validationErrorList.data.data.length > 0
+      ? validationErrorList.data.data.map((validation) => ({
+          ...validation,
+          id:
+            validation._id || `temp-${Math.random().toString(36).substr(2, 9)}`,
         }))
       : [];
-
-  const handleAddRole = () => {
-    setModalMode("add");
-    setOpenModal(true);
-  };
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchValue(e.target.value);
     setPaginationModel({ ...paginationModel, page: 0 });
+  };
+
+  const handleOpenDialog = () => {
+    setOpenDialog(true);
+  };
+
+  const handleCloseDialog = () => {
+    setOpenDialog(false);
+  };
+
+  const handleConfirmAction = () => {
+    setOpenDialog(false);
   };
 
   return (
@@ -235,9 +196,8 @@ export default function ValidationErrors() {
           fontWeight: 400,
         }}
       >
-        Validation Errors
+        Validation Errors{" "}
       </Typography>
-
       <Card
         sx={{
           borderRadius: "8px",
@@ -276,56 +236,72 @@ export default function ValidationErrors() {
             <Box sx={{ display: "flex", gap: 1 }}>
               <Button
                 variant="contained"
-                startIcon={<AddIcon />}
-                onClick={handleAddRole}
+                startIcon={<DownloadIcon />}
                 sx={{
                   borderRadius: "8px",
                 }}
               >
-                Add
+                Import
+              </Button>
+              <Button
+                variant="contained"
+                startIcon={<DeleteSweepIcon />}
+                onClick={handleOpenDialog}
+                sx={{
+                  borderRadius: "8px",
+                }}
+              >
+                Discard All & Submit
               </Button>
             </Box>
           </Box>
           <DataGrid
-            rows={rolesWithIds}
+            rows={validationErrorWithIds.map((validation) => ({
+              ...validation,
+            }))}
             columns={columns}
             initialState={{ pagination: { paginationModel } }}
-            pageSizeOptions={[10, 20]}
+            pageSizeOptions={[5, 10, 20]}
             disableColumnMenu
             paginationMode="server"
             sx={{
               overflow: "visible",
             }}
-            loading={roleList.isLoading}
-            rowCount={roleList?.data?.totalCount || 0}
+            rowCount={validationErrorList?.data?.totalCount || 0}
             paginationModel={paginationModel}
-            onPaginationModelChange={setPaginationModel}
             slots={{
               pagination: () => (
                 <CustomPagination
                   paginationModel={paginationModel}
                   setPaginationModel={setPaginationModel}
-                  rowCount={roleList?.data?.totalCount || 0}
+                  rowCount={validationErrorList?.data?.totalCount || 0}
                 />
               ),
             }}
           />
         </CardContent>
       </Card>
-      {/* <ModalValidation
-        openModal={openModal}
-        setOpenModal={setOpenModal}
-        modalMode={modalMode}
-        setModalMode={setModalMode}
-        editRoleId={editRoleId}
-        setEditRoleId={setEditRoleId}
-        deleteId={deleteId}
-        setDeleteId={setDeleteId}
-        setRoleReload={setRoleReload}
-        filterValues={filterValues}
-        setFilterValues={setFilterValues}
-        permissions={permissions}
-      /> */}
+
+      {/* Confirmation Dialog */}
+      <Dialog
+        open={openDialog}
+        onClose={handleCloseDialog}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+      >
+        <DialogTitle id="alert-dialog-title">Confirm Action</DialogTitle>
+        <DialogContent>
+          <DialogContentText id="alert-dialog-description">
+            Are you sure want to finalize action preview data?
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseDialog}>Cancel</Button>
+          <Button onClick={handleConfirmAction} autoFocus>
+            OK
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }

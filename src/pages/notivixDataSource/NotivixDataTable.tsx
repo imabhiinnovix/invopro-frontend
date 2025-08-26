@@ -552,7 +552,7 @@ export const NotivixDataTable: React.FC<TableSectionProps> = ({
             rowCount={rowCount}
             paginationModel={paginationModelMemo}
             onPaginationModelChange={setPaginationModel}
-            pageSizeOptions={[5, 10, 20]}
+            // pageSizeOptions={[5, 10, 20]}
             disableColumnMenu
             getRowHeight={() => 'auto'} // Allow dynamic row height
             sx={{

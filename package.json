@@ -21,7 +21,7 @@
     "@mui/x-date-pickers": "^7.29.4",
     "@mui/x-date-pickers-pro": "^8.9.2",
     "@reduxjs/toolkit": "^2.6.1",
-    "@tanstack/react-query": "^5.62.8",
+    "@tanstack/react-query": "^5.85.5",
     "@types/redux-thunk": "^2.1.32",
     "axios": "^1.7.9",
     "chart.js": "^4.4.8",

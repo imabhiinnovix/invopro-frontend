@@ -156,7 +156,7 @@ export const formatPermissions = (
   backendPermissions: BackendPermission[]
 ): PermissionMap => {
   const permissionMap: PermissionMap = {};
-  console.log("Backend Permissions:", backendPermissions);
+  // console.log("Backend Permissions:", backendPermissions);
 
   backendPermissions.forEach((perm, index) => {
     const isOriginalStructure = 'permissionId' in perm && 'allowed' in perm;
@@ -219,7 +219,7 @@ export const formatPermissions = (
     };
   });
 
-  console.log("Formatted Permission Map:", permissionMap);
+  // console.log("Formatted Permission Map:", permissionMap);
   localStorage.setItem('permissions', JSON.stringify(permissionMap));
   window.dispatchEvent(new Event('storage'));
 
