@@ -89,7 +89,6 @@ export default function NotivixDataSource() {
     data: AttributeOptionRequestPayload[];
   }>([`attributeList`], GET?.Attribute_Option_List + `?paginate=true`);
 
-
   // Function to refresh data after successful save
   const refreshData = useCallback(() => {
     queryClient.invalidateQueries([
@@ -107,23 +106,31 @@ export default function NotivixDataSource() {
   }, []);
 
   // Handler functions
+
   const handleView = useCallback(
     (id: string) => {
       const rawData = sourceVersionData?.data?.data || [];
       if (rawData.length === 0) {
-        console.warn("Cannot view: No data available");
+        console.warn("Cannot edit: No data available");
         return;
       }
       const row = rawData.find((r) => r._id === id || r.id === id);
       if (row) {
         const newFormData: Record<string, any> = { id: row._id || row.id };
-        const dataSource = row.rowData || row;
+        const dataSource = row.rowData || {};
+        console.log("rdataSource", dataSource);
+
         Object.keys(dataSource).forEach((key) => {
           if (key !== "_id" && key !== "id") {
-            newFormData[key] =
-              dataSource[key] != null ? String(dataSource[key]) : "";
+            const value = dataSource[key];
+            newFormData[key] = Array.isArray(value)
+              ? value
+              : value != null
+                ? String(value)
+                : "";
           }
         });
+
         setFormData(newFormData);
         setModalMode("view");
         setOpenModal(true);
@@ -131,8 +138,37 @@ export default function NotivixDataSource() {
         console.error(`Row with ID ${id} not found`);
       }
     },
-    [sourceVersionData.data]
+    [sourceVersionData?.data]
   );
+  // const handleEdit = useCallback(
+  //   (id: string) => {
+  //     const rawData = sourceVersionData?.data?.data || [];
+  //     console.log("rawData in handleEdit", rawData, id);
+  //     if (rawData.length === 0) {
+  //       console.warn("Cannot edit: No data available");
+  //       return;
+  //     }
+  //     const row = rawData.find((r) => r._id === id || r.id === id);
+  //     if (row) {
+  //       const newFormData: Record<string, any> = { id: row._id || row.id };
+  //       const dataSource = row.rowData || row;
+  //             console.log("rdataSource", dataSource);
+
+  //       Object.keys(dataSource).forEach((key) => {
+  //         if (key !== "_id" && key !== "id") {
+  //           newFormData[key] =
+  //             dataSource[key] != null ? String(dataSource[key]) : "";
+  //         }
+  //       });
+  //       setFormData(newFormData);
+  //       setModalMode("edit");
+  //       setOpenModal(true);
+  //     } else {
+  //       console.error(`Row with ID ${id} not found`);
+  //     }
+  //   },
+  //   [sourceVersionData.data]
+  // );
 
   const handleEdit = useCallback(
     (id: string) => {
@@ -144,13 +180,20 @@ export default function NotivixDataSource() {
       const row = rawData.find((r) => r._id === id || r.id === id);
       if (row) {
         const newFormData: Record<string, any> = { id: row._id || row.id };
-        const dataSource = row.rowData || row;
+        const dataSource = row.rowData || {};
+        console.log("rdataSource", dataSource);
+
         Object.keys(dataSource).forEach((key) => {
           if (key !== "_id" && key !== "id") {
-            newFormData[key] =
-              dataSource[key] != null ? String(dataSource[key]) : "";
+            const value = dataSource[key];
+            newFormData[key] = Array.isArray(value)
+              ? value
+              : value != null
+                ? String(value)
+                : "";
           }
         });
+
         setFormData(newFormData);
         setModalMode("edit");
         setOpenModal(true);
@@ -158,7 +201,7 @@ export default function NotivixDataSource() {
         console.error(`Row with ID ${id} not found`);
       }
     },
-    [sourceVersionData.data]
+    [sourceVersionData?.data]
   );
 
   const handleDelete = useCallback((id: string) => {
