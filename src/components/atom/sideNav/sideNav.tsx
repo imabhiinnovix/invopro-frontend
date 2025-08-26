@@ -195,8 +195,12 @@ export default function SideNav() {
   const permissions = useSelector(
     (state: RootState) => state.userPermission?.permissions
   );
-
   const dataSourcePermissions = permissions?.["Data Source"] || {};
+  console.log(
+    "dataSourcePermissions ",
+    dataSourcePermissions.case_list_list?.allowed
+  );
+
   const validPermissionIds = Object.entries(dataSourcePermissions)
     .filter(([key, permission]) => {
       return (
@@ -458,7 +462,7 @@ export default function SideNav() {
             // },
           ],
         },
-         {
+        {
           name: "Validation Errors",
           icon: (
             <SettingsIcon
@@ -466,7 +470,6 @@ export default function SideNav() {
             />
           ),
           route: "/notivix/validation-errors",
-
         },
       ];
     }

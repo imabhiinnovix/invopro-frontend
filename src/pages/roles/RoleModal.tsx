@@ -647,7 +647,7 @@ import usePost from "../../hooks/usePost";
 import usePut from "../../hooks/usePut";
 import { GET, POST, PUT } from "../../services/apiRoutes";
 import { RootState } from "../../reducers";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import {
   BackendPermission,
   formatPermissionName,
@@ -656,6 +656,7 @@ import {
 } from "../../utils/utils";
 import { useQueryClient } from "@tanstack/react-query";
 import { UserResponse } from "../../context/AuthContext";
+import { setPermissions } from "../../reducers/userSlice";
 
 // Define types (unchanged)
 interface PermissionDetail {
@@ -742,18 +743,18 @@ export function RoleModal({
 }: RoleModalProps) {
   const theme = useUnifiedTheme();
   const queryClient = useQueryClient();
+  const dispatch = useDispatch();
+
   const { permissions } = useSelector(
     (state: RootState) => state.userPermission
   );
-  console.log("j", mode, editRoleId, filterValues, rows);
+  // console.log("j", mode, editRoleId, filterValues, rows);
   const [formattedPermissions, setFormattedPermissions] =
     useState<PermissionMap>({});
   const [isLoadingWithDelay, setIsLoadingWithDelay] = useState(false);
   const [visibleResourceTypes, setVisibleResourceTypes] = useState(5);
   const permissionsContainerRef = useRef<HTMLDivElement>(null);
- 
 
- 
   // Memoize initial permissions
   const initialPermissions = React.useMemo(() => {
     return Object.keys(permissions ?? {}).reduce(
@@ -869,6 +870,10 @@ export function RoleModal({
       setIsLoadingWithDelay(true);
     }
   }, [roleDetail.isLoading, mode]);
+  const userDetailsAPI = useGet<UserResponse>(
+    ["userDetails"],
+    GET.USER_DETAILS
+  );
 
   // POST API
   const createRole = usePost<RolePostPayload, RolePostResponse>(
@@ -887,9 +892,15 @@ export function RoleModal({
   // PUT API
   const updateRole = usePut<RolePostPayload, RolePostResponse>(
     ["updateRole"],
-    (data) => {
+    async (data) => {
       if (data?.success) {
-        queryClient.invalidateQueries(["roleDetail", editRoleId]);
+        queryClient.invalidateQueries({ queryKey: ["userDetails"] });
+
+        const res = await userDetailsAPI.refetch();
+        if (res.data?.success) {
+          dispatch(setPermissions(res.data.data.permissionIds));
+          queryClient.invalidateQueries(["roleDetail", editRoleId]);
+        }
         onRoleUpdated();
         onClose();
       } else {
