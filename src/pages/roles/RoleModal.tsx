@@ -788,7 +788,7 @@ export function RoleModal({
 
   const roleDetail = useGet<RoleDetailResponse>(
     ["roleDetail", editRoleId],
-    editRoleId ? `${GET.ROLE_DETAIL}/${editRoleId}` : null,
+    editRoleId ? `${GET.ROLE_DETAIL}/${editRoleId}?paginate=false` : null,
     !!editRoleId
   );
 

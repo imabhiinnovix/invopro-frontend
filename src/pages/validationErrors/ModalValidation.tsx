@@ -172,7 +172,7 @@ export default function ModalValidation({
 
   const roleDetail = useGet<RoleDetailResponse>(
     ["roleDetail", editRoleId, fetchTimestamp],
-    editRoleId ? `${GET.ROLE_DETAIL}/${editRoleId}` : null,
+    editRoleId ? `${GET.ROLE_DETAIL}/${editRoleId}?paginate=false` : null,
     !!editRoleId,
     { refetchOnWindowFocus: false }
   );
