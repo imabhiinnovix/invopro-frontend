@@ -16,17 +16,20 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
+  CircularProgress,
 } from "@mui/material";
+import SwipeUpIcon from "@mui/icons-material/SwipeUp";
 import SearchIcon from "@mui/icons-material/Search";
-import EditIcon from "@mui/icons-material/Edit";
-import VisibilityIcon from "@mui/icons-material/Visibility";
-import DeleteIcon from "@mui/icons-material/Delete";
+import RemoveCircleIcon from "@mui/icons-material/RemoveCircle";
 import DownloadIcon from "@mui/icons-material/Download";
 import DeleteSweepIcon from "@mui/icons-material/DeleteSweep";
 import useGet from "../../hooks/useGet";
-import { GET } from "../../services/apiRoutes";
+import usePost from "../../hooks/usePost";
+import { GET, POST } from "../../services/apiRoutes";
 import { CustomPagination } from "../../components/common/pagination/customPagination";
 import { useParams } from "react-router-dom";
+import { toast } from "react-toastify";
+import { useQueryClient } from "@tanstack/react-query"; // Added import
 
 const columns: GridColDef[] = [
   {
@@ -80,38 +83,24 @@ const columns: GridColDef[] = [
     sortable: false,
     resizable: false,
     renderCell: (params) => {
-      const hasDataSourceName = !!params.row.dataSourceId?.name;
       return (
         <Box sx={{ display: "flex", gap: 1 }}>
-          <Tooltip title="Edit" arrow>
+          <Tooltip title="Take Action" arrow>
             <Button
               variant="text"
-              onClick={() =>
-                hasDataSourceName && params.row.handleEdit(params.row)
-              }
-              sx={{ minWidth: "auto" }}
-              disabled={!hasDataSourceName}
-            >
-              <EditIcon />
-            </Button>
-          </Tooltip>
-          <Tooltip title="View" arrow>
-            <Button
-              variant="text"
-              onClick={() => params.row.handleView(params.row)}
+              onClick={() => params.row.handleEdit(params.row)}
               sx={{ minWidth: "auto" }}
             >
-              <VisibilityIcon />
+              <SwipeUpIcon />
             </Button>
           </Tooltip>
-          <Tooltip title="Delete" arrow>
+          <Tooltip title="Discard" arrow>
             <Button
               variant="text"
-              onClick={() => params.row.handleDelete(params.row._id)}
-              sx={{ minWidth: "auto", color: "error.main" }}
-              disabled={!params.row._id}
+              onClick={() => params.row.handleDiscard(params.row)}
+              sx={{ minWidth: "auto" }}
             >
-              <DeleteIcon />
+              <RemoveCircleIcon />
             </Button>
           </Tooltip>
         </Box>
@@ -122,6 +111,7 @@ const columns: GridColDef[] = [
 
 export default function ValidationErrors() {
   const { id } = useParams<{ id: string }>();
+  const queryClient = useQueryClient(); // Added query client
   const [searchValue, setSearchValue] = useState("");
   const [paginationModel, setPaginationModel] = useState({
     page: 0,
@@ -129,6 +119,26 @@ export default function ValidationErrors() {
   });
   const [debouncedSearchValue, setDebouncedSearchValue] = useState(searchValue);
   const [openDialog, setOpenDialog] = useState(false);
+  const [discardRowDialog, setDiscardRowDialog] = useState<{
+    open: boolean;
+    rowData: any;
+  }>({ open: false, rowData: null });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isDiscardingRow, setIsDiscardingRow] = useState(false);
+  
+  const discardAllSubmit = usePost(["discardAllSubmit"]);
+  const discardRow = usePost(["discardRow"]);
+  
+  const validationErrorList = useGet<any>(
+    [
+      "validationErrorList",
+      String(paginationModel.page + 1),
+      String(paginationModel.pageSize),
+      debouncedSearchValue,
+    ],
+    `${GET?.VALIDATION_ERROR_LIST}?page=${paginationModel.page + 1}&limit=${paginationModel.pageSize}&dataSourceVersionId=${id}&search=${encodeURIComponent(debouncedSearchValue)}`,
+    true
+  );
 
   useEffect(() => {
     const handler = setTimeout(() => {
@@ -139,18 +149,11 @@ export default function ValidationErrors() {
     };
   }, [searchValue]);
 
-  const perPageItem = paginationModel.pageSize;
-  console.log("id", id);
-  const validationErrorList = useGet<any>(
-    [
-      "validationErrorList",
-      String(paginationModel.page + 1),
-      String(paginationModel.pageSize),
-      debouncedSearchValue,
-    ],
-    `${GET?.VALIDATION_ERROR_LIST}?page=${paginationModel.page + 1}&limit=${perPageItem}&dataSourceVersionId=${id}&search=${encodeURIComponent(debouncedSearchValue)}`,
-    true
-  );
+  // Function to handle row discard
+  const handleDiscardRow = (rowData: any) => {
+    console.log("Discard row clicked", rowData);
+    setDiscardRowDialog({ open: true, rowData });
+  };
 
   // Process API data for DataGrid
   const validationErrorWithIds =
@@ -160,8 +163,15 @@ export default function ValidationErrors() {
           ...validation,
           id:
             validation._id || `temp-${Math.random().toString(36).substr(2, 9)}`,
+          handleDiscard: handleDiscardRow,
         }))
       : [];
+
+  // Extract dataSourceId from the first item (since all have the same ID)
+  const dataSourceId =
+    validationErrorWithIds.length > 0
+      ? validationErrorWithIds[0].dataSourceId
+      : null;
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchValue(e.target.value);
@@ -176,8 +186,75 @@ export default function ValidationErrors() {
     setOpenDialog(false);
   };
 
-  const handleConfirmAction = () => {
-    setOpenDialog(false);
+  const handleDiscardRowCloseDialog = () => {
+    setDiscardRowDialog({ open: false, rowData: null });
+  };
+
+  const handleConfirmAction = async () => {
+    if (!id || !dataSourceId) {
+      console.error("Missing required data for API call");
+      setOpenDialog(false);
+      return;
+    }
+    const payload = {
+      action: "discardAllSubmit",
+      dataSourceVersionId: id,
+      dataSourceId: dataSourceId,
+    };
+    console.log("Payload to be sent:", payload);
+    setIsSubmitting(true);
+    try {
+      const response = await discardAllSubmit.mutateAsync({
+        url: `${POST.RESOLVE_DATA_IMPORT_ERROR}`,
+        payload,
+      });
+      if (response?.success) {
+        toast.success(response?.message || "Action completed successfully");
+        // Invalidate the query to refresh the data
+        queryClient.invalidateQueries(["validationErrorList"]);
+      }
+      
+      setOpenDialog(false);
+    } catch (error) {
+      console.error("Error submitting data:", error);
+      toast.error("Failed to complete the action");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleDiscardRowConfirm = async () => {
+    if (!id || !discardRowDialog.rowData) {
+      console.error("Missing required data for API call");
+      setDiscardRowDialog({ open: false, rowData: null });
+      return;
+    }
+    const payload = {
+      action: "discard",
+      dataSourceVersionId: id,
+      dataSourceId: discardRowDialog.rowData.dataSourceId,
+      rowNumber: discardRowDialog.rowData.rowNumber,
+    };
+    console.log("Row discard payload:", payload);
+    setIsDiscardingRow(true);
+    try {
+      const response = await discardRow.mutateAsync({
+        url: `${POST.RESOLVE_DATA_IMPORT_ERROR}`,
+        payload,
+      });
+      if (response?.success) {
+        toast.success(response?.message || "Row discarded successfully");
+        // Invalidate the query to refresh the data
+        queryClient.invalidateQueries(["validationErrorList"]);
+      }
+      
+      setDiscardRowDialog({ open: false, rowData: null });
+    } catch (error) {
+      console.error("Error discarding row:", error);
+      toast.error("Failed to discard row");
+    } finally {
+      setIsDiscardingRow(false);
+    }
   };
 
   return (
@@ -256,9 +333,7 @@ export default function ValidationErrors() {
             </Box>
           </Box>
           <DataGrid
-            rows={validationErrorWithIds.map((validation) => ({
-              ...validation,
-            }))}
+            rows={validationErrorWithIds}
             columns={columns}
             initialState={{ pagination: { paginationModel } }}
             pageSizeOptions={[5, 10, 20]}
@@ -281,8 +356,8 @@ export default function ValidationErrors() {
           />
         </CardContent>
       </Card>
-
-      {/* Confirmation Dialog */}
+      
+      {/* Confirmation Dialog for Discard All & Submit */}
       <Dialog
         open={openDialog}
         onClose={handleCloseDialog}
@@ -296,9 +371,42 @@ export default function ValidationErrors() {
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseDialog}>Cancel</Button>
-          <Button onClick={handleConfirmAction} autoFocus>
-            OK
+          <Button onClick={handleCloseDialog} disabled={isSubmitting}>
+            Cancel
+          </Button>
+          <Button
+            onClick={handleConfirmAction}
+            autoFocus
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? <CircularProgress size={24} /> : "OK"}
+          </Button>
+        </DialogActions>
+      </Dialog>
+      
+      {/* Confirmation Dialog for Discard Row */}
+      <Dialog
+        open={discardRowDialog.open}
+        onClose={handleDiscardRowCloseDialog}
+        aria-labelledby="discard-row-dialog-title"
+        aria-describedby="discard-row-dialog-description"
+      >
+        <DialogTitle id="discard-row-dialog-title">Confirm Discard</DialogTitle>
+        <DialogContent>
+          <DialogContentText id="discard-row-dialog-description">
+            Are you sure you want to discard row {discardRowDialog.rowData?.rowNumber}?
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleDiscardRowCloseDialog} disabled={isDiscardingRow}>
+            Cancel
+          </Button>
+          <Button
+            onClick={handleDiscardRowConfirm}
+            autoFocus
+            disabled={isDiscardingRow}
+          >
+            {isDiscardingRow ? <CircularProgress size={24} /> : "OK"}
           </Button>
         </DialogActions>
       </Dialog>
