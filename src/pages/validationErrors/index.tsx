@@ -1,6 +1,5 @@
 import * as React from "react";
 import { useState, useEffect } from "react";
-import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import {
   Box,
   Card,
@@ -9,126 +8,66 @@ import {
   TextField,
   Button,
   InputAdornment,
-  Tooltip,
-  Chip,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogContentText,
-  DialogTitle,
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
-import EditIcon from "@mui/icons-material/Edit";
-import VisibilityIcon from "@mui/icons-material/Visibility";
-import DeleteIcon from "@mui/icons-material/Delete";
 import DownloadIcon from "@mui/icons-material/Download";
 import DeleteSweepIcon from "@mui/icons-material/DeleteSweep";
 import useGet from "../../hooks/useGet";
-import { GET } from "../../services/apiRoutes";
-import { CustomPagination } from "../../components/common/pagination/customPagination";
+import usePost from "../../hooks/usePost";
+import { GET, POST } from "../../services/apiRoutes";
 import { useParams } from "react-router-dom";
-
-const columns: GridColDef[] = [
-  {
-    field: "rowNumber",
-    headerName: "RowNumber",
-    width: 150,
-    disableColumnMenu: true,
-    resizable: true,
-  },
-  {
-    field: "errorCode",
-    headerName: "Resource Type",
-    width: 150,
-    disableColumnMenu: true,
-    resizable: true,
-  },
-  {
-    field: "errorMessage",
-    headerName: "Error Message",
-    width: 100,
-    disableColumnMenu: true,
-    resizable: true,
-  },
-  {
-    field: "fileAttributeValue",
-    headerName: "Attribute Value",
-    width: 150,
-    disableColumnMenu: true,
-    resizable: true,
-  },
-  {
-    field: "status",
-    headerName: "Status",
-    width: 100,
-    disableColumnMenu: true,
-    resizable: true,
-    renderCell: (params) => (
-      <Chip
-        label={params.value || "Unknown"}
-        size="small"
-        color={params.value === "active" ? "success" : "error"}
-        variant="outlined"
-      />
-    ),
-  },
-  {
-    field: "actions",
-    headerName: "Actions",
-    width: 150,
-    disableColumnMenu: true,
-    sortable: false,
-    resizable: false,
-    renderCell: (params) => {
-      const hasDataSourceName = !!params.row.dataSourceId?.name;
-      return (
-        <Box sx={{ display: "flex", gap: 1 }}>
-          <Tooltip title="Edit" arrow>
-            <Button
-              variant="text"
-              onClick={() =>
-                hasDataSourceName && params.row.handleEdit(params.row)
-              }
-              sx={{ minWidth: "auto" }}
-              disabled={!hasDataSourceName}
-            >
-              <EditIcon />
-            </Button>
-          </Tooltip>
-          <Tooltip title="View" arrow>
-            <Button
-              variant="text"
-              onClick={() => params.row.handleView(params.row)}
-              sx={{ minWidth: "auto" }}
-            >
-              <VisibilityIcon />
-            </Button>
-          </Tooltip>
-          <Tooltip title="Delete" arrow>
-            <Button
-              variant="text"
-              onClick={() => params.row.handleDelete(params.row._id)}
-              sx={{ minWidth: "auto", color: "error.main" }}
-              disabled={!params.row._id}
-            >
-              <DeleteIcon />
-            </Button>
-          </Tooltip>
-        </Box>
-      );
-    },
-  },
-];
+import { toast } from "react-toastify";
+import { useQueryClient } from "@tanstack/react-query";
+import { ValidationErrorsDataTable } from "./ValidationErrorsDataTable";
+import { ConfirmationDialog } from "../../components/common/deleteConfirmationDialog/ConfirmationDialog";
+import { useSelector } from "react-redux";
+import { RootState } from "../../reducers";
+import { ValidationErrorModal } from "./ValidationErrorModel";
+import { AttributeOptionRequestPayload } from "../../components/atom/attributeOption/types";
 
 export default function ValidationErrors() {
   const { id } = useParams<{ id: string }>();
+  const queryClient = useQueryClient();
   const [searchValue, setSearchValue] = useState("");
   const [paginationModel, setPaginationModel] = useState({
     page: 0,
     pageSize: 10,
   });
   const [debouncedSearchValue, setDebouncedSearchValue] = useState(searchValue);
-  const [openDialog, setOpenDialog] = useState(false);
+  
+  // Single dialog state to handle both actions
+  const [dialog, setDialog] = useState<{
+    open: boolean;
+    type: "discardAll" | "discardRow";
+    rowData?: any;
+  }>({ open: false, type: "discardAll" });
+  
+  // State for the action modal
+  const [actionModalOpen, setActionModalOpen] = useState(false);
+  const [selectedRow, setSelectedRow] = useState<any>(null);
+  
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  const discardAllSubmit = usePost(["discardAllSubmit"]);
+  const discardRow = usePost(["discardRow"]);
+   const attributeList = useGet<{
+    success: boolean;
+    data: AttributeOptionRequestPayload[];
+  }>([`attributeList`], GET?.Attribute_Option_List + `?paginate=true`);
+
+
+  const validationErrorList = useGet<any>(
+    [
+      "validationErrorList",
+      String(paginationModel.page + 1),
+      String(paginationModel.pageSize),
+      debouncedSearchValue,
+    ],
+    `${GET?.VALIDATION_ERROR_LIST}?page=${paginationModel.page + 1}&limit=${paginationModel.pageSize}&dataSourceVersionId=${id}&search=${encodeURIComponent(debouncedSearchValue)}`,
+    true
+  );
+  
+  console.log("Validation Error List:", validationErrorList?.data?.data);
 
   useEffect(() => {
     const handler = setTimeout(() => {
@@ -139,18 +78,20 @@ export default function ValidationErrors() {
     };
   }, [searchValue]);
 
-  const perPageItem = paginationModel.pageSize;
-  console.log("id", id);
-  const validationErrorList = useGet<any>(
-    [
-      "validationErrorList",
-      String(paginationModel.page + 1),
-      String(paginationModel.pageSize),
-      debouncedSearchValue,
-    ],
-    `${GET?.VALIDATION_ERROR_LIST}?page=${paginationModel.page + 1}&limit=${perPageItem}&dataSourceVersionId=${id}&search=${encodeURIComponent(debouncedSearchValue)}`,
-    true
-  );
+  // Function to handle row discard - now logs errorType for the specific row
+  const handleDiscardRow = (rowData: any) => {
+    console.log("Discard row clicked", rowData);
+    console.log("Error Type for this row:", rowData.errorType); 
+    setDialog({ open: true, type: "discardRow", rowData });
+  };
+
+  // Function to handle row edit - logs errorType for the specific row and opens the action modal
+  const handleEditRow = (rowData: any) => {
+    console.log("Edit row clicked", rowData);
+    console.log("Error Type for this row:", rowData.errorType); 
+    setSelectedRow(rowData);
+    setActionModalOpen(true);
+  };
 
   // Process API data for DataGrid
   const validationErrorWithIds =
@@ -159,25 +100,106 @@ export default function ValidationErrors() {
       ? validationErrorList.data.data.map((validation) => ({
           ...validation,
           id:
-            validation._id || `temp-${Math.random().toString(36).substr(2, 9)}`,
+            validation?._id || `temp-${Math?.random()?.toString(36)?.substr(2, 9)}`,
+          handleDiscard: handleDiscardRow,
+          handleEdit: handleEditRow, 
         }))
       : [];
+  
+  // Extract dataSourceId from the first item (since all have the same ID)
+  const firstItem = validationErrorWithIds.length > 0 ? validationErrorWithIds[0] : null;
+  const dataSourceId = firstItem?.dataSourceId || null;
+  
+  console.log("Extracted dataSourceId:", dataSourceId);
+
+  const commonDataSourceList = useSelector(
+    (state: RootState) => state.dataSource?.list
+  );
+  console.log("Current Redux State:", commonDataSourceList);
+  
+  const currentDataSource = commonDataSourceList.find(
+    (ds) => ds?._id === dataSourceId
+  );
+  console.log("Current Data Source:", currentDataSource);
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchValue(e.target.value);
     setPaginationModel({ ...paginationModel, page: 0 });
   };
 
-  const handleOpenDialog = () => {
-    setOpenDialog(true);
+  const handleOpenDiscardAllDialog = () => {
+    setDialog({ open: true, type: "discardAll" });
   };
 
   const handleCloseDialog = () => {
-    setOpenDialog(false);
+    setDialog({ open: false, type: "discardAll" });
   };
 
-  const handleConfirmAction = () => {
-    setOpenDialog(false);
+  const handleCloseActionModal = () => {
+    setActionModalOpen(false);
+    setSelectedRow(null);
+  };
+
+  const handleConfirmAction = async () => {
+    if (!id || !dataSourceId) {
+      console.error("Missing required data for API call");
+      handleCloseDialog();
+      return;
+    }
+    
+    setIsSubmitting(true);
+    try {
+      let response;
+      
+      if (dialog.type === "discardAll") {
+        const payload = {
+          action: "discardAllSubmit",
+          dataSourceVersionId: id,
+          dataSourceId: dataSourceId,
+        };
+        console.log("Payload to be sent:", payload);
+        response = await discardAllSubmit.mutateAsync({
+          url: `${POST.RESOLVE_DATA_IMPORT_ERROR}`,
+          payload,
+        });
+      } else {
+        // Log errorType for the specific row being discarded
+        console.log("Error Type for row being discarded:", dialog.rowData?.errorType);
+        
+        const payload = {
+          action: "discard",
+          dataSourceVersionId: id,
+          dataSourceId: dialog.rowData.dataSourceId,
+          rowNumber: dialog.rowData.rowNumber,
+        };
+        console.log("Row discard payload:", payload);
+        response = await discardRow.mutateAsync({
+          url: `${POST.RESOLVE_DATA_IMPORT_ERROR}`,
+          payload,
+        });
+      }
+
+      if (response?.success) {
+        toast.success(
+          dialog.type === "discardAll" 
+            ? response?.message || "Action completed successfully"
+            : response?.message || "Row discarded successfully"
+        );
+        // Invalidate the query to refresh the data
+        queryClient.invalidateQueries(["validationErrorList"]);
+      }
+      
+      handleCloseDialog();
+    } catch (error) {
+      console.error("Error in action:", error);
+      toast.error(
+        dialog.type === "discardAll" 
+          ? "Failed to complete the action" 
+          : "Failed to discard row"
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -246,7 +268,7 @@ export default function ValidationErrors() {
               <Button
                 variant="contained"
                 startIcon={<DeleteSweepIcon />}
-                onClick={handleOpenDialog}
+                onClick={handleOpenDiscardAllDialog}
                 sx={{
                   borderRadius: "8px",
                 }}
@@ -255,53 +277,42 @@ export default function ValidationErrors() {
               </Button>
             </Box>
           </Box>
-          <DataGrid
-            rows={validationErrorWithIds.map((validation) => ({
-              ...validation,
-            }))}
-            columns={columns}
-            initialState={{ pagination: { paginationModel } }}
-            pageSizeOptions={[5, 10, 20]}
-            disableColumnMenu
-            paginationMode="server"
-            sx={{
-              overflow: "visible",
-            }}
-            rowCount={validationErrorList?.data?.totalCount || 0}
+          <ValidationErrorsDataTable
+            rows={validationErrorWithIds}
             paginationModel={paginationModel}
-            slots={{
-              pagination: () => (
-                <CustomPagination
-                  paginationModel={paginationModel}
-                  setPaginationModel={setPaginationModel}
-                  rowCount={validationErrorList?.data?.totalCount || 0}
-                />
-              ),
-            }}
+            setPaginationModel={setPaginationModel}
+            rowCount={validationErrorList?.data?.totalCount || 0}
           />
         </CardContent>
       </Card>
-
-      {/* Confirmation Dialog */}
-      <Dialog
-        open={openDialog}
+      
+      {/* Confirmation Dialog for Discard Actions */}
+      <ConfirmationDialog
+        open={dialog.open}
         onClose={handleCloseDialog}
-        aria-labelledby="alert-dialog-title"
-        aria-describedby="alert-dialog-description"
-      >
-        <DialogTitle id="alert-dialog-title">Confirm Action</DialogTitle>
-        <DialogContent>
-          <DialogContentText id="alert-dialog-description">
-            Are you sure want to finalize action preview data?
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseDialog}>Cancel</Button>
-          <Button onClick={handleConfirmAction} autoFocus>
-            OK
-          </Button>
-        </DialogActions>
-      </Dialog>
+        onConfirm={handleConfirmAction}
+        title={dialog.type === "discardAll" ? "Confirm Action" : "Confirm Discard"}
+        content={
+          dialog.type === "discardAll" 
+            ? "Are you sure want to finalize action preview data?"
+            : `Are you sure you want to discard row ${dialog.rowData?.rowNumber}?`
+        }
+        confirmText={dialog.type === "discardAll" ? "Confirm" : "Discard"}
+        confirmButtonColor="error"
+        isSubmitting={isSubmitting}
+      />
+      
+      {/* Action Modal for Edit/Take Action */}
+      <ValidationErrorModal
+        openModal={actionModalOpen}
+        rowData={selectedRow}
+        currentDataSource={currentDataSource}
+        handleCloseModal={handleCloseActionModal}
+        attributeListData={attributeList?.data?.data || []}
+        refreshData={() => {
+          queryClient.invalidateQueries(["validationErrorList"]);
+        }}
+      />
     </Box>
   );
 }

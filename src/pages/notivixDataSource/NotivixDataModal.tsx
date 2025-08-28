@@ -1757,7 +1757,7 @@ import usePost from "../../hooks/usePost";
 import { POST, PUT } from "../../services/apiRoutes";
 import { toast } from "react-toastify";
 import usePut from "../../hooks/usePut";
-import { DeleteConfirmationDialog } from "../../components/common/deleteConfirmationDialog/DeleteConfirmationDialog";
+import { ConfirmationDialog } from "../../components/common/deleteConfirmationDialog/ConfirmationDialog";
 
 interface ModelSectionProps {
   openModal: boolean;
@@ -2592,7 +2592,7 @@ export const NotivixDataModal: React.FC<ModelSectionProps> = ({
         sourceVersionData={sourceVersionData}
         setFormData={setFormData}
       />
-      <DeleteConfirmationDialog
+      <ConfirmationDialog
         open={openDialog}
         onClose={handleCloseDialog}
         onConfirm={handleConfirmDelete}

@@ -42,7 +42,8 @@ export const POST = {
   CREATE_NOTIFICATION_TYPE: "/notivix/notification-setting/type/create",
   CREATE_FREQUENCY: "/notivix/notification-setting/frequency/create",
   CREATE_MEDIUM: "/notivix/notification-setting/medium/create",
-  CREATE_VERSION_ROW:"/common/dataSourceVersion/versionData/create"
+  CREATE_VERSION_ROW:"/common/dataSourceVersion/versionData/create",
+  RESOLVE_DATA_IMPORT_ERROR: "/common/dataImportError/resolve",
 };
 
 export const PUT = {
