@@ -57,7 +57,7 @@ const columns: GridColDef[] = [
     sortable: false,
     resizable: false,
     renderCell: (params) => {
-      console.log("Action Params:", params);
+      // console.log("Action Params:", params);
       return (
         <Box sx={{ display: "flex", gap: 1 }}>
           {params.row.errorCode==="1005"?
