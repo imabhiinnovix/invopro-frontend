@@ -56,7 +56,7 @@ export const NotivixDashboardView: React.FC<DashboardViewProps> = ({
   const [gridColumns, setGridColumns] = useState(2);
   const [selectedTheme, setSelectedTheme] = useState<string>('');
   const [isFiltersModalOpen, setIsFiltersModalOpen] = useState(false);
-  // const [currentFilters, setCurrentFilters] = useState<FilterOptions>({});
+  const [dashboardFilters, setDashboardFilters] = useState<any>({});
 
   const inputRef = useRef<HTMLInputElement>(null);
   const { id: dashboardId } = useParams();
@@ -430,58 +430,7 @@ export const NotivixDashboardView: React.FC<DashboardViewProps> = ({
   };
 
   const handleApplyFilters = async (filters: any) => {
-    console.log(filters);
-    // setCurrentFilters(filters);
-
-    // const filtersPayload: Record<string, any> = {};
-
-    // Object.keys(filters).forEach((key) => {
-    //   if (key !== 'searchText' && key !== 'dateRange' && filters[key as keyof FilterOptions]) {
-    //     const value = filters[key as keyof FilterOptions];
-    //     if (value && value !== '') {
-    //       const fieldSetting = dataSourceDetails?.fieldSettings?.find((field) => field.attributeId === key);
-
-    //       if (fieldSetting) {
-    //         const attribute = dataSourceDetails?.entityId?.attributes?.find(
-    //           (attr) => attr._id === fieldSetting.attributeId
-    //         );
-
-    //         if (attribute?.type === 'multioption') {
-    //           filtersPayload[fieldSetting.label] = Array.isArray(value) ? value : [value];
-    //         } else {
-    //           filtersPayload[fieldSetting.label] = Array.isArray(value) ? value[0] : value;
-    //         }
-    //       }
-    //     }
-    //   }
-    // });
-
-    // const firstChart = charts[0];
-
-    // if (!firstChart) {
-    //   toast.error('No charts found in the dashboard');
-    //   return;
-    // }
-
-    // const apiPayload = {
-    //   dataSourceId: currentDashboard?.settings?.dataSource?._id,
-    //   dimension: firstChart.dimensions[0] || firstChart.aggregation.attributeName,
-    //   aggregation: {
-    //     type: firstChart.aggregation.type,
-    //     attributeName: firstChart.aggregation.attributeName,
-    //   },
-    //   groupBy: firstChart.groupBy,
-    //   widgetType: firstChart.widgetTypeId?.chartType || 'number',
-    //   conditions: firstChart.conditions,
-    //   ...(Object.keys(filtersPayload).length > 0 && { filters: filtersPayload }),
-    // };
-
-    // try {
-    //   const response = await axiosInstance.post('/common/dataSourceVersion/chartData', apiPayload);
-    //   toast.success('Filters applied successfully');
-    // } catch (error) {
-    //   toast.error('Failed to apply filters. Please try again.');
-    // }
+    setDashboardFilters(filters);
   };
 
   return (
@@ -743,6 +692,7 @@ export const NotivixDashboardView: React.FC<DashboardViewProps> = ({
           {dashboardId && (
             <ChartGrid
               dashboardId={dashboardId}
+              dashboardFilters={dashboardFilters}
               isEditMode={isEditMode}
               onEditChart={handleEditChart}
               isAddChartModalOpen={isAddChartModalOpen}
