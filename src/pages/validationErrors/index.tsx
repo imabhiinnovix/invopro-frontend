@@ -336,7 +336,14 @@ export default function ValidationErrors() {
               ? "Are you sure you want to resolve this?"
               : `Are you sure you want to discard row ${dialog.rowData?.rowNumber}?`
         }
-        confirmText={dialog.type === "discardAll" ? "Confirm" : "Discard"}
+        // confirmText={dialog.type === "discardAll" ? "Confirm" : "Discard"}
+        confirmText={
+          dialog.type === "discardAll"
+            ? "Confirm"
+            : dialog.type === "resolveRow"
+              ? "Yes"
+              : "Discard"
+        }
         confirmButtonColor="error"
         isSubmitting={isSubmitting}
       />
