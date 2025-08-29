@@ -1930,7 +1930,7 @@ export const NotivixDataModal: React.FC<ModelSectionProps> = ({
         let errorMessage = "";
         // First validate required fields
         if (!validateRequiredFields()) {
-          toast.error("Please fill in all required fields");
+          toast.error("Please fill required fields");
           return;
         }
         // Then validate field types

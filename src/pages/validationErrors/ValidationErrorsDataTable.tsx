@@ -1,15 +1,10 @@
 import * as React from "react";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
-import {
-  Box,
-  Tooltip,
-  Button,
-  Chip,
-} from "@mui/material";
+import { Box, Tooltip, Button, Chip } from "@mui/material";
 import SwipeUpIcon from "@mui/icons-material/SwipeUp";
 import RemoveCircleIcon from "@mui/icons-material/RemoveCircle";
 import { CustomPagination } from "../../components/common/pagination/customPagination";
-
+import FileDownloadDoneIcon from '@mui/icons-material/FileDownloadDone';
 const columns: GridColDef[] = [
   {
     field: "rowNumber",
@@ -20,7 +15,7 @@ const columns: GridColDef[] = [
   },
   {
     field: "errorCode",
-    headerName: "Resource Type",
+    headerName: "Error Code",
     width: 150,
     disableColumnMenu: true,
     resizable: true,
@@ -62,9 +57,20 @@ const columns: GridColDef[] = [
     sortable: false,
     resizable: false,
     renderCell: (params) => {
+      // console.log("Action Params:", params);
       return (
         <Box sx={{ display: "flex", gap: 1 }}>
-          <Tooltip title="Take Action" arrow>
+          {params.row.errorCode==="1005"?
+           <Tooltip title="Resolve" arrow>
+            <Button
+              variant="text"
+              onClick={() => params.row.handleResolve(params.row)}
+              sx={{ minWidth: "auto" }}
+            >
+              <FileDownloadDoneIcon />
+            </Button>
+          </Tooltip>:
+           <Tooltip title="Take Action" arrow>
             <Button
               variant="text"
               onClick={() => params.row.handleEdit(params.row)}
@@ -73,6 +79,8 @@ const columns: GridColDef[] = [
               <SwipeUpIcon />
             </Button>
           </Tooltip>
+          }
+         
           <Tooltip title="Discard" arrow>
             <Button
               variant="text"
@@ -82,6 +90,7 @@ const columns: GridColDef[] = [
               <RemoveCircleIcon />
             </Button>
           </Tooltip>
+         
         </Box>
       );
     },
@@ -95,12 +104,9 @@ interface ValidationErrorsDataTableProps {
   rowCount: number;
 }
 
-export const ValidationErrorsDataTable: React.FC<ValidationErrorsDataTableProps> = ({
-  rows,
-  paginationModel,
-  setPaginationModel,
-  rowCount,
-}) => {
+export const ValidationErrorsDataTable: React.FC<
+  ValidationErrorsDataTableProps
+> = ({ rows, paginationModel, setPaginationModel, rowCount }) => {
   return (
     <DataGrid
       rows={rows}
