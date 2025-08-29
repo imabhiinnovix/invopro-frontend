@@ -332,7 +332,9 @@ export default function ValidationErrors() {
         content={
           dialog.type === "discardAll"
             ? "Are you sure want to finalize action preview data?"
-            : `Are you sure you want to discard row ${dialog.rowData?.rowNumber}?`
+            : dialog.type === "resolveRow"
+              ? "Are you sure you want to resolve this?"
+              : `Are you sure you want to discard row ${dialog.rowData?.rowNumber}?`
         }
         confirmText={dialog.type === "discardAll" ? "Confirm" : "Discard"}
         confirmButtonColor="error"
