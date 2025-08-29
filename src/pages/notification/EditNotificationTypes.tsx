@@ -178,6 +178,7 @@ const ConditionRuleBuilder = ({
       const selectedEntity = list.find(
         (item) => item._id === notification.entityId
       );
+        console.log("kk33333", selectedEntity);
 
       if (selectedEntity?.fieldSettings) {
         const newFieldOptions = selectedEntity.fieldSettings.map((setting) => ({
@@ -185,6 +186,7 @@ const ConditionRuleBuilder = ({
           value: setting.mappedAttributeName,
           attributeId: setting.attributeId,
           type: setting?.type,
+          refAttributeId: setting?.refAttributeId,
         }));
         setFieldOptions(newFieldOptions);
       } else {
@@ -751,10 +753,12 @@ const ConditionRuleBuilder = ({
               (f) => f.value === rule.field
             );
             if (fieldOption && rule.field && rule.operator) {
+              console.log("fieldOption", fieldOption);
               const condition = {
                 attributeId: fieldOption.attributeId,
                 operator: rule.operator,
                 value: rule.value || "",
+                refAttributeId: fieldOption?.refAttributeId || "",
               };
               if (fieldOption.type === "date" && rule.timeUnit) {
                 condition.timeUnit = rule.timeUnit;
@@ -875,74 +879,161 @@ export default function EditNotificationTypes() {
   const navigate = useNavigate();
 
   // Transform backend response to component state
-  useEffect(() => {
-    if (notificationDataFetch.data?.data && list) {
-      const backendData = notificationDataFetch.data.data;
+  // useEffect(() => {
+  //   if (notificationDataFetch.data?.data && list) {
+  //     const backendData = notificationDataFetch.data.data;
 
-      // First, get the fieldOptions for the selected entity
-      const selectedEntity = list.find(
-        (item) => item._id === backendData.dataSourceId
-      );
-      let newFieldOptions = [];
-      if (selectedEntity?.fieldSettings) {
-        newFieldOptions = selectedEntity.fieldSettings.map((setting) => ({
-          label: setting.label,
-          value: setting.mappedAttributeName,
-          attributeId: setting.attributeId,
-          type: setting?.type,
-        }));
-      }
-      setFieldOptions(newFieldOptions);
+  //     // First, get the fieldOptions for the selected entity
+  //     const selectedEntity = list.find(
+  //       (item) => item._id === backendData.dataSourceId
+  //     );
+  //     console.log("kk", selectedEntity);
+  //     let newFieldOptions = [];
+  //     if (selectedEntity?.fieldSettings) {
+  //       newFieldOptions = selectedEntity.fieldSettings.map((setting) => ({
+  //         label: setting.label,
+  //         value: setting.mappedAttributeName,
+  //         attributeId: setting.attributeId,
+  //         type: setting?.type,
+  //         refAttributeId: setting?.refAttributeId || [],
+  //       }));
+  //     }
+  //     setFieldOptions(newFieldOptions);
 
-      // Now, transform the conditions to rules using the newFieldOptions
-      const transformConditions = (conditions) => {
-        return conditions.map((condition, index) => {
-          // Check if this condition has nested conditions (group)
-          if (
-            condition.conditions &&
-            Array.isArray(condition.conditions) &&
-            condition.conditions.length > 0
-          ) {
-            // This is a nested group
-            return {
-              id: `group-${index}`,
-              logic: condition.group_operator,
-              rules: transformConditions(condition.conditions),
-            };
-          } else {
-            // This is a simple rule
-            return {
-              id: `rule-${index}`,
-              field:
-                newFieldOptions.find(
-                  (f) => f.attributeId === condition.attributeId
-                )?.value || "",
-              operator: condition.operator,
-              value: condition.value,
-              timeUnit: condition.timeUnit || "",
-            };
-          }
-        });
-      };
+  //     // Now, transform the conditions to rules using the newFieldOptions
+  //     const transformConditions = (conditions) => {
+  //       return conditions.map((condition, index) => {
+  //         // Check if this condition has nested conditions (group)
+  //         if (
+  //           condition.conditions &&
+  //           Array.isArray(condition.conditions) &&
+  //           condition.conditions.length > 0
+  //         ) {
+  //           // This is a nested group
+  //           return {
+  //             id: `group-${index}`,
+  //             logic: condition.group_operator,
+  //             rules: transformConditions(condition.conditions),
+  //           };
+  //         } else {
+  //           // This is a simple rule
+  //           return {
+  //             id: `rule-${index}`,
+  //             field:
+  //               newFieldOptions.find(
+  //                 (f) => f.attributeId === condition.attributeId
+  //               )?.value || "",
+  //             operator: condition.operator,
+  //             value: condition.value,
+  //             timeUnit: condition.timeUnit || "",
+  //           };
+  //         }
+  //       });
+  //     };
 
-      // Get the first condition group
-      const firstGroup = backendData.conditionGroups[0];
-      if (firstGroup) {
-        const transformedRules = transformConditions(firstGroup.conditions);
-        const newInitialNotification = {
-          name: backendData.name,
-          entityId: backendData.dataSourceId,
-          conditionGroup: {
-            logic: firstGroup.group_operator,
-            rules: transformedRules,
-          },
-        };
+  //     // Get the first condition group
+  //     const firstGroup = backendData.conditionGroups[0];
+  //     if (firstGroup) {
+  //       const transformedRules = transformConditions(firstGroup.conditions);
+  //       const newInitialNotification = {
+  //         name: backendData.name,
+  //         entityId: backendData.dataSourceId,
+  //         conditionGroup: {
+  //           logic: firstGroup.group_operator,
+  //           rules: transformedRules,
+  //         },
+  //       };
 
-        setInitialNotification(newInitialNotification);
-        setNotificationTypeId(backendData._id);
-      }
+  //       setInitialNotification(newInitialNotification);
+  //       setNotificationTypeId(backendData._id);
+  //     }
+  //   }
+  // }, [notificationDataFetch.data, list]);
+
+  // Transform backend response to component state
+useEffect(() => {
+  if (notificationDataFetch.data?.data && list) {
+    const backendData = notificationDataFetch.data.data;
+    // First, get the fieldOptions for the selected entity
+    const selectedEntity = list.find(
+      (item) => item._id === backendData.dataSourceId
+    );
+    console.log("kk", selectedEntity);
+    let newFieldOptions = [];
+    if (selectedEntity?.fieldSettings) {
+      newFieldOptions = selectedEntity.fieldSettings.map((setting) => ({
+        label: setting.label,
+        value: setting.mappedAttributeName,
+        attributeId: setting.attributeId,
+        type: setting?.type,
+        refAttributeId: setting?.refAttributeId || [], // Keep as array to match backend format
+      }));
     }
-  }, [notificationDataFetch.data, list]);
+    setFieldOptions(newFieldOptions);
+    
+    // Now, transform the conditions to rules using the newFieldOptions
+    const transformConditions = (conditions) => {
+      return conditions.map((condition, index) => {
+        // Check if this condition has nested conditions (group)
+        if (
+          condition.conditions &&
+          Array.isArray(condition.conditions) &&
+          condition.conditions.length > 0
+        ) {
+          // This is a nested group
+          return {
+            id: `group-${index}`,
+            logic: condition.group_operator,
+            rules: transformConditions(condition.conditions),
+          };
+        } else {
+          // This is a simple rule
+          // Find matching field by both attributeId AND refAttributeId
+          const matchingField = newFieldOptions.find(
+            (f) => {
+              // Check attributeId match
+              if (f.attributeId !== condition.attributeId) return false;
+              
+              // Handle refAttributeId comparison
+              const fieldRef = Array.isArray(f.refAttributeId) ? f.refAttributeId : [];
+              const conditionRef = Array.isArray(condition.refAttributeId) ? condition.refAttributeId : [];
+              
+              // Compare arrays by length and content
+              if (fieldRef.length !== conditionRef.length) return false;
+              
+              // Check if all elements match
+              return fieldRef.every((val, idx) => val === conditionRef[idx]);
+            }
+          );
+          
+          return {
+            id: `rule-${index}`,
+            field: matchingField?.value || "",
+            operator: condition.operator,
+            value: condition.value,
+            timeUnit: condition.timeUnit || "",
+          };
+        }
+      });
+    };
+    
+    // Get the first condition group
+    const firstGroup = backendData.conditionGroups[0];
+    if (firstGroup) {
+      const transformedRules = transformConditions(firstGroup.conditions);
+      const newInitialNotification = {
+        name: backendData.name,
+        entityId: backendData.dataSourceId,
+        conditionGroup: {
+          logic: firstGroup.group_operator,
+          rules: transformedRules,
+        },
+      };
+      setInitialNotification(newInitialNotification);
+      setNotificationTypeId(backendData._id);
+    }
+  }
+}, [notificationDataFetch.data, list]);
 
   // Handle errors
   useEffect(() => {
