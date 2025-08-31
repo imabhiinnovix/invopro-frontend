@@ -368,7 +368,7 @@ export const NotivixDataTable: React.FC<TableSectionProps> = ({
     [paginationModel.page, paginationModel.pageSize]
   );
 
-  console.log("dataSourceIdin table comp", dataSourceId);
+  // console.log("dataSourceIdin table comp", dataSourceId);
 
   // Format columns to handle date fields and arrays
   const formattedColumns = React.useMemo(() => {

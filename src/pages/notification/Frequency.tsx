@@ -3162,6 +3162,211 @@ const RRuleGenerator = ({
     }
   }, [viewReminderData, openViewDialog]);
   
+  // useEffect(() => {
+  //   if (!reminderData?.data || !editMode) {
+  //     return;
+  //   }
+  //   console.log("Loading edit data:", reminderData.data);
+  //   const data = reminderData.data;
+  //   setStartDate(
+  //     data.schedulerStartDate
+  //       ? new Date(data.schedulerStartDate).toISOString().split("T")[0]
+  //       : ""
+  //   );
+  //   setRepeatType(
+  //     data.frequency
+  //       ? data.frequency.charAt(0).toUpperCase() + data.frequency.slice(1)
+  //       : ""
+  //   );
+  //   setInterval(data.interval || 1);
+  //   setAcknowledgeChecked(data.acknowledgeRequired || false);
+  //   setAttachedChecked(data.attachmentRequired || false);
+  //   setTime(data.triggerTime || "");
+  //   setTemplate(data.templateId?._id || "");
+  //   setMethod(data.medium?._id || "");
+  //   if (data.frequency === "weekly" && data.daysOfWeek?.length > 0) {
+  //     const dayNames = [
+  //       "Sunday",
+  //       "Monday",
+  //       "Tuesday",
+  //       "Wednesday",
+  //       "Thursday",
+  //       "Friday",
+  //       "Saturday",
+  //     ];
+  //     const mappedDays = data.daysOfWeek
+  //       .map((backendIndex) => dayNames[backendIndex])
+  //       .filter((dayName) => dayName);
+  //     console.log("Setting weekly days:", mappedDays);
+  //     setWeeklyDays(mappedDays);
+  //   } else {
+  //     setWeeklyDays([]);
+  //   }
+  //   if (data.frequency === "monthly") {
+  //     if (data.dayOfMonth && data.dayOfMonth.length > 0) {
+  //       setMonthlyType("on");
+  //       setMonthlyDays(data.dayOfMonth.map((d) => d.toString()));
+  //       setMonthlyWeeks([]);
+  //       setMonthlyWeekDays([]);
+  //     } else if (data.weekOfMonth && data.weekOfMonth.length > 0) {
+  //       setMonthlyType("onthe");
+  //       setMonthlyWeeks(
+  //         data.weekOfMonth.map((w) =>
+  //           w === -1 ? "Last" : WEEK_OPTIONS[w - 1]?.id || "First"
+  //         )
+  //       );
+  //       setMonthlyWeekDays(
+  //         data.daysOfWeek?.length > 0
+  //           ? data.daysOfWeek
+  //               .map((d) => {
+  //                 const uiIndex = mapBackendDayToUiIndex(d);
+  //                 return weekdays[uiIndex]?.id;
+  //               })
+  //               .filter((d) => d)
+  //           : []
+  //       );
+  //       setMonthlyDays([]);
+  //     }
+  //   }
+  //   if (data.frequency === "yearly") {
+  //     if (data.dayOfMonth?.length > 0) {
+  //       setYearlyType("on");
+  //       setYearlyMonths(
+  //         data.monthOfYear?.length > 0
+  //           ? data.monthOfYear.map((m) => MONTHS[m - 1]?.id || "Jan")
+  //           : []
+  //       );
+  //       setYearlyDays(
+  //         data.dayOfMonth?.length > 0
+  //           ? data.dayOfMonth.map((d) => d.toString())
+  //           : []
+  //       );
+  //     } else if (data.weekOfMonth?.length > 0) {
+  //       setYearlyType("onthe");
+  //       setYearlyWeeks(
+  //         data.weekOfMonth?.length > 0
+  //           ? data.weekOfMonth.map((w) =>
+  //               w === -1 ? "Last" : WEEK_OPTIONS[w - 1]?.id || "First"
+  //             )
+  //           : []
+  //       );
+  //       setYearlyWeekDays(
+  //         data.daysOfWeek?.length > 0
+  //           ? data.daysOfWeek
+  //               .map((d) => {
+  //                 const uiIndex = mapBackendDayToUiIndex(d);
+  //                 return weekdays[uiIndex]?.id;
+  //               })
+  //               .filter((d) => d)
+  //           : []
+  //       );
+  //       setYearlyWeekMonths(
+  //         data.monthOfYear?.length > 0
+  //           ? data.monthOfYear.map((m) => MONTHS[m - 1]?.id || "Jan")
+  //           : []
+  //       );
+  //     }
+  //   }
+  //   const toRecipients = [];
+  //   const ccRecipients = [];
+  //   if (data.recipients_to && Array.isArray(data.recipients_to)) {
+  //     data.recipients_to.forEach((recipient) => {
+  //       if (
+  //         recipient.customEmails &&
+  //         Array.isArray(recipient.customEmails) &&
+  //         recipient.customEmails.length > 0
+  //       ) {
+  //         recipient.customEmails.forEach((email) => {
+  //           toRecipients.push({
+  //             value: email,
+  //             label: email,
+  //             isCustom: true,
+  //           });
+  //         });
+  //       } else if (recipient.attributeId) {
+  //         const fieldOption = fieldOptions.find(
+  //           (opt) => opt.attributeId === recipient.attributeId
+  //         );
+  //         if (fieldOption) {
+  //           toRecipients.push(fieldOption);
+  //         } else {
+  //           toRecipients.push({
+  //             value: recipient.attributeId,
+  //             label: recipient.attributeId,
+  //           });
+  //         }
+  //       }
+  //     });
+  //   }
+  //   if (data.recipients_cc && Array.isArray(data.recipients_cc)) {
+  //     data.recipients_cc.forEach((recipient) => {
+  //       if (
+  //         recipient.customEmails &&
+  //         Array.isArray(recipient.customEmails) &&
+  //         recipient.customEmails.length > 0
+  //       ) {
+  //         recipient.customEmails.forEach((email) => {
+  //           ccRecipients.push({
+  //             value: email,
+  //             label: email,
+  //             isCustom: true,
+  //           });
+  //         });
+  //       } else if (recipient.attributeId) {
+  //         const fieldOption = fieldOptions.find(
+  //           (opt) => opt.attributeId === recipient.attributeId
+  //         );
+  //         if (fieldOption) {
+  //           ccRecipients.push(fieldOption);
+  //         } else {
+  //           ccRecipients.push({
+  //             value: recipient.attributeId,
+  //             label: recipient.attributeId,
+  //           });
+  //         }
+  //       }
+  //     });
+  //   }
+  //   setToRecipients(toRecipients);
+  //   setCcRecipients(ccRecipients);
+  //   if (data.targetEntity) {
+  //     if (data.targetEntity.attributeId) {
+  //       const fieldOption = fieldOptions.find(
+  //         (opt) => opt.attributeId === data.targetEntity.attributeId
+  //       );
+  //       if (fieldOption) {
+  //         setTargetEntity(fieldOption);
+  //       } else {
+  //         setTargetEntity({
+  //           value: data.targetEntity.attributeId,
+  //           label: data.targetEntity.attributeId,
+  //         });
+  //       }
+  //     } else if (
+  //       data.targetEntity.customEmails &&
+  //       Array.isArray(data.targetEntity.customEmails) &&
+  //       data.targetEntity.customEmails.length > 0
+  //     ) {
+  //       setTargetEntity(data.targetEntity.customEmails[0]);
+  //     }
+  //   } else {
+  //     setTargetEntity(null);
+  //   }
+  //   if (data.maxOccurrences) {
+  //     setEndType("After");
+  //     setEndAfter(parseInt(data.maxOccurrences) || 1);
+  //   } else if (data.schedulerEndDate) {
+  //     setEndType("On date");
+  //     setEndDate(
+  //       new Date(data.schedulerEndDate).toISOString().split("T")[0] || ""
+  //     );
+  //   } else {
+  //     setEndType("Never");
+  //   }
+  //   console.log("Edit data loaded successfully");
+  // }, [reminderData?.data, editMode, fieldOptions]);
+  
+  // New useEffect for yearly type changes
   useEffect(() => {
     if (!reminderData?.data || !editMode) {
       return;
@@ -3267,6 +3472,23 @@ const RRuleGenerator = ({
         );
       }
     }
+
+    // Helper function to compare arrays
+    const arraysEqual = (a, b) => {
+      if (a === b) return true;
+      if (a == null || b == null) return false;
+      if (a.length !== b.length) return false;
+      
+      // Sort both arrays to compare regardless of order
+      const sortedA = [...a].sort();
+      const sortedB = [...b].sort();
+      
+      for (let i = 0; i < sortedA.length; ++i) {
+        if (sortedA[i] !== sortedB[i]) return false;
+      }
+      return true;
+    };
+
     const toRecipients = [];
     const ccRecipients = [];
     if (data.recipients_to && Array.isArray(data.recipients_to)) {
@@ -3284,16 +3506,28 @@ const RRuleGenerator = ({
             });
           });
         } else if (recipient.attributeId) {
+          // First try to match by both attributeId and refAttributeId
           const fieldOption = fieldOptions.find(
-            (opt) => opt.attributeId === recipient.attributeId
+            (opt) => 
+              opt.attributeId === recipient.attributeId &&
+              arraysEqual(opt.refAttributeId || [], recipient.refAttributeId || [])
           );
+          
           if (fieldOption) {
             toRecipients.push(fieldOption);
           } else {
-            toRecipients.push({
-              value: recipient.attributeId,
-              label: recipient.attributeId,
-            });
+            // Fallback to matching by attributeId only
+            const fallbackOption = fieldOptions.find(
+              (opt) => opt.attributeId === recipient.attributeId
+            );
+            if (fallbackOption) {
+              toRecipients.push(fallbackOption);
+            } else {
+              toRecipients.push({
+                value: recipient.attributeId,
+                label: recipient.attributeId,
+              });
+            }
           }
         }
       });
@@ -3313,16 +3547,28 @@ const RRuleGenerator = ({
             });
           });
         } else if (recipient.attributeId) {
+          // First try to match by both attributeId and refAttributeId
           const fieldOption = fieldOptions.find(
-            (opt) => opt.attributeId === recipient.attributeId
+            (opt) => 
+              opt.attributeId === recipient.attributeId &&
+              arraysEqual(opt.refAttributeId || [], recipient.refAttributeId || [])
           );
+          
           if (fieldOption) {
             ccRecipients.push(fieldOption);
           } else {
-            ccRecipients.push({
-              value: recipient.attributeId,
-              label: recipient.attributeId,
-            });
+            // Fallback to matching by attributeId only
+            const fallbackOption = fieldOptions.find(
+              (opt) => opt.attributeId === recipient.attributeId
+            );
+            if (fallbackOption) {
+              ccRecipients.push(fallbackOption);
+            } else {
+              ccRecipients.push({
+                value: recipient.attributeId,
+                label: recipient.attributeId,
+              });
+            }
           }
         }
       });
@@ -3331,16 +3577,28 @@ const RRuleGenerator = ({
     setCcRecipients(ccRecipients);
     if (data.targetEntity) {
       if (data.targetEntity.attributeId) {
+        // First try to match by both attributeId and refAttributeId
         const fieldOption = fieldOptions.find(
-          (opt) => opt.attributeId === data.targetEntity.attributeId
+          (opt) => 
+            opt.attributeId === data.targetEntity.attributeId &&
+            arraysEqual(opt.refAttributeId || [], data.targetEntity.refAttributeId || [])
         );
+        
         if (fieldOption) {
           setTargetEntity(fieldOption);
         } else {
-          setTargetEntity({
-            value: data.targetEntity.attributeId,
-            label: data.targetEntity.attributeId,
-          });
+          // Fallback to matching by attributeId only
+          const fallbackOption = fieldOptions.find(
+            (opt) => opt.attributeId === data.targetEntity.attributeId
+          );
+          if (fallbackOption) {
+            setTargetEntity(fallbackOption);
+          } else {
+            setTargetEntity({
+              value: data.targetEntity.attributeId,
+              label: data.targetEntity.attributeId,
+            });
+          }
         }
       } else if (
         data.targetEntity.customEmails &&
@@ -3365,8 +3623,6 @@ const RRuleGenerator = ({
     }
     console.log("Edit data loaded successfully");
   }, [reminderData?.data, editMode, fieldOptions]);
-  
-  // New useEffect for yearly type changes
   useEffect(() => {
     if (repeatType === "Yearly" && !isInitialMount.current) {
       if (yearlyType === "on") {
@@ -3955,7 +4211,7 @@ if (targetEntity) {
           const monthIndices = yearlyWeekMonths
             .map((m) => MONTHS.findIndex((month) => month.id === m) + 1)
             .filter((index) => index > 0);
-          if (monthcosIndices.length === 0) return "";
+          if (monthIndices.length === 0) return "";
           rrule += `;BYMONTH=${monthIndices.join(",")}`;
           const dayRules = yearlyWeeks.flatMap((week) =>
             yearlyWeekDays.map((day) => {

@@ -3582,7 +3582,7 @@ export const ValidationErrorModal: React.FC<ValidationErrorModalProps> = ({
   const dataSourceId = rowData?.dataSourceId || ""; // Added for error code 1002
 
   const updateVersionRow = usePost(["updateVersionRow"]);
-  console.log("currentDataSource with rowData:", currentDataSource);
+  // console.log("currentDataSource with rowData:", currentDataSource);
 
   // Handle exceptional cases for error codes "1003" and "1002"
   React.useEffect(() => {
@@ -3596,7 +3596,7 @@ export const ValidationErrorModal: React.FC<ValidationErrorModalProps> = ({
           (ds) => ds._id === refDataSourceId
         );
         if (matched) {
-          console.log("Matched data source for errorCode 1003:", matched);
+          // console.log("Matched data source for errorCode 1003:", matched);
           setMatchedDataSource(matched);
           // Find the target attribute in the matched data source
           if (refAttributeId && matched.entityId?.attributes) {
@@ -3604,7 +3604,7 @@ export const ValidationErrorModal: React.FC<ValidationErrorModalProps> = ({
               (attr: any) => attr._id === refAttributeId
             );
             if (attribute) {
-              console.log("Target attribute found:", attribute);
+              // console.log("Target attribute found:", attribute);
               setTargetAttribute(attribute);
             }
           }
@@ -4340,7 +4340,7 @@ export const ValidationErrorModal: React.FC<ValidationErrorModalProps> = ({
                 variant="h6"
                 sx={{ color: STYLE_GUIDE?.COLORS?.primaryDark || "#3f51b5" }}
               >
-                Edit Validation Error
+                Validation Error
               </Typography>
               <IconButton
                 onClick={handleCancel}
@@ -4353,7 +4353,7 @@ export const ValidationErrorModal: React.FC<ValidationErrorModalProps> = ({
                 </Tooltip>
               </IconButton>
             </Box>
-            {effectiveDataSource && (
+            {/* {effectiveDataSource && (
               <Box
                 sx={{
                   mb: 2,
@@ -4418,7 +4418,7 @@ export const ValidationErrorModal: React.FC<ValidationErrorModalProps> = ({
                   </>
                 )}
               </Box>
-            )}
+            )} */}
             <Box
               sx={{
                 display: "grid",

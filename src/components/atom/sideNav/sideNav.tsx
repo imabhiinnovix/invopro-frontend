@@ -196,10 +196,10 @@ export default function SideNav() {
     (state: RootState) => state.userPermission?.permissions
   );
   const dataSourcePermissions = permissions?.["Data Source"] || {};
-  console.log(
-    "dataSourcePermissions ",
-    dataSourcePermissions.case_list_list?.allowed
-  );
+  // console.log(
+  //   "dataSourcePermissions ",
+  //   dataSourcePermissions.case_list_list?.allowed
+  // );
 
   const validPermissionIds = Object.entries(dataSourcePermissions)
     .filter(([key, permission]) => {

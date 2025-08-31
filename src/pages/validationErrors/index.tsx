@@ -15,7 +15,7 @@ import DeleteSweepIcon from "@mui/icons-material/DeleteSweep";
 import useGet from "../../hooks/useGet";
 import usePost from "../../hooks/usePost";
 import { GET, POST } from "../../services/apiRoutes";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
 import { useQueryClient } from "@tanstack/react-query";
 import { ValidationErrorsDataTable } from "./ValidationErrorsDataTable";
@@ -34,7 +34,7 @@ export default function ValidationErrors() {
     pageSize: 10,
   });
   const [debouncedSearchValue, setDebouncedSearchValue] = useState(searchValue);
-
+  const navigate = useNavigate();
   // Single dialog state to handle both actions
   const [dialog, setDialog] = useState<{
     open: boolean;
@@ -68,7 +68,7 @@ export default function ValidationErrors() {
     true
   );
 
-  console.log("Validation Error List:", validationErrorList?.data?.data);
+  // console.log("Validation Error List:", validationErrorList?.data?.data);
 
   useEffect(() => {
     const handler = setTimeout(() => {
@@ -81,20 +81,20 @@ export default function ValidationErrors() {
 
   // Function to handle row discard - now logs errorType for the specific row
   const handleDiscardRow = (rowData: any) => {
-    console.log("Discard row clicked", rowData);
+    // console.log("Discard row clicked", rowData);
     console.log("Error Type for this row:", rowData.errorType);
     setDialog({ open: true, type: "discardRow", rowData });
   };
 
   const handleResolveRow = (rowData: any) => {
-    console.log("Discard row clicked", rowData);
-    console.log("Error Type for this row:", rowData.errorType);
+    // console.log("Discard row clicked", rowData);
+    // console.log("Error Type for this row:", rowData.errorType);
     setDialog({ open: true, type: "resolveRow", rowData });
   };
   // Function to handle row edit - logs errorType for the specific row and opens the action modal
   const handleEditRow = (rowData: any) => {
-    console.log("Edit row clicked", rowData);
-    console.log("Error Type for this row:", rowData.errorType);
+    // console.log("Edit row clicked", rowData);
+    // console.log("Error Type for this row:", rowData.errorType);
     setSelectedRow(rowData);
     setActionModalOpen(true);
   };
@@ -119,17 +119,17 @@ export default function ValidationErrors() {
     validationErrorWithIds.length > 0 ? validationErrorWithIds[0] : null;
   const dataSourceId = firstItem?.dataSourceId || null;
 
-  console.log("Extracted dataSourceId:", dataSourceId);
+  // console.log("Extracted dataSourceId:", dataSourceId);
 
   const commonDataSourceList = useSelector(
     (state: RootState) => state.dataSource?.list
   );
-  console.log("Current Redux State:", commonDataSourceList);
+  // console.log("Current Redux State:", commonDataSourceList);
 
   const currentDataSource = commonDataSourceList.find(
     (ds) => ds?._id === dataSourceId
   );
-  console.log("Current Data Source:", currentDataSource);
+  // console.log("Current Data Source:", currentDataSource);
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchValue(e.target.value);
@@ -182,7 +182,7 @@ export default function ValidationErrors() {
           dataSourceId: dialog.rowData.dataSourceId,
           rowNumber: dialog.rowData.rowNumber,
         };
-        console.log("Row discard payload:", payload);
+        // console.log("Row discard payload:", payload);
         response = await discardRow.mutateAsync({
           url: `${POST.RESOLVE_DATA_IMPORT_ERROR}`,
           payload,
@@ -205,13 +205,18 @@ export default function ValidationErrors() {
       }
 
       if (response?.success) {
+        console.log("Action successful:", response, dialog);
         let successMessage;
         if (dialog.type === "discardAll") {
           successMessage =
             response?.message || "All rows discarded successfully";
-        } else if (dialog.type === "discard") {
+          // navigate(`notivix/data-source/${response.?data.dataSourceId`})
+          navigate(`/notivix/data-source/${response?.data?.dataSourceId}`);
+        } else if (dialog.type === "discardRow") {
+          console.log("Action successful:22222222222", response?.message);
+
           successMessage = response?.message || "Row discarded successfully";
-        } else if (dialog.type === "unique") {
+        } else if (dialog.type === "resolveRow") {
           successMessage =
             response?.message || "Unique constraint resolved successfully";
         }
@@ -226,9 +231,9 @@ export default function ValidationErrors() {
       let errorMessage;
       if (dialog.type === "discardAll") {
         errorMessage = "Failed to discard all rows";
-      } else if (dialog.type === "discard") {
+      } else if (dialog.type === "discardRow") {
         errorMessage = "Failed to discard row";
-      } else if (dialog.type === "unique") {
+      } else if (dialog.type === "resolveRow") {
         errorMessage = "Failed to resolve unique constraint";
       }
 
@@ -331,7 +336,7 @@ export default function ValidationErrors() {
         }
         content={
           dialog.type === "discardAll"
-            ? "Are you sure want to finalize action preview data?"
+            ? "Are you sure want to Discard all data?"
             : dialog.type === "resolveRow"
               ? "Are you sure you want to resolve this?"
               : `Are you sure you want to discard row ${dialog.rowData?.rowNumber}?`
