@@ -18,7 +18,6 @@ import {
   Autocomplete,
   Chip,
   CircularProgress,
-  Backdrop,
 } from "@mui/material";
 import { useForm } from "react-hook-form";
 import { Controller } from "react-hook-form";
@@ -74,12 +73,14 @@ const FileDropzone: React.FC<FileDropzoneProps> = ({
   buttonName,
 }) => {
   const [isDragActive, setIsDragActive] = useState(false);
+
   const onDrop = (acceptedFiles: File[]) => {
     setIsDragActive(false);
     if (acceptedFiles.length > 0) {
       onFileChange(acceptedFiles);
     }
   };
+
   const { getRootProps, getInputProps } = useDropzone({
     onDrop,
     onDragEnter: () => setIsDragActive(true),
@@ -103,6 +104,7 @@ const FileDropzone: React.FC<FileDropzoneProps> = ({
       });
     },
   });
+
   return (
     <Box display="flex" flexDirection="column" gap={STYLE_GUIDE.SPACING.s2}>
       <Box
@@ -266,10 +268,8 @@ const ImportFile: React.FC<ImportFileProps> = ({
     },
   });
 
-  // Use the upload custom report file hook
   const { mutate: mutateReportUpload, isPending: isLoadingReportUpload } = useUploadCustomReportFile();
   
-  // Use the original file post data hook for polling
   const { mutate, isPending } = useFilePostData<
     { files: File[]; operation: string },
     {
@@ -300,7 +300,6 @@ const ImportFile: React.FC<ImportFileProps> = ({
     { showToast: true }
   );
 
-  // Check form validity
   useEffect(() => {
     const isValid = 
       watch("versionValue") && 
@@ -326,8 +325,6 @@ const ImportFile: React.FC<ImportFileProps> = ({
       setFileUploadLoader(false);
       setSettingAttribute([]);
       setSettingAttributeOption([]);
-      setIsPolling(false);
-      setPollingId(null);
       reset({
         dataSourceId: dataSourceId || "",
         versionName: "",
@@ -383,9 +380,7 @@ const ImportFile: React.FC<ImportFileProps> = ({
   ]);
 
   const handleFormClose = () => {
-    if (!isPolling) {
-      setOpen(false);
-    }
+    setOpen(false);
   };
 
   const objectToFormData = (obj: any, form?: FormData, namespace?: string): FormData => {
@@ -421,26 +416,29 @@ const ImportFile: React.FC<ImportFileProps> = ({
         });
       }
     });
+
     const mandatoryAttributes = settingAttribute
       .filter((attr) => attr.required === "Mandatory")
       .map((attr) => attr.name);
     const missingMandatoryAttributes = mandatoryAttributes.filter(
       (attr) => !formData.mappings[attr] || formData.mappings[attr].length === 0
     );
+
     if (missingMandatoryAttributes.length > 0) {
       missingMandatoryAttributes.forEach((attr) => {
         toast.error(`Mandatory attribute is not mapped: ${attr}`);
       });
       return;
     }
+
     if (files.length === 0) {
       toast.error("Please upload at least one file");
       return;
     }
+
     const versionValue = watch("versionValue");
     const formattedVersion = DateTime.fromISO(versionValue).toFormat("yyyy-LL");
     
-    // Create FormData for file upload
     const payload = {
       dataSourceId: formData.dataSourceId,
       versionValue: formattedVersion,
@@ -460,6 +458,8 @@ const ImportFile: React.FC<ImportFileProps> = ({
             setIsPolling(true);
             setPollingId(data.dataSourceVersionId);
             setPollingTimestamp(Date.now());
+            setOpen(false); 
+            toast.info("File uploaded successfully. Processing in progress...");
           } else if (data?.status === "completed") {
             toast.success("File processed successfully!");
             handleCancel();
@@ -565,13 +565,13 @@ const ImportFile: React.FC<ImportFileProps> = ({
         const status = pollingData.data.data?.status;
         if (status === "completed") {
           setIsPolling(false);
+          setPollingId(null);
           toast.success("File processed successfully!");
-          handleCancel();
         } else if (status === "failed") {
           setIsPolling(false);
+          setPollingId(null);
           toast.error("Processing failed. Redirecting to validation errors...");
           navigate(`/notivix/validation-errors/${pollingId}`);
-          handleCancel();
         } else {
           timer = setTimeout(() => {
             setPollingTimestamp(Date.now());
@@ -579,6 +579,7 @@ const ImportFile: React.FC<ImportFileProps> = ({
         }
       } else if (pollingData.isError) {
         setIsPolling(false);
+        setPollingId(null);
         toast.error("Error checking processing status");
       }
     }
@@ -603,28 +604,6 @@ const ImportFile: React.FC<ImportFileProps> = ({
           },
         }}
       >
-        <Backdrop
-          sx={{
-            position: "absolute",
-            zIndex: (theme) => theme.zIndex.drawer + 1,
-            backgroundColor: "rgba(255, 255, 255, 0.8)",
-          }}
-          open={isPolling}
-        >
-          <Box
-            display="flex"
-            flexDirection="column"
-            alignItems="center"
-            justifyContent="center"
-            gap={2}
-          >
-            <CircularProgress size={60} />
-            <Typography variant="h6">Processing your file...</Typography>
-            <Typography variant="body2">
-              This may take a few minutes. Please don't close this dialog.
-            </Typography>
-          </Box>
-        </Backdrop>
         <Typography
           variant="h6"
           sx={{
@@ -785,7 +764,7 @@ const ImportFile: React.FC<ImportFileProps> = ({
           </Box>
         </DialogContent>
         <DialogActions>
-          {isLoadingReportUpload || isPolling ? (
+          {isLoadingReportUpload ? (
             <ProgressBar />
           ) : (
             <Box>
@@ -804,7 +783,7 @@ const ImportFile: React.FC<ImportFileProps> = ({
               <Button
                 variant="contained"
                 onClick={handleSubmit(onSubmit)}
-                disabled={!isFormValid || fileUploadLoader || isLoadingReportUpload || isPolling}
+                disabled={!isFormValid || fileUploadLoader || isLoadingReportUpload}
                 sx={{
                   borderRadius: "8px",
                   backgroundColor:
