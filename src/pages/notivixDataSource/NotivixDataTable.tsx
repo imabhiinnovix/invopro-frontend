@@ -368,9 +368,6 @@ export const NotivixDataTable: React.FC<TableSectionProps> = ({
     [paginationModel.page, paginationModel.pageSize]
   );
 
-  // console.log("dataSourceIdin table comp", dataSourceId);
-
-  // Format columns to handle date fields and arrays
   const formattedColumns = React.useMemo(() => {
     return columns.map((column) => {
       // Skip actions column
@@ -397,7 +394,6 @@ export const NotivixDataTable: React.FC<TableSectionProps> = ({
           const cellContent = renderCellValue(value);
           const tooltipText = getTooltipText(value);
           
-          // Show tooltip only if content is truncated or is an array
           const shouldShowTooltip = Array.isArray(value) || 
             (typeof value === 'string' && value.length > 30);
           
@@ -428,7 +424,6 @@ export const NotivixDataTable: React.FC<TableSectionProps> = ({
             </Box>
           );
         },
-        // Adjust row height for columns that might contain arrays
         ...(column.field !== 'actions' && {
           minWidth: 150,
         })
@@ -552,13 +547,12 @@ export const NotivixDataTable: React.FC<TableSectionProps> = ({
             rowCount={rowCount}
             paginationModel={paginationModelMemo}
             onPaginationModelChange={setPaginationModel}
-            // pageSizeOptions={[5, 10, 20]}
             disableColumnMenu
-            getRowHeight={() => 'auto'} // Allow dynamic row height
+            getRowHeight={() => 'auto'} 
             sx={{
               '& .MuiDataGrid-cell': {
                 display: 'flex',
-                alignItems: 'flex-start', // Align content to top for better readability
+                alignItems: 'flex-start', 
                 paddingY: 1,
                 lineHeight: 1.4,
               },

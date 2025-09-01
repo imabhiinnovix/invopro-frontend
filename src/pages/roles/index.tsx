@@ -79,7 +79,6 @@ export default function Roles() {
     true
   );
   
-  // Reset roleReload after listing is fetched
   useEffect(() => {
     if (roleReload) {
       setRoleReload(false);
@@ -262,8 +261,6 @@ export default function Roles() {
           </Button>
         </DialogActions>
       </Dialog>
-      
-     
     </Box>
   );
 }

@@ -140,35 +140,7 @@ export default function NotivixDataSource() {
     },
     [sourceVersionData?.data]
   );
-  // const handleEdit = useCallback(
-  //   (id: string) => {
-  //     const rawData = sourceVersionData?.data?.data || [];
-  //     console.log("rawData in handleEdit", rawData, id);
-  //     if (rawData.length === 0) {
-  //       console.warn("Cannot edit: No data available");
-  //       return;
-  //     }
-  //     const row = rawData.find((r) => r._id === id || r.id === id);
-  //     if (row) {
-  //       const newFormData: Record<string, any> = { id: row._id || row.id };
-  //       const dataSource = row.rowData || row;
-  //             console.log("rdataSource", dataSource);
-
-  //       Object.keys(dataSource).forEach((key) => {
-  //         if (key !== "_id" && key !== "id") {
-  //           newFormData[key] =
-  //             dataSource[key] != null ? String(dataSource[key]) : "";
-  //         }
-  //       });
-  //       setFormData(newFormData);
-  //       setModalMode("edit");
-  //       setOpenModal(true);
-  //     } else {
-  //       console.error(`Row with ID ${id} not found`);
-  //     }
-  //   },
-  //   [sourceVersionData.data]
-  // );
+ 
 
   const handleEdit = useCallback(
     (id: string) => {

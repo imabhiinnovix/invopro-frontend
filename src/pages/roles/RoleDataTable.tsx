@@ -140,7 +140,6 @@ export function RoleDataTable({
   const theme = useUnifiedTheme();
   const perPageItem = paginationModel.pageSize;
   
-  // API call
   const roleList = useGet<ApiResponse>(
     [
       "roleList",
