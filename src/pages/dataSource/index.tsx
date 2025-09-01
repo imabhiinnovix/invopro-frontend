@@ -28,7 +28,7 @@ export default function DataSource() {
       >
         <Card
           sx={{
-            height: "100%",
+            height: "20%",
             display: "flex",
             flexDirection: "column",
             borderRadius: STYLE_GUIDE.SPACING.s2,

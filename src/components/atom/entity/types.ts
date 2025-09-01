@@ -7,6 +7,7 @@ export interface Attribute {
     | "date"
     | "boolean"
     | "richtext"
+    | "text-with-option"
     | "url"
     | "option"
     | "multioption"
@@ -17,7 +18,7 @@ export interface Attribute {
   optionAttributeId?: string;
   cleaner?: string[];
   required: string | boolean;
-   referenceEntitySetting?: {
+  referenceEntitySetting?: {
     refEntityId?: string;
     refEntityField?: string;
     relationType?: string;

@@ -1,40 +1,21 @@
 import * as React from "react";
-import { useState, useEffect, useCallback, useMemo, useRef } from "react";
-import { DataGrid, GridColDef } from "@mui/x-data-grid";
-import {
-  Box,
-  Card,
-  CardContent,
-  Typography,
-  TextField,
-  Button,
-  InputAdornment,
-  Modal,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Tooltip,
-  Checkbox,
-  FormControlLabel,
-  Select,
-  MenuItem,
-  FormControl,
-  InputLabel,
-} from "@mui/material";
-import { STYLE_GUIDE } from "../../styles";
-import SearchIcon from "@mui/icons-material/Search";
-import FilterListIcon from "@mui/icons-material/FilterList";
-import AddIcon from "@mui/icons-material/Add";
-import EditIcon from "@mui/icons-material/Edit";
-import VisibilityIcon from "@mui/icons-material/Visibility";
-import DeleteIcon from "@mui/icons-material/Delete";
-import { GET } from "../../services/apiRoutes";
-import useGet from "../../hooks/useGet";
-import { CustomPagination } from "../../components/common/pagination/customPagination";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useParams } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { RootState } from "../../store";
+import { DELETE, GET } from "../../services/apiRoutes";
+import useGet from "../../hooks/useGet";
+import useDelete from "../../hooks/useDelete";
+import { STYLE_GUIDE } from "../../styles";
+import { NotivixDataTable } from "./NotivixDataTable";
+import { Box, Button, Tooltip, Typography } from "@mui/material";
+import EditIcon from "@mui/icons-material/Edit";
+import VisibilityIcon from "@mui/icons-material/Visibility";
+import DeleteIcon from "@mui/icons-material/Delete";
+import { AttributeOptionRequestPayload } from "../../components/atom/attributeOption/types";
+import { NotivixDataModal } from "./NotivixDataModal";
+import { useQueryClient } from "@tanstack/react-query";
+import { toast } from "react-toastify";
 
 interface ApiResponse {
   data: any[];
@@ -43,10 +24,10 @@ interface ApiResponse {
 
 export default function NotivixDataSource() {
   const { id: valueId } = useParams<{ id: string }>();
+  const queryClient = useQueryClient();
   const [rows, setRows] = useState<any[]>([]);
-  const rowsRef = useRef<any[]>([]);
   const [rowCount, setRowCount] = useState(0);
-  const [columns, setColumns] = useState<GridColDef[]>([]);
+  const [columns, setColumns] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [openModal, setOpenModal] = useState(false);
   const [modalMode, setModalMode] = useState<
@@ -65,7 +46,8 @@ export default function NotivixDataSource() {
   const { list } = useSelector((state: RootState) => state.dataSource);
   const listCurrentData = list.find((item) => item._id === valueId);
 
-  console.log("List Current Data:", listCurrentData?.fieldSettings);
+  // Create delete API hook
+  const deleteVersionRow = useDelete(["deleteVersionRow"]);
 
   // Debounce search input
   useEffect(() => {
@@ -90,8 +72,7 @@ export default function NotivixDataSource() {
     [
       "sourceVersionData",
       String(paginationModelMemo.page + 1),
-      String(paginationModel.pageSize),
-
+      String(paginationModelMemo.pageSize),
       debouncedSearchValue,
       valueId || "",
     ],
@@ -103,24 +84,53 @@ export default function NotivixDataSource() {
     !!valueId
   );
 
-  // Memoize handler functions
+  const attributeList = useGet<{
+    success: boolean;
+    data: AttributeOptionRequestPayload[];
+  }>([`attributeList`], GET?.Attribute_Option_List + `?paginate=true`);
+
+  // Function to refresh data after successful save
+  const refreshData = useCallback(() => {
+    queryClient.invalidateQueries([
+      "sourceVersionData",
+      String(paginationModelMemo.page + 1),
+      String(paginationModelMemo.pageSize),
+      debouncedSearchValue,
+      valueId || "",
+    ]);
+  }, [queryClient, paginationModelMemo, debouncedSearchValue, valueId]);
+
+  // Function to switch to edit mode from view mode
+  const switchToEditMode = useCallback(() => {
+    setModalMode("edit");
+  }, []);
+
+  // Handler functions
+
   const handleView = useCallback(
     (id: string) => {
       const rawData = sourceVersionData?.data?.data || [];
       if (rawData.length === 0) {
-        console.warn("Cannot view: No data available");
+        console.warn("Cannot edit: No data available");
         return;
       }
       const row = rawData.find((r) => r._id === id || r.id === id);
       if (row) {
         const newFormData: Record<string, any> = { id: row._id || row.id };
-        const dataSource = row.rowData || row;
+        const dataSource = row.rowData || {};
+        console.log("rdataSource", dataSource);
+
         Object.keys(dataSource).forEach((key) => {
           if (key !== "_id" && key !== "id") {
-            newFormData[key] =
-              dataSource[key] != null ? String(dataSource[key]) : "";
+            const value = dataSource[key];
+            newFormData[key] = Array.isArray(value)
+              ? value
+              : value != null
+                ? String(value)
+                : "";
           }
         });
+
         setFormData(newFormData);
         setModalMode("view");
         setOpenModal(true);
@@ -128,8 +138,37 @@ export default function NotivixDataSource() {
         console.error(`Row with ID ${id} not found`);
       }
     },
-    [sourceVersionData.data]
+    [sourceVersionData?.data]
   );
+  // const handleEdit = useCallback(
+  //   (id: string) => {
+  //     const rawData = sourceVersionData?.data?.data || [];
+  //     console.log("rawData in handleEdit", rawData, id);
+  //     if (rawData.length === 0) {
+  //       console.warn("Cannot edit: No data available");
+  //       return;
+  //     }
+  //     const row = rawData.find((r) => r._id === id || r.id === id);
+  //     if (row) {
+  //       const newFormData: Record<string, any> = { id: row._id || row.id };
+  //       const dataSource = row.rowData || row;
+  //             console.log("rdataSource", dataSource);
+
+  //       Object.keys(dataSource).forEach((key) => {
+  //         if (key !== "_id" && key !== "id") {
+  //           newFormData[key] =
+  //             dataSource[key] != null ? String(dataSource[key]) : "";
+  //         }
+  //       });
+  //       setFormData(newFormData);
+  //       setModalMode("edit");
+  //       setOpenModal(true);
+  //     } else {
+  //       console.error(`Row with ID ${id} not found`);
+  //     }
+  //   },
+  //   [sourceVersionData.data]
+  // );
 
   const handleEdit = useCallback(
     (id: string) => {
@@ -141,13 +180,20 @@ export default function NotivixDataSource() {
       const row = rawData.find((r) => r._id === id || r.id === id);
       if (row) {
         const newFormData: Record<string, any> = { id: row._id || row.id };
-        const dataSource = row.rowData || row;
+        const dataSource = row.rowData || {};
+        console.log("rdataSource", dataSource);
+
         Object.keys(dataSource).forEach((key) => {
           if (key !== "_id" && key !== "id") {
-            newFormData[key] =
-              dataSource[key] != null ? String(dataSource[key]) : "";
+            const value = dataSource[key];
+            newFormData[key] = Array.isArray(value)
+              ? value
+              : value != null
+                ? String(value)
+                : "";
           }
         });
+
         setFormData(newFormData);
         setModalMode("edit");
         setOpenModal(true);
@@ -155,7 +201,7 @@ export default function NotivixDataSource() {
         console.error(`Row with ID ${id} not found`);
       }
     },
-    [sourceVersionData.data]
+    [sourceVersionData?.data]
   );
 
   const handleDelete = useCallback((id: string) => {
@@ -177,7 +223,6 @@ export default function NotivixDataSource() {
 
   const handleFilter = useCallback(() => {
     const newFormData: Record<string, any> = { id: "" };
-    // Initialize form data with default values based on field type
     const filterFields =
       listCurrentData?.fieldSettings?.filter(
         (field) => field.isFilterEnable && field.mappedAttributeName
@@ -185,11 +230,11 @@ export default function NotivixDataSource() {
     filterFields.forEach((field) => {
       const fieldName = field.mappedAttributeName;
       if (field.type === "boolean") {
-        newFormData[fieldName] = false; // Default for boolean
+        newFormData[fieldName] = false;
       } else if (field.type === "option" || field.type === "multioption") {
-        newFormData[fieldName] = ""; // Default for dropdown
+        newFormData[fieldName] = "";
       } else {
-        newFormData[fieldName] = ""; // Default for text
+        newFormData[fieldName] = "";
       }
     });
     setFormData(newFormData);
@@ -208,11 +253,32 @@ export default function NotivixDataSource() {
     setDeleteId(null);
   }, []);
 
-  const handleConfirmDelete = useCallback(() => {
-    setRows((prevRows) => prevRows.filter((row) => row._id !== deleteId));
-    setRowCount((prev) => prev - 1);
-    handleCloseDialog();
-  }, [deleteId, handleCloseDialog]);
+  // Updated handleConfirmDelete to call delete API
+  const handleConfirmDelete = useCallback(async () => {
+    if (!deleteId || !valueId) {
+      toast.error("Missing required information for deletion");
+      return;
+    }
+
+    try {
+      await deleteVersionRow.mutateAsync({
+        url: `${DELETE.DELETE_VERSION_ROW}`,
+        payload: {
+          dataSourceId: valueId,
+          ids: [deleteId],
+        },
+      });
+
+      toast.success("Record deleted successfully!");
+
+      refreshData();
+
+      handleCloseDialog();
+    } catch (error) {
+      console.error("Error deleting record:", error);
+      toast.error(`Error: ${error.message || "Failed to delete record"}`);
+    }
+  }, [deleteId, valueId, refreshData, handleCloseDialog, deleteVersionRow]);
 
   const handleSearchChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -233,48 +299,35 @@ export default function NotivixDataSource() {
     handleCloseModal();
   }, [formData, modalMode, handleCloseModal]);
 
-  // Handle loading state
   useEffect(() => {
     setLoading(sourceVersionData.isLoading);
   }, [sourceVersionData.isLoading]);
 
-  // Handle error state and reset data
   useEffect(() => {
     if (sourceVersionData.error) {
       console.error("API error:", sourceVersionData.error);
       setRows([]);
-      rowsRef.current = [];
       setRowCount(0);
       setColumns([]);
     }
   }, [sourceVersionData.error]);
 
-  console.log("Source Version Data:", sourceVersionData);
-
-  // Handle data processing
   useEffect(() => {
     if (sourceVersionData.isLoading || sourceVersionData.error) {
       return;
     }
-
     const rawData = sourceVersionData?.data?.data || [];
     const totalCount = sourceVersionData?.data?.totalCount || 0;
-
     if (!Array.isArray(rawData)) {
       setRows([]);
-      rowsRef.current = [];
       setRowCount(0);
       setColumns([]);
       return;
     }
-
-    // Filter fieldSettings to include only those with isDisplayEnable: true
     const displayFields =
       listCurrentData?.fieldSettings?.filter(
         (field) => field.isDisplayEnable && field.mappedAttributeName
       ) || [];
-
-    // Create columns for the table
     const columns = displayFields.map((field) => ({
       field: field.mappedAttributeName,
       headerName: field.label,
@@ -317,8 +370,6 @@ export default function NotivixDataSource() {
         );
       },
     }));
-
-    // Format rows to include only the fields that are display-enabled
     const formattedRows = rawData.map((item) => {
       const row = { _id: item._id || item.id };
       displayFields.forEach((field) => {
@@ -329,29 +380,16 @@ export default function NotivixDataSource() {
       });
       return row;
     });
-
-    console.log("Formatted Rows:", formattedRows);
-    console.log("Columns:", columns);
-
     setRows(formattedRows);
-    rowsRef.current = formattedRows;
     setRowCount(totalCount);
     setColumns(columns);
   }, [sourceVersionData.data, listCurrentData?.fieldSettings]);
 
-  // Add actions column separately to avoid circular dependency
   useEffect(() => {
-    if (columns.length === 0) {
-      return;
-    }
-
-    // Check if actions column already exists
+    if (columns.length === 0) return;
     const hasActionsColumn = columns.some((col) => col.field === "actions");
-    if (hasActionsColumn) {
-      return;
-    }
-
-    const actionsColumn: GridColDef = {
+    if (hasActionsColumn) return;
+    const actionsColumn = {
       field: "actions",
       headerName: "Actions",
       flex: 1,
@@ -398,162 +436,8 @@ export default function NotivixDataSource() {
         </Box>
       ),
     };
-
     setColumns((prev) => [...prev, actionsColumn]);
   }, [columns, handleView, handleEdit, handleDelete]);
-
-  // Render Modal Fields
-  const renderModalFields = () => {
-    if (modalMode === "view" || modalMode === "edit") {
-      // For view and edit, show all fields in formData
-      const fields = Object.keys(formData)
-        .filter((key) => key !== "id" && key !== "_id")
-        .map((key) => (
-          <TextField
-            key={key}
-            label={key
-              .replace(/([A-Z])/g, " $1")
-              .replace(/^./, (str) => str.toUpperCase())}
-            value={formData[key] || ""}
-            onChange={(e) =>
-              setFormData((prev) => ({ ...prev, [key]: e.target.value }))
-            }
-            disabled={modalMode === "view"}
-            variant="outlined"
-            fullWidth
-            sx={{ "& .MuiOutlinedInput-root": { borderRadius: "8px" } }}
-          />
-        ));
-
-      return fields.length > 0 ? (
-        fields
-      ) : (
-        <Typography>No fields available to display.</Typography>
-      );
-    } else if (modalMode === "filter") {
-      // For filter, use fields where isFilterEnable is true
-      const filterFields =
-        listCurrentData?.fieldSettings?.filter(
-          (field) => field.isFilterEnable && field.mappedAttributeName
-        ) || [];
-
-      const fields = filterFields.map((field) => {
-        const fieldName = field.mappedAttributeName;
-        const fieldLabel = field.label;
-
-        if (field.type === "boolean") {
-          return (
-            <FormControlLabel
-              key={fieldName}
-              control={
-                <Checkbox
-                  checked={!!formData[fieldName]}
-                  onChange={(e) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      [fieldName]: e.target.checked,
-                    }))
-                  }
-                  sx={{ color: STYLE_GUIDE?.COLORS?.primaryDark || "#3f51b5" }}
-                />
-              }
-              label={fieldLabel}
-              sx={{ mb: 1 }}
-            />
-          );
-        } else if (field.type === "option" || field.type === "multioption") {
-          // Collect unique values from data for dropdown options
-          const rawData = sourceVersionData?.data?.data || [];
-          const options = Array.from(
-            new Set(
-              rawData
-                .map(
-                  (item) => item.rowData?.[fieldName] || item[fieldName] || ""
-                )
-                .filter((value) => value !== "")
-            )
-          );
-
-          return (
-            <FormControl
-              key={fieldName}
-              variant="outlined"
-              fullWidth
-              sx={{ "& .MuiOutlinedInput-root": { borderRadius: "8px" } }}
-            >
-              <InputLabel>{fieldLabel}</InputLabel>
-              <Select
-                value={formData[fieldName] || ""}
-                onChange={(e) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    [fieldName]: e.target.value,
-                  }))
-                }
-                label={fieldLabel}
-              >
-                <MenuItem value="">
-                  <em>None</em>
-                </MenuItem>
-                {options.map((option) => (
-                  <MenuItem key={option} value={option}>
-                    {option}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-          );
-        } else {
-          // Default to text input
-          return (
-            <TextField
-              key={fieldName}
-              label={fieldLabel}
-              value={formData[fieldName] || ""}
-              onChange={(e) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  [fieldName]: e.target.value,
-                }))
-              }
-              variant="outlined"
-              fullWidth
-              sx={{ "& .MuiOutlinedInput-root": { borderRadius: "8px" } }}
-            />
-          );
-        }
-      });
-
-      return fields.length > 0 ? (
-        fields
-      ) : (
-        <Typography>No filterable fields available.</Typography>
-      );
-    } else {
-      // For add, use columns based on fieldSettings
-      const fields = columns
-        .filter((col) => col.field !== "actions" && col.field !== "_id")
-        .map((col) => (
-          <TextField
-            key={col.field}
-            label={col.headerName}
-            value={formData[col.field] || ""}
-            onChange={(e) =>
-              setFormData((prev) => ({ ...prev, [col.field]: e.target.value }))
-            }
-            variant="outlined"
-            fullWidth
-            sx={{ "& .MuiOutlinedInput-root": { borderRadius: "8px" } }}
-          />
-        ));
-
-      return fields.length > 0 ? (
-        fields
-      ) : (
-        <Typography>No fields available to display.</Typography>
-      );
-    }
-  };
 
   if (loading && rows.length === 0) {
     return <Typography>Loading...</Typography>;
@@ -580,271 +464,43 @@ export default function NotivixDataSource() {
         {listCurrentData && listCurrentData?.name}
       </Typography>
 
-      <Card
-        sx={{
-          backgroundColor: STYLE_GUIDE?.COLORS?.white || "#ffffff",
-          boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.1)",
-          borderRadius: "8px",
-          overflow: "visible",
-        }}
-      >
-        <CardContent sx={{ p: 3 }}>
-          <Box
-            sx={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              mb: 2,
-            }}
-          >
-            <TextField
-              placeholder="Search..."
-              variant="outlined"
-              size="small"
-              value={searchValue}
-              onChange={handleSearchChange}
-              sx={{
-                width: "300px",
-                "& .MuiOutlinedInput-root": {
-                  borderRadius: "8px",
-                  backgroundColor: STYLE_GUIDE?.COLORS?.white || "#ffffff",
-                  "& fieldset": {
-                    borderColor: STYLE_GUIDE?.COLORS?.divider || "#e0e0e0",
-                  },
-                  "&:hover fieldset": {
-                    borderColor: STYLE_GUIDE?.COLORS?.primaryDark || "#3f51b5",
-                  },
-                },
-              }}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <SearchIcon
-                      sx={{
-                        color: STYLE_GUIDE?.COLORS?.primaryDark || "#3f51b5",
-                      }}
-                    />
-                  </InputAdornment>
-                ),
-              }}
-            />
+      <NotivixDataTable
+        rows={rows}
+        columns={columns}
+        loading={loading}
+        rowCount={rowCount}
+        paginationModel={paginationModel}
+        setPaginationModel={setPaginationModel}
+        searchValue={searchValue}
+        handleSearchChange={handleSearchChange}
+        handleView={handleView}
+        handleEdit={handleEdit}
+        handleDelete={handleDelete}
+        handleAddNotification={handleAddNotification}
+        handleFilter={handleFilter}
+        listCurrentData={listCurrentData}
+        dataSourceId={valueId || ""}
+      />
 
-            <Box sx={{ display: "flex", gap: 1 }}>
-              <Button
-                variant="outlined"
-                startIcon={<FilterListIcon />}
-                onClick={handleFilter}
-                sx={{
-                  borderRadius: "8px",
-                  borderColor: STYLE_GUIDE?.COLORS?.divider || "#e0e0e0",
-                  color: STYLE_GUIDE?.COLORS?.primaryDark || "#3f51b5",
-                  "&:hover": {
-                    backgroundColor:
-                      STYLE_GUIDE?.COLORS?.backgroundDefault || "#f1f5f9",
-                    borderColor: STYLE_GUIDE?.COLORS?.primaryDark || "#3f51b5",
-                  },
-                }}
-              >
-                Filter
-              </Button>
-              {/* <Button
-                variant="contained"
-                startIcon={<AddIcon />}
-                onClick={handleAddNotification}
-                sx={{
-                  borderRadius: "8px",
-                  backgroundColor:
-                    STYLE_GUIDE?.COLORS?.primaryDark || "#3f51b5",
-                  color: STYLE_GUIDE?.COLORS?.white || "#ffffff",
-                  "&:hover": {
-                    backgroundColor: STYLE_GUIDE?.COLORS?.primary || "#5c6bc0",
-                  },
-                }}
-              >
-                Add
-              </Button> */}
-            </Box>
-          </Box>
-
-          {rows.length > 0 ? (
-            <DataGrid
-              loading={loading}
-              rows={rows}
-              columns={columns}
-              getRowId={(row) => row._id}
-              paginationMode="server"
-              rowCount={rowCount}
-              paginationModel={paginationModelMemo}
-              onPaginationModelChange={setPaginationModel}
-              pageSizeOptions={[5, 10, 20]}
-              disableColumnMenu
-              slots={{
-                pagination: () => (
-                  <CustomPagination
-                    paginationModel={paginationModelMemo}
-                    setPaginationModel={setPaginationModel}
-                    rowCount={rowCount}
-                  />
-                ),
-              }}
-            />
-          ) : (
-            <Box
-              sx={{
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                justifyContent: "center",
-                py: 4,
-                textAlign: "center",
-              }}
-            >
-              <Typography
-                variant="h6"
-                sx={{
-                  color: STYLE_GUIDE?.COLORS?.black || "#000000",
-                  mb: 1,
-                  opacity: 0.6,
-                }}
-              >
-                No Data Available
-              </Typography>
-              <Typography
-                variant="body2"
-                sx={{
-                  color: STYLE_GUIDE?.COLORS?.black || "#000000",
-                  opacity: 0.6,
-                }}
-              >
-                No records found.
-              </Typography>
-            </Box>
-          )}
-        </CardContent>
-      </Card>
-
-      <Modal
-        open={openModal}
-        onClose={handleCloseModal}
-        sx={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-        }}
-      >
-        <Box
-          sx={{
-            backgroundColor: STYLE_GUIDE?.COLORS?.white || "#ffffff",
-            borderRadius: "8px",
-            boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.2)",
-            p: 3,
-            width: "600px",
-            maxWidth: "90%",
-            maxHeight: "600px",
-            overflowY: "auto",
-          }}
-        >
-          <Typography
-            variant="h6"
-            sx={{ mb: 2, color: STYLE_GUIDE?.COLORS?.primaryDark || "#3f51b5" }}
-          >
-            {modalMode === "add"
-              ? "Add"
-              : modalMode === "edit"
-                ? "Edit"
-                : modalMode === "view"
-                  ? "View"
-                  : "Filter"}
-          </Typography>
-          <Box
-            sx={{
-              display: "grid",
-              gridTemplateColumns: "1fr 1fr",
-              gap: 2,
-            }}
-          >
-            {renderModalFields()}
-          </Box>
-          <Box
-            sx={{ display: "flex", justifyContent: "flex-end", gap: 1, mt: 3 }}
-          >
-            <Button
-              variant="outlined"
-              onClick={handleCloseModal}
-              sx={{
-                borderRadius: "8px",
-                borderColor: STYLE_GUIDE?.COLORS?.divider || "#e0e0e0",
-                color: STYLE_GUIDE?.COLORS?.primaryDark || "#3f51b5",
-              }}
-            >
-              Cancel
-            </Button>
-            {modalMode !== "view" && (
-              <Button
-                variant="contained"
-                onClick={handleSave}
-                sx={{
-                  borderRadius: "8px",
-                  backgroundColor:
-                    STYLE_GUIDE?.COLORS?.primaryDark || "#3f51b5",
-                  color: STYLE_GUIDE?.COLORS?.white || "#ffffff",
-                  "&:hover": {
-                    backgroundColor: STYLE_GUIDE?.COLORS?.primary || "#5c6bc0",
-                  },
-                }}
-              >
-                {modalMode === "filter" ? "Apply" : "Save"}
-              </Button>
-            )}
-          </Box>
-        </Box>
-      </Modal>
-
-      <Dialog
-        open={openDialog}
-        onClose={handleCloseDialog}
-        sx={{
-          "& .MuiDialog-paper": {
-            borderRadius: "8px",
-            backgroundColor: STYLE_GUIDE?.COLORS?.white || "#ffffff",
-          },
-        }}
-      >
-        <DialogTitle
-          sx={{ color: STYLE_GUIDE?.COLORS?.primaryDark || "#3f51b5" }}
-        >
-          Confirm Delete
-        </DialogTitle>
-        <DialogContent>
-          <Typography>
-            Are you sure you want to delete the notification with ID {deleteId}?
-          </Typography>
-        </DialogContent>
-        <DialogActions>
-          <Button
-            onClick={handleCloseDialog}
-            sx={{
-              borderRadius: "8px",
-              color: STYLE_GUIDE?.COLORS?.primaryDark || "#3f51b5",
-            }}
-          >
-            No
-          </Button>
-          <Button
-            onClick={handleConfirmDelete}
-            sx={{
-              borderRadius: "8px",
-              backgroundColor: STYLE_GUIDE?.COLORS?.error || "#d32f2f",
-              color: "#ffffff",
-              "&:hover": {
-                backgroundColor: STYLE_GUIDE?.COLORS?.error || "#b71c1c",
-              },
-            }}
-          >
-            Yes
-          </Button>
-        </DialogActions>
-      </Dialog>
+      <NotivixDataModal
+        openModal={openModal}
+        modalMode={modalMode}
+        formData={formData}
+        openDialog={openDialog}
+        deleteId={deleteId}
+        listCurrentData={listCurrentData}
+        sourceVersionData={sourceVersionData}
+        columns={columns}
+        handleCloseModal={handleCloseModal}
+        handleCloseDialog={handleCloseDialog}
+        handleConfirmDelete={handleConfirmDelete}
+        handleSave={handleSave}
+        dataSourceId={valueId || ""}
+        switchToEditMode={switchToEditMode}
+        attributeListData={attributeList?.data?.data || []}
+        setFormData={setFormData}
+        refreshData={refreshData}
+      />
     </Box>
   );
 }

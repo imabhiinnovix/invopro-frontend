@@ -9,8 +9,8 @@ export const POST = {
   UPDATE_DASHBOARD: '/common/dashboard/update',
   DELETE_DASHBOARD: '/common/dashboard/delete',
   CREATE_WIDGET: '/dashboard/widget/create',
-  UPDATE_WIDGET: '/common/dashboard/widget/update',
-  DELETE_WIDGET: '/common/dashboard/widget/delete',
+  UPDATE_WIDGET: '/dashboard/widget/update',
+  DELETE_WIDGET: '/dashboard/widget/delete',
   SAVE_WIDGETS: '/common/dashboard/widget/save',
   CREATE_USER: 'common/auth/create-user',
   UPDATE_USER: '/common/users/update/',
@@ -42,6 +42,8 @@ export const POST = {
   CREATE_NOTIFICATION_TYPE: '/notivix/notification-setting/type/create',
   CREATE_FREQUENCY: '/notivix/notification-setting/frequency/create',
   CREATE_MEDIUM: '/notivix/notification-setting/medium/create',
+  CREATE_VERSION_ROW: '/common/dataSourceVersion/versionData/create',
+  RESOLVE_DATA_IMPORT_ERROR: '/common/dataImportError/resolve',
 };
 
 export const PUT = {
@@ -54,6 +56,7 @@ export const PUT = {
   UPDATE_MEDIUM: '/notivix/notification-setting/medium/update',
   UPDATE_FREQUENCY: 'notivix/notification-setting/frequency/update',
   UPDATE_NOTIFICATION_TYPE: 'notivix/notification-setting/type/update',
+  UPDATE_VERSION_ROW: '/common/dataSourceVersion/versionData/update',
 };
 
 export const DELETE = {
@@ -64,6 +67,7 @@ export const DELETE = {
   DELETE_NOTIFICATION_TYPE: 'notivix/notification-setting/type/delete',
   DELETE_MEDIUM: '/notivix/notification-setting/medium/delete',
   DELETE_FREQUENCY: '/notivix/notification-setting/frequency/delete',
+  DELETE_VERSION_ROW: '/common/dataSourceVersion/versionData/delete',
 };
 
 export const GET = {
@@ -115,4 +119,6 @@ export const GET = {
   FREQUENCY_LIST: 'notivix/notification-setting/frequency/list',
   FREQUENCY_DETAIL: 'notivix/notification-setting/frequency',
   NOTIFICATION_SETTING_TYPE_DETAIL: '/notivix/notification-setting/type',
+  GET_DATA_SOURCE_VERSION_BY_ID: '/common/dataSourceVersion/',
+  VALIDATION_ERROR_LIST: '/common/dataImportError/list',
 };
