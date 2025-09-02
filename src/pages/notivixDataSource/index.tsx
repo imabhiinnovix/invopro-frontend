@@ -91,8 +91,8 @@ export default function NotivixDataSource() {
       valueId || '',
       JSON.stringify(filter),
     ],
-    `${GET.SOURCE_VERSION_DATA}?dataSourceId=${encodeURIComponent(valueId || '')}&filters=${JSON.stringify(
-      filter
+    `${GET.SOURCE_VERSION_DATA}?dataSourceId=${encodeURIComponent(valueId || '')}&filters=${encodeURIComponent(
+      JSON.stringify(filter)
     )}&page=${paginationModelMemo.page + 1}&limit=${paginationModelMemo.pageSize}&query=${encodeURIComponent(
       debouncedSearchValue || ''
     )}`,
