@@ -121,4 +121,5 @@ export const GET = {
   NOTIFICATION_SETTING_TYPE_DETAIL: '/notivix/notification-setting/type',
   GET_DATA_SOURCE_VERSION_BY_ID: '/common/dataSourceVersion/',
   VALIDATION_ERROR_LIST: '/common/dataImportError/list',
+  GET_VERSION_DATA_BY_ID: '/common/dataSource/dataSourceDetails/',
 };
