@@ -422,7 +422,7 @@ export default function SideNav() {
                 name: "",
                 icon: (
                   <div ref={lastElementRef} style={{ paddingLeft: "1.5rem" }}>
-                    Loading...
+                    ...
                     <LinearProgress />{" "}
                   </div>
                 ),
