@@ -1803,15 +1803,7 @@ export const NotivixDataModal: React.FC<ModelSectionProps> = ({
   const updateVersionRow = usePut(['updateVersionRow']);
   const [fieldErrors, setFieldErrors] = React.useState<Record<string, string>>({});
   const [submitAttempted, setSubmitAttempted] = React.useState(false);
-  const [isFiltersModalOpen, setIsFiltersModalOpen] = React.useState(false);
 
-  const handleOpenFiltersModal = async () => {
-    setIsFiltersModalOpen(true);
-  };
-
-  const handleCloseFiltersModal = () => {
-    setIsFiltersModalOpen(false);
-  };
   // console.log("formData in modal", formData);
 
   // Function to validate email format
@@ -2535,15 +2527,6 @@ export const NotivixDataModal: React.FC<ModelSectionProps> = ({
         </Box>
       )}
 
-      <NotivixFiltersModal
-        open={isFiltersModalOpen}
-        onClose={handleCloseFiltersModal}
-        onApplyFilters={handleApplyFilters}
-        // currentFilters={currentFilters}
-        dataSourceId={currentDashboard?.settings?.dataSource?._id} // Pass your dataSourceId here
-        filterFlag="isDashboardFilter" // Specify which flag to use for filtering
-        isLoading={dataSourceDetailsLoading}
-      />
       {/* <FilterNotivixDataModal
         open={openModal && modalMode === 'filter'}
         onClose={handleCancel}

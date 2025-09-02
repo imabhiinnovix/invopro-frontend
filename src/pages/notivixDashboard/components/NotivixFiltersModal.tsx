@@ -146,13 +146,19 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
     `/common/dataSource/dataSourceDetails/${dataSourceId}`,
     !!dataSourceId
   );
-
+  console.log(
+    'kishandataSourceQuery',
+    dataSourceQuery.data,
+    dataSourceQuery,
+    `/common/dataSource/dataSourceDetails/${dataSourceId}`
+  );
   // Get filtered field settings based on the flag
   const filteredFieldSettings =
     dataSourceQuery.data?.data.fieldSettings?.filter((field) => field[filterFlag] === true) || [];
 
   // Map entity field options by attributeId for easy lookup
   const entityFieldOptionsMap = React.useMemo(() => {
+    console.log('Building entityFieldOptionsMap...', dataSourceQuery.data?.data);
     const map: Record<string, EntityFieldOption> = {};
     dataSourceQuery.data?.data.entityFieldOptions?.forEach((option) => {
       map[option.value.attributeId] = option;
@@ -237,6 +243,7 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
   }, [filteredFieldSettings]);
 
   const handleApplyFilters = () => {
+    console.log('filters', filters, entityFieldOptionsMap);
     // Convert filters to use entity field option labels as keys
     const transformedFilters: Record<string, any> = {};
 
@@ -246,6 +253,8 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
         transformedFilters[entityOption.label] = value;
       }
     });
+
+    console.log('transformedFilters', transformedFilters);
 
     onApplyFilters(transformedFilters);
     onClose();
