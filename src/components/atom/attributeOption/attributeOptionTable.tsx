@@ -62,32 +62,41 @@ const AttributeOptionTable: React.FC<AttributeOptionTableProps> = ({
   const { getTableSx } = useComponentTypography();
   const [attributes, setAttributes] = useState<AttributeOptionRequestPayload[]>([]);
   const [currentPage, setCurrentPage] = useState<number>(1);
-
   const [expandedRows, setExpandedRows] = useState<{ [key: number]: boolean }>({});
-
+  const [isInitialized, setIsInitialized] = useState<boolean>(false);
+  
   const toggleRow = (index: number): void => {
     setExpandedRows((prev) => ({ ...prev, [index]: !prev[index] }));
   };
-
+  
   const perPageItem = 10;
-
   const attributeList = useGet<{ success: boolean; data: AttributeOptionRequestPayload[]; totalCount: number }>(
     [`attributeList`, String(currentPage)],
     GET?.Attribute_Option_List + `?page=${currentPage}&limit=${perPageItem}`,
     !!currentPage
   );
 
+  // Handle reload - reset to page 1 and clear existing data
   useEffect(() => {
-    setCurrentPage(1);
+    if (attributeOptionReload) {
+      setAttributes([]);
+      setCurrentPage(1);
+      setIsInitialized(false);
+    }
   }, [attributeOptionReload]);
 
+  // Handle data fetching when page changes
   useEffect(() => {
-    if (currentPage === 1 && attributeOptionReload) {
+    if (attributeOptionReload && currentPage === 1) {
       attributeList.refetch();
       setAttributeOptionReload(false);
+      setIsInitialized(true);
+    } else if (isInitialized && currentPage > 1) {
+      attributeList.refetch();
     }
-  }, [currentPage, attributeOptionReload]);
+  }, [currentPage, attributeOptionReload, isInitialized]);
 
+  // Update attributes when new data is fetched
   useEffect(() => {
     if (attributeList?.data?.data) {
       if (currentPage === 1) {
@@ -98,34 +107,29 @@ const AttributeOptionTable: React.FC<AttributeOptionTableProps> = ({
     }
   }, [attributeList?.data?.data]);
 
-  useEffect(() => {
-    setCurrentPage(currentPage);
-  }, [currentPage]);
-
   const lastRowRef = useRef<IntersectionObserver | null>(null);
-
   const lastElementRef = useCallback(
     (node: HTMLTableRowElement | null) => {
-      if (attributeList.isFetching || attributes.length >= attributeList?.data?.totalCount!) return;
-
+      if (attributeList.isFetching || attributes.length >= (attributeList?.data?.totalCount || 0)) return;
+      
       // Disconnect the previous observer if it exists
       if (lastRowRef.current) {
         lastRowRef.current.disconnect();
       }
-
+      
       // Create a new IntersectionObserver
       lastRowRef.current = new IntersectionObserver((entries) => {
         if (entries[0].isIntersecting) {
           setCurrentPage((prevPage) => prevPage + 1);
         }
       });
-
+      
       // Observe the new node if it exists
       if (node) {
         lastRowRef.current.observe(node);
       }
     },
-    [attributeList.isFetching] // Add the correct dependency
+    [attributeList.isFetching, attributes.length, attributeList?.data?.totalCount]
   );
 
   const renderAttributes = (attributes: string[] = []): JSX.Element => (
@@ -147,7 +151,7 @@ const AttributeOptionTable: React.FC<AttributeOptionTableProps> = ({
     </Box>
   );
 
-  if (!attributeList.isFetching && !attributes.length) {
+  if (!attributeList.isFetching && !attributes.length && !isInitialized) {
     return (
       <Box
         display="flex"
@@ -201,23 +205,18 @@ const AttributeOptionTable: React.FC<AttributeOptionTableProps> = ({
                     '-'
                   )}
                 </StyledTableCell>
-
                 <StyledTableCell>
                   {data.createdBy ? `${data.createdBy.firstName} ${data.createdBy.lastName}` : '-'}
                 </StyledTableCell>
-
                 <StyledTableCell>
                   {data.updatedBy ? `${data.updatedBy.firstName} ${data.updatedBy.lastName}` : '-'}
                 </StyledTableCell>
-
                 <StyledTableCell>{data.createdAt ? new Date(data.createdAt).toLocaleString() : '-'}</StyledTableCell>
-
                 <StyledTableCell>
                   {data.updatedBy && data.updatedAt ? new Date(data.updatedAt).toLocaleString() : '-'}
                 </StyledTableCell>
                 <StyledTableCell>
                   {/* <Switch checked={data.isActive} /> */}
-
                   {data.isActive ? (
                     <Typography 
                       sx={{
@@ -249,7 +248,6 @@ const AttributeOptionTable: React.FC<AttributeOptionTableProps> = ({
                   />
                 </StyledTableCell>
               </StyledTableRow>
-
               {data && data.attributeValue && data.attributeValue?.length > 0 && (
                 <StyledTableRow>
                   <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={9}>
@@ -261,7 +259,6 @@ const AttributeOptionTable: React.FC<AttributeOptionTableProps> = ({
               )}
             </React.Fragment>
           ))}
-
           {attributeList.isFetching &&
             Array.from({ length: 1 }, (_, index) => (
               <StyledTableRow key={index}>
