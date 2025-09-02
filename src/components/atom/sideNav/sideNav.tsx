@@ -497,7 +497,7 @@ export default function SideNav() {
           ...(loading
             ? [
                 {
-                  name: "Loading...",
+                  name: "...",
                   icon: <></>,
                   route: "#",
                 },

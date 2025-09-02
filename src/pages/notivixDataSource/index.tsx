@@ -8,7 +8,13 @@ import useGet from "../../hooks/useGet";
 import useDelete from "../../hooks/useDelete";
 import { STYLE_GUIDE } from "../../styles";
 import { NotivixDataTable } from "./NotivixDataTable";
-import { Box, Button, Tooltip, Typography } from "@mui/material";
+import {
+  Box,
+  Button,
+  CircularProgress,
+  Tooltip,
+  Typography,
+} from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -140,7 +146,6 @@ export default function NotivixDataSource() {
     },
     [sourceVersionData?.data]
   );
- 
 
   const handleEdit = useCallback(
     (id: string) => {
@@ -412,7 +417,11 @@ export default function NotivixDataSource() {
   }, [columns, handleView, handleEdit, handleDelete]);
 
   if (loading && rows.length === 0) {
-    return <Typography>Loading...</Typography>;
+    return (
+      <Box sx={{ display: "flex" }}>
+        <CircularProgress />
+      </Box>
+    );
   }
 
   return (
