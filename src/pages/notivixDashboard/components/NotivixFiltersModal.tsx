@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect } from 'react';
 import {
   Dialog,
   DialogTitle,
@@ -19,14 +19,14 @@ import {
   FormControlLabel,
   Radio,
   RadioGroup,
-} from "@mui/material";
-import { STYLE_GUIDE } from "../../../styles";
-import { useUnifiedTheme } from "../../../hooks/useUnifiedTheme";
-import { useComponentTypography } from "../../../hooks/useComponentTypography";
-import useGet from "../../../hooks/useGet";
-import axiosInstance from "../../../services/axiosInstance";
-import { GET } from "../../../services/apiRoutes";
-import { useQueryClient } from "@tanstack/react-query";
+} from '@mui/material';
+import { STYLE_GUIDE } from '../../../styles';
+import { useUnifiedTheme } from '../../../hooks/useUnifiedTheme';
+import { useComponentTypography } from '../../../hooks/useComponentTypography';
+import useGet from '../../../hooks/useGet';
+import axiosInstance from '../../../services/axiosInstance';
+import { GET } from '../../../services/apiRoutes';
+import { useQueryClient } from '@tanstack/react-query';
 
 interface NotivixFiltersModalProps {
   open: boolean;
@@ -34,7 +34,7 @@ interface NotivixFiltersModalProps {
   onApplyFilters: (filters: Record<string, any>) => void;
   currentFilters?: Record<string, any>;
   dataSourceId: string;
-  filterFlag?: "isFilterEnable" | "isDashboardFilter";
+  filterFlag?: 'isFilterEnable' | 'isDashboardFilter';
   isLoading?: boolean;
 }
 
@@ -134,27 +134,19 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
   onApplyFilters,
   currentFilters = {},
   dataSourceId,
-  filterFlag = "isFilterEnable",
+  filterFlag = 'isFilterEnable',
   isLoading = false,
 }) => {
   const theme = useUnifiedTheme();
   const { getButtonSx } = useComponentTypography();
   const [filters, setFilters] = useState<Record<string, any>>(currentFilters);
-  const [optionsCache, setOptionsCache] = useState<Record<string, string[]>>(
-    {}
-  );
-  const [derivedFieldsCache, setDerivedFieldsCache] = useState<
-    Record<string, string[]>
-  >({});
+  const [optionsCache, setOptionsCache] = useState<Record<string, string[]>>({});
+  const [derivedFieldsCache, setDerivedFieldsCache] = useState<Record<string, string[]>>({});
   const queryClient = useQueryClient();
-
-  
-
- 
 
   // Fetch data source details
   const dataSourceQuery = useGet<DataSourceResponse>(
-    ["dataSourceDetails", dataSourceId],
+    ['dataSourceDetails', dataSourceId],
     `${GET.GET_VERSION_DATA_BY_ID}${dataSourceId}`,
     !!dataSourceId && open // Only fetch when modal is open and dataSourceId exists
   );
@@ -170,11 +162,9 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
   useEffect(() => {
     if (dataSourceId && !open) {
       queryClient.prefetchQuery({
-        queryKey: ["dataSourceDetails", dataSourceId],
+        queryKey: ['dataSourceDetails', dataSourceId],
         queryFn: async () => {
-          const response = await axiosInstance.get<DataSourceResponse>(
-            `${GET.GET_VERSION_DATA_BY_ID}${dataSourceId}`
-          );
+          const response = await axiosInstance.get<DataSourceResponse>(`${GET.GET_VERSION_DATA_BY_ID}${dataSourceId}`);
           return response.data;
         },
         staleTime: 5 * 60 * 1000,
@@ -184,13 +174,10 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
 
   const filteredFieldSettings = React.useMemo(() => {
     if (!dataSourceQuery.data?.data?.fieldSettings) return [];
-    return dataSourceQuery.data.data.fieldSettings.filter(
-      (field) => field[filterFlag] === true
-    );
+    return dataSourceQuery.data.data.fieldSettings.filter((field) => field[filterFlag] === true);
   }, [dataSourceQuery.data, filterFlag]);
 
   const entityFieldOptionsMap = React.useMemo(() => {
-   
     const map: Record<string, EntityFieldOption> = {};
     dataSourceQuery.data?.data.entityFieldOptions?.forEach((option) => {
       map[option.value.attributeId] = option;
@@ -208,7 +195,7 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
 
   // Fetch attribute options for option/multioption fields
   const fetchAttributeOptions = async (optionAttributeId: string) => {
-    console.log("optionsCache", optionsCache);
+    console.log('optionsCache', optionsCache);
     if (optionsCache[optionAttributeId]) {
       return optionsCache[optionAttributeId];
     }
@@ -224,7 +211,7 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
         return data.data.attributeValue;
       }
     } catch (error) {
-      console.error("Error fetching attribute options:", error);
+      console.error('Error fetching attribute options:', error);
     }
     return [];
   };
@@ -235,9 +222,7 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
       return derivedFieldsCache[attributeId];
     }
     try {
-      const { data } = await axiosInstance.get<DerivedFieldResponse>(
-        `/common/derivedField/${attributeId}`
-      );
+      const { data } = await axiosInstance.get<DerivedFieldResponse>(`/common/derivedField/${attributeId}`);
       if (data.success && data.data.valueRules) {
         const options = data.data.valueRules.map((rule) => rule.value);
         setDerivedFieldsCache((prev) => ({
@@ -247,7 +232,7 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
         return options;
       }
     } catch (error) {
-      console.error("Error fetching derived field options:", error);
+      console.error('Error fetching derived field options:', error);
     }
     return [];
   };
@@ -257,15 +242,13 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
     if (filteredFieldSettings.length > 0) {
       const fetchOptions = async () => {
         const promises = filteredFieldSettings.map(async (field) => {
-          if (field.type === "option" || field.type === "multioption") {
+          if (field.type === 'option' || field.type === 'multioption') {
             if (field.isDerived) {
               // Fetch derived field options
               await fetchDerivedFieldOptions(field.attributeId);
             } else if (!!entityAttributeOptionMap[field.attributeId]) {
               // Fetch regular attribute options
-              await fetchAttributeOptions(
-                entityAttributeOptionMap[field.attributeId]!
-              );
+              await fetchAttributeOptions(entityAttributeOptionMap[field.attributeId]!);
             }
           }
         });
@@ -276,21 +259,16 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
   }, [filteredFieldSettings]);
 
   const handleApplyFilters = () => {
-    console.log("filters", filters, entityFieldOptionsMap);
+    console.log('filters', filters, entityFieldOptionsMap);
     // Convert filters to use entity field option labels as keys
     const transformedFilters: Record<string, any> = {};
     Object.entries(filters).forEach(([attributeId, value]) => {
       const entityOption = entityFieldOptionsMap[attributeId];
-      if (
-        entityOption &&
-        value !== undefined &&
-        value !== "" &&
-        value !== null
-      ) {
+      if (entityOption && value !== undefined && value !== '' && value !== null) {
         transformedFilters[entityOption.label] = value;
       }
     });
-    console.log("transformedFilters", transformedFilters);
+    console.log('transformedFilters', transformedFilters);
     onApplyFilters(transformedFilters);
     onClose();
   };
@@ -310,30 +288,26 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
   const hasActiveFilters = Object.values(filters).some(
     (value) =>
       value !== undefined &&
-      value !== "" &&
+      value !== '' &&
       value !== null &&
-      (typeof value !== "object" ||
+      (typeof value !== 'object' ||
         (Array.isArray(value) && value.length > 0) ||
-        (!Array.isArray(value) &&
-          Object.values(value).some(
-            (v) => v !== undefined && v !== "" && v !== null
-          )))
+        (!Array.isArray(value) && Object.values(value).some((v) => v !== undefined && v !== '' && v !== null)))
   );
 
   const renderFilterField = (field: FieldSetting) => {
     // Get options based on field type
     let options: string[] = [];
-    if (field.type === "option" || field.type === "multioption") {
+    if (field.type === 'option' || field.type === 'multioption') {
       if (field.isDerived) {
         options = derivedFieldsCache[field.attributeId] || [];
       } else if (entityAttributeOptionMap[field.attributeId]) {
-        options =
-          optionsCache[entityAttributeOptionMap[field.attributeId]!] || [];
+        options = optionsCache[entityAttributeOptionMap[field.attributeId]!] || [];
       }
     }
     const currentValue = filters[field.attributeId];
     switch (field.type) {
-      case "boolean":
+      case 'boolean':
         return (
           <Box key={field.attributeId}>
             <Typography
@@ -346,10 +320,8 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
               {field.label}
             </Typography>
             <RadioGroup
-              value={currentValue || ""}
-              onChange={(e) =>
-                handleFilterChange(field.attributeId, e.target.value)
-              }
+              value={currentValue || ''}
+              onChange={(e) => handleFilterChange(field.attributeId, e.target.value)}
               row
             >
               <FormControlLabel
@@ -373,46 +345,41 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
             </RadioGroup>
           </Box>
         );
-      case "date":
+      case 'date':
         return (
           <TextField
             key={field.attributeId}
             label={field.label}
             placeholder={`Enter ${field.label.toLowerCase()}...`}
             type="date"
-            value={currentValue || ""}
-            onChange={(e) =>
-              handleFilterChange(field.attributeId, e.target.value)
-            }
+            value={currentValue || ''}
+            onChange={(e) => handleFilterChange(field.attributeId, e.target.value)}
             fullWidth
             size="small"
             InputLabelProps={{ shrink: true }}
             sx={{
-              "& .MuiOutlinedInput-root": {
+              '& .MuiOutlinedInput-root': {
                 backgroundColor: theme.getDropdownBackground(),
-                "& fieldset": {
+                '& fieldset': {
                   borderColor: theme.getInputBorderColor(),
                 },
-                "&:hover fieldset": {
-                  borderColor:
-                    theme.border?.hover || STYLE_GUIDE.COLORS.darkBorderHover,
+                '&:hover fieldset': {
+                  borderColor: theme.border?.hover || STYLE_GUIDE.COLORS.darkBorderHover,
                 },
-                "&.Mui-focused fieldset": {
-                  borderColor:
-                    theme.input?.focusBorder ||
-                    STYLE_GUIDE.COLORS.inputFocusFallback,
+                '&.Mui-focused fieldset': {
+                  borderColor: theme.input?.focusBorder || STYLE_GUIDE.COLORS.inputFocusFallback,
                 },
               },
-              "& .MuiInputLabel-root": {
+              '& .MuiInputLabel-root': {
                 color: theme.palette.text.secondary,
               },
-              "& .MuiInputBase-input": {
+              '& .MuiInputBase-input': {
                 color: theme.getInputTextColor(),
               },
             }}
           />
         );
-      case "dateRange":
+      case 'dateRange':
         return (
           <Stack key={field.attributeId} spacing={STYLE_GUIDE.SPACING.s2}>
             <Typography variant="subtitle2" color="text.secondary">
@@ -422,7 +389,7 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
               <TextField
                 label="Start Date"
                 type="date"
-                value={currentValue?.startDate || ""}
+                value={currentValue?.startDate || ''}
                 onChange={(e) =>
                   handleFilterChange(field.attributeId, {
                     ...currentValue,
@@ -432,9 +399,9 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
                 size="small"
                 InputLabelProps={{ shrink: true }}
                 sx={{
-                  "& .MuiOutlinedInput-root": {
+                  '& .MuiOutlinedInput-root': {
                     backgroundColor: theme.getDropdownBackground(),
-                    "& fieldset": {
+                    '& fieldset': {
                       borderColor: theme.getInputBorderColor(),
                     },
                   },
@@ -443,7 +410,7 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
               <TextField
                 label="End Date"
                 type="date"
-                value={currentValue?.endDate || ""}
+                value={currentValue?.endDate || ''}
                 onChange={(e) =>
                   handleFilterChange(field.attributeId, {
                     ...currentValue,
@@ -453,9 +420,9 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
                 size="small"
                 InputLabelProps={{ shrink: true }}
                 sx={{
-                  "& .MuiOutlinedInput-root": {
+                  '& .MuiOutlinedInput-root': {
                     backgroundColor: theme.getDropdownBackground(),
-                    "& fieldset": {
+                    '& fieldset': {
                       borderColor: theme.getInputBorderColor(),
                     },
                   },
@@ -464,31 +431,26 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
             </Stack>
           </Stack>
         );
-      case "option":
+      case 'option':
         return (
           <FormControl key={field.attributeId} fullWidth size="small">
             <InputLabel sx={{ color: theme.palette.text.secondary }}>
-              {field.label} {field.isDerived && "(Derived)"}
+              {field.label} {field.isDerived && '(Derived)'}
             </InputLabel>
             <Select
-              value={currentValue || ""}
-              onChange={(e) =>
-                handleFilterChange(field.attributeId, e.target.value)
-              }
-              label={`${field.label}${field.isDerived ? " (Derived)" : ""}`}
+              value={currentValue || ''}
+              onChange={(e) => handleFilterChange(field.attributeId, e.target.value)}
+              label={`${field.label}${field.isDerived ? ' (Derived)' : ''}`}
               sx={{
                 backgroundColor: theme.getDropdownBackground(),
-                "& .MuiOutlinedInput-notchedOutline": {
+                '& .MuiOutlinedInput-notchedOutline': {
                   borderColor: theme.getInputBorderColor(),
                 },
-                "&:hover .MuiOutlinedInput-notchedOutline": {
-                  borderColor:
-                    theme.border?.hover || STYLE_GUIDE.COLORS.darkBorderHover,
+                '&:hover .MuiOutlinedInput-notchedOutline': {
+                  borderColor: theme.border?.hover || STYLE_GUIDE.COLORS.darkBorderHover,
                 },
-                "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                  borderColor:
-                    theme.input?.focusBorder ||
-                    STYLE_GUIDE.COLORS.inputFocusFallback,
+                '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                  borderColor: theme.input?.focusBorder || STYLE_GUIDE.COLORS.inputFocusFallback,
                 },
               }}
             >
@@ -501,21 +463,19 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
             </Select>
           </FormControl>
         );
-      case "multioption":
+      case 'multioption':
         return (
           <FormControl key={field.attributeId} fullWidth size="small">
             <InputLabel sx={{ color: theme.palette.text.secondary }}>
-              {field.label} {field.isDerived && "(Derived)"}
+              {field.label} {field.isDerived && '(Derived)'}
             </InputLabel>
             <Select
               multiple
               value={currentValue || []}
-              onChange={(e) =>
-                handleFilterChange(field.attributeId, e.target.value)
-              }
-              label={`${field.label}${field.isDerived ? " (Derived)" : ""}`}
+              onChange={(e) => handleFilterChange(field.attributeId, e.target.value)}
+              label={`${field.label}${field.isDerived ? ' (Derived)' : ''}`}
               renderValue={(selected) => (
-                <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
+                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
                   {(selected as string[]).map((value) => (
                     <Chip key={value} label={value} size="small" />
                   ))}
@@ -523,50 +483,42 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
               )}
               sx={{
                 backgroundColor: theme.getDropdownBackground(),
-                "& .MuiOutlinedInput-notchedOutline": {
+                '& .MuiOutlinedInput-notchedOutline': {
                   borderColor: theme.getInputBorderColor(),
                 },
               }}
             >
               {options.map((option) => (
                 <MenuItem key={option} value={option}>
-                  <Checkbox
-                    checked={(currentValue || []).includes(option)}
-                    size="small"
-                  />
+                  <Checkbox checked={(currentValue || []).includes(option)} size="small" />
                   <ListItemText primary={option} />
                 </MenuItem>
               ))}
             </Select>
           </FormControl>
         );
-      case "number":
+      case 'number':
         return (
           <TextField
             key={field.attributeId}
             label={field.label}
             placeholder={`Enter ${field.label.toLowerCase()}...`}
             type="number"
-            value={currentValue || ""}
-            onChange={(e) =>
-              handleFilterChange(field.attributeId, e.target.value)
-            }
+            value={currentValue || ''}
+            onChange={(e) => handleFilterChange(field.attributeId, e.target.value)}
             fullWidth
             size="small"
             sx={{
-              "& .MuiOutlinedInput-root": {
+              '& .MuiOutlinedInput-root': {
                 backgroundColor: theme.getDropdownBackground(),
-                "& fieldset": {
+                '& fieldset': {
                   borderColor: theme.getInputBorderColor(),
                 },
-                "&:hover fieldset": {
-                  borderColor:
-                    theme.border?.hover || STYLE_GUIDE.COLORS.darkBorderHover,
+                '&:hover fieldset': {
+                  borderColor: theme.border?.hover || STYLE_GUIDE.COLORS.darkBorderHover,
                 },
-                "&.Mui-focused fieldset": {
-                  borderColor:
-                    theme.input?.focusBorder ||
-                    STYLE_GUIDE.COLORS.inputFocusFallback,
+                '&.Mui-focused fieldset': {
+                  borderColor: theme.input?.focusBorder || STYLE_GUIDE.COLORS.inputFocusFallback,
                 },
               },
             }}
@@ -578,32 +530,27 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
             key={field.attributeId}
             label={field.label}
             placeholder={`Enter ${field.label.toLowerCase()}...`}
-            value={currentValue || ""}
-            onChange={(e) =>
-              handleFilterChange(field.attributeId, e.target.value)
-            }
+            value={currentValue || ''}
+            onChange={(e) => handleFilterChange(field.attributeId, e.target.value)}
             fullWidth
             size="small"
             sx={{
-              "& .MuiOutlinedInput-root": {
+              '& .MuiOutlinedInput-root': {
                 backgroundColor: theme.getDropdownBackground(),
-                "& fieldset": {
+                '& fieldset': {
                   borderColor: theme.getInputBorderColor(),
                 },
-                "&:hover fieldset": {
-                  borderColor:
-                    theme.border?.hover || STYLE_GUIDE.COLORS.darkBorderHover,
+                '&:hover fieldset': {
+                  borderColor: theme.border?.hover || STYLE_GUIDE.COLORS.darkBorderHover,
                 },
-                "&.Mui-focused fieldset": {
-                  borderColor:
-                    theme.input?.focusBorder ||
-                    STYLE_GUIDE.COLORS.inputFocusFallback,
+                '&.Mui-focused fieldset': {
+                  borderColor: theme.input?.focusBorder || STYLE_GUIDE.COLORS.inputFocusFallback,
                 },
               },
-              "& .MuiInputLabel-root": {
+              '& .MuiInputLabel-root': {
                 color: theme.palette.text.secondary,
               },
-              "& .MuiInputBase-input": {
+              '& .MuiInputBase-input': {
                 color: theme.getInputTextColor(),
               },
             }}
@@ -631,19 +578,16 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
           pb: STYLE_GUIDE.SPACING.s4,
         }}
       >
-        <Typography
-          variant="h6"
-          sx={{ fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.medium }}
-        >
-          Dashboard Filters
+        <Typography variant="h6" sx={{ fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.medium }}>
+          Filters
         </Typography>
       </DialogTitle>
       <DialogContent sx={{ pt: STYLE_GUIDE.SPACING.s4 }}>
         {isLoading || dataSourceQuery.isLoading ? (
           <Box
             sx={{
-              display: "flex",
-              justifyContent: "center",
+              display: 'flex',
+              justifyContent: 'center',
               py: STYLE_GUIDE.SPACING.s6,
             }}
           >
@@ -654,28 +598,24 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
         ) : dataSourceQuery.isError ? (
           <Box
             sx={{
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
               py: STYLE_GUIDE.SPACING.s6,
             }}
           >
             <Typography variant="body2" color="error" sx={{ mb: 2 }}>
-              Error loading filters:{" "}
-              {dataSourceQuery.error?.message || "Unknown error"}
+              Error loading filters: {dataSourceQuery.error?.message || 'Unknown error'}
             </Typography>
-            <Button
-              variant="outlined"
-              onClick={() => dataSourceQuery.refetch()}
-            >
+            <Button variant="outlined" onClick={() => dataSourceQuery.refetch()}>
               Retry
             </Button>
           </Box>
         ) : filteredFieldSettings.length === 0 ? (
           <Box
             sx={{
-              display: "flex",
-              justifyContent: "center",
+              display: 'flex',
+              justifyContent: 'center',
               py: STYLE_GUIDE.SPACING.s6,
             }}
           >
@@ -684,14 +624,24 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
             </Typography>
           </Box>
         ) : (
-          <Stack spacing={STYLE_GUIDE.SPACING.s4}>
+          <Box
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(3, 1fr)',
+              gap: STYLE_GUIDE.SPACING.s4,
+              '@media (max-width: 900px)': {
+                gridTemplateColumns: 'repeat(2, 1fr)',
+              },
+              '@media (max-width: 600px)': {
+                gridTemplateColumns: '1fr',
+              },
+            }}
+          >
             {filteredFieldSettings.map((field) => renderFilterField(field))}
-          </Stack>
+          </Box>
         )}
       </DialogContent>
-      <DialogActions
-        sx={{ p: STYLE_GUIDE.SPACING.s4, gap: STYLE_GUIDE.SPACING.s2 }}
-      >
+      <DialogActions sx={{ p: STYLE_GUIDE.SPACING.s4, gap: STYLE_GUIDE.SPACING.s2 }}>
         <Button
           onClick={handleClearFilters}
           variant="outlined"
@@ -700,11 +650,11 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
             ...getButtonSx(),
             borderColor: theme.palette.error.main,
             color: theme.palette.error.main,
-            "&:hover": {
+            '&:hover': {
               borderColor: theme.palette.error.dark,
               backgroundColor: theme.palette.error.light,
             },
-            "&:disabled": {
+            '&:disabled': {
               borderColor: theme.palette.action.disabled,
               color: theme.palette.action.disabled,
             },
@@ -719,9 +669,8 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
             ...getButtonSx(),
             borderColor: theme.getInputBorderColor(),
             color: theme.palette.text.primary,
-            "&:hover": {
-              borderColor:
-                theme.border?.hover || STYLE_GUIDE.COLORS.darkBorderHover,
+            '&:hover': {
+              borderColor: theme.border?.hover || STYLE_GUIDE.COLORS.darkBorderHover,
             },
           }}
         >
@@ -734,7 +683,7 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
             ...getButtonSx(),
             backgroundColor: STYLE_GUIDE.COLORS.primary,
             color: STYLE_GUIDE.COLORS.white,
-            "&:hover": {
+            '&:hover': {
               backgroundColor: STYLE_GUIDE.COLORS.primaryDark,
             },
           }}
