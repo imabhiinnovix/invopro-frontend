@@ -1123,7 +1123,7 @@ useEffect(() => {
                     variant="h6"
                     sx={{ fontWeight: "bold", color: "text.primary" }}
                   >
-                    Frequency {!notificationTypeId}
+                    Scheduler{!notificationTypeId}
                   </Typography>
                 </AccordionSummary>
                 <AccordionDetails>
