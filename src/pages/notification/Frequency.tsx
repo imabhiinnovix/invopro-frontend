@@ -2447,7 +2447,7 @@ if (targetEntity) {
                 <TextField
                   {...params}
                   variant="outlined"
-                  label="Target Entity"
+                  label="Sent To (Group)"
                   placeholder="Type or select"
                 />
               )}
