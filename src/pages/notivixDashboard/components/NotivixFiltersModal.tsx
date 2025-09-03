@@ -53,6 +53,7 @@ interface EntityFieldOption {
   value: {
     attributeId: string;
     type: string;
+    isDerived?: boolean;
   };
 }
 
@@ -195,7 +196,6 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
 
   // Fetch attribute options for option/multioption fields
   const fetchAttributeOptions = async (optionAttributeId: string) => {
-    console.log('optionsCache', optionsCache);
     if (optionsCache[optionAttributeId]) {
       return optionsCache[optionAttributeId];
     }
@@ -259,16 +259,20 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
   }, [filteredFieldSettings]);
 
   const handleApplyFilters = () => {
-    console.log('filters', filters, entityFieldOptionsMap);
     // Convert filters to use entity field option labels as keys
     const transformedFilters: Record<string, any> = {};
     Object.entries(filters).forEach(([attributeId, value]) => {
       const entityOption = entityFieldOptionsMap[attributeId];
+
       if (entityOption && value !== undefined && value !== '' && value !== null) {
-        transformedFilters[entityOption.label] = value;
+        if (entityOption?.value?.isDerived) {
+          transformedFilters[`Derived.${entityOption.label}`] = value;
+        } else {
+          transformedFilters[entityOption.label] = value;
+        }
       }
     });
-    console.log('transformedFilters', transformedFilters);
+
     onApplyFilters(transformedFilters);
     onClose();
   };
@@ -306,6 +310,7 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
       }
     }
     const currentValue = filters[field.attributeId];
+
     switch (field.type) {
       case 'boolean':
         return (
