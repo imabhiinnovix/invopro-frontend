@@ -81,7 +81,9 @@ export default function NotivixDataSource() {
     }),
     [paginationModel.page, paginationModel.pageSize]
   );
-  //kishan
+  useEffect(() => {
+    setFilter({});
+  }, [valueId]);
   const sourceVersionData = useGet<ApiResponse>(
     [
       'sourceVersionData',
