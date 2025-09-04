@@ -23,11 +23,12 @@
 //   DialogContent,
 //   DialogActions,
 //   Tooltip,
-//   Modal,
+//   FormHelperText,
 // } from "@mui/material";
 // import { DataGrid, GridColDef } from "@mui/x-data-grid";
 // import { GridDeleteIcon } from "@mui/x-data-grid";
 // import EditIcon from "@mui/icons-material/Edit";
+// import VisibilityIcon from "@mui/icons-material/Visibility";
 // import useGet from "../../hooks/useGet";
 // import usePost from "../../hooks/usePost";
 // import usePut from "../../hooks/usePut";
@@ -35,11 +36,11 @@
 // import { GET, POST, PUT, DELETE } from "../../services/apiRoutes";
 // import { STYLE_GUIDE } from "../../styles";
 // import { toast } from "react-toastify";
-// import VisibilityIcon from "@mui/icons-material/Visibility";
 // import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 // import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 // import dayjs from "dayjs";
 // import { TimePicker } from "@mui/x-date-pickers/TimePicker";
+// import ViewReminderDialog from "./ViewReminderDialog"; 
 
 // // Constants remain the same
 // const MONTHS = [
@@ -68,7 +69,6 @@
 //   { id: "Last", label: "Last" },
 //   { id: "All", label: "All" },
 // ];
-
 // // Styles remain the same
 // const styles = {
 //   formRow: {
@@ -167,6 +167,11 @@
 //   viewDetailValue: {
 //     color: STYLE_GUIDE.COLORS.textPrimary,
 //   },
+//   errorText: {
+//     color: STYLE_GUIDE.COLORS.error,
+//     fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
+//     marginTop: STYLE_GUIDE.SPACING.s1,
+//   },
 // };
 
 // // RRuleGenerator Component
@@ -186,7 +191,7 @@
 //     hideError: false,
 //     ...config,
 //   };
-
+  
 //   const weekdays = defaultConfig.weekStartsOnSunday
 //     ? [
 //         { id: "Sunday", label: "Sunday" },
@@ -206,8 +211,9 @@
 //         { id: "Saturday", label: "Saturday" },
 //         { id: "Sunday", label: "Sunday" },
 //       ];
-
+      
 //   const dayAbbrevs = ["SU", "MO", "TU", "WE", "TH", "FR", "SA"];
+  
 //   const backendDayIndices = defaultConfig.weekStartsOnSunday
 //     ? {
 //         Sunday: 0,
@@ -219,29 +225,27 @@
 //         Saturday: 6,
 //       }
 //     : {
+//         Sunday: 0,
 //         Monday: 1,
 //         Tuesday: 2,
 //         Wednesday: 3,
 //         Thursday: 4,
 //         Friday: 5,
 //         Saturday: 6,
-//         Sunday: 0,
 //       };
-
-//   // Helper function to map backend day index to UI weekday index
+      
 //   const mapBackendDayToUiIndex = (backendDay) => {
 //     if (defaultConfig.weekStartsOnSunday) {
 //       return backendDay;
 //     } else {
 //       if (backendDay === 0) {
-//         return 6; // Sunday
+//         return 6; 
 //       } else {
 //         return backendDay - 1;
 //       }
 //     }
 //   };
-
-//   // State
+  
 //   const [startDate, setStartDate] = useState("");
 //   const [repeatType, setRepeatType] = useState("");
 //   const [yearlyType, setYearlyType] = useState(
@@ -285,13 +289,23 @@
 //     message: "",
 //     severity: "info",
 //   });
-
-//   // Refs
+  
+//   const [errors, setErrors] = useState({
+//     frequency: "",
+//     startDate: "",
+//     endDate: "",
+//     interval: "",
+//     weeklyDays: "",
+//     monthlyDays: "",
+//     yearlyDays: "",
+//     template: "",
+//     method: "",
+//   });
+  
 //   const isMounted = useRef(false);
 //   const isInitialMount = useRef(true);
 //   const previousRepeatType = useRef(repeatType);
-
-//   // Reset form function
+  
 //   const resetForm = useCallback(() => {
 //     setStartDate("");
 //     setRepeatType("");
@@ -318,10 +332,121 @@
 //     setToRecipients([]);
 //     setCcRecipients([]);
 //     setTargetEntity(null);
+    
+//     setErrors({
+//       frequency: "",
+//       startDate: "",
+//       endDate: "",
+//       interval: "",
+//       weeklyDays: "",
+//       monthlyDays: "",
+//       yearlyDays: "",
+//       template: "",
+//       method: "",
+//     });
+    
 //     isInitialMount.current = true;
 //   }, [defaultConfig.yearly, defaultConfig.monthly]);
-
-//   // API Hooks
+  
+//   // Validate form
+//   const validateForm = useCallback(() => {
+//     let valid = true;
+//     const newErrors = {
+//       frequency: "",
+//       startDate: "",
+//       endDate: "",
+//       interval: "",
+//       weeklyDays: "",
+//       monthlyDays: "",
+//       yearlyDays: "",
+//       template: "",
+//       method: "",
+//     };
+    
+//     // Validate frequency
+//     if (!repeatType) {
+//       newErrors.frequency = "Frequency is required";
+//       valid = false;
+//     }
+    
+//     // Validate start date
+//     if (!startDate) {
+//       newErrors.startDate = "Start date is required";
+//       valid = false;
+//     }
+    
+//     // Validate interval
+//     if (interval < 1) {
+//       newErrors.interval = "Interval must be at least 1";
+//       valid = false;
+//     }
+    
+//     // Validate based on frequency type
+//     if (repeatType === "Weekly" && weeklyDays.length === 0) {
+//       newErrors.weeklyDays = "At least one day must be selected for weekly frequency";
+//       valid = false;
+//     }
+    
+//     if (repeatType === "Monthly") {
+//       if (monthlyType === "on" && monthlyDays.length === 0) {
+//         newErrors.monthlyDays = "At least one day must be selected for monthly frequency";
+//         valid = false;
+//       } else if (monthlyType === "onthe" && (monthlyWeeks.length === 0 || monthlyWeekDays.length === 0)) {
+//         newErrors.monthlyDays = "Both week and weekday must be selected for monthly frequency";
+//         valid = false;
+//       }
+//     }
+    
+//     if (repeatType === "Yearly") {
+//       if (yearlyType === "on" && (yearlyMonths.length === 0 || yearlyDays.length === 0)) {
+//         newErrors.yearlyDays = "Both month and day must be selected for yearly frequency";
+//         valid = false;
+//       } else if (yearlyType === "onthe" && (yearlyWeeks.length === 0 || yearlyWeekDays.length === 0 || yearlyWeekMonths.length === 0)) {
+//         newErrors.yearlyDays = "Week, weekday, and month must be selected for yearly frequency";
+//         valid = false;
+//       }
+//     }
+    
+//     // Validate end date if selected
+//     if (endType === "On date" && !endDate) {
+//       newErrors.endDate = "End date is required";
+//       valid = false;
+//     }
+    
+//     // Validate template and method
+//     if (!template) {
+//       newErrors.template = "Template is required";
+//       valid = false;
+//     }
+    
+//     if (!method) {
+//       newErrors.method = "Method is required";
+//       valid = false;
+//     }
+    
+//     setErrors(newErrors);
+//     return valid;
+//   }, [
+//     repeatType,
+//     startDate,
+//     interval,
+//     weeklyDays,
+//     monthlyDays,
+//     monthlyType,
+//     monthlyWeeks,
+//     monthlyWeekDays,
+//     yearlyDays,
+//     yearlyMonths,
+//     yearlyType,
+//     yearlyWeeks,
+//     yearlyWeekDays,
+//     yearlyWeekMonths,
+//     endType,
+//     endDate,
+//     template,
+//     method,
+//   ]);
+  
 //   const templateList = useGet(["templateList"], `${GET.TEMPLATE_LIST}`, true);
 //   const mediumList = useGet(["mediumList"], `${GET.MEDIUM_LIST}`, true);
 //   const createFrequency = usePost(["createFrequency"]);
@@ -347,6 +472,7 @@
 //     },
 //     true
 //   );
+  
 //   const { data: frequencyListData, refetch } = useGet(
 //     ["frequencyList", notificationTypeId, frequencyApiSuccess],
 //     frequencyApiSuccess
@@ -354,17 +480,19 @@
 //       : "",
 //     !!frequencyApiSuccess
 //   );
+  
 //   const { data: reminderData, refetch: refetchReminder } = useGet(
 //     ["reminder", editingReminderId],
 //     editingReminderId ? `${GET.FREQUENCY_DETAIL}/${editingReminderId}` : "",
 //     !!editingReminderId
 //   );
+  
 //   const { data: viewReminderData, refetch: refetchViewReminder } = useGet(
 //     ["viewReminder", viewingReminderId],
 //     viewingReminderId ? `${GET.FREQUENCY_DETAIL}/${viewingReminderId}` : "",
 //     !!viewingReminderId
 //   );
-
+  
 //   // useEffect Hooks
 //   useEffect(() => {
 //     isMounted.current = true;
@@ -372,35 +500,33 @@
 //       isMounted.current = false;
 //     };
 //   }, []);
-
+  
 //   useEffect(() => {
 //     if (notificationTypeId) {
 //       setFrequencyApiSuccess(true);
 //       refetch();
 //     }
 //   }, [notificationTypeId, refetch]);
-
+  
 //   useEffect(() => {
 //     if (notificationTypeId && frequencyApiSuccess) {
 //       refetch();
 //     }
 //   }, [notificationTypeId, frequencyApiSuccess, refetch]);
-
+  
 //   useEffect(() => {
 //     if (viewReminderData?.data && openViewDialog) {
 //       setViewingReminderData(viewReminderData.data);
 //     }
 //   }, [viewReminderData, openViewDialog]);
-
+ 
+  
 //   useEffect(() => {
 //     if (!reminderData?.data || !editMode) {
 //       return;
 //     }
-
 //     console.log("Loading edit data:", reminderData.data);
-
 //     const data = reminderData.data;
-
 //     setStartDate(
 //       data.schedulerStartDate
 //         ? new Date(data.schedulerStartDate).toISOString().split("T")[0]
@@ -417,7 +543,6 @@
 //     setTime(data.triggerTime || "");
 //     setTemplate(data.templateId?._id || "");
 //     setMethod(data.medium?._id || "");
-
 //     if (data.frequency === "weekly" && data.daysOfWeek?.length > 0) {
 //       const dayNames = [
 //         "Sunday",
@@ -431,12 +556,10 @@
 //       const mappedDays = data.daysOfWeek
 //         .map((backendIndex) => dayNames[backendIndex])
 //         .filter((dayName) => dayName);
-//       console.log("Setting weekly days:", mappedDays);
 //       setWeeklyDays(mappedDays);
 //     } else {
 //       setWeeklyDays([]);
 //     }
-
 //     if (data.frequency === "monthly") {
 //       if (data.dayOfMonth && data.dayOfMonth.length > 0) {
 //         setMonthlyType("on");
@@ -463,7 +586,6 @@
 //         setMonthlyDays([]);
 //       }
 //     }
-
 //     if (data.frequency === "yearly") {
 //       if (data.dayOfMonth?.length > 0) {
 //         setYearlyType("on");
@@ -504,6 +626,22 @@
 //       }
 //     }
 
+//     // Helper function to compare arrays
+//     const arraysEqual = (a, b) => {
+//       if (a === b) return true;
+//       if (a == null || b == null) return false;
+//       if (a.length !== b.length) return false;
+      
+//       // Sort both arrays to compare regardless of order
+//       const sortedA = [...a].sort();
+//       const sortedB = [...b].sort();
+      
+//       for (let i = 0; i < sortedA.length; ++i) {
+//         if (sortedA[i] !== sortedB[i]) return false;
+//       }
+//       return true;
+//     };
+
 //     const toRecipients = [];
 //     const ccRecipients = [];
 //     if (data.recipients_to && Array.isArray(data.recipients_to)) {
@@ -522,15 +660,25 @@
 //           });
 //         } else if (recipient.attributeId) {
 //           const fieldOption = fieldOptions.find(
-//             (opt) => opt.attributeId === recipient.attributeId
+//             (opt) => 
+//               opt.attributeId === recipient.attributeId &&
+//               arraysEqual(opt.refAttributeId || [], recipient.refAttributeId || [])
 //           );
+          
 //           if (fieldOption) {
 //             toRecipients.push(fieldOption);
 //           } else {
-//             toRecipients.push({
-//               value: recipient.attributeId,
-//               label: recipient.attributeId,
-//             });
+//             const fallbackOption = fieldOptions.find(
+//               (opt) => opt.attributeId === recipient.attributeId
+//             );
+//             if (fallbackOption) {
+//               toRecipients.push(fallbackOption);
+//             } else {
+//               toRecipients.push({
+//                 value: recipient.attributeId,
+//                 label: recipient.attributeId,
+//               });
+//             }
 //           }
 //         }
 //       });
@@ -551,34 +699,53 @@
 //           });
 //         } else if (recipient.attributeId) {
 //           const fieldOption = fieldOptions.find(
-//             (opt) => opt.attributeId === recipient.attributeId
+//             (opt) => 
+//               opt.attributeId === recipient.attributeId &&
+//               arraysEqual(opt.refAttributeId || [], recipient.refAttributeId || [])
 //           );
+          
 //           if (fieldOption) {
 //             ccRecipients.push(fieldOption);
 //           } else {
-//             ccRecipients.push({
-//               value: recipient.attributeId,
-//               label: recipient.attributeId,
-//             });
+//             const fallbackOption = fieldOptions.find(
+//               (opt) => opt.attributeId === recipient.attributeId
+//             );
+//             if (fallbackOption) {
+//               ccRecipients.push(fallbackOption);
+//             } else {
+//               ccRecipients.push({
+//                 value: recipient.attributeId,
+//                 label: recipient.attributeId,
+//               });
+//             }
 //           }
 //         }
 //       });
 //     }
 //     setToRecipients(toRecipients);
 //     setCcRecipients(ccRecipients);
-
 //     if (data.targetEntity) {
 //       if (data.targetEntity.attributeId) {
 //         const fieldOption = fieldOptions.find(
-//           (opt) => opt.attributeId === data.targetEntity.attributeId
+//           (opt) => 
+//             opt.attributeId === data.targetEntity.attributeId &&
+//             arraysEqual(opt.refAttributeId || [], data.targetEntity.refAttributeId || [])
 //         );
+        
 //         if (fieldOption) {
 //           setTargetEntity(fieldOption);
 //         } else {
-//           setTargetEntity({
-//             value: data.targetEntity.attributeId,
-//             label: data.targetEntity.attributeId,
-//           });
+//           const fallbackOption = fieldOptions.find(
+//             (opt) => opt.attributeId === data.targetEntity.attributeId
+//           );
+//           if (fallbackOption) {
+//             setTargetEntity(fallbackOption);
+//           } else {
+//             setTargetEntity({
+//               value: data.targetEntity.attributeId,
+//               label: data.targetEntity.attributeId,
+//             });
+//           }
 //         }
 //       } else if (
 //         data.targetEntity.customEmails &&
@@ -590,7 +757,6 @@
 //     } else {
 //       setTargetEntity(null);
 //     }
-
 //     if (data.maxOccurrences) {
 //       setEndType("After");
 //       setEndAfter(parseInt(data.maxOccurrences) || 1);
@@ -602,11 +768,7 @@
 //     } else {
 //       setEndType("Never");
 //     }
-
-//     console.log("Edit data loaded successfully");
 //   }, [reminderData?.data, editMode, fieldOptions]);
-
-//   // New useEffect for yearly type changes
 //   useEffect(() => {
 //     if (repeatType === "Yearly" && !isInitialMount.current) {
 //       if (yearlyType === "on") {
@@ -619,8 +781,7 @@
 //       }
 //     }
 //   }, [yearlyType, repeatType]);
-
-//   // New useEffect for monthly type changes
+  
 //   useEffect(() => {
 //     if (repeatType === "Monthly" && !isInitialMount.current) {
 //       if (monthlyType === "on") {
@@ -631,7 +792,7 @@
 //       }
 //     }
 //   }, [monthlyType, repeatType]);
-
+  
 //   // Handlers
 //   const handleWeeklyDayToggle = useCallback(
 //     (day) => {
@@ -645,10 +806,15 @@
 //             );
 //         return newDays.length > 0 ? newDays : prev;
 //       });
+      
+//       // Clear error when user selects a day
+//       if (errors.weeklyDays) {
+//         setErrors(prev => ({...prev, weeklyDays: ""}));
+//       }
 //     },
-//     [weekdays]
+//     [weekdays, errors.weeklyDays]
 //   );
-
+  
 //   const handleEditReminder = useCallback(
 //     (reminder) => {
 //       setEditingReminderId(reminder._id);
@@ -659,13 +825,13 @@
 //     },
 //     [refetchReminder]
 //   );
-
+  
 //   const handleCancelEdit = useCallback(() => {
 //     setEditMode(false);
 //     setEditingReminderId(null);
 //     resetForm();
 //   }, [resetForm]);
-
+  
 //   const handleViewReminder = useCallback(
 //     (reminder) => {
 //       setViewingReminderId(reminder._id);
@@ -674,14 +840,13 @@
 //     },
 //     [refetchViewReminder]
 //   );
-
+  
 //   const handleCloseViewDialog = useCallback(() => {
 //     setOpenViewDialog(false);
 //     setViewingReminderId(null);
 //     setViewingReminderData(null);
 //   }, []);
-
-//   // New handlers for type changes
+  
 //   const handleYearlyTypeChange = (e) => {
 //     const newType = e.target.value;
 //     setYearlyType(newType);
@@ -694,7 +859,7 @@
 //       setYearlyDays([]);
 //     }
 //   };
-
+  
 //   const handleMonthlyTypeChange = (e) => {
 //     const newType = e.target.value;
 //     setMonthlyType(newType);
@@ -705,19 +870,20 @@
 //       setMonthlyDays([]);
 //     }
 //   };
-
+  
 //   const handleAddReminder = useCallback(async () => {
+//     // Validate form before submission
+//     if (!validateForm()) {
+//       return;
+//     }
+    
 //     const rrule = generateRRule();
 //     if (!rrule) {
 //       setSuccessMessage("Please select valid options to generate an RRule.");
 //       setTimeout(() => setSuccessMessage(null), 3000);
 //       return;
 //     }
-//     if (!template || !method) {
-//       setSuccessMessage("Please select a template and notification method.");
-//       setTimeout(() => setSuccessMessage(null), 3000);
-//       return;
-//     }
+    
 //     let dayOfMonth = [];
 //     let weekOfMonth = [];
 //     let daysOfWeek = [];
@@ -757,43 +923,57 @@
 //         );
 //       }
 //     }
+    
+   
+    
 //     const formatRecipients = (recipients) => {
-//       const result = [];
-//       const customEmails = [];
-//       const attributeIds = [];
-//       recipients.forEach((recipient) => {
-//         if (typeof recipient === "string") {
-//           if (recipient.includes("@")) {
-//             customEmails.push(recipient);
-//           } else {
-//             attributeIds.push(recipient);
-//           }
-//         } else {
-//           if (recipient.label && recipient.label.includes("@")) {
-//             customEmails.push(recipient.label);
-//           } else {
-//             attributeIds.push(recipient.attributeId);
-//           }
-//         }
-//       });
-//       if (customEmails.length > 0) {
-//         result.push({ customEmails });
-//       }
-//       attributeIds.forEach((id) => {
-//         result.push({ attributeId: id });
-//       });
-//       return result;
-//     };
-
-//     let formattedTargetEntity = null;
-//     if (targetEntity) {
-//       if (typeof targetEntity === "string") {
-//         formattedTargetEntity = { customEmails: [targetEntity] };
+//   const result = [];
+//   const customEmails = [];
+//   recipients.forEach((recipient) => {
+//     if (typeof recipient === "string") {
+//       if (recipient.includes("@")) {
+//         customEmails.push(recipient);
 //       } else {
-//         formattedTargetEntity = { attributeId: targetEntity.attributeId };
+//         result.push({ attributeId: recipient });
+//       }
+//     } else {
+//       if (recipient.label && recipient.label.includes("@")) {
+//         customEmails.push(recipient.label);
+//       } else if (recipient.attributeId) {
+//         const recipientObj = {
+//           attributeId: recipient.attributeId
+//         };
+        
+//         if (recipient.refAttributeId && Array.isArray(recipient.refAttributeId) && recipient.refAttributeId.length > 0) {
+//           recipientObj.refAttributeId = recipient.refAttributeId;
+//         }
+        
+//         result.push(recipientObj);
 //       }
 //     }
+//   });
+  
+//   if (customEmails.length > 0) {
+//     result.push({ customEmails });
+//   }
+  
+//   return result;
+// };
 
+// let formattedTargetEntity = null;
+// if (targetEntity) {
+//   if (typeof targetEntity === "string") {
+//     formattedTargetEntity = { customEmails: [targetEntity] };
+//   } else if (targetEntity.attributeId) {
+//     formattedTargetEntity = {
+//       attributeId: targetEntity.attributeId
+//     };
+    
+//     if (targetEntity.refAttributeId && Array.isArray(targetEntity.refAttributeId) && targetEntity.refAttributeId.length > 0) {
+//       formattedTargetEntity.refAttributeId = targetEntity.refAttributeId;
+//     }
+//   }
+// }
 //     const payload = {
 //       notificationTypeId,
 //       frequency: repeatType.toLowerCase(),
@@ -815,6 +995,7 @@
 //       ...(endType === "After" && { maxOccurrences: endAfter.toString() }),
 //       ...(formattedTargetEntity && { targetEntity: formattedTargetEntity }),
 //     };
+    
 //     console.log("Formatted payload:",payload, JSON.stringify(payload, null, 2));
 //     try {
 //       if (editMode) {
@@ -893,18 +1074,19 @@
 //     weeklyDays,
 //     refetch,
 //     backendDayIndices,
+//     validateForm,
 //   ]);
-
+  
 //   const handleDeleteReminder = useCallback((reminderId) => {
 //     setSelectedReminderId(reminderId);
 //     setOpenDialog(true);
 //   }, []);
-
+  
 //   const handleCloseDialog = useCallback(() => {
 //     setOpenDialog(false);
 //     setSelectedReminderId(null);
 //   }, []);
-
+  
 //   const handleConfirmDelete = useCallback(async () => {
 //     if (selectedReminderId) {
 //       try {
@@ -921,7 +1103,7 @@
 //       }
 //     }
 //   }, [deleteFrequency, selectedReminderId]);
-
+  
 //   const parseRRule = useCallback(
 //     (rruleString) => {
 //       try {
@@ -930,7 +1112,7 @@
 //           const [key, val] = part.split("=");
 //           return { ...acc, [key]: val };
 //         }, {});
-
+        
 //         if (rules.FREQ) {
 //           const newRepeatType =
 //             rules.FREQ.charAt(0) + rules.FREQ.slice(1).toLowerCase();
@@ -938,12 +1120,14 @@
 //             setRepeatType(newRepeatType);
 //           }
 //         }
+        
 //         if (rules.INTERVAL) {
 //           const newInterval = parseInt(rules.INTERVAL) || 1;
 //           if (newInterval !== interval) {
 //             setInterval(newInterval);
 //           }
 //         }
+        
 //         if (rules.COUNT) {
 //           const newEndType = "After";
 //           const newEndAfter = parseInt(rules.COUNT) || 1;
@@ -960,6 +1144,7 @@
 //             setEndDate(newEndDate);
 //           }
 //         }
+        
 //         if (rules.FREQ === "YEARLY" && rules.BYMONTH) {
 //           const monthIndices = rules.BYMONTH.split(",").map((m) => parseInt(m));
 //           const months = monthIndices
@@ -978,6 +1163,7 @@
 //             setYearlyWeekMonths(months);
 //           }
 //         }
+        
 //         if (rules.FREQ === "YEARLY" && rules.BYMONTHDAY) {
 //           const days = rules.BYMONTHDAY.split(",").filter((day) =>
 //             DAYS.some((d) => d.id === day)
@@ -989,6 +1175,7 @@
 //             setYearlyDays(days);
 //           }
 //         }
+        
 //         if (rules.FREQ === "YEARLY" && rules.BYDAY) {
 //           const byDayRules = rules.BYDAY.split(",");
 //           const weeks = [];
@@ -1019,6 +1206,7 @@
 //             setYearlyWeekDays(weekDays);
 //           }
 //         }
+        
 //         if (rules.FREQ === "MONTHLY" && rules.BYMONTHDAY) {
 //           const days = rules.BYMONTHDAY.split(",").filter((day) =>
 //             DAYS.some((d) => d.id === day)
@@ -1030,6 +1218,7 @@
 //             setMonthlyDays(days);
 //           }
 //         }
+        
 //         if (rules.FREQ === "MONTHLY" && rules.BYDAY) {
 //           const byDayRules = rules.BYDAY.split(",");
 //           const weeks = [];
@@ -1060,6 +1249,7 @@
 //             setMonthlyWeekDays(weekDays);
 //           }
 //         }
+        
 //         if (rules.FREQ === "WEEKLY" && rules.BYDAY) {
 //           const days = rules.BYDAY.split(",")
 //             .map((dayAbbrev) => {
@@ -1103,10 +1293,11 @@
 //       weeklyDays,
 //     ]
 //   );
-
+  
 //   const generateRRule = useCallback(() => {
 //     if (!repeatType) return "";
 //     let rrule = `FREQ=${repeatType.toUpperCase()}`;
+    
 //     switch (repeatType) {
 //       case "Yearly":
 //         if (yearlyType === "on") {
@@ -1122,7 +1313,7 @@
 //           const monthIndices = yearlyWeekMonths
 //             .map((m) => MONTHS.findIndex((month) => month.id === m) + 1)
 //             .filter((index) => index > 0);
-//           if (monthcosIndices.length === 0) return "";
+//           if (monthIndices.length === 0) return "";
 //           rrule += `;BYMONTH=${monthIndices.join(",")}`;
 //           const dayRules = yearlyWeeks.flatMap((week) =>
 //             yearlyWeekDays.map((day) => {
@@ -1179,14 +1370,17 @@
 //       default:
 //         break;
 //     }
+    
 //     if (interval > 1) {
 //       rrule += `;INTERVAL=${interval}`;
 //     }
+    
 //     if (endType === "After") {
 //       rrule += `;COUNT=${endAfter}`;
 //     } else if (endType === "On date" && endDate) {
 //       rrule += `;UNTIL=${endDate.replace(/-/g, "")}T235959Z`;
 //     }
+    
 //     return rrule;
 //   }, [
 //     repeatType,
@@ -1211,10 +1405,9 @@
 //     dayAbbrevs,
 //     defaultConfig.weekStartsOnSunday,
 //   ]);
-
+  
 //   useEffect(() => {
 //     if (!isMounted.current || isInitialMount.current) return;
-
 //     const newRRule = generateRRule();
 //     onChange?.(newRRule);
 //   }, [
@@ -1240,10 +1433,9 @@
 //     endDate,
 //     endAfter,
 //   ]);
-
+  
 //   useEffect(() => {
 //     if (!isMounted.current || !value) return;
-
 //     const currentRRule = generateRRule();
 //     if (value !== currentRRule) {
 //       parseRRule(value);
@@ -1276,10 +1468,9 @@
 //     dayAbbrevs,
 //     defaultConfig.weekStartsOnSunday,
 //   ]);
-
+  
 //   useEffect(() => {
 //     if (!isMounted.current || isInitialMount.current) return;
-
 //     if (previousRepeatType.current !== repeatType) {
 //       if (repeatType === "Yearly") {
 //         setYearlyType(defaultConfig.yearly === "on the" ? "onthe" : "on");
@@ -1305,7 +1496,7 @@
 //     isMounted,
 //     isInitialMount,
 //   ]);
-
+  
 //   const formatRecipientsForDisplay = useCallback(
 //     (recipients) => {
 //       if (!recipients || recipients.length === 0) return "None";
@@ -1325,7 +1516,7 @@
 //     },
 //     [fieldOptions]
 //   );
-
+  
 //   const formatTargetEntityForDisplay = useCallback(
 //     (targetEntity) => {
 //       if (!targetEntity) return "None";
@@ -1345,7 +1536,7 @@
 //     },
 //     [fieldOptions]
 //   );
-
+  
 //   const formatRecurrenceDetails = useCallback(
 //     (data) => {
 //       if (!data.frequency) return "Not set";
@@ -1432,7 +1623,7 @@
 //     },
 //     [MONTHS, WEEK_OPTIONS, weekdays, mapBackendDayToUiIndex]
 //   );
-
+  
 //   const columns: GridColDef[] = [
 //     {
 //       field: "frequency",
@@ -1517,7 +1708,7 @@
 //       ),
 //     },
 //   ];
-
+  
 //   return (
 //     <Box sx={{ padding: STYLE_GUIDE.SPACING.s4 }}>
 //       <LocalizationProvider dateAdapter={AdapterDayjs}>
@@ -1537,12 +1728,22 @@
 //               size="small"
 //               type="date"
 //               value={startDate}
-//               onChange={(e) => setStartDate(e.target.value)}
+//               onChange={(e) => {
+//                 setStartDate(e.target.value);
+//                 if (errors.startDate) {
+//                   setErrors(prev => ({...prev, startDate: ""}));
+//                 }
+//               }}
 //               sx={styles.textField}
 //               variant="outlined"
 //               aria-label="Select start date"
+//               error={!!errors.startDate}
 //             />
+//             {errors.startDate && (
+//               <FormHelperText error>{errors.startDate}</FormHelperText>
+//             )}
 //           </FormControl>
+          
 //           <FormControl>
 //             <FormLabel
 //               sx={{
@@ -1558,11 +1759,17 @@
 //               size="small"
 //               aria-placeholder="select"
 //               value={repeatType}
-//               onChange={(e) => setRepeatType(e.target.value)}
+//               onChange={(e) => {
+//                 setRepeatType(e.target.value);
+//                 if (errors.frequency) {
+//                   setErrors(prev => ({...prev, frequency: ""}));
+//                 }
+//               }}
 //               sx={styles.select}
 //               variant="outlined"
 //               displayEmpty
 //               aria-label="Select repeat frequency"
+//               error={!!errors.frequency}
 //             >
 //               <MenuItem value="" disabled>
 //                 Select Frequency
@@ -1573,7 +1780,11 @@
 //                 </MenuItem>
 //               ))}
 //             </Select>
+//             {errors.frequency && (
+//               <FormHelperText error>{errors.frequency}</FormHelperText>
+//             )}
 //           </FormControl>
+          
 //           <FormControl>
 //             <FormLabel
 //               sx={{
@@ -1612,6 +1823,7 @@
 //           </FormControl>
 //         </Box>
 //       </LocalizationProvider>
+      
 //       <Box sx={{ marginBottom: STYLE_GUIDE.SPACING.s6 }}>
 //         {repeatType === "Yearly" && (
 //           <Box>
@@ -1677,13 +1889,16 @@
 //                       option.id === value.id
 //                     }
 //                     value={DAYS.filter((d) => yearlyDays.includes(d.id))}
-//                     onChange={(event, newValue) =>
+//                     onChange={(event, newValue) => {
 //                       setYearlyDays(
 //                         newValue.length > 3
 //                           ? newValue.slice(0, 3).map((v) => v.id)
 //                           : newValue.map((v) => v.id)
-//                       )
-//                     }
+//                       );
+//                       if (errors.yearlyDays) {
+//                         setErrors(prev => ({...prev, yearlyDays: ""}));
+//                       }
+//                     }}
 //                     disabled={yearlyType !== "on"}
 //                     renderInput={(params) => (
 //                       <TextField
@@ -1697,6 +1912,7 @@
 //                   />
 //                 </Box>
 //               </RadioGroup>
+              
 //               <RadioGroup
 //                 row
 //                 name="yearlyType"
@@ -1732,13 +1948,16 @@
 //                     value={WEEK_OPTIONS.filter((w) =>
 //                       yearlyWeeks.includes(w.id)
 //                     )}
-//                     onChange={(event, newValue) =>
+//                     onChange={(event, newValue) => {
 //                       setYearlyWeeks(
 //                         newValue.length > 3
 //                           ? newValue.slice(0, 3).map((v) => v.id)
 //                           : newValue.map((v) => v.id)
-//                       )
-//                     }
+//                       );
+//                       if (errors.yearlyDays) {
+//                         setErrors(prev => ({...prev, yearlyDays: ""}));
+//                       }
+//                     }}
 //                     disabled={yearlyType !== "onthe"}
 //                     renderInput={(params) => (
 //                       <TextField
@@ -1762,13 +1981,16 @@
 //                     value={weekdays.filter((d) =>
 //                       yearlyWeekDays.includes(d.id)
 //                     )}
-//                     onChange={(event, newValue) =>
+//                     onChange={(event, newValue) => {
 //                       setYearlyWeekDays(
 //                         newValue.length > 3
 //                           ? newValue.slice(0, 3).map((v) => v.id)
 //                           : newValue.map((v) => v.id)
-//                       )
-//                     }
+//                       );
+//                       if (errors.yearlyDays) {
+//                         setErrors(prev => ({...prev, yearlyDays: ""}));
+//                       }
+//                     }}
 //                     disabled={yearlyType !== "onthe"}
 //                     renderInput={(params) => (
 //                       <TextField
@@ -1793,13 +2015,16 @@
 //                     value={MONTHS.filter((m) =>
 //                       yearlyWeekMonths.includes(m.id)
 //                     )}
-//                     onChange={(event, newValue) =>
+//                     onChange={(event, newValue) => {
 //                       setYearlyWeekMonths(
 //                         newValue.length > 3
 //                           ? newValue.slice(0, 3).map((v) => v.id)
 //                           : newValue.map((v) => v.id)
-//                       )
-//                     }
+//                       );
+//                       if (errors.yearlyDays) {
+//                         setErrors(prev => ({...prev, yearlyDays: ""}));
+//                       }
+//                     }}
 //                     disabled={yearlyType !== "onthe"}
 //                     renderInput={(params) => (
 //                       <TextField
@@ -1814,8 +2039,15 @@
 //                 </Box>
 //               </RadioGroup>
 //             </FormControl>
+            
+//             {errors.yearlyDays && (
+//               <FormHelperText error sx={{mt: 1}}>
+//                 {errors.yearlyDays}
+//               </FormHelperText>
+//             )}
 //           </Box>
 //         )}
+        
 //         {repeatType === "Monthly" && (
 //           <Box>
 //             <FormControl component="fieldset">
@@ -1830,6 +2062,7 @@
 //               >
 //                 Monthly Recurrence
 //               </FormLabel>
+              
 //               <RadioGroup
 //                 row
 //                 name="monthlyType"
@@ -1863,9 +2096,12 @@
 //                       option.id === value.id
 //                     }
 //                     value={DAYS.filter((day) => monthlyDays.includes(day.id))}
-//                     onChange={(event, newValue) =>
-//                       setMonthlyDays(newValue.map((v) => v.id))
-//                     }
+//                     onChange={(event, newValue) => {
+//                       setMonthlyDays(newValue.map((v) => v.id));
+//                       if (errors.monthlyDays) {
+//                         setErrors(prev => ({...prev, monthlyDays: ""}));
+//                       }
+//                     }}
 //                     disabled={monthlyType !== "on"}
 //                     renderInput={(params) => (
 //                       <TextField
@@ -1879,6 +2115,7 @@
 //                   />
 //                 </Box>
 //               </RadioGroup>
+              
 //               <RadioGroup
 //                 row
 //                 name="monthlyType"
@@ -1914,9 +2151,12 @@
 //                     value={WEEK_OPTIONS.filter((week) =>
 //                       monthlyWeeks.includes(week.id)
 //                     )}
-//                     onChange={(event, newValue) =>
-//                       setMonthlyWeeks(newValue.map((v) => v.id))
-//                     }
+//                     onChange={(event, newValue) => {
+//                       setMonthlyWeeks(newValue.map((v) => v.id));
+//                       if (errors.monthlyDays) {
+//                         setErrors(prev => ({...prev, monthlyDays: ""}));
+//                       }
+//                     }}
 //                     disabled={monthlyType !== "onthe"}
 //                     renderInput={(params) => (
 //                       <TextField
@@ -1940,9 +2180,12 @@
 //                     value={weekdays.filter((day) =>
 //                       monthlyWeekDays.includes(day.id)
 //                     )}
-//                     onChange={(event, newValue) =>
-//                       setMonthlyWeekDays(newValue.map((v) => v.id))
-//                     }
+//                     onChange={(event, newValue) => {
+//                       setMonthlyWeekDays(newValue.map((v) => v.id));
+//                       if (errors.monthlyDays) {
+//                         setErrors(prev => ({...prev, monthlyDays: ""}));
+//                       }
+//                     }}
 //                     disabled={monthlyType !== "onthe"}
 //                     renderInput={(params) => (
 //                       <TextField
@@ -1957,14 +2200,21 @@
 //                 </Box>
 //               </RadioGroup>
 //             </FormControl>
+            
+//             {errors.monthlyDays && (
+//               <FormHelperText error sx={{mt: 1}}>
+//                 {errors.monthlyDays}
+//               </FormHelperText>
+//             )}
 //           </Box>
 //         )}
+        
 //         {repeatType === "Weekly" && (
 //           <Box>
 //             <FormControl component="fieldset">
 //               <FormLabel
 //                 sx={{
-//                   marginBottom: STYLE_GUIDE.Spacing.s2,
+//                   marginBottom: STYLE_GUIDE.SPACING.s2,
 //                   fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.medium,
 //                   color: STYLE_GUIDE.COLORS.textDarkGray,
 //                   fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
@@ -1989,10 +2239,17 @@
 //                   />
 //                 ))}
 //               </Box>
+              
+//               {errors.weeklyDays && (
+//                 <FormHelperText error sx={{mt: 1}}>
+//                   {errors.weeklyDays}
+//                 </FormHelperText>
+//               )}
 //             </FormControl>
 //           </Box>
 //         )}
 //       </Box>
+      
 //       <Box sx={styles.formRow}>
 //         {repeatType !== "Daily" && (
 //           <>
@@ -2011,15 +2268,24 @@
 //                 size="small"
 //                 type="number"
 //                 value={interval}
-//                 onChange={(e) =>
-//                   setInterval(Math.max(1, parseInt(e.target.value) || 1))
-//                 }
+//                 onChange={(e) => {
+//                   const value = Math.max(1, parseInt(e.target.value) || 1);
+//                   setInterval(value);
+//                   if (errors.interval) {
+//                     setErrors(prev => ({...prev, interval: ""}));
+//                   }
+//                 }}
 //                 inputProps={{ min: 1 }}
 //                 sx={{ ...styles.textField, width: "80px" }}
 //                 variant="outlined"
 //                 aria-label="Set repeat interval"
+//                 error={!!errors.interval}
 //               />
+//               {errors.interval && (
+//                 <FormHelperText error>{errors.interval}</FormHelperText>
+//               )}
 //             </FormControl>
+            
 //             <Typography
 //               component="span"
 //               sx={{
@@ -2032,14 +2298,15 @@
 //               {repeatType === "Weekly"
 //                 ? "week(s)"
 //                 : repeatType === "Monthly"
-//                   ? "month(s)"
-//                   : repeatType === "Yearly"
-//                     ? "year(s)"
-//                     : ""}{" "}
+//                 ? "month(s)"
+//                 : repeatType === "Yearly"
+//                 ? "year(s)"
+//                 : ""}{" "}
 //               {interval > 1 ? "s" : ""}
 //             </Typography>
 //           </>
 //         )}
+        
 //         <FormControl>
 //           <FormLabel
 //             sx={{
@@ -2070,6 +2337,7 @@
 //             ))}
 //           </Select>
 //         </FormControl>
+        
 //         {endType === "After" && (
 //           <FormControl>
 //             <FormLabel
@@ -2096,6 +2364,7 @@
 //             />
 //           </FormControl>
 //         )}
+        
 //         {endType === "On date" && (
 //           <FormControl>
 //             <FormLabel
@@ -2112,14 +2381,24 @@
 //               size="small"
 //               type="date"
 //               value={endDate}
-//               onChange={(e) => setEndDate(e.target.value)}
+//               onChange={(e) => {
+//                 setEndDate(e.target.value);
+//                 if (errors.endDate) {
+//                   setErrors(prev => ({...prev, endDate: ""}));
+//                 }
+//               }}
 //               sx={{ ...styles.textField, width: "150px" }}
 //               variant="outlined"
 //               aria-label="Select end date"
+//               error={!!errors.endDate}
 //             />
+//             {errors.endDate && (
+//               <FormHelperText error>{errors.endDate}</FormHelperText>
+//             )}
 //           </FormControl>
 //         )}
 //       </Box>
+      
 //       <Box
 //         component="hr"
 //         sx={{
@@ -2128,6 +2407,7 @@
 //           borderTop: `1px solid ${STYLE_GUIDE.COLORS.divider}`,
 //         }}
 //       />
+      
 //       <Box
 //         sx={{
 //           display: "flex",
@@ -2167,13 +2447,14 @@
 //                 <TextField
 //                   {...params}
 //                   variant="outlined"
-//                   label="Target Entity"
+//                   label="Sent To (Group)"
 //                   placeholder="Type or select"
 //                 />
 //               )}
 //             />
 //           </FormControl>
 //         </Box>
+        
 //         <Box sx={{ flex: 0.6, minWidth: "120px" }}>
 //           <FormControl fullWidth size="small">
 //             <Autocomplete
@@ -2221,6 +2502,7 @@
 //             />
 //           </FormControl>
 //         </Box>
+        
 //         <Box sx={{ flex: 0.6, minWidth: "120px" }}>
 //           <FormControl fullWidth size="small">
 //             <Autocomplete
@@ -2268,16 +2550,22 @@
 //             />
 //           </FormControl>
 //         </Box>
-
-//       {/* Template Section */}
+        
+//         {/* Template Section */}
 //         <Box sx={{ flex: 0.6, minWidth: "120px" }}>
 //           <FormControl size="small" fullWidth>
 //             <InputLabel>Template</InputLabel>
 //             <Select
 //               value={template}
-//               onChange={(e) => setTemplate(e.target.value)}
+//               onChange={(e) => {
+//                 setTemplate(e.target.value);
+//                 if (errors.template) {
+//                   setErrors(prev => ({...prev, template: ""}));
+//                 }
+//               }}
 //               label="Template"
 //               aria-label="Select template"
+//               error={!!errors.template}
 //             >
 //               <MenuItem value="">Select Template...</MenuItem>
 //               {templateList.data?.data?.map((option) => (
@@ -2286,21 +2574,31 @@
 //                 </MenuItem>
 //               ))}
 //             </Select>
+//             {errors.template && (
+//               <FormHelperText error>{errors.template}</FormHelperText>
+//             )}
 //           </FormControl>
 //         </Box>
+        
 //         {/* Notification Method Section */}
 //         <Box sx={{ flex: 0.5, minWidth: "120px" }}>
 //           <FormControl size="small" fullWidth>
 //             <InputLabel>Method</InputLabel>
 //             <Select
 //               value={method}
-//               onChange={(e) => setMethod(e.target.value)}
+//               onChange={(e) => {
+//                 setMethod(e.target.value);
+//                 if (errors.method) {
+//                   setErrors(prev => ({...prev, method: ""}));
+//                 }
+//               }}
 //               label="Method"
 //               renderValue={(selected) =>
 //                 mediumList.data?.data?.find((medium) => medium._id === selected)
 //                   ?.medium || selected
 //               }
 //               aria-label="Select notification method"
+//               error={!!errors.method}
 //             >
 //               <MenuItem value="">Select Method...</MenuItem>
 //               {mediumList.data?.data?.map((option) => (
@@ -2309,8 +2607,12 @@
 //                 </MenuItem>
 //               ))}
 //             </Select>
+//             {errors.method && (
+//               <FormHelperText error>{errors.method}</FormHelperText>
+//             )}
 //           </FormControl>
 //         </Box>
+        
 //         {/* Acknowledge Checkbox */}
 //         <Box
 //           sx={{
@@ -2335,6 +2637,7 @@
 //             }}
 //           />
 //         </Box>
+        
 //         {/* Attached Checkbox */}
 //         <Box
 //           sx={{
@@ -2360,6 +2663,7 @@
 //           />
 //         </Box>
 //       </Box>
+      
 //       {/* Action Buttons */}
 //       <Box
 //         sx={{
@@ -2393,6 +2697,7 @@
 //           {editMode ? "Update Reminder" : "Add Reminder"}
 //         </Button>
 //       </Box>
+      
 //       <Box
 //         component="hr"
 //         sx={{
@@ -2401,6 +2706,7 @@
 //           borderTop: `1px solid ${STYLE_GUIDE.COLORS.divider}`,
 //         }}
 //       />
+      
 //       {/* Reminders List - Data Grid */}
 //       {frequencyListData?.data?.length > 0 && (
 //         <Box sx={styles.reminderContainer}>
@@ -2428,6 +2734,7 @@
 //           </Box>
 //         </Box>
 //       )}
+      
 //       {/* Delete Confirmation Dialog */}
 //       <Dialog
 //         open={openDialog}
@@ -2455,146 +2762,19 @@
 //             Yes
 //           </Button>
 //         </DialogActions>
+        
 //       </Dialog>
-//       {/* View Reminder Dialog */}
-//       <Modal
+      
+//       {/* View Reminder Dialog - Using the new component */}
+//       <ViewReminderDialog
 //         open={openViewDialog}
 //         onClose={handleCloseViewDialog}
-//         aria-labelledby="reminder-details-title"
-//         sx={{
-//           display: "flex",
-//           alignItems: "flex-start",
-//           justifyContent: "center",
-//           mt: 4,
-//         }}
-//       >
-//         <Box
-//           sx={{
-//             backgroundColor: "background.paper",
-//             borderRadius: "8px",
-//             maxWidth: "800px",
-//             width: "100%",
-//             boxShadow: 24,
-//             p: 3,
-//             outline: "none",
-//           }}
-//         >
-//           <Typography id="reminder-details-title" variant="h6" mb={2}>
-//             Reminder Details
-//           </Typography>
-//           {viewingReminderData ? (
-//             <div style={{ display: "flex", flexWrap: "wrap", gap: "16px" }}>
-//               {[
-//                 {
-//                   label: "Frequency",
-//                   value: formatRecurrenceDetails(viewingReminderData),
-//                 },
-//                 {
-//                   label: "Start Date",
-//                   value: viewingReminderData?.schedulerStartDate
-//                     ? new Date(
-//                         viewingReminderData.schedulerStartDate
-//                       ).toLocaleDateString()
-//                     : "Not set",
-//                 },
-//                 viewingReminderData.schedulerEndDate && {
-//                   label: "End Date",
-//                   value: new Date(
-//                     viewingReminderData.schedulerEndDate
-//                   ).toLocaleDateString(),
-//                 },
-//                 viewingReminderData.maxOccurrences && {
-//                   label: "Max Occurrences",
-//                   value: viewingReminderData.maxOccurrences,
-//                 },
-//                 viewingReminderData.triggerTime && {
-//                   label: "Trigger Time",
-//                   value: viewingReminderData.triggerTime,
-//                 },
-//                 {
-//                   label: "Target Entity",
-//                   value: formatTargetEntityForDisplay(
-//                     viewingReminderData.targetEntity
-//                   ),
-//                 },
-//                 {
-//                   label: "Acknowledge Required",
-//                   value: viewingReminderData.acknowledgeRequired ? "Yes" : "No",
-//                 },
-//                 {
-//                   label: "Attachment Required",
-//                   value: viewingReminderData.attachmentRequired ? "Yes" : "No",
-//                 },
-//                 {
-//                   label: "Template",
-//                   value: viewingReminderData.templateId?.name || "Not set",
-//                 },
-//                 {
-//                   label: "Notification Method",
-//                   value: viewingReminderData.medium?.medium || "Not set",
-//                 },
-//                 {
-//                   label: "TO Recipients",
-//                   value: formatRecipientsForDisplay(
-//                     viewingReminderData.recipients_to
-//                   ),
-//                 },
-//                 {
-//                   label: "CC Recipients",
-//                   value: formatRecipientsForDisplay(
-//                     viewingReminderData.recipients_cc
-//                   ),
-//                 },
-//               ]
-//                 .filter(Boolean)
-//                 .map((item, idx) => (
-//                   <div
-//                     key={idx}
-//                     style={{
-//                       flex: "1 1 calc(50% - 16px)", // Mimics Grid's xs={12} sm={6}
-//                       minWidth: "200px", // Ensures responsiveness
-//                     }}
-//                   >
-//                     <label
-//                       style={{
-//                         display: "block",
-//                         marginBottom: "4px",
-//                         fontSize: "14px",
-//                         color: "#666",
-//                         fontWeight: 500,
-//                       }}
-//                     >
-//                       {item.label}
-//                     </label>
-//                     <div
-//                       style={{
-//                         padding: "14px 12px",
-//                         borderRadius: "8px",
-//                         backgroundColor: "#ebe8e8ff",
-//                         textTransform: "uppercase",
-//                         color: "#3f3e3eff",
-//                       }}
-//                     >
-//                       {item.value || "-"}
-//                     </div>
-//                   </div>
-//                 ))}
-//             </div>
-//           ) : (
-//             <div>Loading reminder details...</div>
-//           )}
-//           <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 3 }}>
-//             <Button
-//               variant="outlined"
-//               color="primary"
-//               onClick={handleCloseViewDialog}
-//               aria-label="Cancel editing reminder"
-//             >
-//               Close
-//             </Button>
-//           </Box>
-//         </Box>
-//       </Modal>
+//         viewingReminderData={viewingReminderData}
+//         formatRecurrenceDetails={formatRecurrenceDetails}
+//         formatTargetEntityForDisplay={formatTargetEntityForDisplay}
+//         formatRecipientsForDisplay={formatRecipientsForDisplay}
+//       />
+      
 //       {/* Snackbar for notifications */}
 //       {snackbar.open && (
 //         <Alert
@@ -2608,14 +2788,14 @@
 //     </Box>
 //   );
 // };
-// // Example Components
+
 // const SimpleRender = ({ fieldOptions, notificationTypeId }) => (
 //   <RRuleGenerator
 //     fieldOptions={fieldOptions}
 //     notificationTypeId={notificationTypeId}
 //   />
 // );
-// // App Component
+
 // const Frequency = ({ fieldOptions, notificationTypeId }) => {
 //   return (
 //     <Box>
@@ -2626,13 +2806,9 @@
 //     </Box>
 //   );
 // };
+
 // export default Frequency;
 
-
-
-
-
-//correct version 
 
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import {
@@ -2675,8 +2851,7 @@ import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import dayjs from "dayjs";
 import { TimePicker } from "@mui/x-date-pickers/TimePicker";
-import ViewReminderDialog from "./ViewReminderDialog"; // Import the new component
-
+import ViewReminderDialog from "./ViewReminderDialog"; 
 // Constants remain the same
 const MONTHS = [
   { id: "Jan", label: "January" },
@@ -2808,7 +2983,6 @@ const styles = {
     marginTop: STYLE_GUIDE.SPACING.s1,
   },
 };
-
 // RRuleGenerator Component
 const RRuleGenerator = ({
   onChange,
@@ -2869,20 +3043,18 @@ const RRuleGenerator = ({
         Saturday: 6,
       };
       
-  // Helper function to map backend day index to UI weekday index
   const mapBackendDayToUiIndex = (backendDay) => {
     if (defaultConfig.weekStartsOnSunday) {
       return backendDay;
     } else {
       if (backendDay === 0) {
-        return 6; // Sunday
+        return 6; 
       } else {
         return backendDay - 1;
       }
     }
   };
   
-  // State
   const [startDate, setStartDate] = useState("");
   const [repeatType, setRepeatType] = useState("");
   const [yearlyType, setYearlyType] = useState(
@@ -2913,6 +3085,8 @@ const RRuleGenerator = ({
   const [method, setMethod] = useState("");
   const [toRecipients, setToRecipients] = useState([]);
   const [ccRecipients, setCcRecipients] = useState([]);
+    const [acknowledgeTo, setAcknowledgeTo] = useState([]);
+
   const [targetEntity, setTargetEntity] = useState(null);
   const [openDialog, setOpenDialog] = useState(false);
   const [selectedReminderId, setSelectedReminderId] = useState(null);
@@ -2927,7 +3101,6 @@ const RRuleGenerator = ({
     severity: "info",
   });
   
-  // Form validation errors
   const [errors, setErrors] = useState({
     frequency: "",
     startDate: "",
@@ -2940,12 +3113,10 @@ const RRuleGenerator = ({
     method: "",
   });
   
-  // Refs
   const isMounted = useRef(false);
   const isInitialMount = useRef(true);
   const previousRepeatType = useRef(repeatType);
   
-  // Reset form function
   const resetForm = useCallback(() => {
     setStartDate("");
     setRepeatType("");
@@ -2971,9 +3142,9 @@ const RRuleGenerator = ({
     setMethod("");
     setToRecipients([]);
     setCcRecipients([]);
+    setAcknowledgeTo([]);
     setTargetEntity(null);
     
-    // Reset errors
     setErrors({
       frequency: "",
       startDate: "",
@@ -3088,7 +3259,6 @@ const RRuleGenerator = ({
     method,
   ]);
   
-  // API Hooks
   const templateList = useGet(["templateList"], `${GET.TEMPLATE_LIST}`, true);
   const mediumList = useGet(["mediumList"], `${GET.MEDIUM_LIST}`, true);
   const createFrequency = usePost(["createFrequency"]);
@@ -3161,212 +3331,8 @@ const RRuleGenerator = ({
       setViewingReminderData(viewReminderData.data);
     }
   }, [viewReminderData, openViewDialog]);
+ 
   
-  // useEffect(() => {
-  //   if (!reminderData?.data || !editMode) {
-  //     return;
-  //   }
-  //   console.log("Loading edit data:", reminderData.data);
-  //   const data = reminderData.data;
-  //   setStartDate(
-  //     data.schedulerStartDate
-  //       ? new Date(data.schedulerStartDate).toISOString().split("T")[0]
-  //       : ""
-  //   );
-  //   setRepeatType(
-  //     data.frequency
-  //       ? data.frequency.charAt(0).toUpperCase() + data.frequency.slice(1)
-  //       : ""
-  //   );
-  //   setInterval(data.interval || 1);
-  //   setAcknowledgeChecked(data.acknowledgeRequired || false);
-  //   setAttachedChecked(data.attachmentRequired || false);
-  //   setTime(data.triggerTime || "");
-  //   setTemplate(data.templateId?._id || "");
-  //   setMethod(data.medium?._id || "");
-  //   if (data.frequency === "weekly" && data.daysOfWeek?.length > 0) {
-  //     const dayNames = [
-  //       "Sunday",
-  //       "Monday",
-  //       "Tuesday",
-  //       "Wednesday",
-  //       "Thursday",
-  //       "Friday",
-  //       "Saturday",
-  //     ];
-  //     const mappedDays = data.daysOfWeek
-  //       .map((backendIndex) => dayNames[backendIndex])
-  //       .filter((dayName) => dayName);
-  //     console.log("Setting weekly days:", mappedDays);
-  //     setWeeklyDays(mappedDays);
-  //   } else {
-  //     setWeeklyDays([]);
-  //   }
-  //   if (data.frequency === "monthly") {
-  //     if (data.dayOfMonth && data.dayOfMonth.length > 0) {
-  //       setMonthlyType("on");
-  //       setMonthlyDays(data.dayOfMonth.map((d) => d.toString()));
-  //       setMonthlyWeeks([]);
-  //       setMonthlyWeekDays([]);
-  //     } else if (data.weekOfMonth && data.weekOfMonth.length > 0) {
-  //       setMonthlyType("onthe");
-  //       setMonthlyWeeks(
-  //         data.weekOfMonth.map((w) =>
-  //           w === -1 ? "Last" : WEEK_OPTIONS[w - 1]?.id || "First"
-  //         )
-  //       );
-  //       setMonthlyWeekDays(
-  //         data.daysOfWeek?.length > 0
-  //           ? data.daysOfWeek
-  //               .map((d) => {
-  //                 const uiIndex = mapBackendDayToUiIndex(d);
-  //                 return weekdays[uiIndex]?.id;
-  //               })
-  //               .filter((d) => d)
-  //           : []
-  //       );
-  //       setMonthlyDays([]);
-  //     }
-  //   }
-  //   if (data.frequency === "yearly") {
-  //     if (data.dayOfMonth?.length > 0) {
-  //       setYearlyType("on");
-  //       setYearlyMonths(
-  //         data.monthOfYear?.length > 0
-  //           ? data.monthOfYear.map((m) => MONTHS[m - 1]?.id || "Jan")
-  //           : []
-  //       );
-  //       setYearlyDays(
-  //         data.dayOfMonth?.length > 0
-  //           ? data.dayOfMonth.map((d) => d.toString())
-  //           : []
-  //       );
-  //     } else if (data.weekOfMonth?.length > 0) {
-  //       setYearlyType("onthe");
-  //       setYearlyWeeks(
-  //         data.weekOfMonth?.length > 0
-  //           ? data.weekOfMonth.map((w) =>
-  //               w === -1 ? "Last" : WEEK_OPTIONS[w - 1]?.id || "First"
-  //             )
-  //           : []
-  //       );
-  //       setYearlyWeekDays(
-  //         data.daysOfWeek?.length > 0
-  //           ? data.daysOfWeek
-  //               .map((d) => {
-  //                 const uiIndex = mapBackendDayToUiIndex(d);
-  //                 return weekdays[uiIndex]?.id;
-  //               })
-  //               .filter((d) => d)
-  //           : []
-  //       );
-  //       setYearlyWeekMonths(
-  //         data.monthOfYear?.length > 0
-  //           ? data.monthOfYear.map((m) => MONTHS[m - 1]?.id || "Jan")
-  //           : []
-  //       );
-  //     }
-  //   }
-  //   const toRecipients = [];
-  //   const ccRecipients = [];
-  //   if (data.recipients_to && Array.isArray(data.recipients_to)) {
-  //     data.recipients_to.forEach((recipient) => {
-  //       if (
-  //         recipient.customEmails &&
-  //         Array.isArray(recipient.customEmails) &&
-  //         recipient.customEmails.length > 0
-  //       ) {
-  //         recipient.customEmails.forEach((email) => {
-  //           toRecipients.push({
-  //             value: email,
-  //             label: email,
-  //             isCustom: true,
-  //           });
-  //         });
-  //       } else if (recipient.attributeId) {
-  //         const fieldOption = fieldOptions.find(
-  //           (opt) => opt.attributeId === recipient.attributeId
-  //         );
-  //         if (fieldOption) {
-  //           toRecipients.push(fieldOption);
-  //         } else {
-  //           toRecipients.push({
-  //             value: recipient.attributeId,
-  //             label: recipient.attributeId,
-  //           });
-  //         }
-  //       }
-  //     });
-  //   }
-  //   if (data.recipients_cc && Array.isArray(data.recipients_cc)) {
-  //     data.recipients_cc.forEach((recipient) => {
-  //       if (
-  //         recipient.customEmails &&
-  //         Array.isArray(recipient.customEmails) &&
-  //         recipient.customEmails.length > 0
-  //       ) {
-  //         recipient.customEmails.forEach((email) => {
-  //           ccRecipients.push({
-  //             value: email,
-  //             label: email,
-  //             isCustom: true,
-  //           });
-  //         });
-  //       } else if (recipient.attributeId) {
-  //         const fieldOption = fieldOptions.find(
-  //           (opt) => opt.attributeId === recipient.attributeId
-  //         );
-  //         if (fieldOption) {
-  //           ccRecipients.push(fieldOption);
-  //         } else {
-  //           ccRecipients.push({
-  //             value: recipient.attributeId,
-  //             label: recipient.attributeId,
-  //           });
-  //         }
-  //       }
-  //     });
-  //   }
-  //   setToRecipients(toRecipients);
-  //   setCcRecipients(ccRecipients);
-  //   if (data.targetEntity) {
-  //     if (data.targetEntity.attributeId) {
-  //       const fieldOption = fieldOptions.find(
-  //         (opt) => opt.attributeId === data.targetEntity.attributeId
-  //       );
-  //       if (fieldOption) {
-  //         setTargetEntity(fieldOption);
-  //       } else {
-  //         setTargetEntity({
-  //           value: data.targetEntity.attributeId,
-  //           label: data.targetEntity.attributeId,
-  //         });
-  //       }
-  //     } else if (
-  //       data.targetEntity.customEmails &&
-  //       Array.isArray(data.targetEntity.customEmails) &&
-  //       data.targetEntity.customEmails.length > 0
-  //     ) {
-  //       setTargetEntity(data.targetEntity.customEmails[0]);
-  //     }
-  //   } else {
-  //     setTargetEntity(null);
-  //   }
-  //   if (data.maxOccurrences) {
-  //     setEndType("After");
-  //     setEndAfter(parseInt(data.maxOccurrences) || 1);
-  //   } else if (data.schedulerEndDate) {
-  //     setEndType("On date");
-  //     setEndDate(
-  //       new Date(data.schedulerEndDate).toISOString().split("T")[0] || ""
-  //     );
-  //   } else {
-  //     setEndType("Never");
-  //   }
-  //   console.log("Edit data loaded successfully");
-  // }, [reminderData?.data, editMode, fieldOptions]);
-  
-  // New useEffect for yearly type changes
   useEffect(() => {
     if (!reminderData?.data || !editMode) {
       return;
@@ -3402,7 +3368,6 @@ const RRuleGenerator = ({
       const mappedDays = data.daysOfWeek
         .map((backendIndex) => dayNames[backendIndex])
         .filter((dayName) => dayName);
-      console.log("Setting weekly days:", mappedDays);
       setWeeklyDays(mappedDays);
     } else {
       setWeeklyDays([]);
@@ -3472,7 +3437,6 @@ const RRuleGenerator = ({
         );
       }
     }
-
     // Helper function to compare arrays
     const arraysEqual = (a, b) => {
       if (a === b) return true;
@@ -3488,9 +3452,48 @@ const RRuleGenerator = ({
       }
       return true;
     };
-
     const toRecipients = [];
     const ccRecipients = [];
+    const acknowledgeTo = [];
+    if (data.acknowledge_to && Array.isArray(data.acknowledge_to)) {
+      data.acknowledge_to.forEach((acknowledge) => {
+        if (
+          acknowledge.customEmails &&
+          Array.isArray(acknowledge.customEmails) &&
+          acknowledge.customEmails.length > 0
+        ) {
+          acknowledge.customEmails.forEach((email) => {
+            acknowledgeTo.push({
+              value: email,
+              label: email,
+              isCustom: true,
+            });
+          });
+        } else if (acknowledge.attributeId) {
+          const fieldOption = fieldOptions.find(
+            (opt) => 
+              opt.attributeId === acknowledge.attributeId &&
+              arraysEqual(opt.refAttributeId || [], acknowledge.refAttributeId || [])
+          );
+          
+          if (fieldOption) {
+            acknowledgeTo.push(fieldOption);
+          } else {
+            const fallbackOption = fieldOptions.find(
+              (opt) => opt.attributeId === acknowledge.attributeId
+            );
+            if (fallbackOption) {
+              acknowledgeTo.push(fallbackOption);
+            } else {
+              acknowledgeTo.push({
+                value: acknowledge.attributeId,
+                label: acknowledge.attributeId,
+              });
+            }
+          }
+        }
+      });
+    }
     if (data.recipients_to && Array.isArray(data.recipients_to)) {
       data.recipients_to.forEach((recipient) => {
         if (
@@ -3506,7 +3509,6 @@ const RRuleGenerator = ({
             });
           });
         } else if (recipient.attributeId) {
-          // First try to match by both attributeId and refAttributeId
           const fieldOption = fieldOptions.find(
             (opt) => 
               opt.attributeId === recipient.attributeId &&
@@ -3516,7 +3518,6 @@ const RRuleGenerator = ({
           if (fieldOption) {
             toRecipients.push(fieldOption);
           } else {
-            // Fallback to matching by attributeId only
             const fallbackOption = fieldOptions.find(
               (opt) => opt.attributeId === recipient.attributeId
             );
@@ -3547,7 +3548,6 @@ const RRuleGenerator = ({
             });
           });
         } else if (recipient.attributeId) {
-          // First try to match by both attributeId and refAttributeId
           const fieldOption = fieldOptions.find(
             (opt) => 
               opt.attributeId === recipient.attributeId &&
@@ -3557,7 +3557,6 @@ const RRuleGenerator = ({
           if (fieldOption) {
             ccRecipients.push(fieldOption);
           } else {
-            // Fallback to matching by attributeId only
             const fallbackOption = fieldOptions.find(
               (opt) => opt.attributeId === recipient.attributeId
             );
@@ -3575,9 +3574,9 @@ const RRuleGenerator = ({
     }
     setToRecipients(toRecipients);
     setCcRecipients(ccRecipients);
+    setAcknowledgeTo(acknowledgeTo);
     if (data.targetEntity) {
       if (data.targetEntity.attributeId) {
-        // First try to match by both attributeId and refAttributeId
         const fieldOption = fieldOptions.find(
           (opt) => 
             opt.attributeId === data.targetEntity.attributeId &&
@@ -3587,7 +3586,6 @@ const RRuleGenerator = ({
         if (fieldOption) {
           setTargetEntity(fieldOption);
         } else {
-          // Fallback to matching by attributeId only
           const fallbackOption = fieldOptions.find(
             (opt) => opt.attributeId === data.targetEntity.attributeId
           );
@@ -3621,7 +3619,6 @@ const RRuleGenerator = ({
     } else {
       setEndType("Never");
     }
-    console.log("Edit data loaded successfully");
   }, [reminderData?.data, editMode, fieldOptions]);
   useEffect(() => {
     if (repeatType === "Yearly" && !isInitialMount.current) {
@@ -3636,7 +3633,6 @@ const RRuleGenerator = ({
     }
   }, [yearlyType, repeatType]);
   
-  // New useEffect for monthly type changes
   useEffect(() => {
     if (repeatType === "Monthly" && !isInitialMount.current) {
       if (monthlyType === "on") {
@@ -3702,7 +3698,6 @@ const RRuleGenerator = ({
     setViewingReminderData(null);
   }, []);
   
-  // New handlers for type changes
   const handleYearlyTypeChange = (e) => {
     const newType = e.target.value;
     setYearlyType(newType);
@@ -3780,46 +3775,9 @@ const RRuleGenerator = ({
       }
     }
     
-    // const formatRecipients = (recipients) => {
-    //   console.log("Formatting recipients:", recipients);
-    //   const result = [];
-    //   const customEmails = [];
-    //   const attributeIds = [];
-    //   recipients.forEach((recipient) => {
-    //     if (typeof recipient === "string") {
-    //       if (recipient.includes("@")) {
-    //         customEmails.push(recipient);
-    //       } else {
-    //         attributeIds.push(recipient);
-    //       }
-    //     } else {
-    //       if (recipient.label && recipient.label.includes("@")) {
-    //         customEmails.push(recipient.label);
-    //       } else {
-    //         attributeIds.push(recipient.attributeId);
-    //       }
-    //     }
-    //   });
-    //   if (customEmails.length > 0) {
-    //     result.push({ customEmails });
-    //   }
-    //   attributeIds.forEach((id) => {
-    //     result.push({ attributeId: id });
-    //   });
-    //   return result;
-    // };
-    
-    // let formattedTargetEntity = null;
-    // if (targetEntity) {
-    //   if (typeof targetEntity === "string") {
-    //     formattedTargetEntity = { customEmails: [targetEntity] };
-    //   } else {
-    //     formattedTargetEntity = { attributeId: targetEntity.attributeId };
-    //   }
-    // }
+   
     
     const formatRecipients = (recipients) => {
-  console.log("Formatting recipients:", recipients);
   const result = [];
   const customEmails = [];
   recipients.forEach((recipient) => {
@@ -3827,19 +3785,16 @@ const RRuleGenerator = ({
       if (recipient.includes("@")) {
         customEmails.push(recipient);
       } else {
-        // For string attributes, we don't have refAttributeId
         result.push({ attributeId: recipient });
       }
     } else {
       if (recipient.label && recipient.label.includes("@")) {
         customEmails.push(recipient.label);
       } else if (recipient.attributeId) {
-        // Include refAttributeId if it exists
         const recipientObj = {
           attributeId: recipient.attributeId
         };
         
-        // Add refAttributeId if it exists and is not empty
         if (recipient.refAttributeId && Array.isArray(recipient.refAttributeId) && recipient.refAttributeId.length > 0) {
           recipientObj.refAttributeId = recipient.refAttributeId;
         }
@@ -3855,18 +3810,15 @@ const RRuleGenerator = ({
   
   return result;
 };
-
 let formattedTargetEntity = null;
 if (targetEntity) {
   if (typeof targetEntity === "string") {
     formattedTargetEntity = { customEmails: [targetEntity] };
   } else if (targetEntity.attributeId) {
-    // Include refAttributeId if it exists
     formattedTargetEntity = {
       attributeId: targetEntity.attributeId
     };
     
-    // Add refAttributeId if it exists and is not empty
     if (targetEntity.refAttributeId && Array.isArray(targetEntity.refAttributeId) && targetEntity.refAttributeId.length > 0) {
       formattedTargetEntity.refAttributeId = targetEntity.refAttributeId;
     }
@@ -3887,6 +3839,7 @@ if (targetEntity) {
       attachmentRequired: attachedChecked,
       recipients_to: formatRecipients(toRecipients),
       recipients_cc: formatRecipients(ccRecipients),
+      acknowledge_to: formatRecipients(acknowledgeTo),
       medium: method,
       templateId: template,
       triggerTime: time || "",
@@ -3941,6 +3894,7 @@ if (targetEntity) {
     acknowledgeChecked,
     attachedChecked,
     ccRecipients,
+    acknowledgeTo,
     createFrequency,
     editMode,
     editingReminderId,
@@ -4606,6 +4560,22 @@ if (targetEntity) {
       ),
     },
   ];
+  
+  // Helper function to compare arrays
+  const arraysEqual = (a, b) => {
+    if (a === b) return true;
+    if (a == null || b == null) return false;
+    if (a.length !== b.length) return false;
+    
+    // Sort both arrays to compare regardless of order
+    const sortedA = [...a].sort();
+    const sortedB = [...b].sort();
+    
+    for (let i = 0; i < sortedA.length; ++i) {
+      if (sortedA[i] !== sortedB[i]) return false;
+    }
+    return true;
+  };
   
   return (
     <Box sx={{ padding: STYLE_GUIDE.SPACING.s4 }}>
@@ -5333,7 +5303,14 @@ if (targetEntity) {
                   return option === value;
                 }
                 if (typeof option !== "string" && typeof value !== "string") {
-                  return option.attributeId === value.attributeId;
+                  // Check both attributeId and refAttributeId
+                  if (option.attributeId !== value.attributeId) return false;
+                  
+                  // Check if refAttributeId arrays are equal
+                  const optionRefIds = option.refAttributeId || [];
+                  const valueRefIds = value.refAttributeId || [];
+                  
+                  return arraysEqual(optionRefIds, valueRefIds);
                 }
                 return false;
               }}
@@ -5345,7 +5322,7 @@ if (targetEntity) {
                 <TextField
                   {...params}
                   variant="outlined"
-                  label="Target Entity"
+                  label="Sent To (Group)"
                   placeholder="Type or select"
                 />
               )}
@@ -5369,7 +5346,14 @@ if (targetEntity) {
                   return option === value;
                 }
                 if (typeof option !== "string" && typeof value !== "string") {
-                  return option.attributeId === value.attributeId;
+                  // Check both attributeId and refAttributeId
+                  if (option.attributeId !== value.attributeId) return false;
+                  
+                  // Check if refAttributeId arrays are equal
+                  const optionRefIds = option.refAttributeId || [];
+                  const valueRefIds = value.refAttributeId || [];
+                  
+                  return arraysEqual(optionRefIds, valueRefIds);
                 }
                 return false;
               }}
@@ -5417,7 +5401,14 @@ if (targetEntity) {
                   return option === value;
                 }
                 if (typeof option !== "string" && typeof value !== "string") {
-                  return option.attributeId === value.attributeId;
+                  // Check both attributeId and refAttributeId
+                  if (option.attributeId !== value.attributeId) return false;
+                  
+                  // Check if refAttributeId arrays are equal
+                  const optionRefIds = option.refAttributeId || [];
+                  const valueRefIds = value.refAttributeId || [];
+                  
+                  return arraysEqual(optionRefIds, valueRefIds);
                 }
                 return false;
               }}
@@ -5520,7 +5511,7 @@ if (targetEntity) {
             alignItems: "center",
           }}
         >
-          <FormControlLabel
+          {/* <FormControlLabel
             control={
               <Checkbox
                 checked={acknowledgeChecked}
@@ -5533,7 +5524,59 @@ if (targetEntity) {
               fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
               color: STYLE_GUIDE.COLORS.textDarkGray,
             }}
-          />
+          /> */}
+           <FormControl fullWidth size="small">
+            <Autocomplete
+              multiple
+              freeSolo
+              size="small"
+              id="acknowledge-to"
+              options={fieldOptions.filter((option) => option.type === "email")}
+              getOptionLabel={(option) =>
+                typeof option === "string" ? option : option.label
+              }
+              isOptionEqualToValue={(option, value) => {
+                if (typeof option === "string" && typeof value === "string") {
+                  return option === value;
+                }
+                if (typeof option !== "string" && typeof value !== "string") {
+                  // Check both attributeId and refAttributeId
+                  if (option.attributeId !== value.attributeId) return false;
+                  
+                  // Check if refAttributeId arrays are equal
+                  const optionRefIds = option.refAttributeId || [];
+                  const valueRefIds = value.refAttributeId || [];
+                  
+                  return arraysEqual(optionRefIds, valueRefIds);
+                }
+                return false;
+              }}
+              value={acknowledgeTo}
+              onChange={(event, newValue) => {
+                setAcknowledgeTo(newValue);
+              }}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  variant="outlined"
+                  label="Acknowledge To"
+                  placeholder="Type or select"
+                />
+              )}
+              renderTags={(value, getTagProps) =>
+                value.map((option, index) => (
+                  <Chip
+                    key={
+                      typeof option === "string" ? option : option.attributeId
+                    }
+                    label={typeof option === "string" ? option : option.label}
+                    {...getTagProps({ index })}
+                    size="small"
+                  />
+                ))
+              }
+            />
+          </FormControl>
         </Box>
         
         {/* Attached Checkbox */}
@@ -5686,16 +5729,12 @@ if (targetEntity) {
     </Box>
   );
 };
-
-// Example Components
 const SimpleRender = ({ fieldOptions, notificationTypeId }) => (
   <RRuleGenerator
     fieldOptions={fieldOptions}
     notificationTypeId={notificationTypeId}
   />
 );
-
-// App Component
 const Frequency = ({ fieldOptions, notificationTypeId }) => {
   return (
     <Box>
@@ -5706,5 +5745,4 @@ const Frequency = ({ fieldOptions, notificationTypeId }) => {
     </Box>
   );
 };
-
 export default Frequency;

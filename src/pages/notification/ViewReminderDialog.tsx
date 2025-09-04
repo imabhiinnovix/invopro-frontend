@@ -71,7 +71,7 @@ const ViewReminderDialog = ({
                 value: viewingReminderData.triggerTime,
               },
               {
-                label: "Target Entity",
+                label: "Sent To (Group)",
                 value: formatTargetEntityForDisplay(
                   viewingReminderData.targetEntity
                 ),

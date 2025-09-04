@@ -196,10 +196,7 @@ export default function SideNav() {
     (state: RootState) => state.userPermission?.permissions
   );
   const dataSourcePermissions = permissions?.["Data Source"] || {};
-  // console.log(
-  //   "dataSourcePermissions ",
-  //   dataSourcePermissions.case_list_list?.allowed
-  // );
+  
 
   const validPermissionIds = Object.entries(dataSourcePermissions)
     .filter(([key, permission]) => {
@@ -425,7 +422,7 @@ export default function SideNav() {
                 name: "",
                 icon: (
                   <div ref={lastElementRef} style={{ paddingLeft: "1.5rem" }}>
-                    Loading...
+                    ...
                     <LinearProgress />{" "}
                   </div>
                 ),
@@ -500,7 +497,7 @@ export default function SideNav() {
           ...(loading
             ? [
                 {
-                  name: "Loading...",
+                  name: "...",
                   icon: <></>,
                   route: "#",
                 },

@@ -878,78 +878,7 @@ export default function EditNotificationTypes() {
 
   const navigate = useNavigate();
 
-  // Transform backend response to component state
-  // useEffect(() => {
-  //   if (notificationDataFetch.data?.data && list) {
-  //     const backendData = notificationDataFetch.data.data;
-
-  //     // First, get the fieldOptions for the selected entity
-  //     const selectedEntity = list.find(
-  //       (item) => item._id === backendData.dataSourceId
-  //     );
-  //     console.log("kk", selectedEntity);
-  //     let newFieldOptions = [];
-  //     if (selectedEntity?.fieldSettings) {
-  //       newFieldOptions = selectedEntity.fieldSettings.map((setting) => ({
-  //         label: setting.label,
-  //         value: setting.mappedAttributeName,
-  //         attributeId: setting.attributeId,
-  //         type: setting?.type,
-  //         refAttributeId: setting?.refAttributeId || [],
-  //       }));
-  //     }
-  //     setFieldOptions(newFieldOptions);
-
-  //     // Now, transform the conditions to rules using the newFieldOptions
-  //     const transformConditions = (conditions) => {
-  //       return conditions.map((condition, index) => {
-  //         // Check if this condition has nested conditions (group)
-  //         if (
-  //           condition.conditions &&
-  //           Array.isArray(condition.conditions) &&
-  //           condition.conditions.length > 0
-  //         ) {
-  //           // This is a nested group
-  //           return {
-  //             id: `group-${index}`,
-  //             logic: condition.group_operator,
-  //             rules: transformConditions(condition.conditions),
-  //           };
-  //         } else {
-  //           // This is a simple rule
-  //           return {
-  //             id: `rule-${index}`,
-  //             field:
-  //               newFieldOptions.find(
-  //                 (f) => f.attributeId === condition.attributeId
-  //               )?.value || "",
-  //             operator: condition.operator,
-  //             value: condition.value,
-  //             timeUnit: condition.timeUnit || "",
-  //           };
-  //         }
-  //       });
-  //     };
-
-  //     // Get the first condition group
-  //     const firstGroup = backendData.conditionGroups[0];
-  //     if (firstGroup) {
-  //       const transformedRules = transformConditions(firstGroup.conditions);
-  //       const newInitialNotification = {
-  //         name: backendData.name,
-  //         entityId: backendData.dataSourceId,
-  //         conditionGroup: {
-  //           logic: firstGroup.group_operator,
-  //           rules: transformedRules,
-  //         },
-  //       };
-
-  //       setInitialNotification(newInitialNotification);
-  //       setNotificationTypeId(backendData._id);
-  //     }
-  //   }
-  // }, [notificationDataFetch.data, list]);
-
+  
   // Transform backend response to component state
 useEffect(() => {
   if (notificationDataFetch.data?.data && list) {

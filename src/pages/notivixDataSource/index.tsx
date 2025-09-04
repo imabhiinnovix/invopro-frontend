@@ -8,7 +8,7 @@ import useGet from '../../hooks/useGet';
 import useDelete from '../../hooks/useDelete';
 import { STYLE_GUIDE } from '../../styles';
 import { NotivixDataTable } from './NotivixDataTable';
-import { Box, Button, Tooltip, Typography } from '@mui/material';
+import { Box, Button, Tooltip, Typography, CircularProgress } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -151,35 +151,6 @@ export default function NotivixDataSource() {
     },
     [sourceVersionData?.data]
   );
-  // const handleEdit = useCallback(
-  //   (id: string) => {
-  //     const rawData = sourceVersionData?.data?.data || [];
-  //     console.log("rawData in handleEdit", rawData, id);
-  //     if (rawData.length === 0) {
-  //       console.warn("Cannot edit: No data available");
-  //       return;
-  //     }
-  //     const row = rawData.find((r) => r._id === id || r.id === id);
-  //     if (row) {
-  //       const newFormData: Record<string, any> = { id: row._id || row.id };
-  //       const dataSource = row.rowData || row;
-  //             console.log("rdataSource", dataSource);
-
-  //       Object.keys(dataSource).forEach((key) => {
-  //         if (key !== "_id" && key !== "id") {
-  //           newFormData[key] =
-  //             dataSource[key] != null ? String(dataSource[key]) : "";
-  //         }
-  //       });
-  //       setFormData(newFormData);
-  //       setModalMode("edit");
-  //       setOpenModal(true);
-  //     } else {
-  //       console.error(`Row with ID ${id} not found`);
-  //     }
-  //   },
-  //   [sourceVersionData.data]
-  // );
 
   const handleEdit = useCallback(
     (id: string) => {
@@ -438,7 +409,19 @@ export default function NotivixDataSource() {
   }, [columns, handleView, handleEdit, handleDelete]);
 
   if (loading && rows.length === 0) {
-    return <Typography>Loading...</Typography>;
+    return (
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          height: '100vh',
+          width: '100%',
+        }}
+      >
+        <CircularProgress />
+      </Box>
+    );
   }
 
   return (
