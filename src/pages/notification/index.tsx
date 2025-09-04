@@ -39,6 +39,7 @@ import { DELETE, GET } from "../../services/apiRoutes";
 import { RootState } from "../../reducers";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 
 interface NotificationType {
   _id: string;
@@ -84,7 +85,7 @@ const columns: GridColDef[] = [
       <Chip
         label={params.row.status}
         size="small"
-        color={params.row.status ==="active"? "success" : "error"}
+        color={params.row.status === "active" ? "success" : "error"}
         variant="outlined"
       />
     ),
@@ -134,7 +135,9 @@ const columns: GridColDef[] = [
 export default function NotificationTypes() {
   const theme = useUnifiedTheme();
   const Navigate = useNavigate();
-  const { permissions } = useSelector((state: RootState) => state.userPermission);
+  const { permissions } = useSelector(
+    (state: RootState) => state.userPermission
+  );
   const [openModal, setOpenModal] = useState(false);
   const [modalMode, setModalMode] = useState<"filter" | null>(null);
   const [openDialog, setOpenDialog] = useState(false);
@@ -161,20 +164,30 @@ export default function NotificationTypes() {
     severity: "error",
   });
 
-  const { control, handleSubmit, reset } = useForm<NotificationTypePostPayload>({
-    defaultValues: {
-      name: "",
-      organizationId: "",
-      status: "",
-      permissionIds: [],
-    },
-    mode: "onChange",
-  });
+  const { control, handleSubmit, reset } = useForm<NotificationTypePostPayload>(
+    {
+      defaultValues: {
+        name: "",
+        organizationId: "",
+        status: "",
+        permissionIds: [],
+      },
+      mode: "onChange",
+    }
+  );
 
   useEffect(() => {
     const handler = setTimeout(() => {
-      setDebouncedSearchValue(searchValue);
+      if (searchValue.length === 0) {
+        setDebouncedSearchValue("");
+      } else if (searchValue.length < 3) {
+        toast.warning("Please enter at least 3 characters");
+        setDebouncedSearchValue("");
+      } else {
+        setDebouncedSearchValue(searchValue);
+      }
     }, 500);
+
     return () => {
       clearTimeout(handler);
     };
@@ -229,7 +242,9 @@ export default function NotificationTypes() {
     notificationTypeList.data.data.length > 0
       ? notificationTypeList.data.data.map((notificationType) => ({
           ...notificationType,
-          id: notificationType._id || `temp-${Math.random().toString(36).substr(2, 9)}`,
+          id:
+            notificationType._id ||
+            `temp-${Math.random().toString(36).substr(2, 9)}`,
           permissions: notificationType.permissions || [],
         }))
       : [];
@@ -333,14 +348,24 @@ export default function NotificationTypes() {
       </Typography>
       <Card sx={{ borderRadius: "8px", overflow: "visible" }}>
         <CardContent sx={{ p: 3 }}>
-          <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              mb: 2,
+            }}
+          >
             <TextField
               placeholder="Search ..."
               variant="outlined"
               size="small"
               value={searchValue}
               onChange={handleSearchChange}
-              sx={{ width: "300px", "& .MuiOutlinedInput-root": { borderRadius: "8px" } }}
+              sx={{
+                width: "300px",
+                "& .MuiOutlinedInput-root": { borderRadius: "8px" },
+              }}
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
@@ -380,7 +405,9 @@ export default function NotificationTypes() {
             disableColumnMenu
             paginationMode="server"
             sx={{ overflow: "visible" }}
-            loading={notificationTypeList.isLoading || deleteNotificationType.isLoading}
+            loading={
+              notificationTypeList.isLoading || deleteNotificationType.isLoading
+            }
             rowCount={notificationTypeList?.data?.pagination?.totalRecords || 0}
             paginationModel={paginationModel}
             onPaginationModelChange={setPaginationModel}
@@ -389,7 +416,9 @@ export default function NotificationTypes() {
                 <CustomPagination
                   paginationModel={paginationModel}
                   setPaginationModel={setPaginationModel}
-                  rowCount={notificationTypeList?.data?.pagination?.totalRecords || 0}
+                  rowCount={
+                    notificationTypeList?.data?.pagination?.totalRecords || 0
+                  }
                 />
               ),
             }}
@@ -429,7 +458,9 @@ export default function NotificationTypes() {
                       placeholder="Enter notification type name"
                       variant="outlined"
                       fullWidth
-                      sx={{ "& .MuiOutlinedInput-root": { borderRadius: "8px" } }}
+                      sx={{
+                        "& .MuiOutlinedInput-root": { borderRadius: "8px" },
+                      }}
                     />
                   )}
                 />
@@ -444,7 +475,9 @@ export default function NotificationTypes() {
                       label="Organization ID"
                       variant="outlined"
                       fullWidth
-                      sx={{ "& .MuiOutlinedInput-root": { borderRadius: "8px" } }}
+                      sx={{
+                        "& .MuiOutlinedInput-root": { borderRadius: "8px" },
+                      }}
                     />
                   )}
                 />
@@ -454,12 +487,21 @@ export default function NotificationTypes() {
                   name="status"
                   control={control}
                   render={({ field }) => (
-                    <FormControl fullWidth sx={{ "& .MuiOutlinedInput-root": { borderRadius: "8px" } }}>
+                    <FormControl
+                      fullWidth
+                      sx={{
+                        "& .MuiOutlinedInput-root": { borderRadius: "8px" },
+                      }}
+                    >
                       <InputLabel>Status</InputLabel>
                       <Select
                         {...field}
                         label="Status"
-                        onChange={(e) => field.onChange(e.target.value === "" ? undefined : e.target.value)}
+                        onChange={(e) =>
+                          field.onChange(
+                            e.target.value === "" ? undefined : e.target.value
+                          )
+                        }
                       >
                         <MenuItem value="">All</MenuItem>
                         <MenuItem value="active">Active</MenuItem>
@@ -470,18 +512,37 @@ export default function NotificationTypes() {
                 />
               </Grid>
             </Grid>
-            <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 1, mt: 3 }}>
-              <Button variant="outlined" onClick={handleResetFilter} sx={{ borderRadius: "8px" }}>
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "flex-end",
+                gap: 1,
+                mt: 3,
+              }}
+            >
+              <Button
+                variant="outlined"
+                onClick={handleResetFilter}
+                sx={{ borderRadius: "8px" }}
+              >
                 Reset
               </Button>
-              <Button variant="outlined" onClick={handleCloseModal} sx={{ borderRadius: "8px" }}>
+              <Button
+                variant="outlined"
+                onClick={handleCloseModal}
+                sx={{ borderRadius: "8px" }}
+              >
                 Cancel
               </Button>
               <Button
                 type="submit"
                 variant="contained"
                 sx={{ borderRadius: "8px" }}
-                disabled={!filterValues.name && !filterValues.organizationId && !filterValues.status}
+                disabled={
+                  !filterValues.name &&
+                  !filterValues.organizationId &&
+                  !filterValues.status
+                }
               >
                 Apply
               </Button>

@@ -32,6 +32,7 @@ import {
 import { useQueryClient } from "@tanstack/react-query";
 import { UserResponse } from "../../context/AuthContext";
 import { setPermissions } from "../../reducers/userSlice";
+import { STYLE_GUIDE } from "../../styles";
 
 interface PermissionDetail {
   _id: string;
@@ -414,22 +415,23 @@ export function RoleModal({
                     <label
                       style={{
                         display: "block",
-                        marginBottom: "4px",
-                        fontSize: "14px",
-                        color: "#666",
-                        fontWeight: 500,
+                        marginBottom: STYLE_GUIDE.SPACING.s1,
+                        fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
+                        color: STYLE_GUIDE.COLORS.primary || "#666",
+                        fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.medium,
                       }}
                     >
                       Name
                     </label>
                     <div
                       style={{
-                        padding: "14px 12px",
-                        borderRadius: "8px",
+                        padding: `${STYLE_GUIDE.SPACING.s4} ${STYLE_GUIDE.SPACING.s3}`,
+                        borderRadius: STYLE_GUIDE.SPACING.s2,
                         display: "flex",
                         alignItems: "center",
-                        backgroundColor: "#ebe8e8ff",
-                        color: "#3f3e3eff",
+                        backgroundColor:
+                          STYLE_GUIDE.COLORS.backgroundLight || "#ebe8e8ff",
+                        color: STYLE_GUIDE.COLORS.textPrimary || "#3f3e3eff",
                       }}
                     >
                       {rowData || "-"}
