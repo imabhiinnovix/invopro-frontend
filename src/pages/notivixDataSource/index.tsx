@@ -1,29 +1,23 @@
-import * as React from "react";
-import { useState, useEffect, useCallback, useMemo } from "react";
-import { useParams } from "react-router-dom";
-import { useSelector } from "react-redux";
-import { RootState } from "../../store";
-import { DELETE, GET } from "../../services/apiRoutes";
-import useGet from "../../hooks/useGet";
-import useDelete from "../../hooks/useDelete";
-import { STYLE_GUIDE } from "../../styles";
-import { NotivixDataTable } from "./NotivixDataTable";
-import {
-  Box,
-  Button,
-  Tooltip,
-  Typography,
-  CircularProgress,
-} from "@mui/material";
-import EditIcon from "@mui/icons-material/Edit";
-import VisibilityIcon from "@mui/icons-material/Visibility";
-import DeleteIcon from "@mui/icons-material/Delete";
-import { AttributeOptionRequestPayload } from "../../components/atom/attributeOption/types";
-import { NotivixDataModal } from "./NotivixDataModal";
-import { useQueryClient } from "@tanstack/react-query";
-import { toast } from "react-toastify";
-import NotivixFiltersModal from "../notivixDashboard/components/NotivixFiltersModal";
-import { useComponentTypography } from "../../hooks";
+import * as React from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useParams } from 'react-router-dom';
+import { useSelector } from 'react-redux';
+import { RootState } from '../../store';
+import { DELETE, GET } from '../../services/apiRoutes';
+import useGet from '../../hooks/useGet';
+import useDelete from '../../hooks/useDelete';
+import { STYLE_GUIDE } from '../../styles';
+import { NotivixDataTable } from './NotivixDataTable';
+import { Box, Button, Tooltip, Typography, CircularProgress } from '@mui/material';
+import EditIcon from '@mui/icons-material/Edit';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import DeleteIcon from '@mui/icons-material/Delete';
+import { AttributeOptionRequestPayload } from '../../components/atom/attributeOption/types';
+import { NotivixDataModal } from './NotivixDataModal';
+import { useQueryClient } from '@tanstack/react-query';
+import { toast } from 'react-toastify';
+import NotivixFiltersModal from '../notivixDashboard/components/NotivixFiltersModal';
+import { useComponentTypography } from '../../hooks';
 
 interface ApiResponse {
   data: any[];
@@ -38,13 +32,11 @@ export default function NotivixDataSource() {
   const [columns, setColumns] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [openModal, setOpenModal] = useState(false);
-  const [modalMode, setModalMode] = useState<
-    "add" | "edit" | "view" | "filter" | null
-  >(null);
+  const [modalMode, setModalMode] = useState<'add' | 'edit' | 'view' | 'filter' | null>(null);
   const [openDialog, setOpenDialog] = useState(false);
-  const [formData, setFormData] = useState<Record<string, any>>({ id: "" });
+  const [formData, setFormData] = useState<Record<string, any>>({ id: '' });
   const [deleteId, setDeleteId] = useState<string | null>(null);
-  const [searchValue, setSearchValue] = useState("");
+  const [searchValue, setSearchValue] = useState('');
   const [filter, setFilter] = useState({});
   const [debouncedSearchValue, setDebouncedSearchValue] = useState(searchValue);
   const [paginationModel, setPaginationModel] = useState({
@@ -55,7 +47,7 @@ export default function NotivixDataSource() {
   const { list } = useSelector((state: RootState) => state.dataSource);
   const listCurrentData = list.find((item) => item._id === valueId);
 
-  const deleteVersionRow = useDelete(["deleteVersionRow"]);
+  const deleteVersionRow = useDelete(['deleteVersionRow']);
 
   const [isFiltersModalOpen, setIsFiltersModalOpen] = React.useState(false);
   const { getHeadingSx } = useComponentTypography();
@@ -75,10 +67,10 @@ export default function NotivixDataSource() {
   useEffect(() => {
     const handler = setTimeout(() => {
       if (searchValue.length === 0) {
-        setDebouncedSearchValue("");
+        setDebouncedSearchValue('');
       } else if (searchValue.length < 3) {
-        toast.warning("Please enter at least 3 characters");
-        setDebouncedSearchValue("");
+        toast.warning('Please enter at least 3 characters');
+        setDebouncedSearchValue('');
       } else {
         setDebouncedSearchValue(searchValue);
       }
@@ -97,19 +89,22 @@ export default function NotivixDataSource() {
     }),
     [paginationModel.page, paginationModel.pageSize]
   );
+  useEffect(() => {
+    setFilter({});
+  }, [valueId]);
   const sourceVersionData = useGet<ApiResponse>(
     [
-      "sourceVersionData",
+      'sourceVersionData',
       String(paginationModelMemo.page + 1),
       String(paginationModelMemo.pageSize),
       debouncedSearchValue,
-      valueId || "",
+      valueId || '',
       JSON.stringify(filter),
     ],
-    `${GET.SOURCE_VERSION_DATA}?dataSourceId=${encodeURIComponent(valueId || "")}&filters=${encodeURIComponent(
+    `${GET.SOURCE_VERSION_DATA}?dataSourceId=${encodeURIComponent(valueId || '')}&filters=${encodeURIComponent(
       JSON.stringify(filter)
     )}&page=${paginationModelMemo.page + 1}&limit=${paginationModelMemo.pageSize}&search=${encodeURIComponent(
-      debouncedSearchValue || ""
+      debouncedSearchValue || ''
     )}`,
     !!valueId
   );
@@ -122,44 +117,40 @@ export default function NotivixDataSource() {
   // Function to refresh data after successful save
   const refreshData = useCallback(() => {
     queryClient.invalidateQueries([
-      "sourceVersionData",
+      'sourceVersionData',
       String(paginationModelMemo.page + 1),
       String(paginationModelMemo.pageSize),
       debouncedSearchValue,
-      valueId || "",
+      valueId || '',
     ]);
   }, [queryClient, paginationModelMemo, debouncedSearchValue, valueId]);
 
   const switchToEditMode = useCallback(() => {
-    setModalMode("edit");
+    setModalMode('edit');
   }, []);
 
   const handleView = useCallback(
     (id: string) => {
       const rawData = sourceVersionData?.data?.data || [];
       if (rawData.length === 0) {
-        console.warn("Cannot edit: No data available");
+        console.warn('Cannot edit: No data available');
         return;
       }
       const row = rawData.find((r) => r._id === id || r.id === id);
       if (row) {
         const newFormData: Record<string, any> = { id: row._id || row.id };
         const dataSource = row.rowData || {};
-        console.log("rdataSource", dataSource);
+        console.log('rdataSource', dataSource);
 
         Object.keys(dataSource).forEach((key) => {
-          if (key !== "_id" && key !== "id") {
+          if (key !== '_id' && key !== 'id') {
             const value = dataSource[key];
-            newFormData[key] = Array.isArray(value)
-              ? value
-              : value != null
-                ? String(value)
-                : "";
+            newFormData[key] = Array.isArray(value) ? value : value != null ? String(value) : '';
           }
         });
 
         setFormData(newFormData);
-        setModalMode("view");
+        setModalMode('view');
         setOpenModal(true);
       } else {
         console.error(`Row with ID ${id} not found`);
@@ -172,28 +163,24 @@ export default function NotivixDataSource() {
     (id: string) => {
       const rawData = sourceVersionData?.data?.data || [];
       if (rawData.length === 0) {
-        console.warn("Cannot edit: No data available");
+        console.warn('Cannot edit: No data available');
         return;
       }
       const row = rawData.find((r) => r._id === id || r.id === id);
       if (row) {
         const newFormData: Record<string, any> = { id: row._id || row.id };
         const dataSource = row.rowData || {};
-        console.log("rdataSource", dataSource);
+        console.log('rdataSource', dataSource);
 
         Object.keys(dataSource).forEach((key) => {
-          if (key !== "_id" && key !== "id") {
+          if (key !== '_id' && key !== 'id') {
             const value = dataSource[key];
-            newFormData[key] = Array.isArray(value)
-              ? value
-              : value != null
-                ? String(value)
-                : "";
+            newFormData[key] = Array.isArray(value) ? value : value != null ? String(value) : '';
           }
         });
 
         setFormData(newFormData);
-        setModalMode("edit");
+        setModalMode('edit');
         setOpenModal(true);
       } else {
         console.error(`Row with ID ${id} not found`);
@@ -208,21 +195,21 @@ export default function NotivixDataSource() {
   }, []);
 
   const handleAddNotification = useCallback(() => {
-    const newFormData: Record<string, any> = { id: "" };
+    const newFormData: Record<string, any> = { id: '' };
     columns
-      .filter((col) => col.field !== "actions" && col.field !== "_id")
+      .filter((col) => col.field !== 'actions' && col.field !== '_id')
       .forEach((col) => {
-        newFormData[col.field] = "";
+        newFormData[col.field] = '';
       });
     setFormData(newFormData);
-    setModalMode("add");
+    setModalMode('add');
     setOpenModal(true);
   }, [columns]);
 
   const handleCloseModal = useCallback(() => {
     setOpenModal(false);
     setModalMode(null);
-    setFormData({ id: "" });
+    setFormData({ id: '' });
   }, []);
 
   const handleCloseDialog = useCallback(() => {
@@ -232,7 +219,7 @@ export default function NotivixDataSource() {
 
   const handleConfirmDelete = useCallback(async () => {
     if (!deleteId || !valueId) {
-      toast.error("Missing required information for deletion");
+      toast.error('Missing required information for deletion');
       return;
     }
 
@@ -245,32 +232,29 @@ export default function NotivixDataSource() {
         },
       });
 
-      toast.success("Record deleted successfully!");
+      toast.success('Record deleted successfully!');
 
       refreshData();
 
       handleCloseDialog();
     } catch (error) {
-      console.error("Error deleting record:", error);
-      toast.error(`Error: ${error.message || "Failed to delete record"}`);
+      console.error('Error deleting record:', error);
+      toast.error(`Error: ${error.message || 'Failed to delete record'}`);
     }
   }, [deleteId, valueId, refreshData, handleCloseDialog, deleteVersionRow]);
 
-  const handleSearchChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      const value = e.target.value.slice(0, 200);
-      setSearchValue(value);
-    },
-    []
-  );
+  const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value.slice(0, 200);
+    setSearchValue(value);
+  }, []);
 
   const handleSave = useCallback(() => {
-    if (modalMode === "add") {
-      console.log("Adding new:", formData);
-    } else if (modalMode === "edit") {
-      console.log("Saving edited row:", formData);
-    } else if (modalMode === "filter") {
-      console.log("Applying filter:", formData);
+    if (modalMode === 'add') {
+      console.log('Adding new:', formData);
+    } else if (modalMode === 'edit') {
+      console.log('Saving edited row:', formData);
+    } else if (modalMode === 'filter') {
+      console.log('Applying filter:', formData);
     }
     handleCloseModal();
   }, [formData, modalMode, handleCloseModal]);
@@ -281,7 +265,7 @@ export default function NotivixDataSource() {
 
   useEffect(() => {
     if (sourceVersionData.error) {
-      console.error("API error:", sourceVersionData.error);
+      console.error('API error:', sourceVersionData.error);
       setRows([]);
       setRowCount(0);
       setColumns([]);
@@ -301,23 +285,21 @@ export default function NotivixDataSource() {
       return;
     }
     const displayFields =
-      listCurrentData?.fieldSettings?.filter(
-        (field) => field.isDisplayEnable && field.mappedAttributeName
-      ) || [];
+      listCurrentData?.fieldSettings?.filter((field) => field.isDisplayEnable && field.mappedAttributeName) || [];
     const columns = displayFields.map((field) => ({
       field: field.mappedAttributeName,
       headerName: field.label,
       flex: 1,
       sortable: field.isSortingEnable,
       renderHeader: (params: any) => {
-        const headerText = params.colDef.headerName || "";
+        const headerText = params.colDef.headerName || '';
         return headerText.length > 10 ? (
           <Tooltip title={headerText} arrow>
             <Typography
               sx={{
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-                whiteSpace: "nowrap",
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
               }}
             >
               {headerText}
@@ -328,14 +310,14 @@ export default function NotivixDataSource() {
         );
       },
       renderCell: (params: any) => {
-        const cellValue = params.value != null ? String(params.value) : "";
+        const cellValue = params.value != null ? String(params.value) : '';
         return cellValue.length > 10 ? (
           <Tooltip title={cellValue} arrow>
             <Typography
               sx={{
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-                whiteSpace: "nowrap",
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
               }}
             >
               {cellValue}
@@ -350,9 +332,7 @@ export default function NotivixDataSource() {
       const row = { _id: item._id || item.id };
       displayFields.forEach((field) => {
         row[field.mappedAttributeName] =
-          item.rowData?.[field.mappedAttributeName] ||
-          item[field.mappedAttributeName] ||
-          "";
+          item.rowData?.[field.mappedAttributeName] || item[field.mappedAttributeName] || '';
       });
       return row;
     });
@@ -363,23 +343,23 @@ export default function NotivixDataSource() {
 
   useEffect(() => {
     if (columns.length === 0) return;
-    const hasActionsColumn = columns.some((col) => col.field === "actions");
+    const hasActionsColumn = columns.some((col) => col.field === 'actions');
     if (hasActionsColumn) return;
     const actionsColumn = {
-      field: "actions",
-      headerName: "Actions",
+      field: 'actions',
+      headerName: 'Actions',
       flex: 1,
       sortable: false,
       renderHeader: () => <Typography>Actions</Typography>,
       renderCell: (params: any) => (
-        <Box sx={{ display: "flex", gap: 1 }}>
+        <Box sx={{ display: 'flex', gap: 1 }}>
           <Tooltip title="View" arrow>
             <Button
               size="small"
               onClick={() => handleView(params.row._id)}
               sx={{
-                minWidth: "auto",
-                color: STYLE_GUIDE?.COLORS?.primaryDark || "#3f51b5",
+                minWidth: 'auto',
+                color: STYLE_GUIDE?.COLORS?.primaryDark || '#3f51b5',
               }}
             >
               <VisibilityIcon />
@@ -390,8 +370,8 @@ export default function NotivixDataSource() {
               size="small"
               onClick={() => handleEdit(params.row._id)}
               sx={{
-                minWidth: "auto",
-                color: STYLE_GUIDE?.COLORS?.primaryDark || "#3f51b5",
+                minWidth: 'auto',
+                color: STYLE_GUIDE?.COLORS?.primaryDark || '#3f51b5',
               }}
             >
               <EditIcon />
@@ -402,8 +382,8 @@ export default function NotivixDataSource() {
               size="small"
               onClick={() => handleDelete(params.row._id)}
               sx={{
-                minWidth: "auto",
-                color: STYLE_GUIDE?.COLORS?.error || "#d32f2f",
+                minWidth: 'auto',
+                color: STYLE_GUIDE?.COLORS?.error || '#d32f2f',
               }}
             >
               <DeleteIcon />
@@ -419,11 +399,11 @@ export default function NotivixDataSource() {
     return (
       <Box
         sx={{
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          height: "100vh",
-          width: "100%",
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          height: '100vh',
+          width: '100%',
         }}
       >
         <CircularProgress />
@@ -437,8 +417,8 @@ export default function NotivixDataSource() {
         flexGrow: 1,
         p: 3,
         ml: { xs: 0 },
-        backgroundColor: STYLE_GUIDE?.COLORS?.backgroundLight || "#f5f5f5",
-        minHeight: "100vh",
+        backgroundColor: STYLE_GUIDE?.COLORS?.backgroundLight || '#f5f5f5',
+        minHeight: '100vh',
       }}
     >
       <Typography
@@ -466,7 +446,7 @@ export default function NotivixDataSource() {
         handleAddNotification={handleAddNotification}
         handleOpenFiltersModal={handleOpenFiltersModal}
         listCurrentData={listCurrentData}
-        dataSourceId={valueId || ""}
+        dataSourceId={valueId || ''}
       />
 
       <NotivixDataModal
@@ -482,7 +462,7 @@ export default function NotivixDataSource() {
         handleCloseDialog={handleCloseDialog}
         handleConfirmDelete={handleConfirmDelete}
         handleSave={handleSave}
-        dataSourceId={valueId || ""}
+        dataSourceId={valueId || ''}
         switchToEditMode={switchToEditMode}
         attributeListData={attributeList?.data?.data || []}
         setFormData={setFormData}
