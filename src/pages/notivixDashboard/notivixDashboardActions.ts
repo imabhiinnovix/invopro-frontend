@@ -223,6 +223,7 @@ export const fetchChartData = createAsyncThunk(
       endVersionValue,
       dashboardType,
       dynamicVersionValue,
+      filters,
     }: {
       dashboardId: string;
       versionValue?: string;
@@ -230,6 +231,7 @@ export const fetchChartData = createAsyncThunk(
       endVersionValue?: string;
       dashboardType?: string;
       dynamicVersionValue?: string;
+      filters: any;
     },
     { dispatch, getState }
   ) => {
@@ -243,13 +245,13 @@ export const fetchChartData = createAsyncThunk(
       const batchSize = 3;
       const charts = response.data.data;
 
-
       for (let i = 0; i < charts.length; i += batchSize) {
         const batch = charts.slice(i, i + batchSize);
         await Promise.all(
           batch.map(async (chart) => {
             try {
-              const widgetDataEndpoint = dashboardType === 'fixed' ? GET.FIXED_DASHBOARD_WIDGET_DATA : GET.NOTIVIX_DASHBOARD_WIDGET_DATA;
+              const widgetDataEndpoint =
+                dashboardType === 'fixed' ? GET.FIXED_DASHBOARD_WIDGET_DATA : GET.NOTIVIX_DASHBOARD_WIDGET_DATA;
 
               const dataSourceId = chart.dataSourceId?._id;
 
@@ -265,8 +267,10 @@ export const fetchChartData = createAsyncThunk(
                   startVersionValue: dashboardType === 'trend' ? startVersionValue || '' : '',
                   endVersionValue: dashboardType === 'trend' ? endVersionValue || '' : '',
                   versionValue: dashboardType === 'trend' ? '' : versionValue || '',
-                  dynamicVersionValue: dashboardType === 'trend' ? '' : (dashboardType === 'fixed' ? '' : (versionValue ? '' : '1m')),
+                  dynamicVersionValue:
+                    dashboardType === 'trend' ? '' : dashboardType === 'fixed' ? '' : versionValue ? '' : '1m',
                 },
+                filters,
                 dashBoardType: dashboardType || 'normal',
                 isIncremental: chart.isIncremental,
               });
@@ -316,7 +320,8 @@ export const fetchIndividualWidgetData = createAsyncThunk(
   'nlQuery/getIndividualData',
   async ({ chart, dashboardType }: { chart: any; dashboardType?: string }, { rejectWithValue, dispatch }) => {
     try {
-      const widgetDataEndpoint = dashboardType === 'fixed' ? GET.FIXED_DASHBOARD_WIDGET_DATA : GET.NOTIVIX_DASHBOARD_WIDGET_DATA;
+      const widgetDataEndpoint =
+        dashboardType === 'fixed' ? GET.FIXED_DASHBOARD_WIDGET_DATA : GET.NOTIVIX_DASHBOARD_WIDGET_DATA;
       const widgetResponse = await axiosInstance.post<WidgetDataResponse>(widgetDataEndpoint, {
         dataSourceId: chart.dataSourceId,
         entityId: chart.entityId,

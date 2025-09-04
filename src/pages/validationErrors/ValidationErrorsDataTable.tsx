@@ -7,23 +7,30 @@ import { CustomPagination } from "../../components/common/pagination/customPagin
 import FileDownloadDoneIcon from '@mui/icons-material/FileDownloadDone';
 const columns: GridColDef[] = [
   {
-    field: "rowNumber",
-    headerName: "RowNumber",
-    width: 150,
+    field: "fileRowNumber",
+    headerName: "Row Number",
+    width: 140,
     disableColumnMenu: true,
     resizable: true,
   },
   {
     field: "errorCode",
     headerName: "Error Code",
-    width: 150,
+    width: 130,
+    disableColumnMenu: true,
+    resizable: true,
+  },
+   {
+    field: "fileName",
+    headerName: "File Name",
+    width: 200,
     disableColumnMenu: true,
     resizable: true,
   },
   {
     field: "errorMessage",
     headerName: "Error Message",
-    width: 100,
+    width: 300,
     disableColumnMenu: true,
     resizable: true,
   },

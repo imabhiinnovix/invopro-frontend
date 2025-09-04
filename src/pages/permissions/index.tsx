@@ -48,6 +48,8 @@ import {
 import { UserResponse } from "../../context/AuthContext";
 import { useQueryClient } from "@tanstack/react-query";
 import { setPermissions } from "../../reducers/userSlice";
+import { toast } from "react-toastify";
+import { useComponentTypography } from "../../hooks";
 
 const columns: GridColDef[] = [
   {
@@ -164,10 +166,20 @@ export default function Permissions() {
     dataSourceId: "",
     resourceType: "",
   });
+  const { getHeadingSx } = useComponentTypography();
+
   useEffect(() => {
     const handler = setTimeout(() => {
-      setDebouncedSearchValue(searchValue);
+      if (searchValue.length === 0) {
+        setDebouncedSearchValue("");
+      } else if (searchValue.length < 3) {
+        toast.warning("Please enter at least 3 characters");
+        setDebouncedSearchValue("");
+      } else {
+        setDebouncedSearchValue(searchValue);
+      }
     }, 500);
+
     return () => {
       clearTimeout(handler);
     };
@@ -490,8 +502,8 @@ export default function Permissions() {
       <Typography
         variant="h4"
         sx={{
-          mb: 3,
-          fontWeight: 400,
+          ...getHeadingSx(),
+          mb: STYLE_GUIDE?.SPACING?.s3,
         }}
       >
         Permissions
@@ -638,20 +650,23 @@ export default function Permissions() {
                   <label
                     style={{
                       display: "block",
-                      marginBottom: "4px",
-                      fontSize: "14px",
-                      color: "#666",
-                      fontWeight: 500,
+                      marginBottom: STYLE_GUIDE.SPACING.s1,
+                      fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
+                      color: STYLE_GUIDE.COLORS.textSecondary || "#666",
+                      fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.medium,
                     }}
                   >
                     Name
                   </label>
                   <div
                     style={{
-                      padding: "14px 12px",
-                      borderRadius: "8px",
-                      backgroundColor: "#ebe8e8ff",
-                      color: "#3f3e3eff",
+                      padding: `${STYLE_GUIDE.SPACING.s4} ${STYLE_GUIDE.SPACING.s3}`,
+                      borderRadius: STYLE_GUIDE.SPACING.s2,
+                      backgroundColor:
+                        STYLE_GUIDE.COLORS.backgroundLight || "#ebe8e8ff",
+                      color: STYLE_GUIDE.COLORS.textPrimary || "#3f3e3eff",
+                      fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base,
+                      fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.regular,
                     }}
                   >
                     {formData.name?.trim() || "-"}

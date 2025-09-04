@@ -16,7 +16,6 @@ import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import dayjs from "dayjs";
-import { FilterNotivixDataModal } from "./FilterNotivixDataModal";
 import CloseIcon from "@mui/icons-material/Close";
 import usePost from "../../hooks/usePost";
 import { POST, PUT } from "../../services/apiRoutes";
@@ -51,15 +50,12 @@ export const NotivixDataModal: React.FC<ModelSectionProps> = ({
   openDialog,
   deleteId,
   listCurrentData,
-  sourceVersionData,
-  columns,
   attributeListData,
   handleCloseModal,
   handleCloseDialog,
   handleConfirmDelete,
   handleSave,
   setFormData,
-  switchToEditMode,
   dataSourceId,
   refreshData,
 }) => {
@@ -70,13 +66,11 @@ export const NotivixDataModal: React.FC<ModelSectionProps> = ({
   );
   const [submitAttempted, setSubmitAttempted] = React.useState(false);
 
-  // Function to validate email format
   const isValidEmail = (email: string) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
   };
 
-  // Function to validate number format
   const isValidNumber = (value: string) => {
     const numberRegex = /^[0-9]*$/;
     return numberRegex.test(value);
@@ -123,7 +117,6 @@ export const NotivixDataModal: React.FC<ModelSectionProps> = ({
       if (attribute.required) {
         const fieldName = attribute.name;
         const value = formData[fieldName];
-        // Check if field is empty
         if (
           value === undefined ||
           value === null ||
@@ -139,13 +132,13 @@ export const NotivixDataModal: React.FC<ModelSectionProps> = ({
     return Object.keys(errors).length === 0;
   };
 
-  // Validate a specific field and update errors
+  // Validate
   const validateField = (fieldName: string, value: any) => {
     const attributes = listCurrentData?.entityId?.attributes || [];
     const attribute = attributes.find((attr: any) => attr.name === fieldName);
     if (!attribute) return;
     const errors = { ...fieldErrors };
-    // Check if field is required and empty
+    // Check required and empty
     if (attribute.required) {
       if (
         value === undefined ||
@@ -156,11 +149,10 @@ export const NotivixDataModal: React.FC<ModelSectionProps> = ({
       ) {
         errors[fieldName] = `${attribute.name} is required`;
       } else {
-        // Remove error if field is now filled
         delete errors[fieldName];
       }
     }
-    // Check field type validation
+    // Check  validation
     if (value !== undefined && value !== null && value !== "") {
       if (attribute.type === "email" && !isValidEmail(value)) {
         errors[fieldName] = `Please enter a valid email address`;
@@ -171,14 +163,12 @@ export const NotivixDataModal: React.FC<ModelSectionProps> = ({
         isValidEmail(value) &&
         errors[fieldName]?.includes("email")
       ) {
-        // Remove email error if it's now valid
         delete errors[fieldName];
       } else if (
         attribute.type === "number" &&
         isValidNumber(value) &&
         errors[fieldName]?.includes("number")
       ) {
-        // Remove number error if it's now valid
         delete errors[fieldName];
       }
     }
@@ -192,12 +182,10 @@ export const NotivixDataModal: React.FC<ModelSectionProps> = ({
         const attributes = listCurrentData?.entityId?.attributes || [];
         let isValid = true;
         let errorMessage = "";
-        // First validate required fields
         if (!validateRequiredFields()) {
           toast.error("Please fill required fields");
           return;
         }
-        // Then validate field types
         for (const attribute of attributes) {
           const fieldName = attribute.name;
           const fieldType = attribute.type;
@@ -277,7 +265,6 @@ export const NotivixDataModal: React.FC<ModelSectionProps> = ({
   }
 
   const renderAttributeField = (attribute: any, isViewMode = false) => {
-    // Hide field if isReferenceEditable is HIDE
     const shouldHideField = () => {
       if (
         attribute.name.includes(".") &&
@@ -285,7 +272,7 @@ export const NotivixDataModal: React.FC<ModelSectionProps> = ({
       ) {
         return true;
       }
-      return false; // default
+      return false;
     };
     if (shouldHideField()) return null;
 
@@ -299,10 +286,8 @@ export const NotivixDataModal: React.FC<ModelSectionProps> = ({
       // Nested reference fields → follow isReferenceEditable
       isFieldEditable = !isViewMode && attribute.isReferenceEditable === "EDIT";
     } else {
-      // Top-level fields → normal rule
       isFieldEditable = !isViewMode;
     }
-    // const isFieldEditable = !isViewMode && attribute.isReferenceEditable === "EDIT";
     const value = formData[fieldName];
 
     const renderLabel = (label: string) => (
@@ -317,12 +302,10 @@ export const NotivixDataModal: React.FC<ModelSectionProps> = ({
     if (isViewMode) {
       let displayValue: any = value ?? "-";
 
-      // Handle dates
       if (attribute.type === "date" && displayValue !== "-") {
         displayValue = dayjs(displayValue).format("DD-MMM-YYYY");
       }
 
-      // Handle array
       if (Array.isArray(displayValue)) {
         if (displayValue.length === 0) {
           displayValue = ["No data"];
@@ -369,7 +352,6 @@ export const NotivixDataModal: React.FC<ModelSectionProps> = ({
       );
     }
 
-    // Handle editable input fields (add/edit)
     const handleFieldChange = (val: any) => {
       setFormData((prev) => ({ ...prev, [fieldName]: val }));
       if (submitAttempted) validateField(fieldName, val);
@@ -447,14 +429,14 @@ export const NotivixDataModal: React.FC<ModelSectionProps> = ({
                   label={typeof option === "string" ? option : option.label}
                   {...getTagProps({ index })}
                   sx={{
-                    color: "#000000ff", // Dark text
+                    color: "#000000ff",
                     fontWeight: 500,
-                    opacity: 1, // No fade
+                    opacity: 1,
                     pointerEvents: !isFieldEditable ? "none" : "auto",
                     "& .MuiChip-deleteIcon": {
-                      display: !isFieldEditable ? "none" : "block", // Hide X
+                      display: !isFieldEditable ? "none" : "block",
                     },
-                    backgroundColor: !isFieldEditable ? "#cfcfcf" : "#fdeeee", // Solid fill when disabled
+                    backgroundColor: !isFieldEditable ? "#cfcfcf" : "#fdeeee",
                     border: !isFieldEditable ? "1px solid #b3b3b3" : "none",
                   }}
                 />
@@ -568,7 +550,6 @@ export const NotivixDataModal: React.FC<ModelSectionProps> = ({
     if (attributes.length === 0)
       return <Typography>No attributes available.</Typography>;
 
-    // Two-column layout for add/edit/view
     const firstColumn = attributes.filter((_, i) => i % 2 === 0);
     const secondColumn = attributes.filter((_, i) => i % 2 === 1);
 
@@ -638,18 +619,6 @@ export const NotivixDataModal: React.FC<ModelSectionProps> = ({
                       ? "Edit"
                       : "View"}
                 </Typography>
-                {/* {modalMode === "view" && (
-                  <Tooltip title="Edit">
-                    <IconButton
-                      onClick={switchToEditMode}
-                      sx={{
-                        color: STYLE_GUIDE?.COLORS?.primaryDark || "#3f51b5",
-                      }}
-                    >
-                      <CloseIcon />
-                    </IconButton>
-                  </Tooltip>
-                )} */}
               </Box>
               <IconButton
                 onClick={handleCancel}
@@ -704,15 +673,7 @@ export const NotivixDataModal: React.FC<ModelSectionProps> = ({
           </Box>
         </Box>
       )}
-      <FilterNotivixDataModal
-        open={openModal && modalMode === "filter"}
-        onClose={handleCancel}
-        onApply={handleSaveClick}
-        formData={formData}
-        listCurrentData={listCurrentData}
-        sourceVersionData={sourceVersionData}
-        setFormData={setFormData}
-      />
+
       <ConfirmationDialog
         open={openDialog}
         onClose={handleCloseDialog}

@@ -2,6 +2,8 @@ import * as React from "react";
 import { useState, useEffect, useCallback, memo, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
+  import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+
 import {
   Box,
   Card,
@@ -32,8 +34,8 @@ import { STYLE_GUIDE } from "../../styles";
 import { useSelector } from "react-redux";
 import Frequency from "./Frequency";
 import { RootState } from "../../reducers";
+import { useComponentTypography } from "../../hooks";
 
-// Error Boundary Component
 class ErrorBoundary extends React.Component {
   constructor(props) {
     super(props);
@@ -59,39 +61,32 @@ class ErrorBoundary extends React.Component {
   }
 }
 
-// FocusAwareInput Component that maintains focus
 const FocusAwareInput = React.memo(
   ({ value, onChange, error, placeholder, type = "text", ...props }) => {
     const inputRef = useRef(null);
     const [localValue, setLocalValue] = useState(value);
     const isFocused = useRef(false);
 
-    // Update local value when prop changes (but only when not focused)
     useEffect(() => {
       if (!isFocused.current) {
         setLocalValue(value);
       }
     }, [value]);
 
-    // Handle focus
     const handleFocus = useCallback(() => {
       isFocused.current = true;
     }, []);
 
-    // Handle blur
     const handleBlur = useCallback(() => {
       isFocused.current = false;
       onChange(localValue);
     }, [localValue, onChange]);
 
-    // Handle change
     const handleChange = useCallback((e) => {
       setLocalValue(e.target.value);
     }, []);
 
-    // Handle key down to prevent default behavior if needed
     const handleKeyDown = useCallback((e) => {
-      // Prevent any default behavior that might cause focus loss
       if (e.key === "Enter") {
         e.preventDefault();
       }
@@ -115,7 +110,6 @@ const FocusAwareInput = React.memo(
   }
 );
 
-// ConditionRuleBuilder Component
 const ConditionRuleBuilder = ({
   onChange,
   notificationTypeList,
@@ -131,13 +125,11 @@ const ConditionRuleBuilder = ({
   const { list } = useSelector((state: RootState) => state.dataSource);
   const operatorList = usePost(["operatorList"]);
 
-  // Refs to maintain stable references
   const notificationRef = useRef(notification);
   const fieldOptionsRef = useRef(fieldOptions);
   const operatorListRef = useRef(operatorList);
   const [operatorsLoaded, setOperatorsLoaded] = useState(false);
 
-  // Update refs when state changes
   useEffect(() => {
     notificationRef.current = notification;
   }, [notification]);
@@ -150,14 +142,12 @@ const ConditionRuleBuilder = ({
     operatorListRef.current = operatorList;
   }, [operatorList]);
 
-  // Update internal state when initialNotification changes
   useEffect(() => {
     if (initialNotification) {
       setNotification(initialNotification);
     }
   }, [initialNotification]);
 
-  // Load operators on component mount
   useEffect(() => {
     operatorList.mutate({
       url: POST.OPERATOR_LIST,
@@ -165,20 +155,17 @@ const ConditionRuleBuilder = ({
     });
   }, []);
 
-  // Track when operators are loaded
   useEffect(() => {
     if (operatorList.data && !operatorList.isLoading) {
       setOperatorsLoaded(true);
     }
   }, [operatorList.data, operatorList.isLoading]);
 
-  // Update field options when entity changes
   useEffect(() => {
     if (notification.entityId && list) {
       const selectedEntity = list.find(
         (item) => item._id === notification.entityId
       );
-        console.log("kk33333", selectedEntity);
 
       if (selectedEntity?.fieldSettings) {
         const newFieldOptions = selectedEntity.fieldSettings.map((setting) => ({
@@ -197,7 +184,6 @@ const ConditionRuleBuilder = ({
     }
   }, [notification.entityId, list, setFieldOptions]);
 
-  // Static options for specific fields
   const statusOptions = [
     "open",
     "rated to search",
@@ -215,7 +201,6 @@ const ConditionRuleBuilder = ({
     { value: "y", label: "Yearly" },
   ];
 
-  // Utility functions
   const generateId = () => Math.random().toString(36).substr(2, 9);
 
   const getGroupByPath = (root, path) => {
@@ -240,7 +225,6 @@ const ConditionRuleBuilder = ({
     return selectedOperator?.valueRequired && !rule.value;
   };
 
-  // Simplified rule and group management functions
   const addRule = useCallback((groupPath) => {
     const newRule = {
       id: generateId(),
@@ -293,7 +277,6 @@ const ConditionRuleBuilder = ({
 
   const updateRule = useCallback((groupPath, index, field, value) => {
     setNotification((prev) => {
-      // Create a deep copy to avoid mutation issues
       const updatedNotification = JSON.parse(JSON.stringify(prev));
       const group = getGroupByPath(
         updatedNotification.conditionGroup,
@@ -301,10 +284,8 @@ const ConditionRuleBuilder = ({
       );
 
       if (group && group.rules && group.rules[index]) {
-        // Update the rule
         group.rules[index][field] = value;
 
-        // Clear dependent fields when operator changes
         if (field === "operator") {
           const selectedField = fieldOptionsRef.current.find(
             (f) => f.value === group.rules[index].field
@@ -340,7 +321,6 @@ const ConditionRuleBuilder = ({
     });
   }, []);
 
-  // Render value input based on field type
   const renderValueInput = useCallback(
     (rule, groupPath, index) => {
       const field = fieldOptionsRef.current.find((f) => f.value === rule.field);
@@ -445,7 +425,6 @@ const ConditionRuleBuilder = ({
     [updateRule, validateValue]
   );
 
-  // Helper function to render select fields
   const renderSelectField = useCallback((rule, updateValue, hasError) => {
     const getOptions = () => {
       switch (rule.field) {
@@ -491,13 +470,11 @@ const ConditionRuleBuilder = ({
     );
   }, []);
 
-  // Rule Component
   const RuleComponent = memo(
     ({ rule, groupPath, index }) => {
       const selectedField = fieldOptionsRef.current.find(
         (f) => f.value === rule.field
       );
-      // Get operators from the ref, which will be updated when operatorList loads
       const operators =
         operatorListRef.current.data?.data?.find(
           (op) => op.fieldType === selectedField?.type
@@ -567,7 +544,6 @@ const ConditionRuleBuilder = ({
       );
     },
     (prevProps, nextProps) => {
-      // Custom comparison to prevent unnecessary re-renders
       return (
         prevProps.rule === nextProps.rule &&
         prevProps.groupPath === nextProps.groupPath &&
@@ -576,7 +552,6 @@ const ConditionRuleBuilder = ({
     }
   );
 
-  // Group Component
   const GroupComponent = memo(({ group, groupPath = [], isRoot = false }) => {
     const [collapsed, setCollapsed] = useState(false);
 
@@ -732,7 +707,6 @@ const ConditionRuleBuilder = ({
     );
   });
 
-  // Transform notification data for API
   useEffect(() => {
     const transformNotificationData = () => {
       const transformGroup = (group) => {
@@ -742,18 +716,15 @@ const ConditionRuleBuilder = ({
         };
         group.rules.forEach((rule) => {
           if (rule.logic) {
-            // Handle nested group
             const nestedGroup = transformGroup(rule);
             if (nestedGroup) {
               result.conditions.push(nestedGroup);
             }
           } else {
-            // Handle rule
             const fieldOption = fieldOptionsRef.current.find(
               (f) => f.value === rule.field
             );
             if (fieldOption && rule.field && rule.operator) {
-              console.log("fieldOption", fieldOption);
               const condition = {
                 attributeId: fieldOption.attributeId,
                 operator: rule.operator,
@@ -782,7 +753,6 @@ const ConditionRuleBuilder = ({
       };
     };
 
-    // Only transform if we have valid data and operators are loaded
     if (
       notificationRef.current &&
       notificationRef.current.conditionGroup &&
@@ -852,13 +822,15 @@ const ConditionRuleBuilder = ({
   );
 };
 
-// Main EditNotificationTypes Component
 export default function EditNotificationTypes() {
   const { id } = useParams();
   const [expanded, setExpanded] = useState({
     condition: true,
     reminder: true,
   });
+
+  const { getHeadingSx } = useComponentTypography();
+
   const [notificationData, setNotificationData] = useState({});
   const [notificationTypeId, setNotificationTypeId] = useState(id);
   const [fieldOptions, setFieldOptions] = useState([]);
@@ -878,93 +850,80 @@ export default function EditNotificationTypes() {
 
   const navigate = useNavigate();
 
-  
-  // Transform backend response to component state
-useEffect(() => {
-  if (notificationDataFetch.data?.data && list) {
-    const backendData = notificationDataFetch.data.data;
-    // First, get the fieldOptions for the selected entity
-    const selectedEntity = list.find(
-      (item) => item._id === backendData.dataSourceId
-    );
-    console.log("kk", selectedEntity);
-    let newFieldOptions = [];
-    if (selectedEntity?.fieldSettings) {
-      newFieldOptions = selectedEntity.fieldSettings.map((setting) => ({
-        label: setting.label,
-        value: setting.mappedAttributeName,
-        attributeId: setting.attributeId,
-        type: setting?.type,
-        refAttributeId: setting?.refAttributeId || [], // Keep as array to match backend format
-      }));
-    }
-    setFieldOptions(newFieldOptions);
-    
-    // Now, transform the conditions to rules using the newFieldOptions
-    const transformConditions = (conditions) => {
-      return conditions.map((condition, index) => {
-        // Check if this condition has nested conditions (group)
-        if (
-          condition.conditions &&
-          Array.isArray(condition.conditions) &&
-          condition.conditions.length > 0
-        ) {
-          // This is a nested group
-          return {
-            id: `group-${index}`,
-            logic: condition.group_operator,
-            rules: transformConditions(condition.conditions),
-          };
-        } else {
-          // This is a simple rule
-          // Find matching field by both attributeId AND refAttributeId
-          const matchingField = newFieldOptions.find(
-            (f) => {
-              // Check attributeId match
-              if (f.attributeId !== condition.attributeId) return false;
-              
-              // Handle refAttributeId comparison
-              const fieldRef = Array.isArray(f.refAttributeId) ? f.refAttributeId : [];
-              const conditionRef = Array.isArray(condition.refAttributeId) ? condition.refAttributeId : [];
-              
-              // Compare arrays by length and content
-              if (fieldRef.length !== conditionRef.length) return false;
-              
-              // Check if all elements match
-              return fieldRef.every((val, idx) => val === conditionRef[idx]);
-            }
-          );
-          
-          return {
-            id: `rule-${index}`,
-            field: matchingField?.value || "",
-            operator: condition.operator,
-            value: condition.value,
-            timeUnit: condition.timeUnit || "",
-          };
-        }
-      });
-    };
-    
-    // Get the first condition group
-    const firstGroup = backendData.conditionGroups[0];
-    if (firstGroup) {
-      const transformedRules = transformConditions(firstGroup.conditions);
-      const newInitialNotification = {
-        name: backendData.name,
-        entityId: backendData.dataSourceId,
-        conditionGroup: {
-          logic: firstGroup.group_operator,
-          rules: transformedRules,
-        },
-      };
-      setInitialNotification(newInitialNotification);
-      setNotificationTypeId(backendData._id);
-    }
-  }
-}, [notificationDataFetch.data, list]);
+  useEffect(() => {
+    if (notificationDataFetch.data?.data && list) {
+      const backendData = notificationDataFetch.data.data;
+      const selectedEntity = list.find(
+        (item) => item._id === backendData.dataSourceId
+      );
+      let newFieldOptions = [];
+      if (selectedEntity?.fieldSettings) {
+        newFieldOptions = selectedEntity.fieldSettings.map((setting) => ({
+          label: setting.label,
+          value: setting.mappedAttributeName,
+          attributeId: setting.attributeId,
+          type: setting?.type,
+          refAttributeId: setting?.refAttributeId || [],
+        }));
+      }
+      setFieldOptions(newFieldOptions);
 
-  // Handle errors
+      const transformConditions = (conditions) => {
+        return conditions.map((condition, index) => {
+          if (
+            condition.conditions &&
+            Array.isArray(condition.conditions) &&
+            condition.conditions.length > 0
+          ) {
+            return {
+              id: `group-${index}`,
+              logic: condition.group_operator,
+              rules: transformConditions(condition.conditions),
+            };
+          } else {
+            const matchingField = newFieldOptions.find((f) => {
+              if (f.attributeId !== condition.attributeId) return false;
+
+              const fieldRef = Array.isArray(f.refAttributeId)
+                ? f.refAttributeId
+                : [];
+              const conditionRef = Array.isArray(condition.refAttributeId)
+                ? condition.refAttributeId
+                : [];
+
+              if (fieldRef.length !== conditionRef.length) return false;
+
+              return fieldRef.every((val, idx) => val === conditionRef[idx]);
+            });
+
+            return {
+              id: `rule-${index}`,
+              field: matchingField?.value || "",
+              operator: condition.operator,
+              value: condition.value,
+              timeUnit: condition.timeUnit || "",
+            };
+          }
+        });
+      };
+
+      const firstGroup = backendData.conditionGroups[0];
+      if (firstGroup) {
+        const transformedRules = transformConditions(firstGroup.conditions);
+        const newInitialNotification = {
+          name: backendData.name,
+          entityId: backendData.dataSourceId,
+          conditionGroup: {
+            logic: firstGroup.group_operator,
+            rules: transformedRules,
+          },
+        };
+        setInitialNotification(newInitialNotification);
+        setNotificationTypeId(backendData._id);
+      }
+    }
+  }, [notificationDataFetch.data, list]);
+
   useEffect(() => {
     if (notificationDataFetch.error) {
       toast.error("Failed to load notification data");
@@ -1006,7 +965,6 @@ useEffect(() => {
     }
   };
 
-  // Show loading state while data is being fetched
   if (notificationDataFetch.isLoading || !initialNotification) {
     return (
       <Box
@@ -1020,7 +978,6 @@ useEffect(() => {
         }}
       >
         <CircularProgress />
-        <Typography>Loading notification data...</Typography>
       </Box>
     );
   }
@@ -1039,11 +996,20 @@ useEffect(() => {
         <Typography
           variant="h4"
           sx={{
-            mb: 3,
-            fontWeight: 400,
-            color: STYLE_GUIDE?.COLORS?.primaryDark || "#1976d2",
+            ...getHeadingSx(),
+            mb: STYLE_GUIDE?.SPACING?.s3,
           }}
         >
+          <ArrowBackIcon
+            onClick={() => navigate("/notivix/notification")} 
+            sx={{
+              cursor: "pointer",
+              color: STYLE_GUIDE?.COLORS?.primaryDark || "inherit",
+              fontSize: STYLE_GUIDE?.TYPOGRAPHY?.fontSize?.xxl,
+              marginRight:STYLE_GUIDE.SPACING.s2,
+              fontWeight:STYLE_GUIDE.TYPOGRAPHY.fontWeight.medium
+            }}
+          />
           Edit Notification Type
         </Typography>
 
@@ -1055,7 +1021,6 @@ useEffect(() => {
         >
           <CardContent sx={{ p: 3 }}>
             <Box component="form" onSubmit={handleSubmit}>
-              {/* Condition Rule Builder Accordion */}
               <Accordion
                 expanded={expanded.condition}
                 onChange={handleAccordionChange("condition")}
@@ -1102,7 +1067,6 @@ useEffect(() => {
                 </AccordionDetails>
               </Accordion>
 
-              {/* Frequency Accordion */}
               <Accordion
                 expanded={expanded.reminder && notificationTypeId !== null}
                 onChange={handleAccordionChange("reminder")}

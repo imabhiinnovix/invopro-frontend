@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Dialog,
   DialogTitle,
@@ -14,36 +14,119 @@ import {
   MenuItem,
   Chip,
   Stack,
+  Checkbox,
+  ListItemText,
+  FormControlLabel,
+  Radio,
+  RadioGroup,
 } from '@mui/material';
 import { STYLE_GUIDE } from '../../../styles';
 import { useUnifiedTheme } from '../../../hooks/useUnifiedTheme';
 import { useComponentTypography } from '../../../hooks/useComponentTypography';
+import useGet from '../../../hooks/useGet';
+import axiosInstance from '../../../services/axiosInstance';
+import { GET } from '../../../services/apiRoutes';
+import { useQueryClient } from '@tanstack/react-query';
 
 interface NotivixFiltersModalProps {
   open: boolean;
   onClose: () => void;
-  onApplyFilters: (filters: FilterOptions) => void;
-  currentFilters?: FilterOptions;
-  availableFilters?: Array<{
-    attributeId: string;
-    label: string;
-    type: string;
-    isDashboardFilter: boolean;
-    attributeType?: string;
-    optionAttributeId?: string | null;
-  }>;
+  onApplyFilters: (filters: Record<string, any>) => void;
+  currentFilters?: Record<string, any>;
+  dataSourceId: string;
+  filterFlag?: 'isFilterEnable' | 'isDashboardFilter';
   isLoading?: boolean;
 }
 
-export interface FilterOptions {
-  status?: string;
-  priority?: string;
-  category?: string;
-  dateRange?: {
-    startDate: string;
-    endDate: string;
+interface FieldSetting {
+  attributeId: string;
+  label: string;
+  type: string;
+  isDashboardFilter: boolean;
+  isFilterEnable: boolean;
+  isDerived?: boolean;
+  optionAttributeId?: string;
+}
+
+interface EntityFieldOption {
+  label: string;
+  value: {
+    attributeId: string;
+    type: string;
+    isDerived?: boolean;
   };
-  searchText?: string;
+}
+
+interface DataSourceResponse {
+  success: boolean;
+  message: string;
+  data: {
+    _id: string;
+    code: string;
+    name: string;
+    description: string;
+    entityId: {
+      _id: string;
+      name: string;
+      description: string;
+      attributes: EntityAttribute[];
+    };
+    fieldSettings: FieldSetting[];
+    entityFieldOptions: EntityFieldOption[];
+    isActive: boolean;
+    isShowMenu: boolean;
+    isVisible: boolean;
+    versionType: string;
+    createdAt: string;
+    updatedAt: string;
+    createdBy: string;
+    updatedBy: string;
+  };
+}
+
+interface EntityAttribute {
+  _id: string;
+  name: string;
+  mappingName: string;
+  type: string;
+  required: string;
+  validation: any[];
+  transformations: any[];
+  optionAttributeId: string | null;
+  cleaner: any[];
+  isReferenceEdit: boolean;
+  referenceEntitySetting?: {
+    refEntityId: string;
+    refEntityField: string;
+    relationType: string;
+  };
+}
+
+interface AttributeOptionsResponse {
+  success: boolean;
+  data: {
+    attributeValue: string[];
+  };
+}
+
+interface DerivedFieldResponse {
+  success: boolean;
+  message: string;
+  data: {
+    _id: string;
+    name: string;
+    type: string;
+    valueRules: Array<{
+      value: string;
+      conditionOperator: string;
+      conditions: Array<{
+        fieldId: string;
+        operator: string;
+        matchValues: any[];
+      }>;
+      _id: string;
+    }>;
+  };
 }
 
 const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
@@ -51,38 +134,435 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
   onClose,
   onApplyFilters,
   currentFilters = {},
-  availableFilters = [],
+  dataSourceId,
+  filterFlag = 'isFilterEnable',
   isLoading = false,
 }) => {
   const theme = useUnifiedTheme();
   const { getButtonSx } = useComponentTypography();
-  
-  const [filters, setFilters] = useState<FilterOptions>(currentFilters);
+  const [filters, setFilters] = useState<Record<string, any>>(currentFilters);
+  const [optionsCache, setOptionsCache] = useState<Record<string, string[]>>({});
+  const [derivedFieldsCache, setDerivedFieldsCache] = useState<Record<string, string[]>>({});
+  const queryClient = useQueryClient();
+
+  // Fetch data source details
+  const dataSourceQuery = useGet<DataSourceResponse>(
+    ['dataSourceDetails', dataSourceId],
+    `${GET.GET_VERSION_DATA_BY_ID}${dataSourceId}`,
+    !!dataSourceId && open // Only fetch when modal is open and dataSourceId exists
+  );
+
+  // Force refetch when modal opens
+  useEffect(() => {
+    if (open && dataSourceId) {
+      dataSourceQuery.refetch?.();
+    }
+  }, [open, dataSourceId, dataSourceQuery.refetch]);
+
+  // Prefetch data when dataSourceId is available but modal is closed
+  useEffect(() => {
+    if (dataSourceId && !open) {
+      queryClient.prefetchQuery({
+        queryKey: ['dataSourceDetails', dataSourceId],
+        queryFn: async () => {
+          const response = await axiosInstance.get<DataSourceResponse>(`${GET.GET_VERSION_DATA_BY_ID}${dataSourceId}`);
+          return response.data;
+        },
+        staleTime: 5 * 60 * 1000,
+      });
+    }
+  }, [dataSourceId, open, queryClient]);
+
+  const filteredFieldSettings = React.useMemo(() => {
+    if (!dataSourceQuery.data?.data?.fieldSettings) return [];
+    return dataSourceQuery.data.data.fieldSettings.filter((field) => field[filterFlag] === true);
+  }, [dataSourceQuery.data, filterFlag]);
+
+  const entityFieldOptionsMap = React.useMemo(() => {
+    const map: Record<string, EntityFieldOption> = {};
+    dataSourceQuery.data?.data.entityFieldOptions?.forEach((option) => {
+      map[option.value.attributeId] = option;
+    });
+    return map;
+  }, [dataSourceQuery.data]);
+
+  const entityAttributeOptionMap = React.useMemo(() => {
+    const attrMap: Record<string, string | null> = {};
+    dataSourceQuery.data?.data?.entityId?.attributes?.forEach((attr) => {
+      attrMap[attr._id] = attr.optionAttributeId;
+    });
+    return attrMap;
+  }, [dataSourceQuery.data]);
+
+  // Fetch attribute options for option/multioption fields
+  const fetchAttributeOptions = async (optionAttributeId: string) => {
+    if (optionsCache[optionAttributeId]) {
+      return optionsCache[optionAttributeId];
+    }
+    try {
+      const { data } = await axiosInstance.get<AttributeOptionsResponse>(
+        `/common/attributeOptions/get/${optionAttributeId}`
+      );
+      if (data.success && data.data.attributeValue) {
+        setOptionsCache((prev) => ({
+          ...prev,
+          [optionAttributeId]: data.data.attributeValue,
+        }));
+        return data.data.attributeValue;
+      }
+    } catch (error) {
+      console.error('Error fetching attribute options:', error);
+    }
+    return [];
+  };
+
+  // Fetch derived field options
+  const fetchDerivedFieldOptions = async (attributeId: string) => {
+    if (derivedFieldsCache[attributeId]) {
+      return derivedFieldsCache[attributeId];
+    }
+    try {
+      const { data } = await axiosInstance.get<DerivedFieldResponse>(`/common/derivedField/${attributeId}`);
+      if (data.success && data.data.valueRules) {
+        const options = data.data.valueRules.map((rule) => rule.value);
+        setDerivedFieldsCache((prev) => ({
+          ...prev,
+          [attributeId]: options,
+        }));
+        return options;
+      }
+    } catch (error) {
+      console.error('Error fetching derived field options:', error);
+    }
+    return [];
+  };
+
+  // Load options for option/multioption fields
+  useEffect(() => {
+    if (filteredFieldSettings.length > 0) {
+      const fetchOptions = async () => {
+        const promises = filteredFieldSettings.map(async (field) => {
+          if (field.type === 'option' || field.type === 'multioption') {
+            if (field.isDerived) {
+              // Fetch derived field options
+              await fetchDerivedFieldOptions(field.attributeId);
+            } else if (!!entityAttributeOptionMap[field.attributeId]) {
+              // Fetch regular attribute options
+              await fetchAttributeOptions(entityAttributeOptionMap[field.attributeId]!);
+            }
+          }
+        });
+        await Promise.all(promises);
+      };
+      fetchOptions();
+    }
+  }, [filteredFieldSettings]);
 
   const handleApplyFilters = () => {
-    onApplyFilters(filters);
+    // Convert filters to use entity field option labels as keys
+    const transformedFilters: Record<string, any> = {};
+    Object.entries(filters).forEach(([attributeId, value]) => {
+      const entityOption = entityFieldOptionsMap[attributeId];
+
+      if (entityOption && value !== undefined && value !== '' && value !== null) {
+        if (entityOption?.value?.isDerived) {
+          transformedFilters[`Derived.${entityOption.label}`] = value;
+        } else {
+          transformedFilters[entityOption.label] = value;
+        }
+      }
+    });
+
+    onApplyFilters(transformedFilters);
     onClose();
   };
 
   const handleClearFilters = () => {
-    const clearedFilters: FilterOptions = {};
-    setFilters(clearedFilters);
-    onApplyFilters(clearedFilters);
+    setFilters({});
+    onApplyFilters({});
   };
 
-  const handleFilterChange = (key: keyof FilterOptions, value: any) => {
-    setFilters(prev => ({
+  const handleFilterChange = (attributeId: string, value: any) => {
+    setFilters((prev) => ({
       ...prev,
-      [key]: value,
+      [attributeId]: value,
     }));
   };
 
-
-  const hasActiveFilters = Object.values(filters).some(value => 
-    value !== undefined && value !== '' && 
-    (typeof value !== 'object' || Object.values(value).some(v => v !== undefined && v !== ''))
+  const hasActiveFilters = Object.values(filters).some(
+    (value) =>
+      value !== undefined &&
+      value !== '' &&
+      value !== null &&
+      (typeof value !== 'object' ||
+        (Array.isArray(value) && value.length > 0) ||
+        (!Array.isArray(value) && Object.values(value).some((v) => v !== undefined && v !== '' && v !== null)))
   );
 
+  const renderFilterField = (field: FieldSetting) => {
+    // Get options based on field type
+    let options: string[] = [];
+    if (field.type === 'option' || field.type === 'multioption') {
+      if (field.isDerived) {
+        options = derivedFieldsCache[field.attributeId] || [];
+      } else if (entityAttributeOptionMap[field.attributeId]) {
+        options = optionsCache[entityAttributeOptionMap[field.attributeId]!] || [];
+      }
+    }
+    const currentValue = filters[field.attributeId];
+
+    switch (field.type) {
+      case 'boolean':
+        return (
+          <Box key={field.attributeId}>
+            <Typography
+              variant="subtitle2"
+              sx={{
+                mb: STYLE_GUIDE.SPACING.s2,
+                color: theme.palette.text.secondary,
+              }}
+            >
+              {field.label}
+            </Typography>
+            <RadioGroup
+              value={currentValue || ''}
+              onChange={(e) => handleFilterChange(field.attributeId, e.target.value)}
+              row
+            >
+              <FormControlLabel
+                value=""
+                control={<Radio size="small" />}
+                label="All"
+                sx={{ color: theme.palette.text.primary }}
+              />
+              <FormControlLabel
+                value="true"
+                control={<Radio size="small" />}
+                label="True"
+                sx={{ color: theme.palette.text.primary }}
+              />
+              <FormControlLabel
+                value="false"
+                control={<Radio size="small" />}
+                label="False"
+                sx={{ color: theme.palette.text.primary }}
+              />
+            </RadioGroup>
+          </Box>
+        );
+      case 'date':
+        return (
+          <TextField
+            key={field.attributeId}
+            label={field.label}
+            placeholder={`Enter ${field.label.toLowerCase()}...`}
+            type="date"
+            value={currentValue || ''}
+            onChange={(e) => handleFilterChange(field.attributeId, e.target.value)}
+            fullWidth
+            size="small"
+            InputLabelProps={{ shrink: true }}
+            sx={{
+              '& .MuiOutlinedInput-root': {
+                backgroundColor: theme.getDropdownBackground(),
+                '& fieldset': {
+                  borderColor: theme.getInputBorderColor(),
+                },
+                '&:hover fieldset': {
+                  borderColor: theme.border?.hover || STYLE_GUIDE.COLORS.darkBorderHover,
+                },
+                '&.Mui-focused fieldset': {
+                  borderColor: theme.input?.focusBorder || STYLE_GUIDE.COLORS.inputFocusFallback,
+                },
+              },
+              '& .MuiInputLabel-root': {
+                color: theme.palette.text.secondary,
+              },
+              '& .MuiInputBase-input': {
+                color: theme.getInputTextColor(),
+              },
+            }}
+          />
+        );
+      case 'dateRange':
+        return (
+          <Stack key={field.attributeId} spacing={STYLE_GUIDE.SPACING.s2}>
+            <Typography variant="subtitle2" color="text.secondary">
+              {field.label}
+            </Typography>
+            <Stack direction="row" spacing={STYLE_GUIDE.SPACING.s2}>
+              <TextField
+                label="Start Date"
+                type="date"
+                value={currentValue?.startDate || ''}
+                onChange={(e) =>
+                  handleFilterChange(field.attributeId, {
+                    ...currentValue,
+                    startDate: e.target.value,
+                  })
+                }
+                size="small"
+                InputLabelProps={{ shrink: true }}
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    backgroundColor: theme.getDropdownBackground(),
+                    '& fieldset': {
+                      borderColor: theme.getInputBorderColor(),
+                    },
+                  },
+                }}
+              />
+              <TextField
+                label="End Date"
+                type="date"
+                value={currentValue?.endDate || ''}
+                onChange={(e) =>
+                  handleFilterChange(field.attributeId, {
+                    ...currentValue,
+                    endDate: e.target.value,
+                  })
+                }
+                size="small"
+                InputLabelProps={{ shrink: true }}
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    backgroundColor: theme.getDropdownBackground(),
+                    '& fieldset': {
+                      borderColor: theme.getInputBorderColor(),
+                    },
+                  },
+                }}
+              />
+            </Stack>
+          </Stack>
+        );
+      case 'option':
+        return (
+          <FormControl key={field.attributeId} fullWidth size="small">
+            <InputLabel sx={{ color: theme.palette.text.secondary }}>
+              {field.label} {field.isDerived && '(Derived)'}
+            </InputLabel>
+            <Select
+              value={currentValue || ''}
+              onChange={(e) => handleFilterChange(field.attributeId, e.target.value)}
+              label={`${field.label}${field.isDerived ? ' (Derived)' : ''}`}
+              sx={{
+                backgroundColor: theme.getDropdownBackground(),
+                '& .MuiOutlinedInput-notchedOutline': {
+                  borderColor: theme.getInputBorderColor(),
+                },
+                '&:hover .MuiOutlinedInput-notchedOutline': {
+                  borderColor: theme.border?.hover || STYLE_GUIDE.COLORS.darkBorderHover,
+                },
+                '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                  borderColor: theme.input?.focusBorder || STYLE_GUIDE.COLORS.inputFocusFallback,
+                },
+              }}
+            >
+              <MenuItem value="">All {field.label}</MenuItem>
+              {options.map((option) => (
+                <MenuItem key={option} value={option}>
+                  {option}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        );
+      case 'multioption':
+        return (
+          <FormControl key={field.attributeId} fullWidth size="small">
+            <InputLabel sx={{ color: theme.palette.text.secondary }}>
+              {field.label} {field.isDerived && '(Derived)'}
+            </InputLabel>
+            <Select
+              multiple
+              value={currentValue || []}
+              onChange={(e) => handleFilterChange(field.attributeId, e.target.value)}
+              label={`${field.label}${field.isDerived ? ' (Derived)' : ''}`}
+              renderValue={(selected) => (
+                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                  {(selected as string[]).map((value) => (
+                    <Chip key={value} label={value} size="small" />
+                  ))}
+                </Box>
+              )}
+              sx={{
+                backgroundColor: theme.getDropdownBackground(),
+                '& .MuiOutlinedInput-notchedOutline': {
+                  borderColor: theme.getInputBorderColor(),
+                },
+              }}
+            >
+              {options.map((option) => (
+                <MenuItem key={option} value={option}>
+                  <Checkbox checked={(currentValue || []).includes(option)} size="small" />
+                  <ListItemText primary={option} />
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        );
+      case 'number':
+        return (
+          <TextField
+            key={field.attributeId}
+            label={field.label}
+            placeholder={`Enter ${field.label.toLowerCase()}...`}
+            type="number"
+            value={currentValue || ''}
+            onChange={(e) => handleFilterChange(field.attributeId, e.target.value)}
+            fullWidth
+            size="small"
+            sx={{
+              '& .MuiOutlinedInput-root': {
+                backgroundColor: theme.getDropdownBackground(),
+                '& fieldset': {
+                  borderColor: theme.getInputBorderColor(),
+                },
+                '&:hover fieldset': {
+                  borderColor: theme.border?.hover || STYLE_GUIDE.COLORS.darkBorderHover,
+                },
+                '&.Mui-focused fieldset': {
+                  borderColor: theme.input?.focusBorder || STYLE_GUIDE.COLORS.inputFocusFallback,
+                },
+              },
+            }}
+          />
+        );
+      default: // text, richtext, url, user, email, text-with-option
+        return (
+          <TextField
+            key={field.attributeId}
+            label={field.label}
+            placeholder={`Enter ${field.label.toLowerCase()}...`}
+            value={currentValue || ''}
+            onChange={(e) => handleFilterChange(field.attributeId, e.target.value)}
+            fullWidth
+            size="small"
+            sx={{
+              '& .MuiOutlinedInput-root': {
+                backgroundColor: theme.getDropdownBackground(),
+                '& fieldset': {
+                  borderColor: theme.getInputBorderColor(),
+                },
+                '&:hover fieldset': {
+                  borderColor: theme.border?.hover || STYLE_GUIDE.COLORS.darkBorderHover,
+                },
+                '&.Mui-focused fieldset': {
+                  borderColor: theme.input?.focusBorder || STYLE_GUIDE.COLORS.inputFocusFallback,
+                },
+              },
+              '& .MuiInputLabel-root': {
+                color: theme.palette.text.secondary,
+              },
+              '& .MuiInputBase-input': {
+                color: theme.getInputTextColor(),
+              },
+            }}
+          />
+        );
+    }
+  };
 
   return (
     <Dialog
@@ -104,131 +584,73 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
         }}
       >
         <Typography variant="h6" sx={{ fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.medium }}>
-          Dashboard Filters
+          Filters
         </Typography>
       </DialogTitle>
-
       <DialogContent sx={{ pt: STYLE_GUIDE.SPACING.s4 }}>
-        {isLoading ? (
-          <Box sx={{ display: 'flex', justifyContent: 'center', py: STYLE_GUIDE.SPACING.s6 }}>
+        {isLoading || dataSourceQuery.isLoading ? (
+          <Box
+            sx={{
+              display: 'flex',
+              justifyContent: 'center',
+              py: STYLE_GUIDE.SPACING.s6,
+            }}
+          >
             <Typography variant="body2" color="text.secondary">
               Loading filters...
             </Typography>
           </Box>
+        ) : dataSourceQuery.isError ? (
+          <Box
+            sx={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              py: STYLE_GUIDE.SPACING.s6,
+            }}
+          >
+            <Typography variant="body2" color="error" sx={{ mb: 2 }}>
+              Error loading filters: {dataSourceQuery.error?.message || 'Unknown error'}
+            </Typography>
+            <Button variant="outlined" onClick={() => dataSourceQuery.refetch()}>
+              Retry
+            </Button>
+          </Box>
+        ) : filteredFieldSettings.length === 0 ? (
+          <Box
+            sx={{
+              display: 'flex',
+              justifyContent: 'center',
+              py: STYLE_GUIDE.SPACING.s6,
+            }}
+          >
+            <Typography variant="body2" color="text.secondary">
+              No filters available
+            </Typography>
+          </Box>
         ) : (
-          <Stack spacing={STYLE_GUIDE.SPACING.s4}>
-
-            {/* Dynamic Filters based on available filters */}
-            {availableFilters
-              .filter((filter) => filter.isDashboardFilter)
-              .map((filter) => {
-                // Render different filter types based on attributeType
-                if (filter.attributeType === 'boolean') {
-                  return (
-                    <Box key={filter.attributeId}>
-                      <Typography variant="subtitle2" sx={{ mb: STYLE_GUIDE.SPACING.s2, color: theme.palette.text.secondary }}>
-                        {filter.label}
-                      </Typography>
-                      <FormControl component="fieldset">
-                        <Stack direction="row" spacing={STYLE_GUIDE.SPACING.s4}>
-                          <label style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <input
-                              type="radio"
-                              name={filter.attributeId}
-                              value="true"
-                              checked={filters[filter.attributeId as keyof FilterOptions] === 'true'}
-                              onChange={(e) => handleFilterChange(filter.attributeId as keyof FilterOptions, e.target.value)}
-                              style={{ accentColor: theme.palette.primary.main }}
-                            />
-                            <span style={{ color: theme.palette.text.primary }}>True</span>
-                          </label>
-                          <label style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <input
-                              type="radio"
-                              name={filter.attributeId}
-                              value="false"
-                              checked={filters[filter.attributeId as keyof FilterOptions] === 'false'}
-                              onChange={(e) => handleFilterChange(filter.attributeId as keyof FilterOptions, e.target.value)}
-                              style={{ accentColor: theme.palette.primary.main }}
-                            />
-                            <span style={{ color: theme.palette.text.primary }}>False</span>
-                          </label>
-                        </Stack>
-                      </FormControl>
-                    </Box>
-                  );
-                } else if (filter.attributeType === 'multioption') {
-                  return (
-                    <FormControl key={filter.attributeId} fullWidth size="small">
-                      <InputLabel sx={{ color: theme.palette.text.secondary }}>{filter.label}</InputLabel>
-                      <Select
-                        value={filters[filter.attributeId as keyof FilterOptions] || ''}
-                        onChange={(e) => handleFilterChange(filter.attributeId as keyof FilterOptions, e.target.value)}
-                        label={filter.label}
-                        sx={{
-                          backgroundColor: theme.getDropdownBackground(),
-                          '& .MuiOutlinedInput-notchedOutline': {
-                            borderColor: theme.getInputBorderColor(),
-                          },
-                          '&:hover .MuiOutlinedInput-notchedOutline': {
-                            borderColor: theme.border?.hover || STYLE_GUIDE.COLORS.darkBorderHover,
-                          },
-                          '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                            borderColor: theme.input?.focusBorder || STYLE_GUIDE.COLORS.inputFocusFallback,
-                          },
-                          '& .MuiSelect-icon': {
-                            color: theme.palette.text.secondary,
-                          },
-                        }}
-                      >
-                        {/* <MenuItem value="">All {filter.label}</MenuItem> */}
-                        <MenuItem value="option1">No Option there</MenuItem>
-                      </Select>
-                    </FormControl>
-                  );
-                } else {
-                  // Default to text input
-                  return (
-                    <TextField
-                      key={filter.attributeId}
-                      label={filter.label}
-                      placeholder={`Enter ${filter.label.toLowerCase()}...`}
-                      value={filters[filter.attributeId as keyof FilterOptions] || ''}
-                      onChange={(e) => handleFilterChange(filter.attributeId as keyof FilterOptions, e.target.value)}
-                      fullWidth
-                      size="small"
-                      sx={{
-                        '& .MuiOutlinedInput-root': {
-                          backgroundColor: theme.getDropdownBackground(),
-                          '& fieldset': {
-                            borderColor: theme.getInputBorderColor(),
-                          },
-                          '&:hover fieldset': {
-                            borderColor: theme.border?.hover || STYLE_GUIDE.COLORS.darkBorderHover,
-                          },
-                          '&.Mui-focused fieldset': {
-                            borderColor: theme.input?.focusBorder || STYLE_GUIDE.COLORS.inputFocusFallback,
-                          },
-                        },
-                        '& .MuiInputLabel-root': {
-                          color: theme.palette.text.secondary,
-                        },
-                        '& .MuiInputBase-input': {
-                          color: theme.getInputTextColor(),
-                        },
-                      }}
-                    />
-                  );
-                }
-              })}
-          </Stack>
+          <Box
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(3, 1fr)',
+              gap: STYLE_GUIDE.SPACING.s4,
+              '@media (max-width: 900px)': {
+                gridTemplateColumns: 'repeat(2, 1fr)',
+              },
+              '@media (max-width: 600px)': {
+                gridTemplateColumns: '1fr',
+              },
+            }}
+          >
+            {filteredFieldSettings.map((field) => renderFilterField(field))}
+          </Box>
         )}
       </DialogContent>
-
       <DialogActions sx={{ p: STYLE_GUIDE.SPACING.s4, gap: STYLE_GUIDE.SPACING.s2 }}>
         <Button
           onClick={handleClearFilters}
           variant="outlined"
+          disabled={!hasActiveFilters}
           sx={{
             ...getButtonSx(),
             borderColor: theme.palette.error.main,
@@ -236,6 +658,10 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
             '&:hover': {
               borderColor: theme.palette.error.dark,
               backgroundColor: theme.palette.error.light,
+            },
+            '&:disabled': {
+              borderColor: theme.palette.action.disabled,
+              color: theme.palette.action.disabled,
             },
           }}
         >
@@ -274,4 +700,4 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
   );
 };
 
-export default NotivixFiltersModal; 
+export default NotivixFiltersModal;

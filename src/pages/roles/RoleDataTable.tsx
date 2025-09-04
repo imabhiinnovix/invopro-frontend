@@ -5,15 +5,13 @@ import {
   Box,
   Card,
   CardContent,
-  Typography,
   TextField,
   Button,
   InputAdornment,
-  Chip,
   Tooltip,
+  Chip,
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
-import FilterListIcon from "@mui/icons-material/FilterList";
 import AddIcon from "@mui/icons-material/Add";
 import EditIcon from "@mui/icons-material/Edit";
 import VisibilityIcon from "@mui/icons-material/Visibility";
@@ -22,8 +20,8 @@ import { useUnifiedTheme } from "../../hooks/useUnifiedTheme";
 import useGet from "../../hooks/useGet";
 import { CustomPagination } from "../../components/common/pagination/customPagination";
 import { GET } from "../../services/apiRoutes";
+import { toast } from "react-toastify";
 
-// Define types
 interface Role {
   _id: string;
   organizationId: string;
@@ -70,7 +68,6 @@ const columns: GridColDef[] = [
     resizable: false,
     renderCell: (params) => (
       <Box sx={{ display: "flex", gap: 1 }}>
-
         <Tooltip title="Edit" arrow>
           <Button
             variant="text"
@@ -139,23 +136,45 @@ export function RoleDataTable({
 }: RoleDataTableProps) {
   const theme = useUnifiedTheme();
   const perPageItem = paginationModel.pageSize;
-  
+
+  const [debouncedSearchValue, setDebouncedSearchValue] = useState(searchValue);
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      if (searchValue.length === 0) {
+        setDebouncedSearchValue("");
+      } else if (searchValue.length < 3) {
+        toast.warning("Please enter at least 3 characters");
+        setDebouncedSearchValue("");
+      } else {
+        setDebouncedSearchValue(searchValue);
+      }
+    }, 500);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [searchValue]);
+
   const roleList = useGet<ApiResponse>(
     [
       "roleList",
       String(paginationModel.page + 1),
       String(paginationModel.pageSize),
-      searchValue,
+      debouncedSearchValue,
       String(roleReload),
       filterValues.name,
       filterValues.organizationId,
       filterValues.status,
     ],
-    `${GET.ROLE_LIST}?page=${paginationModel.page + 1}&limit=${perPageItem}&search=${encodeURIComponent(searchValue)}&name=${encodeURIComponent(filterValues.name)}&organizationId=${encodeURIComponent(filterValues.organizationId)}&status=${encodeURIComponent(filterValues.status)}`,
+    `${GET.ROLE_LIST}?page=${paginationModel.page + 1}&limit=${perPageItem}&search=${encodeURIComponent(
+      debouncedSearchValue
+    )}&name=${encodeURIComponent(filterValues.name)}&organizationId=${encodeURIComponent(
+      filterValues.organizationId
+    )}&status=${encodeURIComponent(filterValues.status)}`,
     true
   );
 
-  // Process API data for DataGrid
   const rolesWithIds =
     Array.isArray(roleList?.data?.data) && roleList.data.data.length > 0
       ? roleList.data.data.map((role) => ({
@@ -169,12 +188,7 @@ export function RoleDataTable({
       : [];
 
   return (
-    <Card
-      sx={{
-        borderRadius: "8px",
-        overflow: "visible",
-      }}
-    >
+    <Card sx={{ borderRadius: "8px", overflow: "visible" }}>
       <CardContent sx={{ p: 3 }}>
         <Box
           sx={{
@@ -192,9 +206,7 @@ export function RoleDataTable({
             onChange={onSearchChange}
             sx={{
               width: "300px",
-              "& .MuiOutlinedInput-root": {
-                borderRadius: "8px",
-              },
+              "& .MuiOutlinedInput-root": { borderRadius: "8px" },
             }}
             InputProps={{
               startAdornment: (
@@ -204,29 +216,19 @@ export function RoleDataTable({
               ),
             }}
           />
+
           <Box sx={{ display: "flex", gap: 1 }}>
-            {/* <Button
-              variant="outlined"
-              startIcon={<FilterListIcon />}
-              onClick={onFilter}
-              sx={{
-                borderRadius: "8px",
-              }}
-            >
-              Filter
-            </Button> */}
             <Button
               variant="contained"
               startIcon={<AddIcon />}
               onClick={onAddRole}
-              sx={{
-                borderRadius: "8px",
-              }}
+              sx={{ borderRadius: "8px" }}
             >
               Add
             </Button>
           </Box>
         </Box>
+
         <DataGrid
           rows={rolesWithIds}
           columns={columns}
@@ -234,9 +236,7 @@ export function RoleDataTable({
           pageSizeOptions={[10, 20]}
           disableColumnMenu
           paginationMode="server"
-          sx={{
-            overflow: "visible",
-          }}
+          sx={{ overflow: "visible" }}
           loading={loading || roleList.isLoading}
           rowCount={roleList?.data?.totalCount || 0}
           paginationModel={paginationModel}

@@ -74,6 +74,7 @@ import { SaveWidgetModel } from '../../naturalLanguage/saveWidgetModel';
 import { STYLE_GUIDE } from '../../../styles';
 import { useUnifiedTheme } from '../../../hooks/useUnifiedTheme';
 import { useComponentTypography } from '../../../hooks/useComponentTypography';
+import { MetricCards } from './MetricCard';
 
 ChartJS.register(
   CategoryScale,
@@ -90,6 +91,7 @@ ChartJS.register(
 
 interface ChartGridProps {
   dashboardId: string;
+  dashboardFilters: any;
   isEditMode: boolean;
   onEditChart: (chart: ChartResponse) => void;
   isAddChartModalOpen: boolean;
@@ -199,8 +201,8 @@ const ChartContainer = styled(Box)(({ theme }) => ({
     '& .MuiTableContainer-root': {
       height: '100%',
       width: '100%',
-      overflow: 'auto'
-    }
+      overflow: 'auto',
+    },
   },
   '&:hover': {
     overflow: 'hidden',
@@ -565,6 +567,7 @@ const polarAreaLabelsPlugin = {
 
 export const ChartGrid: React.FC<ChartGridProps> = ({
   dashboardId,
+  dashboardFilters,
   isEditMode,
   onEditChart,
   isAddChartModalOpen,
@@ -638,13 +641,16 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
       if (isNaturalLangauage) {
         dispatch(resetChartAndWidgetData());
       } else {
-        dispatch(fetchChartData({ 
-          dashboardId,
-          dashboardType: currentDashboard?.settings?.dashboardType
-        }));
+        dispatch(
+          fetchChartData({
+            dashboardId,
+            dashboardType: currentDashboard?.settings?.dashboardType,
+            filters: dashboardFilters,
+          })
+        );
       }
     }
-  }, [dispatch, dashboardId, currentDashboard?.settings?.dashboardType]);
+  }, [dispatch, dashboardId, currentDashboard?.settings?.dashboardType, dashboardFilters]);
 
   const handleMenuClick = (event: React.MouseEvent<HTMLElement>, chart: ChartResponse) => {
     event.stopPropagation();
@@ -671,10 +677,13 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
 
       if (result.success) {
         toast.success('Chart deleted successfully!');
-        dispatch(fetchChartData({ 
-          dashboardId,
-          dashboardType: currentDashboard?.settings?.dashboardType
-        }));
+        dispatch(
+          fetchChartData({
+            dashboardId,
+            dashboardType: currentDashboard?.settings?.dashboardType,
+            filters: dashboardFilters,
+          })
+        );
       } else {
         toast.error(result.message || 'Failed to delete chart');
       }
@@ -804,7 +813,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
   const handleExportMenuClick = (event: React.MouseEvent<HTMLElement>, chart: ChartResponse) => {
     event.stopPropagation();
     if (chart.widgetTypeId?.chartType === 'tabular') {
-      handleDownload(chart)
+      handleDownload(chart);
       return;
     }
     setExportMenuAnchorEl(event.currentTarget);
@@ -848,8 +857,8 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
         const groupBy = chart.groupBy
           ? Array.isArray(chart.groupBy)
             ? chart.groupBy.map((group) => {
-              return { [group]: clickedData[group] };
-            })
+                return { [group]: clickedData[group] };
+              })
             : [{ [chart.groupBy]: clickedData.name }]
           : [];
 
@@ -859,10 +868,10 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
           conditions: chart.conditions || [],
           dimensions: isTrend
             ? [
-              {
-                versionValue: clickedData.name,
-              },
-            ]
+                {
+                  versionValue: clickedData.name,
+                },
+              ]
             : dimensions,
           dashboardFilters: {
             startVersionValue: startVersionValue,
@@ -963,15 +972,15 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
       chartType: widgetTypes.find((data) => data._id === formData.widgetTypeId)?.chartType,
     };
 
-    console.log('newFormData', newFormData, widgetTypes);
-    await dispatch(fetchIndividualWidgetData({ 
-      chart: newFormData, 
-      dashboardType: currentDashboard?.settings?.dashboardType 
-    }));
+    await dispatch(
+      fetchIndividualWidgetData({
+        chart: newFormData,
+        dashboardType: currentDashboard?.settings?.dashboardType,
+      })
+    );
   };
 
   const handleSaveWidget = async () => {
-    console.log(chartSaveSettingData, 'chartSaveSettingData');
     setIsChartSaving(true);
     try {
       const result = await dispatch(
@@ -1013,6 +1022,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
   };
 
   const getChartData = (chart: ChartResponse) => {
+    console.log(chart, 'ChartResp');
     const createDefaultDataset = (data: number[] = []): ChartDataset => ({
       label: chart.name,
       data,
@@ -1025,6 +1035,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
       pointHitRadius: 20,
     });
     const chartData = widgetData[chart._id]?.data?.widgetData || chart.data || [];
+    console.log(chartData, 'chartData', widgetData);
 
     if (!chartData.length || chartData.every((item: ChartDataItem) => item.data === 0)) {
       return {
@@ -1393,7 +1404,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
         const groupByField = groupBy[0];
         const uniqueGroups = Array.from(new Set(chartData.map((item) => item[groupByField])));
         const uniqueNames = Array.from(new Set(chartData.map((item) => item.name)));
-        
+
         const datasets = uniqueGroups.map((group, index) => {
           const groupData = uniqueNames.map((name) => {
             const dataPoint = chartData.find((item) => item.name === name && item[groupByField] === group);
@@ -1420,7 +1431,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
       } else {
         const lineLabels = Array.from(new Set(chartData.map((item: ChartDataItem) => item.name)));
         const values = chartData.map((item: ChartDataItem) => item.data);
-        
+
         const secondaryValues = values.map((val, index) => val * (0.5 + Math.random() * 0.5));
 
         return {
@@ -1513,6 +1524,14 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
           ],
         };
       }
+    } else if (chartType === 'number') {
+      //kishan
+      return {
+        value: chartData.length > 0 ? chartData[0].data : 0,
+        label: chart.name,
+        backgroundColor: '#9E9E9E', // Add background color
+        textColor: '#FFFFFF', // Add text color
+      };
     }
 
     const defaultLabels = Array.from(new Set(chartData.map((item: ChartDataItem) => item.name)));
@@ -1852,9 +1871,10 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
   const renderChart = (chart: ChartResponse) => {
     const chartData = getChartData(chart);
 
-    const dimensionField = Array.isArray(chart.dimensions) && chart.dimensions.length > 0
-      ? chart.dimensions[0]
-      : typeof chart.dimensions === 'string'
+    const dimensionField =
+      Array.isArray(chart.dimensions) && chart.dimensions.length > 0
+        ? chart.dimensions[0]
+        : typeof chart.dimensions === 'string'
         ? chart.dimensions
         : 'name';
 
@@ -1867,9 +1887,9 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
 
     if (chartData.isEmpty) {
       return (
-          <Typography color="text.secondary" variant="h6">
-            No data present for this set of data :|
-          </Typography>
+        <Typography color="text.secondary" variant="h6">
+          No data present for this set of data :|
+        </Typography>
       );
     }
 
@@ -2008,21 +2028,25 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
       case 'tabular':
         const chartDataArray = widgetData[chart._id]?.data?.widgetData || chart.data || [];
 
-        const columns = chartDataArray.length > 0
-          ? Object.keys(chartDataArray[0]).map((col) => {
-            if (col === 'name') return dimensionField;
-            if (col === 'data') return aggregationField;
-            return col;
-          })
-          : [];
+        const columns =
+          chartDataArray.length > 0
+            ? Object.keys(chartDataArray[0]).map((col) => {
+                if (col === 'name') return dimensionField;
+                if (col === 'data') return aggregationField;
+                return col;
+              })
+            : [];
 
         return (
-          <TableContainer component={Paper} sx={{ 
-            ...getTableSx(),
-            maxHeight: 400, 
-            overflow: 'auto',
-            backgroundColor: themeUnified.palette.background.paper || STYLE_GUIDE.COLORS.white,
-          }}>
+          <TableContainer
+            component={Paper}
+            sx={{
+              ...getTableSx(),
+              maxHeight: 400,
+              overflow: 'auto',
+              backgroundColor: themeUnified.palette.background.paper || STYLE_GUIDE.COLORS.white,
+            }}
+          >
             <Table stickyHeader>
               <TableHead>
                 <TableRow>
@@ -2030,12 +2054,13 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
                     <TableCell
                       key={column}
                       sx={{
-                        backgroundColor: themeUnified.palette.table?.headerBackground || STYLE_GUIDE.COLORS.backgroundLightGray,
+                        backgroundColor:
+                          themeUnified.palette.table?.headerBackground || STYLE_GUIDE.COLORS.backgroundLightGray,
                         fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold,
                         fontSize: '14px',
                         color: themeUnified.palette.table?.headerText || STYLE_GUIDE.COLORS.textGray,
                         borderBottom: `2px solid ${themeUnified.palette.divider}`,
-                        padding: '12px 16px'
+                        padding: '12px 16px',
                       }}
                     >
                       {column}
@@ -2048,12 +2073,14 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
                   <TableRow
                     key={rowIndex}
                     sx={{
-                      backgroundColor: rowIndex % 2 === 0 
-                        ? themeUnified.palette.table?.rowEvenBackground || STYLE_GUIDE.COLORS.white
-                        : themeUnified.palette.table?.rowOddBackground || STYLE_GUIDE.COLORS.backgroundDefault,
+                      backgroundColor:
+                        rowIndex % 2 === 0
+                          ? themeUnified.palette.table?.rowEvenBackground || STYLE_GUIDE.COLORS.white
+                          : themeUnified.palette.table?.rowOddBackground || STYLE_GUIDE.COLORS.backgroundDefault,
                       '&:hover': {
-                        backgroundColor: themeUnified.palette.table?.rowHoverBackground || STYLE_GUIDE.COLORS.backgroundHover
-                      }
+                        backgroundColor:
+                          themeUnified.palette.table?.rowHoverBackground || STYLE_GUIDE.COLORS.backgroundHover,
+                      },
                     }}
                   >
                     {columns.map((column) => {
@@ -2068,7 +2095,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
                           sx={{
                             padding: '12px 16px',
                             borderBottom: `1px solid ${themeUnified.palette.divider}`,
-                            color: themeUnified.palette.table?.rowText || STYLE_GUIDE.COLORS.textDarkGray
+                            color: themeUnified.palette.table?.rowText || STYLE_GUIDE.COLORS.textDarkGray,
                           }}
                         >
                           {typeof value === 'number' ? value.toLocaleString() : value}
@@ -2127,11 +2154,15 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
               <TableHead>
                 <TableRow>
                   {columns.map((column) => (
-                    <TableCell key={column} sx={{ 
-                      fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold,
-                      backgroundColor: themeUnified.palette.table?.headerBackground || STYLE_GUIDE.COLORS.backgroundLightGray,
-                      color: themeUnified.palette.table?.headerText || STYLE_GUIDE.COLORS.textGray
-                    }}>
+                    <TableCell
+                      key={column}
+                      sx={{
+                        fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold,
+                        backgroundColor:
+                          themeUnified.palette.table?.headerBackground || STYLE_GUIDE.COLORS.backgroundLightGray,
+                        color: themeUnified.palette.table?.headerText || STYLE_GUIDE.COLORS.textGray,
+                      }}
+                    >
                       {column}
                     </TableCell>
                   ))}
@@ -2158,21 +2189,26 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
                   ))
                 ) : drillDownData.length > 0 ? (
                   drillDownData.map((row, index) => (
-                    <TableRow 
+                    <TableRow
                       key={index}
                       sx={{
-                        backgroundColor: index % 2 === 0 
-                          ? themeUnified.palette.table?.rowEvenBackground || STYLE_GUIDE.COLORS.white
-                          : themeUnified.palette.table?.rowOddBackground || STYLE_GUIDE.COLORS.backgroundDefault,
+                        backgroundColor:
+                          index % 2 === 0
+                            ? themeUnified.palette.table?.rowEvenBackground || STYLE_GUIDE.COLORS.white
+                            : themeUnified.palette.table?.rowOddBackground || STYLE_GUIDE.COLORS.backgroundDefault,
                         '&:hover': {
-                          backgroundColor: themeUnified.palette.table?.rowHoverBackground || STYLE_GUIDE.COLORS.backgroundHover
-                        }
+                          backgroundColor:
+                            themeUnified.palette.table?.rowHoverBackground || STYLE_GUIDE.COLORS.backgroundHover,
+                        },
                       }}
                     >
                       {columns.map((column) => (
-                        <TableCell key={column} sx={{ 
-                          color: themeUnified.palette.table?.rowText || STYLE_GUIDE.COLORS.textDarkGray 
-                        }}>
+                        <TableCell
+                          key={column}
+                          sx={{
+                            color: themeUnified.palette.table?.rowText || STYLE_GUIDE.COLORS.textDarkGray,
+                          }}
+                        >
                           {typeof row[column] === 'number' ? row[column].toLocaleString() : row[column]}
                         </TableCell>
                       ))}
@@ -2224,12 +2260,14 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
       const columns = Object.keys(chartDataArray[0]);
       const csvContent = [
         columns.join(','),
-        ...chartDataArray.map(row =>
-          columns.map(column => {
-            const value = row[column];
-            return typeof value === 'number' ? value : `"${value}"`
-          }).join(',')
-        )
+        ...chartDataArray.map((row) =>
+          columns
+            .map((column) => {
+              const value = row[column];
+              return typeof value === 'number' ? value : `"${value}"`;
+            })
+            .join(',')
+        ),
       ].join('\n');
 
       // Create and trigger download
@@ -2250,289 +2288,210 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
       toast.error('Chart instance not found');
       return;
     }
-
   };
 
   return (
-    <>
-      <Grid
-        container
-        spacing={STYLE_GUIDE.SPACING.s4}
-        sx={{
-          height: '100%',
-          alignContent: 'flex-start',
-          p: STYLE_GUIDE.SPACING.s6,
-          '& .MuiGrid-item': {
-            display: 'flex',
-            '& > *': {
-              width: '100%',
-            },
-          },
-        }}
-      >
-        {allCharts?.map((chart:any) => (
-          <>
-            {isNaturalLangauage && (
-              <>
-                <Divider sx={{ width: '100%', mt: 2, borderBottomWidth: '2px' }} />
-                <Divider sx={{ width: '100%', mt: 0.2, borderBottomWidth: '2px' }} />
-                <Grid item xs={12}>
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      justifyContent: 'flex-end',
-                      width: '100%',
-                      mt: 2,
-                    }}
-                  >
-                    <Box display="flex" alignItems="center" gap={1}>
-                      <Box
-                        sx={{
-                          backgroundColor: '#e0f7fa',
-                          color: '#000',
-                          padding: '12px 16px',
-                          borderRadius: '16px',
-                          wordBreak: 'break-word',
-                          flexShrink: 1,
-                        }}
-                      >
-                        <Typography variant="body2" fontWeight={STYLE_GUIDE.TYPOGRAPHY.fontWeight.regular}>
-                          {chart?.userQuery}
-                        </Typography>
-                      </Box>
-                      <Avatar sx={{ bgcolor: 'purple', width: 40, height: 40, fontSize: 20 }}>U</Avatar>
-                    </Box>
-                  </Box>
-                </Grid>
-                <Grid item xs={12}>
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      justifyContent: 'flex-start',
-                      width: '100%',
-                      mt: 2,
-                    }}
-                  >
-                    <Box display="flex" alignItems="center" gap={1}>
-                      <Avatar sx={{ bgcolor: 'green', width: 40, height: 40, fontSize: 20 }}>AI</Avatar>
-                      <Box
-                        sx={{
-                          backgroundColor: 'lightgray',
-                          color: '#000',
-                          padding: '12px 16px',
-                          borderRadius: '16px',
-                          wordBreak: 'break-word',
-                          flexShrink: 1,
-                        }}
-                      >
-                        <Typography variant="body2" fontWeight={STYLE_GUIDE.TYPOGRAPHY.fontWeight.regular}>
-                          Here's the result based on your query: {chart?.userQuery}
-                        </Typography>
-                      </Box>
-                    </Box>
-                  </Box>
-                </Grid>
-
-                <SaveWidgetModel
-                  open={openSaveChart}
-                  onClose={() => {
-                    setOpenSaveChart(false);
-                  }}
-                  onNameChange={setNewSaveChartName}
-                  dashboardList={dashboards}
-                  newChartName={newSaveChartName}
-                  dashBoardId={chartSaveDashboardId}
-                  onDashboardChange={setChartSaveDashboardId}
-                  onCreate={handleSaveWidget}
-                  isCreating={isChartSaving}
-                />
-              </>
-            )}
-            <Grid
-              item
-              xs={12}
-              md={isAddChartModalOpen || isEditChartModalOpen ? 12 : gridColumns === 1 ? 12 : gridColumns === 2 ? 6 : 4}
-              gap={isNaturalLangauage ? 4 : 0}
-              p={isNaturalLangauage ? 2 : 0}
-            >
-              {isNaturalLangauage && (
-                <NotivixAddChartModal
-                  open={true}
-                  onClose={() => { }}
-                  isSubmitting={false}
-                  dashboardId={''}
-                  initialData={chart}
-                  isNaturalLangauage={true}
-                  onSave={(formData) => handleChartUpdate({ ...chart, ...formData })}
-                  setOpenSaveChart={setOpenSaveChart}
-                  setChartSaveSettingData={setChartSaveSettingData}
-                  setNewSaveChartName={setNewSaveChartName}
-                />
-              )}
-              <StyledCard sx={{ ...getCardSx() }}>
-                <CardContent
-                  sx={{
-                    flexGrow: 1,
-                    p: 3,
-                    display: 'flex',
-                    flexDirection: 'column',
-                    height: '100%',
-                  }}
-                >
-                  <ChartTitle>
-                    <ChartTitleText>
-                      {chart.name}
-                      {widgetData[chart._id]?.data?.label && ` (${widgetData[chart._id]?.data?.label})`}
-                    </ChartTitleText>
-                    <Box sx={{ display: 'flex', gap: 1 }}>
-                      <IconButton
-                        size="small"
-                        onClick={() => handleFullViewClick(chart)}
-                        sx={{
-                          opacity: 0.7,
-                          '&:hover': { opacity: 1 },
-                        }}
-                      >
-                        <FullscreenIcon />
-                      </IconButton>
-                      <IconButton
-                        size="small"
-                        onClick={(e) => handleExportMenuClick(e, chart)}
-                        sx={{
-                          opacity: 0.7,
-                          '&:hover': { opacity: 1 },
-                        }}
-                      >
-                        <DownloadIcon />
-                      </IconButton>
-                      {isEditMode && (
-                        <IconButton
-                          size="small"
-                          onClick={(e) => handleMenuClick(e, chart)}
-                          sx={{
-                            opacity: 0.7,
-                            '&:hover': { opacity: 1 },
-                          }}
-                        >
-                          <MoreVertIcon />
-                        </IconButton>
-                      )}
-                    </Box>
-                  </ChartTitle>
-                  <ChartContainer
-                    className={
-                      (chart.widgetTypeId?.chartType || 'line') === 'pie'
-                        ? 'pie-chart'
-                        : (chart.widgetTypeId?.chartType || 'line') === 'horizontalBar'
-                          ? 'horizontal-bar-chart'
-                          : (chart.widgetTypeId?.chartType || 'line') === 'tabular'
-                            ? 'table-chart'
-                            : (chart.widgetTypeId?.chartType || 'line') === 'multiSeriesPie'
-                              ? 'pie-chart'
-                              : 'line-chart'
-                    }
-                    onWheel={handleWheel}
-                  >
-                    {renderChart(chart)}
-                  </ChartContainer>
-                  <Box sx={{ mt: 'auto', textAlign: 'right', fontWeight: 'bold', color: 'primary.main' }}>
-                    Total:{widgetData[chart._id]?.data?.totalCount}
-                  </Box>
-                </CardContent>
-              </StyledCard>
-            </Grid>
-          </>
-        ))}
-
-        {chartsLoading && isNaturalLangauage && (
-          <Grid item xs={12} sx={{ display: 'flex', justifyContent: 'center', p: 2 }}>
-            <LoadingContainer>
-              <CircularProgress />
-            </LoadingContainer>
-          </Grid>
-        )}
-        {isNaturalLangauage && <Box ref={bottomRef} />}
-      </Grid>
-
-      <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleMenuClose} onClick={(e) => e.stopPropagation()}>
-        <MenuItem onClick={handleEditClick}>
-          <EditIcon sx={{ mr: 1, fontSize: 20 }} />
-          Edit
-        </MenuItem>
-        <MenuItem onClick={handleDeleteClick} sx={{ color: 'error.main' }}>
-          <DeleteIcon sx={{ mr: 1, fontSize: 20 }} />
-          Delete
-        </MenuItem>
-      </Menu>
-
-      <Menu
-        anchorEl={exportMenuAnchorEl}
-        open={Boolean(exportMenuAnchorEl)}
-        onClose={handleExportMenuClose}
-        onClick={(e) => e.stopPropagation()}
-      >
-        <MenuItem onClick={() => handleExportImage('png')}>
-          <ImageIcon sx={{ mr: 1, fontSize: 20 }} />
-          Export as PNG
-        </MenuItem>
-        <MenuItem onClick={() => handleExportImage('jpg')}>
-          <ImageIcon sx={{ mr: 1, fontSize: 20 }} />
-          Export as JPG
-        </MenuItem>
-        <MenuItem onClick={handleExportPDF}>
-          <PictureAsPdfIcon sx={{ mr: 1, fontSize: 20 }} />
-          Export as PDF
-        </MenuItem>
-        <MenuItem onClick={handleExportData}>
-          <TableChartIcon sx={{ mr: 1, fontSize: 20 }} />
-          Export Data (CSV)
-        </MenuItem>
-      </Menu>
-
-      {deleteDialogOpen && (
-        <Dialog open={deleteDialogOpen} onClose={handleDeleteCancel} aria-labelledby="delete-dialog-title">
-          <DialogTitle id="delete-dialog-title">Delete Chart</DialogTitle>
-          <DialogContent>
-            <Typography>Are you sure you want to delete this chart? This action cannot be undone.</Typography>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={handleDeleteCancel}>Cancel</Button>
-            <Button onClick={handleDeleteConfirm} color="error" variant="contained" disabled={isDeleting}>
-              {isDeleting ? 'Deleting...' : 'Delete'}
-            </Button>
-          </DialogActions>
-        </Dialog>
-      )}
-
-      <FullScreenModal open={fullViewOpen} onClose={handleFullViewClose} fullScreen>
-        <DialogTitle
+    //kishan
+    <Box sx={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
+      <MetricCards
+        metrics={allCharts
+          ?.filter((chart: any) => chart.widgetTypeId?.chartType === 'number')
+          .map((chart: any) => getChartData(chart))}
+      />
+      <div>
+        <Grid
+          container
+          spacing={STYLE_GUIDE.SPACING.s4}
           sx={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            borderBottom: `1px solid ${theme.palette.divider}`,
-            p: 2,
+            height: '100%',
+            alignContent: 'flex-start',
+            p: STYLE_GUIDE.SPACING.s6,
+            '& .MuiGrid-item': {
+              display: 'flex',
+              '& > *': {
+                width: '100%',
+              },
+            },
           }}
         >
-          <Typography variant="h6">{selectedChart?.name}</Typography>
-          <IconButton
-            onClick={handleFullViewClose}
-            size="small"
+          {allCharts
+            ?.filter((chart: any) => chart.widgetTypeId?.chartType !== 'number')
+            .map((chart: any) => (
+              <>
+                <Grid
+                  item
+                  xs={12}
+                  md={
+                    isAddChartModalOpen || isEditChartModalOpen
+                      ? 12
+                      : gridColumns === 1
+                      ? 12
+                      : gridColumns === 2
+                      ? 6
+                      : 4
+                  }
+                >
+                  <StyledCard sx={{ ...getCardSx() }}>
+                    <CardContent
+                      sx={{
+                        flexGrow: 1,
+                        p: 3,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        height: '100%',
+                      }}
+                    >
+                      <ChartTitle>
+                        <ChartTitleText>
+                          {chart.name}
+                          {widgetData[chart._id]?.data?.label && ` (${widgetData[chart._id]?.data?.label})`}
+                        </ChartTitleText>
+                        <Box sx={{ display: 'flex', gap: 1 }}>
+                          <IconButton
+                            size="small"
+                            onClick={() => handleFullViewClick(chart)}
+                            sx={{
+                              opacity: 0.7,
+                              '&:hover': { opacity: 1 },
+                            }}
+                          >
+                            <FullscreenIcon />
+                          </IconButton>
+                          <IconButton
+                            size="small"
+                            onClick={(e) => handleExportMenuClick(e, chart)}
+                            sx={{
+                              opacity: 0.7,
+                              '&:hover': { opacity: 1 },
+                            }}
+                          >
+                            <DownloadIcon />
+                          </IconButton>
+                          {isEditMode && (
+                            <IconButton
+                              size="small"
+                              onClick={(e) => handleMenuClick(e, chart)}
+                              sx={{
+                                opacity: 0.7,
+                                '&:hover': { opacity: 1 },
+                              }}
+                            >
+                              <MoreVertIcon />
+                            </IconButton>
+                          )}
+                        </Box>
+                      </ChartTitle>
+                      <ChartContainer
+                        className={
+                          (chart.widgetTypeId?.chartType || 'line') === 'pie'
+                            ? 'pie-chart'
+                            : (chart.widgetTypeId?.chartType || 'line') === 'horizontalBar'
+                            ? 'horizontal-bar-chart'
+                            : (chart.widgetTypeId?.chartType || 'line') === 'tabular'
+                            ? 'table-chart'
+                            : (chart.widgetTypeId?.chartType || 'line') === 'multiSeriesPie'
+                            ? 'pie-chart'
+                            : 'line-chart'
+                        }
+                        onWheel={handleWheel}
+                      >
+                        {renderChart(chart)}
+                      </ChartContainer>
+                      <Box sx={{ mt: 'auto', textAlign: 'right', fontWeight: 'bold', color: 'primary.main' }}>
+                        Total:{widgetData[chart._id]?.data?.totalCount}
+                      </Box>
+                    </CardContent>
+                  </StyledCard>
+                </Grid>
+              </>
+            ))}
+        </Grid>
+
+        <Menu
+          anchorEl={anchorEl}
+          open={Boolean(anchorEl)}
+          onClose={handleMenuClose}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <MenuItem onClick={handleEditClick}>
+            <EditIcon sx={{ mr: 1, fontSize: 20 }} />
+            Edit
+          </MenuItem>
+          <MenuItem onClick={handleDeleteClick} sx={{ color: 'error.main' }}>
+            <DeleteIcon sx={{ mr: 1, fontSize: 20 }} />
+            Delete
+          </MenuItem>
+        </Menu>
+
+        <Menu
+          anchorEl={exportMenuAnchorEl}
+          open={Boolean(exportMenuAnchorEl)}
+          onClose={handleExportMenuClose}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <MenuItem onClick={() => handleExportImage('png')}>
+            <ImageIcon sx={{ mr: 1, fontSize: 20 }} />
+            Export as PNG
+          </MenuItem>
+          <MenuItem onClick={() => handleExportImage('jpg')}>
+            <ImageIcon sx={{ mr: 1, fontSize: 20 }} />
+            Export as JPG
+          </MenuItem>
+          <MenuItem onClick={handleExportPDF}>
+            <PictureAsPdfIcon sx={{ mr: 1, fontSize: 20 }} />
+            Export as PDF
+          </MenuItem>
+          <MenuItem onClick={handleExportData}>
+            <TableChartIcon sx={{ mr: 1, fontSize: 20 }} />
+            Export Data (CSV)
+          </MenuItem>
+        </Menu>
+
+        {deleteDialogOpen && (
+          <Dialog open={deleteDialogOpen} onClose={handleDeleteCancel} aria-labelledby="delete-dialog-title">
+            <DialogTitle id="delete-dialog-title">Delete Chart</DialogTitle>
+            <DialogContent>
+              <Typography>Are you sure you want to delete this chart? This action cannot be undone.</Typography>
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={handleDeleteCancel}>Cancel</Button>
+              <Button onClick={handleDeleteConfirm} color="error" variant="contained" disabled={isDeleting}>
+                {isDeleting ? 'Deleting...' : 'Delete'}
+              </Button>
+            </DialogActions>
+          </Dialog>
+        )}
+
+        <FullScreenModal open={fullViewOpen} onClose={handleFullViewClose} fullScreen>
+          <DialogTitle
             sx={{
-              color: theme.palette.text.secondary,
-              '&:hover': {
-                color: theme.palette.text.primary,
-                backgroundColor: theme.palette.action.hover,
-              },
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              borderBottom: `1px solid ${theme.palette.divider}`,
+              p: 2,
             }}
           >
-            <CloseIcon />
-          </IconButton>
-        </DialogTitle>
-        <FullScreenChartContainer>{selectedChart && renderChart(selectedChart)}</FullScreenChartContainer>
-      </FullScreenModal>
+            <Typography variant="h6">{selectedChart?.name}</Typography>
+            <IconButton
+              onClick={handleFullViewClose}
+              size="small"
+              sx={{
+                color: theme.palette.text.secondary,
+                '&:hover': {
+                  color: theme.palette.text.primary,
+                  backgroundColor: theme.palette.action.hover,
+                },
+              }}
+            >
+              <CloseIcon />
+            </IconButton>
+          </DialogTitle>
+          <FullScreenChartContainer>{selectedChart && renderChart(selectedChart)}</FullScreenChartContainer>
+        </FullScreenModal>
 
-      {renderDrillDownDialog()}
-    </>
+        {renderDrillDownDialog()}
+      </div>
+    </Box>
   );
 };
