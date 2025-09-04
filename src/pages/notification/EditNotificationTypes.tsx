@@ -32,9 +32,9 @@ import usePut from "../../hooks/usePut";
 import { GET, POST, PUT } from "../../services/apiRoutes";
 import { STYLE_GUIDE } from "../../styles";
 import { useSelector } from "react-redux";
-import Frequency from "./Frequency";
 import { RootState } from "../../reducers";
 import { useComponentTypography } from "../../hooks";
+import Frequency from "./Frequency";
 
 class ErrorBoundary extends React.Component {
   constructor(props) {

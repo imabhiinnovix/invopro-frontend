@@ -13,8 +13,6 @@ import {
   MenuList,
   MenuItem as MuiMenuItem,
   Typography,
-  Radio,
-  RadioGroup,
   TextField,
   Select,
   MenuItem,
@@ -24,10 +22,6 @@ import {
   Chip,
   InputLabel,
   Autocomplete,
-  List,
-  ListItem,
-  ListItemText,
-  ListItemSecondaryAction,
 } from "@mui/material";
 import {
   Close as CloseIcon,
@@ -35,8 +29,7 @@ import {
   ExpandMore as ExpandMoreIcon,
   ChevronLeft,
   ChevronRight,
-  Add as AddIcon,
-  Delete as DeleteIcon,
+  CalendarMonthOutlined,
 } from "@mui/icons-material";
 import { TimePicker } from "@mui/x-date-pickers/TimePicker";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
@@ -44,17 +37,16 @@ import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import dayjs from "dayjs";
 import useGet from "../../hooks/useGet";
 import { GET } from "../../services/apiRoutes";
+import CustomRecurrence from "./Frequency/CustomRecurrence";
 
 // Helper function to compare arrays
 const arraysEqual = (a, b) => {
   if (a === b) return true;
   if (a == null || b == null) return false;
   if (a.length !== b.length) return false;
-
   // Sort both arrays to compare regardless of order
   const sortedA = [...a].sort();
   const sortedB = [...b].sort();
-
   for (let i = 0; i < sortedA.length; ++i) {
     if (sortedA[i] !== sortedB[i]) return false;
   }
@@ -62,12 +54,19 @@ const arraysEqual = (a, b) => {
 };
 
 export default function Frequency({ fieldOptions }) {
-  console.log("fieldOptions:", fieldOptions);
+  // console.log("fieldOptions:", fieldOptions);
   const [open, setOpen] = useState(false);
   const [allDay, setAllDay] = useState(false);
-  const [selectedDate, setSelectedDate] = useState(new Date(2025, 8, 2));
-  const [selectedTime, setSelectedTime] = useState("4:00 PM");
-  const [repeatOption, setRepeatOption] = useState("Does not repeat");
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [selectedTime, setSelectedTime] = useState(() => {
+    const now = new Date();
+    let hours = now.getHours();
+    const minutes = now.getMinutes();
+    const ampm = hours >= 12 ? "PM" : "AM";
+    hours = hours % 12 || 12;
+    return `${hours}:${minutes.toString().padStart(2, "0")} ${ampm}`;
+  });
+  const [repeatOption, setRepeatOption] = useState("Do not repeat");
   const [customRecurrenceOpen, setCustomRecurrenceOpen] = useState(false);
 
   // New state variables for additional fields
@@ -77,50 +76,8 @@ export default function Frequency({ fieldOptions }) {
   const [attachmentRequired, setAttachmentRequired] = useState(false);
   const [toRecipients, setToRecipients] = useState([]);
   const [ccRecipients, setCcRecipients] = useState([]);
+  const [acknowledgeTo, setAcknowledgeTo] = useState([]);
   const [targetEntity, setTargetEntity] = useState("");
-
-  // New state for custom dates and times
-  const [customDateTimes, setCustomDateTimes] = useState([]);
-  const [customDateTimePickerOpen, setCustomDateTimePickerOpen] = useState(false);
-  const [currentCustomDate, setCurrentCustomDate] = useState(new Date());
-  const [currentCustomTime, setCurrentCustomTime] = useState(dayjs().format("hh:mm A"));
-  const [customCalendarDate, setCustomCalendarDate] = useState(new Date());
-
-  // Format recipients for saving
-  const formatRecipients = (recipients) => {
-    const result = [];
-    const customEmails = [];
-
-    recipients.forEach((recipient) => {
-      if (typeof recipient === "string") {
-        if (recipient.includes("@")) {
-          customEmails.push(recipient);
-        } else {
-          result.push({ attributeId: recipient });
-        }
-      } else {
-        if (recipient.label && recipient.label.includes("@")) {
-          customEmails.push(recipient.label);
-        } else if (recipient.attributeId) {
-          const recipientObj = {
-            attributeId: recipient.attributeId
-          };
-
-          if (recipient.refAttributeId && Array.isArray(recipient.refAttributeId) && recipient.refAttributeId.length > 0) {
-            recipientObj.refAttributeId = recipient.refAttributeId;
-          }
-
-          result.push(recipientObj);
-        }
-      }
-    });
-
-    if (customEmails.length > 0) {
-      result.push({ customEmails });
-    }
-
-    return result;
-  };
 
   /* ---- date-picker ---- */
   const [datePickerOpen, setDatePickerOpen] = useState(false);
@@ -135,7 +92,7 @@ export default function Frequency({ fieldOptions }) {
   /* ---- custom recurrence form ---- */
   const [repeatEvery, setRepeatEvery] = useState(1);
   const [repeatPeriod, setRepeatPeriod] = useState("month");
-  const [monthlyOption, setMonthlyOption] = useState("first-tuesday");
+  const [monthlyOption, setMonthlyOption] = useState("");
   const [yearlyOption, setYearlyOption] = useState("same-day");
   const [endsOption, setEndsOption] = useState("never");
   const [endDate, setEndDate] = useState("2026-09-02");
@@ -151,15 +108,9 @@ export default function Frequency({ fieldOptions }) {
     false,
     false,
   ]);
-  const daysOfWeek = [
-    "Sunday",
-    "Monday",
-    "Tuesday",
-    "Wednesday",
-    "Thursday",
-    "Friday",
-    "Saturday",
-  ];
+
+  const mediumList = useGet(["mediumList"], `${GET.MEDIUM_LIST}`, true);
+  const templateList = useGet(["templateList"], `${GET.TEMPLATE_LIST}`, true);
 
   /* -------- helpers -------- */
   const formatDate = (d) =>
@@ -169,16 +120,6 @@ export default function Frequency({ fieldOptions }) {
       year: "numeric",
     });
 
-  const formatTime = (time) => {
-    return time;
-  };
-
-  const getOrdinal = (n) => {
-    const s = ["th", "st", "nd", "rd"];
-    const v = n % 100;
-    return n + (s[(v - 20) % 10] || s[v] || s[0]);
-  };
-
   const changeCalendarMonth = (delta) => {
     setCalendarDate((d) => {
       const next = new Date(d);
@@ -186,17 +127,6 @@ export default function Frequency({ fieldOptions }) {
       return next;
     });
   };
-
-  const changeCustomCalendarMonth = (delta) => {
-    setCustomCalendarDate((d) => {
-      const next = new Date(d);
-      next.setMonth(d.getMonth() + delta);
-      return next;
-    });
-  };
-
-  const mediumList = useGet(["mediumList"], `${GET.MEDIUM_LIST}`, true);
-  const templateList = useGet(["templateList"], `${GET.TEMPLATE_LIST}`, true);
 
   const generateCalendarDays = () => {
     const y = calendarDate.getFullYear();
@@ -235,38 +165,6 @@ export default function Frequency({ fieldOptions }) {
     return cells;
   };
 
-  const generateCustomCalendarDays = () => {
-    const y = customCalendarDate.getFullYear();
-    const m = customCalendarDate.getMonth();
-    const first = new Date(y, m, 1).getDay();
-    const daysInMonth = new Date(y, m + 1, 0).getDate();
-    const cells = [];
-    for (let i = 0; i < first; i++)
-      cells.push(<Box key={`custom-empty-${i}`} sx={{ width: 32 }} />);
-    for (let d = 1; d <= daysInMonth; d++) {
-      const date = new Date(y, m, d);
-      const isSel = date.toDateString() === currentCustomDate.toDateString();
-      cells.push(
-        <Button
-          key={`custom-${d}`}
-          onClick={() => setCurrentCustomDate(date)}
-          sx={{
-            minWidth: 32,
-            width: 32,
-            height: 32,
-            borderRadius: "50%",
-            color: isSel ? "#fff" : "#3c4043",
-            backgroundColor: isSel ? "#a136a1" : "transparent",
-            "&:hover": { backgroundColor: isSel ? "#a136a1" : "#f1f3f4" },
-          }}
-        >
-          {d}
-        </Button>
-      );
-    }
-    return cells;
-  };
-
   // Generate dynamic repeat options based on selected date
   const getRepeatOptions = () => {
     const dayOfWeek = selectedDate.toLocaleDateString("en-US", {
@@ -274,26 +172,45 @@ export default function Frequency({ fieldOptions }) {
     });
     const dayOfMonth = selectedDate.getDate();
     const month = selectedDate.toLocaleDateString("en-US", { month: "long" });
+
+    // Helper function to get ordinal occurrence
+    const numberToWord = (n) => {
+      const words = ["first", "second", "third", "fourth", "fifth"];
+      return words[n - 1] || n;
+    };
+
+    const getOrdinalOccurrence = (date) => {
+      const day = date.getDate();
+      const weekday = date.getDay();
+      const firstDayOfMonth = new Date(date.getFullYear(), date.getMonth(), 1);
+      const firstWeekday = firstDayOfMonth.getDay();
+      const offset = (weekday - firstWeekday + 7) % 7;
+      const occurrenceNum = Math.floor((day - 1 - offset) / 7) + 1;
+      const lastDayOfMonth = new Date(
+        date.getFullYear(),
+        date.getMonth() + 1,
+        0
+      );
+      const lastWeekday = lastDayOfMonth.getDay();
+      const lastOffset = (lastWeekday - weekday + 7) % 7;
+      const isLast = lastDayOfMonth.getDate() - day < 7;
+      return {
+        occurrence: isLast ? "last" : numberToWord(occurrenceNum),
+        weekday: date.toLocaleDateString("en-US", { weekday: "long" }),
+      };
+    };
+
+    const { occurrence, weekday } = getOrdinalOccurrence(selectedDate);
+
     return [
       "Does not repeat",
       "Daily",
       `Weekly on ${dayOfWeek}`,
-      `Monthly on the ${getOrdinal(dayOfMonth)} ${dayOfWeek}`,
+      `Monthly on the ${occurrence} ${weekday}`,
       `Annually on ${month} ${dayOfMonth}`,
       "Every weekday (Monday to Friday)",
-      "Custom dates and times",
+      "Custom...",
     ];
-  };
-
-  // Format selected days for display
-  const formatSelectedDays = () => {
-    const selected = daysOfWeek.filter((_, index) => selectedDays[index]);
-    if (selected.length === 0) return "";
-    if (selected.length === 1) return selected[0];
-    if (selected.length === 2) return selected.join(" and ");
-    return (
-      selected.slice(0, -1).join(", ") + " and " + selected[selected.length - 1]
-    );
   };
 
   // Initialize selected days when opening custom recurrence
@@ -303,25 +220,40 @@ export default function Frequency({ fieldOptions }) {
     newSelectedDays.fill(false);
     newSelectedDays[dayIndex] = true;
     setSelectedDays(newSelectedDays);
-  };
 
-  // Add a new custom date and time
-  const handleAddCustomDateTime = () => {
-    setCustomDateTimes([
-      ...customDateTimes,
-      {
-        date: new Date(currentCustomDate),
-        time: currentCustomTime,
-      },
-    ]);
-    setCustomDateTimePickerOpen(false);
-  };
+    // Set default monthly option
+    const numberToWord = (n) => {
+      const words = ["first", "second", "third", "fourth", "fifth"];
+      return words[n - 1] || n;
+    };
 
-  // Remove a custom date and time
-  const handleRemoveCustomDateTime = (index) => {
-    const newCustomDateTimes = [...customDateTimes];
-    newCustomDateTimes.splice(index, 1);
-    setCustomDateTimes(newCustomDateTimes);
+    const getOrdinalOccurrence = (date) => {
+      const day = date.getDate();
+      const weekday = date.getDay();
+      const firstDayOfMonth = new Date(date.getFullYear(), date.getMonth(), 1);
+      const firstWeekday = firstDayOfMonth.getDay();
+      const offset = (weekday - firstWeekday + 7) % 7;
+      const occurrenceNum = Math.floor((day - 1 - offset) / 7) + 1;
+      const lastDayOfMonth = new Date(
+        date.getFullYear(),
+        date.getMonth() + 1,
+        0
+      );
+      const lastWeekday = lastDayOfMonth.getDay();
+      const lastOffset = (lastWeekday - weekday + 7) % 7;
+      const isLast = lastDayOfMonth.getDate() - day < 7;
+      return {
+        occurrence: isLast ? "last" : numberToWord(occurrenceNum),
+        weekday: date.toLocaleDateString("en-US", { weekday: "long" }),
+      };
+    };
+
+    const { occurrence, weekday } = getOrdinalOccurrence(selectedDate);
+    const monthlyOptions = [
+      `Monthly on day ${selectedDate.getDate()}`,
+      `Monthly on the ${occurrence} ${weekday}`,
+    ];
+    setMonthlyOption(monthlyOptions[0]);
   };
 
   /* -------- handlers -------- */
@@ -330,11 +262,12 @@ export default function Frequency({ fieldOptions }) {
   const handleSave = () => {
     const formattedToRecipients = formatRecipients(toRecipients);
     const formattedCcRecipients = formatRecipients(ccRecipients);
+    const formattedAcknowledgeTo = formatRecipients(acknowledgeTo);
 
     // Prepare the data to be logged
     const saveData = {
       date: formatDate(selectedDate),
-      time: allDay ? "All day" : selectedTime,
+      // time: allDay ? "All day" : selectedTime,
       repeat: repeatOption,
       template,
       method,
@@ -342,16 +275,9 @@ export default function Frequency({ fieldOptions }) {
       attachmentRequired,
       toRecipients: formattedToRecipients,
       ccRecipients: formattedCcRecipients,
+      acknowledgeTo: formattedAcknowledgeTo,
       targetEntity,
     };
-
-    // Add custom dates if applicable
-    if (repeatOption === "Custom dates and times" ||
-        (repeatPeriod === "month" && monthlyOption === "custom-dates") ||
-        (repeatPeriod === "year" && yearlyOption === "custom-dates")) {
-      saveData.customDateTimes = customDateTimes;
-    }
-
     console.log("Scheduler Data:", saveData);
     handleClose();
   };
@@ -363,65 +289,10 @@ export default function Frequency({ fieldOptions }) {
   const handleRepeatSelect = (opt) => {
     setRepeatOption(opt);
     setRepeatAnchorEl(null);
-
     if (opt === "Custom...") {
       initializeSelectedDays();
       setCustomRecurrenceOpen(true);
-    } else if (opt === "Custom dates and times") {
-      setCustomDateTimes([]);
-      setCustomRecurrenceOpen(true);
-      // Set both monthly and yearly options to custom-dates
-      setRepeatPeriod("month");
-      setMonthlyOption("custom-dates");
-      setYearlyOption("custom-dates");
     }
-  };
-
-  const handleCustomRecurrenceSave = () => {
-    let txt = "";
-    if (repeatPeriod === "week") {
-      const days = formatSelectedDays();
-      txt = `Weekly on ${days}`;
-    } else if (repeatPeriod === "month") {
-      if (monthlyOption === "custom-dates") {
-        txt = "Custom dates and times";
-      } else {
-        const map = {
-          "first-tuesday": "Monthly on the first Tuesday",
-          "second-tuesday": "Monthly on the second Tuesday",
-          "third-tuesday": "Monthly on the third Tuesday",
-          "last-tuesday": "Monthly on the last Tuesday",
-        };
-        txt = map[monthlyOption];
-      }
-    } else if (repeatPeriod === "year") {
-      if (yearlyOption === "custom-dates") {
-        txt = "Custom dates and times";
-      } else {
-        const month = selectedDate.toLocaleDateString("en-US", { month: "long" });
-        const dayOfMonth = selectedDate.getDate();
-        txt = `Annually on ${month} ${dayOfMonth}`;
-      }
-    } else {
-      txt = `Every ${repeatEvery} ${repeatPeriod}${repeatEvery > 1 ? "s" : ""}`;
-    }
-
-    // Add "Ends" info
-    if (endsOption === "on") {
-      const untilDate = new Date(endDate).toLocaleDateString("en-US", {
-        month: "short",
-        day: "numeric",
-        year: "numeric",
-      });
-      txt += `, until ${untilDate}`;
-    } else if (endsOption === "after") {
-      txt += `, ending after ${occurrences} occurrence${
-        occurrences > 1 ? "s" : ""
-      }`;
-    }
-
-    setRepeatOption(txt);
-    setCustomRecurrenceOpen(false);
   };
 
   const handleTimeChange = (newValue) => {
@@ -433,36 +304,47 @@ export default function Frequency({ fieldOptions }) {
     setTimePickerOpen(false);
   };
 
-  const handleCustomTimeChange = (newValue) => {
-    if (newValue) {
-      setCurrentCustomTime(newValue.format("hh:mm A"));
-    }
-  };
+  // Format recipients for saving
+  const formatRecipients = (recipients) => {
+    const result = [];
+    const customEmails = [];
 
-  const handleDayToggle = (index) => {
-    const newSelectedDays = [...selectedDays];
-    newSelectedDays[index] = !newSelectedDays[index];
-    setSelectedDays(newSelectedDays);
-  };
-
-  // Handle period change to ensure custom dates option is set correctly
-  const handlePeriodChange = (e) => {
-    const newPeriod = e.target.value;
-    setRepeatPeriod(newPeriod);
-
-    // If we're in custom dates mode, ensure the appropriate option is set
-    if (repeatOption === "Custom dates and times") {
-      if (newPeriod === "month") {
-        setMonthlyOption("custom-dates");
-      } else if (newPeriod === "year") {
-        setYearlyOption("custom-dates");
+    recipients.forEach((recipient) => {
+      if (typeof recipient === "string") {
+        if (recipient.includes("@")) {
+          customEmails.push(recipient);
+        } else {
+          result.push({ attributeId: recipient });
+        }
+      } else {
+        if (recipient.label && recipient.label.includes("@")) {
+          customEmails.push(recipient.label);
+        } else if (recipient.attributeId) {
+          const recipientObj = {
+            attributeId: recipient.attributeId,
+          };
+          if (
+            recipient.refAttributeId &&
+            Array.isArray(recipient.refAttributeId) &&
+            recipient.refAttributeId.length > 0
+          ) {
+            recipientObj.refAttributeId = recipient.refAttributeId;
+          }
+          result.push(recipientObj);
+        }
       }
+    });
+
+    if (customEmails.length > 0) {
+      result.push({ customEmails });
     }
+
+    return result;
   };
 
   /* -------- render -------- */
   return (
-    <Box sx={{ p: 3 }}>
+    <Box sx={{ p: 3, display: "flex", justifySelf: "flex-end" }}>
       <Button variant="contained" onClick={handleOpenDialog}>
         Add Scheduler{" "}
       </Button>
@@ -497,7 +379,7 @@ export default function Frequency({ fieldOptions }) {
         >
           {/* Date & Time */}
           <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-            <AccessTimeIcon sx={{ color: "#666" }} fontSize="small" />
+            <CalendarMonthOutlined sx={{ color: "#666" }} fontSize="small" />
             <Button
               variant="outlined"
               onClick={() => setDatePickerOpen(true)}
@@ -519,41 +401,33 @@ export default function Frequency({ fieldOptions }) {
             </Button>
 
             {!allDay && (
-              <Button
-                variant="outlined"
-                onClick={() => setTimePickerOpen(true)}
-                sx={{
-                  minWidth: 100,
-                  backgroundColor: "#f8f9fa",
-                  border: "1px solid #ddd",
-                  borderRadius: 2,
-                  color: "#3c4043",
-                  textTransform: "none",
-                  justifyContent: "flex-start",
-                  "&:hover": {
-                    backgroundColor: "#f1f3f4",
-                    border: "1px solid #ccc",
-                  },
-                }}
-              >
-                {selectedTime}
-              </Button>
+              <>
+                <AccessTimeIcon sx={{ color: "#666" }} fontSize="small" />
+                <Button
+                  variant="outlined"
+                  onClick={() => setTimePickerOpen(true)}
+                  sx={{
+                    minWidth: 100,
+                    backgroundColor: "#f8f9fa",
+                    border: "1px solid #ddd",
+                    borderRadius: 2,
+                    color: "#3c4043",
+                    textTransform: "none",
+                    justifyContent: "flex-start",
+                    "&:hover": {
+                      backgroundColor: "#f1f3f4",
+                      border: "1px solid #ccc",
+                    },
+                  }}
+                >
+                  {selectedTime}
+                </Button>
+              </>
             )}
           </Box>
 
           {/* All day + Repeat in same row */}
-          <Box sx={{ display: "flex", alignItems: "center", gap: 2, pl: 5 }}>
-            <FormControlLabel
-              control={
-                <Checkbox
-                  checked={allDay}
-                  onChange={(e) => setAllDay(e.target.checked)}
-                  size="small"
-                />
-              }
-              label="All day"
-            />
-
+          <Box sx={{ display: "flex", alignItems: "center", gap: 2, pl: 4 }}>
             <Button
               variant="outlined"
               onClick={handleRepeatClick}
@@ -593,41 +467,6 @@ export default function Frequency({ fieldOptions }) {
             </Popper>
           </Box>
 
-          {/* Custom dates list */}
-          {repeatOption === "Custom dates and times" && (
-            <Box sx={{ mt: 1, pl: 5 }}>
-              <Typography variant="subtitle2" sx={{ mb: 1 }}>
-                Scheduled dates and times:
-              </Typography>
-
-              {customDateTimes.length === 0 ? (
-                <Typography variant="body2" color="text.secondary">
-                  No dates added yet
-                </Typography>
-              ) : (
-                <List dense>
-                  {customDateTimes.map((dateTime, index) => (
-                    <ListItem key={index}>
-                      <ListItemText
-                        primary={formatDate(dateTime.date)}
-                        secondary={formatTime(dateTime.time)}
-                      />
-                      <ListItemSecondaryAction>
-                        <IconButton
-                          edge="end"
-                          size="small"
-                          onClick={() => handleRemoveCustomDateTime(index)}
-                        >
-                          <DeleteIcon fontSize="small" />
-                        </IconButton>
-                      </ListItemSecondaryAction>
-                    </ListItem>
-                  ))}
-                </List>
-              )}
-            </Box>
-          )}
-
           {/* Additional fields section */}
           <Box sx={{ mt: 1 }}>
             <Box sx={{ display: "flex", gap: 2, mt: 2 }}>
@@ -642,7 +481,6 @@ export default function Frequency({ fieldOptions }) {
                     displayEmpty
                     aria-label="Select template"
                   >
-                    <MenuItem value="">Select Template...</MenuItem>
                     {templateList.data?.data?.map((option) => (
                       <MenuItem key={option._id} value={option._id}>
                         {option.name}
@@ -680,31 +518,138 @@ export default function Frequency({ fieldOptions }) {
             </Box>
 
             {/* Checkboxes */}
-            <Box sx={{ display: "flex", gap: 2, mt: 2 }}>
-              <FormControlLabel
-                control={
-                  <Checkbox
-                    checked={ackRequired}
-                    onChange={(e) => setAckRequired(e.target.checked)}
-                    size="small"
-                  />
-                }
-                label="Acknowledge Required"
-              />
-              <FormControlLabel
-                control={
-                  <Checkbox
-                    checked={attachmentRequired}
-                    onChange={(e) => setAttachmentRequired(e.target.checked)}
-                    size="small"
-                  />
-                }
-                label="Attachment Required"
-              />
+            <Box sx={{ display: "flex", gap: 2, mt: 2, alignItems: "center" }}>
+              <FormControl fullWidth size="small">
+                <Autocomplete
+                  freeSolo
+                  size="small"
+                  id="target-entity-autocomplete"
+                  options={fieldOptions.filter(
+                    (option) => option.type === "email"
+                  )}
+                  getOptionLabel={(option) =>
+                    typeof option === "string" ? option : option.label
+                  }
+                  isOptionEqualToValue={(option, value) => {
+                    if (
+                      typeof option === "string" &&
+                      typeof value === "string"
+                    ) {
+                      return option === value;
+                    }
+                    if (
+                      typeof option !== "string" &&
+                      typeof value !== "string"
+                    ) {
+                      return (
+                        option.attributeId === value.attributeId &&
+                        arraysEqual(
+                          option.refAttributeId || [],
+                          value.refAttributeId || []
+                        )
+                      );
+                    }
+                    return false;
+                  }}
+                  value={targetEntity}
+                  onChange={(event, newValue) => setTargetEntity(newValue)}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      variant="outlined"
+                      label="Sent To (Group)"
+                      placeholder="Type or select"
+                      size="small"
+                    />
+                  )}
+                />
+              </FormControl>
+
+              <Box sx={{ display: "flex", alignItems: "center" }}>
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={attachmentRequired}
+                      onChange={(e) => setAttachmentRequired(e.target.checked)}
+                      size="small"
+                    />
+                  }
+                  label="Attachment"
+                  sx={{ mb: "35px !important" }}
+                />
+              </Box>
+            </Box>
+
+            {/* Acknowledge To */}
+            <Box sx={{ mt: 1 }}>
+              <FormControl fullWidth size="small">
+                <Autocomplete
+                  multiple
+                  freeSolo
+                  size="small"
+                  id="acknowledge-to"
+                  options={fieldOptions.filter(
+                    (option) => option.type === "email"
+                  )}
+                  getOptionLabel={(option) =>
+                    typeof option === "string" ? option : option.label
+                  }
+                  isOptionEqualToValue={(option, value) => {
+                    if (
+                      typeof option === "string" &&
+                      typeof value === "string"
+                    ) {
+                      return option === value;
+                    }
+                    if (
+                      typeof option !== "string" &&
+                      typeof value !== "string"
+                    ) {
+                      return (
+                        option.attributeId === value.attributeId &&
+                        arraysEqual(
+                          option.refAttributeId || [],
+                          value.refAttributeId || []
+                        )
+                      );
+                    }
+                    return false;
+                  }}
+                  value={acknowledgeTo}
+                  onChange={(event, newValue) => {
+                    setAcknowledgeTo(newValue);
+                  }}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      variant="outlined"
+                      label="Acknowledge To"
+                      placeholder="Type or select"
+                      size="small"
+                    />
+                  )}
+                  renderTags={(value, getTagProps) =>
+                    value.map((option, index) => (
+                      <Chip
+                        key={
+                          typeof option === "string"
+                            ? option
+                            : `${option.attributeId}-${JSON.stringify(option.refAttributeId || [])}`
+                        }
+                        label={
+                          typeof option === "string" ? option : option.label
+                        }
+                        {...getTagProps({ index })}
+                        size="small"
+                      />
+                    ))
+                  }
+                />
+              </FormControl>
             </Box>
 
             {/* TO Recipients */}
-            <Box sx={{ mt: 2 }}>
+            <Box sx={{ mt: 1 }}>
               <FormControl fullWidth size="small">
                 <Autocomplete
                   multiple
@@ -772,7 +717,7 @@ export default function Frequency({ fieldOptions }) {
             </Box>
 
             {/* CC Recipients */}
-            <Box sx={{ mt: 2 }}>
+            <Box sx={{ mt: 1 }}>
               <FormControl fullWidth size="small">
                 <Autocomplete
                   multiple
@@ -838,61 +783,17 @@ export default function Frequency({ fieldOptions }) {
                 />
               </FormControl>
             </Box>
-
-            {/* Target Entity */}
-            <Box sx={{ mt: 2 }}>
-              <FormControl fullWidth size="small">
-                <Autocomplete
-                  freeSolo
-                  size="small"
-                  id="target-entity-autocomplete"
-                  options={fieldOptions.filter(
-                    (option) => option.type === "email"
-                  )}
-                  getOptionLabel={(option) =>
-                    typeof option === "string" ? option : option.label
-                  }
-                  isOptionEqualToValue={(option, value) => {
-                    if (
-                      typeof option === "string" &&
-                      typeof value === "string"
-                    ) {
-                      return option === value;
-                    }
-                    if (
-                      typeof option !== "string" &&
-                      typeof value !== "string"
-                    ) {
-                      return (
-                        option.attributeId === value.attributeId &&
-                        arraysEqual(
-                          option.refAttributeId || [],
-                          value.refAttributeId || []
-                        )
-                      );
-                    }
-                    return false;
-                  }}
-                  value={targetEntity}
-                  onChange={(event, newValue) => {
-                    setTargetEntity(newValue);
-                  }}
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      variant="outlined"
-                      label="Target Entity"
-                      placeholder="Type or select"
-                      size="small"
-                    />
-                  )}
-                />
-              </FormControl>
-            </Box>
           </Box>
         </DialogContent>
 
         <DialogActions sx={{ px: 3, pb: 2, pt: 1 }}>
+          <Button
+            variant="outlined"
+            onClick={handleClose}
+            sx={{ textTransform: "none", borderRadius: 2 }}
+          >
+            Cancel{" "}
+          </Button>
           <Button
             variant="contained"
             onClick={handleSave}
@@ -980,7 +881,13 @@ export default function Frequency({ fieldOptions }) {
       >
         <DialogTitle sx={{ pb: 1, fontSize: "1rem" }}>Select Time</DialogTitle>
         <DialogContent
-          sx={{ display: "flex", flexDirection: "column", gap: 2, pb: 1 }}
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            gap: 2,
+            pb: 1,
+            mt: 2,
+          }}
         >
           <LocalizationProvider dateAdapter={AdapterDayjs}>
             <TimePicker
@@ -998,7 +905,6 @@ export default function Frequency({ fieldOptions }) {
               }}
             />
           </LocalizationProvider>
-
           <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
             <Button
               size="small"
@@ -1011,352 +917,30 @@ export default function Frequency({ fieldOptions }) {
         </DialogContent>
       </Dialog>
 
-      {/* Custom recurrence */}
-      <Dialog
+      {/* Custom Recurrence Component */}
+      <CustomRecurrence
         open={customRecurrenceOpen}
         onClose={() => setCustomRecurrenceOpen(false)}
-        maxWidth="sm"
-        fullWidth
-      >
-        <DialogTitle
-          sx={{
-            fontSize: 18,
-            fontWeight: 600,
-            pb: 1,
-            borderBottom: "1px solid #eee",
-          }}
-        >
-          Custom recurrence
-        </DialogTitle>
-
-        <DialogContent
-          sx={{
-            display: "flex",
-            flexDirection: "column",
-            gap: 3,
-            pt: 3,
-          }}
-        >
-          {/* Repeat every */}
-          <Box>
-            <Typography
-              variant="subtitle2"
-              color="text.secondary"
-              sx={{ mb: 1 }}
-            >
-              Repeat every
-            </Typography>
-
-            <Box sx={{ display: "flex", gap: 2, alignItems: "center" }}>
-              <TextField
-                type="number"
-                value={repeatEvery}
-                onChange={(e) => setRepeatEvery(Number(e.target.value))}
-                size="small"
-                sx={{ width: 100 }}
-                inputProps={{ min: 1 }}
-              />
-
-              <FormControl size="small" sx={{ minWidth: 160 }}>
-                <Select
-                  value={repeatPeriod}
-                  onChange={handlePeriodChange}
-                >
-                  <MenuItem value="day">day</MenuItem>
-                  <MenuItem value="week">week</MenuItem>
-                  <MenuItem value="month">month</MenuItem>
-                  <MenuItem value="year">year</MenuItem>
-                </Select>
-              </FormControl>
-            </Box>
-          </Box>
-
-          {/* Weekly days selection */}
-          {repeatPeriod === "week" && (
-            <Box>
-              <Typography
-                variant="subtitle2"
-                color="text.secondary"
-                sx={{ mb: 1 }}
-              >
-                Repeat on
-              </Typography>
-
-              <Grid container spacing={1}>
-                {daysOfWeek.map((day, index) => (
-                  <Grid item key={day}>
-                    <Chip
-                      label={day.substring(0, 3)}
-                      onClick={() => handleDayToggle(index)}
-                      color={selectedDays[index] ? "primary" : "default"}
-                      variant={selectedDays[index] ? "filled" : "outlined"}
-                      clickable
-                      sx={{ borderRadius: 1, minWidth: 50 }}
-                    />
-                  </Grid>
-                ))}
-              </Grid>
-            </Box>
-          )}
-
-          {/* Monthly options */}
-          {repeatPeriod === "month" && (
-            <FormControl fullWidth size="small">
-              <Select
-                value={monthlyOption}
-                onChange={(e) => setMonthlyOption(e.target.value)}
-              >
-                <MenuItem value="first-tuesday">
-                  Monthly on the first Tuesday
-                </MenuItem>
-                <MenuItem value="second-tuesday">
-                  Monthly on the second Tuesday
-                </MenuItem>
-                <MenuItem value="third-tuesday">
-                  Monthly on the third Tuesday
-                </MenuItem>
-                <MenuItem value="last-tuesday">
-                  Monthly on the last Tuesday
-                </MenuItem>
-                <MenuItem value="custom-dates">Custom dates and times</MenuItem>
-              </Select>
-            </FormControl>
-          )}
-
-          {/* Yearly options */}
-          {repeatPeriod === "year" && (
-            <FormControl fullWidth size="small">
-              <Select
-                value={yearlyOption}
-                onChange={(e) => setYearlyOption(e.target.value)}
-              >
-                <MenuItem value="same-day">On the same day each year</MenuItem>
-                <MenuItem value="custom-dates">Custom dates and times</MenuItem>
-              </Select>
-            </FormControl>
-          )}
-
-          {/* Custom dates and times section - for both monthly and yearly */}
-          {((repeatPeriod === "month" && monthlyOption === "custom-dates") ||
-           (repeatPeriod === "year" && yearlyOption === "custom-dates")) && (
-            <Box>
-              <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 1 }}>
-                <Typography variant="subtitle2" color="text.secondary">
-                  Select dates and times
-                </Typography>
-                <Button
-                  variant="outlined"
-                  size="small"
-                  startIcon={<AddIcon />}
-                  onClick={() => setCustomDateTimePickerOpen(true)}
-                >
-                  Add Date
-                </Button>
-              </Box>
-
-              {customDateTimes.length === 0 ? (
-                <Typography variant="body2" color="text.secondary" sx={{ textAlign: "center", py: 2 }}>
-                  No dates added yet. Click "Add Date" to schedule.
-                </Typography>
-              ) : (
-                <List dense>
-                  {customDateTimes.map((dateTime, index) => (
-                    <ListItem key={index}>
-                      <ListItemText
-                        primary={formatDate(dateTime.date)}
-                        secondary={formatTime(dateTime.time)}
-                      />
-                      <ListItemSecondaryAction>
-                        <IconButton
-                          edge="end"
-                          size="small"
-                          onClick={() => handleRemoveCustomDateTime(index)}
-                        >
-                          <DeleteIcon fontSize="small" />
-                        </IconButton>
-                      </ListItemSecondaryAction>
-                    </ListItem>
-                  ))}
-                </List>
-              )}
-            </Box>
-          )}
-
-          {/* Ends Section */}
-          <Box>
-            <Typography
-              variant="subtitle2"
-              color="text.secondary"
-              sx={{ mb: 1 }}
-            >
-              Ends
-            </Typography>
-
-            <RadioGroup
-              value={endsOption}
-              onChange={(e) => setEndsOption(e.target.value)}
-            >
-              <FormControlLabel
-                value="never"
-                control={<Radio size="small" />}
-                label="Never"
-              />
-
-              <FormControlLabel
-                value="on"
-                control={<Radio size="small" />}
-                label={
-                  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                    On
-                    <Button
-                      variant="outlined"
-                      size="small"
-                      onClick={() => setDatePickerOpen(true)}
-                      sx={{
-                        width: 160,
-                        justifyContent: "flex-start",
-                        backgroundColor: "#f9f9f9",
-                        borderColor: "#ccc",
-                        color: "#333",
-                        textTransform: "none",
-                      }}
-                      disabled={endsOption !== "on"}
-                    >
-                      {endDate
-                        ? new Date(endDate).toLocaleDateString("en-US", {
-                            month: "short",
-                            day: "numeric",
-                            year: "numeric",
-                          })
-                        : "Select date"}
-                    </Button>
-                  </Box>
-                }
-              />
-
-              <FormControlLabel
-                value="after"
-                control={<Radio size="small" />}
-                label={
-                  <Box
-                    sx={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 1,
-                      mt: 1,
-                    }}
-                  >
-                    After
-                    <TextField
-                      type="number"
-                      size="small"
-                      sx={{ width: 100 }}
-                      value={occurrences}
-                      onChange={(e) => setOccurrences(Number(e.target.value))}
-                      disabled={endsOption !== "after"}
-                      inputProps={{ min: 1 }}
-                    />
-                    occurrences
-                  </Box>
-                }
-              />
-            </RadioGroup>
-          </Box>
-        </DialogContent>
-
-        <DialogActions sx={{ px: 3, py: 2, borderTop: "1px solid #eee" }}>
-          <Button onClick={() => setCustomRecurrenceOpen(false)}>Cancel</Button>
-          <Button onClick={handleCustomRecurrenceSave} variant="contained">
-            Done
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      {/* Custom date-time picker dialog */}
-      <Dialog
-        open={customDateTimePickerOpen}
-        onClose={() => setCustomDateTimePickerOpen(false)}
-        maxWidth="xs"
-      >
-        <DialogTitle sx={{ pb: 1 }}>Add Date and Time</DialogTitle>
-
-        <DialogContent sx={{ pt: 1 }}>
-          <Box sx={{ mb: 2 }}>
-            <Box
-              sx={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                mb: 1,
-                backgroundColor: "#f8f9fa",
-                p: 1,
-                borderRadius: 1,
-              }}
-            >
-              <IconButton onClick={() => changeCustomCalendarMonth(-1)}>
-                <ChevronLeft />
-              </IconButton>
-              <Typography variant="h6" sx={{ fontWeight: 500 }}>
-                {customCalendarDate.toLocaleDateString("en-US", {
-                  month: "long",
-                  year: "numeric",
-                })}
-              </Typography>
-              <IconButton onClick={() => changeCustomCalendarMonth(1)}>
-                <ChevronRight />
-              </IconButton>
-            </Box>
-
-            <Grid container spacing={0} columns={7}>
-              {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((d) => (
-                <Grid item xs={1} key={d}>
-                  <Box
-                    sx={{
-                      textAlign: "center",
-                      fontSize: 12,
-                      color: "#666",
-                      fontWeight: 500,
-                    }}
-                  >
-                    {d}
-                  </Box>
-                </Grid>
-              ))}
-              {generateCustomCalendarDays()}
-            </Grid>
-          </Box>
-
-          <Box>
-            <Typography variant="subtitle2" sx={{ mb: 1 }}>
-              Select time
-            </Typography>
-
-            <LocalizationProvider dateAdapter={AdapterDayjs}>
-              <TimePicker
-                value={dayjs(currentCustomTime, "hh:mm A")}
-                onChange={handleCustomTimeChange}
-                format="hh:mm a"
-                slotProps={{
-                  textField: {
-                    size: "small",
-                    fullWidth: true,
-                  },
-                }}
-              />
-            </LocalizationProvider>
-          </Box>
-        </DialogContent>
-
-        <DialogActions>
-          <Button onClick={() => setCustomDateTimePickerOpen(false)}>
-            Cancel
-          </Button>
-          <Button onClick={handleAddCustomDateTime} variant="contained">
-            Add
-          </Button>
-        </DialogActions>
-      </Dialog>
+        repeatEvery={repeatEvery}
+        setRepeatEvery={setRepeatEvery}
+        repeatPeriod={repeatPeriod}
+        setRepeatPeriod={setRepeatPeriod}
+        monthlyOption={monthlyOption}
+        setMonthlyOption={setMonthlyOption}
+        endsOption={endsOption}
+        setEndsOption={setEndsOption}
+        endDate={endDate}
+        setEndDate={setEndDate}
+        occurrences={occurrences}
+        setOccurrences={setOccurrences}
+        selectedDays={selectedDays}
+        setSelectedDays={setSelectedDays}
+        selectedDate={selectedDate}
+        onSave={(txt) => {
+          setRepeatOption(txt);
+          setCustomRecurrenceOpen(false);
+        }}
+      />
     </Box>
   );
 }
-
