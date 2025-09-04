@@ -40,6 +40,8 @@ import { RootState } from "../../reducers";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import { STYLE_GUIDE } from "../../styles";
+import { useComponentTypography } from "../../hooks";
 
 interface NotificationType {
   _id: string;
@@ -154,15 +156,8 @@ export default function NotificationTypes() {
     organizationId: "",
     status: "",
   });
-  const [snackbar, setSnackbar] = useState<{
-    open: boolean;
-    message: string;
-    severity: "error" | "success";
-  }>({
-    open: false,
-    message: "",
-    severity: "error",
-  });
+  
+  const { getHeadingSx } = useComponentTypography();
 
   const { control, handleSubmit, reset } = useForm<NotificationTypePostPayload>(
     {
@@ -215,17 +210,8 @@ export default function NotificationTypes() {
       if (data?.success) {
         setNotificationTypeReload(true);
         handleCloseDialog();
-        setSnackbar({
-          open: true,
-          message: "Notification Type deleted successfully!",
-          severity: "success",
-        });
       } else {
-        setSnackbar({
-          open: true,
-          message: "Failed to delete notification type.",
-          severity: "error",
-        });
+        toast.error("Error");
       }
     },
     true
@@ -302,12 +288,7 @@ export default function NotificationTypes() {
           url: `${DELETE.DELETE_NOTIFICATION_TYPE}/${deleteId}`,
         });
       } catch (error) {
-        console.error("Error deleting notification type:", error);
-        setSnackbar({
-          open: true,
-          message: "Failed to delete notification type.",
-          severity: "error",
-        });
+        toast.error("Error deleting notification type:", error);
       }
     }
   };
@@ -343,7 +324,13 @@ export default function NotificationTypes() {
 
   return (
     <Box sx={{ flexGrow: 1, p: 3, ml: { xs: 0 }, minHeight: "100vh" }}>
-      <Typography variant="h4" sx={{ mb: 3, fontWeight: 400 }}>
+      <Typography
+        variant="h4"
+        sx={{
+          ...getHeadingSx(),
+          mb: STYLE_GUIDE?.SPACING?.s3,
+        }}
+      >
         Notification Types
       </Typography>
       <Card sx={{ borderRadius: "8px", overflow: "visible" }}>
@@ -573,19 +560,6 @@ export default function NotificationTypes() {
           </Button>
         </DialogActions>
       </Dialog>
-      <Snackbar
-        open={snackbar.open}
-        autoHideDuration={6000}
-        onClose={() => setSnackbar({ ...snackbar, open: false })}
-      >
-        <Alert
-          onClose={() => setSnackbar({ ...snackbar, open: false })}
-          severity={snackbar.severity}
-          sx={{ width: "100%" }}
-        >
-          {snackbar.message}
-        </Alert>
-      </Snackbar>
     </Box>
   );
 }

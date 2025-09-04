@@ -23,6 +23,7 @@ import { NotivixDataModal } from "./NotivixDataModal";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "react-toastify";
 import NotivixFiltersModal from "../notivixDashboard/components/NotivixFiltersModal";
+import { useComponentTypography } from "../../hooks";
 
 interface ApiResponse {
   data: any[];
@@ -57,6 +58,7 @@ export default function NotivixDataSource() {
   const deleteVersionRow = useDelete(["deleteVersionRow"]);
 
   const [isFiltersModalOpen, setIsFiltersModalOpen] = React.useState(false);
+  const { getHeadingSx } = useComponentTypography();
 
   const handleOpenFiltersModal = () => {
     setIsFiltersModalOpen(true);
@@ -442,9 +444,8 @@ export default function NotivixDataSource() {
       <Typography
         variant="h4"
         sx={{
-          mb: 3,
-          fontWeight: 400,
-          color: STYLE_GUIDE?.COLORS?.primaryDark || "#3f51b5",
+          ...getHeadingSx(),
+          mb: STYLE_GUIDE?.SPACING?.s3,
         }}
       >
         {listCurrentData && listCurrentData?.name}

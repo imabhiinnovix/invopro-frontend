@@ -24,6 +24,7 @@ import { useSelector } from "react-redux";
 import { RootState } from "../../reducers";
 import { ValidationErrorModal } from "./ValidationErrorModel";
 import { AttributeOptionRequestPayload } from "../../components/atom/attributeOption/types";
+import { STYLE_GUIDE } from "../../styles";
 
 export default function ValidationErrors() {
   const { id } = useParams<{ id: string }>();
@@ -66,7 +67,6 @@ export default function ValidationErrors() {
     true
   );
 
-
   useEffect(() => {
     const handler = setTimeout(() => {
       setDebouncedSearchValue(searchValue);
@@ -98,14 +98,13 @@ export default function ValidationErrors() {
             `temp-${Math?.random()?.toString(36)?.substr(2, 9)}`,
           handleDiscard: handleDiscardRow,
           handleEdit: handleEditRow,
-          handleResolve: handleResolveRow, 
+          handleResolve: handleResolveRow,
         }))
       : [];
 
   const firstItem =
     validationErrorWithIds.length > 0 ? validationErrorWithIds[0] : null;
   const dataSourceId = firstItem?.dataSourceId || null;
-
 
   const commonDataSourceList = useSelector(
     (state: RootState) => state.dataSource?.list
@@ -154,7 +153,6 @@ export default function ValidationErrors() {
           payload,
         });
       } else if (dialog?.type === "discardRow") {
-        
         const payload = {
           action: "discard",
           dataSourceVersionId: id,
@@ -166,7 +164,6 @@ export default function ValidationErrors() {
           payload,
         });
       } else if (dialog?.type === "resolveRow") {
-        
         const payload = {
           action: "unique",
           dataSourceVersionId: id,
@@ -186,7 +183,6 @@ export default function ValidationErrors() {
             response?.message || "All rows discarded successfully";
           navigate(`/notivix/data-source/${response?.data?.dataSourceId}`);
         } else if (dialog.type === "discardRow") {
-
           successMessage = response?.message || "Row discarded successfully";
         } else if (dialog.type === "resolveRow") {
           successMessage =
@@ -225,8 +221,11 @@ export default function ValidationErrors() {
       <Typography
         variant="h4"
         sx={{
-          mb: 3,
-          fontWeight: 400,
+          mb: STYLE_GUIDE.SPACING.s3,
+          fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.regular,
+          fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.xxl,
+          color: STYLE_GUIDE.COLORS.primaryDark || "#3f51b5",
+          lineHeight: STYLE_GUIDE.TYPOGRAPHY.lineHeight.normal,
         }}
       >
         Validation Errors{" "}

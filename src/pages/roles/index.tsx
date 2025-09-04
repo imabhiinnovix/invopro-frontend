@@ -16,6 +16,8 @@ import { useQueryClient } from "@tanstack/react-query";
 import { RoleDataTable } from "./RoleDataTable";
 import { RoleModal } from "./RoleModal";
 import { toast } from "react-toastify";
+import { STYLE_GUIDE } from "../../styles";
+import { useComponentTypography } from "../../hooks";
 
 // Define types
 interface Role {
@@ -54,6 +56,8 @@ export default function Roles() {
     organizationId: "",
     status: "",
   });
+    const { getHeadingSx } = useComponentTypography();
+  
 
   // DELETE API
   const deleteRole = useDelete<null, RolePostResponse>(
@@ -173,9 +177,9 @@ export default function Roles() {
       <Typography
         variant="h4"
         sx={{
-          mb: 3,
-          fontWeight: 400,
-        }}
+                  ...getHeadingSx(),
+                  mb: STYLE_GUIDE?.SPACING?.s3,
+                }}
       >
         Roles
       </Typography>

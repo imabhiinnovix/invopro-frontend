@@ -49,6 +49,7 @@ import { UserResponse } from "../../context/AuthContext";
 import { useQueryClient } from "@tanstack/react-query";
 import { setPermissions } from "../../reducers/userSlice";
 import { toast } from "react-toastify";
+import { useComponentTypography } from "../../hooks";
 
 const columns: GridColDef[] = [
   {
@@ -165,32 +166,24 @@ export default function Permissions() {
     dataSourceId: "",
     resourceType: "",
   });
-  // useEffect(() => {
-  //   const handler = setTimeout(() => {
-  //     setDebouncedSearchValue(searchValue);
-  //   }, 500);
-  //   return () => {
-  //     clearTimeout(handler);
-  //   };
-  // }, [searchValue]);
+  const { getHeadingSx } = useComponentTypography();
 
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      if (searchValue.length === 0) {
+        setDebouncedSearchValue("");
+      } else if (searchValue.length < 3) {
+        toast.warning("Please enter at least 3 characters");
+        setDebouncedSearchValue("");
+      } else {
+        setDebouncedSearchValue(searchValue);
+      }
+    }, 500);
 
-    useEffect(() => {
-      const handler = setTimeout(() => {
-        if (searchValue.length === 0) {
-          setDebouncedSearchValue("");
-        } else if (searchValue.length < 3) {
-          toast.warning("Please enter at least 3 characters");
-          setDebouncedSearchValue("");
-        } else {
-          setDebouncedSearchValue(searchValue);
-        }
-      }, 500);
-  
-      return () => {
-        clearTimeout(handler);
-      };
-    }, [searchValue]);
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [searchValue]);
 
   const [formData, setFormData] = useState({
     id: "",
@@ -509,8 +502,8 @@ export default function Permissions() {
       <Typography
         variant="h4"
         sx={{
-          mb: 3,
-          fontWeight: 400,
+          ...getHeadingSx(),
+          mb: STYLE_GUIDE?.SPACING?.s3,
         }}
       >
         Permissions
