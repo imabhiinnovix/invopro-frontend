@@ -25,6 +25,7 @@ interface ApiResponse {
 }
 
 export default function NotivixDataSource() {
+  // console.log('Inside NotivixDataSource');
   const { id: valueId } = useParams<{ id: string }>();
   const queryClient = useQueryClient();
   const [rows, setRows] = useState<any[]>([]);
