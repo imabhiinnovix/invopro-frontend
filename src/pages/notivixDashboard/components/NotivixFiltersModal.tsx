@@ -632,6 +632,7 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
           <Box
             sx={{
               display: 'grid',
+              pt: 1.5,
               gridTemplateColumns: 'repeat(3, 1fr)',
               gap: STYLE_GUIDE.SPACING.s4,
               '@media (max-width: 900px)': {
