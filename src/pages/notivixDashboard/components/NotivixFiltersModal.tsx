@@ -40,6 +40,7 @@ interface NotivixFiltersModalProps {
 
 interface FieldSetting {
   attributeId: string;
+  refAttributeId?: string[];
   label: string;
   type: string;
   isDashboardFilter: boolean;
@@ -52,6 +53,7 @@ interface EntityFieldOption {
   label: string;
   value: {
     attributeId: string;
+    refAttributeId?: string[];
     type: string;
     isDerived?: boolean;
   };
@@ -181,7 +183,10 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
   const entityFieldOptionsMap = React.useMemo(() => {
     const map: Record<string, EntityFieldOption> = {};
     dataSourceQuery.data?.data.entityFieldOptions?.forEach((option) => {
-      map[option.value.attributeId] = option;
+      // Create unique key by combining attributeId with refAttributeId array
+      const refKey = option.value.refAttributeId?.length > 0 ? `-${option.value.refAttributeId.join('-')}` : '';
+      const uniqueKey = `${option.value.attributeId}${refKey}`;
+      map[uniqueKey] = option;
     });
     return map;
   }, [dataSourceQuery.data]);
@@ -261,8 +266,9 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
   const handleApplyFilters = () => {
     // Convert filters to use entity field option labels as keys
     const transformedFilters: Record<string, any> = {};
-    Object.entries(filters).forEach(([attributeId, value]) => {
-      const entityOption = entityFieldOptionsMap[attributeId];
+    Object.entries(filters).forEach(([filterKey, value]) => {
+      // filterKey might be just attributeId or attributeId-refAttributeId1-refAttributeId2
+      const entityOption = entityFieldOptionsMap[filterKey];
 
       if (entityOption && value !== undefined && value !== '' && value !== null) {
         if (entityOption?.value?.isDerived) {
@@ -282,10 +288,10 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
     onApplyFilters({});
   };
 
-  const handleFilterChange = (attributeId: string, value: any) => {
+  const handleFilterChange = (uniqueKey: string, value: any) => {
     setFilters((prev) => ({
       ...prev,
-      [attributeId]: value,
+      [uniqueKey]: value,
     }));
   };
 
@@ -300,6 +306,12 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
   );
 
   const renderFilterField = (field: FieldSetting) => {
+    console.log(field, 'fieldKishan');
+
+    // Generate the same unique key used in entityFieldOptionsMap
+    const refKey = field.refAttributeId?.length > 0 ? `-${field.refAttributeId.join('-')}` : '';
+    const uniqueKey = `${field.attributeId}${refKey}`;
+
     // Get options based on field type
     let options: string[] = [];
     if (field.type === 'option' || field.type === 'multioption') {
@@ -309,12 +321,12 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
         options = optionsCache[entityAttributeOptionMap[field.attributeId]!] || [];
       }
     }
-    const currentValue = filters[field.attributeId];
+    const currentValue = filters[uniqueKey];
 
     switch (field.type) {
       case 'boolean':
         return (
-          <Box key={field.attributeId}>
+          <Box key={uniqueKey}>
             <Typography
               variant="subtitle2"
               sx={{
@@ -324,11 +336,7 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
             >
               {field.label}
             </Typography>
-            <RadioGroup
-              value={currentValue || ''}
-              onChange={(e) => handleFilterChange(field.attributeId, e.target.value)}
-              row
-            >
+            <RadioGroup value={currentValue || ''} onChange={(e) => handleFilterChange(uniqueKey, e.target.value)} row>
               <FormControlLabel
                 value=""
                 control={<Radio size="small" />}
@@ -353,12 +361,12 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
       case 'date':
         return (
           <TextField
-            key={field.attributeId}
+            key={uniqueKey}
             label={field.label}
             placeholder={`Enter ${field.label.toLowerCase()}...`}
             type="date"
             value={currentValue || ''}
-            onChange={(e) => handleFilterChange(field.attributeId, e.target.value)}
+            onChange={(e) => handleFilterChange(uniqueKey, e.target.value)}
             fullWidth
             size="small"
             InputLabelProps={{ shrink: true }}
@@ -386,7 +394,7 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
         );
       case 'dateRange':
         return (
-          <Stack key={field.attributeId} spacing={STYLE_GUIDE.SPACING.s2}>
+          <Stack key={uniqueKey} spacing={STYLE_GUIDE.SPACING.s2}>
             <Typography variant="subtitle2" color="text.secondary">
               {field.label}
             </Typography>
@@ -396,7 +404,7 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
                 type="date"
                 value={currentValue?.startDate || ''}
                 onChange={(e) =>
-                  handleFilterChange(field.attributeId, {
+                  handleFilterChange(uniqueKey, {
                     ...currentValue,
                     startDate: e.target.value,
                   })
@@ -417,7 +425,7 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
                 type="date"
                 value={currentValue?.endDate || ''}
                 onChange={(e) =>
-                  handleFilterChange(field.attributeId, {
+                  handleFilterChange(uniqueKey, {
                     ...currentValue,
                     endDate: e.target.value,
                   })
@@ -438,13 +446,13 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
         );
       case 'option':
         return (
-          <FormControl key={field.attributeId} fullWidth size="small">
+          <FormControl key={uniqueKey} fullWidth size="small">
             <InputLabel sx={{ color: theme.palette.text.secondary }}>
               {field.label} {field.isDerived && '(Derived)'}
             </InputLabel>
             <Select
               value={currentValue || ''}
-              onChange={(e) => handleFilterChange(field.attributeId, e.target.value)}
+              onChange={(e) => handleFilterChange(uniqueKey, e.target.value)}
               label={`${field.label}${field.isDerived ? ' (Derived)' : ''}`}
               sx={{
                 backgroundColor: theme.getDropdownBackground(),
@@ -470,14 +478,14 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
         );
       case 'multioption':
         return (
-          <FormControl key={field.attributeId} fullWidth size="small">
+          <FormControl key={uniqueKey} fullWidth size="small">
             <InputLabel sx={{ color: theme.palette.text.secondary }}>
               {field.label} {field.isDerived && '(Derived)'}
             </InputLabel>
             <Select
               multiple
               value={currentValue || []}
-              onChange={(e) => handleFilterChange(field.attributeId, e.target.value)}
+              onChange={(e) => handleFilterChange(uniqueKey, e.target.value)}
               label={`${field.label}${field.isDerived ? ' (Derived)' : ''}`}
               renderValue={(selected) => (
                 <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
@@ -505,12 +513,12 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
       case 'number':
         return (
           <TextField
-            key={field.attributeId}
+            key={uniqueKey}
             label={field.label}
             placeholder={`Enter ${field.label.toLowerCase()}...`}
             type="number"
             value={currentValue || ''}
-            onChange={(e) => handleFilterChange(field.attributeId, e.target.value)}
+            onChange={(e) => handleFilterChange(uniqueKey, e.target.value)}
             fullWidth
             size="small"
             sx={{
@@ -532,11 +540,11 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
       default: // text, richtext, url, user, email, text-with-option
         return (
           <TextField
-            key={field.attributeId}
+            key={uniqueKey}
             label={field.label}
             placeholder={`Enter ${field.label.toLowerCase()}...`}
             value={currentValue || ''}
-            onChange={(e) => handleFilterChange(field.attributeId, e.target.value)}
+            onChange={(e) => handleFilterChange(uniqueKey, e.target.value)}
             fullWidth
             size="small"
             sx={{
