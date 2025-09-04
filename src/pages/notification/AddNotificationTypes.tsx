@@ -1,11 +1,9 @@
-
-
-
-
 import * as React from "react";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+  import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+
 import {
   Box,
   Card,
@@ -33,6 +31,7 @@ import { GET, POST } from "../../services/apiRoutes";
 import { STYLE_GUIDE } from "../../styles";
 import { useSelector } from "react-redux";
 import Frequency from "./Frequency";
+import { useComponentTypography } from "../../hooks";
 
 // Error Boundary Component
 class ErrorBoundary extends React.Component {
@@ -44,12 +43,12 @@ class ErrorBoundary extends React.Component {
     return { hasError: true };
   }
   componentDidCatch(error, errorInfo) {
-    console.error('Error Boundary caught an error:', error, errorInfo);
+    console.error("Error Boundary caught an error:", error, errorInfo);
   }
   render() {
     if (this.state.hasError) {
       return (
-        <Box sx={{ p: 2, textAlign: 'center' }}>
+        <Box sx={{ p: 2, textAlign: "center" }}>
           <Typography variant="h6" color="error">
             Something went wrong. Please try refreshing the page.
           </Typography>
@@ -60,68 +59,55 @@ class ErrorBoundary extends React.Component {
   }
 }
 
-// Custom Input Component that maintains focus
-const FocusAwareInput = React.memo(({ 
-  value, 
-  onChange, 
-  error, 
-  placeholder, 
-  type = "text",
-  ...props 
-}) => {
-  const inputRef = useRef(null);
-  const [localValue, setLocalValue] = useState(value);
-  const isFocused = useRef(false);
-  
-  // Update local value when prop changes
-  useEffect(() => {
-    if (!isFocused.current) {
-      setLocalValue(value);
-    }
-  }, [value]);
-  
-  // Handle focus
-  const handleFocus = useCallback(() => {
-    isFocused.current = true;
-  }, []);
-  
-  // Handle blur
-  const handleBlur = useCallback(() => {
-    isFocused.current = false;
-    onChange(localValue);
-  }, [localValue, onChange]);
-  
-  // Handle change
-  const handleChange = useCallback((e) => {
-    setLocalValue(e.target.value);
-  }, []);
-  
-  // Handle key down to prevent default behavior if needed
-  const handleKeyDown = useCallback((e) => {
-    // Prevent any default behavior that might cause focus loss
-    if (e.key === 'Enter') {
-      e.preventDefault();
-    }
-  }, []);
-  
-  return (
-    <TextField
-      {...props}
-      inputRef={inputRef}
-      value={localValue}
-      onChange={handleChange}
-      onFocus={handleFocus}
-      onBlur={handleBlur}
-      onKeyDown={handleKeyDown}
-      placeholder={placeholder}
-      type={type}
-      variant="outlined"
-      error={error}
-    />
-  );
-});
+const FocusAwareInput = React.memo(
+  ({ value, onChange, error, placeholder, type = "text", ...props }) => {
+    const inputRef = useRef(null);
+    const [localValue, setLocalValue] = useState(value);
+    const isFocused = useRef(false);
 
-// ConditionRuleBuilder Component
+    useEffect(() => {
+      if (!isFocused.current) {
+        setLocalValue(value);
+      }
+    }, [value]);
+
+    const handleFocus = useCallback(() => {
+      isFocused.current = true;
+    }, []);
+
+    const handleBlur = useCallback(() => {
+      isFocused.current = false;
+      onChange(localValue);
+    }, [localValue, onChange]);
+
+    const handleChange = useCallback((e) => {
+      setLocalValue(e.target.value);
+    }, []);
+
+    const handleKeyDown = useCallback((e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+      }
+    }, []);
+
+    return (
+      <TextField
+        {...props}
+        inputRef={inputRef}
+        value={localValue}
+        onChange={handleChange}
+        onFocus={handleFocus}
+        onBlur={handleBlur}
+        onKeyDown={handleKeyDown}
+        placeholder={placeholder}
+        type={type}
+        variant="outlined"
+        error={error}
+      />
+    );
+  }
+);
+
 const ConditionRuleBuilder = ({
   onChange,
   notificationTypeList,
@@ -142,27 +128,24 @@ const ConditionRuleBuilder = ({
   });
   const { list } = useSelector((state) => state.dataSource);
   const operatorList = usePost(["operatorList"]);
-  
-  // Refs to maintain stable references
+
   const notificationRef = useRef(notification);
   const fieldOptionsRef = useRef(fieldOptions);
   const operatorListRef = useRef(operatorList);
   const activeInputRef = useRef(null);
 
-  // Update refs when state changes
   useEffect(() => {
     notificationRef.current = notification;
   }, [notification]);
-  
+
   useEffect(() => {
     fieldOptionsRef.current = fieldOptions;
   }, [fieldOptions]);
-  
+
   useEffect(() => {
     operatorListRef.current = operatorList;
   }, [operatorList]);
 
-  // Load operators on component mount
   useEffect(() => {
     operatorList.mutate({
       url: POST.OPERATOR_LIST,
@@ -170,21 +153,20 @@ const ConditionRuleBuilder = ({
     });
   }, []);
 
-  // Update field options when entity changes
   useEffect(() => {
     if (notification.entityId && list) {
-      const selectedEntity = list.find(item => item._id === notification.entityId);
-      
-      if (selectedEntity?.fieldSettings) {
-        const newFieldOptions = selectedEntity.fieldSettings
-          .map(setting => ({
-            label: setting.label,
-            value: setting.mappedAttributeName,
-            attributeId: setting.attributeId,
-            type: setting?.type,
-            refAttributeId:setting?.refAttributeId
+      const selectedEntity = list.find(
+        (item) => item._id === notification.entityId
+      );
 
-          }));
+      if (selectedEntity?.fieldSettings) {
+        const newFieldOptions = selectedEntity.fieldSettings.map((setting) => ({
+          label: setting.label,
+          value: setting.mappedAttributeName,
+          attributeId: setting.attributeId,
+          type: setting?.type,
+          refAttributeId: setting?.refAttributeId,
+        }));
         setFieldOptions(newFieldOptions);
       } else {
         setFieldOptions([]);
@@ -194,7 +176,6 @@ const ConditionRuleBuilder = ({
     }
   }, [notification.entityId, list, setFieldOptions]);
 
-  // Static options for specific fields
   const statusOptions = [
     "open",
     "rated to search",
@@ -212,10 +193,8 @@ const ConditionRuleBuilder = ({
     { value: "y", label: "Yearly" },
   ];
 
-  // Utility functions
   const generateId = () => Math.random().toString(36).substr(2, 9);
-  
-  // Helper function to get group by path
+
   const getGroupByPath = useCallback((root, path) => {
     if (path.length === 0) return root;
     let current = root;
@@ -226,194 +205,249 @@ const ConditionRuleBuilder = ({
     return current;
   }, []);
 
-  // Rule and group management functions
-  const addRule = useCallback((groupPath) => {
-    const newRule = {
-      id: generateId(),
-      field: "",
-      operator: "",
-      value: "",
-      timeUnit: "",
-    };
-    
-    setNotification(prev => {
-      // Create a deep copy to avoid mutation
-      const updatedNotification = JSON.parse(JSON.stringify(prev));
-      const group = getGroupByPath(updatedNotification.conditionGroup, groupPath);
-      if (group) {
-        group.rules.push(newRule);
-      }
-      return updatedNotification;
-    });
-  }, [getGroupByPath]);
+  const addRule = useCallback(
+    (groupPath) => {
+      const newRule = {
+        id: generateId(),
+        field: "",
+        operator: "",
+        value: "",
+        timeUnit: "",
+      };
 
-  const addGroup = useCallback((groupPath) => {
-    const newGroup = {
-      id: generateId(),
-      logic: "AND",
-      rules: [],
-    };
-    
-    setNotification(prev => {
-      const updatedNotification = JSON.parse(JSON.stringify(prev));
-      const group = getGroupByPath(updatedNotification.conditionGroup, groupPath);
-      if (group) {
-        group.rules.push(newGroup);
-      }
-      return updatedNotification;
-    });
-  }, [getGroupByPath]);
+      setNotification((prev) => {
+        const updatedNotification = JSON.parse(JSON.stringify(prev));
+        const group = getGroupByPath(
+          updatedNotification.conditionGroup,
+          groupPath
+        );
+        if (group) {
+          group.rules.push(newRule);
+        }
+        return updatedNotification;
+      });
+    },
+    [getGroupByPath]
+  );
 
-  const removeItem = useCallback((groupPath, index) => {
-    setNotification(prev => {
-      const updatedNotification = JSON.parse(JSON.stringify(prev));
-      const group = getGroupByPath(updatedNotification.conditionGroup, groupPath);
-      if (group && group.rules) {
-        group.rules.splice(index, 1);
-      }
-      return updatedNotification;
-    });
-  }, [getGroupByPath]);
+  const addGroup = useCallback(
+    (groupPath) => {
+      const newGroup = {
+        id: generateId(),
+        logic: "AND",
+        rules: [],
+      };
 
-  const updateRule = useCallback((groupPath, index, field, value) => {
-    setNotification(prev => {
-      const updatedNotification = JSON.parse(JSON.stringify(prev));
-      const group = getGroupByPath(updatedNotification.conditionGroup, groupPath);
-      
-      if (group && group.rules && group.rules[index]) {
-        // Update the rule
-        group.rules[index][field] = value;
-        
-        // Clear dependent fields when operator changes
-        if (field === "operator") {
-          const selectedField = fieldOptionsRef.current.find((f) => f.value === group.rules[index].field);
-          const operators = operatorListRef.current.data?.data?.find((op) => op.fieldType === selectedField?.type)?.operators;
-          const selectedOperator = operators?.find((op) => op.operatorKey === value);
-          if (selectedOperator && !selectedOperator.valueRequired) {
-            group.rules[index].value = "";
-            group.rules[index].timeUnit = "";
+      setNotification((prev) => {
+        const updatedNotification = JSON.parse(JSON.stringify(prev));
+        const group = getGroupByPath(
+          updatedNotification.conditionGroup,
+          groupPath
+        );
+        if (group) {
+          group.rules.push(newGroup);
+        }
+        return updatedNotification;
+      });
+    },
+    [getGroupByPath]
+  );
+
+  const removeItem = useCallback(
+    (groupPath, index) => {
+      setNotification((prev) => {
+        const updatedNotification = JSON.parse(JSON.stringify(prev));
+        const group = getGroupByPath(
+          updatedNotification.conditionGroup,
+          groupPath
+        );
+        if (group && group.rules) {
+          group.rules.splice(index, 1);
+        }
+        return updatedNotification;
+      });
+    },
+    [getGroupByPath]
+  );
+
+  const updateRule = useCallback(
+    (groupPath, index, field, value) => {
+      setNotification((prev) => {
+        const updatedNotification = JSON.parse(JSON.stringify(prev));
+        const group = getGroupByPath(
+          updatedNotification.conditionGroup,
+          groupPath
+        );
+
+        if (group && group.rules && group.rules[index]) {
+          group.rules[index][field] = value;
+
+          if (field === "operator") {
+            const selectedField = fieldOptionsRef.current.find(
+              (f) => f.value === group.rules[index].field
+            );
+            const operators = operatorListRef.current.data?.data?.find(
+              (op) => op.fieldType === selectedField?.type
+            )?.operators;
+            const selectedOperator = operators?.find(
+              (op) => op.operatorKey === value
+            );
+            if (selectedOperator && !selectedOperator.valueRequired) {
+              group.rules[index].value = "";
+              group.rules[index].timeUnit = "";
+            }
           }
         }
-      }
-      
-      return updatedNotification;
-    });
-  }, [getGroupByPath]);
 
-  const updateGroupLogic = useCallback((groupPath, logic) => {
-    setNotification(prev => {
-      const updatedNotification = JSON.parse(JSON.stringify(prev));
-      const group = getGroupByPath(updatedNotification.conditionGroup, groupPath);
-      if (group) {
-        group.logic = logic;
-      }
-      return updatedNotification;
-    });
-  }, [getGroupByPath]);
+        return updatedNotification;
+      });
+    },
+    [getGroupByPath]
+  );
+
+  const updateGroupLogic = useCallback(
+    (groupPath, logic) => {
+      setNotification((prev) => {
+        const updatedNotification = JSON.parse(JSON.stringify(prev));
+        const group = getGroupByPath(
+          updatedNotification.conditionGroup,
+          groupPath
+        );
+        if (group) {
+          group.logic = logic;
+        }
+        return updatedNotification;
+      });
+    },
+    [getGroupByPath]
+  );
 
   const validateValue = useCallback((rule) => {
     if (!rule.field || !rule.operator) return false;
     const field = fieldOptionsRef.current.find((f) => f.value === rule.field);
-    const operators = operatorListRef.current.data?.data?.find((op) => op.fieldType === field?.type)?.operators || [];
-    const selectedOperator = operators?.find((op) => op.operatorKey === rule.operator);
+    const operators =
+      operatorListRef.current.data?.data?.find(
+        (op) => op.fieldType === field?.type
+      )?.operators || [];
+    const selectedOperator = operators?.find(
+      (op) => op.operatorKey === rule.operator
+    );
     return selectedOperator?.valueRequired && !rule.value;
   }, []);
 
-  // Render value input based on field type
-  const renderValueInput = useCallback((rule, groupPath, index) => {
-    const field = fieldOptionsRef.current.find((f) => f.value === rule.field);
-    if (!field) return null;
-    const operators = operatorListRef.current.data?.data?.find((op) => op.fieldType === field?.type)?.operators || [];
-    const selectedOperator = operators?.find((op) => op.operatorKey === rule.operator);
-    const valueRequired = selectedOperator?.valueRequired ?? true;
-    
-    if (!valueRequired) return null;
-    const updateValue = (value) => updateRule(groupPath, index, "value", value);
-    const updateTimeUnit = (value) => updateRule(groupPath, index, "timeUnit", value);
-    const hasError = validateValue(rule);
-    
-    switch (field.type) {
-      case "boolean":
-        return (
-          <FormControl fullWidth size="small" error={hasError}>
-            <InputLabel>Select...</InputLabel>
-            <Select
-              value={rule.value}
-              onChange={(e) => updateValue(e.target.value === "true")}
-              label="Select..."
-            >
-              <MenuItem value="">Select...</MenuItem>
-              <MenuItem value="true">True</MenuItem>
-              <MenuItem value="false">False</MenuItem>
-            </Select>
-            {hasError && (
-              <Typography color="error" variant="caption">Required </Typography>
-            )}
-          </FormControl>
-        );
-      case "select":
-        return renderSelectField(rule, updateValue, hasError);
-      case "date":
-        return (
-          <Box sx={{ display: "flex", gap: 2, alignItems: "center" }}>
+  const renderValueInput = useCallback(
+    (rule, groupPath, index) => {
+      const field = fieldOptionsRef.current.find((f) => f.value === rule.field);
+      if (!field) return null;
+      const operators =
+        operatorListRef.current.data?.data?.find(
+          (op) => op.fieldType === field?.type
+        )?.operators || [];
+      const selectedOperator = operators?.find(
+        (op) => op.operatorKey === rule.operator
+      );
+      const valueRequired = selectedOperator?.valueRequired ?? true;
+
+      if (!valueRequired) return null;
+      const updateValue = (value) =>
+        updateRule(groupPath, index, "value", value);
+      const updateTimeUnit = (value) =>
+        updateRule(groupPath, index, "timeUnit", value);
+      const hasError = validateValue(rule);
+
+      switch (field.type) {
+        case "boolean":
+          return (
+            <FormControl fullWidth size="small" error={hasError}>
+              <InputLabel>Select...</InputLabel>
+              <Select
+                value={rule.value}
+                onChange={(e) => updateValue(e.target.value === "true")}
+                label="Select..."
+              >
+                <MenuItem value="">Select...</MenuItem>
+                <MenuItem value="true">True</MenuItem>
+                <MenuItem value="false">False</MenuItem>
+              </Select>
+              {hasError && (
+                <Typography color="error" variant="caption">
+                  Required{" "}
+                </Typography>
+              )}
+            </FormControl>
+          );
+        case "select":
+          return renderSelectField(rule, updateValue, hasError);
+        case "date":
+          return (
+            <Box sx={{ display: "flex", gap: 2, alignItems: "center" }}>
+              <FormControl fullWidth size="small" error={hasError}>
+                <FocusAwareInput
+                  fullWidth
+                  size="small"
+                  type="text"
+                  value={rule.value}
+                  onChange={updateValue}
+                  placeholder="Select date"
+                  error={hasError}
+                />
+                {hasError && (
+                  <Typography color="error" variant="caption">
+                    Required{" "}
+                  </Typography>
+                )}
+              </FormControl>
+              <FormControl fullWidth size="small">
+                <InputLabel>Time Unit</InputLabel>
+                <Select
+                  value={rule.timeUnit}
+                  onChange={(e) => updateTimeUnit(e.target.value)}
+                  label="Time Unit"
+                >
+                  <MenuItem value="">Select...</MenuItem>
+                  {timeUnitOptions.map((option) => (
+                    <MenuItem key={option.value} value={option.value}>
+                      {option.label}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Box>
+          );
+        default:
+          return (
             <FormControl fullWidth size="small" error={hasError}>
               <FocusAwareInput
                 fullWidth
                 size="small"
-                type="text"
                 value={rule.value}
                 onChange={updateValue}
-                placeholder="Select date"
+                placeholder="Value"
                 error={hasError}
               />
               {hasError && (
-                <Typography color="error" variant="caption">Required </Typography>
+                <Typography color="error" variant="caption">
+                  Required{" "}
+                </Typography>
               )}
             </FormControl>
-            <FormControl fullWidth size="small">
-              <InputLabel>Time Unit</InputLabel>
-              <Select
-                value={rule.timeUnit}
-                onChange={(e) => updateTimeUnit(e.target.value)}
-                label="Time Unit"
-              >
-                <MenuItem value="">Select...</MenuItem>
-                {timeUnitOptions.map((option) => (
-                  <MenuItem key={option.value} value={option.value}>
-                    {option.label}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-          </Box>
-        );
-      default:
-        return (
-          <FormControl fullWidth size="small" error={hasError}>
-            <FocusAwareInput
-              fullWidth
-              size="small"
-              value={rule.value}
-              onChange={updateValue}
-              placeholder="Value"
-              error={hasError}
-            />
-            {hasError && (
-              <Typography color="error" variant="caption">Required </Typography>
-            )}
-          </FormControl>
-        );
-    }
-  }, [updateRule, validateValue]);
+          );
+      }
+    },
+    [updateRule, validateValue]
+  );
 
-  // Helper function to render select fields
   const renderSelectField = useCallback((rule, updateValue, hasError) => {
     const getOptions = () => {
       switch (rule.field) {
-        case "status": return statusOptions;
-        case "case_type": return caseTypeOptions;
-        case "country_code": return countryCodeOptions;
-        default: return [];
+        case "status":
+          return statusOptions;
+        case "case_type":
+          return caseTypeOptions;
+        case "country_code":
+          return countryCodeOptions;
+        default:
+          return [];
       }
     };
     const options = getOptions();
@@ -423,8 +457,12 @@ const ConditionRuleBuilder = ({
         <InputLabel>Select...</InputLabel>
         <Select
           multiple={isMultiple}
-          value={isMultiple ? (rule.value ? rule.value.split(",") : []) : rule.value}
-          onChange={(e) => updateValue(isMultiple ? e.target.value.join(",") : e.target.value)}
+          value={
+            isMultiple ? (rule.value ? rule.value.split(",") : []) : rule.value
+          }
+          onChange={(e) =>
+            updateValue(isMultiple ? e.target.value.join(",") : e.target.value)
+          }
           label="Select..."
           sx={isMultiple ? { minHeight: 80 } : {}}
         >
@@ -436,17 +474,23 @@ const ConditionRuleBuilder = ({
           ))}
         </Select>
         {hasError && (
-          <Typography color="error" variant="caption">Required 4</Typography>
+          <Typography color="error" variant="caption">
+            Required 4
+          </Typography>
         )}
       </FormControl>
     );
   }, []);
 
-  // Rule Component with memoization
   const RuleComponent = React.memo(({ rule, groupPath, index }) => {
-    const selectedField = fieldOptionsRef.current.find((f) => f.value === rule.field);
-    const operators = operatorListRef.current.data?.data?.find((op) => op.fieldType === selectedField?.type)?.operators || [];
-    
+    const selectedField = fieldOptionsRef.current.find(
+      (f) => f.value === rule.field
+    );
+    const operators =
+      operatorListRef.current.data?.data?.find(
+        (op) => op.fieldType === selectedField?.type
+      )?.operators || [];
+
     return (
       <Box
         sx={{
@@ -482,7 +526,9 @@ const ConditionRuleBuilder = ({
           <InputLabel>Select operator...</InputLabel>
           <Select
             value={rule.operator}
-            onChange={(e) => updateRule(groupPath, index, "operator", e.target.value)}
+            onChange={(e) =>
+              updateRule(groupPath, index, "operator", e.target.value)
+            }
             label="Select operator..."
           >
             <MenuItem value="">Select operator...</MenuItem>
@@ -509,163 +555,163 @@ const ConditionRuleBuilder = ({
     );
   });
 
-  // Group Component with memoization
-  const GroupComponent = React.memo(({ group, groupPath = [], isRoot = false }) => {
-    const [collapsed, setCollapsed] = useState(false);
-    
-    return (
-      <Box
-        sx={{
-          border: isRoot ? "2px solid" : "1px solid",
-          borderColor: isRoot ? "primary.light" : "grey.300",
-          borderRadius: 2,
-          p: 3,
-          bgcolor: isRoot ? "background.paper" : "inherit",
-          boxShadow: isRoot ? 3 : 1,
-          transition: "all 0.3s ease-in-out",
-        }}
-      >
+  const GroupComponent = React.memo(
+    ({ group, groupPath = [], isRoot = false }) => {
+      const [collapsed, setCollapsed] = useState(false);
+
+      return (
         <Box
           sx={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            mb: 3,
+            border: isRoot ? "2px solid" : "1px solid",
+            borderColor: isRoot ? "primary.light" : "grey.300",
+            borderRadius: 2,
+            p: 3,
+            bgcolor: isRoot ? "background.paper" : "inherit",
+            boxShadow: isRoot ? 3 : 1,
+            transition: "all 0.3s ease-in-out",
           }}
         >
-          <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-            {!isRoot && (
-              <IconButton
-                onClick={() => setCollapsed(!collapsed)}
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              mb: 3,
+            }}
+          >
+            <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+              {!isRoot && (
+                <IconButton
+                  onClick={() => setCollapsed(!collapsed)}
+                  sx={{
+                    bgcolor: "grey.100",
+                    "&:hover": { bgcolor: "grey.200" },
+                    transition: "background-color 0.2s ease",
+                  }}
+                  aria-label="Toggle group collapse"
+                >
+                  {collapsed ? <ChevronRightIcon /> : <ExpandMoreIcon />}
+                </IconButton>
+              )}
+              <Typography
+                variant="subtitle2"
                 sx={{
-                  bgcolor: "grey.100",
-                  "&:hover": { bgcolor: "grey.200" },
-                  transition: "background-color 0.2s ease",
+                  fontWeight: "medium",
+                  color: "text.secondary",
+                  fontSize: "0.9rem",
                 }}
-                aria-label="Toggle group collapse"
               >
-                {collapsed ? <ChevronRightIcon /> : <ExpandMoreIcon />}
-              </IconButton>
-            )}
-            <Typography
-              variant="subtitle2"
-              sx={{
-                fontWeight: "medium",
-                color: "text.secondary",
-                fontSize: "0.9rem",
-              }}
-            >
-              {isRoot ? "Condition Group" : "Nested Group"}
-            </Typography>
-            <FormControl size="small">
-              <InputLabel>Logic</InputLabel>
-              <Select
-                value={group.logic}
-                onChange={(e) => updateGroupLogic(groupPath, e.target.value)}
-                label="Logic"
-                sx={{ fontSize: "0.85rem" }}
-              >
-                <MenuItem value="AND">ALL</MenuItem>
-                <MenuItem value="OR">ANY</MenuItem>
-              </Select>
-            </FormControl>
-          </Box>
-          <Box sx={{ display: "flex", gap: 1 }}>
-            <Button
-              variant="contained"
-              color="primary"
-              size="small"
-              onClick={() => addRule(groupPath)}
-              startIcon={<AddIcon />}
-              sx={{
-                fontSize: "0.85rem",
-                borderRadius: 1,
-                px: 2,
-                py: 0.5,
-                transition: "all 0.2s ease",
-                "&:hover": { transform: "scale(1.05)" },
-              }}
-            >
-              Condition
-            </Button>
-            <Button
-              variant="contained"
-              color="success"
-              size="small"
-              onClick={() => addGroup(groupPath)}
-              startIcon={<AddIcon />}
-              sx={{
-                fontSize: "0.85rem",
-                borderRadius: 1,
-                px: 2,
-                py: 0.5,
-                transition: "all 0.2s ease",
-                "&:hover": { transform: "scale(1.05)" },
-              }}
-            >
-              Group Condition
-            </Button>
-            {!isRoot && (
-              <IconButton
-                onClick={() => {
-                  const parentPath = groupPath.slice(0, -1);
-                  const index = groupPath[groupPath.length - 1];
-                  removeItem(parentPath, index);
+                {isRoot ? "Condition Group" : "Nested Group"}
+              </Typography>
+              <FormControl size="small">
+                <InputLabel>Logic</InputLabel>
+                <Select
+                  value={group.logic}
+                  onChange={(e) => updateGroupLogic(groupPath, e.target.value)}
+                  label="Logic"
+                  sx={{ fontSize: "0.85rem" }}
+                >
+                  <MenuItem value="AND">ALL</MenuItem>
+                  <MenuItem value="OR">ANY</MenuItem>
+                </Select>
+              </FormControl>
+            </Box>
+            <Box sx={{ display: "flex", gap: 1 }}>
+              <Button
+                variant="contained"
+                color="primary"
+                size="small"
+                onClick={() => addRule(groupPath)}
+                startIcon={<AddIcon />}
+                sx={{
+                  fontSize: "0.85rem",
+                  borderRadius: 1,
+                  px: 2,
+                  py: 0.5,
+                  transition: "all 0.2s ease",
+                  "&:hover": { transform: "scale(1.05)" },
                 }}
-                color="error"
-                aria-label="Remove group"
               >
-                <CloseIcon />
-              </IconButton>
-            )}
+                Condition
+              </Button>
+              <Button
+                variant="contained"
+                color="success"
+                size="small"
+                onClick={() => addGroup(groupPath)}
+                startIcon={<AddIcon />}
+                sx={{
+                  fontSize: "0.85rem",
+                  borderRadius: 1,
+                  px: 2,
+                  py: 0.5,
+                  transition: "all 0.2s ease",
+                  "&:hover": { transform: "scale(1.05)" },
+                }}
+              >
+                Group Condition
+              </Button>
+              {!isRoot && (
+                <IconButton
+                  onClick={() => {
+                    const parentPath = groupPath.slice(0, -1);
+                    const index = groupPath[groupPath.length - 1];
+                    removeItem(parentPath, index);
+                  }}
+                  color="error"
+                  aria-label="Remove group"
+                >
+                  <CloseIcon />
+                </IconButton>
+              )}
+            </Box>
           </Box>
+          {!collapsed && (
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+              {group.rules.map((rule, index) => (
+                <Box key={rule.id || index}>
+                  {index > 0 && (
+                    <Box sx={{ py: 1 }}>
+                      <Typography
+                        variant="caption"
+                        sx={{
+                          pl: 1,
+                          fontSize: "0.75rem",
+                          color: "text.secondary",
+                          fontWeight: "medium",
+                          bgcolor: "grey.100",
+                          borderRadius: "12px",
+                          px: 1.5,
+                          py: 0.5,
+                          display: "inline-block",
+                          transition: "all 0.2s ease",
+                        }}
+                      >
+                        {group.logic === "AND" ? "ALL" : "ANY"}
+                      </Typography>
+                    </Box>
+                  )}
+                  {rule.logic ? (
+                    <GroupComponent
+                      group={rule}
+                      groupPath={[...groupPath, index]}
+                    />
+                  ) : (
+                    <RuleComponent
+                      rule={rule}
+                      groupPath={groupPath}
+                      index={index}
+                    />
+                  )}
+                </Box>
+              ))}
+            </Box>
+          )}
         </Box>
-        {!collapsed && (
-          <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-            {group.rules.map((rule, index) => (
-              <Box key={rule.id || index}>
-                {index > 0 && (
-                  <Box sx={{ py: 1 }}>
-                    <Typography
-                      variant="caption"
-                      sx={{
-                        pl: 1,
-                        fontSize: "0.75rem",
-                        color: "text.secondary",
-                        fontWeight: "medium",
-                        bgcolor: "grey.100",
-                        borderRadius: "12px",
-                        px: 1.5,
-                        py: 0.5,
-                        display: "inline-block",
-                        transition: "all 0.2s ease",
-                      }}
-                    >
-                      {group.logic === "AND" ? "ALL" : "ANY"}
-                    </Typography>
-                  </Box>
-                )}
-                {rule.logic ? (
-                  <GroupComponent
-                    group={rule}
-                    groupPath={[...groupPath, index]}
-                  />
-                ) : (
-                  <RuleComponent
-                    rule={rule}
-                    groupPath={groupPath}
-                    index={index}
-                  />
-                )}
-              </Box>
-            ))}
-          </Box>
-        )}
-      </Box>
-    );
-  });
+      );
+    }
+  );
 
-  // Transform notification data for API
   useEffect(() => {
     const transformNotificationData = () => {
       const transformGroup = (group) => {
@@ -675,21 +721,20 @@ const ConditionRuleBuilder = ({
         };
         group.rules.forEach((rule) => {
           if (rule.logic) {
-            // Handle nested group
             const nestedGroup = transformGroup(rule);
             if (nestedGroup) {
               result.conditions.push(nestedGroup);
             }
           } else {
-            // Handle rule
-            const fieldOption = fieldOptionsRef.current.find((f) => f.value === rule.field);
+            const fieldOption = fieldOptionsRef.current.find(
+              (f) => f.value === rule.field
+            );
             if (fieldOption && rule.field && rule.operator) {
               const condition = {
                 attributeId: fieldOption.attributeId,
                 operator: rule.operator,
                 value: rule.value || "",
-                refAttributeId:fieldOption.refAttributeId
-
+                refAttributeId: fieldOption.refAttributeId,
               };
               if (fieldOption.type === "date" && rule.timeUnit) {
                 condition.timeUnit = rule.timeUnit;
@@ -700,7 +745,9 @@ const ConditionRuleBuilder = ({
         });
         return result.conditions.length > 0 ? result : null;
       };
-      const conditionGroup = transformGroup(notificationRef.current.conditionGroup);
+      const conditionGroup = transformGroup(
+        notificationRef.current.conditionGroup
+      );
       return {
         name: notificationRef.current.name || "",
         organizationId: organizationId || "",
@@ -772,28 +819,31 @@ const ConditionRuleBuilder = ({
 
 // Main AddNotificationTypes Component
 export default function AddNotificationTypes() {
-  const [expanded, setExpanded] = useState({ 
-    condition: true, 
-    reminder: true 
+  const [expanded, setExpanded] = useState({
+    condition: true,
+    reminder: true,
   });
+    const { getHeadingSx } = useComponentTypography();
+
   const [notificationData, setNotificationData] = useState({});
   const [notificationTypeId, setNotificationTypeId] = useState(null);
   const [fieldOptions, setFieldOptions] = useState([]);
-  
+
   const { list } = useSelector((state) => state.dataSource);
-  const updatedList = list ? list.filter(item => item?.isShowMenu === true) : [];
+  const updatedList = list
+    ? list.filter((item) => item?.isShowMenu === true)
+    : [];
   const createNotification = usePost(["createNotification"]);
   const notificationResponse = usePost(["notificationResponse"]);
   const navigate = useNavigate();
-  
+
   const handleAccordionChange = (panel) => (event, isExpanded) => {
     setExpanded((prev) => ({ ...prev, [panel]: isExpanded }));
   };
-  
+
   const handleSubmit = async (event) => {
     event.preventDefault();
-    
-    // Validate required fields
+
     if (!notificationData.name) {
       toast.error("Name field is required");
       return;
@@ -816,10 +866,12 @@ export default function AddNotificationTypes() {
         throw new Error("Notification creation failed or no ID returned");
       }
     } catch (error) {
-      toast.error(error.message || "Failed to create notification. Please try again.");
+      toast.error(
+        error.message || "Failed to create notification. Please try again."
+      );
     }
   };
-  
+
   return (
     <ErrorBoundary>
       <Box
@@ -834,14 +886,23 @@ export default function AddNotificationTypes() {
         <Typography
           variant="h4"
           sx={{
-            mb: 3,
-            fontWeight: 400,
-            color: STYLE_GUIDE?.COLORS?.primaryDark || "#1976d2",
+            ...getHeadingSx(),
+            mb: STYLE_GUIDE?.SPACING?.s3,
           }}
         >
-          Add Notification Types
+          <ArrowBackIcon
+            onClick={() => navigate("/notivix/notification")} 
+            sx={{
+              cursor: "pointer",
+              color: STYLE_GUIDE?.COLORS?.primaryDark || "inherit",
+              fontSize: STYLE_GUIDE?.TYPOGRAPHY?.fontSize?.xxl,
+              marginRight:STYLE_GUIDE.SPACING.s2,
+              fontWeight:STYLE_GUIDE.TYPOGRAPHY.fontWeight.medium
+            }}
+          />
+          Add Notification Type
         </Typography>
-        
+
         <Card
           sx={{
             backgroundColor: STYLE_GUIDE?.COLORS?.white || "#ffffff",
@@ -850,7 +911,6 @@ export default function AddNotificationTypes() {
         >
           <CardContent sx={{ p: 3 }}>
             <Box component="form" onSubmit={handleSubmit}>
-              {/* Condition Rule Builder Accordion */}
               <Accordion
                 expanded={expanded.condition}
                 onChange={handleAccordionChange("condition")}
@@ -895,7 +955,6 @@ export default function AddNotificationTypes() {
                   </Box>
                 </AccordionDetails>
               </Accordion>
-              {/* Frequency Accordion */}
               <Accordion
                 expanded={expanded.reminder && notificationTypeId !== null}
                 onChange={handleAccordionChange("reminder")}
@@ -906,10 +965,10 @@ export default function AddNotificationTypes() {
                   expandIcon={<ExpandMoreIcon />}
                   aria-controls="reminder-content"
                   id="reminder-header"
-                  sx={{ 
-                    bgcolor: notificationTypeId ? "grey.50" : "grey.200", 
+                  sx={{
+                    bgcolor: notificationTypeId ? "grey.50" : "grey.200",
                     borderRadius: 2,
-                    opacity: notificationTypeId ? 1 : 0.6
+                    opacity: notificationTypeId ? 1 : 0.6,
                   }}
                 >
                   <Typography

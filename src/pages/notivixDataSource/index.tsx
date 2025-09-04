@@ -17,6 +17,7 @@ import { NotivixDataModal } from './NotivixDataModal';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'react-toastify';
 import NotivixFiltersModal from '../notivixDashboard/components/NotivixFiltersModal';
+import { useComponentTypography } from '../../hooks';
 
 interface ApiResponse {
   data: any[];
@@ -46,10 +47,10 @@ export default function NotivixDataSource() {
   const { list } = useSelector((state: RootState) => state.dataSource);
   const listCurrentData = list.find((item) => item._id === valueId);
 
-  // Create delete API hook
   const deleteVersionRow = useDelete(['deleteVersionRow']);
 
   const [isFiltersModalOpen, setIsFiltersModalOpen] = React.useState(false);
+  const { getHeadingSx } = useComponentTypography();
 
   const handleOpenFiltersModal = () => {
     setIsFiltersModalOpen(true);
@@ -63,11 +64,18 @@ export default function NotivixDataSource() {
     setFilter(filters);
   };
 
-  // Debounce search input
   useEffect(() => {
     const handler = setTimeout(() => {
-      setDebouncedSearchValue(searchValue);
+      if (searchValue.length === 0) {
+        setDebouncedSearchValue('');
+      } else if (searchValue.length < 3) {
+        toast.warning('Please enter at least 3 characters');
+        setDebouncedSearchValue('');
+      } else {
+        setDebouncedSearchValue(searchValue);
+      }
     }, 500);
+
     return () => {
       clearTimeout(handler);
     };
@@ -95,7 +103,7 @@ export default function NotivixDataSource() {
     ],
     `${GET.SOURCE_VERSION_DATA}?dataSourceId=${encodeURIComponent(valueId || '')}&filters=${encodeURIComponent(
       JSON.stringify(filter)
-    )}&page=${paginationModelMemo.page + 1}&limit=${paginationModelMemo.pageSize}&query=${encodeURIComponent(
+    )}&page=${paginationModelMemo.page + 1}&limit=${paginationModelMemo.pageSize}&search=${encodeURIComponent(
       debouncedSearchValue || ''
     )}`,
     !!valueId
@@ -117,12 +125,9 @@ export default function NotivixDataSource() {
     ]);
   }, [queryClient, paginationModelMemo, debouncedSearchValue, valueId]);
 
-  // Function to switch to edit mode from view mode
   const switchToEditMode = useCallback(() => {
     setModalMode('edit');
   }, []);
-
-  // Handler functions
 
   const handleView = useCallback(
     (id: string) => {
@@ -201,25 +206,6 @@ export default function NotivixDataSource() {
     setOpenModal(true);
   }, [columns]);
 
-  // const handleFilter = useCallback(() => {
-  //   const newFormData: Record<string, any> = { id: '' };
-  //   const filterFields =
-  //     listCurrentData?.fieldSettings?.filter((field) => field.isFilterEnable && field.mappedAttributeName) || [];
-  //   filterFields.forEach((field) => {
-  //     const fieldName = field.mappedAttributeName;
-  //     if (field.type === 'boolean') {
-  //       newFormData[fieldName] = false;
-  //     } else if (field.type === 'option' || field.type === 'multioption') {
-  //       newFormData[fieldName] = '';
-  //     } else {
-  //       newFormData[fieldName] = '';
-  //     }
-  //   });
-  //   setFormData(newFormData);
-  //   setModalMode('filter');
-  //   setOpenModal(true);
-  // }, [listCurrentData?.fieldSettings]);
-
   const handleCloseModal = useCallback(() => {
     setOpenModal(false);
     setModalMode(null);
@@ -231,7 +217,6 @@ export default function NotivixDataSource() {
     setDeleteId(null);
   }, []);
 
-  // Updated handleConfirmDelete to call delete API
   const handleConfirmDelete = useCallback(async () => {
     if (!deleteId || !valueId) {
       toast.error('Missing required information for deletion');
@@ -439,9 +424,8 @@ export default function NotivixDataSource() {
       <Typography
         variant="h4"
         sx={{
-          mb: 3,
-          fontWeight: 400,
-          color: STYLE_GUIDE?.COLORS?.primaryDark || '#3f51b5',
+          ...getHeadingSx(),
+          mb: STYLE_GUIDE?.SPACING?.s3,
         }}
       >
         {listCurrentData && listCurrentData?.name}
@@ -489,9 +473,8 @@ export default function NotivixDataSource() {
           open={isFiltersModalOpen}
           onClose={handleCloseFiltersModal}
           onApplyFilters={handleFilter}
-          // currentFilters={currentFilters}
-          dataSourceId={valueId} // Pass your dataSourceId here
-          filterFlag="isDashboardFilter" // Specify which flag to use for filtering
+          dataSourceId={valueId}
+          filterFlag="isDashboardFilter"
         />
       )}
     </Box>
