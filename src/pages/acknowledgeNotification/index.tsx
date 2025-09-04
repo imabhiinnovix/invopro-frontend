@@ -22,9 +22,9 @@ const key = searchParams.get('key');
   useEffect(() => {
     const sendAcknowledgement = async () => {
       try {
-        const response = await acknowledgeNotification.mutateAsync({
+        const response: any = await acknowledgeNotification.mutateAsync({
           url: `${PUT.SEND_ACKNOWLEDGE}/${id}`,
-          payload: { key },
+          payload: { identifierKey: key },
         });
 
         if (response.success) {
@@ -33,9 +33,9 @@ const key = searchParams.get('key');
           );
           setSuccess(true);
         } else {
-          throw new Error(response.message || "Acknowledgement failed");
+          throw new Error(response.message || "Page Expired or Not Found");
         }
-      } catch (error) {
+      } catch (error: any) {
         setMessage(error.message || "Failed to acknowledge notification");
         setSuccess(false);
       } finally {
@@ -46,7 +46,7 @@ const key = searchParams.get('key');
     if (id && key) {
       sendAcknowledgement();
     }
-  }, [id, key, acknowledgeNotification]);
+  }, [id, key]);
 
   const handleReturnToLogin = () => {
     navigate("/login");
