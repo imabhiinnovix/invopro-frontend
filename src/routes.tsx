@@ -32,6 +32,7 @@ import NotivixDataSource from "./pages/notivixDataSource";
 import EditNotificationTypes from "./pages/notification/EditNotificationTypes";
 import { ValidationError } from "yup";
 import ValidationErrors from "./pages/validationErrors";
+import AcknowledgeNotification from "./pages/acknowledgeNotification";
 
 const AppRoutes = () => {
   const token = getAuthToken();
@@ -48,6 +49,10 @@ const AppRoutes = () => {
       <Route path="/login" element={<Login />} />
       <Route path="/otp-login" element={<SendOTP />} />
       <Route path="/otp-login/otp" element={<VerifyOTP />} />
+      <Route
+        path="/notification/send-acknowledge-notification/:id"
+        element={<AcknowledgeNotification />}
+      />
 
       {/* User Protected Routes */}
       <Route element={<AuthProtect />}>

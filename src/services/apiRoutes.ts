@@ -57,6 +57,7 @@ export const PUT = {
   UPDATE_FREQUENCY: 'notivix/notification-setting/frequency/update',
   UPDATE_NOTIFICATION_TYPE: 'notivix/notification-setting/type/update',
   UPDATE_VERSION_ROW: '/common/dataSourceVersion/versionData/update',
+  SEND_ACKNOWLEDGE:"/notification-acknowledge/sendAcknowledge"
 };
 
 export const DELETE = {
