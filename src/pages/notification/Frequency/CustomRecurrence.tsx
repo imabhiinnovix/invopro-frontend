@@ -39,6 +39,8 @@ const CustomRecurrence = ({
   setSelectedDays,
   selectedDate,
   onSave,
+  setEndCalendarDate,
+  endCalendarDate
 }) => {
   const daysOfWeek = [
     "Sunday",
@@ -49,9 +51,8 @@ const CustomRecurrence = ({
     "Friday",
     "Saturday",
   ];
-  
+
   const [endDatePickerOpen, setEndDatePickerOpen] = useState(false);
-  const [endCalendarDate, setEndCalendarDate] = useState(new Date(2026, 8, 2));
 
   // Helper functions
   const numberToWord = (n) => {
@@ -115,7 +116,7 @@ const CustomRecurrence = ({
     } else {
       txt = `Every ${repeatEvery} ${repeatPeriod}${repeatEvery > 1 ? "s" : ""}`;
     }
-    
+
     // Add "Ends" info
     if (endsOption === "on") {
       const untilDate = new Date(endDate).toLocaleDateString("en-US", {
@@ -129,18 +130,13 @@ const CustomRecurrence = ({
         occurrences > 1 ? "s" : ""
       }`;
     }
-    
+
     onSave(txt);
   };
 
   return (
     <>
-      <Dialog
-        open={open}
-        onClose={onClose}
-        maxWidth="sm"
-        fullWidth
-      >
+      <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
         <DialogTitle
           sx={{
             fontSize: 18,
@@ -151,7 +147,7 @@ const CustomRecurrence = ({
         >
           Custom recurrence
         </DialogTitle>
-        
+
         <DialogContent
           sx={{
             display: "flex",
@@ -183,15 +179,23 @@ const CustomRecurrence = ({
                   value={repeatPeriod}
                   onChange={(e) => setRepeatPeriod(e.target.value)}
                 >
-                  <MenuItem value="day">day</MenuItem>
-                  <MenuItem value="week">week</MenuItem>
-                  <MenuItem value="month">month</MenuItem>
-                  <MenuItem value="year">year</MenuItem>
+                  <MenuItem value="day">
+                    {repeatEvery === 1 ? "day" : "days"}
+                  </MenuItem>
+                  <MenuItem value="week">
+                    {repeatEvery === 1 ? "week" : "weeks"}
+                  </MenuItem>
+                  <MenuItem value="month">
+                    {repeatEvery === 1 ? "month" : "months"}
+                  </MenuItem>
+                  <MenuItem value="year">
+                    {repeatEvery === 1 ? "year" : "years"}
+                  </MenuItem>
                 </Select>
               </FormControl>
             </Box>
           </Box>
-          
+
           {/* Weekly days selection */}
           {repeatPeriod === "week" && (
             <Box>
@@ -218,7 +222,7 @@ const CustomRecurrence = ({
               </Grid>
             </Box>
           )}
-          
+
           {/* Monthly options */}
           {repeatPeriod === "month" && (
             <FormControl fullWidth size="small">
@@ -234,7 +238,7 @@ const CustomRecurrence = ({
               </Select>
             </FormControl>
           )}
-          
+
           {/* Ends Section */}
           <Box>
             <Typography
@@ -313,7 +317,7 @@ const CustomRecurrence = ({
             </RadioGroup>
           </Box>
         </DialogContent>
-        
+
         <DialogActions sx={{ px: 3, py: 2, borderTop: "1px solid #eee" }}>
           <Button onClick={onClose}>Cancel</Button>
           <Button onClick={handleCustomRecurrenceSave} variant="contained">
@@ -321,7 +325,7 @@ const CustomRecurrence = ({
           </Button>
         </DialogActions>
       </Dialog>
-      
+
       <EndDatePicker
         open={endDatePickerOpen}
         onClose={() => setEndDatePickerOpen(false)}
