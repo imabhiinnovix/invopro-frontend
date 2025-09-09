@@ -21,6 +21,18 @@ export function objectToFormData(obj: any, formData = new FormData(), parentKey 
   }
   return formData;
 }
+export const formatDate = (dateString?: string): string => {
+  if (!dateString) return "-";
+  try {
+    return new Date(dateString).toLocaleDateString("en-GB", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    });
+  } catch {
+    return "-";
+  }
+};
 
 // Helper function to format permission names
 export const formatPermissionName = (key: string) => {

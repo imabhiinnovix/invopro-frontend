@@ -73,14 +73,12 @@ const FileDropzone: React.FC<FileDropzoneProps> = ({
   buttonName,
 }) => {
   const [isDragActive, setIsDragActive] = useState(false);
-
   const onDrop = (acceptedFiles: File[]) => {
     setIsDragActive(false);
     if (acceptedFiles.length > 0) {
       onFileChange(acceptedFiles);
     }
   };
-
   const { getRootProps, getInputProps } = useDropzone({
     onDrop,
     onDragEnter: () => setIsDragActive(true),
@@ -104,7 +102,6 @@ const FileDropzone: React.FC<FileDropzoneProps> = ({
       });
     },
   });
-
   return (
     <Box display="flex" flexDirection="column" gap={STYLE_GUIDE.SPACING.s2}>
       <Box
@@ -248,8 +245,8 @@ const ImportFile: React.FC<ImportFileProps> = ({
   const [pollingId, setPollingId] = useState<string | null>(null);
   const [pollingTimestamp, setPollingTimestamp] = useState(Date.now());
   const [isFormValid, setIsFormValid] = useState(false);
+  const [showProcessingDialog, setShowProcessingDialog] = useState(false);
   const { getDialogTitleSx } = useComponentTypography();
-
   const {
     control,
     handleSubmit,
@@ -267,7 +264,6 @@ const ImportFile: React.FC<ImportFileProps> = ({
       separator: {},
     },
   });
-
   const { mutate: mutateReportUpload, isPending: isLoadingReportUpload } = useUploadCustomReportFile();
   
   const { mutate, isPending } = useFilePostData<
@@ -299,7 +295,7 @@ const ImportFile: React.FC<ImportFileProps> = ({
     },
     { showToast: true }
   );
-
+  
   useEffect(() => {
     const isValid = 
       watch("versionValue") && 
@@ -309,13 +305,13 @@ const ImportFile: React.FC<ImportFileProps> = ({
       !fileUploadLoader;
     setIsFormValid(isValid);
   }, [watch, errors, files, fileUploadLoader]);
-
+  
   useEffect(() => {
     if (open && dataSourceId) {
       setValue("dataSourceId", dataSourceId);
     }
   }, [open, dataSourceId, setValue]);
-
+  
   useEffect(() => {
     if (!open) {
       setVersionName("");
@@ -334,13 +330,14 @@ const ImportFile: React.FC<ImportFileProps> = ({
       });
     }
   }, [open, reset, dataSourceId]);
-
+  
   const handleCancel = () => {
     setIsPolling(false);
     setPollingId(null);
+    setShowProcessingDialog(false);
     setOpen(false);
   };
-
+  
   const dataSourceDetails = useGet<{
     success: boolean;
     available: boolean;
@@ -350,7 +347,7 @@ const ImportFile: React.FC<ImportFileProps> = ({
     GET?.Data_Source + `/${watch("dataSourceId")}`,
     !!watch("dataSourceId")
   );
-
+  
   const pollingData = useGet<{
     success: boolean;
     data: { status: string };
@@ -359,7 +356,7 @@ const ImportFile: React.FC<ImportFileProps> = ({
     `${GET?.GET_DATA_SOURCE_VERSION_BY_ID}${pollingId}`,
     !!pollingId && isPolling
   );
-
+  
   useEffect(() => {
     if (
       !dataSourceDetails.isFetching &&
@@ -378,11 +375,11 @@ const ImportFile: React.FC<ImportFileProps> = ({
     dataSourceDetails.isSuccess,
     dataSourceDetails.data,
   ]);
-
+  
   const handleFormClose = () => {
     setOpen(false);
   };
-
+  
   const objectToFormData = (obj: any, form?: FormData, namespace?: string): FormData => {
     const fd = form || new FormData();
     for (const property in obj) {
@@ -401,7 +398,7 @@ const ImportFile: React.FC<ImportFileProps> = ({
     }
     return fd;
   };
-
+  
   const onSubmit = async (formData: FormValues) => {
     const reverseMap: Record<string, string[]> = {};
     Object.entries(formData.mappings).forEach(([key, values]) => {
@@ -416,26 +413,27 @@ const ImportFile: React.FC<ImportFileProps> = ({
         });
       }
     });
-
+    
     const mandatoryAttributes = settingAttribute
       .filter((attr) => attr.required === "Mandatory")
       .map((attr) => attr.name);
+      
     const missingMandatoryAttributes = mandatoryAttributes.filter(
       (attr) => !formData.mappings[attr] || formData.mappings[attr].length === 0
     );
-
+    
     if (missingMandatoryAttributes.length > 0) {
       missingMandatoryAttributes.forEach((attr) => {
         toast.error(`Mandatory attribute is not mapped: ${attr}`);
       });
       return;
     }
-
+    
     if (files.length === 0) {
       toast.error("Please upload at least one file");
       return;
     }
-
+    
     const versionValue = watch("versionValue");
     const formattedVersion = DateTime.fromISO(versionValue).toFormat("yyyy-LL");
     
@@ -458,7 +456,8 @@ const ImportFile: React.FC<ImportFileProps> = ({
             setIsPolling(true);
             setPollingId(data.dataSourceVersionId);
             setPollingTimestamp(Date.now());
-            setOpen(false); 
+            setOpen(false);
+            setShowProcessingDialog(true);
             toast.info("File uploaded successfully. Processing in progress...");
           } else if (data?.status === "completed") {
             toast.success("File processed successfully!");
@@ -479,7 +478,7 @@ const ImportFile: React.FC<ImportFileProps> = ({
       toast.error("Upload failed!");
     }
   };
-
+  
   const handleFileRemove = (index: number) => {
     const newFiles = [...files];
     newFiles.splice(index, 1);
@@ -493,7 +492,7 @@ const ImportFile: React.FC<ImportFileProps> = ({
       processFilesForHeaders(newFiles);
     }
   };
-
+  
   const processFilesForHeaders = async (filesToProcess: File[]) => {
     if (filesToProcess.length === 0) {
       setFileHeaders([]);
@@ -525,7 +524,7 @@ const ImportFile: React.FC<ImportFileProps> = ({
       setFileUploadLoader(false);
     }
   };
-
+  
   const handleFileChange = (acceptedFiles: File[]) => {
     const excelFiles = acceptedFiles.filter(
       (file) => file.name.endsWith(".xlsx") || file.name.endsWith(".xls")
@@ -538,7 +537,7 @@ const ImportFile: React.FC<ImportFileProps> = ({
     setFileNames(excelFiles.map((file) => file.name));
     processFilesForHeaders(excelFiles);
   };
-
+  
   useEffect(() => {
     if (fileHeaders.length > 0 && settingAttributeOption.length > 0) {
       const currentMappings = watch("mappings") || {};
@@ -557,7 +556,7 @@ const ImportFile: React.FC<ImportFileProps> = ({
       });
     }
   }, [fileHeaders, settingAttributeOption, setValue, watch]);
-
+  
   useEffect(() => {
     let timer: NodeJS.Timeout;
     if (isPolling && pollingId) {
@@ -566,10 +565,12 @@ const ImportFile: React.FC<ImportFileProps> = ({
         if (status === "completed") {
           setIsPolling(false);
           setPollingId(null);
+          setShowProcessingDialog(false);
           toast.success("File processed successfully!");
         } else if (status === "failed") {
           setIsPolling(false);
           setPollingId(null);
+          setShowProcessingDialog(false);
           toast.error("Processing failed. Redirecting to validation errors...");
           navigate(`/notivix/validation-errors/${pollingId}`);
         } else {
@@ -580,6 +581,7 @@ const ImportFile: React.FC<ImportFileProps> = ({
       } else if (pollingData.isError) {
         setIsPolling(false);
         setPollingId(null);
+        setShowProcessingDialog(false);
         toast.error("Error checking processing status");
       }
     }
@@ -591,6 +593,8 @@ const ImportFile: React.FC<ImportFileProps> = ({
   return (
     <div>
       <Box onClick={() => setOpen(true)}>{CustomButton}</Box>
+      
+      {/* Main Import Dialog */}
       <Dialog
         open={open}
         onClose={handleFormClose}
@@ -802,6 +806,53 @@ const ImportFile: React.FC<ImportFileProps> = ({
               </Button>
             </Box>
           )}
+        </DialogActions>
+      </Dialog>
+
+      {/* Processing Status Dialog */}
+      <Dialog
+        open={showProcessingDialog}
+        onClose={() => setShowProcessingDialog(false)}
+        fullWidth
+        maxWidth="sm"
+        sx={{
+          "& .MuiDialog-paper": {
+            padding: STYLE_GUIDE.SPACING.s4,
+            borderRadius: STYLE_GUIDE.SPACING.s2,
+          },
+        }}
+      >
+        <DialogContent>
+          <Box
+            display="flex"
+            flexDirection="column"
+            alignItems="center"
+            justifyContent="center"
+            gap={STYLE_GUIDE.SPACING.s3}
+            textAlign="center"
+          >
+            <CircularProgress size={60} thickness={4} />
+            <Typography variant="h6" fontWeight="bold">
+              Processing Your Files
+            </Typography>
+            <Typography variant="body1">
+              Your files have been uploaded and are now in the processing queue. 
+              You may close this message and continue using the platform. 
+              Once the processing is complete, you will be notified!
+            </Typography>
+          </Box>
+        </DialogContent>
+        <DialogActions sx={{ justifyContent: "center", pb: STYLE_GUIDE.SPACING.s3 }}>
+          <Button
+            variant="contained"
+            onClick={() => setShowProcessingDialog(false)}
+            sx={{
+              borderRadius: STYLE_GUIDE.SPACING.s1,
+              fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.medium,
+            }}
+          >
+            Close
+          </Button>
         </DialogActions>
       </Dialog>
     </div>
