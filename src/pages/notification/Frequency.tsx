@@ -1886,6 +1886,7 @@ export default function Frequency({ fieldOptions, notificationTypeId }) {
 
   // Handle edit button click
   const handleEditReminder = (row) => {
+    setModalType("edit");
     setSelectedReminder(row);
     // Populate form with existing data
     if (row.schedulerStartDate) {
@@ -3101,7 +3102,7 @@ export default function Frequency({ fieldOptions, notificationTypeId }) {
             onClick={handleSave}
             sx={{ textTransform: "none", borderRadius: 2 }}
           >
-            Save
+            {modelType === "edit" ? "Update" : "Save"}
           </Button>
         </DialogActions>
       </Dialog>
