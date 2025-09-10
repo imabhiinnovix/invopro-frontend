@@ -39,6 +39,7 @@ export interface DataSourceListData {
   };
   createdAt: string;
   updatedAt: string;
+  lastUploadedDate: string;
   __v: 0;
   fieldSettings: DataSourceListFieldSettings[];
   canEditInline: true;

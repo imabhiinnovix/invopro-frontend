@@ -1,6 +1,6 @@
 import * as React from "react";
 import { useState, useEffect, useCallback, useMemo } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { RootState } from "../../store";
 import { DELETE, GET } from "../../services/apiRoutes";
@@ -33,6 +33,7 @@ interface ApiResponse {
 
 export default function NotivixDataSource() {
   // console.log('Inside NotivixDataSource');
+  const navigate = useNavigate();
   const { id: valueId } = useParams<{ id: string }>();
   const queryClient = useQueryClient();
   const [rows, setRows] = useState<any[]>([]);
@@ -284,24 +285,6 @@ export default function NotivixDataSource() {
     setLoading(sourceVersionData.isLoading);
   }, [sourceVersionData.isLoading]);
 
-  // const dataSourceDetails = useGet<{
-  //   success: boolean;
-  //   available: boolean;
-  //   // data: { entityId: { attributes: Attribute[] } };
-  // }>([`dataSourceDetails`], GET?.Data_Source + `/${valueId}`);
-  // console.log(
-  //   "dataSourceDetails0000",
-  //   dataSourceDetails.data?.data?.dataSourceVersion?._id
-  // );
-  // useEffect(() => {
-  //   if (sourceVersionData.error) {
-  //     console.error("API error:", sourceVersionData.error);
-  //     setRows([]);
-  //     setRowCount(0);
-  //     setColumns([]);
-  //   }
-  // }, [sourceVersionData.error]);
-
   useEffect(() => {
     if (sourceVersionData.isLoading || sourceVersionData.error) {
       return;
@@ -444,23 +427,14 @@ export default function NotivixDataSource() {
       </Box>
     );
   }
-  console.log(
-    "listCurrentData",
-    listCurrentData,
-    sourceVersionData,
-    isFiltersModalOpen
-  );
-  // const handleCompleteImport = () => {
-  //   const id = dataSourceDetails.data?.data?.dataSourceVersion?._id;
-  //   if (id) {
-  //     navigate(`/notivix/validation-errors/${id}`)
-  //     // console.log("✅ Redirecting with ID:", id);
-  //     // yaha aap navigate kar sakte ho
-  //     // example: router.push(`/validation-screen/${id}`);
-  //   } else {
-  //     console.warn("⚠️ No version ID found");
-  //   }
-  // };
+  const handleCompleteImport = () => {
+    const id = listCurrentData?.dataSourceVersion?._id;
+    if (id) {
+      navigate(`/notivix/validation-errors/${id}`);
+    } else {
+      console.warn("No version ID found");
+    }
+  };
 
   return (
     <Box
@@ -480,7 +454,6 @@ export default function NotivixDataSource() {
           mb: STYLE_GUIDE?.SPACING?.s3,
         }}
       >
-        {/* Left side - Heading */}
         <Typography
           variant="h4"
           sx={{
@@ -490,22 +463,31 @@ export default function NotivixDataSource() {
           {listCurrentData && listCurrentData?.name}
         </Typography>
 
-        {/* <Box sx={{ textAlign: "right" }}>
-          <Typography variant="body2" color="text.secondary">
-            Last updated :{" "}
-            {formatDate(dataSourceDetails.data?.data?.lastUploadedDate)}
-          </Typography>
-          <Typography
-            variant="body2"
-            sx={{
-              fontWeight: 600,
-              color: STYLE_GUIDE?.COLORS?.primaryDark || "#3f51b5",
-            }}
-            onClick={handleCompleteImport}
-          >
-            Complete your import
-          </Typography>
-        </Box> */}
+        <Box sx={{ textAlign: "right" }}>
+          {listCurrentData?.lastUploadedDate === null ? (
+            ""
+          ) : (
+            <Typography variant="body2" color="text.secondary">
+              Last updated : {formatDate(listCurrentData?.lastUploadedDate)}
+            </Typography>
+          )}
+
+          {listCurrentData?.dataSourceVersion === null ? (
+            ""
+          ) : (
+            <Typography
+              variant="body2"
+              sx={{
+                fontWeight: 600,
+                color: STYLE_GUIDE?.COLORS?.primaryDark || "#3f51b5",
+                cursor:"pointer"
+              }}
+              onClick={handleCompleteImport}
+            >
+              Complete your import
+            </Typography>
+          )}
+        </Box>
       </Box>
 
       {/* <Typography

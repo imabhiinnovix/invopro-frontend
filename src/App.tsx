@@ -7,16 +7,19 @@ import { NavProvider } from "./context/NavContext";
 import AuthProvider from "./context/AuthContext";
 import AppRoutes from "./routes";
 import UnifiedThemeProvider from "./providers/UnifiedThemeProvider";
+import { GlobalPollingManager } from "./components/common/importFile/ImportFile";
 
 function App() {
   return (
     <Provider store={store}>
       <UnifiedThemeProvider>
         <BrowserRouter>
+                <GlobalPollingManager />
+
           <AuthProvider>
             <NavProvider>
-                <AppRoutes />
-                <ToastContainer />
+              <AppRoutes />
+              <ToastContainer />
             </NavProvider>
           </AuthProvider>
         </BrowserRouter>
