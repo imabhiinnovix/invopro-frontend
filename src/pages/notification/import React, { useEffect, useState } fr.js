@@ -209,7 +209,7 @@ export default function Frequency({ fieldOptions, notificationTypeId }) {
     },
   ];
   /* -------- helpers -------- */
-   const formatDate = (d) =>
+  const formatDate = (d) =>
     d.toLocaleDateString("en-US", {
       month: "short",
       day: "numeric",
