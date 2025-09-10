@@ -4348,27 +4348,69 @@ if (targetEntity) {
     isMounted,
     isInitialMount,
   ]);
+  const arraysEqual = (a, b) => {
+  if (a === b) return true;
+  if (!a || !b) return false;
+  if (a.length !== b.length) return false;
+
+  const sortedA = [...a].sort();
+  const sortedB = [...b].sort();
+
+  for (let i = 0; i < sortedA.length; ++i) {
+    if (sortedA[i] !== sortedB[i]) return false;
+  }
+  return true;
+};
   
+  // const formatRecipientsForDisplay = useCallback(
+  //   (recipients) => {
+  //     if (!recipients || recipients.length === 0) return "None";
+  //     return recipients
+  //       .map((recipient) => {
+  //         if (recipient.customEmails && Array.isArray(recipient.customEmails)) {
+  //           return recipient.customEmails.join(", ");
+  //         } else if (recipient.attributeId) {
+  //           const fieldOption = fieldOptions.find(
+  //             (opt) => opt.attributeId === recipient.attributeId
+  //           );
+  //           return fieldOption ? fieldOption.label : recipient.attributeId;
+  //         }
+  //         return "Unknown";
+  //       })
+  //       .join(", ");
+  //   },
+  //   [fieldOptions]
+  // );
+  
+
   const formatRecipientsForDisplay = useCallback(
-    (recipients) => {
-      if (!recipients || recipients.length === 0) return "None";
-      return recipients
-        .map((recipient) => {
-          if (recipient.customEmails && Array.isArray(recipient.customEmails)) {
-            return recipient.customEmails.join(", ");
-          } else if (recipient.attributeId) {
-            const fieldOption = fieldOptions.find(
-              (opt) => opt.attributeId === recipient.attributeId
-            );
-            return fieldOption ? fieldOption.label : recipient.attributeId;
-          }
-          return "Unknown";
-        })
-        .join(", ");
-    },
-    [fieldOptions]
-  );
-  
+  (recipients) => {
+    if (!recipients || !Array.isArray(recipients) || recipients.length === 0) return "None";
+    
+    return recipients
+      .map((recipient) => {
+        // Handle custom emails
+        if (recipient.customEmails && Array.isArray(recipient.customEmails) && recipient.customEmails.length > 0) {
+          return recipient.customEmails.join(", ");
+        }
+        // Handle attribute-based recipients
+        if (recipient.attributeId) {
+          const fieldOption = fieldOptions.find(
+            (opt) =>
+              opt.attributeId === recipient.attributeId &&
+              arraysEqual(opt.refAttributeId || [], recipient.refAttributeId || [])
+          );
+          return fieldOption ? fieldOption.label : recipient.attributeId;
+        }
+        return "Unknown";
+      })
+      .filter((value) => value && value !== "Unknown")
+      .join(", ") || "None";
+  },
+  [fieldOptions, arraysEqual]
+
+);
+
   const formatTargetEntityForDisplay = useCallback(
     (targetEntity) => {
       if (!targetEntity) return "None";
@@ -4562,20 +4604,21 @@ if (targetEntity) {
   ];
   
   // Helper function to compare arrays
-  const arraysEqual = (a, b) => {
-    if (a === b) return true;
-    if (a == null || b == null) return false;
-    if (a.length !== b.length) return false;
+  // const arraysEqual = (a, b) => {
+  //   if (a === b) return true;
+  //   if (a == null || b == null) return false;
+  //   if (a.length !== b.length) return false;
     
-    // Sort both arrays to compare regardless of order
-    const sortedA = [...a].sort();
-    const sortedB = [...b].sort();
+  //   // Sort both arrays to compare regardless of order
+  //   const sortedA = [...a].sort();
+  //   const sortedB = [...b].sort();
     
-    for (let i = 0; i < sortedA.length; ++i) {
-      if (sortedA[i] !== sortedB[i]) return false;
-    }
-    return true;
-  };
+  //   for (let i = 0; i < sortedA.length; ++i) {
+  //     if (sortedA[i] !== sortedB[i]) return false;
+  //   }
+  //   return true;
+  // };
+  
   
   return (
     <Box sx={{ padding: STYLE_GUIDE.SPACING.s4 }}>
