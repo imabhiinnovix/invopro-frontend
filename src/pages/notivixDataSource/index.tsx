@@ -472,21 +472,21 @@ export default function NotivixDataSource() {
             </Typography>
           )}
 
-          {listCurrentData?.dataSourceVersion === null ? (
+          {!listCurrentData?.dataSourceVersion ? (
             ""
-          ) : (
+          ) : listCurrentData?.dataSourceVersion?.status === "failed" ? (
             <Typography
               variant="body2"
               sx={{
                 fontWeight: 600,
                 color: STYLE_GUIDE?.COLORS?.primaryDark || "#3f51b5",
-                cursor:"pointer"
+                cursor: "pointer",
               }}
               onClick={handleCompleteImport}
             >
               Complete your import
             </Typography>
-          )}
+          ) : null}
         </Box>
       </Box>
 
