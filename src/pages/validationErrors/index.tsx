@@ -110,7 +110,7 @@ export default function ValidationErrors() {
     (state: RootState) => state.dataSource?.list
   );
 
-  const currentDataSource = commonDataSourceList.find(
+  const currentDataSource = commonDataSourceList?.find(
     (ds) => ds?._id === dataSourceId
   );
 
