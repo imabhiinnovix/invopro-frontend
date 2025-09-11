@@ -146,6 +146,9 @@ const GlobalPollingManager: React.FC = () => {
 
           // Show success toast
           toast.success("File processed successfully!");
+                  window?.dispatchEvent(new CustomEvent('dataSourceStatusChanged', { 
+          detail: { status: 'completed', id: pollingId } 
+        }));
 
           // Update state if component is still mounted
           if (isMountedRef.current) {
@@ -159,7 +162,10 @@ const GlobalPollingManager: React.FC = () => {
           // Show error toast
           toast.error("Processing failed. Redirecting to validation errors...");
           // navigate(`/notivix/validation-errors/${data?.dataSourceVersionId}`);
-
+        // Dispatch custom event
+        window?.dispatchEvent(new CustomEvent('dataSourceStatusChanged', { 
+          detail: { status: 'failed', id: pollingId } 
+        }));
           // Navigate to error page
           navigate(`/notivix/validation-errors/${pollingId}`);
         } else {
@@ -176,6 +182,10 @@ const GlobalPollingManager: React.FC = () => {
 
         // Show error toast
         toast.error("Error checking processing status");
+         // Dispatch event on error too
+      window?.dispatchEvent(new CustomEvent('dataSourceStatusChanged', { 
+        detail: { status: 'error', id: pollingId } 
+      }));
       }
     }
   }, [pollingData, pollingId, navigate]);
