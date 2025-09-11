@@ -33,6 +33,7 @@ import EditNotificationTypes from "./pages/notification/EditNotificationTypes";
 import { ValidationError } from "yup";
 import ValidationErrors from "./pages/validationErrors";
 import AcknowledgeNotification from "./pages/acknowledgeNotification";
+import NotificationLogger from "./pages/notification/NotificationLogger";
 
 const AppRoutes = () => {
   const token = getAuthToken();
@@ -77,6 +78,10 @@ const AppRoutes = () => {
           <Route
             path="/notivix/notification-types"
             element={<Notification />}
+          />
+           <Route
+            path="/notivix/notification-logger"
+            element={<NotificationLogger />}
           />
           <Route
             path="/notivix/notification-types/add"
