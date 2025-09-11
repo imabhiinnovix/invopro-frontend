@@ -24,11 +24,19 @@ export function objectToFormData(obj: any, formData = new FormData(), parentKey 
 export const formatDate = (dateString?: string): string => {
   if (!dateString) return "-";
   try {
-    return new Date(dateString).toLocaleDateString("en-GB", {
+    const date = new Date(dateString);
+    const formattedDate = date.toLocaleDateString("en-GB", {
       day: "2-digit",
       month: "short",
       year: "numeric",
     });
+    const formattedTime = date.toLocaleTimeString("en-US", {
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+      hour12: true,  // Enables AM/PM
+    });
+    return `${formattedDate} ${formattedTime}`;
   } catch {
     return "-";
   }

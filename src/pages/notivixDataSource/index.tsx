@@ -25,6 +25,9 @@ import { toast } from "react-toastify";
 import NotivixFiltersModal from "../notivixDashboard/components/NotivixFiltersModal";
 import { useComponentTypography } from "../../hooks";
 import { formatDate } from "../../utils/utils";
+import { DataSourceListPayload } from "../../components/atom/sideNav/types";
+import { setDataSourceList } from "../dataSources/dataSourceActions";
+import { useAppDispatch } from "../../storeHooks";
 
 interface ApiResponse {
   data: any[];
@@ -33,6 +36,8 @@ interface ApiResponse {
 
 export default function NotivixDataSource() {
   // console.log('Inside NotivixDataSource');
+    const dispatch = useAppDispatch();
+  
   const navigate = useNavigate();
   const { id: valueId } = useParams<{ id: string }>();
   const queryClient = useQueryClient();
@@ -54,6 +59,32 @@ export default function NotivixDataSource() {
     page: 0,
     pageSize: 10,
   });
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  // Your existing API call with refreshKey dependency
+  const dataSourceNotivixListAPI = useGet<DataSourceListPayload>(
+    ["dataSourceNotivixList", refreshKey], // Add refreshKey to dependency array
+    GET?.DATA_SOURCE_LIST + `?isShowMenu=true`
+  );
+  // Effect to update Redux when API data changes
+  useEffect(() => {
+    if (dataSourceNotivixListAPI.data?.success) {
+      dispatch(setDataSourceList(dataSourceNotivixListAPI.data.data));
+    }
+  }, [dataSourceNotivixListAPI.data, dispatch]);
+   // Effect to listen for status changes
+  useEffect(() => {
+    const handleStatusChange = () => {
+      // Increment refreshKey to trigger API refetch
+      setRefreshKey(prev => prev + 1);
+    };
+
+    window.addEventListener('dataSourceStatusChanged', handleStatusChange);
+
+    return () => {
+      window.removeEventListener('dataSourceStatusChanged', handleStatusChange);
+    };
+  }, []);
 
   const { list } = useSelector((state: RootState) => state.dataSource);
   const listCurrentData = list.find((item) => item._id === valueId);
@@ -71,7 +102,6 @@ export default function NotivixDataSource() {
     setIsFiltersModalOpen(false);
   };
   const handleFilter = async (filters: any) => {
-    console.log(filters);
     setFilter(filters);
   };
 
@@ -144,14 +174,12 @@ export default function NotivixDataSource() {
     (id: string) => {
       const rawData = sourceVersionData?.data?.data || [];
       if (rawData.length === 0) {
-        console.warn("Cannot edit: No data available");
         return;
       }
       const row = rawData.find((r) => r._id === id || r.id === id);
       if (row) {
         const newFormData: Record<string, any> = { id: row._id || row.id };
         const dataSource = row.rowData || {};
-        console.log("rdataSource", dataSource);
 
         Object.keys(dataSource).forEach((key) => {
           if (key !== "_id" && key !== "id") {
