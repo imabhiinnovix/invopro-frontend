@@ -184,7 +184,7 @@ const CommonLayout = () => {
           boxShadow: `1px 0px 10px ${STYLE_GUIDE.COLORS.blackBorderPrimary}`,
           display: "flex",
           flexDirection: "column",
-          overflow: "hidden", // Prevent container from scrolling
+          // overflow: "hidden", // Prevent container from scrolling
         }}
       >
         <SideNav />
