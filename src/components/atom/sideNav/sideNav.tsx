@@ -479,9 +479,8 @@ export default function SideNav() {
       },
       {
         name: "Data Upload",
-
-        icon: createIcon(CloudUploadIcon, "/reports2"),
-        // route: "/reports2",
+        icon: createIcon(CloudUploadIcon, "/data-src-version"),
+        route: "/data-src-version",
       },
       {
         name: "Reports",
@@ -499,11 +498,11 @@ export default function SideNav() {
         icon: createIcon(AutoAwesomeIcon, "/VixAi-Insights"),
         route: "/VixAi-Insights",
       },
-      {
-        name: "User Logs",
-        icon: createIcon(PersonIcon, "/settings"),
-        // route: "/settings",
-      },
+      // {
+      //   name: "User Logs",
+      //   icon: createIcon(PersonIcon, "/settings"),
+      //   // route: "/settings",
+      // },
       {
         name: "Settings",
         icon: createIcon(SettingsIcon, "/settings"),
@@ -577,22 +576,22 @@ export default function SideNav() {
               },
               // {
               //   name: "Department",
-              //   icon: createIcon(AccountTreeIcon, "/department"),
+              //   icon: createIcon(BusinessIcon, "/department"),
               //   route: "/department",
               // },
               // {
               //   name: "Designation",
-              //   icon: createIcon(WorkIcon, "/designation"),
+              //   icon: createIcon(BusinessIcon, "/designation"),
               //   route: "/designation",
               // },
               // {
               //   name: "Product",
-              //   icon: createIcon(InventoryIcon, "/product"),
+              //   icon: createIcon(BusinessIcon, "/product"),
               //   route: "/product",
               // },
               // {
               //   name: "User Setting",
-              //   icon: createIcon(PeopleIcon, "/user-setting"),
+              //   icon: createIcon(BusinessIcon, "/user-setting"),
               //   route: "/user-setting",
               // },
             ],
