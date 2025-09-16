@@ -44,6 +44,9 @@ const globalPollingState = {
   isPolling: false,
   pollingId: null as string | null,
 };
+interface GlobalPollingManagerProps {
+  setShowProcessingDialog?: React.Dispatch<React.SetStateAction<boolean>>;
+}
 
 // Start global polling with 5-second interval
 export const startGlobalPolling = (pollingId: string, callback: () => void) => {
@@ -110,7 +113,9 @@ if (typeof window !== "undefined") {
 }
 
 // Global polling manager component
-const GlobalPollingManager: React.FC = () => {
+const GlobalPollingManager: React.FC<GlobalPollingManagerProps> = ({
+  setShowProcessingDialog,
+}) => {
   const navigate = useNavigate();
   const [pollingTimestamp, setPollingTimestamp] = useState(Date.now());
   const isMountedRef = useRef(true);
@@ -143,6 +148,7 @@ const GlobalPollingManager: React.FC = () => {
         if (status === "completed") {
           // Stop global polling
           stopGlobalPolling(pollingId);
+          setShowProcessingDialog?.(false);
 
           // Show success toast
           toast.success("File processed successfully!");
@@ -159,6 +165,7 @@ const GlobalPollingManager: React.FC = () => {
         } else if (status === "failed") {
           // Stop global polling
           stopGlobalPolling(pollingId);
+          setShowProcessingDialog?.(false);
 
           console.log("polling", pollingId);
           // Show error toast
@@ -183,6 +190,8 @@ const GlobalPollingManager: React.FC = () => {
         console.error("Polling error:", pollingData.error);
         // Stop global polling on error
         stopGlobalPolling(pollingId);
+
+        setShowProcessingDialog?.(false);
 
         // Show error toast
         toast.error("Error checking processing status");
@@ -638,15 +647,15 @@ const ImportFile: React.FC<ImportFileProps> = ({
               console.log("Polling triggered for:", id);
             });
           } else if (data?.status === "completed") {
-            setTimeout(() => {
-              setShowProcessingDialog(false);
-              setOpen(false); // force close modal
-              handleCancel(); // reset form etc.
-            }, 500);
+            // setTimeout(() => {
+            //   setShowProcessingDialog(false);
+            //   setOpen(false); // force close modal
+            //   handleCancel(); // reset form etc.
+            // }, 500);
 
-            return;
+            // return;
             console.log(showProcessingDialog, "showProcessingDialog");
-            toast.success("File processed successfully!");
+            // toast.success("File is!");
           } else if (data?.status === "failed") {
             navigate(`/notivix/validation-errors/${data?.dataSourceVersionId}`);
             handleCancel();
@@ -752,6 +761,8 @@ const ImportFile: React.FC<ImportFileProps> = ({
 
   return (
     <div>
+      <GlobalPollingManager setShowProcessingDialog={setShowProcessingDialog} />
+
       <Box onClick={() => setOpen(true)}>{CustomButton}</Box>
 
       {/* Main Import Dialog */}
