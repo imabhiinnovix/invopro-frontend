@@ -449,11 +449,11 @@ export default function SideNav() {
             },
             {
               name: "Logger",
-              // icon: (
-              //   <SettingsIcon
-              //     sx={{ fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base }}
-              //   />
-              // ),
+              icon: (
+                <SettingsIcon
+                  sx={{ fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base }}
+                />
+              ),
               route: "/notivix/notification-logger",
             },
           ],

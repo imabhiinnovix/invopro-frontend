@@ -10,112 +10,126 @@ import {
   Button,
   InputAdornment,
   Modal,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
   Tooltip,
   Chip,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  Snackbar,
   Grid,
-  Alert,
+  Paper,
+  Divider,
 } from "@mui/material";
-import { useForm, Controller } from "react-hook-form";
 import SearchIcon from "@mui/icons-material/Search";
-import FilterListIcon from "@mui/icons-material/FilterList";
-import AddIcon from "@mui/icons-material/Add";
-import EditIcon from "@mui/icons-material/Edit";
 import VisibilityIcon from "@mui/icons-material/Visibility";
-import DeleteIcon from "@mui/icons-material/Delete";
+import CloseIcon from "@mui/icons-material/Close";
 import { useUnifiedTheme } from "../../hooks/useUnifiedTheme";
 import useGet from "../../hooks/useGet";
-import useDelete from "../../hooks/useDelete";
 import { CustomPagination } from "../../components/common/pagination/customPagination";
-import { DELETE, GET } from "../../services/apiRoutes";
-import { RootState } from "../../reducers";
-import { useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
+import { GET } from "../../services/apiRoutes";
 import { toast } from "react-toastify";
 import { STYLE_GUIDE } from "../../styles";
 import { useComponentTypography } from "../../hooks";
+import { formatDate } from "../../utils/utils";
+import parse from "html-react-parser";
 
-interface NotificationType {
+interface NotificationLog {
   _id: string;
   organizationId: string;
-  name: string;
+  notificationTypeId: {
+    _id: string;
+    name: string;
+  };
+  frequencySettingId: {
+    frequency: string;
+    triggerTime: string;
+  };
+  templateId: {
+    subject: string;
+    body: string;
+  };
+  mediumSettingId: {
+    medium: string;
+  };
+  scheduledAt: string;
+  notificationTriggerId: {
+    source: string;
+    isDryRun: boolean;
+  };
   status: string;
-  permissions?: string[];
+  sentAt: string;
+  payload: Record<string, any>;
+  recipients: {
+    recipient_to: string[];
+    recipient_cc: string[];
+  };
+  alert_content: string;
+  createdAt: string;
 }
 
 interface ApiResponse {
   success: boolean;
-  data: NotificationType[];
-  totalCount: number;
-}
-
-interface NotificationTypePostPayload {
-  name: string;
-  organizationId?: string;
-  status?: string;
-  permissionIds: string[];
-}
-
-interface NotificationTypePostResponse {
-  success: boolean;
-  data: NotificationType;
+  data: NotificationLog[];
+  pagination: {
+    totalRecords: number;
+  };
 }
 
 const columns: GridColDef[] = [
   {
-    field: "name",
+    field: "notificationTypeId",
     headerName: "Notification Type",
     width: 250,
     disableColumnMenu: true,
     resizable: true,
+    renderCell: (params) => params.row?.notificationTypeId?.name || "",
   },
   {
-    field: "name1",
+    field: "createdAt",
     headerName: "Created",
     width: 250,
     disableColumnMenu: true,
     resizable: true,
+    renderCell: (params) => formatDate(params.row.createdAt),
   },
   {
-    field: "name2",
+    field: "scheduledAt",
     headerName: "Trigger Date",
     width: 250,
     disableColumnMenu: true,
     resizable: true,
-  },
-  {
-    field: "name3",
-    headerName: "Processing Status",
-    width: 250,
-    disableColumnMenu: true,
-    resizable: true,
-  },
-  {
-    field: "name4",
-    headerName: "Is Dry Run",
-    width: 250,
-    disableColumnMenu: true,
-    resizable: true,
+    renderCell: (params) => formatDate(params.row.scheduledAt),
   },
   {
     field: "status",
-    headerName: "Subject",
+    headerName: "Processing Status",
     width: 250,
     disableColumnMenu: true,
     resizable: true,
     renderCell: (params) => (
       <Chip
-        label={params.row.status}
+        label={params.value || "Unknown"}
         size="small"
-        color={params.row.status === "active" ? "success" : "error"}
+        color={
+          params.value === "sent"
+            ? "success"
+            : params.value === "pending"
+              ? "warning"
+              : "error"
+        }
+        variant="outlined"
+      />
+    ),
+  },
+  {
+    field: "notificationTriggerId",
+    headerName: "Is Dry Run",
+    width: 250,
+    disableColumnMenu: true,
+    resizable: true,
+    renderCell: (params) => (
+      <Chip
+        label={params.row.notificationTriggerId?.isDryRun ? "Yes" : "No"}
+        size="small"
+        color={
+          params.row.notificationTriggerId?.isDryRun ? "warning" : "success"
+        }
         variant="outlined"
       />
     ),
@@ -129,34 +143,15 @@ const columns: GridColDef[] = [
     resizable: false,
     renderCell: (params) => (
       <Box sx={{ display: "flex", gap: 1 }}>
-        {/* <Tooltip title="Edit" arrow>
-          <Button
-            variant="text"
-            onClick={() => params.row.handleEdit(params.row)}
-            sx={{ minWidth: "auto" }}
-          >
-            <EditIcon />
-          </Button>
-        </Tooltip> */}
         <Tooltip title="View" arrow>
           <Button
             variant="text"
-            // onClick={() => params.row.handleView(params.row)}
+            onClick={() => params.row.handleView(params.row)}
             sx={{ minWidth: "auto" }}
           >
             <VisibilityIcon />
           </Button>
         </Tooltip>
-        {/* <Tooltip title="Delete" arrow>
-          <Button
-            variant="text"
-            onClick={() => params.row.handleDelete(params.row._id)}
-            sx={{ minWidth: "auto", color: "error.main" }}
-            disabled={!params.row._id}
-          >
-            <DeleteIcon />
-          </Button>
-        </Tooltip> */}
       </Box>
     ),
   },
@@ -164,40 +159,19 @@ const columns: GridColDef[] = [
 
 export default function NotificationLogger() {
   const theme = useUnifiedTheme();
-  const Navigate = useNavigate();
-  const { permissions } = useSelector(
-    (state: RootState) => state.userPermission
-  );
-  const [openModal, setOpenModal] = useState(false);
-  const [modalMode, setModalMode] = useState<"filter" | null>(null);
-  const [openDialog, setOpenDialog] = useState(false);
-  const [deleteId, setDeleteId] = useState<string | null>(null);
   const [searchValue, setSearchValue] = useState("");
   const [paginationModel, setPaginationModel] = useState({
     page: 0,
     pageSize: 10,
   });
   const [debouncedSearchValue, setDebouncedSearchValue] = useState(searchValue);
-  const [notificationTypeReload, setNotificationTypeReload] = useState(false);
-  const [filterValues, setFilterValues] = useState({
-    name: "",
-    organizationId: "",
-    status: "",
-  });
+  const [notificationLogReload, setNotificationLogReload] = useState(false);
+
+  const [viewModalOpen, setViewModalOpen] = useState(false);
+  const [selectedNotification, setSelectedNotification] =
+    useState<NotificationLog | null>(null);
 
   const { getHeadingSx } = useComponentTypography();
-
-  const { control, handleSubmit, reset } = useForm<NotificationTypePostPayload>(
-    {
-      defaultValues: {
-        name: "",
-        organizationId: "",
-        status: "",
-        permissionIds: [],
-      },
-      mode: "onChange",
-    }
-  );
 
   useEffect(() => {
     const handler = setTimeout(() => {
@@ -217,137 +191,59 @@ export default function NotificationLogger() {
   }, [searchValue]);
 
   const perPageItem = paginationModel.pageSize;
-  const notificationTypeList = useGet<ApiResponse>(
+  const notificationLogList = useGet<ApiResponse>(
     [
-      "notificationTypeList",
+      "notificationLogList",
       String(paginationModel.page + 1),
       String(paginationModel.pageSize),
       debouncedSearchValue,
-      String(notificationTypeReload),
-      filterValues.name,
-      filterValues.organizationId,
-      filterValues.status,
+      String(notificationLogReload),
     ],
-    `${GET.NOTIFICATION_TYPE_LIST}?page=${paginationModel.page + 1}&limit=${perPageItem}&search=${encodeURIComponent(debouncedSearchValue)}&name=${encodeURIComponent(filterValues.name)}&organizationId=${encodeURIComponent(filterValues.organizationId)}&status=${encodeURIComponent(filterValues.status)}`,
-    true
-  );
-
-  const deleteNotificationType = useDelete<null, NotificationTypePostResponse>(
-    ["deleteNotificationType"],
-    (data) => {
-      if (data?.success) {
-        setNotificationTypeReload(true);
-        handleCloseDialog();
-      } else {
-        toast.error("Error");
-      }
-    },
+    `${GET.NOTIFICATION_LOG_LIST}?page=${paginationModel.page + 1}&limit=${perPageItem}&search=${encodeURIComponent(debouncedSearchValue)}`,
     true
   );
 
   useEffect(() => {
-    if (notificationTypeList?.data && notificationTypeReload) {
-      setNotificationTypeReload(false);
+    if (notificationLogList?.data && notificationLogReload) {
+      setNotificationLogReload(false);
     }
-  }, [notificationTypeList, notificationTypeReload]);
+  }, [notificationLogList, notificationLogReload]);
 
-  const notificationTypesWithIds =
-    Array.isArray(notificationTypeList?.data?.data) &&
-    notificationTypeList.data.data.length > 0
-      ? notificationTypeList.data.data.map((notificationType) => ({
-          ...notificationType,
+  const notificationLogsWithIds =
+    Array.isArray(notificationLogList?.data?.data) &&
+    notificationLogList.data.data.length > 0
+      ? notificationLogList.data.data.map((notificationLog) => ({
+          ...notificationLog,
           id:
-            notificationType._id ||
+            notificationLog._id ||
             `temp-${Math.random().toString(36).substr(2, 9)}`,
-          permissions: notificationType.permissions || [],
+          handleView: (row: NotificationLog) => {
+            setSelectedNotification(row);
+            setViewModalOpen(true);
+          },
         }))
       : [];
 
-  const handleEdit = (row: NotificationType) => {
-    Navigate(`/notivix/notification-types/edit/${row._id}`);
-  };
-
-  const handleView = (row: NotificationType) => {
-    Navigate(`/notivix/notification-types/view/${row._id}`);
-  };
-
-  const handleDelete = (id: string) => {
-    if (id) {
-      setDeleteId(id);
-      setOpenDialog(true);
-    }
-  };
-
-  const handleAddNotificationType = () => {
-    Navigate("/notivix/notification-types/add");
-  };
-
-  const handleFilter = () => {
-    reset({
-      name: filterValues.name,
-      organizationId: filterValues.organizationId,
-      status: filterValues.status,
-      permissionIds: [],
-    });
-    setModalMode("filter");
-    setOpenModal(true);
-  };
-
-  const handleCloseModal = () => {
-    setOpenModal(false);
-    setModalMode(null);
-    reset({
-      name: "",
-      organizationId: "",
-      status: "",
-      permissionIds: [],
-    });
-  };
-
-  const handleCloseDialog = () => {
-    setOpenDialog(false);
-    setDeleteId(null);
-  };
-
-  const handleConfirmDelete = async () => {
-    if (deleteId) {
-      try {
-        await deleteNotificationType.mutate({
-          url: `${DELETE.DELETE_NOTIFICATION_TYPE}/${deleteId}`,
-        });
-      } catch (error) {
-        toast.error("Error deleting notification type:", error);
-      }
-    }
-  };
-
-  const handleResetFilter = () => {
-    reset({
-      name: "",
-      organizationId: "",
-      status: "",
-      permissionIds: [],
-    });
-    setFilterValues({
-      name: "",
-      organizationId: "",
-      status: "",
-    });
-  };
-
-  const onSubmit = async (data: NotificationTypePostPayload) => {
-    setFilterValues({
-      name: data.name,
-      organizationId: data.organizationId || "",
-      status: data.status || "",
-    });
-    setPaginationModel({ ...paginationModel, page: 0 });
-    handleCloseModal();
+  const handleViewModalClose = () => {
+    setViewModalOpen(false);
+    setSelectedNotification(null);
   };
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchValue(e.target.value);
     setPaginationModel({ ...paginationModel, page: 0 });
+  };
+
+  // Function to parse HTML content safely
+  const parseHtmlContent = (html: string) => {
+    if (!html) return null;
+
+    try {
+      return parse(html);
+    } catch (error) {
+      console.error("Error parsing HTML content:", error);
+      return <div>Error rendering content</div>;
+    }
   };
 
   return (
@@ -389,41 +285,16 @@ export default function NotificationLogger() {
                 ),
               }}
             />
-            {/* <Box sx={{ display: "flex", gap: 1 }}>
-              <Button
-                variant="outlined"
-                startIcon={<FilterListIcon />}
-                onClick={handleFilter}
-                sx={{ borderRadius: "8px" }}
-              >
-                Filter
-              </Button>
-              <Button
-                variant="contained"
-                startIcon={<AddIcon />}
-                onClick={handleAddNotificationType}
-                sx={{ borderRadius: "8px" }}
-              >
-                Add
-              </Button>
-            </Box> */}
           </Box>
           <DataGrid
-            rows={notificationTypesWithIds.map((notificationType) => ({
-              ...notificationType,
-              handleEdit,
-              handleView,
-              handleDelete,
-            }))}
+            rows={notificationLogsWithIds}
             columns={columns}
             initialState={{ pagination: { paginationModel } }}
             disableColumnMenu
             paginationMode="server"
             sx={{ overflow: "visible" }}
-            loading={
-              notificationTypeList.isLoading || deleteNotificationType.isLoading
-            }
-            rowCount={notificationTypeList?.data?.pagination?.totalRecords || 0}
+            loading={notificationLogList.isLoading}
+            rowCount={notificationLogList?.data?.pagination?.totalRecords || 0}
             paginationModel={paginationModel}
             onPaginationModelChange={setPaginationModel}
             slots={{
@@ -432,7 +303,7 @@ export default function NotificationLogger() {
                   paginationModel={paginationModel}
                   setPaginationModel={setPaginationModel}
                   rowCount={
-                    notificationTypeList?.data?.pagination?.totalRecords || 0
+                    notificationLogList?.data?.pagination?.totalRecords || 0
                   }
                 />
               ),
@@ -440,9 +311,11 @@ export default function NotificationLogger() {
           />
         </CardContent>
       </Card>
+
+      {/* View Modal */}
       <Modal
-        open={openModal}
-        onClose={handleCloseModal}
+        open={viewModalOpen}
+        onClose={handleViewModalClose}
         sx={{ display: "flex", alignItems: "center", justifyContent: "center" }}
       >
         <Box
@@ -451,143 +324,284 @@ export default function NotificationLogger() {
             borderRadius: "8px",
             boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.2)",
             p: 3,
-            width: "800px",
+            width: "900px",
             maxWidth: "90%",
-            maxHeight: "80vh",
+            maxHeight: "85vh",
             overflowY: "auto",
           }}
         >
-          <Typography variant="h6" sx={{ mb: 2 }}>
-            Filter Notification Types
-          </Typography>
-          <form onSubmit={handleSubmit(onSubmit)}>
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              mb: 2,
+            }}
+          >
+            <Typography variant="h6">Notification Details</Typography>
+            <Button onClick={handleViewModalClose} sx={{ minWidth: "auto" }}>
+              <CloseIcon />
+            </Button>
+          </Box>
+          {selectedNotification && (
             <Grid container spacing={2}>
               <Grid item xs={12}>
-                <Controller
-                  name="name"
-                  control={control}
-                  render={({ field }) => (
-                    <TextField
-                      {...field}
-                      label="Name"
-                      placeholder="Enter notification type name"
-                      variant="outlined"
-                      fullWidth
-                      sx={{
-                        "& .MuiOutlinedInput-root": { borderRadius: "8px" },
-                      }}
-                    />
-                  )}
-                />
-              </Grid>
-              <Grid item xs={12}>
-                <Controller
-                  name="organizationId"
-                  control={control}
-                  render={({ field }) => (
-                    <TextField
-                      {...field}
-                      label="Organization ID"
-                      variant="outlined"
-                      fullWidth
-                      sx={{
-                        "& .MuiOutlinedInput-root": { borderRadius: "8px" },
-                      }}
-                    />
-                  )}
-                />
-              </Grid>
-              <Grid item xs={12}>
-                <Controller
-                  name="status"
-                  control={control}
-                  render={({ field }) => (
-                    <FormControl
-                      fullWidth
-                      sx={{
-                        "& .MuiOutlinedInput-root": { borderRadius: "8px" },
-                      }}
-                    >
-                      <InputLabel>Status</InputLabel>
-                      <Select
-                        {...field}
-                        label="Status"
-                        onChange={(e) =>
-                          field.onChange(
-                            e.target.value === "" ? undefined : e.target.value
-                          )
+                <Paper elevation={1} sx={{ p: 2 }}>
+                  <Typography variant="subtitle1" fontWeight="bold" mb={1}>
+                    Basic Information
+                  </Typography>
+                  <Divider sx={{ mb: 2 }} />
+
+                  <Grid container spacing={1}>
+                    <Grid item xs={4}>
+                      <Typography variant="body2" color="textSecondary">
+                        Trigger date:
+                      </Typography>
+                    </Grid>
+                    <Grid item xs={8}>
+                      <Typography variant="body2">
+                        {formatDate(selectedNotification.scheduledAt)}
+                      </Typography>
+                    </Grid>
+
+                    <Grid item xs={4}>
+                      <Typography variant="body2" color="textSecondary">
+                        Is dry run:
+                      </Typography>
+                    </Grid>
+                    <Grid item xs={8}>
+                      <Typography variant="body2">
+                        {selectedNotification.notificationTriggerId?.isDryRun
+                          ? "Yes"
+                          : "No"}
+                      </Typography>
+                    </Grid>
+
+                    <Grid item xs={4}>
+                      <Typography variant="body2" color="textSecondary">
+                        Acknowledge:
+                      </Typography>
+                    </Grid>
+                    <Grid item xs={8}>
+                      <Typography variant="body2">-</Typography>
+                    </Grid>
+
+                    <Grid item xs={4}>
+                      <Typography variant="body2" color="textSecondary">
+                        Is acknowledged:
+                      </Typography>
+                    </Grid>
+                    <Grid item xs={8}>
+                      <Typography variant="body2">No</Typography>
+                    </Grid>
+
+                    <Grid item xs={4}>
+                      <Typography variant="body2" color="textSecondary">
+                        Is due date passed:
+                      </Typography>
+                    </Grid>
+                    <Grid item xs={8}>
+                      <Typography variant="body2">No</Typography>
+                    </Grid>
+
+                    <Grid item xs={4}>
+                      <Typography variant="body2" color="textSecondary">
+                        Report category:
+                      </Typography>
+                    </Grid>
+                    <Grid item xs={8}>
+                      <Typography variant="body2">-</Typography>
+                    </Grid>
+
+                    <Grid item xs={4}>
+                      <Typography variant="body2" color="textSecondary">
+                        Is active:
+                      </Typography>
+                    </Grid>
+                    <Grid item xs={8}>
+                      <Typography variant="body2">Yes</Typography>
+                    </Grid>
+
+                    <Grid item xs={4}>
+                      <Typography variant="body2" color="textSecondary">
+                        Created:
+                      </Typography>
+                    </Grid>
+                    <Grid item xs={8}>
+                      <Typography variant="body2">
+                        {formatDate(selectedNotification.createdAt)}
+                      </Typography>
+                    </Grid>
+
+                    <Grid item xs={4}>
+                      <Typography variant="body2" color="textSecondary">
+                        Notification type:
+                      </Typography>
+                    </Grid>
+                    <Grid item xs={8}>
+                      <Typography variant="body2">
+                        {selectedNotification.notificationTypeId?.name ||
+                          "overall"}
+                      </Typography>
+                    </Grid>
+
+                    <Grid item xs={4}>
+                      <Typography variant="body2" color="textSecondary">
+                        Processing status:
+                      </Typography>
+                    </Grid>
+                    <Grid item xs={8}>
+                      <Chip
+                        label={selectedNotification.status || "Unknown"}
+                        size="small"
+                        color={
+                          selectedNotification.status === "sent"
+                            ? "success"
+                            : selectedNotification.status === "pending"
+                              ? "warning"
+                              : "error"
                         }
+                        variant="outlined"
+                      />
+                    </Grid>
+
+                    <Grid item xs={4}>
+                      <Typography variant="body2" color="textSecondary">
+                        Notification medium:
+                      </Typography>
+                    </Grid>
+                    <Grid item xs={8}>
+                      <Typography variant="body2">
+                        {selectedNotification.mediumSettingId?.medium ||
+                          "email"}
+                      </Typography>
+                    </Grid>
+                  </Grid>
+                </Paper>
+              </Grid>
+
+              <Grid item xs={12}>
+                <Paper elevation={1} sx={{ p: 2 }}>
+                  <Typography variant="subtitle1" fontWeight="bold" mb={1}>
+                    Recipients
+                  </Typography>
+                  <Divider sx={{ mb: 2 }} />
+
+                  <Grid container spacing={1}>
+                    <Grid item xs={4}>
+                      <Typography variant="body2" color="textSecondary">
+                        To:
+                      </Typography>
+                    </Grid>
+                    <Grid item xs={8}>
+                      <Typography variant="body2">
+                        {selectedNotification.recipients?.recipient_to?.join(
+                          ", "
+                        ) || "No recipients"}
+                      </Typography>
+                    </Grid>
+
+                    <Grid item xs={4}>
+                      <Typography variant="body2" color="textSecondary">
+                        Cc:
+                      </Typography>
+                    </Grid>
+                    <Grid item xs={8}>
+                      <Typography variant="body2">
+                        {selectedNotification.recipients?.recipient_cc?.join(
+                          ", "
+                        ) || "No CC recipients"}
+                      </Typography>
+                    </Grid>
+                  </Grid>
+                </Paper>
+              </Grid>
+
+              <Grid item xs={12}>
+                <Paper elevation={1} sx={{ p: 2 }}>
+                  <Typography variant="subtitle1" fontWeight="bold" mb={1}>
+                    Email Content
+                  </Typography>
+                  <Divider sx={{ mb: 2 }} />
+
+                  <Grid container spacing={1}>
+                    <Grid item xs={4}>
+                      <Typography variant="body2" color="textSecondary">
+                        Subject:
+                      </Typography>
+                    </Grid>
+                    <Grid item xs={8}>
+                      <Typography variant="body2">
+                        {selectedNotification.templateId?.subject ||
+                          "No subject"}
+                      </Typography>
+                    </Grid>
+
+                    <Grid item xs={12}>
+                      <Typography variant="body2" color="textSecondary">
+                        Alert Content:
+                      </Typography>
+                    </Grid>
+                    <Grid item xs={12}>
+                      <Box
+                        sx={{
+                          border: "1px solid #ddd",
+                          borderRadius: "4px",
+                          p: 2,
+                          maxHeight: "400px",
+                          overflowY: "auto",
+                          backgroundColor: "#f9f9f9",
+                        }}
                       >
-                        <MenuItem value="">All</MenuItem>
-                        <MenuItem value="active">Active</MenuItem>
-                        <MenuItem value="inactive">Inactive</MenuItem>
-                      </Select>
-                    </FormControl>
-                  )}
-                />
+                        {parseHtmlContent(selectedNotification.alert_content)}
+                      </Box>
+                    </Grid>
+                  </Grid>
+                </Paper>
+              </Grid>
+
+              <Grid item xs={12}>
+                <Paper elevation={1} sx={{ p: 2 }}>
+                  <Typography variant="subtitle1" fontWeight="bold" mb={1}>
+                    Additional Information
+                  </Typography>
+                  <Divider sx={{ mb: 2 }} />
+
+                  <Grid container spacing={1}>
+                    <Grid item xs={4}>
+                      <Typography variant="body2" color="textSecondary">
+                        File attached:
+                      </Typography>
+                    </Grid>
+                    <Grid item xs={8}>
+                      <Typography variant="body2">-</Typography>
+                    </Grid>
+                  </Grid>
+                </Paper>
               </Grid>
             </Grid>
-            <Box
+          )}
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "flex-end",
+              mt: STYLE_GUIDE.SPACING.s2,
+            }}
+          >
+            <Button
+              variant="outlined"
+              onClick={handleViewModalClose}
               sx={{
-                display: "flex",
-                justifyContent: "flex-end",
-                gap: 1,
-                mt: 3,
+                borderRadius: "8px",
+                borderColor: STYLE_GUIDE?.COLORS?.divider || "#e0e0e0",
+                color: STYLE_GUIDE?.COLORS?.primaryDark || "#3f51b5",
               }}
             >
-              <Button
-                variant="outlined"
-                onClick={handleResetFilter}
-                sx={{ borderRadius: "8px" }}
-              >
-                Reset
-              </Button>
-              <Button
-                variant="outlined"
-                onClick={handleCloseModal}
-                sx={{ borderRadius: "8px" }}
-              >
-                Cancel
-              </Button>
-              <Button
-                type="submit"
-                variant="contained"
-                sx={{ borderRadius: "8px" }}
-                disabled={
-                  !filterValues.name &&
-                  !filterValues.organizationId &&
-                  !filterValues.status
-                }
-              >
-                Apply
-              </Button>
-            </Box>
-          </form>
+              Cancel
+            </Button>
+          </Box>{" "}
         </Box>
       </Modal>
-      <Dialog
-        open={openDialog}
-        onClose={handleCloseDialog}
-        sx={{ "& .MuiDialog-paper": { borderRadius: "8px" } }}
-      >
-        <DialogTitle>Confirm Delete</DialogTitle>
-        <DialogContent>
-          <Typography>Are you sure you want to delete this?</Typography>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseDialog} sx={{ borderRadius: "8px" }}>
-            No
-          </Button>
-          <Button
-            onClick={handleConfirmDelete}
-            color="error"
-            sx={{ borderRadius: "8px" }}
-            disabled={deleteNotificationType.isLoading}
-          >
-            Yes
-          </Button>
-        </DialogActions>
-      </Dialog>
     </Box>
   );
 }
