@@ -1,3 +1,4 @@
+
 import * as React from "react";
 import { useState, useEffect } from "react";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
@@ -142,7 +143,7 @@ const columns: GridColDef[] = [
     sortable: false,
     resizable: false,
     renderCell: (params) => (
-      <Box sx={{ display: "flex", gap: 1 }}>
+      <Box sx={{ display: "flex", gap: STYLE_GUIDE.SPACING.s2 }}>
         <Tooltip title="View" arrow>
           <Button
             variant="text"
@@ -247,24 +248,41 @@ export default function NotificationLogger() {
   };
 
   return (
-    <Box sx={{ flexGrow: 1, p: 3, ml: { xs: 0 }, minHeight: "100vh" }}>
+    <Box
+      sx={{
+        flexGrow: 1,
+        p: STYLE_GUIDE.SPACING.s3,
+        ml: { xs: 0 },
+        minHeight: "100vh",
+        backgroundColor: STYLE_GUIDE.COLORS.backgroundDefault,
+      }}
+    >
       <Typography
         variant="h4"
         sx={{
           ...getHeadingSx(),
-          mb: STYLE_GUIDE?.SPACING?.s3,
+          mb: STYLE_GUIDE.SPACING.s3,
+          color: STYLE_GUIDE.COLORS.textPrimary,
+          fontFamily: STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary,
         }}
       >
-        Notifications
+        Notification Logs
       </Typography>
-      <Card sx={{ borderRadius: "8px", overflow: "visible" }}>
-        <CardContent sx={{ p: 3 }}>
+      <Card
+        sx={{
+          borderRadius: STYLE_GUIDE.SPACING.s1,
+          overflow: "visible",
+          boxShadow: STYLE_GUIDE.SHADOWS.cardPrimary,
+          backgroundColor: STYLE_GUIDE.COLORS.white,
+        }}
+      >
+        <CardContent sx={{ p: STYLE_GUIDE.SPACING.s3 }}>
           <Box
             sx={{
               display: "flex",
               justifyContent: "space-between",
               alignItems: "center",
-              mb: 2,
+              mb: STYLE_GUIDE.SPACING.s3,
             }}
           >
             <TextField
@@ -275,7 +293,9 @@ export default function NotificationLogger() {
               onChange={handleSearchChange}
               sx={{
                 width: "300px",
-                "& .MuiOutlinedInput-root": { borderRadius: "8px" },
+                "& .MuiOutlinedInput-root": {
+                  borderRadius: STYLE_GUIDE.SPACING.s3,
+                },
               }}
               InputProps={{
                 startAdornment: (
@@ -292,7 +312,11 @@ export default function NotificationLogger() {
             initialState={{ pagination: { paginationModel } }}
             disableColumnMenu
             paginationMode="server"
-            sx={{ overflow: "visible" }}
+            sx={{
+              overflow: "visible",
+              fontFamily: STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary,
+              fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base,
+            }}
             loading={notificationLogList.isLoading}
             rowCount={notificationLogList?.data?.pagination?.totalRecords || 0}
             paginationModel={paginationModel}
@@ -320,14 +344,15 @@ export default function NotificationLogger() {
       >
         <Box
           sx={{
-            backgroundColor: theme.palette.background.paper,
-            borderRadius: "8px",
-            boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.2)",
-            p: 3,
+            backgroundColor: STYLE_GUIDE.COLORS.white,
+            borderRadius: STYLE_GUIDE.SPACING.s1,
+            boxShadow: STYLE_GUIDE.SHADOWS.modal,
+            p: STYLE_GUIDE.SPACING.s3,
             width: "900px",
             maxWidth: "90%",
             maxHeight: "85vh",
             overflowY: "auto",
+            fontFamily: STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary,
           }}
         >
           <Box
@@ -335,42 +360,103 @@ export default function NotificationLogger() {
               display: "flex",
               justifyContent: "space-between",
               alignItems: "center",
-              mb: 2,
+              mb: STYLE_GUIDE.SPACING.s3,
             }}
           >
-            <Typography variant="h6">Notification Details</Typography>
-            <Button onClick={handleViewModalClose} sx={{ minWidth: "auto" }}>
+            <Typography
+              variant="h6"
+              sx={{
+                fontFamily: STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary,
+                fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold,
+                color: STYLE_GUIDE.COLORS.textPrimary,
+              }}
+            >
+              Notification logs Details
+            </Typography>
+            <Button
+              onClick={handleViewModalClose}
+              sx={{
+                minWidth: "auto",
+                color: STYLE_GUIDE.COLORS.textSecondary,
+              }}
+            >
               <CloseIcon />
             </Button>
           </Box>
           {selectedNotification && (
-            <Grid container spacing={2}>
+            <Grid container spacing={STYLE_GUIDE.SPACING.s2}>
               <Grid item xs={12}>
-                <Paper elevation={1} sx={{ p: 2 }}>
-                  <Typography variant="subtitle1" fontWeight="bold" mb={1}>
+                <Paper
+                  elevation={1}
+                  sx={{
+                    p: STYLE_GUIDE.SPACING.s2,
+                    backgroundColor: STYLE_GUIDE.COLORS.white,
+                    borderRadius: STYLE_GUIDE.SPACING.s1,
+                  }}
+                >
+                  <Typography
+                    variant="subtitle1"
+                    fontWeight="bold"
+                    mb={STYLE_GUIDE.SPACING.s2}
+                    sx={{
+                      fontFamily: STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary,
+                      fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold,
+                      color: STYLE_GUIDE.COLORS.textPrimary,
+                    }}
+                  >
                     Basic Information
                   </Typography>
-                  <Divider sx={{ mb: 2 }} />
+                  <Divider sx={{ mb: STYLE_GUIDE.SPACING.s2 }} />
 
-                  <Grid container spacing={1}>
+                  <Grid container spacing={STYLE_GUIDE.SPACING.s1}>
                     <Grid item xs={4}>
-                      <Typography variant="body2" color="textSecondary">
+                      <Typography
+                        variant="body2"
+                        color="textSecondary"
+                        sx={{
+                          fontFamily: STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary,
+                          fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
+                          color: STYLE_GUIDE.COLORS.textSecondary,
+                        }}
+                      >
                         Trigger date:
                       </Typography>
                     </Grid>
                     <Grid item xs={8}>
-                      <Typography variant="body2">
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          fontFamily: STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary,
+                          fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
+                          color: STYLE_GUIDE.COLORS.textPrimary,
+                        }}
+                      >
                         {formatDate(selectedNotification.scheduledAt)}
                       </Typography>
                     </Grid>
 
                     <Grid item xs={4}>
-                      <Typography variant="body2" color="textSecondary">
+                      <Typography
+                        variant="body2"
+                        color="textSecondary"
+                        sx={{
+                          fontFamily: STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary,
+                          fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
+                          color: STYLE_GUIDE.COLORS.textSecondary,
+                        }}
+                      >
                         Is dry run:
                       </Typography>
                     </Grid>
                     <Grid item xs={8}>
-                      <Typography variant="body2">
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          fontFamily: STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary,
+                          fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
+                          color: STYLE_GUIDE.COLORS.textPrimary,
+                        }}
+                      >
                         {selectedNotification.notificationTriggerId?.isDryRun
                           ? "Yes"
                           : "No"}
@@ -378,75 +464,198 @@ export default function NotificationLogger() {
                     </Grid>
 
                     <Grid item xs={4}>
-                      <Typography variant="body2" color="textSecondary">
+                      <Typography
+                        variant="body2"
+                        color="textSecondary"
+                        sx={{
+                          fontFamily: STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary,
+                          fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
+                          color: STYLE_GUIDE.COLORS.textSecondary,
+                        }}
+                      >
                         Acknowledge:
                       </Typography>
                     </Grid>
                     <Grid item xs={8}>
-                      <Typography variant="body2">-</Typography>
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          fontFamily: STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary,
+                          fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
+                          color: STYLE_GUIDE.COLORS.textPrimary,
+                        }}
+                      >
+                        -
+                      </Typography>
                     </Grid>
 
                     <Grid item xs={4}>
-                      <Typography variant="body2" color="textSecondary">
+                      <Typography
+                        variant="body2"
+                        color="textSecondary"
+                        sx={{
+                          fontFamily: STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary,
+                          fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
+                          color: STYLE_GUIDE.COLORS.textSecondary,
+                        }}
+                      >
                         Is acknowledged:
                       </Typography>
                     </Grid>
                     <Grid item xs={8}>
-                      <Typography variant="body2">No</Typography>
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          fontFamily: STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary,
+                          fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
+                          color: STYLE_GUIDE.COLORS.textPrimary,
+                        }}
+                      >
+                        No
+                      </Typography>
                     </Grid>
 
                     <Grid item xs={4}>
-                      <Typography variant="body2" color="textSecondary">
+                      <Typography
+                        variant="body2"
+                        color="textSecondary"
+                        sx={{
+                          fontFamily: STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary,
+                          fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
+                          color: STYLE_GUIDE.COLORS.textSecondary,
+                        }}
+                      >
                         Is due date passed:
                       </Typography>
                     </Grid>
                     <Grid item xs={8}>
-                      <Typography variant="body2">No</Typography>
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          fontFamily: STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary,
+                          fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
+                          color: STYLE_GUIDE.COLORS.textPrimary,
+                        }}
+                      >
+                        No
+                      </Typography>
                     </Grid>
 
                     <Grid item xs={4}>
-                      <Typography variant="body2" color="textSecondary">
+                      <Typography
+                        variant="body2"
+                        color="textSecondary"
+                        sx={{
+                          fontFamily: STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary,
+                          fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
+                          color: STYLE_GUIDE.COLORS.textSecondary,
+                        }}
+                      >
                         Report category:
                       </Typography>
                     </Grid>
                     <Grid item xs={8}>
-                      <Typography variant="body2">-</Typography>
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          fontFamily: STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary,
+                          fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
+                          color: STYLE_GUIDE.COLORS.textPrimary,
+                        }}
+                      >
+                        -
+                      </Typography>
                     </Grid>
 
                     <Grid item xs={4}>
-                      <Typography variant="body2" color="textSecondary">
+                      <Typography
+                        variant="body2"
+                        color="textSecondary"
+                        sx={{
+                          fontFamily: STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary,
+                          fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
+                          color: STYLE_GUIDE.COLORS.textSecondary,
+                        }}
+                      >
                         Is active:
                       </Typography>
                     </Grid>
                     <Grid item xs={8}>
-                      <Typography variant="body2">Yes</Typography>
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          fontFamily: STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary,
+                          fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
+                          color: STYLE_GUIDE.COLORS.textPrimary,
+                        }}
+                      >
+                        Yes
+                      </Typography>
                     </Grid>
 
                     <Grid item xs={4}>
-                      <Typography variant="body2" color="textSecondary">
+                      <Typography
+                        variant="body2"
+                        color="textSecondary"
+                        sx={{
+                          fontFamily: STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary,
+                          fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
+                          color: STYLE_GUIDE.COLORS.textSecondary,
+                        }}
+                      >
                         Created:
                       </Typography>
                     </Grid>
                     <Grid item xs={8}>
-                      <Typography variant="body2">
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          fontFamily: STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary,
+                          fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
+                          color: STYLE_GUIDE.COLORS.textPrimary,
+                        }}
+                      >
                         {formatDate(selectedNotification.createdAt)}
                       </Typography>
                     </Grid>
 
                     <Grid item xs={4}>
-                      <Typography variant="body2" color="textSecondary">
+                      <Typography
+                        variant="body2"
+                        color="textSecondary"
+                        sx={{
+                          fontFamily: STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary,
+                          fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
+                          color: STYLE_GUIDE.COLORS.textSecondary,
+                        }}
+                      >
                         Notification type:
                       </Typography>
                     </Grid>
                     <Grid item xs={8}>
-                      <Typography variant="body2">
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          fontFamily: STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary,
+                          fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
+                          color: STYLE_GUIDE.COLORS.textPrimary,
+                        }}
+                      >
                         {selectedNotification.notificationTypeId?.name ||
                           "overall"}
                       </Typography>
                     </Grid>
 
                     <Grid item xs={4}>
-                      <Typography variant="body2" color="textSecondary">
+                      <Typography
+                        variant="body2"
+                        color="textSecondary"
+                        sx={{
+                          fontFamily: STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary,
+                          fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
+                          color: STYLE_GUIDE.COLORS.textSecondary,
+                        }}
+                      >
                         Processing status:
                       </Typography>
                     </Grid>
@@ -466,12 +675,27 @@ export default function NotificationLogger() {
                     </Grid>
 
                     <Grid item xs={4}>
-                      <Typography variant="body2" color="textSecondary">
+                      <Typography
+                        variant="body2"
+                        color="textSecondary"
+                        sx={{
+                          fontFamily: STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary,
+                          fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
+                          color: STYLE_GUIDE.COLORS.textSecondary,
+                        }}
+                      >
                         Notification medium:
                       </Typography>
                     </Grid>
                     <Grid item xs={8}>
-                      <Typography variant="body2">
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          fontFamily: STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary,
+                          fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
+                          color: STYLE_GUIDE.COLORS.textPrimary,
+                        }}
+                      >
                         {selectedNotification.mediumSettingId?.medium ||
                           "email"}
                       </Typography>
@@ -481,20 +705,51 @@ export default function NotificationLogger() {
               </Grid>
 
               <Grid item xs={12}>
-                <Paper elevation={1} sx={{ p: 2 }}>
-                  <Typography variant="subtitle1" fontWeight="bold" mb={1}>
+                <Paper
+                  elevation={1}
+                  sx={{
+                    p: STYLE_GUIDE.SPACING.s2,
+                    backgroundColor: STYLE_GUIDE.COLORS.white,
+                    borderRadius: STYLE_GUIDE.SPACING.s1,
+                  }}
+                >
+                  <Typography
+                    variant="subtitle1"
+                    fontWeight="bold"
+                    mb={STYLE_GUIDE.SPACING.s2}
+                    sx={{
+                      fontFamily: STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary,
+                      fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold,
+                      color: STYLE_GUIDE.COLORS.textPrimary,
+                    }}
+                  >
                     Recipients
                   </Typography>
-                  <Divider sx={{ mb: 2 }} />
+                  <Divider sx={{ mb: STYLE_GUIDE.SPACING.s2 }} />
 
-                  <Grid container spacing={1}>
+                  <Grid container spacing={STYLE_GUIDE.SPACING.s1}>
                     <Grid item xs={4}>
-                      <Typography variant="body2" color="textSecondary">
+                      <Typography
+                        variant="body2"
+                        color="textSecondary"
+                        sx={{
+                          fontFamily: STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary,
+                          fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
+                          color: STYLE_GUIDE.COLORS.textSecondary,
+                        }}
+                      >
                         To:
                       </Typography>
                     </Grid>
                     <Grid item xs={8}>
-                      <Typography variant="body2">
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          fontFamily: STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary,
+                          fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
+                          color: STYLE_GUIDE.COLORS.textPrimary,
+                        }}
+                      >
                         {selectedNotification.recipients?.recipient_to?.join(
                           ", "
                         ) || "No recipients"}
@@ -502,12 +757,27 @@ export default function NotificationLogger() {
                     </Grid>
 
                     <Grid item xs={4}>
-                      <Typography variant="body2" color="textSecondary">
+                      <Typography
+                        variant="body2"
+                        color="textSecondary"
+                        sx={{
+                          fontFamily: STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary,
+                          fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
+                          color: STYLE_GUIDE.COLORS.textSecondary,
+                        }}
+                      >
                         Cc:
                       </Typography>
                     </Grid>
                     <Grid item xs={8}>
-                      <Typography variant="body2">
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          fontFamily: STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary,
+                          fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
+                          color: STYLE_GUIDE.COLORS.textPrimary,
+                        }}
+                      >
                         {selectedNotification.recipients?.recipient_cc?.join(
                           ", "
                         ) || "No CC recipients"}
@@ -518,39 +788,80 @@ export default function NotificationLogger() {
               </Grid>
 
               <Grid item xs={12}>
-                <Paper elevation={1} sx={{ p: 2 }}>
-                  <Typography variant="subtitle1" fontWeight="bold" mb={1}>
+                <Paper
+                  elevation={1}
+                  sx={{
+                    p: STYLE_GUIDE.SPACING.s2,
+                    backgroundColor: STYLE_GUIDE.COLORS.white,
+                    borderRadius: STYLE_GUIDE.SPACING.s1,
+                  }}
+                >
+                  <Typography
+                    variant="subtitle1"
+                    fontWeight="bold"
+                    mb={STYLE_GUIDE.SPACING.s2}
+                    sx={{
+                      fontFamily: STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary,
+                      fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold,
+                      color: STYLE_GUIDE.COLORS.textPrimary,
+                    }}
+                  >
                     Email Content
                   </Typography>
-                  <Divider sx={{ mb: 2 }} />
+                  <Divider sx={{ mb: STYLE_GUIDE.SPACING.s2 }} />
 
-                  <Grid container spacing={1}>
+                  <Grid container spacing={STYLE_GUIDE.SPACING.s1}>
                     <Grid item xs={4}>
-                      <Typography variant="body2" color="textSecondary">
+                      <Typography
+                        variant="body2"
+                        color="textSecondary"
+                        sx={{
+                          fontFamily: STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary,
+                          fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
+                          color: STYLE_GUIDE.COLORS.textSecondary,
+                        }}
+                      >
                         Subject:
                       </Typography>
                     </Grid>
                     <Grid item xs={8}>
-                      <Typography variant="body2">
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          fontFamily: STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary,
+                          fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
+                          color: STYLE_GUIDE.COLORS.textPrimary,
+                        }}
+                      >
                         {selectedNotification.templateId?.subject ||
                           "No subject"}
                       </Typography>
                     </Grid>
 
                     <Grid item xs={12}>
-                      <Typography variant="body2" color="textSecondary">
+                      <Typography
+                        variant="body2"
+                        color="textSecondary"
+                        sx={{
+                          fontFamily: STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary,
+                          fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
+                          color: STYLE_GUIDE.COLORS.textSecondary,
+                        }}
+                      >
                         Alert Content:
                       </Typography>
                     </Grid>
                     <Grid item xs={12}>
                       <Box
                         sx={{
-                          border: "1px solid #ddd",
-                          borderRadius: "4px",
-                          p: 2,
+                          border: `1px solid ${STYLE_GUIDE.COLORS.divider}`,
+                          borderRadius: STYLE_GUIDE.SPACING.s1,
+                          p: STYLE_GUIDE.SPACING.s2,
                           maxHeight: "400px",
                           overflowY: "auto",
-                          backgroundColor: "#f9f9f9",
+                          backgroundColor: STYLE_GUIDE.COLORS.backgroundLight,
+                          fontFamily: STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary,
+                          fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
                         }}
                       >
                         {parseHtmlContent(selectedNotification.alert_content)}
@@ -561,20 +872,53 @@ export default function NotificationLogger() {
               </Grid>
 
               <Grid item xs={12}>
-                <Paper elevation={1} sx={{ p: 2 }}>
-                  <Typography variant="subtitle1" fontWeight="bold" mb={1}>
+                <Paper
+                  elevation={1}
+                  sx={{
+                    p: STYLE_GUIDE.SPACING.s2,
+                    backgroundColor: STYLE_GUIDE.COLORS.white,
+                    borderRadius: STYLE_GUIDE.SPACING.s1,
+                  }}
+                >
+                  <Typography
+                    variant="subtitle1"
+                    fontWeight="bold"
+                    mb={STYLE_GUIDE.SPACING.s2}
+                    sx={{
+                      fontFamily: STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary,
+                      fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold,
+                      color: STYLE_GUIDE.COLORS.textPrimary,
+                    }}
+                  >
                     Additional Information
                   </Typography>
-                  <Divider sx={{ mb: 2 }} />
+                  <Divider sx={{ mb: STYLE_GUIDE.SPACING.s2 }} />
 
-                  <Grid container spacing={1}>
+                  <Grid container spacing={STYLE_GUIDE.SPACING.s1}>
                     <Grid item xs={4}>
-                      <Typography variant="body2" color="textSecondary">
+                      <Typography
+                        variant="body2"
+                        color="textSecondary"
+                        sx={{
+                          fontFamily: STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary,
+                          fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
+                          color: STYLE_GUIDE.COLORS.textSecondary,
+                        }}
+                      >
                         File attached:
                       </Typography>
                     </Grid>
                     <Grid item xs={8}>
-                      <Typography variant="body2">-</Typography>
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          fontFamily: STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary,
+                          fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
+                          color: STYLE_GUIDE.COLORS.textPrimary,
+                        }}
+                      >
+                        -
+                      </Typography>
                     </Grid>
                   </Grid>
                 </Paper>
@@ -592,14 +936,20 @@ export default function NotificationLogger() {
               variant="outlined"
               onClick={handleViewModalClose}
               sx={{
-                borderRadius: "8px",
-                borderColor: STYLE_GUIDE?.COLORS?.divider || "#e0e0e0",
-                color: STYLE_GUIDE?.COLORS?.primaryDark || "#3f51b5",
+                borderRadius: STYLE_GUIDE.SPACING.s1,
+                borderColor: STYLE_GUIDE.COLORS.divider,
+                color: STYLE_GUIDE.COLORS.primaryDark,
+                fontFamily: STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary,
+                fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.medium,
+                "&:hover": {
+                  borderColor: STYLE_GUIDE.COLORS.primary,
+                  backgroundColor: STYLE_GUIDE.COLORS.backgroundHover,
+                },
               }}
             >
               Cancel
             </Button>
-          </Box>{" "}
+          </Box>
         </Box>
       </Modal>
     </Box>
