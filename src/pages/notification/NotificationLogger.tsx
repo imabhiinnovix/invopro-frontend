@@ -1,7 +1,8 @@
-
 import * as React from "react";
 import { useState, useEffect } from "react";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
+import NotificationsIcon from "@mui/icons-material/Notifications";
+
 import {
   Box,
   Card,
@@ -16,6 +17,7 @@ import {
   Grid,
   Paper,
   Divider,
+  CircularProgress,
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import VisibilityIcon from "@mui/icons-material/Visibility";
@@ -23,12 +25,13 @@ import CloseIcon from "@mui/icons-material/Close";
 import { useUnifiedTheme } from "../../hooks/useUnifiedTheme";
 import useGet from "../../hooks/useGet";
 import { CustomPagination } from "../../components/common/pagination/customPagination";
-import { GET } from "../../services/apiRoutes";
+import { GET, POST } from "../../services/apiRoutes";
 import { toast } from "react-toastify";
 import { STYLE_GUIDE } from "../../styles";
 import { useComponentTypography } from "../../hooks";
-import { formatDate } from "../../utils/utils";
+import { formatDate, formatDateUTC } from "../../utils/utils";
 import parse from "html-react-parser";
+import usePost from "../../hooks/usePost";
 
 interface NotificationLog {
   _id: string;
@@ -68,6 +71,9 @@ interface ApiResponse {
   success: boolean;
   data: NotificationLog[];
   pagination: {
+    page: number;
+    limit: number;
+    totalPages: number;
     totalRecords: number;
   };
 }
@@ -75,48 +81,71 @@ interface ApiResponse {
 const columns: GridColDef[] = [
   {
     field: "notificationTypeId",
-    headerName: "Notification Type",
+    headerName: "Notification Name",
     width: 250,
     disableColumnMenu: true,
     resizable: true,
     renderCell: (params) => params.row?.notificationTypeId?.name || "",
   },
   {
-    field: "createdAt",
-    headerName: "Created",
-    width: 250,
+    field: "templateId",
+    headerName: "Notification Type",
+    width: 200,
     disableColumnMenu: true,
     resizable: true,
-    renderCell: (params) => formatDate(params.row.createdAt),
+    renderCell: (params) => params.row?.templateId?.type || "",
   },
   {
-    field: "scheduledAt",
-    headerName: "Trigger Date",
+    field: "subject",
+    headerName: "Subject",
     width: 250,
     disableColumnMenu: true,
     resizable: true,
-    renderCell: (params) => formatDate(params.row.scheduledAt),
+    renderCell: (params) => params.row?.subject || "-",
   },
+
+  {
+    field: "sentAt",
+    headerName: "Sent At",
+    width: 200,
+    disableColumnMenu: true,
+    resizable: true,
+    renderCell: (params) => formatDateUTC(params.row.scheduledAt),
+  },
+
   {
     field: "status",
     headerName: "Processing Status",
     width: 250,
     disableColumnMenu: true,
     resizable: true,
-    renderCell: (params) => (
-      <Chip
-        label={params.value || "Unknown"}
-        size="small"
-        color={
-          params.value === "sent"
-            ? "success"
-            : params.value === "pending"
-              ? "warning"
-              : "error"
-        }
-        variant="outlined"
-      />
-    ),
+    renderCell: (params) => {
+      const value = params.value || "Unknown";
+      const label = value.charAt(0).toUpperCase() + value.slice(1);
+
+      return (
+        <Chip
+          label={label}
+          size="small"
+          color={
+            params.value === "sent"
+              ? "success"
+              : params.value === "pending"
+                ? "warning"
+                : "error"
+          }
+          variant="outlined"
+        />
+      );
+    },
+  },
+  {
+    field: "createdAt",
+    headerName: "Created At",
+    width: 250,
+    disableColumnMenu: true,
+    resizable: true,
+    renderCell: (params) => formatDateUTC(params.row.createdAt),
   },
   {
     field: "notificationTriggerId",
@@ -167,6 +196,7 @@ export default function NotificationLogger() {
   });
   const [debouncedSearchValue, setDebouncedSearchValue] = useState(searchValue);
   const [notificationLogReload, setNotificationLogReload] = useState(false);
+  const triggerNotification = usePost(["triggerNotification"]);
 
   const [viewModalOpen, setViewModalOpen] = useState(false);
   const [selectedNotification, setSelectedNotification] =
@@ -190,6 +220,26 @@ export default function NotificationLogger() {
       clearTimeout(handler);
     };
   }, [searchValue]);
+
+  // Handle trigger notification response
+  useEffect(() => {
+    if (triggerNotification.data) {
+      const { success, message } = triggerNotification.data;
+      
+      if (success) {
+        toast.success(message || "prepareTodayNotifications executed successfully");
+        // Refresh the notification logs after successful trigger
+        setNotificationLogReload(prev => !prev);
+      } else {
+        toast.error(message || "Failed to trigger notification");
+      }
+    }
+    
+    if (triggerNotification.error) {
+      toast.error("Failed to trigger notification");
+      console.error("Error triggering notification:", triggerNotification.error);
+    }
+  }, [triggerNotification.data, triggerNotification.error]);
 
   const perPageItem = paginationModel.pageSize;
   const notificationLogList = useGet<ApiResponse>(
@@ -246,6 +296,15 @@ export default function NotificationLogger() {
       return <div>Error rendering content</div>;
     }
   };
+  
+  const handleScheduleTrigger = () => {
+    triggerNotification.mutate({
+      url: POST.TRIGGER_NOTIFICATION,
+      payload: { isForce: "false" },
+    });
+  };
+
+ 
 
   return (
     <Box
@@ -285,6 +344,7 @@ export default function NotificationLogger() {
               mb: STYLE_GUIDE.SPACING.s3,
             }}
           >
+            {/* Left: Search */}
             <TextField
               placeholder="Search ..."
               variant="outlined"
@@ -305,7 +365,26 @@ export default function NotificationLogger() {
                 ),
               }}
             />
+
+            {/* Right: Schedule Trigger button */}
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={handleScheduleTrigger}
+              disabled={triggerNotification.isLoading}
+              sx={{ borderRadius: STYLE_GUIDE.SPACING.s3 }}
+              startIcon={
+                triggerNotification.isLoading ? (
+                  <CircularProgress size={20} color="inherit" />
+                ) : (
+                  <NotificationsIcon />
+                )
+              }
+            >
+              {triggerNotification.isLoading ? "Triggering..." : "Trigger Notification"}
+            </Button>
           </Box>
+
           <DataGrid
             rows={notificationLogsWithIds}
             columns={columns}
@@ -318,16 +397,15 @@ export default function NotificationLogger() {
               fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base,
             }}
             loading={notificationLogList.isLoading}
-            rowCount={notificationLogList?.data?.pagination?.totalRecords || 0}
+            rowCount={notificationLogList?.data?.pagination.totalRecords|| 0}
             paginationModel={paginationModel}
-            onPaginationModelChange={setPaginationModel}
             slots={{
               pagination: () => (
                 <CustomPagination
                   paginationModel={paginationModel}
                   setPaginationModel={setPaginationModel}
                   rowCount={
-                    notificationLogList?.data?.pagination?.totalRecords || 0
+                    notificationLogList?.data?.pagination.totalRecords || 0
                   }
                 />
               ),

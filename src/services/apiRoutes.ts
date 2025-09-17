@@ -44,6 +44,7 @@ export const POST = {
   CREATE_MEDIUM: '/notivix/notification-setting/medium/create',
   CREATE_VERSION_ROW: '/common/dataSourceVersion/versionData/create',
   RESOLVE_DATA_IMPORT_ERROR: '/common/dataImportError/resolve',
+  TRIGGER_NOTIFICATION:"/notivix/notification-setting/prepared/trigger"
 };
 
 export const PUT = {

@@ -21,6 +21,32 @@ export function objectToFormData(obj: any, formData = new FormData(), parentKey 
   }
   return formData;
 }
+export const formatDateUTC = (dateString?: string): string => {
+  if (!dateString) return "-";
+  try {
+    const date = new Date(dateString);
+
+    const formattedDate = date.toLocaleDateString("en-GB", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+      timeZone: "UTC",   
+    });
+
+    const formattedTime = date.toLocaleTimeString("en-US", {
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+      hour12: true,
+      timeZone: "UTC",   
+    });
+
+    return `${formattedDate} ${formattedTime}`;
+  } catch {
+    return "-";
+  }
+};
+
 export const formatDate = (dateString?: string): string => {
   if (!dateString) return "-";
   try {
@@ -29,12 +55,14 @@ export const formatDate = (dateString?: string): string => {
       day: "2-digit",
       month: "short",
       year: "numeric",
+        timeZone: "Asia/Kolkata",
     });
     const formattedTime = date.toLocaleTimeString("en-US", {
       hour: "2-digit",
       minute: "2-digit",
       second: "2-digit",
       hour12: true,  // Enables AM/PM
+        timeZone: "Asia/Kolkata",
     });
     return `${formattedDate} ${formattedTime}`;
   } catch {

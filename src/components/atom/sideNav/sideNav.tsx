@@ -410,6 +410,12 @@ export default function SideNav() {
       icon: createIcon(SourceIcon, "/notification"),
       route: "/notification",
     };
+    const NotificationLogsMenuItem = {
+      name: "Notification Logs",
+      icon: createIcon(NotificationsIcon, "/notification-logs"),
+      route: "/notification-logs",
+    };
+
     const loadingIndicator =
       dataSourceListAPI?.hasNextPage || dataSourceNotivixListAPI?.isLoading
         ? [
@@ -428,6 +434,7 @@ export default function SideNav() {
       ...monthlyDataSources,
       ...loadingIndicator,
       alertsMenuItem,
+      NotificationLogsMenuItem,
     ];
     // Data sources for Theme Settings submenu
     const themeSettingsDataSources = dataSourceList.map((item) => ({
@@ -498,11 +505,7 @@ export default function SideNav() {
         icon: createIcon(AutoAwesomeIcon, "/VixAi-Insights"),
         route: "/VixAi-Insights",
       },
-      {
-        name: "User Logs",
-        icon: createIcon(PersonIcon, "/notification-logs"),
-        route: "/notification-logs",
-      },
+
       {
         name: "Settings",
         icon: createIcon(SettingsIcon, "/settings"),
