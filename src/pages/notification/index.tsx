@@ -236,11 +236,11 @@ export default function NotificationTypes() {
       : [];
 
   const handleEdit = (row: NotificationType) => {
-    Navigate(`/notivix/notification-types/edit/${row._id}`);
+    Navigate(`/notification-types/edit/${row._id}`);
   };
 
   const handleView = (row: NotificationType) => {
-    Navigate(`/notivix/notification-types/view/${row._id}`);
+    Navigate(`/notification-types/view/${row._id}`);
   };
 
   const handleDelete = (id: string) => {
@@ -251,7 +251,7 @@ export default function NotificationTypes() {
   };
 
   const handleAddNotificationType = () => {
-    Navigate("/notivix/notification-types/add");
+    Navigate("/notification-types/add");
   };
 
   const handleFilter = () => {
@@ -334,13 +334,13 @@ export default function NotificationTypes() {
         Notification Types
       </Typography>
       <Card sx={{ borderRadius: "8px", overflow: "visible" }}>
-        <CardContent sx={{ p: 3 }}>
+        <CardContent sx={{ p: STYLE_GUIDE.SPACING.s3 }}>
           <Box
             sx={{
               display: "flex",
               justifyContent: "space-between",
               alignItems: "center",
-              mb: 2,
+              mb: STYLE_GUIDE.SPACING.s3,
             }}
           >
             <TextField

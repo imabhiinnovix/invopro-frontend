@@ -30,9 +30,9 @@ import AddNotificationTypes from "./pages/notification/AddNotificationTypes";
 import Notification from "./pages/notification";
 import NotivixDataSource from "./pages/notivixDataSource";
 import EditNotificationTypes from "./pages/notification/EditNotificationTypes";
-import { ValidationError } from "yup";
 import ValidationErrors from "./pages/validationErrors";
 import AcknowledgeNotification from "./pages/acknowledgeNotification";
+import NotificationLogger from "./pages/notification/NotificationLogger";
 
 const AppRoutes = () => {
   const token = getAuthToken();
@@ -71,36 +71,30 @@ const AppRoutes = () => {
           <Route path="/VixAi-Chart" element={<NaturalLanguage />} />
           <Route path="/report-settings" element={<ReportSettings />} />
           {/* // Notivix routes */}
-          <Route path="/notivix/dashboard" element={<NotivixDashboard />} />
-          <Route path="/notivix/dashboard/:id" element={<NotivixDashboard />} />
-          <Route path="/notivix/notification" element={<Notification />} />
+          <Route path="/dashboard" element={<NotivixDashboard />} />
+          <Route path="/dashboard/:id" element={<NotivixDashboard />} />
+          <Route path="/notification" element={<Notification />} />
+          <Route path="/notification-types" element={<Notification />} />
           <Route
-            path="/notivix/notification-types"
-            element={<Notification />}
+            path="/notification-logs"
+            element={<NotificationLogger />}
           />
           <Route
-            path="/notivix/notification-types/add"
+            path="/notification-types/add"
             element={<AddNotificationTypes />}
           />
           <Route
-            path="/notivix/notification-types/edit/:id"
+            path="/notification-types/edit/:id"
             element={<EditNotificationTypes />}
           />
-          <Route path="/notivix/settings/users" element={<Users />} />
-          <Route path="/notivix/permissions" element={<Permissions />} />
-          <Route path="/notivix/settings/roles" element={<Roles />} />
-          <Route
-            path="/notivix/settings/organization"
-            element={<Organization />}
-          />
-          <Route
-            path="/notivix/data-source/:id"
-            element={<NotivixDataSource />}
-          />
-          <Route
-            path="/notivix/validation-errors/:id"
-            element={<ValidationErrors />}
-          />
+          <Route path="/settings/users" element={<Users />} />
+          <Route path="/permissions" element={<Permissions />} />
+          {/* <Route path="/notivix/settings/roles" element={<Roles />} /> */}
+          <Route path="/roles" element={<Roles />} />
+
+          <Route path="/organization" element={<Organization />} />
+          <Route path="/data-source-new/:id" element={<NotivixDataSource />} />
+          <Route path="/validation-errors/:id" element={<ValidationErrors />} />
         </Route>
       </Route>
 

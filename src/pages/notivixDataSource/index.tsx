@@ -458,7 +458,7 @@ export default function NotivixDataSource() {
   const handleCompleteImport = () => {
     const id = listCurrentData?.dataSourceVersion?._id;
     if (id) {
-      navigate(`/notivix/validation-errors/${id}`);
+      navigate(`/validation-errors/${id}`);
     } else {
       console.warn("No version ID found");
     }

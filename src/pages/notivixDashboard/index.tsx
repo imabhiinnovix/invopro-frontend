@@ -82,7 +82,7 @@ const NotivixDashboard = () => {
   };
 
   const handleEdit = (dashboardId: string) => {
-    navigate(`/notivix/dashboard/${dashboardId}`, {
+    navigate(`/dashboard/${dashboardId}`, {
       state: { enableEditMode: false },
     });
   };
@@ -100,8 +100,8 @@ const NotivixDashboard = () => {
         await dispatch(deleteDashboard(dashboardToDelete._id)).unwrap();
         dispatch(fetchDashboardList());
         toast.success("Notivix Dashboard deleted successfully!");
-        if (location.pathname === `/notivix/dashboard/${dashboardToDelete._id}`) {
-          navigate("/notivix/dashboard");
+        if (location.pathname === `/dashboard/${dashboardToDelete._id}`) {
+          navigate("/dashboard");
         }
         setDeleteModalOpen(false);
         setDashboardToDelete(null);
@@ -150,11 +150,11 @@ const NotivixDashboard = () => {
         const newDashboard = response?.data;
 
         if (newDashboard && Array.isArray(newDashboard) && newDashboard.length > 0) {
-          navigate(`/notivix/dashboard/${newDashboard[0]._id}`, {
+          navigate(`/dashboard/${newDashboard[0]._id}`, {
             state: { enableEditMode: true },
           });
         } else if (newDashboard && typeof newDashboard === 'object' && '_id' in newDashboard) {
-          navigate(`/notivix/dashboard/${newDashboard._id}`, {
+          navigate(`/dashboard/${newDashboard._id}`, {
             state: { enableEditMode: true },
           });
         }
