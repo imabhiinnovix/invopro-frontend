@@ -236,11 +236,11 @@ export default function NotificationTypes() {
       : [];
 
   const handleEdit = (row: NotificationType) => {
-    Navigate(`/notivix/notification-types/edit/${row._id}`);
+    Navigate(`/notification-types/edit/${row._id}`);
   };
 
   const handleView = (row: NotificationType) => {
-    Navigate(`/notivix/notification-types/view/${row._id}`);
+    Navigate(`/notification-types/view/${row._id}`);
   };
 
   const handleDelete = (id: string) => {
@@ -251,7 +251,7 @@ export default function NotificationTypes() {
   };
 
   const handleAddNotificationType = () => {
-    Navigate("/notivix/notification-types/add");
+    Navigate("/notification-types/add");
   };
 
   const handleFilter = () => {

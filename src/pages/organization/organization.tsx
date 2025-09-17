@@ -814,7 +814,7 @@ export default function Organization() {
                                           color="error"
                                           onClick={() => {
                                             deleteMedium.mutate({
-                                              url: `/notivix/notification-setting/medium/delete/${item._id}`
+                                              url: `/notification-setting/medium/delete/${item._id}`
                                             });
                                           }}
                                         >

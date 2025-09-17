@@ -1001,7 +1001,7 @@ export default function EditNotificationTypes() {
           }}
         >
           <ArrowBackIcon
-            onClick={() => navigate("/notivix/notification")} 
+            onClick={() => navigate("/notification")} 
             sx={{
               cursor: "pointer",
               color: STYLE_GUIDE?.COLORS?.primaryDark || "inherit",
