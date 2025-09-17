@@ -1,3 +1,4 @@
+import { FieldSetting } from './../pages/notivixDashboard/types';
 export interface ErrorResponse {
   fieldName: string;
   message: string;
@@ -48,6 +49,7 @@ export interface WidgetDataResponse {
 export interface DataSource {
   _id: string;
   name: string;
+  fieldSettings: FieldSetting[];
   entityId: {
     _id: string;
     attributes: DataSourceAttribute[];
