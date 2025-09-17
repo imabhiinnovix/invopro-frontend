@@ -334,13 +334,13 @@ export default function NotificationTypes() {
         Notification Types
       </Typography>
       <Card sx={{ borderRadius: "8px", overflow: "visible" }}>
-        <CardContent sx={{ p: 3 }}>
+        <CardContent sx={{ p: STYLE_GUIDE.SPACING.s3 }}>
           <Box
             sx={{
               display: "flex",
               justifyContent: "space-between",
               alignItems: "center",
-              mb: 2,
+              mb: STYLE_GUIDE.SPACING.s3,
             }}
           >
             <TextField

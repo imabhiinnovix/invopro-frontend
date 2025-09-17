@@ -32,6 +32,7 @@ import NotivixDataSource from "./pages/notivixDataSource";
 import EditNotificationTypes from "./pages/notification/EditNotificationTypes";
 import ValidationErrors from "./pages/validationErrors";
 import AcknowledgeNotification from "./pages/acknowledgeNotification";
+import NotificationLogger from "./pages/notification/NotificationLogger";
 
 const AppRoutes = () => {
   const token = getAuthToken();
@@ -73,9 +74,10 @@ const AppRoutes = () => {
           <Route path="/dashboard" element={<NotivixDashboard />} />
           <Route path="/dashboard/:id" element={<NotivixDashboard />} />
           <Route path="/notification" element={<Notification />} />
+          <Route path="/notification-types" element={<Notification />} />
           <Route
-            path="/notification-types"
-            element={<Notification />}
+            path="/notification-logs"
+            element={<NotificationLogger />}
           />
           <Route
             path="/notification-types/add"
@@ -88,20 +90,11 @@ const AppRoutes = () => {
           <Route path="/settings/users" element={<Users />} />
           <Route path="/permissions" element={<Permissions />} />
           {/* <Route path="/notivix/settings/roles" element={<Roles />} /> */}
-                    <Route path="/roles" element={<Roles />} />
+          <Route path="/roles" element={<Roles />} />
 
-          <Route
-            path="/organization"
-            element={<Organization />}
-          />
-          <Route
-            path="/data-source-new/:id"
-            element={<NotivixDataSource />}
-          />
-          <Route
-            path="/validation-errors/:id"
-            element={<ValidationErrors />}
-          />
+          <Route path="/organization" element={<Organization />} />
+          <Route path="/data-source-new/:id" element={<NotivixDataSource />} />
+          <Route path="/validation-errors/:id" element={<ValidationErrors />} />
         </Route>
       </Route>
 

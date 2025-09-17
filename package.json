@@ -28,6 +28,7 @@
     "date-fns": "^4.1.0",
     "dayjs": "^1.11.13",
     "exceljs": "^4.4.0",
+    "html-react-parser": "^5.2.6",
     "html2pdf.js": "^0.9.0",
     "install": "^0.13.0",
     "jspdf": "^3.0.1",

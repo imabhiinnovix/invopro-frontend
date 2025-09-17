@@ -498,11 +498,11 @@ export default function SideNav() {
         icon: createIcon(AutoAwesomeIcon, "/VixAi-Insights"),
         route: "/VixAi-Insights",
       },
-      // {
-      //   name: "User Logs",
-      //   icon: createIcon(PersonIcon, "/settings"),
-      //   // route: "/settings",
-      // },
+      {
+        name: "User Logs",
+        icon: createIcon(PersonIcon, "/notification-logs"),
+        route: "/notification-logs",
+      },
       {
         name: "Settings",
         icon: createIcon(SettingsIcon, "/settings"),
@@ -796,7 +796,7 @@ export default function SideNav() {
                       {/* Scrollable container for dropdown */}
                       <Box
                         sx={{
-                          maxHeight: "280px",
+                          maxHeight: "480px",
                           overflowY: "auto",
                           overflowX: "hidden",
                           "&::-webkit-scrollbar": {
