@@ -113,32 +113,41 @@ const columns: GridColDef[] = [
     renderCell: (params) => formatDateUTC(params.row.scheduledAt),
   },
 
-  {
-    field: "status",
-    headerName: "Processing Status",
-    width: 250,
-    disableColumnMenu: true,
-    resizable: true,
-    renderCell: (params) => {
-      const value = params.value || "Unknown";
-      const label = value.charAt(0).toUpperCase() + value.slice(1);
+ {
+  field: "status",
+  headerName: "Processing Status",
+  width: 200,
+  disableColumnMenu: true,
+  resizable: true,
+  renderCell: (params) => {
+    const value = (params.value || "Unknown").toLowerCase();
+    const label = value.charAt(0).toUpperCase() + value.slice(1);
 
-      return (
-        <Chip
-          label={label}
-          size="small"
-          color={
-            params.value === "sent"
-              ? "success"
-              : params.value === "pending"
-                ? "warning"
-                : "error"
-          }
-          variant="outlined"
-        />
-      );
-    },
+    let color: "success" | "warning" | "error" = "error";
+
+    if (value === "sent") {
+      color = "success";
+    } else if (
+      value === "pending" ||
+      value === "processing" ||
+      value === "acknowledged"
+    ) {
+      color = "warning";
+    } else if (value === "cancelled" || value === "failed") {
+      color = "error";
+    }
+
+    return (
+      <Chip
+        label={label}
+        size="small"
+        color={color}
+        variant="outlined"
+      />
+    );
   },
+}
+,
   {
     field: "createdAt",
     headerName: "Created At",
