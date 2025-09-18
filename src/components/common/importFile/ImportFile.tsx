@@ -178,7 +178,7 @@ const GlobalPollingManager: React.FC<GlobalPollingManagerProps> = ({
             })
           );
           // Navigate to error page
-          navigate(`/notivix/validation-errors/${pollingId}`);
+          navigate(`/validation-errors/${pollingId}`);
         } else {
           // Still processing, schedule next poll
           console.log("Scheduling next poll for:", pollingId);
@@ -657,7 +657,7 @@ const ImportFile: React.FC<ImportFileProps> = ({
             console.log(showProcessingDialog, "showProcessingDialog");
             // toast.success("File is!");
           } else if (data?.status === "failed") {
-            navigate(`/notivix/validation-errors/${data?.dataSourceVersionId}`);
+            navigate(`/validation-errors/${data?.dataSourceVersionId}`);
             handleCancel();
           } else {
             toast.success("File uploaded successfully!");
