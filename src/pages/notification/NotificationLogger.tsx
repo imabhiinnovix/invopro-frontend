@@ -1112,7 +1112,7 @@ const columns: GridColDef[] = [
     width: 250,
     disableColumnMenu: true,
     resizable: true,
-    renderCell: (params) => formatDate(params.row.createdAt),
+    renderCell: (params) => formatDateUTC(params.row.createdAt),
   },
   {
     field: "notificationTriggerId",
