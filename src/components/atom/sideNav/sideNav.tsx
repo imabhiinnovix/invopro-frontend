@@ -447,6 +447,15 @@ export default function SideNav() {
               // ),
               route: "/notivix/notification-types",
             },
+            {
+              name: "Logger",
+              icon: (
+                <SettingsIcon
+                  sx={{ fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base }}
+                />
+              ),
+              route: "/notivix/notification-logger",
+            },
           ],
         },
       ];

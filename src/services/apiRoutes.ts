@@ -123,4 +123,5 @@ export const GET = {
   GET_DATA_SOURCE_VERSION_BY_ID: '/common/dataSourceVersion/',
   VALIDATION_ERROR_LIST: '/common/dataImportError/list',
   GET_VERSION_DATA_BY_ID: '/common/dataSource/dataSourceDetails/',
+  NOTIFICATION_LOG_LIST:"/notivix/notification-setting/prepared/notification/list"
 };
