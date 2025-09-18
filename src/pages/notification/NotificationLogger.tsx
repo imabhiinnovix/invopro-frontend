@@ -1878,7 +1878,7 @@ export default function NotificationLogger() {
                           color: STYLE_GUIDE.COLORS.textPrimary,
                         }}
                       >
-                        {selectedNotification.templateId?.subject ||
+                        {selectedNotification?.subject ||
                           "No subject"}
                       </Typography>
                     </Grid>
