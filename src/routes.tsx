@@ -79,7 +79,7 @@ const AppRoutes = () => {
             element={<Notification />}
           />
            <Route
-            path="/notivix/notification-logger"
+            path="/notification-logs"
             element={<NotificationLogger />}
           />
           <Route
