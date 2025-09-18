@@ -1,3 +1,5 @@
+import { styled } from "@mui/material";
+
 export function objectToFormData(obj: any, formData = new FormData(), parentKey = '') {
   for (const key in obj) {
       if (!obj.hasOwnProperty(key)) continue;
@@ -220,3 +222,20 @@ export const formatPermissions = (
 
   return permissionMap;
 };
+
+
+export const StyledCard = styled(Card)(({ theme }) => ({
+  height: "100%",
+  minHeight: 500,
+  display: "flex",
+  flexDirection: "column",
+  borderRadius: theme.shape.borderRadius,
+  boxShadow: theme.shadows[1],
+  transition: "all 0.3s ease-in-out",
+  backgroundColor: theme.palette.background.paper,
+  border: `1px solid ${theme.palette.divider}`,
+  "&:hover": {
+    boxShadow: theme.shadows[3],
+    transform: "translateY(-2px)",
+  },
+}));

@@ -371,3 +371,34 @@ export interface FetchChartDataPayload {
   endVersionValue?: string;
   dashboardType?: string;
 }
+
+export interface ChartGridProps {
+  dashboardId: string;
+  isEditMode: boolean;
+  onEditChart: (chart: ChartResponse) => void;
+  isAddChartModalOpen: boolean;
+  isEditChartModalOpen: boolean;
+  gridColumns: number;
+  currentDashboard?: Dashboard;
+  startVersionValue?: string;
+  endVersionValue?: string;
+  versionValue?: string;
+  isTrend?: boolean;
+  isNaturalLangauage?: boolean;
+}
+
+export interface ChartDataItem {
+  name: string;
+  data: number;
+  [key: string]: string | number;
+}
+
+export type DrillDownPayload = {
+  dataSourceId?: string;
+  entityId?: string;
+  conditions?: Record<string, unknown>[];
+  dimensions?: Record<string, unknown>[];
+  groupBy?: Record<string, unknown>[];
+  page?: number;
+  limit?: number;
+};
