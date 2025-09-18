@@ -1,25 +1,35 @@
 import { styled } from "@mui/material";
+import { ArcElement, BarElement, Chart as ChartJS, PointElement } from "chart.js";
 
-export function objectToFormData(obj: any, formData = new FormData(), parentKey = '') {
+export function objectToFormData(
+  obj: any,
+  formData = new FormData(),
+  parentKey = ""
+) {
   for (const key in obj) {
-      if (!obj.hasOwnProperty(key)) continue;
-      const value = obj[key];
-      const formKey = parentKey ? `${parentKey}[${key}]` : key;
+    if (!obj.hasOwnProperty(key)) continue;
+    const value = obj[key];
+    const formKey = parentKey ? `${parentKey}[${key}]` : key;
 
-      if (Array.isArray(value)) {
-          // If the value is an array and contains files, append all files with the same key
-          value.forEach((item) => {
-              if (item instanceof File || item instanceof Blob) {
-                  formData.append(parentKey || key, item);
-              } else {
-                  objectToFormData(item, formData, formKey);
-              }
-          });
-      } else if (value && typeof value === 'object' && !(value instanceof File) && !(value instanceof Blob)) {
-          objectToFormData(value, formData, formKey);
-      } else {
-          formData.append(formKey, value);
-      }
+    if (Array.isArray(value)) {
+      // If the value is an array and contains files, append all files with the same key
+      value.forEach((item) => {
+        if (item instanceof File || item instanceof Blob) {
+          formData.append(parentKey || key, item);
+        } else {
+          objectToFormData(item, formData, formKey);
+        }
+      });
+    } else if (
+      value &&
+      typeof value === "object" &&
+      !(value instanceof File) &&
+      !(value instanceof Blob)
+    ) {
+      objectToFormData(value, formData, formKey);
+    } else {
+      formData.append(formKey, value);
+    }
   }
   return formData;
 }
@@ -32,7 +42,7 @@ export const formatDateUTC = (dateString?: string): string => {
       day: "2-digit",
       month: "short",
       year: "numeric",
-      timeZone: "UTC",   
+      timeZone: "UTC",
     });
 
     const formattedTime = date.toLocaleTimeString("en-US", {
@@ -40,7 +50,7 @@ export const formatDateUTC = (dateString?: string): string => {
       minute: "2-digit",
       second: "2-digit",
       hour12: true,
-      timeZone: "UTC",   
+      timeZone: "UTC",
     });
 
     return `${formattedDate} ${formattedTime}`;
@@ -57,14 +67,14 @@ export const formatDate = (dateString?: string): string => {
       day: "2-digit",
       month: "short",
       year: "numeric",
-        timeZone: "Asia/Kolkata",
+      timeZone: "Asia/Kolkata",
     });
     const formattedTime = date.toLocaleTimeString("en-US", {
       hour: "2-digit",
       minute: "2-digit",
       second: "2-digit",
-      hour12: true,  // Enables AM/PM
-        timeZone: "Asia/Kolkata",
+      hour12: true, // Enables AM/PM
+      timeZone: "Asia/Kolkata",
     });
     return `${formattedDate} ${formattedTime}`;
   } catch {
@@ -116,11 +126,10 @@ export interface PermissionMap {
       resourceType: string;
       permissionId: string;
       dataSourceId?: string;
-      methodName?: string; 
+      methodName?: string;
     };
   };
 }
-
 
 export const formatPermissions = (
   backendPermissions: BackendPermission[]
@@ -129,7 +138,7 @@ export const formatPermissions = (
   // console.log("Backend Permissions:", backendPermissions);
 
   backendPermissions.forEach((perm, index) => {
-    const isOriginalStructure = 'permissionId' in perm && 'allowed' in perm;
+    const isOriginalStructure = "permissionId" in perm && "allowed" in perm;
     const permissionId = isOriginalStructure ? perm.permissionId : perm._id;
     const resourceType = perm.resourceType;
     const resourceCode = perm.resourceCode;
@@ -207,7 +216,7 @@ export const formatPermissions = (
       allowed,
       _id: permissionId,
       resourceType,
-      method:backendMethod,
+      method: backendMethod,
       permissionId,
       ...(dataSourceId != null && { dataSourceId }),
       ...(normalizedMethod && {
@@ -223,3 +232,328 @@ export const formatPermissions = (
   return permissionMap;
 };
 
+export const barLabelsPlugin = {
+  id: "barLabels",
+  afterDraw(chart: ChartJS) {
+    const { ctx } = chart;
+    const datasets = chart.data.datasets;
+    const meta = chart.getDatasetMeta(0);
+
+    meta.data.forEach((element, index) => {
+      const bar = element as BarElement;
+      if (!bar || typeof bar.tooltipPosition !== "function") return;
+      const { x, y } = bar.tooltipPosition(Boolean(chart.chartArea));
+      const value = datasets[0].data[index] as number;
+      const text = `${value}`;
+
+      ctx.save();
+      ctx.font = "bold 12px sans-serif";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+
+      // Move label above the bar
+      const offset = 18;
+      const labelY = y - offset;
+
+      // Measure text
+      const paddingX = 8;
+      const paddingY = 4;
+      const textMetrics = ctx.measureText(text);
+      const textWidth = textMetrics.width;
+      const textHeight = 16;
+
+      // Draw rounded rectangle above the bar
+      const rectX = x - textWidth / 2 - paddingX;
+      const rectY = labelY - textHeight / 2 - paddingY;
+      const rectWidth = textWidth + paddingX * 2;
+      const rectHeight = textHeight + paddingY * 2;
+      const radius = 6;
+
+      ctx.beginPath();
+      ctx.moveTo(rectX + radius, rectY);
+      ctx.lineTo(rectX + rectWidth - radius, rectY);
+      ctx.quadraticCurveTo(
+        rectX + rectWidth,
+        rectY,
+        rectX + rectWidth,
+        rectY + radius
+      );
+      ctx.lineTo(rectX + rectWidth, rectY + rectHeight - radius);
+      ctx.quadraticCurveTo(
+        rectX + rectWidth,
+        rectY + rectHeight,
+        rectX + rectWidth - radius,
+        rectY + rectHeight
+      );
+      ctx.lineTo(rectX + radius, rectY + rectHeight);
+      ctx.quadraticCurveTo(
+        rectX,
+        rectY + rectHeight,
+        rectX,
+        rectY + rectHeight - radius
+      );
+      ctx.lineTo(rectX, rectY + radius);
+      ctx.quadraticCurveTo(rectX, rectY, rectX + radius, rectY);
+      ctx.closePath();
+
+      ctx.fillStyle = "#fff";
+      ctx.globalAlpha = 0.85;
+      ctx.fill();
+      ctx.globalAlpha = 1;
+      ctx.strokeStyle = "#888";
+      ctx.lineWidth = 1;
+      ctx.stroke();
+
+      // Draw text above the bar
+      ctx.fillStyle = "#000";
+      ctx.fillText(text, x, labelY);
+      ctx.restore();
+    });
+  },
+};
+
+
+export const sliceLabelsPlugin = {
+  id: "sliceLabels",
+  afterDraw(chart: ChartJS) {
+    const { ctx } = chart;
+    const dataset = chart.data.datasets[0];
+    const meta = chart.getDatasetMeta(0);
+    const total = (dataset.data as number[]).reduce((a, b) => a + b, 0);
+
+    meta.data.forEach((element, index) => {
+      const point = element as PointElement;
+      if (!point || typeof point.tooltipPosition !== "function") return;
+      const value = dataset.data[index] as number;
+      const label = chart.data.labels?.[index] ?? "";
+      const percent = value / total;
+      // if (percent < 0.05) return; // skip small slices
+
+      const { x, y } = point.tooltipPosition(Boolean(chart.chartArea));
+      const text = `${label}: ${value}`;
+
+      ctx.save();
+      ctx.font =
+        percent < 0.1 ? "bold 10px sans-serif" : "bold 12px sans-serif";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+
+      // Measure text
+      const paddingX = 8;
+      const paddingY = 4;
+      const textMetrics = ctx.measureText(text);
+      const textWidth = textMetrics.width;
+      const textHeight = 16;
+
+      // Draw rounded rectangle
+      const rectX = x - textWidth / 2 - paddingX;
+      const rectY = y - textHeight / 2 - paddingY;
+      const rectWidth = textWidth + paddingX * 2;
+      const rectHeight = textHeight + paddingY * 2;
+      const radius = 6;
+
+      ctx.beginPath();
+      ctx.moveTo(rectX + radius, rectY);
+      ctx.lineTo(rectX + rectWidth - radius, rectY);
+      ctx.quadraticCurveTo(
+        rectX + rectWidth,
+        rectY,
+        rectX + rectWidth,
+        rectY + radius
+      );
+      ctx.lineTo(rectX + rectWidth, rectY + rectHeight - radius);
+      ctx.quadraticCurveTo(
+        rectX + rectWidth,
+        rectY + rectHeight,
+        rectX + rectWidth - radius,
+        rectY + rectHeight
+      );
+      ctx.lineTo(rectX + radius, rectY + rectHeight);
+      ctx.quadraticCurveTo(
+        rectX,
+        rectY + rectHeight,
+        rectX,
+        rectY + rectHeight - radius
+      );
+      ctx.lineTo(rectX, rectY + radius);
+      ctx.quadraticCurveTo(rectX, rectY, rectX + radius, rectY);
+      ctx.closePath();
+
+      ctx.fillStyle = "#fff";
+      ctx.globalAlpha = 0.85;
+      ctx.fill();
+      ctx.globalAlpha = 1;
+      ctx.strokeStyle = "#888";
+      ctx.lineWidth = 1;
+      ctx.stroke();
+
+      // Draw text
+      ctx.fillStyle = "#000";
+      ctx.fillText(text, x, y);
+      ctx.restore();
+    });
+  },
+};
+
+
+
+export const pointLabelsPlugin = {
+  id: "pointLabels",
+  afterDraw(chart: ChartJS) {
+    const { ctx } = chart;
+    const datasets = chart.data.datasets;
+    const meta = chart.getDatasetMeta(0);
+
+    meta.data.forEach((element, index) => {
+      const point = element as PointElement;
+      if (!point || typeof point.tooltipPosition !== "function") return;
+      const { x, y } = point.tooltipPosition(Boolean(chart.chartArea));
+      const value = datasets[0].data[index] as number;
+      const text = `${value}`;
+
+      ctx.save();
+      ctx.font = "bold 12px sans-serif";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+
+      // Move label above the point
+      const offset = 18;
+      const labelY = y - offset;
+
+      // Measure text
+      const paddingX = 8;
+      const paddingY = 4;
+      const textMetrics = ctx.measureText(text);
+      const textWidth = textMetrics.width;
+      const textHeight = 16;
+
+      // Draw rounded rectangle above the point
+      const rectX = x - textWidth / 2 - paddingX;
+      const rectY = labelY - textHeight / 2 - paddingY;
+      const rectWidth = textWidth + paddingX * 2;
+      const rectHeight = textHeight + paddingY * 2;
+      const radius = 6;
+
+      ctx.beginPath();
+      ctx.moveTo(rectX + radius, rectY);
+      ctx.lineTo(rectX + rectWidth - radius, rectY);
+      ctx.quadraticCurveTo(
+        rectX + rectWidth,
+        rectY,
+        rectX + rectWidth,
+        rectY + radius
+      );
+      ctx.lineTo(rectX + rectWidth, rectY + rectHeight - radius);
+      ctx.quadraticCurveTo(
+        rectX + rectWidth,
+        rectY + rectHeight,
+        rectX + rectWidth - radius,
+        rectY + rectHeight
+      );
+      ctx.lineTo(rectX + radius, rectY + rectHeight);
+      ctx.quadraticCurveTo(
+        rectX,
+        rectY + rectHeight,
+        rectX,
+        rectY + rectHeight - radius
+      );
+      ctx.lineTo(rectX, rectY + radius);
+      ctx.quadraticCurveTo(rectX, rectY, rectX + radius, rectY);
+      ctx.closePath();
+
+      ctx.fillStyle = "#fff";
+      ctx.globalAlpha = 0.85;
+      ctx.fill();
+      ctx.globalAlpha = 1;
+      ctx.strokeStyle = "#888";
+      ctx.lineWidth = 1;
+      ctx.stroke();
+
+      // Draw text above the point
+      ctx.fillStyle = "#000";
+      ctx.fillText(text, x, labelY);
+      ctx.restore();
+    });
+  },
+};
+
+export const polarAreaLabelsPlugin = {
+  id: "polarAreaLabels",
+  afterDraw(chart: ChartJS) {
+    const { ctx } = chart;
+    const datasets = chart.data.datasets;
+    const meta = chart.getDatasetMeta(0);
+
+    meta.data.forEach((element, index) => {
+      const arc = element as ArcElement;
+      if (!arc || typeof arc.tooltipPosition !== "function") return;
+      const { x, y } = arc.tooltipPosition(Boolean(chart.chartArea));
+      const value = datasets[0].data[index] as number;
+      const label = chart.data.labels?.[index] ?? "";
+      const text = `${label}: ${value}`;
+
+      ctx.save();
+      ctx.font = "bold 12px sans-serif";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+
+      // Move label above the arc
+      const offset = 18;
+      const labelY = y - offset;
+
+      // Measure text
+      const paddingX = 8;
+      const paddingY = 4;
+      const textMetrics = ctx.measureText(text);
+      const textWidth = textMetrics.width;
+      const textHeight = 16;
+
+      // Draw rounded rectangle above the arc
+      const rectX = x - textWidth / 2 - paddingX;
+      const rectY = labelY - textHeight / 2 - paddingY;
+      const rectWidth = textWidth + paddingX * 2;
+      const rectHeight = textHeight + paddingY * 2;
+      const radius = 6;
+
+      ctx.beginPath();
+      ctx.moveTo(rectX + radius, rectY);
+      ctx.lineTo(rectX + rectWidth - radius, rectY);
+      ctx.quadraticCurveTo(
+        rectX + rectWidth,
+        rectY,
+        rectX + rectWidth,
+        rectY + radius
+      );
+      ctx.lineTo(rectX + rectWidth, rectY + rectHeight - radius);
+      ctx.quadraticCurveTo(
+        rectX + rectWidth,
+        rectY + rectHeight,
+        rectX + rectWidth - radius,
+        rectY + rectHeight
+      );
+      ctx.lineTo(rectX + radius, rectY + rectHeight);
+      ctx.quadraticCurveTo(
+        rectX,
+        rectY + rectHeight,
+        rectX,
+        rectY + rectHeight - radius
+      );
+      ctx.lineTo(rectX, rectY + radius);
+      ctx.quadraticCurveTo(rectX, rectY, rectX + radius, rectY);
+      ctx.closePath();
+
+      ctx.fillStyle = "#fff";
+      ctx.globalAlpha = 0.85;
+      ctx.fill();
+      ctx.globalAlpha = 1;
+      ctx.strokeStyle = "#888";
+      ctx.lineWidth = 1;
+      ctx.stroke();
+
+      // Draw text above the arc
+      ctx.fillStyle = "#000";
+      ctx.fillText(text, x, labelY);
+      ctx.restore();
+    });
+  },
+};
