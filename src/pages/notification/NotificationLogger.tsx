@@ -1866,6 +1866,7 @@ export default function NotificationLogger() {
                           color: STYLE_GUIDE.COLORS.textSecondary,
                         }}
                       >
+                        
                         Subject:
                       </Typography>
                     </Grid>
