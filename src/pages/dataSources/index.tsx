@@ -32,8 +32,9 @@ import { useInfiniteScroll } from "../../hooks/useInfiniteScroll";
 import { DateTime } from "luxon";
 import usePost from "../../hooks/usePost";
 import { STYLE_GUIDE } from "../../styles";
-import { useUnifiedTheme } from '../../hooks/useUnifiedTheme';
-import { useComponentTypography } from '../../hooks/useComponentTypography';
+import { useUnifiedTheme } from "../../hooks/useUnifiedTheme";
+import { useComponentTypography } from "../../hooks/useComponentTypography";
+import { DataSourceListData } from "../../components/atom/sideNav/types";
 
 const DataSources = () => {
   const theme = useUnifiedTheme();
@@ -46,8 +47,21 @@ const DataSources = () => {
 
   const { control, watch } = useForm<{ versionValue: string }>({});
 
-  const reduxDataSourceList = useAppSelector((state) => state.dataSource.list);
+  // const reduxDataSourceList = useAppSelector((state) => state.dataSource.list);
 
+  const dataSourceListAPI = useGet<{
+    success: boolean;
+    data: DataSourceListData[];
+  }>(["dataSourceList"], GET?.DATA_SOURCE_LIST + `?canEditInline=true`, true);
+
+   const dataSourceList = useMemo(() => {
+    
+      return dataSourceListAPI?.data?.pages?.flatMap((page) => page?.data) || [];
+    }, [dataSourceListAPI?.data?.pages]);
+
+      console.log("dataSourceListAPI", dataSourceList);
+
+  const reduxDataSourceList = dataSourceList;
   const dataSourceAttributes = useMemo(
     () =>
       reduxDataSourceList?.find((source) => source?._id === id)?.entityId
@@ -247,12 +261,12 @@ const DataSources = () => {
                 alignItems="center"
               >
                 <Stack direction="row" spacing={2} alignItems="center">
-                  <Typography 
-                    variant="h6" 
-                    sx={{ 
-                      ...getHeadingSx(), 
-                      fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold, 
-                      color: theme.palette.primary.main
+                  <Typography
+                    variant="h6"
+                    sx={{
+                      ...getHeadingSx(),
+                      fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold,
+                      color: theme.palette.primary.main,
                     }}
                   >
                     Data Source Version
@@ -269,7 +283,7 @@ const DataSources = () => {
                   variant="contained"
                   disabled={dataSourceCreate?.isPending || !(versionDate && id)}
                   onClick={handleSave}
-                  sx={{ 
+                  sx={{
                     minWidth: "150px",
                     height: "40px",
                     borderRadius: STYLE_GUIDE.SPACING.s1,
@@ -279,7 +293,7 @@ const DataSources = () => {
                     boxShadow: "none",
                     "&:hover": {
                       boxShadow: "none",
-                    }
+                    },
                   }}
                 >
                   {dataSourceCreate?.isPending ? (
@@ -292,7 +306,10 @@ const DataSources = () => {
                         height: "24px",
                       }}
                     >
-                      <CircularProgress size={20} sx={{ color: STYLE_GUIDE.COLORS.white }} />
+                      <CircularProgress
+                        size={20}
+                        sx={{ color: STYLE_GUIDE.COLORS.white }}
+                      />
                     </Box>
                   ) : (
                     "Save Changes"
@@ -301,7 +318,7 @@ const DataSources = () => {
               </Stack>
             </CardContent>
           </Card>
-          
+
           <Box sx={{ display: "flex", justifyContent: "center" }}>
             <TableContainer
               component={Paper}
@@ -329,7 +346,8 @@ const DataSources = () => {
                           backgroundColor:
                             theme.palette.table?.headerBackground ||
                             STYLE_GUIDE.COLORS.backgroundLightGray,
-                          fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold,
+                          fontWeight:
+                            STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold,
                           fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base,
                           color:
                             theme.palette.table?.headerText ||
@@ -452,15 +470,16 @@ const DataSources = () => {
                                 },
                                 onKeyDown: (e) => {
                                   if (
-                                    (e.currentTarget as HTMLInputElement).type ===
-                                      "number" &&
+                                    (e.currentTarget as HTMLInputElement)
+                                      .type === "number" &&
                                     ["e", "E", "+", "-"].includes(e.key)
                                   ) {
                                     e.preventDefault();
                                   }
                                 },
                                 sx: {
-                                  fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base,
+                                  fontSize:
+                                    STYLE_GUIDE.TYPOGRAPHY.fontSize.base,
                                   padding: "8px 12px",
                                 },
                               },
