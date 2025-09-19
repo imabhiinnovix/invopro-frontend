@@ -33,6 +33,7 @@ import EditNotificationTypes from "./pages/notification/EditNotificationTypes";
 import ValidationErrors from "./pages/validationErrors";
 import AcknowledgeNotification from "./pages/acknowledgeNotification";
 import NotificationLogger from "./pages/notification/NotificationLogger";
+import ProfilePage from "./pages/profilePage";
 
 const AppRoutes = () => {
   const token = getAuthToken();
@@ -106,6 +107,10 @@ const AppRoutes = () => {
           <Route
             path="/validation-errors/:id"
             element={<ValidationErrors />}
+          />
+           <Route
+            path="/profile"
+            element={<ProfilePage />}
           />
         </Route>
       </Route>

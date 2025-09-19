@@ -3123,11 +3123,11 @@ export default function SideNav() {
               //   icon: createIcon(BusinessIcon, "/product"),
               //   route: "/product",
               // },
-              // {
-              //   name: "User Setting",
-              //   icon: createIcon(BusinessIcon, "/user-setting"),
-              //   route: "/user-setting",
-              // },
+              {
+                name: "User Setting",
+                icon: createIcon(BusinessIcon, "/profile"),
+                route: "/profile",
+              },
             ],
           },
         ],
