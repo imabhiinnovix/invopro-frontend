@@ -2696,23 +2696,34 @@ export default function SideNav() {
     dispatch(fetchDashboardList());
   }, [dispatch]);
 
-  const { infiniteQuery: dataSourceListAPI, lastElementRef } =
-    useInfiniteScroll<DataSourceListPayload, DataSourceListData>(
-      ["dataSourceList"],
-      GET?.DATA_SOURCE_LIST + `?canEditInline=true`,
-      10,
-      "get",
-      true
-    );
+  // const { infiniteQuery: dataSourceListAPI, lastElementRef } =
+  //   useInfiniteScroll<DataSourceListPayload, DataSourceListData>(
+  //     ["dataSourceList"],
+  //     GET?.DATA_SOURCE_LIST + `?canEditInline=true`,
+  //     10,
+  //     "get",
+  //     true
+  //   );
+  const dataSourceListAPI = useGet<{
+  success: boolean;
+  data: DataSourceListData[];
+}>(
+  ["dataSourceList"],
+  GET?.DATA_SOURCE_LIST + `?canEditInline=true`,
+  true
+)
 
   const dataSourceNotivixListAPI = useGet<DataSourceListPayload>(
     ["dataSourceNotivixList"],
     GET?.DATA_SOURCE_LIST + `?isShowMenu=true`
   );
 
+  // const dataSourceList = useMemo(() => {
+  //   return dataSourceListAPI?.data?.pages?.flatMap((page) => page?.data) || [];
+  // }, [dataSourceListAPI?.data?.pages]);
   const dataSourceList = useMemo(() => {
-    return dataSourceListAPI?.data?.pages?.flatMap((page) => page?.data) || [];
-  }, [dataSourceListAPI?.data?.pages]);
+  return dataSourceListAPI?.data?.data || [];
+}, [dataSourceListAPI?.data?.data]);
 
   const dataSourceNotivixList = useMemo(() => {
     return dataSourceNotivixListAPI?.data?.data || [];
@@ -2938,7 +2949,7 @@ export default function SideNav() {
             {
               name: "",
               icon: (
-                <div ref={lastElementRef} style={{ paddingLeft: "1.5rem" }}>
+                <div  style={{ paddingLeft: "1.5rem" }}>
                   <LinearProgress />
                 </div>
               ),
@@ -3129,7 +3140,7 @@ export default function SideNav() {
     matchedDataSources,
     dataSourceListAPI?.hasNextPage,
     dataSourceNotivixListAPI?.isLoading,
-    lastElementRef,
+    // lastElementRef,
   ]);
 
   // NEW: Separate handler for settings items that doesn't close the main Settings dropdown
