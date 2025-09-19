@@ -152,7 +152,7 @@ export const POST = {
   CREATE_ATTRIBUTE_OPTION: '/common/attributeOptions/create',
   CREATE_DATA_SOURCE: '/common/dataSource/create',
   Custom_Report: '/customReports',
-  DATA_SOURCE_VERSION_CREATE: '/dataSourceVersion/create',
+  DATA_SOURCE_VERSION_CREATE: '/common/dataSourceVersion/create',
   CREATE_THEME: '/common/widgetTheme/create',
   DELETE_THEME: '/widgetTheme/delete/',
   DUPLICATE_THEME: '/widgetTheme/duplicate/',
