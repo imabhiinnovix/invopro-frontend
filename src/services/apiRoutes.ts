@@ -187,7 +187,8 @@ export const PUT = {
   UPDATE_FREQUENCY: 'notivix/notification-setting/frequency/update',
   UPDATE_NOTIFICATION_TYPE: 'notivix/notification-setting/type/update',
   UPDATE_VERSION_ROW: '/common/dataSourceVersion/versionData/update',
-  SEND_ACKNOWLEDGE:"/notification-acknowledge/sendAcknowledge"
+  SEND_ACKNOWLEDGE:"/notification-acknowledge/sendAcknowledge",
+  CHANGE_PASSWORD:"/common/user/change-password",
 };
 
 export const DELETE = {
@@ -199,6 +200,7 @@ export const DELETE = {
   DELETE_MEDIUM: '/notivix/notification-setting/medium/delete',
   DELETE_FREQUENCY: '/notivix/notification-setting/frequency/delete',
   DELETE_VERSION_ROW: '/common/dataSourceVersion/versionData/delete',
+  DELETE_USER_IMAGE:"/common/user/image"
 };
 
 export const GET = {
@@ -253,5 +255,7 @@ export const GET = {
   GET_DATA_SOURCE_VERSION_BY_ID: '/common/dataSourceVersion/',
   VALIDATION_ERROR_LIST: '/common/dataImportError/list',
   GET_VERSION_DATA_BY_ID: '/common/dataSource/dataSourceDetails/',
-  NOTIFICATION_LOG_LIST:"/notivix/notification-setting/prepared/notification/list"
+  NOTIFICATION_LOG_LIST:"/notivix/notification-setting/prepared/notification/list",
+  DEPARTMENT_LIST:"/common/department/list",
+  DESIGNATION_LIST:"/common/designation/list"
 };
