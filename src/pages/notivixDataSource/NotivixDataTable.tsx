@@ -71,7 +71,6 @@ const getTooltipText = (value: any) => {
   return String(value);
 };
 
-
 export const NotivixDataTable: React.FC<TableSectionProps> = ({
   rows,
   columns,
@@ -85,6 +84,24 @@ export const NotivixDataTable: React.FC<TableSectionProps> = ({
   handleOpenFiltersModal,
   dataSourceId,
 }) => {
+  // Use ref to track previous dataSourceId
+  const prevDataSourceIdRef = React.useRef<string>(dataSourceId);
+
+  // Reset search value when dataSourceId changes
+  React.useEffect(() => {
+    // Only reset if dataSourceId has actually changed
+    if (prevDataSourceIdRef.current !== dataSourceId) {
+      // Create a synthetic event to trigger handleSearchChange
+      const event = {
+        target: { value: "" },
+      } as React.ChangeEvent<HTMLInputElement>;
+      handleSearchChange(event);
+
+      // Update the ref to current dataSourceId
+      prevDataSourceIdRef.current = dataSourceId;
+    }
+  }, [dataSourceId, handleSearchChange]);
+
   const paginationModelMemo = React.useMemo(
     () => ({
       page: paginationModel.page,
