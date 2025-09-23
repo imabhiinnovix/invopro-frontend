@@ -58,7 +58,6 @@ export const formatDateUTC = (dateString?: string): string => {
     return "-";
   }
 };
-
 export const formatDate = (dateString?: string): string => {
   if (!dateString) return "-";
   try {

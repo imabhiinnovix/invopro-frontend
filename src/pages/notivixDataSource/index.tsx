@@ -1,3 +1,4 @@
+
 import * as React from "react";
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useNavigate, useParams } from "react-router-dom";
@@ -105,6 +106,7 @@ export default function NotivixDataSource() {
     setFilter(filters);
   };
 
+  // Reset page to 0 when search value changes
   useEffect(() => {
     const handler = setTimeout(() => {
       if (searchValue.length === 0) {
@@ -115,6 +117,9 @@ export default function NotivixDataSource() {
       } else {
         setDebouncedSearchValue(searchValue);
       }
+      
+      // Reset to first page whenever search value changes
+      setPaginationModel(prev => ({ ...prev, page: 0 }));
     }, 500);
 
     return () => {

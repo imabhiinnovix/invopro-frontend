@@ -110,7 +110,7 @@ const columns: GridColDef[] = [
     width: 200,
     disableColumnMenu: true,
     resizable: true,
-    renderCell: (params) => formatDateUTC(params.row.scheduledAt),
+    renderCell: (params) => formatDateUTC(params.row.sentAt),
   },
 
  {
@@ -223,6 +223,8 @@ export default function NotificationLogger() {
       } else {
         setDebouncedSearchValue(searchValue);
       }
+            setPaginationModel((prev) => ({ ...prev, page: 0 }));
+
     }, 500);
 
     return () => {
@@ -908,6 +910,7 @@ export default function NotificationLogger() {
                           color: STYLE_GUIDE.COLORS.textSecondary,
                         }}
                       >
+                        
                         Subject:
                       </Typography>
                     </Grid>
@@ -920,7 +923,7 @@ export default function NotificationLogger() {
                           color: STYLE_GUIDE.COLORS.textPrimary,
                         }}
                       >
-                        {selectedNotification.templateId?.subject ||
+                        {selectedNotification?.subject ||
                           "No subject"}
                       </Typography>
                     </Grid>

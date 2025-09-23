@@ -156,7 +156,7 @@ export default function NotificationTypes() {
     organizationId: "",
     status: "",
   });
-  
+
   const { getHeadingSx } = useComponentTypography();
 
   const { control, handleSubmit, reset } = useForm<NotificationTypePostPayload>(
@@ -181,6 +181,7 @@ export default function NotificationTypes() {
       } else {
         setDebouncedSearchValue(searchValue);
       }
+      setPaginationModel((prev) => ({ ...prev, page: 0 }));
     }, 500);
 
     return () => {
