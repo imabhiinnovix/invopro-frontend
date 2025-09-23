@@ -149,6 +149,7 @@ export function RoleDataTable({
       } else {
         setDebouncedSearchValue(searchValue);
       }
+      setPaginationModel((prev) => ({ ...prev, page: 0 }));
     }, 500);
 
     return () => {

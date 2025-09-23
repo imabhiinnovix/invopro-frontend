@@ -178,6 +178,8 @@ export default function Permissions() {
       } else {
         setDebouncedSearchValue(searchValue);
       }
+            setPaginationModel((prev) => ({ ...prev, page: 0 }));
+
     }, 500);
 
     return () => {
