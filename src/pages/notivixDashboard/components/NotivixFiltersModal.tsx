@@ -27,6 +27,7 @@ import useGet from '../../../hooks/useGet';
 import axiosInstance from '../../../services/axiosInstance';
 import { GET } from '../../../services/apiRoutes';
 import { useQueryClient } from '@tanstack/react-query';
+import DatePicker, { Calendar, DateObject } from 'react-multi-date-picker';
 
 interface NotivixFiltersModalProps {
   open: boolean;
@@ -392,57 +393,36 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
             }}
           />
         );
-      case 'dateRange':
+
+      case 'date-range':
+        const [values, setValues] = useState<DateObject[]>([]);
         return (
-          <Stack key={uniqueKey} spacing={STYLE_GUIDE.SPACING.s2}>
-            <Typography variant="subtitle2" color="text.secondary">
-              {field.label}
-            </Typography>
-            <Stack direction="row" spacing={STYLE_GUIDE.SPACING.s2}>
-              <TextField
-                label="Start Date"
-                type="date"
-                value={currentValue?.startDate || ''}
-                onChange={(e) =>
-                  handleFilterChange(uniqueKey, {
-                    ...currentValue,
-                    startDate: e.target.value,
-                  })
-                }
-                size="small"
-                InputLabelProps={{ shrink: true }}
-                sx={{
-                  '& .MuiOutlinedInput-root': {
-                    backgroundColor: theme.getDropdownBackground(),
-                    '& fieldset': {
-                      borderColor: theme.getInputBorderColor(),
-                    },
-                  },
-                }}
-              />
-              <TextField
-                label="End Date"
-                type="date"
-                value={currentValue?.endDate || ''}
-                onChange={(e) =>
-                  handleFilterChange(uniqueKey, {
-                    ...currentValue,
-                    endDate: e.target.value,
-                  })
-                }
-                size="small"
-                InputLabelProps={{ shrink: true }}
-                sx={{
-                  '& .MuiOutlinedInput-root': {
-                    backgroundColor: theme.getDropdownBackground(),
-                    '& fieldset': {
-                      borderColor: theme.getInputBorderColor(),
-                    },
-                  },
-                }}
-              />
-            </Stack>
-          </Stack>
+          <Box key={uniqueKey} sx={{ width: '100%' }}>
+            <DatePicker
+              value={values}
+              onChange={(dateRange) => {
+                setValues(dateRange);
+                handleFilterChange(uniqueKey, {
+                  startDate: dateRange?.[0]?.format?.('YYYY-MM-DD') || '',
+                  endDate: dateRange?.[1]?.format?.('YYYY-MM-DD') || '',
+                });
+              }}
+              range
+              placeholder={`Enter ${field.label.toLowerCase()}...`}
+              numberOfMonths={2}
+              showOtherDays
+              inputClass="w-full"
+              style={{
+                width: '100%',
+                padding: '8.5px 14px',
+                fontSize: '0.875rem',
+                borderRadius: 4,
+                background: theme.getDropdownBackground(),
+                border: `1px solid ${theme.getInputBorderColor()}`,
+                color: theme.getInputTextColor(),
+              }}
+            />
+          </Box>
         );
       case 'option':
         return (
@@ -582,6 +562,7 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
         sx: {
           backgroundColor: theme.palette.background.paper,
           borderRadius: STYLE_GUIDE.SPACING.s2,
+          overflow: 'visible',
         },
       }}
     >
