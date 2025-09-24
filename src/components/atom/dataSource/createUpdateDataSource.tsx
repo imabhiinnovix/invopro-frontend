@@ -176,6 +176,7 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({
             sorting: setting.isSortingEnable || setting.sorting || false,
             visible: setting.isDisplayEnable || setting.visible || false,
             isDerived: setting.isDerived,
+            optionAttributeId: setting.optionAttributeId,
           }))
         : [
             {
@@ -613,6 +614,7 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({
           isSortingEnable: !!setting.sorting,
           isDisplayEnable: !!setting.visible,
           isDerived: option?.value?.isDerived,
+          optionAttributeId: option?.value?.optionAttributeId,
         };
       }) || [];
 

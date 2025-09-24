@@ -193,8 +193,11 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
 
   const entityAttributeOptionMap = React.useMemo(() => {
     const attrMap: Record<string, string | null> = {};
-    dataSourceQuery.data?.data?.entityId?.attributes?.forEach((attr) => {
-      attrMap[attr._id] = attr.optionAttributeId;
+    dataSourceQuery.data?.data?.fieldSettings.forEach((attr) => {
+      if(attr?.refAttributeId?.length > 0){
+        attr.attributeId = attr?.refAttributeId[attr?.refAttributeId?.length - 1];
+      }
+      attrMap[attr.attributeId] = attr.optionAttributeId;
     });
     return attrMap;
   }, [dataSourceQuery.data]);
