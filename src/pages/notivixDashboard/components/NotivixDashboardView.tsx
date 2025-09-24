@@ -783,7 +783,7 @@ export const NotivixDashboardView: React.FC<DashboardViewProps> = ({
         onApplyFilters={handleApplyFilters}
         // currentFilters={currentFilters}
         dataSourceId={currentDashboard?.settings?.dataSource?._id} // Pass your dataSourceId here
-        filterFlag="isDashboardFilter" // Specify which flag to use for filtering
+        filterFlag="isFilterEnable" // Specify which flag to use for filtering
         isLoading={dataSourceDetailsLoading}
       />
     </Box>
