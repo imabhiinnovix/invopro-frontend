@@ -202,11 +202,15 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
     const map: Record<string, EntityFieldOption> = {};
     let originalAttributeId: string;
     dataSourceQuery.data?.data.entityFieldOptions?.forEach((option) => {
-      originalAttributeId = option?.value?.attributeId;
-      if (option?.value?.refAttributeId?.length > 0) {
-        originalAttributeId = option?.value?.refAttributeId[option?.value?.refAttributeId?.length - 1];
+      let isFieldSettingExist = filteredFieldSettings.filter((field) => field['mappedAttributeName'] == option.label);
+      if(isFieldSettingExist.length > 0){
+    
+        originalAttributeId = option?.value?.attributeId;
+        if (option?.value?.refAttributeId?.length > 0) {
+          originalAttributeId = option?.value?.refAttributeId[option?.value?.refAttributeId?.length - 1];
+        }
+        map[originalAttributeId] = option;
       }
-      map[originalAttributeId] = option;
     });
     return map;
   }, [dataSourceQuery.data]);
@@ -361,21 +365,19 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
   const renderFilterField = (field: FieldSetting) => {
     // Generate the same unique key used in entityFieldOptionsMap
     const refKey = field.refAttributeId?.length > 0 ? `-${field.refAttributeId.join('-')}` : '';
-
     // Get options based on field type
     let options: string[] = [];
     let originalAttributeId: string = field?.attributeId;
-    if (field.type === 'option' || field.type === 'multioption' || field.type === 'text-with-option') {
-      if (field?.refAttributeId?.length > 0) {
+    if (field?.refAttributeId?.length > 0) {
         originalAttributeId = field?.refAttributeId[field?.refAttributeId?.length - 1];
-      }
+    }
+    if (field.type === 'option' || field.type === 'multioption' || field.type === 'text-with-option') {
       if (field.isDerived) {
         options = derivedFieldsCache[originalAttributeId] || [];
       } else if (entityAttributeOptionMap[originalAttributeId]) {
         options = optionsCache[entityAttributeOptionMap[originalAttributeId]!] || [];
       }
     }
-
     const uniqueKey = `${entityFieldOptionsMapByAttributeId[originalAttributeId]?.label || ''}${
       field.attributeId
     }${refKey}`;
