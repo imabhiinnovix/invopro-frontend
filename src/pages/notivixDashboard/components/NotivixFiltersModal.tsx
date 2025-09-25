@@ -147,6 +147,7 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
   const [optionsCache, setOptionsCache] = useState<Record<string, string[]>>({});
   const [derivedFieldsCache, setDerivedFieldsCache] = useState<Record<string, string[]>>({});
   const [dateRangeValue, setDateRangeValue] = useState<DateObject[]>([]);
+  const [focused, setFocused] = useState(false);
   const queryClient = useQueryClient();
 
   // Fetch data source details
@@ -309,8 +310,6 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
   );
 
   const renderFilterField = (field: FieldSetting) => {
-    console.log(field, 'fieldKishan');
-
     // Generate the same unique key used in entityFieldOptionsMap
     const refKey = field.refAttributeId?.length > 0 ? `-${field.refAttributeId.join('-')}` : '';
     const uniqueKey = `${field.attributeId}${refKey}`;
@@ -400,6 +399,8 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
         return (
           <Box key={uniqueKey}>
             <DatePicker
+              onOpen={() => setFocused(true)}
+              onClose={() => setFocused(false)}
               calendarPosition="top"
               value={dateRangeValue}
               onChange={(dateRange) => {
@@ -420,9 +421,9 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
                 fontSize: '16px',
                 borderRadius: 4,
                 background: theme.getDropdownBackground(),
-                border: `1px solid ${theme.getInputBorderColor()}`,
-
+                border: `1px solid ${focused ? theme.input?.focusBorder || 'blue' : theme.getInputBorderColor()}`,
                 color: theme.getInputTextColor(),
+                outline: 'none',
               }}
             />
           </Box>
