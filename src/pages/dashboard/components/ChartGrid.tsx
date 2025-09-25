@@ -118,41 +118,6 @@ const StyledCard = styled(Card)(({ theme }) => ({
     transform: "translateY(-2px)",
   },
 }));
-// const StyledCard = styled(Card, {
-//   shouldForwardProp: (prop) => prop !== "backgroundColor",
-// })<{ backgroundColor: string }>(({ theme, backgroundColor }) => ({
-//   height: "100%",
-//   minHeight: 500,
-//   display: "flex",
-//   flexDirection: "column",
-//   borderRadius: theme.shape.borderRadius,
-//   boxShadow: theme.shadows[1],
-//   transition: "all 0.3s ease-in-out",
-//   backgroundColor: backgroundColor, // Use dynamic background color
-//   border: `1px solid ${theme.palette.divider}`,
-//   "&:hover": {
-//     boxShadow: theme.shadows[3],
-//     transform: "translateY(-2px)",
-//   },
-// }));
-
-// const NumberCard = styled(Card, {
-//   shouldForwardProp: (prop) => prop !== "backgroundColor",
-// })<{ backgroundColor: string }>(({ theme, backgroundColor }) => ({
-//   height: 160,
-//   display: "flex",
-//   flexDirection: "column",
-//   borderRadius: theme.shape.borderRadius,
-//   boxShadow: theme.shadows[1],
-//   transition: "all 0.3s ease-in-out",
-//   backgroundColor: backgroundColor, // Use dynamic background color
-//   border: `1px solid ${theme.palette.divider}`,
-//   overflow: "hidden",
-//   "&:hover": {
-//     boxShadow: theme.shadows[3],
-//     transform: "translateY(-2px)",
-//   },
-// }));
 
 const NumberCard = styled(Card, {
   shouldForwardProp: (prop) => prop !== "backgroundColor",
@@ -844,11 +809,11 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
 
   // SABIC Brand Colors
   const SABIC_COLORS = [
+    "#009FDF", // SABIC Cyan
+    "#FFCD00", // SABIC Orange
     "#333333", // Neutral Dark Gray
-    "#FF8200", // SABIC Orange
     "#004B87", // SABIC Blue
-    "#00B5E2", // SABIC Cyan
-    "#FFFFFF", // White
+    // "#FFFFFF", // White
   ];
   const SABIC_COLORS_NUMBER = ["#939598", "#FFCD00", "#009FDF"];
 
@@ -896,13 +861,13 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
         return processPieData(chartData, groupBy);
 
       case "radar":
-        return processRadarData(chartData, groupBy);
+        return processRadarData(chartData, groupBy, chart);
 
       case "scatter":
-        return processScatterData(chartData, groupBy);
+        return processScatterData(chartData, groupBy, chart);
 
       case "bubble":
-        return processBubbleData(chartData, groupBy);
+        return processBubbleData(chartData, groupBy, chart);
 
       case "polarArea":
         return processPieData(chartData, groupBy);
@@ -931,6 +896,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
 
     // ===== Helper Functions =====
 
+   
     function processLineAreaData(
       data: any[],
       groupBy: string[],
@@ -939,27 +905,26 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
     ) {
       const labels = Array.from(new Set(data.map((item) => item.name)));
 
-      // 🔹 No groupBy → single dataset
+      // Case 1: No groupBy → each "name" becomes a dataset
       if (!groupBy || groupBy.length === 0) {
-        const values = data.map((item) => item.data);
-        return {
-          labels,
-          datasets: [
-            {
-              label: chart?.name || "Count",
-              data: values,
-              borderColor: getColor(0),
-              backgroundColor: isArea ? getColor(2) + "33" : "transparent", // Cyan with opacity
-              fill: isArea ? "start" : false,
-              tension: 0.4,
-              pointRadius: 5,
-              pointHoverRadius: 8,
-            },
-          ],
-        };
+        const datasets = labels.map((label, i) => {
+          const found = data.find((item) => item.name === label);
+          return {
+            label, // Each label gets its own legend
+            data: [found ? found.data : 0], // single point dataset
+            borderColor: getColor(i),
+            backgroundColor: isArea ? getColor(i) + "33" : "transparent",
+            fill: isArea ? "start" : false,
+            tension: 0.4,
+            pointRadius: 5,
+            pointHoverRadius: 8,
+          };
+        });
+
+        return { labels, datasets };
       }
 
-      // 🔹 GroupBy case
+      // Case 2: GroupBy applied → each group is a dataset
       const groupByField = groupBy[0].toLowerCase();
       const uniqueGroups = Array.from(
         new Set(data.map((item) => item[groupByField] || "Unknown"))
@@ -989,6 +954,8 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
       return { labels, datasets };
     }
 
+   
+
     function processBarData(
       data: any[],
       groupBy: string[],
@@ -997,23 +964,134 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
     ) {
       const labels = Array.from(new Set(data.map((item) => item.name)));
 
+      // Case 1: When no groupBy → Each label becomes a dataset
+      if (!groupBy || groupBy.length === 0) {
+        const datasets = data.map((item, i) => {
+          return {
+            label: item.name, // 👈 each name = legend
+            data: labels.map((lbl) => (lbl === item.name ? item.data : 0)), // put value only at matching label, 0 elsewhere
+            backgroundColor: getColor(i),
+            borderColor: "#FFFFFF",
+            borderWidth: 1,
+            borderRadius: 4,
+          };
+        });
+
+        return { labels, datasets };
+      }
+
+      // Case 2: When groupBy is applied → Multiple datasets by group
+      const groupField = groupBy[0].toLowerCase();
+      const uniqueGroups = Array.from(
+        new Set(data.map((item) => item[groupField]).filter(Boolean))
+      );
+
+      const datasets = uniqueGroups.map((group, i) => {
+        const values = labels.map((label) => {
+          const found = data.find(
+            (item) => item.name === label && item[groupField] === group
+          );
+          return found ? found.data : 0;
+        });
+
+        return {
+          label: group, // group becomes legend
+          data: values,
+          backgroundColor: getColor(i),
+          borderColor: "#FFFFFF",
+          borderWidth: 1,
+          borderRadius: 4,
+        };
+      });
+
+      return { labels, datasets };
+    }
+
+   
+
+   
+    interface PieItem {
+  name: string;
+  data?: number;
+  [key: string]: any; // extra fields
+}
+
+function processPieData(data: PieItem[], groupBy: string[] = [], chart?: any) {
+  const labels = Array.from(new Set(data.map((item) => item.name)));
+
+  // Case 1: No groupBy → standard pie/doughnut chart
+  if (!groupBy || groupBy.length === 0) {
+    const values = labels.map((label) => {
+      const found = data.find((item) => item.name === label);
+      return found?.data ?? 0; // fallback to 0
+    });
+
+    return {
+      labels,
+      datasets: [
+        {
+          label: chart?.aggregation?.attributeName || chart?.name || "Count",
+          data: values,
+          backgroundColor: labels.map((_, i) => getColor(i)),
+          borderColor: "#FFFFFF",
+          borderWidth: 2,
+        },
+      ],
+    };
+  }
+
+  // Case 2: With groupBy → each group becomes a dataset
+  const groupField = groupBy[0].toLowerCase();
+  const uniqueGroups = Array.from(
+    new Set(data.map((item) => item[groupField] ?? "Unknown"))
+  );
+
+  const datasets = uniqueGroups.map((group, groupIndex) => {
+    const values = labels.map((label) => {
+      const found = data.find(
+        (item) => item.name === label && (item[groupField] ?? "Unknown") === group
+      );
+      return found?.data ?? 0;
+    });
+
+    return {
+      label: group,
+      data: values,
+      backgroundColor: labels.map((_, i) => getColor(i + groupIndex * 5)),
+      borderColor: "#FFFFFF",
+      borderWidth: 2,
+    };
+  });
+
+  return { labels, datasets };
+}
+
+
+    
+    function processRadarData(data: any[], groupBy: string[], chart: any) {
+      const labels = Array.from(new Set(data.map((item) => item.name)));
+
+      // Case 1: No groupBy → each "name" is a slice, single dataset
       if (!groupBy || groupBy.length === 0) {
         const values = data.map((item) => item.data);
+
         return {
           labels,
           datasets: [
             {
-              label: chart.aggregation?.attributeName || chart.name || "Count",
+              label:
+                chart?.aggregation?.attributeName || chart?.name || "Count",
               data: values,
-              backgroundColor: getColor(0),
-              borderColor: "#FFFFFF",
-              borderWidth: 1,
-              borderRadius: 4,
+              backgroundColor: getColor(0) + "33",
+              borderColor: getColor(0),
+              pointBackgroundColor: getColor(0),
+              pointBorderColor: "#fff",
             },
           ],
         };
       }
 
+      // Case 2: With groupBy → each group becomes a dataset
       const groupField = groupBy[0].toLowerCase();
       const uniqueGroups = Array.from(
         new Set(data.map((item) => item[groupField]).filter(Boolean))
@@ -1030,120 +1108,234 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
         return {
           label: group,
           data: values,
-          backgroundColor: getColor(i),
-          borderColor: "#FFFFFF",
-          borderWidth: 1,
-          borderRadius: 4,
+          backgroundColor: getColor(i) + "33",
+          borderColor: getColor(i),
+          pointBackgroundColor: getColor(i),
+          pointBorderColor: "#fff",
         };
       });
 
       return { labels, datasets };
     }
 
-    function processPieData(data: any[], groupBy: string[]) {
-      const labels = data.map((item) => item.name);
-      const values = data.map((item) => item.data);
+   
+    function processScatterData(data: any[], groupBy: string[], chart: any) {
+      // Case 1: No groupBy → single dataset with all points
+      if (!groupBy || groupBy.length === 0) {
+        const scatterData = data.map((item, index) => ({
+          x: item.x ?? index,
+          y: item.y ?? item.data,
+        }));
 
-      return {
-        labels,
-        datasets: [
-          {
-            data: values,
-            backgroundColor: labels.map((_, i) => getColor(i)),
-            borderColor: "#FFFFFF",
-            borderWidth: 2,
-          },
-        ],
-      };
+        return {
+          datasets: [
+            {
+              label:
+                chart?.aggregation?.attributeName || chart?.name || "Count",
+              data: scatterData,
+              backgroundColor: getColor(0),
+              borderColor: getColor(0),
+            },
+          ],
+        };
+      }
+
+      // Case 2: With groupBy → each group gets its own dataset
+      const groupField = groupBy[0].toLowerCase();
+      const uniqueGroups = Array.from(
+        new Set(data.map((item) => item[groupField]).filter(Boolean))
+      );
+
+      const datasets = uniqueGroups.map((group, i) => {
+        const groupData = data
+          .filter((item) => item[groupField] === group)
+          .map((item, index) => ({
+            x: item.x ?? index,
+            y: item.y ?? item.data,
+          }));
+
+        return {
+          label: group,
+          data: groupData,
+          backgroundColor: getColor(i),
+          borderColor: getColor(i),
+        };
+      });
+
+      return { datasets };
     }
 
-    function processRadarData(data: any[], groupBy: string[]) {
-      const labels = Array.from(new Set(data.map((item) => item.name)));
-      const values = data.map((item) => item.data);
-      return {
-        labels,
-        datasets: [
-          {
-            label: chart.name,
-            data: values,
-            backgroundColor: getColor(0) + "33",
-            borderColor: getColor(0),
-            pointBackgroundColor: getColor(1),
-            pointBorderColor: "#fff",
-          },
-        ],
-      };
+   
+    interface BubbleItem {
+      x?: number;
+      y?: number;
+      r?: number;
+      data?: number;
+      [key: string]: any; // extra fields
     }
 
-    function processScatterData(data: any[], groupBy: string[]) {
-      const scatterData = data.map((item, index) => ({
-        x: item.x || index,
-        y: item.y || item.data,
-      }));
-      return {
-        datasets: [
-          {
-            label: chart.name,
-            data: scatterData,
-            backgroundColor: getColor(1),
-            borderColor: getColor(0),
-          },
-        ],
-      };
-    }
-
-    function processBubbleData(data: any[], groupBy: string[]) {
-      const bubbleData = data.map((item, index) => ({
-        x: item.x || index,
-        y: item.y || item.data,
-        r: item.r || Math.max(5, (item.data || 0) / 10),
-      }));
-      return {
-        datasets: [
-          {
-            label: chart.name,
-            data: bubbleData,
-            backgroundColor: getColor(2) + "99", // Cyan transparent
-            borderColor: getColor(0),
-          },
-        ],
-      };
-    }
-
-    function processComboData(
-      data: any[],
-      groupBy: string[],
-      chartType: string,
+    function processBubbleData(
+      data: BubbleItem[],
+      groupBy: string[] = [],
       chart: any
     ) {
-      const labels = Array.from(new Set(data.map((item) => item.name)));
-      const values = data.map((item) => item.data);
+      // Case 1: No groupBy → all points in single dataset
+      if (!groupBy || groupBy.length === 0) {
+        const bubbleData = data.map((item, index) => ({
+          x: item.x ?? index,
+          y: item.y ?? item.data ?? 0,
+          r: item.r ?? Math.max(5, (item.data ?? 0) / 10),
+        }));
 
-      return {
-        labels,
-        datasets: [
-          {
-            type: "line",
-            label: `${chart?.name || "Count"} Line`,
-            data: values.map((v) => v * 0.8),
-            borderColor: getColor(0),
-            backgroundColor: "transparent",
-            yAxisID: "y1",
-            tension: 0.4,
-          },
-          {
-            type: "bar",
-            label: `${chart?.name || "Count"} Bar`,
-            data: values,
-            backgroundColor: getColor(1),
-            borderColor: "#FFFFFF",
-            yAxisID: "y",
-          },
-        ],
-      };
+        return {
+          datasets: [
+            {
+              label: chart.name,
+              data: bubbleData,
+              backgroundColor: getColor(2) + "99",
+              borderColor: getColor(0),
+            },
+          ],
+        };
+      }
+
+      // Case 2: GroupBy applied → each group is a dataset
+      const groupField = groupBy[0].toLowerCase();
+      const uniqueGroups = Array.from(
+        new Set(data.map((item) => item[groupField] ?? "Unknown"))
+      );
+
+      const datasets = uniqueGroups.map((group, index) => {
+        const groupData = data
+          .filter((item) => (item[groupField] ?? "Unknown") === group)
+          .map((item, i) => ({
+            x: item.x ?? i,
+            y: item.y ?? item.data ?? 0,
+            r: item.r ?? Math.max(5, (item.data ?? 0) / 10),
+          }));
+
+        return {
+          label: group,
+          data: groupData,
+          backgroundColor: getColor(index + 2) + "99",
+          borderColor: getColor(index),
+        };
+      });
+
+      return { datasets };
     }
 
-    function processHistogramData(data: any[]) {
+    //working
+    function processComboData(
+  data: any[],
+  groupBy: string[],
+  chartType: string,
+  chart: any
+) {
+  const labels = Array.from(new Set(data.map((item) => item.name)));
+
+  // Case 1: No groupBy → Each item becomes a bar dataset + one line dataset
+  if (!groupBy || groupBy.length === 0) {
+    // Create bar datasets for each item
+    const barDatasets = data.map((item, i) => {
+      return {
+        type: "bar",
+        label: item.name, // 👈 each name = legend
+        data: labels.map((lbl) => (lbl === item.name ? item.data : 0)), // put value only at matching label
+        backgroundColor: getColor(i),
+        borderColor: "#FFFFFF",
+        borderWidth: 1,
+        borderRadius: 4,
+        yAxisID: "y",
+      };
+    });
+
+    // Calculate total values for each label
+    const totals = labels.map((label) => {
+      const found = data.find((item) => item.name === label);
+      return found ? found.data : 0;
+    });
+
+    // Create line dataset for totals
+    const lineDataset = {
+      type: "line",
+      label: `${chart?.aggregation?.attributeName || chart?.name || "Total"}`,
+      data: totals,
+      borderColor: getColor(data.length), // Use next available color
+      backgroundColor: "transparent",
+      yAxisID: "y1",
+      tension: 0.4,
+      fill: false,
+      pointRadius: 5,
+      pointHoverRadius: 8,
+    };
+
+    return {
+      labels,
+      datasets: [...barDatasets, lineDataset],
+    };
+  }
+
+  // Case 2: With groupBy → Multiple bar datasets by group + one line dataset
+  const groupField = groupBy[0].toLowerCase();
+  const uniqueGroups = Array.from(
+    new Set(data.map((item) => item[groupField]).filter(Boolean))
+  );
+
+  // Create bar datasets for each group
+  const barDatasets = uniqueGroups.map((group, i) => {
+    const values = labels.map((label) => {
+      const found = data.find(
+        (item) => item.name === label && item[groupField] === group
+      );
+      return found ? found.data : 0;
+    });
+
+    return {
+      type: "bar",
+      label: group, // group becomes legend
+      data: values,
+      backgroundColor: getColor(i),
+      borderColor: "#FFFFFF",
+      borderWidth: 1,
+      borderRadius: 4,
+      yAxisID: "y",
+    };
+  });
+
+  // Calculate total values for each label (sum of all groups)
+  const totals = labels.map((label) => {
+    return uniqueGroups.reduce((sum, group) => {
+      const found = data.find(
+        (item) => item.name === label && item[groupField] === group
+      );
+      return sum + (found ? found.data : 0);
+    }, 0);
+  });
+
+  // Create line dataset for totals
+  const lineDataset = {
+    type: "line",
+    label: `${chart?.aggregation?.attributeName || chart?.name || "Total"}`,
+    data: totals,
+    borderColor: getColor(uniqueGroups.length), // Use next available color
+    backgroundColor: "transparent",
+    yAxisID: "y1",
+    tension: 0.4,
+    fill: false,
+    pointRadius: 5,
+    pointHoverRadius: 8,
+  };
+
+  return {
+    labels,
+    datasets: [...barDatasets, lineDataset],
+  };
+}
+
+
+
+     function processHistogramData(data: any[]) {
       const values = data.map((item) => item.data).sort((a, b) => a - b);
       return {
         labels: values,
@@ -1158,23 +1350,62 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
       };
     }
 
-    function processTimeSeriesData(data: any[], groupBy: string[]) {
-      const timeData = data.map((item) => ({
-        x: item.timestamp || item.date || item.name,
-        y: item.data,
+    
+    interface TimeSeriesItem {
+  timestamp?: string | number;
+  date?: string | number;
+  name?: string;
+  data?: number;
+  [key: string]: any;
+}
+
+function processTimeSeriesData(data: TimeSeriesItem[], groupBy: string[] = [], chart?: any) {
+  // Case 1: No groupBy → single dataset
+  if (!groupBy || groupBy.length === 0) {
+    const timeData = data.map((item) => ({
+      x: item.timestamp ?? item.date ?? item.name,
+      y: item.data ?? 0,
+    }));
+
+    return {
+      datasets: [
+        {
+          label: chart?.name || "Time Series",
+          data: timeData,
+          borderColor: getColor(0),
+          backgroundColor: "transparent",
+          tension: 0.4,
+        },
+      ],
+    };
+  }
+
+  // Case 2: With groupBy → split datasets per group
+  const groupField = groupBy[0].toLowerCase();
+  const uniqueGroups = Array.from(
+    new Set(data.map((item) => item[groupField] ?? "Unknown"))
+  );
+
+  const datasets = uniqueGroups.map((group, index) => {
+    const groupData = data
+      .filter((item) => (item[groupField] ?? "Unknown") === group)
+      .map((item) => ({
+        x: item.timestamp ?? item.date ?? item.name,
+        y: item.data ?? 0,
       }));
-      return {
-        datasets: [
-          {
-            label: chart.name,
-            data: timeData,
-            borderColor: getColor(0),
-            backgroundColor: "transparent",
-            tension: 0.4,
-          },
-        ],
-      };
-    }
+
+    return {
+      label: group,
+      data: groupData,
+      borderColor: getColor(index),
+      backgroundColor: "transparent",
+      tension: 0.4,
+    };
+  });
+
+  return { datasets };
+}
+
   };
 
   // Enhanced renderChart function that handles ALL chart types
@@ -2062,79 +2293,6 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
           },
         }}
       >
-        {/* {numberCharts.length > 0 && (
-          <Grid item xs={12}>
-            <Grid container spacing={STYLE_GUIDE.SPACING.s4}>
-              {numberCharts.map((chart: any, index) => (
-                <Grid item xs={12} md={4} key={chart._id}>
-                  <NumberCard
-                    sx={{ ...getCardSx() }}
-                    backgroundColor={SABIC_COLORS[index % SABIC_COLORS.length]} // Cycle through colors
-                  >
-                    <CardContent>
-                      <ChartTitle
-                        sx={{
-                          color: "#333333", // Neutral Dark Gray for title text
-                        }}
-                      >
-                        {" "}
-                        <ChartTitleText>
-                          {chart.name}
-                          {widgetData[chart._id]?.data?.label &&
-                            ` (${widgetData[chart._id]?.data?.label})`}
-                        </ChartTitleText>
-                        <Box sx={{ display: "flex", gap: 1 }}>
-                          <IconButton
-                            size="small"
-                            onClick={() => handleFullViewClick(chart)}
-                            sx={{
-                              opacity: 0.7,
-                              "&:hover": { opacity: 1 },
-                              color: "#333333", // Neutral Dark Gray for icon
-                            }}
-                          >
-                            <FullscreenIcon />
-                          </IconButton>
-                          <IconButton
-                            size="small"
-                            onClick={(e) => handleExportMenuClick(e, chart)}
-                            sx={{
-                              opacity: 0.7,
-                              "&:hover": { opacity: 1 },
-                              color: "#333333", // Neutral Dark Gray for icon
-                            }}
-                          >
-                            <DownloadIcon />
-                          </IconButton>
-                          {isEditMode && (
-                            <IconButton
-                              size="small"
-                              onClick={(e) => handleMenuClick(e, chart)}
-                              sx={{
-                                opacity: 0.7,
-                                "&:hover": { opacity: 1 },
-                                color: "#333333", // Neutral Dark Gray for icon
-                              }}
-                            >
-                              <MoreVertIcon />
-                            </IconButton>
-                          )}
-                        </Box>
-                      </ChartTitle>
-                      <ChartContainer
-                        className="number-chart"
-                        onWheel={handleWheel}
-                        sx={{ mt: -2 }}
-                      >
-                        {renderChart(chart)}
-                      </ChartContainer>
-                    </CardContent>
-                  </NumberCard>
-                </Grid>
-              ))}
-            </Grid>
-          </Grid>
-        )} */}
         {numberCharts.length > 0 && (
           <Grid item xs={12}>
             <Grid container spacing={STYLE_GUIDE.SPACING.s4}>
@@ -2424,9 +2582,9 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
                       )}
                     </Box>
                   </ChartTitle>
-                   <Divider
-                  sx={{ width: "100%", mt: 0.2, borderBottomWidth: "2px" }}
-                />
+                  <Divider
+                    sx={{ width: "100%", mt: 0.2, borderBottomWidth: "2px" }}
+                  />
                   <ChartContainer
                     className={
                       (chart.widgetTypeId?.chartType || "line") === "pie"
@@ -2846,4 +3004,3 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
     </>
   );
 };
-
