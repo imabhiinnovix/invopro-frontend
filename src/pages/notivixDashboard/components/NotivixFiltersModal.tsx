@@ -56,6 +56,7 @@ interface EntityFieldOption {
     refAttributeId?: string[];
     type: string;
     isDerived?: boolean;
+    optionAttributeId: string;
   };
 }
 
@@ -197,6 +198,21 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
     return map;
   }, [dataSourceQuery.data]);
 
+  const entityFieldOptionsMapByAttributeId = React.useMemo(() => {
+    const map: Record<string, EntityFieldOption> = {};
+    let originalAttributeId: string;
+    // console.log('dataSourceQuery.data?.data.entityFieldOptions',dataSourceQuery.data?.data.entityFieldOptions);
+    dataSourceQuery.data?.data.entityFieldOptions?.forEach((option) => {
+      originalAttributeId = option?.value?.attributeId;
+      if(option?.value?.refAttributeId?.length > 0){
+        originalAttributeId= option?.value?.refAttributeId[option?.value?.refAttributeId?.length - 1];
+      }
+      map[originalAttributeId] = option;
+    });
+    // console.log('map',map);
+    return map;
+  }, [dataSourceQuery.data]);
+
   const entityAttributeOptionMap = React.useMemo(() => {
     const attrMap: Record<string, string | null> = {};
     let originalAttributeId: string;
@@ -206,7 +222,7 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
         originalAttributeId= attr?.refAttributeId[attr?.refAttributeId?.length - 1];
       }
       // console.log('originalAttributeId',originalAttributeId);
-      attrMap[originalAttributeId] = attr.optionAttributeId;
+      attrMap[originalAttributeId] = entityFieldOptionsMapByAttributeId[originalAttributeId]? entityFieldOptionsMapByAttributeId[originalAttributeId]?.value?.optionAttributeId : null;
     });
     return attrMap;
   }, [dataSourceQuery.data]);
@@ -329,13 +345,12 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
 
     // Generate the same unique key used in entityFieldOptionsMap
     const refKey = field.refAttributeId?.length > 0 ? `-${field.refAttributeId.join('-')}` : '';
-    const uniqueKey = `${field.mappedAttributeName}${field.attributeId}${refKey}`;
+    
 
     // Get options based on field type
     let options: string[] = [];
-    let originalAttributeId:string;
+    let originalAttributeId:string = field?.attributeId;
     if (field.type === 'option' || field.type === 'multioption') {
-      originalAttributeId = field?.attributeId;
       if(field?.refAttributeId?.length > 0){
         originalAttributeId= field?.refAttributeId[field?.refAttributeId?.length - 1];
       }
@@ -345,6 +360,8 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
         options = optionsCache[entityAttributeOptionMap[originalAttributeId]!] || [];
       }
     }
+
+    const uniqueKey = `${entityFieldOptionsMapByAttributeId[originalAttributeId]?.label || ''}${field.attributeId}${refKey}`;
     const currentValue = filters[uniqueKey];
 
     switch (field.type) {

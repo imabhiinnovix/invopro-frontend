@@ -383,8 +383,6 @@ export interface FieldSetting {
   isSortingEnable: boolean;
   isDisplayEnable: boolean;
   isDerived: boolean;
-  optionAttributeId: string;
-  mappedAttributeName: string;
 }
 
 export interface DataSourceDetailsResponse {
