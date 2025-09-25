@@ -146,6 +146,7 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
   const [filters, setFilters] = useState<Record<string, any>>(currentFilters);
   const [optionsCache, setOptionsCache] = useState<Record<string, string[]>>({});
   const [derivedFieldsCache, setDerivedFieldsCache] = useState<Record<string, string[]>>({});
+  const [dateRangeValue, setDateRangeValue] = useState<DateObject[]>([]);
   const queryClient = useQueryClient();
 
   // Fetch data source details
@@ -286,6 +287,7 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
 
   const handleClearFilters = () => {
     setFilters({});
+    setDateRangeValue([]);
     onApplyFilters({});
   };
 
@@ -395,30 +397,31 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
         );
 
       case 'date-range':
-        const [values, setValues] = useState<DateObject[]>([]);
         return (
-          <Box key={uniqueKey} sx={{ width: '100%' }}>
+          <Box key={uniqueKey}>
             <DatePicker
-              value={values}
+              calendarPosition="top"
+              value={dateRangeValue}
               onChange={(dateRange) => {
-                setValues(dateRange);
+                setDateRangeValue(dateRange);
                 handleFilterChange(uniqueKey, {
                   startDate: dateRange?.[0]?.format?.('YYYY-MM-DD') || '',
                   endDate: dateRange?.[1]?.format?.('YYYY-MM-DD') || '',
                 });
               }}
               range
-              placeholder={`Enter ${field.label.toLowerCase()}...`}
+              placeholder={`${field.label}`}
               numberOfMonths={2}
               showOtherDays
               inputClass="w-full"
               style={{
                 width: '100%',
-                padding: '8.5px 14px',
-                fontSize: '0.875rem',
+                padding: '10px 14px',
+                fontSize: '16px',
                 borderRadius: 4,
                 background: theme.getDropdownBackground(),
                 border: `1px solid ${theme.getInputBorderColor()}`,
+
                 color: theme.getInputTextColor(),
               }}
             />
@@ -576,7 +579,15 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
           Filters
         </Typography>
       </DialogTitle>
-      <DialogContent sx={{ pt: STYLE_GUIDE.SPACING.s4 }}>
+      <DialogContent
+        sx={{
+          fontSize: '14px', // normal body font
+          '& .rmdp-input': {
+            fontSize: '14px',
+            lineHeight: '20px',
+          },
+        }}
+      >
         {isLoading || dataSourceQuery.isLoading ? (
           <Box
             sx={{
