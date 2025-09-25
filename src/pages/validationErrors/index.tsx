@@ -181,7 +181,7 @@ export default function ValidationErrors() {
         if (dialog.type === "discardAll") {
           successMessage =
             response?.message || "All rows discarded successfully";
-          navigate(`/data-source/${response?.data?.dataSourceId}`);
+          navigate(`/data-source-new/${response?.data?.dataSourceId}`);
         } else if (dialog.type === "discardRow") {
           successMessage = response?.message || "Row discarded successfully";
         } else if (dialog.type === "resolveRow") {
