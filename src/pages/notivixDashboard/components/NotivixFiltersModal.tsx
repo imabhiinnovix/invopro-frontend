@@ -276,7 +276,7 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
       let originalAttributeId:string;
       const fetchOptions = async () => {
         const promises = filteredFieldSettings.map(async (field) => {
-          if (field.type === 'option' || field.type === 'multioption') {
+          if (field.type === 'option' || field.type === 'multioption' || field.type === 'text-with-option') {
              originalAttributeId = field?.attributeId;
             if(field?.refAttributeId?.length > 0){
               originalAttributeId= field?.refAttributeId[field?.refAttributeId?.length - 1];
