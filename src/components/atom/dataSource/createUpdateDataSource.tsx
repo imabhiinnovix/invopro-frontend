@@ -615,6 +615,7 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({
           isDisplayEnable: !!setting.visible,
           isDerived: option?.value?.isDerived,
           optionAttributeId: option?.value?.optionAttributeId,
+          mappedAttributeName: option?.label,
         };
       }) || [];
 

@@ -384,6 +384,7 @@ export interface FieldSetting {
   isDisplayEnable: boolean;
   isDerived: boolean;
   optionAttributeId: string;
+  mappedAttributeName: string;
 }
 
 export interface DataSourceDetailsResponse {
