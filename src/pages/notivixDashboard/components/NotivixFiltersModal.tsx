@@ -350,7 +350,7 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
     // Get options based on field type
     let options: string[] = [];
     let originalAttributeId:string = field?.attributeId;
-    if (field.type === 'option' || field.type === 'multioption') {
+    if (field.type === 'option' || field.type === 'multioption' || field.type === 'text-with-option') {
       if(field?.refAttributeId?.length > 0){
         originalAttributeId= field?.refAttributeId[field?.refAttributeId?.length - 1];
       }
@@ -518,6 +518,7 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
           </FormControl>
         );
       case 'multioption':
+      case 'text-with-option':
         return (
           <FormControl key={uniqueKey} fullWidth size="small">
             <InputLabel sx={{ color: theme.palette.text.secondary }}>
