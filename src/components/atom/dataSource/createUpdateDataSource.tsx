@@ -613,6 +613,7 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({
           isSortingEnable: !!setting.sorting,
           isDisplayEnable: !!setting.visible,
           isDerived: option?.value?.isDerived,
+          mappedAttributeName: option?.label,
         };
       }) || [];
 
