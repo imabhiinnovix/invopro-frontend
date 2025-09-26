@@ -1,4 +1,5 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { store } from "./../../reducers/index";
+import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import {
   DashboardListResponse,
   WidgetTypeResponse,
@@ -10,8 +11,8 @@ import {
   Dashboard,
   WidgetType,
   DataSource,
-} from './types';
-import { Theme } from '../createTheme/types';
+} from "./types";
+import { Theme } from "../createTheme/types";
 import {
   fetchDashboardList,
   fetchWidgetTypes,
@@ -26,8 +27,8 @@ import {
   fetchDashboardShareUsers,
   fetchWidgetTheme,
   fetchWidgetSettingBasedOnNaturalLanguage,
-} from './dashboardActions';
-import { WritableDraft } from 'immer';
+} from "./dashboardActions";
+import { WritableDraft } from "immer";
 
 interface Condition {
   field: string;
@@ -53,13 +54,14 @@ interface DashboardSliceState {
   temporaryCharts: TemporaryChart[];
   chartsLoading: boolean;
   chartsError: string | null;
-  widgetData: Record<string, WidgetResponse['data']>;
+  widgetData: Record<string, WidgetResponse["data"]>;
   shareUsers: string[];
   shareUsersLoading: boolean;
   shareUsersError: string | null;
   widgetTheme: Theme | null;
   widgetThemeLoading: boolean;
   widgetThemeError: string | null;
+  storeWidgetData: { widgetId: string; data: WidgetResponse["data"] }[];
 }
 
 const initialState: DashboardSliceState = {
@@ -81,6 +83,7 @@ const initialState: DashboardSliceState = {
   chartsError: null,
   widgetData: {},
   shareUsers: [],
+  storeWidgetData: [],
   shareUsersLoading: false,
   shareUsersError: null,
   widgetTheme: null,
@@ -89,17 +92,33 @@ const initialState: DashboardSliceState = {
 };
 
 const dashboardSlice = createSlice({
-  name: 'dashboard',
+  name: "dashboard",
   initialState,
   reducers: {
-    storeWidgetData: (state, action: PayloadAction<{ widgetId: string; data: WidgetResponse['data'] }>) => {
+    storeWidgetData: (
+      state,
+      action: PayloadAction<{ widgetId: string; data: WidgetResponse["data"] }>
+    ) => {
+      const exists = state.storeWidgetData.some(
+        (item) => item.widgetId === action.payload.widgetId
+      );
+      if (!exists) {
+        state.storeWidgetData.push({
+          widgetId: action.payload.widgetId,
+          data: action.payload.data,
+        });
+      }
+
       state.widgetData[action.payload.widgetId] = action.payload.data;
     },
     resetChartAndWidgetData: (state) => {
       state.widgetData = {};
       state.charts = [];
     },
-    updateChartsData: (state, action: PayloadAction<{ widgetId: string; data: WidgetResponse['data'] }>) => {
+    updateChartsData: (
+      state,
+      action: PayloadAction<{ widgetId: string; data: WidgetResponse["data"] }>
+    ) => {
       state.charts = state.charts.map((chart) =>
         chart._id === action.payload.widgetId
           ? {
@@ -113,19 +132,23 @@ const dashboardSlice = createSlice({
                 : [action.payload.data.groupBy],
               aggregation: action.payload.data.aggregation,
               position: action.payload.data.position,
-              conditions: action.payload.data.conditions.map((condition: Condition) => {
-                const existingCondition = chart.conditions.find((c) => c.field === condition.field);
-                return {
-                  field: condition.field,
-                  operator: condition.operator,
-                  value: condition.value,
-                  _id: existingCondition?._id || condition._id || '',
-                };
-              }),
+              conditions: action.payload.data.conditions.map(
+                (condition: Condition) => {
+                  const existingCondition = chart.conditions.find(
+                    (c) => c.field === condition.field
+                  );
+                  return {
+                    field: condition.field,
+                    operator: condition.operator,
+                    value: condition.value,
+                    _id: existingCondition?._id || condition._id || "",
+                  };
+                }
+              ),
               dataSourceId: action.payload.data.dataSourceId,
               widgetTypeId: {
                 _id: action.payload.data.widgetTypeId as string,
-                chartType: action.payload.data?.chartType || 'line',
+                chartType: action.payload.data?.chartType || "line",
               },
             }
           : chart
@@ -134,14 +157,21 @@ const dashboardSlice = createSlice({
     addTemporaryChart: (state, action: PayloadAction<TemporaryChart>) => {
       state.temporaryCharts.push(action.payload);
     },
-    updateTemporaryChart: (state, action: PayloadAction<{ id: string; chart: TemporaryChart }>) => {
-      const index = state.temporaryCharts.findIndex((chart) => chart._id === action.payload.id);
+    updateTemporaryChart: (
+      state,
+      action: PayloadAction<{ id: string; chart: TemporaryChart }>
+    ) => {
+      const index = state.temporaryCharts.findIndex(
+        (chart) => chart._id === action.payload.id
+      );
       if (index !== -1) {
         state.temporaryCharts[index] = action.payload.chart;
       }
     },
     removeTemporaryChart: (state, action: PayloadAction<string>) => {
-      state.temporaryCharts = state.temporaryCharts.filter((chart) => chart._id !== action.payload);
+      state.temporaryCharts = state.temporaryCharts.filter(
+        (chart) => chart._id !== action.payload
+      );
     },
     clearTemporaryCharts: (state) => {
       state.temporaryCharts = [];
@@ -154,103 +184,135 @@ const dashboardSlice = createSlice({
         state.loading = true;
         state.error = null;
       })
-      .addCase(fetchDashboardList.fulfilled, (state, action: PayloadAction<DashboardListResponse>) => {
-        state.loading = false;
-        state.dashboards = Array.isArray(action.payload.data) ? action.payload.data : [action.payload.data];
-      })
+      .addCase(
+        fetchDashboardList.fulfilled,
+        (state, action: PayloadAction<DashboardListResponse>) => {
+          state.loading = false;
+          state.dashboards = Array.isArray(action.payload.data)
+            ? action.payload.data
+            : [action.payload.data];
+        }
+      )
       .addCase(fetchDashboardList.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.error.message || 'Failed to fetch dashboards';
+        state.error = action.error.message || "Failed to fetch dashboards";
       })
       // Widget types actions
       .addCase(fetchWidgetTypes.pending, (state) => {
         state.widgetTypesLoading = true;
         state.widgetTypesError = null;
       })
-      .addCase(fetchWidgetTypes.fulfilled, (state, action: PayloadAction<WidgetTypeResponse>) => {
-        state.widgetTypesLoading = false;
-        state.widgetTypes = action.payload.data;
-      })
+      .addCase(
+        fetchWidgetTypes.fulfilled,
+        (state, action: PayloadAction<WidgetTypeResponse>) => {
+          state.widgetTypesLoading = false;
+          state.widgetTypes = action.payload.data;
+        }
+      )
       .addCase(fetchWidgetTypes.rejected, (state, action) => {
         state.widgetTypesLoading = false;
-        state.widgetTypesError = action.error.message || 'Failed to fetch widget types';
+        state.widgetTypesError =
+          action.error.message || "Failed to fetch widget types";
       })
       // Data sources actions
       .addCase(fetchDataSources.pending, (state) => {
         state.dataSourcesLoading = true;
         state.dataSourcesError = null;
       })
-      .addCase(fetchDataSources.fulfilled, (state, action: PayloadAction<DataSourceResponse>) => {
-        state.dataSourcesLoading = false;
-        state.dataSources = action.payload.data;
-        state.dataSourcesTotalCount = action.payload.totalCount;
-        state.dataSourcesHasMore = action.payload.data.length === 10;
-      })
+      .addCase(
+        fetchDataSources.fulfilled,
+        (state, action: PayloadAction<DataSourceResponse>) => {
+          state.dataSourcesLoading = false;
+          state.dataSources = action.payload.data;
+          state.dataSourcesTotalCount = action.payload.totalCount;
+          state.dataSourcesHasMore = action.payload.data.length === 10;
+        }
+      )
       .addCase(fetchDataSources.rejected, (state, action) => {
         state.dataSourcesLoading = false;
 
-        state.dataSourcesError = action.error.message || 'Failed to fetch data sources';
+        state.dataSourcesError =
+          action.error.message || "Failed to fetch data sources";
       })
       // Fetch all data sources
       .addCase(fetchAllDataSources.pending, (state) => {
         state.dataSourcesLoading = true;
         state.dataSourcesError = null;
       })
-      .addCase(fetchAllDataSources.fulfilled, (state, action: PayloadAction<DataSourceResponse>) => {
-        state.dataSourcesLoading = false;
-        state.dataSources = action.payload.data;
-        state.dataSourcesTotalCount = action.payload.totalCount;
-        state.dataSourcesHasMore = false;
-        state.dataSourcesPage = 1;
-      })
+      .addCase(
+        fetchAllDataSources.fulfilled,
+        (state, action: PayloadAction<DataSourceResponse>) => {
+          state.dataSourcesLoading = false;
+          state.dataSources = action.payload.data;
+          state.dataSourcesTotalCount = action.payload.totalCount;
+          state.dataSourcesHasMore = false;
+          state.dataSourcesPage = 1;
+        }
+      )
       .addCase(fetchAllDataSources.rejected, (state, action) => {
         state.dataSourcesLoading = false;
-        state.dataSourcesError = action.error.message || 'Failed to fetch all data sources';
+        state.dataSourcesError =
+          action.error.message || "Failed to fetch all data sources";
       })
       // Load more data sources
       .addCase(loadMoreDataSources.pending, (state) => {
         state.dataSourcesLoading = true;
         state.dataSourcesError = null;
       })
-      .addCase(loadMoreDataSources.fulfilled, (state, action: PayloadAction<DataSourceResponse>) => {
-        state.dataSourcesLoading = false;
-        state.dataSources = [...state.dataSources, ...action.payload.data];
-        state.dataSourcesTotalCount = action.payload.totalCount;
-        state.dataSourcesHasMore = action.payload.data.length === 10;
-        state.dataSourcesPage += 1;
-      })
+      .addCase(
+        loadMoreDataSources.fulfilled,
+        (state, action: PayloadAction<DataSourceResponse>) => {
+          state.dataSourcesLoading = false;
+          state.dataSources = [...state.dataSources, ...action.payload.data];
+          state.dataSourcesTotalCount = action.payload.totalCount;
+          state.dataSourcesHasMore = action.payload.data.length === 10;
+          state.dataSourcesPage += 1;
+        }
+      )
       .addCase(loadMoreDataSources.rejected, (state, action) => {
         state.dataSourcesLoading = false;
-        state.dataSourcesError = action.error.message || 'Failed to load more data sources';
+        state.dataSourcesError =
+          action.error.message || "Failed to load more data sources";
       })
       // Chart data actions
       .addCase(fetchChartData.pending, (state) => {
         state.chartsLoading = true;
         state.chartsError = null;
       })
-      .addCase(fetchChartData.fulfilled, (state, action: PayloadAction<ChartDataResponse>) => {
-        state.chartsLoading = false;
-        state.charts = action.payload.data;
-      })
+      .addCase(
+        fetchChartData.fulfilled,
+        (state, action: PayloadAction<ChartDataResponse>) => {
+          state.chartsLoading = false;
+          state.charts = action.payload.data;
+        }
+      )
       .addCase(fetchChartData.rejected, (state, action) => {
         state.chartsLoading = false;
 
-        state.chartsError = action.error.message || 'Failed to fetch chart data';
+        state.chartsError =
+          action.error.message || "Failed to fetch chart data";
       })
       //chartdata from nlquery
       .addCase(fetchWidgetSettingBasedOnNaturalLanguage.pending, (state) => {
         state.chartsLoading = true;
         state.chartsError = null;
       })
-      .addCase(fetchWidgetSettingBasedOnNaturalLanguage.fulfilled, (state, action: PayloadAction<any>) => {
-        console.log('action', action);
-        state.chartsLoading = false;
-        state.charts.push(action.payload.data as any);
-      })
-      .addCase(fetchWidgetSettingBasedOnNaturalLanguage.rejected, (state, action) => {
-        state.chartsLoading = false;
-        state.chartsError = action.error.message || 'Failed to fetch chart data';
-      })
+      .addCase(
+        fetchWidgetSettingBasedOnNaturalLanguage.fulfilled,
+        (state, action: PayloadAction<any>) => {
+          console.log("action", action);
+          state.chartsLoading = false;
+          state.charts.push(action.payload.data as any);
+        }
+      )
+      .addCase(
+        fetchWidgetSettingBasedOnNaturalLanguage.rejected,
+        (state, action) => {
+          state.chartsLoading = false;
+          state.chartsError =
+            action.error.message || "Failed to fetch chart data";
+        }
+      )
       // Delete widget actions
       .addCase(deleteWidget.pending, (state) => {
         state.chartsLoading = true;
@@ -259,12 +321,14 @@ const dashboardSlice = createSlice({
       .addCase(deleteWidget.fulfilled, (state, action) => {
         state.chartsLoading = false;
         if (action.payload.success) {
-          state.charts = state.charts.filter((chart) => chart._id !== action.meta.arg);
+          state.charts = state.charts.filter(
+            (chart) => chart._id !== action.meta.arg
+          );
         }
       })
       .addCase(deleteWidget.rejected, (state, action) => {
         state.chartsLoading = false;
-        state.chartsError = action.error.message || 'Failed to delete widget';
+        state.chartsError = action.error.message || "Failed to delete widget";
       })
       // Create widget actions
       .addCase(createWidget.pending, (state) => {
@@ -282,17 +346,19 @@ const dashboardSlice = createSlice({
             groupBy: Array.isArray(action.payload.data.groupBy)
               ? action.payload.data.groupBy
               : [action.payload.data.groupBy],
-            conditions: action.payload.data.conditions.map((condition: Condition) => ({
-              ...condition,
-              _id: condition._id || '',
-            })),
+            conditions: action.payload.data.conditions.map(
+              (condition: Condition) => ({
+                ...condition,
+                _id: condition._id || "",
+              })
+            ),
           };
           state.charts = [...(state.charts as any), chartData];
         }
       })
       .addCase(createWidget.rejected, (state, action) => {
         state.chartsLoading = false;
-        state.chartsError = action.error.message || 'Failed to create widget';
+        state.chartsError = action.error.message || "Failed to create widget";
       })
       // Update widget actions
       .addCase(updateWidget.pending, (state) => {
@@ -311,18 +377,24 @@ const dashboardSlice = createSlice({
                   dimensions: Array.isArray(updatedWidget.dimensions)
                     ? updatedWidget.dimensions
                     : [updatedWidget.dimensions],
-                  groupBy: Array.isArray(updatedWidget.groupBy) ? updatedWidget.groupBy : [updatedWidget.groupBy],
+                  groupBy: Array.isArray(updatedWidget.groupBy)
+                    ? updatedWidget.groupBy
+                    : [updatedWidget.groupBy],
                   aggregation: updatedWidget.aggregation,
                   position: updatedWidget.position,
-                  conditions: updatedWidget.conditions.map((condition: Condition) => {
-                    const existingCondition = chart.conditions.find((c) => c.field === condition.field);
-                    return {
-                      field: condition.field,
-                      operator: condition.operator,
-                      value: condition.value,
-                      _id: existingCondition?._id || condition._id || '',
-                    };
-                  }),
+                  conditions: updatedWidget.conditions.map(
+                    (condition: Condition) => {
+                      const existingCondition = chart.conditions.find(
+                        (c) => c.field === condition.field
+                      );
+                      return {
+                        field: condition.field,
+                        operator: condition.operator,
+                        value: condition.value,
+                        _id: existingCondition?._id || condition._id || "",
+                      };
+                    }
+                  ),
                   dataSourceId: updatedWidget.dataSourceId as any,
                   widgetTypeId: updatedWidget.widgetTypeId as any,
                 }
@@ -332,7 +404,7 @@ const dashboardSlice = createSlice({
       })
       .addCase(updateWidget.rejected, (state, action) => {
         state.chartsLoading = false;
-        state.chartsError = action.error.message || 'Failed to update widget';
+        state.chartsError = action.error.message || "Failed to update widget";
       })
       .addCase(saveWidgets.pending, (state) => {
         state.chartsLoading = true;
@@ -341,31 +413,32 @@ const dashboardSlice = createSlice({
       .addCase(saveWidgets.fulfilled, (state) => {
         state.chartsLoading = false;
         // Convert temporary charts to permanent charts
-        const convertedCharts: WritableDraft<ChartResponse>[] = state.temporaryCharts.map((chart) => ({
-          _id: chart._id,
-          createdBy: chart.createdBy,
-          dashboardId: chart.dashboardId,
-          name: chart.name,
-          dimensions: chart.dimensions,
-          groupBy: chart.groupBy,
-          aggregation: chart.aggregation,
-          position: chart.position,
-          conditions: chart.conditions,
-          dataSourceId: chart.dataSourceId,
-          widgetTypeId: chart.widgetTypeId,
-          organizationId: chart?.dataSourceId?.organizationId || '',
-          isActive: true,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-          data: chart.data || [],
-        }));
+        const convertedCharts: WritableDraft<ChartResponse>[] =
+          state.temporaryCharts.map((chart) => ({
+            _id: chart._id,
+            createdBy: chart.createdBy,
+            dashboardId: chart.dashboardId,
+            name: chart.name,
+            dimensions: chart.dimensions,
+            groupBy: chart.groupBy,
+            aggregation: chart.aggregation,
+            position: chart.position,
+            conditions: chart.conditions,
+            dataSourceId: chart.dataSourceId,
+            widgetTypeId: chart.widgetTypeId,
+            organizationId: chart?.dataSourceId?.organizationId || "",
+            isActive: true,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            data: chart.data || [],
+          }));
         state.charts = [...state.charts, ...convertedCharts];
         state.temporaryCharts = [];
       })
       .addCase(saveWidgets.rejected, (state, action) => {
         state.chartsLoading = false;
         console.log(action);
-        state.chartsError = action.error.message || 'Failed to save widgets';
+        state.chartsError = action.error.message || "Failed to save widgets";
       })
       // Share users actions
       .addCase(fetchDashboardShareUsers.pending, (state) => {
@@ -378,7 +451,8 @@ const dashboardSlice = createSlice({
       })
       .addCase(fetchDashboardShareUsers.rejected, (state, action) => {
         state.shareUsersLoading = false;
-        state.shareUsersError = action.error.message || 'Failed to fetch share users';
+        state.shareUsersError =
+          action.error.message || "Failed to fetch share users";
       })
       .addCase(fetchWidgetTheme.pending, (state) => {
         state.widgetThemeLoading = true;
@@ -390,7 +464,8 @@ const dashboardSlice = createSlice({
       })
       .addCase(fetchWidgetTheme.rejected, (state, action) => {
         state.widgetThemeLoading = false;
-        state.widgetThemeError = action.error.message || 'Failed to fetch widget theme';
+        state.widgetThemeError =
+          action.error.message || "Failed to fetch widget theme";
       });
   },
 });

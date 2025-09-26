@@ -815,10 +815,27 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
     "#004B87", // SABIC Blue
     // "#FFFFFF", // White
   ];
+  function resolveGroupField(groupBy: string[], chart: any): string {
+    if (!groupBy || groupBy.length === 0) return "";
+    const rawGroupField = groupBy[0];
+    const groupFieldKey = rawGroupField.includes(".")
+      ? rawGroupField.split(".").pop()!
+      : rawGroupField;
+
+    // Match with fieldSettings (case-insensitive)
+    const matchedField = chart?.dataSourceId?.fieldSettings?.find(
+      (f: any) => f.label === groupFieldKey
+    );
+
+    return matchedField ? matchedField.label : groupFieldKey;
+  }
+
   const SABIC_COLORS_NUMBER = ["#939598", "#FFCD00", "#009FDF"];
 
   // Helper: pick color by index
   const getColor = (index: number) => SABIC_COLORS[index % SABIC_COLORS.length];
+
+
 
   const getChartData = (chart: ChartResponse) => {
     const chartData =
@@ -896,7 +913,62 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
 
     // ===== Helper Functions =====
 
-   
+    // function processLineAreaData(
+    //   data: any[],
+    //   groupBy: string[],
+    //   isArea: boolean,
+    //   chart: any
+    // ) {
+    //   const labels = Array.from(new Set(data.map((item) => item.name)));
+
+    //   // Case 1: No groupBy → each "name" becomes a dataset
+    //   if (!groupBy || groupBy.length === 0) {
+    //     const datasets = labels.map((label, i) => {
+    //       const found = data.find((item) => item.name === label);
+    //       return {
+    //         label, // Each label gets its own legend
+    //         data: [found ? found.data : 0], // single point dataset
+    //         borderColor: getColor(i),
+    //         backgroundColor: isArea ? getColor(i) + "33" : "transparent",
+    //         fill: isArea ? "start" : false,
+    //         tension: 0.4,
+    //         pointRadius: 5,
+    //         pointHoverRadius: 8,
+    //       };
+    //     });
+
+    //     return { labels, datasets };
+    //   }
+
+    //   // Case 2: GroupBy applied → each group is a dataset
+    //   const groupByField = groupBy[0].toLowerCase();
+    //   const uniqueGroups = Array.from(
+    //     new Set(data.map((item) => item[groupByField] || "Unknown"))
+    //   );
+
+    //   const datasets = uniqueGroups.map((group, index) => {
+    //     const groupData = labels.map((name) => {
+    //       const dataPoint = data.find(
+    //         (item) =>
+    //           item.name === name && (item[groupByField] || "Unknown") === group
+    //       );
+    //       return dataPoint ? dataPoint.data : 0;
+    //     });
+
+    //     return {
+    //       label: group,
+    //       data: groupData,
+    //       borderColor: getColor(index),
+    //       backgroundColor: isArea ? getColor(index) + "33" : "transparent",
+    //       fill: isArea ? "start" : false,
+    //       tension: 0.4,
+    //       pointRadius: 5,
+    //       pointHoverRadius: 8,
+    //     };
+    //   });
+
+    //   return { labels, datasets };
+    // }
     function processLineAreaData(
       data: any[],
       groupBy: string[],
@@ -925,16 +997,29 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
       }
 
       // Case 2: GroupBy applied → each group is a dataset
-      const groupByField = groupBy[0].toLowerCase();
+
+      // Clean group field name
+      const rawGroupField = groupBy[0];
+      const groupFieldKey = rawGroupField.includes(".")
+        ? rawGroupField.split(".").pop()!
+        : rawGroupField;
+
+      // Match with fieldSettings (case-insensitive)
+      const matchedField = chart.dataSourceId.fieldSettings.find(
+        (f: any) => f.label === groupFieldKey
+      );
+
+      const groupField = matchedField ? matchedField.label : groupFieldKey;
+
       const uniqueGroups = Array.from(
-        new Set(data.map((item) => item[groupByField] || "Unknown"))
+        new Set(data.map((item) => item[groupField] || "Unknown"))
       );
 
       const datasets = uniqueGroups.map((group, index) => {
         const groupData = labels.map((name) => {
           const dataPoint = data.find(
             (item) =>
-              item.name === name && (item[groupByField] || "Unknown") === group
+              item.name === name && (item[groupField] || "Unknown") === group
           );
           return dataPoint ? dataPoint.data : 0;
         });
@@ -954,8 +1039,72 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
       return { labels, datasets };
     }
 
-   
+    //     funcgroupBy[0].toLowerCase();tion processBarData(
+    //       data: any[],
+    //       groupBy: string[],
+    //       chartType: string,
+    //       chart: any
+    //     ) {
+    //       const labels = Array.from(new Set(data.map((item) => item.name)));
+    // console.log("processBarData",groupBy,chart.dataSourceId.fieldSettings);
+    //       // Case 1: When no groupBy → Each label becomes a dataset
+    //       if (!groupBy || groupBy.length === 0) {
+    //         const datasets = data.map((item, i) => {
+    //           return {
+    //             label: item.name, // 👈 each name = legend
+    //             data: labels.map((lbl) => (lbl === item.name ? item.data : 0)), // put value only at matching label, 0 elsewhere
+    //             backgroundColor: getColor(i),
+    //             borderColor: "#FFFFFF",
+    //             borderWidth: 1,
+    //             borderRadius: 4,
+    //           };
+    //         });
 
+    //         return { labels, datasets };
+    //       }
+
+    //       // Case 2: When groupBy is applied → Multiple datasets by group
+    //       // const groupField = groupBy[0].toLowerCase();
+    //             // const groupField = groupBy[0].toLowerCase();
+
+    //             // Clean group field name
+    // const rawGroupField = groupBy[0];
+    // const groupFieldKey = rawGroupField.includes(".")
+    //   ? rawGroupField.split(".").pop()! // take last part after dot
+    //   : rawGroupField;
+
+    // // Find matching fieldSetting label
+    // const matchedField = chart.dataSourceId.fieldSettings.find(
+    //   (f: any) => f.label === groupFieldKey
+    // );
+
+    // // Use label if found, otherwise fallback to groupFieldKey
+    // const groupField = matchedField ? matchedField.label : groupFieldKey;
+
+    //       const uniqueGroups = Array.from(
+    //         new Set(data.map((item) => item[groupField]).filter(Boolean))
+    //       );
+
+    //       const datasets = uniqueGroups.map((group, i) => {
+    //         const values = labels.map((label) => {
+    //           const found = data.find(
+    //             (item) => item.name === label && item[groupField] === group
+    //           );
+    //           return found ? found.data : 0;
+    //         });
+
+    //         return {
+    //           label: group, // group becomes legend
+    //           data: values,
+    //           backgroundColor: getColor(i),
+    //           borderColor: "#FFFFFF",
+    //           borderWidth: 1,
+    //           borderRadius: 4,
+    //         };
+    //       });
+
+    //       return { labels, datasets };
+    //     }
     function processBarData(
       data: any[],
       groupBy: string[],
@@ -963,6 +1112,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
       chart: any
     ) {
       const labels = Array.from(new Set(data.map((item) => item.name)));
+      console.log("processBarData", groupBy, chart.dataSourceId.fieldSettings);
 
       // Case 1: When no groupBy → Each label becomes a dataset
       if (!groupBy || groupBy.length === 0) {
@@ -981,7 +1131,21 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
       }
 
       // Case 2: When groupBy is applied → Multiple datasets by group
-      const groupField = groupBy[0].toLowerCase();
+
+      // Clean group field name
+      const rawGroupField = groupBy[0];
+      const groupFieldKey = rawGroupField.includes(".")
+        ? rawGroupField.split(".").pop()! // take last part after dot
+        : rawGroupField;
+
+      // Find matching fieldSetting label (case-insensitive)
+      const matchedField = chart.dataSourceId.fieldSettings.find(
+        (f: any) => f.label === groupFieldKey
+      );
+
+      // Use label if found, otherwise fallback to groupFieldKey
+      const groupField = matchedField ? matchedField.label : groupFieldKey;
+
       const uniqueGroups = Array.from(
         new Set(data.map((item) => item[groupField]).filter(Boolean))
       );
@@ -1007,67 +1171,68 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
       return { labels, datasets };
     }
 
-   
-
-   
     interface PieItem {
-  name: string;
-  data?: number;
-  [key: string]: any; // extra fields
-}
+      name: string;
+      data?: number;
+      [key: string]: any; // extra fields
+    }
 
-function processPieData(data: PieItem[], groupBy: string[] = [], chart?: any) {
-  const labels = Array.from(new Set(data.map((item) => item.name)));
+    function processPieData(
+      data: PieItem[],
+      groupBy: string[] = [],
+      chart?: any
+    ) {
+      const labels = Array.from(new Set(data.map((item) => item.name)));
 
-  // Case 1: No groupBy → standard pie/doughnut chart
-  if (!groupBy || groupBy.length === 0) {
-    const values = labels.map((label) => {
-      const found = data.find((item) => item.name === label);
-      return found?.data ?? 0; // fallback to 0
-    });
+      // Case 1: No groupBy → standard pie/doughnut chart
+      if (!groupBy || groupBy.length === 0) {
+        const values = labels.map((label) => {
+          const found = data.find((item) => item.name === label);
+          return found?.data ?? 0; // fallback to 0
+        });
 
-    return {
-      labels,
-      datasets: [
-        {
-          label: chart?.aggregation?.attributeName || chart?.name || "Count",
+        return {
+          labels,
+          datasets: [
+            {
+              label:
+                chart?.aggregation?.attributeName || chart?.name || "Count",
+              data: values,
+              backgroundColor: labels.map((_, i) => getColor(i)),
+              borderColor: "#FFFFFF",
+              borderWidth: 2,
+            },
+          ],
+        };
+      }
+
+      // Case 2: With groupBy → each group becomes a dataset
+      const groupField = resolveGroupField(groupBy, chart);
+      const uniqueGroups = Array.from(
+        new Set(data.map((item) => item[groupField] ?? "Unknown"))
+      );
+
+      const datasets = uniqueGroups.map((group, groupIndex) => {
+        const values = labels.map((label) => {
+          const found = data.find(
+            (item) =>
+              item.name === label && (item[groupField] ?? "Unknown") === group
+          );
+          return found?.data ?? 0;
+        });
+
+        return {
+          label: group,
           data: values,
-          backgroundColor: labels.map((_, i) => getColor(i)),
+          backgroundColor: labels.map((_, i) => getColor(i + groupIndex * 5)),
           borderColor: "#FFFFFF",
           borderWidth: 2,
-        },
-      ],
-    };
-  }
+        };
+      });
 
-  // Case 2: With groupBy → each group becomes a dataset
-  const groupField = groupBy[0].toLowerCase();
-  const uniqueGroups = Array.from(
-    new Set(data.map((item) => item[groupField] ?? "Unknown"))
-  );
+      return { labels, datasets };
+    }
 
-  const datasets = uniqueGroups.map((group, groupIndex) => {
-    const values = labels.map((label) => {
-      const found = data.find(
-        (item) => item.name === label && (item[groupField] ?? "Unknown") === group
-      );
-      return found?.data ?? 0;
-    });
-
-    return {
-      label: group,
-      data: values,
-      backgroundColor: labels.map((_, i) => getColor(i + groupIndex * 5)),
-      borderColor: "#FFFFFF",
-      borderWidth: 2,
-    };
-  });
-
-  return { labels, datasets };
-}
-
-
-    
     function processRadarData(data: any[], groupBy: string[], chart: any) {
       const labels = Array.from(new Set(data.map((item) => item.name)));
 
@@ -1092,7 +1257,7 @@ function processPieData(data: PieItem[], groupBy: string[] = [], chart?: any) {
       }
 
       // Case 2: With groupBy → each group becomes a dataset
-      const groupField = groupBy[0].toLowerCase();
+      const groupField = resolveGroupField(groupBy, chart)
       const uniqueGroups = Array.from(
         new Set(data.map((item) => item[groupField]).filter(Boolean))
       );
@@ -1118,54 +1283,52 @@ function processPieData(data: PieItem[], groupBy: string[] = [], chart?: any) {
       return { labels, datasets };
     }
 
-   
-    function processScatterData(data: any[], groupBy: string[], chart: any) {
-      // Case 1: No groupBy → single dataset with all points
-      if (!groupBy || groupBy.length === 0) {
-        const scatterData = data.map((item, index) => ({
-          x: item.x ?? index,
-          y: item.y ?? item.data,
-        }));
+   function processScatterData(data: any[], groupBy: string[], chart: any) {
+  // Case 1: No groupBy
+  if (!groupBy || groupBy.length === 0) {
+    const scatterData = data.map((item, index) => ({
+      x: item.x ?? index,
+      y: item.y ?? item.data,
+    }));
 
-        return {
-          datasets: [
-            {
-              label:
-                chart?.aggregation?.attributeName || chart?.name || "Count",
-              data: scatterData,
-              backgroundColor: getColor(0),
-              borderColor: getColor(0),
-            },
-          ],
-        };
-      }
+    return {
+      datasets: [
+        {
+          label: chart?.aggregation?.attributeName || chart?.name || "Count",
+          data: scatterData,
+          backgroundColor: getColor(0),
+          borderColor: getColor(0),
+        },
+      ],
+    };
+  }
 
-      // Case 2: With groupBy → each group gets its own dataset
-      const groupField = groupBy[0].toLowerCase();
-      const uniqueGroups = Array.from(
-        new Set(data.map((item) => item[groupField]).filter(Boolean))
-      );
+  // Case 2: With groupBy
+  const groupField = resolveGroupField(groupBy, chart);
+  const uniqueGroups = Array.from(
+    new Set(data.map((item) => item[groupField]).filter(Boolean))
+  );
 
-      const datasets = uniqueGroups.map((group, i) => {
-        const groupData = data
-          .filter((item) => item[groupField] === group)
-          .map((item, index) => ({
-            x: item.x ?? index,
-            y: item.y ?? item.data,
-          }));
+  const datasets = uniqueGroups.map((group, i) => {
+    const groupData = data
+      .filter((item) => item[groupField] === group)
+      .map((item, index) => ({
+        x: item.x ?? index,
+        y: item.y ?? item.data,
+      }));
 
-        return {
-          label: group,
-          data: groupData,
-          backgroundColor: getColor(i),
-          borderColor: getColor(i),
-        };
-      });
+    return {
+      label: group,
+      data: groupData,
+      backgroundColor: getColor(i),
+      borderColor: getColor(i),
+    };
+  });
 
-      return { datasets };
-    }
+  return { datasets };
+}
 
-   
+
     interface BubbleItem {
       x?: number;
       y?: number;
@@ -1200,7 +1363,7 @@ function processPieData(data: PieItem[], groupBy: string[] = [], chart?: any) {
       }
 
       // Case 2: GroupBy applied → each group is a dataset
-      const groupField = groupBy[0].toLowerCase();
+      const groupField = resolveGroupField(groupBy, chart)
       const uniqueGroups = Array.from(
         new Set(data.map((item) => item[groupField] ?? "Unknown"))
       );
@@ -1226,116 +1389,228 @@ function processPieData(data: PieItem[], groupBy: string[] = [], chart?: any) {
     }
 
     //working
+    //     function processComboData(
+    //   data: any[],
+    //   groupBy: string[],
+    //   chartType: string,
+    //   chart: any
+    // ) {
+    //   const labels = Array.from(new Set(data.map((item) => item.name)));
+
+    //   // Case 1: No groupBy → Each item becomes a bar dataset + one line dataset
+    //   if (!groupBy || groupBy.length === 0) {
+    //     // Create bar datasets for each item
+    //     const barDatasets = data.map((item, i) => {
+    //       return {
+    //         type: "bar",
+    //         label: item.name, // 👈 each name = legend
+    //         data: labels.map((lbl) => (lbl === item.name ? item.data : 0)), // put value only at matching label
+    //         backgroundColor: getColor(i),
+    //         borderColor: "#FFFFFF",
+    //         borderWidth: 1,
+    //         borderRadius: 4,
+    //         yAxisID: "y",
+    //       };
+    //     });
+
+    //     // Calculate total values for each label
+    //     const totals = labels.map((label) => {
+    //       const found = data.find((item) => item.name === label);
+    //       return found ? found.data : 0;
+    //     });
+
+    //     // Create line dataset for totals
+    //     const lineDataset = {
+    //       type: "line",
+    //       label: `${chart?.aggregation?.attributeName || chart?.name || "Total"}`,
+    //       data: totals,
+    //       borderColor: getColor(data.length), // Use next available color
+    //       backgroundColor: "transparent",
+    //       yAxisID: "y1",
+    //       tension: 0.4,
+    //       fill: false,
+    //       pointRadius: 5,
+    //       pointHoverRadius: 8,
+    //     };
+
+    //     return {
+    //       labels,
+    //       datasets: [...barDatasets, lineDataset],
+    //     };
+    //   }
+
+    //   // Case 2: With groupBy → Multiple bar datasets by group + one line dataset
+    //   const groupField = groupBy[0].toLowerCase();
+    //   const uniqueGroups = Array.from(
+    //     new Set(data.map((item) => item[groupField]).filter(Boolean))
+    //   );
+
+    //   // Create bar datasets for each group
+    //   const barDatasets = uniqueGroups.map((group, i) => {
+    //     const values = labels.map((label) => {
+    //       const found = data.find(
+    //         (item) => item.name === label && item[groupField] === group
+    //       );
+    //       return found ? found.data : 0;
+    //     });
+
+    //     return {
+    //       type: "bar",
+    //       label: group, // group becomes legend
+    //       data: values,
+    //       backgroundColor: getColor(i),
+    //       borderColor: "#FFFFFF",
+    //       borderWidth: 1,
+    //       borderRadius: 4,
+    //       yAxisID: "y",
+    //     };
+    //   });
+
+    //   // Calculate total values for each label (sum of all groups)
+    //   const totals = labels.map((label) => {
+    //     return uniqueGroups.reduce((sum, group) => {
+    //       const found = data.find(
+    //         (item) => item.name === label && item[groupField] === group
+    //       );
+    //       return sum + (found ? found.data : 0);
+    //     }, 0);
+    //   });
+
+    //   // Create line dataset for totals
+    //   const lineDataset = {
+    //     type: "line",
+    //     label: `${chart?.aggregation?.attributeName || chart?.name || "Total"}`,
+    //     data: totals,
+    //     borderColor: getColor(uniqueGroups.length), // Use next available color
+    //     backgroundColor: "transparent",
+    //     yAxisID: "y1",
+    //     tension: 0.4,
+    //     fill: false,
+    //     pointRadius: 5,
+    //     pointHoverRadius: 8,
+    //   };
+
+    //   return {
+    //     labels,
+    //     datasets: [...barDatasets, lineDataset],
+    //   };
+    // }
+
     function processComboData(
-  data: any[],
-  groupBy: string[],
-  chartType: string,
-  chart: any
-) {
-  const labels = Array.from(new Set(data.map((item) => item.name)));
+      data: any[],
+      groupBy: string[],
+      chartType: string,
+      chart: any
+    ) {
+      const labels = Array.from(new Set(data.map((item) => item.name)));
 
-  // Case 1: No groupBy → Each item becomes a bar dataset + one line dataset
-  if (!groupBy || groupBy.length === 0) {
-    // Create bar datasets for each item
-    const barDatasets = data.map((item, i) => {
-      return {
-        type: "bar",
-        label: item.name, // 👈 each name = legend
-        data: labels.map((lbl) => (lbl === item.name ? item.data : 0)), // put value only at matching label
-        backgroundColor: getColor(i),
-        borderColor: "#FFFFFF",
-        borderWidth: 1,
-        borderRadius: 4,
-        yAxisID: "y",
+      // Case 1: No groupBy → Each item becomes a bar dataset + one line dataset
+      if (!groupBy || groupBy.length === 0) {
+        const barDatasets = data.map((item, i) => {
+          return {
+            type: "bar",
+            label: item.name,
+            data: labels.map((lbl) => (lbl === item.name ? item.data : 0)),
+            backgroundColor: getColor(i),
+            borderColor: "#FFFFFF",
+            borderWidth: 1,
+            borderRadius: 4,
+            yAxisID: "y",
+          };
+        });
+
+        const totals = labels.map((label) => {
+          const found = data.find((item) => item.name === label);
+          return found ? found.data : 0;
+        });
+
+        const lineDataset = {
+          type: "line",
+          label: `${chart?.aggregation?.attributeName || chart?.name || "Total"}`,
+          data: totals,
+          borderColor: getColor(data.length),
+          backgroundColor: "transparent",
+          yAxisID: "y1",
+          tension: 0.4,
+          fill: false,
+          pointRadius: 5,
+          pointHoverRadius: 8,
+        };
+
+        return {
+          labels,
+          datasets: [...barDatasets, lineDataset],
+        };
+      }
+
+      // Case 2: With groupBy → Multiple bar datasets by group + one line dataset
+
+      // Clean group field name
+      const rawGroupField = groupBy[0];
+      const groupFieldKey = rawGroupField.includes(".")
+        ? rawGroupField.split(".").pop()!
+        : rawGroupField;
+
+      // Match with fieldSettings (case-insensitive)
+      const matchedField = chart.dataSourceId.fieldSettings.find(
+        (f: any) => f.label === groupFieldKey
+      );
+
+      const groupField = matchedField ? matchedField.label : groupFieldKey;
+
+      const uniqueGroups = Array.from(
+        new Set(data.map((item) => item[groupField]).filter(Boolean))
+      );
+
+      const barDatasets = uniqueGroups.map((group, i) => {
+        const values = labels.map((label) => {
+          const found = data.find(
+            (item) => item.name === label && item[groupField] === group
+          );
+          return found ? found.data : 0;
+        });
+
+        return {
+          type: "bar",
+          label: group,
+          data: values,
+          backgroundColor: getColor(i),
+          borderColor: "#FFFFFF",
+          borderWidth: 1,
+          borderRadius: 4,
+          yAxisID: "y",
+        };
+      });
+
+      const totals = labels.map((label) => {
+        return uniqueGroups.reduce((sum, group) => {
+          const found = data.find(
+            (item) => item.name === label && item[groupField] === group
+          );
+          return sum + (found ? found.data : 0);
+        }, 0);
+      });
+
+      const lineDataset = {
+        type: "line",
+        label: `${chart?.aggregation?.attributeName || chart?.name || "Total"}`,
+        data: totals,
+        borderColor: getColor(uniqueGroups.length),
+        backgroundColor: "transparent",
+        yAxisID: "y1",
+        tension: 0.4,
+        fill: false,
+        pointRadius: 5,
+        pointHoverRadius: 8,
       };
-    });
 
-    // Calculate total values for each label
-    const totals = labels.map((label) => {
-      const found = data.find((item) => item.name === label);
-      return found ? found.data : 0;
-    });
+      return {
+        labels,
+        datasets: [...barDatasets, lineDataset],
+      };
+    }
 
-    // Create line dataset for totals
-    const lineDataset = {
-      type: "line",
-      label: `${chart?.aggregation?.attributeName || chart?.name || "Total"}`,
-      data: totals,
-      borderColor: getColor(data.length), // Use next available color
-      backgroundColor: "transparent",
-      yAxisID: "y1",
-      tension: 0.4,
-      fill: false,
-      pointRadius: 5,
-      pointHoverRadius: 8,
-    };
-
-    return {
-      labels,
-      datasets: [...barDatasets, lineDataset],
-    };
-  }
-
-  // Case 2: With groupBy → Multiple bar datasets by group + one line dataset
-  const groupField = groupBy[0].toLowerCase();
-  const uniqueGroups = Array.from(
-    new Set(data.map((item) => item[groupField]).filter(Boolean))
-  );
-
-  // Create bar datasets for each group
-  const barDatasets = uniqueGroups.map((group, i) => {
-    const values = labels.map((label) => {
-      const found = data.find(
-        (item) => item.name === label && item[groupField] === group
-      );
-      return found ? found.data : 0;
-    });
-
-    return {
-      type: "bar",
-      label: group, // group becomes legend
-      data: values,
-      backgroundColor: getColor(i),
-      borderColor: "#FFFFFF",
-      borderWidth: 1,
-      borderRadius: 4,
-      yAxisID: "y",
-    };
-  });
-
-  // Calculate total values for each label (sum of all groups)
-  const totals = labels.map((label) => {
-    return uniqueGroups.reduce((sum, group) => {
-      const found = data.find(
-        (item) => item.name === label && item[groupField] === group
-      );
-      return sum + (found ? found.data : 0);
-    }, 0);
-  });
-
-  // Create line dataset for totals
-  const lineDataset = {
-    type: "line",
-    label: `${chart?.aggregation?.attributeName || chart?.name || "Total"}`,
-    data: totals,
-    borderColor: getColor(uniqueGroups.length), // Use next available color
-    backgroundColor: "transparent",
-    yAxisID: "y1",
-    tension: 0.4,
-    fill: false,
-    pointRadius: 5,
-    pointHoverRadius: 8,
-  };
-
-  return {
-    labels,
-    datasets: [...barDatasets, lineDataset],
-  };
-}
-
-
-
-     function processHistogramData(data: any[]) {
+    function processHistogramData(data: any[]) {
       const values = data.map((item) => item.data).sort((a, b) => a - b);
       return {
         labels: values,
@@ -1350,62 +1625,64 @@ function processPieData(data: PieItem[], groupBy: string[] = [], chart?: any) {
       };
     }
 
-    
     interface TimeSeriesItem {
-  timestamp?: string | number;
-  date?: string | number;
-  name?: string;
-  data?: number;
-  [key: string]: any;
-}
+      timestamp?: string | number;
+      date?: string | number;
+      name?: string;
+      data?: number;
+      [key: string]: any;
+    }
 
-function processTimeSeriesData(data: TimeSeriesItem[], groupBy: string[] = [], chart?: any) {
-  // Case 1: No groupBy → single dataset
-  if (!groupBy || groupBy.length === 0) {
-    const timeData = data.map((item) => ({
-      x: item.timestamp ?? item.date ?? item.name,
-      y: item.data ?? 0,
-    }));
+    function processTimeSeriesData(
+      data: TimeSeriesItem[],
+      groupBy: string[] = [],
+      chart?: any
+    ) {
+      // Case 1: No groupBy → single dataset
+      if (!groupBy || groupBy.length === 0) {
+        const timeData = data.map((item) => ({
+          x: item.timestamp ?? item.date ?? item.name,
+          y: item.data ?? 0,
+        }));
 
-    return {
-      datasets: [
-        {
-          label: chart?.name || "Time Series",
-          data: timeData,
-          borderColor: getColor(0),
+        return {
+          datasets: [
+            {
+              label: chart?.name || "Time Series",
+              data: timeData,
+              borderColor: getColor(0),
+              backgroundColor: "transparent",
+              tension: 0.4,
+            },
+          ],
+        };
+      }
+
+      // Case 2: With groupBy → split datasets per group
+      const groupField = resolveGroupField(groupBy, chart);
+      const uniqueGroups = Array.from(
+        new Set(data.map((item) => item[groupField] ?? "Unknown"))
+      );
+
+      const datasets = uniqueGroups.map((group, index) => {
+        const groupData = data
+          .filter((item) => (item[groupField] ?? "Unknown") === group)
+          .map((item) => ({
+            x: item.timestamp ?? item.date ?? item.name,
+            y: item.data ?? 0,
+          }));
+
+        return {
+          label: group,
+          data: groupData,
+          borderColor: getColor(index),
           backgroundColor: "transparent",
           tension: 0.4,
-        },
-      ],
-    };
-  }
+        };
+      });
 
-  // Case 2: With groupBy → split datasets per group
-  const groupField = groupBy[0].toLowerCase();
-  const uniqueGroups = Array.from(
-    new Set(data.map((item) => item[groupField] ?? "Unknown"))
-  );
-
-  const datasets = uniqueGroups.map((group, index) => {
-    const groupData = data
-      .filter((item) => (item[groupField] ?? "Unknown") === group)
-      .map((item) => ({
-        x: item.timestamp ?? item.date ?? item.name,
-        y: item.data ?? 0,
-      }));
-
-    return {
-      label: group,
-      data: groupData,
-      borderColor: getColor(index),
-      backgroundColor: "transparent",
-      tension: 0.4,
-    };
-  });
-
-  return { datasets };
-}
-
+      return { datasets };
+    }
   };
 
   // Enhanced renderChart function that handles ALL chart types
