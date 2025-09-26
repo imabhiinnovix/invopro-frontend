@@ -75,10 +75,7 @@ const AppRoutes = () => {
           <Route path="/dashboard" element={<NotivixDashboard />} />
           <Route path="/dashboard/:id" element={<NotivixDashboard />} />
           <Route path="/notification" element={<Notification />} />
-          <Route
-            path="/notification-types"
-            element={<Notification />}
-          />
+          <Route path="/notification-types" element={<Notification />} />
            <Route
             path="/notification-logs"
             element={<NotificationLogger />}
@@ -94,7 +91,7 @@ const AppRoutes = () => {
           <Route path="/settings/users" element={<Users />} />
           <Route path="/permissions" element={<Permissions />} />
           {/* <Route path="/notivix/settings/roles" element={<Roles />} /> */}
-                    <Route path="/roles" element={<Roles />} />
+          <Route path="/roles" element={<Roles />} />
 
           <Route
             path="/organization"
