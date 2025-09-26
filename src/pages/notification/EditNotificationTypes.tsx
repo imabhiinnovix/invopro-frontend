@@ -362,6 +362,7 @@ const ConditionRuleBuilder = ({
               )}
             </FormControl>
           );
+          
         case "select":
           return renderSelectField(rule, updateValue, hasError);
         case "date":
