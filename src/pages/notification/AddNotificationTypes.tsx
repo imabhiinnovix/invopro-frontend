@@ -379,6 +379,7 @@ const ConditionRuleBuilder = ({
         case "select":
           return renderSelectField(rule, updateValue, hasError);
         case "date":
+        case "date-range":
           return (
             <Box sx={{ display: "flex", gap: 2, alignItems: "center" }}>
               <FormControl fullWidth size="small" error={hasError}>
@@ -736,7 +737,7 @@ const ConditionRuleBuilder = ({
                 value: rule.value || "",
                 refAttributeId: fieldOption.refAttributeId,
               };
-              if (fieldOption.type === "date" && rule.timeUnit) {
+              if ((fieldOption.type === "date" || fieldOption.type === 'date-range') && rule.timeUnit) {
                 condition.timeUnit = rule.timeUnit;
               }
               result.conditions.push(condition);
