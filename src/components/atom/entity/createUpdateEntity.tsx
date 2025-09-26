@@ -697,7 +697,7 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
       };
       console.log("2222:", updated);
 
-      if (!["option", "multioption"].includes(data.type)) {
+      if (!["option", "multioption", "text-with-option"].includes(data.type)) {
         updated.optionAttributeId = "";
       }
       if (refEntityId && refEntityField && relationType) {
