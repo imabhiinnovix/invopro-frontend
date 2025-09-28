@@ -26,6 +26,7 @@ import { STYLE_GUIDE } from '../../../styles';
 import { useUnifiedTheme } from '../../../hooks/useUnifiedTheme';
 import { useComponentTypography } from '../../../hooks/useComponentTypography';
 import NotivixFiltersModal from '../../notivixDashboard/components/NotivixFiltersModal';
+import { GridFilterListIcon } from '@mui/x-data-grid';
 
 interface DashboardViewProps {
   title: string;
@@ -544,6 +545,24 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ title: initialTitl
             </>
           ) : (
             <>
+              {!!currentDashboard?.settings?.dataSource?._id && (
+                <Button
+                  onClick={handleOpenFiltersModal}
+                  color="secondary"
+                  variant="outlined"
+                  startIcon={<GridFilterListIcon />}
+                  sx={{
+                    ...getButtonSx(),
+                    borderColor: theme.getInputBorderColor(),
+                    color: theme.palette.text.primary,
+                    '&:hover': {
+                      borderColor: theme.border?.hover || STYLE_GUIDE.COLORS.darkBorderHover,
+                    },
+                  }}
+                >
+                  Filters
+                </Button>
+              )}
               <Box>
                 {currentDashboard?.settings?.dashboardType === 'normal' ? (
                   <Box>
