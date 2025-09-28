@@ -27,6 +27,8 @@ import { useUnifiedTheme } from '../../../hooks/useUnifiedTheme';
 import { useComponentTypography } from '../../../hooks/useComponentTypography';
 import NotivixFiltersModal from '../../notivixDashboard/components/NotivixFiltersModal';
 import { GridFilterListIcon } from '@mui/x-data-grid';
+import { ToggleButton, ToggleButtonGroup } from '@mui/material';
+import DatePicker, { Calendar, DateObject } from 'react-multi-date-picker';
 
 interface DashboardViewProps {
   title: string;
@@ -55,9 +57,21 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ title: initialTitl
   const [isFiltersModalOpen, setIsFiltersModalOpen] = useState(false);
   const [dashboardFilters, setDashboardFilters] = useState<any>({});
   const { dataSourceDetails, dataSourceDetailsLoading } = useAppSelector((state) => state.notivixDashboard);
+  const [statusToggle, setStatusToggle] = useState<'pending' | 'completed'>('pending');
+  const [dateRange, setDateRange] = useState<DateObject[] | null>(null);
+  const [isDateRangeFocused, setIsDateRangeFocused] = useState(false);
   const { themes } = useAppSelector((state) => state.theme);
 
   const postGridColumns = usePost(['']);
+
+  useEffect(() => {
+    if (!!currentDashboard?.settings?.dataSource?._id) {
+      setDashboardFilters((prev) => ({
+        ...prev,
+        'Derived.Status': statusToggle,
+      }));
+    }
+  }, [currentDashboard?.settings?.dataSource?._id]);
 
   const handleOpenFiltersModal = async () => {
     if (currentDashboard?.settings?.dataSource?._id) {
@@ -69,6 +83,37 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ title: initialTitl
     } else {
       setIsFiltersModalOpen(true);
     }
+  };
+
+  const handleStatusToggle = (event: React.MouseEvent<HTMLElement>, newStatus: 'pending' | 'completed' | null) => {
+    if (newStatus !== null) {
+      setStatusToggle(newStatus);
+      setDashboardFilters((prev) => ({
+        ...prev,
+        'Derived.Status': newStatus,
+      }));
+    }
+  };
+
+  const handleDateRangeChange = (dateRange: DateObject[] | DateObject | null) => {
+    const range = Array.isArray(dateRange) ? dateRange : dateRange ? [dateRange] : null;
+    setDateRange(range);
+
+    if (range && range.length === 2) {
+      const startDate = range[0].format('YYYY-MM-DD');
+      const endDate = range[1].format('YYYY-MM-DD');
+
+      setDashboardFilters((prev) => ({
+        ...prev,
+        DueDate: {
+          startDate,
+          endDate,
+        },
+      }));
+    }
+  };
+  const handleDateRangeFocus = (focused: boolean) => {
+    setIsDateRangeFocused(focused);
   };
 
   const handleCloseFiltersModal = () => {
@@ -469,17 +514,94 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ title: initialTitl
               }}
             />
           ) : (
-            <Typography
-              variant="h4"
-              component="h1"
-              sx={{
-                ...getHeadingSx(),
-                mr: STYLE_GUIDE.SPACING.s4,
-                fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.medium,
-              }}
-            >
-              {title}
-            </Typography>
+            <Box sx={{ display: 'flex', gap: STYLE_GUIDE.SPACING.s4, alignItems: 'center' }}>
+              <Typography
+                variant="h4"
+                component="h1"
+                sx={{
+                  ...getHeadingSx(),
+                  mr: STYLE_GUIDE.SPACING.s4,
+                  fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.medium,
+                }}
+              >
+                {title}
+              </Typography>
+              {!!currentDashboard?.settings?.dataSource?._id && (
+                <>
+                  <ToggleButtonGroup
+                    value={statusToggle}
+                    exclusive
+                    onChange={handleStatusToggle}
+                    aria-label="status toggle"
+                    size="small"
+                  >
+                    <ToggleButton
+                      value="pending"
+                      aria-label="pending"
+                      sx={{
+                        px: STYLE_GUIDE.SPACING.s6,
+                        color: theme.palette.text.primary,
+                        borderColor: theme.getInputBorderColor(),
+                        '&:hover': {
+                          borderColor: theme.border?.hover || STYLE_GUIDE.COLORS.darkBorderHover,
+                        },
+                        '&.Mui-selected': {
+                          backgroundColor: theme.palette.primary.main,
+                          color: theme.palette.primary.contrastText,
+                        },
+                      }}
+                    >
+                      PENDING
+                    </ToggleButton>
+                    <ToggleButton
+                      value="completed"
+                      aria-label="completed"
+                      sx={{
+                        px: STYLE_GUIDE.SPACING.s6,
+                        color: theme.palette.text.primary,
+                        borderColor: theme.getInputBorderColor(),
+                        '&:hover': {
+                          borderColor: theme.border?.hover || STYLE_GUIDE.COLORS.darkBorderHover,
+                        },
+                        '&.Mui-selected': {
+                          backgroundColor: theme.palette.primary.main,
+                          color: theme.palette.primary.contrastText,
+                        },
+                      }}
+                    >
+                      COMPLETED
+                    </ToggleButton>
+                  </ToggleButtonGroup>
+                  {/* Date Range Picker */}
+                  <Box>
+                    <DatePicker
+                      onOpen={() => handleDateRangeFocus(true)}
+                      onClose={() => handleDateRangeFocus(false)}
+                      calendarPosition="top"
+                      value={dateRange}
+                      onChange={handleDateRangeChange}
+                      range
+                      placeholder="Select Date Range"
+                      numberOfMonths={2}
+                      showOtherDays
+                      inputClass="w-full"
+                      style={{
+                        width: '250px',
+                        padding: '10px 14px',
+                        fontSize: '16px',
+                        borderRadius: 4,
+                        background: theme.getDropdownBackground(),
+                        border: `1px solid ${
+                          isDateRangeFocused ? theme.input?.focusBorder || 'blue' : theme.getInputBorderColor()
+                        }`,
+                        color: theme.getInputTextColor(),
+                        outline: 'none',
+                      }}
+                    />
+                  </Box>
+                </>
+              )}
+            </Box>
           )}
         </Box>
 
