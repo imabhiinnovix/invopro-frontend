@@ -1,6 +1,6 @@
-import React, { useEffect, useState, useRef } from "react";
-import { useForm, useFieldArray, FieldError, useWatch } from "react-hook-form";
-import ExcelJS from "exceljs";
+import React, { useEffect, useState, useRef } from 'react';
+import { useForm, useFieldArray, FieldError, useWatch } from 'react-hook-form';
+import ExcelJS from 'exceljs';
 import {
   Box,
   Button,
@@ -13,22 +13,22 @@ import {
   IconButton,
   Divider,
   Stack,
-} from "@mui/material";
-import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
-import RemoveCircleOutlineIcon from "@mui/icons-material/RemoveCircleOutline";
-import FileUploadButton from "../file/fileUploadButton";
-import { GET, POST } from "../../../services/apiRoutes";
-import ProgressBar from "../../molecule/progressBar";
-import usePost from "../../../hooks/usePost";
-import usePut from "../../../hooks/usePut";
-import { EntityRequestPayload, EntityResponse } from "./types";
-import CommonSelect from "../../common/dropdown/commonSelect";
-import CommonDropdownSearch from "../../common/dropdown/searchableDropdown";
-import { toast } from "react-toastify";
-import axiosInstance from "../../../services/axiosInstance";
-import { STYLE_GUIDE } from "../../../styles";
-import { useUnifiedTheme } from "../../../hooks/useUnifiedTheme";
-import { useComponentTypography } from "../../../hooks/useComponentTypography";
+} from '@mui/material';
+import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
+import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutline';
+import FileUploadButton from '../file/fileUploadButton';
+import { GET, POST } from '../../../services/apiRoutes';
+import ProgressBar from '../../molecule/progressBar';
+import usePost from '../../../hooks/usePost';
+import usePut from '../../../hooks/usePut';
+import { EntityRequestPayload, EntityResponse } from './types';
+import CommonSelect from '../../common/dropdown/commonSelect';
+import CommonDropdownSearch from '../../common/dropdown/searchableDropdown';
+import { toast } from 'react-toastify';
+import axiosInstance from '../../../services/axiosInstance';
+import { STYLE_GUIDE } from '../../../styles';
+import { useUnifiedTheme } from '../../../hooks/useUnifiedTheme';
+import { useComponentTypography } from '../../../hooks/useComponentTypography';
 
 interface CreateUpdateEntityProps {
   setReloadEntity: React.Dispatch<React.SetStateAction<boolean>>;
@@ -41,17 +41,18 @@ interface FormAttribute {
   name: string;
   mappingName: string;
   type:
-    | ""
-    | "number"
-    | "text"
-    | "date"
-    | "boolean"
-    | "richtext"
-    | "text-with-option"
-    | "url"
-    | "option"
-    | "multioption"
-    | "user";
+    | ''
+    | 'number'
+    | 'text'
+    | 'date'
+    | 'boolean'
+    | 'richtext'
+    | 'text-with-option'
+    | 'url'
+    | 'option'
+    | 'multioption'
+    | 'date-range'
+    | 'user';
   required: string;
   optionAttributeId: string;
   refEntityId: string;
@@ -60,7 +61,7 @@ interface FormAttribute {
   validation: string[];
   transformations: string[];
   cleaner: string[];
-  isReferenceEditable: boolean | "HIDE" | "VIEW" | "EDIT";
+  isReferenceEditable: boolean | 'HIDE' | 'VIEW' | 'EDIT';
 }
 
 interface FormEntityRequestPayload {
@@ -99,7 +100,7 @@ const AttributeField: React.FC<AttributeFieldProps> = ({
   const watchedType = useWatch({
     control,
     name: `attributes.${index}.type`,
-    defaultValue: attribute.type || "",
+    defaultValue: attribute.type || '',
   });
 
   const refEntityId = useWatch({
@@ -109,7 +110,7 @@ const AttributeField: React.FC<AttributeFieldProps> = ({
 
   useEffect(() => {
     if (!refEntityId) {
-      setValue(`attributes.${index}.refEntityField`, "");
+      setValue(`attributes.${index}.refEntityField`, '');
     }
   }, [refEntityId, index, setValue]);
 
@@ -117,7 +118,7 @@ const AttributeField: React.FC<AttributeFieldProps> = ({
     <Box
       sx={{
         mb: 3,
-        pointerEvents: fileUploadLoader ? "none" : "auto",
+        pointerEvents: fileUploadLoader ? 'none' : 'auto',
         opacity: fileUploadLoader ? 0.5 : 1,
       }}
     >
@@ -129,40 +130,40 @@ const AttributeField: React.FC<AttributeFieldProps> = ({
           label="Attribute Name"
           fullWidth
           {...register(`attributes.${index}.name`, {
-            required: "Attribute Name is required",
+            required: 'Attribute Name is required',
           })}
           error={!!errors.attributes?.[index]?.name}
           helperText={errors.attributes?.[index]?.name?.message}
           sx={{
-            "& .MuiOutlinedInput-root": {
+            '& .MuiOutlinedInput-root': {
               borderRadius: STYLE_GUIDE.SPACING.s2,
-              alignItems: "flex-start",
+              alignItems: 'flex-start',
               paddingRight: STYLE_GUIDE.SPACING.s2,
-              fontSize: "14px",
+              fontSize: '14px',
               backgroundColor: STYLE_GUIDE.COLORS.white,
-              "& fieldset": {
+              '& fieldset': {
                 borderColor: STYLE_GUIDE.COLORS.darkBackground,
               },
-              "&:hover fieldset": {
+              '&:hover fieldset': {
                 borderColor: STYLE_GUIDE.COLORS.darkBorderHover,
               },
-              "&.Mui-focused fieldset": {
+              '&.Mui-focused fieldset': {
                 borderColor: STYLE_GUIDE.COLORS.inputFocusFallback,
               },
             },
-            "& .MuiInputLabel-root": {
+            '& .MuiInputLabel-root': {
               color: STYLE_GUIDE.COLORS.darkBorderFocus,
             },
-            "& .MuiInputLabel-root.Mui-focused": {
+            '& .MuiInputLabel-root.Mui-focused': {
               color: STYLE_GUIDE.COLORS.inputFocusFallback,
             },
-            "& .MuiInputBase-input": {
+            '& .MuiInputBase-input': {
               color: `${STYLE_GUIDE.COLORS.textDarkGray} !important`,
             },
-            "& .MuiInputBase-input::placeholder": {
+            '& .MuiInputBase-input::placeholder': {
               color: `${STYLE_GUIDE.COLORS.textSecondary} !important`,
             },
-            "& .MuiInputBase-input:-webkit-autofill": {
+            '& .MuiInputBase-input:-webkit-autofill': {
               WebkitTextFillColor: `${STYLE_GUIDE.COLORS.textDarkGray} !important`,
               WebkitBoxShadow: `0 0 0 1000px ${STYLE_GUIDE.COLORS.white} inset !important`,
             },
@@ -172,40 +173,40 @@ const AttributeField: React.FC<AttributeFieldProps> = ({
           label="File Attribute Name"
           fullWidth
           {...register(`attributes.${index}.mappingName`, {
-            required: "File Attribute Name is required",
+            required: 'File Attribute Name is required',
           })}
           error={!!errors.attributes?.[index]?.mappingName}
           helperText={errors.attributes?.[index]?.mappingName?.message}
           sx={{
-            "& .MuiOutlinedInput-root": {
+            '& .MuiOutlinedInput-root': {
               borderRadius: STYLE_GUIDE.SPACING.s2,
-              alignItems: "flex-start",
+              alignItems: 'flex-start',
               paddingRight: STYLE_GUIDE.SPACING.s2,
-              fontSize: "14px",
+              fontSize: '14px',
               backgroundColor: STYLE_GUIDE.COLORS.white,
-              "& fieldset": {
+              '& fieldset': {
                 borderColor: STYLE_GUIDE.COLORS.darkBackground,
               },
-              "&:hover fieldset": {
+              '&:hover fieldset': {
                 borderColor: STYLE_GUIDE.COLORS.darkBorderHover,
               },
-              "&.Mui-focused fieldset": {
+              '&.Mui-focused fieldset': {
                 borderColor: STYLE_GUIDE.COLORS.inputFocusFallback,
               },
             },
-            "& .MuiInputLabel-root": {
+            '& .MuiInputLabel-root': {
               color: STYLE_GUIDE.COLORS.darkBorderFocus,
             },
-            "& .MuiInputLabel-root.Mui-focused": {
+            '& .MuiInputLabel-root.Mui-focused': {
               color: STYLE_GUIDE.COLORS.inputFocusFallback,
             },
-            "& .MuiInputBase-input": {
+            '& .MuiInputBase-input': {
               color: `${STYLE_GUIDE.COLORS.textDarkGray} !important`,
             },
-            "& .MuiInputBase-input::placeholder": {
+            '& .MuiInputBase-input::placeholder': {
               color: `${STYLE_GUIDE.COLORS.textSecondary} !important`,
             },
-            "& .MuiInputBase-input:-webkit-autofill": {
+            '& .MuiInputBase-input:-webkit-autofill': {
               WebkitTextFillColor: `${STYLE_GUIDE.COLORS.textDarkGray} !important`,
               WebkitBoxShadow: `0 0 0 1000px ${STYLE_GUIDE.COLORS.white} inset !important`,
             },
@@ -216,22 +217,21 @@ const AttributeField: React.FC<AttributeFieldProps> = ({
           name={`attributes.${index}.type`}
           label="Attribute Type"
           options={[
-            "number",
-            "text",
-            "date",
-            "boolean",
-            "richtext",
-            "text-with-option",
-            "url",
-            "option",
-            "multioption",
-            "email",
+            'number',
+            'text',
+            'date',
+            'date-range',
+            'boolean',
+            'richtext',
+            'text-with-option',
+            'url',
+            'option',
+            'multioption',
+            'email',
           ]}
-          defaultValue={attribute.type || ""}
+          defaultValue={attribute.type || ''}
         />
-        {["option", "multioption", "text-with-option"].includes(
-          watchedType
-        ) && (
+        {['option', 'multioption', 'text-with-option'].includes(watchedType) && (
           <CommonDropdownSearch
             control={control}
             name={`attributes.${index}.optionAttributeId`}
@@ -239,7 +239,7 @@ const AttributeField: React.FC<AttributeFieldProps> = ({
             apiUrl={`${GET.Attribute_Option_List}`}
             labelName="attributeName"
             labelValue="_id"
-            defaultValue={attribute.optionAttributeId || ""}
+            defaultValue={attribute.optionAttributeId || ''}
             apiName="attributeOption"
             defaultDataUrl={`${GET.Attribute_Option_Get}`}
           />
@@ -248,20 +248,18 @@ const AttributeField: React.FC<AttributeFieldProps> = ({
           control={control}
           name={`attributes.${index}.required`}
           label="Attribute Validation"
-          options={["Mandatory", "Not Mandatory"]}
-          defaultValue={attribute.required || "Not Mandatory"}
-          rules={{ required: "Attribute Validation is required" }}
+          options={['Mandatory', 'Not Mandatory']}
+          defaultValue={attribute.required || 'Not Mandatory'}
+          rules={{ required: 'Attribute Validation is required' }}
           error={!!errors.attributes?.[index]?.required}
-          errorMessage={
-            (errors.attributes?.[index]?.required as FieldError)?.message
-          }
+          errorMessage={(errors.attributes?.[index]?.required as FieldError)?.message}
         />
         <CommonSelect
           control={control}
           name={`attributes.${index}.isReferenceEditable`}
           label="Reference Editable"
-          options={["EDIT", "VIEW", "HIDE"]}
-          defaultValue={attribute.isReferenceEditable || "HIDE"}
+          options={['EDIT', 'VIEW', 'HIDE']}
+          defaultValue={attribute.isReferenceEditable || 'HIDE'}
           // rules={{ required: "Editable is required" }}
         />
         <CommonDropdownSearch
@@ -271,12 +269,10 @@ const AttributeField: React.FC<AttributeFieldProps> = ({
           apiUrl={`${GET.Entity_List}`}
           labelName="name"
           labelValue="_id"
-          defaultValue={attribute.refEntityId || ""}
+          defaultValue={attribute.refEntityId || ''}
           rules={{ required: false }}
           error={!!errors.attributes?.[index]?.refEntityId}
-          errorMessage={
-            (errors.attributes?.[index]?.refEntityId as FieldError)?.message
-          }
+          errorMessage={(errors.attributes?.[index]?.refEntityId as FieldError)?.message}
           apiName="entities"
           defaultDataUrl={`${GET.Entity_List}`}
         />
@@ -284,64 +280,38 @@ const AttributeField: React.FC<AttributeFieldProps> = ({
           control={control}
           name={`attributes.${index}.refEntityField`}
           label="Reference Entity Field"
-          options={
-            referenceEntityNames[index]?.length
-              ? referenceEntityNames[index]
-              : ["No fields available"]
-          }
-          defaultValue={attribute.refEntityField || ""}
+          options={referenceEntityNames[index]?.length ? referenceEntityNames[index] : ['No fields available']}
+          defaultValue={attribute.refEntityField || ''}
           rules={{ required: false }}
           error={!!errors.attributes?.[index]?.refEntityField}
           errorMessage={
             referenceEntityNames[index]?.length
-              ? (errors.attributes?.[index]?.refEntityField as FieldError)
-                  ?.message
-              : "No reference fields available for this entity"
+              ? (errors.attributes?.[index]?.refEntityField as FieldError)?.message
+              : 'No reference fields available for this entity'
           }
-          disabled={
-            isLoadingReferences[index] || !referenceEntityNames[index]?.length
-          }
-          helperText={
-            isLoadingReferences[index] ? "Loading fields..." : undefined
-          }
+          disabled={isLoadingReferences[index] || !referenceEntityNames[index]?.length}
+          helperText={isLoadingReferences[index] ? 'Loading fields...' : undefined}
           clearable
         />
         <CommonSelect
           control={control}
           name={`attributes.${index}.relationType`}
           label="Reference Relation Type"
-          options={[
-            "many_to_one",
-            "one_to_one",
-            "self",
-            "mapping_one_to_one",
-            "mapping_many_to_one",
-          ]}
-          defaultValue={attribute.relationType || ""}
+          options={['many_to_one', 'one_to_one', 'self', 'mapping_one_to_one', 'mapping_many_to_one']}
+          defaultValue={attribute.relationType || ''}
           rules={{ required: false }}
           error={!!errors.attributes?.[index]?.relationType}
-          errorMessage={
-            (errors.attributes?.[index]?.relationType as FieldError)?.message
-          }
+          errorMessage={(errors.attributes?.[index]?.relationType as FieldError)?.message}
         />
       </Stack>
-      <IconButton
-        color="error"
-        onClick={() => remove(index)}
-        sx={{ mt: 2, display: "flex", alignSelf: "flex-start" }}
-      >
+      <IconButton color="error" onClick={() => remove(index)} sx={{ mt: 2, display: 'flex', alignSelf: 'flex-start' }}>
         <RemoveCircleOutlineIcon />
       </IconButton>
     </Box>
   );
 };
 
-const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
-  setReloadEntity,
-  CustomButton,
-  title,
-  data,
-}) => {
+const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({ setReloadEntity, CustomButton, title, data }) => {
   const theme = useUnifiedTheme();
   const { getDialogTitleSx } = useComponentTypography();
   const [open, setOpen] = useState(false);
@@ -359,22 +329,22 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
     formState: { errors },
   } = useForm<FormEntityRequestPayload>({
     defaultValues: {
-      name: "",
-      description: "",
+      name: '',
+      description: '',
       attributes: [
         {
-          name: "",
-          mappingName: "",
-          type: "",
-          required: "Not Mandatory",
-          optionAttributeId: "",
-          refEntityId: "",
-          refEntityField: "",
-          relationType: "",
+          name: '',
+          mappingName: '',
+          type: '',
+          required: 'Not Mandatory',
+          optionAttributeId: '',
+          refEntityId: '',
+          refEntityField: '',
+          relationType: '',
           validation: [],
           transformations: [],
           cleaner: [],
-          isReferenceEditable: "HIDE",
+          isReferenceEditable: 'HIDE',
         },
       ],
     },
@@ -382,52 +352,48 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
 
   useEffect(() => {
     if (open && data) {
-      console.log("Resetting form with data:", data);
+      console.log('Resetting form with data:', data);
       reset({
-        name: data?.name ?? "",
-        description: data?.description ?? "",
+        name: data?.name ?? '',
+        description: data?.description ?? '',
         attributes: data?.attributes?.map((attr) => ({
-          name: attr.name ?? "",
-          mappingName: attr.mappingName ?? "",
-          type: attr.type ?? "",
-          required: attr.required ? "Mandatory" : "Not Mandatory",
-          optionAttributeId: attr.optionAttributeId ?? "",
-          _id: attr._id ?? "",
+          name: attr.name ?? '',
+          mappingName: attr.mappingName ?? '',
+          type: attr.type ?? '',
+          required: attr.required ? 'Mandatory' : 'Not Mandatory',
+          optionAttributeId: attr.optionAttributeId ?? '',
+          _id: attr._id ?? '',
           refEntityId:
-            typeof attr.referenceEntitySetting?.refEntityId === "object"
-              ? ((attr.referenceEntitySetting?.refEntityId as any)?._id ?? "")
-              : (attr.referenceEntitySetting?.refEntityId ?? ""),
+            typeof attr.referenceEntitySetting?.refEntityId === 'object'
+              ? (attr.referenceEntitySetting?.refEntityId as any)?._id ?? ''
+              : attr.referenceEntitySetting?.refEntityId ?? '',
           refEntityField:
-            typeof attr.referenceEntitySetting?.refEntityField === "object"
-              ? ((attr.referenceEntitySetting?.refEntityField as any)?.name ??
-                "")
-              : (attr.referenceEntitySetting?.refEntityField ?? ""),
-          relationType: attr.referenceEntitySetting?.relationType ?? "",
+            typeof attr.referenceEntitySetting?.refEntityField === 'object'
+              ? (attr.referenceEntitySetting?.refEntityField as any)?.name ?? ''
+              : attr.referenceEntitySetting?.refEntityField ?? '',
+          relationType: attr.referenceEntitySetting?.relationType ?? '',
           validation: attr.validation ?? [],
           transformations: attr.transformations ?? [],
           cleaner: attr.cleaner ?? [],
-          isReferenceEditable: attr.isReferenceEditable || "HIDE"
+          isReferenceEditable: attr.isReferenceEditable || 'HIDE',
         })) ?? [
           {
-            name: "",
-            mappingName: "",
-            type: "",
-            required: "Not Mandatory",
-            optionAttributeId: "",
-            refEntityId: "",
-            refEntityField: "",
-            relationType: "",
+            name: '',
+            mappingName: '',
+            type: '',
+            required: 'Not Mandatory',
+            optionAttributeId: '',
+            refEntityId: '',
+            refEntityField: '',
+            relationType: '',
             validation: [],
             transformations: [],
             cleaner: [],
-            isReferenceEditable: "HIDE",
+            isReferenceEditable: 'HIDE',
           },
         ],
       });
-      console.log(
-        "Form reset complete, attributes length:",
-        data?.attributes?.length || 1
-      );
+      console.log('Form reset complete, attributes length:', data?.attributes?.length || 1);
     }
   }, [open, data, reset]);
 
@@ -437,22 +403,22 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
     } else {
       setIsFormReady(false);
       reset({
-        name: "",
-        description: "",
+        name: '',
+        description: '',
         attributes: [
           {
-            name: "",
-            mappingName: "",
-            type: "",
-            required: "Not Mandatory",
-            optionAttributeId: "",
-            refEntityId: "",
-            refEntityField: "",
-            relationType: "",
+            name: '',
+            mappingName: '',
+            type: '',
+            required: 'Not Mandatory',
+            optionAttributeId: '',
+            refEntityId: '',
+            refEntityField: '',
+            relationType: '',
             validation: [],
             transformations: [],
             cleaner: [],
-            isReferenceEditable: "HIDE",
+            isReferenceEditable: 'HIDE',
           },
         ],
       });
@@ -461,11 +427,11 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
 
   const { fields, append, remove, replace } = useFieldArray({
     control,
-    name: "attributes",
+    name: 'attributes',
   });
 
   useEffect(() => {
-    console.log("Fields length after render:", fields.length);
+    console.log('Fields length after render:', fields.length);
   }, [fields]);
 
   const [referenceEntityNames, setReferenceEntityNames] = useState<{
@@ -477,29 +443,19 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
   const [isLoadingReferences, setIsLoadingReferences] = useState<{
     [key: number]: boolean;
   }>({});
-  const attributes = watch("attributes");
+  const attributes = watch('attributes');
   const prevEntityIdsRef = useRef<string[]>([]);
   const referenceEntityIdsString =
     attributes
-      ?.map((attr) =>
-        typeof attr.refEntityId === "object"
-          ? (attr.refEntityId as any)?._id
-          : attr.refEntityId
-      )
-      .join(",") || "";
+      ?.map((attr) => (typeof attr.refEntityId === 'object' ? (attr.refEntityId as any)?._id : attr.refEntityId))
+      .join(',') || '';
 
   useEffect(() => {
     if (open && isFormReady) {
       attributes?.forEach((attribute, index) => {
         const entityId =
-          typeof attribute?.refEntityId === "object"
-            ? (attribute?.refEntityId as any)?._id
-            : attribute?.refEntityId;
-        if (
-          !entityId ||
-          entityId === prevEntityIdsRef.current[index] ||
-          !/^[a-f\d]{24}$/i.test(entityId)
-        ) {
+          typeof attribute?.refEntityId === 'object' ? (attribute?.refEntityId as any)?._id : attribute?.refEntityId;
+        if (!entityId || entityId === prevEntityIdsRef.current[index] || !/^[a-f\d]{24}$/i.test(entityId)) {
           if (!referenceEntityNames[index]) {
             setReferenceEntityNames((prev) => ({ ...prev, [index]: [] }));
           }
@@ -513,10 +469,8 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
         axiosInstance
           .get(`/common/entities/${entityId}`)
           .then((res) => {
-            const namesArr =
-              res.data?.data?.attributes?.map((f: any) => f.name || "") || [];
-            const typesArr =
-              res.data?.data?.attributes?.map((f: any) => f._id || "") || [];
+            const namesArr = res.data?.data?.attributes?.map((f: any) => f.name || '') || [];
+            const typesArr = res.data?.data?.attributes?.map((f: any) => f._id || '') || [];
             setReferenceEntityNames((prev) => ({
               ...prev,
               [index]: namesArr,
@@ -528,9 +482,7 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
           })
           .catch((error) => {
             console.error(`Failed to fetch entity ${entityId}:`, error);
-            toast.error(
-              `Failed to load reference entity data for ID ${entityId}`
-            );
+            toast.error(`Failed to load reference entity data for ID ${entityId}`);
             setReferenceEntityNames((prev) => ({ ...prev, [index]: [] }));
             setReferenceEntityTypes((prev) => ({ ...prev, [index]: [] }));
           })
@@ -540,9 +492,7 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
       });
       prevEntityIdsRef.current =
         attributes?.map((attr) =>
-          typeof attr.refEntityId === "object"
-            ? (attr.refEntityId as any)?._id
-            : attr.refEntityId
+          typeof attr.refEntityId === 'object' ? (attr.refEntityId as any)?._id : attr.refEntityId
         ) || [];
     }
   }, [open, isFormReady, attributes, referenceEntityIdsString]);
@@ -552,11 +502,8 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
       const selectedFile = event.target.files[0];
       setFile(selectedFile);
       setFileName(selectedFile.name);
-      if (
-        !selectedFile.name.endsWith(".xlsx") &&
-        !selectedFile.name.endsWith(".xls")
-      ) {
-        toast.error("Please upload a valid Excel file.");
+      if (!selectedFile.name.endsWith('.xlsx') && !selectedFile.name.endsWith('.xls')) {
+        toast.error('Please upload a valid Excel file.');
         setFileName(null);
         setFile(null);
         setFileUploadLoader(false);
@@ -571,16 +518,14 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
           try {
             await workbook.xlsx.load(arrayBuffer);
           } catch {
-            toast.error(
-              "Failed to load the Excel file. Ensure the file is valid."
-            );
+            toast.error('Failed to load the Excel file. Ensure the file is valid.');
             setFileName(null);
             setFile(null);
             setFileUploadLoader(false);
             return;
           }
           if (!workbook.worksheets || workbook.worksheets.length === 0) {
-            toast.error("No sheets found in the Excel file.");
+            toast.error('No sheets found in the Excel file.');
             setFileName(null);
             setFile(null);
             setFileUploadLoader(false);
@@ -594,25 +539,25 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
               const actualHeaderName = cell.value.toString().trim();
               const cleanedName = cell.value
                 .toString()
-                .replace(/[^a-zA-Z0-9/]/g, "")
-                .replace(/\//g, " or ")
-                .replace(/\s+/g, " ")
+                .replace(/[^a-zA-Z0-9/]/g, '')
+                .replace(/\//g, ' or ')
+                .replace(/\s+/g, ' ')
                 .trim();
               if (!uniqueNames.has(cleanedName)) {
                 uniqueNames.add(cleanedName);
                 headers.push({
                   name: cleanedName,
                   mappingName: actualHeaderName,
-                  type: "text",
-                  optionAttributeId: "",
-                  refEntityId: "",
-                  refEntityField: "",
-                  relationType: "",
+                  type: 'text',
+                  optionAttributeId: '',
+                  refEntityId: '',
+                  refEntityField: '',
+                  relationType: '',
                   validation: [],
                   transformations: [],
                   cleaner: [],
-                  required: "Not Mandatory",
-                  isReferenceEditable: "HIDE",
+                  required: 'Not Mandatory',
+                  isReferenceEditable: 'HIDE',
                 });
               }
             }
@@ -620,11 +565,11 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
           worksheet.getRow(2).eachCell((cell, colNumber) => {
             if (headers[colNumber - 1] != undefined) {
               const firstValue = cell.value;
-              let type: FormAttribute["type"] = "text";
-              if (typeof firstValue === "number") {
-                type = "number";
+              let type: FormAttribute['type'] = 'text';
+              if (typeof firstValue === 'number') {
+                type = 'number';
               } else if (firstValue instanceof Date) {
-                type = "date";
+                type = 'date';
               }
               headers[colNumber - 1].type = type;
             }
@@ -632,15 +577,13 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
           if (headers.length > 0) {
             replace(headers);
           } else {
-            toast.error("Headers not found.");
+            toast.error('Headers not found.');
             setFileName(null);
             setFile(null);
           }
           setFileUploadLoader(false);
         } catch (e) {
-          toast.error(
-            "Something went wrong while processing the file. Please try again."
-          );
+          toast.error('Something went wrong while processing the file. Please try again.');
           setFileName(null);
           setFile(null);
           setFileUploadLoader(false);
@@ -652,7 +595,7 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
   };
 
   const createEntity = usePost<EntityRequestPayload, EntityResponse>(
-    ["createEntity"],
+    ['createEntity'],
     (data) => {
       if (data?.success) {
         setReloadEntity(true);
@@ -666,7 +609,7 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
   );
 
   const updateEntity = usePut<EntityRequestPayload, EntityResponse>(
-    ["updateEntity"],
+    ['updateEntity'],
     (data) => {
       if (data?.success) {
         setReloadEntity(true);
@@ -684,29 +627,27 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
       (_, index) => referenceEntityNames[index] && referenceEntityTypes[index]
     );
     if (!isReferenceDataLoaded) {
-      toast.error("Reference entity data is still loading. Please wait.");
+      toast.error('Reference entity data is still loading. Please wait.');
       return;
     }
-    console.log("Form data before processing222222222222:", formData);
+    console.log('Form data before processing222222222222:', formData);
     const newAttributes = formData.attributes?.map((data, index) => {
       const { refEntityId, refEntityField, relationType, ...rest } = data;
       const updated: any = {
         ...rest,
-        required: data.required === "Mandatory" ? true : false,
-        isReferenceEditable: data.isReferenceEditable || "HIDE"
+        required: data.required === 'Mandatory' ? true : false,
+        isReferenceEditable: data.isReferenceEditable || 'HIDE',
       };
-      console.log("2222:", updated);
+      console.log('2222:', updated);
 
-      if (!["option", "multioption"].includes(data.type)) {
+      if (!["option", "multioption", "text-with-option"].includes(data.type)) {
         updated.optionAttributeId = "";
       }
       if (refEntityId && refEntityField && relationType) {
         const selectedName = refEntityField;
         const typeIndex = referenceEntityNames[index]?.indexOf(selectedName);
         const selectedType =
-          typeIndex !== -1 && typeIndex !== undefined
-            ? referenceEntityTypes[index]?.[typeIndex] || ""
-            : refEntityField;
+          typeIndex !== -1 && typeIndex !== undefined ? referenceEntityTypes[index]?.[typeIndex] || '' : refEntityField;
         updated.referenceEntitySetting = {
           refEntityId,
           refEntityField: selectedType,
@@ -716,9 +657,9 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
       return updated;
     });
     const newFormData = { ...formData, attributes: newAttributes };
-    console.log("newFormData:", newFormData);
+    console.log('newFormData:', newFormData);
     if (data && data._id) {
-      console.log("Updating entity with ID:", data._id);
+      console.log('Updating entity with ID:', data._id);
       updateEntity.mutate({
         url: `${POST.UPDATE_ENTITY}/${data._id}`,
         payload: newFormData,
@@ -746,10 +687,11 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
         onClose={handleCancel}
         PaperProps={{
           sx: {
-            backgroundColor:
-              theme.palette.dialog?.background || STYLE_GUIDE.COLORS.white,
-            border: `1px solid ${theme.palette.dialog?.border || theme.palette.border?.main || STYLE_GUIDE.COLORS.borderGray}`,
-            borderRadius: theme.palette.dialog?.borderRadius || "8px",
+            backgroundColor: theme.palette.dialog?.background || STYLE_GUIDE.COLORS.white,
+            border: `1px solid ${
+              theme.palette.dialog?.border || theme.palette.border?.main || STYLE_GUIDE.COLORS.borderGray
+            }`,
+            borderRadius: theme.palette.dialog?.borderRadius || '8px',
             boxShadow: theme.palette.dialog?.shadow || STYLE_GUIDE.SHADOWS.lg,
           },
         }}
@@ -757,19 +699,15 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
         <DialogTitle
           sx={{
             ...getDialogTitleSx(),
-            color:
-              theme.palette.dialog?.titleColor ||
-              STYLE_GUIDE.COLORS.textDarkGray,
+            color: theme.palette.dialog?.titleColor || STYLE_GUIDE.COLORS.textDarkGray,
           }}
         >
           {title}
         </DialogTitle>
         <DialogContent
           sx={{
-            color:
-              theme.palette.dialog?.contentColor ||
-              STYLE_GUIDE.COLORS.textDarkGray,
-            fontSize: theme.palette.dialog?.contentFontSize || "1rem",
+            color: theme.palette.dialog?.contentColor || STYLE_GUIDE.COLORS.textDarkGray,
+            fontSize: theme.palette.dialog?.contentFontSize || '1rem',
             borderTop: `1px solid ${theme.palette.divider}`,
             borderBottom: `1px solid ${theme.palette.divider}`,
           }}
@@ -779,45 +717,45 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
               <TextField
                 label="Entity Name*"
                 fullWidth
-                {...register("name", {
-                  required: "Entity Name is required",
+                {...register('name', {
+                  required: 'Entity Name is required',
                   pattern: {
                     value: /^[A-Za-z\s]+$/,
-                    message: "Entity Name must contain only letters",
+                    message: 'Entity Name must contain only letters',
                   },
                 })}
                 error={!!errors.name}
                 helperText={errors.name?.message}
                 sx={{
-                  "& .MuiOutlinedInput-root": {
+                  '& .MuiOutlinedInput-root': {
                     borderRadius: STYLE_GUIDE.SPACING.s2,
-                    alignItems: "flex-start",
+                    alignItems: 'flex-start',
                     paddingRight: STYLE_GUIDE.SPACING.s2,
-                    fontSize: "14px",
+                    fontSize: '14px',
                     backgroundColor: STYLE_GUIDE.COLORS.white,
-                    "& fieldset": {
+                    '& fieldset': {
                       borderColor: STYLE_GUIDE.COLORS.darkBackground,
                     },
-                    "&:hover fieldset": {
+                    '&:hover fieldset': {
                       borderColor: STYLE_GUIDE.COLORS.darkBorderHover,
                     },
-                    "&.Mui-focused fieldset": {
+                    '&.Mui-focused fieldset': {
                       borderColor: STYLE_GUIDE.COLORS.inputFocusFallback,
                     },
                   },
-                  "& .MuiInputLabel-root": {
+                  '& .MuiInputLabel-root': {
                     color: STYLE_GUIDE.COLORS.darkBorderFocus,
                   },
-                  "& .MuiInputLabel-root.Mui-focused": {
+                  '& .MuiInputLabel-root.Mui-focused': {
                     color: STYLE_GUIDE.COLORS.inputFocusFallback,
                   },
-                  "& .MuiInputBase-input": {
+                  '& .MuiInputBase-input': {
                     color: `${STYLE_GUIDE.COLORS.textDarkGray} !important`,
                   },
-                  "& .MuiInputBase-input::placeholder": {
+                  '& .MuiInputBase-input::placeholder': {
                     color: `${STYLE_GUIDE.COLORS.textSecondary} !important`,
                   },
-                  "& .MuiInputBase-input:-webkit-autofill": {
+                  '& .MuiInputBase-input:-webkit-autofill': {
                     WebkitTextFillColor: `${STYLE_GUIDE.COLORS.textDarkGray} !important`,
                     WebkitBoxShadow: `0 0 0 1000px ${STYLE_GUIDE.COLORS.white} inset !important`,
                   },
@@ -828,39 +766,39 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
                 fullWidth
                 multiline
                 rows={4}
-                {...register("description")}
+                {...register('description')}
                 error={!!errors.description}
                 helperText={errors.description?.message}
                 sx={{
-                  "& .MuiOutlinedInput-root": {
+                  '& .MuiOutlinedInput-root': {
                     borderRadius: STYLE_GUIDE.SPACING.s2,
-                    alignItems: "flex-start",
+                    alignItems: 'flex-start',
                     paddingRight: STYLE_GUIDE.SPACING.s2,
-                    fontSize: "14px",
+                    fontSize: '14px',
                     backgroundColor: STYLE_GUIDE.COLORS.white,
-                    "& fieldset": {
+                    '& fieldset': {
                       borderColor: STYLE_GUIDE.COLORS.darkBackground,
                     },
-                    "&:hover fieldset": {
+                    '&:hover fieldset': {
                       borderColor: STYLE_GUIDE.COLORS.darkBorderHover,
                     },
-                    "&.Mui-focused fieldset": {
+                    '&.Mui-focused fieldset': {
                       borderColor: STYLE_GUIDE.COLORS.inputFocusFallback,
                     },
                   },
-                  "& .MuiInputLabel-root": {
+                  '& .MuiInputLabel-root': {
                     color: STYLE_GUIDE.COLORS.darkBorderFocus,
                   },
-                  "& .MuiInputLabel-root.Mui-focused": {
+                  '& .MuiInputLabel-root.Mui-focused': {
                     color: STYLE_GUIDE.COLORS.inputFocusFallback,
                   },
-                  "& .MuiInputBase-input": {
+                  '& .MuiInputBase-input': {
                     color: `${STYLE_GUIDE.COLORS.textDarkGray} !important`,
                   },
-                  "& .MuiInputBase-input::placeholder": {
+                  '& .MuiInputBase-input::placeholder': {
                     color: `${STYLE_GUIDE.COLORS.textSecondary} !important`,
                   },
-                  "& .MuiInputBase-input:-webkit-autofill": {
+                  '& .MuiInputBase-input:-webkit-autofill': {
                     WebkitTextFillColor: `${STYLE_GUIDE.COLORS.textDarkGray} !important`,
                     WebkitBoxShadow: `0 0 0 1000px ${STYLE_GUIDE.COLORS.white} inset !important`,
                   },
@@ -869,11 +807,7 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
               {fileUploadLoader ? (
                 <ProgressBar />
               ) : (
-                <FileUploadButton
-                  fileName={fileName}
-                  onFileChange={handleFileChange}
-                  buttonName={"Upload File"}
-                />
+                <FileUploadButton fileName={fileName} onFileChange={handleFileChange} buttonName={'Upload File'} />
               )}
               <Divider sx={{ my: 3 }} />
               {fields.map((attribute, index) => (
@@ -898,18 +832,18 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
                 onClick={() => {
                   const newIndex = fields.length;
                   append({
-                    name: "",
-                    mappingName: "",
-                    type: "",
-                    required: "Not Mandatory",
-                    optionAttributeId: "",
-                    refEntityId: "",
-                    refEntityField: "",
-                    relationType: "",
+                    name: '',
+                    mappingName: '',
+                    type: '',
+                    required: 'Not Mandatory',
+                    optionAttributeId: '',
+                    refEntityId: '',
+                    refEntityField: '',
+                    relationType: '',
                     validation: [],
                     transformations: [],
                     cleaner: [],
-                    isReferenceEditable: "HIDE",
+                    isReferenceEditable: 'HIDE',
                   });
                   setReferenceEntityNames((prev) => ({
                     ...prev,
@@ -938,7 +872,7 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
               <Button
                 onClick={handleCancel}
                 color="error"
-                sx={{ fontSize: 18, fontWeight: "bold", p: 1, pl: 2, pr: 2 }}
+                sx={{ fontSize: 18, fontWeight: 'bold', p: 1, pl: 2, pr: 2 }}
               >
                 Cancel
               </Button>
@@ -947,10 +881,8 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
                 onClick={handleSubmit(onSubmit)}
                 variant="contained"
                 color="primary"
-                sx={{ fontSize: 18, fontWeight: "bold", p: 1, pl: 2, pr: 2 }}
-                disabled={attributes?.some(
-                  (_, index) => isLoadingReferences[index]
-                )}
+                sx={{ fontSize: 18, fontWeight: 'bold', p: 1, pl: 2, pr: 2 }}
+                disabled={attributes?.some((_, index) => isLoadingReferences[index])}
               >
                 Save Entity
               </Button>

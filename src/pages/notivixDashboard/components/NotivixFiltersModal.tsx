@@ -27,6 +27,7 @@ import useGet from '../../../hooks/useGet';
 import axiosInstance from '../../../services/axiosInstance';
 import { GET } from '../../../services/apiRoutes';
 import { useQueryClient } from '@tanstack/react-query';
+import DatePicker, { Calendar, DateObject } from 'react-multi-date-picker';
 
 interface NotivixFiltersModalProps {
   open: boolean;
@@ -56,6 +57,7 @@ interface EntityFieldOption {
     refAttributeId?: string[];
     type: string;
     isDerived?: boolean;
+    optionAttributeId: string;
   };
 }
 
@@ -145,6 +147,11 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
   const [filters, setFilters] = useState<Record<string, any>>(currentFilters);
   const [optionsCache, setOptionsCache] = useState<Record<string, string[]>>({});
   const [derivedFieldsCache, setDerivedFieldsCache] = useState<Record<string, string[]>>({});
+
+  // Changed: Store date range values per field using uniqueKey
+  const [dateRangeValues, setDateRangeValues] = useState<Record<string, DateObject[]>>({});
+  const [focusedFields, setFocusedFields] = useState<Record<string, boolean>>({});
+
   const queryClient = useQueryClient();
 
   // Fetch data source details
@@ -185,16 +192,40 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
     dataSourceQuery.data?.data.entityFieldOptions?.forEach((option) => {
       // Create unique key by combining attributeId with refAttributeId array
       const refKey = option.value.refAttributeId?.length > 0 ? `-${option.value.refAttributeId.join('-')}` : '';
-      const uniqueKey = `${option.value.attributeId}${refKey}`;
+      const uniqueKey = `${option.label}${option.value.attributeId}${refKey}`;
       map[uniqueKey] = option;
+    });
+    return map;
+  }, [dataSourceQuery.data]);
+
+  const entityFieldOptionsMapByAttributeId = React.useMemo(() => {
+    const map: Record<string, EntityFieldOption> = {};
+    let originalAttributeId: string;
+    dataSourceQuery.data?.data.entityFieldOptions?.forEach((option) => {
+      let isFieldSettingExist = filteredFieldSettings.filter((field) => field['mappedAttributeName'] == option.label);
+      if(isFieldSettingExist.length > 0){
+    
+        originalAttributeId = option?.value?.attributeId;
+        if (option?.value?.refAttributeId?.length > 0) {
+          originalAttributeId = option?.value?.refAttributeId[option?.value?.refAttributeId?.length - 1];
+        }
+        map[originalAttributeId] = option;
+      }
     });
     return map;
   }, [dataSourceQuery.data]);
 
   const entityAttributeOptionMap = React.useMemo(() => {
     const attrMap: Record<string, string | null> = {};
-    dataSourceQuery.data?.data?.entityId?.attributes?.forEach((attr) => {
-      attrMap[attr._id] = attr.optionAttributeId;
+    let originalAttributeId: string;
+    dataSourceQuery.data?.data?.fieldSettings.forEach((attr) => {
+      originalAttributeId = attr?.attributeId;
+      if (attr?.refAttributeId?.length > 0) {
+        originalAttributeId = attr?.refAttributeId[attr?.refAttributeId?.length - 1];
+      }
+      attrMap[originalAttributeId] = entityFieldOptionsMapByAttributeId[originalAttributeId]
+        ? entityFieldOptionsMapByAttributeId[originalAttributeId]?.value?.optionAttributeId
+        : null;
     });
     return attrMap;
   }, [dataSourceQuery.data]);
@@ -245,15 +276,20 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
   // Load options for option/multioption fields
   useEffect(() => {
     if (filteredFieldSettings.length > 0) {
+      let originalAttributeId: string;
       const fetchOptions = async () => {
         const promises = filteredFieldSettings.map(async (field) => {
-          if (field.type === 'option' || field.type === 'multioption') {
+          if (field.type === 'option' || field.type === 'multioption' || field.type === 'text-with-option') {
+            originalAttributeId = field?.attributeId;
+            if (field?.refAttributeId?.length > 0) {
+              originalAttributeId = field?.refAttributeId[field?.refAttributeId?.length - 1];
+            }
             if (field.isDerived) {
               // Fetch derived field options
-              await fetchDerivedFieldOptions(field.attributeId);
-            } else if (!!entityAttributeOptionMap[field.attributeId]) {
+              await fetchDerivedFieldOptions(originalAttributeId);
+            } else if (!!entityAttributeOptionMap[originalAttributeId]) {
               // Fetch regular attribute options
-              await fetchAttributeOptions(entityAttributeOptionMap[field.attributeId]!);
+              await fetchAttributeOptions(entityAttributeOptionMap[originalAttributeId]!);
             }
           }
         });
@@ -278,13 +314,14 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
         }
       }
     });
-
     onApplyFilters(transformedFilters);
     onClose();
   };
 
   const handleClearFilters = () => {
     setFilters({});
+    setDateRangeValues({}); // Changed: Clear all date range values
+    setFocusedFields({}); // Changed: Clear all focused fields
     onApplyFilters({});
   };
 
@@ -292,6 +329,26 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
     setFilters((prev) => ({
       ...prev,
       [uniqueKey]: value,
+    }));
+  };
+
+  // Changed: Helper functions for date range management
+  const handleDateRangeChange = (uniqueKey: string, dateRange: DateObject[]) => {
+    setDateRangeValues((prev) => ({
+      ...prev,
+      [uniqueKey]: dateRange,
+    }));
+
+    handleFilterChange(uniqueKey, {
+      startDate: dateRange?.[0]?.format?.('YYYY-MM-DD') || '',
+      endDate: dateRange?.[1]?.format?.('YYYY-MM-DD') || '',
+    });
+  };
+
+  const handleDateRangeFocus = (uniqueKey: string, focused: boolean) => {
+    setFocusedFields((prev) => ({
+      ...prev,
+      [uniqueKey]: focused,
     }));
   };
 
@@ -306,21 +363,24 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
   );
 
   const renderFilterField = (field: FieldSetting) => {
-    console.log(field, 'fieldKishan');
-
     // Generate the same unique key used in entityFieldOptionsMap
     const refKey = field.refAttributeId?.length > 0 ? `-${field.refAttributeId.join('-')}` : '';
-    const uniqueKey = `${field.attributeId}${refKey}`;
-
     // Get options based on field type
     let options: string[] = [];
-    if (field.type === 'option' || field.type === 'multioption') {
+    let originalAttributeId: string = field?.attributeId;
+    if (field?.refAttributeId?.length > 0) {
+        originalAttributeId = field?.refAttributeId[field?.refAttributeId?.length - 1];
+    }
+    if (field.type === 'option' || field.type === 'multioption' || field.type === 'text-with-option') {
       if (field.isDerived) {
-        options = derivedFieldsCache[field.attributeId] || [];
-      } else if (entityAttributeOptionMap[field.attributeId]) {
-        options = optionsCache[entityAttributeOptionMap[field.attributeId]!] || [];
+        options = derivedFieldsCache[originalAttributeId] || [];
+      } else if (entityAttributeOptionMap[originalAttributeId]) {
+        options = optionsCache[entityAttributeOptionMap[originalAttributeId]!] || [];
       }
     }
+    const uniqueKey = `${entityFieldOptionsMapByAttributeId[originalAttributeId]?.label || ''}${
+      field.attributeId
+    }${refKey}`;
     const currentValue = filters[uniqueKey];
 
     switch (field.type) {
@@ -392,57 +452,39 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
             }}
           />
         );
-      case 'dateRange':
+
+      case 'date-range':
+        // Changed: Use field-specific state for date range
+        const fieldDateRangeValue = dateRangeValues[uniqueKey] || [];
+        const isFieldFocused = focusedFields[uniqueKey] || false;
+
         return (
-          <Stack key={uniqueKey} spacing={STYLE_GUIDE.SPACING.s2}>
-            <Typography variant="subtitle2" color="text.secondary">
-              {field.label}
-            </Typography>
-            <Stack direction="row" spacing={STYLE_GUIDE.SPACING.s2}>
-              <TextField
-                label="Start Date"
-                type="date"
-                value={currentValue?.startDate || ''}
-                onChange={(e) =>
-                  handleFilterChange(uniqueKey, {
-                    ...currentValue,
-                    startDate: e.target.value,
-                  })
-                }
-                size="small"
-                InputLabelProps={{ shrink: true }}
-                sx={{
-                  '& .MuiOutlinedInput-root': {
-                    backgroundColor: theme.getDropdownBackground(),
-                    '& fieldset': {
-                      borderColor: theme.getInputBorderColor(),
-                    },
-                  },
-                }}
-              />
-              <TextField
-                label="End Date"
-                type="date"
-                value={currentValue?.endDate || ''}
-                onChange={(e) =>
-                  handleFilterChange(uniqueKey, {
-                    ...currentValue,
-                    endDate: e.target.value,
-                  })
-                }
-                size="small"
-                InputLabelProps={{ shrink: true }}
-                sx={{
-                  '& .MuiOutlinedInput-root': {
-                    backgroundColor: theme.getDropdownBackground(),
-                    '& fieldset': {
-                      borderColor: theme.getInputBorderColor(),
-                    },
-                  },
-                }}
-              />
-            </Stack>
-          </Stack>
+          <Box key={uniqueKey}>
+            <DatePicker
+              onOpen={() => handleDateRangeFocus(uniqueKey, true)}
+              onClose={() => handleDateRangeFocus(uniqueKey, false)}
+              calendarPosition="top"
+              value={fieldDateRangeValue}
+              onChange={(dateRange) => handleDateRangeChange(uniqueKey, dateRange)}
+              range
+              placeholder={`${field.label}`}
+              numberOfMonths={2}
+              showOtherDays
+              inputClass="w-full"
+              style={{
+                width: '100%',
+                padding: '10px 14px',
+                fontSize: '16px',
+                borderRadius: 4,
+                background: theme.getDropdownBackground(),
+                border: `1px solid ${
+                  isFieldFocused ? theme.input?.focusBorder || 'blue' : theme.getInputBorderColor()
+                }`,
+                color: theme.getInputTextColor(),
+                outline: 'none',
+              }}
+            />
+          </Box>
         );
       case 'option':
         return (
@@ -477,6 +519,7 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
           </FormControl>
         );
       case 'multioption':
+      case 'text-with-option':
         return (
           <FormControl key={uniqueKey} fullWidth size="small">
             <InputLabel sx={{ color: theme.palette.text.secondary }}>
@@ -582,6 +625,7 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
         sx: {
           backgroundColor: theme.palette.background.paper,
           borderRadius: STYLE_GUIDE.SPACING.s2,
+          overflow: 'visible',
         },
       }}
     >
@@ -595,7 +639,15 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
           Filters
         </Typography>
       </DialogTitle>
-      <DialogContent sx={{ pt: STYLE_GUIDE.SPACING.s4 }}>
+      <DialogContent
+        sx={{
+          fontSize: '14px', // normal body font
+          '& .rmdp-input': {
+            fontSize: '14px',
+            lineHeight: '20px',
+          },
+        }}
+      >
         {isLoading || dataSourceQuery.isLoading ? (
           <Box
             sx={{
