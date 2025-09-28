@@ -682,6 +682,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ title: initialTitl
               endVersionValue={currentDashboard?.settings?.dashboardType === 'normal' ? '' : endVersionValue || ''}
               versionValue={versionValue || ''}
               isTrend={currentDashboard?.settings?.dashboardType === 'trend'}
+              dashboardFilters={dashboardFilters}
             />
           )}
         </Box>

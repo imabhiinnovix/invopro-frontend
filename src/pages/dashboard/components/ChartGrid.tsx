@@ -389,7 +389,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
         dispatch(fetchChartData({ dashboardId, dashboardFilters }));
       }
     }
-  }, [dispatch, dashboardId]);
+  }, [dispatch, dashboardId, dashboardFilters]);
 
   const handleMenuClick = (event: React.MouseEvent<HTMLElement>, chart: ChartResponse) => {
     event.stopPropagation();

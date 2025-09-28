@@ -18,7 +18,7 @@ export interface Dashboard {
     endVersionValue: string;
     startVersionValue: string;
     versionValue: string;
-    dataSource: any
+    dataSource: any;
   };
   createdAt: string;
   updatedAt: string;
@@ -385,6 +385,7 @@ export interface ChartGridProps {
   versionValue?: string;
   isTrend?: boolean;
   isNaturalLangauage?: boolean;
+  dashboardFilters: any;
 }
 
 export interface ChartDataItem {
