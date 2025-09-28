@@ -51,7 +51,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ title: initialTitl
   const temporaryCharts = useAppSelector((state) => state.dashboard.temporaryCharts);
   const dashboards = useAppSelector((state) => state.dashboard.dashboards);
   const currentDashboard = dashboards.find((d) => d._id === dashboardId);
-
+  const [isFiltersModalOpen, setIsFiltersModalOpen] = useState(false);
+  const [dashboardFilters, setDashboardFilters] = useState<any>({});
   const { themes } = useAppSelector((state) => state.theme);
 
   const postGridColumns = usePost(['']);
