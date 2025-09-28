@@ -68,6 +68,13 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ title: initialTitl
       setIsFiltersModalOpen(true);
     }
   };
+
+  const handleCloseFiltersModal = () => {
+    setIsFiltersModalOpen(false);
+  };
+  const handleApplyFilters = async (filters: any) => {
+    setDashboardFilters(filters);
+  };
   const validationSchema = yup.object({
     versionValue: yup.string().nullable().optional(),
     startDate: yup
