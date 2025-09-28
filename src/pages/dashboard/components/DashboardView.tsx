@@ -57,6 +57,17 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ title: initialTitl
 
   const postGridColumns = usePost(['']);
 
+  const handleOpenFiltersModal = async () => {
+    if (currentDashboard?.settings?.dataSource?._id) {
+      try {
+        setIsFiltersModalOpen(true);
+      } catch (error) {
+        toast.error('Failed to load filters. Please try again.');
+      }
+    } else {
+      setIsFiltersModalOpen(true);
+    }
+  };
   const validationSchema = yup.object({
     versionValue: yup.string().nullable().optional(),
     startDate: yup
