@@ -166,6 +166,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ title: initialTitl
             startVersionValue,
             endVersionValue,
             versionValue,
+            dashboardFilters,
           })
         );
       } else if (
@@ -182,6 +183,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ title: initialTitl
             startVersionValue,
             endVersionValue,
             dashboardType: currentDashboard?.settings?.dashboardType,
+            dashboardFilters,
           })
         );
       }
@@ -364,6 +366,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ title: initialTitl
               startVersionValue,
               endVersionValue,
               versionValue: formattedVersionValue || '',
+              dashboardFilters,
             })
           );
         }
