@@ -1,14 +1,5 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
-import {
-  Box,
-  Typography,
-  TextField,
-  Button,
-  ButtonGroup,
-  Stack,
-  MenuItem,
-  SelectChangeEvent,
-} from '@mui/material';
+import { Box, Typography, TextField, Button, ButtonGroup, Stack, MenuItem, SelectChangeEvent } from '@mui/material';
 import StyledSelect from '../../../components/atom/common/StyledSelect';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
@@ -34,6 +25,7 @@ import { fetchThemeList } from '../../createTheme/themeActions';
 import { STYLE_GUIDE } from '../../../styles';
 import { useUnifiedTheme } from '../../../hooks/useUnifiedTheme';
 import { useComponentTypography } from '../../../hooks/useComponentTypography';
+import NotivixFiltersModal from '../../notivixDashboard/components/NotivixFiltersModal';
 
 interface DashboardViewProps {
   title: string;
@@ -427,10 +419,41 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ title: initialTitl
               onKeyDown={handleKeyPress}
               size="small"
               fullWidth
-              sx={{ '& .MuiOutlinedInput-root': { borderRadius: STYLE_GUIDE.SPACING.s2, alignItems: 'flex-start', paddingRight: STYLE_GUIDE.SPACING.s2, fontSize: '14px', backgroundColor: theme.getDropdownBackground(), '& fieldset': { borderColor: theme.getInputBorderColor(), }, '&:hover fieldset': { borderColor: theme.border?.hover || STYLE_GUIDE.COLORS.darkBorderHover, }, '&.Mui-focused fieldset': { borderColor: theme.input?.focusBorder || STYLE_GUIDE.COLORS.inputFocusFallback, }, }, '& .MuiInputLabel-root': { color: theme.palette.text.secondary, }, '& .MuiInputLabel-root.Mui-focused': { color: theme.input?.focusBorder || STYLE_GUIDE.COLORS.inputFocusFallback, }, '& .MuiInputBase-input': { color: `${theme.getInputTextColor()} !important`, }, '& .MuiInputBase-input::placeholder': { color: `${theme.palette.text.secondary} !important`, }, '& .MuiInputBase-input:-webkit-autofill': { WebkitTextFillColor: `${theme.getInputTextColor()} !important`, WebkitBoxShadow: `0 0 0 1000px ${theme.getDropdownBackground()} inset !important`, }, }}
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  borderRadius: STYLE_GUIDE.SPACING.s2,
+                  alignItems: 'flex-start',
+                  paddingRight: STYLE_GUIDE.SPACING.s2,
+                  fontSize: '14px',
+                  backgroundColor: theme.getDropdownBackground(),
+                  '& fieldset': { borderColor: theme.getInputBorderColor() },
+                  '&:hover fieldset': { borderColor: theme.border?.hover || STYLE_GUIDE.COLORS.darkBorderHover },
+                  '&.Mui-focused fieldset': {
+                    borderColor: theme.input?.focusBorder || STYLE_GUIDE.COLORS.inputFocusFallback,
+                  },
+                },
+                '& .MuiInputLabel-root': { color: theme.palette.text.secondary },
+                '& .MuiInputLabel-root.Mui-focused': {
+                  color: theme.input?.focusBorder || STYLE_GUIDE.COLORS.inputFocusFallback,
+                },
+                '& .MuiInputBase-input': { color: `${theme.getInputTextColor()} !important` },
+                '& .MuiInputBase-input::placeholder': { color: `${theme.palette.text.secondary} !important` },
+                '& .MuiInputBase-input:-webkit-autofill': {
+                  WebkitTextFillColor: `${theme.getInputTextColor()} !important`,
+                  WebkitBoxShadow: `0 0 0 1000px ${theme.getDropdownBackground()} inset !important`,
+                },
+              }}
             />
           ) : (
-            <Typography variant="h4" component="h1" sx={{ ...getHeadingSx(), mr: STYLE_GUIDE.SPACING.s4, fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.medium }}>
+            <Typography
+              variant="h4"
+              component="h1"
+              sx={{
+                ...getHeadingSx(),
+                mr: STYLE_GUIDE.SPACING.s4,
+                fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.medium,
+              }}
+            >
               {title}
             </Typography>
           )}
@@ -550,7 +573,13 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ title: initialTitl
                   </Stack>
                 ) : null}
               </Box>
-              <Button onClick={handleEditModeToggle} color="primary" variant="contained" startIcon={<EditIcon />} sx={{ ...getButtonSx() }}>
+              <Button
+                onClick={handleEditModeToggle}
+                color="primary"
+                variant="contained"
+                startIcon={<EditIcon />}
+                sx={{ ...getButtonSx() }}
+              >
                 Edit
               </Button>
             </>
@@ -664,6 +693,17 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ title: initialTitl
           </Box>
         )}
       </Box>
+      {!!currentDashboard?.settings?.dataSource?._id && (
+        <NotivixFiltersModal
+          open={isFiltersModalOpen}
+          onClose={handleCloseFiltersModal}
+          onApplyFilters={handleApplyFilters}
+          // currentFilters={currentFilters}
+          dataSourceId={currentDashboard?.settings?.dataSource?._id} // Pass your dataSourceId here
+          filterFlag="isFilterEnable" // Specify which flag to use for filtering
+          isLoading={dataSourceDetailsLoading}
+        />
+      )}
     </Box>
   );
 };
