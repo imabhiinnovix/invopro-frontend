@@ -1254,6 +1254,8 @@ import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import { useNavigate, useLocation } from "react-router-dom";
 import SourceIcon from "@mui/icons-material/Source";
 import HomeIcon from "@mui/icons-material/Home";
+import DashboardIcon from "@mui/icons-material/Dashboard";
+import NotificationsActiveIcon from '@mui/icons-material/NotificationsActive';
 import AssessmentIcon from "@mui/icons-material/Assessment";
 import PaletteIcon from "@mui/icons-material/Palette";
 import BrushIcon from "@mui/icons-material/Brush";
@@ -1679,7 +1681,7 @@ export default function SideNav() {
 
     const alertsMenuItem = {
       name: "Alerts",
-      icon: createIcon(SourceIcon, "/notification"),
+      icon: createIcon(NotificationsActiveIcon, "/notification"),
       route: "/notification",
     };
 
@@ -1688,9 +1690,9 @@ export default function SideNav() {
     );
 
     const notivixDefaultDashboard = {
-      name: defaultNotivixDash && defaultNotivixDash.name,
+      name: defaultNotivixDash && defaultNotivixDash.name ||"",
       icon: createIcon(
-        SourceIcon,
+        DashboardIcon,
         `/dashboard/${defaultNotivixDash && defaultNotivixDash._id}`
       ),
       route: `/dashboard/${defaultNotivixDash && defaultNotivixDash._id}`,
@@ -1716,10 +1718,10 @@ export default function SideNav() {
           ]
         : [];
     const dataSourceItems = [
+      notivixDefaultDashboard,
       ...monthlyDataSources,
       ...loadingIndicator,
       alertsMenuItem,
-      notivixDefaultDashboard,
       NotificationLogsMenuItem,
     ];
     // Data sources for Theme Settings submenu
