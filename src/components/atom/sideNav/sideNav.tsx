@@ -1437,6 +1437,11 @@ export default function SideNav() {
     })
     .map(([key, permission]) => permission.dataSourceId._id);
 
+  const defaultNotivixDash = dashboards.find(
+    (item) => item?.isDefaultNotivix === true
+  );
+  console.log("defaultNotivixDash", defaultNotivixDash);
+
   const closeAllDropdowns = () => {
     setOpenSettings(false);
     setOpenDashboard(false);
@@ -1677,6 +1682,20 @@ export default function SideNav() {
       icon: createIcon(SourceIcon, "/notification"),
       route: "/notification",
     };
+
+    const defaultNotivixDash = dashboards.find(
+      (item) => item?.isDefaultNotivix === true
+    );
+
+    const notivixDefaultDashboard = {
+      name: defaultNotivixDash && defaultNotivixDash.name,
+      icon: createIcon(
+        SourceIcon,
+        `/dashboard/${defaultNotivixDash && defaultNotivixDash._id}`
+      ),
+      route: `/dashboard/${defaultNotivixDash && defaultNotivixDash._id}`,
+    };
+
     const NotificationLogsMenuItem = {
       name: "Notification Logs",
       icon: createIcon(NotificationsIcon, "/notification-logs"),
@@ -1700,6 +1719,7 @@ export default function SideNav() {
       ...monthlyDataSources,
       ...loadingIndicator,
       alertsMenuItem,
+      notivixDefaultDashboard,
       NotificationLogsMenuItem,
     ];
     // Data sources for Theme Settings submenu
