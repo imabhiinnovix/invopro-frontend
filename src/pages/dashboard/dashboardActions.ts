@@ -276,7 +276,7 @@ export const fetchChartData = createAsyncThunk(
                   endVersionValue: dashboardType === 'trend' ? endVersionValue || '' : '',
                   versionValue: dashboardType === 'trend' ? '' : versionValue || '',
                   dynamicVersionValue: dashboardType === 'trend' ? '' : versionValue ? '' : '1m',
-                  ...dashboardFilters,
+                  filters: { ...dashboardFilters },
                 },
                 dashBoardType: dashboardType || 'normal',
                 isIncremental: chart.isIncremental,

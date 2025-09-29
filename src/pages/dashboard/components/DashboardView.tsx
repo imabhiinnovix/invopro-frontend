@@ -57,7 +57,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ title: initialTitl
   const [isFiltersModalOpen, setIsFiltersModalOpen] = useState(false);
   const [dashboardFilters, setDashboardFilters] = useState<any>({});
   const { dataSourceDetails, dataSourceDetailsLoading } = useAppSelector((state) => state.notivixDashboard);
-  const [statusToggle, setStatusToggle] = useState<'pending' | 'completed'>('pending');
+  const [statusToggle, setStatusToggle] = useState<'Pending' | 'Completed'>('Pending');
   const [dateRange, setDateRange] = useState<DateObject[] | null>(null);
   const [isDateRangeFocused, setIsDateRangeFocused] = useState(false);
   const { themes } = useAppSelector((state) => state.theme);
@@ -68,7 +68,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ title: initialTitl
     if (!!currentDashboard?.settings?.dataSource?._id) {
       setDashboardFilters((prev) => ({
         ...prev,
-        'Derived.Status': statusToggle,
+        'Derived.Case Status': statusToggle,
       }));
     }
   }, [currentDashboard?.settings?.dataSource?._id]);
@@ -85,12 +85,12 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ title: initialTitl
     }
   };
 
-  const handleStatusToggle = (event: React.MouseEvent<HTMLElement>, newStatus: 'pending' | 'completed' | null) => {
+  const handleStatusToggle = (event: React.MouseEvent<HTMLElement>, newStatus: 'Pending' | 'Completed' | null) => {
     if (newStatus !== null) {
       setStatusToggle(newStatus);
       setDashboardFilters((prev) => ({
         ...prev,
-        'Derived.Status': newStatus,
+        'Derived.Case Status': newStatus,
       }));
     }
   };
@@ -536,7 +536,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ title: initialTitl
                     size="small"
                   >
                     <ToggleButton
-                      value="pending"
+                      value="Pending"
                       aria-label="pending"
                       sx={{
                         px: STYLE_GUIDE.SPACING.s6,
@@ -554,7 +554,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ title: initialTitl
                       PENDING
                     </ToggleButton>
                     <ToggleButton
-                      value="completed"
+                      value="Completed"
                       aria-label="completed"
                       sx={{
                         px: STYLE_GUIDE.SPACING.s6,
