@@ -203,8 +203,7 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
     let originalAttributeId: string;
     dataSourceQuery.data?.data.entityFieldOptions?.forEach((option) => {
       let isFieldSettingExist = filteredFieldSettings.filter((field) => field['mappedAttributeName'] == option.label);
-      if(isFieldSettingExist.length > 0){
-    
+      if (isFieldSettingExist.length > 0) {
         originalAttributeId = option?.value?.attributeId;
         if (option?.value?.refAttributeId?.length > 0) {
           originalAttributeId = option?.value?.refAttributeId[option?.value?.refAttributeId?.length - 1];
@@ -369,7 +368,7 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
     let options: string[] = [];
     let originalAttributeId: string = field?.attributeId;
     if (field?.refAttributeId?.length > 0) {
-        originalAttributeId = field?.refAttributeId[field?.refAttributeId?.length - 1];
+      originalAttributeId = field?.refAttributeId[field?.refAttributeId?.length - 1];
     }
     if (field.type === 'option' || field.type === 'multioption' || field.type === 'text-with-option') {
       if (field.isDerived) {

@@ -1,14 +1,5 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
-import {
-  Box,
-  Typography,
-  TextField,
-  Button,
-  ButtonGroup,
-  Stack,
-  MenuItem,
-  SelectChangeEvent,
-} from '@mui/material';
+import { Box, Typography, TextField, Button, ButtonGroup, Stack, MenuItem, SelectChangeEvent } from '@mui/material';
 import StyledSelect from '../../../components/atom/common/StyledSelect';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
@@ -34,6 +25,10 @@ import { fetchThemeList } from '../../createTheme/themeActions';
 import { STYLE_GUIDE } from '../../../styles';
 import { useUnifiedTheme } from '../../../hooks/useUnifiedTheme';
 import { useComponentTypography } from '../../../hooks/useComponentTypography';
+import NotivixFiltersModal from '../../notivixDashboard/components/NotivixFiltersModal';
+import { GridFilterListIcon } from '@mui/x-data-grid';
+import { ToggleButton, ToggleButtonGroup } from '@mui/material';
+import DatePicker, { Calendar, DateObject } from 'react-multi-date-picker';
 
 interface DashboardViewProps {
   title: string;
@@ -59,11 +54,74 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ title: initialTitl
   const temporaryCharts = useAppSelector((state) => state.dashboard.temporaryCharts);
   const dashboards = useAppSelector((state) => state.dashboard.dashboards);
   const currentDashboard = dashboards.find((d) => d._id === dashboardId);
-
+  const [isFiltersModalOpen, setIsFiltersModalOpen] = useState(false);
+  const [dashboardFilters, setDashboardFilters] = useState<any>({});
+  const { dataSourceDetails, dataSourceDetailsLoading } = useAppSelector((state) => state.notivixDashboard);
+  const [statusToggle, setStatusToggle] = useState<'Pending' | 'Completed'>('Pending');
+  const [dateRange, setDateRange] = useState<DateObject[] | null>(null);
+  const [isDateRangeFocused, setIsDateRangeFocused] = useState(false);
   const { themes } = useAppSelector((state) => state.theme);
 
   const postGridColumns = usePost(['']);
 
+  useEffect(() => {
+    if (!!currentDashboard?.settings?.dataSource?._id) {
+      setDashboardFilters((prev) => ({
+        ...prev,
+        'Derived.Case Status': statusToggle,
+      }));
+    }
+  }, [currentDashboard?.settings?.dataSource?._id]);
+
+  const handleOpenFiltersModal = async () => {
+    if (currentDashboard?.settings?.dataSource?._id) {
+      try {
+        setIsFiltersModalOpen(true);
+      } catch (error) {
+        toast.error('Failed to load filters. Please try again.');
+      }
+    } else {
+      setIsFiltersModalOpen(true);
+    }
+  };
+
+  const handleStatusToggle = (event: React.MouseEvent<HTMLElement>, newStatus: 'Pending' | 'Completed' | null) => {
+    if (newStatus !== null) {
+      setStatusToggle(newStatus);
+      setDashboardFilters((prev) => ({
+        ...prev,
+        'Derived.Case Status': newStatus,
+      }));
+    }
+  };
+
+  const handleDateRangeChange = (dateRange: DateObject[] | DateObject | null) => {
+    const range = Array.isArray(dateRange) ? dateRange : dateRange ? [dateRange] : null;
+    setDateRange(range);
+
+    if (range && range.length === 2) {
+      const startDate = range[0].format('YYYY-MM-DD');
+      const endDate = range[1].format('YYYY-MM-DD');
+
+      setDashboardFilters((prev) => ({
+        ...prev,
+        DueDate: {
+          startDate,
+          endDate,
+        },
+      }));
+    }
+  };
+  const handleDateRangeFocus = (focused: boolean) => {
+    setIsDateRangeFocused(focused);
+  };
+
+  const handleCloseFiltersModal = () => {
+    setIsFiltersModalOpen(false);
+  };
+  const handleApplyFilters = async (filters: any) => {
+    setDashboardFilters(filters);
+  };
   const validationSchema = yup.object({
     versionValue: yup.string().nullable().optional(),
     startDate: yup
@@ -153,6 +211,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ title: initialTitl
             startVersionValue,
             endVersionValue,
             versionValue,
+            dashboardFilters,
           })
         );
       } else if (
@@ -169,6 +228,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ title: initialTitl
             startVersionValue,
             endVersionValue,
             dashboardType: currentDashboard?.settings?.dashboardType,
+            dashboardFilters,
           })
         );
       }
@@ -351,6 +411,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ title: initialTitl
               startVersionValue,
               endVersionValue,
               versionValue: formattedVersionValue || '',
+              dashboardFilters,
             })
           );
         }
@@ -427,12 +488,120 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ title: initialTitl
               onKeyDown={handleKeyPress}
               size="small"
               fullWidth
-              sx={{ '& .MuiOutlinedInput-root': { borderRadius: STYLE_GUIDE.SPACING.s2, alignItems: 'flex-start', paddingRight: STYLE_GUIDE.SPACING.s2, fontSize: '14px', backgroundColor: theme.getDropdownBackground(), '& fieldset': { borderColor: theme.getInputBorderColor(), }, '&:hover fieldset': { borderColor: theme.border?.hover || STYLE_GUIDE.COLORS.darkBorderHover, }, '&.Mui-focused fieldset': { borderColor: theme.input?.focusBorder || STYLE_GUIDE.COLORS.inputFocusFallback, }, }, '& .MuiInputLabel-root': { color: theme.palette.text.secondary, }, '& .MuiInputLabel-root.Mui-focused': { color: theme.input?.focusBorder || STYLE_GUIDE.COLORS.inputFocusFallback, }, '& .MuiInputBase-input': { color: `${theme.getInputTextColor()} !important`, }, '& .MuiInputBase-input::placeholder': { color: `${theme.palette.text.secondary} !important`, }, '& .MuiInputBase-input:-webkit-autofill': { WebkitTextFillColor: `${theme.getInputTextColor()} !important`, WebkitBoxShadow: `0 0 0 1000px ${theme.getDropdownBackground()} inset !important`, }, }}
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  borderRadius: STYLE_GUIDE.SPACING.s2,
+                  alignItems: 'flex-start',
+                  paddingRight: STYLE_GUIDE.SPACING.s2,
+                  fontSize: '14px',
+                  backgroundColor: theme.getDropdownBackground(),
+                  '& fieldset': { borderColor: theme.getInputBorderColor() },
+                  '&:hover fieldset': { borderColor: theme.border?.hover || STYLE_GUIDE.COLORS.darkBorderHover },
+                  '&.Mui-focused fieldset': {
+                    borderColor: theme.input?.focusBorder || STYLE_GUIDE.COLORS.inputFocusFallback,
+                  },
+                },
+                '& .MuiInputLabel-root': { color: theme.palette.text.secondary },
+                '& .MuiInputLabel-root.Mui-focused': {
+                  color: theme.input?.focusBorder || STYLE_GUIDE.COLORS.inputFocusFallback,
+                },
+                '& .MuiInputBase-input': { color: `${theme.getInputTextColor()} !important` },
+                '& .MuiInputBase-input::placeholder': { color: `${theme.palette.text.secondary} !important` },
+                '& .MuiInputBase-input:-webkit-autofill': {
+                  WebkitTextFillColor: `${theme.getInputTextColor()} !important`,
+                  WebkitBoxShadow: `0 0 0 1000px ${theme.getDropdownBackground()} inset !important`,
+                },
+              }}
             />
           ) : (
-            <Typography variant="h4" component="h1" sx={{ ...getHeadingSx(), mr: STYLE_GUIDE.SPACING.s4, fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.medium }}>
-              {title}
-            </Typography>
+            <Box sx={{ display: 'flex', gap: STYLE_GUIDE.SPACING.s4, alignItems: 'center' }}>
+              <Typography
+                variant="h4"
+                component="h1"
+                sx={{
+                  ...getHeadingSx(),
+                  mr: STYLE_GUIDE.SPACING.s4,
+                  fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.medium,
+                }}
+              >
+                {title}
+              </Typography>
+              {!!currentDashboard?.settings?.dataSource?._id && (
+                <>
+                  <ToggleButtonGroup
+                    value={statusToggle}
+                    exclusive
+                    onChange={handleStatusToggle}
+                    aria-label="status toggle"
+                    size="small"
+                  >
+                    <ToggleButton
+                      value="Pending"
+                      aria-label="pending"
+                      sx={{
+                        px: STYLE_GUIDE.SPACING.s6,
+                        color: theme.palette.text.primary,
+                        borderColor: theme.getInputBorderColor(),
+                        '&:hover': {
+                          borderColor: theme.border?.hover || STYLE_GUIDE.COLORS.darkBorderHover,
+                        },
+                        '&.Mui-selected': {
+                          backgroundColor: theme.palette.primary.main,
+                          color: theme.palette.primary.contrastText,
+                        },
+                      }}
+                    >
+                      PENDING
+                    </ToggleButton>
+                    <ToggleButton
+                      value="Completed"
+                      aria-label="completed"
+                      sx={{
+                        px: STYLE_GUIDE.SPACING.s6,
+                        color: theme.palette.text.primary,
+                        borderColor: theme.getInputBorderColor(),
+                        '&:hover': {
+                          borderColor: theme.border?.hover || STYLE_GUIDE.COLORS.darkBorderHover,
+                        },
+                        '&.Mui-selected': {
+                          backgroundColor: theme.palette.primary.main,
+                          color: theme.palette.primary.contrastText,
+                        },
+                      }}
+                    >
+                      COMPLETED
+                    </ToggleButton>
+                  </ToggleButtonGroup>
+                  {/* Date Range Picker */}
+                  <Box>
+                    <DatePicker
+                      onOpen={() => handleDateRangeFocus(true)}
+                      onClose={() => handleDateRangeFocus(false)}
+                      calendarPosition="top"
+                      value={dateRange}
+                      onChange={handleDateRangeChange}
+                      range
+                      placeholder="Select Date Range"
+                      numberOfMonths={2}
+                      showOtherDays
+                      inputClass="w-full"
+                      style={{
+                        width: '250px',
+                        padding: '10px 14px',
+                        fontSize: '16px',
+                        borderRadius: 4,
+                        background: theme.getDropdownBackground(),
+                        border: `1px solid ${
+                          isDateRangeFocused ? theme.input?.focusBorder || 'blue' : theme.getInputBorderColor()
+                        }`,
+                        color: theme.getInputTextColor(),
+                        outline: 'none',
+                      }}
+                    />
+                  </Box>
+                </>
+              )}
+            </Box>
           )}
         </Box>
 
@@ -501,6 +670,24 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ title: initialTitl
             </>
           ) : (
             <>
+              {!!currentDashboard?.settings?.dataSource?._id && (
+                <Button
+                  onClick={handleOpenFiltersModal}
+                  color="secondary"
+                  variant="outlined"
+                  startIcon={<GridFilterListIcon />}
+                  sx={{
+                    ...getButtonSx(),
+                    borderColor: theme.getInputBorderColor(),
+                    color: theme.palette.text.primary,
+                    '&:hover': {
+                      borderColor: theme.border?.hover || STYLE_GUIDE.COLORS.darkBorderHover,
+                    },
+                  }}
+                >
+                  Filters
+                </Button>
+              )}
               <Box>
                 {currentDashboard?.settings?.dashboardType === 'normal' ? (
                   <Box>
@@ -550,7 +737,13 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ title: initialTitl
                   </Stack>
                 ) : null}
               </Box>
-              <Button onClick={handleEditModeToggle} color="primary" variant="contained" startIcon={<EditIcon />} sx={{ ...getButtonSx() }}>
+              <Button
+                onClick={handleEditModeToggle}
+                color="primary"
+                variant="contained"
+                startIcon={<EditIcon />}
+                sx={{ ...getButtonSx() }}
+              >
                 Edit
               </Button>
             </>
@@ -611,6 +804,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ title: initialTitl
               endVersionValue={currentDashboard?.settings?.dashboardType === 'normal' ? '' : endVersionValue || ''}
               versionValue={versionValue || ''}
               isTrend={currentDashboard?.settings?.dashboardType === 'trend'}
+              dashboardFilters={dashboardFilters}
             />
           )}
         </Box>
@@ -664,6 +858,17 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ title: initialTitl
           </Box>
         )}
       </Box>
+      {!!currentDashboard?.settings?.dataSource?._id && (
+        <NotivixFiltersModal
+          open={isFiltersModalOpen}
+          onClose={handleCloseFiltersModal}
+          onApplyFilters={handleApplyFilters}
+          // currentFilters={currentFilters}
+          dataSourceId={currentDashboard?.settings?.dataSource?._id} // Pass your dataSourceId here
+          filterFlag="isFilterEnable" // Specify which flag to use for filtering
+          isLoading={dataSourceDetailsLoading}
+        />
+      )}
     </Box>
   );
 };
