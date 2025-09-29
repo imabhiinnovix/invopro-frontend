@@ -814,7 +814,6 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
     "#FFCD00", // SABIC Orange
     "#333333", // Neutral Dark Gray
     "#004B87", // SABIC Blue
-    // "#FFFFFF", // White
   ];
   function resolveGroupField(groupBy: string[], chart: any): string {
     if (!groupBy || groupBy.length === 0) return "";
@@ -994,7 +993,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
             label: item.name, // 👈 each name = legend
             data: labels.map((lbl) => (lbl === item.name ? item.data : 0)), // put value only at matching label, 0 elsewhere
             backgroundColor: getColor(i),
-            borderColor: "#FFFFFF",
+            borderColor: "#009FDF",
             borderWidth: 1,
             borderRadius: 4,
           };
@@ -1038,7 +1037,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
           label: group,
           data: values,
           backgroundColor: getColor(i),
-          borderColor: "#FFFFFF",
+          borderColor: "#009FDF",
           borderWidth: 1,
           borderRadius: 4,
         };
