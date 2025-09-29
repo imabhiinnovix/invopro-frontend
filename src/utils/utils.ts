@@ -556,3 +556,19 @@ export const polarAreaLabelsPlugin = {
     });
   },
 };
+
+
+export const arrayToString = (value?: string[] | string): string => {
+  if (Array.isArray(value)) {
+    return value.join(", ");
+  }
+  return value || "";
+};
+
+export const toArray = (value?: string | string[]): string[] => {
+  if (Array.isArray(value)) return value;
+  if (typeof value === "string" && value.trim() !== "") {
+    return value.split(",").map((g) => g.trim()).filter(Boolean);
+  }
+  return [];
+};

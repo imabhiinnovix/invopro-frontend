@@ -47,6 +47,7 @@ import { DateTime } from "luxon";
 import { STYLE_GUIDE } from "../../../styles";
 import axios from "axios";
 import { useUnifiedTheme } from "../../../hooks/useUnifiedTheme";
+import { arrayToString, toArray } from "../../../utils/utils";
 
 interface Position {
   x: number;
@@ -61,8 +62,8 @@ interface Aggregation {
 
 export interface ChartFormData {
   name: string;
-  dimensions: string;
-  groupBy: string;
+  dimensions: string | string[];
+  groupBy: string | string[];
   aggregation: Aggregation;
   position: Position;
   conditions: Condition[];
@@ -230,29 +231,26 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
   const { widgetTypes, dataSources, widgetTypesLoading, dataSourcesLoading } =
     useAppSelector((state) => state.dashboard);
 
+
   const [formData, setFormData] = useState<ChartFormData>({
-    name: initialData?.name || "",
-    dimensions: Array.isArray(initialData?.dimensions)
-      ? initialData.dimensions.join(", ")
-      : "",
-    groupBy: Array.isArray(initialData?.groupBy)
-      ? initialData.groupBy.join(", ")
-      : "",
-    aggregation: initialData?.aggregation || {
-      type: "count",
-      attributeName: "",
-    },
-    position: initialData?.position || {
-      x: 0,
-      y: 0,
-      index: 0,
-    },
-    conditions: initialData?.conditions || [],
-    dataSourceId: initialData?.dataSourceId?._id || "",
-    widgetTypeId: initialData?.widgetTypeId?._id || "",
-    dashboardId,
-    isIncremental: initialData?.isIncremental || false,
-  });
+  name: initialData?.name || "",
+  dimensions: arrayToString(initialData?.dimensions),
+  groupBy: arrayToString(initialData?.groupBy),
+  aggregation: initialData?.aggregation || {
+    type: "count",
+    attributeName: "",
+  },
+  position: initialData?.position || {
+    x: 0,
+    y: 0,
+    index: 0,
+  },
+  conditions: initialData?.conditions || [],
+  dataSourceId: initialData?.dataSourceId?._id || "",
+  widgetTypeId: initialData?.widgetTypeId?._id || "",
+  dashboardId,
+  isIncremental: initialData?.isIncremental || false,
+});
 
   const [selectedDataSource, setSelectedDataSource] =
     useState<DataSource | null>(null);
@@ -260,64 +258,50 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
   const [fieldTypes, setFieldTypes] = useState<{ [key: string]: string }>({});
   const [fieldErrors, setFieldErrors] = useState<{ [key: string]: string }>({});
 
-  useEffect(() => {
-    if (open && initialData) {
-      // Only set initial data if formData is empty (first load)
-      if (!formData.name && !formData.dimensions && !formData.groupBy) {
-        setFormData({
-          name: initialData.name,
-          dimensions: Array.isArray(initialData.dimensions)
-            ? initialData.dimensions.join(", ")
-            : "",
-          groupBy: Array.isArray(initialData.groupBy)
-            ? initialData.groupBy.join(", ")
-            : "",
-          aggregation: initialData.aggregation,
-          position: initialData?.position || {
-            x: 0,
-            y: 0,
-            index: 0,
-          },
-          conditions: initialData.conditions,
-          dataSourceId: initialData.dataSourceId?._id || "",
-          widgetTypeId: initialData.widgetTypeId?._id || "",
-          dashboardId,
-          isIncremental: initialData.isIncremental || false,
-        });
+  
 
-        if (initialData.dataSourceId?._id) {
-          dispatch(fetchAllDataSources()).then(() => {
-            const dataSource = dataSources.find(
-              (ds) => ds._id === initialData.dataSourceId?._id
-            );
-            if (dataSource) {
-              setSelectedDataSource(dataSource);
-            }
-          });
-        }
-      }
-    } else if (!open) {
+  useEffect(() => {
+  if (open && initialData) {
+    if (!formData.name && !formData.dimensions && !formData.groupBy) {
       setFormData({
-        name: "",
-        dimensions: "",
-        groupBy: "",
-        aggregation: {
-          type: "count",
-          attributeName: "",
-        },
-        position: {
-          x: 0,
-          y: 0,
-          index: 0,
-        },
-        conditions: [],
-        dataSourceId: "",
-        widgetTypeId: "",
+        name: initialData.name,
+        dimensions: arrayToString(initialData.dimensions),
+        groupBy: arrayToString(initialData.groupBy),
+        aggregation: initialData.aggregation,
+        position: initialData?.position || { x: 0, y: 0, index: 0 },
+        conditions: initialData.conditions,
+        dataSourceId: initialData.dataSourceId?._id || "",
+        widgetTypeId: initialData.widgetTypeId?._id || "",
         dashboardId,
-        isIncremental: false,
+        isIncremental: initialData.isIncremental || false,
       });
+
+      if (initialData.dataSourceId?._id) {
+        dispatch(fetchAllDataSources()).then(() => {
+          const dataSource = dataSources.find(
+            (ds) => ds._id === initialData.dataSourceId?._id
+          );
+          if (dataSource) {
+            setSelectedDataSource(dataSource);
+          }
+        });
+      }
     }
-  }, [open, initialData, dashboardId, dispatch, dataSources]);
+  } else if (!open) {
+    setFormData({
+      name: "",
+      dimensions: "",
+      groupBy: "",
+      aggregation: { type: "count", attributeName: "" },
+      position: { x: 0, y: 0, index: 0 },
+      conditions: [],
+      dataSourceId: "",
+      widgetTypeId: "",
+      dashboardId,
+      isIncremental: false,
+    });
+  }
+}, [open, initialData, dashboardId, dispatch, dataSources]);
 
   useEffect(() => {
     if (open) {
@@ -481,8 +465,8 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
       setFormData((prev) => ({
         ...prev,
         dataSourceId: event.target.value as string,
-        dimensions: "",
-        groupBy: "",
+        dimensions: [],
+        groupBy: [],
         aggregation: {
           ...prev.aggregation,
           attributeName: "",
@@ -512,178 +496,181 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
     handleChange("groupBy", newGroupBy);
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setFieldErrors({});
-
-    try {
-      const dimensionsToSend = isTrend ? "versionValue" : formData.dimensions;
-      const dashboardType =
-        currentDashboard?.settings?.dashboardType || "normal";
-      const formattedVersionValue = versionValue
-        ? DateTime.fromISO(versionValue).toFormat("yyyy-LL")
-        : "";
-
-      if (onSave) {
-        await onSave({
-          ...formData,
-          dimensions: dimensionsToSend,
-        });
-      } else {
-        // Get widget data using getWidgetData API
-        const widgetResponse = await axiosInstance.post<WidgetDataResponse>(
-          GET.DASHBOARD_WIDGET_DATA,
-          {
-            dataSourceId: formData.dataSourceId,
-            entityId: selectedDataSource?.entityId._id,
-            dimensions: [dimensionsToSend],
-            groupBy: formData.groupBy
-              ? formData.groupBy.split(",").map((g) => g.trim())
-              : [],
-            conditions: formData.conditions.map((condition) => ({
-              ...condition,
-              _id: condition._id || uuidv4(),
-            })),
-            aggregation: formData.aggregation,
-            widgetType:
-              widgetTypes.find((wt) => wt._id === formData.widgetTypeId)
-                ?.chartType || "",
-            dashboardFilters:
-              dashboardType === "trend"
-                ? {
-                    startVersionValue: startVersionValue || "",
-                    endVersionValue: endVersionValue || "",
-                    versionValue: "",
-                    dynamicVersionValue: "",
-                  }
-                : {
-                    startVersionValue: "",
-                    endVersionValue: "",
-                    versionValue: formattedVersionValue,
-                    dynamicVersionValue: formattedVersionValue
-                      ? ""
-                      : formattedVersionValue
-                        ? ""
-                        : "1m",
-                  },
-            dashBoardType: dashboardType,
-            isIncremental: formData.isIncremental || false,
-          }
-        );
-
-        if (widgetResponse.data.success) {
-          // Save the widget directly
-          const saveResponse = await dispatch(
-            saveWidgets({
-              widgets: [
-                {
-                  dashboardId: dashboardId,
-                  widgetTypeId: formData.widgetTypeId,
-                  name: formData.name,
-                  dimensions: dimensionsToSend || formData.dimensions,
-                  groupBy: formData.groupBy
-                    ? formData.groupBy.split(",").map((g) => g.trim())
-                    : [],
-                  aggregation: formData.aggregation,
-                  position: formData.position,
-                  conditions: formData.conditions.map((condition) => ({
-                    field: condition.field,
-                    operator: condition.operator,
-                    value: condition.value,
-                  })),
-                  dataSourceId: formData.dataSourceId,
-                  entityId: selectedDataSource?.entityId._id || "",
-                  isIncremental: formData.isIncremental || false,
-                },
-              ],
-            })
-          ).unwrap();
-
-          if (saveResponse.success) {
-            // Fetch updated chart list
-            await dispatch(
-              fetchChartData({
-                dashboardId,
-                dashboardType,
-                startVersionValue:
-                  dashboardType === "trend" ? startVersionValue : "",
-                endVersionValue:
-                  dashboardType === "trend" ? endVersionValue : "",
-                versionValue:
-                  dashboardType === "trend" ? "" : formattedVersionValue,
-                dynamicVersionValue:
-                  dashboardType === "trend"
-                    ? ""
-                    : formattedVersionValue
-                      ? ""
-                      : "1m",
-              })
-            );
-            toast.success("Chart saved successfully!");
-            onClose();
-          } else {
-            if (saveResponse.errors && saveResponse.errors.length > 0) {
-              const newFieldErrors: { [key: string]: string } = {};
-              saveResponse.errors.forEach((err: ErrorResponse) => {
-                if (err.fieldName && err.message) {
-                  newFieldErrors[err.fieldName] = err.message;
-                }
-              });
-              setFieldErrors(newFieldErrors);
-            }
-            toast.error(saveResponse.message || "Failed to save chart");
-          }
-        } else {
-          if (
-            widgetResponse.data.errors &&
-            widgetResponse.data.errors.length > 0
-          ) {
-            const newFieldErrors: { [key: string]: string } = {};
-            widgetResponse.data.errors.forEach((err: ErrorResponse) => {
-              if (err.fieldName && err.message) {
-                newFieldErrors[err.fieldName] = err.message;
-              }
-            });
-            setFieldErrors(newFieldErrors);
-          }
-          toast.error(widgetResponse.data.message || "Failed to add chart");
-        }
+  
+  // Updated to use fieldSettings
+  const handleFieldErrors = (errors?: ErrorResponse[]) => {
+  if (errors && errors.length > 0) {
+    const newFieldErrors: { [key: string]: string } = {};
+    errors.forEach((err: ErrorResponse) => {
+      if (err.fieldName && err.message) {
+        newFieldErrors[err.fieldName] = err.message;
       }
-    } catch (error) {
-      if (axios.isAxiosError(error) && error.response?.data) {
-        if (error.response.data.errors?.length > 0) {
-          const newFieldErrors: { [key: string]: string } = {};
-          error.response.data.errors.forEach((err: ErrorResponse) => {
-            if (err.fieldName && err.message) {
-              newFieldErrors[err.fieldName] = err.message;
-            }
-          });
-          setFieldErrors(newFieldErrors);
+    });
+    setFieldErrors(newFieldErrors);
+  }
+};
+
+const handleAxiosError = (error: unknown) => {
+  if (axios.isAxiosError(error) && error.response?.data) {
+    handleFieldErrors(error.response.data.errors);
+    const errorMessage =
+      error.response.data.message ||
+      error.response.data.error ||
+      "Failed to add chart";
+    toast.error(errorMessage);
+  } else if (
+    typeof error === "object" &&
+    error !== null &&
+    "message" in error
+  ) {
+    toast.error((error as { message: string }).message);
+  } else {
+    toast.error("Failed to add chart");
+  }
+};
+ 
+
+ 
+// 🔹 Normalizer (make sure it's declared above handleSubmit)
+// const toArray = (value?: string | string[]): string[] => {
+//   if (Array.isArray(value)) return value;
+//   if (typeof value === "string" && value.trim() !== "") {
+//     return value.split(",").map((g) => g.trim()).filter(Boolean);
+//   }
+//   return [];
+// };
+
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  setFieldErrors({});
+
+  try {
+    const dashboardType =
+      currentDashboard?.settings?.dashboardType || "normal";
+
+    const formattedVersionValue = versionValue
+      ? DateTime.fromISO(versionValue).toFormat("yyyy-LL")
+      : "";
+
+    const dimensionsArray = isTrend
+      ? versionValue
+        ? ["versionValue"]
+        : []
+      : toArray(formData.dimensions);
+
+    const groupByArray = toArray(formData.groupBy);
+
+    if (onSave) {
+      await onSave({
+        ...formData,
+        dimensions: dimensionsArray,
+        groupBy: groupByArray,
+      });
+    } else {
+      // Call widget API
+      const widgetResponse = await axiosInstance.post<WidgetDataResponse>(
+        GET.DASHBOARD_WIDGET_DATA,
+        {
+          dataSourceId: formData.dataSourceId,
+          entityId: selectedDataSource?.entityId._id,
+          dimensions: dimensionsArray,
+          groupBy: groupByArray,
+          conditions: formData.conditions.map((condition) => ({
+            ...condition,
+            _id: condition._id || uuidv4(),
+          })),
+          aggregation: formData.aggregation,
+          widgetType:
+            widgetTypes.find((wt) => wt._id === formData.widgetTypeId)
+              ?.chartType || "",
+          dashboardFilters:
+            dashboardType === "trend"
+              ? {
+                  startVersionValue: startVersionValue || "",
+                  endVersionValue: endVersionValue || "",
+                  versionValue: "",
+                  dynamicVersionValue: "",
+                }
+              : {
+                  startVersionValue: "",
+                  endVersionValue: "",
+                  versionValue: formattedVersionValue,
+                  dynamicVersionValue: formattedVersionValue ? "" : "1m",
+                },
+          dashBoardType: dashboardType,
+          isIncremental: formData.isIncremental || false,
         }
-        const errorMessage =
-          error.response.data.message ||
-          error.response.data.error ||
-          "Failed to add chart";
-        toast.error(errorMessage);
-      } else if (
-        typeof error === "object" &&
-        error !== null &&
-        "message" in error
-      ) {
-        toast.error(error.message as string);
+      );
+
+      if (widgetResponse.data.success) {
+        // Save widget
+        const saveResponse = await dispatch(
+          saveWidgets({
+            widgets: [
+              {
+                dashboardId: dashboardId,
+                widgetTypeId: formData.widgetTypeId,
+                name: formData.name,
+                dimensions: dimensionsArray,
+                groupBy: groupByArray,
+                aggregation: formData.aggregation,
+                position: formData.position,
+                conditions: formData.conditions.map((condition) => ({
+                  field: condition.field,
+                  operator: condition.operator,
+                  value: condition.value,
+                })),
+                dataSourceId: formData.dataSourceId,
+                entityId: selectedDataSource?.entityId._id || "",
+                isIncremental: formData.isIncremental || false,
+              },
+            ],
+          })
+        ).unwrap();
+
+        if (saveResponse.success) {
+          await dispatch(
+            fetchChartData({
+              dashboardId,
+              dashboardType,
+              startVersionValue:
+                dashboardType === "trend" ? startVersionValue : "",
+              endVersionValue:
+                dashboardType === "trend" ? endVersionValue : "",
+              versionValue:
+                dashboardType === "trend" ? "" : formattedVersionValue,
+              dynamicVersionValue:
+                dashboardType === "trend"
+                  ? ""
+                  : formattedVersionValue
+                  ? ""
+                  : "1m",
+            })
+          );
+          toast.success("Chart saved successfully!");
+          onClose();
+        } else {
+          handleFieldErrors(saveResponse.errors);
+          toast.error(saveResponse.message || "Failed to save chart");
+        }
       } else {
-        toast.error("Failed to add chart");
+        handleFieldErrors(widgetResponse.data.errors);
+        toast.error(widgetResponse.data.message || "Failed to add chart");
       }
     }
-  };
+  } catch (error) {
+    handleAxiosError(error);
+  }
+};
 
-  // Updated to use fieldSettings
   const getAttributeOptions = (): DataSourceAttribute[] => {
-    return selectedDataSource?.fieldSettings?.map(field => ({
-      name: field.mappedAttributeName, // This will be sent to backend
-      type: field.type || 'string',
-      label: field.label // This will be shown to users
-    })) || [];
+    return (
+      selectedDataSource?.fieldSettings?.map((field) => ({
+        name: field.mappedAttributeName, 
+        type: field.type || "string",
+        label: field.label,
+      })) || []
+    );
   };
 
   const handleClearDimension = () => {
