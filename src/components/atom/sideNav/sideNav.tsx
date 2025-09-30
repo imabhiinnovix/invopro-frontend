@@ -1819,12 +1819,12 @@ export default function SideNav() {
             isBold: true,
             subItems: themeSettingsDataSources,
           },
-          {
-            name: "Report Settings",
-            icon: createIcon(LayersIcon, "/report-settings"),
-            route: "/report-settings",
-            isBold: true,
-          },
+          // {
+          //   name: "Report Settings",
+          //   icon: createIcon(LayersIcon, "/report-settings"),
+          //   route: "/report-settings",
+          //   isBold: true,
+          // },
           ...constantDataSources,
 
           {
