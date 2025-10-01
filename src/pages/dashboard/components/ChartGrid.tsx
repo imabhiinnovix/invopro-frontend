@@ -2933,6 +2933,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
                     height: "100%",
                   }}
                 >
+                  
                   <ChartTitle>
                     <ChartTitleText>
                       {chart.name}
