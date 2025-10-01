@@ -24,6 +24,7 @@ interface CommonDatePickerProps<T extends FieldValues> {
   rules?: RegisterOptions<T>;
   disabled?: boolean;
   sx?: SxProps<Theme>;
+  disableFuture?: boolean; 
 }
 
 const CommonDatePicker = <T extends FieldValues>(
@@ -38,6 +39,7 @@ const CommonDatePicker = <T extends FieldValues>(
     rules = {},
     disabled = false,
     sx,
+    disableFuture = false, 
   } = props;
 
   const [tempDate, setTempDate] = useState<DateTime | null>(
@@ -61,6 +63,8 @@ const CommonDatePicker = <T extends FieldValues>(
               value={tempDate || currentValue || null}
               onChange={(date) => setTempDate(date)}
               disabled={disabled}
+              disableFuture={disableFuture}
+              maxDate={disableFuture ? DateTime.now() : undefined}
               closeOnSelect={false}
               onAccept={() => onChange(tempDate?.toISO())}
               onClose={() => setTempDate(null)}
