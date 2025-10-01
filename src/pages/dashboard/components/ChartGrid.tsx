@@ -817,7 +817,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
   function resolveGroupField(groupBy: string[], chart: any): string {
     if (!groupBy || groupBy.length === 0) return "";
     const groupFieldKey = groupBy[0];
-    
+
     const matchedField = chart?.dataSourceId?.fieldSettings?.find(
       (f: any) => f.mappedAttributeName === groupFieldKey
     );
@@ -856,7 +856,8 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
           chartData,
           groupBy,
           chartType === "area",
-          chart
+          chart,
+          ""
         );
 
       case "verticalBar":
@@ -884,9 +885,14 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
 
       // return processPolarAreaData(chartData, groupBy);
 
+      // case "comboBarLine":
+      // case "stackedBarLine":
+      //   return processComboData(chartData, groupBy, chartType, chart);
+
       case "comboBarLine":
-      case "stackedBarLine":
         return processComboData(chartData, groupBy, chartType, chart);
+      case "stackedBarLine":
+        return processStackedComboData(chartData, groupBy, chartType, chart);
 
       case "histogram":
         return processHistogramData(chartData);
@@ -911,7 +917,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
       groupBy: string[],
       isArea: boolean,
       chart: any,
-      timePeriodLabel: string 
+      timePeriodLabel: string
     ) {
       const labels = Array.from(new Set(data.map((item) => item.name)));
 
@@ -986,8 +992,8 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
       if (!groupBy || groupBy.length === 0) {
         const datasets = data.map((item, i) => {
           return {
-            label: item.name, 
-            data: labels.map((lbl) => (lbl === item.name ? item.data : 0)), 
+            label: item.name,
+            data: labels.map((lbl) => (lbl === item.name ? item.data : 0)),
             backgroundColor: getColor(i),
             borderColor: "#009FDF",
             borderWidth: 1,
@@ -997,7 +1003,6 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
 
         return { labels, datasets };
       }
-
 
       const groupFieldKey = groupBy[0];
 
@@ -1037,7 +1042,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
     interface PieItem {
       name: string;
       data?: number;
-      [key: string]: any; 
+      [key: string]: any;
     }
 
     function processPieData(
@@ -1050,7 +1055,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
       if (!groupBy || groupBy.length === 0) {
         const values = labels?.map((label) => {
           const found = data?.find((item) => item?.name === label);
-          return found?.data ?? 0; 
+          return found?.data ?? 0;
         });
 
         const attributeFieldKey = chart?.aggregation?.attributeName;
@@ -1228,7 +1233,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
       y?: number;
       r?: number;
       data?: number;
-      [key: string]: any; 
+      [key: string]: any;
     }
 
     function processBubbleData(
@@ -1336,9 +1341,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
         };
       }
 
-
       const groupFieldKey = groupBy[0];
-      
 
       const matchedField = chart?.dataSourceId.fieldSettings?.find(
         (f: any) => f.mappedAttributeName === groupFieldKey
@@ -1393,6 +1396,298 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
         label: `${groupAttributeField || chart?.aggregation?.attributeName || chart?.name || "Total"}`,
         data: totals,
         borderColor: getColor(uniqueGroups.length),
+        backgroundColor: "transparent",
+        yAxisID: "y1",
+        tension: 0.4,
+        fill: false,
+        pointRadius: 5,
+        pointHoverRadius: 8,
+      };
+
+      return {
+        labels,
+        datasets: [...barDatasets, lineDataset],
+      };
+    }
+
+    // my update code staked bar line chart
+    function processStackedComboData(
+      data: any[],
+      groupBy: string[],
+      chartType: string,
+      chart: any
+    ) {
+      console.log("Processing Stacked Bar-Line Data:", { data });
+
+      // Check if data has the structure with label and widgetData
+      const hasWidgetDataStructure = data.length > 0 && data[0].widgetData;
+
+      if (hasWidgetDataStructure) {
+        // Extract all unique months/labels
+        const labels = data.map((item) => item.label);
+
+        // CASE 1: When groupBy has value - Stack by groupBy field (e.g., BU)
+        if (groupBy && groupBy.length > 0) {
+          const groupFieldKey = groupBy[0];
+
+          // Get field label for groupBy
+          const matchedGroupField = chart?.dataSourceId?.fieldSettings?.find(
+            (f: any) => f.mappedAttributeName === groupFieldKey
+          );
+          const groupFieldLabel = matchedGroupField
+            ? matchedGroupField.label
+            : groupFieldKey;
+
+          // Extract all unique groupBy values (e.g., all BU values)
+          const allGroupValues = new Set<string>();
+          data.forEach((monthData) => {
+            monthData.widgetData.forEach((item: any) => {
+              if (item[groupFieldLabel]) {
+                allGroupValues.add(item[groupFieldLabel]);
+              }
+            });
+          });
+
+          const uniqueGroupValues = Array.from(allGroupValues);
+
+          // Create STACKED bar datasets for each groupBy value
+          const barDatasets = uniqueGroupValues.map((groupValue, i) => {
+            const values = labels.map((label) => {
+              const monthData = data.find((d) => d.label === label);
+              if (!monthData) return 0;
+
+              // Sum all data for this groupBy value across all dimensions
+              const groupTotal = monthData.widgetData
+                .filter((item: any) => item[groupFieldLabel] === groupValue)
+                .reduce((sum: number, item: any) => sum + (item.data || 0), 0);
+
+              return groupTotal;
+            });
+
+            return {
+              type: "bar",
+              label: groupValue,
+              data: values,
+              backgroundColor: getColor(i),
+              borderColor: "#FFFFFF",
+              borderWidth: 1,
+              borderRadius: 4,
+              stack: "combined", // Important: All bars in same stack
+            };
+          });
+
+          // Calculate totals for line
+          const totals = labels.map((label) => {
+            const monthData = data.find((d) => d.label === label);
+            return monthData?.totalCount || 0;
+          });
+
+          // Get dimension label for line dataset (reverse of combo)
+          const dimensionFieldKey = chart?.dimensions?.[0];
+          const matchedDimensionField =
+            chart?.dataSourceId?.fieldSettings?.find(
+              (f: any) => f.mappedAttributeName === dimensionFieldKey
+            );
+          const dimensionLabel = matchedDimensionField
+            ? matchedDimensionField.label
+            : dimensionFieldKey;
+
+          const lineDataset = {
+            type: "line",
+            label: `${dimensionLabel || "Count"}`,
+            data: totals,
+            borderColor: getColor(uniqueGroupValues.length),
+            backgroundColor: "transparent",
+            yAxisID: "y1",
+            tension: 0.4,
+            fill: false,
+            pointRadius: 5,
+            pointHoverRadius: 8,
+          };
+
+          return {
+            labels,
+            datasets: [...barDatasets, lineDataset],
+          };
+        }
+
+        // CASE 2: When groupBy is empty - Stack by dimension values (e.g., SBU)
+        const allDimensionValues = new Set<string>();
+        data.forEach((monthData) => {
+          monthData.widgetData.forEach((item: any) => {
+            allDimensionValues.add(item.name);
+          });
+        });
+
+        const uniqueDimensionValues = Array.from(allDimensionValues);
+
+        // Create STACKED bar datasets for each dimension value
+        const barDatasets = uniqueDimensionValues.map((dimensionValue, i) => {
+          const values = labels.map((label) => {
+            const monthData = data.find((d) => d.label === label);
+            const itemData = monthData?.widgetData?.find(
+              (item: any) => item.name === dimensionValue
+            );
+            return itemData ? itemData.data : 0;
+          });
+
+          return {
+            type: "bar",
+            label: dimensionValue,
+            data: values,
+            backgroundColor: getColor(i),
+            borderColor: "#FFFFFF",
+            borderWidth: 1,
+            borderRadius: 4,
+            stack: "combined",
+          };
+        });
+
+        // Calculate totals for line
+        const totals = labels.map((label) => {
+          const monthData = data.find((d) => d.label === label);
+          return monthData?.totalCount || 0;
+        });
+
+        // Get groupBy label for line dataset (reverse of combo)
+        const groupFieldKey = groupBy?.[0];
+        const matchedGroupField = chart?.dataSourceId?.fieldSettings?.find(
+          (f: any) => f.mappedAttributeName === groupFieldKey
+        );
+        const groupFieldLabel = matchedGroupField
+          ? matchedGroupField.label
+          : groupFieldKey;
+
+        const lineDataset = {
+          type: "line",
+          label: `${groupFieldLabel || "Count"}`,
+          data: totals,
+          borderColor: getColor(uniqueDimensionValues.length),
+          backgroundColor: "transparent",
+          yAxisID: "y1",
+          tension: 0.4,
+          fill: false,
+          pointRadius: 5,
+          pointHoverRadius: 8,
+        };
+
+        return {
+          labels,
+          datasets: [...barDatasets, lineDataset],
+        };
+      }
+
+      // ============================================================
+      // LEGACY: Original logic for regular data structure (non-widgetData)
+      // ============================================================
+      const labels = Array.from(new Set(data.map((item: any) => item.name)));
+
+      // CASE 1: When groupBy has value (grouped data) - Stack by groupBy
+      if (groupBy && groupBy.length > 0) {
+        const groupFieldKey = groupBy[0];
+        const matchedField = chart?.dataSourceId?.fieldSettings?.find(
+          (f: any) => f.mappedAttributeName === groupFieldKey
+        );
+        const groupField = matchedField ? matchedField.label : groupFieldKey;
+
+        const uniqueGroups = Array.from(
+          new Set(
+            data.map((item) => item[groupField] as string).filter(Boolean)
+          )
+        );
+
+        // Create STACKED bar datasets for each group
+        const barDatasets = uniqueGroups.map((group, index) => {
+          const groupData = labels.map((name) => {
+            const dataPoint = data.find(
+              (item) => item.name === name && item[groupField] === group
+            );
+            return dataPoint ? dataPoint.data : 0;
+          });
+
+          return {
+            type: "bar",
+            label: group,
+            data: groupData,
+            backgroundColor: getColor(index),
+            borderColor: "#FFFFFF",
+            borderWidth: 1,
+            borderRadius: 4,
+            stack: "combined", // All bars stacked together
+          };
+        });
+
+        // Calculate totals for line (sum across all groups per label)
+        const totals = labels.map((label) => {
+          return data
+            .filter((item) => item.name === label)
+            .reduce((sum, item) => sum + (item.data || 0), 0);
+        });
+
+        // Get dimension label for line dataset (reverse of combo)
+        const dimensionFieldKey = chart?.dimensions?.[0];
+        const matchedDimensionField = chart?.dataSourceId?.fieldSettings?.find(
+          (f: any) => f.mappedAttributeName === dimensionFieldKey
+        );
+        const dimensionLabel = matchedDimensionField
+          ? matchedDimensionField.label
+          : dimensionFieldKey;
+
+        const lineDataset = {
+          type: "line",
+          label: `${dimensionLabel || "Count"}`,
+          data: totals,
+          borderColor: getColor(uniqueGroups.length),
+          backgroundColor: "transparent",
+          yAxisID: "y1",
+          tension: 0.4,
+          fill: false,
+          pointRadius: 5,
+          pointHoverRadius: 8,
+        };
+
+        return {
+          labels,
+          datasets: [...barDatasets, lineDataset],
+        };
+      }
+
+      // CASE 2: When groupBy is empty (non-grouped data) - Stack by dimension
+      const barDatasets = data.map((item, i) => {
+        return {
+          type: "bar",
+          label: item.name,
+          data: labels.map((lbl) => (lbl === item.name ? item.data : 0)),
+          backgroundColor: getColor(i),
+          borderColor: "#FFFFFF",
+          borderWidth: 1,
+          borderRadius: 4,
+          stack: "combined",
+        };
+      });
+
+      const totals = labels.map((label) => {
+        const found = data.find((item) => item.name === label);
+        return found ? found.data : 0;
+      });
+
+      // Get groupBy label for line dataset (if no groupBy, use dimension)
+      const groupFieldKey = groupBy?.[0];
+      const dimensionFieldKey = chart?.dimensions?.[0];
+
+      const lineFieldKey = groupFieldKey || dimensionFieldKey;
+      const matchedLineField = chart?.dataSourceId?.fieldSettings?.find(
+        (f: any) => f.mappedAttributeName === lineFieldKey
+      );
+      const lineLabel = matchedLineField
+        ? matchedLineField.label
+        : lineFieldKey;
+
+      const lineDataset = {
+        type: "line",
+        label: `${lineLabel || "Count"}`,
+        data: totals,
+        borderColor: getColor(data.length),
         backgroundColor: "transparent",
         yAxisID: "y1",
         tension: 0.4,
@@ -2641,8 +2936,8 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
                   <ChartTitle>
                     <ChartTitleText>
                       {chart.name}
-                      {widgetData[chart._id]?.data?.label &&
-                        ` (${widgetData[chart._id]?.data?.label})`}
+                      {/* {widgetData[chart._id]?.data?.label &&
+                        ` (${widgetData[chart._id]?.data?.label})`} */}
                     </ChartTitleText>
                     <Box sx={{ display: "flex", gap: 1 }}>
                       <IconButton
