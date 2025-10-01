@@ -36,7 +36,7 @@ export default function Report() {
   const [regularDownloadRequestId, setRegularDownloadRequestId] = useState('');
   const [viewReportNameWithVersionValue, setViewReportNameWithVersionValue] = useState('');
 
-   const { getHeadingSx, getButtonSx } = useComponentTypography();
+  const { getHeadingSx, getButtonSx } = useComponentTypography();
 
   const exportFile = useFileDownload<Blob>((data) => {
     const blob = new Blob([data], { type: 'application/octet-stream' });
@@ -50,7 +50,7 @@ export default function Report() {
     document.body.removeChild(link);
 
     URL.revokeObjectURL(url);
-    
+
     setIntermediateDownloadRequestId('');
     setRegularDownloadRequestId('');
   });
@@ -67,7 +67,7 @@ export default function Report() {
     setIntermediateDownloadRequestId(fileId);
     setDownLoadFileName(fileName);
     exportFile.mutate({
-      url: `${GET?.Custom_Report}/intermediate-download/${fileId}`,
+      url: `${GET?.Custom_Report}/download/${fileId}?isIntermediate=true`,
     });
   };
 
@@ -225,20 +225,20 @@ export default function Report() {
                         '&:disabled': {
                           bgcolor: theme.palette.action.disabledBackground,
                           color: theme.palette.action.disabled,
-                        }
+                        },
                       }}
                     >
-                      <PictureAsPdfIcon sx={{ color: theme.getIconColor() }}/>
+                      <PictureAsPdfIcon sx={{ color: theme.getIconColor() }} />
                     </Button>
                   </Tooltip>
                 )}
 
-                {allDetailData?.status === "completed" && allDetailData?.intermediateReportId && (
+                {allDetailData?.status === 'completed' && allDetailData?.intermediateReportId && (
                   <Box
                     sx={{
-                      display: "flex",
-                      justifyContent: "flex-end",
-                      alignItems: "center",
+                      display: 'flex',
+                      justifyContent: 'flex-end',
+                      alignItems: 'center',
                     }}
                   >
                     {exportFile.isPending &&
@@ -248,13 +248,13 @@ export default function Report() {
                         sx={{
                           width: 27,
                           height: 27,
-                          borderRadius: "50%",
-                          border: "3px solid #f3f3f3",
-                          borderTop: "3px solid #3498db",
-                          animation: "spin 1s linear infinite",
-                          "@keyframes spin": {
-                            "0%": { transform: "rotate(0deg)" },
-                            "100%": { transform: "rotate(360deg)" },
+                          borderRadius: '50%',
+                          border: '3px solid #f3f3f3',
+                          borderTop: '3px solid #3498db',
+                          animation: 'spin 1s linear infinite',
+                          '@keyframes spin': {
+                            '0%': { transform: 'rotate(0deg)' },
+                            '100%': { transform: 'rotate(360deg)' },
                           },
                           mr: 1,
                         }}
@@ -271,14 +271,16 @@ export default function Report() {
                           }}
                           sx={{ ...getButtonSx(), mr: 1 }}
                         >
-                          <DownloadForOfflineIcon  sx={{ color: theme.getIconColor() }}/>
+                          <DownloadForOfflineIcon sx={{ color: theme.getIconColor() }} />
                         </Button>
                       </Tooltip>
                     )}
                   </Box>
                 )}
 
-                {exportFile.isPending && !!regularDownloadRequestId && regularDownloadRequestId === allDetailData?._id ? (
+                {exportFile.isPending &&
+                !!regularDownloadRequestId &&
+                regularDownloadRequestId === allDetailData?._id ? (
                   <Box
                     sx={{
                       width: 27,
@@ -303,7 +305,7 @@ export default function Report() {
                           allDetailData?._id || ''
                         );
                       }}
-                      sx={{ 
+                      sx={{
                         ...getButtonSx(),
                         mr: 1,
                         bgcolor: theme.palette.success.main,
@@ -312,14 +314,13 @@ export default function Report() {
                           bgcolor: theme.palette.success.dark,
                           transform: 'translateY(-1px)',
                           boxShadow: theme.shadows[3],
-                        }
+                        },
                       }}
                     >
                       <SimCardDownloadIcon sx={{ color: theme.getIconColor() }} />
                     </Button>
                   </Tooltip>
                 )}
-                
               </Box>
             </Box>
           </>
@@ -341,7 +342,7 @@ export default function Report() {
       {viewReportRequestId && viewReportRequestId.length > 0 ? (
         <Box ref={tabRef}>
           <ScrollableTabNavigation
-            tabs={(allDetailData?.dataSourceVersion ?? []).filter(tab => !tab.isIntermediate)}
+            tabs={(allDetailData?.dataSourceVersion ?? []).filter((tab) => !tab.isIntermediate)}
             activeTab={activeTab}
             setActiveTab={setActiveTab}
             tabStyle={tabStyle}
@@ -373,72 +374,70 @@ export default function Report() {
             ref={targetRef}
           >
             {allDetailData?.dataSourceVersion
-              ?.filter(item => !!item.allowPdfDownload) // Only include sheets that allow PDF download
+              ?.filter((item) => !!item.allowPdfDownload) // Only include sheets that allow PDF download
               .map((item, index, filteredArray) => (
-              <Box key={index}>
-                {index === 0 && (
-                  <Table
-                    size="small"
-                    sx={{
-                      width: 'auto',
-                      mb: 2,
-                      ml: 0,
-                      pl: 0,
-                    }}
-                  >
-                    <TableBody>
-                      <TableRow>
-                        <TableCell sx={{ fontWeight: 600, borderBottom: 'none', pr: 1, whiteSpace: 'nowrap' }}>
-                          Report Name:
-                        </TableCell>
-                        <TableCell sx={{ fontWeight: 500, borderBottom: 'none' }}>
-                          {allDetailData?.customReportId?.reportName}
-                        </TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell sx={{ fontWeight: 600, borderBottom: 'none', pr: 1, whiteSpace: 'nowrap' }}>
-                          Period:
-                        </TableCell>
-                        <TableCell sx={{ fontWeight: 500, borderBottom: 'none' }}>
-                          {allDetailData?.versionValue}
-                        </TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell sx={{ fontWeight: 600, borderBottom: 'none', pr: 1, whiteSpace: 'nowrap' }}>
-                          Created By:
-                        </TableCell>
-                        <TableCell sx={{ fontWeight: 500, borderBottom: 'none' }}>
-                          {`${allDetailData?.createdBy?.firstName || ''}${
-                            allDetailData?.createdBy?.lastName ? ' ' + allDetailData.createdBy.lastName : ''
-                          }`}
-                        </TableCell>
-                      </TableRow>
-                    </TableBody>
-                  </Table>
-                )}
+                <Box key={index}>
+                  {index === 0 && (
+                    <Table
+                      size="small"
+                      sx={{
+                        width: 'auto',
+                        mb: 2,
+                        ml: 0,
+                        pl: 0,
+                      }}
+                    >
+                      <TableBody>
+                        <TableRow>
+                          <TableCell sx={{ fontWeight: 600, borderBottom: 'none', pr: 1, whiteSpace: 'nowrap' }}>
+                            Report Name:
+                          </TableCell>
+                          <TableCell sx={{ fontWeight: 500, borderBottom: 'none' }}>
+                            {allDetailData?.customReportId?.reportName}
+                          </TableCell>
+                        </TableRow>
+                        <TableRow>
+                          <TableCell sx={{ fontWeight: 600, borderBottom: 'none', pr: 1, whiteSpace: 'nowrap' }}>
+                            Period:
+                          </TableCell>
+                          <TableCell sx={{ fontWeight: 500, borderBottom: 'none' }}>
+                            {allDetailData?.versionValue}
+                          </TableCell>
+                        </TableRow>
+                        <TableRow>
+                          <TableCell sx={{ fontWeight: 600, borderBottom: 'none', pr: 1, whiteSpace: 'nowrap' }}>
+                            Created By:
+                          </TableCell>
+                          <TableCell sx={{ fontWeight: 500, borderBottom: 'none' }}>
+                            {`${allDetailData?.createdBy?.firstName || ''}${
+                              allDetailData?.createdBy?.lastName ? ' ' + allDetailData.createdBy.lastName : ''
+                            }`}
+                          </TableCell>
+                        </TableRow>
+                      </TableBody>
+                    </Table>
+                  )}
 
-                <Box>
-                  <Box sx={{ display: 'flex', mt: 1, mb: 1 }}>
-                    <Box sx={{ fontWeight: 600 }}>Sheet Name: </Box>
-                    <Box>{item.sheetName}</Box>
+                  <Box>
+                    <Box sx={{ display: 'flex', mt: 1, mb: 1 }}>
+                      <Box sx={{ fontWeight: 600 }}>Sheet Name: </Box>
+                      <Box>{item.sheetName}</Box>
+                    </Box>
+                    <ViewReport
+                      key={index}
+                      dataSourceVersionId={item.dataSourceVersionId}
+                      versionCode={item.versionCode}
+                      mappingFuctionName={item.mappingFuctionName}
+                      versionValue={allDetailData.versionValue.split('-')[0]}
+                      sheetCode={item.sheetCode}
+                      designCode={item.designCode}
+                      customReportId={allDetailData.customReportId._id}
+                    />
                   </Box>
-                  <ViewReport
-                    key={index}
-                    dataSourceVersionId={item.dataSourceVersionId}
-                    versionCode={item.versionCode}
-                    mappingFuctionName={item.mappingFuctionName}
-                    versionValue={allDetailData.versionValue.split('-')[0]}
-                    sheetCode={item.sheetCode}
-                    designCode={item.designCode}
-                    customReportId={allDetailData.customReportId._id}
-                  />
-                </Box>
 
-                {index < filteredArray.length - 1 && (
-                  <Box className="html2pdf__page-break" />
-                )}
-              </Box>
-            ))}
+                  {index < filteredArray.length - 1 && <Box className="html2pdf__page-break" />}
+                </Box>
+              ))}
           </Box>
         </Box>
       ) : (

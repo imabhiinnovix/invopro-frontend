@@ -299,13 +299,16 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
   }, [filteredFieldSettings]);
 
   const handleApplyFilters = () => {
-    // Convert filters to use entity field option labels as keys
     const transformedFilters: Record<string, any> = {};
+
     Object.entries(filters).forEach(([filterKey, value]) => {
-      // filterKey might be just attributeId or attributeId-refAttributeId1-refAttributeId2
       const entityOption = entityFieldOptionsMap[filterKey];
 
-      if (entityOption && value !== undefined && value !== '' && value !== null) {
+      // Skip undefined, null, empty string, and empty array
+      const isEmptyValue =
+        value === undefined || value === null || value === '' || (Array.isArray(value) && value.length === 0);
+
+      if (entityOption && !isEmptyValue) {
         if (entityOption?.value?.isDerived) {
           transformedFilters[`Derived.${entityOption.label}`] = value;
         } else {
@@ -313,6 +316,7 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
         }
       }
     });
+
     onApplyFilters(transformedFilters);
     onClose();
   };

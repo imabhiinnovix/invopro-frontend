@@ -817,7 +817,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
   function resolveGroupField(groupBy: string[], chart: any): string {
     if (!groupBy || groupBy.length === 0) return "";
     const groupFieldKey = groupBy[0];
-    
+
     const matchedField = chart?.dataSourceId?.fieldSettings?.find(
       (f: any) => f.mappedAttributeName === groupFieldKey
     );
@@ -1746,7 +1746,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
 
           const lineDataset = {
             type: "line",
-            label: `Total ${dimensionLabel || "Count"}`,
+            label: `${dimensionLabel || "Count"}`,
             data: totals,
             borderColor: getColor(uniqueGroupValues.length),
             backgroundColor: "transparent",
@@ -1812,7 +1812,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
 
         const lineDataset = {
           type: "line",
-          label: `Total ${groupFieldLabel || "Count"}`,
+          label: `${groupFieldLabel || "Count"}`,
           data: totals,
           borderColor: getColor(uniqueDimensionValues.length),
           backgroundColor: "transparent",
@@ -1831,7 +1831,6 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
 
       // ============================================================
       // LEGACY: Original logic for regular data structure (non-widgetData)
-      // This mirrors the combo logic but with stacking enabled
       // ============================================================
       const labels = Array.from(new Set(data.map((item: any) => item.name)));
 
@@ -1888,7 +1887,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
 
         const lineDataset = {
           type: "line",
-          label: `Total ${dimensionLabel || "Count"}`,
+          label: `${dimensionLabel || "Count"}`,
           data: totals,
           borderColor: getColor(uniqueGroups.length),
           backgroundColor: "transparent",
@@ -1938,7 +1937,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
 
       const lineDataset = {
         type: "line",
-        label: `Total ${lineLabel || "Count"}`,
+        label: `${lineLabel || "Count"}`,
         data: totals,
         borderColor: getColor(data.length),
         backgroundColor: "transparent",
@@ -3265,6 +3264,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
                     height: "100%",
                   }}
                 >
+                  
                   <ChartTitle>
                     <ChartTitleText>
                       {chart.name}
