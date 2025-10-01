@@ -797,6 +797,7 @@ const ImportFile: React.FC<ImportFileProps> = ({
                 control={control}
                 views={["year", "month"]}
                 label="Period*"
+                disableFuture={true}
                 rules={{ required: "Period is required" }}
               />
               <TextField
