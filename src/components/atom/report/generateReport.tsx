@@ -12,7 +12,7 @@ import ProgressBar from "../../molecule/progressBar";
 import { DateTime } from "luxon";
 import React, { useState } from "react";
 import UploadMultipleFiles from "../dataSourceVerion/uploadMultipleVersionValue";
-import { STYLE_GUIDE } from '../../../styles';
+import { STYLE_GUIDE } from "../../../styles";
 import { useUnifiedTheme } from "../../../hooks/useUnifiedTheme";
 import { useComponentTypography } from "../../../hooks/useComponentTypography";
 
@@ -68,8 +68,8 @@ export default function GenerateReport({ setReload }: GenerateReportProps) {
       >
         <CardContent
           sx={{
-            display: 'flex',
-            flexDirection: 'column',
+            display: "flex",
+            flexDirection: "column",
             gap: STYLE_GUIDE.SPACING.s4,
             p: STYLE_GUIDE.SPACING.s6,
           }}
@@ -84,16 +84,16 @@ export default function GenerateReport({ setReload }: GenerateReportProps) {
           >
             Generate New Report
           </Typography>
-          
-          <Box 
-            display="flex" 
-            flexDirection={{ xs: 'column', md: 'row' }}
+
+          <Box
+            display="flex"
+            flexDirection={{ xs: "column", md: "row" }}
             gap={STYLE_GUIDE.SPACING.s4}
             sx={{
-              '& .MuiFormControl-root': {
+              "& .MuiFormControl-root": {
                 flex: 1,
-                minWidth: { xs: '100%', md: '200px' }
-              }
+                minWidth: { xs: "100%", md: "200px" },
+              },
             }}
           >
             <CommonDropdownSearch
@@ -115,14 +115,15 @@ export default function GenerateReport({ setReload }: GenerateReportProps) {
               control={control}
               views={["year", "month"]}
               label="Period*"
+              disableFuture={true}
               rules={{ required: "Period is required" }}
             />
 
-            <Box 
-              display="flex" 
-              alignItems={{ xs: 'stretch', md: 'flex-start' }}
-              sx={{ 
-                minWidth: { xs: '100%', md: '200px' }
+            <Box
+              display="flex"
+              alignItems={{ xs: "stretch", md: "flex-start" }}
+              sx={{
+                minWidth: { xs: "100%", md: "200px" },
               }}
             >
               {generateReport.isPending ? (
@@ -134,18 +135,18 @@ export default function GenerateReport({ setReload }: GenerateReportProps) {
                   type="submit"
                   onClick={handleSubmit(onSubmit)}
                   sx={{
-                    width: '100%',
-                    height: '56px',
-                    textTransform: 'none',
+                    width: "100%",
+                    height: "56px",
+                    textTransform: "none",
                     fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.medium,
                     borderRadius: 1,
-                    boxShadow: 'none',
+                    boxShadow: "none",
                     bgcolor: theme.palette.primary.main,
                     color: theme.palette.primary.contrastText,
-                    '&:hover': {
+                    "&:hover": {
                       bgcolor: theme.palette.primary.dark,
                       boxShadow: STYLE_GUIDE.SHADOWS.none,
-                    }
+                    },
                   }}
                 >
                   Generate Report

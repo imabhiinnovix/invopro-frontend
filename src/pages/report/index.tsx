@@ -76,7 +76,7 @@ export default function Report() {
     cursor: 'pointer',
     borderBottom: activeTab === index ? `2px solid ${theme.palette.primary.main}` : '2px solid transparent',
     fontWeight: activeTab === index ? 'bold' : 'normal',
-    backgroundColor: activeTab === index ? theme.palette.primary.light : theme.palette.background.paper,
+    // backgroundColor: activeTab === index ? theme.palette.primary.light : theme.palette.background.paper,
     color: activeTab === index ? theme.palette.primary.main : theme.palette.text.primary,
     '&:hover': {
       backgroundColor: activeTab === index ? theme.palette.primary.light : theme.palette.action.hover,
@@ -211,24 +211,29 @@ export default function Report() {
                 ) : (
                   <Tooltip title="Download Pdf" arrow>
                     <Button
-                      variant="contained"
+                          variant="text"
                       disabled={!(viewReportNameWithVersionValue && viewReportNameWithVersionValue.length > 0)}
                       onClick={handleDownloadPdf}
-                      sx={{
-                        ...getButtonSx(),
-                        bgcolor: theme.palette.primary.main,
-                        color: theme.palette.primary.contrastText,
-                        '&:hover': {
-                          bgcolor: theme.palette.primary.dark,
-                          boxShadow: theme.shadows[3],
-                        },
-                        '&:disabled': {
-                          bgcolor: theme.palette.action.disabledBackground,
-                          color: theme.palette.action.disabled,
-                        },
-                      }}
+                                                sx={{ minWidth: "auto" }}
+
+                      // sx={{
+                      //   ...getButtonSx(),
+                      //   bgcolor: theme.palette.primary.main,
+                      //   color: theme.palette.primary.contrastText,
+                      //   '&:hover': {
+                      //     bgcolor: theme.palette.primary.dark,
+                      //     boxShadow: theme.shadows[3],
+                      //   },
+                      //   '&:disabled': {
+                      //     bgcolor: theme.palette.action.disabledBackground,
+                      //     color: theme.palette.action.disabled,
+                      //   },
+                      // }}
                     >
-                      <PictureAsPdfIcon sx={{ color: theme.getIconColor() }} />
+                      <PictureAsPdfIcon 
+                     
+                      // sx={{ color: theme.getIconColor() }}
+                       />
                     </Button>
                   </Tooltip>
                 )}
@@ -262,16 +267,20 @@ export default function Report() {
                     ) : (
                       <Tooltip title="Intermediate Download" arrow>
                         <Button
-                          variant="contained"
+                          variant="text"
+                                                    sx={{ minWidth: "auto" }}
+
                           onClick={() => {
                             intermediateDownloadFile(
                               `${allDetailData.customReportId?.reportName}-intermediate-${allDetailData.versionValue}.xlsx`,
                               allDetailData._id
                             );
                           }}
-                          sx={{ ...getButtonSx(), mr: 1 }}
+                          // sx={{ ...getButtonSx(), mr: 1 }}
                         >
-                          <DownloadForOfflineIcon sx={{ color: theme.getIconColor() }} />
+                          <DownloadForOfflineIcon 
+                          // sx={{ color: theme.getIconColor() }}
+                           />
                         </Button>
                       </Tooltip>
                     )}
@@ -298,26 +307,30 @@ export default function Report() {
                 ) : (
                   <Tooltip title="Download Excel" arrow>
                     <Button
-                      variant="contained"
+                      variant="text"
+                                                sx={{ minWidth: "auto" }}
+
                       onClick={() => {
                         downloadFile(
                           `${allDetailData?.customReportId?.reportName}-${allDetailData?.versionValue}.xlsx`,
                           allDetailData?._id || ''
                         );
                       }}
-                      sx={{
-                        ...getButtonSx(),
-                        mr: 1,
-                        bgcolor: theme.palette.success.main,
-                        color: theme.palette.success.contrastText,
-                        '&:hover': {
-                          bgcolor: theme.palette.success.dark,
-                          transform: 'translateY(-1px)',
-                          boxShadow: theme.shadows[3],
-                        },
-                      }}
+                      // sx={{
+                      //   ...getButtonSx(),
+                      //   mr: 1,
+                      //   bgcolor: theme.palette.success.main,
+                      //   color: theme.palette.success.contrastText,
+                      //   '&:hover': {
+                      //     bgcolor: theme.palette.success.dark,
+                      //     transform: 'translateY(-1px)',
+                      //     boxShadow: theme.shadows[3],
+                      //   },
+                      // }}
                     >
-                      <SimCardDownloadIcon sx={{ color: theme.getIconColor() }} />
+                      <SimCardDownloadIcon 
+                      // sx={{ color: theme.getIconColor() }}
+                       />
                     </Button>
                   </Tooltip>
                 )}
