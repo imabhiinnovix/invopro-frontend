@@ -1,6 +1,5 @@
 //new ui
 
-
 // import React, { useState, useEffect, useCallback, useRef } from "react";
 // import {
 //   Dialog,
@@ -123,7 +122,7 @@
 //   const [isCustomRecurrence, setIsCustomRecurrence] = useState(false);
 //   const [viewDialogOpen, setViewDialogOpen] = useState(false);
 //   const [selectedReminder, setSelectedReminder] = useState(null);
-  
+
 //   // API hooks
 //   const createNotification = usePost(["createNotification"]);
 //   const deleteNotification = useDelete(["deleteNotification"]);
@@ -137,7 +136,7 @@
 //       : "",
 //     !!notificationTypeId
 //   );
-  
+
 //   // Reset form fields
 //   const resetFormFields = () => {
 //     setSelectedDate(new Date());
@@ -172,13 +171,13 @@
 //     });
 //     setIsCustomRecurrence(false);
 //   };
-  
+
 //   useEffect(() => {
 //     if (notificationTypeId && !frequencyApiSuccess) {
 //       setFrequencyApiSuccess(true);
 //     }
 //   }, [notificationTypeId, frequencyApiSuccess]);
-  
+
 //   const columns: GridColDef[] = [
 //     {
 //       field: "frequency",
@@ -269,21 +268,21 @@
 //       ),
 //     },
 //   ];
-  
+
 //   interface RecipientData {
 //     customEmails?: string[];
 //     attributeId?: string;
 //     refAttributeId?: string[];
 //     label?: string;
 //   }
-  
+
 //   interface FieldOption {
 //     attributeId: string;
 //     refAttributeId?: string[];
 //     type?: string;
 //     label: string;
 //   }
-  
+
 //   const transformRecipients = (
 //     recipients: RecipientData[],
 //     fieldOptions: FieldOption[]
@@ -316,7 +315,7 @@
 //       return recipient;
 //     });
 //   };
-  
+
 //   const transformTargetEntity = (entity, fieldOptions) => {
 //     if (!entity) return null;
 //     if (
@@ -341,7 +340,7 @@
 //     }
 //     return entity;
 //   };
-  
+
 //   const handleEditReminder = (row) => {
 //     setModalType("edit");
 //     setSelectedReminder(row);
@@ -486,12 +485,12 @@
 //     }
 //     setOpen(true);
 //   };
-  
+
 //   const handleViewReminder = (row) => {
 //     setSelectedReminder(row);
 //     setViewDialogOpen(true);
 //   };
-  
+
 //   const handleDeleteClick = (row) => {
 //     setDialog({
 //       open: true,
@@ -499,7 +498,7 @@
 //       rowData: row,
 //     });
 //   };
-  
+
 //   const handleCloseDialog = () => {
 //     setDialog({
 //       open: false,
@@ -507,7 +506,7 @@
 //       rowData: null,
 //     });
 //   };
-  
+
 //   const handleConfirmAction = async () => {
 //     if (dialog.type === "delete" && dialog.rowData) {
 //       try {
@@ -530,7 +529,7 @@
 //       }
 //     }
 //   };
-  
+
 //   const validateForm = () => {
 //     let isValid = true;
 //     const newErrors = {
@@ -548,16 +547,16 @@
 //     setErrors(newErrors);
 //     return isValid;
 //   };
-  
+
 //   // Use the imported utility functions
 //   const handleChangeCalendarMonth = (delta) => {
 //     changeCalendarMonth(setCalendarDate, delta);
 //   };
-  
+
 //   const getGeneratedCalendarDays = () => {
 //     return generateCalendarDays(calendarDate, selectedDate, setDatePickerOpen);
 //   };
-  
+
 //   const getRepeatOptions = () => {
 //     const dayOfWeek = selectedDate.toLocaleDateString("en-US", {
 //       weekday: "long",
@@ -602,7 +601,7 @@
 //     }
 //     return options;
 //   };
-  
+
 //   const initializeSelectedDays = () => {
 //     const dayIndex = selectedDate.getDay();
 //     const newSelectedDays = [...selectedDays];
@@ -639,15 +638,15 @@
 //     ];
 //     setMonthlyOption(monthlyOptions[0]);
 //   };
-  
+
 //   const handleOpenDialog = () => {
 //     resetFormFields();
 //     setOpen(true);
 //     setModalType("add");
 //   };
-  
+
 //   const handleClose = () => setOpen(false);
-  
+
 // // Frequency.tsx - Fix for formatDateForAPI function
 
 // const formatDateForAPI = (date) => {
@@ -658,7 +657,7 @@
 //     const day = String(date.getDate()).padStart(2, "0");
 //     return `${year}-${month}-${day}`;
 //   }
-  
+
 //   // If it's a string, try to convert it to a Date object
 //   if (typeof date === 'string') {
 //     const dateObj = new Date(date);
@@ -670,7 +669,7 @@
 //       return `${year}-${month}-${day}`;
 //     }
 //   }
-  
+
 //   // If it's a timestamp (number), convert it to a Date object
 //   if (typeof date === 'number') {
 //     const dateObj = new Date(date);
@@ -682,12 +681,12 @@
 //       return `${year}-${month}-${day}`;
 //     }
 //   }
-  
+
 //   // If we can't convert it to a valid date, return a fallback or throw an error
 //   console.error("Invalid date provided to formatDateForAPI:", date);
 //   return ""; // Default fallback date
 // };
-  
+
 //   const formatRecipients = (recipients) => {
 //     const result = [];
 //     const customEmails = [];
@@ -721,7 +720,7 @@
 //     }
 //     return result;
 //   };
-  
+
 //   const formatTargetEntity = (entity) => {
 //     if (!entity) return null;
 //     if (typeof entity === "string") {
@@ -734,7 +733,7 @@
 //       return entity;
 //     }
 //   };
-  
+
 // //   const generatePayload = () => {
 // //     const formattedToRecipients = formatRecipients(toRecipients);
 // //     const formattedCcRecipients = formatRecipients(ccRecipients);
@@ -908,7 +907,7 @@
 // //     }
 // //     return payload;
 // //   };
-  
+
 // // Frequency.tsx - Fix for generatePayload function
 
 // const generatePayload = () => {
@@ -916,13 +915,13 @@
 //   const formattedCcRecipients = formatRecipients(ccRecipients);
 //   const formattedAcknowledgeTo = formatRecipients(acknowledgeTo);
 //   const formattedTargetEntity = formatTargetEntity(targetEntity);
-  
+
 //   // Ensure selectedDate is a Date object
 //   const startDate = selectedDate instanceof Date ? selectedDate : new Date(selectedDate);
-  
+
 //   // Ensure endDate is a Date object if it exists
 //   const formattedEndDate = endDate ? (endDate instanceof Date ? endDate : new Date(endDate)) : null;
-  
+
 //   const payload = {
 //     notificationTypeId,
 //     frequency: transformUIToAPIFrequency(repeatOption),
@@ -939,14 +938,14 @@
 //     schedulerEndDate: formattedEndDate ? formatDateForAPI(formattedEndDate) : null,
 //     maxOccurrences: occurrences,
 //   };
-  
+
 //   if (formattedAcknowledgeTo.length > 0) {
 //     payload.acknowledge_to = formattedAcknowledgeTo;
 //   }
 //   if (formattedTargetEntity) {
 //     payload.targetEntity = formattedTargetEntity;
 //   }
-  
+
 //   if (repeatOption === "Do not repeat") {
 //     return payload;
 //   } else if (repeatOption === "Daily") {
@@ -1021,7 +1020,7 @@
 //     payload.monthOfYear = monthNames.indexOf(monthName) + 1;
 //     payload.dayOfYearMonth = dayNumber;
 //   }
-  
+
 //   if (isCustomRecurrence) {
 //     if (repeatPeriod === "day") {
 //       payload.frequency = "daily";
@@ -1086,14 +1085,14 @@
 //         payload.dayOfYearMonth = selectedDate.getDate();
 //       }
 //     }
-    
+
 //     if (endsOption === "on") {
 //       payload.schedulerEndDate = formattedEndDate ? formatDateForAPI(formattedEndDate) : null;
 //     } else if (endsOption === "after") {
 //       payload.maxOccurrences = occurrences;
 //     }
 //   }
-  
+
 //   return payload;
 // };
 //   const handleSave = async (payload = null) => {
@@ -1132,11 +1131,11 @@
 //       );
 //     }
 //   };
-  
+
 //   const handleRepeatClick = (e) => {
 //     setRepeatAnchorEl(e.currentTarget);
 //   };
-  
+
 //   const handleRepeatSelect = (value) => {
 //     setRepeatOption(value);
 //     setRepeatAnchorEl(null);
@@ -1165,7 +1164,7 @@
 //       setSelectedDays([false, false, false, false, false, false, false]);
 //     }
 //   };
-  
+
 //   const handleTimeChange = (newValue) => {
 //     if (newValue) {
 //       setSelectedTime(newValue.format("hh:mm A"));
@@ -1174,7 +1173,7 @@
 //     }
 //     setTimePickerOpen(false);
 //   };
-  
+
 //   return (
 //     <Box sx={{ p: 3 }}>
 //       <Box
@@ -1893,13 +1892,7 @@
 //   );
 // }
 
-
-
-
 // old ui
-
-
-
 
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import {
@@ -1942,7 +1935,7 @@ import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import dayjs from "dayjs";
 import { TimePicker } from "@mui/x-date-pickers/TimePicker";
-import ViewReminderDialog from "./ViewReminderDialog"; 
+import ViewReminderDialog from "./ViewReminderDialog";
 // Constants remain the same
 const MONTHS = [
   { id: "Jan", label: "January" },
@@ -2091,7 +2084,7 @@ const RRuleGenerator = ({
     hideError: false,
     ...config,
   };
-  
+
   const weekdays = defaultConfig.weekStartsOnSunday
     ? [
         { id: "Sunday", label: "Sunday" },
@@ -2111,9 +2104,9 @@ const RRuleGenerator = ({
         { id: "Saturday", label: "Saturday" },
         { id: "Sunday", label: "Sunday" },
       ];
-      
+
   const dayAbbrevs = ["SU", "MO", "TU", "WE", "TH", "FR", "SA"];
-  
+
   const backendDayIndices = defaultConfig.weekStartsOnSunday
     ? {
         Sunday: 0,
@@ -2133,19 +2126,19 @@ const RRuleGenerator = ({
         Friday: 5,
         Saturday: 6,
       };
-      
+
   const mapBackendDayToUiIndex = (backendDay) => {
     if (defaultConfig.weekStartsOnSunday) {
       return backendDay;
     } else {
       if (backendDay === 0) {
-        return 6; 
+        return 6;
       } else {
         return backendDay - 1;
       }
     }
   };
-  
+
   const [startDate, setStartDate] = useState("");
   const [repeatType, setRepeatType] = useState("");
   const [yearlyType, setYearlyType] = useState(
@@ -2176,7 +2169,7 @@ const RRuleGenerator = ({
   const [method, setMethod] = useState("");
   const [toRecipients, setToRecipients] = useState([]);
   const [ccRecipients, setCcRecipients] = useState([]);
-    const [acknowledgeTo, setAcknowledgeTo] = useState([]);
+  const [acknowledgeTo, setAcknowledgeTo] = useState([]);
 
   const [targetEntity, setTargetEntity] = useState(null);
   const [openDialog, setOpenDialog] = useState(false);
@@ -2191,7 +2184,8 @@ const RRuleGenerator = ({
     message: "",
     severity: "info",
   });
-  
+  const [resetCount, setResetCount] = useState(0);
+
   const [errors, setErrors] = useState({
     frequency: "",
     startDate: "",
@@ -2203,11 +2197,11 @@ const RRuleGenerator = ({
     template: "",
     method: "",
   });
-  
+
   const isMounted = useRef(false);
   const isInitialMount = useRef(true);
   const previousRepeatType = useRef(repeatType);
-  
+
   const resetForm = useCallback(() => {
     setStartDate("");
     setRepeatType("");
@@ -2235,7 +2229,7 @@ const RRuleGenerator = ({
     setCcRecipients([]);
     setAcknowledgeTo([]);
     setTargetEntity(null);
-    
+
     setErrors({
       frequency: "",
       startDate: "",
@@ -2247,10 +2241,11 @@ const RRuleGenerator = ({
       template: "",
       method: "",
     });
-    
+
     isInitialMount.current = true;
+    setResetCount((prev) => prev + 1);
   }, [defaultConfig.yearly, defaultConfig.monthly]);
-  
+
   // Validate form
   const validateForm = useCallback(() => {
     let valid = true;
@@ -2265,68 +2260,84 @@ const RRuleGenerator = ({
       template: "",
       method: "",
     };
-    
+
     // Validate frequency
     if (!repeatType) {
       newErrors.frequency = "Frequency is required";
       valid = false;
     }
-    
+
     // Validate start date
     if (!startDate) {
       newErrors.startDate = "Start date is required";
       valid = false;
     }
-    
+
     // Validate interval
     if (interval < 1) {
       newErrors.interval = "Interval must be at least 1";
       valid = false;
     }
-    
+
     // Validate based on frequency type
     if (repeatType === "Weekly" && weeklyDays.length === 0) {
-      newErrors.weeklyDays = "At least one day must be selected for weekly frequency";
+      newErrors.weeklyDays =
+        "At least one day must be selected for weekly frequency";
       valid = false;
     }
-    
+
     if (repeatType === "Monthly") {
       if (monthlyType === "on" && monthlyDays.length === 0) {
-        newErrors.monthlyDays = "At least one day must be selected for monthly frequency";
+        newErrors.monthlyDays =
+          "At least one day must be selected for monthly frequency";
         valid = false;
-      } else if (monthlyType === "onthe" && (monthlyWeeks.length === 0 || monthlyWeekDays.length === 0)) {
-        newErrors.monthlyDays = "Both week and weekday must be selected for monthly frequency";
+      } else if (
+        monthlyType === "onthe" &&
+        (monthlyWeeks.length === 0 || monthlyWeekDays.length === 0)
+      ) {
+        newErrors.monthlyDays =
+          "Both week and weekday must be selected for monthly frequency";
         valid = false;
       }
     }
-    
+
     if (repeatType === "Yearly") {
-      if (yearlyType === "on" && (yearlyMonths.length === 0 || yearlyDays.length === 0)) {
-        newErrors.yearlyDays = "Both month and day must be selected for yearly frequency";
+      if (
+        yearlyType === "on" &&
+        (yearlyMonths.length === 0 || yearlyDays.length === 0)
+      ) {
+        newErrors.yearlyDays =
+          "Both month and day must be selected for yearly frequency";
         valid = false;
-      } else if (yearlyType === "onthe" && (yearlyWeeks.length === 0 || yearlyWeekDays.length === 0 || yearlyWeekMonths.length === 0)) {
-        newErrors.yearlyDays = "Week, weekday, and month must be selected for yearly frequency";
+      } else if (
+        yearlyType === "onthe" &&
+        (yearlyWeeks.length === 0 ||
+          yearlyWeekDays.length === 0 ||
+          yearlyWeekMonths.length === 0)
+      ) {
+        newErrors.yearlyDays =
+          "Week, weekday, and month must be selected for yearly frequency";
         valid = false;
       }
     }
-    
+
     // Validate end date if selected
     if (endType === "On date" && !endDate) {
       newErrors.endDate = "End date is required";
       valid = false;
     }
-    
+
     // Validate template and method
     if (!template) {
       newErrors.template = "Template is required";
       valid = false;
     }
-    
+
     if (!method) {
       newErrors.method = "Method is required";
       valid = false;
     }
-    
+
     setErrors(newErrors);
     return valid;
   }, [
@@ -2349,7 +2360,7 @@ const RRuleGenerator = ({
     template,
     method,
   ]);
-  
+
   const templateList = useGet(["templateList"], `${GET.TEMPLATE_LIST}`, true);
   const mediumList = useGet(["mediumList"], `${GET.MEDIUM_LIST}`, true);
   const createFrequency = usePost(["createFrequency"]);
@@ -2375,7 +2386,7 @@ const RRuleGenerator = ({
     },
     true
   );
-  
+
   const { data: frequencyListData, refetch } = useGet(
     ["frequencyList", notificationTypeId, frequencyApiSuccess],
     frequencyApiSuccess
@@ -2383,19 +2394,19 @@ const RRuleGenerator = ({
       : "",
     !!frequencyApiSuccess
   );
-  
+
   const { data: reminderData, refetch: refetchReminder } = useGet(
     ["reminder", editingReminderId],
     editingReminderId ? `${GET.FREQUENCY_DETAIL}/${editingReminderId}` : "",
     !!editingReminderId
   );
-  
+
   const { data: viewReminderData, refetch: refetchViewReminder } = useGet(
     ["viewReminder", viewingReminderId],
     viewingReminderId ? `${GET.FREQUENCY_DETAIL}/${viewingReminderId}` : "",
     !!viewingReminderId
   );
-  
+
   // useEffect Hooks
   useEffect(() => {
     isMounted.current = true;
@@ -2403,27 +2414,26 @@ const RRuleGenerator = ({
       isMounted.current = false;
     };
   }, []);
-  
+
   useEffect(() => {
     if (notificationTypeId) {
       setFrequencyApiSuccess(true);
       refetch();
     }
   }, [notificationTypeId, refetch]);
-  
+
   useEffect(() => {
     if (notificationTypeId && frequencyApiSuccess) {
       refetch();
     }
   }, [notificationTypeId, frequencyApiSuccess, refetch]);
-  
+
   useEffect(() => {
     if (viewReminderData?.data && openViewDialog) {
       setViewingReminderData(viewReminderData.data);
     }
   }, [viewReminderData, openViewDialog]);
- 
-  
+
   useEffect(() => {
     if (!reminderData?.data || !editMode) {
       return;
@@ -2533,11 +2543,11 @@ const RRuleGenerator = ({
       if (a === b) return true;
       if (a == null || b == null) return false;
       if (a.length !== b.length) return false;
-      
+
       // Sort both arrays to compare regardless of order
       const sortedA = [...a].sort();
       const sortedB = [...b].sort();
-      
+
       for (let i = 0; i < sortedA.length; ++i) {
         if (sortedA[i] !== sortedB[i]) return false;
       }
@@ -2562,11 +2572,14 @@ const RRuleGenerator = ({
           });
         } else if (acknowledge.attributeId) {
           const fieldOption = fieldOptions.find(
-            (opt) => 
+            (opt) =>
               opt.attributeId === acknowledge.attributeId &&
-              arraysEqual(opt.refAttributeId || [], acknowledge.refAttributeId || [])
+              arraysEqual(
+                opt.refAttributeId || [],
+                acknowledge.refAttributeId || []
+              )
           );
-          
+
           if (fieldOption) {
             acknowledgeTo.push(fieldOption);
           } else {
@@ -2601,11 +2614,14 @@ const RRuleGenerator = ({
           });
         } else if (recipient.attributeId) {
           const fieldOption = fieldOptions.find(
-            (opt) => 
+            (opt) =>
               opt.attributeId === recipient.attributeId &&
-              arraysEqual(opt.refAttributeId || [], recipient.refAttributeId || [])
+              arraysEqual(
+                opt.refAttributeId || [],
+                recipient.refAttributeId || []
+              )
           );
-          
+
           if (fieldOption) {
             toRecipients.push(fieldOption);
           } else {
@@ -2640,11 +2656,14 @@ const RRuleGenerator = ({
           });
         } else if (recipient.attributeId) {
           const fieldOption = fieldOptions.find(
-            (opt) => 
+            (opt) =>
               opt.attributeId === recipient.attributeId &&
-              arraysEqual(opt.refAttributeId || [], recipient.refAttributeId || [])
+              arraysEqual(
+                opt.refAttributeId || [],
+                recipient.refAttributeId || []
+              )
           );
-          
+
           if (fieldOption) {
             ccRecipients.push(fieldOption);
           } else {
@@ -2669,11 +2688,14 @@ const RRuleGenerator = ({
     if (data.targetEntity) {
       if (data.targetEntity.attributeId) {
         const fieldOption = fieldOptions.find(
-          (opt) => 
+          (opt) =>
             opt.attributeId === data.targetEntity.attributeId &&
-            arraysEqual(opt.refAttributeId || [], data.targetEntity.refAttributeId || [])
+            arraysEqual(
+              opt.refAttributeId || [],
+              data.targetEntity.refAttributeId || []
+            )
         );
-        
+
         if (fieldOption) {
           setTargetEntity(fieldOption);
         } else {
@@ -2723,7 +2745,7 @@ const RRuleGenerator = ({
       }
     }
   }, [yearlyType, repeatType]);
-  
+
   useEffect(() => {
     if (repeatType === "Monthly" && !isInitialMount.current) {
       if (monthlyType === "on") {
@@ -2734,7 +2756,7 @@ const RRuleGenerator = ({
       }
     }
   }, [monthlyType, repeatType]);
-  
+
   // Handlers
   const handleWeeklyDayToggle = useCallback(
     (day) => {
@@ -2748,15 +2770,15 @@ const RRuleGenerator = ({
             );
         return newDays.length > 0 ? newDays : prev;
       });
-      
+
       // Clear error when user selects a day
       if (errors.weeklyDays) {
-        setErrors(prev => ({...prev, weeklyDays: ""}));
+        setErrors((prev) => ({ ...prev, weeklyDays: "" }));
       }
     },
     [weekdays, errors.weeklyDays]
   );
-  
+
   const handleEditReminder = useCallback(
     (reminder) => {
       setEditingReminderId(reminder._id);
@@ -2767,13 +2789,13 @@ const RRuleGenerator = ({
     },
     [refetchReminder]
   );
-  
+
   const handleCancelEdit = useCallback(() => {
     setEditMode(false);
     setEditingReminderId(null);
     resetForm();
   }, [resetForm]);
-  
+
   const handleViewReminder = useCallback(
     (reminder) => {
       setViewingReminderId(reminder._id);
@@ -2782,13 +2804,13 @@ const RRuleGenerator = ({
     },
     [refetchViewReminder]
   );
-  
+
   const handleCloseViewDialog = useCallback(() => {
     setOpenViewDialog(false);
     setViewingReminderId(null);
     setViewingReminderData(null);
   }, []);
-  
+
   const handleYearlyTypeChange = (e) => {
     const newType = e.target.value;
     setYearlyType(newType);
@@ -2801,7 +2823,7 @@ const RRuleGenerator = ({
       setYearlyDays([]);
     }
   };
-  
+
   const handleMonthlyTypeChange = (e) => {
     const newType = e.target.value;
     setMonthlyType(newType);
@@ -2812,20 +2834,20 @@ const RRuleGenerator = ({
       setMonthlyDays([]);
     }
   };
-  
+
   const handleAddReminder = useCallback(async () => {
     // Validate form before submission
     if (!validateForm()) {
       return;
     }
-    
+
     const rrule = generateRRule();
     if (!rrule) {
       setSuccessMessage("Please select valid options to generate an RRule.");
       setTimeout(() => setSuccessMessage(null), 3000);
       return;
     }
-    
+
     let dayOfMonth = [];
     let weekOfMonth = [];
     let daysOfWeek = [];
@@ -2865,63 +2887,69 @@ const RRuleGenerator = ({
         );
       }
     }
-    
-   
-    
+
     const formatRecipients = (recipients) => {
-  const result = [];
-  const customEmails = [];
-  recipients.forEach((recipient) => {
-    if (typeof recipient === "string") {
-      if (recipient.includes("@")) {
-        customEmails.push(recipient);
-      } else {
-        result.push({ attributeId: recipient });
-      }
-    } else {
-      if (recipient.label && recipient.label.includes("@")) {
-        customEmails.push(recipient.label);
-      } else if (recipient.attributeId) {
-        const recipientObj = {
-          attributeId: recipient.attributeId
-        };
-        
-        if (recipient.refAttributeId && Array.isArray(recipient.refAttributeId) && recipient.refAttributeId.length > 0) {
-          recipientObj.refAttributeId = recipient.refAttributeId;
+      const result = [];
+      const customEmails = [];
+      recipients.forEach((recipient) => {
+        if (typeof recipient === "string") {
+          if (recipient.includes("@")) {
+            customEmails.push(recipient);
+          } else {
+            result.push({ attributeId: recipient });
+          }
+        } else {
+          if (recipient.label && recipient.label.includes("@")) {
+            customEmails.push(recipient.label);
+          } else if (recipient.attributeId) {
+            const recipientObj = {
+              attributeId: recipient.attributeId,
+            };
+
+            if (
+              recipient.refAttributeId &&
+              Array.isArray(recipient.refAttributeId) &&
+              recipient.refAttributeId.length > 0
+            ) {
+              recipientObj.refAttributeId = recipient.refAttributeId;
+            }
+
+            result.push(recipientObj);
+          }
         }
-        
-        result.push(recipientObj);
+      });
+
+      if (customEmails.length > 0) {
+        result.push({ customEmails });
+      }
+
+      return result;
+    };
+    let formattedTargetEntity = null;
+    if (targetEntity) {
+      if (typeof targetEntity === "string") {
+        formattedTargetEntity = { customEmails: [targetEntity] };
+      } else if (targetEntity.attributeId) {
+        formattedTargetEntity = {
+          attributeId: targetEntity.attributeId,
+        };
+
+        if (
+          targetEntity.refAttributeId &&
+          Array.isArray(targetEntity.refAttributeId) &&
+          targetEntity.refAttributeId.length > 0
+        ) {
+          formattedTargetEntity.refAttributeId = targetEntity.refAttributeId;
+        }
       }
     }
-  });
-  
-  if (customEmails.length > 0) {
-    result.push({ customEmails });
-  }
-  
-  return result;
-};
-let formattedTargetEntity = null;
-if (targetEntity) {
-  if (typeof targetEntity === "string") {
-    formattedTargetEntity = { customEmails: [targetEntity] };
-  } else if (targetEntity.attributeId) {
-    formattedTargetEntity = {
-      attributeId: targetEntity.attributeId
-    };
-    
-    if (targetEntity.refAttributeId && Array.isArray(targetEntity.refAttributeId) && targetEntity.refAttributeId.length > 0) {
-      formattedTargetEntity.refAttributeId = targetEntity.refAttributeId;
-    }
-  }
-}
     const payload = {
       notificationTypeId,
       frequency: repeatType.toLowerCase(),
       schedulerStartDate: startDate,
       ...(endType === "On date" && { schedulerEndDate: endDate }),
       interval,
-      ...( dayOfMonth.length  && { dayOfMonth }),
+      ...(dayOfMonth.length && { dayOfMonth }),
       ...(weekOfMonth.length > 0 && { weekOfMonth }),
       ...(daysOfWeek.length > 0 && { daysOfWeek }),
       ...(monthOfYear.length > 0 && { monthOfYear }),
@@ -2937,8 +2965,12 @@ if (targetEntity) {
       ...(endType === "After" && { maxOccurrences: endAfter.toString() }),
       ...(formattedTargetEntity && { targetEntity: formattedTargetEntity }),
     };
-    
-    console.log("Formatted payload:",payload, JSON.stringify(payload, null, 2));
+
+    console.log(
+      "Formatted payload:",
+      payload,
+      JSON.stringify(payload, null, 2)
+    );
     try {
       if (editMode) {
         console.log("Updating reminder with ID:", editingReminderId);
@@ -3019,17 +3051,17 @@ if (targetEntity) {
     backendDayIndices,
     validateForm,
   ]);
-  
+
   const handleDeleteReminder = useCallback((reminderId) => {
     setSelectedReminderId(reminderId);
     setOpenDialog(true);
   }, []);
-  
+
   const handleCloseDialog = useCallback(() => {
     setOpenDialog(false);
     setSelectedReminderId(null);
   }, []);
-  
+
   const handleConfirmDelete = useCallback(async () => {
     if (selectedReminderId) {
       try {
@@ -3046,7 +3078,7 @@ if (targetEntity) {
       }
     }
   }, [deleteFrequency, selectedReminderId]);
-  
+
   const parseRRule = useCallback(
     (rruleString) => {
       try {
@@ -3055,7 +3087,7 @@ if (targetEntity) {
           const [key, val] = part.split("=");
           return { ...acc, [key]: val };
         }, {});
-        
+
         if (rules.FREQ) {
           const newRepeatType =
             rules.FREQ.charAt(0) + rules.FREQ.slice(1).toLowerCase();
@@ -3063,14 +3095,14 @@ if (targetEntity) {
             setRepeatType(newRepeatType);
           }
         }
-        
+
         if (rules.INTERVAL) {
           const newInterval = parseInt(rules.INTERVAL) || 1;
           if (newInterval !== interval) {
             setInterval(newInterval);
           }
         }
-        
+
         if (rules.COUNT) {
           const newEndType = "After";
           const newEndAfter = parseInt(rules.COUNT) || 1;
@@ -3087,7 +3119,7 @@ if (targetEntity) {
             setEndDate(newEndDate);
           }
         }
-        
+
         if (rules.FREQ === "YEARLY" && rules.BYMONTH) {
           const monthIndices = rules.BYMONTH.split(",").map((m) => parseInt(m));
           const months = monthIndices
@@ -3106,7 +3138,7 @@ if (targetEntity) {
             setYearlyWeekMonths(months);
           }
         }
-        
+
         if (rules.FREQ === "YEARLY" && rules.BYMONTHDAY) {
           const days = rules.BYMONTHDAY.split(",").filter((day) =>
             DAYS.some((d) => d.id === day)
@@ -3118,7 +3150,7 @@ if (targetEntity) {
             setYearlyDays(days);
           }
         }
-        
+
         if (rules.FREQ === "YEARLY" && rules.BYDAY) {
           const byDayRules = rules.BYDAY.split(",");
           const weeks = [];
@@ -3149,7 +3181,7 @@ if (targetEntity) {
             setYearlyWeekDays(weekDays);
           }
         }
-        
+
         if (rules.FREQ === "MONTHLY" && rules.BYMONTHDAY) {
           const days = rules.BYMONTHDAY.split(",").filter((day) =>
             DAYS.some((d) => d.id === day)
@@ -3161,7 +3193,7 @@ if (targetEntity) {
             setMonthlyDays(days);
           }
         }
-        
+
         if (rules.FREQ === "MONTHLY" && rules.BYDAY) {
           const byDayRules = rules.BYDAY.split(",");
           const weeks = [];
@@ -3192,7 +3224,7 @@ if (targetEntity) {
             setMonthlyWeekDays(weekDays);
           }
         }
-        
+
         if (rules.FREQ === "WEEKLY" && rules.BYDAY) {
           const days = rules.BYDAY.split(",")
             .map((dayAbbrev) => {
@@ -3236,11 +3268,11 @@ if (targetEntity) {
       weeklyDays,
     ]
   );
-  
+
   const generateRRule = useCallback(() => {
     if (!repeatType) return "";
     let rrule = `FREQ=${repeatType.toUpperCase()}`;
-    
+
     switch (repeatType) {
       case "Yearly":
         if (yearlyType === "on") {
@@ -3313,17 +3345,17 @@ if (targetEntity) {
       default:
         break;
     }
-    
+
     if (interval > 1) {
       rrule += `;INTERVAL=${interval}`;
     }
-    
+
     if (endType === "After") {
       rrule += `;COUNT=${endAfter}`;
     } else if (endType === "On date" && endDate) {
       rrule += `;UNTIL=${endDate.replace(/-/g, "")}T235959Z`;
     }
-    
+
     return rrule;
   }, [
     repeatType,
@@ -3348,7 +3380,7 @@ if (targetEntity) {
     dayAbbrevs,
     defaultConfig.weekStartsOnSunday,
   ]);
-  
+
   useEffect(() => {
     if (!isMounted.current || isInitialMount.current) return;
     const newRRule = generateRRule();
@@ -3376,7 +3408,7 @@ if (targetEntity) {
     endDate,
     endAfter,
   ]);
-  
+
   useEffect(() => {
     if (!isMounted.current || !value) return;
     const currentRRule = generateRRule();
@@ -3411,7 +3443,7 @@ if (targetEntity) {
     dayAbbrevs,
     defaultConfig.weekStartsOnSunday,
   ]);
-  
+
   useEffect(() => {
     if (!isMounted.current || isInitialMount.current) return;
     if (previousRepeatType.current !== repeatType) {
@@ -3440,19 +3472,19 @@ if (targetEntity) {
     isInitialMount,
   ]);
   const arraysEqual = (a, b) => {
-  if (a === b) return true;
-  if (!a || !b) return false;
-  if (a.length !== b.length) return false;
+    if (a === b) return true;
+    if (!a || !b) return false;
+    if (a.length !== b.length) return false;
 
-  const sortedA = [...a].sort();
-  const sortedB = [...b].sort();
+    const sortedA = [...a].sort();
+    const sortedB = [...b].sort();
 
-  for (let i = 0; i < sortedA.length; ++i) {
-    if (sortedA[i] !== sortedB[i]) return false;
-  }
-  return true;
-};
-  
+    for (let i = 0; i < sortedA.length; ++i) {
+      if (sortedA[i] !== sortedB[i]) return false;
+    }
+    return true;
+  };
+
   // const formatRecipientsForDisplay = useCallback(
   //   (recipients) => {
   //     if (!recipients || recipients.length === 0) return "None";
@@ -3472,35 +3504,43 @@ if (targetEntity) {
   //   },
   //   [fieldOptions]
   // );
-  
 
   const formatRecipientsForDisplay = useCallback(
-  (recipients) => {
-    if (!recipients || !Array.isArray(recipients) || recipients.length === 0) return "None";
-    
-    return recipients
-      .map((recipient) => {
-        // Handle custom emails
-        if (recipient.customEmails && Array.isArray(recipient.customEmails) && recipient.customEmails.length > 0) {
-          return recipient.customEmails.join(", ");
-        }
-        // Handle attribute-based recipients
-        if (recipient.attributeId) {
-          const fieldOption = fieldOptions.find(
-            (opt) =>
-              opt.attributeId === recipient.attributeId &&
-              arraysEqual(opt.refAttributeId || [], recipient.refAttributeId || [])
-          );
-          return fieldOption ? fieldOption.label : recipient.attributeId;
-        }
-        return "Unknown";
-      })
-      .filter((value) => value && value !== "Unknown")
-      .join(", ") || "None";
-  },
-  [fieldOptions, arraysEqual]
+    (recipients) => {
+      if (!recipients || !Array.isArray(recipients) || recipients.length === 0)
+        return "None";
 
-);
+      return (
+        recipients
+          .map((recipient) => {
+            // Handle custom emails
+            if (
+              recipient.customEmails &&
+              Array.isArray(recipient.customEmails) &&
+              recipient.customEmails.length > 0
+            ) {
+              return recipient.customEmails.join(", ");
+            }
+            // Handle attribute-based recipients
+            if (recipient.attributeId) {
+              const fieldOption = fieldOptions.find(
+                (opt) =>
+                  opt.attributeId === recipient.attributeId &&
+                  arraysEqual(
+                    opt.refAttributeId || [],
+                    recipient.refAttributeId || []
+                  )
+              );
+              return fieldOption ? fieldOption.label : recipient.attributeId;
+            }
+            return "Unknown";
+          })
+          .filter((value) => value && value !== "Unknown")
+          .join(", ") || "None"
+      );
+    },
+    [fieldOptions, arraysEqual]
+  );
 
   const formatTargetEntityForDisplay = useCallback(
     (targetEntity) => {
@@ -3521,7 +3561,7 @@ if (targetEntity) {
     },
     [fieldOptions]
   );
-  
+
   const formatRecurrenceDetails = useCallback(
     (data) => {
       if (!data.frequency) return "Not set";
@@ -3608,7 +3648,7 @@ if (targetEntity) {
     },
     [MONTHS, WEEK_OPTIONS, weekdays, mapBackendDayToUiIndex]
   );
-  
+
   const columns: GridColDef[] = [
     {
       field: "frequency",
@@ -3693,24 +3733,23 @@ if (targetEntity) {
       ),
     },
   ];
-  
+
   // Helper function to compare arrays
   // const arraysEqual = (a, b) => {
   //   if (a === b) return true;
   //   if (a == null || b == null) return false;
   //   if (a.length !== b.length) return false;
-    
+
   //   // Sort both arrays to compare regardless of order
   //   const sortedA = [...a].sort();
   //   const sortedB = [...b].sort();
-    
+
   //   for (let i = 0; i < sortedA.length; ++i) {
   //     if (sortedA[i] !== sortedB[i]) return false;
   //   }
   //   return true;
   // };
-  
-  
+
   return (
     <Box sx={{ padding: STYLE_GUIDE.SPACING.s4 }}>
       <LocalizationProvider dateAdapter={AdapterDayjs}>
@@ -3733,7 +3772,7 @@ if (targetEntity) {
               onChange={(e) => {
                 setStartDate(e.target.value);
                 if (errors.startDate) {
-                  setErrors(prev => ({...prev, startDate: ""}));
+                  setErrors((prev) => ({ ...prev, startDate: "" }));
                 }
               }}
               sx={styles.textField}
@@ -3745,7 +3784,7 @@ if (targetEntity) {
               <FormHelperText error>{errors.startDate}</FormHelperText>
             )}
           </FormControl>
-          
+
           <FormControl>
             <FormLabel
               sx={{
@@ -3764,7 +3803,7 @@ if (targetEntity) {
               onChange={(e) => {
                 setRepeatType(e.target.value);
                 if (errors.frequency) {
-                  setErrors(prev => ({...prev, frequency: ""}));
+                  setErrors((prev) => ({ ...prev, frequency: "" }));
                 }
               }}
               sx={styles.select}
@@ -3786,7 +3825,7 @@ if (targetEntity) {
               <FormHelperText error>{errors.frequency}</FormHelperText>
             )}
           </FormControl>
-          
+
           <FormControl>
             <FormLabel
               sx={{
@@ -3825,7 +3864,7 @@ if (targetEntity) {
           </FormControl>
         </Box>
       </LocalizationProvider>
-      
+
       <Box sx={{ marginBottom: STYLE_GUIDE.SPACING.s6 }}>
         {repeatType === "Yearly" && (
           <Box>
@@ -3898,7 +3937,7 @@ if (targetEntity) {
                           : newValue.map((v) => v.id)
                       );
                       if (errors.yearlyDays) {
-                        setErrors(prev => ({...prev, yearlyDays: ""}));
+                        setErrors((prev) => ({ ...prev, yearlyDays: "" }));
                       }
                     }}
                     disabled={yearlyType !== "on"}
@@ -3914,7 +3953,7 @@ if (targetEntity) {
                   />
                 </Box>
               </RadioGroup>
-              
+
               <RadioGroup
                 row
                 name="yearlyType"
@@ -3957,7 +3996,7 @@ if (targetEntity) {
                           : newValue.map((v) => v.id)
                       );
                       if (errors.yearlyDays) {
-                        setErrors(prev => ({...prev, yearlyDays: ""}));
+                        setErrors((prev) => ({ ...prev, yearlyDays: "" }));
                       }
                     }}
                     disabled={yearlyType !== "onthe"}
@@ -3990,7 +4029,7 @@ if (targetEntity) {
                           : newValue.map((v) => v.id)
                       );
                       if (errors.yearlyDays) {
-                        setErrors(prev => ({...prev, yearlyDays: ""}));
+                        setErrors((prev) => ({ ...prev, yearlyDays: "" }));
                       }
                     }}
                     disabled={yearlyType !== "onthe"}
@@ -4024,7 +4063,7 @@ if (targetEntity) {
                           : newValue.map((v) => v.id)
                       );
                       if (errors.yearlyDays) {
-                        setErrors(prev => ({...prev, yearlyDays: ""}));
+                        setErrors((prev) => ({ ...prev, yearlyDays: "" }));
                       }
                     }}
                     disabled={yearlyType !== "onthe"}
@@ -4041,15 +4080,15 @@ if (targetEntity) {
                 </Box>
               </RadioGroup>
             </FormControl>
-            
+
             {errors.yearlyDays && (
-              <FormHelperText error sx={{mt: 1}}>
+              <FormHelperText error sx={{ mt: 1 }}>
                 {errors.yearlyDays}
               </FormHelperText>
             )}
           </Box>
         )}
-        
+
         {repeatType === "Monthly" && (
           <Box>
             <FormControl component="fieldset">
@@ -4064,7 +4103,7 @@ if (targetEntity) {
               >
                 Monthly Recurrence
               </FormLabel>
-              
+
               <RadioGroup
                 row
                 name="monthlyType"
@@ -4101,7 +4140,7 @@ if (targetEntity) {
                     onChange={(event, newValue) => {
                       setMonthlyDays(newValue.map((v) => v.id));
                       if (errors.monthlyDays) {
-                        setErrors(prev => ({...prev, monthlyDays: ""}));
+                        setErrors((prev) => ({ ...prev, monthlyDays: "" }));
                       }
                     }}
                     disabled={monthlyType !== "on"}
@@ -4117,7 +4156,7 @@ if (targetEntity) {
                   />
                 </Box>
               </RadioGroup>
-              
+
               <RadioGroup
                 row
                 name="monthlyType"
@@ -4156,7 +4195,7 @@ if (targetEntity) {
                     onChange={(event, newValue) => {
                       setMonthlyWeeks(newValue.map((v) => v.id));
                       if (errors.monthlyDays) {
-                        setErrors(prev => ({...prev, monthlyDays: ""}));
+                        setErrors((prev) => ({ ...prev, monthlyDays: "" }));
                       }
                     }}
                     disabled={monthlyType !== "onthe"}
@@ -4185,7 +4224,7 @@ if (targetEntity) {
                     onChange={(event, newValue) => {
                       setMonthlyWeekDays(newValue.map((v) => v.id));
                       if (errors.monthlyDays) {
-                        setErrors(prev => ({...prev, monthlyDays: ""}));
+                        setErrors((prev) => ({ ...prev, monthlyDays: "" }));
                       }
                     }}
                     disabled={monthlyType !== "onthe"}
@@ -4202,15 +4241,15 @@ if (targetEntity) {
                 </Box>
               </RadioGroup>
             </FormControl>
-            
+
             {errors.monthlyDays && (
-              <FormHelperText error sx={{mt: 1}}>
+              <FormHelperText error sx={{ mt: 1 }}>
                 {errors.monthlyDays}
               </FormHelperText>
             )}
           </Box>
         )}
-        
+
         {repeatType === "Weekly" && (
           <Box>
             <FormControl component="fieldset">
@@ -4241,9 +4280,9 @@ if (targetEntity) {
                   />
                 ))}
               </Box>
-              
+
               {errors.weeklyDays && (
-                <FormHelperText error sx={{mt: 1}}>
+                <FormHelperText error sx={{ mt: 1 }}>
                   {errors.weeklyDays}
                 </FormHelperText>
               )}
@@ -4251,7 +4290,7 @@ if (targetEntity) {
           </Box>
         )}
       </Box>
-      
+
       <Box sx={styles.formRow}>
         {repeatType !== "Daily" && (
           <>
@@ -4274,7 +4313,7 @@ if (targetEntity) {
                   const value = Math.max(1, parseInt(e.target.value) || 1);
                   setInterval(value);
                   if (errors.interval) {
-                    setErrors(prev => ({...prev, interval: ""}));
+                    setErrors((prev) => ({ ...prev, interval: "" }));
                   }
                 }}
                 inputProps={{ min: 1 }}
@@ -4287,7 +4326,7 @@ if (targetEntity) {
                 <FormHelperText error>{errors.interval}</FormHelperText>
               )}
             </FormControl>
-            
+
             <Typography
               component="span"
               sx={{
@@ -4300,15 +4339,15 @@ if (targetEntity) {
               {repeatType === "Weekly"
                 ? "week(s)"
                 : repeatType === "Monthly"
-                ? "month(s)"
-                : repeatType === "Yearly"
-                ? "year(s)"
-                : ""}{" "}
+                  ? "month(s)"
+                  : repeatType === "Yearly"
+                    ? "year(s)"
+                    : ""}{" "}
               {interval > 1 ? "s" : ""}
             </Typography>
           </>
         )}
-        
+
         <FormControl>
           <FormLabel
             sx={{
@@ -4339,7 +4378,7 @@ if (targetEntity) {
             ))}
           </Select>
         </FormControl>
-        
+
         {endType === "After" && (
           <FormControl>
             <FormLabel
@@ -4366,7 +4405,7 @@ if (targetEntity) {
             />
           </FormControl>
         )}
-        
+
         {endType === "On date" && (
           <FormControl>
             <FormLabel
@@ -4386,7 +4425,7 @@ if (targetEntity) {
               onChange={(e) => {
                 setEndDate(e.target.value);
                 if (errors.endDate) {
-                  setErrors(prev => ({...prev, endDate: ""}));
+                  setErrors((prev) => ({ ...prev, endDate: "" }));
                 }
               }}
               sx={{ ...styles.textField, width: "150px" }}
@@ -4400,7 +4439,7 @@ if (targetEntity) {
           </FormControl>
         )}
       </Box>
-      
+
       <Box
         component="hr"
         sx={{
@@ -4409,7 +4448,7 @@ if (targetEntity) {
           borderTop: `1px solid ${STYLE_GUIDE.COLORS.divider}`,
         }}
       />
-      
+
       <Box
         sx={{
           display: "flex",
@@ -4426,6 +4465,7 @@ if (targetEntity) {
           <FormControl fullWidth size="small">
             <Autocomplete
               freeSolo
+              key={resetCount} // This forces re-render when resetCount changes
               size="small"
               id="target-entity-autocomplete"
               options={fieldOptions}
@@ -4439,11 +4479,11 @@ if (targetEntity) {
                 if (typeof option !== "string" && typeof value !== "string") {
                   // Check both attributeId and refAttributeId
                   if (option.attributeId !== value.attributeId) return false;
-                  
+
                   // Check if refAttributeId arrays are equal
                   const optionRefIds = option.refAttributeId || [];
                   const valueRefIds = value.refAttributeId || [];
-                  
+
                   return arraysEqual(optionRefIds, valueRefIds);
                 }
                 return false;
@@ -4463,7 +4503,7 @@ if (targetEntity) {
             />
           </FormControl>
         </Box>
-        
+
         <Box sx={{ flex: 0.6, minWidth: "120px" }}>
           <FormControl fullWidth size="small">
             <Autocomplete
@@ -4482,11 +4522,11 @@ if (targetEntity) {
                 if (typeof option !== "string" && typeof value !== "string") {
                   // Check both attributeId and refAttributeId
                   if (option.attributeId !== value.attributeId) return false;
-                  
+
                   // Check if refAttributeId arrays are equal
                   const optionRefIds = option.refAttributeId || [];
                   const valueRefIds = value.refAttributeId || [];
-                  
+
                   return arraysEqual(optionRefIds, valueRefIds);
                 }
                 return false;
@@ -4518,7 +4558,7 @@ if (targetEntity) {
             />
           </FormControl>
         </Box>
-        
+
         <Box sx={{ flex: 0.6, minWidth: "120px" }}>
           <FormControl fullWidth size="small">
             <Autocomplete
@@ -4537,11 +4577,11 @@ if (targetEntity) {
                 if (typeof option !== "string" && typeof value !== "string") {
                   // Check both attributeId and refAttributeId
                   if (option.attributeId !== value.attributeId) return false;
-                  
+
                   // Check if refAttributeId arrays are equal
                   const optionRefIds = option.refAttributeId || [];
                   const valueRefIds = value.refAttributeId || [];
-                  
+
                   return arraysEqual(optionRefIds, valueRefIds);
                 }
                 return false;
@@ -4573,7 +4613,7 @@ if (targetEntity) {
             />
           </FormControl>
         </Box>
-        
+
         {/* Template Section */}
         <Box sx={{ flex: 0.6, minWidth: "120px" }}>
           <FormControl size="small" fullWidth>
@@ -4583,7 +4623,7 @@ if (targetEntity) {
               onChange={(e) => {
                 setTemplate(e.target.value);
                 if (errors.template) {
-                  setErrors(prev => ({...prev, template: ""}));
+                  setErrors((prev) => ({ ...prev, template: "" }));
                 }
               }}
               label="Template"
@@ -4602,7 +4642,7 @@ if (targetEntity) {
             )}
           </FormControl>
         </Box>
-        
+
         {/* Notification Method Section */}
         <Box sx={{ flex: 0.5, minWidth: "120px" }}>
           <FormControl size="small" fullWidth>
@@ -4612,7 +4652,7 @@ if (targetEntity) {
               onChange={(e) => {
                 setMethod(e.target.value);
                 if (errors.method) {
-                  setErrors(prev => ({...prev, method: ""}));
+                  setErrors((prev) => ({ ...prev, method: "" }));
                 }
               }}
               label="Method"
@@ -4635,7 +4675,7 @@ if (targetEntity) {
             )}
           </FormControl>
         </Box>
-        
+
         {/* Acknowledge Checkbox */}
         <Box
           sx={{
@@ -4659,7 +4699,7 @@ if (targetEntity) {
               color: STYLE_GUIDE.COLORS.textDarkGray,
             }}
           /> */}
-           <FormControl fullWidth size="small">
+          <FormControl fullWidth size="small">
             <Autocomplete
               multiple
               freeSolo
@@ -4676,11 +4716,11 @@ if (targetEntity) {
                 if (typeof option !== "string" && typeof value !== "string") {
                   // Check both attributeId and refAttributeId
                   if (option.attributeId !== value.attributeId) return false;
-                  
+
                   // Check if refAttributeId arrays are equal
                   const optionRefIds = option.refAttributeId || [];
                   const valueRefIds = value.refAttributeId || [];
-                  
+
                   return arraysEqual(optionRefIds, valueRefIds);
                 }
                 return false;
@@ -4712,7 +4752,7 @@ if (targetEntity) {
             />
           </FormControl>
         </Box>
-        
+
         {/* Attached Checkbox */}
         <Box
           sx={{
@@ -4738,7 +4778,7 @@ if (targetEntity) {
           />
         </Box>
       </Box>
-      
+
       {/* Action Buttons */}
       <Box
         sx={{
@@ -4772,7 +4812,7 @@ if (targetEntity) {
           {editMode ? "Update Reminder" : "Add Reminder"}
         </Button>
       </Box>
-      
+
       <Box
         component="hr"
         sx={{
@@ -4781,7 +4821,7 @@ if (targetEntity) {
           borderTop: `1px solid ${STYLE_GUIDE.COLORS.divider}`,
         }}
       />
-      
+
       {/* Reminders List - Data Grid */}
       {frequencyListData?.data?.length > 0 && (
         <Box sx={styles.reminderContainer}>
@@ -4809,7 +4849,7 @@ if (targetEntity) {
           </Box>
         </Box>
       )}
-      
+
       {/* Delete Confirmation Dialog */}
       <Dialog
         open={openDialog}
@@ -4837,9 +4877,8 @@ if (targetEntity) {
             Yes
           </Button>
         </DialogActions>
-        
       </Dialog>
-      
+
       {/* View Reminder Dialog - Using the new component */}
       <ViewReminderDialog
         open={openViewDialog}
@@ -4849,7 +4888,7 @@ if (targetEntity) {
         formatTargetEntityForDisplay={formatTargetEntityForDisplay}
         formatRecipientsForDisplay={formatRecipientsForDisplay}
       />
-      
+
       {/* Snackbar for notifications */}
       {snackbar.open && (
         <Alert
@@ -4879,5 +4918,4 @@ const Frequency = ({ fieldOptions, notificationTypeId }) => {
     </Box>
   );
 };
-export default Frequency; 
-
+export default Frequency;
