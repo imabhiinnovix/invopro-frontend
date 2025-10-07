@@ -4428,7 +4428,7 @@ if (targetEntity) {
               freeSolo
               size="small"
               id="target-entity-autocomplete"
-              options={fieldOptions.filter((option) => option.type === "email")}
+              options={fieldOptions}
               getOptionLabel={(option) =>
                 typeof option === "string" ? option : option.label
               }
