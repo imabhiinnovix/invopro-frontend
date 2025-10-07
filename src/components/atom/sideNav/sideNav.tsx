@@ -207,7 +207,7 @@ export default function SideNav() {
   const defaultNotivixDash = dashboards.find(
     (item) => item?.isDefaultNotivix === true
   );
-  console.log("defaultNotivixDash", defaultNotivixDash);
+  // console.log("defaultNotivixDash", defaultNotivixDash);
 
   // const closeAllDropdowns = () => {
   //   setOpenSettings(false);

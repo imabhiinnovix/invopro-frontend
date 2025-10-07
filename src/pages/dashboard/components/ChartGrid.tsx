@@ -88,6 +88,7 @@ import { SaveWidgetModel } from "../../naturalLanguage/saveWidgetModel";
 import { STYLE_GUIDE } from "../../../styles";
 import { useUnifiedTheme } from "../../../hooks/useUnifiedTheme";
 import { useComponentTypography } from "../../../hooks/useComponentTypography";
+import { formatDateWithoutTime } from "../../../utils/utils";
 
 // Register ChartJS components
 ChartJS.register(
@@ -1157,7 +1158,6 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
           );
           return found?.data ?? 0;
         });
-         
 
         return {
           label: group,
@@ -1469,8 +1469,6 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
       };
     }
 
-    
-
     function processStackedComboData(
       data: any[],
       groupBy: string[],
@@ -1636,7 +1634,6 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
         };
       }
 
-      
       const labels = Array.from(new Set(data.map((item: any) => item.name)));
 
       // CASE 1: When groupBy has value - Stacked bars by dimensions + multiple lines for groupBy
@@ -2329,14 +2326,10 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
           },
         };
 
-      
-
       case "stackedBarLine":
         return {
           ...baseOptions,
           scales: {
-          
-
             y: {
               type: "linear" as const,
               display: widgetTheme?.scales?.y?.display ?? true,
@@ -2648,20 +2641,34 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
                         },
                       }}
                     >
-                      {columns.map((column) => (
-                        <TableCell
-                          key={column}
-                          sx={{
-                            color:
-                              themeUnified.palette.table?.rowText ||
-                              STYLE_GUIDE.COLORS.textDarkGray,
-                          }}
-                        >
-                          {typeof row[column] === "number"
-                            ? row[column].toLocaleString()
-                            : row[column]}
-                        </TableCell>
-                      ))}
+                      
+                      {columns.map((column) => {
+                        const cellValue = row[column];
+
+                        const isDateField =
+                          column.toLowerCase().includes("date") ||
+                          column.toLowerCase().includes("datetaken") ||
+                          column.toLowerCase().includes("duedate");
+
+                        return (
+                          <TableCell
+                            key={column}
+                            sx={{
+                              color:
+                                themeUnified.palette.table?.rowText ||
+                                STYLE_GUIDE.COLORS.textDarkGray,
+                            }}
+                          >
+                            {cellValue == null || cellValue === ""
+                              ? "-"
+                              : typeof cellValue === "number"
+                                ? cellValue.toLocaleString()
+                                : isDateField
+                                  ? formatDateWithoutTime(cellValue)
+                                  : cellValue}
+                          </TableCell>
+                        );
+                      })}
                     </TableRow>
                   ))
                 ) : (
@@ -2695,7 +2702,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
           )}
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleDrillDownClose}>Close23</Button>
+          <Button onClick={handleDrillDownClose}>Close</Button>
         </DialogActions>
       </DrillDownDialog>
     );
@@ -2779,7 +2786,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
                             SABIC_COLORS_NUMBER[
                               index % SABIC_COLORS_NUMBER.length
                             ] === "#939598"
-                              ? "#FFFFFF" 
+                              ? "#FFFFFF"
                               : "#939598",
                         }}
                       >
@@ -2845,11 +2852,11 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
                           mt: -2,
                           backgroundColor: "transparent",
                           display: "flex",
-                          flexDirection: "column", 
-                          justifyContent: "flex-start", 
-                          alignItems: "flex-start", 
+                          flexDirection: "column",
+                          justifyContent: "flex-start",
+                          alignItems: "flex-start",
                           width: "100%",
-                        }} 
+                        }}
                       >
                         {renderChart(chart)}
                       </ChartContainer>

@@ -44,9 +44,9 @@ export default function AttributeOption() {
                 fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.bold,
                 fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.xl,
                 padding: `${STYLE_GUIDE.SPACING.s4} ${STYLE_GUIDE.SPACING.s6}`,
-                bgcolor: STYLE_GUIDE.COLORS.bootstrapPrimary,
+                bgcolor: STYLE_GUIDE.COLORS.primary,
                 color: STYLE_GUIDE.COLORS.white,
-                '&:hover': { bgcolor: STYLE_GUIDE.COLORS.bootstrapPrimaryHover },
+                // '&:hover': { bgcolor: STYLE_GUIDE.COLORS.bootstrapPrimaryHover },
                 '@media (max-width: 600px)': {
                   fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.large,
                   padding: `${STYLE_GUIDE.SPACING.s3} ${STYLE_GUIDE.SPACING.s4}`,

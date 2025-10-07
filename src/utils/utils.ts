@@ -81,6 +81,21 @@ export const formatDate = (dateString?: string): string => {
   }
 };
 
+export const formatDateWithoutTime = (dateString?: string): string => {
+  if (!dateString) return "-";
+  try {
+    const date = new Date(dateString);
+    return date.toLocaleDateString("en-GB", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+      timeZone: "Asia/Kolkata",
+    });
+  } catch {
+    return "-";
+  }
+};
+
 // Helper function to format permission names
 export const formatPermissionName = (key: string) => {
   return key

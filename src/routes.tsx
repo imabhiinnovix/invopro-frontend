@@ -95,6 +95,7 @@ const AppRoutes = () => {
           <Route path="/validation-errors/:id" element={<ValidationErrors />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/create-theme" element={<CreateTheme />} />
+          <Route path="/attribute-option" element={<AttributeOption />} />
         </Route>
       </Route>
 
@@ -102,7 +103,7 @@ const AppRoutes = () => {
       <Route element={<SuperAdminProtect />}>
         <Route element={<CommonLayout />}>
           <Route path="/superadmin/dashboard" element={<Dashboard />} />
-          <Route path="/attribute-option" element={<AttributeOption />} />
+          {/* <Route path="/attribute-option" element={<AttributeOption />} /> */}
         </Route>
       </Route>
 

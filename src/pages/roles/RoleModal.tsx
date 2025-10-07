@@ -33,74 +33,9 @@ import { useQueryClient } from "@tanstack/react-query";
 import { UserResponse } from "../../context/AuthContext";
 import { setPermissions } from "../../reducers/userSlice";
 import { STYLE_GUIDE } from "../../styles";
+import { RoleDetailResponse, RoleModalProps, RolePostPayload, RolePostResponse } from "../../types/permissions";
 
-interface PermissionDetail {
-  _id: string;
-  name: string;
-  method: string;
-  resourceId: string;
-  dataSourceId?: string;
-  resourceType: string;
-  resourceCode?: string;
-  status: string;
-  isSuperUser: boolean;
-  organizationId?: string;
-  createdAt: string;
-  updatedAt: string;
-  __v: number;
-}
-interface RoleDetail {
-  _id: string;
-  permissionId: PermissionDetail;
-  roleId: string;
-  status: string;
-  __v: number;
-  createdAt: string;
-  updatedAt: string;
-}
-interface Role {
-  _id: string;
-  organizationId: string;
-  name: string;
-  status: string;
-  permissions?: string[];
-}
-interface RoleDetailResponse {
-  success: boolean;
-  data: RoleDetail[];
-  totalCount: number;
-}
-interface RolePostPayload {
-  name: string;
-  organizationId?: string;
-  status?: string;
-  permissionIds: string[];
-}
-interface RolePostResponse {
-  success: boolean;
-  data: Role;
-}
-interface RoleModalProps {
-  open: boolean;
-  onClose: () => void;
-  rowData?: string;
 
-  mode: "add" | "edit" | "view" | "filter" | null;
-  editRoleId: string | null;
-  filterValues: {
-    name: string;
-    organizationId: string;
-    status: string;
-  };
-  onFilterApply: (values: {
-    name: string;
-    organizationId: string;
-    status: string;
-  }) => void;
-  onFilterReset: () => void;
-  onRoleCreated: () => void;
-  onRoleUpdated: () => void;
-}
 
 export function RoleModal({
   open,
