@@ -1,5 +1,3 @@
-
-
 import { styled, Theme, CSSObject } from "@mui/material/styles";
 import Box from "@mui/material/Box";
 import MuiDrawer from "@mui/material/Drawer";
@@ -518,11 +516,11 @@ export default function SideNav() {
           },
         ],
       },
-      {
-        name: "Data Upload",
-        icon: createIcon(CloudUploadIcon, "/data-src-version"),
-        route: "/data-src-version",
-      },
+      // {
+      //   name: "Data Upload",
+      //   icon: createIcon(CloudUploadIcon, "/data-src-version"),
+      //   route: "/data-src-version",
+      // },
       {
         name: "Reports",
         icon: createIcon(AssessmentIcon, "/reports"),
@@ -554,6 +552,11 @@ export default function SideNav() {
             icon: createIcon(ArrowDropDownCircleIcon, "/attribute-option"),
             route: "/attribute-option",
             isBold: true,
+          },
+          {
+            name: "Data Upload",
+            icon: createIcon(CloudUploadIcon, "/data-src-version"),
+            route: "/data-src-version",
           },
           {
             name: "Entity",
