@@ -335,7 +335,7 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({
 
   // Prefill form when dialog opens
   useEffect(() => {
-    console.log("refill form withP data:", open, data);
+    // console.log("refill form withP data:", open, data);
     if (open && data) {
       reset({
         name: data.name ?? "",

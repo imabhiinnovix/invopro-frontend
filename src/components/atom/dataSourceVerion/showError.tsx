@@ -16,6 +16,8 @@ import { Close } from '@mui/icons-material';
 import useGet from '../../../hooks/useGet';
 import { GET } from '../../../services/apiRoutes';
 import { useComponentTypography } from '../../../hooks';
+import { useNav } from '../../../context/NavContext';
+import { useNavigate } from 'react-router-dom';
 
 interface ErrorDialogProps {
   dataSourceVersionId: string;
@@ -24,7 +26,7 @@ const ErrorDialog: React.FC<ErrorDialogProps> = ({ dataSourceVersionId }) => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [errors, setErrors] = useState<any[]>([]);
-
+const navigate = useNavigate();
   const perPageItem = 10;
 
   const errorList = useGet<{ success: boolean; data: any[]; totalCount: number }>(
@@ -71,12 +73,20 @@ const ErrorDialog: React.FC<ErrorDialogProps> = ({ dataSourceVersionId }) => {
   );
 
   const { getDialogTitleSx } = useComponentTypography();
-
+console.log("Rendering ErrorDialog with dataSourceVersionId:", dataSourceVersionId);
   return (
     <div>
-      <Button variant="outlined" onClick={() => setDialogOpen(true)}>
+      {/* <Button variant="outlined" onClick={() => setDialogOpen(true)}>
         Show Errors
-      </Button>
+      </Button> */}
+       <Button
+      variant="outlined"
+      onClick={() =>
+        navigate(`/validation-errors/${dataSourceVersionId}`)
+      }
+    >
+      Show Errors
+    </Button>
       <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} maxWidth="md" fullWidth>
         <DialogTitle sx={{
           ...getDialogTitleSx(),
