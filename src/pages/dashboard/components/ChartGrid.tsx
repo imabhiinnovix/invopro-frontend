@@ -1843,9 +1843,9 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
         <Typography
           color="text.secondary"
           variant="h6"
-          sx={{ textAlign: "center", p: 4 }}
+          sx={{ textAlign: "center", p: 4 , color: "#fff4f4ff"}}
         >
-          No data available for this chart
+          No data 
         </Typography>
       );
     }
