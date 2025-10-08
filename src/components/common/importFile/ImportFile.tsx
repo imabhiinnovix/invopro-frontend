@@ -3170,7 +3170,7 @@ interface GlobalPollingManagerProps {
  * @param callback - Function to execute on each poll
  */
 export const startGlobalPolling = (pollingId: string, callback: () => void) => {
-  console.log("Starting global polling for:", pollingingId);
+  console.log("Starting global polling for:", pollingId);
 
   // Clear any existing timer for this ID
   if (globalPollingState.activePolls.has(pollingId)) {

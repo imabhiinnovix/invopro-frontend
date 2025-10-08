@@ -175,17 +175,17 @@ export default function Report() {
                   <Box component="span" fontWeight="bold">
                     {allDetailData?.customReportId?.reportName || ''}
                   </Box>{' '}
-                  Report for the period{' '}
+                  Report for the period of {' '}
                   <Box component="span" fontWeight="bold">
                     {allDetailData?.versionValue
                       ? DateTime.fromFormat(allDetailData.versionValue, 'yyyy-MM').toFormat('LLLL yyyy')
                       : ''}
                   </Box>{' '}
-                  created by{' '}
+                ,created by{' '}
                   {`${allDetailData?.createdBy?.firstName || ''}${
                     allDetailData?.createdBy?.lastName ? ' ' + allDetailData.createdBy.lastName : ''
                   }`}{' '}
-                  at{' '}
+                  on{' '}
                   {allDetailData?.createdAt
                     ? DateTime.fromISO(allDetailData.createdAt).toFormat('dd LLL yyyy hh:mm a')
                     : ''}
