@@ -35,6 +35,7 @@ import { useSelector } from "react-redux";
 import { RootState } from "../../reducers";
 import { useComponentTypography } from "../../hooks";
 import Frequency from "./Frequency";
+import ConditionPreview from "./ConditionPreview";
 
 class ErrorBoundary extends React.Component {
   constructor(props) {
@@ -818,7 +819,14 @@ const ConditionRuleBuilder = ({
         </Box>
       </Box>
       {notification.conditionGroup && (
+        <>
         <GroupComponent group={notification.conditionGroup} isRoot={true} />
+         <ConditionPreview
+          conditionGroup={notification.conditionGroup}
+          fieldOptions={fieldOptions}
+          operatorList={operatorList}
+        />
+        </>
       )}
     </>
   );
