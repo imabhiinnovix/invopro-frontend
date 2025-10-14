@@ -35,6 +35,7 @@ import AcknowledgeNotification from "./pages/acknowledgeNotification";
 import NotificationLogger from "./pages/notification/NotificationLogger";
 import ProfilePage from "./pages/profilePage";
 import Designation from "./pages/designation";
+import Department from "./pages/department";
 
 const AppRoutes = () => {
   const token = getAuthToken();
@@ -98,6 +99,7 @@ const AppRoutes = () => {
           <Route path="/create-theme" element={<CreateTheme />} />
           <Route path="/attribute-option" element={<AttributeOption />} />
           <Route path="/designation" element={<Designation />} />
+          <Route path="/department" element={<Department />} />
         </Route>
       </Route>
 

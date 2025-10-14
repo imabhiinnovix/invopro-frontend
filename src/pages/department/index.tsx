@@ -1,4 +1,6 @@
 
+
+
 import * as React from "react";
 import { useState, useEffect } from "react";
 import {
@@ -16,11 +18,11 @@ import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "react-toastify";
 import { STYLE_GUIDE } from "../../styles";
 import { useComponentTypography } from "../../hooks";
-import { DesignationModal } from "./DesignationModal";
-import { DesignationDataTable } from "./DesignationDataTable";
+import { DepartmentModal } from "./DepartmentModal";
+import { DepartmentDataTable } from "./DepartmentDataTable";
 
 // Define types
-interface Designation {
+interface Department {
   _id: string;
   organizationId: string;
   name: string;
@@ -33,12 +35,12 @@ interface Designation {
   };
 }
 
-interface DesignationPostResponse {
+interface DepartmentPostResponse {
   success: boolean;
-  data: Designation;
+  data: Department;
 }
 
-export default function Designation() {
+export default function Department() {
   const queryClient = useQueryClient();
 
   const [openModal, setOpenModal] = useState(false);
@@ -47,17 +49,17 @@ export default function Designation() {
   >(null);
   const [openDialog, setOpenDialog] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
-  const [editDesignationId, setEditDesignationId] = useState<string | null>(
+  const [editDepartmentId, setEditDepartmentId] = useState<string | null>(
     null
   );
-  const [rowData, setRowData] = useState<Designation | null>(null);
+  const [rowData, setRowData] = useState<Department| null>(null);
 
   const [searchValue, setSearchValue] = useState("");
   const [paginationModel, setPaginationModel] = useState({
     page: 0,
     pageSize: 10,
   });
-  const [designationReload, setDesignationReload] = useState(false);
+  const [departmentReload, setDepartmentReload] = useState(false);
   const [filterValues, setFilterValues] = useState({
     name: "",
     organizationId: "",
@@ -66,40 +68,40 @@ export default function Designation() {
   const { getHeadingSx } = useComponentTypography();
 
   // DELETE API
-  const deleteDesignation = useDelete<null, DesignationPostResponse>(
-    ["deleteDesignation"],
+  const deleteDepartment = useDelete<null, DepartmentPostResponse>(
+    ["deleteDepartment"],
     (data) => {
       if (data?.success) {
-        setDesignationReload(true);
+        setDepartmentReload(true);
         handleCloseDialog();
       } else {
-        toast.error("Error deleting designation");
+        toast.error("Error deleting department");
       }
     },
     true
   );
 
   useEffect(() => {
-    if (designationReload) {
-      setDesignationReload(false);
+    if (departmentReload) {
+      setDepartmentReload(false);
     }
-  }, [designationReload]);
+  }, [departmentReload]);
 
-  const handleAddDesignation = () => {
+  const handleAddDepartment = () => {
     setModalMode("add");
     setOpenModal(true);
   };
 
-  const handleEdit = (row: Designation) => {
+  const handleEdit = (row: Department) => {
     setRowData(row);
-    setEditDesignationId(row._id);
+    setEditDepartmentId(row._id);
     setModalMode("edit");
     setOpenModal(true);
   };
 
-  const handleView = (row: Designation) => {
+  const handleView = (row: Department) => {
     setRowData(row);
-    setEditDesignationId(row._id);
+    setEditDepartmentId(row._id);
     setModalMode("view");
     setOpenModal(true);
   };
@@ -119,7 +121,7 @@ export default function Designation() {
   const handleCloseModal = () => {
     setOpenModal(false);
     setModalMode(null);
-    setEditDesignationId(null);
+    setEditDepartmentId(null);
     setRowData(null);
   };
 
@@ -131,11 +133,11 @@ export default function Designation() {
   const handleConfirmDelete = async () => {
     if (deleteId) {
       try {
-        await deleteDesignation.mutate({
+        await deleteDepartment.mutate({
           url: `${DELETE.DELETE_ROLE}/${deleteId}`,
         });
       } catch (error) {
-        toast.error("Error deleting designation", error);
+        toast.error("Error deleting Department", error);
       }
     }
   };
@@ -161,12 +163,12 @@ export default function Designation() {
     });
   };
 
-  const handleDesignationCreated = () => {
-    setDesignationReload(true);
+  const handleDepartmentCreated = () => {
+    setDepartmentReload(true);
   };
 
-  const handleDesignationUpdated = () => {
-    setDesignationReload(true);
+  const handleDepartmentUpdated = () => {
+    setDepartmentReload(true);
   };
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -190,35 +192,35 @@ export default function Designation() {
           mb: STYLE_GUIDE?.SPACING?.s3,
         }}
       >
-        Designations{" "}
+        Departments{" "}
       </Typography>
 
-      <DesignationDataTable
-        onAddDesignation={handleAddDesignation}
-        onEditDesignation={handleEdit}
-        onViewDesignation={handleView}
-        onDeleteDesignation={handleDelete}
+      <DepartmentDataTable
+        onAddDepartment={handleAddDepartment}
+        onEditDepartment={handleEdit}
+        onViewDepartment={handleView}
+        onDeleteDepartment={handleDelete}
         onFilter={handleFilter}
         searchValue={searchValue}
         onSearchChange={handleSearchChange}
         paginationModel={paginationModel}
         setPaginationModel={setPaginationModel}
         filterValues={filterValues}
-        designationReload={designationReload}
-        loading={deleteDesignation.isLoading}
+        departmentReload={departmentReload}
+        loading={deleteDepartment.isLoading}
       />
 
-      <DesignationModal
+      <DepartmentModal
         rowData={rowData}
         open={openModal}
         onClose={handleCloseModal}
         mode={modalMode}
-        editDesignationId={editDesignationId}
+        editDepartmentId={editDepartmentId}
         filterValues={filterValues}
         onFilterApply={handleFilterApply}
         onFilterReset={handleFilterReset}
-        onDesignationCreated={handleDesignationCreated}
-        onDesignationUpdated={handleDesignationUpdated}
+        onDepartmentCreated={handleDepartmentCreated}
+        onDepartmentUpdated={handleDepartmentUpdated}
       />
 
       <Dialog
@@ -242,7 +244,7 @@ export default function Designation() {
             onClick={handleConfirmDelete}
             color="error"
             sx={{ borderRadius: "8px" }}
-            disabled={deleteDesignation.isLoading}
+            disabled={deleteDepartment.isLoading}
           >
             Yes
           </Button>

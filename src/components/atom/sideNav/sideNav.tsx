@@ -65,6 +65,8 @@ import EventAvailableIcon from "@mui/icons-material/EventAvailable";
 import ArrowDropDownCircleIcon from "@mui/icons-material/ArrowDropDownCircle";
 import DeleteIcon from "@mui/icons-material/Delete";
 import TopicIcon from "@mui/icons-material/Topic";
+import AccountBalanceIcon from "@mui/icons-material/AccountBalance";
+import BusinessCenterIcon from '@mui/icons-material/BusinessCenter';
 
 interface ErrorResponse {
   success: boolean;
@@ -624,14 +626,14 @@ export default function SideNav() {
                 icon: createIcon(KeyIcon, "/permissions"),
                 route: "/permissions",
               },
-              // {
-              //   name: "Department",
-              //   icon: createIcon(BusinessIcon, "/department"),
-              //   route: "/department",
-              // },
+              {
+                name: "Department",
+                icon: createIcon(AccountBalanceIcon, "/department"),
+                route: "/department",
+              },
               {
                 name: "Designation",
-                icon: createIcon(BusinessIcon, "/designation"),
+                icon: createIcon(BusinessCenterIcon, "/designation"),
                 route: "/designation",
               },
               // {
