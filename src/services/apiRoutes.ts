@@ -173,6 +173,7 @@ export const POST = {
   CREATE_VERSION_ROW: "/common/dataSourceVersion/versionData/create",
   RESOLVE_DATA_IMPORT_ERROR: "/common/dataImportError/resolve",
   TRIGGER_NOTIFICATION: "/notivix/notification-setting/prepared/trigger",
+  CREATE_DESIGNATION: "/common/designation/create",
 };
 
 export const PUT = {
@@ -189,6 +190,7 @@ export const PUT = {
   SEND_ACKNOWLEDGE: "/notification-acknowledge/sendAcknowledge",
   CHANGE_PASSWORD: "/common/user/change-password",
   UPDATE_CURRENT_USER: "/common/user/update-current-user",
+  UPDATE_DESIGNATION: "/common/designation/update",
 };
 
 export const DELETE = {

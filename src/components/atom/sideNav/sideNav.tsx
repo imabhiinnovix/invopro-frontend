@@ -629,11 +629,11 @@ export default function SideNav() {
               //   icon: createIcon(BusinessIcon, "/department"),
               //   route: "/department",
               // },
-              // {
-              //   name: "Designation",
-              //   icon: createIcon(BusinessIcon, "/designation"),
-              //   route: "/designation",
-              // },
+              {
+                name: "Designation",
+                icon: createIcon(BusinessIcon, "/designation"),
+                route: "/designation",
+              },
               // {
               //   name: "Product",
               //   icon: createIcon(BusinessIcon, "/product"),
