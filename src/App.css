@@ -1,3 +1,4 @@
+@import "tailwindcss";
 /* Normalize styles */
 body {
   margin: 0;
@@ -34,7 +35,6 @@ html,
 .MuiTypography-subtitle2 {
   font-family: inherit !important;
 }
-
 
 input[type="number"] {
   appearance: textfield;

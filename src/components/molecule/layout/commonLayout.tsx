@@ -74,7 +74,6 @@
 
 // // export default CommonLayout;
 
-
 // // CommonLayout.jsx
 // import { Box } from "@mui/material";
 // import { Outlet } from "react-router-dom";
@@ -124,7 +123,7 @@
 //       >
 //         <SideNav />
 //       </Box>
-      
+
 //       {/* Main Content Area */}
 //       <Box
 //         sx={{
@@ -154,12 +153,34 @@
 // export default CommonLayout;
 
 // CommonLayout.jsx
-import { Box } from "@mui/material";
+import { Box, Stack } from "@mui/material";
 import { Outlet } from "react-router-dom";
 import SideNav from "../../atom/sideNav/sideNav";
 import { STYLE_GUIDE } from "../../../styles";
+import Header from "../header";
 
 const CommonLayout = () => {
+  return (
+    <Stack>
+      <Header />
+      <Stack flexDirection="row">
+        <SideNav />
+        <Box
+          sx={{
+            flex: 1,
+            height: "100%",
+            p: STYLE_GUIDE.SPACING.s3,
+            overflowY: "auto",
+            overflowX: "hidden",
+          }}
+        >
+          <Outlet />
+        </Box>
+      </Stack>
+    </Stack>
+  );
+};
+const CommonLayoutOld = () => {
   return (
     <Box
       sx={{
@@ -189,7 +210,7 @@ const CommonLayout = () => {
       >
         <SideNav />
       </Box>
-      
+
       {/* Main Content Area */}
       <Box
         sx={{

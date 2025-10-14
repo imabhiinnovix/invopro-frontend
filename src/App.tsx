@@ -8,14 +8,14 @@ import AuthProvider from "./context/AuthContext";
 import AppRoutes from "./routes";
 import UnifiedThemeProvider from "./providers/UnifiedThemeProvider";
 import { GlobalPollingManager } from "./components/common/importFile/ImportFile";
+import "./App.css";
 
 function App() {
   return (
     <Provider store={store}>
       <UnifiedThemeProvider>
         <BrowserRouter>
-                <GlobalPollingManager />
-
+          <GlobalPollingManager />
           <AuthProvider>
             <NavProvider>
               <AppRoutes />

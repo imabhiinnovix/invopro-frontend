@@ -1,18 +1,18 @@
-import { useState, useCallback, useContext, useEffect } from 'react';
+import { useState, useCallback, useContext, useEffect } from "react";
 
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import Avatar from '@mui/material/Avatar';
-import Popover from '@mui/material/Popover';
-import Divider from '@mui/material/Divider';
-import MenuList from '@mui/material/MenuList';
-import Typography from '@mui/material/Typography';
-import IconButton from '@mui/material/IconButton';
-import MenuItem, { menuItemClasses } from '@mui/material/MenuItem';
-import { AuthContext } from '../../../context/AuthContext';
-import { useNavigate } from 'react-router-dom';
-import { clearLocalStorage } from '../../../utils/handleLocalStorage';
-import { STYLE_GUIDE } from '../../../styles';
+import Box from "@mui/material/Box";
+import Button from "@mui/material/Button";
+import Avatar from "@mui/material/Avatar";
+import Popover from "@mui/material/Popover";
+import Divider from "@mui/material/Divider";
+import MenuList from "@mui/material/MenuList";
+import Typography from "@mui/material/Typography";
+import IconButton from "@mui/material/IconButton";
+import MenuItem, { menuItemClasses } from "@mui/material/MenuItem";
+import { AuthContext } from "../../../context/AuthContext";
+import { useNavigate } from "react-router-dom";
+import { clearLocalStorage } from "../../../utils/handleLocalStorage";
+import { STYLE_GUIDE } from "../../../styles";
 
 interface MenuItem {
   label: string;
@@ -21,13 +21,19 @@ interface MenuItem {
 export function AccountPopover() {
   const menuData: MenuItem[] = [];
   const navigate = useNavigate();
-  const [openPopover, setOpenPopover] = useState<HTMLButtonElement | null>(null);
-  const { userDetails, initialization, clearAuthContext, isAuthUser } = useContext(AuthContext);
+  const [openPopover, setOpenPopover] = useState<HTMLButtonElement | null>(
+    null
+  );
+  const { userDetails, initialization, clearAuthContext, isAuthUser } =
+    useContext(AuthContext);
 
-  const handleOpenPopover = useCallback((event: React.MouseEvent<HTMLButtonElement>) => {
-    event.preventDefault();
-    setOpenPopover(event.currentTarget);
-  }, []);
+  const handleOpenPopover = useCallback(
+    (event: React.MouseEvent<HTMLButtonElement>) => {
+      event.preventDefault();
+      setOpenPopover(event.currentTarget);
+    },
+    []
+  );
 
   const handleClosePopover = useCallback(() => {
     setOpenPopover(null);
@@ -37,7 +43,7 @@ export function AccountPopover() {
     clearAuthContext();
     clearLocalStorage();
     handleClosePopover();
-    navigate('/login');
+    navigate("/login");
   }, [clearAuthContext, handleClosePopover, navigate]);
 
   useEffect(() => {
@@ -45,6 +51,18 @@ export function AccountPopover() {
       initialization();
     }
   }, [initialization, isAuthUser]);
+
+  function getInitials() {
+    try {
+      return (
+        userDetails?.data?.firstName?.charAt(0).toUpperCase() +
+        userDetails?.data?.lastName?.charAt(0).toUpperCase()
+      );
+    } catch (error) {
+      console.error("Error getting initials:", error);
+      return "A";
+    }
+  }
 
   if (!isAuthUser) {
     return null;
@@ -55,13 +73,15 @@ export function AccountPopover() {
       <IconButton
         onClick={handleOpenPopover}
         sx={{
-          p: parseFloat(STYLE_GUIDE.SPACING.s1) / 2,
           width: 40,
           height: 40,
         }}
       >
-        <Avatar alt={userDetails?.data?.firstName?.[0]?.toUpperCase()} sx={{ width: 1, height: 1 }}>
-          {userDetails?.data?.firstName?.charAt(0).toUpperCase()}
+        <Avatar
+          alt={userDetails?.data?.firstName?.[0]?.toUpperCase()}
+          sx={{ width: 40, height: 40 }}
+        >
+          {getInitials()}
         </Avatar>
       </IconButton>
 
@@ -69,8 +89,8 @@ export function AccountPopover() {
         open={!!openPopover}
         anchorEl={openPopover}
         onClose={handleClosePopover}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-        transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+        transformOrigin={{ vertical: "top", horizontal: "right" }}
         slotProps={{
           paper: {
             sx: { width: 200 },
@@ -82,26 +102,30 @@ export function AccountPopover() {
             {`${userDetails?.data?.firstName} ${userDetails?.data?.lastName}`}
           </Typography>
 
-          <Typography variant="body2" sx={{ color: STYLE_GUIDE.COLORS.textMediumGray }} noWrap>
+          <Typography
+            variant="body2"
+            sx={{ color: STYLE_GUIDE.COLORS.textMediumGray }}
+            noWrap
+          >
             {userDetails?.data?.email}
           </Typography>
         </Box>
 
-        <Divider sx={{ borderStyle: 'dashed' }} />
+        <Divider sx={{ borderStyle: "dashed" }} />
 
         <MenuList
           disablePadding
           sx={{
             p: STYLE_GUIDE.SPACING.s2,
             gap: STYLE_GUIDE.SPACING.s1,
-            display: 'flex',
-            flexDirection: 'column',
+            display: "flex",
+            flexDirection: "column",
             [`& .${menuItemClasses.root}`]: {
               px: STYLE_GUIDE.SPACING.s2,
               gap: STYLE_GUIDE.SPACING.s4,
               borderRadius: 0.75,
               color: STYLE_GUIDE.COLORS.textMediumGray,
-              '&:hover': { color: STYLE_GUIDE.COLORS.textDarkGray },
+              "&:hover": { color: STYLE_GUIDE.COLORS.textDarkGray },
               [`&.${menuItemClasses.selected}`]: {
                 color: STYLE_GUIDE.COLORS.textDarkGray,
                 bgcolor: STYLE_GUIDE.COLORS.backgroundHover,
@@ -123,7 +147,13 @@ export function AccountPopover() {
         </MenuList>
 
         <Box sx={{ p: STYLE_GUIDE.SPACING.s2 }}>
-          <Button fullWidth color="error" size="medium" variant="text" onClick={logout}>
+          <Button
+            fullWidth
+            color="error"
+            size="medium"
+            variant="text"
+            onClick={logout}
+          >
             Logout
           </Button>
         </Box>

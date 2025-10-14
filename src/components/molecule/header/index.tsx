@@ -22,8 +22,9 @@ const Header = () => {
         position="sticky"
         color="inherit"
         elevation={2}
-        sx={{ 
-          height: 70 }}
+        sx={{
+          height: 70,
+        }}
       >
         <Toolbar>
           <Box
@@ -38,7 +39,7 @@ const Header = () => {
             }}
           >
             <Box gap={0} display="flex" alignItems="center">
-              {!["/login", "/otp-login", "/otp-login/otp"].includes(
+              {/* {!["/login", "/otp-login", "/otp-login/otp"].includes(
                 pathname
               ) && (
                 <IconButton
@@ -52,7 +53,7 @@ const Header = () => {
                 >
                   <MenuIcon />
                 </IconButton>
-              )}
+              )} */}
               <Box
                 component="img"
                 src={logo}
