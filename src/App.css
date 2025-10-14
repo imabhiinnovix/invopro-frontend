@@ -10,6 +10,7 @@ body,
 html,
 #root {
   height: 100%;
+  overflow: hidden;
 }
 
 /* Reset box-sizing globally */

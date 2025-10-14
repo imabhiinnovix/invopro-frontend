@@ -163,7 +163,7 @@ const CommonLayout = () => {
   return (
     <Stack>
       <Header />
-      <Stack flexDirection="row">
+      <Stack flexDirection="row" height="calc(100vh - 70px)">
         <SideNav />
         <Box
           sx={{

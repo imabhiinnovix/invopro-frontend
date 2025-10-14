@@ -12,7 +12,7 @@ import NotificationsIcon from "@mui/icons-material/Notifications";
 // import ManageAccountsIcon from "@mui/icons-material/ManageAccounts";
 import AddIcon from "@mui/icons-material/Add";
 import React, { useEffect, useMemo, useContext, useState } from "react";
-import { Collapse, LinearProgress, Tooltip } from "@mui/material";
+import { Collapse, LinearProgress, Tooltip, Typography } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -72,7 +72,7 @@ interface ErrorResponse {
   error: Record<string, unknown>;
 }
 
-const drawerWidth = 225;
+const drawerWidth = 250;
 
 const openedMixin = (theme: Theme): CSSObject => ({
   width: drawerWidth,
@@ -272,7 +272,7 @@ export default function SideNav() {
           navigate(route);
         }
         navigate(route);
-      } else if (itemName === "Notification") {
+      } else if (itemName === "Notifications") {
         setOpenNotificationSettings((prev) => !prev);
         navigate(route);
       } else if (itemName === "Settings") {
@@ -329,8 +329,8 @@ export default function SideNav() {
           error && typeof error === "object" && "payload" in error
             ? (error.payload as { message?: string })?.message
             : error && typeof error === "object" && "message" in error
-              ? (error as { message?: string })?.message
-              : "Failed to create dashboard. Please try again.";
+            ? (error as { message?: string })?.message
+            : "Failed to create dashboard. Please try again.";
         toast.error(errorMessage);
       } finally {
         setIsCreatingLoading(false);
@@ -392,10 +392,10 @@ export default function SideNav() {
       return (
         <IconComponent
           sx={{
-            fontSize: "18px",
+            fontSize: "20px",
             color: location.pathname.startsWith(route)
               ? theme.palette.primary.main
-              : theme.getIconColor(),
+              : theme.palette.text.secondary,
           }}
         />
       );
@@ -464,7 +464,7 @@ export default function SideNav() {
     };
 
     const NotificationLogsMenuItem = {
-      name: "Notification Logs",
+      name: "Notifications Logs",
       icon: createIcon(NotificationsIcon, "/notification-logs"),
       route: "/notification-logs",
     };
@@ -502,12 +502,12 @@ export default function SideNav() {
         route: "/dashboard",
         subItems: [
           {
-            name: "Create New Dashboard",
+            name: "New Dashboard",
             icon: (
               <AddIcon
                 sx={{
-                  fontSize: "14px",
-                  color: theme.getIconColor(),
+                  fontSize: "20px",
+                  color: theme.palette.text.secondary,
                 }}
               />
             ),
@@ -690,29 +690,11 @@ export default function SideNav() {
             height: "100%",
             width: openNav ? drawerWidth : `calc(${theme.spacing(7)} + 1px)`,
             overflow: "auto",
+            borderRight: `1px solid ${theme.palette.divider}`,
+            bgcolor: theme.palette.background.paper,
+            py: 2,
           }}
         >
-          <Box
-            sx={{
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-              height: "50px",
-              borderBottom: `1px solid ${theme.palette.divider}`,
-              flexShrink: 0,
-            }}
-          >
-            <Box
-              component="img"
-              src={logo}
-              alt="Logo"
-              sx={{
-                width: openNav ? 120 : 40,
-                height: "auto",
-                transition: "width 0.2s ease-in-out",
-              }}
-            />
-          </Box>
           <Box
             sx={{
               py: 0,
@@ -720,14 +702,14 @@ export default function SideNav() {
               overflowY: "auto",
               overflowX: "hidden",
               "&::-webkit-scrollbar": {
-                width: "3px",
+                width: "6px",
               },
               "&::-webkit-scrollbar-track": {
                 background: "transparent",
               },
               "&::-webkit-scrollbar-thumb": {
                 background: theme.palette.action.hover,
-                borderRadius: "1.5px",
+                borderRadius: "3px",
               },
               "&::-webkit-scrollbar-thumb:hover": {
                 background: theme.palette.action.selected,
@@ -766,13 +748,13 @@ export default function SideNav() {
                           );
                         }}
                         sx={{
-                          minHeight: 36,
-                          mx: 1,
-                          px: 1.5,
-                          borderRadius: "8px",
+                          minHeight: 40,
+                          mx: 1.5,
+                          px: 2,
+                          borderRadius: "6px",
                           justifyContent: openNav ? "initial" : "center",
                           backgroundColor: isRouteActive(item.route)
-                            ? "#ffffff"
+                            ? theme.palette.action.selected
                             : "transparent",
                           color: isRouteActive(item.route)
                             ? theme.palette.primary.main
@@ -780,20 +762,17 @@ export default function SideNav() {
                           "& .MuiListItemIcon-root": {
                             color: isRouteActive(item.route)
                               ? theme.palette.primary.main
-                              : theme.palette.text.primary,
+                              : theme.palette.text.secondary,
                           },
                           "&:hover": {
-                            backgroundColor: isRouteActive(item.route)
-                              ? "#ffffff"
-                              : theme.palette.action.hover,
-                            borderRadius: "8px",
+                            backgroundColor: theme.palette.action.hover,
                           },
                         }}
                       >
                         <ListItemIcon
                           sx={{
-                            minWidth: 20,
-                            mr: openNav ? 0.75 : "auto",
+                            minWidth: 24,
+                            mr: openNav ? 1.5 : "auto",
                             justifyContent: "center",
                           }}
                         >
@@ -808,6 +787,7 @@ export default function SideNav() {
                             m: 0,
                             "& .MuiListItemText-primary": {
                               ...getNavigationSx(),
+                              fontWeight: isRouteActive(item.route) ? 600 : 500,
                               color: isRouteActive(item.route)
                                 ? theme.palette.primary.main
                                 : theme.palette.text.primary,
@@ -820,7 +800,7 @@ export default function SideNav() {
                         {item.subItems &&
                           openNav &&
                           ((item.name === "Dashboards" && openDashboard) ||
-                          (item.name === "Notification" &&
+                          (item.name === "Notifications" &&
                             openNotificationSettings) ||
                           (item.name === "Settings" && openReportSettings) ||
                           (item.name === "Theme Settings" &&
@@ -830,19 +810,19 @@ export default function SideNav() {
                             openSystemSettings) ? (
                             <ExpandLessIcon
                               sx={{
-                                fontSize: "14px",
+                                fontSize: "20px",
                                 color: isRouteActive(item.route)
                                   ? theme.palette.primary.main
-                                  : theme.palette.text.primary,
+                                  : theme.palette.text.secondary,
                               }}
                             />
                           ) : (
                             <ExpandMoreIcon
                               sx={{
-                                fontSize: "14px",
+                                fontSize: "20px",
                                 color: isRouteActive(item.route)
                                   ? theme.palette.primary.main
-                                  : theme.palette.text.primary,
+                                  : theme.palette.text.secondary,
                               }}
                             />
                           ))}
@@ -854,17 +834,17 @@ export default function SideNav() {
                       in={
                         item.name === "Dashboards"
                           ? openDashboard
-                          : item.name === "Notification"
-                            ? openNotificationSettings
-                            : item.name === "Settings"
-                              ? openReportSettings
-                              : item.name === "Theme Settings"
-                                ? openThemeSettings
-                                : item.name === "Data Sources"
-                                  ? openDataSources
-                                  : item.name === "System Settings"
-                                    ? openSystemSettings
-                                    : openSettings
+                          : item.name === "Notifications"
+                          ? openNotificationSettings
+                          : item.name === "Settings"
+                          ? openReportSettings
+                          : item.name === "Theme Settings"
+                          ? openThemeSettings
+                          : item.name === "Data Sources"
+                          ? openDataSources
+                          : item.name === "System Settings"
+                          ? openSystemSettings
+                          : openSettings
                       }
                       timeout="auto"
                       unmountOnExit
@@ -897,206 +877,76 @@ export default function SideNav() {
                           disablePadding
                           sx={{
                             py: 0.25,
+                            backgroundColor: "#f6f6f6",
                           }}
                         >
                           {item.name === "Dashboards" && (
                             <>
                               {/* Create New Dashboard Button */}
-                              <ListItem
-                                disablePadding
-                                sx={{ display: "block", mb: 0.25 }}
-                              >
-                                <ListItemButton
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setOpenCreateModal(true);
-                                  }}
-                                  sx={{
-                                    minHeight: 32,
-                                    px: STYLE_GUIDE.SPACING.s3,
-                                    pl: STYLE_GUIDE.SPACING.s3,
-                                    borderRadius: "8px",
-                                    mx: STYLE_GUIDE.SPACING.s2,
-                                    "&:hover": {
-                                      backgroundColor:
-                                        STYLE_GUIDE.COLORS.backgroundDefault,
-                                    },
-                                  }}
-                                >
-                                  <ListItemIcon
+                              <MainListItem
+                                onClick={() => setOpenCreateModal(true)}
+                                label="New Dashboards"
+                                icon={
+                                  <AddIcon
                                     sx={{
-                                      minWidth: 20,
-                                      mr: 0.75,
-                                      justifyContent: "center",
-                                    }}
-                                  >
-                                    <AddIcon
-                                      sx={{
-                                        fontSize: "14px",
-                                        color: theme.getIconColor(),
-                                      }}
-                                    />
-                                  </ListItemIcon>
-                                  <ListItemText
-                                    primary="Create New Dashboard"
-                                    sx={{
-                                      m: 0,
-                                      "& .MuiListItemText-primary": {
-                                        ...getNavigationSx(),
-                                      },
+                                      fontSize: "14px",
+                                      color: theme.getIconColor(),
                                     }}
                                   />
-                                </ListItemButton>
-                              </ListItem>
+                                }
+                              />
 
                               {/* Scrollable Dashboard List */}
-                              <Box
-                                sx={{
-                                  maxHeight: "200px",
-                                  overflowY: "auto",
-                                  overflowX: "hidden",
-                                  "&::-webkit-scrollbar": {
-                                    width: "3px",
-                                  },
-                                  "&::-webkit-scrollbar-track": {
-                                    background: "transparent",
-                                  },
-                                  "&::-webkit-scrollbar-thumb": {
-                                    background: theme.palette.action.hover,
-                                    borderRadius: "1.5px",
-                                  },
-                                  "&::-webkit-scrollbar-thumb:hover": {
-                                    background: theme.palette.action.selected,
-                                  },
-                                  scrollbarWidth: "thin",
-                                  scrollbarColor: `${theme.palette.action.hover} transparent`,
-                                }}
-                              >
+                              <SubItemScroller>
                                 {loading ? (
-                                  <ListItem
-                                    disablePadding
-                                    sx={{ display: "block", mb: 0.25 }}
-                                  >
-                                    <ListItemButton
-                                      sx={{
-                                        minHeight: 32,
-                                        px: STYLE_GUIDE.SPACING.s3,
-                                        pl: STYLE_GUIDE.SPACING.s3,
-                                        borderRadius: "8px",
-                                        mx: STYLE_GUIDE.SPACING.s2,
-                                      }}
-                                    >
-                                      <ListItemText
-                                        primary="..."
-                                        sx={{
-                                          m: 0,
-                                          "& .MuiListItemText-primary": {
-                                            ...getNavigationSx(),
-                                          },
-                                        }}
-                                      />
-                                    </ListItemButton>
-                                  </ListItem>
+                                  <MainListItem
+                                    label="..."
+                                    icon={<LinearProgress />}
+                                    onClick={() => {}}
+                                  />
                                 ) : (
-                                  dashboards.map((dashboard: DashboardType) => (
-                                    <ListItem
-                                      key={dashboard._id}
-                                      disablePadding
-                                      sx={{ display: "block", mb: 0.25 }}
-                                    >
-                                      <Tooltip
+                                  dashboards.map(
+                                    (
+                                      dashboard: DashboardType,
+                                      index: number
+                                    ) => (
+                                      <MainListItem
+                                        key={dashboard._id}
+                                        onClick={() =>
+                                          navigate(
+                                            `/dashboard/${dashboard._id}`
+                                          )
+                                        }
+                                        label={dashboard.name}
                                         title={dashboard.name}
-                                        placement="right"
-                                      >
-                                        <ListItemButton
-                                          onClick={(e) => {
-                                            e.stopPropagation();
-                                            navigate(
-                                              `/dashboard/${dashboard._id}`
-                                            );
-                                          }}
-                                          sx={{
-                                            minHeight: 32,
-                                            px: STYLE_GUIDE.SPACING.s3,
-                                            pl: STYLE_GUIDE.SPACING.s3,
-                                            borderRadius: "8px",
-                                            mx: STYLE_GUIDE.SPACING.s2,
-                                            "&:hover": {
-                                              backgroundColor:
-                                                STYLE_GUIDE.COLORS
-                                                  .backgroundDefault,
-                                            },
-                                          }}
-                                        >
-                                          <ListItemText
-                                            primary={dashboard.name}
-                                            sx={{
-                                              m: 0,
-                                              "& .MuiListItemText-primary": {
-                                                ...getNavigationSx(),
-                                                whiteSpace: "nowrap",
-                                                overflow: "hidden",
-                                                textOverflow: "ellipsis",
-                                              },
-                                            }}
-                                          />
-                                          {/* <ListItemIcon
-                                            onClick={(e) => handleDeleteClick(e, dashboard)}
-                                            sx={{
-                                              minWidth: 20,
-                                              mr: 0.75,
-                                              justifyContent: "center",
-                                              cursor: "pointer",
-                                            }}
-                                          >
-                                            <DeleteIcon
-                                              sx={{
-                                                fontSize: "16px",
-                                                color: theme.getIconColor(),
-                                              }}
-                                            />
-                                          </ListItemIcon> */}
-                                        </ListItemButton>
-                                      </Tooltip>
-                                    </ListItem>
-                                  ))
+                                        icon={<NumberIcon number={index + 1} />}
+                                      />
+                                    )
+                                  )
                                 )}
-                              </Box>
+                              </SubItemScroller>
 
                               {/* All Dashboards Link */}
-                              <ListItem
-                                disablePadding
-                                sx={{ display: "block", mb: 0.25 }}
-                              >
-                                <ListItemButton
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    navigate("/dashboard");
-                                  }}
-                                  sx={{
-                                    minHeight: 32,
-                                    px: STYLE_GUIDE.SPACING.s3,
-                                    pl: STYLE_GUIDE.SPACING.s3,
-                                    borderRadius: "8px",
-                                    mx: STYLE_GUIDE.SPACING.s2,
-                                    "&:hover": {
-                                      backgroundColor:
-                                        STYLE_GUIDE.COLORS.backgroundDefault,
-                                    },
-                                  }}
-                                >
-                                  <ListItemText
-                                    primary="All Dashboards"
-                                    sx={{
-                                      m: 0,
-                                      "& .MuiListItemText-primary": {
-                                        ...getNavigationSx(),
-                                        fontWeight: 600,
-                                      },
-                                    }}
+                              <MainListItem
+                                onClick={() => navigate("/dashboard")}
+                                label="All Dashboards"
+                                icon={<DashboardIcon />}
+                              />
+                            </>
+                          )}
+
+                          {item.name === "Notifications" && (
+                            <>
+                              {item.subItems?.map((subItem, subIndex) => {
+                                return (
+                                  <MainListItem
+                                    key={subIndex}
+                                    label={subItem.name}
+                                    icon={subItem.icon}
+                                    onClick={() => navigate(subItem.route)}
                                   />
-                                </ListItemButton>
-                              </ListItem>
+                                );
+                              })}
                             </>
                           )}
 
@@ -1110,325 +960,151 @@ export default function SideNav() {
                                 return (
                                   <React.Fragment key={subIndex}>
                                     {hasNestedItems ? (
-                                      <ListItem
-                                        disablePadding
-                                        sx={{ display: "block", mb: 0.25 }}
-                                      >
-                                        <Tooltip
-                                          title={subItem.name}
-                                          placement="right"
-                                          enterDelay={500}
-                                          enterNextDelay={200}
-                                        >
-                                          <ListItemButton
-                                            onClick={(e) => {
-                                              e.stopPropagation();
-                                              e.preventDefault();
-                                              if (
-                                                subItem.name ===
-                                                "Theme Settings"
-                                              ) {
-                                                setOpenThemeSettings(
-                                                  (prev) => !prev
-                                                );
-                                              } else if (
-                                                subItem.name ===
-                                                "System Settings"
-                                              ) {
-                                                setOpenSystemSettings(
-                                                  (prev) => !prev
-                                                );
-                                              } else if (
-                                                subItem.name === "Data Sources"
-                                              ) {
-                                                setOpenDataSources(
-                                                  (prev) => !prev
-                                                );
-                                              }
-                                            }}
-                                            sx={{
-                                              minHeight: 32,
-                                              px: STYLE_GUIDE.SPACING.s3,
-                                              pl: STYLE_GUIDE.SPACING.s3,
-                                              borderRadius: "8px",
-                                              mx: STYLE_GUIDE.SPACING.s2,
-                                              "&:hover": {
-                                                backgroundColor:
-                                                  STYLE_GUIDE.COLORS
-                                                    .backgroundDefault,
-                                              },
-                                            }}
-                                          >
-                                            <ListItemIcon
-                                              sx={{
-                                                minWidth: 20,
-                                                mr: 0.75,
-                                                justifyContent: "center",
-                                              }}
-                                            >
-                                              {subItem.icon}
-                                            </ListItemIcon>
-                                            <ListItemText
-                                              primary={
-                                                openNav
-                                                  ? subItem.name
-                                                  : truncateText(
-                                                      subItem.name,
-                                                      10
-                                                    )
-                                              }
-                                              sx={{
-                                                m: 0,
-                                                "& .MuiListItemText-primary": {
-                                                  ...getNavigationSx(),
-                                                  fontWeight: 600,
-                                                  color:
-                                                    theme.palette.text.primary,
-                                                  whiteSpace: "nowrap",
-                                                  overflow: "hidden",
-                                                  textOverflow: "ellipsis",
-                                                },
-                                              }}
-                                            />
-                                            {openNav &&
-                                              ((subItem.name ===
-                                                "Theme Settings" &&
-                                                openThemeSettings) ||
-                                              (subItem.name ===
-                                                "Data Sources" &&
-                                                openDataSources) ||
-                                              (subItem.name ===
-                                                "System Settings" &&
-                                                openSystemSettings) ? (
-                                                <ExpandLessIcon
-                                                  sx={{ fontSize: "14px" }}
-                                                />
-                                              ) : (
-                                                <ExpandMoreIcon
-                                                  sx={{ fontSize: "14px" }}
-                                                />
-                                              ))}
-                                          </ListItemButton>
-                                        </Tooltip>
-
-                                        {/* Nested dropdown */}
-                                        <Collapse
-                                          in={
+                                      <MainListItem
+                                        icon={subItem.icon}
+                                        label={subItem.name}
+                                        title={subItem.name}
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          e.preventDefault();
+                                          if (
                                             subItem.name === "Theme Settings"
-                                              ? openThemeSettings
-                                              : subItem.name === "Data Sources"
+                                          ) {
+                                            setOpenThemeSettings(
+                                              (prev) => !prev
+                                            );
+                                          } else if (
+                                            subItem.name === "System Settings"
+                                          ) {
+                                            setOpenSystemSettings(
+                                              (prev) => !prev
+                                            );
+                                          } else if (
+                                            subItem.name === "Data Sources"
+                                          ) {
+                                            setOpenDataSources((prev) => !prev);
+                                          }
+                                        }}
+                                        isExpanded={
+                                          subItem.name === "Theme Settings"
+                                            ? openThemeSettings
+                                            : subItem.name === "Data Sources"
+                                            ? openDataSources
+                                            : subItem.name === "System Settings"
+                                            ? openSystemSettings
+                                            : false
+                                        }
+                                        collapsibleComp={
+                                          <Collapse
+                                            in={
+                                              subItem.name === "Theme Settings"
+                                                ? openThemeSettings
+                                                : subItem.name ===
+                                                  "Data Sources"
                                                 ? openDataSources
                                                 : subItem.name ===
-                                                    "System Settings"
-                                                  ? openSystemSettings
-                                                  : false
-                                          }
-                                          timeout="auto"
-                                          unmountOnExit
-                                        >
-                                          <Box
-                                            sx={{
-                                              maxHeight: "240px",
-                                              overflowY: "auto",
-                                              overflowX: "hidden",
-                                              "&::-webkit-scrollbar": {
-                                                width: "3px",
-                                              },
-                                              "&::-webkit-scrollbar-track": {
-                                                background: "transparent",
-                                              },
-                                              "&::-webkit-scrollbar-thumb": {
-                                                background:
-                                                  theme.palette.action.hover,
-                                                borderRadius: "1.5px",
-                                              },
-                                              "&::-webkit-scrollbar-thumb:hover":
-                                                {
-                                                  background:
-                                                    theme.palette.action
-                                                      .selected,
-                                                },
-                                              scrollbarWidth: "thin",
-                                              scrollbarColor: `${theme.palette.action.hover} transparent`,
-                                            }}
+                                                  "System Settings"
+                                                ? openSystemSettings
+                                                : false
+                                            }
+                                            timeout="auto"
+                                            unmountOnExit
                                           >
-                                            <List
-                                              component="div"
-                                              disablePadding
-                                            >
-                                              {subItem.subItems?.map(
-                                                (nestedItem, nestedIndex) => (
-                                                  <ListItem
-                                                    key={nestedIndex}
-                                                    disablePadding
-                                                    sx={{
-                                                      display: "block",
-                                                      mb: 0.25,
-                                                    }}
-                                                  >
-                                                    <Tooltip
+                                            <SubItemScroller>
+                                              <List
+                                                component="div"
+                                                disablePadding
+                                              >
+                                                {subItem.subItems?.map(
+                                                  (nestedItem) => (
+                                                    <MainListItem
+                                                      onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        e.preventDefault();
+                                                        handleNestedItemClick(
+                                                          nestedItem.route
+                                                        );
+                                                      }}
+                                                      isNested={true}
+                                                      icon={nestedItem.icon}
+                                                      label={nestedItem.name}
                                                       title={nestedItem.name}
-                                                      placement="right"
-                                                      enterDelay={500}
-                                                      enterNextDelay={200}
-                                                    >
-                                                      <ListItemButton
-                                                        onClick={(e) => {
-                                                          e.stopPropagation();
-                                                          e.preventDefault();
-                                                          handleNestedItemClick(
-                                                            nestedItem.route
-                                                          );
-                                                        }}
-                                                        sx={{
-                                                          minHeight: 32,
-                                                          px: STYLE_GUIDE
-                                                            .SPACING.s3,
-                                                          pl: STYLE_GUIDE
-                                                            .SPACING.s6,
-                                                          borderRadius: "8px",
-                                                          mx: STYLE_GUIDE
-                                                            .SPACING.s2,
-                                                          "&:hover": {
-                                                            backgroundColor:
-                                                              STYLE_GUIDE.COLORS
-                                                                .backgroundDefault,
-                                                          },
-                                                        }}
-                                                      >
-                                                        <ListItemIcon
-                                                          sx={{
-                                                            minWidth: 20,
-                                                            mr: 0.75,
-                                                            justifyContent:
-                                                              "center",
-                                                          }}
-                                                        >
-                                                          {nestedItem.icon}
-                                                        </ListItemIcon>
-                                                        <ListItemText
-                                                          primary={
-                                                            openNav
-                                                              ? nestedItem.name
-                                                              : truncateText(
-                                                                  nestedItem.name,
-                                                                  10
-                                                                )
-                                                          }
-                                                          sx={{
-                                                            m: 0,
-                                                            "& .MuiListItemText-primary":
-                                                              {
-                                                                ...getNavigationSx(),
-                                                                color:
-                                                                  theme.palette
-                                                                    .text
-                                                                    .primary,
-                                                                whiteSpace:
-                                                                  "nowrap",
-                                                                overflow:
-                                                                  "hidden",
-                                                                textOverflow:
-                                                                  "ellipsis",
-                                                              },
-                                                          }}
-                                                        />
-                                                      </ListItemButton>
-                                                    </Tooltip>
-                                                  </ListItem>
-                                                )
-                                              )}
-                                            </List>
-                                          </Box>
-                                        </Collapse>
-                                      </ListItem>
+                                                    />
+                                                  )
+                                                )}
+                                              </List>
+                                            </SubItemScroller>
+                                          </Collapse>
+                                        }
+                                      />
                                     ) : (
                                       // ALL direct items (Attribute Option, Entity, Report Settings, constantDataSources, etc.)
-                                      <ListItem
-                                        disablePadding
-                                        sx={{ display: "block", mb: 0.25 }}
-                                      >
-                                        <Tooltip
-                                          title={subItem.name}
-                                          placement="right"
-                                          enterDelay={500}
-                                          enterNextDelay={200}
-                                        >
-                                          <ListItemButton
-                                            onClick={(e) => {
-                                              e.stopPropagation();
-                                              e.preventDefault();
-                                              handleSettingsItemClick(
-                                                subItem.route,
-                                                subItem.name
-                                              );
-                                            }}
-                                            sx={{
-                                              minHeight: 32,
-                                              px: STYLE_GUIDE.SPACING.s3,
-                                              pl: STYLE_GUIDE.SPACING.s3,
-                                              borderRadius: "8px",
-                                              mx: STYLE_GUIDE.SPACING.s2,
-                                              "&:hover": {
-                                                backgroundColor:
-                                                  STYLE_GUIDE.COLORS
-                                                    .backgroundDefault,
-                                              },
-                                            }}
-                                          >
-                                            <ListItemIcon
-                                              sx={{
-                                                minWidth: 20,
-                                                mr: 0.75,
-                                                justifyContent: "center",
-                                              }}
-                                            >
-                                              {subItem.icon}
-                                            </ListItemIcon>
-                                            <ListItemText
-                                              primary={
-                                                openNav
-                                                  ? subItem.name
-                                                  : truncateText(
-                                                      subItem.name,
-                                                      10
-                                                    )
-                                              }
-                                              sx={{
-                                                m: 0,
-                                                "& .MuiListItemText-primary": {
-                                                  ...getNavigationSx(),
-                                                  fontWeight: subItem.isBold
-                                                    ? 600
-                                                    : 600,
-
-                                                  color:
-                                                    theme.palette.text.primary,
-                                                  whiteSpace: "nowrap",
-                                                  overflow: "hidden",
-                                                  textOverflow: "ellipsis",
-                                                },
-                                              }}
-                                            />
-                                          </ListItemButton>
-                                        </Tooltip>
-                                      </ListItem>
+                                      <MainListItem
+                                        icon={subItem.icon}
+                                        label={subItem.name}
+                                        title={subItem.name}
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          e.preventDefault();
+                                          handleSettingsItemClick(
+                                            subItem.route,
+                                            subItem.name
+                                          );
+                                        }}
+                                      />
                                     )}
                                   </React.Fragment>
                                 );
                               })}
                             </>
                           ) : (
-                            <SubItemsList
-                              subItems={item.subItems.filter(
-                                (subItem) => !subItem.isCreateButton
-                              )}
-                              openNav={openNav}
-                              parentName={item.name}
-                              dashboards={dashboards}
-                              onDeleteClick={handleDeleteClick}
-                              onCreateClick={() => setOpenCreateModal(true)}
-                            />
+                            item.name !== "Dashboards" &&
+                            item.name !== "Notifications" && (
+                              <MainListItem
+                                onClick={() => {
+                                  navigate(item.route);
+                                }}
+                                label={item.name}
+                                collapsibleComp={
+                                  <Collapse
+                                    in={true}
+                                    timeout="auto"
+                                    unmountOnExit
+                                  >
+                                    <SubItemScroller>
+                                      <List component="div" disablePadding>
+                                        {item.subItems?.map((nestedItem) => (
+                                          <MainListItem
+                                            onClick={(e) => {
+                                              e.stopPropagation();
+                                              e.preventDefault();
+                                              handleNestedItemClick(
+                                                nestedItem.route
+                                              );
+                                            }}
+                                            isNested={true}
+                                            icon={nestedItem.icon}
+                                            label={nestedItem.name}
+                                            title={nestedItem.name}
+                                          />
+                                        ))}
+                                      </List>
+                                    </SubItemScroller>
+                                  </Collapse>
+                                }
+                                // icon={<DashboardIcon />}
+                              />
+                            )
+                            // <SubItemsList
+                            //   subItems={item.subItems.filter(
+                            //     (subItem) => !subItem.isCreateButton
+                            //   )}
+                            //   openNav={openNav}
+                            //   parentName={item.name}
+                            //   dashboards={dashboards}
+                            //   onDeleteClick={handleDeleteClick}
+                            //   onCreateClick={() => setOpenCreateModal(true)}
+                            // />
                           )}
                         </List>
                       </Box>
@@ -1438,7 +1114,7 @@ export default function SideNav() {
               ))}
             </List>
           </Box>
-          <Box
+          {/* <Box
             sx={{
               px: STYLE_GUIDE.SPACING.s3,
               pb: STYLE_GUIDE.SPACING.s1,
@@ -1489,7 +1165,7 @@ export default function SideNav() {
                 />
               </ListItemButton>
             </Tooltip>
-          </Box>
+          </Box> */}
         </Box>
       </Drawer>
       <CreateDashboardModal
@@ -1513,6 +1189,139 @@ export default function SideNav() {
         onCancel={handleDeleteCancel}
         isDeleting={isDeleting}
       />
+    </Box>
+  );
+}
+
+function MainListItem({
+  onClick,
+  label,
+  icon,
+  title,
+  collapsibleComp,
+  isExpanded,
+  isNested,
+}: {
+  onClick: (e: React.MouseEvent) => void;
+  label: string;
+  icon?: React.ReactNode;
+  title?: string;
+  collapsibleComp?: React.ReactNode;
+  isExpanded?: boolean;
+  isNested?: boolean;
+}) {
+  const { getNavigationSx } = useComponentTypography();
+  return (
+    <ListItem
+      disablePadding
+      sx={{
+        display: "block",
+      }}
+    >
+      <Tooltip title={title} placement="right">
+        <ListItemButton
+          onClick={(e) => {
+            e.stopPropagation();
+            onClick(e);
+          }}
+          sx={{
+            minHeight: 32,
+            px: STYLE_GUIDE.SPACING.s3,
+            pl: isNested ? STYLE_GUIDE.SPACING.s12 : STYLE_GUIDE.SPACING.s8,
+            borderRadius: "8px",
+            mx: STYLE_GUIDE.SPACING.s2,
+            "&:hover": {
+              backgroundColor: "red",
+            },
+          }}
+        >
+          {icon && (
+            <ListItemIcon
+              sx={{
+                minWidth: 20,
+                mr: 0.75,
+                justifyContent: "center",
+              }}
+            >
+              {icon}
+            </ListItemIcon>
+          )}
+          <ListItemText
+            primary={label}
+            sx={{
+              m: 0,
+              "& .MuiListItemText-primary": {
+                ...getNavigationSx(),
+                // fontWeight: 600,
+                whiteSpace: "nowrap",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+              },
+            }}
+          />
+          {collapsibleComp ? (
+            isExpanded ? (
+              <ExpandLessIcon />
+            ) : (
+              <ExpandMoreIcon />
+            )
+          ) : null}
+        </ListItemButton>
+      </Tooltip>
+      {collapsibleComp}
+    </ListItem>
+  );
+}
+
+function SubItemScroller({ children }: { children: React.ReactNode }) {
+  const theme = useUnifiedTheme();
+  return (
+    <Box
+      sx={{
+        // maxHeight: "200px",
+        // overflowY: "auto",
+
+        overflowX: "hidden",
+        backgroundColor: "transparent",
+        "&::-webkit-scrollbar": {
+          width: "3px",
+        },
+        "&::-webkit-scrollbar-track": {
+          background: "transparent",
+        },
+        "&::-webkit-scrollbar-thumb": {
+          background: theme.palette.action.hover,
+          borderRadius: "1.5px",
+        },
+        "&::-webkit-scrollbar-thumb:hover": {
+          background: theme.palette.action.selected,
+        },
+        scrollbarWidth: "thin",
+        scrollbarColor: `${theme.palette.action.hover} transparent`,
+      }}
+    >
+      {children}
+    </Box>
+  );
+}
+
+function NumberIcon({ number }: { number: number }) {
+  const theme = useUnifiedTheme();
+  return (
+    <Box
+      sx={{
+        width: 20,
+        height: 20,
+        borderRadius: "50%",
+        backgroundColor: theme.palette.primary.main,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+      }}
+    >
+      <Typography color="white" fontSize={12}>
+        {number}
+      </Typography>
     </Box>
   );
 }
