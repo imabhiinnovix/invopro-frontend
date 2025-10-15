@@ -175,6 +175,7 @@ export const POST = {
   TRIGGER_NOTIFICATION: "/notivix/notification-setting/prepared/trigger",
   CREATE_DESIGNATION: "/common/designation/create",
   CREATE_DEPARTMENT: "/common/department/create",
+  CREATE_TEMPLATE: "/notivix/notification-setting/template/create",
 };
 
 export const PUT = {
@@ -193,6 +194,7 @@ export const PUT = {
   UPDATE_CURRENT_USER: "/common/user/update-current-user",
   UPDATE_DESIGNATION: "/common/designation/update",
   UPDATE_DEPARTMENT: "/common/department/update",
+  UPDATE_TEMPLATE: "/notivix/notification-setting/template/update",
 };
 
 export const DELETE = {
@@ -205,6 +207,7 @@ export const DELETE = {
   DELETE_FREQUENCY: "/notivix/notification-setting/frequency/delete",
   DELETE_VERSION_ROW: "/common/dataSourceVersion/versionData/delete",
   DELETE_USER_IMAGE: "/common/user/image",
+  DELETE_TEMPLATE: "/notivix/notification-setting/template/delete",
 };
 
 export const GET = {

@@ -66,7 +66,7 @@ import ArrowDropDownCircleIcon from "@mui/icons-material/ArrowDropDownCircle";
 import DeleteIcon from "@mui/icons-material/Delete";
 import TopicIcon from "@mui/icons-material/Topic";
 import AccountBalanceIcon from "@mui/icons-material/AccountBalance";
-import BusinessCenterIcon from '@mui/icons-material/BusinessCenter';
+import BusinessCenterIcon from "@mui/icons-material/BusinessCenter";
 
 interface ErrorResponse {
   success: boolean;
@@ -470,6 +470,11 @@ export default function SideNav() {
       icon: createIcon(NotificationsIcon, "/notification-logs"),
       route: "/notification-logs",
     };
+    const Template = {
+      name: "Templates",
+      icon: createIcon(NotificationsIcon, "/templates"),
+      route: "/templates",
+    };
     const loadingIndicator =
       dataSourceListAPI?.hasNextPage || dataSourceNotivixListAPI?.isLoading
         ? [
@@ -486,6 +491,7 @@ export default function SideNav() {
         : [];
     const dataSourceItems = [
       alertsMenuItem,
+      Template,
       // notivixDefaultDashboard,
       ...monthlyDataSources,
       ...loadingIndicator,
