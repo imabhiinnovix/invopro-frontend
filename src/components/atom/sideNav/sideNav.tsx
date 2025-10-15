@@ -1130,9 +1130,7 @@ function MainListItem({
       {!isMainItem && (
         <Box
           sx={{
-            backgroundColor: isActive
-              ? theme.palette.primary.main
-              : theme.palette.text.secondary,
+            backgroundColor: isActive ? theme.palette.primary.main : "#e2e2e2",
             left: `calc(${spacing} - 8px)`,
           }}
           className="absolute h-full w-[2px] top-0"
