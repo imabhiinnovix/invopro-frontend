@@ -19,6 +19,7 @@ import { toast } from "react-toastify";
 import { STYLE_GUIDE } from "../../styles";
 import { useComponentTypography } from "../../hooks";
 import { TemplateDataTable } from "./TemplateDataTable";
+import { TemplateModal } from "./TemplateModal";
 
 
 // Define types

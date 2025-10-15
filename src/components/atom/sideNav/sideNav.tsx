@@ -472,8 +472,8 @@ export default function SideNav() {
     };
     const Template = {
       name: "Templates",
-      icon: createIcon(NotificationsIcon, "/templates"),
-      route: "/templates",
+      icon: createIcon(NotificationsIcon, "/template"),
+      route: "/template",
     };
     const loadingIndicator =
       dataSourceListAPI?.hasNextPage || dataSourceNotivixListAPI?.isLoading

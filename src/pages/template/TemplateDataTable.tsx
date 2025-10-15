@@ -168,22 +168,18 @@ export function TemplateDataTable({
       filterValues.organizationId,
       filterValues.status,
     ],
-    `${GET.DEPARTMENT_LIST}?page=${paginationModel.page + 1}&limit=${perPageItem}&search=${encodeURIComponent(
+    `${GET.TEMPLATE_LIST}?page=${paginationModel.page + 1}&limit=${perPageItem}&search=${encodeURIComponent(
       debouncedSearchValue
-    )}&name=${encodeURIComponent(filterValues.name)}&organizationId=${encodeURIComponent(
-      filterValues.organizationId
-    )}&status=${encodeURIComponent(filterValues.status)}`,
+    )}
+    `,
     true
   );
 
   const templatesWithIds =
-    Array.isArray(templateList?.data?.data) &&
-    templateList.data.data.length > 0
+    Array.isArray(templateList?.data?.data) && templateList.data.data.length > 0
       ? templateList.data.data.map((template) => ({
           ...template,
-          id:
-            template._id ||
-            `temp-${Math.random().toString(36).substr(2, 9)}`,
+          id: template._id || `temp-${Math.random().toString(36).substr(2, 9)}`,
           permissions: template.permissions || [],
           handleEdit: onEditTemplate,
           handleView: onViewTemplate,
