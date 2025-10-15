@@ -796,7 +796,7 @@ export default function SideNav() {
                               disablePadding
                               sx={{
                                 py: 0.25,
-                                backgroundColor: "#f6f6f6",
+                                // backgroundColor: "#a136a126",
                               }}
                             >
                               {item.name === "Dashboards" && (
@@ -830,6 +830,7 @@ export default function SideNav() {
                                           index: number
                                         ) => (
                                           <MainListItem
+                                            route={`/dashboard/${dashboard._id}`}
                                             key={dashboard._id}
                                             onClick={() =>
                                               navigate(
@@ -839,7 +840,10 @@ export default function SideNav() {
                                             label={dashboard.name}
                                             title={dashboard.name}
                                             icon={
-                                              <NumberIcon number={index + 1} />
+                                              <NumberIcon
+                                                number={index + 1}
+                                                route={`/dashboard/${dashboard._id}`}
+                                              />
                                             }
                                           />
                                         )
@@ -849,6 +853,7 @@ export default function SideNav() {
 
                                   {/* All Dashboards Link */}
                                   <MainListItem
+                                    route="/dashboard"
                                     onClick={() => navigate("/dashboard")}
                                     label="All Dashboards"
                                     icon={<DashboardIcon />}
@@ -865,6 +870,7 @@ export default function SideNav() {
                                         label={subItem.name}
                                         icon={subItem.icon}
                                         onClick={() => navigate(subItem.route)}
+                                        route={subItem.route}
                                       />
                                     );
                                   })}
@@ -882,6 +888,7 @@ export default function SideNav() {
                                       <React.Fragment key={subIndex}>
                                         {hasNestedItems ? (
                                           <MainListItem
+                                            route={subItem.route}
                                             icon={subItem.icon}
                                             label={subItem.name}
                                             title={subItem.name}
@@ -946,6 +953,9 @@ export default function SideNav() {
                                                     {subItem.subItems?.map(
                                                       (nestedItem) => (
                                                         <MainListItem
+                                                          route={
+                                                            nestedItem.route
+                                                          }
                                                           onClick={(e) => {
                                                             e.stopPropagation();
                                                             e.preventDefault();
@@ -972,6 +982,7 @@ export default function SideNav() {
                                         ) : (
                                           // ALL direct items (Attribute Option, Entity, Report Settings, constantDataSources, etc.)
                                           <MainListItem
+                                            route={subItem.route}
                                             icon={subItem.icon}
                                             label={subItem.name}
                                             title={subItem.name}
@@ -993,6 +1004,7 @@ export default function SideNav() {
                                 item.name !== "Dashboards" &&
                                 item.name !== "Notifications" && (
                                   <MainListItem
+                                    route={item.route}
                                     onClick={() => {
                                       navigate(item.route);
                                     }}
@@ -1004,10 +1016,15 @@ export default function SideNav() {
                                         unmountOnExit
                                       >
                                         <SubItemScroller>
-                                          <List component="div" disablePadding>
+                                          <List
+                                            component="div"
+                                            disablePadding
+                                            sx={{ overflow: "hidden" }}
+                                          >
                                             {item.subItems?.map(
                                               (nestedItem) => (
                                                 <MainListItem
+                                                  route={nestedItem.route}
                                                   onClick={(e) => {
                                                     e.stopPropagation();
                                                     e.preventDefault();
@@ -1091,7 +1108,7 @@ function MainListItem({
   const theme = useUnifiedTheme();
   const location = useLocation();
   const isRouteActive = (route: string) => {
-    return location.pathname.startsWith(route);
+    return location.pathname === route;
   };
 
   let spacing = isMainItem ? STYLE_GUIDE.SPACING.s4 : STYLE_GUIDE.SPACING.s8;
@@ -1099,13 +1116,29 @@ function MainListItem({
     spacing = STYLE_GUIDE.SPACING.s12;
   }
 
+  const isActive = route ? isRouteActive(route) : false;
+
   return (
     <ListItem
       disablePadding
       sx={{
         display: "block",
+        // px: isMainItem ? STYLE_GUIDE.SPACING.s2 : 0,
+        py: 0.25,
       }}
     >
+      {!isMainItem && (
+        <Box
+          sx={{
+            backgroundColor: isActive
+              ? theme.palette.primary.main
+              : theme.palette.text.secondary,
+            left: `calc(${spacing} - 8px)`,
+          }}
+          className="absolute h-full w-[2px] top-0"
+        ></Box>
+      )}
+
       <Tooltip title={title} placement="right">
         <ListItemButton
           onClick={(e) => {
@@ -1113,37 +1146,39 @@ function MainListItem({
             onClick(e);
           }}
           sx={{
-            minHeight: 32,
-            px: STYLE_GUIDE.SPACING.s3,
+            minHeight: 36,
+            px: STYLE_GUIDE.SPACING.s2,
             pl: spacing,
-            // borderRadius: "8px",
-            // mx: STYLE_GUIDE.SPACING.s2,
-            // "&:hover": {
-            //   backgroundColor: "red",
-            // },
-            // backgroundColor: isRouteActive(route || "")
+            // borderRadius: "6px",
+            transition: "all 0.2s ease-in-out",
+            // backgroundColor: isActive
             //   ? theme.palette.action.selected
             //   : "transparent",
-            color: isMainItem
-              ? isRouteActive(route || "")
-                ? theme.palette.primary.main
-                : theme.palette.text.primary
-              : "inherit",
+            "&:hover": {
+              backgroundColor: isActive
+                ? theme.palette.action.selected
+                : theme.palette.action.hover,
+              // transform: "translateX(2px)",
+            },
+            color: isActive
+              ? theme.palette.primary.main
+              : theme.palette.text.primary,
           }}
         >
           {icon && (
             <ListItemIcon
               sx={{
-                minWidth: 20,
-                mr: 0.75,
+                minWidth: 24,
+                mr: 1.25,
                 justifyContent: "center",
+                display: "flex",
+                alignItems: "center",
                 "& .MuiSvgIcon-root": {
                   fontSize: 20,
-                  color: isMainItem
-                    ? isRouteActive(route || "")
-                      ? theme.palette.primary.main
-                      : theme.palette.text.primary
-                    : "inherit",
+                  color: isActive
+                    ? theme.palette.primary.main
+                    : theme.palette.text.secondary,
+                  transition: "color 0.2s ease-in-out",
                 },
               }}
             >
@@ -1154,45 +1189,54 @@ function MainListItem({
             primary={label}
             sx={{
               m: 0,
+              flex: 1,
               "& .MuiListItemText-primary": {
                 ...getNavigationSx(),
-                // fontWeight: 600,
                 whiteSpace: "nowrap",
                 overflow: "hidden",
                 textOverflow: "ellipsis",
-                fontSize: 12,
-                fontWeight: isMainItem
-                  ? isRouteActive(route || "")
-                    ? 600
-                    : 500
-                  : 500,
-                color: isMainItem
-                  ? isRouteActive(route || "")
-                    ? theme.palette.primary.main
-                    : theme.palette.text.primary
-                  : "inherit",
+                fontSize: isMainItem ? 13 : 12,
+                fontWeight: isActive ? 600 : isMainItem ? 500 : 400,
+                color: isActive
+                  ? theme.palette.primary.main
+                  : theme.palette.text.primary,
+                lineHeight: 1.5,
+                transition: "all 0.2s ease-in-out",
               },
             }}
           />
-          {collapsibleComp ? (
-            isExpanded ? (
-              <ExpandLessIcon
-                sx={{
-                  color: isRouteActive(route || "")
-                    ? theme.palette.primary.main
-                    : theme.palette.text.primary,
-                }}
-              />
-            ) : (
-              <ExpandMoreIcon
-                sx={{
-                  color: isRouteActive(route || "")
-                    ? theme.palette.primary.main
-                    : theme.palette.text.primary,
-                }}
-              />
-            )
-          ) : null}
+          {collapsibleComp && (
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                ml: 0.5,
+              }}
+            >
+              {isExpanded ? (
+                <ExpandLessIcon
+                  sx={{
+                    fontSize: 20,
+                    color: isActive
+                      ? theme.palette.primary.main
+                      : theme.palette.text.secondary,
+                    transition: "all 0.2s ease-in-out",
+                  }}
+                />
+              ) : (
+                <ExpandMoreIcon
+                  sx={{
+                    fontSize: 20,
+                    color: isActive
+                      ? theme.palette.primary.main
+                      : theme.palette.text.secondary,
+                    transition: "all 0.2s ease-in-out",
+                  }}
+                />
+              )}
+            </Box>
+          )}
         </ListItemButton>
       </Tooltip>
       {collapsibleComp}
@@ -1207,7 +1251,7 @@ function SubItemScroller({ children }: { children: React.ReactNode }) {
       sx={{
         // maxHeight: "200px",
         // overflowY: "auto",
-
+        overflowY: "hidden",
         overflowX: "hidden",
         backgroundColor: "transparent",
         "&::-webkit-scrollbar": {
@@ -1232,15 +1276,21 @@ function SubItemScroller({ children }: { children: React.ReactNode }) {
   );
 }
 
-function NumberIcon({ number }: { number: number }) {
-  // const theme = useUnifiedTheme();
+function NumberIcon({ number, route }: { number: number; route: string }) {
+  const theme = useUnifiedTheme();
+
+  const isRouteActive = (route: string) => {
+    return location.pathname === route;
+  };
   return (
     <Box
       sx={{
         width: 20,
         height: 20,
         borderRadius: "50%",
-        backgroundColor: "#00000094",
+        backgroundColor: isRouteActive(route)
+          ? theme.palette.primary.main
+          : "#00000094",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
