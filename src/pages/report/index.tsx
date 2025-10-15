@@ -1,26 +1,35 @@
-import { Box, Button, Table, TableBody, TableCell, TableRow, Tooltip, Typography } from '@mui/material';
-import GenerateReport from '../../components/atom/report/generateReport';
-import { useEffect, useRef, useState } from 'react';
-import ReportRequestTable from '../../components/atom/report/reportRequestTable';
-import ViewReport from '../../components/atom/report/viewReport';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import type { ReportRequestResponse } from '../../components/atom/report/types';
-import { DateTime } from 'luxon';
-import html2pdf from 'html2pdf.js';
-import ReportSelection from '../../components/atom/report/changeReportFromViewReport';
-import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
-import ScrollableTabNavigation from '../../components/atom/report/scrollableTab';
-import SimCardDownloadIcon from '@mui/icons-material/SimCardDownload';
-import DownloadForOfflineIcon from '@mui/icons-material/DownloadForOffline';
-import { GET } from '../../services/apiRoutes';
-import { useUnifiedTheme } from '../../hooks/useUnifiedTheme';
-import { useComponentTypography } from '../../hooks/useComponentTypography';
-import useFileDownload from '../../hooks/useFiledownload';
+import {
+  Box,
+  Button,
+  Table,
+  TableBody,
+  TableCell,
+  TableRow,
+  Tooltip,
+  Typography,
+} from "@mui/material";
+import GenerateReport from "../../components/atom/report/generateReport";
+import { useEffect, useRef, useState } from "react";
+import ReportRequestTable from "../../components/atom/report/reportRequestTable";
+import ViewReport from "../../components/atom/report/viewReport";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import type { ReportRequestResponse } from "../../components/atom/report/types";
+import { DateTime } from "luxon";
+import html2pdf from "html2pdf.js";
+import ReportSelection from "../../components/atom/report/changeReportFromViewReport";
+import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
+import ScrollableTabNavigation from "../../components/atom/report/scrollableTab";
+import SimCardDownloadIcon from "@mui/icons-material/SimCardDownload";
+import DownloadForOfflineIcon from "@mui/icons-material/DownloadForOffline";
+import { GET } from "../../services/apiRoutes";
+import { useUnifiedTheme } from "../../hooks/useUnifiedTheme";
+import { useComponentTypography } from "../../hooks/useComponentTypography";
+import useFileDownload from "../../hooks/useFiledownload";
 
 export default function Report() {
   const theme = useUnifiedTheme();
   const [reload, setReload] = useState(false);
-  const [viewReportRequestId, setViewReportRequestId] = useState('');
+  const [viewReportRequestId, setViewReportRequestId] = useState("");
 
   const [maxHeight, setMaxHeight] = useState<number>(0);
 
@@ -28,19 +37,22 @@ export default function Report() {
   const tabRef = useRef<HTMLDivElement>(null);
   const targetRef = useRef<HTMLDivElement>(null);
 
-  const [allDetailData, setAllDetailData] = useState<ReportRequestResponse | null>(null);
+  const [allDetailData, setAllDetailData] =
+    useState<ReportRequestResponse | null>(null);
   const [activeTab, setActiveTab] = useState(0);
-  const [downloadFileName, setDownLoadFileName] = useState('');
+  const [downloadFileName, setDownLoadFileName] = useState("");
   const [isPdfLoading, setIsPdfLoading] = useState(false);
-  const [intermediateDownloadRequestId, setIntermediateDownloadRequestId] = useState('');
-  const [regularDownloadRequestId, setRegularDownloadRequestId] = useState('');
-  const [viewReportNameWithVersionValue, setViewReportNameWithVersionValue] = useState('');
+  const [intermediateDownloadRequestId, setIntermediateDownloadRequestId] =
+    useState("");
+  const [regularDownloadRequestId, setRegularDownloadRequestId] = useState("");
+  const [viewReportNameWithVersionValue, setViewReportNameWithVersionValue] =
+    useState("");
 
   const { getHeadingSx, getButtonSx } = useComponentTypography();
 
   const exportFile = useFileDownload<Blob>((data) => {
-    const blob = new Blob([data], { type: 'application/octet-stream' });
-    const link = document.createElement('a');
+    const blob = new Blob([data], { type: "application/octet-stream" });
+    const link = document.createElement("a");
     const url = URL.createObjectURL(blob);
     link.href = url;
     link.download = downloadFileName;
@@ -51,8 +63,8 @@ export default function Report() {
 
     URL.revokeObjectURL(url);
 
-    setIntermediateDownloadRequestId('');
-    setRegularDownloadRequestId('');
+    setIntermediateDownloadRequestId("");
+    setRegularDownloadRequestId("");
   });
 
   const downloadFile = (fileName: string, fileId: string) => {
@@ -72,14 +84,23 @@ export default function Report() {
   };
 
   const tabStyle = (index: number) => ({
-    padding: '10px 20px',
-    cursor: 'pointer',
-    borderBottom: activeTab === index ? `2px solid ${theme.palette.primary.main}` : '2px solid transparent',
-    fontWeight: activeTab === index ? 'bold' : 'normal',
+    padding: "10px 20px",
+    cursor: "pointer",
+    borderBottom:
+      activeTab === index
+        ? `2px solid ${theme.palette.primary.main}`
+        : "2px solid transparent",
+    fontWeight: activeTab === index ? "bold" : "normal",
     // backgroundColor: activeTab === index ? theme.palette.primary.light : theme.palette.background.paper,
-    color: activeTab === index ? theme.palette.primary.main : theme.palette.text.primary,
-    '&:hover': {
-      backgroundColor: activeTab === index ? theme.palette.primary.light : theme.palette.action.hover,
+    color:
+      activeTab === index
+        ? theme.palette.primary.main
+        : theme.palette.text.primary,
+    "&:hover": {
+      backgroundColor:
+        activeTab === index
+          ? theme.palette.primary.light
+          : theme.palette.action.hover,
     },
   });
 
@@ -88,7 +109,9 @@ export default function Report() {
       const headerHeight = headerRef.current?.clientHeight || 0;
       const tabHeight = tabRef.current?.clientHeight || 0;
       const total = headerHeight + tabHeight;
-      const leftHeight = window.innerHeight ? window.innerHeight : 0 - total - 30;
+      const leftHeight = window.innerHeight
+        ? window.innerHeight
+        : 0 - total - 30;
       if (leftHeight > 0) {
         setMaxHeight(leftHeight);
       }
@@ -105,9 +128,9 @@ export default function Report() {
     const opt = {
       margin: 0.5,
       filename: `${viewReportNameWithVersionValue}.pdf`,
-      image: { type: 'jpeg', quality: 0.98 },
+      image: { type: "jpeg", quality: 0.98 },
       html2canvas: { scale: 2 },
-      jsPDF: { unit: 'in', format: 'a4', orientation: 'landscape' },
+      jsPDF: { unit: "in", format: "a4", orientation: "landscape" },
     };
 
     html2pdf().set(opt).from(targetRef.current.innerHTML).save();
@@ -116,9 +139,9 @@ export default function Report() {
   return (
     <Box
       sx={{
-        width: '100%',
+        width: "100%",
         backgroundColor: theme.palette.background.paper,
-        minHeight: 'calc(100vh - 64px)',
+        minHeight: "calc(100vh - 64px)",
         p: 1,
       }}
     >
@@ -127,41 +150,46 @@ export default function Report() {
           <>
             <Box
               sx={{
-                cursor: 'pointer',
+                cursor: "pointer",
                 color: theme.palette.text.primary,
-                '&:hover': {
+                "&:hover": {
                   backgroundColor: theme.palette.action.hover,
                   color: theme.palette.primary.main,
                 },
               }}
               onClick={() => {
-                setViewReportRequestId('');
+                setViewReportRequestId("");
               }}
             >
               <ArrowBackIcon fontSize="medium" />
             </Box>
             <ReportSelection
               defaultReport={{
-                _id: allDetailData?.customReportId?._id || '',
-                reportName: allDetailData?.customReportId?.reportName || '',
+                _id: allDetailData?.customReportId?._id || "",
+                reportName: allDetailData?.customReportId?.reportName || "",
               }}
-              defaultVersion={{ _id: allDetailData?._id || '', versionValue: allDetailData?.versionValue || '' }}
+              defaultVersion={{
+                _id: allDetailData?._id || "",
+                versionValue: allDetailData?.versionValue || "",
+              }}
               setViewReportRequestId={setViewReportRequestId}
               setAllDetailData={setAllDetailData}
-              setViewReportNameWithVersionValue={setViewReportNameWithVersionValue}
+              setViewReportNameWithVersionValue={
+                setViewReportNameWithVersionValue
+              }
             />
             <Box
               sx={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
                 p: 2,
               }}
             >
               <Box
                 sx={{
-                  display: 'flex',
-                  alignItems: 'center',
+                  display: "flex",
+                  alignItems: "center",
                   gap: 1,
                 }}
               >
@@ -169,52 +197,64 @@ export default function Report() {
                   variant="h6"
                   sx={{
                     fontWeight: 500,
-                    color: 'text.primary',
+                    color: "text.primary",
                   }}
                 >
                   <Box component="span" fontWeight="bold">
-                    {allDetailData?.customReportId?.reportName || ''}
-                  </Box>{' '}
-                  Report for the period of {' '}
+                    {allDetailData?.customReportId?.reportName || ""}
+                  </Box>{" "}
+                  Report for the period of{" "}
                   <Box component="span" fontWeight="bold">
                     {allDetailData?.versionValue
-                      ? DateTime.fromFormat(allDetailData.versionValue, 'yyyy-MM').toFormat('LLLL yyyy')
-                      : ''}
-                  </Box>{' '}
-                ,created by{' '}
-                  {`${allDetailData?.createdBy?.firstName || ''}${
-                    allDetailData?.createdBy?.lastName ? ' ' + allDetailData.createdBy.lastName : ''
-                  }`}{' '}
-                  on{' '}
+                      ? DateTime.fromFormat(
+                          allDetailData.versionValue,
+                          "yyyy-MM"
+                        ).toFormat("LLLL yyyy")
+                      : ""}
+                  </Box>{" "}
+                  ,created by{" "}
+                  {`${allDetailData?.createdBy?.firstName || ""}${
+                    allDetailData?.createdBy?.lastName
+                      ? " " + allDetailData.createdBy.lastName
+                      : ""
+                  }`}{" "}
+                  on{" "}
                   {allDetailData?.createdAt
-                    ? DateTime.fromISO(allDetailData.createdAt).toFormat('dd LLL yyyy hh:mm a')
-                    : ''}
+                    ? DateTime.fromISO(allDetailData.createdAt).toFormat(
+                        "dd LLL yyyy hh:mm a"
+                      )
+                    : ""}
                 </Typography>
               </Box>
 
-              <Box sx={{ display: 'flex', gap: 1 }}>
+              <Box sx={{ display: "flex", gap: 1 }}>
                 {isPdfLoading ? (
                   <Box
                     sx={{
                       width: 27,
                       height: 27,
-                      borderRadius: '50%',
-                      border: '3px solid #f3f3f3',
-                      borderTop: '3px solid #3498db',
-                      animation: 'spin 1s linear infinite',
-                      '@keyframes spin': {
-                        '0%': { transform: 'rotate(0deg)' },
-                        '100%': { transform: 'rotate(360deg)' },
+                      borderRadius: "50%",
+                      border: "3px solid #f3f3f3",
+                      borderTop: "3px solid #3498db",
+                      animation: "spin 1s linear infinite",
+                      "@keyframes spin": {
+                        "0%": { transform: "rotate(0deg)" },
+                        "100%": { transform: "rotate(360deg)" },
                       },
                     }}
                   />
                 ) : (
                   <Tooltip title="Download Pdf" arrow>
                     <Button
-                          variant="text"
-                      disabled={!(viewReportNameWithVersionValue && viewReportNameWithVersionValue.length > 0)}
+                      variant="text"
+                      disabled={
+                        !(
+                          viewReportNameWithVersionValue &&
+                          viewReportNameWithVersionValue.length > 0
+                        )
+                      }
                       onClick={handleDownloadPdf}
-                                                sx={{ minWidth: "auto" }}
+                      sx={{ minWidth: "auto" }}
 
                       // sx={{
                       //   ...getButtonSx(),
@@ -230,62 +270,62 @@ export default function Report() {
                       //   },
                       // }}
                     >
-                      <PictureAsPdfIcon 
-                     
+                      <PictureAsPdfIcon
+
                       // sx={{ color: theme.getIconColor() }}
-                       />
+                      />
                     </Button>
                   </Tooltip>
                 )}
 
-                {allDetailData?.status === 'completed' && allDetailData?.intermediateReportId && (
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      justifyContent: 'flex-end',
-                      alignItems: 'center',
-                    }}
-                  >
-                    {exportFile.isPending &&
-                    !!intermediateDownloadRequestId &&
-                    intermediateDownloadRequestId === allDetailData._id ? (
-                      <Box
-                        sx={{
-                          width: 27,
-                          height: 27,
-                          borderRadius: '50%',
-                          border: '3px solid #f3f3f3',
-                          borderTop: '3px solid #3498db',
-                          animation: 'spin 1s linear infinite',
-                          '@keyframes spin': {
-                            '0%': { transform: 'rotate(0deg)' },
-                            '100%': { transform: 'rotate(360deg)' },
-                          },
-                          mr: 1,
-                        }}
-                      />
-                    ) : (
-                      <Tooltip title="Intermediate Download" arrow>
-                        <Button
-                          variant="text"
-                                                    sx={{ minWidth: "auto" }}
-
-                          onClick={() => {
-                            intermediateDownloadFile(
-                              `${allDetailData.customReportId?.reportName}-intermediate-${allDetailData.versionValue}.xlsx`,
-                              allDetailData._id
-                            );
+                {allDetailData?.status === "completed" &&
+                  allDetailData?.intermediateReportId && (
+                    <Box
+                      sx={{
+                        display: "flex",
+                        justifyContent: "flex-end",
+                        alignItems: "center",
+                      }}
+                    >
+                      {exportFile.isPending &&
+                      !!intermediateDownloadRequestId &&
+                      intermediateDownloadRequestId === allDetailData._id ? (
+                        <Box
+                          sx={{
+                            width: 27,
+                            height: 27,
+                            borderRadius: "50%",
+                            border: "3px solid #f3f3f3",
+                            borderTop: "3px solid #3498db",
+                            animation: "spin 1s linear infinite",
+                            "@keyframes spin": {
+                              "0%": { transform: "rotate(0deg)" },
+                              "100%": { transform: "rotate(360deg)" },
+                            },
+                            mr: 1,
                           }}
-                          // sx={{ ...getButtonSx(), mr: 1 }}
-                        >
-                          <DownloadForOfflineIcon 
-                          // sx={{ color: theme.getIconColor() }}
-                           />
-                        </Button>
-                      </Tooltip>
-                    )}
-                  </Box>
-                )}
+                        />
+                      ) : (
+                        <Tooltip title="Intermediate Download" arrow>
+                          <Button
+                            variant="text"
+                            sx={{ minWidth: "auto" }}
+                            onClick={() => {
+                              intermediateDownloadFile(
+                                `${allDetailData.customReportId?.reportName}-intermediate-${allDetailData.versionValue}.xlsx`,
+                                allDetailData._id
+                              );
+                            }}
+                            // sx={{ ...getButtonSx(), mr: 1 }}
+                          >
+                            <DownloadForOfflineIcon
+                            // sx={{ color: theme.getIconColor() }}
+                            />
+                          </Button>
+                        </Tooltip>
+                      )}
+                    </Box>
+                  )}
 
                 {exportFile.isPending &&
                 !!regularDownloadRequestId &&
@@ -294,13 +334,13 @@ export default function Report() {
                     sx={{
                       width: 27,
                       height: 27,
-                      borderRadius: '50%',
-                      border: '3px solid #f3f3f3',
-                      borderTop: '3px solid #3498db',
-                      animation: 'spin 1s linear infinite',
-                      '@keyframes spin': {
-                        '0%': { transform: 'rotate(0deg)' },
-                        '100%': { transform: 'rotate(360deg)' },
+                      borderRadius: "50%",
+                      border: "3px solid #f3f3f3",
+                      borderTop: "3px solid #3498db",
+                      animation: "spin 1s linear infinite",
+                      "@keyframes spin": {
+                        "0%": { transform: "rotate(0deg)" },
+                        "100%": { transform: "rotate(360deg)" },
                       },
                     }}
                   />
@@ -308,12 +348,11 @@ export default function Report() {
                   <Tooltip title="Download Excel" arrow>
                     <Button
                       variant="text"
-                                                sx={{ minWidth: "auto" }}
-
+                      sx={{ minWidth: "auto" }}
                       onClick={() => {
                         downloadFile(
                           `${allDetailData?.customReportId?.reportName}-${allDetailData?.versionValue}.xlsx`,
-                          allDetailData?._id || ''
+                          allDetailData?._id || ""
                         );
                       }}
                       // sx={{
@@ -328,9 +367,9 @@ export default function Report() {
                       //   },
                       // }}
                     >
-                      <SimCardDownloadIcon 
+                      <SimCardDownloadIcon
                       // sx={{ color: theme.getIconColor() }}
-                       />
+                      />
                     </Button>
                   </Tooltip>
                 )}
@@ -345,6 +384,7 @@ export default function Report() {
               fontSize: getHeadingSx().fontSize,
               fontWeight: getHeadingSx().fontWeight,
               color: theme.palette.text.primary,
+              mb: 1,
             }}
           >
             Reports
@@ -355,7 +395,9 @@ export default function Report() {
       {viewReportRequestId && viewReportRequestId.length > 0 ? (
         <Box ref={tabRef}>
           <ScrollableTabNavigation
-            tabs={(allDetailData?.dataSourceVersion ?? []).filter((tab) => !tab.isIntermediate)}
+            tabs={(allDetailData?.dataSourceVersion ?? []).filter(
+              (tab) => !tab.isIntermediate
+            )}
             activeTab={activeTab}
             setActiveTab={setActiveTab}
             tabStyle={tabStyle}
@@ -368,7 +410,7 @@ export default function Report() {
                   dataSourceVersionId={item.dataSourceVersionId}
                   versionCode={item.versionCode}
                   mappingFuctionName={item.mappingFuctionName}
-                  versionValue={allDetailData.versionValue.split('-')[0]}
+                  versionValue={allDetailData.versionValue.split("-")[0]}
                   sheetCode={item.sheetCode}
                   designCode={item.designCode}
                   customReportId={allDetailData.customReportId._id}
@@ -381,7 +423,7 @@ export default function Report() {
           {/* To download pdf */}
           <Box
             sx={{
-              display: 'none',
+              display: "none",
               marginBottom: 5,
             }}
             ref={targetRef}
@@ -394,7 +436,7 @@ export default function Report() {
                     <Table
                       size="small"
                       sx={{
-                        width: 'auto',
+                        width: "auto",
                         mb: 2,
                         ml: 0,
                         pl: 0,
@@ -402,28 +444,57 @@ export default function Report() {
                     >
                       <TableBody>
                         <TableRow>
-                          <TableCell sx={{ fontWeight: 600, borderBottom: 'none', pr: 1, whiteSpace: 'nowrap' }}>
+                          <TableCell
+                            sx={{
+                              fontWeight: 600,
+                              borderBottom: "none",
+                              pr: 1,
+                              whiteSpace: "nowrap",
+                            }}
+                          >
                             Report Name:
                           </TableCell>
-                          <TableCell sx={{ fontWeight: 500, borderBottom: 'none' }}>
+                          <TableCell
+                            sx={{ fontWeight: 500, borderBottom: "none" }}
+                          >
                             {allDetailData?.customReportId?.reportName}
                           </TableCell>
                         </TableRow>
                         <TableRow>
-                          <TableCell sx={{ fontWeight: 600, borderBottom: 'none', pr: 1, whiteSpace: 'nowrap' }}>
+                          <TableCell
+                            sx={{
+                              fontWeight: 600,
+                              borderBottom: "none",
+                              pr: 1,
+                              whiteSpace: "nowrap",
+                            }}
+                          >
                             Period:
                           </TableCell>
-                          <TableCell sx={{ fontWeight: 500, borderBottom: 'none' }}>
+                          <TableCell
+                            sx={{ fontWeight: 500, borderBottom: "none" }}
+                          >
                             {allDetailData?.versionValue}
                           </TableCell>
                         </TableRow>
                         <TableRow>
-                          <TableCell sx={{ fontWeight: 600, borderBottom: 'none', pr: 1, whiteSpace: 'nowrap' }}>
+                          <TableCell
+                            sx={{
+                              fontWeight: 600,
+                              borderBottom: "none",
+                              pr: 1,
+                              whiteSpace: "nowrap",
+                            }}
+                          >
                             Created By:
                           </TableCell>
-                          <TableCell sx={{ fontWeight: 500, borderBottom: 'none' }}>
-                            {`${allDetailData?.createdBy?.firstName || ''}${
-                              allDetailData?.createdBy?.lastName ? ' ' + allDetailData.createdBy.lastName : ''
+                          <TableCell
+                            sx={{ fontWeight: 500, borderBottom: "none" }}
+                          >
+                            {`${allDetailData?.createdBy?.firstName || ""}${
+                              allDetailData?.createdBy?.lastName
+                                ? " " + allDetailData.createdBy.lastName
+                                : ""
                             }`}
                           </TableCell>
                         </TableRow>
@@ -432,7 +503,7 @@ export default function Report() {
                   )}
 
                   <Box>
-                    <Box sx={{ display: 'flex', mt: 1, mb: 1 }}>
+                    <Box sx={{ display: "flex", mt: 1, mb: 1 }}>
                       <Box sx={{ fontWeight: 600 }}>Sheet Name: </Box>
                       <Box>{item.sheetName}</Box>
                     </Box>
@@ -441,14 +512,16 @@ export default function Report() {
                       dataSourceVersionId={item.dataSourceVersionId}
                       versionCode={item.versionCode}
                       mappingFuctionName={item.mappingFuctionName}
-                      versionValue={allDetailData.versionValue.split('-')[0]}
+                      versionValue={allDetailData.versionValue.split("-")[0]}
                       sheetCode={item.sheetCode}
                       designCode={item.designCode}
                       customReportId={allDetailData.customReportId._id}
                     />
                   </Box>
 
-                  {index < filteredArray.length - 1 && <Box className="html2pdf__page-break" />}
+                  {index < filteredArray.length - 1 && (
+                    <Box className="html2pdf__page-break" />
+                  )}
                 </Box>
               ))}
           </Box>
@@ -456,29 +529,19 @@ export default function Report() {
       ) : (
         <Box
           sx={{
-            p: 2,
-            display: 'flex',
-            flexDirection: 'column',
+            display: "flex",
+            flexDirection: "column",
             gap: 2,
           }}
         >
-          <Box
-            sx={{
-              backgroundColor: theme.palette.background.paper,
-              borderRadius: 1,
-              p: 2,
-              boxShadow: theme.shadows[1],
-            }}
-          >
-            <GenerateReport setReload={setReload} />
-          </Box>
+          <GenerateReport setReload={setReload} />
 
           <Box
             sx={{
               backgroundColor: theme.palette.background.paper,
               borderRadius: 1,
               boxShadow: theme.shadows[1],
-              overflow: 'hidden',
+              overflow: "hidden",
             }}
           >
             <ReportRequestTable
@@ -486,7 +549,9 @@ export default function Report() {
               reload={reload}
               setViewReportRequestId={setViewReportRequestId}
               setAllDetailData={setAllDetailData}
-              setViewReportNameWithVersionValue={setViewReportNameWithVersionValue}
+              setViewReportNameWithVersionValue={
+                setViewReportNameWithVersionValue
+              }
             />
           </Box>
         </Box>

@@ -75,11 +75,11 @@ export default function GenerateReport({ setReload }: GenerateReportProps) {
           }}
         >
           <Typography
-            variant="h6"
             sx={{
               ...getHeadingSx(),
               fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold,
               color: theme.palette.text.primary,
+              fontSize: 14,
             }}
           >
             Generate New Report
@@ -88,6 +88,7 @@ export default function GenerateReport({ setReload }: GenerateReportProps) {
           <Box
             display="flex"
             flexDirection={{ xs: "column", md: "row" }}
+            alignItems="center"
             gap={STYLE_GUIDE.SPACING.s4}
             sx={{
               "& .MuiFormControl-root": {
@@ -131,12 +132,12 @@ export default function GenerateReport({ setReload }: GenerateReportProps) {
               ) : (
                 <Button
                   variant="contained"
-                  size="large"
+                  size="small"
                   type="submit"
                   onClick={handleSubmit(onSubmit)}
                   sx={{
                     width: "100%",
-                    height: "56px",
+                    height: "40px",
                     textTransform: "none",
                     fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.medium,
                     borderRadius: 1,

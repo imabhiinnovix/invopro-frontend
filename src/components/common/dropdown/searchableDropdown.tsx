@@ -232,6 +232,7 @@ const CommonDropdownSearch: React.FC<CommonDropdownSearchProps> = ({
               options={options}
               label={label}
               error={error}
+              size="small"
               onInputChange={(_, value: string, reason: string) => {
                 if (reason === "input") {
                   field.onChange(null);
