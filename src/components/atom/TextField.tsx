@@ -8,7 +8,7 @@ import VisibilityIcon from "@mui/icons-material/Visibility";
 
 interface TextFieldProps {
   label: string;
-  placeholder: string;
+  placeholder?: string;
   required?: boolean;
   error?: boolean;
   helperText?: string;
@@ -17,6 +17,12 @@ interface TextFieldProps {
   name?: string;
   onChange?: (event: React.ChangeEvent<HTMLInputElement>) => void;
   onBlur?: (event: React.FocusEvent<HTMLInputElement>) => void;
+  autoFocus?: boolean;
+  margin?: "dense" | "normal";
+  type?: string;
+  variant?: "outlined" | "standard" | "filled";
+  size?: "small" | "medium" | "undefined";
+  value?: string;
 }
 
 const TextField = forwardRef<HTMLInputElement, TextFieldProps>(
