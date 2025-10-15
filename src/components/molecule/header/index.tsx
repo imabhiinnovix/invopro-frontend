@@ -23,7 +23,7 @@ const Header = () => {
         color="inherit"
         elevation={2}
         sx={{
-          height: 70,
+          height: 60,
         }}
       >
         <Toolbar>
@@ -58,7 +58,7 @@ const Header = () => {
                 component="img"
                 src={logo}
                 alt="Logo"
-                sx={{ width: "auto", height: 70 }}
+                sx={{ width: "auto", height: 60 }}
               />
               {/* <img src={logo} alt="Logo" /> */}
             </Box>

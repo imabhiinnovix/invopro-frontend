@@ -720,283 +720,197 @@ export default function SideNav() {
           >
             <List
               sx={{
-                py: 0,
+                pt: 0,
+                pb: "50px",
               }}
             >
               {navItems.map((item, i) => (
                 <React.Fragment key={i}>
-                  <ListItem
-                    disablePadding
-                    sx={{
-                      display: "block",
-                      mb: 0.5,
-                    }}
-                  >
-                    <Tooltip
-                      title={item.name}
-                      placement="right"
-                      enterDelay={500}
-                      enterNextDelay={200}
-                    >
-                      <ListItemButton
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleItemClick(
-                            item.route,
-                            !!item.subItems,
-                            item.name
-                          );
-                        }}
-                        sx={{
-                          minHeight: 40,
-                          mx: 1.5,
-                          px: 2,
-                          borderRadius: "6px",
-                          justifyContent: openNav ? "initial" : "center",
-                          backgroundColor: isRouteActive(item.route)
-                            ? theme.palette.action.selected
-                            : "transparent",
-                          color: isRouteActive(item.route)
-                            ? theme.palette.primary.main
-                            : theme.palette.text.primary,
-                          "& .MuiListItemIcon-root": {
-                            color: isRouteActive(item.route)
-                              ? theme.palette.primary.main
-                              : theme.palette.text.secondary,
-                          },
-                          "&:hover": {
-                            backgroundColor: theme.palette.action.hover,
-                          },
-                        }}
-                      >
-                        <ListItemIcon
-                          sx={{
-                            minWidth: 24,
-                            mr: openNav ? 1.5 : "auto",
-                            justifyContent: "center",
-                          }}
-                        >
-                          {item.icon}
-                        </ListItemIcon>
-                        <ListItemText
-                          primary={
-                            openNav ? item.name : truncateText(item.name, 10)
+                  <MainListItem
+                    isMainItem={true}
+                    label={item.name}
+                    icon={item.icon}
+                    route={item.route}
+                    onClick={() =>
+                      handleItemClick(item.route, !!item.subItems, item.name)
+                    }
+                    isExpanded={
+                      (item.subItems &&
+                        openNav &&
+                        item.name === "Dashboards" &&
+                        openDashboard) ||
+                      (item.name === "Notifications" &&
+                        openNotificationSettings) ||
+                      (item.name === "Settings" && openReportSettings) ||
+                      (item.name === "Theme Settings" && openThemeSettings) ||
+                      (item.name === "Data Sources" && openDataSources) ||
+                      (item.name === "System Settings" && openSystemSettings)
+                    }
+                    collapsibleComp={
+                      item.subItems &&
+                      openNav && (
+                        <Collapse
+                          in={
+                            item.name === "Dashboards"
+                              ? openDashboard
+                              : item.name === "Notifications"
+                              ? openNotificationSettings
+                              : item.name === "Settings"
+                              ? openReportSettings
+                              : item.name === "Theme Settings"
+                              ? openThemeSettings
+                              : item.name === "Data Sources"
+                              ? openDataSources
+                              : item.name === "System Settings"
+                              ? openSystemSettings
+                              : openSettings
                           }
-                          sx={{
-                            opacity: openNav ? 1 : 0,
-                            m: 0,
-                            "& .MuiListItemText-primary": {
-                              ...getNavigationSx(),
-                              fontWeight: isRouteActive(item.route) ? 600 : 500,
-                              color: isRouteActive(item.route)
-                                ? theme.palette.primary.main
-                                : theme.palette.text.primary,
-                              whiteSpace: "nowrap",
-                              overflow: "hidden",
-                              textOverflow: "ellipsis",
-                            },
-                          }}
-                        />
-                        {item.subItems &&
-                          openNav &&
-                          ((item.name === "Dashboards" && openDashboard) ||
-                          (item.name === "Notifications" &&
-                            openNotificationSettings) ||
-                          (item.name === "Settings" && openReportSettings) ||
-                          (item.name === "Theme Settings" &&
-                            openThemeSettings) ||
-                          (item.name === "Data Sources" && openDataSources) ||
-                          (item.name === "System Settings" &&
-                            openSystemSettings) ? (
-                            <ExpandLessIcon
-                              sx={{
-                                fontSize: "20px",
-                                color: isRouteActive(item.route)
-                                  ? theme.palette.primary.main
-                                  : theme.palette.text.secondary,
-                              }}
-                            />
-                          ) : (
-                            <ExpandMoreIcon
-                              sx={{
-                                fontSize: "20px",
-                                color: isRouteActive(item.route)
-                                  ? theme.palette.primary.main
-                                  : theme.palette.text.secondary,
-                              }}
-                            />
-                          ))}
-                      </ListItemButton>
-                    </Tooltip>
-                  </ListItem>
-                  {item.subItems && openNav && (
-                    <Collapse
-                      in={
-                        item.name === "Dashboards"
-                          ? openDashboard
-                          : item.name === "Notifications"
-                          ? openNotificationSettings
-                          : item.name === "Settings"
-                          ? openReportSettings
-                          : item.name === "Theme Settings"
-                          ? openThemeSettings
-                          : item.name === "Data Sources"
-                          ? openDataSources
-                          : item.name === "System Settings"
-                          ? openSystemSettings
-                          : openSettings
-                      }
-                      timeout="auto"
-                      unmountOnExit
-                    >
-                      {/* Scrollable container for dropdown */}
-                      <Box
-                        sx={{
-                          maxHeight: "480px",
-                          overflowY: "auto",
-                          overflowX: "hidden",
-                          "&::-webkit-scrollbar": {
-                            width: "3px",
-                          },
-                          "&::-webkit-scrollbar-track": {
-                            background: "transparent",
-                          },
-                          "&::-webkit-scrollbar-thumb": {
-                            background: theme.palette.action.hover,
-                            borderRadius: "1.5px",
-                          },
-                          "&::-webkit-scrollbar-thumb:hover": {
-                            background: theme.palette.action.selected,
-                          },
-                          scrollbarWidth: "thin",
-                          scrollbarColor: `${theme.palette.action.hover} transparent`,
-                        }}
-                      >
-                        <List
-                          component="div"
-                          disablePadding
-                          sx={{
-                            py: 0.25,
-                            backgroundColor: "#f6f6f6",
-                          }}
+                          timeout="auto"
+                          unmountOnExit
                         >
-                          {item.name === "Dashboards" && (
-                            <>
-                              {/* Create New Dashboard Button */}
-                              <MainListItem
-                                onClick={() => setOpenCreateModal(true)}
-                                label="New Dashboards"
-                                icon={
-                                  <AddIcon
-                                    sx={{
-                                      fontSize: "14px",
-                                      color: theme.getIconColor(),
-                                    }}
-                                  />
-                                }
-                              />
-
-                              {/* Scrollable Dashboard List */}
-                              <SubItemScroller>
-                                {loading ? (
+                          {/* Scrollable container for dropdown */}
+                          <Box
+                            sx={{
+                              // maxHeight: "480px",
+                              // overflowY: "auto",
+                              overflowX: "hidden",
+                              "&::-webkit-scrollbar": {
+                                width: "3px",
+                              },
+                              "&::-webkit-scrollbar-track": {
+                                background: "transparent",
+                              },
+                              "&::-webkit-scrollbar-thumb": {
+                                background: theme.palette.action.hover,
+                                borderRadius: "1.5px",
+                              },
+                              "&::-webkit-scrollbar-thumb:hover": {
+                                background: theme.palette.action.selected,
+                              },
+                              scrollbarWidth: "thin",
+                              scrollbarColor: `${theme.palette.action.hover} transparent`,
+                            }}
+                          >
+                            <List
+                              component="div"
+                              disablePadding
+                              sx={{
+                                py: 0.25,
+                                backgroundColor: "#f6f6f6",
+                              }}
+                            >
+                              {item.name === "Dashboards" && (
+                                <>
+                                  {/* Create New Dashboard Button */}
                                   <MainListItem
-                                    label="..."
-                                    icon={<LinearProgress />}
-                                    onClick={() => {}}
-                                  />
-                                ) : (
-                                  dashboards.map(
-                                    (
-                                      dashboard: DashboardType,
-                                      index: number
-                                    ) => (
-                                      <MainListItem
-                                        key={dashboard._id}
-                                        onClick={() =>
-                                          navigate(
-                                            `/dashboard/${dashboard._id}`
-                                          )
-                                        }
-                                        label={dashboard.name}
-                                        title={dashboard.name}
-                                        icon={<NumberIcon number={index + 1} />}
-                                      />
-                                    )
-                                  )
-                                )}
-                              </SubItemScroller>
-
-                              {/* All Dashboards Link */}
-                              <MainListItem
-                                onClick={() => navigate("/dashboard")}
-                                label="All Dashboards"
-                                icon={<DashboardIcon />}
-                              />
-                            </>
-                          )}
-
-                          {item.name === "Notifications" && (
-                            <>
-                              {item.subItems?.map((subItem, subIndex) => {
-                                return (
-                                  <MainListItem
-                                    key={subIndex}
-                                    label={subItem.name}
-                                    icon={subItem.icon}
-                                    onClick={() => navigate(subItem.route)}
-                                  />
-                                );
-                              })}
-                            </>
-                          )}
-
-                          {item.name === "Settings" ? (
-                            <>
-                              {item.subItems?.map((subItem, subIndex) => {
-                                const hasNestedItems =
-                                  subItem.subItems &&
-                                  subItem.subItems.length > 0;
-
-                                return (
-                                  <React.Fragment key={subIndex}>
-                                    {hasNestedItems ? (
-                                      <MainListItem
-                                        icon={subItem.icon}
-                                        label={subItem.name}
-                                        title={subItem.name}
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          e.preventDefault();
-                                          if (
-                                            subItem.name === "Theme Settings"
-                                          ) {
-                                            setOpenThemeSettings(
-                                              (prev) => !prev
-                                            );
-                                          } else if (
-                                            subItem.name === "System Settings"
-                                          ) {
-                                            setOpenSystemSettings(
-                                              (prev) => !prev
-                                            );
-                                          } else if (
-                                            subItem.name === "Data Sources"
-                                          ) {
-                                            setOpenDataSources((prev) => !prev);
-                                          }
+                                    onClick={() => setOpenCreateModal(true)}
+                                    label="New Dashboards"
+                                    icon={
+                                      <AddIcon
+                                        sx={{
+                                          fontSize: "14px",
+                                          color: theme.getIconColor(),
                                         }}
-                                        isExpanded={
-                                          subItem.name === "Theme Settings"
-                                            ? openThemeSettings
-                                            : subItem.name === "Data Sources"
-                                            ? openDataSources
-                                            : subItem.name === "System Settings"
-                                            ? openSystemSettings
-                                            : false
-                                        }
-                                        collapsibleComp={
-                                          <Collapse
-                                            in={
+                                      />
+                                    }
+                                  />
+
+                                  {/* Scrollable Dashboard List */}
+                                  <SubItemScroller>
+                                    {loading ? (
+                                      <MainListItem
+                                        label="..."
+                                        icon={<LinearProgress />}
+                                        onClick={() => {}}
+                                      />
+                                    ) : (
+                                      dashboards.map(
+                                        (
+                                          dashboard: DashboardType,
+                                          index: number
+                                        ) => (
+                                          <MainListItem
+                                            key={dashboard._id}
+                                            onClick={() =>
+                                              navigate(
+                                                `/dashboard/${dashboard._id}`
+                                              )
+                                            }
+                                            label={dashboard.name}
+                                            title={dashboard.name}
+                                            icon={
+                                              <NumberIcon number={index + 1} />
+                                            }
+                                          />
+                                        )
+                                      )
+                                    )}
+                                  </SubItemScroller>
+
+                                  {/* All Dashboards Link */}
+                                  <MainListItem
+                                    onClick={() => navigate("/dashboard")}
+                                    label="All Dashboards"
+                                    icon={<DashboardIcon />}
+                                  />
+                                </>
+                              )}
+
+                              {item.name === "Notifications" && (
+                                <>
+                                  {item.subItems?.map((subItem, subIndex) => {
+                                    return (
+                                      <MainListItem
+                                        key={subIndex}
+                                        label={subItem.name}
+                                        icon={subItem.icon}
+                                        onClick={() => navigate(subItem.route)}
+                                      />
+                                    );
+                                  })}
+                                </>
+                              )}
+
+                              {item.name === "Settings" ? (
+                                <>
+                                  {item.subItems?.map((subItem, subIndex) => {
+                                    const hasNestedItems =
+                                      subItem.subItems &&
+                                      subItem.subItems.length > 0;
+
+                                    return (
+                                      <React.Fragment key={subIndex}>
+                                        {hasNestedItems ? (
+                                          <MainListItem
+                                            icon={subItem.icon}
+                                            label={subItem.name}
+                                            title={subItem.name}
+                                            onClick={(e) => {
+                                              e.stopPropagation();
+                                              e.preventDefault();
+                                              if (
+                                                subItem.name ===
+                                                "Theme Settings"
+                                              ) {
+                                                setOpenThemeSettings(
+                                                  (prev) => !prev
+                                                );
+                                              } else if (
+                                                subItem.name ===
+                                                "System Settings"
+                                              ) {
+                                                setOpenSystemSettings(
+                                                  (prev) => !prev
+                                                );
+                                              } else if (
+                                                subItem.name === "Data Sources"
+                                              ) {
+                                                setOpenDataSources(
+                                                  (prev) => !prev
+                                                );
+                                              }
+                                            }}
+                                            isExpanded={
                                               subItem.name === "Theme Settings"
                                                 ? openThemeSettings
                                                 : subItem.name ===
@@ -1007,165 +921,124 @@ export default function SideNav() {
                                                 ? openSystemSettings
                                                 : false
                                             }
-                                            timeout="auto"
-                                            unmountOnExit
-                                          >
-                                            <SubItemScroller>
-                                              <List
-                                                component="div"
-                                                disablePadding
+                                            collapsibleComp={
+                                              <Collapse
+                                                in={
+                                                  subItem.name ===
+                                                  "Theme Settings"
+                                                    ? openThemeSettings
+                                                    : subItem.name ===
+                                                      "Data Sources"
+                                                    ? openDataSources
+                                                    : subItem.name ===
+                                                      "System Settings"
+                                                    ? openSystemSettings
+                                                    : false
+                                                }
+                                                timeout="auto"
+                                                unmountOnExit
                                               >
-                                                {subItem.subItems?.map(
-                                                  (nestedItem) => (
-                                                    <MainListItem
-                                                      onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        e.preventDefault();
-                                                        handleNestedItemClick(
-                                                          nestedItem.route
-                                                        );
-                                                      }}
-                                                      isNested={true}
-                                                      icon={nestedItem.icon}
-                                                      label={nestedItem.name}
-                                                      title={nestedItem.name}
-                                                    />
-                                                  )
-                                                )}
-                                              </List>
-                                            </SubItemScroller>
-                                          </Collapse>
-                                        }
-                                      />
-                                    ) : (
-                                      // ALL direct items (Attribute Option, Entity, Report Settings, constantDataSources, etc.)
-                                      <MainListItem
-                                        icon={subItem.icon}
-                                        label={subItem.name}
-                                        title={subItem.name}
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          e.preventDefault();
-                                          handleSettingsItemClick(
-                                            subItem.route,
-                                            subItem.name
-                                          );
-                                        }}
-                                      />
-                                    )}
-                                  </React.Fragment>
-                                );
-                              })}
-                            </>
-                          ) : (
-                            item.name !== "Dashboards" &&
-                            item.name !== "Notifications" && (
-                              <MainListItem
-                                onClick={() => {
-                                  navigate(item.route);
-                                }}
-                                label={item.name}
-                                collapsibleComp={
-                                  <Collapse
-                                    in={true}
-                                    timeout="auto"
-                                    unmountOnExit
-                                  >
-                                    <SubItemScroller>
-                                      <List component="div" disablePadding>
-                                        {item.subItems?.map((nestedItem) => (
+                                                <SubItemScroller>
+                                                  <List
+                                                    component="div"
+                                                    disablePadding
+                                                  >
+                                                    {subItem.subItems?.map(
+                                                      (nestedItem) => (
+                                                        <MainListItem
+                                                          onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            e.preventDefault();
+                                                            handleNestedItemClick(
+                                                              nestedItem.route
+                                                            );
+                                                          }}
+                                                          isNested={true}
+                                                          icon={nestedItem.icon}
+                                                          label={
+                                                            nestedItem.name
+                                                          }
+                                                          title={
+                                                            nestedItem.name
+                                                          }
+                                                        />
+                                                      )
+                                                    )}
+                                                  </List>
+                                                </SubItemScroller>
+                                              </Collapse>
+                                            }
+                                          />
+                                        ) : (
+                                          // ALL direct items (Attribute Option, Entity, Report Settings, constantDataSources, etc.)
                                           <MainListItem
+                                            icon={subItem.icon}
+                                            label={subItem.name}
+                                            title={subItem.name}
                                             onClick={(e) => {
                                               e.stopPropagation();
                                               e.preventDefault();
-                                              handleNestedItemClick(
-                                                nestedItem.route
+                                              handleSettingsItemClick(
+                                                subItem.route,
+                                                subItem.name
                                               );
                                             }}
-                                            isNested={true}
-                                            icon={nestedItem.icon}
-                                            label={nestedItem.name}
-                                            title={nestedItem.name}
                                           />
-                                        ))}
-                                      </List>
-                                    </SubItemScroller>
-                                  </Collapse>
-                                }
-                                // icon={<DashboardIcon />}
-                              />
-                            )
-                            // <SubItemsList
-                            //   subItems={item.subItems.filter(
-                            //     (subItem) => !subItem.isCreateButton
-                            //   )}
-                            //   openNav={openNav}
-                            //   parentName={item.name}
-                            //   dashboards={dashboards}
-                            //   onDeleteClick={handleDeleteClick}
-                            //   onCreateClick={() => setOpenCreateModal(true)}
-                            // />
-                          )}
-                        </List>
-                      </Box>
-                    </Collapse>
-                  )}
+                                        )}
+                                      </React.Fragment>
+                                    );
+                                  })}
+                                </>
+                              ) : (
+                                item.name !== "Dashboards" &&
+                                item.name !== "Notifications" && (
+                                  <MainListItem
+                                    onClick={() => {
+                                      navigate(item.route);
+                                    }}
+                                    label={item.name}
+                                    collapsibleComp={
+                                      <Collapse
+                                        in={true}
+                                        timeout="auto"
+                                        unmountOnExit
+                                      >
+                                        <SubItemScroller>
+                                          <List component="div" disablePadding>
+                                            {item.subItems?.map(
+                                              (nestedItem) => (
+                                                <MainListItem
+                                                  onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    e.preventDefault();
+                                                    handleNestedItemClick(
+                                                      nestedItem.route
+                                                    );
+                                                  }}
+                                                  isNested={true}
+                                                  icon={nestedItem.icon}
+                                                  label={nestedItem.name}
+                                                  title={nestedItem.name}
+                                                />
+                                              )
+                                            )}
+                                          </List>
+                                        </SubItemScroller>
+                                      </Collapse>
+                                    }
+                                  />
+                                )
+                              )}
+                            </List>
+                          </Box>
+                        </Collapse>
+                      )
+                    }
+                  />
                 </React.Fragment>
               ))}
             </List>
           </Box>
-          {/* <Box
-            sx={{
-              px: STYLE_GUIDE.SPACING.s3,
-              pb: STYLE_GUIDE.SPACING.s1,
-              mt: "auto",
-              flexShrink: 0,
-            }}
-          >
-            <Tooltip title="Logout" placement="right">
-              <ListItemButton
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleLogout();
-                }}
-                sx={{
-                  minHeight: 36,
-                  px: STYLE_GUIDE.SPACING.s3,
-                  borderRadius: "8px",
-                  justifyContent: openNav ? "initial" : "center",
-                  color: theme.palette.text.primary,
-                  "&:hover": {
-                    backgroundColor: theme.palette.action.hover,
-                  },
-                }}
-              >
-                <ListItemIcon
-                  sx={{
-                    minWidth: 20,
-                    mr: openNav ? STYLE_GUIDE.SPACING.s2 : "auto",
-                    justifyContent: "center",
-                  }}
-                >
-                  <LogoutIcon
-                    sx={{
-                      color: theme.getIconColor(),
-                      fontSize: "16px",
-                    }}
-                  />
-                </ListItemIcon>
-                <ListItemText
-                  primary="Logout"
-                  sx={{
-                    opacity: openNav ? 1 : 0,
-                    m: 0,
-                    "& .MuiListItemText-primary": {
-                      ...getNavigationSx(),
-                    },
-                  }}
-                />
-              </ListItemButton>
-            </Tooltip>
-          </Box> */}
         </Box>
       </Drawer>
       <CreateDashboardModal
@@ -1201,6 +1074,8 @@ function MainListItem({
   collapsibleComp,
   isExpanded,
   isNested,
+  route,
+  isMainItem,
 }: {
   onClick: (e: React.MouseEvent) => void;
   label: string;
@@ -1209,8 +1084,21 @@ function MainListItem({
   collapsibleComp?: React.ReactNode;
   isExpanded?: boolean;
   isNested?: boolean;
+  route?: string;
+  isMainItem?: boolean;
 }) {
   const { getNavigationSx } = useComponentTypography();
+  const theme = useUnifiedTheme();
+  const location = useLocation();
+  const isRouteActive = (route: string) => {
+    return location.pathname.startsWith(route);
+  };
+
+  let spacing = isMainItem ? STYLE_GUIDE.SPACING.s4 : STYLE_GUIDE.SPACING.s8;
+  if (isNested) {
+    spacing = STYLE_GUIDE.SPACING.s12;
+  }
+
   return (
     <ListItem
       disablePadding
@@ -1227,12 +1115,20 @@ function MainListItem({
           sx={{
             minHeight: 32,
             px: STYLE_GUIDE.SPACING.s3,
-            pl: isNested ? STYLE_GUIDE.SPACING.s12 : STYLE_GUIDE.SPACING.s8,
-            borderRadius: "8px",
-            mx: STYLE_GUIDE.SPACING.s2,
-            "&:hover": {
-              backgroundColor: "red",
-            },
+            pl: spacing,
+            // borderRadius: "8px",
+            // mx: STYLE_GUIDE.SPACING.s2,
+            // "&:hover": {
+            //   backgroundColor: "red",
+            // },
+            // backgroundColor: isRouteActive(route || "")
+            //   ? theme.palette.action.selected
+            //   : "transparent",
+            color: isMainItem
+              ? isRouteActive(route || "")
+                ? theme.palette.primary.main
+                : theme.palette.text.primary
+              : "inherit",
           }}
         >
           {icon && (
@@ -1241,6 +1137,14 @@ function MainListItem({
                 minWidth: 20,
                 mr: 0.75,
                 justifyContent: "center",
+                "& .MuiSvgIcon-root": {
+                  fontSize: 20,
+                  color: isMainItem
+                    ? isRouteActive(route || "")
+                      ? theme.palette.primary.main
+                      : theme.palette.text.primary
+                    : "inherit",
+                },
               }}
             >
               {icon}
@@ -1256,14 +1160,37 @@ function MainListItem({
                 whiteSpace: "nowrap",
                 overflow: "hidden",
                 textOverflow: "ellipsis",
+                fontSize: 12,
+                fontWeight: isMainItem
+                  ? isRouteActive(route || "")
+                    ? 600
+                    : 500
+                  : 500,
+                color: isMainItem
+                  ? isRouteActive(route || "")
+                    ? theme.palette.primary.main
+                    : theme.palette.text.primary
+                  : "inherit",
               },
             }}
           />
           {collapsibleComp ? (
             isExpanded ? (
-              <ExpandLessIcon />
+              <ExpandLessIcon
+                sx={{
+                  color: isRouteActive(route || "")
+                    ? theme.palette.primary.main
+                    : theme.palette.text.primary,
+                }}
+              />
             ) : (
-              <ExpandMoreIcon />
+              <ExpandMoreIcon
+                sx={{
+                  color: isRouteActive(route || "")
+                    ? theme.palette.primary.main
+                    : theme.palette.text.primary,
+                }}
+              />
             )
           ) : null}
         </ListItemButton>
@@ -1306,20 +1233,20 @@ function SubItemScroller({ children }: { children: React.ReactNode }) {
 }
 
 function NumberIcon({ number }: { number: number }) {
-  const theme = useUnifiedTheme();
+  // const theme = useUnifiedTheme();
   return (
     <Box
       sx={{
         width: 20,
         height: 20,
         borderRadius: "50%",
-        backgroundColor: theme.palette.primary.main,
+        backgroundColor: "#00000094",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
       }}
     >
-      <Typography color="white" fontSize={12}>
+      <Typography color="white" fontSize={10}>
         {number}
       </Typography>
     </Box>

@@ -73,13 +73,13 @@ export function AccountPopover() {
       <IconButton
         onClick={handleOpenPopover}
         sx={{
-          width: 40,
-          height: 40,
+          width: 35,
+          height: 35,
         }}
       >
         <Avatar
           alt={userDetails?.data?.firstName?.[0]?.toUpperCase()}
-          sx={{ width: 40, height: 40 }}
+          sx={{ width: 35, height: 35, fontSize: 14 }}
         >
           {getInitials()}
         </Avatar>
@@ -98,13 +98,14 @@ export function AccountPopover() {
         }}
       >
         <Box sx={{ p: STYLE_GUIDE.SPACING.s4, pb: STYLE_GUIDE.SPACING.s2 }}>
-          <Typography variant="subtitle2" noWrap>
+          <Typography variant="subtitle2" noWrap fontSize={12}>
             {`${userDetails?.data?.firstName} ${userDetails?.data?.lastName}`}
           </Typography>
 
           <Typography
             variant="body2"
             sx={{ color: STYLE_GUIDE.COLORS.textMediumGray }}
+            fontSize={12}
             noWrap
           >
             {userDetails?.data?.email}
@@ -113,7 +114,7 @@ export function AccountPopover() {
 
         <Divider sx={{ borderStyle: "dashed" }} />
 
-        <MenuList
+        {/* <MenuList
           disablePadding
           sx={{
             p: STYLE_GUIDE.SPACING.s2,
@@ -137,22 +138,19 @@ export function AccountPopover() {
           {menuData?.map((option) => (
             <MenuItem
               key={option.label}
-              // selected={option.href === pathname}
-              // onClick={() => handleClickItem(option.href)}
             >
-              {/* {option.icon} */}
               {option.label}
             </MenuItem>
           ))}
-        </MenuList>
+        </MenuList> */}
 
         <Box sx={{ p: STYLE_GUIDE.SPACING.s2 }}>
           <Button
             fullWidth
             color="error"
-            size="medium"
             variant="text"
             onClick={logout}
+            sx={{ height: 30 }}
           >
             Logout
           </Button>
