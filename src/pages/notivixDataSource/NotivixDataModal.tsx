@@ -22,6 +22,7 @@ import { POST, PUT } from "../../services/apiRoutes";
 import { toast } from "react-toastify";
 import usePut from "../../hooks/usePut";
 import { ConfirmationDialog } from "../../components/common/deleteConfirmationDialog/ConfirmationDialog";
+import DialogContainer from "../../components/molecule/dialog";
 
 interface ModelSectionProps {
   openModal: boolean;
@@ -457,8 +458,8 @@ export const NotivixDataModal: React.FC<ModelSectionProps> = ({
                   !isFieldEditable
                     ? ""
                     : isReferenceMulti
-                      ? "Select option"
-                      : "Type or select"
+                    ? "Select option"
+                    : "Type or select"
                 }
               />
             )}
@@ -572,74 +573,14 @@ export const NotivixDataModal: React.FC<ModelSectionProps> = ({
   return (
     <>
       {openModal && modalMode !== "filter" && (
-        <Box
-          sx={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            width: "100%",
-            height: "100%",
-            backgroundColor: "rgba(0, 0, 0, 0.5)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            zIndex: 1300,
-          }}
-          onClick={handleCancel}
-        >
-          <Box
-            sx={{
-              backgroundColor: STYLE_GUIDE?.COLORS?.white || "#ffffff",
-              borderRadius: "8px",
-              boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.2)",
-              p: 3,
-              width: "900px",
-              maxWidth: "90%",
-              maxHeight: "80vh",
-              overflowY: "auto",
-            }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <Box
-              sx={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                mb: 2,
-              }}
-            >
-              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                <Typography
-                  variant="h6"
-                  sx={{ color: STYLE_GUIDE?.COLORS?.primaryDark || "#3f51b5" }}
-                >
-                  {modalMode === "add"
-                    ? "Add"
-                    : modalMode === "edit"
-                      ? "Edit"
-                      : "View"}
-                </Typography>
-              </Box>
-              <IconButton
-                onClick={handleCancel}
-                sx={{
-                  color: STYLE_GUIDE?.COLORS?.textSecondary || "#666",
-                }}
-              >
-                <Tooltip title="Close">
-                  <CloseIcon />
-                </Tooltip>
-              </IconButton>
-            </Box>
-            {renderModalFields()}
-            <Box
-              sx={{
-                display: "flex",
-                justifyContent: "flex-end",
-                gap: 1,
-                mt: 3,
-              }}
-            >
+        <DialogContainer
+          open={openModal}
+          onClose={handleCancel}
+          title={
+            modalMode === "add" ? "Add" : modalMode === "edit" ? "Edit" : "View"
+          }
+          actions={
+            <>
               <Button
                 variant="outlined"
                 onClick={handleCancel}
@@ -669,9 +610,111 @@ export const NotivixDataModal: React.FC<ModelSectionProps> = ({
                   Save
                 </Button>
               )}
-            </Box>
-          </Box>
-        </Box>
+            </>
+          }
+        >
+          {renderModalFields()}
+        </DialogContainer>
+        // <Box
+        //   sx={{
+        //     position: "fixed",
+        //     top: 0,
+        //     left: 0,
+        //     width: "100%",
+        //     height: "100%",
+        //     backgroundColor: "rgba(0, 0, 0, 0.5)",
+        //     display: "flex",
+        //     alignItems: "center",
+        //     justifyContent: "center",
+        //     zIndex: 1300,
+        //   }}
+        //   onClick={handleCancel}
+        // >
+        //   <Box
+        //     sx={{
+        //       backgroundColor: STYLE_GUIDE?.COLORS?.white || "#ffffff",
+        //       borderRadius: "8px",
+        //       boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.2)",
+        //       p: 3,
+        //       width: "900px",
+        //       maxWidth: "90%",
+        //       maxHeight: "80vh",
+        //       overflowY: "auto",
+        //     }}
+        //     onClick={(e) => e.stopPropagation()}
+        //   >
+        //     <Box
+        //       sx={{
+        //         display: "flex",
+        //         justifyContent: "space-between",
+        //         alignItems: "center",
+        //         mb: 2,
+        //       }}
+        //     >
+        //       <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+        //         <Typography
+        //           variant="h6"
+        //           sx={{ color: STYLE_GUIDE?.COLORS?.primaryDark || "#3f51b5" }}
+        //         >
+        //           {modalMode === "add"
+        //             ? "Add"
+        //             : modalMode === "edit"
+        //             ? "Edit"
+        //             : "View"}
+        //         </Typography>
+        //       </Box>
+        //       <IconButton
+        //         onClick={handleCancel}
+        //         sx={{
+        //           color: STYLE_GUIDE?.COLORS?.textSecondary || "#666",
+        //         }}
+        //       >
+        //         <Tooltip title="Close">
+        //           <CloseIcon />
+        //         </Tooltip>
+        //       </IconButton>
+        //     </Box>
+        //     {renderModalFields()}
+        //     <Box
+        //       sx={{
+        //         display: "flex",
+        //         justifyContent: "flex-end",
+        //         gap: 1,
+        //         mt: 3,
+        //       }}
+        //     >
+        // <Button
+        //   variant="outlined"
+        //   onClick={handleCancel}
+        //   sx={{
+        //     borderRadius: "8px",
+        //     borderColor: STYLE_GUIDE?.COLORS?.divider || "#e0e0e0",
+        //     color: STYLE_GUIDE?.COLORS?.primaryDark || "#3f51b5",
+        //   }}
+        // >
+        //   Cancel
+        // </Button>
+        // {modalMode !== "view" && (
+        //   <Button
+        //     variant="contained"
+        //     onClick={handleSaveClick}
+        //     sx={{
+        //       borderRadius: "8px",
+        //       backgroundColor:
+        //         STYLE_GUIDE?.COLORS?.primaryDark || "#3f51b5",
+        //       color: STYLE_GUIDE?.COLORS?.white || "#ffffff",
+        //       "&:hover": {
+        //         backgroundColor:
+        //           STYLE_GUIDE?.COLORS?.primary || "#5c6bc0",
+        //       },
+        //     }}
+        //   >
+        //     Save
+        //   </Button>
+        //       )}
+        //     </Box>
+        //   </Box>
+        // </Box>
       )}
 
       <ConfirmationDialog

@@ -1038,7 +1038,6 @@
 // export { GlobalPollingManager };
 // export default ImportFile;
 
-
 // import React, { useEffect, useState, useRef } from "react";
 // import { useNavigate } from "react-router-dom";
 // import * as XLSX from "xlsx";
@@ -1657,7 +1656,7 @@
 //     const versionValue = watch("versionValue");
 //     const formattedVersion = DateTime.fromISO(versionValue).toFormat("yyyy-LL");
 //     console.log("Formatted Version:", formattedVersion);
-    
+
 //     // Generate unique version name using timestamp
 //     const uniqueVersionName = `version_${Date.now()}`;
 
@@ -1842,9 +1841,9 @@
 //                 disableFuture={true}
 //                 rules={{ required: "Period is required" }}
 //               />
-              
+
 //               {/* Removed version name field */}
-              
+
 //               {fileUploadLoader ? (
 //                 <ProgressBar />
 //               ) : (
@@ -2069,7 +2068,6 @@
 // // Export both components
 // export { GlobalPollingManager };
 // export default ImportFile;
-
 
 // import React, { useEffect, useState, useRef } from "react";
 // import { useNavigate } from "react-router-dom";
@@ -2884,9 +2882,9 @@
 //                 disableFuture={true}
 //                 rules={{ required: "Period is required" }}
 //               />
-              
+
 //               {/* Removed version name field */}
-              
+
 //               {fileUploadLoader ? (
 //                 <ProgressBar />
 //               ) : (
@@ -3112,7 +3110,6 @@
 // export { GlobalPollingManager };
 // export default ImportFile;
 
-
 import React, { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import * as XLSX from "xlsx";
@@ -3152,6 +3149,7 @@ import { useDropzone } from "react-dropzone";
 import { GridCloseIcon } from "@mui/x-data-grid";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import { useUploadCustomReportFile } from "../../../hooks/useFileUpalod";
+import DialogContainer from "../../molecule/dialog";
 
 // Global polling state that persists across components
 const globalPollingState = {
@@ -3472,6 +3470,7 @@ const FileDropzone: React.FC<FileDropzoneProps> = ({
               backgroundColor: STYLE_GUIDE.COLORS.primary,
             },
             transition: "background-color 0.2s ease",
+            height: "40px",
           }}
         >
           {buttonName}
@@ -3799,13 +3798,13 @@ const ImportFile: React.FC<ImportFileProps> = ({
     const versionValue = watch("versionValue");
     const formattedVersion = DateTime.fromISO(versionValue).toFormat("yyyy-LL");
     console.log("Formatted Version:", formattedVersion);
-          const randomSuffix = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+    const randomSuffix = Math.floor(Math.random() * 1000)
+      .toString()
+      .padStart(3, "0");
 
-    
     // Generate unique version name using timestamp
     // const uniqueVersionName = `version_${Date.now()}`;
-        const uniqueVersionName = `version_${Date.now()}_${randomSuffix}`;
-
+    const uniqueVersionName = `version_${Date.now()}_${randomSuffix}`;
 
     const payload = {
       dataSourceId: formData.dataSourceId,
@@ -3966,141 +3965,166 @@ const ImportFile: React.FC<ImportFileProps> = ({
       <Box onClick={() => setOpen(true)}>{CustomButton}</Box>
 
       {/* Main Import Dialog */}
-      <Dialog
+      <DialogContainer
         open={open}
         onClose={handleFormClose}
-        fullWidth
-        maxWidth="md"
-        sx={{
-          "& .MuiDialog-paper": {
-            width: "800px",
-            maxWidth: "800px",
-            position: "relative",
-          },
-        }}
+        title={title}
+        actions={
+          <>
+            {isLoadingReportUpload ? (
+              <ProgressBar />
+            ) : (
+              <Box>
+                <Button
+                  variant="outlined"
+                  onClick={handleCancel}
+                  sx={{
+                    borderRadius: "8px",
+                    marginRight: STYLE_GUIDE.SPACING.s2,
+                    borderColor: STYLE_GUIDE?.COLORS?.divider || "#e0e0e0",
+                    color: STYLE_GUIDE?.COLORS?.primaryDark || "#3f51b5",
+                  }}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  variant="contained"
+                  onClick={handleSubmit(onSubmit)}
+                  disabled={
+                    !isFormValid || fileUploadLoader || isLoadingReportUpload
+                  }
+                  sx={{
+                    borderRadius: "8px",
+                    backgroundColor:
+                      STYLE_GUIDE?.COLORS?.primaryDark || "#3f51b5",
+                    color: STYLE_GUIDE?.COLORS?.white || "#ffffff",
+                    "&:hover": {
+                      backgroundColor:
+                        STYLE_GUIDE?.COLORS?.primary || "#5c6bc0",
+                    },
+                    "&.Mui-disabled": {
+                      backgroundColor:
+                        STYLE_GUIDE?.COLORS?.disabled || "#cccccc",
+                      color: STYLE_GUIDE?.COLORS?.disabledText || "#666666",
+                    },
+                  }}
+                >
+                  Save
+                </Button>
+              </Box>
+            )}
+          </>
+        }
       >
-        <Typography
-          variant="h6"
-          sx={{
-            color: STYLE_GUIDE?.COLORS?.primaryDark || "#3f51b5",
-            paddingTop: STYLE_GUIDE.SPACING.s5,
-            paddingLeft: STYLE_GUIDE.SPACING.s5,
-          }}
-        >
-          {title}
-        </Typography>
-        <DialogContent>
-          <Box component="form" onSubmit={handleSubmit(onSubmit)} noValidate>
-            <Stack spacing={3}>
-              <CommonDatePicker
-                name={"versionValue"}
-                control={control}
-                views={["year", "month"]}
-                label="Period*"
-                disableFuture={true}
-                rules={{ required: "Period is required" }}
+        <Box component="form" onSubmit={handleSubmit(onSubmit)} noValidate>
+          <Stack spacing={3}>
+            <CommonDatePicker
+              name={"versionValue"}
+              control={control}
+              views={["year", "month"]}
+              label="Period*"
+              disableFuture={true}
+              rules={{ required: "Period is required" }}
+            />
+
+            {/* Removed version name field */}
+
+            {fileUploadLoader ? (
+              <ProgressBar />
+            ) : (
+              <FileDropzone
+                fileNames={fileNames}
+                onFileChange={handleFileChange}
+                onFileRemove={handleFileRemove}
+                buttonName={"Upload Files"}
               />
-              
-              {/* Removed version name field */}
-              
-              {fileUploadLoader ? (
-                <ProgressBar />
-              ) : (
-                <FileDropzone
-                  fileNames={fileNames}
-                  onFileChange={handleFileChange}
-                  onFileRemove={handleFileRemove}
-                  buttonName={"Upload Files"}
-                />
-              )}
-              {fileHeaders.length > 0 &&
-                settingAttribute.length > 0 &&
-                settingAttributeOption.length > 0 &&
-                !dataSourceDetails.isFetching && (
-                  <>
-                    <Typography
-                      variant="body2"
-                      sx={{ mt: 2, fontWeight: "bold" }}
-                    >
-                      Map file headers to entity attributes:
-                    </Typography>
-                    <Table>
-                      <TableHead>
-                        <TableRow>
-                          <TableCell
-                            sx={{
-                              backgroundColor:
-                                theme.palette.table?.headerBackground,
-                              color: theme.palette.table?.headerText,
-                              fontWeight: "medium",
-                            }}
-                          >
-                            Entity Setting Attribute
-                          </TableCell>
-                          <TableCell
-                            sx={{
-                              backgroundColor:
-                                theme.palette.table?.headerBackground,
-                              color: theme.palette.table?.headerText,
-                              fontWeight: "medium",
-                            }}
-                          >
-                            File Headers
-                          </TableCell>
-                        </TableRow>
-                      </TableHead>
-                      <TableBody>
-                        {settingAttributeOption.map((option, index) => {
-                          return (
-                            <TableRow key={index}>
-                              <TableCell>{option}</TableCell>
-                              <TableCell>
-                                <Controller
-                                  name={`mappings.${option}`}
-                                  control={control}
-                                  defaultValue={[]}
-                                  rules={{
-                                    required:
-                                      "Please select at least one header",
-                                  }}
-                                  render={({ field }) => (
-                                    <Autocomplete
-                                      {...field}
-                                      multiple
-                                      options={fileHeaders}
-                                      getOptionLabel={(option) => option}
-                                      renderTags={(value, getTagProps) =>
-                                        value.map((option, index) => (
-                                          <Chip
-                                            key={index}
-                                            variant="outlined"
-                                            label={option}
-                                            {...getTagProps({ index })}
-                                            size="small"
-                                          />
-                                        ))
-                                      }
-                                      renderInput={(params) => (
-                                        <TextField
-                                          {...params}
+            )}
+            {fileHeaders.length > 0 &&
+              settingAttribute.length > 0 &&
+              settingAttributeOption.length > 0 &&
+              !dataSourceDetails.isFetching && (
+                <>
+                  <Typography
+                    variant="body2"
+                    sx={{ mt: 2, fontWeight: "bold" }}
+                  >
+                    Map file headers to entity attributes:
+                  </Typography>
+                  <Table>
+                    <TableHead>
+                      <TableRow>
+                        <TableCell
+                          sx={{
+                            backgroundColor:
+                              theme.palette.table?.headerBackground,
+                            color: theme.palette.table?.headerText,
+                            fontWeight: "medium",
+                          }}
+                        >
+                          Entity Setting Attribute
+                        </TableCell>
+                        <TableCell
+                          sx={{
+                            backgroundColor:
+                              theme.palette.table?.headerBackground,
+                            color: theme.palette.table?.headerText,
+                            fontWeight: "medium",
+                          }}
+                        >
+                          File Headers
+                        </TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {settingAttributeOption.map((option, index) => {
+                        return (
+                          <TableRow key={index}>
+                            <TableCell>{option}</TableCell>
+                            <TableCell>
+                              <Controller
+                                name={`mappings.${option}`}
+                                control={control}
+                                defaultValue={[]}
+                                rules={{
+                                  required: "Please select at least one header",
+                                }}
+                                render={({ field }) => (
+                                  <Autocomplete
+                                    {...field}
+                                    multiple
+                                    options={fileHeaders}
+                                    getOptionLabel={(option) => option}
+                                    renderTags={(value, getTagProps) =>
+                                      value.map((option, index) => (
+                                        <Chip
+                                          key={index}
                                           variant="outlined"
-                                          label="Map to headers"
-                                          placeholder="Select headers"
-                                          error={!!errors.mappings?.[option]}
-                                          helperText={
-                                            errors.mappings?.[option]
-                                              ?.message ||
-                                            `Select one or more headers to map with ${option}`
-                                          }
+                                          label={option}
+                                          {...getTagProps({ index })}
+                                          size="small"
                                         />
-                                      )}
-                                      onChange={(_, data) => {
-                                        field.onChange(data);
-                                      }}
-                                    />
-                                  )}
-                                />
-                                {/* {!!watch(`mappings.${option}`)?.length &&
+                                      ))
+                                    }
+                                    renderInput={(params) => (
+                                      <TextField
+                                        {...params}
+                                        variant="outlined"
+                                        label="Map to headers"
+                                        placeholder="Select headers"
+                                        error={!!errors.mappings?.[option]}
+                                        helperText={
+                                          errors.mappings?.[option]?.message ||
+                                          `Select one or more headers to map with ${option}`
+                                        }
+                                      />
+                                    )}
+                                    onChange={(_, data) => {
+                                      field.onChange(data);
+                                    }}
+                                  />
+                                )}
+                              />
+                              {/* {!!watch(`mappings.${option}`)?.length &&
                                   settingAttribute.some(
                                     (attr) =>
                                       attr.name === option &&
@@ -4118,62 +4142,57 @@ const ImportFile: React.FC<ImportFileProps> = ({
                                       }
                                     />
                                   )} */}
-                              </TableCell>
-                            </TableRow>
-                          );
-                        })}
-                      </TableBody>
-                    </Table>
-                  </>
-                )}
-            </Stack>
-          </Box>
-        </DialogContent>
-        <DialogActions>
-          {isLoadingReportUpload ? (
-            <ProgressBar />
-          ) : (
-            <Box>
-              <Button
-                variant="outlined"
-                onClick={handleCancel}
-                sx={{
-                  borderRadius: "8px",
-                  marginRight: STYLE_GUIDE.SPACING.s2,
-                  borderColor: STYLE_GUIDE?.COLORS?.divider || "#e0e0e0",
-                  color: STYLE_GUIDE?.COLORS?.primaryDark || "#3f51b5",
-                }}
-              >
-                Cancel
-              </Button>
-              <Button
-                variant="contained"
-                onClick={handleSubmit(onSubmit)}
-                disabled={
-                  !isFormValid || fileUploadLoader || isLoadingReportUpload
-                }
-                sx={{
-                  borderRadius: "8px",
-                  backgroundColor:
-                    STYLE_GUIDE?.COLORS?.primaryDark || "#3f51b5",
-                  color: STYLE_GUIDE?.COLORS?.white || "#ffffff",
-                  "&:hover": {
-                    backgroundColor: STYLE_GUIDE?.COLORS?.primary || "#5c6bc0",
-                  },
-                  "&.Mui-disabled": {
-                    backgroundColor: STYLE_GUIDE?.COLORS?.disabled || "#cccccc",
-                    color: STYLE_GUIDE?.COLORS?.disabledText || "#666666",
-                  },
-                }}
-              >
-                Save
-              </Button>
-            </Box>
-          )}
-        </DialogActions>
-      </Dialog>
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
+                    </TableBody>
+                  </Table>
+                </>
+              )}
+          </Stack>
+        </Box>
+      </DialogContainer>
+
+      <DialogContainer
+        open={showProcessingDialog}
+        onClose={() => setShowProcessingDialog(false)}
+        title="Processing Your Files"
+        actions={
+          <Button
+            variant="contained"
+            onClick={() => setShowProcessingDialog(false)}
+            sx={{
+              borderRadius: STYLE_GUIDE.SPACING.s1,
+              fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.medium,
+            }}
+          >
+            Close
+          </Button>
+        }
+      >
+        <Box
+          display="flex"
+          flexDirection="column"
+          alignItems="center"
+          justifyContent="center"
+          gap={STYLE_GUIDE.SPACING.s3}
+          textAlign="center"
+        >
+          <CircularProgress size={60} thickness={4} />
+          <Typography variant="h6" fontWeight="bold">
+            Processing Your Files
+          </Typography>
+          <Typography variant="body1">
+            Your files have been uploaded and are now in the processing queue.
+            You may close this message and continue using the platform. Once the
+            processing is complete, you will be notified!
+          </Typography>
+        </Box>
+      </DialogContainer>
+
       {/* Processing Status Dialog */}
-      <Dialog
+      {/* <Dialog
         open={showProcessingDialog}
         onClose={() => setShowProcessingDialog(false)}
         fullWidth
@@ -4219,7 +4238,7 @@ const ImportFile: React.FC<ImportFileProps> = ({
             Close
           </Button>
         </DialogActions>
-      </Dialog>
+      </Dialog> */}
     </div>
   );
 };
