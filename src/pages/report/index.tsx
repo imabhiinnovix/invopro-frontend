@@ -25,6 +25,7 @@ import { GET } from "../../services/apiRoutes";
 import { useUnifiedTheme } from "../../hooks/useUnifiedTheme";
 import { useComponentTypography } from "../../hooks/useComponentTypography";
 import useFileDownload from "../../hooks/useFiledownload";
+import PrimaryButton from "../../components/common/PrimaryButton";
 
 export default function Report() {
   const theme = useUnifiedTheme();
@@ -148,21 +149,31 @@ export default function Report() {
       <Box ref={headerRef}>
         {viewReportRequestId && viewReportRequestId.length > 0 ? (
           <>
-            <Box
-              sx={{
-                cursor: "pointer",
-                color: theme.palette.text.primary,
-                "&:hover": {
-                  backgroundColor: theme.palette.action.hover,
-                  color: theme.palette.primary.main,
-                },
-              }}
+            <PrimaryButton
+              icon={<ArrowBackIcon fontSize="medium" />}
               onClick={() => {
                 setViewReportRequestId("");
               }}
+              variant="outlined"
+              sx={{ mb: 3 }}
             >
-              <ArrowBackIcon fontSize="medium" />
-            </Box>
+              Back
+            </PrimaryButton>
+            {/* <Box
+                sx={{
+                  cursor: "pointer",
+                  color: theme.palette.text.primary,
+                  "&:hover": {
+                    backgroundColor: theme.palette.action.hover,
+                    color: theme.palette.primary.main,
+                  },
+                }}
+                onClick={() => {
+                  setViewReportRequestId("");
+                }}
+              >
+                <ArrowBackIcon fontSize="medium" />
+              </Box> */}
             <ReportSelection
               defaultReport={{
                 _id: allDetailData?.customReportId?._id || "",
@@ -183,7 +194,8 @@ export default function Report() {
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "space-between",
-                p: 2,
+                // p: 2,
+                py: 2,
               }}
             >
               <Box
@@ -198,6 +210,7 @@ export default function Report() {
                   sx={{
                     fontWeight: 500,
                     color: "text.primary",
+                    fontSize: "16px",
                   }}
                 >
                   <Box component="span" fontWeight="bold">

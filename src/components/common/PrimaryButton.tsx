@@ -13,16 +13,16 @@ export default function PrimaryButton({
   onClick: () => void;
   sx?: SxProps<Theme>;
   children: React.ReactNode;
-  rest?: ButtonProps;
-}) {
+  rest?: Omit<ButtonProps, "children" | "onClick" | "sx">;
+} & Omit<ButtonProps, "children" | "onClick" | "sx">) {
   const { getButtonSx } = useComponentTypography();
   const buttonSx = {
     ...getButtonSx(),
-    backgroundColor: STYLE_GUIDE.COLORS.primary,
-    color: STYLE_GUIDE.COLORS.white,
-    "&:hover": {
-      backgroundColor: STYLE_GUIDE.COLORS.primaryDark,
-    },
+    // backgroundColor: STYLE_GUIDE.COLORS.primary,
+    // color: STYLE_GUIDE.COLORS.white,
+    // "&:hover": {
+    //   backgroundColor: STYLE_GUIDE.COLORS.primaryDark,
+    // },
     height: 40,
     borderRadius: STYLE_GUIDE.SPACING.s2,
     textTransform: "none",
