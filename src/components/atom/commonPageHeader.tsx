@@ -23,6 +23,7 @@ export default function CommonPageHeader({
         backgroundColor: theme.palette.background.paper,
         // borderBottom: "1px solid",
         borderColor: STYLE_GUIDE.COLORS.divider,
+        mb: 4,
       }}
     >
       <Typography

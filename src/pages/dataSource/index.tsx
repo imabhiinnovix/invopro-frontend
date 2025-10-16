@@ -28,7 +28,7 @@ export default function DataSource() {
           />
         }
       />
-      <Box sx={{ mt: 4 }}>
+      <Box>
         <DataSourceTable reload={reload} setReload={setReload} />
       </Box>
     </Box>

@@ -42,6 +42,10 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { STYLE_GUIDE } from "../../styles";
 import { useComponentTypography } from "../../hooks";
+import CommonPageHeader from "../../components/atom/commonPageHeader";
+import PrimaryButton from "../../components/common/PrimaryButton";
+import SearchField from "../../components/common/SearchField";
+import DialogContainer from "../../components/molecule/dialog";
 
 interface NotificationType {
   _id: string;
@@ -201,7 +205,15 @@ export default function NotificationTypes() {
       filterValues.organizationId,
       filterValues.status,
     ],
-    `${GET.NOTIFICATION_TYPE_LIST}?page=${paginationModel.page + 1}&limit=${perPageItem}&search=${encodeURIComponent(debouncedSearchValue)}&name=${encodeURIComponent(filterValues.name)}&organizationId=${encodeURIComponent(filterValues.organizationId)}&status=${encodeURIComponent(filterValues.status)}`,
+    `${GET.NOTIFICATION_TYPE_LIST}?page=${
+      paginationModel.page + 1
+    }&limit=${perPageItem}&search=${encodeURIComponent(
+      debouncedSearchValue
+    )}&name=${encodeURIComponent(
+      filterValues.name
+    )}&organizationId=${encodeURIComponent(
+      filterValues.organizationId
+    )}&status=${encodeURIComponent(filterValues.status)}`,
     true
   );
 
@@ -324,8 +336,20 @@ export default function NotificationTypes() {
   };
 
   return (
-    <Box sx={{ flexGrow: 1, p: 3, ml: { xs: 0 }, minHeight: "100vh" }}>
-      <Typography
+    <Box sx={{ p: STYLE_GUIDE.SPACING.s2 }}>
+      <CommonPageHeader
+        title="Notification Types"
+        actions={
+          <PrimaryButton
+            variant="contained"
+            startIcon={<AddIcon />}
+            onClick={handleAddNotificationType}
+          >
+            Add Notification Type
+          </PrimaryButton>
+        }
+      />
+      {/* <Typography
         variant="h4"
         sx={{
           ...getHeadingSx(),
@@ -333,7 +357,7 @@ export default function NotificationTypes() {
         }}
       >
         Notification Types
-      </Typography>
+      </Typography> */}
       <Card sx={{ borderRadius: "8px", overflow: "visible" }}>
         <CardContent sx={{ p: STYLE_GUIDE.SPACING.s3 }}>
           <Box
@@ -344,23 +368,9 @@ export default function NotificationTypes() {
               mb: STYLE_GUIDE.SPACING.s3,
             }}
           >
-            <TextField
-              placeholder="Search ..."
-              variant="outlined"
-              size="small"
-              value={searchValue}
-              onChange={handleSearchChange}
-              sx={{
-                width: "300px",
-                "& .MuiOutlinedInput-root": { borderRadius: "8px" },
-              }}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <SearchIcon />
-                  </InputAdornment>
-                ),
-              }}
+            <SearchField
+              searchValue={searchValue}
+              handleSearchChange={handleSearchChange}
             />
             <Box sx={{ display: "flex", gap: 1 }}>
               <Button
@@ -371,14 +381,14 @@ export default function NotificationTypes() {
               >
                 Filter
               </Button>
-              <Button
+              {/* <Button
                 variant="contained"
                 startIcon={<AddIcon />}
                 onClick={handleAddNotificationType}
                 sx={{ borderRadius: "8px" }}
               >
                 Add
-              </Button>
+              </Button> */}
             </Box>
           </Box>
           <DataGrid
@@ -392,7 +402,7 @@ export default function NotificationTypes() {
             initialState={{ pagination: { paginationModel } }}
             disableColumnMenu
             paginationMode="server"
-            sx={{ overflow: "visible" }}
+            sx={{ overflow: "visible", height: "calc(100vh - 280px)" }}
             loading={
               notificationTypeList.isLoading || deleteNotificationType.isLoading
             }
@@ -413,154 +423,131 @@ export default function NotificationTypes() {
           />
         </CardContent>
       </Card>
-      <Modal
+      <DialogContainer
         open={openModal}
         onClose={handleCloseModal}
-        sx={{ display: "flex", alignItems: "center", justifyContent: "center" }}
-      >
-        <Box
-          sx={{
-            backgroundColor: theme.palette.background.paper,
-            borderRadius: "8px",
-            boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.2)",
-            p: 3,
-            width: "800px",
-            maxWidth: "90%",
-            maxHeight: "80vh",
-            overflowY: "auto",
-          }}
-        >
-          <Typography variant="h6" sx={{ mb: 2 }}>
-            Filter Notification Types
-          </Typography>
-          <form onSubmit={handleSubmit(onSubmit)}>
-            <Grid container spacing={2}>
-              <Grid item xs={12}>
-                <Controller
-                  name="name"
-                  control={control}
-                  render={({ field }) => (
-                    <TextField
-                      {...field}
-                      label="Name"
-                      placeholder="Enter notification type name"
-                      variant="outlined"
-                      fullWidth
-                      sx={{
-                        "& .MuiOutlinedInput-root": { borderRadius: "8px" },
-                      }}
-                    />
-                  )}
-                />
-              </Grid>
-              <Grid item xs={12}>
-                <Controller
-                  name="organizationId"
-                  control={control}
-                  render={({ field }) => (
-                    <TextField
-                      {...field}
-                      label="Organization ID"
-                      variant="outlined"
-                      fullWidth
-                      sx={{
-                        "& .MuiOutlinedInput-root": { borderRadius: "8px" },
-                      }}
-                    />
-                  )}
-                />
-              </Grid>
-              <Grid item xs={12}>
-                <Controller
-                  name="status"
-                  control={control}
-                  render={({ field }) => (
-                    <FormControl
-                      fullWidth
-                      sx={{
-                        "& .MuiOutlinedInput-root": { borderRadius: "8px" },
-                      }}
-                    >
-                      <InputLabel>Status</InputLabel>
-                      <Select
-                        {...field}
-                        label="Status"
-                        onChange={(e) =>
-                          field.onChange(
-                            e.target.value === "" ? undefined : e.target.value
-                          )
-                        }
-                      >
-                        <MenuItem value="">All</MenuItem>
-                        <MenuItem value="active">Active</MenuItem>
-                        <MenuItem value="inactive">Inactive</MenuItem>
-                      </Select>
-                    </FormControl>
-                  )}
-                />
-              </Grid>
-            </Grid>
-            <Box
-              sx={{
-                display: "flex",
-                justifyContent: "flex-end",
-                gap: 1,
-                mt: 3,
-              }}
+        title="Filter Notification Types"
+        actions={
+          <>
+            <Button
+              variant="outlined"
+              onClick={handleResetFilter}
+              sx={{ borderRadius: "8px" }}
             >
-              <Button
+              Reset
+            </Button>
+            <Button
+              variant="outlined"
+              onClick={handleCloseModal}
+              sx={{ borderRadius: "8px" }}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              variant="contained"
+              sx={{ borderRadius: "8px" }}
+              disabled={
+                !filterValues.name &&
+                !filterValues.organizationId &&
+                !filterValues.status
+              }
+            >
+              Apply
+            </Button>
+          </>
+        }
+      >
+        <form onSubmit={handleSubmit(onSubmit)}>
+          <Controller
+            name="name"
+            control={control}
+            render={({ field }) => (
+              <TextField
+                {...field}
+                label="Name"
+                placeholder="Enter notification type name"
                 variant="outlined"
-                onClick={handleResetFilter}
-                sx={{ borderRadius: "8px" }}
-              >
-                Reset
-              </Button>
-              <Button
+                fullWidth
+                sx={{
+                  "& .MuiOutlinedInput-root": { borderRadius: "8px" },
+                }}
+              />
+            )}
+          />
+
+          <Controller
+            name="organizationId"
+            control={control}
+            render={({ field }) => (
+              <TextField
+                {...field}
+                label="Organization ID"
                 variant="outlined"
-                onClick={handleCloseModal}
-                sx={{ borderRadius: "8px" }}
+                fullWidth
+                sx={{
+                  "& .MuiOutlinedInput-root": { borderRadius: "8px" },
+                }}
+              />
+            )}
+          />
+
+          <Controller
+            name="status"
+            control={control}
+            render={({ field }) => (
+              <FormControl
+                fullWidth
+                sx={{
+                  "& .MuiOutlinedInput-root": { borderRadius: "8px" },
+                }}
               >
-                Cancel
-              </Button>
-              <Button
-                type="submit"
-                variant="contained"
-                sx={{ borderRadius: "8px" }}
-                disabled={
-                  !filterValues.name &&
-                  !filterValues.organizationId &&
-                  !filterValues.status
-                }
-              >
-                Apply
-              </Button>
-            </Box>
-          </form>
-        </Box>
-      </Modal>
-      <Dialog
+                <InputLabel>Status</InputLabel>
+                <Select
+                  {...field}
+                  label="Status"
+                  onChange={(e) =>
+                    field.onChange(
+                      e.target.value === "" ? undefined : e.target.value
+                    )
+                  }
+                >
+                  <MenuItem value="">All</MenuItem>
+                  <MenuItem value="active">Active</MenuItem>
+                  <MenuItem value="inactive">Inactive</MenuItem>
+                </Select>
+              </FormControl>
+            )}
+          />
+        </form>
+      </DialogContainer>
+      <DialogContainer
         open={openDialog}
         onClose={handleCloseDialog}
-        sx={{ "& .MuiDialog-paper": { borderRadius: "8px" } }}
+        title="Confirm Delete"
+        actions={
+          <>
+            <Button
+              onClick={handleCloseDialog}
+              sx={{ borderRadius: "8px" }}
+              variant="outlined"
+            >
+              No
+            </Button>
+            <Button
+              onClick={handleConfirmDelete}
+              variant="contained"
+              color="error"
+              sx={{ borderRadius: "8px" }}
+              disabled={deleteNotificationType.isLoading}
+            >
+              Yes
+            </Button>
+          </>
+        }
       >
-        <DialogTitle>Confirm Delete</DialogTitle>
-        <DialogContent>
-          <Typography>Are you sure you want to delete this?</Typography>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseDialog} sx={{ borderRadius: "8px" }}>
-            No
-          </Button>
-          <Button
-            onClick={handleConfirmDelete}
-            color="error"
-            sx={{ borderRadius: "8px" }}
-            disabled={deleteNotificationType.isLoading}
-          >
-            Yes
-          </Button>
-        </DialogActions>
-      </Dialog>
+        <Typography>Are you sure you want to delete this?</Typography>
+      </DialogContainer>
     </Box>
   );
 }
