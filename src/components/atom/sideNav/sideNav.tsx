@@ -9,7 +9,7 @@ import ListItemText from "@mui/material/ListItemText";
 import { useNav } from "../../../context/NavContext";
 import LayersIcon from "@mui/icons-material/Layers";
 import NotificationsIcon from "@mui/icons-material/Notifications";
-// import ManageAccountsIcon from "@mui/icons-material/ManageAccounts";
+import ArticleIcon from "@mui/icons-material/Article";
 import AddIcon from "@mui/icons-material/Add";
 import React, { useEffect, useMemo, useContext, useState } from "react";
 import { Collapse, LinearProgress, Tooltip } from "@mui/material";
@@ -472,7 +472,7 @@ export default function SideNav() {
     };
     const Template = {
       name: "Templates",
-      icon: createIcon(NotificationsIcon, "/template"),
+      icon: createIcon(ArticleIcon, "/template"),
       route: "/template",
     };
     const loadingIndicator =

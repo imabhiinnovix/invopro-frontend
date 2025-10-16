@@ -139,7 +139,10 @@ export default function Frequency({ fieldOptions, notificationTypeId }) {
 
   // Reset form fields
   const resetFormFields = () => {
-    setSelectedDate(new Date());
+    // setSelectedDate(new Date());
+    const now = new Date();
+    setSelectedDate(now);
+    setCalendarDate(new Date(now.getFullYear(), now.getMonth(), 1));
     setSelectedTime(() => {
       const now = new Date();
       let hours = now.getHours();
@@ -344,8 +347,15 @@ export default function Frequency({ fieldOptions, notificationTypeId }) {
   const handleEditReminder = (row) => {
     setModalType("edit");
     setSelectedReminder(row);
+    // if (row.schedulerStartDate) {
+    //   setSelectedDate(new Date(row.schedulerStartDate));
+    // }
     if (row.schedulerStartDate) {
-      setSelectedDate(new Date(row.schedulerStartDate));
+      const startDate = new Date(row.schedulerStartDate);
+      setSelectedDate(startDate);
+      setCalendarDate(
+        new Date(startDate.getFullYear(), startDate.getMonth(), 1)
+      ); // Add this line
     }
     if (row.triggerTime) {
       setSelectedTime(row.triggerTime);
@@ -355,7 +365,12 @@ export default function Frequency({ fieldOptions, notificationTypeId }) {
         row,
         new Date(row.schedulerStartDate)
       );
-      if (row.frequency === "daily" && row.interval === 1 && !row.maxOccurrences && !row.schedulerEndDate) {
+      if (
+        row.frequency === "daily" &&
+        row.interval === 1 &&
+        !row.maxOccurrences &&
+        !row.schedulerEndDate
+      ) {
         uiFrequency = "Daily";
       }
       setRepeatOption(uiFrequency);
@@ -554,7 +569,14 @@ export default function Frequency({ fieldOptions, notificationTypeId }) {
   };
 
   const getGeneratedCalendarDays = () => {
-    return generateCalendarDays(calendarDate, selectedDate, setDatePickerOpen);
+    return generateCalendarDays(
+      calendarDate,
+      selectedDate,
+      setSelectedDate,
+      setDatePickerOpen
+    );
+
+    // return generateCalendarDays(calendarDate, selectedDate, setDatePickerOpen);
   };
 
   const getRepeatOptions = () => {
@@ -642,50 +664,52 @@ export default function Frequency({ fieldOptions, notificationTypeId }) {
   const handleOpenDialog = () => {
     resetFormFields();
     setOpen(true);
+    const today = new Date();
+    setCalendarDate(new Date(today.getFullYear(), today.getMonth(), 1));
     setModalType("add");
   };
 
   const handleClose = () => setOpen(false);
 
-// Frequency.tsx - Fix for formatDateForAPI function
+  // Frequency.tsx - Fix for formatDateForAPI function
 
-const formatDateForAPI = (date) => {
-  // Check if date is already a Date object
-  if (date instanceof Date) {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const day = String(date.getDate()).padStart(2, "0");
-    return `${year}-${month}-${day}`;
-  }
-
-  // If it's a string, try to convert it to a Date object
-  if (typeof date === 'string') {
-    const dateObj = new Date(date);
-    // Check if the conversion resulted in a valid date
-    if (!isNaN(dateObj.getTime())) {
-      const year = dateObj.getFullYear();
-      const month = String(dateObj.getMonth() + 1).padStart(2, "0");
-      const day = String(dateObj.getDate()).padStart(2, "0");
+  const formatDateForAPI = (date) => {
+    // Check if date is already a Date object
+    if (date instanceof Date) {
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, "0");
+      const day = String(date.getDate()).padStart(2, "0");
       return `${year}-${month}-${day}`;
     }
-  }
 
-  // If it's a timestamp (number), convert it to a Date object
-  if (typeof date === 'number') {
-    const dateObj = new Date(date);
-    // Check if the conversion resulted in a valid date
-    if (!isNaN(dateObj.getTime())) {
-      const year = dateObj.getFullYear();
-      const month = String(dateObj.getMonth() + 1).padStart(2, "0");
-      const day = String(dateObj.getDate()).padStart(2, "0");
-      return `${year}-${month}-${day}`;
+    // If it's a string, try to convert it to a Date object
+    if (typeof date === "string") {
+      const dateObj = new Date(date);
+      // Check if the conversion resulted in a valid date
+      if (!isNaN(dateObj.getTime())) {
+        const year = dateObj.getFullYear();
+        const month = String(dateObj.getMonth() + 1).padStart(2, "0");
+        const day = String(dateObj.getDate()).padStart(2, "0");
+        return `${year}-${month}-${day}`;
+      }
     }
-  }
 
-  // If we can't convert it to a valid date, return a fallback or throw an error
-  console.error("Invalid date provided to formatDateForAPI:", date);
-  return ""; // Default fallback date
-};
+    // If it's a timestamp (number), convert it to a Date object
+    if (typeof date === "number") {
+      const dateObj = new Date(date);
+      // Check if the conversion resulted in a valid date
+      if (!isNaN(dateObj.getTime())) {
+        const year = dateObj.getFullYear();
+        const month = String(dateObj.getMonth() + 1).padStart(2, "0");
+        const day = String(dateObj.getDate()).padStart(2, "0");
+        return `${year}-${month}-${day}`;
+      }
+    }
+
+    // If we can't convert it to a valid date, return a fallback or throw an error
+    console.error("Invalid date provided to formatDateForAPI:", date);
+    return ""; // Default fallback date
+  };
 
   const formatRecipients = (recipients) => {
     const result = [];
@@ -734,367 +758,202 @@ const formatDateForAPI = (date) => {
     }
   };
 
-//   const generatePayload = () => {
-//     const formattedToRecipients = formatRecipients(toRecipients);
-//     const formattedCcRecipients = formatRecipients(ccRecipients);
-//     const formattedAcknowledgeTo = formatRecipients(acknowledgeTo);
-//     const formattedTargetEntity = formatTargetEntity(targetEntity);
-//     const payload = {
-//       notificationTypeId,
-//       frequency: transformUIToAPIFrequency(repeatOption),
-//       schedulerStartDate: formatDateForAPI(selectedDate),
-//       interval: repeatEvery,
-//       repeatAnnually: false,
-//       attachmentRequired,
-//       recipients_to: formattedToRecipients,
-//       recipients_cc: formattedCcRecipients,
-//       medium: method,
-//       templateId: template,
-//       triggerTime: selectedTime,
-//       isActive: "active",
-//       schedulerEndDate: endDate ? formatDateForAPI(endDate) : null,
-//       maxOccurrences: occurrences,
-//     };
-//     if (formattedAcknowledgeTo.length > 0) {
-//       payload.acknowledge_to = formattedAcknowledgeTo;
-//     }
-//     if (formattedTargetEntity) {
-//       payload.targetEntity = formattedTargetEntity;
-//     }
-//     if (repeatOption === "Do not repeat") {
-//       return payload;
-//     } else if (repeatOption === "Daily") {
-//       return payload;
-//     } else if (repeatOption.startsWith("Weekly on")) {
-//       const dayName = repeatOption.replace("Weekly on ", "").split(" and ")[0];
-//       const dayNameToIndex = (dayName) => {
-//         const days = [
-//           "Sunday",
-//           "Monday",
-//           "Tuesday",
-//           "Wednesday",
-//           "Thursday",
-//           "Friday",
-//           "Saturday",
-//         ];
-//         return days.indexOf(dayName);
-//       };
-//       payload.daysOfWeek = [dayNameToIndex(dayName)];
-//     } else if (repeatOption === "Every weekday (Monday to Friday)") {
-//       payload.daysOfWeek = [1, 2, 3, 4, 5];
-//     } else if (repeatOption.startsWith("Monthly on day")) {
-//       const dayNumber = parseInt(repeatOption.replace("Monthly on day ", ""));
-//       payload.dayOfMonth = [dayNumber];
-//     } else if (repeatOption.startsWith("Monthly on the")) {
-//       const parts = repeatOption.replace("Monthly on the ", "").split(" ");
-//       const occurrence = parts[0];
-//       const weekday = parts.slice(1).join(" ");
-//       const occurrenceWordToNumber = (occurrence) => {
-//         const map = {
-//           first: 1,
-//           second: 2,
-//           third: 3,
-//           fourth: 4,
-//           fifth: 5,
-//           last: 5,
-//         };
-//         return map[occurrence] || 1;
-//       };
-//       const dayNameToIndex = (dayName) => {
-//         const days = [
-//           "Sunday",
-//           "Monday",
-//           "Tuesday",
-//           "Wednesday",
-//           "Thursday",
-//           "Friday",
-//           "Saturday",
-//         ];
-//         return days.indexOf(dayName);
-//       };
-//       payload.weekOfMonth = [occurrenceWordToNumber(occurrence)];
-//       payload.dayOfWeekInMonth = dayNameToIndex(weekday);
-//     } else if (repeatOption.startsWith("Annually on")) {
-//       const parts = repeatOption.replace("Annually on ", "").split(" ");
-//       const monthName = parts[0];
-//       const dayNumber = parseInt(parts[1]);
-//       const monthNames = [
-//         "January",
-//         "February",
-//         "March",
-//         "April",
-//         "May",
-//         "June",
-//         "July",
-//         "August",
-//         "September",
-//         "October",
-//         "November",
-//         "December",
-//       ];
-//       payload.monthOfYear = monthNames.indexOf(monthName) + 1;
-//       payload.dayOfYearMonth = dayNumber;
-//     }
-//     if (isCustomRecurrence) {
-//       if (repeatPeriod === "day") {
-//         payload.frequency = "daily";
-//       } else if (repeatPeriod === "week") {
-//         payload.frequency = "weekly";
-//         const daysArray = [];
-//         if (Array.isArray(selectedDays) && selectedDays.length === 7) {
-//           if (selectedDays[0]) daysArray.push(0);
-//           if (selectedDays[1]) daysArray.push(1);
-//           if (selectedDays[2]) daysArray.push(2);
-//           if (selectedDays[3]) daysArray.push(3);
-//           if (selectedDays[4]) daysArray.push(4);
-//           if (selectedDays[5]) daysArray.push(5);
-//           if (selectedDays[6]) daysArray.push(6);
-//         }
-//         if (daysArray.length === 0) {
-//           daysArray.push(selectedDate.getDay());
-//         }
-//         payload.daysOfWeek = daysArray;
-//       } else if (repeatPeriod === "month") {
-//         payload.frequency = "monthly";
-//         if (monthlyOption && monthlyOption.startsWith("Monthly on day")) {
-//           const dayNumber = parseInt(monthlyOption.split(" ").pop());
-//           payload.dayOfMonth = [dayNumber];
-//         } else if (
-//           monthlyOption &&
-//           monthlyOption.startsWith("Monthly on the")
-//         ) {
-//           const parts = monthlyOption.replace("Monthly on the ", "").split(" ");
-//           const occurrence = parts[0];
-//           const weekday = parts.slice(1).join(" ");
-//           const occurrenceWordToNumber = (occurrence) => {
-//             const map = {
-//               first: 1,
-//               second: 2,
-//               third: 3,
-//               fourth: 4,
-//               fifth: 5,
-//               last: 5,
-//             };
-//             return map[occurrence] || 1;
-//           };
-//           const dayNameToIndex = (dayName) => {
-//             const days = [
-//               "Sunday",
-//               "Monday",
-//               "Tuesday",
-//               "Wednesday",
-//               "Thursday",
-//               "Friday",
-//               "Saturday",
-//             ];
-//             return days.indexOf(dayName);
-//           };
-//           payload.weekOfMonth = [occurrenceWordToNumber(occurrence)];
-//           payload.dayOfWeekInMonth = dayNameToIndex(weekday);
-//         }
-//       } else if (repeatPeriod === "year") {
-//         payload.frequency = "yearly";
-//         if (yearlyOption === "same-day") {
-//           payload.monthOfYear = selectedDate.getMonth() + 1;
-//           payload.dayOfYearMonth = selectedDate.getDate();
-//         }
-//       }
-//       if (endsOption === "on") {
-//         payload.schedulerEndDate = endDate ? formatDateForAPI(endDate) : null;
-//       } else if (endsOption === "after") {
-//         payload.maxOccurrences = occurrences;
-//       }
-//     }
-//     return payload;
-//   };
+  // Frequency.tsx - Fix for generatePayload function
 
-// Frequency.tsx - Fix for generatePayload function
+  const generatePayload = () => {
+    const formattedToRecipients = formatRecipients(toRecipients);
+    const formattedCcRecipients = formatRecipients(ccRecipients);
+    const formattedAcknowledgeTo = formatRecipients(acknowledgeTo);
+    const formattedTargetEntity = formatTargetEntity(targetEntity);
 
-const generatePayload = () => {
-  const formattedToRecipients = formatRecipients(toRecipients);
-  const formattedCcRecipients = formatRecipients(ccRecipients);
-  const formattedAcknowledgeTo = formatRecipients(acknowledgeTo);
-  const formattedTargetEntity = formatTargetEntity(targetEntity);
+    // Ensure selectedDate is a Date object
+    const startDate =
+      selectedDate instanceof Date ? selectedDate : new Date(selectedDate);
 
-  // Ensure selectedDate is a Date object
-  const startDate = selectedDate instanceof Date ? selectedDate : new Date(selectedDate);
+    // Ensure endDate is a Date object if it exists
+    const formattedEndDate = endDate
+      ? endDate instanceof Date
+        ? endDate
+        : new Date(endDate)
+      : null;
 
-  // Ensure endDate is a Date object if it exists
-  const formattedEndDate = endDate ? (endDate instanceof Date ? endDate : new Date(endDate)) : null;
-
-  const payload = {
-    notificationTypeId,
-    frequency: transformUIToAPIFrequency(repeatOption),
-    schedulerStartDate: formatDateForAPI(startDate),
-    interval: repeatEvery,
-    repeatAnnually: false,
-    attachmentRequired,
-    recipients_to: formattedToRecipients,
-    recipients_cc: formattedCcRecipients,
-    medium: method,
-    templateId: template,
-    triggerTime: selectedTime,
-    isActive: "active",
-    schedulerEndDate: formattedEndDate ? formatDateForAPI(formattedEndDate) : null,
-    maxOccurrences: occurrences,
-  };
-
-  if (formattedAcknowledgeTo.length > 0) {
-    payload.acknowledge_to = formattedAcknowledgeTo;
-  }
-  if (formattedTargetEntity) {
-    payload.targetEntity = formattedTargetEntity;
-  }
-
-  if (repeatOption === "Do not repeat") {
-    return payload;
-  } else if (repeatOption === "Daily") {
-    return payload;
-  } else if (repeatOption.startsWith("Weekly on")) {
-    const dayName = repeatOption.replace("Weekly on ", "").split(" and ")[0];
-    const dayNameToIndex = (dayName) => {
-      const days = [
-        "Sunday",
-        "Monday",
-        "Tuesday",
-        "Wednesday",
-        "Thursday",
-        "Friday",
-        "Saturday",
-      ];
-      return days.indexOf(dayName);
+    const payload = {
+      notificationTypeId,
+      frequency: transformUIToAPIFrequency(repeatOption),
+      schedulerStartDate: formatDateForAPI(startDate),
+      interval: repeatEvery,
+      repeatAnnually: false,
+      attachmentRequired,
+      recipients_to: formattedToRecipients,
+      recipients_cc: formattedCcRecipients,
+      medium: method,
+      templateId: template,
+      triggerTime: selectedTime,
+      isActive: "active",
+      schedulerEndDate: formattedEndDate
+        ? formatDateForAPI(formattedEndDate)
+        : null,
+      maxOccurrences: occurrences,
     };
-    payload.daysOfWeek = [dayNameToIndex(dayName)];
-  } else if (repeatOption === "Every weekday (Monday to Friday)") {
-    payload.daysOfWeek = [1, 2, 3, 4, 5];
-  } else if (repeatOption.startsWith("Monthly on day")) {
-    const dayNumber = parseInt(repeatOption.replace("Monthly on day ", ""));
-    payload.dayOfMonth = [dayNumber];
-  } else if (repeatOption.startsWith("Monthly on the")) {
-    const parts = repeatOption.replace("Monthly on the ", "").split(" ");
-    const occurrence = parts[0];
-    const weekday = parts.slice(1).join(" ");
-    const occurrenceWordToNumber = (occurrence) => {
-      const map = {
-        first: 1,
-        second: 2,
-        third: 3,
-        fourth: 4,
-        fifth: 5,
-        last: 5,
+
+    if (formattedAcknowledgeTo.length > 0) {
+      payload.acknowledge_to = formattedAcknowledgeTo;
+    }
+    if (formattedTargetEntity) {
+      payload.targetEntity = formattedTargetEntity;
+    }
+
+    if (repeatOption === "Do not repeat") {
+      return payload;
+    } else if (repeatOption === "Daily") {
+      return payload;
+    } else if (repeatOption.startsWith("Weekly on")) {
+      const dayName = repeatOption.replace("Weekly on ", "").split(" and ")[0];
+      const dayNameToIndex = (dayName) => {
+        const days = [
+          "Sunday",
+          "Monday",
+          "Tuesday",
+          "Wednesday",
+          "Thursday",
+          "Friday",
+          "Saturday",
+        ];
+        return days.indexOf(dayName);
       };
-      return map[occurrence] || 1;
-    };
-    const dayNameToIndex = (dayName) => {
-      const days = [
-        "Sunday",
-        "Monday",
-        "Tuesday",
-        "Wednesday",
-        "Thursday",
-        "Friday",
-        "Saturday",
+      payload.daysOfWeek = [dayNameToIndex(dayName)];
+    } else if (repeatOption === "Every weekday (Monday to Friday)") {
+      payload.daysOfWeek = [1, 2, 3, 4, 5];
+    } else if (repeatOption.startsWith("Monthly on day")) {
+      const dayNumber = parseInt(repeatOption.replace("Monthly on day ", ""));
+      payload.dayOfMonth = [dayNumber];
+    } else if (repeatOption.startsWith("Monthly on the")) {
+      const parts = repeatOption.replace("Monthly on the ", "").split(" ");
+      const occurrence = parts[0];
+      const weekday = parts.slice(1).join(" ");
+      const occurrenceWordToNumber = (occurrence) => {
+        const map = {
+          first: 1,
+          second: 2,
+          third: 3,
+          fourth: 4,
+          fifth: 5,
+          last: 5,
+        };
+        return map[occurrence] || 1;
+      };
+      const dayNameToIndex = (dayName) => {
+        const days = [
+          "Sunday",
+          "Monday",
+          "Tuesday",
+          "Wednesday",
+          "Thursday",
+          "Friday",
+          "Saturday",
+        ];
+        return days.indexOf(dayName);
+      };
+      payload.weekOfMonth = [occurrenceWordToNumber(occurrence)];
+      payload.dayOfWeekInMonth = dayNameToIndex(weekday);
+    } else if (repeatOption.startsWith("Annually on")) {
+      const parts = repeatOption.replace("Annually on ", "").split(" ");
+      const monthName = parts[0];
+      const dayNumber = parseInt(parts[1]);
+      const monthNames = [
+        "January",
+        "February",
+        "March",
+        "April",
+        "May",
+        "June",
+        "July",
+        "August",
+        "September",
+        "October",
+        "November",
+        "December",
       ];
-      return days.indexOf(dayName);
-    };
-    payload.weekOfMonth = [occurrenceWordToNumber(occurrence)];
-    payload.dayOfWeekInMonth = dayNameToIndex(weekday);
-  } else if (repeatOption.startsWith("Annually on")) {
-    const parts = repeatOption.replace("Annually on ", "").split(" ");
-    const monthName = parts[0];
-    const dayNumber = parseInt(parts[1]);
-    const monthNames = [
-      "January",
-      "February",
-      "March",
-      "April",
-      "May",
-      "June",
-      "July",
-      "August",
-      "September",
-      "October",
-      "November",
-      "December",
-    ];
-    payload.monthOfYear = monthNames.indexOf(monthName) + 1;
-    payload.dayOfYearMonth = dayNumber;
-  }
+      payload.monthOfYear = monthNames.indexOf(monthName) + 1;
+      payload.dayOfYearMonth = dayNumber;
+    }
 
-  if (isCustomRecurrence) {
-    if (repeatPeriod === "day") {
-      payload.frequency = "daily";
-    } else if (repeatPeriod === "week") {
-      payload.frequency = "weekly";
-      const daysArray = [];
-      if (Array.isArray(selectedDays) && selectedDays.length === 7) {
-        if (selectedDays[0]) daysArray.push(0);
-        if (selectedDays[1]) daysArray.push(1);
-        if (selectedDays[2]) daysArray.push(2);
-        if (selectedDays[3]) daysArray.push(3);
-        if (selectedDays[4]) daysArray.push(4);
-        if (selectedDays[5]) daysArray.push(5);
-        if (selectedDays[6]) daysArray.push(6);
-      }
-      if (daysArray.length === 0) {
-        daysArray.push(selectedDate.getDay());
-      }
-      payload.daysOfWeek = daysArray;
-    } else if (repeatPeriod === "month") {
-      payload.frequency = "monthly";
-      if (monthlyOption && monthlyOption.startsWith("Monthly on day")) {
-        const dayNumber = parseInt(monthlyOption.split(" ").pop());
-        payload.dayOfMonth = [dayNumber];
-      } else if (
-        monthlyOption &&
-        monthlyOption.startsWith("Monthly on the")
-      ) {
-        const parts = monthlyOption.replace("Monthly on the ", "").split(" ");
-        const occurrence = parts[0];
-        const weekday = parts.slice(1).join(" ");
-        const occurrenceWordToNumber = (occurrence) => {
-          const map = {
-            first: 1,
-            second: 2,
-            third: 3,
-            fourth: 4,
-            fifth: 5,
-            last: 5,
+    if (isCustomRecurrence) {
+      if (repeatPeriod === "day") {
+        payload.frequency = "daily";
+      } else if (repeatPeriod === "week") {
+        payload.frequency = "weekly";
+        const daysArray = [];
+        if (Array.isArray(selectedDays) && selectedDays.length === 7) {
+          if (selectedDays[0]) daysArray.push(0);
+          if (selectedDays[1]) daysArray.push(1);
+          if (selectedDays[2]) daysArray.push(2);
+          if (selectedDays[3]) daysArray.push(3);
+          if (selectedDays[4]) daysArray.push(4);
+          if (selectedDays[5]) daysArray.push(5);
+          if (selectedDays[6]) daysArray.push(6);
+        }
+        if (daysArray.length === 0) {
+          daysArray.push(selectedDate.getDay());
+        }
+        payload.daysOfWeek = daysArray;
+      } else if (repeatPeriod === "month") {
+        payload.frequency = "monthly";
+        if (monthlyOption && monthlyOption.startsWith("Monthly on day")) {
+          const dayNumber = parseInt(monthlyOption.split(" ").pop());
+          payload.dayOfMonth = [dayNumber];
+        } else if (
+          monthlyOption &&
+          monthlyOption.startsWith("Monthly on the")
+        ) {
+          const parts = monthlyOption.replace("Monthly on the ", "").split(" ");
+          const occurrence = parts[0];
+          const weekday = parts.slice(1).join(" ");
+          const occurrenceWordToNumber = (occurrence) => {
+            const map = {
+              first: 1,
+              second: 2,
+              third: 3,
+              fourth: 4,
+              fifth: 5,
+              last: 5,
+            };
+            return map[occurrence] || 1;
           };
-          return map[occurrence] || 1;
-        };
-        const dayNameToIndex = (dayName) => {
-          const days = [
-            "Sunday",
-            "Monday",
-            "Tuesday",
-            "Wednesday",
-            "Thursday",
-            "Friday",
-            "Saturday",
-          ];
-          return days.indexOf(dayName);
-        };
-        payload.weekOfMonth = [occurrenceWordToNumber(occurrence)];
-        payload.dayOfWeekInMonth = dayNameToIndex(weekday);
+          const dayNameToIndex = (dayName) => {
+            const days = [
+              "Sunday",
+              "Monday",
+              "Tuesday",
+              "Wednesday",
+              "Thursday",
+              "Friday",
+              "Saturday",
+            ];
+            return days.indexOf(dayName);
+          };
+          payload.weekOfMonth = [occurrenceWordToNumber(occurrence)];
+          payload.dayOfWeekInMonth = dayNameToIndex(weekday);
+        }
+      } else if (repeatPeriod === "year") {
+        payload.frequency = "yearly";
+        if (yearlyOption === "same-day") {
+          payload.monthOfYear = selectedDate.getMonth() + 1;
+          payload.dayOfYearMonth = selectedDate.getDate();
+        }
       }
-    } else if (repeatPeriod === "year") {
-      payload.frequency = "yearly";
-      if (yearlyOption === "same-day") {
-        payload.monthOfYear = selectedDate.getMonth() + 1;
-        payload.dayOfYearMonth = selectedDate.getDate();
+
+      if (endsOption === "on") {
+        payload.schedulerEndDate = formattedEndDate
+          ? formatDateForAPI(formattedEndDate)
+          : null;
+      } else if (endsOption === "after") {
+        payload.maxOccurrences = occurrences;
       }
     }
 
-    if (endsOption === "on") {
-      payload.schedulerEndDate = formattedEndDate ? formatDateForAPI(formattedEndDate) : null;
-    } else if (endsOption === "after") {
-      payload.maxOccurrences = occurrences;
-    }
-  }
-
-  return payload;
-};
+    return payload;
+  };
   const handleSave = async (payload = null) => {
     if (!validateForm()) {
       return;
@@ -1437,11 +1296,12 @@ const generatePayload = () => {
                   freeSolo
                   size="small"
                   id="target-entity-autocomplete"
-                  options={fieldOptions
-                  //   .filter(
-                  //   (option) => option.type === "email"
-                  // )
-                }
+                  options={
+                    fieldOptions
+                    //   .filter(
+                    //   (option) => option.type === "email"
+                    // )
+                  }
                   getOptionLabel={(option) => {
                     if (typeof option === "string") return option;
                     return option.label || option.attributeId || "";
