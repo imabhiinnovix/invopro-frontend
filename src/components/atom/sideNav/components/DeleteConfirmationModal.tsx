@@ -1,10 +1,18 @@
-import React from 'react';
-import { Dialog, DialogTitle, DialogContent, DialogActions, Button, Typography } from '@mui/material';
-import LoadingButton from '@mui/lab/LoadingButton';
-import { Dashboard } from '../../../../pages/dashboard/types';
-import { STYLE_GUIDE } from '../../../../styles';
-import { useUnifiedTheme } from '../../../../hooks/useUnifiedTheme';
-import { useComponentTypography } from '../../../../hooks/useComponentTypography';
+import React from "react";
+import {
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button,
+  Typography,
+} from "@mui/material";
+import LoadingButton from "@mui/lab/LoadingButton";
+import { Dashboard } from "../../../../pages/dashboard/types";
+import { STYLE_GUIDE } from "../../../../styles";
+import { useUnifiedTheme } from "../../../../hooks/useUnifiedTheme";
+import { useComponentTypography } from "../../../../hooks/useComponentTypography";
+import DialogContainer from "../../../molecule/dialog";
 
 interface DeleteConfirmationModalProps {
   open: boolean;
@@ -14,15 +22,36 @@ interface DeleteConfirmationModalProps {
   isDeleting: boolean;
 }
 
-export const DeleteConfirmationModal: React.FC<DeleteConfirmationModalProps> = ({
-  open,
-  dashboard,
-  onConfirm,
-  onCancel,
-  isDeleting,
-}) => {
+export const DeleteConfirmationModal: React.FC<
+  DeleteConfirmationModalProps
+> = ({ open, dashboard, onConfirm, onCancel, isDeleting }) => {
   const theme = useUnifiedTheme();
   const { getDialogTitleSx } = useComponentTypography();
+
+  return (
+    <DialogContainer
+      open={open}
+      onClose={onCancel}
+      title="Delete Dashboard"
+      actions={
+        <>
+          <Button onClick={onCancel}>Cancel</Button>
+          <LoadingButton
+            onClick={onConfirm}
+            loading={isDeleting}
+            color="error"
+            variant="contained"
+          >
+            Delete
+          </LoadingButton>
+        </>
+      }
+    >
+      <Typography>
+        Are you sure you want to delete "{dashboard?.name}"?
+      </Typography>
+    </DialogContainer>
+  );
 
   return (
     <Dialog
@@ -32,27 +61,39 @@ export const DeleteConfirmationModal: React.FC<DeleteConfirmationModalProps> = (
       aria-describedby="delete-dialog-description"
       PaperProps={{
         sx: {
-          backgroundColor: theme.palette.dialog?.background || STYLE_GUIDE.COLORS.white,
-          border: `1px solid ${theme.palette.dialog?.border || theme.palette.border?.main || STYLE_GUIDE.COLORS.borderGray}`,
-          borderRadius: theme.palette.dialog?.borderRadius || '8px',
+          backgroundColor:
+            theme.palette.dialog?.background || STYLE_GUIDE.COLORS.white,
+          border: `1px solid ${
+            theme.palette.dialog?.border ||
+            theme.palette.border?.main ||
+            STYLE_GUIDE.COLORS.borderGray
+          }`,
+          borderRadius: theme.palette.dialog?.borderRadius || "8px",
           boxShadow: theme.palette.dialog?.shadow || STYLE_GUIDE.SHADOWS.lg,
-        }
+        },
       }}
     >
-      <DialogTitle 
+      <DialogTitle
         id="delete-dialog-title"
         sx={{
           ...getDialogTitleSx(),
-          color: theme.palette.dialog?.titleColor || STYLE_GUIDE.COLORS.textDarkGray,
+          color:
+            theme.palette.dialog?.titleColor || STYLE_GUIDE.COLORS.textDarkGray,
         }}
       >
         Delete Dashboard
       </DialogTitle>
-      <DialogContent sx={{
-        color: theme.palette.dialog?.contentColor || STYLE_GUIDE.COLORS.textDarkGray,
-        fontSize: theme.palette.dialog?.contentFontSize || '1rem',
-      }}>
-        <Typography>Are you sure you want to delete "{dashboard?.name}"?</Typography>
+      <DialogContent
+        sx={{
+          color:
+            theme.palette.dialog?.contentColor ||
+            STYLE_GUIDE.COLORS.textDarkGray,
+          fontSize: theme.palette.dialog?.contentFontSize || "1rem",
+        }}
+      >
+        <Typography>
+          Are you sure you want to delete "{dashboard?.name}"?
+        </Typography>
       </DialogContent>
       <DialogActions>
         <Button onClick={onCancel}>Cancel</Button>
@@ -67,4 +108,4 @@ export const DeleteConfirmationModal: React.FC<DeleteConfirmationModalProps> = (
       </DialogActions>
     </Dialog>
   );
-}; 
+};
