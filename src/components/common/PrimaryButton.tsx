@@ -10,7 +10,7 @@ export default function PrimaryButton({
   ...rest
 }: {
   icon?: React.ReactNode;
-  onClick: () => void;
+  onClick?: () => void;
   sx?: SxProps<Theme>;
   children: React.ReactNode;
   rest?: Omit<ButtonProps, "children" | "onClick" | "sx">;
@@ -32,7 +32,7 @@ export default function PrimaryButton({
     <Button
       variant="contained"
       startIcon={icon || undefined}
-      onClick={onClick}
+      onClick={onClick || undefined}
       sx={buttonSx as SxProps<Theme>}
       {...rest}
     >
