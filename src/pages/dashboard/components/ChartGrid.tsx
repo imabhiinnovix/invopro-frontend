@@ -1383,7 +1383,12 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
 
         const lineDataset = {
           type: "line",
-          label: `${groupAttributeField || chart?.aggregation?.attributeName || chart?.name || "Total"}`,
+          label: `${
+            groupAttributeField ||
+            chart?.aggregation?.attributeName ||
+            chart?.name ||
+            "Total"
+          }`,
           data: totals,
           borderColor: getColor(data.length),
           backgroundColor: "transparent",
@@ -1452,7 +1457,12 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
         : attributeFieldKey;
       const lineDataset = {
         type: "line",
-        label: `${groupAttributeField || chart?.aggregation?.attributeName || chart?.name || "Total"}`,
+        label: `${
+          groupAttributeField ||
+          chart?.aggregation?.attributeName ||
+          chart?.name ||
+          "Total"
+        }`,
         data: totals,
         borderColor: getColor(uniqueGroups.length),
         backgroundColor: "transparent",
@@ -1843,9 +1853,9 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
         <Typography
           color="text.secondary"
           variant="h6"
-          sx={{ textAlign: "center", p: 4 , color: "#665b69ff"}}
+          sx={{ textAlign: "center", p: 4, color: "#665b69ff" }}
         >
-          No data 
+          No data
         </Typography>
       );
     }
@@ -2641,7 +2651,6 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
                         },
                       }}
                     >
-                      
                       {columns.map((column) => {
                         const cellValue = row[column];
 
@@ -2662,10 +2671,10 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
                             {cellValue == null || cellValue === ""
                               ? "-"
                               : typeof cellValue === "number"
-                                ? cellValue.toLocaleString()
-                                : isDateField
-                                  ? formatDateWithoutTime(cellValue)
-                                  : cellValue}
+                              ? cellValue.toLocaleString()
+                              : isDateField
+                              ? formatDateWithoutTime(cellValue)
+                              : cellValue}
                           </TableCell>
                         );
                       })}
@@ -2759,7 +2768,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
         sx={{
           height: "100%",
           alignContent: "flex-start",
-          p: STYLE_GUIDE.SPACING.s6,
+          // p: STYLE_GUIDE.SPACING.s6,
           "& .MuiGrid-item": {
             display: "flex",
             "& > *": {
@@ -2982,10 +2991,10 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
                 isAddChartModalOpen || isEditChartModalOpen
                   ? 12
                   : gridColumns === 1
-                    ? 12
-                    : gridColumns === 2
-                      ? 6
-                      : 4
+                  ? 12
+                  : gridColumns === 2
+                  ? 6
+                  : 4
               }
               gap={isNaturalLangauage ? 4 : 0}
               p={isNaturalLangauage ? 2 : 0}
@@ -3065,20 +3074,20 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
                       (chart.widgetTypeId?.chartType || "line") === "pie"
                         ? "pie-chart"
                         : (chart.widgetTypeId?.chartType || "line") ===
-                            "horizontalBar"
-                          ? "horizontal-bar-chart"
-                          : (chart.widgetTypeId?.chartType || "line") ===
-                              "tabular"
-                            ? "table-chart"
-                            : (chart.widgetTypeId?.chartType || "line") ===
-                                "multiSeriesPie"
-                              ? "pie-chart"
-                              : (chart.widgetTypeId?.chartType || "line") ===
-                                    "stackedBarLine" ||
-                                  (chart.widgetTypeId?.chartType || "line") ===
-                                    "comboBarLine"
-                                ? "combo-chart"
-                                : "line-chart"
+                          "horizontalBar"
+                        ? "horizontal-bar-chart"
+                        : (chart.widgetTypeId?.chartType || "line") ===
+                          "tabular"
+                        ? "table-chart"
+                        : (chart.widgetTypeId?.chartType || "line") ===
+                          "multiSeriesPie"
+                        ? "pie-chart"
+                        : (chart.widgetTypeId?.chartType || "line") ===
+                            "stackedBarLine" ||
+                          (chart.widgetTypeId?.chartType || "line") ===
+                            "comboBarLine"
+                        ? "combo-chart"
+                        : "line-chart"
                     }
                     onWheel={handleWheel}
                   >

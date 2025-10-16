@@ -32,6 +32,7 @@ import { STYLE_GUIDE } from "../../styles";
 import { useUnifiedTheme } from "../../hooks/useUnifiedTheme";
 import { useComponentTypography } from "../../hooks/useComponentTypography";
 import CommonTable from "../../components/common/table";
+import PrimaryButton from "../../components/common/PrimaryButton";
 
 const Dashboard = () => {
   const theme = useUnifiedTheme();
@@ -233,7 +234,7 @@ const Dashboard = () => {
           flexDirection: "column",
           width: "100%",
           backgroundColor: theme.palette.background.paper,
-          p: { xs: STYLE_GUIDE.SPACING.s4, md: STYLE_GUIDE.SPACING.s6 },
+          p: { md: STYLE_GUIDE.SPACING.s2 },
           gap: STYLE_GUIDE.SPACING.s4,
         }}
       >
@@ -257,7 +258,13 @@ const Dashboard = () => {
           >
             Dashboards
           </Typography>
-          <Button
+          <PrimaryButton
+            icon={<AddIcon />}
+            onClick={() => setOpenCreateModal(true)}
+          >
+            Create New Dashboard
+          </PrimaryButton>
+          {/* <Button
             variant="contained"
             startIcon={<AddIcon />}
             onClick={() => setOpenCreateModal(true)}
@@ -268,14 +275,15 @@ const Dashboard = () => {
               "&:hover": {
                 backgroundColor: STYLE_GUIDE.COLORS.primaryDark,
               },
-              px: STYLE_GUIDE.SPACING.s6,
-              py: STYLE_GUIDE.SPACING.s2,
+              // px: STYLE_GUIDE.SPACING.s6,
+              // py: STYLE_GUIDE.SPACING.s2,
               borderRadius: STYLE_GUIDE.SPACING.s2,
               textTransform: "none",
+              height: 40,
             }}
           >
             Create New Dashboard
-          </Button>
+          </Button> */}
         </Box>
 
         <CommonTable
@@ -511,7 +519,7 @@ const Dashboard = () => {
   return (
     <Box
       sx={{
-        p: STYLE_GUIDE.SPACING.s1,
+        p: STYLE_GUIDE.SPACING.s2,
         backgroundColor: theme.palette.background.paper,
       }}
     >

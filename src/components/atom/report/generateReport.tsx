@@ -15,6 +15,7 @@ import UploadMultipleFiles from "../dataSourceVerion/uploadMultipleVersionValue"
 import { STYLE_GUIDE } from "../../../styles";
 import { useUnifiedTheme } from "../../../hooks/useUnifiedTheme";
 import { useComponentTypography } from "../../../hooks/useComponentTypography";
+import PrimaryButton from "../../common/PrimaryButton";
 
 interface GenerateReportProps {
   setReload: React.Dispatch<React.SetStateAction<boolean>>;
@@ -130,28 +131,34 @@ export default function GenerateReport({ setReload }: GenerateReportProps) {
               {generateReport.isPending ? (
                 <ProgressBar />
               ) : (
-                <Button
-                  variant="contained"
-                  size="small"
-                  type="submit"
+                <PrimaryButton
                   onClick={handleSubmit(onSubmit)}
-                  sx={{
-                    width: "100%",
-                    height: "40px",
-                    textTransform: "none",
-                    fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.medium,
-                    borderRadius: 1,
-                    boxShadow: "none",
-                    bgcolor: theme.palette.primary.main,
-                    color: theme.palette.primary.contrastText,
-                    "&:hover": {
-                      bgcolor: theme.palette.primary.dark,
-                      boxShadow: STYLE_GUIDE.SHADOWS.none,
-                    },
-                  }}
+                  sx={{ width: "100%" }}
                 >
                   Generate Report
-                </Button>
+                </PrimaryButton>
+                // <Button
+                //   variant="contained"
+                //   size="small"
+                //   type="submit"
+                //   onClick={handleSubmit(onSubmit)}
+                //   sx={{
+                //     width: "100%",
+                //     height: "40px",
+                //     textTransform: "none",
+                //     fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.medium,
+                //     borderRadius: 1,
+                //     boxShadow: "none",
+                //     bgcolor: theme.palette.primary.main,
+                //     color: theme.palette.primary.contrastText,
+                //     "&:hover": {
+                //       bgcolor: theme.palette.primary.dark,
+                //       boxShadow: STYLE_GUIDE.SHADOWS.none,
+                //     },
+                //   }}
+                // >
+                //   Generate Report
+                // </Button>
               )}
             </Box>
           </Box>
