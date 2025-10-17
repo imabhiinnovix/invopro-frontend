@@ -81,6 +81,7 @@ import { toast } from "react-toastify";
 import jsPDF from "jspdf";
 import axiosInstance from "../../../services/axiosInstance";
 import { Theme } from "../../createTheme/types";
+import VisibilityIcon from "@mui/icons-material/Visibility";
 
 import { AddChartModal, ChartFormData } from "./AddChartModal";
 import { resetChartAndWidgetData } from "../dashboardReducer";
@@ -747,6 +748,70 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
       } finally {
         setIsDrillDownLoading(false);
       }
+    }
+  };
+
+  const handleShowAllData = async (
+    chart: ChartResponse,
+    elements: ActiveElement[]
+  ) => {
+    console.log("Show all data clicked", chart);
+
+    setSelectedChart(chart);
+    setDrillDownTitle(`${chart.name} - All Data`);
+    setDrillDownOpen(true);
+    setCurrentPage(1);
+    setIsDrillDownLoading(true);
+
+    try {
+      const payload = {
+        dataSourceId: chart.dataSourceId?._id,
+        entityId: chart.dataSourceId?.entityId,
+        conditions: chart.conditions || [],
+        dimensions: [], // Empty array for all data
+        dashboardFilters: {
+          startVersionValue: startVersionValue,
+          endVersionValue: endVersionValue,
+          versionValue: versionValue,
+        },
+        groupBy: [], // Empty array for all data
+        page: 1,
+        limit: itemsPerPage,
+        dashBoardType: currentDashboard?.settings?.dashboardType,
+      };
+
+      setDrillDownPayload(payload);
+
+      const response = await axiosInstance.post(
+        "/common/dataSource/getWidgetDataByFilter",
+        payload
+      );
+
+      if (response.data.success) {
+        const drillDownData = response.data.data;
+        console.log("Response data:", drillDownData);
+        setDrillDownData(drillDownData);
+        setTotalPages(response.data.pagination.totalPages);
+        setTotalRecords(response.data.pagination.totalRecords);
+
+        // Set drill-down columns from the response data
+        if (drillDownData && drillDownData.length > 0) {
+          const columns = Object.keys(drillDownData[0]).filter(
+            (key) => key !== "_id"
+          );
+          console.log("Columns:", columns);
+          setDrillDownColumns(columns);
+        } else {
+          setDrillDownColumns([]);
+        }
+      } else {
+        toast.error(response.data.message || "Failed to fetch detailed data");
+      }
+    } catch (error) {
+      console.error("Error fetching detailed data:", error);
+      toast.error("Failed to fetch detailed data");
+    } finally {
+      setIsDrillDownLoading(false);
     }
   };
   const handleDrillDownClose = () => {
@@ -3210,19 +3275,41 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
           }}
         >
           <Typography variant="h6">{selectedChart?.name}</Typography>
-          <IconButton
-            onClick={handleFullViewClose}
-            size="small"
-            sx={{
-              color: theme.palette.text.secondary,
-              "&:hover": {
-                color: theme.palette.text.primary,
-                backgroundColor: theme.palette.action.hover,
-              },
-            }}
-          >
-            <CloseIcon />
-          </IconButton>
+
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+            <Button
+              // variant="outlined"
+              // startIcon={<VisibilityIcon />}
+              onClick={(e) => {
+                e.stopPropagation();
+                handleShowAllData(selectedChart, []);
+              }}
+              sx={{
+                color: theme.palette.primary.main,
+                borderColor: theme.palette.primary.main,
+                "&:hover": {
+                  backgroundColor: theme.palette.action.hover,
+                  borderColor: theme.palette.primary.dark,
+                },
+              }}
+            >
+              Source Data
+            </Button>
+
+            <IconButton
+              onClick={handleFullViewClose}
+              size="small"
+              sx={{
+                color: theme.palette.text.secondary,
+                "&:hover": {
+                  color: theme.palette.text.primary,
+                  backgroundColor: theme.palette.action.hover,
+                },
+              }}
+            >
+              <CloseIcon />
+            </IconButton>
+          </Box>
         </DialogTitle>
 
         {/* Scrollable main content area */}
