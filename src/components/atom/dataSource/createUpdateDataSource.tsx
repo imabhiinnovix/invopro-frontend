@@ -36,6 +36,7 @@ import axiosInstance from "../../../services/axiosInstance";
 import { debounce } from "lodash";
 import { useComponentTypography } from "../../../hooks/useComponentTypography";
 import DialogContainer from "../../molecule/dialog";
+import PrimaryButton from "../../common/PrimaryButton";
 
 interface Attribute {
   _id: string;
@@ -705,34 +706,16 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({
               <CircularProgress />
             ) : (
               <>
-                <Button
-                  onClick={handleCancel}
-                  color="error"
-                  sx={{
-                    fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.large,
-                    fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.bold,
-                    p: STYLE_GUIDE.SPACING.s2,
-                    pl: STYLE_GUIDE.SPACING.s4,
-                    pr: STYLE_GUIDE.SPACING.s4,
-                  }}
-                >
+                <PrimaryButton onClick={handleCancel} variant="outlined">
                   Cancel
-                </Button>
-                <Button
+                </PrimaryButton>
+                <PrimaryButton
                   type="submit"
                   variant="contained"
-                  color="primary"
                   onClick={handleSubmit(onSubmit)}
-                  sx={{
-                    fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.large,
-                    fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.bold,
-                    p: STYLE_GUIDE.SPACING.s2,
-                    pl: STYLE_GUIDE.SPACING.s4,
-                    pr: STYLE_GUIDE.SPACING.s4,
-                  }}
                 >
                   Save Data Source
-                </Button>
+                </PrimaryButton>
               </>
             )}
           </>

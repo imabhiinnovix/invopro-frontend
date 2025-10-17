@@ -55,7 +55,7 @@
 //   }>(["dataSourceList"], GET?.DATA_SOURCE_LIST + `?canEditInline=true`, true);
 
 //    const dataSourceList = useMemo(() => {
-    
+
 //       return dataSourceListAPI?.data?.pages?.flatMap((page) => page?.data) || [];
 //     }, [dataSourceListAPI?.data?.pages]);
 
@@ -578,7 +578,7 @@
 //   }>(["dataSourceList"], GET?.DATA_SOURCE_LIST + `?canEditInline=true`, true);
 
 //    const dataSourceList = useMemo(() => {
-    
+
 //       return dataSourceListAPI?.data?.pages?.flatMap((page) => page?.data) || [];
 //     }, [dataSourceListAPI?.data?.pages]);
 
@@ -1080,6 +1080,8 @@ import { STYLE_GUIDE } from "../../styles";
 import { useUnifiedTheme } from "../../hooks/useUnifiedTheme";
 import { useComponentTypography } from "../../hooks/useComponentTypography";
 import { DataSourceListData } from "../../components/atom/sideNav/types";
+import CommonPageHeader from "../../components/atom/commonPageHeader";
+import PrimaryButton from "../../components/common/PrimaryButton";
 
 const DataSources = () => {
   const theme = useUnifiedTheme();
@@ -1297,62 +1299,22 @@ const DataSources = () => {
       {tab === "Notifix" ? (
         <p>yesss</p>
       ) : (
-        <Container
-          maxWidth="xl"
-          sx={{
-            margin: STYLE_GUIDE.SPACING.s8,
-            padding: STYLE_GUIDE.SPACING.s8,
-            backgroundColor: theme.palette.background.paper,
-            borderRadius: STYLE_GUIDE.SPACING.s3,
-            boxShadow: STYLE_GUIDE.SHADOWS.base,
-          }}
-        >
-          <Card
-            sx={{
-              marginBottom: STYLE_GUIDE.SPACING.s8,
-            }}
-          >
-            <CardContent sx={{ padding: STYLE_GUIDE.SPACING.s4 }}>
-              <Stack
-                direction="row"
-                justifyContent="space-between"
-                alignItems="center"
-              >
-                <Stack direction="row" spacing={2} alignItems="center">
-                  <Typography
-                    variant="h6"
-                    sx={{
-                      ...getHeadingSx(),
-                      fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold,
-                      color: theme.palette.primary.main,
-                    }}
-                  >
-                    Data Source Version
-                  </Typography>
-                  <CommonDatePicker
-                    name="versionValue"
-                    control={control}
-                    views={["year", "month"]}
-                    label="Period*"
-                    rules={{ required: "Period is required" }}
-                  />
-                </Stack>
-                <Button
+        <Box sx={{ p: STYLE_GUIDE.SPACING.s2 }}>
+          <CommonPageHeader
+            title="Data Source Version"
+            actions={
+              <Box sx={{ display: "flex", gap: STYLE_GUIDE.SPACING.s2 }}>
+                <CommonDatePicker
+                  name="versionValue"
+                  control={control}
+                  views={["year", "month"]}
+                  label="Period*"
+                  rules={{ required: "Period is required" }}
+                />
+                <PrimaryButton
                   variant="contained"
                   disabled={dataSourceCreate?.isPending || !(versionDate && id)}
                   onClick={handleSave}
-                  sx={{
-                    minWidth: "150px",
-                    height: "40px",
-                    borderRadius: STYLE_GUIDE.SPACING.s1,
-                    textTransform: "none",
-                    fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
-                    fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.medium,
-                    boxShadow: "none",
-                    "&:hover": {
-                      boxShadow: "none",
-                    },
-                  }}
                 >
                   {dataSourceCreate?.isPending ? (
                     <Box
@@ -1372,11 +1334,10 @@ const DataSources = () => {
                   ) : (
                     "Save Changes"
                   )}
-                </Button>
-              </Stack>
-            </CardContent>
-          </Card>
-
+                </PrimaryButton>
+              </Box>
+            }
+          />
           <Box sx={{ display: "flex", justifyContent: "center" }}>
             <TableContainer
               component={Paper}
@@ -1385,13 +1346,14 @@ const DataSources = () => {
                 maxHeight: "calc(100vh - 300px)",
                 borderRadius: STYLE_GUIDE.SPACING.s2,
                 boxShadow: STYLE_GUIDE.SHADOWS.xxxl,
-                width: "fit-content",
+                // width: "fit-content",
                 backgroundColor:
                   theme.palette.card?.background ||
                   STYLE_GUIDE.COLORS.backgroundSurface,
                 "& .MuiTable-root": {
                   minWidth: "600px",
                 },
+                width: "100%",
               }}
             >
               <Table stickyHeader>
@@ -1513,7 +1475,10 @@ const DataSources = () => {
                                   theme.palette.table?.rowText ||
                                   theme.palette.input?.text ||
                                   STYLE_GUIDE.COLORS.textDarkGray,
-                                WebkitBoxShadow: `0 0 0 1000px ${theme.palette.background.paper || STYLE_GUIDE.COLORS.white} inset`,
+                                WebkitBoxShadow: `0 0 0 1000px ${
+                                  theme.palette.background.paper ||
+                                  STYLE_GUIDE.COLORS.white
+                                } inset`,
                               },
                             }}
                             slotProps={{
@@ -1567,7 +1532,7 @@ const DataSources = () => {
               </Table>
             </TableContainer>
           </Box>
-        </Container>
+        </Box>
       )}
     </>
   );

@@ -1,14 +1,17 @@
-import { Box, Typography } from "@mui/material";
+import { Box, IconButton, Stack, Typography } from "@mui/material";
 import { STYLE_GUIDE } from "../../styles";
 import { useComponentTypography } from "../../hooks/useComponentTypography";
 import { useUnifiedTheme } from "../../hooks/useUnifiedTheme";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 
 export default function CommonPageHeader({
   title,
   actions,
+  onBack,
 }: {
   title: string;
   actions: React.ReactNode;
+  onBack?: () => void;
 }) {
   const theme = useUnifiedTheme();
   const { getHeadingSx } = useComponentTypography();
@@ -26,14 +29,21 @@ export default function CommonPageHeader({
         mb: 4,
       }}
     >
-      <Typography
-        variant="h4"
-        sx={{
-          ...getHeadingSx(),
-        }}
-      >
-        {title}
-      </Typography>
+      <Stack direction="row" alignItems="center" gap={STYLE_GUIDE.SPACING.s2}>
+        {onBack && (
+          <IconButton onClick={onBack}>
+            <ArrowBackIcon sx={{ color: theme.palette.primary.main }} />
+          </IconButton>
+        )}
+        <Typography
+          variant="h4"
+          sx={{
+            ...getHeadingSx(),
+          }}
+        >
+          {title}
+        </Typography>
+      </Stack>
       {actions}
     </Box>
   );

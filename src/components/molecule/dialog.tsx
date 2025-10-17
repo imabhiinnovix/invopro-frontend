@@ -27,12 +27,16 @@ export default function DialogContainer({
   title,
   children,
   actions,
+  maxWidth = "md",
+  fullWidth = true,
 }: {
   open: boolean;
   onClose: () => void;
   title: string;
   children: React.ReactNode;
   actions: React.ReactNode;
+  maxWidth?: "xs" | "sm" | "md" | "lg" | "xl";
+  fullWidth?: boolean;
 }) {
   const theme = useUnifiedTheme();
   const { getDialogTitleSx } = useComponentTypography();
@@ -42,8 +46,8 @@ export default function DialogContainer({
         onClose={onClose}
         aria-labelledby="customized-dialog-title"
         open={open}
-        maxWidth="sm"
-        fullWidth
+        maxWidth={maxWidth}
+        fullWidth={fullWidth}
       >
         <DialogTitle
           sx={{

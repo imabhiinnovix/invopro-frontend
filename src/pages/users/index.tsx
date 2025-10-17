@@ -1,18 +1,45 @@
-import { useState } from 'react';
-import { DataGrid, GridColDef, GridRenderCellParams } from '@mui/x-data-grid';
+import { useState } from "react";
+import { DataGrid, GridColDef, GridRenderCellParams } from "@mui/x-data-grid";
 import {
-  Box, Card, CardContent, Typography, TextField, Button, Modal, Dialog, DialogTitle, DialogContent, DialogActions, Tooltip, Chip, FormControl, InputLabel, Select, MenuItem,CircularProgress, Autocomplete,
-} from '@mui/material';
-import EditIcon from '@mui/icons-material/Edit';
-import DeleteIcon from '@mui/icons-material/Delete';
-import { useUnifiedTheme } from '../../hooks/useUnifiedTheme';
-import { STYLE_GUIDE } from '../../styles';
-import { GET, POST, PUT, DELETE } from '../../services/apiRoutes';
-import useGet from '../../hooks/useGet';
-import usePost from '../../hooks/usePost';
-import usePut from '../../hooks/usePut';
-import useDelete from '../../hooks/useDelete';
-import { UserListResponse, User, CreateUserPayload, CreateUserResponse, RoleListResponse, ProductSubscriptionListResponse } from './types';
+  Box,
+  Card,
+  CardContent,
+  Typography,
+  TextField,
+  Button,
+  Modal,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Tooltip,
+  Chip,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  CircularProgress,
+  Autocomplete,
+} from "@mui/material";
+import EditIcon from "@mui/icons-material/Edit";
+import DeleteIcon from "@mui/icons-material/Delete";
+import { useUnifiedTheme } from "../../hooks/useUnifiedTheme";
+import { STYLE_GUIDE } from "../../styles";
+import { GET, POST, PUT, DELETE } from "../../services/apiRoutes";
+import useGet from "../../hooks/useGet";
+import usePost from "../../hooks/usePost";
+import usePut from "../../hooks/usePut";
+import useDelete from "../../hooks/useDelete";
+import {
+  UserListResponse,
+  User,
+  CreateUserPayload,
+  CreateUserResponse,
+  RoleListResponse,
+  ProductSubscriptionListResponse,
+} from "./types";
+import DialogContainer from "../../components/molecule/dialog";
+import PrimaryButton from "../../components/common/PrimaryButton";
 
 interface UsersProps {
   organizationId?: string;
@@ -29,38 +56,69 @@ interface UserRowData {
   roleNames: string[];
   organizationProductSubscriptionIds: string[];
   isVerified: boolean;
-  status: 'active' | 'inactive';
+  status: "active" | "inactive";
   handleEdit: (row: UserRowData) => void;
   handleView: (row: UserRowData) => void;
   handleDelete: (id: string) => void;
 }
 
-
-
 const columns: GridColDef[] = [
   // { field: 'id', headerName: 'ID', width: 70, disableColumnMenu: true, resizable: true },
-  { field: 'firstName', headerName: 'First Name', width: 200, disableColumnMenu: true, resizable: true },
-  { field: 'lastName', headerName: 'Last Name', width: 200, disableColumnMenu: true, resizable: true },
-  { field: 'email', headerName: 'Email', width: 200, disableColumnMenu: true, resizable: true },
   {
-    field: 'mobile',
-    headerName: 'Mobile',
+    field: "firstName",
+    headerName: "First Name",
     width: 200,
     disableColumnMenu: true,
     resizable: true,
-    valueFormatter: (params: { value: unknown }) => params?.value ? params?.value.toString() : '-'
   },
   {
-    field: 'roleNames',
-    headerName: 'Roles',
+    field: "lastName",
+    headerName: "Last Name",
+    width: 200,
+    disableColumnMenu: true,
+    resizable: true,
+  },
+  {
+    field: "email",
+    headerName: "Email",
+    width: 200,
+    disableColumnMenu: true,
+    resizable: true,
+  },
+  {
+    field: "mobile",
+    headerName: "Mobile",
+    width: 200,
+    disableColumnMenu: true,
+    resizable: true,
+    valueFormatter: (params: { value: unknown }) =>
+      params?.value ? params?.value.toString() : "-",
+  },
+  {
+    field: "roleNames",
+    headerName: "Roles",
     width: 200,
     disableColumnMenu: true,
     resizable: true,
     renderCell: (params: GridRenderCellParams) => (
-      <Box sx={{ display: 'flex', gap: STYLE_GUIDE.SPACING.s1, flexWrap: 'wrap', width: '100%', height: '100%', alignItems: 'center' }}>
+      <Box
+        sx={{
+          display: "flex",
+          gap: STYLE_GUIDE.SPACING.s1,
+          flexWrap: "wrap",
+          width: "100%",
+          height: "100%",
+          alignItems: "center",
+        }}
+      >
         {(params.value as string[])?.map((roleName: string) => (
-          <Chip key={roleName} label={roleName} size="small" variant="outlined" />
-        )) || '-'}
+          <Chip
+            key={roleName}
+            label={roleName}
+            size="small"
+            variant="outlined"
+          />
+        )) || "-"}
       </Box>
     ),
   },
@@ -73,8 +131,8 @@ const columns: GridColDef[] = [
   //   renderCell: (params: any) => params.value ? params.value.slice(-8) : '-',
   // },
   {
-    field: 'status',
-    headerName: 'Status',
+    field: "status",
+    headerName: "Status",
     width: 100,
     disableColumnMenu: true,
     resizable: true,
@@ -82,40 +140,42 @@ const columns: GridColDef[] = [
       <Chip
         label={params.value as string}
         size="small"
-        color={(params.value as string) === 'active' ? 'success' : 'error'}
+        color={(params.value as string) === "active" ? "success" : "error"}
         variant="outlined"
       />
     ),
   },
   {
-    field: 'isVerified',
-    headerName: 'Verified',
+    field: "isVerified",
+    headerName: "Verified",
     width: 100,
     disableColumnMenu: true,
     resizable: true,
     renderCell: (params: GridRenderCellParams) => (
       <Chip
-        label={(params.value as boolean) ? 'Yes' : 'No'}
+        label={(params.value as boolean) ? "Yes" : "No"}
         size="small"
-        color={(params.value as boolean) ? 'success' : 'warning'}
+        color={(params.value as boolean) ? "success" : "warning"}
         variant="outlined"
       />
     ),
   },
   {
-    field: 'actions',
-    headerName: 'Actions',
+    field: "actions",
+    headerName: "Actions",
     width: 150,
     disableColumnMenu: true,
     sortable: false,
     resizable: false,
     renderCell: (params: GridRenderCellParams) => (
-      <Box sx={{ display: 'flex', gap: STYLE_GUIDE.SPACING.s2 }}>
+      <Box sx={{ display: "flex", gap: STYLE_GUIDE.SPACING.s2 }}>
         <Tooltip title="Edit" arrow>
           <Button
             variant="text"
-            onClick={() => (params.row as UserRowData).handleEdit(params.row as UserRowData)}
-            sx={{ minWidth: 'auto' }}
+            onClick={() =>
+              (params.row as UserRowData).handleEdit(params.row as UserRowData)
+            }
+            sx={{ minWidth: "auto" }}
           >
             <EditIcon />
           </Button>
@@ -132,8 +192,12 @@ const columns: GridColDef[] = [
         <Tooltip title="Delete" arrow>
           <Button
             variant="text"
-            onClick={() => (params.row as UserRowData).handleDelete((params.row as UserRowData).id)}
-            sx={{ minWidth: 'auto', color: 'error.main' }}
+            onClick={() =>
+              (params.row as UserRowData).handleDelete(
+                (params.row as UserRowData).id
+              )
+            }
+            sx={{ minWidth: "auto", color: "error.main" }}
           >
             <DeleteIcon />
           </Button>
@@ -143,36 +207,43 @@ const columns: GridColDef[] = [
   },
 ];
 
-
 export default function Users({ organizationId }: UsersProps) {
   const theme = useUnifiedTheme();
   const [openModal, setOpenModal] = useState(false);
-  const [modalMode, setModalMode] = useState<'add' | 'edit' | 'view' | null>(null);
+  const [modalMode, setModalMode] = useState<"add" | "edit" | "view" | null>(
+    null
+  );
   const [openDialog, setOpenDialog] = useState(false);
   const [userIdForEdit, setUserIdForEdit] = useState<string | null>(null);
 
   const usersQuery = useGet<UserListResponse>(
-    ['users', organizationId || 'all'],
-    organizationId ? `${GET.User_List}?organizationId=${organizationId}` : GET.User_List,
+    ["users", organizationId || "all"],
+    organizationId
+      ? `${GET.User_List}?organizationId=${organizationId}`
+      : GET.User_List,
     true
   );
 
   const rolesQuery = useGet<RoleListResponse>(
-    ['roles', organizationId || 'all'],
-    organizationId ? `${GET.Roles_List}?organizationId=${organizationId}` : GET.Roles_List,
+    ["roles", organizationId || "all"],
+    organizationId
+      ? `${GET.Roles_List}?organizationId=${organizationId}`
+      : GET.Roles_List,
     true
   );
 
-  console.log('rolesQuery:', rolesQuery.data?.data);
+  console.log("rolesQuery:", rolesQuery.data?.data);
 
   const productSubscriptionsQuery = useGet<ProductSubscriptionListResponse>(
-    ['productSubscriptions', organizationId || 'all'],
-    organizationId ? `${GET.Product_Subscription_List}?organizationId=${organizationId}` : GET.Product_Subscription_List,
+    ["productSubscriptions", organizationId || "all"],
+    organizationId
+      ? `${GET.Product_Subscription_List}?organizationId=${organizationId}`
+      : GET.Product_Subscription_List,
     true
   );
 
   const createUserMutation = usePost<CreateUserPayload, CreateUserResponse>(
-    ['users', organizationId || 'all'],
+    ["users", organizationId || "all"],
     () => {
       usersQuery.refetch();
       handleCloseModal();
@@ -181,7 +252,7 @@ export default function Users({ organizationId }: UsersProps) {
   );
 
   const updateUserMutation = usePut<CreateUserPayload, CreateUserResponse>(
-    ['users', organizationId || 'all'],
+    ["users", organizationId || "all"],
     () => {
       usersQuery.refetch();
       handleCloseModal();
@@ -190,7 +261,7 @@ export default function Users({ organizationId }: UsersProps) {
   );
 
   const deleteUserMutation = useDelete<any>(
-    ['users', organizationId || 'all'],
+    ["users", organizationId || "all"],
     () => {
       usersQuery.refetch();
       handleCloseDialog();
@@ -199,30 +270,31 @@ export default function Users({ organizationId }: UsersProps) {
   );
 
   const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
-    email: '',
-    password: '',
-    mobile: '',
-    organizationId: '',
+    firstName: "",
+    lastName: "",
+    email: "",
+    password: "",
+    mobile: "",
+    organizationId: "",
     roleIds: [] as string[],
     organizationProductSubscriptionIds: [] as string[],
-    status: 'active' as 'active' | 'inactive',
+    status: "active" as "active" | "inactive",
   });
 
   const handleEdit = (row: UserRowData) => {
     setFormData({
       firstName: row.firstName,
-      lastName: row.lastName === '-' ? '' : row.lastName,
+      lastName: row.lastName === "-" ? "" : row.lastName,
       email: row.email,
-      password: '',
-      mobile: row.mobile?.toString() || '',
-      organizationId: row.organizationId || '',
+      password: "",
+      mobile: row.mobile?.toString() || "",
+      organizationId: row.organizationId || "",
       roleIds: row.roleIds,
-      organizationProductSubscriptionIds: row.organizationProductSubscriptionIds,
+      organizationProductSubscriptionIds:
+        row.organizationProductSubscriptionIds,
       status: row.status,
     });
-    setModalMode('edit');
+    setModalMode("edit");
     setUserIdForEdit(row.id);
     setOpenModal(true);
   };
@@ -230,16 +302,17 @@ export default function Users({ organizationId }: UsersProps) {
   const handleView = (row: UserRowData) => {
     setFormData({
       firstName: row.firstName,
-      lastName: row.lastName || '',
+      lastName: row.lastName || "",
       email: row.email,
-      password: '',
-      mobile: row.mobile?.toString() || '',
-      organizationId: row.organizationId || '',
+      password: "",
+      mobile: row.mobile?.toString() || "",
+      organizationId: row.organizationId || "",
       roleIds: row.roleIds,
-      organizationProductSubscriptionIds: row.organizationProductSubscriptionIds,
+      organizationProductSubscriptionIds:
+        row.organizationProductSubscriptionIds,
       status: row.status,
     });
-    setModalMode('view');
+    setModalMode("view");
     setOpenModal(true);
   };
 
@@ -250,17 +323,17 @@ export default function Users({ organizationId }: UsersProps) {
 
   const handleAddUser = () => {
     setFormData({
-      firstName: '',
-      lastName: '',
-      email: '',
-      password: '',
-      mobile: '',
-      organizationId: '',
+      firstName: "",
+      lastName: "",
+      email: "",
+      password: "",
+      mobile: "",
+      organizationId: "",
       roleIds: [],
       organizationProductSubscriptionIds: [],
-      status: 'active',
+      status: "active",
     });
-    setModalMode('add');
+    setModalMode("add");
     setOpenModal(true);
   };
 
@@ -268,15 +341,15 @@ export default function Users({ organizationId }: UsersProps) {
     setOpenModal(false);
     setModalMode(null);
     setFormData({
-      firstName: '',
-      lastName: '',
-      email: '',
-      password: '',
-      mobile: '',
-      organizationId: '',
+      firstName: "",
+      lastName: "",
+      email: "",
+      password: "",
+      mobile: "",
+      organizationId: "",
       roleIds: [],
       organizationProductSubscriptionIds: [],
-      status: 'active',
+      status: "active",
     });
   };
 
@@ -289,7 +362,7 @@ export default function Users({ organizationId }: UsersProps) {
     if (userIdForEdit) {
       deleteUserMutation.mutate({
         url: `${DELETE.Delete_User}/${userIdForEdit}`,
-        payload: { organizationId: organizationId || '' },
+        payload: { organizationId: organizationId || "" },
       });
     } else {
       handleCloseDialog();
@@ -297,14 +370,15 @@ export default function Users({ organizationId }: UsersProps) {
   };
 
   const handleSave = async () => {
-    if (modalMode === 'add') {
+    if (modalMode === "add") {
       const payload: CreateUserPayload = {
         email: formData.email,
         firstName: formData.firstName,
         lastName: formData.lastName,
         password: formData.password,
         roleIds: formData.roleIds,
-        organizationProductSubscriptionIds: formData.organizationProductSubscriptionIds,
+        organizationProductSubscriptionIds:
+          formData.organizationProductSubscriptionIds,
         mobile: formData.mobile,
         organizationId: organizationId || undefined,
       };
@@ -312,13 +386,14 @@ export default function Users({ organizationId }: UsersProps) {
         url: POST.Create_User,
         payload,
       });
-    } else if (modalMode === 'edit' && userIdForEdit) {
+    } else if (modalMode === "edit" && userIdForEdit) {
       const updatePayload: any = {
         firstName: formData.firstName,
         lastName: formData.lastName,
         organizationId: organizationId || undefined,
         roleIds: formData.roleIds,
-        organizationProductSubscriptionIds: formData.organizationProductSubscriptionIds,
+        organizationProductSubscriptionIds:
+          formData.organizationProductSubscriptionIds,
         mobile: formData.mobile,
       };
       if (formData.password) {
@@ -333,24 +408,26 @@ export default function Users({ organizationId }: UsersProps) {
     }
   };
 
-  const transformedUsers: UserRowData[] = usersQuery.data?.data?.map((user: User) => ({
-    id: user._id,
-    firstName: user.firstName,
-    lastName: user.lastName === "" ? '-' : user.lastName,
-    email: user.email,
-    mobile: user.mobile === "" ? '-' : user.mobile,
-    organizationId: user.organizationId,
-    roleIds: user.roleIds.map(role => role._id),
-    roleNames: user.roleIds.map(role => role.name),
-    organizationProductSubscriptionIds: user.organizationProductSubscriptionIds.map(sub => sub._id),
-    isVerified: user.isVerified,
-    status: user.status as 'active' | 'inactive',
-    handleEdit,
-    handleView,
-    handleDelete,
-  })) || [];
+  const transformedUsers: UserRowData[] =
+    usersQuery.data?.data?.map((user: User) => ({
+      id: user._id,
+      firstName: user.firstName,
+      lastName: user.lastName === "" ? "-" : user.lastName,
+      email: user.email,
+      mobile: user.mobile === "" ? "-" : user.mobile,
+      organizationId: user.organizationId,
+      roleIds: user.roleIds.map((role) => role._id),
+      roleNames: user.roleIds.map((role) => role.name),
+      organizationProductSubscriptionIds:
+        user.organizationProductSubscriptionIds.map((sub) => sub._id),
+      isVerified: user.isVerified,
+      status: user.status as "active" | "inactive",
+      handleEdit,
+      handleView,
+      handleDelete,
+    })) || [];
 
-  const isAddMode = modalMode === 'add';
+  const isAddMode = modalMode === "add";
   const isFormValid =
     !!formData.firstName.trim() &&
     !!formData.email.trim() &&
@@ -361,96 +438,337 @@ export default function Users({ organizationId }: UsersProps) {
   return (
     <Box
       sx={{
-        p: STYLE_GUIDE.SPACING.s6,
+        p: 1,
         ml: { xs: STYLE_GUIDE.SPACING.s0 },
+        backgroundColor: STYLE_GUIDE.COLORS.backgroundDefault,
       }}
     >
-      <Card
+      <Box
         sx={{
-          borderRadius: STYLE_GUIDE.SPACING.s2,
-          overflow: 'visible',
+          display: "flex",
+          justifyContent: "flex-end",
+          alignItems: "center",
+          mb: STYLE_GUIDE.SPACING.s3,
         }}
       >
-        <CardContent sx={{ p: STYLE_GUIDE.SPACING.s6 }}>
-          <Box
-            sx={{
-              display: 'flex',
-              justifyContent: 'flex-end',
-              alignItems: 'center',
-              mb: STYLE_GUIDE.SPACING.s3,
-            }}
-          >
-            <Button
-              variant="contained"
-              onClick={handleAddUser}
-              sx={{
-                borderRadius: STYLE_GUIDE.SPACING.s2,
-              }}
-            >
-              Add User
-            </Button>
-          </Box>
+        <Button
+          variant="contained"
+          onClick={handleAddUser}
+          sx={{
+            borderRadius: STYLE_GUIDE.SPACING.s2,
+          }}
+        >
+          Add User
+        </Button>
+      </Box>
 
-          {usersQuery.isLoading ? (
-            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', py: STYLE_GUIDE.SPACING.s8 }}>
-              <CircularProgress />
-              <Typography sx={{ ml: STYLE_GUIDE.SPACING.s3 }}>Loading users...</Typography>
-            </Box>
-          ) : usersQuery.error ? (
-            <Box sx={{ textAlign: 'center', py: STYLE_GUIDE.SPACING.s6 }}>
-              <Typography color="error" sx={{ mb: STYLE_GUIDE.SPACING.s3 }}>
-                {usersQuery.error instanceof Error ? usersQuery.error.message : 'Failed to fetch users'}
-              </Typography>
-            </Box>
-          ) : !transformedUsers || transformedUsers.length === 0 ? (
-            <Box sx={{ textAlign: 'center', py: STYLE_GUIDE.SPACING.s8 }}>
-              <Typography variant="body1" color="text.secondary">
-                No users found.
-              </Typography>
-            </Box>
-          ) : (
-            <DataGrid
-              rows={transformedUsers}
-              columns={columns}
-              disableColumnMenu
-              hideFooter={true}
+      {usersQuery.isLoading ? (
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            py: STYLE_GUIDE.SPACING.s8,
+          }}
+        >
+          <CircularProgress />
+          <Typography sx={{ ml: STYLE_GUIDE.SPACING.s3 }}>
+            Loading users...
+          </Typography>
+        </Box>
+      ) : usersQuery.error ? (
+        <Box sx={{ textAlign: "center", py: STYLE_GUIDE.SPACING.s6 }}>
+          <Typography color="error" sx={{ mb: STYLE_GUIDE.SPACING.s3 }}>
+            {usersQuery.error instanceof Error
+              ? usersQuery.error.message
+              : "Failed to fetch users"}
+          </Typography>
+        </Box>
+      ) : !transformedUsers || transformedUsers.length === 0 ? (
+        <Box sx={{ textAlign: "center", py: STYLE_GUIDE.SPACING.s8 }}>
+          <Typography variant="body1" color="text.secondary">
+            No users found.
+          </Typography>
+        </Box>
+      ) : (
+        <DataGrid
+          rows={transformedUsers}
+          columns={columns}
+          disableColumnMenu
+          hideFooter={true}
+          sx={{
+            overflow: "visible",
+          }}
+        />
+      )}
+
+      <DialogContainer
+        open={openModal}
+        onClose={handleCloseModal}
+        title={
+          modalMode === "add"
+            ? "Add User"
+            : modalMode === "edit"
+            ? "Edit User"
+            : "View User"
+        }
+        maxWidth="md"
+        fullWidth
+        actions={
+          <>
+            <PrimaryButton variant="outlined" onClick={handleCloseModal}>
+              Cancel
+            </PrimaryButton>
+            {modalMode !== "view" && (
+              <PrimaryButton
+                onClick={handleSave}
+                disabled={
+                  createUserMutation.isPending ||
+                  updateUserMutation.isPending ||
+                  !isFormValid
+                }
+              >
+                {createUserMutation.isPending ||
+                updateUserMutation.isPending ? (
+                  <CircularProgress size={20} />
+                ) : (
+                  "Save"
+                )}
+              </PrimaryButton>
+            )}
+          </>
+        }
+      >
+        <Box
+          sx={{
+            display: "grid",
+            gridTemplateColumns: "2fr 2fr",
+            gap: STYLE_GUIDE.SPACING.s6,
+            padding: STYLE_GUIDE.SPACING.s4,
+          }}
+        >
+          <TextField
+            label="First Name"
+            value={formData.firstName}
+            onChange={(e) =>
+              setFormData({ ...formData, firstName: e.target.value })
+            }
+            disabled={modalMode === "view"}
+            variant="outlined"
+            fullWidth
+            required
+            sx={{
+              "& .MuiOutlinedInput-root": {
+                borderRadius: STYLE_GUIDE.SPACING.s2,
+              },
+            }}
+          />
+          <TextField
+            label="Last Name"
+            value={formData.lastName}
+            onChange={(e) =>
+              setFormData({ ...formData, lastName: e.target.value })
+            }
+            disabled={modalMode === "view"}
+            variant="outlined"
+            fullWidth
+            sx={{
+              "& .MuiOutlinedInput-root": {
+                borderRadius: STYLE_GUIDE.SPACING.s2,
+              },
+            }}
+          />
+          <TextField
+            label="Email"
+            value={formData.email}
+            onChange={(e) =>
+              setFormData({ ...formData, email: e.target.value })
+            }
+            disabled={modalMode === "view"}
+            variant="outlined"
+            fullWidth
+            required
+            type="email"
+            sx={{
+              "& .MuiOutlinedInput-root": {
+                borderRadius: STYLE_GUIDE.SPACING.s2,
+              },
+            }}
+          />
+          {modalMode === "add" && (
+            <TextField
+              label="Password"
+              value={formData.password}
+              onChange={(e) =>
+                setFormData({ ...formData, password: e.target.value })
+              }
+              variant="outlined"
+              fullWidth
+              required
+              type="password"
               sx={{
-                overflow: 'visible',
+                "& .MuiOutlinedInput-root": {
+                  borderRadius: STYLE_GUIDE.SPACING.s2,
+                },
               }}
             />
           )}
-        </CardContent>
-      </Card>
+          <TextField
+            label="Mobile"
+            value={formData.mobile}
+            onChange={(e) =>
+              setFormData({ ...formData, mobile: e.target.value })
+            }
+            disabled={modalMode === "view"}
+            variant="outlined"
+            fullWidth
+            type="tel"
+            sx={{
+              "& .MuiOutlinedInput-root": {
+                borderRadius: STYLE_GUIDE.SPACING.s2,
+              },
+            }}
+          />
+          {!organizationId && (
+            <TextField
+              label="Organization ID"
+              value={formData.organizationId}
+              onChange={(e) =>
+                setFormData({ ...formData, organizationId: e.target.value })
+              }
+              disabled={modalMode === "view"}
+              variant="outlined"
+              fullWidth
+              sx={{
+                "& .MuiOutlinedInput-root": {
+                  borderRadius: STYLE_GUIDE.SPACING.s2,
+                },
+              }}
+            />
+          )}
+          <FormControl
+            fullWidth
+            required
+            sx={{
+              "& .MuiOutlinedInput-root": {
+                borderRadius: STYLE_GUIDE.SPACING.s2,
+              },
+            }}
+          >
+            <InputLabel>Status</InputLabel>
+            <Select
+              value={formData.status}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  status: e.target.value as "active" | "inactive",
+                })
+              }
+              disabled={modalMode === "view"}
+              label="Status"
+            >
+              <MenuItem value="active">Active</MenuItem>
+              <MenuItem value="inactive">Inactive</MenuItem>
+            </Select>
+          </FormControl>
+          <Autocomplete
+            multiple
+            options={rolesQuery.data?.data || []}
+            getOptionLabel={(option) => option.name}
+            value={
+              rolesQuery.data?.data?.filter((role) =>
+                formData.roleIds.includes(role._id)
+              ) || []
+            }
+            onChange={(_, newValue) =>
+              setFormData({
+                ...formData,
+                roleIds: newValue.map((role) => role._id),
+              })
+            }
+            disabled={modalMode === "view"}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label="Roles"
+                required
+                variant="outlined"
+                sx={{
+                  "& .MuiOutlinedInput-root": {
+                    borderRadius: STYLE_GUIDE.SPACING.s2,
+                  },
+                }}
+              />
+            )}
+          />
+          <Autocomplete
+            multiple
+            options={productSubscriptionsQuery.data?.data || []}
+            getOptionLabel={(option) => option.productId.name}
+            value={
+              productSubscriptionsQuery.data?.data?.filter((sub) =>
+                formData.organizationProductSubscriptionIds.includes(sub._id)
+              ) || []
+            }
+            onChange={(_, newValue) =>
+              setFormData({
+                ...formData,
+                organizationProductSubscriptionIds: newValue.map(
+                  (sub) => sub._id
+                ),
+              })
+            }
+            disabled={modalMode === "view"}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label="Product Subscriptions"
+                required
+                variant="outlined"
+                sx={{
+                  "& .MuiOutlinedInput-root": {
+                    borderRadius: STYLE_GUIDE.SPACING.s2,
+                  },
+                }}
+              />
+            )}
+          />
+        </Box>
+      </DialogContainer>
 
-      <Modal
+      {/* <Modal
         open={openModal}
         onClose={handleCloseModal}
         sx={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
         }}
       >
         <Box
           sx={{
-            backgroundColor: theme.palette.background.paper || STYLE_GUIDE.COLORS.white,
+            backgroundColor:
+              theme.palette.background.paper || STYLE_GUIDE.COLORS.white,
             borderRadius: STYLE_GUIDE.SPACING.s2,
             p: STYLE_GUIDE.SPACING.s3,
-            width: '700px',
-            maxWidth: '90%',
-            maxHeight: '90vh',
-            overflow: 'auto',
+            width: "700px",
+            maxWidth: "90%",
+            maxHeight: "90vh",
+            overflow: "auto",
           }}
         >
           <Typography variant="h6" sx={{ mb: STYLE_GUIDE.SPACING.s3 }}>
-            {modalMode === 'add' ? 'Add User' :
-              modalMode === 'edit' ? 'Edit User' : 'View User'}
+            {modalMode === "add"
+              ? "Add User"
+              : modalMode === "edit"
+              ? "Edit User"
+              : "View User"}
           </Typography>
 
           <Box
             sx={{
-              display: 'grid',
-              gridTemplateColumns: '2fr 2fr',
+              display: "grid",
+              gridTemplateColumns: "2fr 2fr",
               gap: STYLE_GUIDE.SPACING.s6,
               padding: STYLE_GUIDE.SPACING.s4,
             }}
@@ -458,72 +776,121 @@ export default function Users({ organizationId }: UsersProps) {
             <TextField
               label="First Name"
               value={formData.firstName}
-              onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
-              disabled={modalMode === 'view'}
+              onChange={(e) =>
+                setFormData({ ...formData, firstName: e.target.value })
+              }
+              disabled={modalMode === "view"}
               variant="outlined"
               fullWidth
               required
-              sx={{ '& .MuiOutlinedInput-root': { borderRadius: STYLE_GUIDE.SPACING.s2 } }}
+              sx={{
+                "& .MuiOutlinedInput-root": {
+                  borderRadius: STYLE_GUIDE.SPACING.s2,
+                },
+              }}
             />
             <TextField
               label="Last Name"
               value={formData.lastName}
-              onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
-              disabled={modalMode === 'view'}
+              onChange={(e) =>
+                setFormData({ ...formData, lastName: e.target.value })
+              }
+              disabled={modalMode === "view"}
               variant="outlined"
               fullWidth
-              sx={{ '& .MuiOutlinedInput-root': { borderRadius: STYLE_GUIDE.SPACING.s2 } }}
+              sx={{
+                "& .MuiOutlinedInput-root": {
+                  borderRadius: STYLE_GUIDE.SPACING.s2,
+                },
+              }}
             />
             <TextField
               label="Email"
               value={formData.email}
-              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-              disabled={modalMode === 'view'}
+              onChange={(e) =>
+                setFormData({ ...formData, email: e.target.value })
+              }
+              disabled={modalMode === "view"}
               variant="outlined"
               fullWidth
               required
               type="email"
-              sx={{ '& .MuiOutlinedInput-root': { borderRadius: STYLE_GUIDE.SPACING.s2 } }}
+              sx={{
+                "& .MuiOutlinedInput-root": {
+                  borderRadius: STYLE_GUIDE.SPACING.s2,
+                },
+              }}
             />
-            {modalMode === 'add' && (
+            {modalMode === "add" && (
               <TextField
                 label="Password"
                 value={formData.password}
-                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, password: e.target.value })
+                }
                 variant="outlined"
                 fullWidth
                 required
                 type="password"
-                sx={{ '& .MuiOutlinedInput-root': { borderRadius: STYLE_GUIDE.SPACING.s2 } }}
+                sx={{
+                  "& .MuiOutlinedInput-root": {
+                    borderRadius: STYLE_GUIDE.SPACING.s2,
+                  },
+                }}
               />
             )}
             <TextField
               label="Mobile"
               value={formData.mobile}
-              onChange={(e) => setFormData({ ...formData, mobile: e.target.value })}
-              disabled={modalMode === 'view'}
+              onChange={(e) =>
+                setFormData({ ...formData, mobile: e.target.value })
+              }
+              disabled={modalMode === "view"}
               variant="outlined"
               fullWidth
               type="tel"
-              sx={{ '& .MuiOutlinedInput-root': { borderRadius: STYLE_GUIDE.SPACING.s2 } }}
+              sx={{
+                "& .MuiOutlinedInput-root": {
+                  borderRadius: STYLE_GUIDE.SPACING.s2,
+                },
+              }}
             />
             {!organizationId && (
               <TextField
                 label="Organization ID"
                 value={formData.organizationId}
-                onChange={(e) => setFormData({ ...formData, organizationId: e.target.value })}
-                disabled={modalMode === 'view'}
+                onChange={(e) =>
+                  setFormData({ ...formData, organizationId: e.target.value })
+                }
+                disabled={modalMode === "view"}
                 variant="outlined"
                 fullWidth
-                sx={{ '& .MuiOutlinedInput-root': { borderRadius: STYLE_GUIDE.SPACING.s2 } }}
+                sx={{
+                  "& .MuiOutlinedInput-root": {
+                    borderRadius: STYLE_GUIDE.SPACING.s2,
+                  },
+                }}
               />
             )}
-            <FormControl fullWidth required sx={{ '& .MuiOutlinedInput-root': { borderRadius: STYLE_GUIDE.SPACING.s2 } }}>
+            <FormControl
+              fullWidth
+              required
+              sx={{
+                "& .MuiOutlinedInput-root": {
+                  borderRadius: STYLE_GUIDE.SPACING.s2,
+                },
+              }}
+            >
               <InputLabel>Status</InputLabel>
               <Select
                 value={formData.status}
-                onChange={(e) => setFormData({ ...formData, status: e.target.value as 'active' | 'inactive' })}
-                disabled={modalMode === 'view'}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    status: e.target.value as "active" | "inactive",
+                  })
+                }
+                disabled={modalMode === "view"}
                 label="Status"
               >
                 <MenuItem value="active">Active</MenuItem>
@@ -534,16 +901,29 @@ export default function Users({ organizationId }: UsersProps) {
               multiple
               options={rolesQuery.data?.data || []}
               getOptionLabel={(option) => option.name}
-              value={rolesQuery.data?.data?.filter(role => formData.roleIds.includes(role._id)) || []}
-              onChange={(_, newValue) => setFormData({ ...formData, roleIds: newValue.map(role => role._id) })}
-              disabled={modalMode === 'view'}
+              value={
+                rolesQuery.data?.data?.filter((role) =>
+                  formData.roleIds.includes(role._id)
+                ) || []
+              }
+              onChange={(_, newValue) =>
+                setFormData({
+                  ...formData,
+                  roleIds: newValue.map((role) => role._id),
+                })
+              }
+              disabled={modalMode === "view"}
               renderInput={(params) => (
                 <TextField
                   {...params}
                   label="Roles"
                   required
                   variant="outlined"
-                  sx={{ '& .MuiOutlinedInput-root': { borderRadius: STYLE_GUIDE.SPACING.s2 } }}
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      borderRadius: STYLE_GUIDE.SPACING.s2,
+                    },
+                  }}
                 />
               )}
             />
@@ -551,22 +931,44 @@ export default function Users({ organizationId }: UsersProps) {
               multiple
               options={productSubscriptionsQuery.data?.data || []}
               getOptionLabel={(option) => option.productId.name}
-              value={productSubscriptionsQuery.data?.data?.filter(sub => formData.organizationProductSubscriptionIds.includes(sub._id)) || []}
-              onChange={(_, newValue) => setFormData({ ...formData, organizationProductSubscriptionIds: newValue.map(sub => sub._id) })}
-              disabled={modalMode === 'view'}
+              value={
+                productSubscriptionsQuery.data?.data?.filter((sub) =>
+                  formData.organizationProductSubscriptionIds.includes(sub._id)
+                ) || []
+              }
+              onChange={(_, newValue) =>
+                setFormData({
+                  ...formData,
+                  organizationProductSubscriptionIds: newValue.map(
+                    (sub) => sub._id
+                  ),
+                })
+              }
+              disabled={modalMode === "view"}
               renderInput={(params) => (
                 <TextField
                   {...params}
                   label="Product Subscriptions"
                   required
                   variant="outlined"
-                  sx={{ '& .MuiOutlinedInput-root': { borderRadius: STYLE_GUIDE.SPACING.s2 } }}
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      borderRadius: STYLE_GUIDE.SPACING.s2,
+                    },
+                  }}
                 />
               )}
             />
           </Box>
 
-          <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: STYLE_GUIDE.SPACING.s2, mt: STYLE_GUIDE.SPACING.s6 }}>
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "flex-end",
+              gap: STYLE_GUIDE.SPACING.s2,
+              mt: STYLE_GUIDE.SPACING.s6,
+            }}
+          >
             <Button
               variant="outlined"
               onClick={handleCloseModal}
@@ -576,60 +978,57 @@ export default function Users({ organizationId }: UsersProps) {
             >
               Cancel
             </Button>
-            {modalMode !== 'view' && (
+            {modalMode !== "view" && (
               <Button
                 variant="contained"
                 onClick={handleSave}
-                disabled={createUserMutation.isPending || updateUserMutation.isPending || !isFormValid}
+                disabled={
+                  createUserMutation.isPending ||
+                  updateUserMutation.isPending ||
+                  !isFormValid
+                }
                 sx={{
                   borderRadius: STYLE_GUIDE.SPACING.s2,
                 }}
               >
-                {createUserMutation.isPending || updateUserMutation.isPending ? <CircularProgress size={20} /> : 'Save'}
+                {createUserMutation.isPending ||
+                updateUserMutation.isPending ? (
+                  <CircularProgress size={20} />
+                ) : (
+                  "Save"
+                )}
               </Button>
             )}
           </Box>
         </Box>
-      </Modal>
+      </Modal> */}
 
-      <Dialog
+      <DialogContainer
         open={openDialog}
         onClose={handleCloseDialog}
-        sx={{
-          '& .MuiDialog-paper': {
-            borderRadius: STYLE_GUIDE.SPACING.s2,
-          },
-        }}
+        title="Confirm Delete"
+        maxWidth="sm"
+        actions={
+          <>
+            <PrimaryButton variant="outlined" onClick={handleCloseDialog}>
+              No
+            </PrimaryButton>
+            <PrimaryButton
+              onClick={handleConfirmDelete}
+              color="error"
+              disabled={deleteUserMutation.isPending}
+            >
+              {deleteUserMutation.isPending ? (
+                <CircularProgress size={20} />
+              ) : (
+                "Yes"
+              )}
+            </PrimaryButton>
+          </>
+        }
       >
-        <DialogTitle>
-          Confirm Delete
-        </DialogTitle>
-        <DialogContent>
-          <Typography>
-            Are you sure you want to delete the user?
-          </Typography>
-        </DialogContent>
-        <DialogActions>
-          <Button
-            onClick={handleCloseDialog}
-            sx={{
-              borderRadius: STYLE_GUIDE.SPACING.s2,
-            }}
-          >
-            No
-          </Button>
-          <Button
-            onClick={handleConfirmDelete}
-            color="error"
-            sx={{
-              borderRadius: STYLE_GUIDE.SPACING.s2,
-            }}
-            disabled={deleteUserMutation.isPending}
-          >
-            {deleteUserMutation.isPending ? <CircularProgress size={20} /> : 'Yes'}
-          </Button>
-        </DialogActions>
-      </Dialog>
+        <Typography>Are you sure you want to delete the user?</Typography>
+      </DialogContainer>
     </Box>
   );
 }
