@@ -274,7 +274,7 @@ export default function SideNav() {
         navigate(route);
       } else if (itemName === "Notifications") {
         setOpenNotificationSettings((prev) => !prev);
-        navigate(route);
+        // navigate(route);
       } else if (itemName === "Settings") {
         setOpenReportSettings((prev) => !prev);
         // Don't navigate for Settings main item
@@ -691,7 +691,7 @@ export default function SideNav() {
             width: openNav ? drawerWidth : `calc(${theme.spacing(7)} + 1px)`,
             overflow: "auto",
             borderRight: `1px solid ${theme.palette.divider}`,
-            bgcolor: theme.palette.background.paper,
+            bgcolor: "#f9f9f9",
             py: 2,
           }}
         >

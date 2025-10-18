@@ -7,6 +7,7 @@ import { AccountPopover } from "../../atom/accountPopover/accountPopover";
 // import { Menu as MenuIcon } from "@mui/icons-material";
 // import { useNav } from "../../../context/NavContext";
 import { STYLE_GUIDE } from "../../../styles";
+import { useUnifiedTheme } from "../../../hooks/useUnifiedTheme";
 
 const Header = () => {
   const { pathname } = useLocation();
@@ -15,6 +16,7 @@ const Header = () => {
   //   // Use the functional update form correctly
   //   setOpenNav(!openNav); // This toggles the value of `openNav`
   // };
+  const theme = useUnifiedTheme();
 
   return (
     <>
@@ -24,6 +26,9 @@ const Header = () => {
         elevation={2}
         sx={{
           height: 60,
+          bgcolor: "#f9f9f9",
+          borderBottom: `1px solid ${theme.palette.divider}`,
+          boxShadow: "none",
         }}
       >
         <Toolbar>

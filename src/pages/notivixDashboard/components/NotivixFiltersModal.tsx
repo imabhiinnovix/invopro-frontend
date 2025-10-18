@@ -1654,6 +1654,21 @@ import DatePicker, { Calendar, DateObject } from "react-multi-date-picker";
 import "react-multi-date-picker/styles/colors/purple.css";
 import DialogContainer from "../../../components/molecule/dialog";
 
+// Add global styles for datepicker portal to ensure it appears above modal
+const style = document.createElement("style");
+style.textContent = `
+  .rmdp-container:not(.rmdp-input) {
+    z-index: 9999 !important;
+  }
+  .rmdp-wrapper {
+    z-index: 9999 !important;
+  }
+`;
+if (!document.getElementById("rmdp-portal-styles")) {
+  style.id = "rmdp-portal-styles";
+  document.head.appendChild(style);
+}
+
 interface NotivixFiltersModalProps {
   open: boolean;
   onClose: () => void;
@@ -2255,16 +2270,35 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
         return (
           <Box key={uniqueKey}>
             <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
-              <Box sx={{ flex: 1 }}>
+              <Box
+                sx={{
+                  flex: 1,
+                  height: 40,
+                  position: "relative",
+                  "& .rmdp-container ": {
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                    width: "100%",
+                    height: "40px !important",
+                  },
+                  "& .rmdp-container input": {
+                    height: "40px !important",
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                  },
+                }}
+              >
                 <DatePicker
                   onOpen={() => handleDateRangeFocus(uniqueKey, true)}
                   onClose={() => handleDateRangeFocus(uniqueKey, false)}
-                  calendarPosition="top"
                   value={fieldDateRangeValue}
                   onChange={(dateRange) =>
                     handleDateRangeChange(uniqueKey, dateRange)
                   }
                   range
+                  portal
                   placeholder={`${field.label}`}
                   numberOfMonths={2}
                   showOtherDays
@@ -2273,8 +2307,9 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
                   inputClass="w-full"
                   style={{
                     width: "100%",
-                    padding: "10px 14px",
-                    fontSize: "16px",
+                    height: "38px",
+                    padding: "8.5px 14px",
+                    fontSize: "14px",
                     borderRadius: 4,
                     background: theme.getDropdownBackground(),
                     border: `1px solid ${
@@ -2284,7 +2319,13 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
                     }`,
                     color: theme.getInputTextColor(),
                     outline: "none",
+                    boxSizing: "border-box",
                   }}
+                  containerStyle={{
+                    width: "100%",
+                  }}
+                  portalTarget={document.body}
+                  zIndex={9999}
                 />
               </Box>
               {fieldDateRangeValue.length > 0 && (
@@ -2459,6 +2500,7 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
       open={open}
       onClose={onClose}
       title="Filters"
+      id="filters-modal-portal-target"
       actions={
         <>
           <Button
@@ -2559,7 +2601,7 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
           sx={{
             display: "grid",
             pt: 1.5,
-            gridTemplateColumns: "repeat(3, 1fr)",
+            gridTemplateColumns: "repeat(2, 1fr)",
             gap: STYLE_GUIDE.SPACING.s4,
             "@media (max-width: 900px)": {
               gridTemplateColumns: "repeat(2, 1fr)",

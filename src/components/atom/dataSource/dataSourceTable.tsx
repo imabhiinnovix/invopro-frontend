@@ -284,7 +284,7 @@ const DataSourceTable: React.FC<AttributeOptionTableProps> = ({
             setReload={setReload}
             title="Update Data Source"
             CustomButton={<Button>Edit</Button>}
-            data={row.originalData as any}
+            data={row as any}
           />
         );
       },

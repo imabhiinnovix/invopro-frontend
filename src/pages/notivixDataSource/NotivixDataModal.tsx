@@ -389,6 +389,7 @@ export const NotivixDataModal: React.FC<ModelSectionProps> = ({
               handleFieldChange(typeof val === "string" ? val : val?.id || "")
             }
             disabled={!isFieldEditable}
+            sx={{ height: "56px" }}
             renderInput={(params) => (
               <TextField
                 {...params}
@@ -445,6 +446,7 @@ export const NotivixDataModal: React.FC<ModelSectionProps> = ({
             }
             sx={{
               "& .MuiOutlinedInput-root": { borderRadius: "8px" },
+              height: "56px",
             }}
             renderInput={(params) => (
               <TextField

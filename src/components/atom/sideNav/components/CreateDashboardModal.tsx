@@ -68,6 +68,7 @@ export const CreateDashboardModal: React.FC<CreateDashboardModalProps> = ({
       open={open}
       onClose={onClose}
       title="Create New Dashboard"
+      maxWidth="sm"
       actions={
         <>
           <Button onClick={onClose} variant="outlined">

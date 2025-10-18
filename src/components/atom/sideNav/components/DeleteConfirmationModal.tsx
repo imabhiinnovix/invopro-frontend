@@ -33,6 +33,7 @@ export const DeleteConfirmationModal: React.FC<
       open={open}
       onClose={onCancel}
       title="Delete Dashboard"
+      maxWidth="sm"
       actions={
         <>
           <Button onClick={onCancel}>Cancel</Button>

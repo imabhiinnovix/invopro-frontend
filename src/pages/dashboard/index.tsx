@@ -290,7 +290,7 @@ const Dashboard = () => {
           columns={columns}
           rows={rows}
           loading={isLoading}
-          height="calc(100vh - 100px)"
+          height="calc(100vh - 240px)"
         />
 
         {/* <Box

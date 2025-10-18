@@ -1264,7 +1264,7 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({
                   });
                 }}
                 label="Show in Menu"
-                displayEmpty
+                // displayEmpty
               >
                 <MenuItem value="true">Yes</MenuItem>
                 <MenuItem value="false">No</MenuItem>

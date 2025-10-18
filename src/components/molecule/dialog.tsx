@@ -29,6 +29,7 @@ export default function DialogContainer({
   actions,
   maxWidth = "md",
   fullWidth = true,
+  id,
 }: {
   open: boolean;
   onClose: () => void;
@@ -37,6 +38,7 @@ export default function DialogContainer({
   actions: React.ReactNode;
   maxWidth?: "xs" | "sm" | "md" | "lg" | "xl";
   fullWidth?: boolean;
+  id?: string;
 }) {
   const theme = useUnifiedTheme();
   const { getDialogTitleSx } = useComponentTypography();
@@ -48,6 +50,11 @@ export default function DialogContainer({
         open={open}
         maxWidth={maxWidth}
         fullWidth={fullWidth}
+        // PaperProps={{
+        //   sx: {
+        //     overflow: "visible",
+        //   },
+        // }}
       >
         <DialogTitle
           sx={{
@@ -78,10 +85,12 @@ export default function DialogContainer({
         </IconButton>
         <DialogContent
           dividers
+          id={id}
           sx={{
             display: "flex",
             flexDirection: "column",
             gap: STYLE_GUIDE.SPACING.s6,
+            // overflow: "visible",
           }}
         >
           {children}
