@@ -249,7 +249,7 @@ const DataSourceTable: React.FC<AttributeOptionTableProps> = ({
     {
       id: "createdAt",
       label: "Created At",
-      minWidth: 170,
+      minWidth: 270,
       renderCell: (row: Record<string, unknown>) => {
         return row.createdAt ? new Date(row.createdAt).toLocaleString() : "-";
       },
@@ -257,7 +257,7 @@ const DataSourceTable: React.FC<AttributeOptionTableProps> = ({
     {
       id: "updatedAt",
       label: "Updated At",
-      minWidth: 170,
+      minWidth: 270,
       renderCell: (row: Record<string, unknown>) => {
         return row.updatedAt ? new Date(row.updatedAt).toLocaleString() : "-";
       },
