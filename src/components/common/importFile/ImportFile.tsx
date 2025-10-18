@@ -3969,6 +3969,7 @@ const ImportFile: React.FC<ImportFileProps> = ({
         open={open}
         onClose={handleFormClose}
         title={title}
+        maxWidth="sm"
         actions={
           <>
             {isLoadingReportUpload ? (

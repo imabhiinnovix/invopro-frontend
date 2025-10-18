@@ -1033,6 +1033,7 @@ export default function NotificationLogger() {
         open={viewModalOpen}
         onClose={handleViewModalClose}
         title="Notification logs Details"
+        maxWidth="lg"
         actions={
           <PrimaryButton variant="outlined" onClick={handleViewModalClose}>
             Cancel

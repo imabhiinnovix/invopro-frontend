@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect } from "react";
 import {
   Box,
   TextField,
@@ -7,23 +7,22 @@ import {
   CircularProgress,
   Avatar,
   InputAdornment,
-} from '@mui/material';
-import SendIcon from '@mui/icons-material/Send';
-import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
-import PersonIcon from '@mui/icons-material/Person';
-import { useForm } from 'react-hook-form';
-import { yupResolver } from '@hookform/resolvers/yup';
-import * as yup from 'yup';
-import { useMutation } from '@tanstack/react-query';
-import axiosInstance from '../../services/axiosInstance';
-import { GET } from '../../services/apiRoutes';
-import { STYLE_GUIDE } from '../../styles';
-import { useUnifiedTheme } from '../../hooks/useUnifiedTheme';
-import { useComponentTypography } from '../../hooks/useComponentTypography';
-
+} from "@mui/material";
+import SendIcon from "@mui/icons-material/Send";
+import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
+import PersonIcon from "@mui/icons-material/Person";
+import { useForm } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+import * as yup from "yup";
+import { useMutation } from "@tanstack/react-query";
+import axiosInstance from "../../services/axiosInstance";
+import { GET } from "../../services/apiRoutes";
+import { STYLE_GUIDE } from "../../styles";
+import { useUnifiedTheme } from "../../hooks/useUnifiedTheme";
+import { useComponentTypography } from "../../hooks/useComponentTypography";
 
 const validationSchema = yup.object().shape({
-  query: yup.string().required('Please enter your question'),
+  query: yup.string().required("Please enter your question"),
 });
 
 interface QAPair {
@@ -34,9 +33,9 @@ interface QAPair {
 }
 
 function extractHtmlFromApiData(data: any): string {
-  if (typeof data !== 'string') return '';
-  if (data.startsWith('```')) {
-    return data.replace(/^```[a-zA-Z]*\n?|```$/g, '').replace(/```$/, '');
+  if (typeof data !== "string") return "";
+  if (data.startsWith("```")) {
+    return data.replace(/^```[a-zA-Z]*\n?|```$/g, "").replace(/```$/, "");
   }
   return data;
 }
@@ -44,11 +43,9 @@ function extractHtmlFromApiData(data: any): string {
 const AIInsightPage: React.FC = () => {
   const theme = useUnifiedTheme();
   const { getHeadingSx } = useComponentTypography();
-  
+
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [qaPairs, setQAPairs] = React.useState<QAPair[]>([]);
-
-
 
   const {
     register,
@@ -60,7 +57,7 @@ const AIInsightPage: React.FC = () => {
   });
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
+    if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       handleSubmit(onSubmit)();
     }
@@ -69,12 +66,12 @@ const AIInsightPage: React.FC = () => {
   const insightMutation = useMutation({
     mutationFn: async (userQuery: string) => {
       const { data } = await axiosInstance.get(`${GET.NL_Query_INSIGHTS}`, {
-        params: { userQuery }
+        params: { userQuery },
       });
       return data;
     },
     onSuccess: (result) => {
-      setQAPairs(prev => {
+      setQAPairs((prev) => {
         const updated = [...prev];
         updated[updated.length - 1] = {
           ...updated[updated.length - 1],
@@ -85,53 +82,50 @@ const AIInsightPage: React.FC = () => {
       });
     },
     onError: (error: any) => {
-      setQAPairs(prev => {
+      setQAPairs((prev) => {
         const updated = [...prev];
         updated[updated.length - 1] = {
           ...updated[updated.length - 1],
-          htmlContent: '',
+          htmlContent: "",
           loading: false,
-          error: error?.response?.data?.message || 'API error',
+          error: error?.response?.data?.message || "API error",
         };
         return updated;
       });
-    }
+    },
   });
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (qaPairs.length > 0) {
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }
   }, [qaPairs]);
 
   const onSubmit = async (formData: { query: string }) => {
     const userQuery = formData.query;
-    setQAPairs(prev => [
+    setQAPairs((prev) => [
       ...prev,
-      { userQuery, htmlContent: '', loading: true },
+      { userQuery, htmlContent: "", loading: true },
     ]);
     reset();
     insightMutation.mutate(userQuery);
   };
 
   return (
-    <Box sx={{
-      height: '100%',
-      bgcolor: theme.palette.background.paper,
-      display: 'flex',
-      flexDirection: 'column',
-      boxShadow: theme.shadows[1],
-      fontFamily: theme.typography.fontFamily,
-    }}>
-      <Box
-        px={3}
-        py={3}
-        borderBottom={1}
-        borderColor={theme.palette.divider}
-        bgcolor={theme.palette.background.paper}
-      >
+    <Box
+      sx={{
+        p: STYLE_GUIDE.SPACING.s2,
+        height: "100%",
+        overflow: "hidden",
+        display: "flex",
+        flexDirection: "column",
+      }}
+    >
+      <Box>
         <Typography
           variant="h5"
           gutterBottom
-          sx={{ 
+          sx={{
             ...getHeadingSx(),
 
             fontWeight: 600,
@@ -152,21 +146,23 @@ const AIInsightPage: React.FC = () => {
           Ask questions about your data and get AI-powered insights
         </Typography>
       </Box>
-      <Box sx={{
-        flex: 1,
-        overflowY: 'auto',
-        px: 3,
-        py: 2,
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 2,
-        backgroundColor: theme.palette.background.paper,
-      }}>
+      <Box
+        sx={{
+          flex: 1,
+          overflowY: "auto",
+          px: 3,
+          py: 2,
+          display: "flex",
+          flexDirection: "column",
+          gap: 2,
+          backgroundColor: theme.palette.background.paper,
+        }}
+      >
         {qaPairs.length === 0 && (
           <Typography
             variant="body2"
             align="center"
-            sx={{ 
+            sx={{
               mt: 6,
               color: theme.palette.text.secondary,
               fontSize: "1rem",
@@ -178,8 +174,8 @@ const AIInsightPage: React.FC = () => {
         )}
         {qaPairs.map((qa, index) => (
           <React.Fragment key={index}>
-            <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 1 }}>
-              <Box sx={{ display: 'flex', alignItems: 'flex-end', gap: 1 }}>
+            <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 1 }}>
+              <Box sx={{ display: "flex", alignItems: "flex-end", gap: 1 }}>
                 <Box
                   sx={{
                     bgcolor: theme.palette.primary.main,
@@ -188,9 +184,9 @@ const AIInsightPage: React.FC = () => {
                     py: 1.5,
                     borderRadius: 3,
                     maxWidth: 420,
-                    fontSize: '1rem',
-                    wordBreak: 'break-word',
-                    boxShadow: 'none',
+                    fontSize: "1rem",
+                    wordBreak: "break-word",
+                    boxShadow: "none",
                     fontFamily: theme.typography.fontFamily,
                   }}
                 >
@@ -203,25 +199,31 @@ const AIInsightPage: React.FC = () => {
                     {qa.userQuery}
                   </Typography>
                 </Box>
-                <Avatar sx={{
-                  bgcolor: theme.palette.primary.main,
-                  width: 32,
-                  height: 32,
-                  ml: 1
-                }}>
+                <Avatar
+                  sx={{
+                    bgcolor: theme.palette.primary.main,
+                    width: 32,
+                    height: 32,
+                    ml: 1,
+                  }}
+                >
                   <PersonIcon />
                 </Avatar>
               </Box>
             </Box>
             {qa.loading && (
-              <Box sx={{ display: 'flex', justifyContent: 'flex-start', mb: 2 }}>
-                <Box sx={{ display: 'flex', alignItems: 'flex-end', gap: 1 }}>
-                  <Avatar sx={{
-                    bgcolor: theme.palette.secondary.main,
-                    width: 32,
-                    height: 32,
-                    mr: 1
-                  }}>
+              <Box
+                sx={{ display: "flex", justifyContent: "flex-start", mb: 2 }}
+              >
+                <Box sx={{ display: "flex", alignItems: "flex-end", gap: 1 }}>
+                  <Avatar
+                    sx={{
+                      bgcolor: theme.palette.secondary.main,
+                      width: 32,
+                      height: 32,
+                      mr: 1,
+                    }}
+                  >
                     <AutoAwesomeIcon />
                   </Avatar>
                   <Box
@@ -232,11 +234,11 @@ const AIInsightPage: React.FC = () => {
                       py: 1.5,
                       borderRadius: 3,
                       maxWidth: 520,
-                      fontSize: '1rem',
-                      wordBreak: 'break-word',
-                      boxShadow: 'none',
-                      display: 'flex',
-                      alignItems: 'center',
+                      fontSize: "1rem",
+                      wordBreak: "break-word",
+                      boxShadow: "none",
+                      display: "flex",
+                      alignItems: "center",
                       fontFamily: theme.typography.fontFamily,
                     }}
                   >
@@ -255,14 +257,18 @@ const AIInsightPage: React.FC = () => {
               </Box>
             )}
             {qa.htmlContent && !qa.loading && (
-              <Box sx={{ display: 'flex', justifyContent: 'flex-start', mb: 2 }}>
-                <Box sx={{ display: 'flex', alignItems: 'flex-end', gap: 1 }}>
-                  <Avatar sx={{
-                    bgcolor: theme.palette.secondary.main,
-                    width: 32,
-                    height: 32,
-                    mr: 1
-                  }}>
+              <Box
+                sx={{ display: "flex", justifyContent: "flex-start", mb: 2 }}
+              >
+                <Box sx={{ display: "flex", alignItems: "flex-end", gap: 1 }}>
+                  <Avatar
+                    sx={{
+                      bgcolor: theme.palette.secondary.main,
+                      width: 32,
+                      height: 32,
+                      mr: 1,
+                    }}
+                  >
                     <AutoAwesomeIcon />
                   </Avatar>
                   <Box
@@ -273,9 +279,9 @@ const AIInsightPage: React.FC = () => {
                       py: 1.5,
                       borderRadius: 3,
                       maxWidth: 520,
-                      fontSize: '1rem',
-                      wordBreak: 'break-word',
-                      boxShadow: 'none',
+                      fontSize: "1rem",
+                      wordBreak: "break-word",
+                      boxShadow: "none",
                       fontFamily: theme.typography.fontFamily,
                     }}
                   >
@@ -286,7 +292,7 @@ const AIInsightPage: React.FC = () => {
                         component="span"
                         fontSize="1rem"
                         fontFamily={theme.typography.fontFamily}
-                        sx={{ wordBreak: 'break-word' }}
+                        sx={{ wordBreak: "break-word" }}
                         dangerouslySetInnerHTML={{ __html: qa.htmlContent }}
                       />
                     </Box>
@@ -295,14 +301,18 @@ const AIInsightPage: React.FC = () => {
               </Box>
             )}
             {qa.error && !qa.loading && (
-              <Box sx={{ display: 'flex', justifyContent: 'flex-start', mb: 2 }}>
-                <Box sx={{ display: 'flex', alignItems: 'flex-end', gap: 1 }}>
-                  <Avatar sx={{
-                    bgcolor: theme.palette.error.main,
-                    width: 32,
-                    height: 32,
-                    mr: 1
-                  }}>
+              <Box
+                sx={{ display: "flex", justifyContent: "flex-start", mb: 2 }}
+              >
+                <Box sx={{ display: "flex", alignItems: "flex-end", gap: 1 }}>
+                  <Avatar
+                    sx={{
+                      bgcolor: theme.palette.error.main,
+                      width: 32,
+                      height: 32,
+                      mr: 1,
+                    }}
+                  >
                     <AutoAwesomeIcon />
                   </Avatar>
                   <Box
@@ -313,9 +323,9 @@ const AIInsightPage: React.FC = () => {
                       py: 1.5,
                       borderRadius: 3,
                       maxWidth: 520,
-                      fontSize: '1rem',
-                      wordBreak: 'break-word',
-                      boxShadow: 'none',
+                      fontSize: "1rem",
+                      wordBreak: "break-word",
+                      boxShadow: "none",
                       fontFamily: theme.typography.fontFamily,
                     }}
                   >
@@ -335,22 +345,28 @@ const AIInsightPage: React.FC = () => {
         ))}
         <div ref={messagesEndRef} />
       </Box>
-      <Box sx={{
-        width: '100%',
-        bgcolor: theme.palette.background.paper,
-        py: 2,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-      }}>
-        <Box component="form" onSubmit={handleSubmit(onSubmit)} sx={{ display: 'flex', gap: 1, width: '100%', maxWidth: 900 }}>
+      <Box
+        sx={{
+          width: "100%",
+          bgcolor: theme.palette.background.paper,
+          py: 2,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        <Box
+          component="form"
+          onSubmit={handleSubmit(onSubmit)}
+          sx={{ display: "flex", gap: 1, width: "100%", maxWidth: 900 }}
+        >
           <TextField
             multiline
             minRows={2}
             fullWidth
             placeholder="Ask anything"
             variant="outlined"
-            {...register('query')}
+            {...register("query")}
             error={!!errors.query}
             helperText={errors.query?.message}
             disabled={insightMutation.isPending}
@@ -363,54 +379,89 @@ const AIInsightPage: React.FC = () => {
                     color="primary"
                     disabled={insightMutation.isPending}
                     sx={{
-                      backgroundColor: theme.dashboardTheme?.colors?.primary?.main || STYLE_GUIDE.COLORS.darkBackground,
-                      color: theme.dashboardTheme?.colors?.primary?.contrastText || STYLE_GUIDE.COLORS.white,
+                      backgroundColor:
+                        theme.dashboardTheme?.colors?.primary?.main ||
+                        STYLE_GUIDE.COLORS.darkBackground,
+                      color:
+                        theme.dashboardTheme?.colors?.primary?.contrastText ||
+                        STYLE_GUIDE.COLORS.white,
                       borderRadius: STYLE_GUIDE.SPACING.s4,
-                      '&:hover': {
-                        backgroundColor: theme.dashboardTheme?.colors?.primary?.light || STYLE_GUIDE.COLORS.darkDarker,
+                      "&:hover": {
+                        backgroundColor:
+                          theme.dashboardTheme?.colors?.primary?.light ||
+                          STYLE_GUIDE.COLORS.darkDarker,
                       },
                       width: 48,
                       height: 48,
                     }}
                   >
-                    {insightMutation.isPending ? <CircularProgress size={24} color="inherit" /> : <SendIcon />}
+                    {insightMutation.isPending ? (
+                      <CircularProgress size={24} color="inherit" />
+                    ) : (
+                      <SendIcon />
+                    )}
                   </IconButton>
                 </InputAdornment>
               ),
             }}
             sx={{
-              '& .MuiOutlinedInput-root': {
+              "& .MuiOutlinedInput-root": {
                 borderRadius: STYLE_GUIDE.SPACING.s6,
-                alignItems: 'flex-start',
+                alignItems: "flex-start",
                 padding: 3,
                 paddingRight: STYLE_GUIDE.SPACING.s2,
-                fontSize: '14px',
-                backgroundColor: theme.dashboardTheme?.colors?.background?.paper || '#ffffff',
-                '& fieldset': {
-                  borderColor: theme.dashboardTheme?.colors?.inputBorder || STYLE_GUIDE.COLORS.darkBackground,
+                fontSize: "14px",
+                backgroundColor:
+                  theme.dashboardTheme?.colors?.background?.paper || "#ffffff",
+                "& fieldset": {
+                  borderColor:
+                    theme.dashboardTheme?.colors?.inputBorder ||
+                    STYLE_GUIDE.COLORS.darkBackground,
                 },
-                '&:hover fieldset': {
-                  borderColor: theme.dashboardTheme?.colors?.borderHover || STYLE_GUIDE.COLORS.darkBorderHover,
+                "&:hover fieldset": {
+                  borderColor:
+                    theme.dashboardTheme?.colors?.borderHover ||
+                    STYLE_GUIDE.COLORS.darkBorderHover,
                 },
-                '&.Mui-focused fieldset': {
-                  borderColor: theme.dashboardTheme?.components?.input?.focusBorderColor || theme.dashboardTheme?.components?.input?.focusBorderColorFallback || STYLE_GUIDE.COLORS.inputFocusFallback,
+                "&.Mui-focused fieldset": {
+                  borderColor:
+                    theme.dashboardTheme?.components?.input?.focusBorderColor ||
+                    theme.dashboardTheme?.components?.input
+                      ?.focusBorderColorFallback ||
+                    STYLE_GUIDE.COLORS.inputFocusFallback,
                 },
               },
-              '& .MuiInputLabel-root': {
-                color: theme.dashboardTheme?.colors?.text?.secondary || STYLE_GUIDE.COLORS.darkBorderFocus,
+              "& .MuiInputLabel-root": {
+                color:
+                  theme.dashboardTheme?.colors?.text?.secondary ||
+                  STYLE_GUIDE.COLORS.darkBorderFocus,
               },
-              '& .MuiInputLabel-root.Mui-focused': {
-                color: theme.dashboardTheme?.components?.input?.focusBorderColor || theme.dashboardTheme?.components?.input?.focusBorderColorFallback || STYLE_GUIDE.COLORS.inputFocusFallback,
+              "& .MuiInputLabel-root.Mui-focused": {
+                color:
+                  theme.dashboardTheme?.components?.input?.focusBorderColor ||
+                  theme.dashboardTheme?.components?.input
+                    ?.focusBorderColorFallback ||
+                  STYLE_GUIDE.COLORS.inputFocusFallback,
               },
-              '& .MuiInputBase-input': {
-                color: `${theme.dashboardTheme?.colors?.inputText || theme.palette.text.primary} !important`,
+              "& .MuiInputBase-input": {
+                color: `${
+                  theme.dashboardTheme?.colors?.inputText ||
+                  theme.palette.text.primary
+                } !important`,
               },
-              '& .MuiInputBase-input::placeholder': {
-                color: `${theme.dashboardTheme?.colors?.text?.secondary || '#666'} !important`,
+              "& .MuiInputBase-input::placeholder": {
+                color: `${
+                  theme.dashboardTheme?.colors?.text?.secondary || "#666"
+                } !important`,
               },
-              '& .MuiInputBase-input:-webkit-autofill': {
-                WebkitTextFillColor: `${theme.dashboardTheme?.colors?.inputText || theme.palette.text.primary} !important`,
-                WebkitBoxShadow: `0 0 0 1000px ${theme.dashboardTheme?.colors?.background?.paper || '#ffffff'} inset !important`,
+              "& .MuiInputBase-input:-webkit-autofill": {
+                WebkitTextFillColor: `${
+                  theme.dashboardTheme?.colors?.inputText ||
+                  theme.palette.text.primary
+                } !important`,
+                WebkitBoxShadow: `0 0 0 1000px ${
+                  theme.dashboardTheme?.colors?.background?.paper || "#ffffff"
+                } inset !important`,
               },
             }}
             autoComplete="off"
@@ -421,4 +472,4 @@ const AIInsightPage: React.FC = () => {
   );
 };
 
-export default AIInsightPage; 
+export default AIInsightPage;
