@@ -18,6 +18,7 @@ import {
   styled,
   FormControlLabel,
   Checkbox,
+  Stack,
 } from "@mui/material";
 import Grid from "@mui/material/Grid2";
 import { SketchPicker, ColorResult } from "react-color";
@@ -528,13 +529,13 @@ const CreateThemeDialog = ({
                 alignItems: "center",
                 gap: 1,
                 mt: 1,
-                position: "relative",
+                // position: "relative",
               }}
             >
               <Typography variant="body2" sx={{ color: "rgba(0, 0, 0, 0.6)" }}>
                 Title Color
               </Typography>
-              <Box
+              <Stack
                 ref={(el) => {
                   if (el) buttonRefs.set("title-color", el);
                 }}
@@ -617,7 +618,7 @@ const CreateThemeDialog = ({
                     </Box>
                   </Portal>
                 )}
-              </Box>
+              </Stack>
             </Box>
           </Grid>
 
@@ -1112,13 +1113,12 @@ const CreateThemeDialog = ({
                 alignItems: "center",
                 gap: 1,
                 mt: 1,
-                position: "relative",
               }}
             >
               <Typography variant="body2" sx={{ color: "rgba(0, 0, 0, 0.6)" }}>
                 Legend Color
               </Typography>
-              <Box
+              <Stack
                 ref={(el) => {
                   if (el) buttonRefs.set("legend-color", el);
                 }}
@@ -1209,7 +1209,7 @@ const CreateThemeDialog = ({
                     </Box>
                   </Portal>
                 )}
-              </Box>
+              </Stack>
             </Box>
           </Grid>
 
@@ -1323,13 +1323,13 @@ const CreateThemeDialog = ({
                 alignItems: "center",
                 gap: 1,
                 mt: 1,
-                position: "relative",
+                // position: "relative",
               }}
             >
               <Typography variant="body2" sx={{ color: "rgba(0, 0, 0, 0.6)" }}>
                 Background Color
               </Typography>
-              <Box
+              <Stack
                 ref={(el) => {
                   if (el) buttonRefs.set("tooltip-bg", el);
                 }}
@@ -1415,7 +1415,7 @@ const CreateThemeDialog = ({
                     </Box>
                   </Portal>
                 )}
-              </Box>
+              </Stack>
             </Box>
           </Grid>
 
@@ -1447,13 +1447,13 @@ const CreateThemeDialog = ({
                 alignItems: "center",
                 gap: 1,
                 mt: 1,
-                position: "relative",
+                // position: "relative",
               }}
             >
               <Typography variant="body2" sx={{ color: "rgba(0, 0, 0, 0.6)" }}>
                 Title Color
               </Typography>
-              <Box
+              <Stack
                 ref={(el) => {
                   if (el) buttonRefs.set("tooltip-title", el);
                 }}
@@ -1541,7 +1541,7 @@ const CreateThemeDialog = ({
                     </Box>
                   </Portal>
                 )}
-              </Box>
+              </Stack>
             </Box>
           </Grid>
 
@@ -1573,13 +1573,13 @@ const CreateThemeDialog = ({
                 alignItems: "center",
                 gap: 1,
                 mt: 1,
-                position: "relative",
+                // position: "relative",
               }}
             >
               <Typography variant="body2" sx={{ color: "rgba(0, 0, 0, 0.6)" }}>
                 Border Color
               </Typography>
-              <Box
+              <Stack
                 ref={(el) => {
                   if (el) buttonRefs.set("tooltip-border", el);
                 }}
@@ -1667,7 +1667,7 @@ const CreateThemeDialog = ({
                     </Box>
                   </Portal>
                 )}
-              </Box>
+              </Stack>
             </Box>
           </Grid>
         </Grid>
@@ -1761,13 +1761,13 @@ const CreateThemeDialog = ({
                 alignItems: "center",
                 gap: 1,
                 mt: 1,
-                position: "relative",
+                // position: "relative",
               }}
             >
               <Typography variant="body2" sx={{ color: "rgba(0, 0, 0, 0.6)" }}>
                 Grid Color
               </Typography>
-              <Box
+              <Stack
                 ref={(el) => {
                   if (el) buttonRefs.set("y-scale-grid", el);
                 }}
@@ -1862,7 +1862,7 @@ const CreateThemeDialog = ({
                     </Box>
                   </Portal>
                 )}
-              </Box>
+              </Stack>
             </Box>
           </Grid>
           {/* <Grid size={{ xs: 12, sm: 6 }} component="div">
@@ -1958,7 +1958,7 @@ const CreateThemeDialog = ({
               <Typography variant="body2" sx={{ color: "rgba(0, 0, 0, 0.6)" }}>
                 Title Color
               </Typography>
-              <Box
+              <Stack
                 ref={(el) => {
                   if (el) buttonRefs.set("y-scale-title", el);
                 }}
@@ -2052,7 +2052,7 @@ const CreateThemeDialog = ({
                     </Box>
                   </Portal>
                 )}
-              </Box>
+              </Stack>
             </Box>
           </Grid>
         </Grid>
@@ -2154,7 +2154,7 @@ const CreateThemeDialog = ({
               <Typography variant="body2" sx={{ color: "rgba(0, 0, 0, 0.6)" }}>
                 Ticks Color
               </Typography>
-              <Box
+              <Stack
                 ref={(el) => {
                   if (el) buttonRefs.set("x-scale-ticks", el);
                 }}
@@ -2248,7 +2248,7 @@ const CreateThemeDialog = ({
                     </Box>
                   </Portal>
                 )}
-              </Box>
+              </Stack>
             </Box>
           </Grid>
         </Grid>
@@ -2661,7 +2661,7 @@ const CreateThemeDialog = ({
                   >
                     Color {index + 1}
                   </Typography>
-                  <Box
+                  <Stack
                     ref={(el) => {
                       if (el) buttonRefs.set(`color-${index}`, el);
                     }}
@@ -2744,7 +2744,7 @@ const CreateThemeDialog = ({
                         </Box>
                       </Portal>
                     )}
-                  </Box>
+                  </Stack>
                   <IconButton
                     size="small"
                     color="error"
@@ -2794,7 +2794,7 @@ const CreateThemeDialog = ({
                   >
                     Border Color {index + 1}
                   </Typography>
-                  <Box
+                  <Stack
                     ref={(el) => {
                       if (el) buttonRefs.set(`border-${index}`, el);
                     }}
@@ -2879,7 +2879,7 @@ const CreateThemeDialog = ({
                         </Box>
                       </Portal>
                     )}
-                  </Box>
+                  </Stack>
                   <IconButton
                     size="small"
                     color="error"
@@ -2932,7 +2932,7 @@ const CreateThemeDialog = ({
                   >
                     Background Color {index + 1}
                   </Typography>
-                  <Box
+                  <Stack
                     ref={(el) => {
                       if (el) buttonRefs.set(`bg-${index}`, el);
                     }}
@@ -3015,7 +3015,7 @@ const CreateThemeDialog = ({
                         </Box>
                       </Portal>
                     )}
-                  </Box>
+                  </Stack>
                   <IconButton
                     size="small"
                     color="error"

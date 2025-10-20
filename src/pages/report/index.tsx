@@ -26,6 +26,7 @@ import { useUnifiedTheme } from "../../hooks/useUnifiedTheme";
 import { useComponentTypography } from "../../hooks/useComponentTypography";
 import useFileDownload from "../../hooks/useFiledownload";
 import PrimaryButton from "../../components/common/PrimaryButton";
+import { STYLE_GUIDE } from "../../styles";
 
 export default function Report() {
   const theme = useUnifiedTheme();
@@ -140,10 +141,11 @@ export default function Report() {
   return (
     <Box
       sx={{
-        width: "100%",
-        backgroundColor: theme.palette.background.paper,
-        minHeight: "calc(100vh - 64px)",
-        p: 1,
+        // width: "100%",
+        // backgroundColor: theme.palette.background.paper,
+        // minHeight: "calc(100vh - 64px)",
+        // p: 1,
+        p: STYLE_GUIDE.SPACING.s2,
       }}
     >
       <Box ref={headerRef}>

@@ -427,6 +427,7 @@ export default function NotificationTypes() {
         open={openModal}
         onClose={handleCloseModal}
         title="Filter Notification Types"
+        maxWidth="sm"
         actions={
           <>
             <Button
@@ -458,7 +459,14 @@ export default function NotificationTypes() {
           </>
         }
       >
-        <form onSubmit={handleSubmit(onSubmit)}>
+        <form
+          onSubmit={handleSubmit(onSubmit)}
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: STYLE_GUIDE.SPACING.s3,
+          }}
+        >
           <Controller
             name="name"
             control={control}
@@ -525,6 +533,7 @@ export default function NotificationTypes() {
         open={openDialog}
         onClose={handleCloseDialog}
         title="Confirm Delete"
+        maxWidth="xs"
         actions={
           <>
             <Button

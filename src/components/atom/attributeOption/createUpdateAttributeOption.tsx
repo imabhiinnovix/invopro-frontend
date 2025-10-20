@@ -124,6 +124,7 @@ const CreateUpdateAttributeOption: React.FC<
         open={open}
         onClose={handleFormClose}
         title={title}
+        maxWidth="sm"
         actions={
           <>
             {createAttributeOptions.isPending ||
@@ -142,89 +143,83 @@ const CreateUpdateAttributeOption: React.FC<
           </>
         }
       >
-        <Box mt={2}>
-          <Controller
-            name="attributeName"
-            control={control}
-            rules={{ required: "Attribute name is required" }}
-            render={({ field, fieldState }) => (
-              <TextField
-                {...field}
-                label="Attribute Name"
-                fullWidth
-                error={!!fieldState.error}
-                helperText={fieldState.error?.message}
-              />
-            )}
-          />
-        </Box>
+        <Controller
+          name="attributeName"
+          control={control}
+          rules={{ required: "Attribute name is required" }}
+          render={({ field, fieldState }) => (
+            <TextField
+              {...field}
+              label="Attribute Name"
+              fullWidth
+              error={!!fieldState.error}
+              helperText={fieldState.error?.message}
+            />
+          )}
+        />
 
-        <Box mt={2}>
-          <Controller
-            name="attributeValue"
-            control={control}
-            rules={{ required: "Attribute value is required" }}
-            render={({ formState }) => (
-              <Box>
-                <Box display="flex" alignItems="center">
-                  <TextField
-                    label="Add Attribute Value"
-                    fullWidth
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") {
-                        e.preventDefault();
-                        const value = (
-                          e.target as HTMLInputElement
-                        ).value.trim();
-                        if (value) {
-                          handleAddValue(value);
-                          (e.target as HTMLInputElement).value = "";
-                        }
+        <Controller
+          name="attributeValue"
+          control={control}
+          rules={{ required: "Attribute value is required" }}
+          render={({ formState }) => (
+            <Box>
+              <Box display="flex" alignItems="center">
+                <TextField
+                  label="Add Attribute Value"
+                  fullWidth
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      const value = (e.target as HTMLInputElement).value.trim();
+                      if (value) {
+                        handleAddValue(value);
+                        (e.target as HTMLInputElement).value = "";
                       }
-                    }}
-                    error={!!formState.errors.attributeValue}
-                    helperText={formState?.errors?.attributeValue?.message}
-                    slotProps={{
-                      input: {
-                        name: "attributeValue",
-                        endAdornment: (
-                          <InputAdornment position="end">
-                            <IconButton
-                              onClick={() => {
-                                const input = document.querySelector(
-                                  'input[name="attributeValue"]'
-                                ) as HTMLInputElement;
-                                const value = input?.value.trim();
-                                if (value) {
-                                  handleAddValue(value);
-                                  input.value = "";
-                                }
-                              }}
-                              color="primary"
-                              aria-label="add value"
-                            >
-                              <AddIcon sx={{ color: theme.getIconColor() }} />
-                            </IconButton>
-                          </InputAdornment>
-                        ),
-                      },
-                    }}
-                  />
-                </Box>
-                <Box mt={1} display="flex" flexWrap="wrap" gap={1}>
-                  {attributeValue &&
-                    attributeValue.map((value, index) => (
-                      <Chip
-                        key={index}
-                        label={value}
-                        onDelete={() => handleDeleteValue(value)}
-                      />
-                    ))}
-                </Box>
+                    }
+                  }}
+                  error={!!formState.errors.attributeValue}
+                  helperText={formState?.errors?.attributeValue?.message}
+                  slotProps={{
+                    input: {
+                      name: "attributeValue",
+                      endAdornment: (
+                        <InputAdornment position="end">
+                          <IconButton
+                            onClick={() => {
+                              const input = document.querySelector(
+                                'input[name="attributeValue"]'
+                              ) as HTMLInputElement;
+                              const value = input?.value.trim();
+                              if (value) {
+                                handleAddValue(value);
+                                input.value = "";
+                              }
+                            }}
+                            color="primary"
+                            aria-label="add value"
+                          >
+                            <AddIcon sx={{ color: theme.getIconColor() }} />
+                          </IconButton>
+                        </InputAdornment>
+                      ),
+                    },
+                  }}
+                />
               </Box>
-            )}
-          />
-        </Box>
+              <Box mt={1} display="flex" flexWrap="wrap" gap={1}>
+                {attributeValue &&
+                  attributeValue.map((value, index) => (
+                    <Chip
+                      key={index}
+                      label={value}
+                      onDelete={() => handleDeleteValue(value)}
+                    />
+                  ))}
+              </Box>
+            </Box>
+          )}
+        />
       </DialogContainer>
 
       {/* <Dialog open={open} onClose={handleFormClose} fullWidth maxWidth="sm">

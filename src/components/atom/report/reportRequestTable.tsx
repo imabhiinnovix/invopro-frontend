@@ -1014,6 +1014,7 @@ import {
   Button,
   Tooltip,
   tableCellClasses,
+  Stack,
 } from "@mui/material";
 
 import useGet from "../../../hooks/useGet";
@@ -1027,6 +1028,7 @@ import { STYLE_GUIDE } from "../../../styles";
 import DownloadForOfflineIcon from "@mui/icons-material/DownloadForOffline";
 import { useUnifiedTheme } from "../../../hooks/useUnifiedTheme";
 import { useComponentTypography } from "../../../hooks/useComponentTypography";
+import CommonTable from "../../common/table";
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
   [`&.${tableCellClasses.head}`]: {
@@ -1306,6 +1308,185 @@ const ReportRequestTable: React.FC<AttributeOptionTableProps> = ({
     );
   }
 
+  const columns = [
+    {
+      id: "reportName",
+      label: "Report Name",
+      minWidth: 170,
+      renderCell: (row: ReportRequestResponse) => {
+        return row.customReportId?.reportName || "-";
+      },
+    },
+    {
+      id: "period",
+      label: "Period",
+      renderCell: (row: ReportRequestResponse) => {
+        return row.versionValue || "-";
+      },
+    },
+    {
+      id: "status",
+      label: "Status",
+      renderCell: (row: ReportRequestResponse) => {
+        const color =
+          row.status === "completed"
+            ? "success.main"
+            : row.status === "processing"
+            ? "warning.main"
+            : row.status === "failed"
+            ? "error.main"
+            : "text.primary";
+        return <Typography color={color}>{row.status || "-"}</Typography>;
+      },
+    },
+    {
+      id: "preparedBy",
+      label: "Prepared By",
+      renderCell: (row: ReportRequestResponse) => {
+        return `${row.createdBy?.firstName || ""} ${
+          row.createdBy?.lastName ? " " + row.createdBy.lastName : ""
+        }`;
+      },
+    },
+    {
+      id: "preparedOn",
+      label: "Prepared On",
+      renderCell: (row: ReportRequestResponse) => {
+        return row.createdAt ? new Date(row.createdAt).toLocaleString() : "-";
+      },
+    },
+    {
+      id: "actions",
+      label: "Actions",
+      align: "right",
+      renderCell: (row: ReportRequestResponse) => {
+        return (
+          <Stack direction="row" justifyContent="flex-end" alignItems="center">
+            {row.status === "completed" ? (
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "flex-end",
+                  alignItems: "center",
+                }}
+              >
+                {exportFile.isPending &&
+                !!downloadRequestId &&
+                downloadRequestId === row._id ? (
+                  <Box
+                    sx={{
+                      width: 27,
+                      height: 27,
+                      borderRadius: "50%",
+                      border: "3px solid #f3f3f3",
+                      borderTop: "3px solid #3498db",
+                      animation: "spin 1s linear infinite",
+                      "@keyframes spin": {
+                        "0%": { transform: "rotate(0deg)" },
+                        "100%": { transform: "rotate(360deg)" },
+                      },
+                      mr: 1,
+                    }}
+                  />
+                ) : (
+                  <Tooltip title="Download Excel" arrow>
+                    <Button
+                      variant="text"
+                      // onClick={() => params.row.handleEdit(params.row)}
+                      sx={{ minWidth: "auto" }}
+                    >
+                      <SimCardDownloadIcon
+                        onClick={() => {
+                          downloadFile(
+                            `${row.customReportId?.reportName}-${row.versionValue}.xlsx`,
+                            row._id
+                          );
+                        }}
+                        // sx={{ mr: 2 }}
+                        // sx={{ color: theme.getIconColor() }}
+                      />{" "}
+                    </Button>
+                  </Tooltip>
+                )}
+                <Tooltip title="View Report" arrow>
+                  <Button variant="text" sx={{ minWidth: "auto" }}>
+                    <VisibilityIcon
+                      onClick={() => {
+                        setAllDetailData(row);
+                        setViewReportRequestId(row._id);
+                        setViewReportNameWithVersionValue(
+                          `${darowta.customReportId?.reportName}-${row.versionValue}`
+                        );
+                      }}
+                      //  sx={{ color: theme.getIconColor() }}
+                    />
+                  </Button>
+
+                  {/* </StyledButton> */}
+                </Tooltip>
+              </Box>
+            ) : (
+              "-"
+            )}
+            {row.status === "completed" && row.intermediateReportId && (
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "flex-end",
+                  alignItems: "center",
+                }}
+              >
+                {exportFile.isPending &&
+                !!intermediateDownloadRequestId &&
+                intermediateDownloadRequestId === row._id ? (
+                  <Box
+                    sx={{
+                      width: 27,
+                      height: 27,
+                      borderRadius: "50%",
+                      border: "3px solid #f3f3f3",
+                      borderTop: "3px solid #3498db",
+                      animation: "spin 1s linear infinite",
+                      "@keyframes spin": {
+                        "0%": { transform: "rotate(0deg)" },
+                        "100%": { transform: "rotate(360deg)" },
+                      },
+                      mr: 1,
+                    }}
+                  />
+                ) : (
+                  <Tooltip title="Intermediate Download" arrow>
+                    <Button variant="text" sx={{ minWidth: "auto" }}>
+                      <DownloadForOfflineIcon
+                        onClick={() => {
+                          intermediateDownloadFile(
+                            `${row.customReportId?.reportName}-intermediate-${row.versionValue}.xlsx`,
+                            row._id
+                          );
+                        }}
+                      />
+                    </Button>
+                  </Tooltip>
+                )}
+              </Box>
+            )}
+          </Stack>
+        );
+      },
+    },
+  ];
+
+  return (
+    <CommonTable
+      columns={columns}
+      rows={reportRequests || []}
+      isLazyLoading={reportRequestList.isFetching}
+      height="calc(100vh - 300px)"
+      isLazyTable={true}
+      ref={lastElementRef}
+    />
+  );
+
   return (
     <TableContainer
       component={Paper}
@@ -1401,10 +1582,10 @@ const ReportRequestTable: React.FC<AttributeOptionTableProps> = ({
                     data.status === "completed"
                       ? "success.main"
                       : data.status === "processing"
-                        ? "warning.main"
-                        : data.status === "failed"
-                          ? "error.main"
-                          : "text.primary",
+                      ? "warning.main"
+                      : data.status === "failed"
+                      ? "error.main"
+                      : "text.primary",
                   fontWeight: 500,
                 }}
               >
@@ -1417,7 +1598,9 @@ const ReportRequestTable: React.FC<AttributeOptionTableProps> = ({
                     "#34495e",
                 }}
               >
-                {`${data?.createdBy?.firstName || ""}${data?.createdBy?.lastName ? " " + data.createdBy.lastName : ""}`}
+                {`${data?.createdBy?.firstName || ""}${
+                  data?.createdBy?.lastName ? " " + data.createdBy.lastName : ""
+                }`}
               </StyledTableCell>
               <StyledTableCell
                 sx={{
@@ -1499,23 +1682,23 @@ const ReportRequestTable: React.FC<AttributeOptionTableProps> = ({
                           setViewReportNameWithVersionValue(`${data.customReportId?.reportName}-${data.versionValue}`);
                         }}
                       > */}
-                       <Button
-                          variant="text"
-                          // onClick={() => params.row.handleEdit(params.row)}
-                          sx={{ minWidth: "auto" }}
-                        >
-                          <VisibilityIcon
-                        onClick={() => {
-                          setAllDetailData(data);
-                          setViewReportRequestId(data._id);
-                          setViewReportNameWithVersionValue(
-                            `${data.customReportId?.reportName}-${data.versionValue}`
-                          );
-                        }}
-                        //  sx={{ color: theme.getIconColor() }}
-                      />
-                        </Button>
-                      
+                      <Button
+                        variant="text"
+                        // onClick={() => params.row.handleEdit(params.row)}
+                        sx={{ minWidth: "auto" }}
+                      >
+                        <VisibilityIcon
+                          onClick={() => {
+                            setAllDetailData(data);
+                            setViewReportRequestId(data._id);
+                            setViewReportNameWithVersionValue(
+                              `${data.customReportId?.reportName}-${data.versionValue}`
+                            );
+                          }}
+                          //  sx={{ color: theme.getIconColor() }}
+                        />
+                      </Button>
+
                       {/* </StyledButton> */}
                     </Tooltip>
                   </Box>

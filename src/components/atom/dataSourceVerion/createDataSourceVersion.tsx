@@ -374,6 +374,7 @@ const CreateDataSourceVersion: React.FC<CreateDataSourceVersionProps> = ({
         open={open}
         onClose={handleFormClose}
         title={title}
+        maxWidth="sm"
         actions={
           <>
             {isPending ? (
@@ -395,227 +396,229 @@ const CreateDataSourceVersion: React.FC<CreateDataSourceVersionProps> = ({
           </>
         }
       >
-        <Box component="form" onSubmit={handleSubmit(onSubmit)} noValidate>
-          <Stack spacing={3}>
-            <CommonDropdownSearch
-              control={control}
-              name={`dataSourceId`}
-              label="Select Data Source* "
-              apiUrl={`${GET.Data_Source_List}`}
-              labelName="name"
-              labelValue="_id"
-              defaultValue={""}
-              rules={{ required: "Data Source is required" }}
-              error={!!errors.dataSourceId}
-              errorMessage={errors.dataSourceId?.message as string}
-              apiName="entityList"
-              defaultDataUrl={""}
-            />
-            <CommonDatePicker
-              name={"versionValue"}
-              control={control}
-              views={["year", "month"]}
-              label="Period*"
-              rules={{ required: "Period is required" }}
-            />
+        <Box
+          component="form"
+          onSubmit={handleSubmit(onSubmit)}
+          noValidate
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: STYLE_GUIDE.SPACING.s3,
+          }}
+        >
+          <CommonDropdownSearch
+            control={control}
+            name={`dataSourceId`}
+            label="Select Data Source* "
+            apiUrl={`${GET.Data_Source_List}`}
+            labelName="name"
+            labelValue="_id"
+            defaultValue={""}
+            rules={{ required: "Data Source is required" }}
+            error={!!errors.dataSourceId}
+            errorMessage={errors.dataSourceId?.message as string}
+            apiName="entityList"
+            defaultDataUrl={""}
+          />
+          <CommonDatePicker
+            name={"versionValue"}
+            control={control}
+            views={["year", "month"]}
+            label="Period*"
+            rules={{ required: "Period is required" }}
+          />
 
-            <TextField
-              label="Version Name(Distinct Name for Identical Version of Same Data Source)*"
-              fullWidth
-              {...register("versionName", {
-                required: "Version name is required",
-              })}
-              onChange={(event) => {
-                setVersionName(event.target.value);
-              }}
-              error={!!errors.versionName}
-              defaultValue={""}
-              disabled={
-                watch("versionValue") && watch("dataSourceId") ? false : true
-              }
-              helperText={
-                errors.versionName?.message ||
-                (versionNameAvailability.isFetched && versionName.length > 0 ? (
-                  versionNameAvailability.data?.available ? (
-                    <Typography
-                      variant="subtitle2"
-                      color="success"
-                      component={"span"}
-                    >
-                      Version name is available
-                    </Typography>
-                  ) : (
-                    <Typography
-                      variant="subtitle2"
-                      color="error"
-                      component={"span"}
-                    >
-                      version name is not available
-                    </Typography>
-                  )
+          <TextField
+            label="Version Name(Distinct Name for Identical Version of Same Data Source)*"
+            fullWidth
+            {...register("versionName", {
+              required: "Version name is required",
+            })}
+            onChange={(event) => {
+              setVersionName(event.target.value);
+            }}
+            error={!!errors.versionName}
+            defaultValue={""}
+            disabled={
+              watch("versionValue") && watch("dataSourceId") ? false : true
+            }
+            helperText={
+              errors.versionName?.message ||
+              (versionNameAvailability.isFetched && versionName.length > 0 ? (
+                versionNameAvailability.data?.available ? (
+                  <Typography
+                    variant="subtitle2"
+                    color="success"
+                    component={"span"}
+                  >
+                    Version name is available
+                  </Typography>
                 ) : (
-                  ""
-                ))
-              }
-              sx={{
-                "& .MuiOutlinedInput-root": {
-                  borderRadius: STYLE_GUIDE.SPACING.s2,
-                  alignItems: "center",
-                  fontSize: "14px",
-                  backgroundColor:
-                    theme.dashboardTheme?.colors?.background?.paper ||
-                    "#ffffff",
-                  "& fieldset": {
-                    borderColor:
-                      theme.dashboardTheme?.colors?.inputBorder ||
-                      STYLE_GUIDE.COLORS.darkBackground,
-                  },
-                  "&:hover fieldset": {
-                    borderColor:
-                      theme.dashboardTheme?.colors?.borderHover ||
-                      STYLE_GUIDE.COLORS.darkBorderHover,
-                  },
-                  "&.Mui-focused fieldset": {
-                    borderColor:
-                      theme.dashboardTheme?.components?.input
-                        ?.focusBorderColor ||
-                      theme.dashboardTheme?.components?.input
-                        ?.focusBorderColorFallback ||
-                      STYLE_GUIDE.COLORS.inputFocusFallback,
-                  },
+                  <Typography
+                    variant="subtitle2"
+                    color="error"
+                    component={"span"}
+                  >
+                    version name is not available
+                  </Typography>
+                )
+              ) : (
+                ""
+              ))
+            }
+            sx={{
+              "& .MuiOutlinedInput-root": {
+                borderRadius: STYLE_GUIDE.SPACING.s2,
+                alignItems: "center",
+                fontSize: "14px",
+                backgroundColor:
+                  theme.dashboardTheme?.colors?.background?.paper || "#ffffff",
+                "& fieldset": {
+                  borderColor:
+                    theme.dashboardTheme?.colors?.inputBorder ||
+                    STYLE_GUIDE.COLORS.darkBackground,
                 },
-                "& .MuiInputLabel-root": {
-                  color:
-                    theme.dashboardTheme?.colors?.text?.secondary ||
-                    STYLE_GUIDE.COLORS.darkBorderFocus,
+                "&:hover fieldset": {
+                  borderColor:
+                    theme.dashboardTheme?.colors?.borderHover ||
+                    STYLE_GUIDE.COLORS.darkBorderHover,
                 },
-                "& .MuiInputLabel-root.Mui-focused": {
-                  color:
+                "&.Mui-focused fieldset": {
+                  borderColor:
                     theme.dashboardTheme?.components?.input?.focusBorderColor ||
                     theme.dashboardTheme?.components?.input
                       ?.focusBorderColorFallback ||
                     STYLE_GUIDE.COLORS.inputFocusFallback,
                 },
-                "& .MuiInputBase-input": {
-                  color: `${
-                    theme.dashboardTheme?.colors?.inputText ||
-                    theme.dashboardTheme?.colors?.text?.primary ||
-                    "#000000"
-                  } !important`,
-                },
-                "& .MuiInputBase-input::placeholder": {
-                  color: `${
-                    theme.dashboardTheme?.colors?.text?.secondary || "#666"
-                  } !important`,
-                },
-                "& .MuiInputBase-input:-webkit-autofill": {
-                  WebkitTextFillColor: `${
-                    theme.dashboardTheme?.colors?.inputText ||
-                    theme.dashboardTheme?.colors?.text?.primary ||
-                    "#000000"
-                  } !important`,
-                  WebkitBoxShadow: `0 0 0 1000px ${
-                    theme.dashboardTheme?.colors?.background?.paper || "#ffffff"
-                  } inset !important`,
-                },
-              }}
+              },
+              "& .MuiInputLabel-root": {
+                color:
+                  theme.dashboardTheme?.colors?.text?.secondary ||
+                  STYLE_GUIDE.COLORS.darkBorderFocus,
+              },
+              "& .MuiInputLabel-root.Mui-focused": {
+                color:
+                  theme.dashboardTheme?.components?.input?.focusBorderColor ||
+                  theme.dashboardTheme?.components?.input
+                    ?.focusBorderColorFallback ||
+                  STYLE_GUIDE.COLORS.inputFocusFallback,
+              },
+              "& .MuiInputBase-input": {
+                color: `${
+                  theme.dashboardTheme?.colors?.inputText ||
+                  theme.dashboardTheme?.colors?.text?.primary ||
+                  "#000000"
+                } !important`,
+              },
+              "& .MuiInputBase-input::placeholder": {
+                color: `${
+                  theme.dashboardTheme?.colors?.text?.secondary || "#666"
+                } !important`,
+              },
+              "& .MuiInputBase-input:-webkit-autofill": {
+                WebkitTextFillColor: `${
+                  theme.dashboardTheme?.colors?.inputText ||
+                  theme.dashboardTheme?.colors?.text?.primary ||
+                  "#000000"
+                } !important`,
+                WebkitBoxShadow: `0 0 0 1000px ${
+                  theme.dashboardTheme?.colors?.background?.paper || "#ffffff"
+                } inset !important`,
+              },
+            }}
+          />
+
+          {fileUploadLoader ? (
+            <ProgressBar />
+          ) : (
+            <FileUploadButton
+              fileName={fileName}
+              onFileChange={handleFileChange}
+              buttonName={"Upload File"}
             />
+          )}
+          {console.log("fileHeader", fileHeader)}
 
-            {fileUploadLoader ? (
-              <ProgressBar />
-            ) : (
-              <FileUploadButton
-                fileName={fileName}
-                onFileChange={handleFileChange}
-                buttonName={"Upload File"}
-              />
-            )}
-            {console.log("fileHeader", fileHeader)}
-
-            {fileHeader.length > 0 &&
-              settingAttribute.length > 0 &&
-              settingAttributeOption.length > 0 &&
-              !dataSourceDetails.isFetching && (
-                <Table>
-                  <TableHead>
-                    <TableRow>
-                      {/* <TableCell>{fileName?.split('.')[0]} Attribute</TableCell>
+          {fileHeader.length > 0 &&
+            settingAttribute.length > 0 &&
+            settingAttributeOption.length > 0 &&
+            !dataSourceDetails.isFetching && (
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    {/* <TableCell>{fileName?.split('.')[0]} Attribute</TableCell>
                       <TableCell>Entity Setting Attribute</TableCell> */}
-                      <TableCell
-                        sx={{
-                          backgroundColor:
-                            theme.palette.table?.headerBackground,
-                          color: theme.palette.table?.headerText,
-                          fontWeight: "medium",
-                        }}
-                      >
-                        Entity Setting Attribute
-                      </TableCell>
-                      <TableCell
-                        sx={{
-                          backgroundColor:
-                            theme.palette.table?.headerBackground,
-                          color: theme.palette.table?.headerText,
-                          fontWeight: "medium",
-                        }}
-                      >
-                        {fileName?.split(".")[0]} Attribute
-                      </TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {settingAttributeOption.map((option, index) => {
-                      const normalize = (str) =>
-                        str.replace(/\s+/g, "").toLowerCase();
+                    <TableCell
+                      sx={{
+                        backgroundColor: theme.palette.table?.headerBackground,
+                        color: theme.palette.table?.headerText,
+                        fontWeight: "medium",
+                      }}
+                    >
+                      Entity Setting Attribute
+                    </TableCell>
+                    <TableCell
+                      sx={{
+                        backgroundColor: theme.palette.table?.headerBackground,
+                        color: theme.palette.table?.headerText,
+                        fontWeight: "medium",
+                      }}
+                    >
+                      {fileName?.split(".")[0]} Attribute
+                    </TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {settingAttributeOption.map((option, index) => {
+                    const normalize = (str) =>
+                      str.replace(/\s+/g, "").toLowerCase();
 
-                      const matchedHeader = fileHeader.find(
-                        (header) => normalize(header) === normalize(option)
-                      );
+                    const matchedHeader = fileHeader.find(
+                      (header) => normalize(header) === normalize(option)
+                    );
 
-                      console.log("option34", option);
-                      console.log("matchedHeader", matchedHeader);
-                      return (
-                        <TableRow key={index}>
-                          <TableCell>{option}</TableCell>
-                          <TableCell>
-                            <CommonSelect
-                              control={control}
-                              name={`mappings.${option}`}
-                              label={"Map To"}
-                              options={fileHeader}
-                              defaultValue={matchedHeader || ""}
-                              rules={{
-                                required:
-                                  "Choose how to handle extra fields:skip saving for this column.",
-                              }}
-                              error={!!errors.mappings?.[option]}
-                              errorMessage={errors.mappings?.[option]?.message}
-                              setValue={setValue}
-                            />
-                            {!!watch(`mappings.${option}`) &&
-                              settingAttribute.some(
-                                (attr) =>
-                                  attr.name === watch(`mappings.${option}`) &&
-                                  attr.type === "multioption"
-                              ) && (
-                                <TextField
-                                  label="Seprate Multioption*"
-                                  fullWidth
-                                  {...register(`separator.${option}`, {
-                                    required: "Separator is required",
-                                  })}
-                                  error={!!errors.separator?.[option]}
-                                  helperText={
-                                    errors.separator?.[option]?.message
-                                  }
-                                />
-                              )}
-                          </TableCell>
-                        </TableRow>
-                      );
-                    })}
+                    console.log("option34", option);
+                    console.log("matchedHeader", matchedHeader);
+                    return (
+                      <TableRow key={index}>
+                        <TableCell>{option}</TableCell>
+                        <TableCell>
+                          <CommonSelect
+                            control={control}
+                            name={`mappings.${option}`}
+                            label={"Map To"}
+                            options={fileHeader}
+                            defaultValue={matchedHeader || ""}
+                            rules={{
+                              required:
+                                "Choose how to handle extra fields:skip saving for this column.",
+                            }}
+                            error={!!errors.mappings?.[option]}
+                            errorMessage={errors.mappings?.[option]?.message}
+                            setValue={setValue}
+                          />
+                          {!!watch(`mappings.${option}`) &&
+                            settingAttribute.some(
+                              (attr) =>
+                                attr.name === watch(`mappings.${option}`) &&
+                                attr.type === "multioption"
+                            ) && (
+                              <TextField
+                                label="Seprate Multioption*"
+                                fullWidth
+                                {...register(`separator.${option}`, {
+                                  required: "Separator is required",
+                                })}
+                                error={!!errors.separator?.[option]}
+                                helperText={errors.separator?.[option]?.message}
+                              />
+                            )}
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
 
-                    {/* {fileHeader.map((header, index) => (
+                  {/* {fileHeader.map((header, index) => (
                       <TableRow key={index}>
                         <TableCell>{header}</TableCell>
                         <TableCell>
@@ -650,10 +653,9 @@ const CreateDataSourceVersion: React.FC<CreateDataSourceVersionProps> = ({
                         </TableCell>
                       </TableRow>
                     ))} */}
-                  </TableBody>
-                </Table>
-              )}
-          </Stack>
+                </TableBody>
+              </Table>
+            )}
         </Box>
       </DialogContainer>
     </div>
