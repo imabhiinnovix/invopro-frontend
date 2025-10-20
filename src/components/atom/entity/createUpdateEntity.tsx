@@ -124,9 +124,28 @@ const AttributeField: React.FC<AttributeFieldProps> = ({
         opacity: fileUploadLoader ? 0.5 : 1,
       }}
     >
-      <Typography variant="h6" mb={2}>
-        Attribute {index + 1}
-      </Typography>
+      <Stack
+        direction="row"
+        justifyContent="space-between"
+        alignItems="center"
+        mb={2}
+      >
+        <Typography variant="h6">Attribute {index + 1}</Typography>
+        <PrimaryButton
+          variant="outlined"
+          color="error"
+          onClick={() => remove(index)}
+        >
+          <Box
+            gap={STYLE_GUIDE.SPACING.s2}
+            display="flex"
+            justifyContent="center"
+            alignItems="center"
+          >
+            <RemoveCircleOutlineIcon /> Remove Attribute
+          </Box>
+        </PrimaryButton>
+      </Stack>
       <Stack spacing={2}>
         <TextField
           label="Attribute Name"
@@ -136,40 +155,6 @@ const AttributeField: React.FC<AttributeFieldProps> = ({
           })}
           error={!!errors.attributes?.[index]?.name}
           helperText={errors.attributes?.[index]?.name?.message}
-          sx={{
-            "& .MuiOutlinedInput-root": {
-              borderRadius: STYLE_GUIDE.SPACING.s2,
-              alignItems: "flex-start",
-              paddingRight: STYLE_GUIDE.SPACING.s2,
-              fontSize: "14px",
-              backgroundColor: STYLE_GUIDE.COLORS.white,
-              "& fieldset": {
-                borderColor: STYLE_GUIDE.COLORS.darkBackground,
-              },
-              "&:hover fieldset": {
-                borderColor: STYLE_GUIDE.COLORS.darkBorderHover,
-              },
-              "&.Mui-focused fieldset": {
-                borderColor: STYLE_GUIDE.COLORS.inputFocusFallback,
-              },
-            },
-            "& .MuiInputLabel-root": {
-              color: STYLE_GUIDE.COLORS.darkBorderFocus,
-            },
-            "& .MuiInputLabel-root.Mui-focused": {
-              color: STYLE_GUIDE.COLORS.inputFocusFallback,
-            },
-            "& .MuiInputBase-input": {
-              color: `${STYLE_GUIDE.COLORS.textDarkGray} !important`,
-            },
-            "& .MuiInputBase-input::placeholder": {
-              color: `${STYLE_GUIDE.COLORS.textSecondary} !important`,
-            },
-            "& .MuiInputBase-input:-webkit-autofill": {
-              WebkitTextFillColor: `${STYLE_GUIDE.COLORS.textDarkGray} !important`,
-              WebkitBoxShadow: `0 0 0 1000px ${STYLE_GUIDE.COLORS.white} inset !important`,
-            },
-          }}
         />
         <TextField
           label="File Attribute Name"
@@ -179,40 +164,6 @@ const AttributeField: React.FC<AttributeFieldProps> = ({
           })}
           error={!!errors.attributes?.[index]?.mappingName}
           helperText={errors.attributes?.[index]?.mappingName?.message}
-          sx={{
-            "& .MuiOutlinedInput-root": {
-              borderRadius: STYLE_GUIDE.SPACING.s2,
-              alignItems: "flex-start",
-              paddingRight: STYLE_GUIDE.SPACING.s2,
-              fontSize: "14px",
-              backgroundColor: STYLE_GUIDE.COLORS.white,
-              "& fieldset": {
-                borderColor: STYLE_GUIDE.COLORS.darkBackground,
-              },
-              "&:hover fieldset": {
-                borderColor: STYLE_GUIDE.COLORS.darkBorderHover,
-              },
-              "&.Mui-focused fieldset": {
-                borderColor: STYLE_GUIDE.COLORS.inputFocusFallback,
-              },
-            },
-            "& .MuiInputLabel-root": {
-              color: STYLE_GUIDE.COLORS.darkBorderFocus,
-            },
-            "& .MuiInputLabel-root.Mui-focused": {
-              color: STYLE_GUIDE.COLORS.inputFocusFallback,
-            },
-            "& .MuiInputBase-input": {
-              color: `${STYLE_GUIDE.COLORS.textDarkGray} !important`,
-            },
-            "& .MuiInputBase-input::placeholder": {
-              color: `${STYLE_GUIDE.COLORS.textSecondary} !important`,
-            },
-            "& .MuiInputBase-input:-webkit-autofill": {
-              WebkitTextFillColor: `${STYLE_GUIDE.COLORS.textDarkGray} !important`,
-              WebkitBoxShadow: `0 0 0 1000px ${STYLE_GUIDE.COLORS.white} inset !important`,
-            },
-          }}
         />
         <CommonSelect
           control={control}
@@ -329,13 +280,6 @@ const AttributeField: React.FC<AttributeFieldProps> = ({
           }
         />
       </Stack>
-      <IconButton
-        color="error"
-        onClick={() => remove(index)}
-        sx={{ mt: 2, display: "flex", alignSelf: "flex-start" }}
-      >
-        <RemoveCircleOutlineIcon />
-      </IconButton>
     </Box>
   );
 };
@@ -784,40 +728,6 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
               })}
               error={!!errors.name}
               helperText={errors.name?.message}
-              sx={{
-                "& .MuiOutlinedInput-root": {
-                  borderRadius: STYLE_GUIDE.SPACING.s2,
-                  alignItems: "flex-start",
-                  paddingRight: STYLE_GUIDE.SPACING.s2,
-                  fontSize: "14px",
-                  backgroundColor: STYLE_GUIDE.COLORS.white,
-                  "& fieldset": {
-                    borderColor: STYLE_GUIDE.COLORS.darkBackground,
-                  },
-                  "&:hover fieldset": {
-                    borderColor: STYLE_GUIDE.COLORS.darkBorderHover,
-                  },
-                  "&.Mui-focused fieldset": {
-                    borderColor: STYLE_GUIDE.COLORS.inputFocusFallback,
-                  },
-                },
-                "& .MuiInputLabel-root": {
-                  color: STYLE_GUIDE.COLORS.darkBorderFocus,
-                },
-                "& .MuiInputLabel-root.Mui-focused": {
-                  color: STYLE_GUIDE.COLORS.inputFocusFallback,
-                },
-                "& .MuiInputBase-input": {
-                  color: `${STYLE_GUIDE.COLORS.textDarkGray} !important`,
-                },
-                "& .MuiInputBase-input::placeholder": {
-                  color: `${STYLE_GUIDE.COLORS.textSecondary} !important`,
-                },
-                "& .MuiInputBase-input:-webkit-autofill": {
-                  WebkitTextFillColor: `${STYLE_GUIDE.COLORS.textDarkGray} !important`,
-                  WebkitBoxShadow: `0 0 0 1000px ${STYLE_GUIDE.COLORS.white} inset !important`,
-                },
-              }}
             />
             <TextField
               label="Entity Description"
@@ -827,40 +737,6 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
               {...register("description")}
               error={!!errors.description}
               helperText={errors.description?.message}
-              sx={{
-                "& .MuiOutlinedInput-root": {
-                  borderRadius: STYLE_GUIDE.SPACING.s2,
-                  alignItems: "flex-start",
-                  paddingRight: STYLE_GUIDE.SPACING.s2,
-                  fontSize: "14px",
-                  backgroundColor: STYLE_GUIDE.COLORS.white,
-                  "& fieldset": {
-                    borderColor: STYLE_GUIDE.COLORS.darkBackground,
-                  },
-                  "&:hover fieldset": {
-                    borderColor: STYLE_GUIDE.COLORS.darkBorderHover,
-                  },
-                  "&.Mui-focused fieldset": {
-                    borderColor: STYLE_GUIDE.COLORS.inputFocusFallback,
-                  },
-                },
-                "& .MuiInputLabel-root": {
-                  color: STYLE_GUIDE.COLORS.darkBorderFocus,
-                },
-                "& .MuiInputLabel-root.Mui-focused": {
-                  color: STYLE_GUIDE.COLORS.inputFocusFallback,
-                },
-                "& .MuiInputBase-input": {
-                  color: `${STYLE_GUIDE.COLORS.textDarkGray} !important`,
-                },
-                "& .MuiInputBase-input::placeholder": {
-                  color: `${STYLE_GUIDE.COLORS.textSecondary} !important`,
-                },
-                "& .MuiInputBase-input:-webkit-autofill": {
-                  WebkitTextFillColor: `${STYLE_GUIDE.COLORS.textDarkGray} !important`,
-                  WebkitBoxShadow: `0 0 0 1000px ${STYLE_GUIDE.COLORS.white} inset !important`,
-                },
-              }}
             />
             {fileUploadLoader ? (
               <ProgressBar />
@@ -888,8 +764,8 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
                 fileUploadLoader={fileUploadLoader}
               />
             ))}
-            <Button
-              variant="contained"
+            <PrimaryButton
+              variant="outlined"
               startIcon={<AddCircleOutlineIcon />}
               onClick={() => {
                 const newIndex = fields.length;
@@ -922,7 +798,7 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
               }}
             >
               Add Attribute
-            </Button>
+            </PrimaryButton>
           </Stack>
         </Box>
       </DialogContainer>

@@ -1,7 +1,8 @@
-import React from 'react';
-import { Button, Box } from '@mui/material';
-import UploadFileIcon from '@mui/icons-material/UploadFile';
-import { STYLE_GUIDE } from '../../../styles';
+import React from "react";
+import { Button, Box } from "@mui/material";
+import UploadFileIcon from "@mui/icons-material/UploadFile";
+import { STYLE_GUIDE } from "../../../styles";
+import PrimaryButton from "../../common/PrimaryButton";
 
 interface FileUploadButtonProps {
   fileName: string | null; // Controlled file name state
@@ -9,33 +10,34 @@ interface FileUploadButtonProps {
   buttonName: string;
 }
 
-const FileUploadButton: React.FC<FileUploadButtonProps> = ({ fileName, onFileChange, buttonName }) => {
+const FileUploadButton: React.FC<FileUploadButtonProps> = ({
+  fileName,
+  onFileChange,
+  buttonName,
+}) => {
   return (
     <Box display="flex" alignItems="center" gap={STYLE_GUIDE.SPACING.s2}>
-      <Button
-        variant="contained"
-        component="label"
-        sx={{
-          fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.bold,
-          bgcolor: STYLE_GUIDE.COLORS.bootstrapPrimary,
-          color: STYLE_GUIDE.COLORS.white,
-          '&:hover': { bgcolor: STYLE_GUIDE.COLORS.bootstrapPrimaryHover },
-          padding: STYLE_GUIDE.SPACING.s4,
-        }}
-      >
-        <Box gap={STYLE_GUIDE.SPACING.s1} display="flex" justifyContent="center">
+      <PrimaryButton variant="outlined" component="label">
+        <Box
+          gap={STYLE_GUIDE.SPACING.s1}
+          display="flex"
+          justifyContent="center"
+        >
           <UploadFileIcon />
           {buttonName}
         </Box>
 
         <input type="file" hidden onChange={onFileChange} />
-      </Button>
+      </PrimaryButton>
       {fileName && (
-        <Box component="span" sx={{ 
-          fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base,
-          color: STYLE_GUIDE.COLORS.darkText,
-          fontFamily: STYLE_GUIDE.TYPOGRAPHY.fontFamily
-        }}>
+        <Box
+          component="span"
+          sx={{
+            fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base,
+            color: STYLE_GUIDE.COLORS.darkText,
+            fontFamily: STYLE_GUIDE.TYPOGRAPHY.fontFamily,
+          }}
+        >
           {fileName}
         </Box>
       )}
