@@ -839,6 +839,7 @@ export default function SideNav() {
                                             }
                                             label={dashboard.name}
                                             title={dashboard.name}
+                                            showIcon={true}
                                             icon={
                                               <NumberIcon
                                                 number={index + 1}
@@ -1093,6 +1094,7 @@ function MainListItem({
   isNested,
   route,
   isMainItem,
+  showIcon,
 }: {
   onClick: (e: React.MouseEvent) => void;
   label: string;
@@ -1103,6 +1105,7 @@ function MainListItem({
   isNested?: boolean;
   route?: string;
   isMainItem?: boolean;
+  showIcon?: boolean;
 }) {
   const { getNavigationSx } = useComponentTypography();
   const theme = useUnifiedTheme();
@@ -1117,6 +1120,8 @@ function MainListItem({
   }
 
   const isActive = route ? isRouteActive(route) : false;
+
+  const showListItemIcon = isMainItem || showIcon ? true : false;
 
   return (
     <ListItem
@@ -1163,7 +1168,7 @@ function MainListItem({
               : theme.palette.text.primary,
           }}
         >
-          {icon && (
+          {icon && showListItemIcon && (
             <ListItemIcon
               sx={{
                 minWidth: 24,
@@ -1183,6 +1188,7 @@ function MainListItem({
               {icon}
             </ListItemIcon>
           )}
+          {!showListItemIcon && <Box sx={{ width: 4, height: 12 }} />}
           <ListItemText
             primary={label}
             sx={{
