@@ -26,7 +26,7 @@ export function AccountPopover() {
   );
   const { userDetails, initialization, clearAuthContext, isAuthUser } =
     useContext(AuthContext);
-
+  const { imagePath } = userDetails?.data || {};
   const handleOpenPopover = useCallback(
     (event: React.MouseEvent<HTMLButtonElement>) => {
       event.preventDefault();
@@ -79,7 +79,16 @@ export function AccountPopover() {
       >
         <Avatar
           alt={userDetails?.data?.firstName?.[0]?.toUpperCase()}
-          sx={{ width: 35, height: 35, fontSize: 14 }}
+          sx={{
+            width: 35,
+            height: 35,
+            fontSize: 14,
+            objectFit: "cover",
+            backgroundColor: "white",
+            border: "1px solid #f0f0f0",
+            color: STYLE_GUIDE.COLORS.textMediumGray,
+          }}
+          src={imagePath}
         >
           {getInitials()}
         </Avatar>
