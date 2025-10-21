@@ -122,7 +122,7 @@ const DashboardThemePage = () => {
     <Box
       sx={{
         p: 3,
-        maxWidth: "1400px",
+        // maxWidth: "1400px",
         margin: "0 auto",
         backgroundColor: unifiedTheme.palette.background.paper,
       }}

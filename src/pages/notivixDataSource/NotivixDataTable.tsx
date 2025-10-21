@@ -252,6 +252,11 @@ export const NotivixDataTable: React.FC<TableSectionProps> = ({
                       STYLE_GUIDE?.COLORS?.backgroundLight || "#f5f5f5",
                   },
                 },
+                "& .MuiDataGrid-footerContainer": {
+                  borderTop: `1px solid ${
+                    STYLE_GUIDE?.COLORS?.divider || "#e0e0e0"
+                  }`,
+                },
                 height: "calc(100vh - 280px)",
               }}
               slots={{

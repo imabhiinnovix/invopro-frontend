@@ -400,32 +400,32 @@ export function RoleModal({
           <Grid container spacing={2}>
             <Grid item xs={12}>
               {mode === "view" ? (
-                <>
-                  <label
-                    style={{
-                      display: "block",
-                      marginBottom: STYLE_GUIDE.SPACING.s1,
-                      fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
-                      color: STYLE_GUIDE.COLORS.primary || "#666",
-                      fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.medium,
-                    }}
-                  >
-                    Name
-                  </label>
-                  <div
-                    style={{
-                      padding: `${STYLE_GUIDE.SPACING.s4} ${STYLE_GUIDE.SPACING.s3}`,
-                      borderRadius: STYLE_GUIDE.SPACING.s2,
-                      display: "flex",
-                      alignItems: "center",
-                      backgroundColor:
-                        STYLE_GUIDE.COLORS.backgroundLight || "#ebe8e8ff",
-                      color: STYLE_GUIDE.COLORS.textPrimary || "#3f3e3eff",
-                    }}
-                  >
-                    {rowData || "-"}
-                  </div>
-                </>
+                <Controller
+                  name="name"
+                  control={control}
+                  rules={{
+                    required: "Name is required",
+                    minLength: {
+                      value: 2,
+                      message: "Enter at least 2 characters",
+                    },
+                  }}
+                  disabled={mode === "view"}
+                  render={({ field, fieldState }) => (
+                    <TextField
+                      {...field}
+                      label="Name *"
+                      placeholder="Enter role name"
+                      variant="outlined"
+                      fullWidth
+                      error={!!fieldState.error}
+                      helperText={fieldState.error?.message || " "}
+                      sx={{
+                        "& .MuiOutlinedInput-root": { borderRadius: "8px" },
+                      }}
+                    />
+                  )}
+                />
               ) : (
                 <Controller
                   name="name"
