@@ -9,7 +9,7 @@ import ListItemText from "@mui/material/ListItemText";
 import { useNav } from "../../../context/NavContext";
 import LayersIcon from "@mui/icons-material/Layers";
 import NotificationsIcon from "@mui/icons-material/Notifications";
-// import ManageAccountsIcon from "@mui/icons-material/ManageAccounts";
+import ArticleIcon from "@mui/icons-material/Article";
 import AddIcon from "@mui/icons-material/Add";
 import React, { useEffect, useMemo, useContext, useState } from "react";
 import { Collapse, LinearProgress, Tooltip, Typography } from "@mui/material";
@@ -65,6 +65,8 @@ import EventAvailableIcon from "@mui/icons-material/EventAvailable";
 import ArrowDropDownCircleIcon from "@mui/icons-material/ArrowDropDownCircle";
 import DeleteIcon from "@mui/icons-material/Delete";
 import TopicIcon from "@mui/icons-material/Topic";
+import AccountBalanceIcon from "@mui/icons-material/AccountBalance";
+import BusinessCenterIcon from "@mui/icons-material/BusinessCenter";
 
 interface ErrorResponse {
   success: boolean;
@@ -468,6 +470,11 @@ export default function SideNav() {
       icon: createIcon(NotificationsIcon, "/notification-logs"),
       route: "/notification-logs",
     };
+    const Template = {
+      name: "Templates",
+      icon: createIcon(ArticleIcon, "/template"),
+      route: "/template",
+    };
     const loadingIndicator =
       dataSourceListAPI?.hasNextPage || dataSourceNotivixListAPI?.isLoading
         ? [
@@ -484,6 +491,7 @@ export default function SideNav() {
         : [];
     const dataSourceItems = [
       alertsMenuItem,
+      Template,
       // notivixDefaultDashboard,
       ...monthlyDataSources,
       ...loadingIndicator,
@@ -624,16 +632,16 @@ export default function SideNav() {
                 icon: createIcon(KeyIcon, "/permissions"),
                 route: "/permissions",
               },
-              // {
-              //   name: "Department",
-              //   icon: createIcon(BusinessIcon, "/department"),
-              //   route: "/department",
-              // },
-              // {
-              //   name: "Designation",
-              //   icon: createIcon(BusinessIcon, "/designation"),
-              //   route: "/designation",
-              // },
+              {
+                name: "Department",
+                icon: createIcon(AccountBalanceIcon, "/department"),
+                route: "/department",
+              },
+              {
+                name: "Designation",
+                icon: createIcon(BusinessCenterIcon, "/designation"),
+                route: "/designation",
+              },
               // {
               //   name: "Product",
               //   icon: createIcon(BusinessIcon, "/product"),

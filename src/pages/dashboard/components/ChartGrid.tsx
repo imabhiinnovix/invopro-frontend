@@ -81,6 +81,7 @@ import { toast } from "react-toastify";
 import jsPDF from "jspdf";
 import axiosInstance from "../../../services/axiosInstance";
 import { Theme } from "../../createTheme/types";
+import VisibilityIcon from "@mui/icons-material/Visibility";
 
 import { AddChartModal, ChartFormData } from "./AddChartModal";
 import { resetChartAndWidgetData } from "../dashboardReducer";
@@ -359,6 +360,8 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
     widgetTypes: state.dashboard.widgetTypes,
     dashboards: state.dashboard.dashboards || [],
   }));
+
+  const [drillDownColumns, setDrillDownColumns] = useState<string[]>([]);
 
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [selectedChart, setSelectedChart] = useState<ChartResponse | null>(
@@ -720,9 +723,22 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
         );
 
         if (response.data.success) {
-          setDrillDownData(response.data.data);
+          const drillDownData = response.data.data;
+          console.log("Response data:", drillDownData); // Add this log
+          setDrillDownData(drillDownData);
           setTotalPages(response.data.pagination.totalPages);
           setTotalRecords(response.data.pagination.totalRecords);
+
+          // Set drill-down columns from the response data
+          if (drillDownData && drillDownData.length > 0) {
+            const columns = Object.keys(drillDownData[0]).filter(
+              (key) => key !== "_id"
+            );
+            console.log("Columns:", columns); // Add this log
+            setDrillDownColumns(columns);
+          } else {
+            setDrillDownColumns([]);
+          }
         } else {
           toast.error(response.data.message || "Failed to fetch detailed data");
         }
@@ -735,6 +751,69 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
     }
   };
 
+  const handleShowAllData = async (
+    chart: ChartResponse,
+    elements: ActiveElement[]
+  ) => {
+    console.log("Show all data clicked", chart);
+
+    setSelectedChart(chart);
+    setDrillDownTitle(`${chart.name} - All Data`);
+    setDrillDownOpen(true);
+    setCurrentPage(1);
+    setIsDrillDownLoading(true);
+
+    try {
+      const payload = {
+        dataSourceId: chart.dataSourceId?._id,
+        entityId: chart.dataSourceId?.entityId,
+        conditions: chart.conditions || [],
+        dimensions: [], // Empty array for all data
+        dashboardFilters: {
+          startVersionValue: startVersionValue,
+          endVersionValue: endVersionValue,
+          versionValue: versionValue,
+        },
+        groupBy: [], // Empty array for all data
+        page: 1,
+        limit: itemsPerPage,
+        dashBoardType: currentDashboard?.settings?.dashboardType,
+      };
+
+      setDrillDownPayload(payload);
+
+      const response = await axiosInstance.post(
+        "/common/dataSource/getWidgetDataByFilter",
+        payload
+      );
+
+      if (response.data.success) {
+        const drillDownData = response.data.data;
+        console.log("Response data:", drillDownData);
+        setDrillDownData(drillDownData);
+        setTotalPages(response.data.pagination.totalPages);
+        setTotalRecords(response.data.pagination.totalRecords);
+
+        // Set drill-down columns from the response data
+        if (drillDownData && drillDownData.length > 0) {
+          const columns = Object.keys(drillDownData[0]).filter(
+            (key) => key !== "_id"
+          );
+          console.log("Columns:", columns);
+          setDrillDownColumns(columns);
+        } else {
+          setDrillDownColumns([]);
+        }
+      } else {
+        toast.error(response.data.message || "Failed to fetch detailed data");
+      }
+    } catch (error) {
+      console.error("Error fetching detailed data:", error);
+      toast.error("Failed to fetch detailed data");
+    } finally {
+      setIsDrillDownLoading(false);
+    }
+  };
   const handleDrillDownClose = () => {
     setDrillDownOpen(false);
     setDrillDownData([]);
@@ -2711,7 +2790,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
           )}
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleDrillDownClose}>Close</Button>
+          <Button onClick={handleDrillDownClose}>Close2</Button>
         </DialogActions>
       </DrillDownDialog>
     );
@@ -3122,7 +3201,6 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
         )}
         {isNaturalLangauage && <Box ref={bottomRef} />}
       </Grid>
-
       <Menu
         anchorEl={anchorEl}
         open={Boolean(anchorEl)}
@@ -3138,7 +3216,6 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
           Delete
         </MenuItem>
       </Menu>
-
       <Menu
         anchorEl={exportMenuAnchorEl}
         open={Boolean(exportMenuAnchorEl)}
@@ -3162,7 +3239,6 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
           Export Data (CSV)
         </MenuItem>
       </Menu>
-
       {deleteDialogOpen && (
         <Dialog
           open={deleteDialogOpen}
@@ -3202,29 +3278,270 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
             alignItems: "center",
             borderBottom: `1px solid ${theme.palette.divider}`,
             p: 2,
+            position: "sticky",
+            top: 0,
+            zIndex: 100,
+            backgroundColor: theme.palette.background.paper,
           }}
         >
           <Typography variant="h6">{selectedChart?.name}</Typography>
-          <IconButton
-            onClick={handleFullViewClose}
-            size="small"
+
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+            <Button
+              // variant="outlined"
+              // startIcon={<VisibilityIcon />}
+              onClick={(e) => {
+                e.stopPropagation();
+                handleShowAllData(selectedChart, []);
+              }}
+              sx={{
+                color: theme.palette.primary.main,
+                borderColor: theme.palette.primary.main,
+                "&:hover": {
+                  backgroundColor: theme.palette.action.hover,
+                  borderColor: theme.palette.primary.dark,
+                },
+              }}
+            >
+              Source Data 
+            </Button>
+
+            <IconButton
+              onClick={handleFullViewClose}
+              size="small"
+              sx={{
+                color: theme.palette.text.secondary,
+                "&:hover": {
+                  color: theme.palette.text.primary,
+                  backgroundColor: theme.palette.action.hover,
+                },
+              }}
+            >
+              <CloseIcon />
+            </IconButton>
+          </Box>
+        </DialogTitle>
+
+        {/* Scrollable main content area */}
+        <Box
+          sx={{
+            flex: 1,
+            overflow: "auto",
+            display: "flex",
+            flexDirection: "column",
+          }}
+        >
+          {/* Chart section - takes full height initially, 60% when drill-down is open */}
+          <Box
             sx={{
-              color: theme.palette.text.secondary,
-              "&:hover": {
-                color: theme.palette.text.primary,
-                backgroundColor: theme.palette.action.hover,
-              },
+              flex: drillDownOpen ? 0.6 : 1,
+              minHeight: drillDownOpen ? "60vh" : "100vh",
+              overflow: "hidden",
+              borderBottom: drillDownOpen
+                ? `1px solid ${theme.palette.divider}`
+                : "none",
             }}
           >
-            <CloseIcon />
-          </IconButton>
-        </DialogTitle>
-        <FullScreenChartContainer>
-          {selectedChart && renderChart(selectedChart)}
-        </FullScreenChartContainer>
-      </FullScreenModal>
+            <FullScreenChartContainer>
+              {selectedChart && renderChart(selectedChart)}
+            </FullScreenChartContainer>
+          </Box>
 
-      {renderDrillDownDialog()}
+          {/* Drill-down section - only visible when drillDownOpen is true */}
+          {drillDownOpen && (
+            <Box
+              sx={{
+                flex: 0.4,
+                minHeight: "115vh",
+                display: "flex",
+                flexDirection: "column",
+                backgroundColor: theme.palette.background.paper,
+              }}
+            >
+              {/* Header with title and close button */}
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  borderBottom: `1px solid ${theme.palette.divider}`,
+                  p: 2,
+                  backgroundColor: theme.palette.background.paper,
+                  position: "sticky",
+                  top: 0,
+                  zIndex: 100,
+                }}
+              >
+                <Typography variant="h6">{drillDownTitle}</Typography>
+                <IconButton
+                  onClick={handleDrillDownClose}
+                  size="small"
+                  sx={{
+                    color: theme.palette.text.secondary,
+                    "&:hover": {
+                      color: theme.palette.text.primary,
+                      backgroundColor: theme.palette.action.hover,
+                    },
+                  }}
+                >
+                  <CloseIcon />
+                </IconButton>
+              </Box>
+
+              {/* Table content with proper scrolling */}
+              <Box
+                sx={{
+                  flex: 1,
+                  overflow: "auto",
+                }}
+              >
+                <StyledTableContainer
+                  sx={{
+                    height: "100%",
+                    ...getTableSx(),
+                  }}
+                >
+                  <Table stickyHeader>
+                    <TableHead>
+                      <TableRow>
+                        {drillDownColumns.map((column) => (
+                          <TableCell
+                            key={column}
+                            sx={{
+                              fontWeight:
+                                STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold,
+                              backgroundColor:
+                                themeUnified.palette.table?.headerBackground ||
+                                STYLE_GUIDE.COLORS.backgroundLightGray,
+                              color:
+                                themeUnified.palette.table?.headerText ||
+                                STYLE_GUIDE.COLORS.textGray,
+                              position: "sticky",
+                              top: 0,
+                              zIndex: 10,
+                              whiteSpace: "nowrap",
+                            }}
+                          >
+                            {column}
+                          </TableCell>
+                        ))}
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {console.log(
+                        "drillDownData in table body:",
+                        drillDownData
+                      )}
+                      {isDrillDownLoading ? (
+                        Array.from({ length: 5 }).map((_, index) => (
+                          <TableRow key={index}>
+                            {drillDownColumns.map((column) => (
+                              <TableCell key={column}>
+                                <Box
+                                  sx={{
+                                    width: "100%",
+                                    height: 20,
+                                    bgcolor: "grey.200",
+                                    borderRadius: 1,
+                                  }}
+                                />
+                              </TableCell>
+                            ))}
+                          </TableRow>
+                        ))
+                      ) : drillDownData.length > 0 ? (
+                        drillDownData.map((row, index) => (
+                          <TableRow
+                            key={index}
+                            sx={{
+                              backgroundColor:
+                                index % 2 === 0
+                                  ? themeUnified.palette.table
+                                      ?.rowEvenBackground ||
+                                    STYLE_GUIDE.COLORS.white
+                                  : themeUnified.palette.table
+                                      ?.rowOddBackground ||
+                                    STYLE_GUIDE.COLORS.backgroundDefault,
+                              "&:hover": {
+                                backgroundColor:
+                                  themeUnified.palette.table
+                                    ?.rowHoverBackground ||
+                                  STYLE_GUIDE.COLORS.backgroundHover,
+                              },
+                            }}
+                          >
+                            {drillDownColumns.map((column) => {
+                              const cellValue = row[column];
+                              const isDateField =
+                                column.toLowerCase().includes("date") ||
+                                column.toLowerCase().includes("datetaken") ||
+                                column.toLowerCase().includes("duedate");
+
+                              return (
+                                <TableCell
+                                  key={column}
+                                  sx={{
+                                    color:
+                                      themeUnified.palette.table?.rowText ||
+                                      STYLE_GUIDE.COLORS.textDarkGray,
+                                    whiteSpace: "nowrap",
+                                  }}
+                                >
+                                  {cellValue == null || cellValue === ""
+                                    ? "-"
+                                    : typeof cellValue === "number"
+                                      ? cellValue.toLocaleString()
+                                      : isDateField
+                                        ? formatDateWithoutTime(cellValue)
+                                        : cellValue}
+                                </TableCell>
+                              );
+                            })}
+                          </TableRow>
+                        ))
+                      ) : (
+                        <TableRow>
+                          <TableCell
+                            colSpan={drillDownColumns.length}
+                            align="center"
+                          >
+                            No data available
+                          </TableCell>
+                        </TableRow>
+                      )}
+                    </TableBody>
+                  </Table>
+                </StyledTableContainer>
+              </Box>
+
+              {/* Footer with pagination and close button */}
+              {!isDrillDownLoading && drillDownData.length > 0 && (
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    p: 2,
+                    borderTop: `1px solid ${theme.palette.divider}`,
+                    position: "sticky",
+                    bottom: 0,
+                    backgroundColor: theme.palette.background.paper,
+                    zIndex: 100,
+                  }}
+                >
+                  <Pagination
+                    count={totalPages}
+                    page={currentPage}
+                    onChange={handlePageChange}
+                    color="primary"
+                  />
+                  <Button onClick={handleDrillDownClose}>Close</Button>
+                </Box>
+              )}
+            </Box>
+          )}
+        </Box>
+      </FullScreenModal>
     </>
   );
 };

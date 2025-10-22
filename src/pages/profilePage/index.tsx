@@ -230,6 +230,13 @@
 //     return true;
 //   };
 
+//   const refreshUserData = async () => {
+//     const freshData = await userDetailsAPI.refetch();
+//     if (freshData.data?.data) {
+//       dispatch(setCurrentUser(freshData.data.data));
+//     }
+//   };
+
 //   const handlePasswordChange = async (e) => {
 //     e.preventDefault();
 //     if (!validatePasswords()) {
@@ -245,13 +252,23 @@
 //       });
 //       if (response.success) {
 //         toast.success("Password changed successfully!");
-//         await userDetailsAPI.refetch();
-//         if (userDetailsAPI.data?.data) {
-//           dispatch(setCurrentUser(userDetailsAPI.data.data));
-//         }
-//         setTimeout(() => {
-//           toggleEditMode("password");
-//         }, 1500);
+
+//         // Reset password fields and exit edit mode
+//         setProfile((prev) => ({
+//           ...prev,
+//           password: {
+//             currentPassword: "",
+//             newPassword: "",
+//             confirmPassword: "",
+//           },
+//         }));
+//         setEditModes((prev) => ({
+//           ...prev,
+//           password: false,
+//         }));
+
+//         // Refresh user data
+//         await refreshUserData();
 //       } else {
 //         throw new Error(response.message || "Failed to change password");
 //       }
@@ -284,11 +301,15 @@
 //       });
 //       if (response.success) {
 //         toast.success("Profile updated successfully!");
-//         await userDetailsAPI.refetch();
-//         if (userDetailsAPI.data?.data) {
-//           dispatch(setCurrentUser(userDetailsAPI.data.data));
-//         }
-//         toggleEditMode(section);
+
+//         // Exit edit mode
+//         setEditModes((prev) => ({
+//           ...prev,
+//           [section]: false,
+//         }));
+
+//         // Refresh user data
+//         await refreshUserData();
 //       } else {
 //         throw new Error(response.message || "Failed to update profile");
 //       }
@@ -337,18 +358,17 @@
 //       });
 //       if (response.success) {
 //         console.log("Upload ", response.data);
-//         const newImageUrl =
-//           response.data?.imageUrl || imagePreview || "/default-avatar.png";
-//         setProfileImage(newImageUrl);
+//         toast.success("Profile picture uploaded successfully!");
+
+//         // Clear preview and file input
 //         setImagePreview(null);
 //         setFileName(null);
 //         if (fileInputRef.current) {
 //           fileInputRef.current.value = "";
 //         }
-//         await userDetailsAPI.refetch();
-//         if (userDetailsAPI.data?.data) {
-//           dispatch(setCurrentUser(userDetailsAPI.data.data));
-//         }
+
+//         // Refresh user data to get new image URL
+//         await refreshUserData();
 //       } else {
 //         throw new Error(response.message || "Failed to upload profile picture");
 //       }
@@ -385,15 +405,15 @@
 //         method: "DELETE",
 //       });
 //       if (response.success) {
-//         setProfileImage("/default-avatar.png");
+//         toast.success("Profile picture deleted successfully!");
+
+//         // Clear preview and close modal
 //         setImagePreview(null);
 //         setFileName(null);
 //         setDeleteModalOpen(false);
-//         toast.success("Profile picture deleted successfully");
-//         await userDetailsAPI.refetch();
-//         if (userDetailsAPI.data?.data) {
-//           dispatch(setCurrentUser(userDetailsAPI.data.data));
-//         }
+
+//         // Refresh user data
+//         await refreshUserData();
 //       } else {
 //         throw new Error(response.message || "Failed to delete profile picture");
 //       }
@@ -1106,13 +1126,26 @@ const ProfilePage = () => {
   };
 
   const handleInputChange = (section, field, value) => {
-    setProfile((prev) => ({
-      ...prev,
-      [section]: {
-        ...prev[section],
-        [field]: value,
-      },
-    }));
+    // Validate mobile and postalCode fields to only accept numbers
+    if (field === "mobile" || field === "postalCode") {
+      // Remove any non-digit characters
+      const numericValue = value.replace(/\D/g, "");
+      setProfile((prev) => ({
+        ...prev,
+        [section]: {
+          ...prev[section],
+          [field]: numericValue,
+        },
+      }));
+    } else {
+      setProfile((prev) => ({
+        ...prev,
+        [section]: {
+          ...prev[section],
+          [field]: value,
+        },
+      }));
+    }
     if (section === "password") {
       setPasswordError("");
     }
@@ -1166,6 +1199,13 @@ const ProfilePage = () => {
     return true;
   };
 
+  const refreshUserData = async () => {
+    const freshData = await userDetailsAPI.refetch();
+    if (freshData.data?.data) {
+      dispatch(setCurrentUser(freshData.data.data));
+    }
+  };
+
   const handlePasswordChange = async (e) => {
     e.preventDefault();
     if (!validatePasswords()) {
@@ -1180,13 +1220,24 @@ const ProfilePage = () => {
         },
       });
       if (response.success) {
-        toast.success("Password changed successfully! Refreshing page...");
-        await userDetailsAPI.refetch();
-        if (userDetailsAPI.data?.data) {
-          dispatch(setCurrentUser(userDetailsAPI.data.data));
-        }
-        // Hard refresh the page
-        window.location.reload();
+        toast.success("Password changed successfully!");
+
+        // Reset password fields and exit edit mode
+        setProfile((prev) => ({
+          ...prev,
+          password: {
+            currentPassword: "",
+            newPassword: "",
+            confirmPassword: "",
+          },
+        }));
+        setEditModes((prev) => ({
+          ...prev,
+          password: false,
+        }));
+
+        // Refresh user data
+        await refreshUserData();
       } else {
         throw new Error(response.message || "Failed to change password");
       }
@@ -1218,13 +1269,16 @@ const ProfilePage = () => {
         payload,
       });
       if (response.success) {
-        toast.success("Profile updated successfully! Refreshing page...");
-        await userDetailsAPI.refetch();
-        if (userDetailsAPI.data?.data) {
-          dispatch(setCurrentUser(userDetailsAPI.data.data));
-        }
-        // Hard refresh the page
-        window.location.reload();
+        toast.success("Profile updated successfully!");
+
+        // Exit edit mode
+        setEditModes((prev) => ({
+          ...prev,
+          [section]: false,
+        }));
+
+        // Refresh user data
+        await refreshUserData();
       } else {
         throw new Error(response.message || "Failed to update profile");
       }
@@ -1273,20 +1327,17 @@ const ProfilePage = () => {
       });
       if (response.success) {
         console.log("Upload ", response.data);
-        const newImageUrl =
-          response.data?.imageUrl || imagePreview || "/default-avatar.png";
-        setProfileImage(newImageUrl);
+        toast.success("Profile picture uploaded successfully!");
+
+        // Clear preview and file input
         setImagePreview(null);
         setFileName(null);
         if (fileInputRef.current) {
           fileInputRef.current.value = "";
         }
-        await userDetailsAPI.refetch();
-        if (userDetailsAPI.data?.data) {
-          dispatch(setCurrentUser(userDetailsAPI.data.data));
-        }
-        // Hard refresh the page
-        window.location.reload();
+
+        // Refresh user data to get new image URL
+        await refreshUserData();
       } else {
         throw new Error(response.message || "Failed to upload profile picture");
       }
@@ -1323,19 +1374,15 @@ const ProfilePage = () => {
         method: "DELETE",
       });
       if (response.success) {
-        setProfileImage("/default-avatar.png");
+        toast.success("Profile picture deleted successfully!");
+
+        // Clear preview and close modal
         setImagePreview(null);
         setFileName(null);
         setDeleteModalOpen(false);
-        toast.success(
-          "Profile picture deleted successfully! Refreshing page..."
-        );
-        await userDetailsAPI.refetch();
-        if (userDetailsAPI.data?.data) {
-          dispatch(setCurrentUser(userDetailsAPI.data.data));
-        }
-        // Hard refresh the page
-        window.location.reload();
+
+        // Refresh user data
+        await refreshUserData();
       } else {
         throw new Error(response.message || "Failed to delete profile picture");
       }
@@ -1461,7 +1508,7 @@ const ProfilePage = () => {
     { id: "firstName", label: "First Name" },
     { id: "lastName", label: "Last Name" },
     { id: "email", label: "Email" },
-    { id: "mobile", label: "Mobile" },
+    { id: "mobile", label: "Mobile", type: "tel" },
     { id: "company", label: "Company" },
     {
       id: "departmentId",
@@ -1482,7 +1529,7 @@ const ProfilePage = () => {
     { id: "city", label: "City" },
     { id: "state", label: "State" },
     { id: "country", label: "Country" },
-    { id: "postalCode", label: "Postal Code" },
+    { id: "postalCode", label: "Postal Code", type: "tel" },
   ];
 
   const passwordFields = [

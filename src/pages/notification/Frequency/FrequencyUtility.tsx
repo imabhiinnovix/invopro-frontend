@@ -513,7 +513,7 @@ export const changeCalendarMonth = (setCalendarDate, delta) => {
   });
 };
 
-export const generateCalendarDays = (calendarDate, selectedDate, setDatePickerOpen) => {
+export const generateCalendarDays = (calendarDate, selectedDate, setSelectedDate, setDatePickerOpen) => {
   const y = calendarDate.getFullYear();
   const m = calendarDate.getMonth();
   const first = new Date(y, m, 1).getDay();
