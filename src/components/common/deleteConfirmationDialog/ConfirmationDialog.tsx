@@ -9,6 +9,8 @@ import {
   CircularProgress,
 } from "@mui/material";
 import { STYLE_GUIDE } from "../../../styles";
+import DialogContainer from "../../molecule/dialog";
+import PrimaryButton from "../PrimaryButton";
 
 interface ConfirmationDialogProps {
   open: boolean;
@@ -18,12 +20,24 @@ interface ConfirmationDialogProps {
   content?: string | React.ReactNode;
   confirmText?: string;
   cancelText?: string;
-  confirmButtonColor?: "primary" | "secondary" | "success" | "error" | "info" | "warning";
-  cancelButtonColor?: "primary" | "secondary" | "success" | "error" | "info" | "warning";
+  confirmButtonColor?:
+    | "primary"
+    | "secondary"
+    | "success"
+    | "error"
+    | "info"
+    | "warning";
+  cancelButtonColor?:
+    | "primary"
+    | "secondary"
+    | "success"
+    | "error"
+    | "info"
+    | "warning";
   isSubmitting?: boolean;
   disableConfirmButton?: boolean;
   maxWidth?: "xs" | "sm" | "md" | "lg" | "xl";
-  deleteId?: string | null; 
+  deleteId?: string | null;
 }
 
 export const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
@@ -39,7 +53,7 @@ export const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
   isSubmitting = false,
   disableConfirmButton = false,
   maxWidth = "xs",
-  deleteId, 
+  deleteId,
 }) => {
   const getButtonColor = (color: string) => {
     switch (color) {
@@ -80,60 +94,56 @@ export const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
   };
 
   // Default content based on whether deleteId is provided
-  const dialogContent = content || 
-    (deleteId 
-      ? `Are you sure you want to delete this?` 
+  const dialogContent =
+    content ||
+    (deleteId
+      ? `Are you sure you want to delete this?`
       : "Are you sure you want to proceed?");
 
   return (
-    <Dialog
+    <DialogContainer
       open={open}
       onClose={onClose}
       maxWidth={maxWidth}
-      sx={{
-        "& .MuiDialog-paper": {
-          borderRadius: "8px",
-          backgroundColor: STYLE_GUIDE?.COLORS?.white || "#ffffff",
-        },
-      }}
+      title={title}
+      actions={
+        <>
+          <PrimaryButton
+            onClick={onClose}
+            variant="outlined"
+            sx={{
+              borderRadius: "8px",
+              color: getButtonColor(cancelButtonColor),
+            }}
+          >
+            {cancelText}
+          </PrimaryButton>
+          <PrimaryButton
+            onClick={onConfirm}
+            disabled={isSubmitting || disableConfirmButton}
+            sx={{
+              borderRadius: "8px",
+              backgroundColor: getButtonColor(confirmButtonColor),
+              color: "#ffffff",
+              "&:hover": {
+                backgroundColor: getButtonHoverColor(confirmButtonColor),
+              },
+              "&.Mui-disabled": {
+                backgroundColor: STYLE_GUIDE?.COLORS?.divider || "#e0e0e0",
+                color: STYLE_GUIDE?.COLORS?.textMediumGray || "#9e9e9e",
+              },
+            }}
+          >
+            {isSubmitting ? (
+              <CircularProgress size={24} color="inherit" />
+            ) : (
+              confirmText
+            )}
+          </PrimaryButton>
+        </>
+      }
     >
-      <DialogTitle
-        sx={{ color: STYLE_GUIDE?.COLORS?.primaryDark || "#8c2d8c" }}
-      >
-        {title}
-      </DialogTitle>
-      <DialogContent>
-        <Typography>{dialogContent}</Typography>
-      </DialogContent>
-      <DialogActions>
-        <Button
-          onClick={onClose}
-          sx={{
-            borderRadius: "8px",
-            color: getButtonColor(cancelButtonColor),
-          }}
-        >
-          {cancelText}
-        </Button>
-        <Button
-          onClick={onConfirm}
-          disabled={isSubmitting || disableConfirmButton}
-          sx={{
-            borderRadius: "8px",
-            backgroundColor: getButtonColor(confirmButtonColor),
-            color: "#ffffff",
-            "&:hover": {
-              backgroundColor: getButtonHoverColor(confirmButtonColor),
-            },
-            "&.Mui-disabled": {
-              backgroundColor: STYLE_GUIDE?.COLORS?.divider || "#e0e0e0",
-              color: STYLE_GUIDE?.COLORS?.textMediumGray || "#9e9e9e",
-            },
-          }}
-        >
-          {isSubmitting ? <CircularProgress size={24} color="inherit" /> : confirmText}
-        </Button>
-      </DialogActions>
-    </Dialog>
+      <Typography>{dialogContent}</Typography>
+    </DialogContainer>
   );
 };

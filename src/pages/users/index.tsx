@@ -36,8 +36,6 @@
 //   handleDelete: (id: string) => void;
 // }
 
-
-
 // const columns: GridColDef[] = [
 //   // { field: 'id', headerName: 'ID', width: 70, disableColumnMenu: true, resizable: true },
 //   { field: 'firstName', headerName: 'First Name', width: 200, disableColumnMenu: true, resizable: true },
@@ -143,7 +141,6 @@
 //     ),
 //   },
 // ];
-
 
 // export default function Users({ organizationId }: UsersProps) {
 //   const theme = useUnifiedTheme();
@@ -680,8 +677,6 @@
 //   );
 // }
 
-
-
 import { useState } from "react";
 import { DataGrid, GridColDef, GridRenderCellParams } from "@mui/x-data-grid";
 import {
@@ -723,6 +718,7 @@ import {
   ProductSubscriptionListResponse,
 } from "./types";
 import { Department } from "../designation/DesignationModal";
+import DialogContainer from "../../components/molecule/dialog";
 
 interface UsersProps {
   organizationId?: string;
@@ -982,9 +978,13 @@ export default function Users({ organizationId }: UsersProps) {
 
   const handleEdit = (row: UserRowData) => {
     // Find the department and designation objects from the fetched lists
-    const department = departmentList.data?.data?.find(dept => dept._id === row.departmentId);
-    const designation = designationList.data?.data?.find(design => design._id === row.designationId);
-    
+    const department = departmentList.data?.data?.find(
+      (dept) => dept._id === row.departmentId
+    );
+    const designation = designationList.data?.data?.find(
+      (design) => design._id === row.designationId
+    );
+
     setFormData({
       firstName: row.firstName,
       lastName: row.lastName === "-" ? "" : row.lastName,
@@ -1006,9 +1006,13 @@ export default function Users({ organizationId }: UsersProps) {
 
   const handleView = (row: UserRowData) => {
     // Find the department and designation objects from the fetched lists
-    const department = departmentList.data?.data?.find(dept => dept._id === row.departmentId);
-    const designation = designationList.data?.data?.find(design => design._id === row.designationId);
-    
+    const department = departmentList.data?.data?.find(
+      (dept) => dept._id === row.departmentId
+    );
+    const designation = designationList.data?.data?.find(
+      (design) => design._id === row.designationId
+    );
+
     setFormData({
       firstName: row.firstName,
       lastName: row.lastName || "",
@@ -1130,9 +1134,13 @@ export default function Users({ organizationId }: UsersProps) {
   const transformedUsers: UserRowData[] =
     usersQuery.data?.data?.map((user: User) => {
       // Find the department and designation objects from the fetched lists
-      const department = departmentList.data?.data?.find(dept => dept._id === user.departmentId);
-      const designation = designationList.data?.data?.find(design => design._id === user.designationId);
-      
+      const department = departmentList.data?.data?.find(
+        (dept) => dept._id === user.departmentId
+      );
+      const designation = designationList.data?.data?.find(
+        (design) => design._id === user.designationId
+      );
+
       return {
         id: user._id,
         firstName: user.firstName,
@@ -1174,11 +1182,12 @@ export default function Users({ organizationId }: UsersProps) {
   return (
     <Box
       sx={{
-        p: STYLE_GUIDE.SPACING.s6,
+        p: 1,
         ml: { xs: STYLE_GUIDE.SPACING.s0 },
+        backgroundColor: STYLE_GUIDE.COLORS.backgroundDefault,
       }}
     >
-      <Card
+      <Box
         sx={{
           borderRadius: STYLE_GUIDE.SPACING.s2,
           overflow: "visible",
@@ -1243,10 +1252,130 @@ export default function Users({ organizationId }: UsersProps) {
               }}
             />
           )}
+          <TextField
+            label="Mobile"
+            value={formData.mobile}
+            onChange={(e) =>
+              setFormData({ ...formData, mobile: e.target.value })
+            }
+            disabled={modalMode === "view"}
+            variant="outlined"
+            fullWidth
+            type="tel"
+            sx={{
+              "& .MuiOutlinedInput-root": {
+                borderRadius: STYLE_GUIDE.SPACING.s2,
+              },
+            }}
+          />
+          {!organizationId && (
+            <TextField
+              label="Organization ID"
+              value={formData.organizationId}
+              onChange={(e) =>
+                setFormData({ ...formData, organizationId: e.target.value })
+              }
+              disabled={modalMode === "view"}
+              variant="outlined"
+              fullWidth
+              sx={{
+                "& .MuiOutlinedInput-root": {
+                  borderRadius: STYLE_GUIDE.SPACING.s2,
+                },
+              }}
+            />
+          )}
+          <FormControl
+            fullWidth
+            required
+            sx={{
+              "& .MuiOutlinedInput-root": {
+                borderRadius: STYLE_GUIDE.SPACING.s2,
+              },
+            }}
+          >
+            <InputLabel>Status</InputLabel>
+            <Select
+              value={formData.status}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  status: e.target.value as "active" | "inactive",
+                })
+              }
+              disabled={modalMode === "view"}
+              label="Status"
+            >
+              <MenuItem value="active">Active</MenuItem>
+              <MenuItem value="inactive">Inactive</MenuItem>
+            </Select>
+          </FormControl>
+          <Autocomplete
+            multiple
+            options={rolesQuery.data?.data || []}
+            getOptionLabel={(option) => option.name}
+            value={
+              rolesQuery.data?.data?.filter((role) =>
+                formData.roleIds.includes(role._id)
+              ) || []
+            }
+            onChange={(_, newValue) =>
+              setFormData({
+                ...formData,
+                roleIds: newValue.map((role) => role._id),
+              })
+            }
+            disabled={modalMode === "view"}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label="Roles"
+                required
+                variant="outlined"
+                sx={{
+                  "& .MuiOutlinedInput-root": {
+                    borderRadius: STYLE_GUIDE.SPACING.s2,
+                  },
+                }}
+              />
+            )}
+          />
+          <Autocomplete
+            multiple
+            options={productSubscriptionsQuery.data?.data || []}
+            getOptionLabel={(option) => option.productId.name}
+            value={
+              productSubscriptionsQuery.data?.data?.filter((sub) =>
+                formData.organizationProductSubscriptionIds.includes(sub._id)
+              ) || []
+            }
+            onChange={(_, newValue) =>
+              setFormData({
+                ...formData,
+                organizationProductSubscriptionIds: newValue.map(
+                  (sub) => sub._id
+                ),
+              })
+            }
+            disabled={modalMode === "view"}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label="Product Subscriptions"
+                required
+                variant="outlined"
+                sx={{
+                  "& .MuiOutlinedInput-root": {
+                    borderRadius: STYLE_GUIDE.SPACING.s2,
+                  },
+                }}
+              />
+            )}
+          />
         </CardContent>
-      </Card>
+      </Box>
 
-      <Modal
+      {/* <Modal
         open={openModal}
         onClose={handleCloseModal}
         sx={{
@@ -1470,7 +1599,6 @@ export default function Users({ organizationId }: UsersProps) {
               )}
             />
 
-            {/* Department Autocomplete */}
             <Autocomplete
               options={departmentList.data?.data || []}
               getOptionLabel={(option) => option.name}
@@ -1501,7 +1629,6 @@ export default function Users({ organizationId }: UsersProps) {
               )}
             />
 
-            {/* Designation Autocomplete - filtered by selected department */}
             <Autocomplete
               options={filteredDesignations || []}
               getOptionLabel={(option) => option.name}
@@ -1572,9 +1699,9 @@ export default function Users({ organizationId }: UsersProps) {
             )}
           </Box>
         </Box>
-      </Modal>
+      </Modal> */}
 
-      <Dialog
+      <DialogContainer
         open={openDialog}
         onClose={handleCloseDialog}
         sx={{
@@ -1611,7 +1738,7 @@ export default function Users({ organizationId }: UsersProps) {
             )}
           </Button>
         </DialogActions>
-      </Dialog>
+      </DialogContainer>
     </Box>
   );
 }

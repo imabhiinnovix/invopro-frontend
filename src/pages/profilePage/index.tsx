@@ -252,7 +252,7 @@
 //       });
 //       if (response.success) {
 //         toast.success("Password changed successfully!");
-        
+
 //         // Reset password fields and exit edit mode
 //         setProfile((prev) => ({
 //           ...prev,
@@ -266,7 +266,7 @@
 //           ...prev,
 //           password: false,
 //         }));
-        
+
 //         // Refresh user data
 //         await refreshUserData();
 //       } else {
@@ -301,13 +301,13 @@
 //       });
 //       if (response.success) {
 //         toast.success("Profile updated successfully!");
-        
+
 //         // Exit edit mode
 //         setEditModes((prev) => ({
 //           ...prev,
 //           [section]: false,
 //         }));
-        
+
 //         // Refresh user data
 //         await refreshUserData();
 //       } else {
@@ -359,14 +359,14 @@
 //       if (response.success) {
 //         console.log("Upload ", response.data);
 //         toast.success("Profile picture uploaded successfully!");
-        
+
 //         // Clear preview and file input
 //         setImagePreview(null);
 //         setFileName(null);
 //         if (fileInputRef.current) {
 //           fileInputRef.current.value = "";
 //         }
-        
+
 //         // Refresh user data to get new image URL
 //         await refreshUserData();
 //       } else {
@@ -406,12 +406,12 @@
 //       });
 //       if (response.success) {
 //         toast.success("Profile picture deleted successfully!");
-        
+
 //         // Clear preview and close modal
 //         setImagePreview(null);
 //         setFileName(null);
 //         setDeleteModalOpen(false);
-        
+
 //         // Refresh user data
 //         await refreshUserData();
 //       } else {
@@ -998,6 +998,8 @@ import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "../../reducers";
 import useDelete from "../../hooks/useDelete";
 import { setCurrentUser } from "../../reducers/userSlice";
+import PrimaryButton from "../../components/common/PrimaryButton";
+import DialogContainer from "../../components/molecule/dialog";
 
 const ProfilePage = () => {
   const userProfile = useSelector(
@@ -1219,7 +1221,7 @@ const ProfilePage = () => {
       });
       if (response.success) {
         toast.success("Password changed successfully!");
-        
+
         // Reset password fields and exit edit mode
         setProfile((prev) => ({
           ...prev,
@@ -1233,7 +1235,7 @@ const ProfilePage = () => {
           ...prev,
           password: false,
         }));
-        
+
         // Refresh user data
         await refreshUserData();
       } else {
@@ -1268,13 +1270,13 @@ const ProfilePage = () => {
       });
       if (response.success) {
         toast.success("Profile updated successfully!");
-        
+
         // Exit edit mode
         setEditModes((prev) => ({
           ...prev,
           [section]: false,
         }));
-        
+
         // Refresh user data
         await refreshUserData();
       } else {
@@ -1326,14 +1328,14 @@ const ProfilePage = () => {
       if (response.success) {
         console.log("Upload ", response.data);
         toast.success("Profile picture uploaded successfully!");
-        
+
         // Clear preview and file input
         setImagePreview(null);
         setFileName(null);
         if (fileInputRef.current) {
           fileInputRef.current.value = "";
         }
-        
+
         // Refresh user data to get new image URL
         await refreshUserData();
       } else {
@@ -1373,12 +1375,12 @@ const ProfilePage = () => {
       });
       if (response.success) {
         toast.success("Profile picture deleted successfully!");
-        
+
         // Clear preview and close modal
         setImagePreview(null);
         setFileName(null);
         setDeleteModalOpen(false);
-        
+
         // Refresh user data
         await refreshUserData();
       } else {
@@ -1602,26 +1604,23 @@ const ProfilePage = () => {
                     mb: 2,
                   }}
                 >
-                  <Button
+                  <PrimaryButton
                     variant="outlined"
                     startIcon={<UploadIcon />}
                     onClick={triggerFileInput}
-                    size="small"
-                    sx={{ borderRadius: 2 }}
                   >
                     Upload
-                  </Button>
+                  </PrimaryButton>
                   {profileImage !== "/default-avatar.png" && (
-                    <Button
+                    <PrimaryButton
                       variant="outlined"
                       color="error"
                       startIcon={<DeleteIcon />}
                       onClick={handleDeleteClick}
                       size="small"
-                      sx={{ borderRadius: 2 }}
                     >
                       Delete
-                    </Button>
+                    </PrimaryButton>
                   )}
                 </Box>
               </>
@@ -1635,7 +1634,7 @@ const ProfilePage = () => {
                   mb: 2,
                 }}
               >
-                <Button
+                <PrimaryButton
                   variant="contained"
                   color="primary"
                   startIcon={
@@ -1651,17 +1650,15 @@ const ProfilePage = () => {
                   sx={{ borderRadius: 2 }}
                 >
                   {isUploading ? "Uploading..." : "Save"}
-                </Button>
-                <Button
+                </PrimaryButton>
+                <PrimaryButton
                   variant="outlined"
                   color="error"
                   startIcon={<DeleteIcon />}
                   onClick={handleImagePreviewDelete}
-                  size="small"
-                  sx={{ borderRadius: 2 }}
                 >
                   Cancel
-                </Button>
+                </PrimaryButton>
               </Box>
             )}
             <Typography
@@ -1686,15 +1683,13 @@ const ProfilePage = () => {
               title="Personal Information"
               titleTypographyProps={{ fontWeight: 600 }}
               action={
-                <Button
+                <PrimaryButton
                   variant={editModes.personal ? "outlined" : "contained"}
                   startIcon={editModes.personal ? <CancelIcon /> : <EditIcon />}
                   onClick={() => toggleEditMode("personal")}
-                  size="small"
-                  sx={{ borderRadius: 2 }}
                 >
                   {editModes.personal ? "Cancel" : "Edit"}
-                </Button>
+                </PrimaryButton>
               }
               sx={{ pb: 1 }}
             />
@@ -1742,15 +1737,13 @@ const ProfilePage = () => {
               title="Address Information"
               titleTypographyProps={{ fontWeight: 600 }}
               action={
-                <Button
+                <PrimaryButton
                   variant={editModes.address ? "outlined" : "contained"}
                   startIcon={editModes.address ? <CancelIcon /> : <EditIcon />}
                   onClick={() => toggleEditMode("address")}
-                  size="small"
-                  sx={{ borderRadius: 2 }}
                 >
                   {editModes.address ? "Cancel" : "Edit"}
-                </Button>
+                </PrimaryButton>
               }
               sx={{ pb: 1 }}
             />
@@ -1764,19 +1757,17 @@ const ProfilePage = () => {
                     xs={12}
                     sx={{ display: "flex", justifyContent: "flex-end", mt: 1 }}
                   >
-                    <Button
+                    <PrimaryButton
                       variant="contained"
                       color="primary"
                       startIcon={<SaveIcon />}
                       onClick={() => handleSaveChanges("address")}
                       disabled={updateUserProfile.isLoading}
-                      size="small"
-                      sx={{ borderRadius: 2 }}
                     >
                       {updateUserProfile.isLoading
                         ? "Saving..."
                         : "Save Changes"}
-                    </Button>
+                    </PrimaryButton>
                   </Grid>
                 )}
               </Grid>
@@ -1803,15 +1794,13 @@ const ProfilePage = () => {
                 sx={{ p: 0 }}
               />
               {!editModes.password && (
-                <Button
+                <PrimaryButton
                   variant="contained"
                   startIcon={<EditIcon />}
                   onClick={() => toggleEditMode("password")}
-                  size="small"
-                  sx={{ borderRadius: 2, mb: 1 }}
                 >
                   Change
-                </Button>
+                </PrimaryButton>
               )}
             </Box>
             <Divider />
@@ -1834,7 +1823,7 @@ const ProfilePage = () => {
                       mt: 1,
                     }}
                   >
-                    <Button
+                    <PrimaryButton
                       variant="contained"
                       color="primary"
                       startIcon={<SaveIcon />}
@@ -1842,22 +1831,18 @@ const ProfilePage = () => {
                       disabled={
                         !isPasswordFormValid || changePassword.isLoading
                       }
-                      size="small"
-                      sx={{ borderRadius: 2 }}
                     >
                       {changePassword.isLoading
                         ? "Updating..."
                         : "Update Password"}
-                    </Button>
-                    <Button
+                    </PrimaryButton>
+                    <PrimaryButton
                       variant="outlined"
                       startIcon={<CancelIcon />}
                       onClick={() => toggleEditMode("password")}
-                      size="small"
-                      sx={{ borderRadius: 2 }}
                     >
                       Cancel
-                    </Button>
+                    </PrimaryButton>
                   </Grid>
                 </Grid>
               ) : (
@@ -1880,39 +1865,32 @@ const ProfilePage = () => {
           </Card>
         </Grid>
       </Grid>
-      <Dialog
+      <DialogContainer
         open={deleteModalOpen}
         onClose={handleDeleteCancel}
-        aria-labelledby="delete-confirmation-title"
-        aria-describedby="delete-confirmation-description"
+        title="Confirm Deletion"
+        maxWidth="sm"
+        actions={
+          <>
+            <PrimaryButton variant="outlined" onClick={handleDeleteCancel}>
+              Cancel
+            </PrimaryButton>
+            <PrimaryButton
+              variant="outlined"
+              onClick={handleDeleteConfirm}
+              color="error"
+              disabled={isDeleting}
+              startIcon={<DeleteIcon />}
+            >
+              {isDeleting ? "Deleting..." : "Delete"}
+            </PrimaryButton>
+          </>
+        }
       >
-        <DialogTitle id="delete-confirmation-title">
-          Confirm Deletion
-        </DialogTitle>
-        <DialogContent>
-          <Typography>
-            Are you sure you want to delete your profile picture?
-          </Typography>
-        </DialogContent>
-        <DialogActions>
-          <Button
-            onClick={handleDeleteCancel}
-            color="primary"
-            disabled={isDeleting}
-          >
-            Cancel
-          </Button>
-          <Button
-            onClick={handleDeleteConfirm}
-            color="error"
-            autoFocus
-            disabled={isDeleting}
-            startIcon={<DeleteIcon />}
-          >
-            {isDeleting ? "Deleting..." : "Delete"}
-          </Button>
-        </DialogActions>
-      </Dialog>
+        <Typography>
+          Are you sure you want to delete your profile picture?
+        </Typography>
+      </DialogContainer>
     </Box>
   );
 };

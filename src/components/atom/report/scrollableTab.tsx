@@ -1,10 +1,9 @@
-import type React from 'react';
+import type React from "react";
 
-import { Box, IconButton } from '@mui/material';
-import { KeyboardArrowLeft, KeyboardArrowRight } from '@mui/icons-material';
-import { useRef, useState, useEffect } from 'react';
-import { useUnifiedTheme } from '../../../hooks/useUnifiedTheme';
-
+import { Box, IconButton } from "@mui/material";
+import { KeyboardArrowLeft, KeyboardArrowRight } from "@mui/icons-material";
+import { useRef, useState, useEffect } from "react";
+import { useUnifiedTheme } from "../../../hooks/useUnifiedTheme";
 
 interface ScrollableTabNavigationProps {
   tabs: { tabName: string }[];
@@ -34,14 +33,15 @@ export default function ScrollableTabNavigation({
 
   useEffect(() => {
     checkForArrows();
-    window.addEventListener('resize', checkForArrows);
-    return () => window.removeEventListener('resize', checkForArrows);
+    window.addEventListener("resize", checkForArrows);
+    return () => window.removeEventListener("resize", checkForArrows);
   }, [tabs]);
 
   useEffect(() => {
     // Scroll active tab into view when it changes
     if (scrollContainerRef.current) {
-      const tabElements = scrollContainerRef.current.querySelectorAll('.tab-item');
+      const tabElements =
+        scrollContainerRef.current.querySelectorAll(".tab-item");
       if (tabElements[activeTab]) {
         const tabElement = tabElements[activeTab] as HTMLElement;
         const container = scrollContainerRef.current;
@@ -52,25 +52,30 @@ export default function ScrollableTabNavigation({
         const containerRight = containerLeft + container.offsetWidth;
 
         if (tabLeft < containerLeft) {
-          container.scrollTo({ left: tabLeft - 16, behavior: 'smooth' });
+          container.scrollTo({ left: tabLeft - 16, behavior: "smooth" });
         } else if (tabRight > containerRight) {
-          container.scrollTo({ left: tabRight - container.offsetWidth + 16, behavior: 'smooth' });
+          container.scrollTo({
+            left: tabRight - container.offsetWidth + 16,
+            behavior: "smooth",
+          });
         }
       }
     }
   }, [activeTab]);
 
-  const scroll = (direction: 'left' | 'right') => {
+  const scroll = (direction: "left" | "right") => {
     if (!scrollContainerRef.current) return;
 
     const container = scrollContainerRef.current;
     const scrollAmount = container.clientWidth * 0.8;
     const newScrollLeft =
-      direction === 'left' ? container.scrollLeft - scrollAmount : container.scrollLeft + scrollAmount;
+      direction === "left"
+        ? container.scrollLeft - scrollAmount
+        : container.scrollLeft + scrollAmount;
 
     container.scrollTo({
       left: newScrollLeft,
-      behavior: 'smooth',
+      behavior: "smooth",
     });
   };
 
@@ -81,26 +86,26 @@ export default function ScrollableTabNavigation({
   return (
     <Box
       sx={{
-        display: 'flex',
-        alignItems: 'center',
-        width: '100%',
-        position: 'relative',
+        display: "flex",
+        alignItems: "center",
+        width: "100%",
+        position: "relative",
         borderBottom: `1px solid ${theme.palette.divider}`,
         mb: 2,
       }}
     >
       {showLeftArrow && (
         <IconButton
-          onClick={() => scroll('left')}
+          onClick={() => scroll("left")}
           sx={{
-            position: 'absolute',
+            position: "absolute",
             left: 0,
             zIndex: 2,
             backgroundColor: theme.palette.background.paper,
             color: theme.palette.text.primary,
             boxShadow: theme.shadows[2],
-            '&:hover': {
-              backgroundColor: theme.palette.action.hover,
+            "&:hover": {
+              backgroundColor: theme.palette.background.default,
             },
           }}
           size="small"
@@ -113,17 +118,17 @@ export default function ScrollableTabNavigation({
         ref={scrollContainerRef}
         onScroll={handleScroll}
         sx={{
-          display: 'flex',
-          overflowX: 'auto',
-          scrollbarWidth: 'none', // Firefox
-          '&::-webkit-scrollbar': {
+          display: "flex",
+          overflowX: "auto",
+          scrollbarWidth: "none", // Firefox
+          "&::-webkit-scrollbar": {
             // Chrome, Safari, Edge
-            display: 'none',
+            display: "none",
           },
-          msOverflowStyle: 'none', // IE
-          width: '100%',
+          msOverflowStyle: "none", // IE
+          width: "100%",
           px: showLeftArrow || showRightArrow ? 4 : 0,
-          transition: 'padding 0.3s ease',
+          transition: "padding 0.3s ease",
         }}
       >
         {tabs?.map((item, index) => (
@@ -132,7 +137,7 @@ export default function ScrollableTabNavigation({
             className="tab-item"
             style={{
               ...tabStyle(index),
-              whiteSpace: 'nowrap',
+              whiteSpace: "nowrap",
               flexShrink: 0,
             }}
             onClick={() => {
@@ -146,16 +151,16 @@ export default function ScrollableTabNavigation({
 
       {showRightArrow && (
         <IconButton
-          onClick={() => scroll('right')}
+          onClick={() => scroll("right")}
           sx={{
-            position: 'absolute',
+            position: "absolute",
             right: 0,
             zIndex: 2,
             backgroundColor: theme.palette.background.paper,
             color: theme.palette.text.primary,
             boxShadow: theme.shadows[2],
-            '&:hover': {
-              backgroundColor: theme.palette.action.hover,
+            "&:hover": {
+              backgroundColor: theme.palette.background.default,
             },
           }}
           size="small"

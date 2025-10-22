@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from "react";
 import {
   Dialog,
   DialogTitle,
@@ -10,17 +10,22 @@ import {
   Box,
   IconButton,
   InputAdornment,
-} from '@mui/material';
-import { useForm, Controller } from 'react-hook-form';
-import { AttributeOptionRequestPayload, AttributeOptionResponse } from './types';
-import AddIcon from '@mui/icons-material/Add';
-import usePost from '../../../hooks/usePost';
-import { POST, PUT } from '../../../services/apiRoutes';
-import ProgressBar from '../../molecule/progressBar';
-import usePut from '../../../hooks/usePut';
-import { STYLE_GUIDE } from '../../../styles';
-import { useUnifiedTheme } from '../../../hooks/useUnifiedTheme';
-import { useComponentTypography } from '../../../hooks/useComponentTypography';
+} from "@mui/material";
+import { useForm, Controller } from "react-hook-form";
+import {
+  AttributeOptionRequestPayload,
+  AttributeOptionResponse,
+} from "./types";
+import AddIcon from "@mui/icons-material/Add";
+import usePost from "../../../hooks/usePost";
+import { POST, PUT } from "../../../services/apiRoutes";
+import ProgressBar from "../../molecule/progressBar";
+import usePut from "../../../hooks/usePut";
+import { STYLE_GUIDE } from "../../../styles";
+import { useUnifiedTheme } from "../../../hooks/useUnifiedTheme";
+import { useComponentTypography } from "../../../hooks/useComponentTypography";
+import DialogContainer from "../../molecule/dialog";
+import PrimaryButton from "../../common/PrimaryButton";
 
 interface CreateUpdateAttributeOptionProps {
   setAttributeOptionReload: React.Dispatch<React.SetStateAction<boolean>>;
@@ -29,25 +34,25 @@ interface CreateUpdateAttributeOptionProps {
   data?: AttributeOptionRequestPayload;
 }
 
-const CreateUpdateAttributeOption: React.FC<CreateUpdateAttributeOptionProps> = ({
-  setAttributeOptionReload,
-  CustomButton,
-  title,
-  data,
-}) => {
+const CreateUpdateAttributeOption: React.FC<
+  CreateUpdateAttributeOptionProps
+> = ({ setAttributeOptionReload, CustomButton, title, data }) => {
   const [open, setOpen] = useState(false);
-  const { control, handleSubmit, setValue, watch, reset, clearErrors } = useForm<AttributeOptionRequestPayload>({
-    defaultValues: { attributeName: data?.attributeName ?? '', attributeValue: data?.attributeValue ?? [] },
-  });
+  const { control, handleSubmit, setValue, watch, reset, clearErrors } =
+    useForm<AttributeOptionRequestPayload>({
+      defaultValues: {
+        attributeName: data?.attributeName ?? "",
+        attributeValue: data?.attributeValue ?? [],
+      },
+    });
 
-  const attributeValue = watch('attributeValue');
+  const attributeValue = watch("attributeValue");
   const theme = useUnifiedTheme();
   const { getDialogTitleSx } = useComponentTypography();
-  
 
   useEffect(() => {
     reset({
-      attributeName: data?.attributeName ?? '',
+      attributeName: data?.attributeName ?? "",
       attributeValue: data?.attributeValue ?? [],
     });
   }, [data, reset]);
@@ -59,20 +64,23 @@ const CreateUpdateAttributeOption: React.FC<CreateUpdateAttributeOptionProps> = 
 
   const handleAddValue = (value: string) => {
     if (value && !attributeValue.includes(value)) {
-      setValue('attributeValue', [...attributeValue, value]);
-      clearErrors('attributeValue');
+      setValue("attributeValue", [...attributeValue, value]);
+      clearErrors("attributeValue");
     }
   };
 
   const handleDeleteValue = (value: string) => {
     setValue(
-      'attributeValue',
+      "attributeValue",
       attributeValue.filter((v) => v !== value)
     );
   };
 
-  const createAttributeOptions = usePost<AttributeOptionRequestPayload, AttributeOptionResponse>(
-    ['createUpdateAttributeOptions'],
+  const createAttributeOptions = usePost<
+    AttributeOptionRequestPayload,
+    AttributeOptionResponse
+  >(
+    ["createUpdateAttributeOptions"],
     (data) => {
       if (data?.success) {
         setAttributeOptionReload(true);
@@ -81,8 +89,11 @@ const CreateUpdateAttributeOption: React.FC<CreateUpdateAttributeOptionProps> = 
     },
     true
   );
-  const updateAttributeOptions = usePut<AttributeOptionRequestPayload, AttributeOptionResponse>(
-    ['updateAttributeOptions'],
+  const updateAttributeOptions = usePut<
+    AttributeOptionRequestPayload,
+    AttributeOptionResponse
+  >(
+    ["updateAttributeOptions"],
     (data) => {
       if (data?.success) {
         setAttributeOptionReload(true);
@@ -94,17 +105,124 @@ const CreateUpdateAttributeOption: React.FC<CreateUpdateAttributeOptionProps> = 
 
   const onSubmitHandler = (formData: AttributeOptionRequestPayload) => {
     if (data && data._id) {
-      updateAttributeOptions.mutate({ url: `${PUT.UPDATE_ATTRIBUTE_OPTION}/${data._id}`, payload: formData });
+      updateAttributeOptions.mutate({
+        url: `${PUT.UPDATE_ATTRIBUTE_OPTION}/${data._id}`,
+        payload: formData,
+      });
     } else {
-      createAttributeOptions.mutate({ url: POST.CREATE_ATTRIBUTE_OPTION, payload: formData });
+      createAttributeOptions.mutate({
+        url: POST.CREATE_ATTRIBUTE_OPTION,
+        payload: formData,
+      });
     }
   };
 
   return (
     <>
       <Box onClick={() => setOpen(true)}>{CustomButton}</Box>
+      <DialogContainer
+        open={open}
+        onClose={handleFormClose}
+        title={title}
+        maxWidth="sm"
+        actions={
+          <>
+            {createAttributeOptions.isPending ||
+            updateAttributeOptions.isPending ? (
+              <ProgressBar />
+            ) : (
+              <>
+                <PrimaryButton variant="outlined" onClick={handleFormClose}>
+                  Cancel
+                </PrimaryButton>
+                <PrimaryButton onClick={handleSubmit(onSubmitHandler)}>
+                  Submit
+                </PrimaryButton>
+              </>
+            )}
+          </>
+        }
+      >
+        <Controller
+          name="attributeName"
+          control={control}
+          rules={{ required: "Attribute name is required" }}
+          render={({ field, fieldState }) => (
+            <TextField
+              {...field}
+              label="Attribute Name"
+              fullWidth
+              error={!!fieldState.error}
+              helperText={fieldState.error?.message}
+            />
+          )}
+        />
 
-      <Dialog open={open} onClose={handleFormClose} fullWidth maxWidth="sm">
+        <Controller
+          name="attributeValue"
+          control={control}
+          rules={{ required: "Attribute value is required" }}
+          render={({ formState }) => (
+            <Box>
+              <Box display="flex" alignItems="center">
+                <TextField
+                  label="Add Attribute Value"
+                  fullWidth
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      const value = (e.target as HTMLInputElement).value.trim();
+                      if (value) {
+                        handleAddValue(value);
+                        (e.target as HTMLInputElement).value = "";
+                      }
+                    }
+                  }}
+                  error={!!formState.errors.attributeValue}
+                  helperText={formState?.errors?.attributeValue?.message}
+                  slotProps={{
+                    input: {
+                      name: "attributeValue",
+                      endAdornment: (
+                        <InputAdornment position="end">
+                          <IconButton
+                            onClick={() => {
+                              const input = document.querySelector(
+                                'input[name="attributeValue"]'
+                              ) as HTMLInputElement;
+                              const value = input?.value.trim();
+                              if (value) {
+                                handleAddValue(value);
+                                input.value = "";
+                              }
+                            }}
+                            color="primary"
+                            aria-label="add value"
+                          >
+                            <AddIcon sx={{ color: theme.getIconColor() }} />
+                          </IconButton>
+                        </InputAdornment>
+                      ),
+                    },
+                  }}
+                />
+              </Box>
+              <Box mt={1} display="flex" flexWrap="wrap" gap={1}>
+                {attributeValue &&
+                  attributeValue.map((value, index) => (
+                    <Chip
+                      key={index}
+                      label={value}
+                      onDelete={() => handleDeleteValue(value)}
+                    />
+                  ))}
+              </Box>
+            </Box>
+          )}
+        />
+      </DialogContainer>
+
+      {/* <Dialog open={open} onClose={handleFormClose} fullWidth maxWidth="sm">
         <DialogTitle
           sx={{
             ...getDialogTitleSx(),
@@ -209,7 +327,7 @@ const CreateUpdateAttributeOption: React.FC<CreateUpdateAttributeOptionProps> = 
             </>
           )}
         </DialogActions>
-      </Dialog>
+      </Dialog> */}
     </>
   );
 };

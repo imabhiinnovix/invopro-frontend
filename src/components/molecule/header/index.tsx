@@ -1,20 +1,22 @@
-import { AppBar, Toolbar, IconButton, Box } from "@mui/material";
+import { AppBar, Toolbar, Box } from "@mui/material";
 
 import { useLocation } from "react-router-dom";
 
-import logo from "../../../assets/ReportiVix-logo.png";
+import logo from "../../../assets/logo.png";
 import { AccountPopover } from "../../atom/accountPopover/accountPopover";
-import { Menu as MenuIcon } from "@mui/icons-material";
-import { useNav } from "../../../context/NavContext";
+// import { Menu as MenuIcon } from "@mui/icons-material";
+// import { useNav } from "../../../context/NavContext";
 import { STYLE_GUIDE } from "../../../styles";
+import { useUnifiedTheme } from "../../../hooks/useUnifiedTheme";
 
 const Header = () => {
   const { pathname } = useLocation();
-  const { openNav, setOpenNav } = useNav();
-  const handleClick = () => {
-    // Use the functional update form correctly
-    setOpenNav(!openNav); // This toggles the value of `openNav`
-  };
+  // const { openNav, setOpenNav } = useNav();
+  // const handleClick = () => {
+  //   // Use the functional update form correctly
+  //   setOpenNav(!openNav); // This toggles the value of `openNav`
+  // };
+  const theme = useUnifiedTheme();
 
   return (
     <>
@@ -22,8 +24,12 @@ const Header = () => {
         position="sticky"
         color="inherit"
         elevation={2}
-        sx={{ 
-          height: 70 }}
+        sx={{
+          height: 60,
+          bgcolor: "#f9f9f9",
+          borderBottom: `1px solid ${theme.palette.divider}`,
+          boxShadow: "none",
+        }}
       >
         <Toolbar>
           <Box
@@ -38,7 +44,7 @@ const Header = () => {
             }}
           >
             <Box gap={0} display="flex" alignItems="center">
-              {!["/login", "/otp-login", "/otp-login/otp"].includes(
+              {/* {!["/login", "/otp-login", "/otp-login/otp"].includes(
                 pathname
               ) && (
                 <IconButton
@@ -52,12 +58,12 @@ const Header = () => {
                 >
                   <MenuIcon />
                 </IconButton>
-              )}
+              )} */}
               <Box
                 component="img"
                 src={logo}
                 alt="Logo"
-                sx={{ width: 150, height: "auto" }}
+                sx={{ width: "auto", height: 60 }}
               />
               {/* <img src={logo} alt="Logo" /> */}
             </Box>

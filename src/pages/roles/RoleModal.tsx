@@ -33,9 +33,13 @@ import { useQueryClient } from "@tanstack/react-query";
 import { UserResponse } from "../../context/AuthContext";
 import { setPermissions } from "../../reducers/userSlice";
 import { STYLE_GUIDE } from "../../styles";
-import { RoleDetailResponse, RoleModalProps, RolePostPayload, RolePostResponse } from "../../types/permissions";
-
-
+import {
+  RoleDetailResponse,
+  RoleModalProps,
+  RolePostPayload,
+  RolePostResponse,
+} from "../../types/permissions";
+import DialogContainer from "../../components/molecule/dialog";
 
 export function RoleModal({
   open,
@@ -304,198 +308,245 @@ export function RoleModal({
   }, [reset, onFilterReset]);
 
   return (
-    <Modal
+    <DialogContainer
       open={open}
       onClose={onClose}
-      sx={{
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-      }}
-    >
-      <Box
-        sx={{
-          backgroundColor: theme.palette.background.paper,
-          borderRadius: "8px",
-          boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.2)",
-          p: 3,
-          width: "800px",
-          maxWidth: "90%",
-        }}
-      >
-        <Typography variant="h6" sx={{ mb: 2 }}>
-          {mode === "add"
-            ? "Add Role"
-            : mode === "edit"
-              ? "Edit Role"
-              : mode === "view"
-                ? "View Role"
-                : "Filter Roles"}
-        </Typography>
-        {(roleDetail.isLoading || isLoadingWithDelay) &&
-        (mode === "edit" || mode === "view") ? (
-          <Box sx={{ display: "flex", justifyContent: "center", py: 4 }}>
-            <CircularProgress />
+      title={
+        mode === "add"
+          ? "Add Role"
+          : mode === "edit"
+          ? "Edit Role"
+          : "View Role"
+      }
+      actions={
+        <>
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "flex-end",
+              gap: 1,
+              mt: 3,
+            }}
+          >
+            {mode === "filter" ? (
+              <>
+                <Button
+                  variant="outlined"
+                  onClick={handleResetFilter}
+                  sx={{ borderRadius: "8px" }}
+                >
+                  Reset
+                </Button>
+                <Button
+                  variant="outlined"
+                  onClick={onClose}
+                  sx={{ borderRadius: "8px" }}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  variant="contained"
+                  sx={{ borderRadius: "8px" }}
+                  disabled={
+                    !filterValues.name &&
+                    !filterValues.organizationId &&
+                    !filterValues.status
+                  }
+                >
+                  Apply
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button
+                  variant="outlined"
+                  onClick={onClose}
+                  sx={{ borderRadius: "8px" }}
+                >
+                  Cancel
+                </Button>
+                {mode !== "view" && (
+                  <Button
+                    type="submit"
+                    variant="contained"
+                    sx={{ borderRadius: "8px" }}
+                    disabled={
+                      !formState.isValid ||
+                      createRole.isLoading ||
+                      updateRole.isLoading
+                    }
+                  >
+                    Save
+                  </Button>
+                )}
+              </>
+            )}
           </Box>
-        ) : roleDetail.isError && (mode === "edit" || mode === "view") ? (
-          <Typography color="error">
-            Failed to load role details. Please try again.
-          </Typography>
-        ) : (
-          <form onSubmit={handleSubmit(onSubmit)}>
-            <Grid container spacing={2}>
-              <Grid item xs={12}>
-                {mode === "view" ? (
-                  <>
-                    <label
-                      style={{
-                        display: "block",
-                        marginBottom: STYLE_GUIDE.SPACING.s1,
-                        fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
-                        color: STYLE_GUIDE.COLORS.primary || "#666",
-                        fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.medium,
+        </>
+      }
+    >
+      {(roleDetail.isLoading || isLoadingWithDelay) &&
+      (mode === "edit" || mode === "view") ? (
+        <Box sx={{ display: "flex", justifyContent: "center", py: 4 }}>
+          <CircularProgress />
+        </Box>
+      ) : roleDetail.isError && (mode === "edit" || mode === "view") ? (
+        <Typography color="error">
+          Failed to load role details. Please try again.
+        </Typography>
+      ) : (
+        <form onSubmit={handleSubmit(onSubmit)}>
+          <Grid container spacing={2}>
+            <Grid item xs={12}>
+              {mode === "view" ? (
+                <Controller
+                  name="name"
+                  control={control}
+                  rules={{
+                    required: "Name is required",
+                    minLength: {
+                      value: 2,
+                      message: "Enter at least 2 characters",
+                    },
+                  }}
+                  disabled={mode === "view"}
+                  render={({ field, fieldState }) => (
+                    <TextField
+                      {...field}
+                      label="Name *"
+                      placeholder="Enter role name"
+                      variant="outlined"
+                      fullWidth
+                      error={!!fieldState.error}
+                      helperText={fieldState.error?.message || " "}
+                      sx={{
+                        "& .MuiOutlinedInput-root": { borderRadius: "8px" },
                       }}
-                    >
-                      Name
-                    </label>
-                    <div
-                      style={{
-                        padding: `${STYLE_GUIDE.SPACING.s4} ${STYLE_GUIDE.SPACING.s3}`,
-                        borderRadius: STYLE_GUIDE.SPACING.s2,
-                        display: "flex",
-                        alignItems: "center",
-                        backgroundColor:
-                          STYLE_GUIDE.COLORS.backgroundLight || "#ebe8e8ff",
-                        color: STYLE_GUIDE.COLORS.textPrimary || "#3f3e3eff",
+                    />
+                  )}
+                />
+              ) : (
+                <Controller
+                  name="name"
+                  control={control}
+                  rules={{
+                    required: "Name is required",
+                    minLength: {
+                      value: 2,
+                      message: "Enter at least 2 characters",
+                    },
+                  }}
+                  render={({ field, fieldState }) => (
+                    <TextField
+                      {...field}
+                      label="Name *"
+                      placeholder="Enter role name"
+                      variant="outlined"
+                      fullWidth
+                      error={!!fieldState.error}
+                      helperText={fieldState.error?.message || " "}
+                      sx={{
+                        "& .MuiOutlinedInput-root": { borderRadius: "8px" },
                       }}
-                    >
-                      {rowData || "-"}
-                    </div>
-                  </>
-                ) : (
+                    />
+                  )}
+                />
+              )}
+            </Grid>
+            {mode === "filter" && (
+              <>
+                <Grid item xs={12}>
                   <Controller
-                    name="name"
+                    name="organizationId"
                     control={control}
-                    rules={{
-                      required: "Name is required",
-                      minLength: {
-                        value: 2,
-                        message: "Enter at least 2 characters",
-                      },
-                    }}
-                    render={({ field, fieldState }) => (
+                    render={({ field }) => (
                       <TextField
                         {...field}
-                        label="Name *"
-                        placeholder="Enter role name"
+                        label="Organization ID"
                         variant="outlined"
                         fullWidth
-                        error={!!fieldState.error}
-                        helperText={fieldState.error?.message || " "}
                         sx={{
-                          "& .MuiOutlinedInput-root": { borderRadius: "8px" },
+                          "& .MuiOutlinedInput-root": {
+                            borderRadius: "8px",
+                          },
                         }}
                       />
                     )}
                   />
-                )}
-              </Grid>
-              {mode === "filter" && (
-                <>
-                  <Grid item xs={12}>
-                    <Controller
-                      name="organizationId"
-                      control={control}
-                      render={({ field }) => (
-                        <TextField
+                </Grid>
+                <Grid item xs={12}>
+                  <Controller
+                    name="status"
+                    control={control}
+                    render={({ field }) => (
+                      <FormControl
+                        fullWidth
+                        sx={{
+                          "& .MuiOutlinedInput-root": {
+                            borderRadius: "8px",
+                          },
+                        }}
+                      >
+                        <InputLabel>Status</InputLabel>
+                        <Select
                           {...field}
-                          label="Organization ID"
-                          variant="outlined"
-                          fullWidth
+                          label="Status"
+                          onChange={(e) =>
+                            field.onChange(
+                              e.target.value === "" ? undefined : e.target.value
+                            )
+                          }
+                        >
+                          <MenuItem value="">All</MenuItem>
+                          <MenuItem value="active">Active</MenuItem>
+                          <MenuItem value="inactive">Inactive</MenuItem>
+                        </Select>
+                      </FormControl>
+                    )}
+                  />
+                </Grid>
+              </>
+            )}
+            {(mode === "add" || mode === "edit" || mode === "view") && (
+              <Grid item xs={12}>
+                <Typography variant="subtitle1" sx={{ mb: 2, mt: 2 }}>
+                  Permissions
+                </Typography>
+                {Object.keys(selectedPermissions).length === 0 ? (
+                  <Typography>No permissions available.</Typography>
+                ) : (
+                  <Box
+                    ref={permissionsContainerRef}
+                    sx={{
+                      maxHeight: "400px",
+                      overflowY: "auto",
+                      border: `1px solid ${theme.palette.divider}`,
+                      borderRadius: "8px",
+                      p: 1,
+                    }}
+                  >
+                    {Object.keys(selectedPermissions)
+                      .slice(0, visibleResourceTypes)
+                      .map((resourceType) => (
+                        <Box
+                          key={resourceType}
                           sx={{
-                            "& .MuiOutlinedInput-root": {
-                              borderRadius: "8px",
-                            },
-                          }}
-                        />
-                      )}
-                    />
-                  </Grid>
-                  <Grid item xs={12}>
-                    <Controller
-                      name="status"
-                      control={control}
-                      render={({ field }) => (
-                        <FormControl
-                          fullWidth
-                          sx={{
-                            "& .MuiOutlinedInput-root": {
-                              borderRadius: "8px",
-                            },
+                            border: `1px solid ${theme.palette.divider}`,
+                            p: 2,
+                            borderRadius: "8px",
+                            mb: 2,
                           }}
                         >
-                          <InputLabel>Status</InputLabel>
-                          <Select
-                            {...field}
-                            label="Status"
-                            onChange={(e) =>
-                              field.onChange(
-                                e.target.value === ""
-                                  ? undefined
-                                  : e.target.value
-                              )
-                            }
+                          <Typography
+                            variant="subtitle2"
+                            sx={{ mb: 1, fontWeight: 600 }}
                           >
-                            <MenuItem value="">All</MenuItem>
-                            <MenuItem value="active">Active</MenuItem>
-                            <MenuItem value="inactive">Inactive</MenuItem>
-                          </Select>
-                        </FormControl>
-                      )}
-                    />
-                  </Grid>
-                </>
-              )}
-              {(mode === "add" || mode === "edit" || mode === "view") && (
-                <Grid item xs={12}>
-                  <Typography variant="subtitle1" sx={{ mb: 2, mt: 2 }}>
-                    Permissions
-                  </Typography>
-                  {Object.keys(selectedPermissions).length === 0 ? (
-                    <Typography>No permissions available.</Typography>
-                  ) : (
-                    <Box
-                      ref={permissionsContainerRef}
-                      sx={{
-                        maxHeight: "400px",
-                        overflowY: "auto",
-                        border: `1px solid ${theme.palette.divider}`,
-                        borderRadius: "8px",
-                        p: 1,
-                      }}
-                    >
-                      {Object.keys(selectedPermissions)
-                        .slice(0, visibleResourceTypes)
-                        .map((resourceType) => (
-                          <Box
-                            key={resourceType}
-                            sx={{
-                              border: `1px solid ${theme.palette.divider}`,
-                              p: 2,
-                              borderRadius: "8px",
-                              mb: 2,
-                            }}
-                          >
-                            <Typography
-                              variant="subtitle2"
-                              sx={{ mb: 1, fontWeight: 600 }}
-                            >
-                              {resourceType}
-                            </Typography>
-                            <Grid container spacing={2}>
-                              {Object.keys(
-                                selectedPermissions[resourceType]
-                              ).map((permKey) => (
+                            {resourceType}
+                          </Typography>
+                          <Grid container spacing={2}>
+                            {Object.keys(selectedPermissions[resourceType]).map(
+                              (permKey) => (
                                 <Grid item xs={12} sm={6} md={4} key={permKey}>
                                   <FormControlLabel
                                     control={
@@ -529,93 +580,30 @@ export function RoleModal({
                                     }}
                                   />
                                 </Grid>
-                              ))}
-                            </Grid>
-                          </Box>
-                        ))}
-                      {visibleResourceTypes <
-                        Object.keys(selectedPermissions).length && (
-                        <Box
-                          sx={{
-                            display: "flex",
-                            justifyContent: "center",
-                            py: 2,
-                          }}
-                        >
-                          <CircularProgress size={24} />
+                              )
+                            )}
+                          </Grid>
                         </Box>
-                      )}
-                    </Box>
-                  )}
-                </Grid>
-              )}
-            </Grid>
-            <Box
-              sx={{
-                display: "flex",
-                justifyContent: "flex-end",
-                gap: 1,
-                mt: 3,
-              }}
-            >
-              {mode === "filter" ? (
-                <>
-                  <Button
-                    variant="outlined"
-                    onClick={handleResetFilter}
-                    sx={{ borderRadius: "8px" }}
-                  >
-                    Reset
-                  </Button>
-                  <Button
-                    variant="outlined"
-                    onClick={onClose}
-                    sx={{ borderRadius: "8px" }}
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    type="submit"
-                    variant="contained"
-                    sx={{ borderRadius: "8px" }}
-                    disabled={
-                      !filterValues.name &&
-                      !filterValues.organizationId &&
-                      !filterValues.status
-                    }
-                  >
-                    Apply
-                  </Button>
-                </>
-              ) : (
-                <>
-                  <Button
-                    variant="outlined"
-                    onClick={onClose}
-                    sx={{ borderRadius: "8px" }}
-                  >
-                    Cancel
-                  </Button>
-                  {mode !== "view" && (
-                    <Button
-                      type="submit"
-                      variant="contained"
-                      sx={{ borderRadius: "8px" }}
-                      disabled={
-                        !formState.isValid ||
-                        createRole.isLoading ||
-                        updateRole.isLoading
-                      }
-                    >
-                      Save
-                    </Button>
-                  )}
-                </>
-              )}
-            </Box>
-          </form>
-        )}
-      </Box>
-    </Modal>
+                      ))}
+                    {visibleResourceTypes <
+                      Object.keys(selectedPermissions).length && (
+                      <Box
+                        sx={{
+                          display: "flex",
+                          justifyContent: "center",
+                          py: 2,
+                        }}
+                      >
+                        <CircularProgress size={24} />
+                      </Box>
+                    )}
+                  </Box>
+                )}
+              </Grid>
+            )}
+          </Grid>
+        </form>
+      )}
+    </DialogContainer>
   );
 }

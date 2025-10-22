@@ -32,6 +32,10 @@ import { useComponentTypography } from "../../hooks";
 import { formatDate, formatDateUTC } from "../../utils/utils";
 import parse from "html-react-parser";
 import usePost from "../../hooks/usePost";
+import CommonPageHeader from "../../components/atom/commonPageHeader";
+import PrimaryButton from "../../components/common/PrimaryButton";
+import SearchField from "../../components/common/SearchField";
+import DialogContainer from "../../components/molecule/dialog";
 
 interface NotificationLog {
   _id: string;
@@ -113,41 +117,35 @@ const columns: GridColDef[] = [
     renderCell: (params) => formatDateUTC(params.row.sentAt),
   },
 
- {
-  field: "status",
-  headerName: "Processing Status",
-  width: 200,
-  disableColumnMenu: true,
-  resizable: true,
-  renderCell: (params) => {
-    const value = (params.value || "Unknown").toLowerCase();
-    const label = value.charAt(0).toUpperCase() + value.slice(1);
+  {
+    field: "status",
+    headerName: "Processing Status",
+    width: 200,
+    disableColumnMenu: true,
+    resizable: true,
+    renderCell: (params) => {
+      const value = (params.value || "Unknown").toLowerCase();
+      const label = value.charAt(0).toUpperCase() + value.slice(1);
 
-    let color: "success" | "warning" | "error" = "error";
+      let color: "success" | "warning" | "error" = "error";
 
-    if (value === "sent") {
-      color = "success";
-    } else if (
-      value === "pending" ||
-      value === "processing" ||
-      value === "acknowledged"
-    ) {
-      color = "warning";
-    } else if (value === "cancelled" || value === "failed") {
-      color = "error";
-    }
+      if (value === "sent") {
+        color = "success";
+      } else if (
+        value === "pending" ||
+        value === "processing" ||
+        value === "acknowledged"
+      ) {
+        color = "warning";
+      } else if (value === "cancelled" || value === "failed") {
+        color = "error";
+      }
 
-    return (
-      <Chip
-        label={label}
-        size="small"
-        color={color}
-        variant="outlined"
-      />
-    );
+      return (
+        <Chip label={label} size="small" color={color} variant="outlined" />
+      );
+    },
   },
-}
-,
   {
     field: "createdAt",
     headerName: "Created At",
@@ -223,8 +221,7 @@ export default function NotificationLogger() {
       } else {
         setDebouncedSearchValue(searchValue);
       }
-            setPaginationModel((prev) => ({ ...prev, page: 0 }));
-
+      setPaginationModel((prev) => ({ ...prev, page: 0 }));
     }, 500);
 
     return () => {
@@ -236,19 +233,24 @@ export default function NotificationLogger() {
   useEffect(() => {
     if (triggerNotification.data) {
       const { success, message } = triggerNotification.data;
-      
+
       if (success) {
-        toast.success(message || "prepareTodayNotifications executed successfully");
+        toast.success(
+          message || "prepareTodayNotifications executed successfully"
+        );
         // Refresh the notification logs after successful trigger
-        setNotificationLogReload(prev => !prev);
+        setNotificationLogReload((prev) => !prev);
       } else {
         toast.error(message || "Failed to trigger notification");
       }
     }
-    
+
     if (triggerNotification.error) {
       toast.error("Failed to trigger notification");
-      console.error("Error triggering notification:", triggerNotification.error);
+      console.error(
+        "Error triggering notification:",
+        triggerNotification.error
+      );
     }
   }, [triggerNotification.data, triggerNotification.error]);
 
@@ -261,7 +263,9 @@ export default function NotificationLogger() {
       debouncedSearchValue,
       String(notificationLogReload),
     ],
-    `${GET.NOTIFICATION_LOG_LIST}?page=${paginationModel.page + 1}&limit=${perPageItem}&search=${encodeURIComponent(debouncedSearchValue)}`,
+    `${GET.NOTIFICATION_LOG_LIST}?page=${
+      paginationModel.page + 1
+    }&limit=${perPageItem}&search=${encodeURIComponent(debouncedSearchValue)}`,
     true
   );
 
@@ -307,7 +311,7 @@ export default function NotificationLogger() {
       return <div>Error rendering content</div>;
     }
   };
-  
+
   const handleScheduleTrigger = () => {
     triggerNotification.mutate({
       url: POST.TRIGGER_NOTIFICATION,
@@ -315,37 +319,34 @@ export default function NotificationLogger() {
     });
   };
 
- 
-
   return (
     <Box
       sx={{
-        flexGrow: 1,
-        p: STYLE_GUIDE.SPACING.s3,
-        ml: { xs: 0 },
-        minHeight: "100vh",
-        backgroundColor: STYLE_GUIDE.COLORS.backgroundDefault,
+        p: STYLE_GUIDE.SPACING.s2,
       }}
     >
-      <Typography
-        variant="h4"
-        sx={{
-          ...getHeadingSx(),
-          mb: STYLE_GUIDE.SPACING.s3,
-          color: STYLE_GUIDE.COLORS.textPrimary,
-          fontFamily: STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary,
-        }}
-      >
-        Notification Logs
-      </Typography>
-      <Card
-        sx={{
-          borderRadius: STYLE_GUIDE.SPACING.s1,
-          overflow: "visible",
-          boxShadow: STYLE_GUIDE.SHADOWS.cardPrimary,
-          backgroundColor: STYLE_GUIDE.COLORS.white,
-        }}
-      >
+      <CommonPageHeader
+        title="Notification Logs"
+        actions={
+          <PrimaryButton
+            variant="contained"
+            disabled={triggerNotification.isLoading}
+            startIcon={
+              triggerNotification.isLoading ? (
+                <CircularProgress size={20} color="inherit" />
+              ) : (
+                <NotificationsIcon />
+              )
+            }
+            onClick={handleScheduleTrigger}
+          >
+            {triggerNotification.isLoading
+              ? "Triggering..."
+              : "Trigger Notification"}
+          </PrimaryButton>
+        }
+      />
+      <Card sx={{ borderRadius: "8px", overflow: "visible" }}>
         <CardContent sx={{ p: STYLE_GUIDE.SPACING.s3 }}>
           <Box
             sx={{
@@ -356,29 +357,13 @@ export default function NotificationLogger() {
             }}
           >
             {/* Left: Search */}
-            <TextField
-              placeholder="Search ..."
-              variant="outlined"
-              size="small"
-              value={searchValue}
-              onChange={handleSearchChange}
-              sx={{
-                width: "300px",
-                "& .MuiOutlinedInput-root": {
-                  borderRadius: STYLE_GUIDE.SPACING.s3,
-                },
-              }}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <SearchIcon />
-                  </InputAdornment>
-                ),
-              }}
+            <SearchField
+              searchValue={searchValue}
+              handleSearchChange={handleSearchChange}
             />
 
             {/* Right: Schedule Trigger button */}
-            <Button
+            {/* <Button
               variant="contained"
               color="primary"
               onClick={handleScheduleTrigger}
@@ -392,23 +377,26 @@ export default function NotificationLogger() {
                 )
               }
             >
-              {triggerNotification.isLoading ? "Triggering..." : "Trigger Notification"}
-            </Button>
+              {triggerNotification.isLoading
+                ? "Triggering..."
+                : "Trigger Notification"}
+            </Button> */}
           </Box>
 
           <DataGrid
+            sx={{ height: "calc(100vh - 280px)" }}
             rows={notificationLogsWithIds}
             columns={columns}
             initialState={{ pagination: { paginationModel } }}
             disableColumnMenu
             paginationMode="server"
-            sx={{
-              overflow: "visible",
-              fontFamily: STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary,
-              fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base,
-            }}
+            // sx={{
+            //   overflow: "visible",
+            //   fontFamily: STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary,
+            //   fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base,
+            // }}
             loading={notificationLogList.isLoading}
-            rowCount={notificationLogList?.data?.pagination.totalRecords|| 0}
+            rowCount={notificationLogList?.data?.pagination.totalRecords || 0}
             paginationModel={paginationModel}
             slots={{
               pagination: () => (
@@ -426,7 +414,7 @@ export default function NotificationLogger() {
       </Card>
 
       {/* View Modal */}
-      <Modal
+      {/* <Modal
         open={viewModalOpen}
         onClose={handleViewModalClose}
         sx={{ display: "flex", alignItems: "center", justifyContent: "center" }}
@@ -756,8 +744,8 @@ export default function NotificationLogger() {
                           selectedNotification.status === "sent"
                             ? "success"
                             : selectedNotification.status === "pending"
-                              ? "warning"
-                              : "error"
+                            ? "warning"
+                            : "error"
                         }
                         variant="outlined"
                       />
@@ -910,7 +898,6 @@ export default function NotificationLogger() {
                           color: STYLE_GUIDE.COLORS.textSecondary,
                         }}
                       >
-                        
                         Subject:
                       </Typography>
                     </Grid>
@@ -923,8 +910,7 @@ export default function NotificationLogger() {
                           color: STYLE_GUIDE.COLORS.textPrimary,
                         }}
                       >
-                        {selectedNotification?.subject ||
-                          "No subject"}
+                        {selectedNotification?.subject || "No subject"}
                       </Typography>
                     </Grid>
 
@@ -1041,7 +1027,560 @@ export default function NotificationLogger() {
             </Button>
           </Box>
         </Box>
-      </Modal>
+      </Modal> */}
+
+      <DialogContainer
+        open={viewModalOpen}
+        onClose={handleViewModalClose}
+        title="Notification logs Details"
+        maxWidth="lg"
+        actions={
+          <PrimaryButton variant="outlined" onClick={handleViewModalClose}>
+            Cancel
+          </PrimaryButton>
+        }
+      >
+        {selectedNotification && (
+          <Grid container spacing={STYLE_GUIDE.SPACING.s2}>
+            <Grid item xs={12}>
+              <Paper
+                elevation={1}
+                sx={{
+                  p: STYLE_GUIDE.SPACING.s2,
+                  backgroundColor: STYLE_GUIDE.COLORS.white,
+                  borderRadius: STYLE_GUIDE.SPACING.s1,
+                }}
+              >
+                <Typography
+                  variant="subtitle1"
+                  fontWeight="bold"
+                  mb={STYLE_GUIDE.SPACING.s2}
+                  sx={{
+                    fontFamily: STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary,
+                    fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold,
+                    color: STYLE_GUIDE.COLORS.textPrimary,
+                  }}
+                >
+                  Basic Information
+                </Typography>
+                <Divider sx={{ mb: STYLE_GUIDE.SPACING.s2 }} />
+
+                <Grid container spacing={STYLE_GUIDE.SPACING.s1}>
+                  <Grid item xs={4}>
+                    <Typography
+                      variant="body2"
+                      color="textSecondary"
+                      sx={{
+                        fontFamily: STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary,
+                        fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
+                        color: STYLE_GUIDE.COLORS.textSecondary,
+                      }}
+                    >
+                      Trigger date:
+                    </Typography>
+                  </Grid>
+                  <Grid item xs={8}>
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        fontFamily: STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary,
+                        fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
+                        color: STYLE_GUIDE.COLORS.textPrimary,
+                      }}
+                    >
+                      {formatDate(selectedNotification.scheduledAt)}
+                    </Typography>
+                  </Grid>
+
+                  <Grid item xs={4}>
+                    <Typography
+                      variant="body2"
+                      color="textSecondary"
+                      sx={{
+                        fontFamily: STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary,
+                        fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
+                        color: STYLE_GUIDE.COLORS.textSecondary,
+                      }}
+                    >
+                      Is dry run:
+                    </Typography>
+                  </Grid>
+                  <Grid item xs={8}>
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        fontFamily: STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary,
+                        fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
+                        color: STYLE_GUIDE.COLORS.textPrimary,
+                      }}
+                    >
+                      {selectedNotification.notificationTriggerId?.isDryRun
+                        ? "Yes"
+                        : "No"}
+                    </Typography>
+                  </Grid>
+
+                  <Grid item xs={4}>
+                    <Typography
+                      variant="body2"
+                      color="textSecondary"
+                      sx={{
+                        fontFamily: STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary,
+                        fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
+                        color: STYLE_GUIDE.COLORS.textSecondary,
+                      }}
+                    >
+                      Acknowledge:
+                    </Typography>
+                  </Grid>
+                  <Grid item xs={8}>
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        fontFamily: STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary,
+                        fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
+                        color: STYLE_GUIDE.COLORS.textPrimary,
+                      }}
+                    >
+                      -
+                    </Typography>
+                  </Grid>
+
+                  <Grid item xs={4}>
+                    <Typography
+                      variant="body2"
+                      color="textSecondary"
+                      sx={{
+                        fontFamily: STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary,
+                        fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
+                        color: STYLE_GUIDE.COLORS.textSecondary,
+                      }}
+                    >
+                      Is acknowledged:
+                    </Typography>
+                  </Grid>
+                  <Grid item xs={8}>
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        fontFamily: STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary,
+                        fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
+                        color: STYLE_GUIDE.COLORS.textPrimary,
+                      }}
+                    >
+                      No
+                    </Typography>
+                  </Grid>
+
+                  <Grid item xs={4}>
+                    <Typography
+                      variant="body2"
+                      color="textSecondary"
+                      sx={{
+                        fontFamily: STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary,
+                        fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
+                        color: STYLE_GUIDE.COLORS.textSecondary,
+                      }}
+                    >
+                      Is due date passed:
+                    </Typography>
+                  </Grid>
+                  <Grid item xs={8}>
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        fontFamily: STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary,
+                        fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
+                        color: STYLE_GUIDE.COLORS.textPrimary,
+                      }}
+                    >
+                      No
+                    </Typography>
+                  </Grid>
+
+                  <Grid item xs={4}>
+                    <Typography
+                      variant="body2"
+                      color="textSecondary"
+                      sx={{
+                        fontFamily: STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary,
+                        fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
+                        color: STYLE_GUIDE.COLORS.textSecondary,
+                      }}
+                    >
+                      Report category:
+                    </Typography>
+                  </Grid>
+                  <Grid item xs={8}>
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        fontFamily: STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary,
+                        fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
+                        color: STYLE_GUIDE.COLORS.textPrimary,
+                      }}
+                    >
+                      -
+                    </Typography>
+                  </Grid>
+
+                  <Grid item xs={4}>
+                    <Typography
+                      variant="body2"
+                      color="textSecondary"
+                      sx={{
+                        fontFamily: STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary,
+                        fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
+                        color: STYLE_GUIDE.COLORS.textSecondary,
+                      }}
+                    >
+                      Is active:
+                    </Typography>
+                  </Grid>
+                  <Grid item xs={8}>
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        fontFamily: STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary,
+                        fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
+                        color: STYLE_GUIDE.COLORS.textPrimary,
+                      }}
+                    >
+                      Yes
+                    </Typography>
+                  </Grid>
+
+                  <Grid item xs={4}>
+                    <Typography
+                      variant="body2"
+                      color="textSecondary"
+                      sx={{
+                        fontFamily: STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary,
+                        fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
+                        color: STYLE_GUIDE.COLORS.textSecondary,
+                      }}
+                    >
+                      Created:
+                    </Typography>
+                  </Grid>
+                  <Grid item xs={8}>
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        fontFamily: STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary,
+                        fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
+                        color: STYLE_GUIDE.COLORS.textPrimary,
+                      }}
+                    >
+                      {formatDate(selectedNotification.createdAt)}
+                    </Typography>
+                  </Grid>
+
+                  <Grid item xs={4}>
+                    <Typography
+                      variant="body2"
+                      color="textSecondary"
+                      sx={{
+                        fontFamily: STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary,
+                        fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
+                        color: STYLE_GUIDE.COLORS.textSecondary,
+                      }}
+                    >
+                      Notification type:
+                    </Typography>
+                  </Grid>
+                  <Grid item xs={8}>
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        fontFamily: STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary,
+                        fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
+                        color: STYLE_GUIDE.COLORS.textPrimary,
+                      }}
+                    >
+                      {selectedNotification.notificationTypeId?.name ||
+                        "overall"}
+                    </Typography>
+                  </Grid>
+
+                  <Grid item xs={4}>
+                    <Typography
+                      variant="body2"
+                      color="textSecondary"
+                      sx={{
+                        fontFamily: STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary,
+                        fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
+                        color: STYLE_GUIDE.COLORS.textSecondary,
+                      }}
+                    >
+                      Processing status:
+                    </Typography>
+                  </Grid>
+                  <Grid item xs={8}>
+                    <Chip
+                      label={selectedNotification.status || "Unknown"}
+                      size="small"
+                      color={
+                        selectedNotification.status === "sent"
+                          ? "success"
+                          : selectedNotification.status === "pending"
+                          ? "warning"
+                          : "error"
+                      }
+                      variant="outlined"
+                    />
+                  </Grid>
+
+                  <Grid item xs={4}>
+                    <Typography
+                      variant="body2"
+                      color="textSecondary"
+                      sx={{
+                        fontFamily: STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary,
+                        fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
+                        color: STYLE_GUIDE.COLORS.textSecondary,
+                      }}
+                    >
+                      Notification medium:
+                    </Typography>
+                  </Grid>
+                  <Grid item xs={8}>
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        fontFamily: STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary,
+                        fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
+                        color: STYLE_GUIDE.COLORS.textPrimary,
+                      }}
+                    >
+                      {selectedNotification.mediumSettingId?.medium || "email"}
+                    </Typography>
+                  </Grid>
+                </Grid>
+              </Paper>
+            </Grid>
+
+            <Grid item xs={12}>
+              <Paper
+                elevation={1}
+                sx={{
+                  p: STYLE_GUIDE.SPACING.s2,
+                  backgroundColor: STYLE_GUIDE.COLORS.white,
+                  borderRadius: STYLE_GUIDE.SPACING.s1,
+                }}
+              >
+                <Typography
+                  variant="subtitle1"
+                  fontWeight="bold"
+                  mb={STYLE_GUIDE.SPACING.s2}
+                  sx={{
+                    fontFamily: STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary,
+                    fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold,
+                    color: STYLE_GUIDE.COLORS.textPrimary,
+                  }}
+                >
+                  Recipients
+                </Typography>
+                <Divider sx={{ mb: STYLE_GUIDE.SPACING.s2 }} />
+
+                <Grid container spacing={STYLE_GUIDE.SPACING.s1}>
+                  <Grid item xs={4}>
+                    <Typography
+                      variant="body2"
+                      color="textSecondary"
+                      sx={{
+                        fontFamily: STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary,
+                        fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
+                        color: STYLE_GUIDE.COLORS.textSecondary,
+                      }}
+                    >
+                      To:
+                    </Typography>
+                  </Grid>
+                  <Grid item xs={8}>
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        fontFamily: STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary,
+                        fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
+                        color: STYLE_GUIDE.COLORS.textPrimary,
+                      }}
+                    >
+                      {selectedNotification.recipients?.recipient_to?.join(
+                        ", "
+                      ) || "No recipients"}
+                    </Typography>
+                  </Grid>
+
+                  <Grid item xs={4}>
+                    <Typography
+                      variant="body2"
+                      color="textSecondary"
+                      sx={{
+                        fontFamily: STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary,
+                        fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
+                        color: STYLE_GUIDE.COLORS.textSecondary,
+                      }}
+                    >
+                      Cc:
+                    </Typography>
+                  </Grid>
+                  <Grid item xs={8}>
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        fontFamily: STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary,
+                        fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
+                        color: STYLE_GUIDE.COLORS.textPrimary,
+                      }}
+                    >
+                      {selectedNotification.recipients?.recipient_cc?.join(
+                        ", "
+                      ) || "No CC recipients"}
+                    </Typography>
+                  </Grid>
+                </Grid>
+              </Paper>
+            </Grid>
+
+            <Grid item xs={12}>
+              <Paper
+                elevation={1}
+                sx={{
+                  p: STYLE_GUIDE.SPACING.s2,
+                  backgroundColor: STYLE_GUIDE.COLORS.white,
+                  borderRadius: STYLE_GUIDE.SPACING.s1,
+                }}
+              >
+                <Typography
+                  variant="subtitle1"
+                  fontWeight="bold"
+                  mb={STYLE_GUIDE.SPACING.s2}
+                  sx={{
+                    fontFamily: STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary,
+                    fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold,
+                    color: STYLE_GUIDE.COLORS.textPrimary,
+                  }}
+                >
+                  Email Content
+                </Typography>
+                <Divider sx={{ mb: STYLE_GUIDE.SPACING.s2 }} />
+
+                <Grid container spacing={STYLE_GUIDE.SPACING.s1}>
+                  <Grid item xs={4}>
+                    <Typography
+                      variant="body2"
+                      color="textSecondary"
+                      sx={{
+                        fontFamily: STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary,
+                        fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
+                        color: STYLE_GUIDE.COLORS.textSecondary,
+                      }}
+                    >
+                      Subject:
+                    </Typography>
+                  </Grid>
+                  <Grid item xs={8}>
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        fontFamily: STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary,
+                        fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
+                        color: STYLE_GUIDE.COLORS.textPrimary,
+                      }}
+                    >
+                      {selectedNotification?.subject || "No subject"}
+                    </Typography>
+                  </Grid>
+
+                  <Grid item xs={12}>
+                    <Typography
+                      variant="body2"
+                      color="textSecondary"
+                      sx={{
+                        fontFamily: STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary,
+                        fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
+                        color: STYLE_GUIDE.COLORS.textSecondary,
+                      }}
+                    >
+                      Alert Content:
+                    </Typography>
+                  </Grid>
+                  <Grid item xs={12}>
+                    <Box
+                      sx={{
+                        border: `1px solid ${STYLE_GUIDE.COLORS.divider}`,
+                        borderRadius: STYLE_GUIDE.SPACING.s1,
+                        p: STYLE_GUIDE.SPACING.s2,
+                        maxHeight: "400px",
+                        overflowY: "auto",
+                        backgroundColor: STYLE_GUIDE.COLORS.backgroundLight,
+                        fontFamily: STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary,
+                        fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
+                      }}
+                    >
+                      {parseHtmlContent(selectedNotification.alert_content)}
+                    </Box>
+                  </Grid>
+                </Grid>
+              </Paper>
+            </Grid>
+
+            <Grid item xs={12}>
+              <Paper
+                elevation={1}
+                sx={{
+                  p: STYLE_GUIDE.SPACING.s2,
+                  backgroundColor: STYLE_GUIDE.COLORS.white,
+                  borderRadius: STYLE_GUIDE.SPACING.s1,
+                }}
+              >
+                <Typography
+                  variant="subtitle1"
+                  fontWeight="bold"
+                  mb={STYLE_GUIDE.SPACING.s2}
+                  sx={{
+                    fontFamily: STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary,
+                    fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold,
+                    color: STYLE_GUIDE.COLORS.textPrimary,
+                  }}
+                >
+                  Additional Information
+                </Typography>
+                <Divider sx={{ mb: STYLE_GUIDE.SPACING.s2 }} />
+
+                <Grid container spacing={STYLE_GUIDE.SPACING.s1}>
+                  <Grid item xs={4}>
+                    <Typography
+                      variant="body2"
+                      color="textSecondary"
+                      sx={{
+                        fontFamily: STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary,
+                        fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
+                        color: STYLE_GUIDE.COLORS.textSecondary,
+                      }}
+                    >
+                      File attached:
+                    </Typography>
+                  </Grid>
+                  <Grid item xs={8}>
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        fontFamily: STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary,
+                        fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
+                        color: STYLE_GUIDE.COLORS.textPrimary,
+                      }}
+                    >
+                      -
+                    </Typography>
+                  </Grid>
+                </Grid>
+              </Paper>
+            </Grid>
+          </Grid>
+        )}
+      </DialogContainer>
     </Box>
   );
 }

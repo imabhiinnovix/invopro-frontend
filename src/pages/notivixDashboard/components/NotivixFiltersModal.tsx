@@ -1652,6 +1652,22 @@ import { GET } from "../../../services/apiRoutes";
 import { useQueryClient } from "@tanstack/react-query";
 import DatePicker, { Calendar, DateObject } from "react-multi-date-picker";
 import "react-multi-date-picker/styles/colors/purple.css";
+import DialogContainer from "../../../components/molecule/dialog";
+
+// Add global styles for datepicker portal to ensure it appears above modal
+const style = document.createElement("style");
+style.textContent = `
+  .rmdp-container:not(.rmdp-input) {
+    z-index: 9999 !important;
+  }
+  .rmdp-wrapper {
+    z-index: 9999 !important;
+  }
+`;
+if (!document.getElementById("rmdp-portal-styles")) {
+  style.id = "rmdp-portal-styles";
+  document.head.appendChild(style);
+}
 
 interface NotivixFiltersModalProps {
   open: boolean;
@@ -2094,9 +2110,10 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
               originalAttributeId =
                 field.refAttributeId[field.refAttributeId.length - 1];
             }
-            const fieldUniqueKey = `${entityFieldOptionsMapByAttributeId[originalAttributeId]?.label || ""}${
-              field.attributeId
-            }${refKey}`;
+            const fieldUniqueKey = `${
+              entityFieldOptionsMapByAttributeId[originalAttributeId]?.label ||
+              ""
+            }${field.attributeId}${refKey}`;
             return fieldUniqueKey === uniqueKey;
           });
 
@@ -2163,9 +2180,9 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
           optionsCache[entityAttributeOptionMap[originalAttributeId]!] || [];
       }
     }
-    const uniqueKey = `${entityFieldOptionsMapByAttributeId[originalAttributeId]?.label || ""}${
-      field.attributeId
-    }${refKey}`;
+    const uniqueKey = `${
+      entityFieldOptionsMapByAttributeId[originalAttributeId]?.label || ""
+    }${field.attributeId}${refKey}`;
     const currentValue = filters[uniqueKey];
 
     switch (field.type) {
@@ -2253,16 +2270,35 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
         return (
           <Box key={uniqueKey}>
             <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
-              <Box sx={{ flex: 1 }}>
+              <Box
+                sx={{
+                  flex: 1,
+                  height: 40,
+                  position: "relative",
+                  "& .rmdp-container ": {
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                    width: "100%",
+                    height: "40px !important",
+                  },
+                  "& .rmdp-container input": {
+                    height: "40px !important",
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                  },
+                }}
+              >
                 <DatePicker
                   onOpen={() => handleDateRangeFocus(uniqueKey, true)}
                   onClose={() => handleDateRangeFocus(uniqueKey, false)}
-                  calendarPosition="top"
                   value={fieldDateRangeValue}
                   onChange={(dateRange) =>
                     handleDateRangeChange(uniqueKey, dateRange)
                   }
                   range
+                  portal
                   placeholder={`${field.label}`}
                   numberOfMonths={2}
                   showOtherDays
@@ -2271,8 +2307,9 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
                   inputClass="w-full"
                   style={{
                     width: "100%",
-                    padding: "10px 14px",
-                    fontSize: "16px",
+                    height: "38px",
+                    padding: "8.5px 14px",
+                    fontSize: "14px",
                     borderRadius: 4,
                     background: theme.getDropdownBackground(),
                     border: `1px solid ${
@@ -2282,7 +2319,13 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
                     }`,
                     color: theme.getInputTextColor(),
                     outline: "none",
+                    boxSizing: "border-box",
                   }}
+                  containerStyle={{
+                    width: "100%",
+                  }}
+                  portalTarget={document.body}
+                  zIndex={9999}
                 />
               </Box>
               {fieldDateRangeValue.length > 0 && (
@@ -2452,6 +2495,127 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
     }
   };
 
+  return (
+    <DialogContainer
+      open={open}
+      onClose={onClose}
+      title="Filters"
+      id="filters-modal-portal-target"
+      actions={
+        <>
+          <Button
+            onClick={handleClearFilters}
+            variant="outlined"
+            disabled={!hasActiveFilters}
+            sx={{
+              ...getButtonSx(),
+              borderColor: theme.palette.error.main,
+              color: theme.palette.error.main,
+              "&:hover": {
+                borderColor: theme.palette.error.dark,
+                backgroundColor: theme.palette.error.light,
+              },
+              "&:disabled": {
+                borderColor: theme.palette.action.disabled,
+                color: theme.palette.action.disabled,
+              },
+            }}
+          >
+            Clear All
+          </Button>
+          <Button
+            onClick={onClose}
+            variant="outlined"
+            sx={{
+              ...getButtonSx(),
+              borderColor: theme.getInputBorderColor(),
+              color: theme.palette.text.primary,
+              "&:hover": {
+                borderColor:
+                  theme.border?.hover || STYLE_GUIDE.COLORS.darkBorderHover,
+              },
+            }}
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={handleApplyFilters}
+            variant="contained"
+            sx={{
+              ...getButtonSx(),
+              backgroundColor: STYLE_GUIDE.COLORS.primary,
+              color: STYLE_GUIDE.COLORS.white,
+              "&:hover": {
+                backgroundColor: STYLE_GUIDE.COLORS.primaryDark,
+              },
+            }}
+          >
+            Apply Filters
+          </Button>
+        </>
+      }
+    >
+      {isLoading || dataSourceQuery.isLoading ? (
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "center",
+            py: STYLE_GUIDE.SPACING.s6,
+          }}
+        >
+          <Typography variant="body2" color="text.secondary">
+            Loading filters...
+          </Typography>
+        </Box>
+      ) : dataSourceQuery.isError ? (
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            py: STYLE_GUIDE.SPACING.s6,
+          }}
+        >
+          <Typography variant="body2" color="error" sx={{ mb: 2 }}>
+            Error loading filters:{" "}
+            {dataSourceQuery.error?.message || "Unknown error"}
+          </Typography>
+          <Button variant="outlined" onClick={() => dataSourceQuery.refetch()}>
+            Retry
+          </Button>
+        </Box>
+      ) : filteredFieldSettings.length === 0 ? (
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "center",
+            py: STYLE_GUIDE.SPACING.s6,
+          }}
+        >
+          <Typography variant="body2" color="text.secondary">
+            No filters available
+          </Typography>
+        </Box>
+      ) : (
+        <Box
+          sx={{
+            display: "grid",
+            pt: 1.5,
+            gridTemplateColumns: "repeat(2, 1fr)",
+            gap: STYLE_GUIDE.SPACING.s4,
+            "@media (max-width: 900px)": {
+              gridTemplateColumns: "repeat(2, 1fr)",
+            },
+            "@media (max-width: 600px)": {
+              gridTemplateColumns: "1fr",
+            },
+          }}
+        >
+          {filteredFieldSettings.map((field) => renderFilterField(field))}
+        </Box>
+      )}
+    </DialogContainer>
+  );
   return (
     <Dialog
       open={open}

@@ -17,6 +17,8 @@ import AddIcon from "@mui/icons-material/Add";
 import { CustomPagination } from "../../components/common/pagination/customPagination";
 import ImportFile from "../../components/common/importFile/ImportFile";
 import dayjs from "dayjs";
+import SearchField from "../../components/common/SearchField";
+import PrimaryButton from "../../components/common/PrimaryButton";
 
 interface TableSectionProps {
   rows: any[];
@@ -194,91 +196,33 @@ export const NotivixDataTable: React.FC<TableSectionProps> = ({
               mb: 2,
             }}
           >
-            <TextField
-              placeholder="Search..."
-              variant="outlined"
-              size="small"
-              value={searchValue}
-              onChange={handleSearchChange}
-              sx={{
-                width: "300px",
-                "& .MuiOutlinedInput-root": {
-                  borderRadius: "8px",
-                  backgroundColor: STYLE_GUIDE?.COLORS?.white || "#ffffff",
-                  "& fieldset": {
-                    borderColor: STYLE_GUIDE?.COLORS?.divider || "#e0e0e0",
-                  },
-                  "&:hover fieldset": {
-                    borderColor: STYLE_GUIDE?.COLORS?.primaryDark || "#3f51b5",
-                  },
-                },
-              }}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <SearchIcon
-                      sx={{
-                        color: STYLE_GUIDE?.COLORS?.primaryDark || "#3f51b5",
-                      }}
-                    />
-                  </InputAdornment>
-                ),
-              }}
+            <SearchField
+              searchValue={searchValue}
+              handleSearchChange={handleSearchChange}
             />
+
             <Box sx={{ display: "flex", gap: 1 }}>
-              <Button
+              <PrimaryButton
                 variant="outlined"
                 startIcon={<FilterListIcon />}
                 onClick={handleOpenFiltersModal}
-                sx={{
-                  borderRadius: "8px",
-                  borderColor: STYLE_GUIDE?.COLORS?.divider || "#e0e0e0",
-                  color: STYLE_GUIDE?.COLORS?.primaryDark || "#3f51b5",
-                  "&:hover": {
-                    backgroundColor:
-                      STYLE_GUIDE?.COLORS?.backgroundDefault || "#f1f5f9",
-                    borderColor: STYLE_GUIDE?.COLORS?.primaryDark || "#3f51b5",
-                  },
-                }}
               >
                 Filter
-              </Button>
-              <Button
+              </PrimaryButton>
+              <PrimaryButton
                 variant="contained"
                 startIcon={<AddIcon />}
                 onClick={handleAddNotification}
-                sx={{
-                  borderRadius: "8px",
-                  backgroundColor:
-                    STYLE_GUIDE?.COLORS?.primaryDark || "#3f51b5",
-                  color: STYLE_GUIDE?.COLORS?.white || "#ffffff",
-                  "&:hover": {
-                    backgroundColor: STYLE_GUIDE?.COLORS?.primary || "#5c6bc0",
-                  },
-                }}
               >
                 Add
-              </Button>
+              </PrimaryButton>
               <ImportFile
                 title="Import"
                 dataSourceId={dataSourceId}
                 CustomButton={
-                  <Button
-                    startIcon={<AddIcon />}
-                    variant="contained"
-                    sx={{
-                      borderRadius: "8px",
-                      backgroundColor:
-                        STYLE_GUIDE?.COLORS?.primaryDark || "#3f51b5",
-                      color: STYLE_GUIDE?.COLORS?.white || "#ffffff",
-                      "&:hover": {
-                        backgroundColor:
-                          STYLE_GUIDE?.COLORS?.primary || "#5c6bc0",
-                      },
-                    }}
-                  >
+                  <PrimaryButton startIcon={<AddIcon />} variant="contained">
                     Import
-                  </Button>
+                  </PrimaryButton>
                 }
               />
             </Box>
@@ -308,6 +252,12 @@ export const NotivixDataTable: React.FC<TableSectionProps> = ({
                       STYLE_GUIDE?.COLORS?.backgroundLight || "#f5f5f5",
                   },
                 },
+                "& .MuiDataGrid-footerContainer": {
+                  borderTop: `1px solid ${
+                    STYLE_GUIDE?.COLORS?.divider || "#e0e0e0"
+                  }`,
+                },
+                height: "calc(100vh - 280px)",
               }}
               slots={{
                 pagination: () => (
