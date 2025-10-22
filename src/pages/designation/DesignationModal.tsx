@@ -21,7 +21,7 @@ import usePut from "../../hooks/usePut";
 import usePost from "../../hooks/usePost";
 import { GET, POST, PUT } from "../../services/apiRoutes";
 
-interface Department {
+export interface Department {
   _id: string;
   name: string;
   status: string;
