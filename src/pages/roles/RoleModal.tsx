@@ -369,6 +369,7 @@ export function RoleModal({
                 {mode !== "view" && (
                   <Button
                     type="submit"
+                    form="role-form" // ✅ Link the button to the form below
                     variant="contained"
                     sx={{ borderRadius: "8px" }}
                     disabled={
@@ -396,7 +397,7 @@ export function RoleModal({
           Failed to load role details. Please try again.
         </Typography>
       ) : (
-        <form onSubmit={handleSubmit(onSubmit)}>
+        <form id="role-form" onSubmit={handleSubmit(onSubmit)}>
           <Grid container spacing={2}>
             <Grid item xs={12}>
               {mode === "view" ? (
