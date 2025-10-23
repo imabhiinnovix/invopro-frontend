@@ -86,7 +86,7 @@ const columns: GridColDef[] = [
             <VisibilityIcon />
           </Button>
         </Tooltip>
-        {/* <Tooltip title="Delete" arrow>
+        <Tooltip title="Delete" arrow>
           <Button
             variant="text"
             onClick={() => params.row.handleDelete(params.row._id)}
@@ -95,7 +95,7 @@ const columns: GridColDef[] = [
           >
             <DeleteIcon />
           </Button>
-        </Tooltip> */}
+        </Tooltip>
       </Box>
     ),
   },
@@ -246,7 +246,7 @@ export function TemplateDataTable({
               <CustomPagination
                 paginationModel={paginationModel}
                 setPaginationModel={setPaginationModel}
-                rowCount={templateList?.data?.totalCount || 0}
+                rowCount={templateList?.data?.pagination?.totalRecords || 0}
               />
             ),
           }}
