@@ -291,6 +291,7 @@ const Dashboard = () => {
           rows={rows}
           loading={isLoading}
           height="calc(100vh - 240px)"
+          onRowClick={(row) => handleEdit(row.originalData._id)}
         />
 
         {/* <Box

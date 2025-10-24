@@ -30,6 +30,7 @@ interface CommonTableProps {
   ) => React.ReactNode;
   isLazyTable?: boolean;
   isLazyLoading?: boolean;
+  onRowClick?: (row: Record<string, unknown>) => void;
 }
 
 const CommonTable = forwardRef<HTMLTableElement, CommonTableProps>(
@@ -42,6 +43,7 @@ const CommonTable = forwardRef<HTMLTableElement, CommonTableProps>(
       collpasible,
       isLazyTable,
       isLazyLoading,
+      onRowClick,
     },
     ref
   ) => {
@@ -124,6 +126,7 @@ const CommonTable = forwardRef<HTMLTableElement, CommonTableProps>(
                   <>
                     <TableRow
                       hover
+                      onClick={() => onRowClick?.(row)}
                       role="checkbox"
                       tabIndex={-1}
                       key={row.code || row._id || index}
@@ -132,6 +135,9 @@ const CommonTable = forwardRef<HTMLTableElement, CommonTableProps>(
                           ? ref
                           : null
                       }
+                      sx={{
+                        cursor: onRowClick ? "pointer" : "default",
+                      }}
                     >
                       {columns.map((column) => {
                         const value = row[column.id] || "-";
