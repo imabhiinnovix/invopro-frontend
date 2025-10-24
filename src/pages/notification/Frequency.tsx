@@ -128,7 +128,11 @@ export default function Frequency({ fieldOptions, notificationTypeId }) {
   const deleteNotification = useDelete(["deleteNotification"]);
   const updateNotification = usePut(["updateNotification"]);
   const mediumList = useGet(["mediumList"], `${GET.MEDIUM_LIST}`, true);
-  const templateList = useGet(["templateList"], `${GET.TEMPLATE_LIST}`, true);
+  const templateList = useGet(
+    ["templateList"],
+    `${GET.TEMPLATE_LIST}?paginate=false`,
+    true
+  );
   const { data: frequencyListData, refetch } = useGet(
     ["frequencyList", notificationTypeId],
     notificationTypeId
@@ -1231,7 +1235,7 @@ export default function Frequency({ fieldOptions, notificationTypeId }) {
           </Box>
           <Box sx={{ mt: 1 }}>
             <Box sx={{ display: "flex", gap: 2, mt: 2 }}>
-              <Box sx={{ flex: 0.5, minWidth: "120px" }}>
+              {/* <Box sx={{ flex: 0.5, minWidth: "120px" }}>
                 <FormControl size="small" fullWidth error={!!errors.template}>
                   <InputLabel>Template</InputLabel>
                   <Select
@@ -1256,7 +1260,42 @@ export default function Frequency({ fieldOptions, notificationTypeId }) {
                     <FormHelperText error>{errors.template}</FormHelperText>
                   )}
                 </FormControl>
+              </Box> */}
+              <Box sx={{ flex: 0.5, minWidth: "120px" }}>
+                <FormControl size="small" fullWidth error={!!errors.template}>
+                  <InputLabel>Template</InputLabel>
+                  <Select
+                    value={template}
+                    onChange={(e) => {
+                      setTemplate(e.target.value);
+                      if (e.target.value) {
+                        setErrors({ ...errors, template: "" });
+                      }
+                    }}
+                    label="Template"
+                    displayEmpty
+                    aria-label="Select template"
+                    MenuProps={{
+                      PaperProps: {
+                        style: {
+                          maxHeight: 250, // controls visible height of dropdown
+                          overflowY: "auto",
+                        },
+                      },
+                    }}
+                  >
+                    {templateList.data?.data?.map((option) => (
+                      <MenuItem key={option._id} value={option._id}>
+                        {option.name}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                  {errors.template && (
+                    <FormHelperText error>{errors.template}</FormHelperText>
+                  )}
+                </FormControl>
               </Box>
+
               <Box sx={{ flex: 0.5, minWidth: "120px" }}>
                 <FormControl size="small" fullWidth error={!!errors.method}>
                   <InputLabel>Method</InputLabel>
