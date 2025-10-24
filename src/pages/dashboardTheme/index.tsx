@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState } from "react";
 import {
   Box,
   Typography,
@@ -11,36 +11,41 @@ import {
   DialogContent,
   DialogContentText,
   DialogActions,
-} from '@mui/material';
+} from "@mui/material";
 import {
   Add as AddIcon,
   Palette as PaletteIcon,
   CheckCircle as ApplyIcon,
-} from '@mui/icons-material';
-import { useAppDispatch, useAppSelector } from '../../storeHooks';
-import { 
-  deleteDashboardTheme, 
+} from "@mui/icons-material";
+import { useAppDispatch, useAppSelector } from "../../storeHooks";
+import {
+  deleteDashboardTheme,
   duplicateDashboardTheme,
   applyDashboardTheme,
   clearError,
-  clearSuccess 
-} from '../../reducers/dashboardThemeSlice';
-import { DashboardTheme } from '../../types/dashboardTheme';
-import DashboardThemePreview from './components/DashboardThemePreview';
-import CreateDashboardThemeDialog from './components/CreateDashboardThemeDialog';
-import { toast } from 'react-toastify';
-import { useUnifiedTheme } from '../../hooks/useUnifiedTheme';
-import { useComponentTypography } from '../../hooks/useComponentTypography';
-import { STYLE_GUIDE } from '../../styles';
-
+  clearSuccess,
+} from "../../reducers/dashboardThemeSlice";
+import { DashboardTheme } from "../../types/dashboardTheme";
+import DashboardThemePreview from "./components/DashboardThemePreview";
+import CreateDashboardThemeDialog from "./components/CreateDashboardThemeDialog";
+import { toast } from "react-toastify";
+import { useUnifiedTheme } from "../../hooks/useUnifiedTheme";
+import { useComponentTypography } from "../../hooks/useComponentTypography";
+import { STYLE_GUIDE } from "../../styles";
+import PrimaryButton from "../../components/common/PrimaryButton";
+import DialogContainer from "../../components/molecule/dialog";
 
 const DashboardThemePage = () => {
   const unifiedTheme = useUnifiedTheme();
   const { getHeadingSx, getButtonSx } = useComponentTypography();
   const dispatch = useAppDispatch();
-  const { themes, loading, error, success, dashboardTheme } = useAppSelector((state) => state.dashboardTheme);
+  const { themes, loading, error, success, dashboardTheme } = useAppSelector(
+    (state) => state.dashboardTheme
+  );
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [selectedTheme, setSelectedTheme] = useState<DashboardTheme | null>(null);
+  const [selectedTheme, setSelectedTheme] = useState<DashboardTheme | null>(
+    null
+  );
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [themeToDelete, setThemeToDelete] = useState<string | null>(null);
 
@@ -102,10 +107,10 @@ const DashboardThemePage = () => {
     return (
       <Box
         sx={{
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          height: '100vh',
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100vh",
         }}
       >
         <CircularProgress />
@@ -114,35 +119,54 @@ const DashboardThemePage = () => {
   }
 
   return (
-    <Box sx={{ p: 3, maxWidth: '1400px', margin: '0 auto', backgroundColor: unifiedTheme.palette.background.paper }}>
-      <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 3 }}>
+    <Box
+      sx={{
+        p: 3,
+        // maxWidth: "1400px",
+        margin: "0 auto",
+        backgroundColor: unifiedTheme.palette.background.paper,
+      }}
+    >
+      <Stack
+        direction="row"
+        justifyContent="space-between"
+        alignItems="center"
+        sx={{ mb: 3 }}
+      >
         <Box>
-          <Typography variant="h4" component="h1" gutterBottom sx={{ ...getHeadingSx(), fontWeight: 600 }}>
+          <Typography
+            variant="h4"
+            component="h1"
+            gutterBottom
+            sx={{ ...getHeadingSx(), fontWeight: 600 }}
+          >
             Dashboard Theme Library
           </Typography>
           <Typography variant="body1" color="text.secondary">
-            Create and manage custom themes for your dashboard. Customize colors, typography, and component styles.
+            Create and manage custom themes for your dashboard. Customize
+            colors, typography, and component styles.
           </Typography>
         </Box>
-        <Button
-          variant="contained"
-          startIcon={<AddIcon sx={{ color: unifiedTheme.getIconColor() }}/>}
+        <PrimaryButton
+          startIcon={<AddIcon />}
           onClick={() => setIsDialogOpen(true)}
-          sx={{ 
-            ...getButtonSx(),
-            px: 3, 
-            py: 1.5,
-            borderRadius: 2,
-            textTransform: 'none',
-            fontWeight: 600
-          }}
+          sx={{ width: 200 }}
         >
           Create Theme
-        </Button>
+        </PrimaryButton>
       </Stack>
 
       {dashboardTheme && (
-        <Box sx={{ mb: 3, p: 2, bgcolor: 'background.paper', borderRadius: 2, border: '1px solid', borderColor: 'divider' }}>
+        <Box
+          sx={{
+            mb: 3,
+            p: 2,
+            bgcolor: "background.paper",
+            borderRadius: 2,
+            border: "1px solid",
+            borderColor: "divider",
+          }}
+        >
           <Stack direction="row" alignItems="center" spacing={2}>
             <ApplyIcon color="success" />
             <Typography variant="body1" fontWeight={500}>
@@ -168,8 +192,8 @@ const DashboardThemePage = () => {
       </Grid>
 
       {themes.length === 0 && !loading && (
-        <Box sx={{ textAlign: 'center', py: 8 }}>
-          <PaletteIcon sx={{ fontSize: 64, color: 'text.secondary', mb: 2 }} />
+        <Box sx={{ textAlign: "center", py: 8 }}>
+          <PaletteIcon sx={{ fontSize: 64, color: "text.secondary", mb: 2 }} />
           <Typography variant="h6" color="text.secondary" gutterBottom>
             No themes created yet
           </Typography>
@@ -187,51 +211,39 @@ const DashboardThemePage = () => {
         </Box>
       )}
 
-
-
       <CreateDashboardThemeDialog
         open={isDialogOpen}
         onClose={handleCloseDialog}
         theme={selectedTheme}
       />
 
-      <Dialog
+      <DialogContainer
         open={deleteConfirmOpen}
         onClose={cancelDelete}
-        aria-labelledby="delete-dialog-title"
-        aria-describedby="delete-dialog-description"
+        title="Delete Theme"
+        actions={
+          <>
+            <PrimaryButton onClick={cancelDelete} variant="outlined">
+              Cancel
+            </PrimaryButton>
+            <PrimaryButton
+              onClick={confirmDelete}
+              variant="contained"
+              color="error"
+              disabled={loading}
+            >
+              {loading ? "Deleting..." : "Delete"}
+            </PrimaryButton>
+          </>
+        }
       >
-        <DialogTitle 
-          id="delete-dialog-title"
-          sx={{
-             ...getDialogTitleSx(),
-            color: unifiedTheme.palette.dialog?.titleColor || STYLE_GUIDE.COLORS.textDarkGray,
-          }}
-        >
-          Delete Theme
-        </DialogTitle>
-        <DialogContent>
-          <DialogContentText id="delete-dialog-description">
-            Are you sure you want to delete this theme? This action cannot be undone.
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={cancelDelete} color="primary" sx={{ ...getButtonSx() }}>
-            Cancel
-          </Button>
-          <Button
-            onClick={confirmDelete}
-            color="error"
-            variant="contained"
-            disabled={loading}
-            sx={{ ...getButtonSx() }}
-          >
-            {loading ? 'Deleting...' : 'Delete'}
-          </Button>
-        </DialogActions>
-      </Dialog>
+        <Typography>
+          Are you sure you want to delete this theme? This action cannot be
+          undone.
+        </Typography>
+      </DialogContainer>
     </Box>
   );
 };
 
-export default DashboardThemePage; 
+export default DashboardThemePage;

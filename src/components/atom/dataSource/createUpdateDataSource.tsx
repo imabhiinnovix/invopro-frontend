@@ -35,6 +35,8 @@ import { useUnifiedTheme } from "../../../hooks/useUnifiedTheme";
 import axiosInstance from "../../../services/axiosInstance";
 import { debounce } from "lodash";
 import { useComponentTypography } from "../../../hooks/useComponentTypography";
+import DialogContainer from "../../molecule/dialog";
+import PrimaryButton from "../../common/PrimaryButton";
 
 interface Attribute {
   _id: string;
@@ -161,7 +163,7 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({
       entityId:
         typeof data?.entityId === "string"
           ? data.entityId
-          : (data?.entityId?._id ?? ""),
+          : data?.entityId?._id ?? "",
       entityAttributes: data?.uniqueAttributeRules?.length
         ? data.uniqueAttributeRules.map((rule) => rule.map((attr) => attr.name))
         : [[""]],
@@ -170,7 +172,9 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({
         : [[""]],
       fieldSettings: data?.fieldSettings?.length
         ? data.fieldSettings.map((setting) => ({
-            attributeId: `${setting.attributeId}-${setting.refAttributeId || "null"}`,
+            attributeId: `${setting.attributeId}-${
+              setting.refAttributeId || "null"
+            }`,
             value: setting.label || setting.value || "",
             filter: setting.isFilterEnable || setting.filter || false,
             sorting: setting.isSortingEnable || setting.sorting || false,
@@ -346,7 +350,7 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({
         entityId:
           typeof data.entityId === "string"
             ? data.entityId
-            : (data?.entityId?._id ?? ""),
+            : data?.entityId?._id ?? "",
         entityAttributes: data.uniqueAttributeRules?.length
           ? data.uniqueAttributeRules.map((rule) =>
               rule.map((attr) => attr.name)
@@ -360,7 +364,9 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({
         fieldSettings: data.fieldSettings?.length
           ? data.fieldSettings.map((setting) => {
               return {
-                attributeId: `${setting.attributeId}-${setting.refAttributeId || "null"}`,
+                attributeId: `${setting.attributeId}-${
+                  setting.refAttributeId || "null"
+                }`,
                 value: setting.label || setting.value || "",
                 filter: setting.isFilterEnable || setting.filter || false,
                 sorting: setting.isSortingEnable || setting.sorting || false,
@@ -578,7 +584,9 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({
     const updatedFieldSettings =
       formData.fieldSettings?.map((setting) => {
         const option = entityFieldOptions.find((opt) => {
-          const optionKey = `${opt.value.attributeId}-${opt.value.refAttributeId || "null"}`;
+          const optionKey = `${opt.value.attributeId}-${
+            opt.value.refAttributeId || "null"
+          }`;
           return optionKey === setting.attributeId;
         });
 
@@ -688,7 +696,590 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({
     <>
       <Box onClick={() => setOpen(true)}>{CustomButton}</Box>
 
-      <Dialog
+      <DialogContainer
+        open={open}
+        onClose={handleCancel}
+        title={title}
+        actions={
+          <>
+            {createDataSource.isPending || updateDataSource.isPending ? (
+              <CircularProgress />
+            ) : (
+              <>
+                <PrimaryButton onClick={handleCancel} variant="outlined">
+                  Cancel
+                </PrimaryButton>
+                <PrimaryButton
+                  type="submit"
+                  variant="contained"
+                  onClick={handleSubmit(onSubmit)}
+                >
+                  Save Data Source
+                </PrimaryButton>
+              </>
+            )}
+          </>
+        }
+      >
+        <Box component="form" onSubmit={handleSubmit(onSubmit)} noValidate>
+          <Stack spacing={3}>
+            {entityName && (
+              <Typography variant="body1" sx={{ mb: 2 }}>
+                Selected Entity: <strong>{entityName}</strong>
+              </Typography>
+            )}
+            {(isLoadingEntity || isLoadingEntities) && (
+              <CircularProgress sx={{ alignSelf: "center" }} />
+            )}
+            <TextField
+              label="Data Source Name*"
+              fullWidth
+              {...register("name", {
+                required: "Data source name is required",
+              })}
+              onChange={(event) => {
+                const nameValue = event.target.value;
+                debouncedSetName(nameValue);
+                setValue("name", nameValue, { shouldValidate: true });
+
+                if (!data?.code) {
+                  const sanitizedCode = nameValue
+                    .toLowerCase()
+                    .replace(/[^a-zA-Z0-9_]/g, "");
+                  debouncedSetCode(sanitizedCode);
+                  setValue("code", sanitizedCode, { shouldValidate: true });
+                }
+              }}
+              error={!!errors.name}
+              helperText={
+                errors.name?.message ||
+                (nameAvailability.isFetched &&
+                name.length > 0 &&
+                !data?.name ? (
+                  nameAvailability.data?.available ? (
+                    <Typography
+                      sx={{ color: STYLE_GUIDE.COLORS.bootstrapSuccess }}
+                    >
+                      Name is available
+                    </Typography>
+                  ) : (
+                    <Typography
+                      sx={{ color: STYLE_GUIDE.COLORS.bootstrapDanger }}
+                    >
+                      {nameAvailability.data?.message ||
+                        "Name is not available"}
+                    </Typography>
+                  )
+                ) : (
+                  ""
+                ))
+              }
+              sx={{
+                "& .MuiOutlinedInput-root": {
+                  borderRadius: STYLE_GUIDE.SPACING.s2,
+                  fontSize: "14px",
+                  backgroundColor:
+                    theme.dashboardTheme?.colors?.background?.paper ||
+                    "#ffffff",
+                  "& fieldset": {
+                    borderColor:
+                      theme.dashboardTheme?.colors?.inputBorder ||
+                      STYLE_GUIDE.COLORS.darkBackground,
+                  },
+                  "&:hover fieldset": {
+                    borderColor:
+                      theme.dashboardTheme?.colors?.borderHover ||
+                      STYLE_GUIDE.COLORS.darkBorderHover,
+                  },
+                  "&.Mui-focused fieldset": {
+                    borderColor:
+                      theme.dashboardTheme?.components?.input
+                        ?.focusBorderColor ||
+                      theme.dashboardTheme?.components?.input
+                        ?.focusBorderColorFallback ||
+                      STYLE_GUIDE.COLORS.inputFocusFallback,
+                  },
+                },
+                "& .MuiInputLabel-root": {
+                  color:
+                    theme.dashboardTheme?.colors?.text?.secondary ||
+                    STYLE_GUIDE.COLORS.darkBorderFocus,
+                },
+                "& .MuiInputLabel-root.Mui-focused": {
+                  color:
+                    theme.dashboardTheme?.components?.input?.focusBorderColor ||
+                    theme.dashboardTheme?.components?.input
+                      ?.focusBorderColorFallback ||
+                    STYLE_GUIDE.COLORS.inputFocusFallback,
+                },
+              }}
+            />
+
+            <TextField
+              label="Data Source Description"
+              fullWidth
+              multiline
+              rows={4}
+              {...register("description")}
+              error={!!errors.description}
+              helperText={errors.description?.message}
+              sx={{
+                "& .MuiOutlinedInput-root": {
+                  borderRadius: STYLE_GUIDE.SPACING.s2,
+                  fontSize: "14px",
+                  backgroundColor:
+                    theme.dashboardTheme?.colors?.background?.paper ||
+                    "#ffffff",
+                  "& fieldset": {
+                    borderColor:
+                      theme.dashboardTheme?.colors?.inputBorder ||
+                      STYLE_GUIDE.COLORS.darkBackground,
+                  },
+                  "&:hover fieldset": {
+                    borderColor:
+                      theme.dashboardTheme?.colors?.borderHover ||
+                      STYLE_GUIDE.COLORS.darkBorderHover,
+                  },
+                  "&.Mui-focused fieldset": {
+                    borderColor:
+                      theme.dashboardTheme?.components?.input
+                        ?.focusBorderColor ||
+                      theme.dashboardTheme?.components?.input
+                        ?.focusBorderColorFallback ||
+                      STYLE_GUIDE.COLORS.inputFocusFallback,
+                  },
+                },
+                "& .MuiInputLabel-root": {
+                  color:
+                    theme.dashboardTheme?.colors?.text?.secondary ||
+                    STYLE_GUIDE.COLORS.darkBorderFocus,
+                },
+                "& .MuiInputLabel-root.Mui-focused": {
+                  color:
+                    theme.dashboardTheme?.components?.input?.focusBorderColor ||
+                    theme.dashboardTheme?.components?.input
+                      ?.focusBorderColorFallback ||
+                    STYLE_GUIDE.COLORS.inputFocusFallback,
+                },
+              }}
+            />
+
+            <Autocomplete
+              options={entities}
+              getOptionLabel={(option) => option.name || ""}
+              value={
+                Array.isArray(entities)
+                  ? entities.find((e) => e._id === entityId) || null
+                  : null
+              }
+              onChange={(event, newValue) => {
+                setValue("entityId", newValue?._id || "", {
+                  shouldValidate: true,
+                });
+              }}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  label="Select Entity*"
+                  error={!!errors.entityId}
+                  helperText={errors.entityId?.message}
+                  InputProps={{
+                    ...params.InputProps,
+                    endAdornment: (
+                      <>
+                        {isLoadingEntities ? (
+                          <CircularProgress color="inherit" size={20} />
+                        ) : null}
+                        {params.InputProps.endAdornment}
+                      </>
+                    ),
+                  }}
+                />
+              )}
+              loading={isLoadingEntities}
+            />
+
+            {attributeFields.map((field, index) => (
+              <Box key={field.id} sx={{ mb: 3 }}>
+                <Stack direction="row" spacing={2} alignItems="center">
+                  <Box sx={{ flex: 1 }}>
+                    <Typography variant="h6" mb={1}>
+                      Unique {index + 1} Attributes
+                    </Typography>
+
+                    <Autocomplete
+                      multiple
+                      options={entityAttributes}
+                      getOptionLabel={(option) => option.name || ""}
+                      isOptionEqualToValue={(option, value) =>
+                        option._id === value._id
+                      }
+                      value={
+                        Array.isArray(watch(`entityAttributes.${index}`))
+                          ? watch(`entityAttributes.${index}`)
+                              .map((name) =>
+                                entityAttributes.find(
+                                  (attr) => attr.name === name
+                                )
+                              )
+                              .filter(
+                                (attr): attr is Attribute => attr !== undefined
+                              )
+                          : []
+                      }
+                      onChange={(event, newValue) => {
+                        setValue(
+                          `entityAttributes.${index}`,
+                          newValue.map((attr) => attr.name),
+                          { shouldValidate: true }
+                        );
+                      }}
+                      renderInput={(params) => (
+                        <TextField
+                          {...params}
+                          label={`Select Unique Attribute ${index + 1}*`}
+                          error={!!errors.entityAttributes?.[index]}
+                          helperText={errors.entityAttributes?.[index]?.message}
+                        />
+                      )}
+                      disabled={!entityId || isLoadingEntity}
+                    />
+                  </Box>
+                  {attributeFields.length > 1 && (
+                    <IconButton
+                      color="error"
+                      onClick={() => removeAttribute(index)}
+                    >
+                      <RemoveCircleOutlineIcon />
+                    </IconButton>
+                  )}
+                </Stack>
+              </Box>
+            ))}
+
+            <Button
+              variant="contained"
+              startIcon={<AddCircleOutlineIcon />}
+              onClick={handleAddMoreAttribute}
+              sx={{ whiteSpace: "nowrap", mt: 2 }}
+              disabled={!entityId || isLoadingEntity}
+            >
+              Add More Attributes
+            </Button>
+
+            <Typography variant="h5" sx={{ mt: 4, mb: 2 }}>
+              Field Settings
+            </Typography>
+
+            {settingFields.map((field, index) => {
+              const currentAttributeId = watch(
+                `fieldSettings.${index}.attributeId`
+              );
+
+              // Find the selected option using the unique key
+              const selectedOption =
+                entityFieldOptions.find((opt) => {
+                  const optionKey = `${opt.value.attributeId}-${
+                    opt.value.refAttributeId || "null"
+                  }`;
+                  return optionKey === currentAttributeId;
+                }) || null;
+
+              return (
+                <Box
+                  key={field.id}
+                  sx={{
+                    mb: 3,
+                    p: 2,
+                    border: `1px solid ${theme.palette.divider}`,
+                    borderRadius: 1,
+                  }}
+                >
+                  <Stack direction="row" spacing={2} alignItems="center">
+                    <Box sx={{ flex: 1 }}>
+                      <Stack direction="row" spacing={2} mb={2}>
+                        <Autocomplete
+                          options={entityFieldOptions}
+                          getOptionLabel={(option) => option.label || ""}
+                          // Fixed isOptionEqualToValue function
+                          isOptionEqualToValue={(option, value) => {
+                            if (!option || !value) return false;
+                            const optionKey = `${option.value.attributeId}-${
+                              option.value.refAttributeId || "null"
+                            }`;
+                            const valueKey = `${value.value.attributeId}-${
+                              value.value.refAttributeId || "null"
+                            }`;
+                            return optionKey === valueKey;
+                          }}
+                          value={selectedOption}
+                          // onChange={(event, newValue) => {
+                          //   // Create unique identifier for the selected option
+                          //   const uniqueKey = newValue
+                          //     ? `${newValue.value.attributeId}-${newValue.value.refAttributeId || "null"}`
+                          //     : "";
+                          //   setValue(
+                          //     `fieldSettings.${index}.type`,
+                          //     newValue.value.type || "",
+                          //     { shouldValidate: true }
+                          //   );
+
+                          //   setValue(
+                          //     `fieldSettings.${index}.attributeId`,
+                          //     uniqueKey,
+                          //     { shouldValidate: true }
+                          //   );
+                          // }}
+                          onChange={(event, newValue) => {
+                            const uniqueKey = newValue
+                              ? `${newValue.value.attributeId}-${
+                                  newValue.value.refAttributeId || "null"
+                                }`
+                              : "";
+
+                            setValue(
+                              `fieldSettings.${index}.type`,
+                              newValue?.value?.type || "",
+                              { shouldValidate: true }
+                            );
+
+                            setValue(
+                              `fieldSettings.${index}.attributeId`,
+                              uniqueKey,
+                              { shouldValidate: true }
+                            );
+                          }}
+                          renderInput={(params) => (
+                            <TextField
+                              {...params}
+                              label="Field*"
+                              error={
+                                !!errors.fieldSettings?.[index]?.attributeId
+                              }
+                              helperText={
+                                errors.fieldSettings?.[index]?.attributeId
+                                  ?.message
+                              }
+                            />
+                          )}
+                          disabled={!entityId || isLoadingEntity}
+                          sx={{ flex: 1 }}
+                          clearOnBlur={false}
+                          handleHomeEndKeys={true}
+                        />
+
+                        <TextField
+                          label="Show Label*"
+                          {...register(`fieldSettings.${index}.value`, {
+                            required: "Show label is required",
+                          })}
+                          error={!!errors.fieldSettings?.[index]?.value}
+                          helperText={
+                            errors.fieldSettings?.[index]?.value?.message
+                          }
+                          sx={{ flex: 1 }}
+                        />
+                      </Stack>
+
+                      <Stack direction="row" spacing={2}>
+                        <FormControlLabel
+                          control={
+                            <Checkbox
+                              {...register(`fieldSettings.${index}.filter`)}
+                              defaultChecked={field.filter}
+                            />
+                          }
+                          label="Filter"
+                        />
+                        <FormControlLabel
+                          control={
+                            <Checkbox
+                              {...register(`fieldSettings.${index}.sorting`)}
+                              defaultChecked={field.sorting}
+                            />
+                          }
+                          label="Sorting"
+                        />
+                        <FormControlLabel
+                          control={
+                            <Checkbox
+                              {...register(`fieldSettings.${index}.visible`)}
+                              defaultChecked={field.visible}
+                            />
+                          }
+                          label="Visible"
+                        />
+                      </Stack>
+                    </Box>
+
+                    {settingFields.length > 1 && (
+                      <IconButton
+                        color="error"
+                        onClick={() => removeSetting(index)}
+                      >
+                        <RemoveCircleOutlineIcon />
+                      </IconButton>
+                    )}
+                  </Stack>
+                </Box>
+              );
+            })}
+
+            <Button
+              variant="contained"
+              startIcon={<AddCircleOutlineIcon />}
+              onClick={handleAddMoreSetting}
+              sx={{ whiteSpace: "nowrap", mt: 2 }}
+              disabled={!entityId || isLoadingEntity}
+            >
+              Add Entity Setting
+            </Button>
+
+            <TextField
+              label="Data Source Code(Unique Code)*"
+              fullWidth
+              {...register("code", {
+                required: "Data source code is required",
+                pattern: {
+                  value: /^(?!.*(\$|\0|^system\.|\.system\.))[\w]+$/,
+                  message:
+                    'Data source code should not contain special characters, null characters, space or restricted prefixes (e.g., "system." or ".system.")',
+                },
+              })}
+              value={code}
+              onChange={(event) => {
+                const sanitizedCode = event.target.value
+                  .toLowerCase()
+                  .replace(/[^a-zA-Z0-9_]/g, "");
+                debouncedSetCode(sanitizedCode);
+                setValue("code", sanitizedCode, { shouldValidate: true });
+              }}
+              error={!!errors.code}
+              disabled={!!data?.code}
+              helperText={
+                errors.code?.message ||
+                (codeAvailability.isFetched &&
+                code.length > 0 &&
+                !data?.code ? (
+                  codeAvailability.data?.available ? (
+                    <Typography
+                      sx={{ color: STYLE_GUIDE.COLORS.bootstrapSuccess }}
+                    >
+                      Code is available
+                    </Typography>
+                  ) : (
+                    <Typography
+                      sx={{ color: STYLE_GUIDE.COLORS.bootstrapDanger }}
+                    >
+                      {codeAvailability.data?.message ||
+                        "Code is not available"}
+                    </Typography>
+                  )
+                ) : (
+                  ""
+                ))
+              }
+              sx={{
+                "& .MuiOutlinedInput-root": {
+                  borderRadius: STYLE_GUIDE.SPACING.s2,
+                  fontSize: "14px",
+                  backgroundColor:
+                    theme.dashboardTheme?.colors?.background?.paper ||
+                    "#ffffff",
+                  "& fieldset": {
+                    borderColor:
+                      theme.dashboardTheme?.colors?.inputBorder ||
+                      STYLE_GUIDE.COLORS.darkBackground,
+                  },
+                  "&:hover fieldset": {
+                    borderColor:
+                      theme.dashboardTheme?.colors?.borderHover ||
+                      STYLE_GUIDE.COLORS.darkBorderHover,
+                  },
+                  "&.Mui-focused fieldset": {
+                    borderColor:
+                      theme.dashboardTheme?.components?.input
+                        ?.focusBorderColor ||
+                      theme.dashboardTheme?.components?.input
+                        ?.focusBorderColorFallback ||
+                      STYLE_GUIDE.COLORS.inputFocusFallback,
+                  },
+                },
+                "& .MuiInputLabel-root": {
+                  color:
+                    theme.dashboardTheme?.colors?.text?.secondary ||
+                    STYLE_GUIDE.COLORS.darkBorderFocus,
+                },
+                "& .MuiInputLabel-root.Mui-focused": {
+                  color:
+                    theme.dashboardTheme?.components?.input?.focusBorderColor ||
+                    theme.dashboardTheme?.components?.input
+                      ?.focusBorderColorFallback ||
+                    STYLE_GUIDE.COLORS.inputFocusFallback,
+                },
+              }}
+            />
+
+            <FormControl fullWidth error={!!errors.versionType}>
+              <InputLabel>Version Type</InputLabel>
+              <Select
+                {...register("versionType", {
+                  required: "Version type is required",
+                })}
+                value={watch("versionType") || ""}
+                onChange={(event) =>
+                  setValue("versionType", event.target.value, {
+                    shouldValidate: true,
+                  })
+                }
+                label="Version Type"
+              >
+                <MenuItem value="monthly">Monthly</MenuItem>
+                <MenuItem value="number">Number</MenuItem>
+                <MenuItem value="constant">Constant</MenuItem>
+              </Select>
+              {errors.versionType && (
+                <Typography color="error">
+                  {errors.versionType.message}
+                </Typography>
+              )}
+            </FormControl>
+
+            <FormControl fullWidth error={!!errors.isShowMenu} required>
+              <InputLabel>Show in Menu</InputLabel>
+              <Select
+                value={
+                  watch("isShowMenu") === undefined
+                    ? ""
+                    : watch("isShowMenu")
+                    ? "true"
+                    : "false"
+                }
+                onChange={(event) => {
+                  const value = event.target.value;
+                  const booleanValue =
+                    value === "" ? undefined : value === "true";
+                  setValue("isShowMenu", booleanValue, {
+                    shouldValidate: true,
+                  });
+                }}
+                label="Show in Menu"
+                // displayEmpty
+              >
+                <MenuItem value="true">Yes</MenuItem>
+                <MenuItem value="false">No</MenuItem>
+              </Select>
+              {errors.isShowMenu && (
+                <Typography color="error">
+                  {errors.isShowMenu.message}
+                </Typography>
+              )}
+            </FormControl>
+          </Stack>
+        </Box>
+      </DialogContainer>
+
+      {/* <Dialog
         fullWidth
         maxWidth="lg"
         open={open}
@@ -697,7 +1288,11 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({
           sx: {
             backgroundColor:
               theme.palette.dialog?.background || STYLE_GUIDE.COLORS.white,
-            border: `1px solid ${theme.palette.dialog?.border || theme.palette.border?.main || STYLE_GUIDE.COLORS.borderGray}`,
+            border: `1px solid ${
+              theme.palette.dialog?.border ||
+              theme.palette.border?.main ||
+              STYLE_GUIDE.COLORS.borderGray
+            }`,
             borderRadius: theme.palette.dialog?.borderRadius || "8px",
             boxShadow: theme.palette.dialog?.shadow || STYLE_GUIDE.SHADOWS.lg,
           },
@@ -986,7 +1581,9 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({
                 // Find the selected option using the unique key
                 const selectedOption =
                   entityFieldOptions.find((opt) => {
-                    const optionKey = `${opt.value.attributeId}-${opt.value.refAttributeId || "null"}`;
+                    const optionKey = `${opt.value.attributeId}-${
+                      opt.value.refAttributeId || "null"
+                    }`;
                     return optionKey === currentAttributeId;
                   }) || null;
 
@@ -1009,8 +1606,12 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({
                             // Fixed isOptionEqualToValue function
                             isOptionEqualToValue={(option, value) => {
                               if (!option || !value) return false;
-                              const optionKey = `${option.value.attributeId}-${option.value.refAttributeId || "null"}`;
-                              const valueKey = `${value.value.attributeId}-${value.value.refAttributeId || "null"}`;
+                              const optionKey = `${option.value.attributeId}-${
+                                option.value.refAttributeId || "null"
+                              }`;
+                              const valueKey = `${value.value.attributeId}-${
+                                value.value.refAttributeId || "null"
+                              }`;
                               return optionKey === valueKey;
                             }}
                             value={selectedOption}
@@ -1033,7 +1634,9 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({
                             // }}
                             onChange={(event, newValue) => {
                               const uniqueKey = newValue
-                                ? `${newValue.value.attributeId}-${newValue.value.refAttributeId || "null"}`
+                                ? `${newValue.value.attributeId}-${
+                                    newValue.value.refAttributeId || "null"
+                                  }`
                                 : "";
 
                               setValue(
@@ -1237,7 +1840,6 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({
                   <MenuItem value="monthly">Monthly</MenuItem>
                   <MenuItem value="number">Number</MenuItem>
                   <MenuItem value="constant">Constant</MenuItem>
-
                 </Select>
                 {errors.versionType && (
                   <Typography color="error">
@@ -1253,8 +1855,8 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({
                     watch("isShowMenu") === undefined
                       ? ""
                       : watch("isShowMenu")
-                        ? "true"
-                        : "false"
+                      ? "true"
+                      : "false"
                   }
                   onChange={(event) => {
                     const value = event.target.value;
@@ -1315,7 +1917,7 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({
             </>
           )}
         </DialogActions>
-      </Dialog>
+      </Dialog> */}
 
       <Snackbar
         open={!!error}

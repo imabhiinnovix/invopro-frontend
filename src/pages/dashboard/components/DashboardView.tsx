@@ -1856,7 +1856,7 @@ import PauseIcon from "@mui/icons-material/Pause";
 import ViewColumnIcon from "@mui/icons-material/ViewColumn";
 import SquareIcon from "@mui/icons-material/Square";
 import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
-import "react-multi-date-picker/styles/colors/purple.css"
+import "react-multi-date-picker/styles/colors/purple.css";
 
 import { useParams, useLocation } from "react-router-dom";
 import { ChartGrid } from "./ChartGrid";
@@ -2134,8 +2134,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     const range = Array.isArray(dateRange)
       ? dateRange
       : dateRange
-        ? [dateRange]
-        : null;
+      ? [dateRange]
+      : null;
     setDateRange(range);
 
     if (range && range.length === 2) {
@@ -2578,7 +2578,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     >
       <Box
         sx={{
-          p: STYLE_GUIDE.SPACING.s6,
+          // p: { md: STYLE_GUIDE.SPACING.s2 },
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
@@ -2586,6 +2586,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           gap: STYLE_GUIDE.SPACING.s4,
           borderBottom: 1,
           borderColor: "divider",
+          pb: STYLE_GUIDE.SPACING.s4,
         }}
       >
         <Box sx={{ flex: 1, mr: STYLE_GUIDE.SPACING.s4 }}>
@@ -2655,7 +2656,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                       whiteSpace: "nowrap",
                       overflow: "hidden",
                       textOverflow: "ellipsis",
-                      maxWidth: "180px",
+                      maxWidth: "300px",
                     }}
                   >
                     {title}
@@ -2889,7 +2890,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                         format="DD/MM/YYYY"
                         placeholder="Select Date Range"
                         numberOfMonths={2}
-
                         showOtherDays
                         className="purple"
                         // Remove inputClass, use inputProps with full width

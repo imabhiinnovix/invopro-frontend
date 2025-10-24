@@ -20,9 +20,11 @@ import CreateThemeDialog from "./components/CreateThemeDialog";
 import { Theme } from "./types";
 import usePost from "../../hooks/usePost";
 import { POST } from "../../services/apiRoutes";
-import { useUnifiedTheme } from '../../hooks/useUnifiedTheme';
-import { useComponentTypography } from '../../hooks/useComponentTypography';
+import { useUnifiedTheme } from "../../hooks/useUnifiedTheme";
+import { useComponentTypography } from "../../hooks/useComponentTypography";
 import { STYLE_GUIDE } from "../../styles";
+import PrimaryButton from "../../components/common/PrimaryButton";
+import DialogContainer from "../../components/molecule/dialog";
 
 const CreateTheme = () => {
   const theme = useUnifiedTheme();
@@ -92,7 +94,7 @@ const CreateTheme = () => {
     setSelectedTheme(null);
   };
 
-   const { getDialogTitleSx } = useComponentTypography();
+  const { getDialogTitleSx } = useComponentTypography();
 
   if (loading) {
     return (
@@ -120,16 +122,20 @@ const CreateTheme = () => {
   return (
     <Box sx={{ p: 3, backgroundColor: theme.palette.background.paper }}>
       <Stack direction="row" justifyContent="space-between" alignItems="center">
-        <Typography variant="h4" component="h1" gutterBottom sx={getHeadingSx()}>
+        <Typography
+          variant="h4"
+          component="h1"
+          gutterBottom
+          sx={getHeadingSx()}
+        >
           Theme Library
         </Typography>
-        <Button
+        <PrimaryButton
           variant="contained"
-          color="primary"
           onClick={() => setIsDialogOpen(true)}
         >
           + Create
-        </Button>
+        </PrimaryButton>
       </Stack>
       <Typography variant="body1" sx={{ mb: 4 }}>
         Browse and preview available chart themes
@@ -153,41 +159,32 @@ const CreateTheme = () => {
       />
 
       {/* Delete Confirmation Dialog */}
-      <Dialog
+      <DialogContainer
         open={deleteConfirmOpen}
         onClose={cancelDelete}
-        aria-labelledby="delete-dialog-title"
-        aria-describedby="delete-dialog-description"
+        title="Delete Theme"
+        actions={
+          <>
+            <PrimaryButton onClick={cancelDelete} variant="outlined">
+              Cancel
+            </PrimaryButton>
+            <PrimaryButton
+              disabled={deleteThemeMutation.isPending}
+              onClick={confirmDelete}
+              variant="contained"
+              color="error"
+            >
+              {deleteThemeMutation.isPending ? "Deleting..." : "Delete"}
+            </PrimaryButton>
+          </>
+        }
       >
-        <DialogTitle 
-          id="delete-dialog-title"
-          sx={{
-           ...getDialogTitleSx(),
-            color: theme.palette.dialog?.titleColor || STYLE_GUIDE.COLORS.textDarkGray,
-          }}
-        >
-          Delete Theme
-        </DialogTitle>
-        <DialogContent>
-          <DialogContentText id="delete-dialog-description">
-            Are you sure you want to delete this theme? This action cannot be
-            undone.
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={cancelDelete} color="primary">
-            Cancel
-          </Button>
-          <Button
-            onClick={confirmDelete}
-            color="error"
-            variant="contained"
-            disabled={deleteThemeMutation.isPending}
-          >
-            {deleteThemeMutation.isPending ? "Deleting..." : "Delete"}
-          </Button>
-        </DialogActions>
-      </Dialog>
+        <Typography>
+          {" "}
+          Are you sure you want to delete this theme? This action cannot be
+          undone.
+        </Typography>
+      </DialogContainer>
     </Box>
   );
 };

@@ -1,3 +1,4 @@
+@import "tailwindcss";
 /* Normalize styles */
 body {
   margin: 0;
@@ -9,6 +10,7 @@ body,
 html,
 #root {
   height: 100%;
+  overflow: hidden;
 }
 
 /* Reset box-sizing globally */
@@ -34,7 +36,6 @@ html,
 .MuiTypography-subtitle2 {
   font-family: inherit !important;
 }
-
 
 input[type="number"] {
   appearance: textfield;

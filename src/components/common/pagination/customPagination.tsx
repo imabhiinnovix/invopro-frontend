@@ -34,7 +34,7 @@ export const CustomPagination: React.FC<CustomPaginationProps> = ({
         justifyContent: "flex-end",
         p: 1,
         backgroundColor: STYLE_GUIDE?.COLORS?.white || "#ffffff",
-        borderTop: `1px solid ${STYLE_GUIDE?.COLORS?.divider || "#e0e0e0"}`,
+        // borderTop: `1px solid ${STYLE_GUIDE?.COLORS?.divider || "#e0e0e0"}`,
       }}
     >
       <Box sx={{ display: "flex", alignItems: "center", mr: 2 }}>

@@ -81,7 +81,6 @@
 
 // export default CommonDatePicker;
 
-
 import { useState } from "react";
 import {
   Controller,
@@ -108,7 +107,7 @@ interface CommonDatePickerProps<T extends FieldValues> {
   rules?: RegisterOptions<T>;
   disabled?: boolean;
   sx?: SxProps<Theme>;
-  disableFuture?: boolean; 
+  disableFuture?: boolean;
 }
 
 const CommonDatePicker = <T extends FieldValues>(
@@ -123,7 +122,7 @@ const CommonDatePicker = <T extends FieldValues>(
     rules = {},
     disabled = false,
     sx,
-    disableFuture = false, 
+    disableFuture = false,
   } = props;
 
   const [tempDate, setTempDate] = useState<DateTime | null>(
@@ -156,6 +155,12 @@ const CommonDatePicker = <T extends FieldValues>(
                 textField: {
                   error: !!error,
                   helperText: error?.message,
+                  size: "small",
+                  sx: {
+                    "& .MuiOutlinedInput-root": {
+                      backgroundColor: "white",
+                    },
+                  },
                 },
               }}
               sx={sx}

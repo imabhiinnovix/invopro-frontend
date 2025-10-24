@@ -50,6 +50,8 @@ import { useQueryClient } from "@tanstack/react-query";
 import { setPermissions } from "../../reducers/userSlice";
 import { toast } from "react-toastify";
 import { useComponentTypography } from "../../hooks";
+import DialogContainer from "../../components/molecule/dialog";
+import PrimaryButton from "../../components/common/PrimaryButton";
 
 const columns: GridColDef[] = [
   {
@@ -178,8 +180,7 @@ export default function Permissions() {
       } else {
         setDebouncedSearchValue(searchValue);
       }
-            setPaginationModel((prev) => ({ ...prev, page: 0 }));
-
+      setPaginationModel((prev) => ({ ...prev, page: 0 }));
     }, 500);
 
     return () => {
@@ -208,7 +209,15 @@ export default function Permissions() {
       filterValues.dataSourceId,
       filterValues.resourceType,
     ],
-    `${GET?.PERMISSION_LIST}?page=${paginationModel.page + 1}&limit=${perPageItem}&search=${encodeURIComponent(debouncedSearchValue)}&name=${encodeURIComponent(filterValues.name)}&dataSourceId=${encodeURIComponent(filterValues.dataSourceId)}&resourceType=${encodeURIComponent(filterValues.resourceType)}`,
+    `${GET?.PERMISSION_LIST}?page=${
+      paginationModel.page + 1
+    }&limit=${perPageItem}&search=${encodeURIComponent(
+      debouncedSearchValue
+    )}&name=${encodeURIComponent(
+      filterValues.name
+    )}&dataSourceId=${encodeURIComponent(
+      filterValues.dataSourceId
+    )}&resourceType=${encodeURIComponent(filterValues.resourceType)}`,
     true
   );
   // Get Datasource
@@ -607,205 +616,32 @@ export default function Permissions() {
         </CardContent>
       </Card>
 
-      <Modal
+      <DialogContainer
         open={openModal}
         onClose={handleCloseModal}
-        sx={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-        }}
-      >
-        <Box
-          sx={{
-            backgroundColor:
-              theme.palette.background.paper || STYLE_GUIDE.COLORS.white,
-            borderRadius: "8px",
-            p: 3,
-            width: "500px",
-            maxWidth: "90%",
-            maxHeight: "90vh",
-            overflow: "auto",
-          }}
-        >
-          <Typography variant="h6" sx={{ mb: 2 }}>
-            {modalMode === "add"
-              ? "Add "
-              : modalMode === "edit"
-                ? "Edit "
-                : modalMode === "view"
-                  ? "View "
-                  : "Filter "}
-          </Typography>
-
-          <Box
-            sx={{
-              display: "grid",
-              gridTemplateColumns: "1fr",
-              gap: 2,
-            }}
-          >
-            {modalMode === "view" ? (
-              <>
-                {/* Name */}
-                <div>
-                  <label
-                    style={{
-                      display: "block",
-                      marginBottom: STYLE_GUIDE.SPACING.s1,
-                      fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
-                      color: STYLE_GUIDE.COLORS.textSecondary || "#666",
-                      fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.medium,
-                    }}
-                  >
-                    Name
-                  </label>
-                  <div
-                    style={{
-                      padding: `${STYLE_GUIDE.SPACING.s4} ${STYLE_GUIDE.SPACING.s3}`,
-                      borderRadius: STYLE_GUIDE.SPACING.s2,
-                      backgroundColor:
-                        STYLE_GUIDE.COLORS.backgroundLight || "#ebe8e8ff",
-                      color: STYLE_GUIDE.COLORS.textPrimary || "#3f3e3eff",
-                      fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base,
-                      fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.regular,
-                    }}
-                  >
-                    {formData.name?.trim() || "-"}
-                  </div>
-                </div>
-
-                {/* Data Source */}
-                <div>
-                  <label
-                    style={{
-                      display: "block",
-                      marginBottom: "4px",
-                      fontSize: "14px",
-                      color: "#666",
-                      fontWeight: 500,
-                    }}
-                  >
-                    Data Source
-                  </label>
-                  <div
-                    style={{
-                      padding: "14px 12px",
-                      borderRadius: "8px",
-                      backgroundColor: "#ebe8e8ff",
-                      color: "#3f3e3eff",
-                    }}
-                  >
-                    {dataSourceOptions.find(
-                      (option) => option.id === formData.dataSourceId
-                    )?.name || "-"}
-                  </div>
-                </div>
-
-                {/* Method */}
-                <div>
-                  <label
-                    style={{
-                      display: "block",
-                      marginBottom: "4px",
-                      fontSize: "14px",
-                      color: "#666",
-                      fontWeight: 500,
-                    }}
-                  >
-                    Method
-                  </label>
-                  <div
-                    style={{
-                      padding: "14px 12px",
-                      borderRadius: "8px",
-                      backgroundColor: "#ebe8e8ff",
-                      textTransform: "uppercase",
-                      color: "#3f3e3eff",
-                    }}
-                  >
-                    {formData.methodName || "-"}
-                  </div>
-                </div>
-              </>
-            ) : (
-              <>
-                <TextField
-                  label="Name"
-                  value={formData.name}
-                  onChange={(e) =>
-                    setFormData({ ...formData, name: e.target.value })
-                  }
-                  variant="outlined"
-                  fullWidth
-                  required
-                  sx={{ "& .MuiOutlinedInput-root": { borderRadius: "8px" } }}
-                />
-
-                <FormControl
-                  fullWidth
-                  sx={{ "& .MuiOutlinedInput-root": { borderRadius: "8px" } }}
-                >
-                  <InputLabel>Data Source</InputLabel>
-                  <Select
-                    value={formData.dataSourceId}
-                    onChange={handleDataSourceChange}
-                    label="Data Source"
-                    required
-                  >
-                    {dataSourceOptions.map((option) => (
-                      <MenuItem key={option.id} value={option.id}>
-                        {option.name}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-
-                <FormControl
-                  fullWidth
-                  sx={{ "& .MuiOutlinedInput-root": { borderRadius: "8px" } }}
-                >
-                  <InputLabel>Method</InputLabel>
-                  <Select
-                    value={formData.methodName}
-                    onChange={handleMethodChange}
-                    label="Method"
-                    required
-                  >
-                    <MenuItem value="list">LIST</MenuItem>
-                    <MenuItem value="create">CREATE</MenuItem>
-                    <MenuItem value="delete">DELETE</MenuItem>
-                    <MenuItem value="update">UPDATE</MenuItem>
-                    <MenuItem value="view">VIEW</MenuItem>
-                  </Select>
-                </FormControl>
-              </>
-            )}
-          </Box>
-
-          <Box
-            sx={{ display: "flex", justifyContent: "flex-end", gap: 1, mt: 3 }}
-          >
+        maxWidth="sm"
+        title={
+          modalMode === "add"
+            ? "Add Permission"
+            : modalMode === "edit"
+            ? "Edit Permission"
+            : modalMode === "view"
+            ? "View Permission"
+            : "Filter Permission"
+        }
+        actions={
+          <>
             {modalMode === "filter" ? (
               <>
-                <Button
-                  variant="outlined"
-                  onClick={handleResetFilter}
-                  sx={{ borderRadius: "8px" }}
-                >
+                <PrimaryButton variant="outlined" onClick={handleResetFilter}>
                   Reset
-                </Button>
-                <Button
-                  variant="outlined"
-                  onClick={handleCloseModal}
-                  sx={{ borderRadius: "8px" }}
-                >
+                </PrimaryButton>
+                <PrimaryButton variant="outlined" onClick={handleCloseModal}>
                   Cancel
-                </Button>
-                <Button
+                </PrimaryButton>
+                <PrimaryButton
                   variant="contained"
                   onClick={handleSave}
-                  sx={{ borderRadius: "8px" }}
                   disabled={
                     !formData.name &&
                     !formData.dataSourceId &&
@@ -816,22 +652,17 @@ export default function Permissions() {
                   }
                 >
                   Apply
-                </Button>
+                </PrimaryButton>
               </>
             ) : (
               <>
-                <Button
-                  variant="outlined"
-                  onClick={handleCloseModal}
-                  sx={{ borderRadius: "8px" }}
-                >
+                <PrimaryButton variant="outlined" onClick={handleCloseModal}>
                   Cancel
-                </Button>
+                </PrimaryButton>
                 {modalMode !== "view" && (
-                  <Button
+                  <PrimaryButton
                     variant="contained"
                     onClick={handleSave}
-                    sx={{ borderRadius: "8px" }}
                     disabled={
                       !formData.name ||
                       !formData.dataSourceId ||
@@ -841,43 +672,91 @@ export default function Permissions() {
                     }
                   >
                     Save
-                  </Button>
+                  </PrimaryButton>
                 )}
               </>
             )}
-          </Box>
-        </Box>
-      </Modal>
+          </>
+        }
+      >
+        <>
+          <TextField
+            label="Name"
+            value={formData.name}
+            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+            variant="outlined"
+            disabled={modalMode === "view"}
+            fullWidth
+            required
+            sx={{ "& .MuiOutlinedInput-root": { borderRadius: "8px" } }}
+          />
 
-      <Dialog
+          <FormControl
+            fullWidth
+            sx={{ "& .MuiOutlinedInput-root": { borderRadius: "8px" } }}
+          >
+            <InputLabel>Data Source</InputLabel>
+            <Select
+              value={formData.dataSourceId}
+              disabled={modalMode === "view"}
+              onChange={handleDataSourceChange}
+              label="Data Source"
+              required
+            >
+              {dataSourceOptions.map((option) => (
+                <MenuItem key={option.id} value={option.id}>
+                  {option.name}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+
+          <FormControl
+            fullWidth
+            sx={{ "& .MuiOutlinedInput-root": { borderRadius: "8px" } }}
+          >
+            <InputLabel>Method</InputLabel>
+            <Select
+              value={formData.methodName}
+              disabled={modalMode === "view"}
+              onChange={handleMethodChange}
+              label="Method"
+              required
+            >
+              <MenuItem value="list">LIST</MenuItem>
+              <MenuItem value="create">CREATE</MenuItem>
+              <MenuItem value="delete">DELETE</MenuItem>
+              <MenuItem value="update">UPDATE</MenuItem>
+              <MenuItem value="view">VIEW</MenuItem>
+            </Select>
+          </FormControl>
+        </>
+      </DialogContainer>
+
+      <DialogContainer
         open={openDialog}
         onClose={handleCloseDialog}
-        sx={{
-          "& .MuiDialog-paper": {
-            borderRadius: "8px",
-          },
-        }}
+        maxWidth="sm"
+        title="Confirm Delete"
+        actions={
+          <>
+            <PrimaryButton variant="outlined" onClick={handleCloseDialog}>
+              No
+            </PrimaryButton>
+            <PrimaryButton
+              onClick={handleConfirmDelete}
+              color="error"
+              disabled={deletePermission.isPending}
+            >
+              Yes
+            </PrimaryButton>
+          </>
+        }
       >
-        <DialogTitle>Confirm Delete</DialogTitle>
-        <DialogContent>
-          <Typography>
-            Are you sure you want to delete the Permission ?
-          </Typography>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseDialog} sx={{ borderRadius: "8px" }}>
-            No
-          </Button>
-          <Button
-            onClick={handleConfirmDelete}
-            color="error"
-            sx={{ borderRadius: "8px" }}
-            disabled={deletePermission.isPending}
-          >
-            Yes
-          </Button>
-        </DialogActions>
-      </Dialog>
+        <Typography>
+          Are you sure you want to delete the Permission ?
+        </Typography>
+      </DialogContainer>
     </Box>
   );
 }

@@ -1,15 +1,16 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback } from "react";
 import {
   Box,
   MenuItem,
   Button,
   type SelectChangeEvent,
   Skeleton,
-} from '@mui/material';
-import StyledSelect from '../common/StyledSelect';
-import useGet from '../../../hooks/useGet';
-import { GET } from '../../../services/apiRoutes';
-import { ReportRequestResponse } from './types';
+} from "@mui/material";
+import StyledSelect from "../common/StyledSelect";
+import useGet from "../../../hooks/useGet";
+import { GET } from "../../../services/apiRoutes";
+import { ReportRequestResponse } from "./types";
+import PrimaryButton from "../../common/PrimaryButton";
 
 // Define types for our data
 interface ReportData {
@@ -21,8 +22,12 @@ interface ReportSelectionProps {
   defaultReport?: { _id: string; reportName: string };
   defaultVersion?: { _id: string; versionValue: string };
   setViewReportRequestId: React.Dispatch<React.SetStateAction<string>>;
-  setViewReportNameWithVersionValue: React.Dispatch<React.SetStateAction<string>>;
-  setAllDetailData: React.Dispatch<React.SetStateAction<ReportRequestResponse | null>>;
+  setViewReportNameWithVersionValue: React.Dispatch<
+    React.SetStateAction<string>
+  >;
+  setAllDetailData: React.Dispatch<
+    React.SetStateAction<ReportRequestResponse | null>
+  >;
 }
 
 export default function ReportSelection({
@@ -33,8 +38,12 @@ export default function ReportSelection({
   setAllDetailData,
 }: ReportSelectionProps) {
   // State for selected values
-  const [selectedReport, setSelectedReport] = useState<string>(defaultReport?._id || '');
-  const [selectedVersion, setSelectedVersion] = useState<string>(defaultVersion?._id || '');
+  const [selectedReport, setSelectedReport] = useState<string>(
+    defaultReport?._id || ""
+  );
+  const [selectedVersion, setSelectedVersion] = useState<string>(
+    defaultVersion?._id || ""
+  );
 
   const [currentPageReport, setCurrentPageReport] = useState<number>(1);
   const [currentPageVersion, setCurrentPageVersion] = useState<number>(1);
@@ -45,14 +54,23 @@ export default function ReportSelection({
   const perPageItem = 2;
 
   // Fetch reports data
-  const reportList = useGet<{ success: boolean; data: ReportData[]; totalCount: number }>(
+  const reportList = useGet<{
+    success: boolean;
+    data: ReportData[];
+    totalCount: number;
+  }>(
     [`reportList`, String(currentPageReport)],
-    `${GET?.Custom_Report}/list` + `?page=${currentPageReport}&limit=${perPageItem}`,
+    `${GET?.Custom_Report}/list` +
+      `?page=${currentPageReport}&limit=${perPageItem}`,
     !!currentPageReport
   );
 
   // Fetch versions data
-  const versionList = useGet<{ success: boolean; data: ReportRequestResponse[]; totalCount: number }>(
+  const versionList = useGet<{
+    success: boolean;
+    data: ReportRequestResponse[];
+    totalCount: number;
+  }>(
     [`versionList`, String(selectedReport), String(currentPageVersion)],
     `${GET?.Data_Source_Version}/listVersionData/${selectedReport}` +
       `?page=${currentPageVersion}&limit=${perPageItem}`,
@@ -85,7 +103,7 @@ export default function ReportSelection({
   const handleReportChange = (event: SelectChangeEvent<unknown>) => {
     const reportId = event.target.value as string;
     setSelectedReport(reportId);
-    setSelectedVersion('');
+    setSelectedVersion("");
     setVersions([]);
     setCurrentPageVersion(1);
   };
@@ -102,7 +120,9 @@ export default function ReportSelection({
       if (data) {
         setAllDetailData(data);
         setViewReportRequestId(data._id);
-        setViewReportNameWithVersionValue(`${data.customReportId?.reportName}-${data.versionValue}`);
+        setViewReportNameWithVersionValue(
+          `${data.customReportId?.reportName}-${data.versionValue}`
+        );
       }
     }
   };
@@ -111,7 +131,11 @@ export default function ReportSelection({
 
   const lastReportElementRef = useCallback(
     (node: HTMLLIElement | null) => {
-      if (reportList.isFetching || reports.length >= reportList?.data?.totalCount!) return;
+      if (
+        reportList.isFetching ||
+        reports.length >= reportList?.data?.totalCount!
+      )
+        return;
 
       // Disconnect the previous observer if it exists
       if (lastReportRowRef.current) {
@@ -137,7 +161,11 @@ export default function ReportSelection({
 
   const lastVersionElementRef = useCallback(
     (node: HTMLLIElement | null) => {
-      if (versionList.isFetching || versions.length >= versionList?.data?.totalCount!) return;
+      if (
+        versionList.isFetching ||
+        versions.length >= versionList?.data?.totalCount!
+      )
+        return;
 
       // Disconnect the previous observer if it exists
       if (lastVersionRef.current) {
@@ -162,23 +190,27 @@ export default function ReportSelection({
   // Find the default report and version display names
   const selectedReportName =
     reports.find((r) => r._id === selectedReport)?.reportName ||
-    (defaultReport && selectedReport === defaultReport._id ? defaultReport.reportName : '');
+    (defaultReport && selectedReport === defaultReport._id
+      ? defaultReport.reportName
+      : "");
 
   const selectedVersionValue =
     versions.find((v) => v._id === selectedVersion)?.versionValue ||
-    (defaultVersion && selectedVersion === defaultVersion._id ? defaultVersion.versionValue : '');
+    (defaultVersion && selectedVersion === defaultVersion._id
+      ? defaultVersion.versionValue
+      : "");
 
   return (
     <Box
       sx={{
-        display: 'flex',
-        flexDirection: { xs: 'column', md: 'row' },
-        alignItems: { xs: 'stretch', md: 'flex-end' },
+        display: "flex",
+        flexDirection: { xs: "column", md: "row" },
+        alignItems: { xs: "stretch", md: "flex-end" },
         gap: 2,
-        p: 2,
-        backgroundColor: 'white',
+        // p: 2,
+        backgroundColor: "white",
         borderRadius: 1,
-        boxShadow: '0px 1px 2px rgba(0, 0, 0, 0.05)',
+        boxShadow: "0px 1px 2px rgba(0, 0, 0, 0.05)",
       }}
     >
       <StyledSelect
@@ -187,17 +219,31 @@ export default function ReportSelection({
         renderValue={() => selectedReportName}
         onChange={handleReportChange}
         sx={{ minWidth: 200, flex: 1 }}
+        size="small"
       >
         {reports.map((report, i) => (
-          <MenuItem key={report._id} value={report._id} ref={i === reports.length - 1 ? lastReportElementRef : null}>
+          <MenuItem
+            key={report._id}
+            value={report._id}
+            ref={i === reports.length - 1 ? lastReportElementRef : null}
+          >
             {report.reportName}
           </MenuItem>
         ))}
         {reportList.isFetching && (
           <>
             {[1, 2, 3].map((i) => (
-              <MenuItem key={`skeleton-report-${i}`} disabled sx={{ opacity: 1 }}>
-                <Skeleton variant="text" width="100%" height={24} animation="wave" />
+              <MenuItem
+                key={`skeleton-report-${i}`}
+                disabled
+                sx={{ opacity: 1 }}
+              >
+                <Skeleton
+                  variant="text"
+                  width="100%"
+                  height={24}
+                  animation="wave"
+                />
               </MenuItem>
             ))}
           </>
@@ -205,6 +251,7 @@ export default function ReportSelection({
       </StyledSelect>
 
       <StyledSelect
+        size="small"
         label="Version"
         value={selectedVersion}
         onChange={handleVersionChange}
@@ -224,15 +271,31 @@ export default function ReportSelection({
         {versionList.isFetching && (
           <>
             {[1, 2, 3].map((i) => (
-              <MenuItem key={`skeleton-version-${i}`} disabled sx={{ opacity: 1 }}>
-                <Skeleton variant="text" width="100%" height={24} animation="wave" />
+              <MenuItem
+                key={`skeleton-version-${i}`}
+                disabled
+                sx={{ opacity: 1 }}
+              >
+                <Skeleton
+                  variant="text"
+                  width="100%"
+                  height={24}
+                  animation="wave"
+                />
               </MenuItem>
             ))}
           </>
         )}
       </StyledSelect>
+      <PrimaryButton
+        disabled={!selectedReport || !selectedVersion}
+        onClick={handleSubmit}
+        sx={{ minWidth: 120 }}
+      >
+        View
+      </PrimaryButton>
 
-      <Button
+      {/* <Button
         variant="contained"
         color="primary"
         disabled={!selectedReport || !selectedVersion}
@@ -243,7 +306,7 @@ export default function ReportSelection({
         }}
       >
         View
-      </Button>
+      </Button> */}
     </Box>
   );
 }

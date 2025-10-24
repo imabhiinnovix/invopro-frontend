@@ -66,7 +66,8 @@ interface ExtendedFile extends File {
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
   [`&.${tableCellClasses.head}`]: {
-    backgroundColor: theme.palette.table?.headerBackground || theme.palette.background.default,
+    backgroundColor:
+      theme.palette.table?.headerBackground || theme.palette.background.default,
     color: theme.palette.table?.headerText || theme.palette.text.primary,
     fontWeight: theme.typography.fontWeightMedium,
   },
@@ -116,7 +117,7 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
   }>(
     [`versionValue`, String(reportId), String(versionValue)],
     GET?.Custom_Report +
-    `/getVersionValue/?reportRequestId=${reportId}&versionValue=${versionValue}`,
+      `/getVersionValue/?reportRequestId=${reportId}&versionValue=${versionValue}`,
     !!reportId && !!versionValue
   );
 
@@ -400,7 +401,7 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
                     file?.name === keyName &&
                     (!file?.sheetName ||
                       file?.sheetName?.toLowerCase() ===
-                      requiredFile?.sheetName?.toLowerCase())
+                        requiredFile?.sheetName?.toLowerCase())
                 )
               )?.entityId?.attributes;
 
@@ -549,7 +550,7 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
                     file?.name === requiredFile.name &&
                     (!file?.sheetName ||
                       file.sheetName.toLowerCase() ===
-                      requiredFile.sheetName?.toLowerCase())
+                        requiredFile.sheetName?.toLowerCase())
                 );
               });
 
@@ -560,7 +561,7 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
             mappingData.forEach((option) => {
               if (!option?.name || !option?.mappingName) return;
 
-              const matchedHeader:any = headers.find(
+              const matchedHeader: any = headers.find(
                 (name) =>
                   name
                     ?.replace(/[^a-zA-Z0-9/]/g, "")
@@ -683,7 +684,7 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
         return file;
       }),
     };
-    const formData:any = objectToFormData(tempData);
+    const formData: any = objectToFormData(tempData);
     mutateReportUpload(formData, {
       onSuccess: () => {
         setOpen(false);
@@ -751,15 +752,19 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
             </Box>
           </Backdrop>
         )}
-        <DialogTitle sx={{
-          ...getDialogTitleSx()
-        }}>Generate Report</DialogTitle>
+        <DialogTitle
+          sx={{
+            ...getDialogTitleSx(),
+          }}
+        >
+          Generate Report
+        </DialogTitle>
         <DialogTitle
           display="flex"
           justifyContent="space-between"
           alignItems={"center"}
           sx={{
-            ...getDialogTitleSx()
+            ...getDialogTitleSx(),
           }}
         >
           <Typography> period: {versionValue} </Typography>
@@ -839,7 +844,7 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
                               fontWeight={600}
                             >
                               {fileName?.isVersionAvailable ||
-                                watch("files")?.[index]
+                              watch("files")?.[index]
                                 ? "Reupload File"
                                 : "Upload File"}
                             </Typography>
@@ -888,7 +893,9 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
                             const selectedFile = [
                               ...unmappedFiles,
                               ...(watch("files") || []),
-                            ].find((f) => f?.name === e.target.value as string);
+                            ].find(
+                              (f) => f?.name === (e.target.value as string)
+                            );
                             if (selectedFile) {
                               handleFileSelection(
                                 selectedFile,
@@ -966,9 +973,9 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
                             (errors?.mappings?.message ||
                               errors?.mappings?.root
                                 ?.message) as unknown as Record<
-                                  string,
-                                  { isError: boolean; msg: string }
-                                >
+                              string,
+                              { isError: boolean; msg: string }
+                            >
                           )?.[fileName?.extededName]?.isError ? (
                             <ErrorOutlineIcon color="error" />
                           ) : (

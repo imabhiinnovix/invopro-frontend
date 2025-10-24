@@ -21,6 +21,7 @@ import useGet from "../../hooks/useGet";
 import { CustomPagination } from "../../components/common/pagination/customPagination";
 import { GET } from "../../services/apiRoutes";
 import { toast } from "react-toastify";
+import SearchField from "../../components/common/SearchField";
 
 interface Role {
   _id: string;
@@ -168,9 +169,13 @@ export function RoleDataTable({
       filterValues.organizationId,
       filterValues.status,
     ],
-    `${GET.ROLE_LIST}?page=${paginationModel.page + 1}&limit=${perPageItem}&search=${encodeURIComponent(
+    `${GET.ROLE_LIST}?page=${
+      paginationModel.page + 1
+    }&limit=${perPageItem}&search=${encodeURIComponent(
       debouncedSearchValue
-    )}&name=${encodeURIComponent(filterValues.name)}&organizationId=${encodeURIComponent(
+    )}&name=${encodeURIComponent(
+      filterValues.name
+    )}&organizationId=${encodeURIComponent(
       filterValues.organizationId
     )}&status=${encodeURIComponent(filterValues.status)}`,
     true
@@ -199,26 +204,12 @@ export function RoleDataTable({
             mb: 2,
           }}
         >
-          <TextField
-            placeholder="Search ..."
-            variant="outlined"
-            size="small"
-            value={searchValue}
-            onChange={onSearchChange}
-            sx={{
-              width: "300px",
-              "& .MuiOutlinedInput-root": { borderRadius: "8px" },
-            }}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <SearchIcon />
-                </InputAdornment>
-              ),
-            }}
+          <SearchField
+            searchValue={searchValue}
+            handleSearchChange={onSearchChange}
           />
 
-          <Box sx={{ display: "flex", gap: 1 }}>
+          {/* <Box sx={{ display: "flex", gap: 1 }}>
             <Button
               variant="contained"
               startIcon={<AddIcon />}
@@ -227,7 +218,7 @@ export function RoleDataTable({
             >
               Add
             </Button>
-          </Box>
+          </Box> */}
         </Box>
 
         <DataGrid

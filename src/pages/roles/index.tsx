@@ -18,6 +18,9 @@ import { RoleModal } from "./RoleModal";
 import { toast } from "react-toastify";
 import { STYLE_GUIDE } from "../../styles";
 import { useComponentTypography } from "../../hooks";
+import CommonPageHeader from "../../components/atom/commonPageHeader";
+import DialogContainer from "../../components/molecule/dialog";
+import PrimaryButton from "../../components/common/PrimaryButton";
 
 // Define types
 interface Role {
@@ -56,8 +59,7 @@ export default function Roles() {
     organizationId: "",
     status: "",
   });
-    const { getHeadingSx } = useComponentTypography();
-  
+  const { getHeadingSx } = useComponentTypography();
 
   // DELETE API
   const deleteRole = useDelete<null, RolePostResponse>(
@@ -168,21 +170,17 @@ export default function Roles() {
   return (
     <Box
       sx={{
-        flexGrow: 1,
-        p: 3,
-        ml: { xs: 0 },
-        minHeight: "100vh",
+        p: STYLE_GUIDE?.SPACING?.s2,
       }}
     >
-      <Typography
-        variant="h4"
-        sx={{
-                  ...getHeadingSx(),
-                  mb: STYLE_GUIDE?.SPACING?.s3,
-                }}
-      >
-        Roles
-      </Typography>
+      <CommonPageHeader
+        title="Roles"
+        actions={
+          <Button variant="contained" color="primary" onClick={handleAddRole}>
+            Add Role
+          </Button>
+        }
+      />
 
       <RoleDataTable
         onAddRole={handleAddRole}
@@ -212,33 +210,33 @@ export default function Roles() {
         onRoleUpdated={handleRoleUpdated}
       />
 
-      <Dialog
+      <DialogContainer
         open={openDialog}
         onClose={handleCloseDialog}
-        sx={{
-          "& .MuiDialog-paper": {
-            borderRadius: "8px",
-          },
-        }}
+        title="Confirm Delete"
+        maxWidth="xs"
+        actions={
+          <>
+            <PrimaryButton
+              onClick={handleCloseDialog}
+              variant="outlined"
+              sx={{ borderRadius: "8px" }}
+            >
+              No
+            </PrimaryButton>
+            <PrimaryButton
+              onClick={handleConfirmDelete}
+              color="error"
+              disabled={deleteRole.isLoading}
+              sx={{ borderRadius: "8px" }}
+            >
+              Yes
+            </PrimaryButton>
+          </>
+        }
       >
-        <DialogTitle>Confirm Delete</DialogTitle>
-        <DialogContent>
-          <Typography>Are you sure you want to delete this?</Typography>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseDialog} sx={{ borderRadius: "8px" }}>
-            No
-          </Button>
-          <Button
-            onClick={handleConfirmDelete}
-            color="error"
-            sx={{ borderRadius: "8px" }}
-            disabled={deleteRole.isLoading}
-          >
-            Yes
-          </Button>
-        </DialogActions>
-      </Dialog>
+        <Typography>Are you sure you want to delete this?</Typography>
+      </DialogContainer>
     </Box>
   );
 }
