@@ -255,7 +255,7 @@ export const fetchChartData = createAsyncThunk(
       // Process charts in batches of 3 to avoid overwhelming the system
       const batchSize = 3;
       const charts = response.data.data;
-      console.log('response22222222', charts);
+      // console.log('response22222222', charts);
 
       for (let i = 0; i < charts.length; i += batchSize) {
         const batch = charts.slice(i, i + batchSize);

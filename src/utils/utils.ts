@@ -145,6 +145,125 @@ export interface PermissionMap {
   };
 }
 
+// export const formatPermissions = (
+//   backendPermissions: BackendPermission[]
+// ): PermissionMap => {
+//   const permissionMap: PermissionMap = {};
+//   // console.log("Backend Permissions:", backendPermissions);
+
+//   backendPermissions.forEach((perm, index) => {
+//     const isOriginalStructure = "permissionId" in perm && "allowed" in perm;
+//     const permissionId = isOriginalStructure ? perm.permissionId : perm._id;
+//     const resourceType = perm.resourceType;
+//     const resourceCode = perm.resourceCode;
+//     const allowed = isOriginalStructure ? perm.allowed : true;
+//     const dataSourceId = isOriginalStructure ? perm.dataSourceId : undefined;
+//     const backendMethod = isOriginalStructure ? perm.method : undefined;
+//     // const methodName = isOriginalStructure ? perm.method : undefined;
+//     if (!permissionId || !resourceType || !resourceCode) {
+//       console.warn(
+//         `Invalid permission at index ${index}:`,
+//         JSON.stringify(perm, null, 2)
+//       );
+//       return;
+//     }
+
+//     // Split resourceCode on '__' first
+//     let resourceCodeParts = resourceCode.split("__");
+
+//     // If single part, try splitting on '_' and handle special cases
+//     if (resourceCodeParts.length === 1) {
+//       resourceCodeParts = resourceCode.split("_");
+//       if (resourceCodeParts.length < 2) {
+//         console.warn(
+//           `Skipping invalid resourceCode format at index ${index}: ${resourceCode}`
+//         );
+//         return;
+//       }
+//       // Special case for notification_type_get → notificationType__get
+//       if (
+//         resourceCodeParts[0] === "notification" &&
+//         resourceCodeParts[1] === "type"
+//       ) {
+//         resourceCodeParts = ["notificationType", resourceCodeParts[2]];
+//       } else {
+//         // Treat as resource_method (e.g., role_permission_list → role__permission_list)
+//         resourceCodeParts = [
+//           resourceCodeParts.slice(0, -1).join("_"),
+//           resourceCodeParts[resourceCodeParts.length - 1],
+//         ];
+//       }
+//     }
+
+//     if (!permissionMap[resourceType]) {
+//       permissionMap[resourceType] = {};
+//     }
+
+//     const methodMapping: Record<string, string> = {
+//       get: "list",
+//       put: "update",
+//       post: "create",
+//       delete: "delete",
+//     };
+
+//     const normalizedMethod = backendMethod?.toLowerCase();
+
+//     let methodName: string;
+//     let formattedKey: string;
+
+//     if (resourceCodeParts.length === 2) {
+//       methodName = resourceCodeParts[1]; // e.g., 'get' for notificationType__get
+//       formattedKey = methodName;
+//     } else if (resourceCodeParts.length >= 3) {
+//       const nestedKey = resourceCodeParts[1];
+//       const method = resourceCodeParts[2];
+//       methodName = `${nestedKey}_${method}`; // e.g., 'case_list_list'
+//       formattedKey = methodName;
+//     } else {
+//       console.warn(
+//         `Unexpected resourceCode format at index ${index}: ${resourceCode}`
+//       );
+//       return;
+//     }
+
+//     permissionMap[resourceType][formattedKey] = {
+//       allowed,
+//       _id: permissionId,
+//       resourceType,
+//       method: backendMethod,
+//       permissionId,
+//       ...(dataSourceId != null && { dataSourceId }),
+//       ...(normalizedMethod && {
+//         methodValue: methodMapping[normalizedMethod] || normalizedMethod,
+//       }),
+//     };
+//   });
+
+//   // console.log("Formatted Permission Map:", permissionMap);
+//   localStorage.setItem("permissions", JSON.stringify(permissionMap));
+//   window.dispatchEvent(new Event("storage"));
+
+//   return permissionMap;
+// };
+
+// Helper functions from transformPermissions
+function extractFromResourceCode(code: string): string | null {
+  if (!code) return null;
+  const segments = code.split(/_{1,2}/);
+  return segments[segments.length - 1]?.toLowerCase() || null;
+}
+
+function mapHttpMethod(method: string | undefined): string {
+  const mapping: Record<string, string> = {
+    'GET': 'list',
+    'POST': 'create',
+    'PUT': 'update',
+    'DELETE': 'delete',
+    'PATCH': 'update'
+  };
+  return mapping[method?.toUpperCase()] || method?.toLowerCase() || 'unknown';
+}
+
 export const formatPermissions = (
   backendPermissions: BackendPermission[]
 ): PermissionMap => {
@@ -159,7 +278,7 @@ export const formatPermissions = (
     const allowed = isOriginalStructure ? perm.allowed : true;
     const dataSourceId = isOriginalStructure ? perm.dataSourceId : undefined;
     const backendMethod = isOriginalStructure ? perm.method : undefined;
-    // const methodName = isOriginalStructure ? perm.method : undefined;
+    
     if (!permissionId || !resourceType || !resourceCode) {
       console.warn(
         `Invalid permission at index ${index}:`,
@@ -199,26 +318,21 @@ export const formatPermissions = (
       permissionMap[resourceType] = {};
     }
 
-    const methodMapping: Record<string, string> = {
-      get: "list",
-      put: "update",
-      post: "create",
-      delete: "delete",
-    };
+    // Determine method value using helper functions (priority order)
+    const methodValue = 
+      perm.methodName ||                                    
+      extractFromResourceCode(perm.resourceCode) ||         
+      mapHttpMethod(perm.method) ||                         
+      'unknown';
 
-    const normalizedMethod = backendMethod?.toLowerCase();
-
-    let methodName: string;
     let formattedKey: string;
 
     if (resourceCodeParts.length === 2) {
-      methodName = resourceCodeParts[1]; // e.g., 'get' for notificationType__get
-      formattedKey = methodName;
+      formattedKey = resourceCodeParts[1]; // e.g., 'get' for notificationType__get
     } else if (resourceCodeParts.length >= 3) {
       const nestedKey = resourceCodeParts[1];
       const method = resourceCodeParts[2];
-      methodName = `${nestedKey}_${method}`; // e.g., 'case_list_list'
-      formattedKey = methodName;
+      formattedKey = `${nestedKey}_${method}`; // e.g., 'case_list_list'
     } else {
       console.warn(
         `Unexpected resourceCode format at index ${index}: ${resourceCode}`
@@ -233,9 +347,7 @@ export const formatPermissions = (
       method: backendMethod,
       permissionId,
       ...(dataSourceId != null && { dataSourceId }),
-      ...(normalizedMethod && {
-        methodValue: methodMapping[normalizedMethod] || normalizedMethod,
-      }),
+      methodValue, // Use the standardized method value
     };
   });
 
@@ -245,7 +357,6 @@ export const formatPermissions = (
 
   return permissionMap;
 };
-
 export const barLabelsPlugin = {
   id: "barLabels",
   afterDraw(chart: ChartJS) {

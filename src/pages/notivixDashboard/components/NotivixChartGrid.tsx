@@ -827,7 +827,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
 
   const handleChartClick = async (chart: ChartResponse, elements: ActiveElement[]) => {
     if (!elements || !elements.length) return;
-
+console.log('Chart clicked222222:', chart, elements);
     setSelectedChart(chart);
 
     const clickedElement = elements[0];
