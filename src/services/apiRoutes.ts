@@ -176,6 +176,8 @@ export const POST = {
   CREATE_DESIGNATION: "/common/designation/create",
   CREATE_DEPARTMENT: "/common/department/create",
   CREATE_TEMPLATE: "/notivix/notification-setting/template/create",
+    NOTIFICATION_SUMMARY: "notivix/notification-setting/type/summary",
+
 };
 
 export const PUT = {

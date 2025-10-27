@@ -1,4 +1,3 @@
-
 // import React from 'react';
 // import { Box, Paper, Typography, Chip } from '@mui/material';
 
@@ -6,7 +5,7 @@
 //   // VIBGYOR colors for nested brackets
 //   const bracketColors = [
 //     '#9C27B0', // Violet
-//     '#3F51B5', // Indigo  
+//     '#3F51B5', // Indigo
 //     '#2196F3', // Blue
 //     '#4CAF50', // Green
 //     '#FFEB3B', // Yellow
@@ -114,7 +113,7 @@
 
 //     const logicOperator = group.logic === 'AND' ? 'ALL' : 'ANY';
 //     const needsParentheses = depth > 0;
-    
+
 //     // Get color based on depth (cycle through VIBGYOR colors)
 // const bracketColor = bracketColors[depth % bracketColors.length];
 //     // Determine text color (white for yellow/light colors, white for others)
@@ -214,7 +213,7 @@
 //         >
 //           📋 Condition Preview
 //         </Typography>
-        
+
 //         {/* Color Legend for Brackets */}
 //         <Box sx={{ display: 'flex', gap: 0.5, alignItems: 'center' }}>
 //           <Typography variant="caption" sx={{ fontSize: '0.65rem', color: 'text.secondary', mr: 0.5 }}>
@@ -288,8 +287,6 @@
 
 // export default ConditionPreview;
 
-
-
 // import React, { useEffect, useState } from 'react';
 // import { Box, Paper, Typography, Chip, CircularProgress } from '@mui/material';
 // import usePost from '../../hooks/usePost';
@@ -302,7 +299,7 @@
 //   // VIBGYOR colors for nested brackets
 //   const bracketColors = [
 //     '#9C27B0', // Violet
-//     '#3F51B5', // Indigo  
+//     '#3F51B5', // Indigo
 //     '#2196F3', // Blue
 //     '#4CAF50', // Green
 //     '#FFEB3B', // Yellow
@@ -410,7 +407,7 @@
 
 //     const logicOperator = group.logic === 'AND' ? 'ALL' : 'ANY';
 //     const needsParentheses = depth > 0;
-    
+
 //     // Get color based on depth (cycle through VIBGYOR colors)
 //     const bracketColor = bracketColors[depth % bracketColors.length];
 //     // Determine text color (white for yellow/light colors, white for others)
@@ -534,7 +531,7 @@
 //         >
 //           📋 Condition Preview
 //         </Typography>
-        
+
 //         {/* Color Legend for Brackets */}
 //         <Box sx={{ display: 'flex', gap: 0.5, alignItems: 'center' }}>
 //           <Typography variant="caption" sx={{ fontSize: '0.65rem', color: 'text.secondary', mr: 0.5 }}>
@@ -602,7 +599,7 @@
 //           </Typography>
 //         </Box>
 //       )}
-      
+
 //       {/* Summary Section */}
 //       {summaryData && (
 //         <Box
@@ -633,7 +630,7 @@
 //           </Typography>
 //         </Box>
 //       )}
-      
+
 //       {/* Loading indicator for summary */}
 //       {getSummary.isLoading && (
 //         <Box
@@ -661,22 +658,25 @@
 
 // export default ConditionPreview;
 
-
-import React, { useEffect, useState, useMemo } from 'react';
-import { Box, Paper, Typography, Chip, CircularProgress } from '@mui/material';
-import usePost from '../../hooks/usePost';
-import { POST } from '../../services/apiRoutes';
+import React, { useEffect, useState, useMemo } from "react";
+import { Box, Paper, Typography, Chip, CircularProgress } from "@mui/material";
+import usePost from "../../hooks/usePost";
+import { POST } from "../../services/apiRoutes";
 
 // Helper function to transform notification data
-const transformNotificationData = (notification, fieldOptions, organizationId) => {
+const transformNotificationData = (
+  notification,
+  fieldOptions,
+  organizationId
+) => {
   const transformGroup = (group) => {
     if (!group || !group.rules || group.rules.length === 0) return null;
-    
+
     const result = {
       group_operator: group.logic,
       conditions: [],
     };
-    
+
     group.rules.forEach((rule) => {
       if (rule.logic) {
         const nestedGroup = transformGroup(rule);
@@ -692,22 +692,23 @@ const transformNotificationData = (notification, fieldOptions, organizationId) =
             value: rule.value || "",
             refAttributeId: fieldOption.refAttributeId,
           };
-          
+
           if (
-            (fieldOption.type === "date" || fieldOption.type === "date-range") &&
+            (fieldOption.type === "date" ||
+              fieldOption.type === "date-range") &&
             rule.timeUnit
           ) {
             condition.timeUnit = rule.timeUnit;
           }
-          
+
           result.conditions.push(condition);
         }
       }
     });
-    
+
     return result.conditions.length > 0 ? result : null;
   };
-  
+
   const conditionGroup = transformGroup(notification.conditionGroup);
   return {
     name: notification.name || "",
@@ -719,35 +720,44 @@ const transformNotificationData = (notification, fieldOptions, organizationId) =
   };
 };
 
-const ConditionPreview = ({ conditionGroup, fieldOptions, operatorList, notification }) => {
+const ConditionPreview = ({
+  conditionGroup,
+  fieldOptions,
+  operatorList,
+  notification,
+}) => {
   const [summaryData, setSummaryData] = useState(null);
-  const getSummary = usePost(['getNotificationSummary']);
+  const getSummary = usePost(["getNotificationSummary"]);
 
   // VIBGYOR colors for nested brackets
   const bracketColors = [
-    '#9C27B0', // Violet
-    '#3F51B5', // Indigo  
-    '#2196F3', // Blue
-    '#4CAF50', // Green
-    '#FFEB3B', // Yellow
-    '#FF9800', // Orange
-    '#F44336', // Red
+    "#9C27B0", // Violet
+    "#3F51B5", // Indigo
+    "#2196F3", // Blue
+    "#4CAF50", // Green
+    "#FFEB3B", // Yellow
+    "#FF9800", // Orange
+    "#F44336", // Red
   ];
 
   // Transform notification data for summary
   const transformedNotification = useMemo(() => {
     if (!notification || !notification.entityId) return null;
-    
+
     // Get organizationId from Redux or pass as prop
     const organizationId = notification.organizationId || "";
-    
-    return transformNotificationData(notification, fieldOptions, organizationId);
+
+    return transformNotificationData(
+      notification,
+      fieldOptions,
+      organizationId
+    );
   }, [notification, fieldOptions]);
 
   const getOperatorSymbol = (operatorKey, fieldType) => {
-    const operators = operatorList?.data?.data?.find(
-      (op) => op.fieldType === fieldType
-    )?.operators || [];
+    const operators =
+      operatorList?.data?.data?.find((op) => op.fieldType === fieldType)
+        ?.operators || [];
     const operator = operators.find((op) => op.operatorKey === operatorKey);
     return operator?.operatorName || operatorKey;
   };
@@ -758,13 +768,14 @@ const ConditionPreview = ({ conditionGroup, fieldOptions, operatorList, notifica
   };
 
   const formatValue = (value, timeUnit) => {
-    if (!value) return '';
+    if (!value) return "";
     if (timeUnit) {
-      const unitLabel = {
-        'M': 'months',
-        'd': 'days',
-        'y': 'years'
-      }[timeUnit] || timeUnit;
+      const unitLabel =
+        {
+          M: "months",
+          d: "days",
+          y: "years",
+        }[timeUnit] || timeUnit;
       return `${value} ${unitLabel}`;
     }
     return value;
@@ -794,8 +805,8 @@ const ConditionPreview = ({ conditionGroup, fieldOptions, operatorList, notifica
               key={rule.id || index}
               component="span"
               sx={{
-                display: 'inline-flex',
-                alignItems: 'center',
+                display: "inline-flex",
+                alignItems: "center",
                 gap: 0.5,
               }}
             >
@@ -806,15 +817,15 @@ const ConditionPreview = ({ conditionGroup, fieldOptions, operatorList, notifica
                 variant="outlined"
                 sx={{
                   fontWeight: 600,
-                  borderRadius: '4px',
-                  height: '24px',
+                  borderRadius: "4px",
+                  height: "24px",
                 }}
               />
               <Typography
                 component="span"
                 sx={{
-                  fontSize: '0.875rem',
-                  color: 'text.secondary',
+                  fontSize: "0.875rem",
+                  color: "text.secondary",
                   fontWeight: 500,
                   px: 0.5,
                 }}
@@ -829,8 +840,8 @@ const ConditionPreview = ({ conditionGroup, fieldOptions, operatorList, notifica
                   variant="filled"
                   sx={{
                     fontWeight: 500,
-                    borderRadius: '4px',
-                    height: '24px',
+                    borderRadius: "4px",
+                    height: "24px",
                   }}
                 />
               )}
@@ -842,22 +853,22 @@ const ConditionPreview = ({ conditionGroup, fieldOptions, operatorList, notifica
 
     if (expressions.length === 0) return null;
 
-    const logicOperator = group.logic === 'AND' ? 'ALL' : 'ANY';
+    const logicOperator = group.logic === "AND" ? "ALL" : "ANY";
     const needsParentheses = depth > 0;
-    
+
     // Get color based on depth (cycle through VIBGYOR colors)
     const bracketColor = bracketColors[depth % bracketColors.length];
     // Determine text color (white for yellow/light colors, white for others)
-    const isLightColor = bracketColor === '#FFEB3B'; // Yellow
-    const textColor = isLightColor ? '#000' : '#FFF';
+    const isLightColor = bracketColor === "#FFEB3B"; // Yellow
+    const textColor = isLightColor ? "#000" : "#FFF";
 
     return (
       <Box
         component="span"
         sx={{
-          display: 'inline-flex',
-          flexWrap: 'wrap',
-          alignItems: 'center',
+          display: "inline-flex",
+          flexWrap: "wrap",
+          alignItems: "center",
           gap: 1,
           py: 0.5,
         }}
@@ -866,8 +877,8 @@ const ConditionPreview = ({ conditionGroup, fieldOptions, operatorList, notifica
           <Typography
             component="span"
             sx={{
-              fontSize: '1.8rem',
-              fontWeight: 'bold',
+              fontSize: "1.8rem",
+              fontWeight: "bold",
               color: bracketColor,
               lineHeight: 1,
               px: 0.3,
@@ -885,12 +896,13 @@ const ConditionPreview = ({ conditionGroup, fieldOptions, operatorList, notifica
                 label={logicOperator}
                 size="small"
                 sx={{
-                  bgcolor: group.logic === 'AND' ? 'success.light' : 'warning.light',
-                  color: 'white',
+                  bgcolor:
+                    group.logic === "AND" ? "success.light" : "warning.light",
+                  color: "white",
                   fontWeight: 700,
-                  fontSize: '0.75rem',
-                  height: '24px',
-                  borderRadius: '4px',
+                  fontSize: "0.75rem",
+                  height: "24px",
+                  borderRadius: "4px",
                 }}
               />
             )}
@@ -901,8 +913,8 @@ const ConditionPreview = ({ conditionGroup, fieldOptions, operatorList, notifica
           <Typography
             component="span"
             sx={{
-              fontSize: '1.8rem',
-              fontWeight: 'bold',
+              fontSize: "1.8rem",
+              fontWeight: "bold",
               color: bracketColor,
               lineHeight: 1,
               px: 0.3,
@@ -920,17 +932,21 @@ const ConditionPreview = ({ conditionGroup, fieldOptions, operatorList, notifica
   // Fetch summary when transformedNotification changes
   useEffect(() => {
     const fetchSummary = async () => {
-      if (transformedNotification && transformedNotification.dataSourceId && transformedNotification.conditionGroups?.length > 0) {
+      if (
+        transformedNotification &&
+        transformedNotification.dataSourceId &&
+        transformedNotification.conditionGroups?.length > 0
+      ) {
         try {
           const response = await getSummary.mutateAsync({
-            url: `${POST.NOTIFICATION_SUMMARY || 'notivix/notification-setting/type/summary'}`,
+            url: `${POST.NOTIFICATION_SUMMARY}`,
             payload: transformedNotification,
           });
           if (response?.success) {
             setSummaryData(response.data);
           }
         } catch (error) {
-          console.error('Failed to fetch summary:', error);
+          console.error("Failed to fetch summary:", error);
           setSummaryData(null);
         }
       } else {
@@ -947,31 +963,41 @@ const ConditionPreview = ({ conditionGroup, fieldOptions, operatorList, notifica
       sx={{
         p: 2,
         mt: 3,
-        bgcolor: 'grey.50',
-        borderLeft: '4px solid',
-        borderColor: 'primary.main',
-        minHeight: '60px',
-        display: 'flex',
-        flexDirection: 'column',
+        bgcolor: "grey.50",
+        borderLeft: "4px solid",
+        borderColor: "primary.main",
+        minHeight: "60px",
+        display: "flex",
+        flexDirection: "column",
       }}
     >
-      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          mb: 1,
+        }}
+      >
         <Typography
           variant="subtitle2"
           sx={{
             fontWeight: 700,
-            color: 'text.secondary',
-            textTransform: 'uppercase',
-            fontSize: '0.75rem',
-            letterSpacing: '0.5px',
+            color: "text.secondary",
+            textTransform: "uppercase",
+            fontSize: "0.75rem",
+            letterSpacing: "0.5px",
           }}
         >
           📋 Condition Preview
         </Typography>
-        
+
         {/* Color Legend for Brackets */}
-        <Box sx={{ display: 'flex', gap: 0.5, alignItems: 'center' }}>
-          <Typography variant="caption" sx={{ fontSize: '0.65rem', color: 'text.secondary', mr: 0.5 }}>
+        <Box sx={{ display: "flex", gap: 0.5, alignItems: "center" }}>
+          <Typography
+            variant="caption"
+            sx={{ fontSize: "0.65rem", color: "text.secondary", mr: 0.5 }}
+          >
             Bracket Levels:
           </Typography>
           {bracketColors.slice(0, 4).map((color, index) => (
@@ -981,13 +1007,13 @@ const ConditionPreview = ({ conditionGroup, fieldOptions, operatorList, notifica
                 width: 16,
                 height: 16,
                 bgcolor: color,
-                borderRadius: '2px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: '0.6rem',
-                fontWeight: 'bold',
-                color: color === '#FFEB3B' ? '#000' : '#FFF',
+                borderRadius: "2px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontSize: "0.6rem",
+                fontWeight: "bold",
+                color: color === "#FFEB3B" ? "#000" : "#FFF",
               }}
             >
               {index + 1}
@@ -999,15 +1025,15 @@ const ConditionPreview = ({ conditionGroup, fieldOptions, operatorList, notifica
       {hasConditions ? (
         <Box
           sx={{
-            display: 'flex',
-            flexWrap: 'wrap',
-            alignItems: 'center',
+            display: "flex",
+            flexWrap: "wrap",
+            alignItems: "center",
             gap: 1,
             p: 1.5,
-            bgcolor: 'white',
+            bgcolor: "white",
             borderRadius: 1,
-            border: '1px solid',
-            borderColor: 'grey.300',
+            border: "1px solid",
+            borderColor: "grey.300",
           }}
         >
           {renderConditionExpression(conditionGroup)}
@@ -1015,21 +1041,21 @@ const ConditionPreview = ({ conditionGroup, fieldOptions, operatorList, notifica
       ) : (
         <Box
           sx={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
             p: 2,
-            bgcolor: 'white',
+            bgcolor: "white",
             borderRadius: 1,
-            border: '1px dashed',
-            borderColor: 'grey.400',
+            border: "1px dashed",
+            borderColor: "grey.400",
           }}
         >
           <Typography
             variant="body2"
             sx={{
-              color: 'text.secondary',
-              fontStyle: 'italic',
+              color: "text.secondary",
+              fontStyle: "italic",
             }}
           >
             No conditions added yet. Add conditions to see the preview.
@@ -1042,48 +1068,50 @@ const ConditionPreview = ({ conditionGroup, fieldOptions, operatorList, notifica
           sx={{
             mt: 2,
             p: 1.5,
-            bgcolor: 'white',
+            bgcolor: "white",
             borderRadius: 1,
-            border: '1px solid',
-            borderColor: 'grey.300',
+            border: "1px solid",
+            borderColor: "grey.300",
           }}
         >
           <Typography
             variant="subtitle2"
             sx={{
               fontWeight: 700,
-              color: 'text.secondary',
+              color: "text.secondary",
               mb: 1,
-              fontSize: '0.75rem',
-              textTransform: 'uppercase',
-              letterSpacing: '0.5px',
+              fontSize: "0.75rem",
+              textTransform: "uppercase",
+              letterSpacing: "0.5px",
             }}
           >
             📊 Summary
           </Typography>
-          <Typography variant="body2" sx={{ color: 'text.primary' }}>
-            {summaryData.summary || summaryData.message || JSON.stringify(summaryData)}
+          <Typography variant="body2" sx={{ color: "text.primary" }}>
+            {summaryData.result ||
+              summaryData.result ||
+              JSON.stringify(summaryData)}
           </Typography>
         </Box>
       )}
-      
+
       {/* Loading indicator for summary */}
       {getSummary.isLoading && (
         <Box
           sx={{
             mt: 2,
             p: 1.5,
-            bgcolor: 'white',
+            bgcolor: "white",
             borderRadius: 1,
-            border: '1px solid',
-            borderColor: 'grey.300',
-            display: 'flex',
-            alignItems: 'center',
+            border: "1px solid",
+            borderColor: "grey.300",
+            display: "flex",
+            alignItems: "center",
             gap: 1,
           }}
         >
           <CircularProgress size={16} />
-          <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+          <Typography variant="body2" sx={{ color: "text.secondary" }}>
             Loading summary...
           </Typography>
         </Box>
