@@ -2134,8 +2134,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     const range = Array.isArray(dateRange)
       ? dateRange
       : dateRange
-      ? [dateRange]
-      : null;
+        ? [dateRange]
+        : null;
     setDateRange(range);
 
     if (range && range.length === 2) {
@@ -2567,6 +2567,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     }
   };
 
+  console.log("dashboardFilters", currentDashboard.isDefaultNotivix);
   return (
     <Box
       sx={{
@@ -3239,17 +3240,17 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           </Box>
         )}
       </Box>
-      {!!currentDashboard?.settings?.dataSource?._id && (
-        <NotivixFiltersModal
-          open={isFiltersModalOpen}
-          onClose={handleCloseFiltersModal}
-          onApplyFilters={handleApplyFilters}
-          currentFilters={dashboardFilters}
-          dataSourceId={currentDashboard?.settings?.dataSource?._id} // Pass your dataSourceId here
-          filterFlag="isFilterEnable" // Specify which flag to use for filtering
-          isLoading={dataSourceDetailsLoading}
-        />
-      )}
+      {currentDashboard?.isDefaultNotivix ===true ?(
+          <NotivixFiltersModal
+            open={isFiltersModalOpen}
+            onClose={handleCloseFiltersModal}
+            onApplyFilters={handleApplyFilters}
+            currentFilters={dashboardFilters}
+            dataSourceId={currentDashboard?.settings?.dataSource?._id} // Pass your dataSourceId here
+            filterFlag="isFilterEnable" // Specify which flag to use for filtering
+            isLoading={dataSourceDetailsLoading}
+          />
+        ):""}
     </Box>
   );
 };
