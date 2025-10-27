@@ -159,7 +159,7 @@ export default function NotivixDataSource() {
   const attributeList = useGet<{
     success: boolean;
     data: AttributeOptionRequestPayload[];
-  }>([`attributeList`], GET?.Attribute_Option_List + `?paginate=true`);
+  }>([`attributeList`], GET?.Attribute_Option_List + `?paginate=false`);
 
   // Function to refresh data after successful save
   const refreshData = useCallback(() => {

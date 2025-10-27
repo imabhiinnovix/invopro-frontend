@@ -727,7 +727,7 @@ export default function Permissions() {
               <MenuItem value="create">CREATE</MenuItem>
               <MenuItem value="delete">DELETE</MenuItem>
               <MenuItem value="update">UPDATE</MenuItem>
-              <MenuItem value="view">VIEW</MenuItem>
+              {/* <MenuItem value="view">VIEW</MenuItem> */}
             </Select>
           </FormControl>
         </>

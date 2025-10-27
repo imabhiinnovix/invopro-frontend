@@ -54,7 +54,7 @@ export default function ValidationErrors() {
   const attributeList = useGet<{
     success: boolean;
     data: AttributeOptionRequestPayload[];
-  }>([`attributeList`], GET?.Attribute_Option_List + `?paginate=true`);
+  }>([`attributeList`], GET?.Attribute_Option_List + `?paginate=false`);
 
   const validationErrorList = useGet<any>(
     [
