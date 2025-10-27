@@ -140,7 +140,6 @@ const ProfilePage = () => {
   >(
     ["uploadProfileImage"],
     (data) => {
-      console.log("dataa", data);
       toast.success(data.message);
     },
     { showToast: false }
@@ -428,7 +427,6 @@ const ProfilePage = () => {
         },
       });
       if (response.success) {
-        console.log("Upload ", response.data);
         toast.success("Profile picture uploaded successfully!");
 
         setImagePreview(null);
