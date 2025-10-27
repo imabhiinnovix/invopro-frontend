@@ -470,6 +470,7 @@ export const NotivixDataModal: React.FC<ModelSectionProps> = ({
       }
 
       case "date":
+      case "date-range":
         return (
           <LocalizationProvider key={fieldName} dateAdapter={AdapterDayjs}>
             <DatePicker

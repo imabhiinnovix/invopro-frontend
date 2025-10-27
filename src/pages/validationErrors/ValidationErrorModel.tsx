@@ -203,8 +203,7 @@ export const ValidationErrorModal: React.FC<ValidationErrorModalProps> = ({
             `Setting ${fieldName} to fileAttributeValue: ${fieldValue}`
           );
         }
-        
-        if (attribute.type === "date" && fieldValue) {
+        if ((attribute.type === "date" || attribute.type === "date-range") && fieldValue) {
           // Use safe conversion for dates
           const isoDate = safeDateToISOString(fieldValue);
           initialFormData[fieldName] = isoDate || "";
@@ -253,7 +252,7 @@ export const ValidationErrorModal: React.FC<ValidationErrorModalProps> = ({
       const value = formData[fieldName];
       
       if (value !== undefined && value !== null && value !== "") {
-        if (attribute.type === "date" && value) {
+        if ((attribute.type === "date" || attribute.type === "date-range") && value) {
           // Use safe conversion for dates
           const isoDate = safeDateToISOString(value);
           if (isoDate) {
@@ -291,8 +290,12 @@ export const ValidationErrorModal: React.FC<ValidationErrorModalProps> = ({
       };
     } else if (errorCode === "1002") {
       return {
-         action: "update",
+        action: "update",
         rowData: rowDataPayload,
+        rowNumber: rowData.rowNumber,
+        dataSourceVersionId: rowData.dataSourceVersionId,
+        dataSourceId: rowData.dataSourceId,
+        attributeType: rowData.attributeType
       };
     } else if (errorCode === "1001") {
       console.log("Building payload for error code 1001", rowDataPayload);
@@ -656,6 +659,7 @@ export const ValidationErrorModal: React.FC<ValidationErrorModalProps> = ({
           />
         );
       case "date":
+      case "date-range":
         // Safely parse the date value for the DatePicker
         const dateValue = fieldValue ? dayjs(fieldValue) : null;
         return (
