@@ -660,6 +660,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
     elements: ActiveElement[]
   ) => {
     if (!elements || !elements.length) return;
+        console.log("handleChartClick", chart,elements);
 
     setSelectedChart(chart);
 
@@ -687,7 +688,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
             ? chart.dimensions.map((dim) => ({ [dim]: clickedData.name }))
             : [{ [chart.dimensions]: clickedData.name }]
           : [];
-        console.log("Clicked Data:", chart.groupBy);
+        console.log("Clicked Data11:-----", chart);
 
         const groupBy = chart.groupBy
           ? Array.isArray(chart.groupBy)
@@ -734,7 +735,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
             const columns = Object.keys(drillDownData[0]).filter(
               (key) => key !== "_id"
             );
-            console.log("Columns:", columns); // Add this log
+            // console.log("Columns:", columns); // Add this log
             setDrillDownColumns(columns);
           } else {
             setDrillDownColumns([]);
@@ -755,7 +756,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
     chart: ChartResponse,
     elements: ActiveElement[]
   ) => {
-    console.log("Show all data clicked", chart);
+    console.log(" data clicked333", chart);
 
     setSelectedChart(chart);
     setDrillDownTitle(`${chart.name} - All Data`);
@@ -799,7 +800,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
           const columns = Object.keys(drillDownData[0]).filter(
             (key) => key !== "_id"
           );
-          console.log("Columns:", columns);
+          // console.log("Columns:", columns);
           setDrillDownColumns(columns);
         } else {
           setDrillDownColumns([]);
@@ -825,6 +826,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
     event: React.ChangeEvent<unknown>,
     value: number
   ) => {
+
     if (!selectedChart || !drillDownPayload) return;
 
     try {
@@ -832,6 +834,8 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
         ...drillDownPayload,
         page: value,
       };
+          console.log("Page changed to:", payload);
+
 
       const response = await axiosInstance.post(
         "/common/dataSource/getWidgetDataByFilter",
@@ -3428,10 +3432,10 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
                       </TableRow>
                     </TableHead>
                     <TableBody>
-                      {console.log(
+                      {/* {console.log(
                         "drillDownData in table body:",
                         drillDownData
-                      )}
+                      )} */}
                       {isDrillDownLoading ? (
                         Array.from({ length: 5 }).map((_, index) => (
                           <TableRow key={index}>
