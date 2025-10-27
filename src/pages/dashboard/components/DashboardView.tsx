@@ -2044,7 +2044,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   };
 
   useEffect(() => {
-    if (!!currentDashboard?.settings?.dataSource?._id) {
+    if (currentDashboard?.isDefaultNotivix) {
       setDashboardFilters((prev) => {
         if (statusToggle === "Pending") {
           const today = new DateObject(); // Current date
@@ -2677,7 +2677,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 </Typography>
               )}
 
-              {!!currentDashboard?.settings?.dataSource?._id && (
+              {currentDashboard?.isDefaultNotivix && (
                 <>
                   <ToggleButtonGroup
                     value={statusToggle}
@@ -3047,7 +3047,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             </>
           ) : (
             <>
-              {!!currentDashboard?.settings?.dataSource?._id && (
+              {currentDashboard?.isDefaultNotivix && (
                 <Button
                   onClick={handleOpenFiltersModal}
                   variant="outlined"
