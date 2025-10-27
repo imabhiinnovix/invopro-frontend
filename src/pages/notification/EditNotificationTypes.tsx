@@ -2,7 +2,7 @@ import * as React from "react";
 import { useState, useEffect, useCallback, memo, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
-  import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 
 import {
   Box,
@@ -363,7 +363,7 @@ const ConditionRuleBuilder = ({
               )}
             </FormControl>
           );
-          
+
         case "select":
           return renderSelectField(rule, updateValue, hasError);
         case "date":
@@ -734,7 +734,11 @@ const ConditionRuleBuilder = ({
                 value: rule.value || "",
                 refAttributeId: fieldOption?.refAttributeId || "",
               };
-              if ((fieldOption.type === "date" || fieldOption.type === "date-range") && rule.timeUnit) {
+              if (
+                (fieldOption.type === "date" ||
+                  fieldOption.type === "date-range") &&
+                rule.timeUnit
+              ) {
                 condition.timeUnit = rule.timeUnit;
               }
               result.conditions.push(condition);
@@ -820,12 +824,13 @@ const ConditionRuleBuilder = ({
       </Box>
       {notification.conditionGroup && (
         <>
-        <GroupComponent group={notification.conditionGroup} isRoot={true} />
-         <ConditionPreview
-          conditionGroup={notification.conditionGroup}
-          fieldOptions={fieldOptions}
-          operatorList={operatorList}
-        />
+          <GroupComponent group={notification.conditionGroup} isRoot={true} />
+          <ConditionPreview
+            conditionGroup={notification.conditionGroup}
+            fieldOptions={fieldOptions}
+            operatorList={operatorList}
+            notification={notification}
+          />
         </>
       )}
     </>
@@ -1011,13 +1016,13 @@ export default function EditNotificationTypes() {
           }}
         >
           <ArrowBackIcon
-            onClick={() => navigate("/notification")} 
+            onClick={() => navigate("/notification")}
             sx={{
               cursor: "pointer",
               color: STYLE_GUIDE?.COLORS?.primaryDark || "inherit",
               fontSize: STYLE_GUIDE?.TYPOGRAPHY?.fontSize?.xxl,
-              marginRight:STYLE_GUIDE.SPACING.s2,
-              fontWeight:STYLE_GUIDE.TYPOGRAPHY.fontWeight.medium
+              marginRight: STYLE_GUIDE.SPACING.s2,
+              fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.medium,
             }}
           />
           Edit Notification Type
