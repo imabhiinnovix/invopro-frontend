@@ -435,7 +435,7 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
     const value = event.target.value;
     const fieldType = fieldTypes[index];
 
-    if (fieldType === "date") {
+    if (fieldType === "date" || fieldType === 'date-range') {
       // Format date to YYYY-MM-DD
       const formattedDate = formatDateToYYYYMMDD(value);
       handleConditionChange(index, "value", formattedDate);
@@ -1017,7 +1017,7 @@ const handleSubmit = async (e: React.FormEvent) => {
                     ))}
                   </StyledSelect>
                 </FormControl>
-                {fieldTypes[index] === "date" ? (
+                {(fieldTypes[index] === "date" || fieldTypes[index] === "date-range") ? (
                   <TextField
                     label="Value"
                     type="date"
@@ -1501,7 +1501,7 @@ const handleSubmit = async (e: React.FormEvent) => {
                           )}
                         </StyledSelect>
                       </FormControl>
-                      {fieldTypes[index] === "date" ? (
+                      {(fieldTypes[index] === "date" || fieldTypes[index] === "date-range") ? (
                         <TextField
                           label="Value"
                           type="date"
