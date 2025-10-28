@@ -346,6 +346,7 @@ export function RoleModal({
                 </Button>
                 <Button
                   type="submit"
+                  onClick={handleSubmit(onSubmit)}
                   variant="contained"
                   sx={{ borderRadius: "8px" }}
                   disabled={
@@ -369,6 +370,7 @@ export function RoleModal({
                 {mode !== "view" && (
                   <Button
                     type="submit"
+                    onClick={handleSubmit(onSubmit)}
                     variant="contained"
                     sx={{ borderRadius: "8px" }}
                     disabled={
