@@ -489,6 +489,10 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
   const handleFullViewClose = () => {
     setFullViewOpen(false);
     setSelectedChart(null);
+       setDrillDownOpen(false);
+    setDrillDownData([]);
+    setDrillDownTitle("");
+    setDrillDownPayload(null);
   };
 
   const handleExportImage = async (format: "png" | "jpg") => {
@@ -3424,6 +3428,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
                   sx={{
                     height: "100%",
                     ...getTableSx(),
+                    overflowX: "auto",
                   }}
                 >
                   <Table stickyHeader>
