@@ -446,6 +446,7 @@ export default function NotificationTypes() {
             </Button>
             <Button
               type="submit"
+              onClick={handleSubmit(onSubmit)}
               variant="contained"
               sx={{ borderRadius: "8px" }}
               disabled={
