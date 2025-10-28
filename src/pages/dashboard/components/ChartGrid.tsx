@@ -360,13 +360,14 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
     widgetTypes: state.dashboard.widgetTypes,
     dashboards: state.dashboard.dashboards || [],
   }));
-
+// console.log("dashboarf>>>>>>>>>>",dashboardFilters)
   const [drillDownColumns, setDrillDownColumns] = useState<string[]>([]);
 
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [selectedChart, setSelectedChart] = useState<ChartResponse | null>(
     null
   );
+  // console.log('setSelectedChart',selectedChart);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [fullViewOpen, setFullViewOpen] = useState(false);
@@ -657,25 +658,36 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
 
   const handleChartClick = async (
     chart: ChartResponse,
-    elements: ActiveElement[]
+    elements: ActiveElement[],
+    event: any
   ) => {
+    console.log('event',event, event.chart.tooltip.title[0]);
     if (!elements || !elements.length) return;
         console.log("handleChartClick", chart,elements);
 
     setSelectedChart(chart);
 
-    const clickedElement = elements[0];
+    // Extract both datasetIndex and index for clarity
+  const { datasetIndex, index } = elements[0];
+  const clickedElement = { datasetIndex, index }; // Explicitly store indices
+  console.log("Clicked Element (with indices):", clickedElement);
+
     const chartData =
       widgetData[chart._id]?.data?.widgetData || chart.data || [];
-
-    const clickedData = chartData?.find((item: ChartDataItem) => {
+    // console.log('elements',elements,chartData);
+    const clickedDataFilter = chartData?.filter((item: ChartDataItem) => {
       const dataIndex = clickedElement.index;
+      // console.log('item',item,dataIndex);
       if (dataIndex >= 0 && dataIndex < chartData.length) {
-        return item.name === chartData[dataIndex].name;
+        return Array.isArray(item.name) ? item.name[0] === event?.chart.tooltip.title[0]
+                                        : item.name === event?.chart.tooltip.title[0];
       }
       return false;
     });
-
+    // console.log('clickedDataFilter',clickedDataFilter);
+    // const clickedData = chartData?.find((item: ChartDataItem, i: number) => i === index + 1);
+    const clickedData = clickedDataFilter?.length > 1 ? clickedDataFilter[datasetIndex]: clickedDataFilter[0];
+    // console.log('clickedData',clickedData,chartData);
     if (clickedData) {
       setDrillDownTitle(`${chart.name} - ${clickedData.name}`);
       setDrillDownOpen(true);
@@ -688,16 +700,23 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
             ? chart.dimensions.map((dim) => ({ [dim]: clickedData.name }))
             : [{ [chart.dimensions]: clickedData.name }]
           : [];
-        console.log("Clicked Data11:-----", chart);
+        // console.log("Clicked Data11:-----", chart);
+                // console.log("Clicked Data111111:-----", chart);
 
+       
         const groupBy = chart.groupBy
           ? Array.isArray(chart.groupBy)
             ? chart.groupBy.map((group) => {
-                return { [group]: clickedData[group] };
+               const matchedField = chart && (chart.dataSourceId.fieldSettings?.find(
+        (f: any) => f.mappedAttributeName === group
+      ));
+
+      const groupField = matchedField ? matchedField.label : group;
+                return { [group]: clickedData[groupField] };
               })
             : [{ [chart.groupBy]: clickedData.name }]
           : [];
-
+        // console.log('groupBy',groupBy);
         const payload = {
           dataSourceId: chart.dataSourceId?._id,
           entityId: chart.dataSourceId?.entityId,
@@ -709,12 +728,14 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
             startVersionValue: startVersionValue,
             endVersionValue: endVersionValue,
             versionValue: versionValue,
+            filters:{...dashboardFilters}
           },
           groupBy,
           page: 1,
           limit: itemsPerPage,
           dashBoardType: currentDashboard?.settings?.dashboardType,
         };
+        // console.log("payload here",payload)
 
         setDrillDownPayload(payload);
 
@@ -787,7 +808,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
         "/common/dataSource/getWidgetDataByFilter",
         payload
       );
-
+      console.log('groupBy....',payload);
       if (response.data.success) {
         const drillDownData = response.data.data;
         console.log("Response data:", drillDownData);
@@ -1949,7 +1970,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
       options: {
         ...options,
         onClick: (event: ChartEvent, elements: ActiveElement[]) => {
-          handleChartClick(chart, elements);
+          handleChartClick(chart, elements, event);
         },
       },
       ref: (ref: any) => {
