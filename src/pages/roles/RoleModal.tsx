@@ -346,6 +346,7 @@ export function RoleModal({
                 </Button>
                 <Button
                   type="submit"
+                  onClick={handleSubmit(onSubmit)}
                   variant="contained"
                   sx={{ borderRadius: "8px" }}
                   disabled={
@@ -370,6 +371,7 @@ export function RoleModal({
                   <Button
                     type="submit"
                     form="role-form" // ✅ Link the button to the form below
+                    onClick={handleSubmit(onSubmit)}
                     variant="contained"
                     sx={{ borderRadius: "8px" }}
                     disabled={

@@ -576,6 +576,7 @@ export default function Organization() {
                 <PrimaryButton
                   type="submit"
                   variant="contained"
+                  onClick={handleSubmit(handleEditSubmit)}
                   disabled={
                     !isValid ||
                     fields.length === 0 ||
@@ -1383,6 +1384,7 @@ export default function Organization() {
                 <PrimaryButton
                   type="submit"
                   variant="contained"
+                  onClick={handleSubmit(handleCreateSubmit)}
                   disabled={!isValid || createLoading}
                 >
                   {createLoading ? "Creating..." : "Create"}
