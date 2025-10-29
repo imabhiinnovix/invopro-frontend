@@ -85,12 +85,12 @@ export default function Report() {
     });
   };
   const intermediateSupplementalDownloadFile = (
-    // fileName: string,
+    fileName: string,
     // fileId: string,
     row: any
   ) => {
     // setIntermediateDownloadRequestId(fileId);
-    // setDownLoadFileName(fileName);
+    setDownLoadFileName(fileName);
     exportFile.mutate({
       url: `${GET?.Custom_Report}/downloadSupplementalIntermediate/${
         row.customReportId?._id
@@ -314,7 +314,7 @@ export default function Report() {
                       <Button variant="text" sx={{ minWidth: "auto" }}>
                         <DownloadForOfflineIcon
                           onClick={() => {
-                            intermediateSupplementalDownloadFile(allDetailData);
+                            intermediateSupplementalDownloadFile(`${allDetailData.customReportId?.reportName}-intermediate-${allDetailData.versionValue}.xlsx`,allDetailData);
                           }}
                         />
                       </Button>
@@ -348,7 +348,7 @@ export default function Report() {
                           }}
                         />
                       ) : (
-                        <Tooltip title="Intermediate Download222" arrow>
+                        <Tooltip title="Intermediate Download" arrow>
                           <Button
                             variant="text"
                             sx={{ minWidth: "auto" }}

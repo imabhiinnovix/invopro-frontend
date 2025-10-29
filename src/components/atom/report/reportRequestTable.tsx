@@ -1162,12 +1162,12 @@ const ReportRequestTable: React.FC<AttributeOptionTableProps> = ({
     });
   };
   const intermediateSupplementalDownloadFile = (
-    // fileName: string,
+    fileName: string,
     // fileId: string,
     row: any
   ) => {
     // setIntermediateDownloadRequestId(fileId);
-    // setDownLoadFileName(fileName);
+    setDownLoadFileName(fileName);
     exportFile.mutate({
       url: `${GET?.Custom_Report}/downloadSupplementalIntermediate/${
         row.customReportId?._id
@@ -1450,7 +1450,7 @@ const ReportRequestTable: React.FC<AttributeOptionTableProps> = ({
                   <Button variant="text" sx={{ minWidth: "auto" }}>
                     <DownloadForOfflineIcon
                       onClick={() => {
-                        intermediateSupplementalDownloadFile(row);
+                        intermediateSupplementalDownloadFile(`${row.customReportId?.reportName}-intermediate-${row.versionValue}.xlsx`,row);
                       }}
                     />
                   </Button>
