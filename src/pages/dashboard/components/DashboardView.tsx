@@ -2914,7 +2914,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                           size="small"
                           sx={{
                             position: "absolute",
-                            right: 6,
+                            right: 13,
                             top: "50%",
                             transform: "translateY(-50%)",
                             minWidth: "auto",
