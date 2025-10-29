@@ -1444,7 +1444,7 @@ const ReportRequestTable: React.FC<AttributeOptionTableProps> = ({
             ) : (
               "-"
             )}
-            {row.status === "completed" &&
+            {/* {row.status === "completed" &&
               row.customReportId?._id === "67c7fa3493d10de5c51ae7c1" && (
                 <Tooltip title="Intermediate Download" arrow>
                   <Button variant="text" sx={{ minWidth: "auto" }}>
@@ -1455,8 +1455,47 @@ const ReportRequestTable: React.FC<AttributeOptionTableProps> = ({
                     />
                   </Button>
                 </Tooltip>
+              )} */}
+            {row.status === "completed" &&
+              row.customReportId?._id === "67c7fa3493d10de5c51ae7c1" && (
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "flex-end",
+                    alignItems: "center",
+                  }}
+                >
+                  {exportFile.isPending &&
+                  row.customReportId?._id === "67c7fa3493d10de5c51ae7c1" ? (
+                    <Box
+                      sx={{
+                        width: 27,
+                        height: 27,
+                        borderRadius: "50%",
+                        border: "3px solid #f3f3f3",
+                        borderTop: "3px solid #3498db",
+                        animation: "spin 1s linear infinite",
+                        "@keyframes spin": {
+                          "0%": { transform: "rotate(0deg)" },
+                          "100%": { transform: "rotate(360deg)" },
+                        },
+                        mr: 1,
+                      }}
+                    />
+                  ) : (
+                    <Tooltip title="Intermediate Download" arrow>
+                      <Button variant="text" sx={{ minWidth: "auto" }}>
+                        <DownloadForOfflineIcon
+                          onClick={() => {
+                            intermediateSupplementalDownloadFile(row);
+                          }}
+                        />
+                      </Button>
+                    </Tooltip>
+                  )}
+                </Box>
               )}
-            { row.status === "completed" && row.intermediateReportId && (
+            {row.status === "completed" && row.intermediateReportId && (
               <Box
                 sx={{
                   display: "flex",
