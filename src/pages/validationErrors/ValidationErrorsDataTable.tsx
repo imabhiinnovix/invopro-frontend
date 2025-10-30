@@ -13,13 +13,13 @@ const columns: GridColDef[] = [
     disableColumnMenu: true,
     resizable: true,
   },
-  {
-    field: "errorCode",
-    headerName: "Error Code",
-    width: 130,
-    disableColumnMenu: true,
-    resizable: true,
-  },
+  // {
+  //   field: "errorCode",
+  //   headerName: "Error Code",
+  //   width: 130,
+  //   disableColumnMenu: true,
+  //   resizable: true,
+  // },
    {
     field: "fileName",
     headerName: "File Name",
