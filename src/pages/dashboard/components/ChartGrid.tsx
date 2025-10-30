@@ -3335,7 +3335,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
                 },
               }}
             >
-              Source Data 
+              All Data 
             </Button>
 
             <IconButton
