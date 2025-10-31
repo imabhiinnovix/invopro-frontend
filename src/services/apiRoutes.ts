@@ -269,4 +269,5 @@ export const GET = {
     "/notivix/notification-setting/prepared/notification/list",
   DEPARTMENT_LIST: "/common/department/list",
   DESIGNATION_LIST: "/common/designation/list",
+  ERROR_ROW_DATA: "/common/dataImportError/data",
 };
