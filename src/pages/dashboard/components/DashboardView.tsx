@@ -2048,7 +2048,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
       setDashboardFilters((prev) => {
         if (statusToggle === "Pending") {
           const today = new DateObject(); // Current date
-          const thirtyDaysAfter = new DateObject().add(1, "month");
+          const thirtyDaysAfter = new DateObject().add(30, "day");
           setDateRange([today, thirtyDaysAfter]);
           return {
             ...prev,
@@ -2060,7 +2060,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           };
         } else if (statusToggle === "Completed") {
           const today = new DateObject(); // Current date
-          const thirtyDaysAgo = new DateObject().subtract(1, "month");
+          const thirtyDaysAgo = new DateObject().subtract(30, "day");
 
           setDateRange([thirtyDaysAgo, today]);
           return {
@@ -2099,7 +2099,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         const { DueDate, DateTaken, ...rest } = prev;
         if (newStatus === "Pending") {
           const today = new DateObject(); // Current date
-          const thirtyDaysAfter = new DateObject().add(1, "month");
+          const thirtyDaysAfter = new DateObject().add(30, "day");
           setDateRange([today, thirtyDaysAfter]);
           return {
             ...rest,
@@ -2111,7 +2111,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           };
         } else if (newStatus === "Completed") {
           const today = new DateObject(); // Current date
-          const thirtyDaysAgo = new DateObject().subtract(1, "month");
+          const thirtyDaysAgo = new DateObject().subtract(30, "day");
 
           setDateRange([thirtyDaysAgo, today]);
           return {
