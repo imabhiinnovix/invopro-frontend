@@ -3532,6 +3532,8 @@ export const ValidationErrorModal: React.FC<ValidationErrorModalProps> = ({
         dataSourceVersionId: rowData.dataSourceVersionId,
         dataSourceId: rowData.dataSourceId,
         attributeType: rowData.attributeType,
+        fileAttributeValue: rowData.fileAttributeValue,
+        attributeName: rowData.attributeName,
       };
     } else if (errorCode === "1001") {
       console.log("Building payload for error code 1001", rowDataPayload);
