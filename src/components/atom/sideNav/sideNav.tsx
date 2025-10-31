@@ -331,8 +331,8 @@ export default function SideNav() {
           error && typeof error === "object" && "payload" in error
             ? (error.payload as { message?: string })?.message
             : error && typeof error === "object" && "message" in error
-            ? (error as { message?: string })?.message
-            : "Failed to create dashboard. Please try again.";
+              ? (error as { message?: string })?.message
+              : "Failed to create dashboard. Please try again.";
         toast.error(errorMessage);
       } finally {
         setIsCreatingLoading(false);
@@ -735,6 +735,7 @@ export default function SideNav() {
               {navItems.map((item, i) => (
                 <React.Fragment key={i}>
                   <MainListItem
+                    disabled={item.name === "Theme Settings"} // Disable Theme Settings
                     isMainItem={true}
                     label={item.name}
                     icon={item.icon}
@@ -762,16 +763,16 @@ export default function SideNav() {
                             item.name === "Dashboards"
                               ? openDashboard
                               : item.name === "Notifications"
-                              ? openNotificationSettings
-                              : item.name === "Settings"
-                              ? openReportSettings
-                              : item.name === "Theme Settings"
-                              ? openThemeSettings
-                              : item.name === "Data Sources"
-                              ? openDataSources
-                              : item.name === "System Settings"
-                              ? openSystemSettings
-                              : openSettings
+                                ? openNotificationSettings
+                                : item.name === "Settings"
+                                  ? openReportSettings
+                                  : item.name === "Theme Settings"
+                                    ? openThemeSettings
+                                    : item.name === "Data Sources"
+                                      ? openDataSources
+                                      : item.name === "System Settings"
+                                        ? openSystemSettings
+                                        : openSettings
                           }
                           timeout="auto"
                           unmountOnExit
@@ -897,6 +898,9 @@ export default function SideNav() {
                                       <React.Fragment key={subIndex}>
                                         {hasNestedItems ? (
                                           <MainListItem
+                                            disabled={
+                                              subItem.name === "Theme Settings"
+                                            } // Disable Theme Settings, System Settings, Data Sources
                                             route={subItem.route}
                                             icon={subItem.icon}
                                             label={subItem.name}
@@ -904,38 +908,41 @@ export default function SideNav() {
                                             onClick={(e) => {
                                               e.stopPropagation();
                                               e.preventDefault();
-                                              if (
-                                                subItem.name ===
-                                                "Theme Settings"
-                                              ) {
-                                                setOpenThemeSettings(
-                                                  (prev) => !prev
-                                                );
-                                              } else if (
-                                                subItem.name ===
-                                                "System Settings"
-                                              ) {
-                                                setOpenSystemSettings(
-                                                  (prev) => !prev
-                                                );
-                                              } else if (
-                                                subItem.name === "Data Sources"
-                                              ) {
-                                                setOpenDataSources(
-                                                  (prev) => !prev
-                                                );
+                                              if (!subItem?.disabled) {
+                                                if (
+                                                  subItem.name ===
+                                                  "Theme Settings"
+                                                ) {
+                                                  setOpenThemeSettings(
+                                                    (prev) => !prev
+                                                  );
+                                                } else if (
+                                                  subItem.name ===
+                                                  "System Settings"
+                                                ) {
+                                                  setOpenSystemSettings(
+                                                    (prev) => !prev
+                                                  );
+                                                } else if (
+                                                  subItem.name ===
+                                                  "Data Sources"
+                                                ) {
+                                                  setOpenDataSources(
+                                                    (prev) => !prev
+                                                  );
+                                                }
                                               }
                                             }}
                                             isExpanded={
                                               subItem.name === "Theme Settings"
                                                 ? openThemeSettings
                                                 : subItem.name ===
-                                                  "Data Sources"
-                                                ? openDataSources
-                                                : subItem.name ===
-                                                  "System Settings"
-                                                ? openSystemSettings
-                                                : false
+                                                    "Data Sources"
+                                                  ? openDataSources
+                                                  : subItem.name ===
+                                                      "System Settings"
+                                                    ? openSystemSettings
+                                                    : false
                                             }
                                             collapsibleComp={
                                               <Collapse
@@ -944,12 +951,12 @@ export default function SideNav() {
                                                   "Theme Settings"
                                                     ? openThemeSettings
                                                     : subItem.name ===
-                                                      "Data Sources"
-                                                    ? openDataSources
-                                                    : subItem.name ===
-                                                      "System Settings"
-                                                    ? openSystemSettings
-                                                    : false
+                                                        "Data Sources"
+                                                      ? openDataSources
+                                                      : subItem.name ===
+                                                          "System Settings"
+                                                        ? openSystemSettings
+                                                        : false
                                                 }
                                                 timeout="auto"
                                                 unmountOnExit
@@ -1103,6 +1110,7 @@ function MainListItem({
   route,
   isMainItem,
   showIcon,
+  disabled = false,
 }: {
   onClick: (e: React.MouseEvent) => void;
   label: string;
@@ -1114,6 +1122,7 @@ function MainListItem({
   route?: string;
   isMainItem?: boolean;
   showIcon?: boolean;
+  disabled?: boolean;
 }) {
   const { getNavigationSx } = useComponentTypography();
   const theme = useUnifiedTheme();
@@ -1152,9 +1161,13 @@ function MainListItem({
 
       <Tooltip title={title} placement="right">
         <ListItemButton
+          disabled={disabled} // Apply disabled state
           onClick={(e) => {
-            e.stopPropagation();
-            onClick(e);
+            if (!disabled) {
+              // Only handle click if not disabled
+              e.stopPropagation();
+              onClick(e);
+            }
           }}
           sx={{
             minHeight: 36,

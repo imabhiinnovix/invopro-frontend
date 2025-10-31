@@ -388,6 +388,11 @@ export const NotivixDataModal: React.FC<ModelSectionProps> = ({
             onChange={(e, val) =>
               handleFieldChange(typeof val === "string" ? val : val?.id || "")
             }
+             onInputChange={(e, newInputValue, reason) => {
+              if (!isReference && reason === "input") {
+                handleFieldChange(newInputValue);
+              }
+            }}
             disabled={!isFieldEditable}
             sx={{ height: "56px" }}
             renderInput={(params) => (
@@ -423,6 +428,11 @@ export const NotivixDataModal: React.FC<ModelSectionProps> = ({
                 val.map((item) => (typeof item === "string" ? item : item.id))
               )
             }
+              onInputChange={(e, newInputValue, reason) => {
+              if (!isReference && reason === "input") {
+                handleFieldChange(newInputValue);
+              }
+            }}
             disabled={!isFieldEditable}
             renderTags={(value, getTagProps) =>
               value.map((option, index) => (
