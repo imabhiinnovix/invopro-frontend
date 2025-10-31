@@ -246,24 +246,52 @@ export const NotivixDataModal: React.FC<ModelSectionProps> = ({
     handleCloseModal();
   };
 
+  // function normalizeMultiOptionValue(
+  //   raw: any,
+  //   options: { id: string; label: string }[]
+  // ) {
+  //   let values: string[] = [];
+  //   if (Array.isArray(raw)) {
+  //     values = raw;
+  //   } else if (typeof raw === "string") {
+  //     values = raw
+  //       .split(",")
+  //       .map((v) => v.trim())
+  //       .filter(Boolean);
+  //   }
+  //   return values.map((val) => {
+  //     const match = options.find((opt) => opt.id === val);
+  //     return match || { id: val, label: val };
+  //   });
+  // }
   function normalizeMultiOptionValue(
-    raw: any,
-    options: { id: string; label: string }[]
-  ) {
-    let values: string[] = [];
-    if (Array.isArray(raw)) {
-      values = raw;
-    } else if (typeof raw === "string") {
-      values = raw
-        .split(",")
-        .map((v) => v.trim())
-        .filter(Boolean);
-    }
-    return values.map((val) => {
-      const match = options.find((opt) => opt.id === val);
-      return match || { id: val, label: val };
-    });
+  raw: any,
+  options: { id: string; label: string }[]
+) {
+  let values: string[] = [];
+  
+  // Handle string values (single entity, not array)
+  if (typeof raw === "string") {
+    // Treat as single value instead of splitting
+    values = [raw];
+  } 
+  // Handle existing arrays
+  else if (Array.isArray(raw)) {
+    values = raw;
   }
+  // Handle other types
+  else {
+    values = raw ? [String(raw)] : [];
+  }
+  
+  // Remove duplicates
+  const uniqueValues = [...new Set(values)];
+  
+  return uniqueValues.map((val) => {
+    const match = options.find((opt) => opt.id === val);
+    return match || { id: val, label: val };
+  });
+}
 
   const renderAttributeField = (attribute: any, isViewMode = false) => {
     const shouldHideField = () => {
