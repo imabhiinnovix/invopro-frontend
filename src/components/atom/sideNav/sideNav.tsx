@@ -578,24 +578,24 @@ export default function SideNav() {
             route: "/data-src",
             isBold: true,
           },
-          {
-            name: "Theme Settings",
-            icon: createIcon(PaletteIcon, "/theme-settings"),
-            route: "#",
-            isBold: true,
-            subItems: [
-              {
-                name: "Create Theme",
-                icon: createIcon(PaletteIcon, "/create-theme"),
-                route: "/create-theme",
-              },
-              {
-                name: "Layout Themes",
-                icon: createIcon(BrushIcon, "/themes"),
-                route: "/themes",
-              },
-            ],
-          },
+          // {
+          //   name: "Theme Settings",
+          //   icon: createIcon(PaletteIcon, "/theme-settings"),
+          //   route: "#",
+          //   isBold: true,
+          //   subItems: [
+          //     {
+          //       name: "Create Theme",
+          //       icon: createIcon(PaletteIcon, "/create-theme"),
+          //       route: "/create-theme",
+          //     },
+          //     {
+          //       name: "Layout Themes",
+          //       icon: createIcon(BrushIcon, "/themes"),
+          //       route: "/themes",
+          //     },
+          //   ],
+          // },
           {
             name: "Data Sources",
             icon: createIcon(SourceIcon, "/datasources"),
