@@ -1235,7 +1235,7 @@ export const ValidationErrorModal: React.FC<ValidationErrorModalProps> = ({
         }
       }
       // Handle error code 1002
-      if (errorCode === "1002" && dataSourceId) {
+      if ((errorCode === "1002" || errorCode === "1001") && dataSourceId) {
         const matched = commonDataSourceList?.find(
           (ds) => ds._id === dataSourceId
         );
@@ -1340,7 +1340,7 @@ const safeDateToISOString = (value: any): string | null => {
 
       // For error code 1002, get rowData from rowDetailData if available
       let sourceData = rowData;
-      if (errorCode === "1002" && rowDetailData) {
+      if ((errorCode === "1002" || errorCode === "1001") && rowDetailData) {
         sourceData = rowDetailData?.rowData || rowData;
       }
 
@@ -1528,6 +1528,12 @@ const buildRowDataPayload = () => {
       return {
         action: "update",
         rowData: rowDataPayload,
+        rowNumber: rowData.rowNumber,
+        dataSourceVersionId: rowData.dataSourceVersionId,
+        dataSourceId: rowData.dataSourceId,
+        attributeType: rowData.attributeType,
+        fileAttributeValue: rowData.fileAttributeValue,
+        attributeName: rowData.attributeName,
       };
     }
   };
@@ -1676,12 +1682,17 @@ const buildRowDataPayload = () => {
       refAttributeId &&
       attribute._id === refAttributeId;
 
+    const isTargetAttributeFor1001 =
+      errorCode === "1001" &&
+      refAttributeId &&
+      attribute._id === refAttributeId;  
+
     // Disable the field only for error code 1003 target attribute
     const isDisabled = isTargetAttributeFor1003;
 
     // Highlight for both 1003 and 1002
     const isTargetAttribute =
-      isTargetAttributeFor1003 || isTargetAttributeFor1002;
+      isTargetAttributeFor1003 || isTargetAttributeFor1002 || isTargetAttributeFor1001;
 
     const renderLabel = (label: string) => (
       <React.Fragment>
@@ -1706,7 +1717,7 @@ const buildRowDataPayload = () => {
             (Error Field - Disabled)
           </Typography>
         )}
-        {isTargetAttributeFor1002 && (
+        {(isTargetAttributeFor1002 || isTargetAttributeFor1001) && (
           <Typography
             component="span"
             sx={{
