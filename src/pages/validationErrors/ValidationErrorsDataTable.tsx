@@ -168,7 +168,7 @@ export const ValidationErrorsDataTable: React.FC<
         />
       );
     }
-    return null; // Don't render footer when data is not available
+    return null; 
   };
 
   return (
@@ -184,7 +184,7 @@ export const ValidationErrorsDataTable: React.FC<
       rowCount={rowCount}
       paginationModel={paginationModel}
       checkboxSelection={false}
-      isRowSelectable={() => false} // Prevent any row from being selectable
+      isRowSelectable={() => false} 
       slots={{
         footer: renderFooter,
       }}
