@@ -2504,21 +2504,20 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         toast.success("Chart updated successfully!");
         handleCloseEditModal();
         
-        //Comment due to multiple call and filter not handle in this call
         // Fetch updated chart data
-        // if (dashboardId) {
-        //   dispatch(
-        //     fetchChartData({
-        //       dashboardId,
-        //       dashboardType:
-        //         currentDashboard?.settings?.dashboardType || "normal",
-        //       startVersionValue,
-        //       endVersionValue,
-        //       versionValue: formattedVersionValue || "",
-        //       dashboardFilters,
-        //     })
-        //   );
-        // }
+        if (dashboardId) {
+          dispatch(
+            fetchChartData({
+              dashboardId,
+              dashboardType:
+                currentDashboard?.settings?.dashboardType || "normal",
+              startVersionValue,
+              endVersionValue,
+              versionValue: formattedVersionValue || "",
+              dashboardFilters,
+            })
+          );
+        }
       } else {
         toast.error(result.message || "Failed to update chart");
       }
