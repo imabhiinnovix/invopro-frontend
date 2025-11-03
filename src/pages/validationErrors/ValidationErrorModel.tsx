@@ -1317,19 +1317,21 @@ export const ValidationErrorModal: React.FC<ValidationErrorModalProps> = ({
   };
 
   // Helper function to safely convert a value to a date ISO string
-  const safeDateToISOString = (value: any): string | null => {
-    if (!value) return null;
-    try {
-      const date = dayjs(value);
-      if (date.isValid()) {
-        return date.toISOString();
-      }
-      return null;
-    } catch (error) {
-      console.error("Error converting date:", error);
-      return null;
+const safeDateToISOString = (value: any): string | null => {
+  if (!value) return null;
+  try {
+    const date = dayjs(value);
+    if (date.isValid()) {
+      // Preserve only date part, ignore time zone shifts
+      return date.format("YYYY-MM-DD");
     }
-  };
+    return null;
+  } catch (error) {
+    console.error("Error converting date:", error);
+    return null;
+  }
+};
+
 
   // Initialize form data when modal opens or row data changes
   React.useEffect(() => {
@@ -1360,6 +1362,7 @@ export const ValidationErrorModal: React.FC<ValidationErrorModalProps> = ({
           fieldValue
         ) {
           const isoDate = safeDateToISOString(fieldValue);
+          console.log(`Converted date for field ${fieldName}:`, isoDate,fieldValue);
           initialFormData[fieldName] = isoDate || "";
         } else if (attribute.type === "boolean") {
           initialFormData[fieldName] =
