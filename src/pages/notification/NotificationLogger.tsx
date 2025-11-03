@@ -214,6 +214,7 @@ export default function NotificationLogger() {
   const [debouncedSearchValue, setDebouncedSearchValue] = useState(searchValue);
   const [notificationLogReload, setNotificationLogReload] = useState(false);
   const triggerNotification = usePost(["triggerNotification"]);
+  const resendNotification = usePost(["resendNotification"]);
 
   const [viewModalOpen, setViewModalOpen] = useState(false);
   const [selectedNotification, setSelectedNotification] =
@@ -280,10 +281,35 @@ export default function NotificationLogger() {
   );
 
   useEffect(() => {
+    if (resendNotification.data) {
+      const { success, message } = resendNotification.data;
+
+      if (success) {
+        toast.success(message || "Notification resent successfully");
+        // Refresh the notification logs after successful resend
+        setNotificationLogReload((prev) => !prev);
+      } else {
+        toast.error(message || "Failed to resend notification");
+      }
+    }
+
+    if (resendNotification.error) {
+      toast.error("Failed to resend notification");
+      console.error("Error resending notification:", resendNotification.error);
+    }
+  }, [resendNotification.data, resendNotification.error]);
+  useEffect(() => {
     if (notificationLogList?.data && notificationLogReload) {
       setNotificationLogReload(false);
     }
   }, [notificationLogList, notificationLogReload]);
+
+    const handleResendNow = (row: NotificationLog) => {
+    resendNotification.mutate({
+      url: POST.RESEND_NOTIFICATION, // Make sure this is defined in your apiRoutes
+      payload: { notificationId: row._id },
+    });
+  };
 
   const notificationLogsWithIds =
     Array.isArray(notificationLogList?.data?.data) &&
@@ -297,6 +323,7 @@ export default function NotificationLogger() {
             setSelectedNotification(row);
             setViewModalOpen(true);
           },
+          handleResendNow: handleResendNow,
         }))
       : [];
 
@@ -328,6 +355,7 @@ export default function NotificationLogger() {
       payload: { isForce: "false" },
     });
   };
+
 
   return (
     <Box
