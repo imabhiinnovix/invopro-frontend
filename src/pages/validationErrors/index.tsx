@@ -332,7 +332,7 @@ export default function ValidationErrors() {
             </Box>
           </Box>
           <Box sx={{ color: STYLE_GUIDE.COLORS.primary }}>
-            Total Records:-{validationErrorList?.data?.totalUploadedRecords}
+            Total Records:{validationErrorList?.data?.totalUploadedRecords}
           </Box>
 
           <ValidationErrorsDataTable
