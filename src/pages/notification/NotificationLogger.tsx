@@ -2,6 +2,7 @@ import * as React from "react";
 import { useState, useEffect } from "react";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import NotificationsIcon from "@mui/icons-material/Notifications";
+import ForwardToInboxIcon from "@mui/icons-material/ForwardToInbox";
 
 import {
   Box,
@@ -187,6 +188,15 @@ const columns: GridColDef[] = [
             sx={{ minWidth: "auto" }}
           >
             <VisibilityIcon />
+          </Button>
+        </Tooltip>
+        <Tooltip title="Resend Now" arrow>
+          <Button
+            variant="text"
+            onClick={() => params.row.handleResendNow(params.row)}
+            sx={{ minWidth: "auto" }}
+          >
+            <ForwardToInboxIcon />
           </Button>
         </Tooltip>
       </Box>
@@ -1324,8 +1334,8 @@ export default function NotificationLogger() {
                         selectedNotification.status === "sent"
                           ? "success"
                           : selectedNotification.status === "pending"
-                          ? "warning"
-                          : "error"
+                            ? "warning"
+                            : "error"
                       }
                       variant="outlined"
                     />
