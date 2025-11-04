@@ -1,4 +1,3 @@
-
 import * as React from "react";
 import { useState, useEffect } from "react";
 import {
@@ -18,6 +17,10 @@ import { STYLE_GUIDE } from "../../styles";
 import { useComponentTypography } from "../../hooks";
 import { DesignationModal } from "./DesignationModal";
 import { DesignationDataTable } from "./DesignationDataTable";
+import { useSelector } from "react-redux";
+import { RootState } from "../../store";
+import { checkPermission } from "../../utils/utils";
+import { PermissionsMap } from "../../utils/constants";
 
 // Define types
 interface Designation {
@@ -64,6 +67,24 @@ export default function Designation() {
     status: "",
   });
   const { getHeadingSx } = useComponentTypography();
+  const permissions = useSelector(
+    (state: RootState) => state.userPermission.permissions
+  );
+  const shouldAllowAdd = checkPermission(
+    permissions,
+    PermissionsMap.DESIGNATION,
+    "create"
+  );
+  const shouldAllowEdit = checkPermission(
+    permissions,
+    PermissionsMap.DESIGNATION,
+    "update"
+  );
+  const shouldAllowDelete = checkPermission(
+    permissions,
+    PermissionsMap.DESIGNATION,
+    "delete"
+  );
 
   // DELETE API
   const deleteDesignation = useDelete<null, DesignationPostResponse>(
@@ -206,6 +227,9 @@ export default function Designation() {
         filterValues={filterValues}
         designationReload={designationReload}
         loading={deleteDesignation.isLoading}
+        shouldAllowAdd={shouldAllowAdd}
+        shouldAllowEdit={shouldAllowEdit}
+        shouldAllowDelete={shouldAllowDelete}
       />
 
       <DesignationModal
