@@ -1029,6 +1029,7 @@ import DownloadForOfflineIcon from "@mui/icons-material/DownloadForOffline";
 import { useUnifiedTheme } from "../../../hooks/useUnifiedTheme";
 import { useComponentTypography } from "../../../hooks/useComponentTypography";
 import CommonTable from "../../common/table";
+import { rowSelectionStateInitializer } from "@mui/x-data-grid/internals";
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
   [`&.${tableCellClasses.head}`]: {
@@ -1160,7 +1161,21 @@ const ReportRequestTable: React.FC<AttributeOptionTableProps> = ({
       url: `${GET?.Custom_Report}/download/${fileId}?isIntermediate=true`,
     });
   };
+  const intermediateSupplementalDownloadFile = (
+    fileName: string,
+    // fileId: string,
+    row: any
+  ) => {
+    // setIntermediateDownloadRequestId(fileId);
+    setDownLoadFileName(fileName);
+    exportFile.mutate({
+      url: `${GET?.Custom_Report}/downloadSupplementalIntermediate/${
+        row.customReportId?._id
+      }?versionValue=${row.versionValue}`,
+    });
+  };
 
+  // {{reportivixUrl}}/reportivix/customReports/downloadSupplementalIntermediate/:customReportId?versionValue=2025-10
   const perPageItem = 10;
 
   const reportRequestList = useGet<ReportRequestData>(
@@ -1332,10 +1347,10 @@ const ReportRequestTable: React.FC<AttributeOptionTableProps> = ({
           row.status === "completed"
             ? "success.main"
             : row.status === "processing"
-            ? "warning.main"
-            : row.status === "failed"
-            ? "error.main"
-            : "text.primary";
+              ? "warning.main"
+              : row.status === "failed"
+                ? "error.main"
+                : "text.primary";
         return <Typography color={color}>{row.status || "-"}</Typography>;
       },
     },
@@ -1360,6 +1375,7 @@ const ReportRequestTable: React.FC<AttributeOptionTableProps> = ({
       label: "Actions",
       align: "right",
       renderCell: (row: ReportRequestResponse) => {
+        console.log("row in action", row);
         return (
           <Stack direction="row" justifyContent="flex-end" alignItems="center">
             {row.status === "completed" ? (
@@ -1428,7 +1444,20 @@ const ReportRequestTable: React.FC<AttributeOptionTableProps> = ({
             ) : (
               "-"
             )}
-            {row.status === "completed" && row.intermediateReportId && (
+            {row.status === "completed" &&
+              row.customReportId?._id === "67c7fa3493d10de5c51ae7c1" && (
+                <Tooltip title="Intermediate Download" arrow>
+                  <Button variant="text" sx={{ minWidth: "auto" }}>
+                    <DownloadForOfflineIcon
+                      onClick={() => {
+                        intermediateSupplementalDownloadFile(`${row.customReportId?.reportName}-intermediate-${row.versionValue}.xlsx`,row);
+                      }}
+                    />
+                  </Button>
+                </Tooltip>
+              )}
+              
+            { row.status === "completed" && row.intermediateReportId && (
               <Box
                 sx={{
                   display: "flex",
@@ -1582,10 +1611,10 @@ const ReportRequestTable: React.FC<AttributeOptionTableProps> = ({
                     data.status === "completed"
                       ? "success.main"
                       : data.status === "processing"
-                      ? "warning.main"
-                      : data.status === "failed"
-                      ? "error.main"
-                      : "text.primary",
+                        ? "warning.main"
+                        : data.status === "failed"
+                          ? "error.main"
+                          : "text.primary",
                   fontWeight: 500,
                 }}
               >

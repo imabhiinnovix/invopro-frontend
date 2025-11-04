@@ -233,7 +233,7 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
 
 
   const [formData, setFormData] = useState<ChartFormData>({
-  name: initialData?.name || "",
+  name: initialData?.name || `Chart - ${new Date().toLocaleString()}`,
   dimensions: arrayToString(initialData?.dimensions),
   groupBy: arrayToString(initialData?.groupBy),
   aggregation: initialData?.aggregation || {
@@ -435,7 +435,7 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
     const value = event.target.value;
     const fieldType = fieldTypes[index];
 
-    if (fieldType === "date") {
+    if (fieldType === "date" || fieldType === 'date-range') {
       // Format date to YYYY-MM-DD
       const formattedDate = formatDateToYYYYMMDD(value);
       handleConditionChange(index, "value", formattedDate);
@@ -1017,7 +1017,7 @@ const handleSubmit = async (e: React.FormEvent) => {
                     ))}
                   </StyledSelect>
                 </FormControl>
-                {fieldTypes[index] === "date" ? (
+                {(fieldTypes[index] === "date" || fieldTypes[index] === "date-range") ? (
                   <TextField
                     label="Value"
                     type="date"
@@ -1501,7 +1501,7 @@ const handleSubmit = async (e: React.FormEvent) => {
                           )}
                         </StyledSelect>
                       </FormControl>
-                      {fieldTypes[index] === "date" ? (
+                      {(fieldTypes[index] === "date" || fieldTypes[index] === "date-range") ? (
                         <TextField
                           label="Value"
                           type="date"

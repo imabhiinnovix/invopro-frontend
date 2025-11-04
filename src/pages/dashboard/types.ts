@@ -9,6 +9,7 @@ export interface Dashboard {
   name: string;
   description: string;
   isDeleted: boolean;
+  isDefaultNotivix?: boolean;
   isActive: boolean;
   settings: {
     gridColumns: number;

@@ -35,7 +35,6 @@ interface ApiResponse {
 }
 
 export default function NotivixDataSource() {
-  // console.log('Inside NotivixDataSource');
   const dispatch = useAppDispatch();
 
   const navigate = useNavigate();
@@ -60,6 +59,7 @@ export default function NotivixDataSource() {
     pageSize: 10,
   });
   const [refreshKey, setRefreshKey] = useState(0);
+  const processingStatus = localStorage.getItem("dataSourceProcessingStatus")
 
   // Your existing API call with refreshKey dependency
   const dataSourceNotivixListAPI = useGet<DataSourceListPayload>(
@@ -155,11 +155,17 @@ export default function NotivixDataSource() {
     )}`,
     !!valueId
   );
+  useEffect(() => {
+    if (processingStatus === "completed") {
+      queryClient.invalidateQueries({ queryKey: ["sourceVersionData"] });
+      localStorage.removeItem("dataSourceProcessingStatus");
+    }
+  }, [processingStatus, queryClient]);
 
   const attributeList = useGet<{
     success: boolean;
     data: AttributeOptionRequestPayload[];
-  }>([`attributeList`], GET?.Attribute_Option_List + `?paginate=true`);
+  }>([`attributeList`], GET?.Attribute_Option_List + `?paginate=false`);
 
   // Function to refresh data after successful save
   const refreshData = useCallback(() => {
@@ -212,14 +218,12 @@ export default function NotivixDataSource() {
     (id: string) => {
       const rawData = sourceVersionData?.data?.data || [];
       if (rawData.length === 0) {
-        console.warn("Cannot edit: No data available");
         return;
       }
       const row = rawData.find((r) => r._id === id || r.id === id);
       if (row) {
         const newFormData: Record<string, any> = { id: row._id || row.id };
         const dataSource = row.rowData || {};
-        console.log("rdataSource", dataSource);
 
         Object.keys(dataSource).forEach((key) => {
           if (key !== "_id" && key !== "id") {
@@ -291,7 +295,6 @@ export default function NotivixDataSource() {
 
       handleCloseDialog();
     } catch (error) {
-      console.error("Error deleting record:", error);
       toast.error(`Error: ${error.message || "Failed to delete record"}`);
     }
   }, [deleteId, valueId, refreshData, handleCloseDialog, deleteVersionRow]);

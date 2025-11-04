@@ -251,15 +251,28 @@ export const NotivixDataModal: React.FC<ModelSectionProps> = ({
     options: { id: string; label: string }[]
   ) {
     let values: string[] = [];
-    if (Array.isArray(raw)) {
-      values = raw;
-    } else if (typeof raw === "string") {
-      values = raw
-        .split(",")
-        .map((v) => v.trim())
-        .filter(Boolean);
+
+    // Handle string values (single entity, not array)
+    if (typeof raw === "string") {
+      // Treat as single value instead of splitting
+      if (raw.trim() !== "") {
+        values = [raw];
+      }
     }
-    return values.map((val) => {
+    // Handle existing arrays
+    else if (Array.isArray(raw)) {
+    values = raw.filter(val => val != null && val !== '');
+    }
+    // Handle other types
+    else {
+if (raw != null) {
+      values = [String(raw)];
+    }    }
+
+    // Remove duplicates
+    const uniqueValues = [...new Set(values)];
+
+    return uniqueValues.map((val) => {
       const match = options.find((opt) => opt.id === val);
       return match || { id: val, label: val };
     });
@@ -388,6 +401,11 @@ export const NotivixDataModal: React.FC<ModelSectionProps> = ({
             onChange={(e, val) =>
               handleFieldChange(typeof val === "string" ? val : val?.id || "")
             }
+            onInputChange={(e, newInputValue, reason) => {
+              if (!isReference && reason === "input") {
+                handleFieldChange(newInputValue);
+              }
+            }}
             disabled={!isFieldEditable}
             sx={{ height: "56px" }}
             renderInput={(params) => (
@@ -423,6 +441,11 @@ export const NotivixDataModal: React.FC<ModelSectionProps> = ({
                 val.map((item) => (typeof item === "string" ? item : item.id))
               )
             }
+            onInputChange={(e, newInputValue, reason) => {
+              if (!isReferenceMulti && reason === "input") {
+                handleFieldChange(newInputValue);
+              }
+            }}
             disabled={!isFieldEditable}
             renderTags={(value, getTagProps) =>
               value.map((option, index) => (
@@ -460,8 +483,8 @@ export const NotivixDataModal: React.FC<ModelSectionProps> = ({
                   !isFieldEditable
                     ? ""
                     : isReferenceMulti
-                    ? "Select option"
-                    : "Type or select"
+                      ? "Select option"
+                      : "Type or select"
                 }
               />
             )}
@@ -470,6 +493,7 @@ export const NotivixDataModal: React.FC<ModelSectionProps> = ({
       }
 
       case "date":
+      case "date-range":
         return (
           <LocalizationProvider key={fieldName} dateAdapter={AdapterDayjs}>
             <DatePicker

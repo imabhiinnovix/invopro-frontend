@@ -1,3 +1,7 @@
+
+
+
+
 import * as React from "react";
 import { useState, useEffect } from "react";
 import {
@@ -25,6 +29,8 @@ import { RootState } from "../../reducers";
 import { ValidationErrorModal } from "./ValidationErrorModel";
 import { AttributeOptionRequestPayload } from "../../components/atom/attributeOption/types";
 import { STYLE_GUIDE } from "../../styles";
+import axios from "axios";
+import axiosInstance from "../../services/axiosInstance";
 
 export default function ValidationErrors() {
   const { id } = useParams<{ id: string }>();
@@ -41,9 +47,29 @@ export default function ValidationErrors() {
     type: "discardAll" | "discardRow" | "resolveRow";
     rowData?: any;
   }>({ open: false, type: "discardAll" });
+  
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      if (searchValue.length === 0) {
+        setDebouncedSearchValue("");
+      } else if (searchValue.length < 3) {
+        toast.warning("Please enter at least 3 characters");
+        setDebouncedSearchValue("");
+      } else {
+        setDebouncedSearchValue(searchValue);
+      }
+      setPaginationModel((prev) => ({ ...prev, page: 0 }));
+    }, 500);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [searchValue]);
 
   const [actionModalOpen, setActionModalOpen] = useState(false);
   const [selectedRow, setSelectedRow] = useState<any>(null);
+  const [rowDetailData, setRowDetailData] = useState<any>(null);
+  const [isLoadingRowDetail, setIsLoadingRowDetail] = useState(false);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -54,7 +80,15 @@ export default function ValidationErrors() {
   const attributeList = useGet<{
     success: boolean;
     data: AttributeOptionRequestPayload[];
-  }>([`attributeList`], GET?.Attribute_Option_List + `?paginate=true`);
+  }>([`attributeList`], GET?.Attribute_Option_List + `?paginate=false`);
+  
+  const commonDataSourceList = useSelector(
+    (state: RootState) => state.dataSource?.list
+  );
+  
+  const dataSourceIdForPayload = commonDataSourceList?.find(
+    (item) => item?.dataSourceVersion?._id === id
+  );
 
   const validationErrorList = useGet<any>(
     [
@@ -62,19 +96,13 @@ export default function ValidationErrors() {
       String(paginationModel.page + 1),
       String(paginationModel.pageSize),
       debouncedSearchValue,
+      dataSourceIdForPayload?._id,
     ],
-    `${GET?.VALIDATION_ERROR_LIST}?page=${paginationModel.page + 1}&limit=${paginationModel.pageSize}&dataSourceVersionId=${id}&search=${encodeURIComponent(debouncedSearchValue)}`,
+    id && dataSourceIdForPayload?._id
+      ? `${GET?.VALIDATION_ERROR_LIST}?page=${paginationModel.page + 1}&limit=${paginationModel.pageSize}&dataSourceVersionId=${id}&dataSourceId=${dataSourceIdForPayload._id}&search=${encodeURIComponent(debouncedSearchValue)}`
+      : null,
     true
   );
-
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      setDebouncedSearchValue(searchValue);
-    }, 500);
-    return () => {
-      clearTimeout(handler);
-    };
-  }, [searchValue]);
 
   const handleDiscardRow = (rowData: any) => {
     setDialog({ open: true, type: "discardRow", rowData });
@@ -83,9 +111,30 @@ export default function ValidationErrors() {
   const handleResolveRow = (rowData: any) => {
     setDialog({ open: true, type: "resolveRow", rowData });
   };
-  const handleEditRow = (rowData: any) => {
+
+  const handleEditRow = async (rowData: any) => {
+    setIsLoadingRowDetail(true);
     setSelectedRow(rowData);
-    setActionModalOpen(true);
+    
+    try {
+      const url = `${GET.ERROR_ROW_DATA}?dataSourceVersionId=${rowData.dataSourceVersionId}&dataSourceId=${rowData.dataSourceId}&rowNumber=${rowData.rowNumber}`;
+      
+      const response = await axiosInstance.get(url);
+      
+      console.log("Row Detail Data:", response.data);
+      
+      if (response.data?.success) {
+        setRowDetailData(response.data.data);
+        setActionModalOpen(true);
+      } else {
+        toast.error("Failed to fetch row details");
+      }
+    } catch (error) {
+      console.error("Error fetching row detail:", error);
+      toast.error("Failed to fetch row details");
+    } finally {
+      setIsLoadingRowDetail(false);
+    }
   };
 
   const validationErrorWithIds =
@@ -105,10 +154,6 @@ export default function ValidationErrors() {
   const firstItem =
     validationErrorWithIds.length > 0 ? validationErrorWithIds[0] : null;
   const dataSourceId = firstItem?.dataSourceId || null;
-
-  const commonDataSourceList = useSelector(
-    (state: RootState) => state.dataSource?.list
-  );
 
   const currentDataSource = commonDataSourceList?.find(
     (ds) => ds?._id === dataSourceId
@@ -130,11 +175,11 @@ export default function ValidationErrors() {
   const handleCloseActionModal = () => {
     setActionModalOpen(false);
     setSelectedRow(null);
+    setRowDetailData(null);
   };
 
   const handleConfirmAction = async () => {
     if (!id || !dataSourceId) {
-      console.error("Missing required data for API call");
       handleCloseDialog();
       return;
     }
@@ -169,7 +214,6 @@ export default function ValidationErrors() {
           dataSourceVersionId: id,
           rowNumber: dialog.rowData.rowNumber,
         };
-        console.log("Row unique payload:", payload);
         response = await resolveRow.mutateAsync({
           url: `${POST.RESOLVE_DATA_IMPORT_ERROR}`,
           payload,
@@ -194,7 +238,6 @@ export default function ValidationErrors() {
       }
       handleCloseDialog();
     } catch (error) {
-      console.error("Error in action:", error);
       let errorMessage;
       if (dialog.type === "discardAll") {
         errorMessage = "Failed to discard all rows";
@@ -209,6 +252,7 @@ export default function ValidationErrors() {
       setIsSubmitting(false);
     }
   };
+
   return (
     <Box
       sx={{
@@ -245,36 +289,36 @@ export default function ValidationErrors() {
               mb: 2,
             }}
           >
-            <TextField
-              placeholder="Search ..."
-              variant="outlined"
-              size="small"
-              value={searchValue}
-              onChange={handleSearchChange}
+            <Box
               sx={{
-                width: "300px",
-                "& .MuiOutlinedInput-root": {
-                  borderRadius: "8px",
-                },
+                justifyContent: "center",
+                alignItems: "center",
+                gap: 2,
               }}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <SearchIcon />
-                  </InputAdornment>
-                ),
-              }}
-            />
-            <Box sx={{ display: "flex", gap: 1 }}>
-              {/* <Button
-                variant="contained"
-                startIcon={<DownloadIcon />}
+            >
+              <TextField
+                placeholder="Search ..."
+                variant="outlined"
+                size="small"
+                value={searchValue}
+                onChange={handleSearchChange}
                 sx={{
-                  borderRadius: "8px",
+                  width: "300px",
+                  "& .MuiOutlinedInput-root": {
+                    borderRadius: "8px",
+                  },
                 }}
-              >
-                Import
-              </Button> */}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <SearchIcon />
+                    </InputAdornment>
+                  ),
+                }}
+              />
+            </Box>
+
+            <Box sx={{ display: "flex", gap: 1 }}>
               <Button
                 variant="contained"
                 startIcon={<DeleteSweepIcon />}
@@ -287,11 +331,17 @@ export default function ValidationErrors() {
               </Button>
             </Box>
           </Box>
+          <Box sx={{ color: STYLE_GUIDE.COLORS.primary }}>
+            Total Records:{validationErrorList?.data?.totalUploadedRecords}
+          </Box>
+
           <ValidationErrorsDataTable
             rows={validationErrorWithIds}
             paginationModel={paginationModel}
             setPaginationModel={setPaginationModel}
             rowCount={validationErrorList?.data?.totalCount || 0}
+            validationErrorList={validationErrorList}
+            isLoadingRowDetail={isLoadingRowDetail}
           />
         </CardContent>
       </Card>
@@ -324,6 +374,7 @@ export default function ValidationErrors() {
       <ValidationErrorModal
         openModal={actionModalOpen}
         rowData={selectedRow}
+        rowDetailData={rowDetailData}
         currentDataSource={currentDataSource}
         handleCloseModal={handleCloseActionModal}
         attributeListData={attributeList?.data?.data || []}

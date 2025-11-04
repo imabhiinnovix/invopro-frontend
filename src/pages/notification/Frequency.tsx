@@ -128,7 +128,11 @@ export default function Frequency({ fieldOptions, notificationTypeId }) {
   const deleteNotification = useDelete(["deleteNotification"]);
   const updateNotification = usePut(["updateNotification"]);
   const mediumList = useGet(["mediumList"], `${GET.MEDIUM_LIST}`, true);
-  const templateList = useGet(["templateList"], `${GET.TEMPLATE_LIST}`, true);
+  const templateList = useGet(
+    ["templateList"],
+    `${GET.TEMPLATE_LIST}?paginate=false`,
+    true
+  );
   const { data: frequencyListData, refetch } = useGet(
     ["frequencyList", notificationTypeId],
     notificationTypeId
@@ -1145,7 +1149,7 @@ export default function Frequency({ fieldOptions, notificationTypeId }) {
             mt: 2,
           }}
         >
-          <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+          {/* <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
             <Typography
               variant="body2"
               sx={{
@@ -1205,7 +1209,111 @@ export default function Frequency({ fieldOptions, notificationTypeId }) {
                 </>
               )}
             </Box>
+          </Box> */}
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: "row",
+              alignItems: "center",
+              gap: 3,
+            }}
+          >
+            {/* Starts on Section */}
+            <Box
+              sx={{
+                display: "flex",
+                flexDirection: "row",
+                alignItems: "center",
+                gap: 1,
+              }}
+            >
+              <Typography
+                variant="body2"
+                sx={{
+                  color: "rgba(0, 0, 0, 0.6)",
+                  fontWeight: 500,
+                  fontSize: "0.875rem",
+                  lineHeight: "1.4375rem",
+                  letterSpacing: "0.00938em",
+                  pl: 0.5,
+                }}
+              >
+                Starts on
+              </Typography>
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+                <CalendarMonthOutlined
+                  sx={{ color: "#666" }}
+                  fontSize="small"
+                />
+                <Button
+                  variant="outlined"
+                  onClick={() => setDatePickerOpen(true)}
+                  sx={{
+                    flex: 1,
+                    backgroundColor: "#f8f9fa",
+                    border: "1px solid #ddd",
+                    borderRadius: 2,
+                    color: "#3c4043",
+                    textTransform: "none",
+                    justifyContent: "flex-start",
+                    "&:hover": {
+                      backgroundColor: "#f1f3f4",
+                      border: "1px solid #ccc",
+                    },
+                  }}
+                >
+                  {formatDate(selectedDate)}
+                </Button>
+              </Box>
+            </Box>
+
+            {/* Time Section in same row */}
+            <Box
+              sx={{
+                display: "flex",
+                flexDirection: "row",
+                alignItems: "center",
+                gap: 1,
+              }}
+            >
+              <Typography
+                variant="body2"
+                sx={{
+                  color: "rgba(0, 0, 0, 0.6)",
+                  fontWeight: 500,
+                  fontSize: "0.875rem",
+                  lineHeight: "1.4375rem",
+                  letterSpacing: "0.00938em",
+                  pl: 0.5,
+                }}
+              >
+                Time (IST)
+              </Typography>
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+                <AccessTimeIcon sx={{ color: "#666" }} fontSize="small" />
+                <Button
+                  variant="outlined"
+                  onClick={() => setTimePickerOpen(true)}
+                  sx={{
+                    minWidth: 100,
+                    backgroundColor: "#f8f9fa",
+                    border: "1px solid #ddd",
+                    borderRadius: 2,
+                    color: "#3c4043",
+                    textTransform: "none",
+                    justifyContent: "flex-start",
+                    "&:hover": {
+                      backgroundColor: "#f1f3f4",
+                      border: "1px solid #ccc",
+                    },
+                  }}
+                >
+                  {selectedTime}
+                </Button>
+              </Box>
+            </Box>
           </Box>
+
           <Box sx={{ display: "flex", alignItems: "center", gap: 2, pl: 4 }}>
             <FormControl fullWidth size="small">
               <InputLabel>Repeat</InputLabel>
@@ -1245,6 +1353,14 @@ export default function Frequency({ fieldOptions, notificationTypeId }) {
                     label="Template"
                     displayEmpty
                     aria-label="Select template"
+                    MenuProps={{
+                      PaperProps: {
+                        style: {
+                          maxHeight: 250, // controls visible height of dropdown
+                          overflowY: "auto",
+                        },
+                      },
+                    }}
                   >
                     {templateList.data?.data?.map((option) => (
                       <MenuItem key={option._id} value={option._id}>
@@ -1257,6 +1373,7 @@ export default function Frequency({ fieldOptions, notificationTypeId }) {
                   )}
                 </FormControl>
               </Box>
+
               <Box sx={{ flex: 0.5, minWidth: "120px" }}>
                 <FormControl size="small" fullWidth error={!!errors.method}>
                   <InputLabel>Method</InputLabel>
@@ -1290,8 +1407,8 @@ export default function Frequency({ fieldOptions, notificationTypeId }) {
                 </FormControl>
               </Box>
             </Box>
-            <Box sx={{ display: "flex", gap: 2, mt: 2, alignItems: "center" }}>
-              <FormControl fullWidth size="small">
+            {/* <Box sx={{ display: "flex", gap: 2, mt: 2, alignItems: "center" }}>
+              <FormControl fullWidth size="small" sx={{ flexGrow: 1 }}>
                 <Autocomplete
                   freeSolo
                   size="small"
@@ -1340,7 +1457,7 @@ export default function Frequency({ fieldOptions, notificationTypeId }) {
                   )}
                 />
               </FormControl>
-              <Box sx={{ display: "flex", alignItems: "center" }}>
+              <Box sx={{ display: "flex", alignItems: "center" ,flexGrow: 1 }}>
                 <FormControlLabel
                   control={
                     <Checkbox
@@ -1349,8 +1466,67 @@ export default function Frequency({ fieldOptions, notificationTypeId }) {
                       size="small"
                     />
                   }
-                  label="Attachment"
+                  label="Attach Notification Summary"
                   sx={{ mb: "35px !important" }}
+                />
+              </Box>
+            </Box> */}
+            <Box sx={{ display: "flex", gap: 2, mt: 2, alignItems: "center" }}>
+              <Box sx={{ flexGrow: 1.5 }}>
+                <Autocomplete
+                  freeSolo
+                  size="small"
+                  id="target-entity-autocomplete"
+                  options={fieldOptions}
+                  getOptionLabel={(option) => {
+                    if (typeof option === "string") return option;
+                    return option.label || option.attributeId || "";
+                  }}
+                  isOptionEqualToValue={(option, value) => {
+                    if (
+                      typeof option === "string" &&
+                      typeof value === "string"
+                    ) {
+                      return option === value;
+                    }
+                    if (
+                      typeof option !== "string" &&
+                      typeof value !== "string"
+                    ) {
+                      return (
+                        option.attributeId === value.attributeId &&
+                        arraysEqual(
+                          option.refAttributeId || [],
+                          value.refAttributeId || []
+                        )
+                      );
+                    }
+                    return false;
+                  }}
+                  value={targetEntity}
+                  onChange={(event, newValue) => setTargetEntity(newValue)}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      variant="outlined"
+                      label="Sent To (Group)"
+                      placeholder="Type or select"
+                      size="small"
+                    />
+                  )}
+                />
+              </Box>
+              <Box sx={{ display: "flex", alignItems: "center", flexGrow: .1 }}>
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={attachmentRequired}
+                      onChange={(e) => setAttachmentRequired(e.target.checked)}
+                      size="small"
+                    />
+                  }
+                  label="Attach Notification Summary"
+                  sx={{ mb: "50px !important" }}
                 />
               </Box>
             </Box>

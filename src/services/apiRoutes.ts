@@ -176,6 +176,10 @@ export const POST = {
   CREATE_DESIGNATION: "/common/designation/create",
   CREATE_DEPARTMENT: "/common/department/create",
   CREATE_TEMPLATE: "/notivix/notification-setting/template/create",
+  NOTIFICATION_SUMMARY: "notivix/notification-setting/type/summary",
+    RESEND_NOTIFICATION: "/notivix/notification-setting/prepared/notification/resend",
+
+
 };
 
 export const PUT = {
@@ -267,4 +271,5 @@ export const GET = {
     "/notivix/notification-setting/prepared/notification/list",
   DEPARTMENT_LIST: "/common/department/list",
   DESIGNATION_LIST: "/common/designation/list",
+  ERROR_ROW_DATA: "/common/dataImportError/data",
 };

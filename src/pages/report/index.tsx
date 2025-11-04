@@ -84,6 +84,19 @@ export default function Report() {
       url: `${GET?.Custom_Report}/download/${fileId}?isIntermediate=true`,
     });
   };
+  const intermediateSupplementalDownloadFile = (
+    fileName: string,
+    // fileId: string,
+    row: any
+  ) => {
+    // setIntermediateDownloadRequestId(fileId);
+    setDownLoadFileName(fileName);
+    exportFile.mutate({
+      url: `${GET?.Custom_Report}/downloadSupplementalIntermediate/${
+        row.customReportId?._id
+      }?versionValue=${row.versionValue}`,
+    });
+  };
 
   const tabStyle = (index: number) => ({
     padding: "10px 20px",
@@ -292,7 +305,21 @@ export default function Report() {
                     </Button>
                   </Tooltip>
                 )}
-
+                {/* {console.log('allDetailData', allDetailData)} */}
+                {allDetailData &&
+                  allDetailData.status === "completed" &&
+                  allDetailData.customReportId?._id ===
+                    "67c7fa3493d10de5c51ae7c1" && (
+                    <Tooltip title="Intermediate Download" arrow>
+                      <Button variant="text" sx={{ minWidth: "auto" }}>
+                        <DownloadForOfflineIcon
+                          onClick={() => {
+                            intermediateSupplementalDownloadFile(`${allDetailData.customReportId?.reportName}-intermediate-${allDetailData.versionValue}.xlsx`,allDetailData);
+                          }}
+                        />
+                      </Button>
+                    </Tooltip>
+                  )}
                 {allDetailData?.status === "completed" &&
                   allDetailData?.intermediateReportId && (
                     <Box
