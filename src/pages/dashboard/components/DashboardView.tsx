@@ -2323,7 +2323,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             endVersionValue,
             versionValue,
             dashboardFilters,
-            abhishek:"dashboard view 1"
           })
         );
       } else if (
@@ -2343,7 +2342,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             endVersionValue,
             dashboardType: currentDashboard?.settings?.dashboardType,
             dashboardFilters,
-                        abhishek:"dashboard view 2"
 
           })
         );
@@ -2534,7 +2532,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               endVersionValue,
               versionValue: formattedVersionValue || "",
               dashboardFilters,
-                          abhishek:"dashboard view 3"
 
             })
           );

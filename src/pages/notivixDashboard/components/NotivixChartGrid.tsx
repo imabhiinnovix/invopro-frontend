@@ -646,8 +646,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
             dashboardId,
             dashboardType: currentDashboard?.settings?.dashboardType,
             filters: dashboardFilters,
-            abhishek:"notivix xhart grid 1"
-          })
+=          })
         );
       }
     }
@@ -683,7 +682,6 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
             dashboardId,
             dashboardType: currentDashboard?.settings?.dashboardType,
             filters: dashboardFilters,
-                        abhishek:"notivix xhart grid 2"
 
           })
         );

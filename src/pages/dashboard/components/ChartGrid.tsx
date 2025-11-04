@@ -363,7 +363,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
     dashboards: state.dashboard.dashboards || [],
   }));
 //   useEffect(() => {
-//   dispatch(fetchChartData({ dashboardId, dashboardFilters ,abhishek:"chart grid use effect 1" }));
+//   dispatch(fetchChartData({ dashboardId, dashboardFilters  }));
 // }, [dispatch, dashboardId]); // re-fetch when dashboard changes
 // console.log("dashboarf>>>>>>>>>>",dashboardFilters)
   const [drillDownColumns, setDrillDownColumns] = useState<string[]>([]);
@@ -422,15 +422,15 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
     }
   }, [dispatch, dashboards.length]);
 
-  // useEffect(() => {
-  //   if (dashboardId) {
-  //     if (isNaturalLangauage) {
-  //       dispatch(resetChartAndWidgetData());
-  //     } else {
-  //       dispatch(fetchChartData({ dashboardId, dashboardFilters ,abhishek:"chart grid use effect 2" }) );
-  //     }
-  //   }
-  // }, [dispatch, dashboardId, dashboardFilters]);
+  useEffect(() => {
+    if (dashboardId) {
+      if (isNaturalLangauage) {
+        dispatch(resetChartAndWidgetData());
+      } else {
+        dispatch(fetchChartData({ dashboardId, dashboardFilters  }) );
+      }
+    }
+  }, [dispatch, dashboardId, dashboardFilters]);
 
   const handleMenuClick = (
     event: React.MouseEvent<HTMLElement>,
@@ -460,7 +460,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
 
       if (result.success) {
         toast.success("Chart deleted successfully!");
-        dispatch(fetchChartData({ dashboardId, dashboardFilters ,abhishek:"chart grid handle delete confirm" }) );
+        dispatch(fetchChartData({ dashboardId, dashboardFilters  }) );
       } else {
         toast.error(result.message || "Failed to delete chart");
       }

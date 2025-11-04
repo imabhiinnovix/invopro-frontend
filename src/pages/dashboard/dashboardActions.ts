@@ -235,7 +235,6 @@ export const fetchChartData = createAsyncThunk(
       endVersionValue,
       dashboardType,
       dynamicVersionValue,
-      abhishek,
       dashboardFilters = {},
     }: {
       dashboardId: string;
@@ -245,13 +244,11 @@ export const fetchChartData = createAsyncThunk(
       dashboardType?: string;
       dynamicVersionValue?: string;
       dashboardFilters: any;
-            abhishek,
 
     },
     { dispatch }
   ) => {
-    console.log('dashboardFilters in fetchChartData:', dashboardFilters,      abhishek,
-);
+   
     const response = await axiosInstance.get<ChartDataResponse>(
       `${GET.DASHBOARD_WIDGET_GET_CHART_DATA}/${dashboardId}`
     );
