@@ -21,6 +21,10 @@ import { useComponentTypography } from "../../hooks";
 import CommonPageHeader from "../../components/atom/commonPageHeader";
 import DialogContainer from "../../components/molecule/dialog";
 import PrimaryButton from "../../components/common/PrimaryButton";
+import { PermissionsMap } from "../../utils/constants";
+import { checkPermission } from "../../utils/utils";
+import { RootState } from "../../store";
+import { useSelector } from "react-redux";
 
 // Define types
 interface Role {
@@ -60,6 +64,24 @@ export default function Roles() {
     status: "",
   });
   const { getHeadingSx } = useComponentTypography();
+  const permissions = useSelector(
+    (state: RootState) => state.userPermission.permissions
+  );
+  const shouldAllowAdd = checkPermission(
+    permissions,
+    PermissionsMap.ROLE,
+    "create"
+  );
+  const shouldAllowEdit = checkPermission(
+    permissions,
+    PermissionsMap.ROLE,
+    "update"
+  );
+  const shouldAllowDelete = checkPermission(
+    permissions,
+    PermissionsMap.ROLE,
+    "delete"
+  );
 
   // DELETE API
   const deleteRole = useDelete<null, RolePostResponse>(
@@ -176,9 +198,11 @@ export default function Roles() {
       <CommonPageHeader
         title="Roles"
         actions={
-          <Button variant="contained" color="primary" onClick={handleAddRole}>
-            Add Role
-          </Button>
+          shouldAllowAdd && (
+            <Button variant="contained" color="primary" onClick={handleAddRole}>
+              Add Role
+            </Button>
+          )
         }
       />
 
@@ -195,6 +219,8 @@ export default function Roles() {
         filterValues={filterValues}
         roleReload={roleReload}
         loading={deleteRole.isLoading}
+        shouldAllowEdit={shouldAllowEdit}
+        shouldAllowDelete={shouldAllowDelete}
       />
 
       <RoleModal
