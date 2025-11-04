@@ -2587,10 +2587,16 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           gap: STYLE_GUIDE.SPACING.s4,
           borderBottom: 1,
           borderColor: "divider",
-          pb: STYLE_GUIDE.SPACING.s4,
+          pb: STYLE_GUIDE.SPACING.s2,
+          pt: STYLE_GUIDE.SPACING.s2,
         }}
       >
-        <Box sx={{ flex: 1, mr: STYLE_GUIDE.SPACING.s4 }}>
+        <Box
+          sx={{
+            flex: 1,
+            mr: STYLE_GUIDE.SPACING.s4,
+          }}
+        >
           {isEditMode ? (
             <TextField
               inputRef={inputRef}
@@ -2657,7 +2663,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                       whiteSpace: "nowrap",
                       overflow: "hidden",
                       textOverflow: "ellipsis",
-                      maxWidth: "300px",
+                      maxWidth: "100px",
                     }}
                   >
                     {title}
