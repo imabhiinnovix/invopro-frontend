@@ -44,6 +44,9 @@ import PrimaryButton from "../../components/common/PrimaryButton";
 
 interface UsersProps {
   organizationId?: string;
+  shouldAllowUserCreate: boolean;
+  shouldAllowUserEdit: boolean;
+  shouldAllowUserDelete: boolean;
 }
 
 interface UserRowData {
@@ -65,6 +68,8 @@ interface UserRowData {
   handleEdit: (row: UserRowData) => void;
   handleView: (row: UserRowData) => void;
   handleDelete: (id: string) => void;
+  shouldAllowUserEdit: boolean;
+  shouldAllowUserDelete: boolean;
 }
 
 const columns: GridColDef[] = [
@@ -95,8 +100,7 @@ const columns: GridColDef[] = [
     width: 200,
     disableColumnMenu: true,
     resizable: true,
-    valueFormatter: (params: { value: unknown }) =>
-      params?params:"-",
+    valueFormatter: (params: { value: unknown }) => (params ? params : "-"),
   },
   {
     field: "roleNames",
@@ -192,6 +196,7 @@ const columns: GridColDef[] = [
               (params.row as UserRowData).handleEdit(params.row as UserRowData)
             }
             sx={{ minWidth: "auto" }}
+            disabled={!(params.row as UserRowData).shouldAllowUserEdit}
           >
             <EditIcon />
           </Button>
@@ -205,6 +210,7 @@ const columns: GridColDef[] = [
               )
             }
             sx={{ minWidth: "auto", color: "error.main" }}
+            disabled={!(params.row as UserRowData).shouldAllowUserDelete}
           >
             <DeleteIcon />
           </Button>
@@ -214,7 +220,12 @@ const columns: GridColDef[] = [
   },
 ];
 
-export default function Users({ organizationId }: UsersProps) {
+export default function Users({
+  organizationId,
+  shouldAllowUserCreate,
+  shouldAllowUserEdit,
+  shouldAllowUserDelete,
+}: UsersProps) {
   const theme = useUnifiedTheme();
   const [openModal, setOpenModal] = useState(false);
   const [modalMode, setModalMode] = useState<"add" | "edit" | "view" | null>(
@@ -483,6 +494,8 @@ export default function Users({ organizationId }: UsersProps) {
         handleEdit,
         handleView,
         handleDelete,
+        shouldAllowUserEdit,
+        shouldAllowUserDelete,
       };
     }) || [];
 
@@ -525,6 +538,7 @@ export default function Users({ organizationId }: UsersProps) {
             <Button
               variant="contained"
               onClick={handleAddUser}
+              disabled={!shouldAllowUserCreate}
               sx={{
                 borderRadius: STYLE_GUIDE.SPACING.s2,
               }}

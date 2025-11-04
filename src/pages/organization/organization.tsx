@@ -43,6 +43,10 @@ import Autocomplete from "@mui/material/Autocomplete";
 import CommonPageHeader from "../../components/atom/commonPageHeader";
 import DialogContainer from "../../components/molecule/dialog";
 import PrimaryButton from "../../components/common/PrimaryButton";
+import { useSelector } from "react-redux";
+import { RootState } from "../../store";
+import { checkPermission } from "../../utils/utils";
+import { PermissionsMap } from "../../utils/constants";
 
 interface ProductSubscription {
   productId: string;
@@ -72,6 +76,48 @@ interface OrganizationFormValues {
 
 export default function Organization() {
   const { isSuperUser } = useContext(AuthContext);
+  const permissions = useSelector(
+    (state: RootState) => state.userPermission.permissions
+  );
+  const shouldAllowCreate = checkPermission(
+    permissions,
+    PermissionsMap.ORGANIZATION,
+    "create"
+  );
+  const shouldAllowEdit = checkPermission(
+    permissions,
+    PermissionsMap.ORGANIZATION,
+    "update"
+  );
+  const shouldAllowDelete = checkPermission(
+    permissions,
+    PermissionsMap.ORGANIZATION,
+    "delete"
+  );
+
+  const shouldAllowUserList = checkPermission(
+    permissions,
+    PermissionsMap.USER,
+    "list"
+  );
+
+  const shouldAllowUserCreate = checkPermission(
+    permissions,
+    PermissionsMap.USER,
+    "create"
+  );
+
+  const shouldAllowUserEdit = checkPermission(
+    permissions,
+    PermissionsMap.USER,
+    "update"
+  );
+
+  const shouldAllowUserDelete = checkPermission(
+    permissions,
+    PermissionsMap.USER,
+    "delete"
+  );
 
   const {
     control,
@@ -429,6 +475,7 @@ export default function Organization() {
   }, [editOpen, selectedOrg, productAccessData, productAccessOrgId]);
 
   const handleRowClick = (org: any, _rowIndex: number) => {
+    if (!shouldAllowUserList) return;
     const isUserSuperUser = isSuperUser();
 
     const organizationIdForUsers = isUserSuperUser ? org._id : null;
@@ -455,20 +502,25 @@ export default function Organization() {
         title={showUsers ? "User Details" : "Organizations Details"}
         onBack={showUsers ? handleBackToOrganizations : undefined}
         actions={
-          showUsers ? undefined : (
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={handleCreateOpen}
-            >
-              Create
-            </Button>
-          )
+          showUsers
+            ? undefined
+            : shouldAllowCreate && (
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={handleCreateOpen}
+                >
+                  Create
+                </Button>
+              )
         }
       />
       {showUsers ? (
         <Users
           organizationId={selectedOrganizationForUsers?.organizationIdForUsers}
+          shouldAllowUserCreate={shouldAllowUserCreate}
+          shouldAllowUserEdit={shouldAllowUserEdit}
+          shouldAllowUserDelete={shouldAllowUserDelete}
         />
       ) : (
         <>
@@ -530,6 +582,7 @@ export default function Organization() {
                     action: (
                       <>
                         <IconButton
+                          disabled={!shouldAllowEdit}
                           onClick={(e) => {
                             e.stopPropagation();
                             handleEditOpen(org);
@@ -540,6 +593,7 @@ export default function Organization() {
                           <EditIcon fontSize="small" />
                         </IconButton>
                         <IconButton
+                          disabled={!shouldAllowDelete}
                           onClick={(e) => {
                             e.stopPropagation();
                             handleDeleteOpen(org);
