@@ -303,7 +303,6 @@ export default function NotificationLogger() {
   // Function to parse HTML content safely
   const parseHtmlContent = (html: string) => {
     if (!html) return null;
-
     try {
       return parse(html);
     } catch (error) {
@@ -1517,6 +1516,16 @@ export default function NotificationLogger() {
                         backgroundColor: STYLE_GUIDE.COLORS.backgroundLight,
                         fontFamily: STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary,
                         fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
+                        "& table": {
+                          borderCollapse: "collapse",
+                          borderSpacing: 0,
+                          padding: 0,
+                          "& th, & td": {
+                            border: "1px solid #ddd",
+                            padding: "2px 6px",
+                            textAlign: "left",
+                          },
+                        },
                       }}
                     >
                       {parseHtmlContent(selectedNotification.alert_content)}
