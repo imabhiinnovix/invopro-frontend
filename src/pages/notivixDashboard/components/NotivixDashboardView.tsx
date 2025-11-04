@@ -160,6 +160,7 @@ export const NotivixDashboardView: React.FC<DashboardViewProps> = ({
             startVersionValue,
             endVersionValue,
             versionValue: versionValue || undefined,
+            filters: dashboardFilters,
           })
         );
       } else if (
@@ -176,6 +177,8 @@ export const NotivixDashboardView: React.FC<DashboardViewProps> = ({
             startVersionValue,
             endVersionValue,
             dashboardType: currentDashboard?.settings?.dashboardType,
+            filters: dashboardFilters,
+
           })
         );
       } else if (currentDashboard?.settings?.dashboardType === 'fixed') {
@@ -186,6 +189,7 @@ export const NotivixDashboardView: React.FC<DashboardViewProps> = ({
             startVersionValue: startVersionValue || undefined,
             endVersionValue: endVersionValue || undefined,
             versionValue: versionValue || undefined,
+            filters: dashboardFilters,
           })
         );
       }
@@ -198,6 +202,7 @@ export const NotivixDashboardView: React.FC<DashboardViewProps> = ({
     formattedVersionValue,
     hasErrors,
     startVersionValue,
+    dashboardFilters
   ]);
 
   useEffect(() => {
