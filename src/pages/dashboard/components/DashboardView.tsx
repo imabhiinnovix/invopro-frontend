@@ -1921,6 +1921,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   const currentDashboard = dashboards.find((d) => d._id === dashboardId);
   const [isFiltersModalOpen, setIsFiltersModalOpen] = useState(false);
   const [dashboardFilters, setDashboardFilters] = useState<any>({});
+  console.log("Dashboard Filters-------------------3----:", dashboardFilters);
   const { dataSourceDetails, dataSourceDetailsLoading } = useAppSelector(
     (state) => state.notivixDashboard
   );
@@ -2172,35 +2173,37 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     setIsFiltersModalOpen(false);
   };
   const handleApplyFilters = async (filters: any) => {
-    setDashboardFilters(filters);
-    setStatusToggle(
-      filters["Derived.Case Status"]
-        ? filters["Derived.Case Status"]
-        : "Pending"
-    );
+    if (Object.keys(filters).length > 0) {
+      setDashboardFilters(filters);
+      setStatusToggle(
+        filters["Derived.Case Status"]
+          ? filters["Derived.Case Status"]
+          : "Pending"
+      );
 
-    // Fix: Use DateObject instead of Date
-    if (
-      filters["DueDate"] &&
-      filters["DueDate"].startDate &&
-      filters["DueDate"].endDate
-    ) {
-      setDateRange([
-        new DateObject(filters["DueDate"].startDate),
-        new DateObject(filters["DueDate"].endDate),
-      ]);
-    } else if (
-      filters["DateTaken"] &&
-      filters["DateTaken"].startDate &&
-      filters["DateTaken"].endDate
-    ) {
-      setDateRange([
-        new DateObject(filters["DateTaken"].startDate),
-        new DateObject(filters["DateTaken"].endDate),
-      ]);
-    } else {
-      // Clear date range if no date filter is applied
-      setDateRange(null);
+      // Fix: Use DateObject instead of Date
+      if (
+        filters["DueDate"] &&
+        filters["DueDate"].startDate &&
+        filters["DueDate"].endDate
+      ) {
+        setDateRange([
+          new DateObject(filters["DueDate"].startDate),
+          new DateObject(filters["DueDate"].endDate),
+        ]);
+      } else if (
+        filters["DateTaken"] &&
+        filters["DateTaken"].startDate &&
+        filters["DateTaken"].endDate
+      ) {
+        setDateRange([
+          new DateObject(filters["DateTaken"].startDate),
+          new DateObject(filters["DateTaken"].endDate),
+        ]);
+      } else {
+        // Clear date range if no date filter is applied
+        setDateRange(null);
+      }
     }
   };
   const validationSchema = yup.object({
@@ -2299,7 +2302,12 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
   useEffect(() => {
     if (dashboardId) {
-      if (currentDashboard?.settings?.dashboardType === "normal") {
+      const hasFilters = Object.keys(dashboardFilters).length > 0;
+
+      if (
+        currentDashboard?.settings?.dashboardType === "normal" &&
+        hasFilters
+      ) {
         dispatch(
           fetchChartData({
             dashboardId,
@@ -2317,7 +2325,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         endVersionValue &&
         DateTime.fromISO(startVersionValue) <
           DateTime.fromISO(endVersionValue) &&
-        !hasErrors
+        !hasErrors &&
+        hasFilters
       ) {
         dispatch(
           fetchChartData({
@@ -2339,6 +2348,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     formattedVersionValue,
     hasErrors,
     startVersionValue,
+    dashboardFilters,
   ]);
 
   useEffect(() => {
@@ -2503,7 +2513,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
       if (result.success) {
         toast.success("Chart updated successfully!");
         handleCloseEditModal();
-        
+
         // Fetch updated chart data
         if (dashboardId) {
           dispatch(
@@ -3240,17 +3250,19 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           </Box>
         )}
       </Box>
-      {currentDashboard?.isDefaultNotivix ===true ?(
-          <NotivixFiltersModal
-            open={isFiltersModalOpen}
-            onClose={handleCloseFiltersModal}
-            onApplyFilters={handleApplyFilters}
-            currentFilters={dashboardFilters}
-            dataSourceId={currentDashboard?.settings?.dataSource?._id} // Pass your dataSourceId here
-            filterFlag="isFilterEnable" // Specify which flag to use for filtering
-            isLoading={dataSourceDetailsLoading}
-          />
-        ):""}
+      {currentDashboard?.isDefaultNotivix === true ? (
+        <NotivixFiltersModal
+          open={isFiltersModalOpen}
+          onClose={handleCloseFiltersModal}
+          onApplyFilters={handleApplyFilters}
+          currentFilters={dashboardFilters}
+          dataSourceId={currentDashboard?.settings?.dataSource?._id} // Pass your dataSourceId here
+          filterFlag="isFilterEnable" // Specify which flag to use for filtering
+          isLoading={dataSourceDetailsLoading}
+        />
+      ) : (
+        ""
+      )}
     </Box>
   );
 };
