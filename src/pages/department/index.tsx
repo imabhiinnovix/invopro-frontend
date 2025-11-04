@@ -1,6 +1,3 @@
-
-
-
 import * as React from "react";
 import { useState, useEffect } from "react";
 import {
@@ -20,6 +17,10 @@ import { STYLE_GUIDE } from "../../styles";
 import { useComponentTypography } from "../../hooks";
 import { DepartmentModal } from "./DepartmentModal";
 import { DepartmentDataTable } from "./DepartmentDataTable";
+import { useSelector } from "react-redux";
+import { RootState } from "../../store";
+import { checkPermission } from "../../utils/utils";
+import { PermissionsMap } from "../../utils/constants";
 
 // Define types
 interface Department {
@@ -49,10 +50,8 @@ export default function Department() {
   >(null);
   const [openDialog, setOpenDialog] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
-  const [editDepartmentId, setEditDepartmentId] = useState<string | null>(
-    null
-  );
-  const [rowData, setRowData] = useState<Department| null>(null);
+  const [editDepartmentId, setEditDepartmentId] = useState<string | null>(null);
+  const [rowData, setRowData] = useState<Department | null>(null);
 
   const [searchValue, setSearchValue] = useState("");
   const [paginationModel, setPaginationModel] = useState({
@@ -66,6 +65,24 @@ export default function Department() {
     status: "",
   });
   const { getHeadingSx } = useComponentTypography();
+  const permissions = useSelector(
+    (state: RootState) => state.userPermission.permissions
+  );
+  const shouldAllowAdd = checkPermission(
+    permissions,
+    PermissionsMap.DEPARTMENT,
+    "create"
+  );
+  const shouldAllowEdit = checkPermission(
+    permissions,
+    PermissionsMap.DEPARTMENT,
+    "update"
+  );
+  const shouldAllowDelete = checkPermission(
+    permissions,
+    PermissionsMap.DEPARTMENT,
+    "delete"
+  );
 
   // DELETE API
   const deleteDepartment = useDelete<null, DepartmentPostResponse>(
@@ -208,6 +225,9 @@ export default function Department() {
         filterValues={filterValues}
         departmentReload={departmentReload}
         loading={deleteDepartment.isLoading}
+        shouldAllowAdd={shouldAllowAdd}
+        shouldAllowEdit={shouldAllowEdit}
+        shouldAllowDelete={shouldAllowDelete}
       />
 
       <DepartmentModal
