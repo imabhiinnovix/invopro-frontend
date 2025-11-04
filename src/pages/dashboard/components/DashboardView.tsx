@@ -2139,6 +2139,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         : null;
     setDateRange(range);
 
+    
     if (range && range.length === 2) {
       const startDate = range[0].format("YYYY-MM-DD");
       const endDate = range[1].format("YYYY-MM-DD");
