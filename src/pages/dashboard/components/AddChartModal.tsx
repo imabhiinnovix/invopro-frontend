@@ -633,6 +633,8 @@ const handleSubmit = async (e: React.FormEvent) => {
             fetchChartData({
               dashboardId,
               dashboardType,
+                    abhishek:"add chart modal",
+
               startVersionValue:
                 dashboardType === "trend" ? startVersionValue : "",
               endVersionValue:

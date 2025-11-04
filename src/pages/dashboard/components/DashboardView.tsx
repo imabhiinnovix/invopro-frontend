@@ -2139,7 +2139,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         : null;
     setDateRange(range);
 
-    
+
     if (range && range.length === 2) {
       const startDate = range[0].format("YYYY-MM-DD");
       const endDate = range[1].format("YYYY-MM-DD");
@@ -2304,6 +2304,11 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   useEffect(() => {
     if (dashboardId) {
       const hasFilters = Object.keys(dashboardFilters).length > 0;
+      // console.log("Dashboard Filters-------------------4----:", dashboardFilters);
+   if (!hasFilters) {
+      return;
+    }
+      console.log("Dashboard Filters-------------------5----:", dashboardFilters);
 
       if (
         currentDashboard?.settings?.dashboardType === "normal" &&
@@ -2318,6 +2323,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             endVersionValue,
             versionValue,
             dashboardFilters,
+            abhishek:"dashboard view 1"
           })
         );
       } else if (
@@ -2337,6 +2343,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             endVersionValue,
             dashboardType: currentDashboard?.settings?.dashboardType,
             dashboardFilters,
+                        abhishek:"dashboard view 2"
+
           })
         );
       }
@@ -2526,6 +2534,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               endVersionValue,
               versionValue: formattedVersionValue || "",
               dashboardFilters,
+                          abhishek:"dashboard view 3"
+
             })
           );
         }

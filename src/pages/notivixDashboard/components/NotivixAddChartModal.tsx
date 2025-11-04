@@ -596,6 +596,7 @@ export const NotivixAddChartModal: React.FC<AddChartModalProps> = ({
               fetchChartData({
                 dashboardId,
                 dashboardType,
+                abhishek:"notifix add chart model",
                 startVersionValue: dashboardType === 'trend' ? startVersionValue : '',
                 endVersionValue: dashboardType === 'trend' ? endVersionValue : '',
                 versionValue: dashboardType === 'trend' ? '' : formattedVersionValue,

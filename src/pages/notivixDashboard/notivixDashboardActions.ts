@@ -223,6 +223,7 @@ export const fetchChartData = createAsyncThunk(
       endVersionValue,
       dashboardType,
       dynamicVersionValue,
+      abhishek,
       filters,
     }: {
       dashboardId: string;
@@ -232,13 +233,14 @@ export const fetchChartData = createAsyncThunk(
       dashboardType?: string;
       dynamicVersionValue?: string;
       filters: any;
+      abhishek?:string;
     },
     { dispatch, getState }
   ) => {
     const response = await axiosInstance.get<ChartDataResponse>(
       `${GET.NOTIVIX_DASHBOARD_WIDGET_GET_CHART_DATA}/${dashboardId}`
     );
-
+console.log('dashboardFilters in fetchChartData thunk:',       abhishek,)
     // Make additional API calls for each chart
     if (response.data.success && response.data.data) {
       // Process charts in batches of 3 to avoid overwhelming the system

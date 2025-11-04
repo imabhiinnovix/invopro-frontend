@@ -161,6 +161,8 @@ export const NotivixDashboardView: React.FC<DashboardViewProps> = ({
             endVersionValue,
             versionValue: versionValue || undefined,
             filters: dashboardFilters,
+                        abhishek:"notivix dashboard view 1"
+
           })
         );
       } else if (
@@ -178,6 +180,8 @@ export const NotivixDashboardView: React.FC<DashboardViewProps> = ({
             endVersionValue,
             dashboardType: currentDashboard?.settings?.dashboardType,
             filters: dashboardFilters,
+                                    abhishek:"notivix dashboard view 2"
+
 
           })
         );
@@ -190,6 +194,8 @@ export const NotivixDashboardView: React.FC<DashboardViewProps> = ({
             endVersionValue: endVersionValue || undefined,
             versionValue: versionValue || undefined,
             filters: dashboardFilters,
+                                    abhishek:"notivix dashboard view 3"
+
           })
         );
       }
@@ -371,6 +377,8 @@ export const NotivixDashboardView: React.FC<DashboardViewProps> = ({
               startVersionValue,
               endVersionValue,
               versionValue: formattedVersionValue || '',
+                                      abhishek:"notivix dashboard view 4"
+
             })
           );
         }
