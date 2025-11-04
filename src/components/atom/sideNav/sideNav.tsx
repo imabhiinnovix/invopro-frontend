@@ -67,6 +67,9 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import TopicIcon from "@mui/icons-material/Topic";
 import AccountBalanceIcon from "@mui/icons-material/AccountBalance";
 import BusinessCenterIcon from "@mui/icons-material/BusinessCenter";
+import { UseQueryResult } from "@tanstack/react-query";
+import { checkPermission, PermissionMap } from "../../../utils/utils";
+import { PermissionsMap } from "../../../utils/constants";
 
 interface ErrorResponse {
   success: boolean;
@@ -331,8 +334,8 @@ export default function SideNav() {
           error && typeof error === "object" && "payload" in error
             ? (error.payload as { message?: string })?.message
             : error && typeof error === "object" && "message" in error
-              ? (error as { message?: string })?.message
-              : "Failed to create dashboard. Please try again.";
+            ? (error as { message?: string })?.message
+            : "Failed to create dashboard. Please try again.";
         toast.error(errorMessage);
       } finally {
         setIsCreatingLoading(false);
@@ -390,273 +393,15 @@ export default function SideNav() {
   };
 
   const navItems: NavItem[] = useMemo(() => {
-    const createIcon = (IconComponent: React.ElementType, route: string) => {
-      return (
-        <IconComponent
-          sx={{
-            fontSize: "20px",
-            color: location.pathname.startsWith(route)
-              ? theme.palette.primary.main
-              : theme.palette.text.secondary,
-          }}
-        />
-      );
-    };
-    const monthlyDataSources = matchedDataSources
-      .filter((item) => item.versionType === "monthly")
-      .map((item) => ({
-        name: item?.name ?? "",
-        icon: createIcon(SourceIcon, `/data-source-new/${item?._id}`),
-        route: `/data-source-new/${item?._id}`,
-      }));
-
-    const constantDataSources = matchedDataSources
-      .filter((item) => item.versionType === "constant")
-      .map((item) => {
-        let icon;
-
-        switch (item.name) {
-          case "Action Due":
-            icon = createIcon(
-              EventAvailableIcon,
-              `/data-source-new/${item?._id}`
-            );
-            break;
-          case "IP Counsels":
-            icon = createIcon(PersonIcon, `/data-source-new/${item?._id}`);
-            break;
-          case "Formality Officer":
-            icon = createIcon(
-              HorizontalSplitIcon,
-              `/data-source-new/${item?._id}`
-            );
-            break;
-          default:
-            icon = createIcon(
-              EventAvailableIcon,
-              `/data-source-new/${item?._id}`
-            );
-            break;
-        }
-
-        return {
-          name: item?.name ?? "",
-          icon: icon,
-          route: `/data-source-new/${item?._id}`,
-        };
-      });
-
-    const alertsMenuItem = {
-      name: "Alerts Settings",
-      icon: createIcon(NotificationsActiveIcon, "/notification"),
-      route: "/notification",
-    };
-
-    const defaultNotivixDash = dashboards.find(
-      (item) => item?.isDefaultNotivix === true
+    return getNavItems(
+      matchedDataSources,
+      dataSourceList,
+      dataSourceListAPI,
+      dataSourceNotivixListAPI,
+      theme,
+      location,
+      permissions
     );
-
-    const notivixDefaultDashboard = {
-      name: (defaultNotivixDash && defaultNotivixDash.name) || "",
-      icon: createIcon(
-        DashboardIcon,
-        `/dashboard/${defaultNotivixDash && defaultNotivixDash._id}`
-      ),
-      route: `/dashboard/${defaultNotivixDash && defaultNotivixDash._id}`,
-    };
-
-    const NotificationLogsMenuItem = {
-      name: "Notifications Logs",
-      icon: createIcon(NotificationsIcon, "/notification-logs"),
-      route: "/notification-logs",
-    };
-    const Template = {
-      name: "Templates",
-      icon: createIcon(ArticleIcon, "/template"),
-      route: "/template",
-    };
-    const loadingIndicator =
-      dataSourceListAPI?.hasNextPage || dataSourceNotivixListAPI?.isLoading
-        ? [
-            {
-              name: "",
-              icon: (
-                <div style={{ paddingLeft: "1.5rem" }}>
-                  <LinearProgress />
-                </div>
-              ),
-              route: "#",
-            },
-          ]
-        : [];
-    const dataSourceItems = [
-      alertsMenuItem,
-      Template,
-      // notivixDefaultDashboard,
-      ...monthlyDataSources,
-      ...loadingIndicator,
-      NotificationLogsMenuItem,
-    ];
-    // Data sources for Theme Settings submenu
-    const themeSettingsDataSources = dataSourceList.map((item) => ({
-      name: item?.name ?? "",
-      icon: createIcon(SourceIcon, `/data-source/${item?._id}`),
-      route: `/data-source/${item?._id}`,
-    }));
-    return [
-      {
-        name: "Dashboards",
-        icon: <HomeIcon />,
-        route: "/dashboard",
-        subItems: [
-          {
-            name: "New Dashboard",
-            icon: (
-              <AddIcon
-                sx={{
-                  fontSize: "20px",
-                  color: theme.palette.text.secondary,
-                }}
-              />
-            ),
-            route: "#",
-            isCreateButton: true,
-          },
-        ],
-      },
-      // {
-      //   name: "Data Upload",
-      //   icon: createIcon(CloudUploadIcon, "/data-src-version"),
-      //   route: "/data-src-version",
-      // },
-      {
-        name: "Reports",
-        icon: createIcon(AssessmentIcon, "/reports"),
-        route: "/reports",
-      },
-      {
-        name: "Notifications",
-        icon: createIcon(NotificationsIcon, "/data-source"),
-        route: "/data-source",
-        subItems: dataSourceItems,
-      },
-      {
-        name: "VixAI Insights",
-        icon: createIcon(AutoAwesomeIcon, "/VixAi-Insights"),
-        route: "/VixAi-Insights",
-      },
-      // {
-      //   name: "User Logs",
-      //   icon: createIcon(PersonIcon, "/notification-logs"),
-      //   route: "/notification-logs",
-      // },
-      {
-        name: "Settings",
-        icon: createIcon(SettingsIcon, "/settings"),
-        route: "/settings",
-        subItems: [
-          {
-            name: "Attribute Option",
-            icon: createIcon(ArrowDropDownCircleIcon, "/attribute-option"),
-            route: "/attribute-option",
-            isBold: true,
-          },
-          {
-            name: "Data Upload",
-            icon: createIcon(CloudUploadIcon, "/data-src-version"),
-            route: "/data-src-version",
-          },
-          {
-            name: "Entity",
-            icon: createIcon(CheckBoxOutlineBlankIcon, "/entity"),
-            route: "/entity",
-            isBold: true,
-          },
-          {
-            name: "Data Src",
-            icon: createIcon(TopicIcon, "/data-src"),
-            route: "/data-src",
-            isBold: true,
-          },
-          // {
-          //   name: "Theme Settings",
-          //   icon: createIcon(PaletteIcon, "/theme-settings"),
-          //   route: "#",
-          //   isBold: true,
-          //   subItems: [
-          //     {
-          //       name: "Create Theme",
-          //       icon: createIcon(PaletteIcon, "/create-theme"),
-          //       route: "/create-theme",
-          //     },
-          //     {
-          //       name: "Layout Themes",
-          //       icon: createIcon(BrushIcon, "/themes"),
-          //       route: "/themes",
-          //     },
-          //   ],
-          // },
-          {
-            name: "Data Sources",
-            icon: createIcon(SourceIcon, "/datasources"),
-            route: "#",
-            isBold: true,
-            subItems: themeSettingsDataSources,
-          },
-          // {
-          //   name: "Report Settings",
-          //   icon: createIcon(LayersIcon, "/report-settings"),
-          //   route: "/report-settings",
-          //   isBold: true,
-          // },
-          ...constantDataSources,
-
-          {
-            name: "System Settings",
-            icon: createIcon(ManageAccountsIcon, "/system-settings"),
-            route: "#",
-            isBold: true,
-            subItems: [
-              {
-                name: "Roles",
-                icon: createIcon(AssignmentIndIcon, "/roles"),
-                route: "/roles",
-              },
-              {
-                name: "Organization",
-                icon: createIcon(BusinessIcon, "/organization"),
-                route: "/organization",
-              },
-              {
-                name: "Permission",
-                icon: createIcon(KeyIcon, "/permissions"),
-                route: "/permissions",
-              },
-              {
-                name: "Department",
-                icon: createIcon(AccountBalanceIcon, "/department"),
-                route: "/department",
-              },
-              {
-                name: "Designation",
-                icon: createIcon(BusinessCenterIcon, "/designation"),
-                route: "/designation",
-              },
-              // {
-              //   name: "Product",
-              //   icon: createIcon(BusinessIcon, "/product"),
-              //   route: "/product",
-              // },
-              {
-                name: "My Profile",
-                icon: createIcon(ManageAccountsIcon, "/profile"),
-                route: "/profile",
-              },
-            ],
-          },
-        ],
-      },
-    ];
   }, [
     loading,
     dashboards,
@@ -732,344 +477,371 @@ export default function SideNav() {
                 pb: "50px",
               }}
             >
-              {navItems.map((item, i) => (
-                <React.Fragment key={i}>
-                  <MainListItem
-                    disabled={item.name === "Theme Settings"} // Disable Theme Settings
-                    isMainItem={true}
-                    label={item.name}
-                    icon={item.icon}
-                    route={item.route}
-                    onClick={() =>
-                      handleItemClick(item.route, !!item.subItems, item.name)
-                    }
-                    isExpanded={
-                      (item.subItems &&
-                        openNav &&
-                        item.name === "Dashboards" &&
-                        openDashboard) ||
-                      (item.name === "Notifications" &&
-                        openNotificationSettings) ||
-                      (item.name === "Settings" && openReportSettings) ||
-                      (item.name === "Theme Settings" && openThemeSettings) ||
-                      (item.name === "Data Sources" && openDataSources) ||
-                      (item.name === "System Settings" && openSystemSettings)
-                    }
-                    collapsibleComp={
-                      item.subItems &&
-                      openNav && (
-                        <Collapse
-                          in={
-                            item.name === "Dashboards"
-                              ? openDashboard
-                              : item.name === "Notifications"
+              {navItems.map((item, i) => {
+                if (item.shouldShow !== undefined && !item.shouldShow) {
+                  return null;
+                }
+                return (
+                  <React.Fragment key={i}>
+                    <MainListItem
+                      disabled={item.name === "Theme Settings"} // Disable Theme Settings
+                      isMainItem={true}
+                      label={item.name}
+                      icon={item.icon}
+                      route={item.route}
+                      onClick={() =>
+                        handleItemClick(item.route, !!item.subItems, item.name)
+                      }
+                      isExpanded={
+                        (item.subItems &&
+                          openNav &&
+                          item.name === "Dashboards" &&
+                          openDashboard) ||
+                        (item.name === "Notifications" &&
+                          openNotificationSettings) ||
+                        (item.name === "Settings" && openReportSettings) ||
+                        (item.name === "Theme Settings" && openThemeSettings) ||
+                        (item.name === "Data Sources" && openDataSources) ||
+                        (item.name === "System Settings" && openSystemSettings)
+                      }
+                      collapsibleComp={
+                        item.subItems &&
+                        openNav && (
+                          <Collapse
+                            in={
+                              item.name === "Dashboards"
+                                ? openDashboard
+                                : item.name === "Notifications"
                                 ? openNotificationSettings
                                 : item.name === "Settings"
-                                  ? openReportSettings
-                                  : item.name === "Theme Settings"
-                                    ? openThemeSettings
-                                    : item.name === "Data Sources"
-                                      ? openDataSources
-                                      : item.name === "System Settings"
-                                        ? openSystemSettings
-                                        : openSettings
-                          }
-                          timeout="auto"
-                          unmountOnExit
-                        >
-                          {/* Scrollable container for dropdown */}
-                          <Box
-                            sx={{
-                              // maxHeight: "480px",
-                              // overflowY: "auto",
-                              overflowX: "hidden",
-                              "&::-webkit-scrollbar": {
-                                width: "3px",
-                              },
-                              "&::-webkit-scrollbar-track": {
-                                background: "transparent",
-                              },
-                              "&::-webkit-scrollbar-thumb": {
-                                background: theme.palette.action.hover,
-                                borderRadius: "1.5px",
-                              },
-                              "&::-webkit-scrollbar-thumb:hover": {
-                                background: theme.palette.action.selected,
-                              },
-                              scrollbarWidth: "thin",
-                              scrollbarColor: `${theme.palette.action.hover} transparent`,
-                            }}
+                                ? openReportSettings
+                                : item.name === "Theme Settings"
+                                ? openThemeSettings
+                                : item.name === "Data Sources"
+                                ? openDataSources
+                                : item.name === "System Settings"
+                                ? openSystemSettings
+                                : openSettings
+                            }
+                            timeout="auto"
+                            unmountOnExit
                           >
-                            <List
-                              component="div"
-                              disablePadding
+                            {/* Scrollable container for dropdown */}
+                            <Box
                               sx={{
-                                py: 0.25,
-                                // backgroundColor: "#a136a126",
+                                // maxHeight: "480px",
+                                // overflowY: "auto",
+                                overflowX: "hidden",
+                                "&::-webkit-scrollbar": {
+                                  width: "3px",
+                                },
+                                "&::-webkit-scrollbar-track": {
+                                  background: "transparent",
+                                },
+                                "&::-webkit-scrollbar-thumb": {
+                                  background: theme.palette.action.hover,
+                                  borderRadius: "1.5px",
+                                },
+                                "&::-webkit-scrollbar-thumb:hover": {
+                                  background: theme.palette.action.selected,
+                                },
+                                scrollbarWidth: "thin",
+                                scrollbarColor: `${theme.palette.action.hover} transparent`,
                               }}
                             >
-                              {item.name === "Dashboards" && (
-                                <>
-                                  {/* Create New Dashboard Button */}
-                                  <MainListItem
-                                    onClick={() => setOpenCreateModal(true)}
-                                    label="New Dashboards"
-                                    icon={
-                                      <AddIcon
-                                        sx={{
-                                          fontSize: "14px",
-                                          color: theme.getIconColor(),
-                                        }}
-                                      />
-                                    }
-                                  />
+                              <List
+                                component="div"
+                                disablePadding
+                                sx={{
+                                  py: 0.25,
+                                  // backgroundColor: "#a136a126",
+                                }}
+                              >
+                                {item.name === "Dashboards" && (
+                                  <>
+                                    {/* Create New Dashboard Button */}
+                                    <MainListItem
+                                      onClick={() => setOpenCreateModal(true)}
+                                      label="New Dashboards"
+                                      icon={
+                                        <AddIcon
+                                          sx={{
+                                            fontSize: "14px",
+                                            color: theme.getIconColor(),
+                                          }}
+                                        />
+                                      }
+                                    />
 
-                                  {/* Scrollable Dashboard List */}
-                                  <SubItemScroller>
-                                    {loading ? (
-                                      <MainListItem
-                                        label="..."
-                                        icon={<LinearProgress />}
-                                        onClick={() => {}}
-                                      />
-                                    ) : (
-                                      dashboards.map(
-                                        (
-                                          dashboard: DashboardType,
-                                          index: number
-                                        ) => (
-                                          <MainListItem
-                                            route={`/dashboard/${dashboard._id}`}
-                                            key={dashboard._id}
-                                            onClick={() =>
-                                              navigate(
-                                                `/dashboard/${dashboard._id}`
-                                              )
-                                            }
-                                            label={dashboard.name}
-                                            title={dashboard.name}
-                                            showIcon={true}
-                                            icon={
-                                              <NumberIcon
-                                                number={index + 1}
-                                                route={`/dashboard/${dashboard._id}`}
-                                              />
-                                            }
-                                          />
-                                        )
-                                      )
-                                    )}
-                                  </SubItemScroller>
-
-                                  {/* All Dashboards Link */}
-                                  <MainListItem
-                                    route="/dashboard"
-                                    onClick={() => navigate("/dashboard")}
-                                    label="All Dashboards"
-                                    icon={<DashboardIcon />}
-                                  />
-                                </>
-                              )}
-
-                              {item.name === "Notifications" && (
-                                <>
-                                  {item.subItems?.map((subItem, subIndex) => {
-                                    return (
-                                      <MainListItem
-                                        key={subIndex}
-                                        label={subItem.name}
-                                        icon={subItem.icon}
-                                        onClick={() => navigate(subItem.route)}
-                                        route={subItem.route}
-                                      />
-                                    );
-                                  })}
-                                </>
-                              )}
-
-                              {item.name === "Settings" ? (
-                                <>
-                                  {item.subItems?.map((subItem, subIndex) => {
-                                    const hasNestedItems =
-                                      subItem.subItems &&
-                                      subItem.subItems.length > 0;
-
-                                    return (
-                                      <React.Fragment key={subIndex}>
-                                        {hasNestedItems ? (
-                                          <MainListItem
-                                            disabled={
-                                              subItem.name === "Theme Settings"
-                                            } // Disable Theme Settings, System Settings, Data Sources
-                                            route={subItem.route}
-                                            icon={subItem.icon}
-                                            label={subItem.name}
-                                            title={subItem.name}
-                                            onClick={(e) => {
-                                              e.stopPropagation();
-                                              e.preventDefault();
-                                              if (!subItem?.disabled) {
-                                                if (
-                                                  subItem.name ===
-                                                  "Theme Settings"
-                                                ) {
-                                                  setOpenThemeSettings(
-                                                    (prev) => !prev
-                                                  );
-                                                } else if (
-                                                  subItem.name ===
-                                                  "System Settings"
-                                                ) {
-                                                  setOpenSystemSettings(
-                                                    (prev) => !prev
-                                                  );
-                                                } else if (
-                                                  subItem.name ===
-                                                  "Data Sources"
-                                                ) {
-                                                  setOpenDataSources(
-                                                    (prev) => !prev
-                                                  );
-                                                }
+                                    {/* Scrollable Dashboard List */}
+                                    <SubItemScroller>
+                                      {loading ? (
+                                        <MainListItem
+                                          label="..."
+                                          icon={<LinearProgress />}
+                                          onClick={() => {}}
+                                        />
+                                      ) : (
+                                        dashboards.map(
+                                          (
+                                            dashboard: DashboardType,
+                                            index: number
+                                          ) => (
+                                            <MainListItem
+                                              route={`/dashboard/${dashboard._id}`}
+                                              key={dashboard._id}
+                                              onClick={() =>
+                                                navigate(
+                                                  `/dashboard/${dashboard._id}`
+                                                )
                                               }
-                                            }}
-                                            isExpanded={
-                                              subItem.name === "Theme Settings"
-                                                ? openThemeSettings
-                                                : subItem.name ===
+                                              label={dashboard.name}
+                                              title={dashboard.name}
+                                              showIcon={true}
+                                              icon={
+                                                <NumberIcon
+                                                  number={index + 1}
+                                                  route={`/dashboard/${dashboard._id}`}
+                                                />
+                                              }
+                                            />
+                                          )
+                                        )
+                                      )}
+                                    </SubItemScroller>
+
+                                    {/* All Dashboards Link */}
+                                    <MainListItem
+                                      route="/dashboard"
+                                      onClick={() => navigate("/dashboard")}
+                                      label="All Dashboards"
+                                      icon={<DashboardIcon />}
+                                    />
+                                  </>
+                                )}
+
+                                {item.name === "Notifications" && (
+                                  <>
+                                    {item.subItems?.map((subItem, subIndex) => {
+                                      return (
+                                        <MainListItem
+                                          key={subIndex}
+                                          label={subItem.name}
+                                          icon={subItem.icon}
+                                          onClick={() =>
+                                            navigate(subItem.route)
+                                          }
+                                          route={subItem.route}
+                                        />
+                                      );
+                                    })}
+                                  </>
+                                )}
+
+                                {item.name === "Settings" ? (
+                                  <>
+                                    {item.subItems?.map((subItem, subIndex) => {
+                                      const hasNestedItems =
+                                        subItem.subItems &&
+                                        subItem.subItems.length > 0;
+
+                                      if (
+                                        subItem.shouldShow !== undefined &&
+                                        !subItem.shouldShow
+                                      ) {
+                                        return null;
+                                      }
+
+                                      return (
+                                        <React.Fragment key={subIndex}>
+                                          {hasNestedItems ? (
+                                            <MainListItem
+                                              disabled={
+                                                subItem.name ===
+                                                "Theme Settings"
+                                              } // Disable Theme Settings, System Settings, Data Sources
+                                              route={subItem.route}
+                                              icon={subItem.icon}
+                                              label={subItem.name}
+                                              title={subItem.name}
+                                              onClick={(e) => {
+                                                e.stopPropagation();
+                                                e.preventDefault();
+                                                if (!subItem?.disabled) {
+                                                  if (
+                                                    subItem.name ===
+                                                    "Theme Settings"
+                                                  ) {
+                                                    setOpenThemeSettings(
+                                                      (prev) => !prev
+                                                    );
+                                                  } else if (
+                                                    subItem.name ===
+                                                    "System Settings"
+                                                  ) {
+                                                    setOpenSystemSettings(
+                                                      (prev) => !prev
+                                                    );
+                                                  } else if (
+                                                    subItem.name ===
+                                                    "Data Sources"
+                                                  ) {
+                                                    setOpenDataSources(
+                                                      (prev) => !prev
+                                                    );
+                                                  }
+                                                }
+                                              }}
+                                              isExpanded={
+                                                subItem.name ===
+                                                "Theme Settings"
+                                                  ? openThemeSettings
+                                                  : subItem.name ===
                                                     "Data Sources"
                                                   ? openDataSources
                                                   : subItem.name ===
-                                                      "System Settings"
-                                                    ? openSystemSettings
-                                                    : false
-                                            }
-                                            collapsibleComp={
-                                              <Collapse
-                                                in={
-                                                  subItem.name ===
-                                                  "Theme Settings"
-                                                    ? openThemeSettings
-                                                    : subItem.name ===
+                                                    "System Settings"
+                                                  ? openSystemSettings
+                                                  : false
+                                              }
+                                              collapsibleComp={
+                                                <Collapse
+                                                  in={
+                                                    subItem.name ===
+                                                    "Theme Settings"
+                                                      ? openThemeSettings
+                                                      : subItem.name ===
                                                         "Data Sources"
                                                       ? openDataSources
                                                       : subItem.name ===
-                                                          "System Settings"
-                                                        ? openSystemSettings
-                                                        : false
-                                                }
-                                                timeout="auto"
-                                                unmountOnExit
-                                              >
-                                                <SubItemScroller>
-                                                  <List
-                                                    component="div"
-                                                    disablePadding
-                                                  >
-                                                    {subItem.subItems?.map(
-                                                      (nestedItem) => (
-                                                        <MainListItem
-                                                          route={
-                                                            nestedItem.route
+                                                        "System Settings"
+                                                      ? openSystemSettings
+                                                      : false
+                                                  }
+                                                  timeout="auto"
+                                                  unmountOnExit
+                                                >
+                                                  <SubItemScroller>
+                                                    <List
+                                                      component="div"
+                                                      disablePadding
+                                                    >
+                                                      {subItem.subItems?.map(
+                                                        (nestedItem) => {
+                                                          if (
+                                                            nestedItem.shouldShow !==
+                                                              undefined &&
+                                                            !nestedItem.shouldShow
+                                                          ) {
+                                                            return null;
                                                           }
-                                                          onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            e.preventDefault();
-                                                            handleNestedItemClick(
-                                                              nestedItem.route
-                                                            );
-                                                          }}
-                                                          isNested={true}
-                                                          icon={nestedItem.icon}
-                                                          label={
-                                                            nestedItem.name
-                                                          }
-                                                          title={
-                                                            nestedItem.name
-                                                          }
-                                                        />
-                                                      )
-                                                    )}
-                                                  </List>
-                                                </SubItemScroller>
-                                              </Collapse>
-                                            }
-                                          />
-                                        ) : (
-                                          // ALL direct items (Attribute Option, Entity, Report Settings, constantDataSources, etc.)
-                                          <MainListItem
-                                            route={subItem.route}
-                                            icon={subItem.icon}
-                                            label={subItem.name}
-                                            title={subItem.name}
-                                            onClick={(e) => {
-                                              e.stopPropagation();
-                                              e.preventDefault();
-                                              handleSettingsItemClick(
-                                                subItem.route,
-                                                subItem.name
-                                              );
-                                            }}
-                                          />
-                                        )}
-                                      </React.Fragment>
-                                    );
-                                  })}
-                                </>
-                              ) : (
-                                item.name !== "Dashboards" &&
-                                item.name !== "Notifications" && (
-                                  <MainListItem
-                                    route={item.route}
-                                    onClick={() => {
-                                      navigate(item.route);
-                                    }}
-                                    label={item.name}
-                                    collapsibleComp={
-                                      <Collapse
-                                        in={true}
-                                        timeout="auto"
-                                        unmountOnExit
-                                      >
-                                        <SubItemScroller>
-                                          <List
-                                            component="div"
-                                            disablePadding
-                                            sx={{ overflow: "hidden" }}
-                                          >
-                                            {item.subItems?.map(
-                                              (nestedItem) => (
-                                                <MainListItem
-                                                  route={nestedItem.route}
-                                                  onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    e.preventDefault();
-                                                    handleNestedItemClick(
-                                                      nestedItem.route
-                                                    );
-                                                  }}
-                                                  isNested={true}
-                                                  icon={nestedItem.icon}
-                                                  label={nestedItem.name}
-                                                  title={nestedItem.name}
-                                                />
-                                              )
-                                            )}
-                                          </List>
-                                        </SubItemScroller>
-                                      </Collapse>
-                                    }
-                                  />
-                                )
-                              )}
-                            </List>
-                          </Box>
-                        </Collapse>
-                      )
-                    }
-                  />
-                </React.Fragment>
-              ))}
+                                                          return (
+                                                            <MainListItem
+                                                              route={
+                                                                nestedItem.route
+                                                              }
+                                                              onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                e.preventDefault();
+                                                                handleNestedItemClick(
+                                                                  nestedItem.route
+                                                                );
+                                                              }}
+                                                              isNested={true}
+                                                              icon={
+                                                                nestedItem.icon
+                                                              }
+                                                              label={
+                                                                nestedItem.name
+                                                              }
+                                                              title={
+                                                                nestedItem.name
+                                                              }
+                                                            />
+                                                          );
+                                                        }
+                                                      )}
+                                                    </List>
+                                                  </SubItemScroller>
+                                                </Collapse>
+                                              }
+                                            />
+                                          ) : (
+                                            // ALL direct items (Attribute Option, Entity, Report Settings, constantDataSources, etc.)
+                                            <MainListItem
+                                              route={subItem.route}
+                                              icon={subItem.icon}
+                                              label={subItem.name}
+                                              title={subItem.name}
+                                              onClick={(e) => {
+                                                e.stopPropagation();
+                                                e.preventDefault();
+                                                handleSettingsItemClick(
+                                                  subItem.route,
+                                                  subItem.name
+                                                );
+                                              }}
+                                            />
+                                          )}
+                                        </React.Fragment>
+                                      );
+                                    })}
+                                  </>
+                                ) : (
+                                  item.name !== "Dashboards" &&
+                                  item.name !== "Notifications" && (
+                                    <MainListItem
+                                      route={item.route}
+                                      onClick={() => {
+                                        navigate(item.route);
+                                      }}
+                                      label={item.name}
+                                      collapsibleComp={
+                                        <Collapse
+                                          in={true}
+                                          timeout="auto"
+                                          unmountOnExit
+                                        >
+                                          <SubItemScroller>
+                                            <List
+                                              component="div"
+                                              disablePadding
+                                              sx={{ overflow: "hidden" }}
+                                            >
+                                              {item.subItems?.map(
+                                                (nestedItem) => (
+                                                  <MainListItem
+                                                    route={nestedItem.route}
+                                                    onClick={(e) => {
+                                                      e.stopPropagation();
+                                                      e.preventDefault();
+                                                      handleNestedItemClick(
+                                                        nestedItem.route
+                                                      );
+                                                    }}
+                                                    isNested={true}
+                                                    icon={nestedItem.icon}
+                                                    label={nestedItem.name}
+                                                    title={nestedItem.name}
+                                                  />
+                                                )
+                                              )}
+                                            </List>
+                                          </SubItemScroller>
+                                        </Collapse>
+                                      }
+                                    />
+                                  )
+                                )}
+                              </List>
+                            </Box>
+                          </Collapse>
+                        )
+                      }
+                    />
+                  </React.Fragment>
+                );
+              })}
             </List>
           </Box>
         </Box>
@@ -1326,4 +1098,297 @@ function NumberIcon({ number, route }: { number: number; route: string }) {
       </Typography>
     </Box>
   );
+}
+
+const createIcon = (
+  IconComponent: React.ElementType,
+  route: string,
+  theme: Theme
+) => {
+  return (
+    <IconComponent
+      sx={{
+        fontSize: "20px",
+        color: location.pathname.startsWith(route)
+          ? theme.palette.primary.main
+          : theme.palette.text.secondary,
+      }}
+    />
+  );
+};
+
+function getNavItems(
+  matchedDataSources: DataSourceListData[],
+  dataSourceList: DataSourceListData[],
+  dataSourceListAPI: UseQueryResult<{
+    success: boolean;
+    data: DataSourceListData[];
+  }>,
+  dataSourceNotivixListAPI: UseQueryResult<DataSourceListPayload>,
+  theme: any,
+  location: Location,
+  permissions: PermissionMap
+) {
+  const monthlyDataSources = matchedDataSources
+    .filter((item) => item.versionType === "monthly")
+    .map((item) => ({
+      name: item?.name ?? "",
+      icon: createIcon(SourceIcon, `/data-source-new/${item?._id}`, theme),
+      route: `/data-source-new/${item?._id}`,
+    }));
+
+  const alertsMenuItem = {
+    name: "Alerts Settings",
+    icon: createIcon(NotificationsActiveIcon, "/notification", theme),
+    route: "/notification",
+  };
+
+  const NotificationLogsMenuItem = {
+    name: "Notifications Logs",
+    icon: createIcon(NotificationsIcon, "/notification-logs", theme),
+    route: "/notification-logs",
+  };
+  const Template = {
+    name: "Templates",
+    icon: createIcon(ArticleIcon, "/template", theme),
+    route: "/template",
+  };
+
+  const loadingIndicator =
+    dataSourceListAPI?.hasNextPage || dataSourceNotivixListAPI?.isLoading
+      ? [
+          {
+            name: "",
+            icon: (
+              <div style={{ paddingLeft: "1.5rem" }}>
+                <LinearProgress />
+              </div>
+            ),
+            route: "#",
+          },
+        ]
+      : [];
+  const dataSourceItems = [
+    alertsMenuItem,
+    Template,
+    // notivixDefaultDashboard,
+    ...monthlyDataSources,
+    ...loadingIndicator,
+    NotificationLogsMenuItem,
+  ];
+
+  return [
+    {
+      name: "Dashboards",
+      icon: <HomeIcon />,
+      route: "/dashboard",
+      shouldShow: checkPermission(
+        permissions,
+        PermissionsMap.DASHBOARD,
+        "list"
+      ),
+      subItems: [
+        {
+          name: "New Dashboard",
+          icon: (
+            <AddIcon
+              sx={{
+                fontSize: "20px",
+                color: theme.palette.text.secondary,
+              }}
+            />
+          ),
+          route: "#",
+          isCreateButton: true,
+        },
+      ],
+    },
+    {
+      name: "Reports",
+      icon: createIcon(AssessmentIcon, "/reports", theme),
+      route: "/reports",
+    },
+    {
+      name: "Notifications",
+      icon: createIcon(NotificationsIcon, "/data-source", theme),
+      route: "/data-source",
+      subItems: dataSourceItems,
+    },
+    {
+      name: "VixAI Insights",
+      icon: createIcon(AutoAwesomeIcon, "/VixAi-Insights", theme),
+      route: "/VixAi-Insights",
+    },
+    getSystemSettingsItems(
+      dataSourceList,
+      matchedDataSources,
+      permissions,
+      theme
+    ),
+  ];
+}
+
+function getSystemSettingsItems(
+  dataSourceList,
+  matchedDataSources,
+  permissions: PermissionMap,
+  theme: Theme
+) {
+  // Data sources for Theme Settings submenu
+  const themeSettingsDataSources = dataSourceList.map((item) => ({
+    name: item?.name ?? "",
+    icon: createIcon(SourceIcon, `/data-source/${item?._id}`, theme),
+    route: `/data-source/${item?._id}`,
+  }));
+
+  const constantDataSources = matchedDataSources
+    .filter((item) => item.versionType === "constant")
+    .map((item) => {
+      let icon;
+
+      switch (item.name) {
+        case "Action Due":
+          icon = createIcon(
+            EventAvailableIcon,
+            `/data-source-new/${item?._id}`,
+            theme
+          );
+          break;
+        case "IP Counsels":
+          icon = createIcon(PersonIcon, `/data-source-new/${item?._id}`, theme);
+          break;
+        case "Formality Officer":
+          icon = createIcon(
+            HorizontalSplitIcon,
+            `/data-source-new/${item?._id}`,
+            theme
+          );
+          break;
+        default:
+          icon = createIcon(
+            EventAvailableIcon,
+            `/data-source-new/${item?._id}`,
+            theme
+          );
+          break;
+      }
+
+      return {
+        name: item?.name ?? "",
+        icon: icon,
+        route: `/data-source-new/${item?._id}`,
+      };
+    });
+
+  return {
+    name: "Settings",
+    icon: createIcon(SettingsIcon, "/settings", theme),
+    route: "/settings",
+    subItems: [
+      {
+        name: "Attribute Option",
+        icon: createIcon(ArrowDropDownCircleIcon, "/attribute-option", theme),
+        route: "/attribute-option",
+        isBold: true,
+        shouldShow: checkPermission(
+          permissions,
+          PermissionsMap.ATTRIBUTE_OPTION,
+          "list"
+        ),
+      },
+      {
+        name: "Data Upload",
+        icon: createIcon(CloudUploadIcon, "/data-src-version", theme),
+        route: "/data-src-version",
+      },
+      {
+        name: "Entity",
+        icon: createIcon(CheckBoxOutlineBlankIcon, "/entity", theme),
+        route: "/entity",
+        isBold: true,
+        shouldShow: checkPermission(
+          permissions,
+          PermissionsMap.ENTITIES,
+          "list"
+        ),
+      },
+      {
+        name: "Data Src",
+        icon: createIcon(TopicIcon, "/data-src", theme),
+        route: "/data-src",
+        isBold: true,
+      },
+      {
+        name: "Data Sources",
+        icon: createIcon(SourceIcon, "/datasources", theme),
+        route: "#",
+        isBold: true,
+        subItems: themeSettingsDataSources,
+      },
+      ...constantDataSources,
+      {
+        name: "System Settings",
+        icon: createIcon(ManageAccountsIcon, "/system-settings", theme),
+        route: "#",
+        isBold: true,
+        subItems: [
+          {
+            name: "Roles",
+            icon: createIcon(AssignmentIndIcon, "/roles", theme),
+            route: "/roles",
+            shouldShow: checkPermission(
+              permissions,
+              PermissionsMap.ROLE,
+              "list"
+            ),
+          },
+          {
+            name: "Organization",
+            icon: createIcon(BusinessIcon, "/organization", theme),
+            route: "/organization",
+            shouldShow: checkPermission(
+              permissions,
+              PermissionsMap.ORGANIZATION,
+              "list"
+            ),
+          },
+          {
+            name: "Permission",
+            icon: createIcon(KeyIcon, "/permissions", theme),
+            route: "/permissions",
+            shouldShow: checkPermission(
+              permissions,
+              PermissionsMap.PERMISSION,
+              "list"
+            ),
+          },
+          {
+            name: "Department",
+            icon: createIcon(AccountBalanceIcon, "/department", theme),
+            route: "/department",
+            shouldShow: checkPermission(
+              permissions,
+              PermissionsMap.DEPARTMENT,
+              "list"
+            ),
+          },
+          {
+            name: "Designation",
+            icon: createIcon(BusinessCenterIcon, "/designation", theme),
+            route: "/designation",
+            shouldShow: checkPermission(
+              permissions,
+              PermissionsMap.DESIGNATION,
+              "list"
+            ),
+          },
+          {
+            name: "My Profile",
+            icon: createIcon(ManageAccountsIcon, "/profile", theme),
+            route: "/profile",
+          },
+        ],
+      },
+    ],
+  };
 }

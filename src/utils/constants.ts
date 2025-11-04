@@ -216,3 +216,40 @@ export const AdminSidebar = [
     icon: 'ph:user-list',
   },
 ];
+
+export const PermissionsMap = {
+  DATA_SOURCE: "Data Source",
+  DESIGNATION: "Designation",
+  DEPARTMENT: "Department",
+  USER_PROFILE_IMAGE: "User Profile Image",
+  DASHBOARD_THEME: "Dashboard Theme",
+  DASHBOARD_FONT_THEME: "Dashboard Font Theme",
+  NOTIFICATION_MEDIUM_SETTING: "Notification Medium Setting",
+  NOTIFICATION_SETTING_TEMPLATE: "Notification Setting Template",
+  NOTIFICATION_SETTING_FREQUENCY: "Notification Setting Frequency",
+  NOTIFICATION_SETTING_TYPE: "Notification Setting Type",
+  DERIVED_FIELD: "Derived Field",
+  NL_QUERY: "NL Query",
+  CUSTOM_REPORT: "Custom Report",
+  DASHBOARD_SHARE: "Dashboard Share",
+  WIDGET_THEME: "Widget Theme",
+  GET_DATA_BY_VERSION_ID_WIDGET_THEME: "get_data_by_version_idWidget Theme",
+  OPERATOR: "Operator",
+  WIDGET_TYPE: "Widget Type",
+  DASHBOARD: "Dashboard",
+  DATA_SOURCE_VERSION: "Data Source Version",
+  FILE_UPLOAD: "File Upload",
+  ATTRIBUTE_OPTION: "Attribute Option",
+  ENTITIES: "Entities",
+  PRODUCT_SUBSCRIPTION: "Product Subscription",
+  ORGANIZATION: "Organization",
+  PRODUCT: "Product",
+  ROLE: "Role",
+  PERMISSION: "Permission",
+  USER: "User",
+} as const;
+
+export type PermissionResourceType = keyof typeof PermissionsMap;
+
+export type PermissionResourceCode = 'get' | 'list' | 'update' | 'create'
+ 
