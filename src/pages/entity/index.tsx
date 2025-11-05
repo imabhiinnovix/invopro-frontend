@@ -7,10 +7,32 @@ import { useUnifiedTheme } from "../../hooks/useUnifiedTheme";
 import CreateUpdateAttributeOption from "../../components/atom/attributeOption/createUpdateAttributeOption";
 import CommonPageHeader from "../../components/atom/commonPageHeader";
 import PrimaryButton from "../../components/common/PrimaryButton";
+import { useSelector } from "react-redux";
+import { RootState } from "../../store";
+import { checkPermission } from "../../utils/utils";
+import { PermissionsMap } from "../../utils/constants";
 
 export default function Entity() {
   const theme = useUnifiedTheme();
   const [reloadEntity, setReloadEntity] = useState(false);
+  const permissions = useSelector(
+    (state: RootState) => state.userPermission.permissions
+  );
+  const shouldAllowAdd = checkPermission(
+    permissions,
+    PermissionsMap.ENTITIES,
+    "create"
+  );
+  const shouldAllowEdit = checkPermission(
+    permissions,
+    PermissionsMap.ENTITIES,
+    "update"
+  );
+  const shouldAllowDelete = checkPermission(
+    permissions,
+    PermissionsMap.ENTITIES,
+    "delete"
+  );
   return (
     <Box
       sx={{
@@ -24,9 +46,11 @@ export default function Entity() {
             setReloadEntity={setReloadEntity}
             title="Create New Entity"
             CustomButton={
-              <PrimaryButton variant="contained">
-                Create New Entity
-              </PrimaryButton>
+              shouldAllowAdd && (
+                <PrimaryButton variant="contained">
+                  Create New Entity
+                </PrimaryButton>
+              )
             }
           />
         }
@@ -36,6 +60,8 @@ export default function Entity() {
         <EntityTable
           reloadEntity={reloadEntity}
           setReloadEntity={setReloadEntity}
+          shouldAllowEdit={shouldAllowEdit}
+          shouldAllowDelete={shouldAllowDelete}
         />
       </Box>
     </Box>

@@ -623,6 +623,12 @@ export default function SideNav() {
                                 {item.name === "Notifications" && (
                                   <>
                                     {item.subItems?.map((subItem, subIndex) => {
+                                      if (
+                                        subItem.shouldShow !== undefined &&
+                                        !subItem.shouldShow
+                                      ) {
+                                        return null;
+                                      }
                                       return (
                                         <MainListItem
                                           key={subIndex}
@@ -1141,6 +1147,11 @@ function getNavItems(
     name: "Alerts Settings",
     icon: createIcon(NotificationsActiveIcon, "/notification", theme),
     route: "/notification",
+    shouldShow: checkPermission(
+      permissions,
+      PermissionsMap.NOTIFICATION_SETTING_TYPE,
+      "list"
+    ),
   };
 
   const NotificationLogsMenuItem = {
