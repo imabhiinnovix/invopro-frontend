@@ -149,6 +149,12 @@ export default function Organization() {
     "list"
   );
 
+  const shouldAllowProductSubscriptionListing = checkPermission(
+    permissions,
+    PermissionsMap.PRODUCT_SUBSCRIPTION,
+    "list"
+  );
+
   const {
     control,
     handleSubmit,
@@ -551,6 +557,9 @@ export default function Organization() {
           shouldAllowUserCreate={shouldAllowUserCreate}
           shouldAllowUserEdit={shouldAllowUserEdit}
           shouldAllowUserDelete={shouldAllowUserDelete}
+          shouldAllowProductSubscriptionListing={
+            shouldAllowProductSubscriptionListing
+          }
         />
       ) : (
         <>

@@ -47,6 +47,7 @@ interface UsersProps {
   shouldAllowUserCreate: boolean;
   shouldAllowUserEdit: boolean;
   shouldAllowUserDelete: boolean;
+  shouldAllowProductSubscriptionListing: boolean;
 }
 
 interface UserRowData {
@@ -225,6 +226,7 @@ export default function Users({
   shouldAllowUserCreate,
   shouldAllowUserEdit,
   shouldAllowUserDelete,
+  shouldAllowProductSubscriptionListing,
 }: UsersProps) {
   const theme = useUnifiedTheme();
   const [openModal, setOpenModal] = useState(false);
@@ -805,42 +807,43 @@ export default function Users({
               />
             )}
           />
-          <Autocomplete
-            sx={{
-              height: 56,
-            }}
-            multiple
-            options={productSubscriptionsQuery.data?.data || []}
-            getOptionLabel={(option) => option.productId.name}
-            value={
-              productSubscriptionsQuery.data?.data?.filter((sub) =>
-                formData.organizationProductSubscriptionIds.includes(sub._id)
-              ) || []
-            }
-            onChange={(_, newValue) =>
-              setFormData({
-                ...formData,
-                organizationProductSubscriptionIds: newValue.map(
-                  (sub) => sub._id
-                ),
-              })
-            }
-            disabled={modalMode === "view"}
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                label="Product Subscriptions"
-                required
-                variant="outlined"
-                sx={{
-                  "& .MuiOutlinedInput-root": {
-                    borderRadius: STYLE_GUIDE.SPACING.s2,
-                  },
-                }}
-              />
-            )}
-          />
-
+          {shouldAllowProductSubscriptionListing && (
+            <Autocomplete
+              sx={{
+                height: 56,
+              }}
+              multiple
+              options={productSubscriptionsQuery.data?.data || []}
+              getOptionLabel={(option) => option.productId.name}
+              value={
+                productSubscriptionsQuery.data?.data?.filter((sub) =>
+                  formData.organizationProductSubscriptionIds.includes(sub._id)
+                ) || []
+              }
+              onChange={(_, newValue) =>
+                setFormData({
+                  ...formData,
+                  organizationProductSubscriptionIds: newValue.map(
+                    (sub) => sub._id
+                  ),
+                })
+              }
+              disabled={modalMode === "view"}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  label="Product Subscriptions"
+                  required
+                  variant="outlined"
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      borderRadius: STYLE_GUIDE.SPACING.s2,
+                    },
+                  }}
+                />
+              )}
+            />
+          )}
           {/* Department Autocomplete */}
           <Autocomplete
             sx={{

@@ -1321,6 +1321,11 @@ function getSystemSettingsItems(
         name: "Data Upload",
         icon: createIcon(CloudUploadIcon, "/data-src-version", theme),
         route: "/data-src-version",
+        shouldShow: checkPermission(
+          permissions,
+          PermissionsMap.DATA_SOURCE_VERSION,
+          "list"
+        ),
       },
       {
         name: "Entity",
