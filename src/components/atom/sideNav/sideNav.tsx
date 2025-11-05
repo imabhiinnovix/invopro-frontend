@@ -202,6 +202,11 @@ export default function SideNav() {
   const permissions = useSelector(
     (state: RootState) => state.userPermission?.permissions
   );
+  const shouldAllowDashboardCreate = checkPermission(
+    permissions,
+    PermissionsMap.DASHBOARD,
+    "create"
+  );
   const dataSourcePermissions = permissions?.["Data Source"] || {};
   const validPermissionIds = Object.entries(dataSourcePermissions)
     .filter(([key, permission]) => {
@@ -560,18 +565,20 @@ export default function SideNav() {
                                 {item.name === "Dashboards" && (
                                   <>
                                     {/* Create New Dashboard Button */}
-                                    <MainListItem
-                                      onClick={() => setOpenCreateModal(true)}
-                                      label="New Dashboards"
-                                      icon={
-                                        <AddIcon
-                                          sx={{
-                                            fontSize: "14px",
-                                            color: theme.getIconColor(),
-                                          }}
-                                        />
-                                      }
-                                    />
+                                    {shouldAllowDashboardCreate && (
+                                      <MainListItem
+                                        onClick={() => setOpenCreateModal(true)}
+                                        label="New Dashboards"
+                                        icon={
+                                          <AddIcon
+                                            sx={{
+                                              fontSize: "14px",
+                                              color: theme.getIconColor(),
+                                            }}
+                                          />
+                                        }
+                                      />
+                                    )}
 
                                     {/* Scrollable Dashboard List */}
                                     <SubItemScroller>

@@ -33,6 +33,9 @@ import { useUnifiedTheme } from "../../hooks/useUnifiedTheme";
 import { useComponentTypography } from "../../hooks/useComponentTypography";
 import CommonTable from "../../components/common/table";
 import PrimaryButton from "../../components/common/PrimaryButton";
+import { checkPermission } from "../../utils/utils";
+import { PermissionsMap } from "../../utils/constants";
+import { useSelector } from "react-redux";
 
 const Dashboard = () => {
   const theme = useUnifiedTheme();
@@ -55,6 +58,27 @@ const Dashboard = () => {
   >("normal");
   const [timePeriod, setTimePeriod] = useState<string>("1m");
   const [dataSourceId, setDataSourceId] = useState<string>("");
+
+  const permissions = useSelector(
+    (state: RootState) => state.userPermission?.permissions
+  );
+
+  const shouldAllowDashboardCreate = checkPermission(
+    permissions,
+    PermissionsMap.DASHBOARD,
+    "create"
+  );
+  const shouldAllowDashboardDelete = checkPermission(
+    permissions,
+    PermissionsMap.DASHBOARD,
+    "delete"
+  );
+
+  const shouldAllowDashboardGet = checkPermission(
+    permissions,
+    PermissionsMap.DASHBOARD,
+    "get"
+  );
 
   useEffect(() => {
     if (!dashboards.length) {
@@ -198,6 +222,7 @@ const Dashboard = () => {
       label: "Actions",
       minWidth: 170,
       renderCell: (row: Record<string, unknown>) => {
+        if (!shouldAllowDashboardDelete) return null;
         return (
           <Box>
             <Tooltip title="Delete Dashboard">
@@ -223,6 +248,7 @@ const Dashboard = () => {
     type: dashboard.settings.dashboardType,
     actions: dashboard._id,
     originalData: dashboard,
+    shouldAllowDelete: shouldAllowDashboardDelete,
   }));
 
   // If no ID is provided, show the dashboard list view
@@ -258,12 +284,14 @@ const Dashboard = () => {
           >
             Dashboards
           </Typography>
-          <PrimaryButton
-            icon={<AddIcon />}
-            onClick={() => setOpenCreateModal(true)}
-          >
-            Create New Dashboard
-          </PrimaryButton>
+          {shouldAllowDashboardCreate && (
+            <PrimaryButton
+              icon={<AddIcon />}
+              onClick={() => setOpenCreateModal(true)}
+            >
+              Create New Dashboard
+            </PrimaryButton>
+          )}
           {/* <Button
             variant="contained"
             startIcon={<AddIcon />}
@@ -291,7 +319,9 @@ const Dashboard = () => {
           rows={rows}
           loading={isLoading}
           height="calc(100vh - 240px)"
-          onRowClick={(row) => handleEdit(row.originalData._id)}
+          onRowClick={(row) =>
+            shouldAllowDashboardGet && handleEdit(row.originalData._id)
+          }
         />
 
         {/* <Box

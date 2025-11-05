@@ -91,7 +91,10 @@ import { SaveWidgetModel } from "../../naturalLanguage/saveWidgetModel";
 import { STYLE_GUIDE } from "../../../styles";
 import { useUnifiedTheme } from "../../../hooks/useUnifiedTheme";
 import { useComponentTypography } from "../../../hooks/useComponentTypography";
-import { formatDateWithoutTime } from "../../../utils/utils";
+import { checkPermission, formatDateWithoutTime } from "../../../utils/utils";
+import { PermissionsMap } from "../../../utils/constants";
+import { useSelector } from "react-redux";
+import { RootState } from "../../../reducers";
 
 // Register ChartJS components
 ChartJS.register(
@@ -363,9 +366,9 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
     dashboards: state.dashboard.dashboards || [],
   }));
   useEffect(() => {
-  dispatch(fetchChartData({ dashboardId, dashboardFilters }));
-}, [dispatch, dashboardId]); // re-fetch when dashboard changes
-// console.log("dashboarf>>>>>>>>>>",dashboardFilters)
+    dispatch(fetchChartData({ dashboardId, dashboardFilters }));
+  }, [dispatch, dashboardId]); // re-fetch when dashboard changes
+  // console.log("dashboarf>>>>>>>>>>",dashboardFilters)
   const [drillDownColumns, setDrillDownColumns] = useState<string[]>([]);
 
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
@@ -402,6 +405,27 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
   );
   const otherCharts = allCharts.filter(
     (chart) => chart.widgetTypeId?.chartType !== "number"
+  );
+
+  const permissions = useSelector(
+    (state: RootState) => state.userPermission?.permissions
+  );
+  const shouldAllowWidgetDelete = checkPermission(
+    permissions,
+    PermissionsMap.DASHBOARD,
+    "delete_widget"
+  );
+
+  const shouldAllowWidgetUpdate = checkPermission(
+    permissions,
+    PermissionsMap.DASHBOARD,
+    "update_widget"
+  );
+
+  const shouldAllowWidgetSave = checkPermission(
+    permissions,
+    PermissionsMap.DASHBOARD,
+    "save_widgets"
   );
 
   const bottomRef: any = isNaturalLangauage
@@ -608,7 +632,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
         if (value === null || value === undefined) return "";
         const str = String(value);
         if (/[",\n]/.test(str)) {
-          return `"${str.replace(/"/g, '""')}"`; 
+          return `"${str.replace(/"/g, '""')}"`;
         }
         return str;
       };
@@ -667,8 +691,6 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
     setSelectedChart(null);
   };
 
-  
-
   const handleRowsPerPageChange = async (event: SelectChangeEvent<number>) => {
     const newLimit = Number(event.target.value);
     setRowsPerPage(newLimit);
@@ -682,24 +704,21 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
     try {
       const payload = {
         ...drillDownPayload,
-        page: 1, 
+        page: 1,
         limit: newLimit,
       };
-
 
       const response = await axiosInstance.post(
         "/common/dataSource/getWidgetDataByFilter",
         payload
       );
 
-
       if (response.data.success) {
         setDrillDownData(response.data.data);
         setTotalPages(response.data.pagination.totalPages);
         setTotalRecords(response.data.pagination.totalRecords);
         setCurrentPage(1);
-        setDrillDownPayload(payload); 
-      
+        setDrillDownPayload(payload);
       } else {
         toast.error(response.data.message || "Failed to fetch detailed data");
       }
@@ -719,7 +738,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
     setSelectedChart(chart);
 
     const { datasetIndex, index } = elements[0];
-    const clickedElement = { datasetIndex, index }; 
+    const clickedElement = { datasetIndex, index };
 
     const chartData =
       widgetData[chart._id]?.data?.widgetData || chart.data || [];
@@ -821,7 +840,6 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
     chart: ChartResponse,
     elements: ActiveElement[]
   ) => {
-
     setSelectedChart(chart);
     setDrillDownTitle(`${chart.name} - All Data`);
     setDrillDownOpen(true);
@@ -884,7 +902,6 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
     setRowsPerPage(10);
   };
 
- 
   const handlePageChange = async (
     event: React.ChangeEvent<unknown>,
     value: number
@@ -895,7 +912,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
       const payload = {
         ...drillDownPayload,
         page: value,
-        limit: rowsPerPage, 
+        limit: rowsPerPage,
       };
 
       const response = await axiosInstance.post(
@@ -1629,7 +1646,6 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
       chartType: string,
       chart: any
     ) {
-
       const hasWidgetDataStructure = data.length > 0 && data[0].widgetData;
 
       if (hasWidgetDataStructure) {
@@ -1682,7 +1698,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
               borderColor: "#FFFFFF",
               borderWidth: 1,
               borderRadius: 4,
-              stack: "combined", 
+              stack: "combined",
             };
           });
 
@@ -2089,7 +2105,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
       case "comboBarLine":
       case "stackedBarLine":
         return <Chart type="bar" {...baseChartProps} />;
-     
+
       case "gantt":
       case "heatmap":
       case "treemap":
@@ -2787,10 +2803,10 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
                             {cellValue == null || cellValue === ""
                               ? "-"
                               : typeof cellValue === "number"
-                                ? cellValue.toLocaleString()
-                                : isDateField
-                                  ? formatDateWithoutTime(cellValue)
-                                  : cellValue}
+                              ? cellValue.toLocaleString()
+                              : isDateField
+                              ? formatDateWithoutTime(cellValue)
+                              : cellValue}
                           </TableCell>
                         );
                       })}
@@ -2914,9 +2930,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
                               ? "#FFFFFF"
                               : "#939598",
                         }}
-                      >
-                      
-                      </ChartTitle>
+                      ></ChartTitle>
                       <ChartContainer
                         className="number-chart"
                         onWheel={handleWheel}
@@ -3054,10 +3068,10 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
                 isAddChartModalOpen || isEditChartModalOpen
                   ? 12
                   : gridColumns === 1
-                    ? 12
-                    : gridColumns === 2
-                      ? 6
-                      : 4
+                  ? 12
+                  : gridColumns === 2
+                  ? 6
+                  : 4
               }
               gap={isNaturalLangauage ? 4 : 0}
               p={isNaturalLangauage ? 2 : 0}
@@ -3115,18 +3129,20 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
                       >
                         <DownloadIcon />
                       </IconButton>
-                      {isEditMode && (
-                        <IconButton
-                          size="small"
-                          onClick={(e) => handleMenuClick(e, chart)}
-                          sx={{
-                            opacity: 0.7,
-                            "&:hover": { opacity: 1 },
-                          }}
-                        >
-                          <MoreVertIcon />
-                        </IconButton>
-                      )}
+                      {isEditMode &&
+                        (shouldAllowWidgetUpdate ||
+                          shouldAllowWidgetDelete) && (
+                          <IconButton
+                            size="small"
+                            onClick={(e) => handleMenuClick(e, chart)}
+                            sx={{
+                              opacity: 0.7,
+                              "&:hover": { opacity: 1 },
+                            }}
+                          >
+                            <MoreVertIcon />
+                          </IconButton>
+                        )}
                     </Box>
                   </ChartTitle>
                   <Divider
@@ -3137,20 +3153,20 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
                       (chart.widgetTypeId?.chartType || "line") === "pie"
                         ? "pie-chart"
                         : (chart.widgetTypeId?.chartType || "line") ===
-                            "horizontalBar"
-                          ? "horizontal-bar-chart"
-                          : (chart.widgetTypeId?.chartType || "line") ===
-                              "tabular"
-                            ? "table-chart"
-                            : (chart.widgetTypeId?.chartType || "line") ===
-                                "multiSeriesPie"
-                              ? "pie-chart"
-                              : (chart.widgetTypeId?.chartType || "line") ===
-                                    "stackedBarLine" ||
-                                  (chart.widgetTypeId?.chartType || "line") ===
-                                    "comboBarLine"
-                                ? "combo-chart"
-                                : "line-chart"
+                          "horizontalBar"
+                        ? "horizontal-bar-chart"
+                        : (chart.widgetTypeId?.chartType || "line") ===
+                          "tabular"
+                        ? "table-chart"
+                        : (chart.widgetTypeId?.chartType || "line") ===
+                          "multiSeriesPie"
+                        ? "pie-chart"
+                        : (chart.widgetTypeId?.chartType || "line") ===
+                            "stackedBarLine" ||
+                          (chart.widgetTypeId?.chartType || "line") ===
+                            "comboBarLine"
+                        ? "combo-chart"
+                        : "line-chart"
                     }
                     onWheel={handleWheel}
                   >
@@ -3185,21 +3201,27 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
         )}
         {isNaturalLangauage && <Box ref={bottomRef} />}
       </Grid>
+
       <Menu
         anchorEl={anchorEl}
         open={Boolean(anchorEl)}
         onClose={handleMenuClose}
         onClick={(e) => e.stopPropagation()}
       >
-        <MenuItem onClick={handleEditClick}>
-          <EditIcon sx={{ mr: 1, fontSize: 20 }} />
-          Edit
-        </MenuItem>
-        <MenuItem onClick={handleDeleteClick} sx={{ color: "error.main" }}>
-          <DeleteIcon sx={{ mr: 1, fontSize: 20 }} />
-          Delete
-        </MenuItem>
+        {shouldAllowWidgetUpdate && (
+          <MenuItem onClick={handleEditClick}>
+            <EditIcon sx={{ mr: 1, fontSize: 20 }} />
+            Edit
+          </MenuItem>
+        )}
+        {shouldAllowWidgetDelete && (
+          <MenuItem onClick={handleDeleteClick} sx={{ color: "error.main" }}>
+            <DeleteIcon sx={{ mr: 1, fontSize: 20 }} />
+            Delete
+          </MenuItem>
+        )}
       </Menu>
+
       <Menu
         anchorEl={exportMenuAnchorEl}
         open={Boolean(exportMenuAnchorEl)}
@@ -3473,10 +3495,10 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
                                   {cellValue == null || cellValue === ""
                                     ? "-"
                                     : typeof cellValue === "number"
-                                      ? cellValue.toLocaleString()
-                                      : isDateField
-                                        ? formatDateWithoutTime(cellValue)
-                                        : cellValue}
+                                    ? cellValue.toLocaleString()
+                                    : isDateField
+                                    ? formatDateWithoutTime(cellValue)
+                                    : cellValue}
                                 </TableCell>
                               );
                             })}

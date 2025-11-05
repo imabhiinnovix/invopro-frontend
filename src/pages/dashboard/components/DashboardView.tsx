@@ -1887,6 +1887,10 @@ import { GridFilterListIcon } from "@mui/x-data-grid";
 import { ToggleButton, ToggleButtonGroup } from "@mui/material";
 import DatePicker, { DateObject } from "react-multi-date-picker";
 import FilterListIcon from "@mui/icons-material/FilterList";
+import { useSelector } from "react-redux";
+import { RootState } from "../../../store";
+import { checkPermission } from "../../../utils/utils";
+import { PermissionsMap } from "../../../utils/constants";
 
 interface DashboardViewProps {
   title: string;
@@ -1933,6 +1937,20 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
   const postGridColumns = usePost([""]);
 
+  const permissions = useSelector(
+    (state: RootState) => state.userPermission?.permissions
+  );
+  const shouldAllowDashboardUpdate = checkPermission(
+    permissions,
+    PermissionsMap.DASHBOARD,
+    "update"
+  );
+
+  const shouldAllowWidgetCreate = checkPermission(
+    permissions,
+    PermissionsMap.DASHBOARD,
+    "create_widget"
+  );
   // Predefined range options
   const rangeOptions = {
     Pending: [
@@ -3043,15 +3061,17 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                   <ViewColumnIcon />
                 </Button>
               </ButtonGroup>
-              <Button
-                variant="contained"
-                color="primary"
-                startIcon={<AddIcon />}
-                onClick={() => setIsAddChartModalOpen(true)}
-                sx={{ ...getButtonSx(), px: STYLE_GUIDE.SPACING.s6 }}
-              >
-                Add Chart
-              </Button>
+              {shouldAllowWidgetCreate && (
+                <Button
+                  variant="contained"
+                  color="primary"
+                  startIcon={<AddIcon />}
+                  onClick={() => setIsAddChartModalOpen(true)}
+                  sx={{ ...getButtonSx(), px: STYLE_GUIDE.SPACING.s6 }}
+                >
+                  Add Chart
+                </Button>
+              )}
               <Button
                 onClick={handleEditModeToggle}
                 color="success"
@@ -3125,19 +3145,21 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                   </Stack>
                 ) : null}
               </Box>
-              <Button
-                onClick={handleEditModeToggle}
-                // color="primary"
-                variant="contained"
-                startIcon={<EditIcon />}
-                // sx={{ ...getButtonSx() }}
-                sx={{
-                  borderRadius: "8px",
-                  width: "120px",
-                }}
-              >
-                Edit
-              </Button>
+              {shouldAllowDashboardUpdate && (
+                <Button
+                  onClick={handleEditModeToggle}
+                  // color="primary"
+                  variant="contained"
+                  startIcon={<EditIcon />}
+                  // sx={{ ...getButtonSx() }}
+                  sx={{
+                    borderRadius: "8px",
+                    width: "120px",
+                  }}
+                >
+                  Edit
+                </Button>
+              )}
             </>
           )}
         </Box>
