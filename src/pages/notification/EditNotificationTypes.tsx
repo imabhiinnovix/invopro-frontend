@@ -36,6 +36,8 @@ import { RootState } from "../../reducers";
 import { useComponentTypography } from "../../hooks";
 import Frequency from "./Frequency";
 import ConditionPreview from "./ConditionPreview";
+import { checkPermission } from "../../utils/utils";
+import { PermissionsMap } from "../../utils/constants";
 
 class ErrorBoundary extends React.Component {
   constructor(props) {
@@ -846,6 +848,37 @@ export default function EditNotificationTypes() {
 
   const { getHeadingSx } = useComponentTypography();
 
+  const permissions = useSelector(
+    (state: RootState) => state.userPermission.permissions
+  );
+  const shouldAllowScheduler = checkPermission(
+    permissions,
+    PermissionsMap.NOTIFICATION_SETTING_FREQUENCY,
+    "list"
+  );
+
+  const shouldAllowSchedulerCreate = checkPermission(
+    permissions,
+    PermissionsMap.NOTIFICATION_SETTING_FREQUENCY,
+    "create"
+  );
+  const shouldAllowSchedulerUpdate = checkPermission(
+    permissions,
+    PermissionsMap.NOTIFICATION_SETTING_FREQUENCY,
+    "update"
+  );
+  const shouldAllowSchedulerDelete = checkPermission(
+    permissions,
+    PermissionsMap.NOTIFICATION_SETTING_FREQUENCY,
+    "delete"
+  );
+
+  const shouldAllowSchedulerGet = checkPermission(
+    permissions,
+    PermissionsMap.NOTIFICATION_SETTING_FREQUENCY,
+    "get"
+  );
+
   const [notificationData, setNotificationData] = useState({});
   const [notificationTypeId, setNotificationTypeId] = useState(id);
   const [fieldOptions, setFieldOptions] = useState([]);
@@ -1086,7 +1119,7 @@ export default function EditNotificationTypes() {
                 expanded={expanded.reminder && notificationTypeId !== null}
                 onChange={handleAccordionChange("reminder")}
                 sx={{ mb: 2, borderRadius: 2, boxShadow: 1 }}
-                disabled={notificationTypeId === null}
+                disabled={notificationTypeId === null || !shouldAllowScheduler}
               >
                 <AccordionSummary
                   expandIcon={<ExpandMoreIcon />}
@@ -1102,7 +1135,7 @@ export default function EditNotificationTypes() {
                     variant="h6"
                     sx={{ fontWeight: "bold", color: "text.primary" }}
                   >
-                    Scheduler{!notificationTypeId}
+                    Scheduler {!notificationTypeId}
                   </Typography>
                 </AccordionSummary>
                 <AccordionDetails>
@@ -1110,6 +1143,10 @@ export default function EditNotificationTypes() {
                     <Frequency
                       fieldOptions={fieldOptions}
                       notificationTypeId={notificationTypeId}
+                      shouldAllowSchedulerGet={shouldAllowSchedulerGet}
+                      shouldAllowSchedulerCreate={shouldAllowSchedulerCreate}
+                      shouldAllowSchedulerUpdate={shouldAllowSchedulerUpdate}
+                      shouldAllowSchedulerDelete={shouldAllowSchedulerDelete}
                     />
                   </ErrorBoundary>
                 </AccordionDetails>

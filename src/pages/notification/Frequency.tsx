@@ -63,7 +63,14 @@ import {
   generateCalendarDays,
 } from "./Frequency/FrequencyUtility";
 
-export default function Frequency({ fieldOptions, notificationTypeId }) {
+export default function Frequency({
+  fieldOptions,
+  notificationTypeId,
+  shouldAllowSchedulerGet,
+  shouldAllowSchedulerCreate,
+  shouldAllowSchedulerUpdate,
+  shouldAllowSchedulerDelete,
+}) {
   // State variables
   const [open, setOpen] = useState(false);
   const [allDay, setAllDay] = useState(false);
@@ -249,6 +256,7 @@ export default function Frequency({ fieldOptions, notificationTypeId }) {
               color="primary"
               aria-label="edit"
               onClick={() => handleEditReminder(params.row)}
+              disabled={!shouldAllowSchedulerUpdate}
             >
               <EditIcon />
             </IconButton>
@@ -258,6 +266,7 @@ export default function Frequency({ fieldOptions, notificationTypeId }) {
               color="primary"
               aria-label="view"
               onClick={() => handleViewReminder(params.row)}
+              disabled={!shouldAllowSchedulerGet}
             >
               <VisibilityIcon />
             </IconButton>
@@ -267,6 +276,7 @@ export default function Frequency({ fieldOptions, notificationTypeId }) {
               color="error"
               aria-label="delete"
               onClick={() => handleDeleteClick(params.row)}
+              disabled={!shouldAllowSchedulerDelete}
             >
               <DeleteIcon />
             </IconButton>
@@ -990,7 +1000,9 @@ export default function Frequency({ fieldOptions, notificationTypeId }) {
     } catch (error) {
       console.error("Error saving scheduler:", error);
       toast.error(
-        `An error occurred while ${modelType === "edit" ? "updating" : "creating"} the scheduler`
+        `An error occurred while ${
+          modelType === "edit" ? "updating" : "creating"
+        } the scheduler`
       );
     }
   };
@@ -1058,17 +1070,19 @@ export default function Frequency({ fieldOptions, notificationTypeId }) {
             ? "Scheduler Listing"
             : "Scheduler"}
         </Typography>
-        <Button
-          variant="contained"
-          onClick={handleOpenDialog}
-          sx={{
-            textTransform: "none",
-            borderRadius: 2,
-            fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.medium,
-          }}
-        >
-          Add New
-        </Button>
+        {shouldAllowSchedulerCreate && (
+          <Button
+            variant="contained"
+            onClick={handleOpenDialog}
+            sx={{
+              textTransform: "none",
+              borderRadius: 2,
+              fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.medium,
+            }}
+          >
+            Add New
+          </Button>
+        )}
       </Box>
       {frequencyListData?.data?.length > 0 ? (
         <Box>
@@ -1516,7 +1530,9 @@ export default function Frequency({ fieldOptions, notificationTypeId }) {
                   )}
                 />
               </Box>
-              <Box sx={{ display: "flex", alignItems: "center", flexGrow: .1 }}>
+              <Box
+                sx={{ display: "flex", alignItems: "center", flexGrow: 0.1 }}
+              >
                 <FormControlLabel
                   control={
                     <Checkbox
@@ -1584,7 +1600,9 @@ export default function Frequency({ fieldOptions, notificationTypeId }) {
                         key={
                           typeof option === "string"
                             ? option
-                            : `${option.attributeId}-${JSON.stringify(option.refAttributeId || [])}`
+                            : `${option.attributeId}-${JSON.stringify(
+                                option.refAttributeId || []
+                              )}`
                         }
                         label={
                           typeof option === "string" ? option : option.label
@@ -1651,7 +1669,9 @@ export default function Frequency({ fieldOptions, notificationTypeId }) {
                         key={
                           typeof option === "string"
                             ? option
-                            : `${option.attributeId}-${JSON.stringify(option.refAttributeId || [])}`
+                            : `${option.attributeId}-${JSON.stringify(
+                                option.refAttributeId || []
+                              )}`
                         }
                         label={
                           typeof option === "string" ? option : option.label
@@ -1718,7 +1738,9 @@ export default function Frequency({ fieldOptions, notificationTypeId }) {
                         key={
                           typeof option === "string"
                             ? option
-                            : `${option.attributeId}-${JSON.stringify(option.refAttributeId || [])}`
+                            : `${option.attributeId}-${JSON.stringify(
+                                option.refAttributeId || []
+                              )}`
                         }
                         label={
                           typeof option === "string" ? option : option.label
@@ -1890,10 +1912,10 @@ export default function Frequency({ fieldOptions, notificationTypeId }) {
             Array.isArray(days) && days.length === 7
               ? days
               : selectedDays.length === 7
-                ? selectedDays
-                : Array(7)
-                    .fill(false)
-                    .map((_, i) => i === selectedDate.getDay());
+              ? selectedDays
+              : Array(7)
+                  .fill(false)
+                  .map((_, i) => i === selectedDate.getDay());
           const customFrequencyText = generateCustomFrequencyText(
             repeatEvery,
             repeatPeriod,

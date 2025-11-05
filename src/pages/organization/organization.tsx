@@ -913,7 +913,7 @@ export default function Organization() {
                       return (
                         <Grid item xs={12}>
                           <Typography variant="h6" sx={{ mt: 3, mb: 2 }}>
-                            Medium Settings for Notivix
+                            Channel Settings for Notivix
                           </Typography>
 
                           {mediumListDataWithOrg?.data &&
