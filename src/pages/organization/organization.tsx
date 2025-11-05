@@ -119,6 +119,30 @@ export default function Organization() {
     "delete"
   );
 
+  const shouldAllowMediumAdd = checkPermission(
+    permissions,
+    PermissionsMap.NOTIFICATION_MEDIUM_SETTING,
+    "create"
+  );
+
+  const shouldAllowMediumEdit = checkPermission(
+    permissions,
+    PermissionsMap.NOTIFICATION_MEDIUM_SETTING,
+    "update"
+  );
+
+  const shouldAllowMediumDelete = checkPermission(
+    permissions,
+    PermissionsMap.NOTIFICATION_MEDIUM_SETTING,
+    "delete"
+  );
+
+  const shouldAllowMediumList = checkPermission(
+    permissions,
+    PermissionsMap.NOTIFICATION_MEDIUM_SETTING,
+    "list"
+  );
+
   const {
     control,
     handleSubmit,
@@ -1163,6 +1187,7 @@ export default function Organization() {
                                     startIcon={<span>+</span>}
                                     onClick={() => setShowMediumDropdown(true)}
                                     sx={{ minWidth: 200 }}
+                                    disabled={!shouldAllowMediumAdd}
                                   >
                                     Add Medium
                                   </Button>
