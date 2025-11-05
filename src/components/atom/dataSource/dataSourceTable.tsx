@@ -57,11 +57,13 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
 interface AttributeOptionTableProps {
   reload: boolean;
   setReload: React.Dispatch<React.SetStateAction<boolean>>;
+  shouldAllowEdit: boolean;
 }
 
 const DataSourceTable: React.FC<AttributeOptionTableProps> = ({
   reload,
   setReload,
+  shouldAllowEdit,
 }) => {
   const { getHeadingSx, getTableSx } = useComponentTypography();
   const [dataSource, setDataSource] = useState<DataSourceType[]>([]);
@@ -283,7 +285,7 @@ const DataSourceTable: React.FC<AttributeOptionTableProps> = ({
           <CreateUpdateDataSource
             setReload={setReload}
             title="Update Data Source"
-            CustomButton={<Button>Edit</Button>}
+            CustomButton={<Button disabled={!shouldAllowEdit}>Edit</Button>}
             data={row as any}
           />
         );

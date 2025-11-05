@@ -36,17 +36,17 @@ export default function AttributeOption() {
       <CommonPageHeader
         title="Attribute Options"
         actions={
-          shouldShowCreateButton && (
-            <CreateUpdateAttributeOption
-              setAttributeOptionReload={setAttributeOptionReload}
-              title="Create New Attribute Option"
-              CustomButton={
+          <CreateUpdateAttributeOption
+            setAttributeOptionReload={setAttributeOptionReload}
+            title="Create New Attribute Option"
+            CustomButton={
+              shouldShowCreateButton && (
                 <PrimaryButton variant="contained">
                   Create New Attribute Option
                 </PrimaryButton>
-              }
-            />
-          )
+              )
+            }
+          />
         }
       />
       {/* <Box
