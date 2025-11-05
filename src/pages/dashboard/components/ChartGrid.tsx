@@ -365,9 +365,9 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
     widgetTypes: state.dashboard.widgetTypes,
     dashboards: state.dashboard.dashboards || [],
   }));
-  useEffect(() => {
-    dispatch(fetchChartData({ dashboardId, dashboardFilters }));
-  }, [dispatch, dashboardId]); // re-fetch when dashboard changes
+  //   useEffect(() => {
+  //   dispatch(fetchChartData({ dashboardId, dashboardFilters  }));
+  // }, [dispatch, dashboardId]); // re-fetch when dashboard changes
   // console.log("dashboarf>>>>>>>>>>",dashboardFilters)
   const [drillDownColumns, setDrillDownColumns] = useState<string[]>([]);
 

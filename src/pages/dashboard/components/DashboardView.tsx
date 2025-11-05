@@ -1925,6 +1925,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   const currentDashboard = dashboards.find((d) => d._id === dashboardId);
   const [isFiltersModalOpen, setIsFiltersModalOpen] = useState(false);
   const [dashboardFilters, setDashboardFilters] = useState<any>({});
+  console.log("Dashboard Filters-------------------3----:", dashboardFilters);
   const { dataSourceDetails, dataSourceDetailsLoading } = useAppSelector(
     (state) => state.notivixDashboard
   );
@@ -2156,6 +2157,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
       : null;
     setDateRange(range);
 
+
     if (range && range.length === 2) {
       const startDate = range[0].format("YYYY-MM-DD");
       const endDate = range[1].format("YYYY-MM-DD");
@@ -2190,35 +2192,37 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     setIsFiltersModalOpen(false);
   };
   const handleApplyFilters = async (filters: any) => {
-    setDashboardFilters(filters);
-    setStatusToggle(
-      filters["Derived.Case Status"]
-        ? filters["Derived.Case Status"]
-        : "Pending"
-    );
+    if (Object.keys(filters).length > 0) {
+      setDashboardFilters(filters);
+      setStatusToggle(
+        filters["Derived.Case Status"]
+          ? filters["Derived.Case Status"]
+          : "Pending"
+      );
 
-    // Fix: Use DateObject instead of Date
-    if (
-      filters["DueDate"] &&
-      filters["DueDate"].startDate &&
-      filters["DueDate"].endDate
-    ) {
-      setDateRange([
-        new DateObject(filters["DueDate"].startDate),
-        new DateObject(filters["DueDate"].endDate),
-      ]);
-    } else if (
-      filters["DateTaken"] &&
-      filters["DateTaken"].startDate &&
-      filters["DateTaken"].endDate
-    ) {
-      setDateRange([
-        new DateObject(filters["DateTaken"].startDate),
-        new DateObject(filters["DateTaken"].endDate),
-      ]);
-    } else {
-      // Clear date range if no date filter is applied
-      setDateRange(null);
+      // Fix: Use DateObject instead of Date
+      if (
+        filters["DueDate"] &&
+        filters["DueDate"].startDate &&
+        filters["DueDate"].endDate
+      ) {
+        setDateRange([
+          new DateObject(filters["DueDate"].startDate),
+          new DateObject(filters["DueDate"].endDate),
+        ]);
+      } else if (
+        filters["DateTaken"] &&
+        filters["DateTaken"].startDate &&
+        filters["DateTaken"].endDate
+      ) {
+        setDateRange([
+          new DateObject(filters["DateTaken"].startDate),
+          new DateObject(filters["DateTaken"].endDate),
+        ]);
+      } else {
+        // Clear date range if no date filter is applied
+        setDateRange(null);
+      }
     }
   };
   const validationSchema = yup.object({
@@ -2317,7 +2321,17 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
   useEffect(() => {
     if (dashboardId) {
-      if (currentDashboard?.settings?.dashboardType === "normal") {
+      const hasFilters = Object.keys(dashboardFilters).length > 0;
+      // console.log("Dashboard Filters-------------------4----:", dashboardFilters);
+   if (!hasFilters) {
+      return;
+    }
+      console.log("Dashboard Filters-------------------5----:", dashboardFilters);
+
+      if (
+        currentDashboard?.settings?.dashboardType === "normal" &&
+        hasFilters
+      ) {
         dispatch(
           fetchChartData({
             dashboardId,
@@ -2335,7 +2349,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         endVersionValue &&
         DateTime.fromISO(startVersionValue) <
           DateTime.fromISO(endVersionValue) &&
-        !hasErrors
+        !hasErrors &&
+        hasFilters
       ) {
         dispatch(
           fetchChartData({
@@ -2345,6 +2360,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             endVersionValue,
             dashboardType: currentDashboard?.settings?.dashboardType,
             dashboardFilters,
+
           })
         );
       }
@@ -2357,6 +2373,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     formattedVersionValue,
     hasErrors,
     startVersionValue,
+    dashboardFilters,
   ]);
 
   useEffect(() => {
@@ -2533,6 +2550,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               endVersionValue,
               versionValue: formattedVersionValue || "",
               dashboardFilters,
+
             })
           );
         }
