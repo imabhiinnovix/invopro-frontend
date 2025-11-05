@@ -2134,8 +2134,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     const range = Array.isArray(dateRange)
       ? dateRange
       : dateRange
-        ? [dateRange]
-        : null;
+      ? [dateRange]
+      : null;
     setDateRange(range);
 
     if (range && range.length === 2) {
@@ -2503,7 +2503,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
       if (result.success) {
         toast.success("Chart updated successfully!");
         handleCloseEditModal();
-        
+
         // Fetch updated chart data
         if (dashboardId) {
           dispatch(
@@ -2577,6 +2577,17 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         overflow: "hidden",
       }}
     >
+      <Typography
+        variant="h4"
+        component="h1"
+        sx={{
+          ...getHeadingSx(),
+          mr: STYLE_GUIDE.SPACING.s4,
+          fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.medium,
+        }}
+      >
+        {title}
+      </Typography>
       <Box
         sx={{
           // p: { md: STYLE_GUIDE.SPACING.s2 },
@@ -2651,7 +2662,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 alignItems: "center",
               }}
             >
-              {title.length > 10 ? (
+              {/* {title.length > 10 ? (
                 <Tooltip title={title}>
                   <Typography
                     variant="h4"
@@ -2663,7 +2674,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                       whiteSpace: "nowrap",
                       overflow: "hidden",
                       textOverflow: "ellipsis",
-                      maxWidth: "100px",
+                      // maxWidth: "100px",
                     }}
                   >
                     {title}
@@ -2681,7 +2692,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 >
                   {title}
                 </Typography>
-              )}
+              )} */}
 
               {currentDashboard?.isDefaultNotivix && (
                 <>
@@ -3064,7 +3075,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 </Button>
               )}
               <Box>
-                {currentDashboard?.settings?.dashboardType === "normal" ? (
+                {currentDashboard?.settings?.dashboardType === "normal" &&
+                !currentDashboard?.isDefaultNotivix ? (
                   <Box>
                     <CommonDatePicker
                       name="versionValue"
@@ -3246,17 +3258,19 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           </Box>
         )}
       </Box>
-      {currentDashboard?.isDefaultNotivix ===true ?(
-          <NotivixFiltersModal
-            open={isFiltersModalOpen}
-            onClose={handleCloseFiltersModal}
-            onApplyFilters={handleApplyFilters}
-            currentFilters={dashboardFilters}
-            dataSourceId={currentDashboard?.settings?.dataSource?._id} // Pass your dataSourceId here
-            filterFlag="isFilterEnable" // Specify which flag to use for filtering
-            isLoading={dataSourceDetailsLoading}
-          />
-        ):""}
+      {currentDashboard?.isDefaultNotivix === true ? (
+        <NotivixFiltersModal
+          open={isFiltersModalOpen}
+          onClose={handleCloseFiltersModal}
+          onApplyFilters={handleApplyFilters}
+          currentFilters={dashboardFilters}
+          dataSourceId={currentDashboard?.settings?.dataSource?._id} // Pass your dataSourceId here
+          filterFlag="isFilterEnable" // Specify which flag to use for filtering
+          isLoading={dataSourceDetailsLoading}
+        />
+      ) : (
+        ""
+      )}
     </Box>
   );
 };
