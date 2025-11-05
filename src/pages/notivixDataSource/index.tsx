@@ -24,14 +24,106 @@ import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "react-toastify";
 import NotivixFiltersModal from "../notivixDashboard/components/NotivixFiltersModal";
 import { useComponentTypography } from "../../hooks";
-import { formatDate } from "../../utils/utils";
+import { checkPermission, formatDate } from "../../utils/utils";
 import { DataSourceListPayload } from "../../components/atom/sideNav/types";
 import { setDataSourceList } from "../dataSources/dataSourceActions";
 import { useAppDispatch } from "../../storeHooks";
+import { PermissionsMap } from "../../utils/constants";
 
 interface ApiResponse {
   data: any[];
   totalCount: number;
+}
+
+function getPermsForDataSource(dataSourceName: string, permissions: any) {
+  let permissionData = {
+    shouldAllowAdd: false,
+    shouldAllowEdit: false,
+    shouldAllowDelete: false,
+  };
+  if (dataSourceName == "CaseList") {
+    const keys = ["case_list_create", "case_list_update", "case_list_delete"];
+    permissionData.shouldAllowAdd = checkPermission(
+      permissions,
+      PermissionsMap.DATA_SOURCE,
+      keys[0]
+    );
+    permissionData.shouldAllowEdit = checkPermission(
+      permissions,
+      PermissionsMap.DATA_SOURCE,
+      keys[1]
+    );
+    permissionData.shouldAllowDelete = checkPermission(
+      permissions,
+      PermissionsMap.DATA_SOURCE,
+      keys[2]
+    );
+  } else if (dataSourceName == "Formality Officer") {
+    const keys = [
+      "formality_officers_create",
+      "formality_officers_update",
+      "formality_officers_delete",
+    ];
+    permissionData.shouldAllowAdd = checkPermission(
+      permissions,
+      PermissionsMap.DATA_SOURCE,
+      keys[0]
+    );
+    permissionData.shouldAllowEdit = checkPermission(
+      permissions,
+      PermissionsMap.DATA_SOURCE,
+      keys[1]
+    );
+    permissionData.shouldAllowDelete = checkPermission(
+      permissions,
+      PermissionsMap.DATA_SOURCE,
+      keys[2]
+    );
+  } else if (dataSourceName == "IP Counsels") {
+    const keys = [
+      "ip_counsel_create",
+      "ip_counsel_update",
+      "ip_counsel_delete",
+    ];
+    permissionData.shouldAllowAdd = checkPermission(
+      permissions,
+      PermissionsMap.DATA_SOURCE,
+      keys[0]
+    );
+    permissionData.shouldAllowEdit = checkPermission(
+      permissions,
+      PermissionsMap.DATA_SOURCE,
+      keys[1]
+    );
+    permissionData.shouldAllowDelete = checkPermission(
+      permissions,
+      PermissionsMap.DATA_SOURCE,
+      keys[2]
+    );
+  } else if (dataSourceName == "Action Due") {
+    const keys = [
+      "action_due_create",
+      "action_due_update",
+      "action_due_delete",
+    ];
+    permissionData.shouldAllowAdd = checkPermission(
+      permissions,
+      PermissionsMap.DATA_SOURCE,
+      keys[0]
+    );
+    permissionData.shouldAllowEdit = checkPermission(
+      permissions,
+      PermissionsMap.DATA_SOURCE,
+      keys[1]
+    );
+    permissionData.shouldAllowDelete = checkPermission(
+      permissions,
+      PermissionsMap.DATA_SOURCE,
+      keys[2]
+    );
+  }
+
+  return permissionData;
 }
 
 export default function NotivixDataSource() {
@@ -59,7 +151,7 @@ export default function NotivixDataSource() {
     pageSize: 10,
   });
   const [refreshKey, setRefreshKey] = useState(0);
-  const processingStatus = localStorage.getItem("dataSourceProcessingStatus")
+  const processingStatus = localStorage.getItem("dataSourceProcessingStatus");
 
   // Your existing API call with refreshKey dependency
   const dataSourceNotivixListAPI = useGet<DataSourceListPayload>(
@@ -93,6 +185,12 @@ export default function NotivixDataSource() {
 
   const [isFiltersModalOpen, setIsFiltersModalOpen] = React.useState(false);
   const { getHeadingSx } = useComponentTypography();
+
+  const permissions = useSelector(
+    (state: RootState) => state.userPermission.permissions
+  );
+  const { shouldAllowAdd, shouldAllowEdit, shouldAllowDelete } =
+    getPermsForDataSource(listCurrentData?.name || "", permissions);
 
   const handleOpenFiltersModal = () => {
     setIsFiltersModalOpen(true);
@@ -549,6 +647,7 @@ export default function NotivixDataSource() {
         handleOpenFiltersModal={handleOpenFiltersModal}
         listCurrentData={listCurrentData}
         dataSourceId={valueId || ""}
+        shouldAllowAdd={shouldAllowAdd}
       />
 
       <NotivixDataModal

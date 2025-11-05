@@ -38,6 +38,7 @@ interface TableSectionProps {
   handleOpenFiltersModal: () => void;
   listCurrentData: any;
   dataSourceId: string;
+  shouldAllowAdd: boolean;
 }
 
 const renderCellValue = (value: any) => {
@@ -85,6 +86,7 @@ export const NotivixDataTable: React.FC<TableSectionProps> = ({
   handleAddNotification,
   handleOpenFiltersModal,
   dataSourceId,
+  shouldAllowAdd,
 }) => {
   // Use ref to track previous dataSourceId
   const prevDataSourceIdRef = React.useRef<string>(dataSourceId);
@@ -209,13 +211,15 @@ export const NotivixDataTable: React.FC<TableSectionProps> = ({
               >
                 Filter
               </PrimaryButton>
-              <PrimaryButton
-                variant="contained"
-                startIcon={<AddIcon />}
-                onClick={handleAddNotification}
-              >
-                Add
-              </PrimaryButton>
+              {shouldAllowAdd && (
+                <PrimaryButton
+                  variant="contained"
+                  startIcon={<AddIcon />}
+                  onClick={handleAddNotification}
+                >
+                  Add
+                </PrimaryButton>
+              )}
               <ImportFile
                 title="Import"
                 dataSourceId={dataSourceId}
