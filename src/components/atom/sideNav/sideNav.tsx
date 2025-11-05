@@ -1163,6 +1163,11 @@ function getNavItems(
     name: "Templates",
     icon: createIcon(ArticleIcon, "/template", theme),
     route: "/template",
+    shouldShow: checkPermission(
+      permissions,
+      PermissionsMap.NOTIFICATION_SETTING_TEMPLATE,
+      "list"
+    ),
   };
 
   const loadingIndicator =
