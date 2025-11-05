@@ -46,6 +46,8 @@ import useDelete from "../../hooks/useDelete";
 import { setCurrentUser } from "../../reducers/userSlice";
 import PrimaryButton from "../../components/common/PrimaryButton";
 import DialogContainer from "../../components/molecule/dialog";
+import { checkPermission } from "../../utils/utils";
+import { PermissionsMap } from "../../utils/constants";
 
 const ProfilePage = () => {
   const userProfile = useSelector(
@@ -57,6 +59,27 @@ const ProfilePage = () => {
     ["userDetails"],
     GET.USER_DETAILS
   );
+
+  const permissions = useSelector(
+    (state: RootState) => state.userPermission.permissions
+  );
+  const shouldAllowDelete = checkPermission(
+    permissions,
+    PermissionsMap.USER_PROFILE_IMAGE,
+    "delete"
+  );
+  const shouldAllowView = checkPermission(
+    permissions,
+    PermissionsMap.USER_PROFILE_IMAGE,
+    "get"
+  );
+  const shouldAllowUpload = checkPermission(
+    permissions,
+    PermissionsMap.FILE_UPLOAD,
+    "upload"
+  );
+
+  console.log(shouldAllowDelete, shouldAllowView, shouldAllowUpload);
 
   const [profile, setProfile] = useState({
     personal: {
@@ -176,13 +199,15 @@ const ProfilePage = () => {
           confirmPassword: "",
         },
       };
-      
+
       setProfile(newProfile);
       setOriginalProfile({
         personal: { ...newProfile.personal },
-        address: { ...newProfile.address }
+        address: { ...newProfile.address },
       });
-      setProfileImage(userProfile?.imagePath || "/default-avatar.png");
+      if (shouldAllowView) {
+        setProfileImage(userProfile?.imagePath || "/default-avatar.png");
+      }
       setSelectedDepartmentId(userProfile?.departmentId?._id || "");
     }
   }, [userProfile]);
@@ -700,24 +725,27 @@ const ProfilePage = () => {
                     mb: 2,
                   }}
                 >
-                  <PrimaryButton
-                    variant="outlined"
-                    startIcon={<UploadIcon />}
-                    onClick={triggerFileInput}
-                  >
-                    Upload
-                  </PrimaryButton>
-                  {profileImage !== "/default-avatar.png" && (
+                  {shouldAllowUpload && (
                     <PrimaryButton
                       variant="outlined"
-                      color="error"
-                      startIcon={<DeleteIcon />}
-                      onClick={handleDeleteClick}
-                      size="small"
+                      startIcon={<UploadIcon />}
+                      onClick={triggerFileInput}
                     >
-                      Delete
+                      Upload
                     </PrimaryButton>
                   )}
+                  {profileImage !== "/default-avatar.png" &&
+                    shouldAllowDelete && (
+                      <PrimaryButton
+                        variant="outlined"
+                        color="error"
+                        startIcon={<DeleteIcon />}
+                        onClick={handleDeleteClick}
+                        size="small"
+                      >
+                        Delete
+                      </PrimaryButton>
+                    )}
                 </Box>
               </>
             )}
@@ -782,7 +810,11 @@ const ProfilePage = () => {
                 <PrimaryButton
                   variant={editModes.personal ? "outlined" : "contained"}
                   startIcon={editModes.personal ? <CancelIcon /> : <EditIcon />}
-                  onClick={() => editModes.personal ? handleCancel("personal") : toggleEditMode("personal")}
+                  onClick={() =>
+                    editModes.personal
+                      ? handleCancel("personal")
+                      : toggleEditMode("personal")
+                  }
                 >
                   {editModes.personal ? "Cancel" : "Edit"}
                 </PrimaryButton>
@@ -836,7 +868,11 @@ const ProfilePage = () => {
                 <PrimaryButton
                   variant={editModes.address ? "outlined" : "contained"}
                   startIcon={editModes.address ? <CancelIcon /> : <EditIcon />}
-                  onClick={() => editModes.address ? handleCancel("address") : toggleEditMode("address")}
+                  onClick={() =>
+                    editModes.address
+                      ? handleCancel("address")
+                      : toggleEditMode("address")
+                  }
                 >
                   {editModes.address ? "Cancel" : "Edit"}
                 </PrimaryButton>

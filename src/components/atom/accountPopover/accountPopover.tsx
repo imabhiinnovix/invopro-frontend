@@ -13,6 +13,10 @@ import { AuthContext } from "../../../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { clearLocalStorage } from "../../../utils/handleLocalStorage";
 import { STYLE_GUIDE } from "../../../styles";
+import { RootState } from "../../../store";
+import { checkPermission } from "../../../utils/utils";
+import { PermissionsMap } from "../../../utils/constants";
+import { useSelector } from "react-redux";
 
 interface MenuItem {
   label: string;
@@ -26,6 +30,15 @@ export function AccountPopover() {
   );
   const { userDetails, initialization, clearAuthContext, isAuthUser } =
     useContext(AuthContext);
+  const permissions = useSelector(
+    (state: RootState) => state.userPermission.permissions
+  );
+  const shouldAllowProfilePictureView = checkPermission(
+    permissions,
+    PermissionsMap.USER_PROFILE_IMAGE,
+    "get"
+  );
+
   const { imagePath } = userDetails?.data || {};
   const handleOpenPopover = useCallback(
     (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -88,7 +101,7 @@ export function AccountPopover() {
             border: "1px solid #f0f0f0",
             color: STYLE_GUIDE.COLORS.textMediumGray,
           }}
-          src={imagePath}
+          src={shouldAllowProfilePictureView ? imagePath : null}
         >
           {getInitials()}
         </Avatar>

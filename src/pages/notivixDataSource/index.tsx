@@ -121,6 +121,27 @@ function getPermsForDataSource(dataSourceName: string, permissions: any) {
       PermissionsMap.DATA_SOURCE,
       keys[2]
     );
+  } else if (dataSourceName == "Test User details") {
+    const keys = [
+      "testuserdetails_list",
+      "testuserdetails_update",
+      "testuserdetails_delete",
+    ];
+    permissionData.shouldAllowAdd = checkPermission(
+      permissions,
+      PermissionsMap.DATA_SOURCE,
+      keys[0]
+    );
+    permissionData.shouldAllowEdit = checkPermission(
+      permissions,
+      PermissionsMap.DATA_SOURCE,
+      keys[1]
+    );
+    permissionData.shouldAllowDelete = checkPermission(
+      permissions,
+      PermissionsMap.DATA_SOURCE,
+      keys[2]
+    );
   }
 
   return permissionData;
@@ -521,6 +542,7 @@ export default function NotivixDataSource() {
             <Button
               size="small"
               onClick={() => handleEdit(params.row._id)}
+              disabled={!shouldAllowEdit}
               sx={{
                 minWidth: "auto",
                 color: STYLE_GUIDE?.COLORS?.primaryDark || "#3f51b5",
@@ -533,6 +555,7 @@ export default function NotivixDataSource() {
             <Button
               size="small"
               onClick={() => handleDelete(params.row._id)}
+              disabled={!shouldAllowDelete}
               sx={{
                 minWidth: "auto",
                 color: STYLE_GUIDE?.COLORS?.error || "#d32f2f",
