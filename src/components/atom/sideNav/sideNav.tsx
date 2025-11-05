@@ -1223,6 +1223,11 @@ function getNavItems(
       name: "Reports",
       icon: createIcon(AssessmentIcon, "/reports", theme),
       route: "/reports",
+      shouldShow: checkPermission(
+        permissions,
+        PermissionsMap.CUSTOM_REPORT,
+        "list"
+      ),
     },
     {
       name: "Notifications",

@@ -1102,6 +1102,8 @@ interface AttributeOptionTableProps {
   setAllDetailData: React.Dispatch<
     React.SetStateAction<ReportRequestResponse | null>
   >;
+  shouldAllowDownload: boolean;
+  shouldAllowIntermediateDownload: boolean;
 }
 
 interface ReportRequestData {
@@ -1116,6 +1118,8 @@ const ReportRequestTable: React.FC<AttributeOptionTableProps> = ({
   setViewReportRequestId,
   setViewReportNameWithVersionValue,
   setAllDetailData,
+  shouldAllowDownload,
+  shouldAllowIntermediateDownload,
 }) => {
   const [reportRequests, setReportRequests] = useState<ReportRequestResponse[]>(
     []
@@ -1169,9 +1173,7 @@ const ReportRequestTable: React.FC<AttributeOptionTableProps> = ({
     // setIntermediateDownloadRequestId(fileId);
     setDownLoadFileName(fileName);
     exportFile.mutate({
-      url: `${GET?.Custom_Report}/downloadSupplementalIntermediate/${
-        row.customReportId?._id
-      }?versionValue=${row.versionValue}`,
+      url: `${GET?.Custom_Report}/downloadSupplementalIntermediate/${row.customReportId?._id}?versionValue=${row.versionValue}`,
     });
   };
 
@@ -1347,10 +1349,10 @@ const ReportRequestTable: React.FC<AttributeOptionTableProps> = ({
           row.status === "completed"
             ? "success.main"
             : row.status === "processing"
-              ? "warning.main"
-              : row.status === "failed"
-                ? "error.main"
-                : "text.primary";
+            ? "warning.main"
+            : row.status === "failed"
+            ? "error.main"
+            : "text.primary";
         return <Typography color={color}>{row.status || "-"}</Typography>;
       },
     },
@@ -1410,6 +1412,7 @@ const ReportRequestTable: React.FC<AttributeOptionTableProps> = ({
                       variant="text"
                       // onClick={() => params.row.handleEdit(params.row)}
                       sx={{ minWidth: "auto" }}
+                      disabled={!shouldAllowDownload}
                     >
                       <SimCardDownloadIcon
                         onClick={() => {
@@ -1447,17 +1450,24 @@ const ReportRequestTable: React.FC<AttributeOptionTableProps> = ({
             {row.status === "completed" &&
               row.customReportId?._id === "67c7fa3493d10de5c51ae7c1" && (
                 <Tooltip title="Intermediate Download" arrow>
-                  <Button variant="text" sx={{ minWidth: "auto" }}>
+                  <Button
+                    variant="text"
+                    sx={{ minWidth: "auto" }}
+                    disabled={!shouldAllowIntermediateDownload}
+                  >
                     <DownloadForOfflineIcon
                       onClick={() => {
-                        intermediateSupplementalDownloadFile(`${row.customReportId?.reportName}-intermediate-${row.versionValue}.xlsx`,row);
+                        intermediateSupplementalDownloadFile(
+                          `${row.customReportId?.reportName}-intermediate-${row.versionValue}.xlsx`,
+                          row
+                        );
                       }}
                     />
                   </Button>
                 </Tooltip>
               )}
-              
-            { row.status === "completed" && row.intermediateReportId && (
+
+            {row.status === "completed" && row.intermediateReportId && (
               <Box
                 sx={{
                   display: "flex",
@@ -1485,7 +1495,11 @@ const ReportRequestTable: React.FC<AttributeOptionTableProps> = ({
                   />
                 ) : (
                   <Tooltip title="Intermediate Download" arrow>
-                    <Button variant="text" sx={{ minWidth: "auto" }}>
+                    <Button
+                      variant="text"
+                      sx={{ minWidth: "auto" }}
+                      disabled={!shouldAllowIntermediateDownload}
+                    >
                       <DownloadForOfflineIcon
                         onClick={() => {
                           intermediateDownloadFile(
@@ -1611,10 +1625,10 @@ const ReportRequestTable: React.FC<AttributeOptionTableProps> = ({
                     data.status === "completed"
                       ? "success.main"
                       : data.status === "processing"
-                        ? "warning.main"
-                        : data.status === "failed"
-                          ? "error.main"
-                          : "text.primary",
+                      ? "warning.main"
+                      : data.status === "failed"
+                      ? "error.main"
+                      : "text.primary",
                   fontWeight: 500,
                 }}
               >
