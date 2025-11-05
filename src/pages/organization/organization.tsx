@@ -143,6 +143,12 @@ export default function Organization() {
     "list"
   );
 
+  const shouldAllowProductListing = checkPermission(
+    permissions,
+    PermissionsMap.PRODUCT,
+    "list"
+  );
+
   const {
     control,
     handleSubmit,
@@ -1545,38 +1551,42 @@ export default function Organization() {
                     )}
                   />
                 </Grid>
-                <Grid item xs={12}>
-                  <Controller
-                    name="productIds"
-                    control={control}
-                    rules={{ required: "At least one product is required" }}
-                    render={({ field }) => (
-                      <Autocomplete
-                        multiple
-                        options={productOptions}
-                        getOptionLabel={(option) => option.name}
-                        value={productOptions.filter((option) =>
-                          field.value?.includes(option._id)
-                        )}
-                        onChange={(_, newValue) => {
-                          field.onChange(newValue.map((option) => option._id));
-                        }}
-                        isOptionEqualToValue={(option, value) =>
-                          option._id === value._id
-                        }
-                        renderInput={(params) => (
-                          <TextField
-                            {...params}
-                            label="Products"
-                            margin="normal"
-                            error={!!errors.productIds}
-                            helperText={errors.productIds?.message}
-                          />
-                        )}
-                      />
-                    )}
-                  />
-                </Grid>
+                {shouldAllowProductListing && (
+                  <Grid item xs={12}>
+                    <Controller
+                      name="productIds"
+                      control={control}
+                      rules={{ required: "At least one product is required" }}
+                      render={({ field }) => (
+                        <Autocomplete
+                          multiple
+                          options={productOptions}
+                          getOptionLabel={(option) => option.name}
+                          value={productOptions.filter((option) =>
+                            field.value?.includes(option._id)
+                          )}
+                          onChange={(_, newValue) => {
+                            field.onChange(
+                              newValue.map((option) => option._id)
+                            );
+                          }}
+                          isOptionEqualToValue={(option, value) =>
+                            option._id === value._id
+                          }
+                          renderInput={(params) => (
+                            <TextField
+                              {...params}
+                              label="Products"
+                              margin="normal"
+                              error={!!errors.productIds}
+                              helperText={errors.productIds?.message}
+                            />
+                          )}
+                        />
+                      )}
+                    />
+                  </Grid>
+                )}
                 {(fields || []).map((field, idx) => (
                   <Grid
                     container

@@ -210,6 +210,11 @@ export default function NotivixDataSource() {
   const permissions = useSelector(
     (state: RootState) => state.userPermission.permissions
   );
+  const shouldAllowImport = checkPermission(
+    permissions,
+    PermissionsMap.FILE_UPLOAD,
+    "upload"
+  );
   const { shouldAllowAdd, shouldAllowEdit, shouldAllowDelete } =
     getPermsForDataSource(listCurrentData?.name || "", permissions);
 
@@ -671,6 +676,7 @@ export default function NotivixDataSource() {
         listCurrentData={listCurrentData}
         dataSourceId={valueId || ""}
         shouldAllowAdd={shouldAllowAdd}
+        shouldAllowImport={shouldAllowImport}
       />
 
       <NotivixDataModal
