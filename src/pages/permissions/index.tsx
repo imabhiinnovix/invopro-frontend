@@ -52,6 +52,8 @@ import { toast } from "react-toastify";
 import { useComponentTypography } from "../../hooks";
 import DialogContainer from "../../components/molecule/dialog";
 import PrimaryButton from "../../components/common/PrimaryButton";
+import { checkPermission } from "../../utils/utils";
+import { PermissionsMap } from "../../utils/constants";
 
 const columns: GridColDef[] = [
   {
@@ -117,7 +119,7 @@ const columns: GridColDef[] = [
                 hasDataSourceName && params.row.handleEdit(params.row)
               }
               sx={{ minWidth: "auto" }}
-              disabled={!hasDataSourceName}
+              disabled={!hasDataSourceName || !params.row.shouldAllowEdit}
             >
               <EditIcon />
             </Button>
@@ -136,7 +138,7 @@ const columns: GridColDef[] = [
               variant="text"
               onClick={() => params.row.handleDelete(params.row._id)}
               sx={{ minWidth: "auto", color: "error.main" }}
-              disabled={!params.row._id}
+              disabled={!params.row._id || !params.row.shouldAllowDelete}
             >
               <DeleteIcon />
             </Button>
@@ -169,6 +171,24 @@ export default function Permissions() {
     resourceType: "",
   });
   const { getHeadingSx } = useComponentTypography();
+  const permissions = useSelector(
+    (state: RootState) => state.userPermission.permissions
+  );
+  const shouldAllowAdd = checkPermission(
+    permissions,
+    PermissionsMap.PERMISSION,
+    "create"
+  );
+  const shouldAllowEdit = checkPermission(
+    permissions,
+    PermissionsMap.PERMISSION,
+    "update"
+  );
+  const shouldAllowDelete = checkPermission(
+    permissions,
+    PermissionsMap.PERMISSION,
+    "delete"
+  );
 
   useEffect(() => {
     const handler = setTimeout(() => {
@@ -571,6 +591,7 @@ export default function Permissions() {
                 variant="contained"
                 startIcon={<AddIcon />}
                 onClick={handleAddPermission}
+                disabled={!shouldAllowAdd}
                 sx={{
                   borderRadius: "8px",
                 }}
@@ -586,6 +607,8 @@ export default function Permissions() {
               handleEdit,
               handleView,
               handleDelete,
+              shouldAllowEdit,
+              shouldAllowDelete,
             }))}
             columns={columns}
             initialState={{ pagination: { paginationModel } }}

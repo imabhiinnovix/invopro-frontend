@@ -73,6 +73,7 @@ const columns: GridColDef[] = [
             variant="text"
             onClick={() => params.row.handleEdit(params.row)}
             sx={{ minWidth: "auto" }}
+            disabled={!params.row.shouldAllowEdit}
           >
             <EditIcon />
           </Button>
@@ -118,6 +119,9 @@ interface DepartmentDataTableProps {
   };
   departmentReload: boolean;
   loading: boolean;
+  shouldAllowAdd: boolean;
+  shouldAllowEdit: boolean;
+  shouldAllowDelete: boolean;
 }
 
 export function DepartmentDataTable({
@@ -133,6 +137,9 @@ export function DepartmentDataTable({
   filterValues,
   departmentReload,
   loading,
+  shouldAllowAdd,
+  shouldAllowEdit,
+  shouldAllowDelete,
 }: DepartmentDataTableProps) {
   const theme = useUnifiedTheme();
   const perPageItem = paginationModel.pageSize;
@@ -168,9 +175,13 @@ export function DepartmentDataTable({
       filterValues.organizationId,
       filterValues.status,
     ],
-    `${GET.DEPARTMENT_LIST}?page=${paginationModel.page + 1}&limit=${perPageItem}&search=${encodeURIComponent(
+    `${GET.DEPARTMENT_LIST}?page=${
+      paginationModel.page + 1
+    }&limit=${perPageItem}&search=${encodeURIComponent(
       debouncedSearchValue
-    )}&name=${encodeURIComponent(filterValues.name)}&organizationId=${encodeURIComponent(
+    )}&name=${encodeURIComponent(
+      filterValues.name
+    )}&organizationId=${encodeURIComponent(
       filterValues.organizationId
     )}&status=${encodeURIComponent(filterValues.status)}`,
     true
@@ -182,12 +193,13 @@ export function DepartmentDataTable({
       ? departmentList.data.data.map((department) => ({
           ...department,
           id:
-            department._id ||
-            `temp-${Math.random().toString(36).substr(2, 9)}`,
+            department._id || `temp-${Math.random().toString(36).substr(2, 9)}`,
           permissions: department.permissions || [],
           handleEdit: onEditDepartment,
           handleView: onViewDepartment,
           handleDelete: onDeleteDepartment,
+          shouldAllowEdit,
+          shouldAllowDelete,
         }))
       : [];
 
@@ -227,6 +239,7 @@ export function DepartmentDataTable({
               startIcon={<AddIcon />}
               onClick={onAddDepartment}
               sx={{ borderRadius: "8px" }}
+              disabled={!shouldAllowAdd}
             >
               Add
             </Button>

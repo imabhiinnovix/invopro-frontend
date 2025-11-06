@@ -27,6 +27,9 @@ import { useComponentTypography } from "../../hooks/useComponentTypography";
 import useFileDownload from "../../hooks/useFiledownload";
 import PrimaryButton from "../../components/common/PrimaryButton";
 import { STYLE_GUIDE } from "../../styles";
+import { useSelector } from "react-redux";
+import { PermissionsMap } from "../../utils/constants";
+import { checkPermission } from "../../utils/utils";
 
 export default function Report() {
   const theme = useUnifiedTheme();
@@ -51,6 +54,24 @@ export default function Report() {
     useState("");
 
   const { getHeadingSx, getButtonSx } = useComponentTypography();
+  const permissions = useSelector(
+    (state: RootState) => state.userPermission.permissions
+  );
+  const shouldAllowGenerateReport = checkPermission(
+    permissions,
+    PermissionsMap.CUSTOM_REPORT,
+    "generate"
+  );
+  const shouldAllowDownload = checkPermission(
+    permissions,
+    PermissionsMap.CUSTOM_REPORT,
+    "download"
+  );
+  const shouldAllowIntermediateDownload = checkPermission(
+    permissions,
+    PermissionsMap.CUSTOM_REPORT,
+    "download_supplemental_intermediate"
+  );
 
   const exportFile = useFileDownload<Blob>((data) => {
     const blob = new Blob([data], { type: "application/octet-stream" });
@@ -92,9 +113,7 @@ export default function Report() {
     // setIntermediateDownloadRequestId(fileId);
     setDownLoadFileName(fileName);
     exportFile.mutate({
-      url: `${GET?.Custom_Report}/downloadSupplementalIntermediate/${
-        row.customReportId?._id
-      }?versionValue=${row.versionValue}`,
+      url: `${GET?.Custom_Report}/downloadSupplementalIntermediate/${row.customReportId?._id}?versionValue=${row.versionValue}`,
     });
   };
 
@@ -314,7 +333,10 @@ export default function Report() {
                       <Button variant="text" sx={{ minWidth: "auto" }}>
                         <DownloadForOfflineIcon
                           onClick={() => {
-                            intermediateSupplementalDownloadFile(`${allDetailData.customReportId?.reportName}-intermediate-${allDetailData.versionValue}.xlsx`,allDetailData);
+                            intermediateSupplementalDownloadFile(
+                              `${allDetailData.customReportId?.reportName}-intermediate-${allDetailData.versionValue}.xlsx`,
+                              allDetailData
+                            );
                           }}
                         />
                       </Button>
@@ -576,7 +598,9 @@ export default function Report() {
             gap: 2,
           }}
         >
-          <GenerateReport setReload={setReload} />
+          {shouldAllowGenerateReport && (
+            <GenerateReport setReload={setReload} />
+          )}
 
           <Box
             sx={{
@@ -594,6 +618,8 @@ export default function Report() {
               setViewReportNameWithVersionValue={
                 setViewReportNameWithVersionValue
               }
+              shouldAllowDownload={shouldAllowDownload}
+              shouldAllowIntermediateDownload={shouldAllowIntermediateDownload}
             />
           </Box>
         </Box>

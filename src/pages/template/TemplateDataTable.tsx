@@ -73,6 +73,7 @@ const columns: GridColDef[] = [
             variant="text"
             onClick={() => params.row.handleEdit(params.row)}
             sx={{ minWidth: "auto" }}
+            disabled={!params.row.shouldAllowEdit}
           >
             <EditIcon />
           </Button>
@@ -91,7 +92,7 @@ const columns: GridColDef[] = [
             variant="text"
             onClick={() => params.row.handleDelete(params.row._id)}
             sx={{ minWidth: "auto", color: "error.main" }}
-            disabled={!params.row._id}
+            disabled={!params.row._id || !params.row.shouldAllowDelete}
           >
             <DeleteIcon />
           </Button>
@@ -118,9 +119,15 @@ interface TemplateDataTableProps {
   };
   templateReload: boolean;
   loading: boolean;
+  shouldAllowAdd: boolean;
+  shouldAllowEdit: boolean;
+  shouldAllowDelete: boolean;
 }
 
 export function TemplateDataTable({
+  shouldAllowAdd,
+  shouldAllowEdit,
+  shouldAllowDelete,
   onAddTemplate,
   onEditTemplate,
   onViewTemplate,
@@ -168,9 +175,9 @@ export function TemplateDataTable({
       filterValues.organizationId,
       filterValues.status,
     ],
-    `${GET.TEMPLATE_LIST}?page=${paginationModel.page + 1}&limit=${perPageItem}&search=${encodeURIComponent(
-      debouncedSearchValue
-    )}
+    `${GET.TEMPLATE_LIST}?page=${
+      paginationModel.page + 1
+    }&limit=${perPageItem}&search=${encodeURIComponent(debouncedSearchValue)}
     `,
     true
   );
@@ -184,6 +191,8 @@ export function TemplateDataTable({
           handleEdit: onEditTemplate,
           handleView: onViewTemplate,
           handleDelete: onDeleteTemplate,
+          shouldAllowEdit,
+          shouldAllowDelete,
         }))
       : [];
 
@@ -223,6 +232,7 @@ export function TemplateDataTable({
               startIcon={<AddIcon />}
               onClick={onAddTemplate}
               sx={{ borderRadius: "8px" }}
+              disabled={!shouldAllowAdd}
             >
               Add
             </Button>

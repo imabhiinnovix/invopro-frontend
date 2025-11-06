@@ -22,6 +22,10 @@ import { CustomPagination } from "../../components/common/pagination/customPagin
 import { GET } from "../../services/apiRoutes";
 import { toast } from "react-toastify";
 import SearchField from "../../components/common/SearchField";
+import { useSelector } from "react-redux";
+import { RootState } from "../../store";
+import { checkPermission } from "../../utils/utils";
+import { PermissionsMap } from "../../utils/constants";
 
 interface Role {
   _id: string;
@@ -72,8 +76,11 @@ const columns: GridColDef[] = [
         <Tooltip title="Edit" arrow>
           <Button
             variant="text"
-            onClick={() => params.row.handleEdit(params.row)}
+            onClick={() =>
+              params.row.shouldAllowEdit && params.row.handleEdit(params.row)
+            }
             sx={{ minWidth: "auto" }}
+            disabled={!params.row.shouldAllowEdit}
           >
             <EditIcon />
           </Button>
@@ -92,7 +99,7 @@ const columns: GridColDef[] = [
             variant="text"
             onClick={() => params.row.handleDelete(params.row._id)}
             sx={{ minWidth: "auto", color: "error.main" }}
-            disabled={!params.row._id}
+            disabled={!params.row._id || !params.row.shouldAllowDelete}
           >
             <DeleteIcon />
           </Button>
@@ -119,6 +126,8 @@ interface RoleDataTableProps {
   };
   roleReload: boolean;
   loading: boolean;
+  shouldAllowEdit: boolean;
+  shouldAllowDelete: boolean;
 }
 
 export function RoleDataTable({
@@ -134,8 +143,11 @@ export function RoleDataTable({
   filterValues,
   roleReload,
   loading,
+  shouldAllowEdit,
+  shouldAllowDelete,
 }: RoleDataTableProps) {
   const theme = useUnifiedTheme();
+
   const perPageItem = paginationModel.pageSize;
 
   const [debouncedSearchValue, setDebouncedSearchValue] = useState(searchValue);
@@ -190,6 +202,8 @@ export function RoleDataTable({
           handleEdit: onEditRole,
           handleView: onViewRole,
           handleDelete: onDeleteRole,
+          shouldAllowEdit: shouldAllowEdit,
+          shouldAllowDelete: shouldAllowDelete,
         }))
       : [];
 

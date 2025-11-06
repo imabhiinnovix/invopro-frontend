@@ -1,5 +1,6 @@
 import { styled } from "@mui/material";
 import { ArcElement, BarElement, Chart as ChartJS, PointElement } from "chart.js";
+import { PermissionResourceCode, PermissionResourceType } from "./constants";
 
 export function objectToFormData(
   obj: any,
@@ -698,3 +699,12 @@ export const toArray = (value?: string | string[]): string[] => {
   }
   return [];
 };
+
+
+export const checkPermission = (permissions:PermissionMap|null, permissionFor:PermissionResourceType, permissionType:PermissionResourceCode) => {
+  let permissionsData = permissions 
+  if (!permissions) {
+    permissionsData = JSON.parse(localStorage.getItem("permissions") || "{}");
+  }
+  return permissionsData?.[permissionFor]?.[permissionType]?.allowed ?? false;
+}

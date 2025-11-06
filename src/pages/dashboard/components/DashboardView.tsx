@@ -1887,6 +1887,10 @@ import { GridFilterListIcon } from "@mui/x-data-grid";
 import { ToggleButton, ToggleButtonGroup } from "@mui/material";
 import DatePicker, { DateObject } from "react-multi-date-picker";
 import FilterListIcon from "@mui/icons-material/FilterList";
+import { useSelector } from "react-redux";
+import { RootState } from "../../../store";
+import { checkPermission } from "../../../utils/utils";
+import { PermissionsMap } from "../../../utils/constants";
 
 interface DashboardViewProps {
   title: string;
@@ -1921,6 +1925,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   const currentDashboard = dashboards.find((d) => d._id === dashboardId);
   const [isFiltersModalOpen, setIsFiltersModalOpen] = useState(false);
   const [dashboardFilters, setDashboardFilters] = useState<any>({});
+  console.log("Dashboard Filters-------------------3----:", dashboardFilters);
   const { dataSourceDetails, dataSourceDetailsLoading } = useAppSelector(
     (state) => state.notivixDashboard
   );
@@ -1933,6 +1938,20 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
   const postGridColumns = usePost([""]);
 
+  const permissions = useSelector(
+    (state: RootState) => state.userPermission?.permissions
+  );
+  const shouldAllowDashboardUpdate = checkPermission(
+    permissions,
+    PermissionsMap.DASHBOARD,
+    "update"
+  );
+
+  const shouldAllowWidgetCreate = checkPermission(
+    permissions,
+    PermissionsMap.DASHBOARD,
+    "create_widget"
+  );
   // Predefined range options
   const rangeOptions = {
     Pending: [
@@ -2134,9 +2153,10 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     const range = Array.isArray(dateRange)
       ? dateRange
       : dateRange
-        ? [dateRange]
-        : null;
+      ? [dateRange]
+      : null;
     setDateRange(range);
+
 
     if (range && range.length === 2) {
       const startDate = range[0].format("YYYY-MM-DD");
@@ -2172,35 +2192,37 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     setIsFiltersModalOpen(false);
   };
   const handleApplyFilters = async (filters: any) => {
-    setDashboardFilters(filters);
-    setStatusToggle(
-      filters["Derived.Case Status"]
-        ? filters["Derived.Case Status"]
-        : "Pending"
-    );
+    if (Object.keys(filters).length > 0) {
+      setDashboardFilters(filters);
+      setStatusToggle(
+        filters["Derived.Case Status"]
+          ? filters["Derived.Case Status"]
+          : "Pending"
+      );
 
-    // Fix: Use DateObject instead of Date
-    if (
-      filters["DueDate"] &&
-      filters["DueDate"].startDate &&
-      filters["DueDate"].endDate
-    ) {
-      setDateRange([
-        new DateObject(filters["DueDate"].startDate),
-        new DateObject(filters["DueDate"].endDate),
-      ]);
-    } else if (
-      filters["DateTaken"] &&
-      filters["DateTaken"].startDate &&
-      filters["DateTaken"].endDate
-    ) {
-      setDateRange([
-        new DateObject(filters["DateTaken"].startDate),
-        new DateObject(filters["DateTaken"].endDate),
-      ]);
-    } else {
-      // Clear date range if no date filter is applied
-      setDateRange(null);
+      // Fix: Use DateObject instead of Date
+      if (
+        filters["DueDate"] &&
+        filters["DueDate"].startDate &&
+        filters["DueDate"].endDate
+      ) {
+        setDateRange([
+          new DateObject(filters["DueDate"].startDate),
+          new DateObject(filters["DueDate"].endDate),
+        ]);
+      } else if (
+        filters["DateTaken"] &&
+        filters["DateTaken"].startDate &&
+        filters["DateTaken"].endDate
+      ) {
+        setDateRange([
+          new DateObject(filters["DateTaken"].startDate),
+          new DateObject(filters["DateTaken"].endDate),
+        ]);
+      } else {
+        // Clear date range if no date filter is applied
+        setDateRange(null);
+      }
     }
   };
   const validationSchema = yup.object({
@@ -2299,7 +2321,17 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
   useEffect(() => {
     if (dashboardId) {
-      if (currentDashboard?.settings?.dashboardType === "normal") {
+      const hasFilters = Object.keys(dashboardFilters).length > 0;
+      // console.log("Dashboard Filters-------------------4----:", dashboardFilters);
+   if (!hasFilters) {
+      return;
+    }
+      console.log("Dashboard Filters-------------------5----:", dashboardFilters);
+
+      if (
+        currentDashboard?.settings?.dashboardType === "normal" &&
+        hasFilters
+      ) {
         dispatch(
           fetchChartData({
             dashboardId,
@@ -2317,7 +2349,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         endVersionValue &&
         DateTime.fromISO(startVersionValue) <
           DateTime.fromISO(endVersionValue) &&
-        !hasErrors
+        !hasErrors &&
+        hasFilters
       ) {
         dispatch(
           fetchChartData({
@@ -2327,6 +2360,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             endVersionValue,
             dashboardType: currentDashboard?.settings?.dashboardType,
             dashboardFilters,
+
           })
         );
       }
@@ -2339,6 +2373,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     formattedVersionValue,
     hasErrors,
     startVersionValue,
+    dashboardFilters,
   ]);
 
   useEffect(() => {
@@ -2503,7 +2538,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
       if (result.success) {
         toast.success("Chart updated successfully!");
         handleCloseEditModal();
-        
+
         // Fetch updated chart data
         if (dashboardId) {
           dispatch(
@@ -2515,6 +2550,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               endVersionValue,
               versionValue: formattedVersionValue || "",
               dashboardFilters,
+
             })
           );
         }
@@ -2577,6 +2613,17 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         overflow: "hidden",
       }}
     >
+      <Typography
+        variant="h4"
+        component="h1"
+        sx={{
+          ...getHeadingSx(),
+          mr: STYLE_GUIDE.SPACING.s4,
+          fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.medium,
+        }}
+      >
+        {title}
+      </Typography>
       <Box
         sx={{
           // p: { md: STYLE_GUIDE.SPACING.s2 },
@@ -2651,7 +2698,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 alignItems: "center",
               }}
             >
-              {title.length > 10 ? (
+              {/* {title.length > 10 ? (
                 <Tooltip title={title}>
                   <Typography
                     variant="h4"
@@ -2663,7 +2710,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                       whiteSpace: "nowrap",
                       overflow: "hidden",
                       textOverflow: "ellipsis",
-                      maxWidth: "100px",
+                      // maxWidth: "100px",
                     }}
                   >
                     {title}
@@ -2681,7 +2728,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 >
                   {title}
                 </Typography>
-              )}
+              )} */}
 
               {currentDashboard?.isDefaultNotivix && (
                 <>
@@ -3032,15 +3079,17 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                   <ViewColumnIcon />
                 </Button>
               </ButtonGroup>
-              <Button
-                variant="contained"
-                color="primary"
-                startIcon={<AddIcon />}
-                onClick={() => setIsAddChartModalOpen(true)}
-                sx={{ ...getButtonSx(), px: STYLE_GUIDE.SPACING.s6 }}
-              >
-                Add Chart
-              </Button>
+              {shouldAllowWidgetCreate && (
+                <Button
+                  variant="contained"
+                  color="primary"
+                  startIcon={<AddIcon />}
+                  onClick={() => setIsAddChartModalOpen(true)}
+                  sx={{ ...getButtonSx(), px: STYLE_GUIDE.SPACING.s6 }}
+                >
+                  Add Chart
+                </Button>
+              )}
               <Button
                 onClick={handleEditModeToggle}
                 color="success"
@@ -3064,7 +3113,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 </Button>
               )}
               <Box>
-                {currentDashboard?.settings?.dashboardType === "normal" ? (
+                {currentDashboard?.settings?.dashboardType === "normal" &&
+                !currentDashboard?.isDefaultNotivix ? (
                   <Box>
                     <CommonDatePicker
                       name="versionValue"
@@ -3113,19 +3163,21 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                   </Stack>
                 ) : null}
               </Box>
-              <Button
-                onClick={handleEditModeToggle}
-                // color="primary"
-                variant="contained"
-                startIcon={<EditIcon />}
-                // sx={{ ...getButtonSx() }}
-                sx={{
-                  borderRadius: "8px",
-                  width: "120px",
-                }}
-              >
-                Edit
-              </Button>
+              {shouldAllowDashboardUpdate && (
+                <Button
+                  onClick={handleEditModeToggle}
+                  // color="primary"
+                  variant="contained"
+                  startIcon={<EditIcon />}
+                  // sx={{ ...getButtonSx() }}
+                  sx={{
+                    borderRadius: "8px",
+                    width: "120px",
+                  }}
+                >
+                  Edit
+                </Button>
+              )}
             </>
           )}
         </Box>
@@ -3246,17 +3298,19 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           </Box>
         )}
       </Box>
-      {currentDashboard?.isDefaultNotivix ===true ?(
-          <NotivixFiltersModal
-            open={isFiltersModalOpen}
-            onClose={handleCloseFiltersModal}
-            onApplyFilters={handleApplyFilters}
-            currentFilters={dashboardFilters}
-            dataSourceId={currentDashboard?.settings?.dataSource?._id} // Pass your dataSourceId here
-            filterFlag="isFilterEnable" // Specify which flag to use for filtering
-            isLoading={dataSourceDetailsLoading}
-          />
-        ):""}
+      {currentDashboard?.isDefaultNotivix === true ? (
+        <NotivixFiltersModal
+          open={isFiltersModalOpen}
+          onClose={handleCloseFiltersModal}
+          onApplyFilters={handleApplyFilters}
+          currentFilters={dashboardFilters}
+          dataSourceId={currentDashboard?.settings?.dataSource?._id} // Pass your dataSourceId here
+          filterFlag="isFilterEnable" // Specify which flag to use for filtering
+          isLoading={dataSourceDetailsLoading}
+        />
+      ) : (
+        ""
+      )}
     </Box>
   );
 };

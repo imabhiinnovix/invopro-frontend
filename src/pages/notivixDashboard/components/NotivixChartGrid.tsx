@@ -682,6 +682,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
             dashboardId,
             dashboardType: currentDashboard?.settings?.dashboardType,
             filters: dashboardFilters,
+
           })
         );
       } else {

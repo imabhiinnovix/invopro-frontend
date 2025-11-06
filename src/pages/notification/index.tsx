@@ -46,6 +46,8 @@ import CommonPageHeader from "../../components/atom/commonPageHeader";
 import PrimaryButton from "../../components/common/PrimaryButton";
 import SearchField from "../../components/common/SearchField";
 import DialogContainer from "../../components/molecule/dialog";
+import { checkPermission } from "../../utils/utils";
+import { PermissionsMap } from "../../utils/constants";
 
 interface NotificationType {
   _id: string;
@@ -110,6 +112,7 @@ const columns: GridColDef[] = [
             variant="text"
             onClick={() => params.row.handleEdit(params.row)}
             sx={{ minWidth: "auto" }}
+            disabled={!params.row.shouldAllowEdit}
           >
             <EditIcon />
           </Button>
@@ -128,7 +131,7 @@ const columns: GridColDef[] = [
             variant="text"
             onClick={() => params.row.handleDelete(params.row._id)}
             sx={{ minWidth: "auto", color: "error.main" }}
-            disabled={!params.row._id}
+            disabled={!params.row._id || !params.row.shouldAllowDelete}
           >
             <DeleteIcon />
           </Button>
@@ -162,6 +165,21 @@ export default function NotificationTypes() {
   });
 
   const { getHeadingSx } = useComponentTypography();
+  const shouldAllowAdd = checkPermission(
+    permissions,
+    PermissionsMap.NOTIFICATION_SETTING_TYPE,
+    "create"
+  );
+  const shouldAllowEdit = checkPermission(
+    permissions,
+    PermissionsMap.NOTIFICATION_SETTING_TYPE,
+    "update"
+  );
+  const shouldAllowDelete = checkPermission(
+    permissions,
+    PermissionsMap.NOTIFICATION_SETTING_TYPE,
+    "delete"
+  );
 
   const { control, handleSubmit, reset } = useForm<NotificationTypePostPayload>(
     {
@@ -340,13 +358,15 @@ export default function NotificationTypes() {
       <CommonPageHeader
         title="Notification Types"
         actions={
-          <PrimaryButton
-            variant="contained"
-            startIcon={<AddIcon />}
-            onClick={handleAddNotificationType}
-          >
-            Add Notification Type
-          </PrimaryButton>
+          shouldAllowAdd && (
+            <PrimaryButton
+              variant="contained"
+              startIcon={<AddIcon />}
+              onClick={handleAddNotificationType}
+            >
+              Add Notification Type
+            </PrimaryButton>
+          )
         }
       />
       {/* <Typography
@@ -397,6 +417,8 @@ export default function NotificationTypes() {
               handleEdit,
               handleView,
               handleDelete,
+              shouldAllowEdit,
+              shouldAllowDelete,
             }))}
             columns={columns}
             initialState={{ pagination: { paginationModel } }}

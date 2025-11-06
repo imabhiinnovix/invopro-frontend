@@ -73,6 +73,7 @@ const columns: GridColDef[] = [
             variant="text"
             onClick={() => params.row.handleEdit(params.row)}
             sx={{ minWidth: "auto" }}
+            disabled={!params.row.shouldAllowEdit}
           >
             <EditIcon />
           </Button>
@@ -118,6 +119,9 @@ interface DesignationDataTableProps {
   };
   designationReload: boolean;
   loading: boolean;
+  shouldAllowAdd: boolean;
+  shouldAllowEdit: boolean;
+  shouldAllowDelete: boolean;
 }
 
 export function DesignationDataTable({
@@ -133,6 +137,9 @@ export function DesignationDataTable({
   filterValues,
   designationReload,
   loading,
+  shouldAllowAdd,
+  shouldAllowEdit,
+  shouldAllowDelete,
 }: DesignationDataTableProps) {
   const theme = useUnifiedTheme();
   const perPageItem = paginationModel.pageSize;
@@ -168,9 +175,13 @@ export function DesignationDataTable({
       filterValues.organizationId,
       filterValues.status,
     ],
-    `${GET.DESIGNATION_LIST}?page=${paginationModel.page + 1}&limit=${perPageItem}&search=${encodeURIComponent(
+    `${GET.DESIGNATION_LIST}?page=${
+      paginationModel.page + 1
+    }&limit=${perPageItem}&search=${encodeURIComponent(
       debouncedSearchValue
-    )}&name=${encodeURIComponent(filterValues.name)}&organizationId=${encodeURIComponent(
+    )}&name=${encodeURIComponent(
+      filterValues.name
+    )}&organizationId=${encodeURIComponent(
       filterValues.organizationId
     )}&status=${encodeURIComponent(filterValues.status)}`,
     true
@@ -188,6 +199,8 @@ export function DesignationDataTable({
           handleEdit: onEditDesignation,
           handleView: onViewDesignation,
           handleDelete: onDeleteDesignation,
+          shouldAllowEdit,
+          shouldAllowDelete,
         }))
       : [];
 
@@ -227,6 +240,7 @@ export function DesignationDataTable({
               startIcon={<AddIcon />}
               onClick={onAddDesignation}
               sx={{ borderRadius: "8px" }}
+              disabled={!shouldAllowAdd}
             >
               Add
             </Button>

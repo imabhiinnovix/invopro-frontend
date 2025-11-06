@@ -61,11 +61,13 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
 interface AttributeOptionTableProps {
   attributeOptionReload: boolean; // attributeOptionReload is now a boolean
   setAttributeOptionReload: React.Dispatch<React.SetStateAction<boolean>>;
+  shouldAllowEdit: boolean;
 }
 
 const AttributeOptionTable: React.FC<AttributeOptionTableProps> = ({
   attributeOptionReload,
   setAttributeOptionReload,
+  shouldAllowEdit,
 }) => {
   const { getTableSx } = useComponentTypography();
   const [attributes, setAttributes] = useState<AttributeOptionRequestPayload[]>(
@@ -302,7 +304,7 @@ const AttributeOptionTable: React.FC<AttributeOptionTableProps> = ({
           <CreateUpdateAttributeOption
             setAttributeOptionReload={setAttributeOptionReload}
             title="Update Attribute Option"
-            CustomButton={<Button>Edit</Button>}
+            CustomButton={<Button disabled={!shouldAllowEdit}>Edit</Button>}
             data={row}
           />
         );

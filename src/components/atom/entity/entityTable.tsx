@@ -61,11 +61,15 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
 interface EntityTableProps {
   reloadEntity: boolean; // reloadEntity is now a boolean
   setReloadEntity: React.Dispatch<React.SetStateAction<boolean>>;
+  shouldAllowEdit: boolean;
+  shouldAllowDelete: boolean;
 }
 
 const EntityTable: React.FC<EntityTableProps> = ({
   reloadEntity,
   setReloadEntity,
+  shouldAllowEdit,
+  shouldAllowDelete,
 }) => {
   const { getHeadingSx, getTableSx } = useComponentTypography();
   const [entities, setEntities] = useState<EntityRequestPayload[]>([]);
@@ -283,7 +287,7 @@ const EntityTable: React.FC<EntityTableProps> = ({
           <CreateUpdateEntity
             setReloadEntity={setReloadEntity}
             title="Update Entity"
-            CustomButton={<Button>Edit</Button>}
+            CustomButton={<Button disabled={!shouldAllowEdit}>Edit</Button>}
             data={row as any}
           />
         );

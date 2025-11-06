@@ -43,6 +43,10 @@ import Autocomplete from "@mui/material/Autocomplete";
 import CommonPageHeader from "../../components/atom/commonPageHeader";
 import DialogContainer from "../../components/molecule/dialog";
 import PrimaryButton from "../../components/common/PrimaryButton";
+import { useSelector } from "react-redux";
+import { RootState } from "../../store";
+import { checkPermission } from "../../utils/utils";
+import { PermissionsMap } from "../../utils/constants";
 
 interface ProductSubscription {
   productId: string;
@@ -72,6 +76,84 @@ interface OrganizationFormValues {
 
 export default function Organization() {
   const { isSuperUser } = useContext(AuthContext);
+  const permissions = useSelector(
+    (state: RootState) => state.userPermission.permissions
+  );
+  const shouldAllowCreate = checkPermission(
+    permissions,
+    PermissionsMap.ORGANIZATION,
+    "create"
+  );
+  const shouldAllowEdit = checkPermission(
+    permissions,
+    PermissionsMap.ORGANIZATION,
+    "update"
+  );
+  const shouldAllowDelete = checkPermission(
+    permissions,
+    PermissionsMap.ORGANIZATION,
+    "delete"
+  );
+
+  const shouldAllowUserList = checkPermission(
+    permissions,
+    PermissionsMap.USER,
+    "list"
+  );
+
+  const shouldAllowUserCreate = checkPermission(
+    permissions,
+    PermissionsMap.USER,
+    "create"
+  );
+
+  const shouldAllowUserEdit = checkPermission(
+    permissions,
+    PermissionsMap.USER,
+    "update"
+  );
+
+  const shouldAllowUserDelete = checkPermission(
+    permissions,
+    PermissionsMap.USER,
+    "delete"
+  );
+
+  const shouldAllowMediumAdd = checkPermission(
+    permissions,
+    PermissionsMap.NOTIFICATION_MEDIUM_SETTING,
+    "create"
+  );
+
+  const shouldAllowMediumEdit = checkPermission(
+    permissions,
+    PermissionsMap.NOTIFICATION_MEDIUM_SETTING,
+    "update"
+  );
+
+  const shouldAllowMediumDelete = checkPermission(
+    permissions,
+    PermissionsMap.NOTIFICATION_MEDIUM_SETTING,
+    "delete"
+  );
+
+  const shouldAllowMediumList = checkPermission(
+    permissions,
+    PermissionsMap.NOTIFICATION_MEDIUM_SETTING,
+    "list"
+  );
+
+  const shouldAllowProductListing = checkPermission(
+    permissions,
+    PermissionsMap.PRODUCT,
+    "list"
+  );
+
+  const shouldAllowProductSubscriptionListing = checkPermission(
+    permissions,
+    PermissionsMap.PRODUCT_SUBSCRIPTION,
+    "list"
+  );
 
   const {
     control,
@@ -429,6 +511,7 @@ export default function Organization() {
   }, [editOpen, selectedOrg, productAccessData, productAccessOrgId]);
 
   const handleRowClick = (org: any, _rowIndex: number) => {
+    if (!shouldAllowUserList) return;
     const isUserSuperUser = isSuperUser();
 
     const organizationIdForUsers = isUserSuperUser ? org._id : null;
@@ -455,20 +538,28 @@ export default function Organization() {
         title={showUsers ? "User Details" : "Organizations Details"}
         onBack={showUsers ? handleBackToOrganizations : undefined}
         actions={
-          showUsers ? undefined : (
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={handleCreateOpen}
-            >
-              Create
-            </Button>
-          )
+          showUsers
+            ? undefined
+            : shouldAllowCreate && (
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={handleCreateOpen}
+                >
+                  Create
+                </Button>
+              )
         }
       />
       {showUsers ? (
         <Users
           organizationId={selectedOrganizationForUsers?.organizationIdForUsers}
+          shouldAllowUserCreate={shouldAllowUserCreate}
+          shouldAllowUserEdit={shouldAllowUserEdit}
+          shouldAllowUserDelete={shouldAllowUserDelete}
+          shouldAllowProductSubscriptionListing={
+            shouldAllowProductSubscriptionListing
+          }
         />
       ) : (
         <>
@@ -530,6 +621,7 @@ export default function Organization() {
                     action: (
                       <>
                         <IconButton
+                          disabled={!shouldAllowEdit}
                           onClick={(e) => {
                             e.stopPropagation();
                             handleEditOpen(org);
@@ -540,6 +632,7 @@ export default function Organization() {
                           <EditIcon fontSize="small" />
                         </IconButton>
                         <IconButton
+                          disabled={!shouldAllowDelete}
                           onClick={(e) => {
                             e.stopPropagation();
                             handleDeleteOpen(org);
@@ -829,7 +922,7 @@ export default function Organization() {
                       return (
                         <Grid item xs={12}>
                           <Typography variant="h6" sx={{ mt: 3, mb: 2 }}>
-                            Medium Settings for Notivix
+                            Channel Settings for Notivix
                           </Typography>
 
                           {mediumListDataWithOrg?.data &&
@@ -1109,6 +1202,7 @@ export default function Organization() {
                                     startIcon={<span>+</span>}
                                     onClick={() => setShowMediumDropdown(true)}
                                     sx={{ minWidth: 200 }}
+                                    disabled={!shouldAllowMediumAdd}
                                   >
                                     Add Medium
                                   </Button>
@@ -1466,38 +1560,42 @@ export default function Organization() {
                     )}
                   />
                 </Grid>
-                <Grid item xs={12}>
-                  <Controller
-                    name="productIds"
-                    control={control}
-                    rules={{ required: "At least one product is required" }}
-                    render={({ field }) => (
-                      <Autocomplete
-                        multiple
-                        options={productOptions}
-                        getOptionLabel={(option) => option.name}
-                        value={productOptions.filter((option) =>
-                          field.value?.includes(option._id)
-                        )}
-                        onChange={(_, newValue) => {
-                          field.onChange(newValue.map((option) => option._id));
-                        }}
-                        isOptionEqualToValue={(option, value) =>
-                          option._id === value._id
-                        }
-                        renderInput={(params) => (
-                          <TextField
-                            {...params}
-                            label="Products"
-                            margin="normal"
-                            error={!!errors.productIds}
-                            helperText={errors.productIds?.message}
-                          />
-                        )}
-                      />
-                    )}
-                  />
-                </Grid>
+                {shouldAllowProductListing && (
+                  <Grid item xs={12}>
+                    <Controller
+                      name="productIds"
+                      control={control}
+                      rules={{ required: "At least one product is required" }}
+                      render={({ field }) => (
+                        <Autocomplete
+                          multiple
+                          options={productOptions}
+                          getOptionLabel={(option) => option.name}
+                          value={productOptions.filter((option) =>
+                            field.value?.includes(option._id)
+                          )}
+                          onChange={(_, newValue) => {
+                            field.onChange(
+                              newValue.map((option) => option._id)
+                            );
+                          }}
+                          isOptionEqualToValue={(option, value) =>
+                            option._id === value._id
+                          }
+                          renderInput={(params) => (
+                            <TextField
+                              {...params}
+                              label="Products"
+                              margin="normal"
+                              error={!!errors.productIds}
+                              helperText={errors.productIds?.message}
+                            />
+                          )}
+                        />
+                      )}
+                    />
+                  </Grid>
+                )}
                 {(fields || []).map((field, idx) => (
                   <Grid
                     container

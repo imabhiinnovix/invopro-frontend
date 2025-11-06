@@ -7,10 +7,28 @@ import { STYLE_GUIDE } from "../../styles";
 import { useUnifiedTheme } from "../../hooks/useUnifiedTheme";
 import PrimaryButton from "../../components/common/PrimaryButton";
 import CommonPageHeader from "../../components/atom/commonPageHeader";
+import { checkPermission } from "../../utils/utils";
+import { PermissionsMap } from "../../utils/constants";
+import { useSelector } from "react-redux";
+import { RootState } from "../../store/store";
 
 export default function DataSource() {
   const theme = useUnifiedTheme();
   const [reload, setReload] = useState(false);
+  const permissions = useSelector(
+    (state: RootState) => state.userPermission.permissions
+  );
+  const shouldAllowAdd = checkPermission(
+    permissions,
+    PermissionsMap.DATA_SOURCE,
+    "create"
+  );
+
+  const shouldAllowEdit = checkPermission(
+    permissions,
+    PermissionsMap.DATA_SOURCE,
+    "update"
+  );
 
   return (
     <Box sx={{ p: STYLE_GUIDE.SPACING.s2 }}>
@@ -21,15 +39,21 @@ export default function DataSource() {
             setReload={setReload}
             title="Create New Data Source"
             CustomButton={
-              <PrimaryButton variant="contained">
-                Create New Data Source
-              </PrimaryButton>
+              shouldAllowAdd && (
+                <PrimaryButton variant="contained">
+                  Create New Data Source
+                </PrimaryButton>
+              )
             }
           />
         }
       />
       <Box>
-        <DataSourceTable reload={reload} setReload={setReload} />
+        <DataSourceTable
+          reload={reload}
+          setReload={setReload}
+          shouldAllowEdit={shouldAllowEdit}
+        />
       </Box>
     </Box>
   );

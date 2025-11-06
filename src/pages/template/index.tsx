@@ -17,6 +17,10 @@ import { STYLE_GUIDE } from "../../styles";
 import { useComponentTypography } from "../../hooks";
 import { TemplateDataTable } from "./TemplateDataTable";
 import { TemplateModal } from "./TemplateModal";
+import { useSelector } from "react-redux";
+import { RootState } from "../../store";
+import { checkPermission } from "../../utils/utils";
+import { PermissionsMap } from "../../utils/constants";
 
 // Define types
 interface Template {
@@ -61,6 +65,24 @@ export default function Template() {
     status: "",
   });
   const { getHeadingSx } = useComponentTypography();
+  const permissions = useSelector(
+    (state: RootState) => state.userPermission.permissions
+  );
+  const shouldAllowAdd = checkPermission(
+    permissions,
+    PermissionsMap.NOTIFICATION_SETTING_TEMPLATE,
+    "create"
+  );
+  const shouldAllowEdit = checkPermission(
+    permissions,
+    PermissionsMap.NOTIFICATION_SETTING_TEMPLATE,
+    "update"
+  );
+  const shouldAllowDelete = checkPermission(
+    permissions,
+    PermissionsMap.NOTIFICATION_SETTING_TEMPLATE,
+    "delete"
+  );
 
   // DELETE API
   const deleteTemplate = useDelete<null, TemplatePostResponse>(
@@ -138,10 +160,7 @@ export default function Template() {
     }
   };
 
-  const handleFilterApply = (values: {
-    name: string;
-    templateId: string;
-  }) => {
+  const handleFilterApply = (values: { name: string; templateId: string }) => {
     setFilterValues({
       name: values.name,
       organizationId: "",
@@ -207,6 +226,9 @@ export default function Template() {
         filterValues={filterValues}
         templateReload={templateReload}
         loading={deleteTemplate.isLoading}
+        shouldAllowAdd={shouldAllowAdd}
+        shouldAllowEdit={shouldAllowEdit}
+        shouldAllowDelete={shouldAllowDelete}
       />
 
       <TemplateModal

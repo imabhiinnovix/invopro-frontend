@@ -33,6 +33,9 @@ import { useSelector } from "react-redux";
 import Frequency from "./Frequency";
 import { useComponentTypography } from "../../hooks";
 import ConditionPreview from "./ConditionPreview";
+import { RootState } from "../../store";
+import { PermissionsMap } from "../../utils/constants";
+import { checkPermission } from "../../utils/utils";
 
 // Error Boundary Component
 class ErrorBoundary extends React.Component {
@@ -860,6 +863,36 @@ export default function AddNotificationTypes() {
     reminder: true,
   });
   const { getHeadingSx } = useComponentTypography();
+  const permissions = useSelector(
+    (state: RootState) => state.userPermission.permissions
+  );
+  const shouldAllowScheduler = checkPermission(
+    permissions,
+    PermissionsMap.NOTIFICATION_SETTING_FREQUENCY,
+    "list"
+  );
+
+  const shouldAllowSchedulerCreate = checkPermission(
+    permissions,
+    PermissionsMap.NOTIFICATION_SETTING_FREQUENCY,
+    "create"
+  );
+  const shouldAllowSchedulerUpdate = checkPermission(
+    permissions,
+    PermissionsMap.NOTIFICATION_SETTING_FREQUENCY,
+    "update"
+  );
+  const shouldAllowSchedulerDelete = checkPermission(
+    permissions,
+    PermissionsMap.NOTIFICATION_SETTING_FREQUENCY,
+    "delete"
+  );
+
+  const shouldAllowSchedulerGet = checkPermission(
+    permissions,
+    PermissionsMap.NOTIFICATION_SETTING_FREQUENCY,
+    "get"
+  );
 
   const [notificationData, setNotificationData] = useState({});
   const [notificationTypeId, setNotificationTypeId] = useState(null);
@@ -1006,7 +1039,7 @@ export default function AddNotificationTypes() {
                 expanded={expanded.reminder && notificationTypeId !== null}
                 onChange={handleAccordionChange("reminder")}
                 sx={{ mb: 2, borderRadius: 2, boxShadow: 1 }}
-                disabled={notificationTypeId === null}
+                disabled={notificationTypeId === null || !shouldAllowScheduler}
               >
                 <AccordionSummary
                   expandIcon={<ExpandMoreIcon />}
@@ -1022,7 +1055,7 @@ export default function AddNotificationTypes() {
                     variant="h6"
                     sx={{ fontWeight: "bold", color: "text.primary" }}
                   >
-                    Frequency {!notificationTypeId}
+                    Scheduler {!notificationTypeId}
                   </Typography>
                 </AccordionSummary>
                 <AccordionDetails>
@@ -1030,6 +1063,10 @@ export default function AddNotificationTypes() {
                     <Frequency
                       fieldOptions={fieldOptions}
                       notificationTypeId={notificationTypeId}
+                      shouldAllowSchedulerGet={shouldAllowSchedulerGet}
+                      shouldAllowSchedulerCreate={shouldAllowSchedulerCreate}
+                      shouldAllowSchedulerUpdate={shouldAllowSchedulerUpdate}
+                      shouldAllowSchedulerDelete={shouldAllowSchedulerDelete}
                     />
                   </ErrorBoundary>
                 </AccordionDetails>

@@ -6,10 +6,27 @@ import { STYLE_GUIDE } from "../../styles";
 import { useUnifiedTheme } from "../../hooks/useUnifiedTheme";
 import CommonPageHeader from "../../components/atom/commonPageHeader";
 import PrimaryButton from "../../components/common/PrimaryButton";
+import { useSelector } from "react-redux";
+import { RootState } from "../../store";
+import { checkPermission } from "../../utils/utils";
+import { PermissionsMap } from "../../utils/constants";
 
 export default function AttributeOption() {
   const theme = useUnifiedTheme();
   const [attributeOptionReload, setAttributeOptionReload] = useState(false);
+  const permissions = useSelector(
+    (state: RootState) => state.userPermission.permissions
+  );
+  const shouldShowCreateButton = checkPermission(
+    permissions,
+    PermissionsMap.ATTRIBUTE_OPTION,
+    "create"
+  );
+  const shouldAllowEdit = checkPermission(
+    permissions,
+    PermissionsMap.ATTRIBUTE_OPTION,
+    "update"
+  );
   return (
     <Box
       sx={{
@@ -23,9 +40,11 @@ export default function AttributeOption() {
             setAttributeOptionReload={setAttributeOptionReload}
             title="Create New Attribute Option"
             CustomButton={
-              <PrimaryButton variant="contained">
-                Create New Attribute Option
-              </PrimaryButton>
+              shouldShowCreateButton && (
+                <PrimaryButton variant="contained">
+                  Create New Attribute Option
+                </PrimaryButton>
+              )
             }
           />
         }
@@ -67,6 +86,7 @@ export default function AttributeOption() {
       <AttributeOptionTable
         attributeOptionReload={attributeOptionReload}
         setAttributeOptionReload={setAttributeOptionReload}
+        shouldAllowEdit={shouldAllowEdit}
       />
     </Box>
   );
