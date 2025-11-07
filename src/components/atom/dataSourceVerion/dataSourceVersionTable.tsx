@@ -545,8 +545,6 @@ const DataSourceVersionTable: React.FC<AttributeOptionTableProps> = ({
   }
 
   const columns = [
-    { id: "versionName", label: "Version Name", minWidth: 170 },
-    { id: "versionValue", label: "Period", minWidth: 170 },
     {
       id: "dataSourceName",
       label: "Data Source Name",
@@ -555,14 +553,17 @@ const DataSourceVersionTable: React.FC<AttributeOptionTableProps> = ({
         return row.dataSourceId?.name || "-";
       },
     },
-    {
-      id: "dataSourceName",
-      label: "Data Source Name",
-      minWidth: 250,
-      renderCell: (row: Record<string, unknown>) => {
-        return row.fileName || "-";
-      },
-    },
+
+    { id: "versionValue", label: "Period", minWidth: 170 },
+
+    // {
+    //   id: "dataSourceName",
+    //   label: "Data Source Name",
+    //   minWidth: 250,
+    //   renderCell: (row: Record<string, unknown>) => {
+    //     return row.fileName || "-";
+    //   },
+    // },
     { id: "fileName", label: "File Name" },
     {
       id: "mappings",
@@ -585,27 +586,27 @@ const DataSourceVersionTable: React.FC<AttributeOptionTableProps> = ({
         );
       },
     },
-    {
-      id: "separator",
-      label: "Separator",
-      renderCell: (row: Record<string, unknown>, index: number) => {
-        return row.separator && Object.keys(row.separator).length > 0 ? (
-          <IconButton
-            aria-label="expand row"
-            size="small"
-            onClick={() => toggleSepratorRow(index)}
-          >
-            {expandedSepratorRows[index] ? (
-              <KeyboardArrowUpIcon />
-            ) : (
-              <KeyboardArrowDownIcon />
-            )}
-          </IconButton>
-        ) : (
-          "-"
-        );
-      },
-    },
+    // {
+    //   id: "separator",
+    //   label: "Separator",
+    //   renderCell: (row: Record<string, unknown>, index: number) => {
+    //     return row.separator && Object.keys(row.separator).length > 0 ? (
+    //       <IconButton
+    //         aria-label="expand row"
+    //         size="small"
+    //         onClick={() => toggleSepratorRow(index)}
+    //       >
+    //         {expandedSepratorRows[index] ? (
+    //           <KeyboardArrowUpIcon />
+    //         ) : (
+    //           <KeyboardArrowDownIcon />
+    //         )}
+    //       </IconButton>
+    //     ) : (
+    //       "-"
+    //     );
+    //   },
+    // },
     {
       id: "createdBy",
       label: "Created By",
@@ -628,6 +629,7 @@ const DataSourceVersionTable: React.FC<AttributeOptionTableProps> = ({
         return row.createdAt ? new Date(row.createdAt).toLocaleString() : "-";
       },
     },
+    { id: "versionName", label: "Version ID", minWidth: 170 },
     {
       id: "status",
       label: "Status",
