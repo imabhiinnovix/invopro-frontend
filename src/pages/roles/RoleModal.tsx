@@ -338,13 +338,6 @@ export function RoleModal({
                   Reset
                 </Button>
                 <Button
-                  variant="outlined"
-                  onClick={onClose}
-                  sx={{ borderRadius: "8px" }}
-                >
-                  Cancel
-                </Button>
-                <Button
                   type="submit"
                   onClick={handleSubmit(onSubmit)}
                   variant="contained"
@@ -360,13 +353,6 @@ export function RoleModal({
               </>
             ) : (
               <>
-                <Button
-                  variant="outlined"
-                  onClick={onClose}
-                  sx={{ borderRadius: "8px" }}
-                >
-                  Cancel
-                </Button>
                 {mode !== "view" && (
                   <Button
                     type="submit"

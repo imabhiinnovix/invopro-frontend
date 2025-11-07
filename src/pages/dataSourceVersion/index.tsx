@@ -30,15 +30,15 @@ export default function DataSourceVersion() {
       }}
     >
       <CommonPageHeader
-        title="Data Source Version"
+        title="Data Upload"
         actions={
           shouldAllowAdd && (
             <CreateDataSourceVersion
               setReload={setReload}
-              title="Create New Data Source Version"
+              title="Create New Data Upload"
               CustomButton={
                 <PrimaryButton variant="contained">
-                  Create Data Source Version
+                  Create File Upload
                 </PrimaryButton>
               }
             />

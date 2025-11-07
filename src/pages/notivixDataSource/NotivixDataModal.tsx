@@ -261,13 +261,14 @@ export const NotivixDataModal: React.FC<ModelSectionProps> = ({
     }
     // Handle existing arrays
     else if (Array.isArray(raw)) {
-    values = raw.filter(val => val != null && val !== '');
+      values = raw.filter((val) => val != null && val !== "");
     }
     // Handle other types
     else {
-if (raw != null) {
-      values = [String(raw)];
-    }    }
+      if (raw != null) {
+        values = [String(raw)];
+      }
+    }
 
     // Remove duplicates
     const uniqueValues = [...new Set(values)];
@@ -483,8 +484,8 @@ if (raw != null) {
                   !isFieldEditable
                     ? ""
                     : isReferenceMulti
-                      ? "Select option"
-                      : "Type or select"
+                    ? "Select option"
+                    : "Type or select"
                 }
               />
             )}
@@ -607,17 +608,6 @@ if (raw != null) {
           }
           actions={
             <>
-              <Button
-                variant="outlined"
-                onClick={handleCancel}
-                sx={{
-                  borderRadius: "8px",
-                  borderColor: STYLE_GUIDE?.COLORS?.divider || "#e0e0e0",
-                  color: STYLE_GUIDE?.COLORS?.primaryDark || "#3f51b5",
-                }}
-              >
-                Cancel
-              </Button>
               {modalMode !== "view" && (
                 <Button
                   variant="contained"

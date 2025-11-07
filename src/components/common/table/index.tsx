@@ -9,6 +9,9 @@ import TablePagination from "@mui/material/TablePagination";
 import TableRow from "@mui/material/TableRow";
 import Skeleton from "@mui/material/Skeleton";
 import { forwardRef } from "react";
+import Box from "@mui/material/Box";
+import Stack from "@mui/material/Stack";
+import Typography from "@mui/material/Typography";
 
 interface Column {
   id: string;
@@ -31,6 +34,8 @@ interface CommonTableProps {
   isLazyTable?: boolean;
   isLazyLoading?: boolean;
   onRowClick?: (row: Record<string, unknown>) => void;
+  customFooterLeftComponent?: React.ReactNode;
+  customFooterRightComponent?: React.ReactNode;
 }
 
 const CommonTable = forwardRef<HTMLTableElement, CommonTableProps>(
@@ -44,6 +49,7 @@ const CommonTable = forwardRef<HTMLTableElement, CommonTableProps>(
       isLazyTable,
       isLazyLoading,
       onRowClick,
+      customFooterLeftComponent,
     },
     ref
   ) => {
@@ -166,15 +172,29 @@ const CommonTable = forwardRef<HTMLTableElement, CommonTableProps>(
         </TableContainer>
 
         {!isLazyTable && !loading && (
-          <TablePagination
-            rowsPerPageOptions={[10, 25, 100]}
-            component="div"
-            count={rows.length}
-            rowsPerPage={rowsPerPage}
-            page={page}
-            onPageChange={handleChangePage}
-            onRowsPerPageChange={handleChangeRowsPerPage}
-          />
+          <Stack
+            direction="row"
+            justifyContent="space-between"
+            alignItems="center"
+            px={1}
+          >
+            {customFooterLeftComponent ? (
+              customFooterLeftComponent
+            ) : (
+              <Typography variant="body2">
+                Total Records: {rows.length}
+              </Typography>
+            )}
+            <TablePagination
+              rowsPerPageOptions={[10, 25, 100]}
+              component="div"
+              count={rows.length}
+              rowsPerPage={rowsPerPage}
+              page={page}
+              onPageChange={handleChangePage}
+              onRowsPerPageChange={handleChangeRowsPerPage}
+            />
+          </Stack>
         )}
       </Paper>
     );

@@ -1004,9 +1004,9 @@ const ProfilePage = () => {
         maxWidth="sm"
         actions={
           <>
-            <PrimaryButton variant="outlined" onClick={handleDeleteCancel}>
+            {/* <PrimaryButton variant="outlined" onClick={handleDeleteCancel}>
               Cancel
-            </PrimaryButton>
+            </PrimaryButton> */}
             <PrimaryButton
               variant="outlined"
               onClick={handleDeleteConfirm}

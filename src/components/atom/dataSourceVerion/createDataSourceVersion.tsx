@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   Button,
   TextField,
@@ -55,7 +55,12 @@ const CreateDataSourceVersion: React.FC<CreateDataSourceVersionProps> = ({
 }) => {
   const theme = useUnifiedTheme();
   const [open, setOpen] = useState(false);
-  const [versionName, setVersionName] = useState("");
+  const uniqueRandomVersionName = useMemo(() => {
+    return `version_${Date.now()}_${Math.random()
+      .toString(36)
+      .substring(2, 15)}`;
+  }, []);
+  const [versionName, setVersionName] = useState(uniqueRandomVersionName);
   const [file, setFile] = useState<File | null>(null);
   const [fileName, setFileName] = useState<string | null>(null);
   const [fileHeader, setFileHeader] = useState<string[]>([]);
@@ -381,9 +386,6 @@ const CreateDataSourceVersion: React.FC<CreateDataSourceVersionProps> = ({
               <ProgressBar />
             ) : (
               <>
-                <PrimaryButton onClick={handleCancel} variant="outlined">
-                  Cancel
-                </PrimaryButton>
                 <PrimaryButton
                   type="submit"
                   onClick={handleSubmit(onSubmit)}
@@ -428,7 +430,7 @@ const CreateDataSourceVersion: React.FC<CreateDataSourceVersionProps> = ({
             rules={{ required: "Period is required" }}
           />
 
-          <TextField
+          {/* <TextField
             label="Version Name(Distinct Name for Identical Version of Same Data Source)*"
             fullWidth
             {...register("versionName", {
@@ -526,7 +528,7 @@ const CreateDataSourceVersion: React.FC<CreateDataSourceVersionProps> = ({
                 } inset !important`,
               },
             }}
-          />
+          /> */}
 
           {fileUploadLoader ? (
             <ProgressBar />

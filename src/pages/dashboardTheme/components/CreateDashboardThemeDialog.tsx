@@ -201,14 +201,6 @@ const CreateDashboardThemeDialog: React.FC<CreateDashboardThemeDialogProps> = ({
       actions={
         <>
           <PrimaryButton
-            onClick={onClose}
-            variant="outlined"
-            disabled={loading}
-            sx={{ ...getButtonSx() }}
-          >
-            Cancel
-          </PrimaryButton>
-          <PrimaryButton
             onClick={handleSubmit}
             disabled={loading || !formData.name.trim()}
             startIcon={loading ? <CircularProgress size={16} /> : null}

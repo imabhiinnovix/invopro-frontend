@@ -42,6 +42,8 @@ import { useUploadCustomReportFile } from "../../../hooks/useFileUpalod";
 import { objectToFormData } from "../../../utils/utils";
 import * as XLSX from "xlsx";
 import { useComponentTypography } from "../../../hooks/useComponentTypography";
+import DialogContainer from "../../molecule/dialog";
+import PrimaryButton from "../../common/PrimaryButton";
 
 interface UploadMultipleFilesProps {
   reportId: string;
@@ -732,6 +734,229 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
   }, [trigger]);
 
   return (
+    <DialogContainer
+      maxWidth="lg"
+      fullWidth
+      open={open}
+      onClose={() => setOpen(false)}
+      title={`Generate Report for Period: ${versionValue}`}
+      actions={
+        <PrimaryButton
+          onClick={handleSubmit(onSubmit, onError)}
+          variant="contained"
+          color="primary"
+          disabled={isLoadingReportUpload || !!errors.files}
+        >
+          Submit
+        </PrimaryButton>
+      }
+    >
+      <Stack direction="column" gap={2}>
+        <Stack
+          direction="row"
+          justifyContent="flex-end"
+          alignItems="flex-start"
+        >
+          <Stack alignItems={"flex-end"}>
+            <PrimaryButton
+              variant="contained"
+              component="label"
+              color="primary"
+            >
+              <Box gap={1} display="flex" justifyContent="center">
+                <UploadFileIcon />
+                Upload Files
+              </Box>
+              <input
+                type="file"
+                hidden
+                multiple
+                onChange={(e) => handleFileChange(e)}
+              />
+            </PrimaryButton>
+            {errors.files && (
+              <Typography variant="caption" color="error">
+                {String(errors.files.message)}
+              </Typography>
+            )}
+          </Stack>
+        </Stack>
+        <TableContainer component={Paper} sx={{ ...getTableSx() }}>
+          <Table sx={{ width: "100%" }} aria-label="customized table">
+            <TableHead>
+              <TableRow>
+                <StyledTableCell>FILE NAME</StyledTableCell>
+                <StyledTableCell>UPLOAD FILE</StyledTableCell>
+                <StyledTableCell>SELECT FILE</StyledTableCell>
+                <StyledTableCell align="center">MAPPINGS</StyledTableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {requiredFiles?.map((fileName, index) => (
+                <StyledTableRow key={`${fileName._id}`}>
+                  <StyledTableCell>
+                    {fileName?.extededName || "-"}
+                  </StyledTableCell>
+                  <StyledTableCell>
+                    <Box>
+                      <PrimaryButton variant="contained" component="label">
+                        <Stack
+                          gap={1}
+                          direction="row"
+                          justifyContent="center"
+                          alignContent="center"
+                        >
+                          <UploadFileIcon />
+                          <Typography component="span" variant="button">
+                            {fileName?.isVersionAvailable ||
+                            watch("files")?.[index]
+                              ? "Reupload"
+                              : "Upload"}
+                          </Typography>
+                        </Stack>
+                        <input
+                          type="file"
+                          hidden
+                          onChange={(e) =>
+                            handleFileChange(e, fileName.name, index)
+                          }
+                        />
+                        {fileName?.isRequired && (
+                          <Typography
+                            component="span"
+                            color="error"
+                            sx={{
+                              fontSize: 35,
+                              position: "absolute",
+                              top: -23,
+                              right: -8,
+                            }}
+                          >
+                            *
+                          </Typography>
+                        )}
+                      </PrimaryButton>
+                      {fileName?.isVersionAvailable ? (
+                        <Typography
+                          component="div"
+                          variant="caption"
+                          color="info"
+                        >
+                          Data Available
+                        </Typography>
+                      ) : null}
+                    </Box>
+                  </StyledTableCell>
+                  <StyledTableCell>
+                    <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
+                      <StyledSelect
+                        label="Select File"
+                        value={fileSelections[fileName.extededName] || ""}
+                        onChange={(e) => {
+                          const selectedFile = [
+                            ...unmappedFiles,
+                            ...(watch("files") || []),
+                          ].find((f) => f?.name === (e.target.value as string));
+                          if (selectedFile) {
+                            handleFileSelection(
+                              selectedFile,
+                              fileName.extededName
+                            );
+                          }
+                        }}
+                      >
+                        {(() => {
+                          // Get all files
+                          const allFiles = [
+                            ...unmappedFiles,
+                            ...(watch("files") || []),
+                          ].filter(Boolean);
+
+                          // Create a Map using file names as keys to ensure uniqueness
+                          const uniqueFiles = new Map();
+
+                          allFiles.forEach((file) => {
+                            if (file && !uniqueFiles.has(file.name)) {
+                              uniqueFiles.set(file.name, file);
+                            }
+                          });
+
+                          return Array.from(uniqueFiles.values()).map(
+                            (file) => (
+                              <MenuItem key={file.name} value={file.name}>
+                                {file.name}
+                              </MenuItem>
+                            )
+                          );
+                        })()}
+                      </StyledSelect>
+                      {fileSelections[fileName.extededName] && (
+                        <Button
+                          color="error"
+                          onClick={() => handleRemoveFile(fileName.extededName)}
+                          sx={{ minWidth: "auto", p: 1 }}
+                        >
+                          <Typography
+                            component="span"
+                            sx={{ fontSize: "1.5rem" }}
+                          >
+                            ×
+                          </Typography>
+                        </Button>
+                      )}
+                    </Box>
+                  </StyledTableCell>
+                  <StyledTableCell align="center">
+                    {fileHeader[fileName.extededName] ? (
+                      <Stack
+                        direction="row"
+                        gap={1}
+                        alignItems="center"
+                        justifyContent="center"
+                      >
+                        <ViewMapping
+                          fileName={fileName}
+                          CustomButton={<Button>View Mappings</Button>}
+                          title={`Mapping for ${fileName.name}`}
+                          settingAttributeOption={fileName.attributes}
+                          fileHeaders={fileHeader[fileName.extededName]!}
+                          control={control}
+                          setValue={setValue}
+                          index={index}
+                          setOpen={setOpenMappingModal}
+                          open={openMappingModal}
+                          trigger={trigger}
+                          watch={watch}
+                        />
+                        {(
+                          (errors?.mappings?.message ||
+                            errors?.mappings?.root
+                              ?.message) as unknown as Record<
+                            string,
+                            { isError: boolean; msg: string }
+                          >
+                        )?.[fileName?.extededName]?.isError ? (
+                          <ErrorOutlineIcon color="error" />
+                        ) : (
+                          <CheckCircleIcon color="success" />
+                        )}
+                      </Stack>
+                    ) : fileName?.isVersionAvailable ? (
+                      <CheckCircleIcon color="success" />
+                    ) : (
+                      "-"
+                    )}
+                  </StyledTableCell>
+                </StyledTableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      </Stack>
+    </DialogContainer>
+  );
+
+  return (
     <>
       <Dialog
         open={open}
@@ -995,9 +1220,6 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
           </TableContainer>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setOpen(false)} color="error">
-            Cancel
-          </Button>
           <Button
             onClick={handleSubmit(onSubmit, onError)}
             variant="contained"

@@ -5,6 +5,7 @@ import SwipeUpIcon from "@mui/icons-material/SwipeUp";
 import RemoveCircleIcon from "@mui/icons-material/RemoveCircle";
 import { CustomPagination } from "../../components/common/pagination/customPagination";
 import FileDownloadDoneIcon from "@mui/icons-material/FileDownloadDone";
+import CommonTable from "../../components/common/table";
 
 const CustomFooter = ({
   paginationModel,
@@ -34,55 +35,56 @@ const CustomFooter = ({
 
 const columns: GridColDef[] = [
   {
-    field: "fileRowNumber",
-    headerName: "Row Number",
+    id: "fileRowNumber",
+    label: "Row Number",
     width: 140,
     disableColumnMenu: true,
     resizable: true,
   },
   {
-    field: "fileName",
-    headerName: "File Name",
+    id: "fileName",
+    label: "File Name",
     width: 200,
     disableColumnMenu: true,
     resizable: true,
   },
   {
-    field: "errorMessage",
-    headerName: "Error Message",
+    id: "errorMessage",
+    label: "Error Message",
     width: 300,
     disableColumnMenu: true,
     resizable: true,
   },
   {
-    field: "fileAttributeValue",
-    headerName: "Attribute Value",
+    id: "fileAttributeValue",
+    label: "Attribute Value",
     width: 150,
     disableColumnMenu: true,
     resizable: true,
   },
   {
-    field: "status",
-    headerName: "Status",
+    id: "status",
+    label: "Status",
     width: 100,
     disableColumnMenu: true,
     resizable: true,
-    renderCell: (params) => {
+    renderCell: (row: Record<string, unknown>) => {
       let chipColor = "default";
       let chipVariant = "outlined";
 
-      if (params.value === "resolved") {
+      if (row.status === "resolved") {
         chipColor = "success";
-      } else if (params.value === "open") {
+      } else if (row.status === "open") {
         chipColor = "primary";
         chipVariant = "outlined"; // This will give us the blue border
       } else {
         chipColor = "error";
       }
+      console.log("row", row);
 
       return (
         <Chip
-          label={params.value || "Unknown"}
+          label={row.status || "Unknown"}
           size="small"
           color={chipColor}
           variant={chipVariant}
@@ -91,22 +93,23 @@ const columns: GridColDef[] = [
     },
   },
   {
-    field: "actions",
-    headerName: "Actions",
+    id: "actions",
+    label: "Actions",
     width: 150,
     disableColumnMenu: true,
     sortable: false,
     resizable: false,
-    renderCell: (params) => {
-      const isDiscarded = params.row.status === "discarded";
+    renderCell: (row: Record<string, unknown>) => {
+      const isDiscarded = row.status === "discarded";
+      const isResolved = row.status === "resolved";
 
       return (
         <Box sx={{ display: "flex", gap: 1 }}>
-          {params.row.errorCode === "1005" ? (
+          {row.errorCode === "1005" ? (
             <Tooltip title="Resolve" arrow>
               <Button
                 variant="text"
-                onClick={() => params.row.handleResolve(params.row)}
+                onClick={() => row.handleResolve(row)}
                 sx={{ minWidth: "auto" }}
               >
                 <FileDownloadDoneIcon />
@@ -116,8 +119,9 @@ const columns: GridColDef[] = [
             <Tooltip title="Take Action" arrow>
               <Button
                 variant="text"
-                onClick={() => params.row.handleEdit(params.row)}
+                onClick={() => row.handleEdit(row)}
                 sx={{ minWidth: "auto" }}
+                disabled={isResolved}
               >
                 <SwipeUpIcon />
               </Button>
@@ -126,9 +130,9 @@ const columns: GridColDef[] = [
           <Tooltip title="Discard" arrow>
             <Button
               variant="text"
-              onClick={() => params.row.handleDiscard(params.row)}
+              onClick={() => row.handleDiscard(row)}
               sx={{ minWidth: "auto" }}
-              disabled={isDiscarded}
+              disabled={isDiscarded || isResolved}
             >
               <RemoveCircleIcon />
             </Button>
@@ -168,8 +172,24 @@ export const ValidationErrorsDataTable: React.FC<
         />
       );
     }
-    return null; 
+    return null;
   };
+
+  return (
+    <CommonTable
+      columns={columns}
+      rows={rows || []}
+      height="calc(100vh - 400px)"
+      customFooterLeftComponent={
+        <>
+          <Typography variant="body2">
+            {validationErrorList.data?.totalActionCount} of{" "}
+            {validationErrorList.data?.totalCount} Resolved
+          </Typography>
+        </>
+      }
+    />
+  );
 
   return (
     <DataGrid
@@ -184,7 +204,7 @@ export const ValidationErrorsDataTable: React.FC<
       rowCount={rowCount}
       paginationModel={paginationModel}
       checkboxSelection={false}
-      isRowSelectable={() => false} 
+      isRowSelectable={() => false}
       slots={{
         footer: renderFooter,
       }}

@@ -1780,23 +1780,23 @@ const columns: GridColDef[] = [
     resizable: true,
     renderCell: (params) => formatDateUTC(params.row.createdAt),
   },
-  {
-    field: "notificationTriggerId",
-    headerName: "Is Dry Run",
-    width: 250,
-    disableColumnMenu: true,
-    resizable: true,
-    renderCell: (params) => (
-      <Chip
-        label={params.row.notificationTriggerId?.isDryRun ? "Yes" : "No"}
-        size="small"
-        color={
-          params.row.notificationTriggerId?.isDryRun ? "warning" : "success"
-        }
-        variant="outlined"
-      />
-    ),
-  },
+  // {
+  //   field: "notificationTriggerId",
+  //   headerName: "Is Dry Run",
+  //   width: 250,
+  //   disableColumnMenu: true,
+  //   resizable: true,
+  //   renderCell: (params) => (
+  //     <Chip
+  //       label={params.row.notificationTriggerId?.isDryRun ? "Yes" : "No"}
+  //       size="small"
+  //       color={
+  //         params.row.notificationTriggerId?.isDryRun ? "warning" : "success"
+  //       }
+  //       variant="outlined"
+  //     />
+  //   ),
+  // },
   {
     field: "actions",
     headerName: "Actions",
@@ -2057,7 +2057,7 @@ export default function NotificationLogger() {
             loading={notificationLogList.isLoading}
             rowCount={notificationLogList?.data?.pagination.totalRecords || 0}
             paginationModel={paginationModel}
-            isRowSelectable={() => false} 
+            isRowSelectable={() => false}
             slots={{
               pagination: () => (
                 <CustomPagination
@@ -2079,8 +2079,11 @@ export default function NotificationLogger() {
         title="Notification logs Details"
         maxWidth="lg"
         actions={
-          <PrimaryButton variant="outlined" onClick={handleViewModalClose}>
-            Cancel
+          <PrimaryButton
+            onClick={() => handleResendNow(selectedNotification?._id)}
+          >
+            <ForwardToInboxIcon sx={{ mr: STYLE_GUIDE.SPACING.s2 }} />
+            Resend Now
           </PrimaryButton>
         }
       >
@@ -2136,7 +2139,7 @@ export default function NotificationLogger() {
                     </Typography>
                   </Grid>
 
-                  <Grid item xs={4}>
+                  {/* <Grid item xs={4}>
                     <Typography
                       variant="body2"
                       color="textSecondary"
@@ -2162,7 +2165,7 @@ export default function NotificationLogger() {
                         ? "Yes"
                         : "No"}
                     </Typography>
-                  </Grid>
+                  </Grid> */}
 
                   <Grid item xs={4}>
                     <Typography
@@ -2212,8 +2215,8 @@ export default function NotificationLogger() {
                         selectedNotification.status === "sent"
                           ? "success"
                           : selectedNotification.status === "pending"
-                            ? "warning"
-                            : "error"
+                          ? "warning"
+                          : "error"
                       }
                       variant="outlined"
                     />

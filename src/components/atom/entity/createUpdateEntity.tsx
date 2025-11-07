@@ -697,9 +697,6 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
               <ProgressBar />
             ) : (
               <>
-                <PrimaryButton onClick={handleCancel} variant="outlined">
-                  Cancel
-                </PrimaryButton>
                 <PrimaryButton
                   type="submit"
                   onClick={handleSubmit(onSubmit)}

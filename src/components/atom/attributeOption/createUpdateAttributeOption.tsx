@@ -132,9 +132,6 @@ const CreateUpdateAttributeOption: React.FC<
               <ProgressBar />
             ) : (
               <>
-                <PrimaryButton variant="outlined" onClick={handleFormClose}>
-                  Cancel
-                </PrimaryButton>
                 <PrimaryButton onClick={handleSubmit(onSubmitHandler)}>
                   Submit
                 </PrimaryButton>

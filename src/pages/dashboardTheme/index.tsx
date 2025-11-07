@@ -223,9 +223,6 @@ const DashboardThemePage = () => {
         title="Delete Theme"
         actions={
           <>
-            <PrimaryButton onClick={cancelDelete} variant="outlined">
-              Cancel
-            </PrimaryButton>
             <PrimaryButton
               onClick={confirmDelete}
               variant="contained"

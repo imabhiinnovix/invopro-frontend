@@ -706,9 +706,6 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({
               <CircularProgress />
             ) : (
               <>
-                <PrimaryButton onClick={handleCancel} variant="outlined">
-                  Cancel
-                </PrimaryButton>
                 <PrimaryButton
                   type="submit"
                   variant="contained"

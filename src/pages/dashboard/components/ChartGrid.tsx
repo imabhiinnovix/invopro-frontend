@@ -177,9 +177,9 @@ const ChartContainer = styled(Box)(({ theme }) => ({
   },
   "&.line-chart": {
     minHeight: 500,
-    padding: theme.spacing(4, 2, 6, 4),
+    // padding: theme.spacing(4, 2, 6, 4),
     "& canvas": {
-      maxWidth: "98% !important",
+      // maxWidth: "98% !important",
       maxHeight: "90% !important",
     },
   },
@@ -740,6 +740,9 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
     const { datasetIndex, index } = elements[0];
     const clickedElement = { datasetIndex, index };
 
+    // Get the dataset label
+    const datasetLabel = event.chart.data.datasets[datasetIndex].label;
+
     const chartData =
       widgetData[chart._id]?.data?.widgetData || chart.data || [];
     const clickedDataFilter = chartData?.filter((item: ChartDataItem) => {
@@ -757,7 +760,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
         ? clickedDataFilter[datasetIndex]
         : clickedDataFilter[0];
     if (clickedData) {
-      setDrillDownTitle(`${chart.name} - ${clickedData.name}`);
+      setDrillDownTitle(`${clickedData.name} - ${datasetLabel}`);
       setDrillDownOpen(true);
       setCurrentPage(1);
       setIsDrillDownLoading(true);
@@ -2225,13 +2228,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
       maintainAspectRatio: false,
       plugins: {
         legend: {
-          position: (widgetTheme?.legend?.position ?? "bottom") as
-            | "bottom"
-            | "right"
-            | "center"
-            | "top"
-            | "left"
-            | "chartArea",
+          position: "bottom",
           display: widgetTheme?.legend?.display ?? true,
           align: "start" as const,
           labels: {
@@ -2298,9 +2295,10 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
           scales: {
             y: {
               title: {
-                color: widgetTheme?.scales?.x?.ticks?.color ?? "grey",
+                color: "black",
                 display: true,
                 text: yLabel,
+                font: { size: 14, weight: "bold" },
               },
               display: widgetTheme?.scales?.y?.display ?? true,
               beginAtZero: widgetTheme?.scales?.y?.beginAtZero ?? true,
@@ -2319,9 +2317,10 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
             },
             x: {
               title: {
-                color: widgetTheme?.scales?.x?.ticks?.color ?? "grey",
+                color: "black",
                 display: true,
                 text: xLabel,
+                font: { size: 14, weight: "bold" },
               },
               display: widgetTheme?.scales?.x?.display ?? true,
               grid: {
@@ -2354,9 +2353,8 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
               title: {
                 display: true,
                 text: xLabel,
-                color:
-                  widgetTheme?.scales?.x?.ticks?.color ||
-                  theme.palette.text.primary,
+                color: "black",
+
                 font: { size: 14, weight: "bold" as const },
               },
               display: widgetTheme?.scales?.x?.display ?? true,
@@ -2403,7 +2401,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
           plugins: {
             ...baseOptions.plugins,
             legend: {
-              position: "top" as const,
+              position: "bottom" as const,
               labels: {
                 usePointStyle: true,
                 color:
@@ -2427,9 +2425,10 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
           scales: {
             x: {
               title: {
-                color: widgetTheme?.scales?.x?.ticks?.color ?? "grey",
+                color: "black",
                 display: true,
                 text: xLabel,
+                font: { size: 14, weight: "bold" },
               },
               display: widgetTheme?.scales?.x?.display ?? true,
               grid: {
@@ -2448,9 +2447,10 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
             },
             y: {
               title: {
-                color: widgetTheme?.scales?.x?.ticks?.color ?? "grey",
+                color: "black",
                 display: true,
                 text: yLabel,
+                font: { size: 14, weight: "bold" },
               },
               display: widgetTheme?.scales?.y?.display ?? true,
               beginAtZero: widgetTheme?.scales?.y?.beginAtZero ?? true,
@@ -2484,9 +2484,10 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
               },
               stacked: true,
               title: {
-                color: widgetTheme?.scales?.x?.ticks?.color ?? "grey",
+                color: "black",
                 display: true,
                 text: yLabel,
+                font: { size: 14, weight: "bold" },
               },
               ticks: {
                 padding: widgetTheme?.scales?.y?.ticks?.padding ?? 8,
@@ -2501,9 +2502,10 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
                 drawOnChartArea: false,
               },
               title: {
-                color: widgetTheme?.scales?.x?.ticks?.color ?? "grey",
+                color: "black",
                 display: true,
                 text: `Total ${yLabel}`, // Line axis label - differentiate from bar
+                font: { size: 14, weight: "bold" },
               },
               ticks: {
                 padding: widgetTheme?.scales?.y?.ticks?.padding ?? 8,
@@ -2514,6 +2516,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
                 color: widgetTheme?.scales?.x?.ticks?.color ?? "grey",
                 display: true,
                 text: xLabel,
+                font: { size: 14, weight: "bold" },
               },
               display: widgetTheme?.scales?.x?.display ?? true,
               grid: {
@@ -2543,9 +2546,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
               title: {
                 display: true,
                 text: xLabel,
-                color:
-                  widgetTheme?.scales?.x?.ticks?.color ||
-                  theme.palette.text.primary,
+                color: "black",
                 font: { size: 14, weight: "bold" },
               },
               display: widgetTheme?.scales?.x?.display ?? true,
@@ -2569,9 +2570,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
               title: {
                 display: true,
                 text: yLabel,
-                color:
-                  widgetTheme?.scales?.y?.ticks?.color ||
-                  theme.palette.text.primary,
+                color: "black",
                 font: { size: 14, weight: "bold" },
               },
               grid: {
@@ -2615,7 +2614,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
             ...baseOptions.plugins,
             legend: {
               display: true,
-              position: "top" as const,
+              position: "bottom" as const,
               labels: {
                 usePointStyle: true,
                 color:
@@ -3294,7 +3293,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
 
           <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
             <Button
-              // variant="outlined"
+              variant="outlined"
               // startIcon={<VisibilityIcon />}
               onClick={(e) => {
                 e.stopPropagation();
@@ -3358,10 +3357,12 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
             <Box
               sx={{
                 flex: 0.4,
-                minHeight: "115vh",
+                // minHeight: "115vh",
                 display: "flex",
                 flexDirection: "column",
                 backgroundColor: theme.palette.background.paper,
+                m: 4,
+                border: `1px solid ${theme.palette.divider}`,
               }}
             >
               {/* Header with title and close button */}
@@ -3535,7 +3536,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
                   }}
                 >
                   <Typography variant="body2" sx={{ mr: 2 }}>
-                    Total Records :- {totalRecords}
+                    Total Records : {totalRecords}
                   </Typography>
 
                   <div style={{ display: "flex", alignItems: "center" }}>

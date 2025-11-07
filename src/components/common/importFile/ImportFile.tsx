@@ -57,7 +57,6 @@ interface GlobalPollingManagerProps {
  * @param callback - Function to execute on each poll
  */
 export const startGlobalPolling = (pollingId: string, callback: () => void) => {
-
   // Clear any existing timer for this ID
   if (globalPollingState.activePolls.has(pollingId)) {
     clearTimeout(globalPollingState.activePolls.get(pollingId));
@@ -66,7 +65,7 @@ export const startGlobalPolling = (pollingId: string, callback: () => void) => {
   // Set new timer with 5-second interval
   const timer = setTimeout(() => {
     callback();
-  }, 5000); 
+  }, 5000);
 
   globalPollingState.activePolls.set(pollingId, timer);
   globalPollingState.isPolling = true;
@@ -82,7 +81,6 @@ export const startGlobalPolling = (pollingId: string, callback: () => void) => {
  * @param pollingId - Unique identifier for the polling session
  */
 export const stopGlobalPolling = (pollingId: string) => {
-
   if (globalPollingState.activePolls.has(pollingId)) {
     clearTimeout(globalPollingState.activePolls.get(pollingId));
     globalPollingState.activePolls.delete(pollingId);
@@ -150,7 +148,6 @@ const GlobalPollingManager: React.FC<GlobalPollingManagerProps> = ({
   // Effect to handle polling response
   useEffect(() => {
     if (globalPollingState.isPolling && pollingId) {
-
       if (pollingData.isSuccess) {
         const status = pollingData.data.data?.status;
         const dataSourceId = pollingData.data.data?.dataSourceId;
@@ -239,12 +236,12 @@ const GlobalPollingManager: React.FC<GlobalPollingManagerProps> = ({
           setPollingTimestamp(now);
         }
       }
-    }, 2000); 
+    }, 2000);
 
     return () => clearInterval(interval);
   }, []);
 
-  return null; 
+  return null;
 };
 
 interface ImportFileProps {
@@ -726,7 +723,6 @@ const ImportFile: React.FC<ImportFileProps> = ({
     try {
       await mutateReportUpload(formDataToSend, {
         onSuccess: (data: any) => {
-
           if (data?.status === "pending" && data?.dataSourceVersionId) {
             const id = data.dataSourceVersionId;
 
@@ -735,8 +731,7 @@ const ImportFile: React.FC<ImportFileProps> = ({
             toast.info("File uploaded successfully. Processing in progress...");
 
             // Start global polling with 5-second interval
-            startGlobalPolling(id, () => {
-            });
+            startGlobalPolling(id, () => {});
           } else if (data?.status === "completed") {
             window?.dispatchEvent(
               new CustomEvent("dataSourceStatusChanged", {
@@ -893,18 +888,6 @@ const ImportFile: React.FC<ImportFileProps> = ({
               <ProgressBar />
             ) : (
               <Box>
-                <Button
-                  variant="outlined"
-                  onClick={handleCancel}
-                  sx={{
-                    borderRadius: "8px",
-                    marginRight: STYLE_GUIDE.SPACING.s2,
-                    borderColor: STYLE_GUIDE?.COLORS?.divider || "#e0e0e0",
-                    color: STYLE_GUIDE?.COLORS?.primaryDark || "#3f51b5",
-                  }}
-                >
-                  Cancel
-                </Button>
                 <Button
                   variant="contained"
                   onClick={handleSubmit(onSubmit)}
