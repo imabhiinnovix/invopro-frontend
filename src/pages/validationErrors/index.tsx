@@ -117,7 +117,7 @@ export default function ValidationErrors() {
     setSelectedRow(rowData);
     
     try {
-      const url = `${GET.ERROR_ROW_DATA}?dataSourceVersionId=${rowData.dataSourceVersionId}&dataSourceId=${rowData.dataSourceId}&rowNumber=${rowData.rowNumber}`;
+      const url = `${GET.ERROR_ROW_DATA}?dataSourceVersionId=${rowData.dataSourceVersionId}&dataSourceId=${rowData.dataSourceId}&rowNumber=${rowData.rowNumber}&errorId=${rowData._id}`;
       
       const response = await axiosInstance.get(url);
       
