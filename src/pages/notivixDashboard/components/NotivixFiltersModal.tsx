@@ -2525,22 +2525,7 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
               },
             }}
           >
-            Clear All
-          </Button>
-          <Button
-            onClick={onClose}
-            variant="outlined"
-            sx={{
-              ...getButtonSx(),
-              borderColor: theme.getInputBorderColor(),
-              color: theme.palette.text.primary,
-              "&:hover": {
-                borderColor:
-                  theme.border?.hover || STYLE_GUIDE.COLORS.darkBorderHover,
-              },
-            }}
-          >
-            Cancel
+            Reset
           </Button>
           <Button
             onClick={handleApplyFilters}
@@ -2554,7 +2539,7 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
               },
             }}
           >
-            Apply Filters
+            Apply
           </Button>
         </>
       }
