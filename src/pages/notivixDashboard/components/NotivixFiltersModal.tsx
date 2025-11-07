@@ -2333,6 +2333,7 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
               {fieldDateRangeValue.length > 0 && (
                 <Button
                   size="small"
+                  variant="contained"
                   onClick={() => {
                     setDateRangeValues((prev) => ({
                       ...prev,
@@ -2341,13 +2342,14 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
                     handleFilterChange(uniqueKey, undefined);
                   }}
                   sx={{
-                    right: "8px",
-                    minWidth: "auto",
-                    padding: "4px",
-                    color: theme.palette.text.secondary,
-                    "&:hover": {
-                      backgroundColor: "rgba(0, 0, 0, 0.04)",
-                    },
+                    // right: "8px",
+                    minWidth: "40px",
+                    // padding: "4px",
+                    height: "40px",
+                    color: "white",
+                    // "&:hover": {
+                    //   backgroundColor: "rgba(0, 0, 0, 0.04)",
+                    // },
                   }}
                 >
                   x
