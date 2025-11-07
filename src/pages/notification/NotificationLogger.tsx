@@ -2079,8 +2079,11 @@ export default function NotificationLogger() {
         title="Notification logs Details"
         maxWidth="lg"
         actions={
-          <PrimaryButton variant="outlined" onClick={handleViewModalClose}>
-            Close
+          <PrimaryButton
+            onClick={() => handleResendNow(selectedNotification?._id)}
+          >
+            <ForwardToInboxIcon sx={{ mr: STYLE_GUIDE.SPACING.s2 }} />
+            Resend Now
           </PrimaryButton>
         }
       >
