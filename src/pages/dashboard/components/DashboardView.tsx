@@ -2157,7 +2157,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
       : null;
     setDateRange(range);
 
-
     if (range && range.length === 2) {
       const startDate = range[0].format("YYYY-MM-DD");
       const endDate = range[1].format("YYYY-MM-DD");
@@ -2323,10 +2322,13 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     if (dashboardId) {
       const hasFilters = Object.keys(dashboardFilters).length > 0;
       // console.log("Dashboard Filters-------------------4----:", dashboardFilters);
-   if (!hasFilters) {
-      return;
-    }
-      console.log("Dashboard Filters-------------------5----:", dashboardFilters);
+      if (!hasFilters) {
+        return;
+      }
+      console.log(
+        "Dashboard Filters-------------------5----:",
+        dashboardFilters
+      );
 
       if (
         currentDashboard?.settings?.dashboardType === "normal" &&
@@ -2360,7 +2362,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             endVersionValue,
             dashboardType: currentDashboard?.settings?.dashboardType,
             dashboardFilters,
-
           })
         );
       }
@@ -2550,7 +2551,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               endVersionValue,
               versionValue: formattedVersionValue || "",
               dashboardFilters,
-
             })
           );
         }
@@ -2946,17 +2946,22 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                         numberOfMonths={2}
                         showOtherDays
                         className="purple"
+                        style={{
+                          fontSize: "14px",
+                        }}
                         // Remove inputClass, use inputProps with full width
                         inputProps={{
                           style: {
                             width: "100%",
                             padding: "8px 28px 8px 38px",
-                            fontSize: "14px",
+                            fontSize: "10px",
                             border: "none",
                             background: "transparent",
                             color: theme.getInputTextColor(),
                             outline: "none",
                             cursor: "pointer", // ensure clickable
+                            fontFamily:
+                              '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
                           },
                         }}
                       />

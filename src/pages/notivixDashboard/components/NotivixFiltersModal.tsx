@@ -2320,6 +2320,8 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
                     color: theme.getInputTextColor(),
                     outline: "none",
                     boxSizing: "border-box",
+                    fontFamily:
+                      '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
                   }}
                   containerStyle={{
                     width: "100%",

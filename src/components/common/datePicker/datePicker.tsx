@@ -160,6 +160,10 @@ const CommonDatePicker = <T extends FieldValues>(
                     "& .MuiOutlinedInput-root": {
                       backgroundColor: "white",
                     },
+                    "& .MuiInputBase-input": {
+                      fontFamily:
+                        '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+                    },
                   },
                 },
               }}

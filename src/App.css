@@ -47,3 +47,32 @@ input[type="number"]::-webkit-inner-spin-button {
   -webkit-appearance: none;
   margin: 0;
 }
+
+/* DatePicker (react-multi-date-picker) font styling */
+.rmdp-wrapper,
+.rmdp-container,
+.rmdp-calendar,
+.rmdp-day-picker,
+.rmdp-header,
+.rmdp-week-day,
+.rmdp-day,
+.rmdp-month-picker,
+.rmdp-year-picker,
+.rmdp-input {
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif !important;
+}
+
+/* MUI DatePicker (MobileDatePicker) font styling */
+.MuiPickersLayout-root,
+.MuiDateCalendar-root,
+.MuiPickersCalendarHeader-root,
+.MuiDayCalendar-header,
+.MuiDayCalendar-weekDayLabel,
+.MuiPickersDay-root,
+.MuiPickersYear-yearButton,
+.MuiPickersMonth-monthButton,
+.MuiPickersToolbar-root {
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif !important;
+}
