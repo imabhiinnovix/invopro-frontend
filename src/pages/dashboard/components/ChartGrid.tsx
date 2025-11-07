@@ -177,9 +177,9 @@ const ChartContainer = styled(Box)(({ theme }) => ({
   },
   "&.line-chart": {
     minHeight: 500,
-    padding: theme.spacing(4, 2, 6, 4),
+    // padding: theme.spacing(4, 2, 6, 4),
     "& canvas": {
-      maxWidth: "98% !important",
+      // maxWidth: "98% !important",
       maxHeight: "90% !important",
     },
   },
@@ -2228,13 +2228,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
       maintainAspectRatio: false,
       plugins: {
         legend: {
-          position: (widgetTheme?.legend?.position ?? "bottom") as
-            | "bottom"
-            | "right"
-            | "center"
-            | "top"
-            | "left"
-            | "chartArea",
+          position: "bottom",
           display: widgetTheme?.legend?.display ?? true,
           align: "start" as const,
           labels: {
@@ -2304,6 +2298,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
                 color: "black",
                 display: true,
                 text: yLabel,
+                font: { size: 14, weight: "bold" },
               },
               display: widgetTheme?.scales?.y?.display ?? true,
               beginAtZero: widgetTheme?.scales?.y?.beginAtZero ?? true,
@@ -2325,6 +2320,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
                 color: "black",
                 display: true,
                 text: xLabel,
+                font: { size: 14, weight: "bold" },
               },
               display: widgetTheme?.scales?.x?.display ?? true,
               grid: {
@@ -2405,7 +2401,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
           plugins: {
             ...baseOptions.plugins,
             legend: {
-              position: "top" as const,
+              position: "bottom" as const,
               labels: {
                 usePointStyle: true,
                 color:
@@ -2432,6 +2428,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
                 color: "black",
                 display: true,
                 text: xLabel,
+                font: { size: 14, weight: "bold" },
               },
               display: widgetTheme?.scales?.x?.display ?? true,
               grid: {
@@ -2453,6 +2450,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
                 color: "black",
                 display: true,
                 text: yLabel,
+                font: { size: 14, weight: "bold" },
               },
               display: widgetTheme?.scales?.y?.display ?? true,
               beginAtZero: widgetTheme?.scales?.y?.beginAtZero ?? true,
@@ -2489,6 +2487,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
                 color: "black",
                 display: true,
                 text: yLabel,
+                font: { size: 14, weight: "bold" },
               },
               ticks: {
                 padding: widgetTheme?.scales?.y?.ticks?.padding ?? 8,
@@ -2506,6 +2505,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
                 color: "black",
                 display: true,
                 text: `Total ${yLabel}`, // Line axis label - differentiate from bar
+                font: { size: 14, weight: "bold" },
               },
               ticks: {
                 padding: widgetTheme?.scales?.y?.ticks?.padding ?? 8,
@@ -2516,6 +2516,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
                 color: widgetTheme?.scales?.x?.ticks?.color ?? "grey",
                 display: true,
                 text: xLabel,
+                font: { size: 14, weight: "bold" },
               },
               display: widgetTheme?.scales?.x?.display ?? true,
               grid: {
@@ -2613,7 +2614,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
             ...baseOptions.plugins,
             legend: {
               display: true,
-              position: "top" as const,
+              position: "bottom" as const,
               labels: {
                 usePointStyle: true,
                 color:
