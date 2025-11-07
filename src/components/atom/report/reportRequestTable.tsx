@@ -1029,7 +1029,7 @@ import DownloadForOfflineIcon from "@mui/icons-material/DownloadForOffline";
 import { useUnifiedTheme } from "../../../hooks/useUnifiedTheme";
 import { useComponentTypography } from "../../../hooks/useComponentTypography";
 import CommonTable from "../../common/table";
-import { rowSelectionStateInitializer } from "@mui/x-data-grid/internals";
+import CSVDownloadIcon from "../../../assets/csv-download.png";
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
   [`&.${tableCellClasses.head}`]: {
@@ -1148,6 +1148,10 @@ const ReportRequestTable: React.FC<AttributeOptionTableProps> = ({
     document.body.removeChild(link);
 
     URL.revokeObjectURL(url);
+    setDownloadRequestId("");
+    setDownLoadFileName("");
+    setIntermediateDownloadRequestId("");
+    setDownLoadFileName("");
   });
 
   const downloadFile = (fileName: string, fileId: string) => {
@@ -1413,17 +1417,23 @@ const ReportRequestTable: React.FC<AttributeOptionTableProps> = ({
                       // onClick={() => params.row.handleEdit(params.row)}
                       sx={{ minWidth: "auto" }}
                       disabled={!shouldAllowDownload}
+                      onClick={() => {
+                        downloadFile(
+                          `${row.customReportId?.reportName}-${row.versionValue}.xlsx`,
+                          row._id
+                        );
+                      }}
                     >
-                      <SimCardDownloadIcon
-                        onClick={() => {
-                          downloadFile(
-                            `${row.customReportId?.reportName}-${row.versionValue}.xlsx`,
-                            row._id
-                          );
-                        }}
+                      <img
+                        style={{ width: "25px", height: "25px" }}
+                        src={CSVDownloadIcon}
+                        alt="CSV Download"
+                      />
+                      {/* <SimCardDownloadIcon
+                       
                         // sx={{ mr: 2 }}
                         // sx={{ color: theme.getIconColor() }}
-                      />{" "}
+                      />{" "} */}
                     </Button>
                   </Tooltip>
                 )}
@@ -1434,7 +1444,7 @@ const ReportRequestTable: React.FC<AttributeOptionTableProps> = ({
                         setAllDetailData(row);
                         setViewReportRequestId(row._id);
                         setViewReportNameWithVersionValue(
-                          `${darowta.customReportId?.reportName}-${row.versionValue}`
+                          `${row.customReportId?.reportName}-${row.versionValue}`
                         );
                       }}
                       //  sx={{ color: theme.getIconColor() }}
@@ -1455,7 +1465,7 @@ const ReportRequestTable: React.FC<AttributeOptionTableProps> = ({
                     sx={{ minWidth: "auto" }}
                     disabled={!shouldAllowIntermediateDownload}
                   >
-                    <DownloadForOfflineIcon
+                    <SimCardDownloadIcon
                       onClick={() => {
                         intermediateSupplementalDownloadFile(
                           `${row.customReportId?.reportName}-intermediate-${row.versionValue}.xlsx`,
@@ -1500,8 +1510,10 @@ const ReportRequestTable: React.FC<AttributeOptionTableProps> = ({
                       sx={{ minWidth: "auto" }}
                       disabled={!shouldAllowIntermediateDownload}
                     >
-                      <DownloadForOfflineIcon
+                      <SimCardDownloadIcon
                         onClick={() => {
+                          setDownloadRequestId("");
+                          setDownLoadFileName("");
                           intermediateDownloadFile(
                             `${row.customReportId?.reportName}-intermediate-${row.versionValue}.xlsx`,
                             row._id
