@@ -356,7 +356,7 @@ export default function NotificationTypes() {
   return (
     <Box sx={{ p: STYLE_GUIDE.SPACING.s2 }}>
       <CommonPageHeader
-        title="Notification Types"
+        title="Notifications"
         actions={
           shouldAllowAdd && (
             <PrimaryButton
@@ -364,7 +364,7 @@ export default function NotificationTypes() {
               startIcon={<AddIcon />}
               onClick={handleAddNotificationType}
             >
-              Add Notification Type
+              Add Notification
             </PrimaryButton>
           )
         }
@@ -448,7 +448,7 @@ export default function NotificationTypes() {
       <DialogContainer
         open={openModal}
         onClose={handleCloseModal}
-        title="Filter Notification Types"
+        title="Filter Notifications"
         maxWidth="sm"
         actions={
           <>
