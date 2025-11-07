@@ -740,6 +740,9 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
     const { datasetIndex, index } = elements[0];
     const clickedElement = { datasetIndex, index };
 
+    // Get the dataset label
+    const datasetLabel = event.chart.data.datasets[datasetIndex].label;
+
     const chartData =
       widgetData[chart._id]?.data?.widgetData || chart.data || [];
     const clickedDataFilter = chartData?.filter((item: ChartDataItem) => {
@@ -757,7 +760,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
         ? clickedDataFilter[datasetIndex]
         : clickedDataFilter[0];
     if (clickedData) {
-      setDrillDownTitle(`${chart.name} - ${clickedData.name}`);
+      setDrillDownTitle(`${clickedData.name} - ${datasetLabel}`);
       setDrillDownOpen(true);
       setCurrentPage(1);
       setIsDrillDownLoading(true);
@@ -3294,7 +3297,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
 
           <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
             <Button
-              // variant="outlined"
+              variant="outlined"
               // startIcon={<VisibilityIcon />}
               onClick={(e) => {
                 e.stopPropagation();
@@ -3358,10 +3361,12 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
             <Box
               sx={{
                 flex: 0.4,
-                minHeight: "115vh",
+                // minHeight: "115vh",
                 display: "flex",
                 flexDirection: "column",
                 backgroundColor: theme.palette.background.paper,
+                m: 4,
+                border: `1px solid ${theme.palette.divider}`,
               }}
             >
               {/* Header with title and close button */}
@@ -3535,7 +3540,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
                   }}
                 >
                   <Typography variant="body2" sx={{ mr: 2 }}>
-                    Total Records :- {totalRecords}
+                    Total Records : {totalRecords}
                   </Typography>
 
                   <div style={{ display: "flex", alignItems: "center" }}>
