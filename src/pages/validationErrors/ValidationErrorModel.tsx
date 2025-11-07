@@ -2178,7 +2178,7 @@ export const ValidationErrorModal: React.FC<ValidationErrorModalProps> = ({
                 variant="h6"
                 sx={{ color: STYLE_GUIDE?.COLORS?.primaryDark || "#3f51b5" }}
               >
-                Validation Error
+                {rowDetailData?.errorAction}
               </Typography>
               <IconButton
                 onClick={handleCancel}
