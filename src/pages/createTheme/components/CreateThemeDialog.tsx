@@ -459,9 +459,6 @@ const CreateThemeDialog = ({
       title={theme ? "Update Theme" : "Create New Theme"}
       actions={
         <>
-          <PrimaryButton onClick={onClose} variant="outlined">
-            Cancel
-          </PrimaryButton>
           <PrimaryButton
             onClick={handleSubmit}
             disabled={

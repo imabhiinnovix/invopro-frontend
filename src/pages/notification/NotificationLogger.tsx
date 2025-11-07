@@ -2057,7 +2057,7 @@ export default function NotificationLogger() {
             loading={notificationLogList.isLoading}
             rowCount={notificationLogList?.data?.pagination.totalRecords || 0}
             paginationModel={paginationModel}
-            isRowSelectable={() => false} 
+            isRowSelectable={() => false}
             slots={{
               pagination: () => (
                 <CustomPagination
@@ -2080,7 +2080,7 @@ export default function NotificationLogger() {
         maxWidth="lg"
         actions={
           <PrimaryButton variant="outlined" onClick={handleViewModalClose}>
-            Cancel
+            Close
           </PrimaryButton>
         }
       >
@@ -2212,8 +2212,8 @@ export default function NotificationLogger() {
                         selectedNotification.status === "sent"
                           ? "success"
                           : selectedNotification.status === "pending"
-                            ? "warning"
-                            : "error"
+                          ? "warning"
+                          : "error"
                       }
                       variant="outlined"
                     />

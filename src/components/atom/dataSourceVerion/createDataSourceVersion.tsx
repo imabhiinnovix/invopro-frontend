@@ -381,9 +381,6 @@ const CreateDataSourceVersion: React.FC<CreateDataSourceVersionProps> = ({
               <ProgressBar />
             ) : (
               <>
-                <PrimaryButton onClick={handleCancel} variant="outlined">
-                  Cancel
-                </PrimaryButton>
                 <PrimaryButton
                   type="submit"
                   onClick={handleSubmit(onSubmit)}

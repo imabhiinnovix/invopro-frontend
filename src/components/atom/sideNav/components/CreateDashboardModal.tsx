@@ -71,9 +71,6 @@ export const CreateDashboardModal: React.FC<CreateDashboardModalProps> = ({
       maxWidth="sm"
       actions={
         <>
-          <Button onClick={onClose} variant="outlined">
-            Cancel
-          </Button>
           <Button
             onClick={onCreate}
             variant="contained"

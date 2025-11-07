@@ -460,13 +460,6 @@ export default function NotificationTypes() {
               Reset
             </Button>
             <Button
-              variant="outlined"
-              onClick={handleCloseModal}
-              sx={{ borderRadius: "8px" }}
-            >
-              Cancel
-            </Button>
-            <Button
               type="submit"
               onClick={handleSubmit(onSubmit)}
               variant="contained"

@@ -663,9 +663,6 @@ export default function Organization() {
             fullWidth
             actions={
               <>
-                <PrimaryButton variant="outlined" onClick={handleEditClose}>
-                  Cancel
-                </PrimaryButton>
                 <PrimaryButton
                   type="submit"
                   variant="contained"
@@ -1446,9 +1443,6 @@ export default function Organization() {
             maxWidth="sm"
             actions={
               <>
-                <PrimaryButton variant="outlined" onClick={handleDeleteClose}>
-                  Cancel
-                </PrimaryButton>
                 <PrimaryButton
                   onClick={handleDeleteConfirm}
                   color="error"
@@ -1472,9 +1466,6 @@ export default function Organization() {
             title="Create Organization"
             actions={
               <>
-                <PrimaryButton variant="outlined" onClick={handleCreateClose}>
-                  Cancel
-                </PrimaryButton>
                 <PrimaryButton
                   type="submit"
                   variant="contained"

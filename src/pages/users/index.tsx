@@ -604,9 +604,6 @@ export default function Users({
         maxWidth="md"
         actions={
           <>
-            <PrimaryButton variant="outlined" onClick={handleCloseModal}>
-              Cancel
-            </PrimaryButton>
             {modalMode !== "view" && (
               <PrimaryButton
                 variant="contained"
@@ -920,9 +917,6 @@ export default function Users({
         maxWidth="sm"
         actions={
           <>
-            <PrimaryButton variant="outlined" onClick={handleCloseDialog}>
-              No
-            </PrimaryButton>
             <PrimaryButton
               onClick={handleConfirmDelete}
               color="error"

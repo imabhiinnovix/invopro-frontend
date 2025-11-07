@@ -659,9 +659,6 @@ export default function Permissions() {
                 <PrimaryButton variant="outlined" onClick={handleResetFilter}>
                   Reset
                 </PrimaryButton>
-                <PrimaryButton variant="outlined" onClick={handleCloseModal}>
-                  Cancel
-                </PrimaryButton>
                 <PrimaryButton
                   variant="contained"
                   onClick={handleSave}
@@ -679,9 +676,6 @@ export default function Permissions() {
               </>
             ) : (
               <>
-                <PrimaryButton variant="outlined" onClick={handleCloseModal}>
-                  Cancel
-                </PrimaryButton>
                 {modalMode !== "view" && (
                   <PrimaryButton
                     variant="contained"
