@@ -1,7 +1,3 @@
-
-
-
-
 import * as React from "react";
 import { useState, useEffect } from "react";
 import {
@@ -47,7 +43,7 @@ export default function ValidationErrors() {
     type: "discardAll" | "discardRow" | "resolveRow";
     rowData?: any;
   }>({ open: false, type: "discardAll" });
-  
+
   useEffect(() => {
     const handler = setTimeout(() => {
       if (searchValue.length === 0) {
@@ -81,11 +77,11 @@ export default function ValidationErrors() {
     success: boolean;
     data: AttributeOptionRequestPayload[];
   }>([`attributeList`], GET?.Attribute_Option_List + `?paginate=false`);
-  
+
   const commonDataSourceList = useSelector(
     (state: RootState) => state.dataSource?.list
   );
-  
+
   const dataSourceIdForPayload = commonDataSourceList?.find(
     (item) => item?.dataSourceVersion?._id === id
   );
@@ -99,7 +95,11 @@ export default function ValidationErrors() {
       dataSourceIdForPayload?._id,
     ],
     id && dataSourceIdForPayload?._id
-      ? `${GET?.VALIDATION_ERROR_LIST}?page=${paginationModel.page + 1}&limit=${paginationModel.pageSize}&dataSourceVersionId=${id}&dataSourceId=${dataSourceIdForPayload._id}&search=${encodeURIComponent(debouncedSearchValue)}`
+      ? `${GET?.VALIDATION_ERROR_LIST}?page=${paginationModel.page + 1}&limit=${
+          paginationModel.pageSize
+        }&dataSourceVersionId=${id}&dataSourceId=${
+          dataSourceIdForPayload._id
+        }&search=${encodeURIComponent(debouncedSearchValue)}`
       : null,
     true
   );
@@ -115,14 +115,14 @@ export default function ValidationErrors() {
   const handleEditRow = async (rowData: any) => {
     setIsLoadingRowDetail(true);
     setSelectedRow(rowData);
-    
+
     try {
       const url = `${GET.ERROR_ROW_DATA}?dataSourceVersionId=${rowData.dataSourceVersionId}&dataSourceId=${rowData.dataSourceId}&rowNumber=${rowData.rowNumber}`;
-      
+
       const response = await axiosInstance.get(url);
-      
+
       console.log("Row Detail Data:", response.data);
-      
+
       if (response.data?.success) {
         setRowDetailData(response.data.data);
         setActionModalOpen(true);
@@ -259,7 +259,7 @@ export default function ValidationErrors() {
         flexGrow: 1,
         p: 3,
         ml: { xs: 0 },
-        minHeight: "100vh",
+        // minHeight: "100vh",
       }}
     >
       <Typography
@@ -357,15 +357,15 @@ export default function ValidationErrors() {
           dialog.type === "discardAll"
             ? "Are you sure want to Discard all data?"
             : dialog.type === "resolveRow"
-              ? "Are you sure you want to resolve this?"
-              : `Are you sure you want to discard row ${dialog.rowData?.rowNumber}?`
+            ? "Are you sure you want to resolve this?"
+            : `Are you sure you want to discard "${dialog.rowData?.fileName}" at row ${dialog.rowData?.fileRowNumber}?`
         }
         confirmText={
           dialog.type === "discardAll"
             ? "Confirm"
             : dialog.type === "resolveRow"
-              ? "Yes"
-              : "Discard"
+            ? "Yes"
+            : "Discard"
         }
         confirmButtonColor="error"
         isSubmitting={isSubmitting}

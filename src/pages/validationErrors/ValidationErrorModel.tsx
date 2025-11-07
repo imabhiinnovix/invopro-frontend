@@ -1118,7 +1118,6 @@
 //   );
 // };
 
-
 import * as React from "react";
 import {
   Box,
@@ -1143,6 +1142,7 @@ import { toast } from "react-toastify";
 import usePost from "../../hooks/usePost";
 import { useSelector } from "react-redux";
 import { RootState } from "../../reducers";
+import DialogContainer from "../../components/molecule/dialog";
 
 interface ValidationErrorModalProps {
   openModal: boolean;
@@ -1188,11 +1188,11 @@ export const ValidationErrorModal: React.FC<ValidationErrorModalProps> = ({
     options: { id: string; label: string }[]
   ) => {
     let values: string[] = [];
-    
+
     // Handle string values (single entity, not array)
     if (typeof raw === "string") {
       values = [raw];
-    } 
+    }
     // Handle existing arrays
     else if (Array.isArray(raw)) {
       values = raw;
@@ -1201,10 +1201,10 @@ export const ValidationErrorModal: React.FC<ValidationErrorModalProps> = ({
     else {
       values = raw ? [String(raw)] : [];
     }
-    
+
     // Remove duplicates
     const uniqueValues = [...new Set(values)];
-    
+
     return uniqueValues.map((val) => {
       const match = options.find((opt) => opt.id === val);
       return match || { id: val, label: val };
@@ -1317,21 +1317,20 @@ export const ValidationErrorModal: React.FC<ValidationErrorModalProps> = ({
   };
 
   // Helper function to safely convert a value to a date ISO string
-const safeDateToISOString = (value: any): string | null => {
-  if (!value) return null;
-  try {
-    const date = dayjs(value);
-    if (date.isValid()) {
-      // Preserve only date part, ignore time zone shifts
-      return date.format("YYYY-MM-DD");
+  const safeDateToISOString = (value: any): string | null => {
+    if (!value) return null;
+    try {
+      const date = dayjs(value);
+      if (date.isValid()) {
+        // Preserve only date part, ignore time zone shifts
+        return date.format("YYYY-MM-DD");
+      }
+      return null;
+    } catch (error) {
+      console.error("Error converting date:", error);
+      return null;
     }
-    return null;
-  } catch (error) {
-    console.error("Error converting date:", error);
-    return null;
-  }
-};
-
+  };
 
   // Initialize form data when modal opens or row data changes
   React.useEffect(() => {
@@ -1356,13 +1355,17 @@ const safeDateToISOString = (value: any): string | null => {
         ) {
           fieldValue = rowData.fileAttributeValue;
         }
-        
+
         if (
           (attribute.type === "date" || attribute.type === "date-range") &&
           fieldValue
         ) {
           const isoDate = safeDateToISOString(fieldValue);
-          console.log(`Converted date for field ${fieldName}:`, isoDate,fieldValue);
+          console.log(
+            `Converted date for field ${fieldName}:`,
+            isoDate,
+            fieldValue
+          );
           initialFormData[fieldName] = isoDate || "";
         } else if (attribute.type === "boolean") {
           initialFormData[fieldName] =
@@ -1371,7 +1374,7 @@ const safeDateToISOString = (value: any): string | null => {
           // Use the normalizeMultiOptionValue function
           const options = getOptionsForAttribute(attribute.optionAttributeId);
           const normalized = normalizeMultiOptionValue(fieldValue, options);
-          initialFormData[fieldName] = normalized.map(item => item.id);
+          initialFormData[fieldName] = normalized.map((item) => item.id);
         } else {
           initialFormData[fieldName] = fieldValue || "";
         }
@@ -1384,7 +1387,14 @@ const safeDateToISOString = (value: any): string | null => {
 
       setFormData(initialFormData);
     }
-  }, [rowData, rowDetailData, effectiveDataSource, openModal, errorCode, refAttributeId]);
+  }, [
+    rowData,
+    rowDetailData,
+    effectiveDataSource,
+    openModal,
+    errorCode,
+    refAttributeId,
+  ]);
 
   const isValidEmail = (email: string) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -1426,79 +1436,79 @@ const safeDateToISOString = (value: any): string | null => {
   // };
 
   // Build the rowData payload for both error codes
-// const buildRowDataPayload = () => {
-//   const rowDataPayload: Record<string, any> = {};
-//   effectiveDataSource?.entityId?.attributes.forEach((attribute: any) => {
-//     const fieldName = attribute.name;
-//     const value = formData[fieldName];
+  // const buildRowDataPayload = () => {
+  //   const rowDataPayload: Record<string, any> = {};
+  //   effectiveDataSource?.entityId?.attributes.forEach((attribute: any) => {
+  //     const fieldName = attribute.name;
+  //     const value = formData[fieldName];
 
-//     if (value !== undefined && value !== null && value !== "") {
-//       if (
-//         (attribute.type === "date" || attribute.type === "date-range") &&
-//         value
-//       ) {
-//         const isoDate = safeDateToISOString(value);
-//         if (isoDate) {
-//           rowDataPayload[fieldName] = isoDate;
-//         }
-//       } else if (attribute.type === "boolean") {
-//         rowDataPayload[fieldName] = value ? "true" : "false";
-//       } else if (attribute.type === "multioption") {
-//         // Convert array of IDs to pipe-separated string
-//         rowDataPayload[fieldName] = Array.isArray(value) ? value.join("|") : value;
-//       } else {
-//         rowDataPayload[fieldName] = value;
-//       }
-//     }
-//   });
-//   return rowDataPayload;
-// };
+  //     if (value !== undefined && value !== null && value !== "") {
+  //       if (
+  //         (attribute.type === "date" || attribute.type === "date-range") &&
+  //         value
+  //       ) {
+  //         const isoDate = safeDateToISOString(value);
+  //         if (isoDate) {
+  //           rowDataPayload[fieldName] = isoDate;
+  //         }
+  //       } else if (attribute.type === "boolean") {
+  //         rowDataPayload[fieldName] = value ? "true" : "false";
+  //       } else if (attribute.type === "multioption") {
+  //         // Convert array of IDs to pipe-separated string
+  //         rowDataPayload[fieldName] = Array.isArray(value) ? value.join("|") : value;
+  //       } else {
+  //         rowDataPayload[fieldName] = value;
+  //       }
+  //     }
+  //   });
+  //   return rowDataPayload;
+  // };
 
-// Build the rowData payload for both error codes
-const buildRowDataPayload = () => {
-  const rowDataPayload: Record<string, any> = {};
-  effectiveDataSource?.entityId?.attributes.forEach((attribute: any) => {
-    const fieldName = attribute.name;
-    const value = formData[fieldName];
+  // Build the rowData payload for both error codes
+  const buildRowDataPayload = () => {
+    const rowDataPayload: Record<string, any> = {};
+    effectiveDataSource?.entityId?.attributes.forEach((attribute: any) => {
+      const fieldName = attribute.name;
+      const value = formData[fieldName];
 
-    if (value !== undefined && value !== null && value !== "") {
-      if (
-        (attribute.type === "date" || attribute.type === "date-range") &&
-        value
-      ) {
-        const isoDate = safeDateToISOString(value);
-        if (isoDate) {
-          rowDataPayload[fieldName] = isoDate;
-        }
-      } else if (attribute.type === "boolean") {
-        rowDataPayload[fieldName] = value ? "true" : "false";
-      } else if (attribute.type === "multioption") {
-        // Get the original value from the source data
-        let sourceData = rowData;
-        if (errorCode === "1002" && rowDetailData) {
-          sourceData = rowDetailData?.rowData || rowData;
-        }
-        
-        const originalValue = sourceData[fieldName];
-        
-        // If the original value was an array, keep it as an array
-        if (Array.isArray(originalValue)) {
-          rowDataPayload[fieldName] = value;
-        } else {
-          // If the original value was not an array, convert array to string
-          if (Array.isArray(value)) {
-            rowDataPayload[fieldName] = value.join("|");
-          } else {
-            rowDataPayload[fieldName] = value;
+      if (value !== undefined && value !== null && value !== "") {
+        if (
+          (attribute.type === "date" || attribute.type === "date-range") &&
+          value
+        ) {
+          const isoDate = safeDateToISOString(value);
+          if (isoDate) {
+            rowDataPayload[fieldName] = isoDate;
           }
+        } else if (attribute.type === "boolean") {
+          rowDataPayload[fieldName] = value ? "true" : "false";
+        } else if (attribute.type === "multioption") {
+          // Get the original value from the source data
+          let sourceData = rowData;
+          if (errorCode === "1002" && rowDetailData) {
+            sourceData = rowDetailData?.rowData || rowData;
+          }
+
+          const originalValue = sourceData[fieldName];
+
+          // If the original value was an array, keep it as an array
+          if (Array.isArray(originalValue)) {
+            rowDataPayload[fieldName] = value;
+          } else {
+            // If the original value was not an array, convert array to string
+            if (Array.isArray(value)) {
+              rowDataPayload[fieldName] = value.join("|");
+            } else {
+              rowDataPayload[fieldName] = value;
+            }
+          }
+        } else {
+          rowDataPayload[fieldName] = value;
         }
-      } else {
-        rowDataPayload[fieldName] = value;
       }
-    }
-  });
-  return rowDataPayload;
-};
+    });
+    return rowDataPayload;
+  };
 
   // Convert form data to payload based on error code
   const convertToPayload = () => {
@@ -1685,14 +1695,16 @@ const buildRowDataPayload = () => {
     const isTargetAttributeFor1001 =
       errorCode === "1001" &&
       refAttributeId &&
-      attribute._id === refAttributeId;  
+      attribute._id === refAttributeId;
 
     // Disable the field only for error code 1003 target attribute
     const isDisabled = isTargetAttributeFor1003;
 
     // Highlight for both 1003 and 1002
     const isTargetAttribute =
-      isTargetAttributeFor1003 || isTargetAttributeFor1002 || isTargetAttributeFor1001;
+      isTargetAttributeFor1003 ||
+      isTargetAttributeFor1002 ||
+      isTargetAttributeFor1001;
 
     const renderLabel = (label: string) => (
       <React.Fragment>
@@ -1795,6 +1807,7 @@ const buildRowDataPayload = () => {
               }
             }}
             disabled={isDisabled}
+            sx={{ height: "56px" }}
             renderInput={(params) => (
               <TextField
                 {...params}
@@ -1849,12 +1862,12 @@ const buildRowDataPayload = () => {
         const multioptionOptions = getOptionsForAttribute(
           attribute.optionAttributeId
         );
-        
+
         // Get the array of IDs from form data
         const selectedIds = formData[fieldName] || [];
         // Convert IDs to full option objects
         const selectedOptions = selectedIds.map((id: string) => {
-          const option = multioptionOptions.find(opt => opt.id === id);
+          const option = multioptionOptions.find((opt) => opt.id === id);
           return option || { id, label: id };
         });
 
@@ -1884,6 +1897,7 @@ const buildRowDataPayload = () => {
               }
             }}
             disabled={isDisabled}
+            sx={{ height: "56px" }}
             renderInput={(params) => (
               <TextField
                 {...params}
@@ -1902,7 +1916,9 @@ const buildRowDataPayload = () => {
                     }),
                   },
                 }}
-                placeholder={isReferenceMulti ? "Select option" : "Type or select"}
+                placeholder={
+                  isReferenceMulti ? "Select option" : "Type or select"
+                }
               />
             )}
             renderTags={(value, getTagProps) =>
@@ -1917,7 +1933,9 @@ const buildRowDataPayload = () => {
                     if (!isDisabled) {
                       // Remove the specific option when chip is deleted
                       const currentValues = formData[fieldName] || [];
-                      const newValues = currentValues.filter((id: string) => id !== option.id);
+                      const newValues = currentValues.filter(
+                        (id: string) => id !== option.id
+                      );
                       handleFieldChange(fieldName, newValues, attribute);
                     }
                   }}
@@ -2081,6 +2099,41 @@ const buildRowDataPayload = () => {
       </>
     );
   };
+
+  return (
+    <DialogContainer
+      open={openModal}
+      onClose={handleCloseModal}
+      maxWidth={"md"}
+      title={"Validation Error"}
+      actions={
+        <Button
+          variant="contained"
+          onClick={handleSaveClick}
+          sx={{
+            borderRadius: "8px",
+            backgroundColor: STYLE_GUIDE?.COLORS?.primaryDark || "#3f51b5",
+            color: STYLE_GUIDE?.COLORS?.white || "#ffffff",
+            "&:hover": {
+              backgroundColor: STYLE_GUIDE?.COLORS?.primary || "#5c6bc0",
+            },
+          }}
+        >
+          Save
+        </Button>
+      }
+    >
+      <Box
+        sx={{
+          display: "grid",
+          gridTemplateColumns: "1fr 1fr",
+          gap: 2,
+        }}
+      >
+        {renderModalFields()}
+      </Box>
+    </DialogContainer>
+  );
 
   return (
     <>
