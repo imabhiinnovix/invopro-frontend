@@ -1780,23 +1780,23 @@ const columns: GridColDef[] = [
     resizable: true,
     renderCell: (params) => formatDateUTC(params.row.createdAt),
   },
-  {
-    field: "notificationTriggerId",
-    headerName: "Is Dry Run",
-    width: 250,
-    disableColumnMenu: true,
-    resizable: true,
-    renderCell: (params) => (
-      <Chip
-        label={params.row.notificationTriggerId?.isDryRun ? "Yes" : "No"}
-        size="small"
-        color={
-          params.row.notificationTriggerId?.isDryRun ? "warning" : "success"
-        }
-        variant="outlined"
-      />
-    ),
-  },
+  // {
+  //   field: "notificationTriggerId",
+  //   headerName: "Is Dry Run",
+  //   width: 250,
+  //   disableColumnMenu: true,
+  //   resizable: true,
+  //   renderCell: (params) => (
+  //     <Chip
+  //       label={params.row.notificationTriggerId?.isDryRun ? "Yes" : "No"}
+  //       size="small"
+  //       color={
+  //         params.row.notificationTriggerId?.isDryRun ? "warning" : "success"
+  //       }
+  //       variant="outlined"
+  //     />
+  //   ),
+  // },
   {
     field: "actions",
     headerName: "Actions",
@@ -2139,7 +2139,7 @@ export default function NotificationLogger() {
                     </Typography>
                   </Grid>
 
-                  <Grid item xs={4}>
+                  {/* <Grid item xs={4}>
                     <Typography
                       variant="body2"
                       color="textSecondary"
@@ -2165,7 +2165,7 @@ export default function NotificationLogger() {
                         ? "Yes"
                         : "No"}
                     </Typography>
-                  </Grid>
+                  </Grid> */}
 
                   <Grid item xs={4}>
                     <Typography
