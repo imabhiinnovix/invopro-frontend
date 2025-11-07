@@ -645,6 +645,7 @@ const DataSourceVersionTable: React.FC<AttributeOptionTableProps> = ({
     {
       id: "error",
       label: "Error",
+      minWidth: 170,
       renderCell: (row: Record<string, unknown>) => {
         return row.status === "failed" ? (
           <ErrorDialog dataSourceVersionId={row._id} />

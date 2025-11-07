@@ -2301,7 +2301,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
           scales: {
             y: {
               title: {
-                color: widgetTheme?.scales?.x?.ticks?.color ?? "grey",
+                color: "black",
                 display: true,
                 text: yLabel,
               },
@@ -2322,7 +2322,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
             },
             x: {
               title: {
-                color: widgetTheme?.scales?.x?.ticks?.color ?? "grey",
+                color: "black",
                 display: true,
                 text: xLabel,
               },
@@ -2357,9 +2357,8 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
               title: {
                 display: true,
                 text: xLabel,
-                color:
-                  widgetTheme?.scales?.x?.ticks?.color ||
-                  theme.palette.text.primary,
+                color: "black",
+
                 font: { size: 14, weight: "bold" as const },
               },
               display: widgetTheme?.scales?.x?.display ?? true,
@@ -2430,7 +2429,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
           scales: {
             x: {
               title: {
-                color: widgetTheme?.scales?.x?.ticks?.color ?? "grey",
+                color: "black",
                 display: true,
                 text: xLabel,
               },
@@ -2451,7 +2450,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
             },
             y: {
               title: {
-                color: widgetTheme?.scales?.x?.ticks?.color ?? "grey",
+                color: "black",
                 display: true,
                 text: yLabel,
               },
@@ -2487,7 +2486,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
               },
               stacked: true,
               title: {
-                color: widgetTheme?.scales?.x?.ticks?.color ?? "grey",
+                color: "black",
                 display: true,
                 text: yLabel,
               },
@@ -2504,7 +2503,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
                 drawOnChartArea: false,
               },
               title: {
-                color: widgetTheme?.scales?.x?.ticks?.color ?? "grey",
+                color: "black",
                 display: true,
                 text: `Total ${yLabel}`, // Line axis label - differentiate from bar
               },
@@ -2546,9 +2545,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
               title: {
                 display: true,
                 text: xLabel,
-                color:
-                  widgetTheme?.scales?.x?.ticks?.color ||
-                  theme.palette.text.primary,
+                color: "black",
                 font: { size: 14, weight: "bold" },
               },
               display: widgetTheme?.scales?.x?.display ?? true,
@@ -2572,9 +2569,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
               title: {
                 display: true,
                 text: yLabel,
-                color:
-                  widgetTheme?.scales?.y?.ticks?.color ||
-                  theme.palette.text.primary,
+                color: "black",
                 font: { size: 14, weight: "bold" },
               },
               grid: {
