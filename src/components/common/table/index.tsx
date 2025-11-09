@@ -193,6 +193,10 @@ const CommonTable = forwardRef<HTMLTableElement, CommonTableProps>(
               page={page}
               onPageChange={handleChangePage}
               onRowsPerPageChange={handleChangeRowsPerPage}
+              labelDisplayedRows={({ page }) => {
+                const totalPages = Math.ceil(rows.length / rowsPerPage);
+                return `Page ${page + 1} of ${totalPages}`;
+              }}
             />
           </Stack>
         )}
