@@ -1318,11 +1318,12 @@ function getSystemSettingsItems(
         icon: createIcon(ArrowDropDownCircleIcon, "/attribute-option", theme),
         route: "/attribute-option",
         isBold: true,
-        shouldShow: checkPermission(
-          permissions,
-          PermissionsMap.ATTRIBUTE_OPTION,
-          "list"
-        ),
+        // shouldShow: checkPermission(
+        //   permissions,
+        //   PermissionsMap.ATTRIBUTE_OPTION,
+        //   "list"
+        // ),
+        shouldShow: false, // IMP Hardcoded to hide for now
       },
       {
         name: "Data Upload",
