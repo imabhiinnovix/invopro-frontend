@@ -35,11 +35,9 @@ export default function DataSourceVersion() {
           shouldAllowAdd && (
             <CreateDataSourceVersion
               setReload={setReload}
-              title="Create New Data Upload"
+              title="File Upload"
               CustomButton={
-                <PrimaryButton variant="contained">
-                  Create File Upload
-                </PrimaryButton>
+                <PrimaryButton variant="contained">File Upload</PrimaryButton>
               }
             />
           )
