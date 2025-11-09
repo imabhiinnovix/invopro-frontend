@@ -54,6 +54,7 @@ const transformNotificationData = (
     name: notification.name || "",
     organizationId: organizationId || "",
     dataSourceId: notification.entityId || "",
+    _id: notification._id || "",
     triggerFieldId: "",
     isActive: true,
     conditionGroups: conditionGroup ? [conditionGroup] : [],

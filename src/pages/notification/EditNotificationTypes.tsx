@@ -754,6 +754,7 @@ const ConditionRuleBuilder = ({
       );
       return {
         name: notificationRef.current.name || "",
+        _id: notificationRef.current._id || "",
         organizationId: organizationId || "",
         dataSourceId: notificationRef.current.entityId || "",
         triggerFieldId: "",
@@ -965,6 +966,7 @@ export default function EditNotificationTypes() {
             logic: firstGroup.group_operator,
             rules: transformedRules,
           },
+          _id: backendData._id
         };
         setInitialNotification(newInitialNotification);
         setNotificationTypeId(backendData._id);
