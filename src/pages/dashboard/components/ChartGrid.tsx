@@ -755,15 +755,48 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
       return false;
     });
     // const clickedData = chartData?.find((item: ChartDataItem, i: number) => i === index + 1);
-    const clickedData =
+    let clickedData =
       clickedDataFilter?.length > 1
         ? clickedDataFilter[datasetIndex]
         : clickedDataFilter[0];
+    if (
+      "ReportCriticalEvent" in clickedData &&
+      ["Critical", "Other"].includes(datasetLabel)
+    ) {
+      clickedData = clickedDataFilter.find((item: ChartDataItem) => {
+        const currentClickedCriticality =
+          datasetLabel === "Critical" ? "Y" : "N";
+        return (
+          "ReportCriticalEvent" in item &&
+          item["ReportCriticalEvent"] === currentClickedCriticality
+        );
+      });
+    }
+
     if (clickedData) {
       setDrillDownTitle(`${clickedData.name} - ${datasetLabel}`);
       setDrillDownOpen(true);
       setCurrentPage(1);
       setIsDrillDownLoading(true);
+
+      function getGroupBy() {
+        let groupBy = [];
+        if (!chart.groupBy) return [];
+        if (Array.isArray(chart.groupBy)) {
+          groupBy = chart.groupBy.map((group) => {
+            const matchedField =
+              chart &&
+              chart.dataSourceId.fieldSettings?.find(
+                (f: any) => f.mappedAttributeName === group
+              );
+            const groupField = matchedField ? matchedField.label : group;
+            return { [group]: clickedData[groupField] };
+          });
+        } else {
+          groupBy = [{ [chart.groupBy]: clickedData.name }];
+        }
+        return groupBy;
+      }
 
       try {
         const dimensions = chart.dimensions
@@ -771,21 +804,8 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
             ? chart.dimensions.map((dim) => ({ [dim]: clickedData.name }))
             : [{ [chart.dimensions]: clickedData.name }]
           : [];
+        const groupBy = getGroupBy();
 
-        const groupBy = chart.groupBy
-          ? Array.isArray(chart.groupBy)
-            ? chart.groupBy.map((group) => {
-                const matchedField =
-                  chart &&
-                  chart.dataSourceId.fieldSettings?.find(
-                    (f: any) => f.mappedAttributeName === group
-                  );
-
-                const groupField = matchedField ? matchedField.label : group;
-                return { [group]: clickedData[groupField] };
-              })
-            : [{ [chart.groupBy]: clickedData.name }]
-          : [];
         const payload = {
           dataSourceId: chart.dataSourceId?._id,
           entityId: chart.dataSourceId?.entityId,
