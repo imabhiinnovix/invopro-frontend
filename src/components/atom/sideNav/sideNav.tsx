@@ -292,7 +292,7 @@ export default function SideNav() {
         setOpenThemeSettings((prev) => !prev);
       } else if (itemName === "System Settings") {
         setOpenSystemSettings((prev) => !prev);
-      } else if (itemName === "Report Constants") {
+      } else if (itemName === "IP Report Constants") {
         setOpenDataSources((prev) => !prev);
       } else {
         setOpenSettings((prev) => !prev);
@@ -506,7 +506,7 @@ export default function SideNav() {
                           openNotificationSettings) ||
                         (item.name === "Settings" && openReportSettings) ||
                         (item.name === "Theme Settings" && openThemeSettings) ||
-                        (item.name === "Report Constants" && openDataSources) ||
+                        (item.name === "IP Report Constants" && openDataSources) ||
                         (item.name === "System Settings" && openSystemSettings)
                       }
                       collapsibleComp={
@@ -522,7 +522,7 @@ export default function SideNav() {
                                 ? openReportSettings
                                 : item.name === "Theme Settings"
                                 ? openThemeSettings
-                                : item.name === "Report Constants"
+                                : item.name === "IP Report Constants"
                                 ? openDataSources
                                 : item.name === "System Settings"
                                 ? openSystemSettings
@@ -672,7 +672,7 @@ export default function SideNav() {
                                               disabled={
                                                 subItem.name ===
                                                 "Theme Settings"
-                                              } // Disable Theme Settings, System Settings, Report Constants
+                                              } // Disable Theme Settings, System Settings, IP Report Constants
                                               route={subItem.route}
                                               icon={subItem.icon}
                                               label={subItem.name}
@@ -697,7 +697,7 @@ export default function SideNav() {
                                                     );
                                                   } else if (
                                                     subItem.name ===
-                                                    "Report Constants"
+                                                    "IP Report Constants"
                                                   ) {
                                                     setOpenDataSources(
                                                       (prev) => !prev
@@ -710,7 +710,7 @@ export default function SideNav() {
                                                 "Theme Settings"
                                                   ? openThemeSettings
                                                   : subItem.name ===
-                                                    "Report Constants"
+                                                    "IP Report Constants"
                                                   ? openDataSources
                                                   : subItem.name ===
                                                     "System Settings"
@@ -724,7 +724,7 @@ export default function SideNav() {
                                                     "Theme Settings"
                                                       ? openThemeSettings
                                                       : subItem.name ===
-                                                        "Report Constants"
+                                                        "IP Report Constants"
                                                       ? openDataSources
                                                       : subItem.name ===
                                                         "System Settings"
@@ -1353,7 +1353,7 @@ function getSystemSettingsItems(
         isBold: true,
       },
       {
-        name: "Report Constants",
+        name: "IP Report Constants",
         icon: createIcon(SourceIcon, "/datasources", theme),
         route: "#",
         isBold: true,
