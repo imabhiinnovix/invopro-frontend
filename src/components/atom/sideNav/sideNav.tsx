@@ -292,7 +292,7 @@ export default function SideNav() {
         setOpenThemeSettings((prev) => !prev);
       } else if (itemName === "System Settings") {
         setOpenSystemSettings((prev) => !prev);
-      } else if (itemName === "Data Sources") {
+      } else if (itemName === "Report Constants") {
         setOpenDataSources((prev) => !prev);
       } else {
         setOpenSettings((prev) => !prev);
@@ -506,7 +506,7 @@ export default function SideNav() {
                           openNotificationSettings) ||
                         (item.name === "Settings" && openReportSettings) ||
                         (item.name === "Theme Settings" && openThemeSettings) ||
-                        (item.name === "Data Sources" && openDataSources) ||
+                        (item.name === "Report Constants" && openDataSources) ||
                         (item.name === "System Settings" && openSystemSettings)
                       }
                       collapsibleComp={
@@ -522,7 +522,7 @@ export default function SideNav() {
                                 ? openReportSettings
                                 : item.name === "Theme Settings"
                                 ? openThemeSettings
-                                : item.name === "Data Sources"
+                                : item.name === "Report Constants"
                                 ? openDataSources
                                 : item.name === "System Settings"
                                 ? openSystemSettings
@@ -672,7 +672,7 @@ export default function SideNav() {
                                               disabled={
                                                 subItem.name ===
                                                 "Theme Settings"
-                                              } // Disable Theme Settings, System Settings, Data Sources
+                                              } // Disable Theme Settings, System Settings, Report Constants
                                               route={subItem.route}
                                               icon={subItem.icon}
                                               label={subItem.name}
@@ -697,7 +697,7 @@ export default function SideNav() {
                                                     );
                                                   } else if (
                                                     subItem.name ===
-                                                    "Data Sources"
+                                                    "Report Constants"
                                                   ) {
                                                     setOpenDataSources(
                                                       (prev) => !prev
@@ -710,7 +710,7 @@ export default function SideNav() {
                                                 "Theme Settings"
                                                   ? openThemeSettings
                                                   : subItem.name ===
-                                                    "Data Sources"
+                                                    "Report Constants"
                                                   ? openDataSources
                                                   : subItem.name ===
                                                     "System Settings"
@@ -724,7 +724,7 @@ export default function SideNav() {
                                                     "Theme Settings"
                                                       ? openThemeSettings
                                                       : subItem.name ===
-                                                        "Data Sources"
+                                                        "Report Constants"
                                                       ? openDataSources
                                                       : subItem.name ===
                                                         "System Settings"
@@ -1347,13 +1347,13 @@ function getSystemSettingsItems(
         ),
       },
       {
-        name: "Data Src",
+        name: "Data Source",
         icon: createIcon(TopicIcon, "/data-src", theme),
         route: "/data-src",
         isBold: true,
       },
       {
-        name: "Data Sources",
+        name: "Report Constants",
         icon: createIcon(SourceIcon, "/datasources", theme),
         route: "#",
         isBold: true,
