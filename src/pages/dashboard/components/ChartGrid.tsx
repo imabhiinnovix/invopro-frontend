@@ -451,7 +451,8 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
       if (isNaturalLangauage) {
         dispatch(resetChartAndWidgetData());
       } else {
-        dispatch(fetchChartData({ dashboardId, dashboardFilters }));
+        // IMP - This is causing the issue of not fetching the chart data properly since dashboard type is not passed
+        // dispatch(fetchChartData({ dashboardId, dashboardFilters }));
       }
     }
   }, [dispatch, dashboardId, dashboardFilters]);

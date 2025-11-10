@@ -238,7 +238,7 @@ const dashboardSlice = createSlice({
       })
       .addCase(fetchChartData.fulfilled, (state, action: PayloadAction<ChartDataResponse>) => {
         state.chartsLoading = false;
-        state.charts = action.payload.data;
+        state.charts = action.payload?.data || [];
       })
       .addCase(fetchChartData.rejected, (state, action) => {
         state.chartsLoading = false;
