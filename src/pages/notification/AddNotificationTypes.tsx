@@ -767,7 +767,45 @@ const ConditionRuleBuilder = ({
         });
         return result.conditions.length > 0 ? result : null;
       };
+      const transformGroupSummary = (group) => {
+        const result = {
+          group_operator: group.logic,
+          conditions: [],
+        };
+        group.rules.forEach((rule) => {
+          if (rule.logic) {
+            const nestedGroup = transformGroupSummary(rule);
+            if (nestedGroup) {
+              result.conditions.push(nestedGroup);
+            }
+          } else {
+            const fieldOption = fieldOptionsRef.current.find(
+              (f) => f.value === rule.field
+            );
+            if (fieldOption && rule.field && rule.operator) {
+              const condition = {
+                attributeId: fieldOption.label,
+                operator: rule.operator,
+                value: rule.value || "",
+                // refAttributeId: fieldOption.refAttributeId,
+              };
+              if (
+                (fieldOption.type === "date" ||
+                  fieldOption.type === "date-range") &&
+                rule.timeUnit
+              ) {
+                condition.timeUnit = rule.timeUnit;
+              }
+              result.conditions.push(condition);
+            }
+          }
+        });
+        return result.conditions.length > 0 ? result : null;
+      };
       const conditionGroup = transformGroup(
+        notificationRef.current.conditionGroup
+      );
+      const conditionGroupSummary = transformGroupSummary(
         notificationRef.current.conditionGroup
       );
       return {
@@ -777,6 +815,7 @@ const ConditionRuleBuilder = ({
         triggerFieldId: "",
         isActive: true,
         conditionGroups: conditionGroup ? [conditionGroup] : [],
+        conditionSummaryGroups: conditionGroupSummary ? [conditionGroupSummary] : [],
       };
     };
     const transformedData = transformNotificationData();

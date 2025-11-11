@@ -54,7 +54,7 @@ const transformNotificationData = (
     name: notification.name || "",
     organizationId: organizationId || "",
     dataSourceId: notification.entityId || "",
-    _id: notification._id || "",
+    _id: notification?._id || "",
     triggerFieldId: "",
     isActive: true,
     conditionGroups: conditionGroup ? [conditionGroup] : [],
@@ -276,7 +276,8 @@ const ConditionPreview = ({
       if (
         transformedNotification &&
         transformedNotification.dataSourceId &&
-        transformedNotification.conditionGroups?.length > 0
+        transformedNotification.conditionGroups?.length > 0 &&
+        transformedNotification._id
       ) {
         try {
           const response = await getSummary.mutateAsync({
