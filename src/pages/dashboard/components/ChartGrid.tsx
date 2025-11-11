@@ -330,6 +330,7 @@ const ChartTitleText = styled(Typography)({
 
 export const ChartGrid: React.FC<ChartGridProps> = ({
   dashboardId,
+  isDefaultNotivix,
   isEditMode,
   onEditChart,
   isAddChartModalOpen,
@@ -446,16 +447,17 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
     }
   }, [dispatch, dashboards.length]);
 
-  useEffect(() => {
-    if (dashboardId) {
-      if (isNaturalLangauage) {
-        dispatch(resetChartAndWidgetData());
-      } else {
-        // IMP - This is causing the issue of not fetching the chart data properly since dashboard type is not passed
-        // dispatch(fetchChartData({ dashboardId, dashboardFilters }));
-      }
-    }
-  }, [dispatch, dashboardId, dashboardFilters]);
+  // useEffect(() => {
+  //   if (dashboardId) {
+  //     if (isNaturalLangauage) {
+  //       dispatch(resetChartAndWidgetData());
+  //     } else {
+  //       dispatch(
+  //         fetchChartData({ dashboardId, dashboardFilters, isDefaultNotivix })
+  //       );
+  //     }
+  //   }
+  // }, [dispatch, dashboardId, dashboardFilters]);
 
   const handleMenuClick = (
     event: React.MouseEvent<HTMLElement>,
@@ -485,7 +487,9 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
 
       if (result.success) {
         toast.success("Chart deleted successfully!");
-        dispatch(fetchChartData({ dashboardId, dashboardFilters }));
+        dispatch(
+          fetchChartData({ dashboardId, dashboardFilters, isDefaultNotivix })
+        );
       } else {
         toast.error(result.message || "Failed to delete chart");
       }

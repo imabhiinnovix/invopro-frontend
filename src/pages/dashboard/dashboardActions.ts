@@ -236,6 +236,7 @@ export const fetchChartData = createAsyncThunk(
       dashboardType,
       dynamicVersionValue,
       dashboardFilters = {},
+      isDefaultNotivix=false
     }: {
       dashboardId: string;
       versionValue?: string;
@@ -244,11 +245,12 @@ export const fetchChartData = createAsyncThunk(
       dashboardType?: string;
       dynamicVersionValue?: string;
       dashboardFilters: any;
+      isDefaultNotivix?: boolean;
 
     },
     { dispatch }
   ) => {
-    if(!dashboardType) return []
+    if(!dashboardType && isDefaultNotivix) return []
 
     const response = await axiosInstance.get<ChartDataResponse>(
       `${GET.DASHBOARD_WIDGET_GET_CHART_DATA}/${dashboardId}`

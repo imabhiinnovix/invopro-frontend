@@ -387,6 +387,7 @@ export interface ChartGridProps {
   isTrend?: boolean;
   isNaturalLangauage?: boolean;
   dashboardFilters: any;
+  isDefaultNotivix?: boolean;
 }
 
 export interface ChartDataItem {
