@@ -3251,6 +3251,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               versionValue={versionValue || ""}
               isTrend={currentDashboard?.settings?.dashboardType === "trend"}
               dashboardFilters={dashboardFilters}
+              isDefaultNotivix={currentDashboard?.isDefaultNotivix || false}
             />
           )}
         </Box>
