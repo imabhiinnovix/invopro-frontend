@@ -228,6 +228,7 @@ export default function ValidationErrors() {
         const payload = {
           action: "discard",
           dataSourceVersionId: id,
+          dataSourceId: dialog.selectedRows?.[0]?.dataSourceId,
           rowNumber: dialog.selectedRows.map((row: any) => row.rowNumber),
         };
 
