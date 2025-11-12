@@ -84,6 +84,25 @@ const columns: GridColDef[] = [
     resizable: true,
   },
   {
+    field: "userId",
+    headerName: "Created By",
+    width: 250,
+    disableColumnMenu: true,
+    resizable: true,
+    renderCell: (params) => {
+        return params.row.userId
+          ? `${params.row.userId?.firstName} ${params.row.userId?.lastName}`
+          : "-";
+      },
+  },
+  {
+    field: "updatedAt",
+    headerName: "Updated At",
+    width: 250,
+    disableColumnMenu: true,
+    resizable: true,
+  },
+  {
     field: "status",
     headerName: "Status",
     width: 250,
