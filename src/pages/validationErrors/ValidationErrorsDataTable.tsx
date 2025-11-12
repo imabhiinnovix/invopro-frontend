@@ -1,11 +1,12 @@
 import * as React from "react";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
-import { Box, Tooltip, Button, Chip, Typography } from "@mui/material";
+import { Box, Tooltip, Button, Chip, Typography, Stack } from "@mui/material";
 import SwipeUpIcon from "@mui/icons-material/SwipeUp";
 import RemoveCircleIcon from "@mui/icons-material/RemoveCircle";
 import { CustomPagination } from "../../components/common/pagination/customPagination";
 import FileDownloadDoneIcon from "@mui/icons-material/FileDownloadDone";
 import CommonTable from "../../components/common/table";
+import PrimaryButton from "../../components/common/PrimaryButton";
 
 const CustomFooter = ({
   paginationModel,
@@ -80,7 +81,7 @@ const columns: GridColDef[] = [
       } else {
         chipColor = "error";
       }
-      console.log("row", row);
+      // console.log("row", row);
 
       return (
         <Chip
@@ -149,6 +150,7 @@ interface ValidationErrorsDataTableProps {
   setPaginationModel: (model: { page: number; pageSize: number }) => void;
   rowCount: number;
   validationErrorList?: any;
+  handleDiscardSelectedRows?: (selectedRows: any[]) => void;
 }
 
 export const ValidationErrorsDataTable: React.FC<
@@ -159,6 +161,7 @@ export const ValidationErrorsDataTable: React.FC<
   setPaginationModel,
   rowCount,
   validationErrorList,
+  handleDiscardSelectedRows,
 }) => {
   // Conditionally render the footer only when validationErrorList.data is available
   const renderFooter = () => {
@@ -188,6 +191,16 @@ export const ValidationErrorsDataTable: React.FC<
           </Typography>
         </>
       }
+      rowSelection={true}
+      bulkAction={(selectedRows) => (
+        <Stack direction="row" spacing={2} justifyContent="flex-end">
+          <PrimaryButton
+            onClick={() => handleDiscardSelectedRows?.(selectedRows)}
+          >
+            Discard {selectedRows.length} items
+          </PrimaryButton>
+        </Stack>
+      )}
     />
   );
 
