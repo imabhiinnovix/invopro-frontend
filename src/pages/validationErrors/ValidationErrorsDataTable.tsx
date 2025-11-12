@@ -7,6 +7,7 @@ import { CustomPagination } from "../../components/common/pagination/customPagin
 import FileDownloadDoneIcon from "@mui/icons-material/FileDownloadDone";
 import CommonTable from "../../components/common/table";
 import PrimaryButton from "../../components/common/PrimaryButton";
+import { useEffect, useRef } from "react";
 
 const CustomFooter = ({
   paginationModel,
@@ -151,6 +152,8 @@ interface ValidationErrorsDataTableProps {
   rowCount: number;
   validationErrorList?: any;
   handleDiscardSelectedRows?: (selectedRows: any[]) => void;
+  resetSelections: boolean;
+  setResetSelections: (reset: boolean) => void;
 }
 
 export const ValidationErrorsDataTable: React.FC<
@@ -162,7 +165,11 @@ export const ValidationErrorsDataTable: React.FC<
   rowCount,
   validationErrorList,
   handleDiscardSelectedRows,
+  resetSelections,
+  setResetSelections,
 }) => {
+  const tableRef = useRef(null);
+
   // Conditionally render the footer only when validationErrorList.data is available
   const renderFooter = () => {
     if (validationErrorList?.data) {
@@ -178,8 +185,16 @@ export const ValidationErrorsDataTable: React.FC<
     return null;
   };
 
+  useEffect(() => {
+    if (resetSelections) {
+      tableRef.current?.resetSelection();
+      setResetSelections(false);
+    }
+  }, [resetSelections]);
+
   return (
     <CommonTable
+      ref={tableRef}
       columns={columns}
       rows={rows || []}
       height="calc(100vh - 400px)"

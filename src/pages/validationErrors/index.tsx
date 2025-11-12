@@ -36,6 +36,7 @@ export default function ValidationErrors() {
     page: 0,
     pageSize: 10,
   });
+  const [resetSelections, setResetSelections] = useState(false);
   const [debouncedSearchValue, setDebouncedSearchValue] = useState(searchValue);
   const navigate = useNavigate();
   const [dialog, setDialog] = useState<{
@@ -227,16 +228,14 @@ export default function ValidationErrors() {
         const payload = {
           action: "discard",
           dataSourceVersionId: id,
-          dataSourceId: dialog.selectedRows.map((row: any) => row.dataSourceId),
-          rowNumber: dialog.selectedRows.map((row: any) => row.fileRowNumber),
+          rowNumber: dialog.selectedRows.map((row: any) => row.rowNumber),
         };
 
-        console.log("Payload:", payload);
-        // FIXME: Implement this
-        // response = await discardRow.mutateAsync({
-        //   url: `${POST.RESOLVE_DATA_IMPORT_ERROR}`,
-        //   payload,
-        // });
+        response = await discardRow.mutateAsync({
+          url: `${POST.RESOLVE_DATA_IMPORT_ERROR}`,
+          payload,
+        });
+        setResetSelections(true);
       }
 
       if (response?.success) {
@@ -367,6 +366,8 @@ export default function ValidationErrors() {
             validationErrorList={validationErrorList}
             isLoadingRowDetail={isLoadingRowDetail}
             handleDiscardSelectedRows={handleDiscardSelectedRows}
+            resetSelections={resetSelections}
+            setResetSelections={setResetSelections}
           />
         </CardContent>
       </Card>

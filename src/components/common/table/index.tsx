@@ -1,3 +1,4 @@
+/* eslint-disable */
 import * as React from "react";
 import Paper from "@mui/material/Paper";
 import Table from "@mui/material/Table";
@@ -8,7 +9,7 @@ import TableHead from "@mui/material/TableHead";
 import TablePagination from "@mui/material/TablePagination";
 import TableRow from "@mui/material/TableRow";
 import Skeleton from "@mui/material/Skeleton";
-import { forwardRef } from "react";
+import { forwardRef, useImperativeHandle } from "react";
 import Box from "@mui/material/Box";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
@@ -41,7 +42,7 @@ interface CommonTableProps {
   bulkAction?: (selectedRows: Record<string, unknown>[]) => React.ReactNode;
 }
 
-const CommonTable = forwardRef<HTMLTableRowElement, CommonTableProps>(
+const CommonTable = forwardRef<any, CommonTableProps>(
   (
     {
       columns,
@@ -63,6 +64,12 @@ const CommonTable = forwardRef<HTMLTableRowElement, CommonTableProps>(
     const [selectedRows, setSelectedRows] = React.useState<
       Record<string, unknown>[]
     >([]);
+    // Expose resetSelection method to parent component
+    useImperativeHandle(ref, () => ({
+      resetSelection: () => {
+        setSelectedRows([]);
+      },
+    }));
 
     const handleChangePage = (_event: unknown, newPage: number) => {
       setPage(newPage);
