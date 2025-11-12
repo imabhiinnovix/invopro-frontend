@@ -35,7 +35,29 @@ const CustomFooter = ({
   );
 };
 
-const columns: GridColDef[] = [
+
+
+interface ValidationErrorsDataTableProps {
+  rows: any[];
+  paginationModel: { page: number; pageSize: number };
+  setPaginationModel: (model: { page: number; pageSize: number }) => void;
+  rowCount: number;
+  validationErrorList?: any;
+  isLatest?: boolean;
+}
+
+export const ValidationErrorsDataTable: React.FC<
+  ValidationErrorsDataTableProps
+> = ({
+  rows,
+  paginationModel,
+  setPaginationModel,
+  rowCount,
+  validationErrorList,
+  isLatest
+}) => {
+
+  const columns: GridColDef[] = [
   {
     id: "fileRowNumber",
     label: "Row Number",
@@ -113,6 +135,7 @@ const columns: GridColDef[] = [
                 variant="text"
                 onClick={() => row.handleResolve(row)}
                 sx={{ minWidth: "auto" }}
+                disabled={isLatest === false}
               >
                 <FileDownloadDoneIcon />
               </Button>
@@ -123,7 +146,7 @@ const columns: GridColDef[] = [
                 variant="text"
                 onClick={() => row.handleEdit(row)}
                 sx={{ minWidth: "auto" }}
-                disabled={isResolved}
+                disabled={isResolved || isLatest === false}
               >
                 <SwipeUpIcon />
               </Button>
@@ -134,7 +157,7 @@ const columns: GridColDef[] = [
               variant="text"
               onClick={() => row.handleDiscard(row)}
               sx={{ minWidth: "auto" }}
-              disabled={isDiscarded || isResolved}
+              disabled={isDiscarded || isResolved || isLatest === false}
             >
               <RemoveCircleIcon />
             </Button>

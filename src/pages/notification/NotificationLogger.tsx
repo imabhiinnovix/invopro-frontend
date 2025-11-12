@@ -2451,32 +2451,38 @@ export default function NotificationLogger() {
                 <Divider sx={{ mb: STYLE_GUIDE.SPACING.s2 }} />
 
                 <Grid container spacing={STYLE_GUIDE.SPACING.s1}>
-                  <Grid item xs={4}>
-                    <Typography
-                      variant="body2"
-                      color="textSecondary"
-                      sx={{
-                        fontFamily: STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary,
-                        fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
-                        color: STYLE_GUIDE.COLORS.textSecondary,
-                      }}
-                    >
-                      File attached:
-                    </Typography>
-                  </Grid>
-                  <Grid item xs={8}>
-                    <Typography
-                      variant="body2"
-                      sx={{
-                        fontFamily: STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary,
-                        fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
-                        color: STYLE_GUIDE.COLORS.textPrimary,
-                      }}
-                    >
-                      -
-                    </Typography>
-                  </Grid>
-                </Grid>
+              <Grid item xs={4}>
+                <Typography
+                  variant="body2"
+                  color="textSecondary"
+                  sx={{
+                    fontFamily: STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary,
+                    fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
+                    color: STYLE_GUIDE.COLORS.textSecondary,
+                  }}
+                >
+                  File attached:
+                </Typography>
+              </Grid>
+              <Grid item xs={8}>
+                <Typography
+                  variant="body2"
+                  sx={{
+                    fontFamily: STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary,
+                    fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
+                    color: STYLE_GUIDE.COLORS.textPrimary,
+                    wordBreak: "break-word",
+                  }}
+                >
+                  {selectedNotification?.attachmentPaths?.length
+                    ? selectedNotification.attachmentPaths
+                        .map((file) => file.fileName)
+                        .join(", ")
+                    : "-"}
+                </Typography>
+              </Grid>
+            </Grid>
+
               </Paper>
             </Grid>
           </Grid>

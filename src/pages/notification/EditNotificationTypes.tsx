@@ -749,16 +749,56 @@ const ConditionRuleBuilder = ({
         });
         return result.conditions.length > 0 ? result : null;
       };
+      const transformGroupSummary = (group) => {
+        const result = {
+          group_operator: group.logic,
+          conditions: [],
+        };
+        group.rules.forEach((rule) => {
+          if (rule.logic) {
+            const nestedGroup = transformGroupSummary(rule);
+            if (nestedGroup) {
+              result.conditions.push(nestedGroup);
+            }
+          } else {
+            const fieldOption = fieldOptionsRef.current.find(
+              (f) => f.value === rule.field
+            );
+            if (fieldOption && rule.field && rule.operator) {
+              const condition = {
+                attributeId: fieldOption.label,
+                operator: rule.operator,
+                value: rule.value || "",
+                // refAttributeId: fieldOption?.refAttributeId || "",
+              };
+              if (
+                (fieldOption.type === "date" ||
+                  fieldOption.type === "date-range") &&
+                rule.timeUnit
+              ) {
+                condition.timeUnit = rule.timeUnit;
+              }
+              result.conditions.push(condition);
+            }
+          }
+        });
+        return result.conditions.length > 0 ? result : null;
+      };
       const conditionGroup = transformGroup(
+        notificationRef.current.conditionGroup
+      );
+      const summaryConditionGroup = transformGroupSummary(
         notificationRef.current.conditionGroup
       );
       return {
         name: notificationRef.current.name || "",
+        _id: notificationRef.current._id || "",
         organizationId: organizationId || "",
         dataSourceId: notificationRef.current.entityId || "",
         triggerFieldId: "",
         isActive: true,
         conditionGroups: conditionGroup ? [conditionGroup] : [],
+        conditionSummaryGroups: summaryConditionGroup ? [summaryConditionGroup] : [],
       };
     };
 
@@ -965,6 +1005,7 @@ export default function EditNotificationTypes() {
             logic: firstGroup.group_operator,
             rules: transformedRules,
           },
+          _id: backendData._id
         };
         setInitialNotification(newInitialNotification);
         setNotificationTypeId(backendData._id);

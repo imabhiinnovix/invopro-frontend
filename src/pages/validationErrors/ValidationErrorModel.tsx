@@ -2105,7 +2105,7 @@ export const ValidationErrorModal: React.FC<ValidationErrorModalProps> = ({
       open={openModal}
       onClose={handleCloseModal}
       maxWidth={"md"}
-      title={"Validation Error"}
+      title={rowDetailData?.errorAction}
       actions={
         <Button
           variant="contained"

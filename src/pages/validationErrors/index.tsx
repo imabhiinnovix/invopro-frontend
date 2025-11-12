@@ -84,9 +84,19 @@ export default function ValidationErrors() {
     (state: RootState) => state.dataSource?.list
   );
 
-  const dataSourceIdForPayload = commonDataSourceList?.find(
-    (item) => item?.dataSourceVersion?._id === id
+  let dataSourceIdForPayload = commonDataSourceList?.find(
+    (item: any) => item?.dataSourceVersion?._id === id
   );
+  let isLatest = false;
+  if (dataSourceIdForPayload && dataSourceIdForPayload?._id) {
+    isLatest = true;
+  } else {
+    dataSourceIdForPayload = commonDataSourceList?.find(
+      (item: any) =>
+        Array.isArray(item?.allDataSourceVersions) &&
+        item.allDataSourceVersions.some((v: any) => v._id === id)
+    );
+  }
 
   const validationErrorList = useGet<any>(
     [
@@ -350,6 +360,7 @@ export default function ValidationErrors() {
                 sx={{
                   borderRadius: "8px",
                 }}
+                disabled={isLatest === false}
               >
                 Discard All & Submit
               </Button>
@@ -369,6 +380,7 @@ export default function ValidationErrors() {
             handleDiscardSelectedRows={handleDiscardSelectedRows}
             resetSelections={resetSelections}
             setResetSelections={setResetSelections}
+            isLatest={isLatest}
           />
         </CardContent>
       </Card>
