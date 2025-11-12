@@ -2094,7 +2094,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         return { ...prev, "Derived.Case Status": statusToggle };
       });
     }
-  }, [currentDashboard?.settings?.dataSource?._id]);
+  }, [currentDashboard]);
 
   const handleOpenFiltersModal = async () => {
     if (currentDashboard?.settings?.dataSource?._id) {
@@ -2322,7 +2322,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     if (dashboardId) {
       const hasFilters = Object.keys(dashboardFilters).length > 0;
       // console.log("Dashboard Filters-------------------4----:", dashboardFilters);
-      if (!hasFilters) {
+      if (!hasFilters && currentDashboard?.isDefaultNotivix) {
         return;
       }
       console.log(
@@ -2361,6 +2361,13 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             startVersionValue,
             endVersionValue,
             dashboardType: currentDashboard?.settings?.dashboardType,
+            dashboardFilters,
+          })
+        );
+      } else if (!currentDashboard?.isDefaultNotivix) {
+        dispatch(
+          fetchChartData({
+            dashboardId,
             dashboardFilters,
           })
         );
