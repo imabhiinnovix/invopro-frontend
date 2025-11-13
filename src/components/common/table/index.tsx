@@ -1,3 +1,4 @@
+/* eslint-disable */
 import * as React from "react";
 import Paper from "@mui/material/Paper";
 import Table from "@mui/material/Table";
@@ -8,10 +9,11 @@ import TableHead from "@mui/material/TableHead";
 import TablePagination from "@mui/material/TablePagination";
 import TableRow from "@mui/material/TableRow";
 import Skeleton from "@mui/material/Skeleton";
-import { forwardRef } from "react";
+import { forwardRef, useImperativeHandle } from "react";
 import Box from "@mui/material/Box";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
+import Checkbox from "@mui/material/Checkbox";
 
 interface Column {
   id: string;
@@ -36,9 +38,11 @@ interface CommonTableProps {
   onRowClick?: (row: Record<string, unknown>) => void;
   customFooterLeftComponent?: React.ReactNode;
   customFooterRightComponent?: React.ReactNode;
+  rowSelection?: boolean;
+  bulkAction?: (selectedRows: Record<string, unknown>[]) => React.ReactNode;
 }
 
-const CommonTable = forwardRef<HTMLTableElement, CommonTableProps>(
+const CommonTable = forwardRef<any, CommonTableProps>(
   (
     {
       columns,
@@ -50,13 +54,24 @@ const CommonTable = forwardRef<HTMLTableElement, CommonTableProps>(
       isLazyLoading,
       onRowClick,
       customFooterLeftComponent,
+      rowSelection = false,
+      bulkAction,
     },
     ref
   ) => {
     const [page, setPage] = React.useState(0);
     const [rowsPerPage, setRowsPerPage] = React.useState(10);
+    const [selectedRows, setSelectedRows] = React.useState<
+      Record<string, unknown>[]
+    >([]);
+    // Expose resetSelection method to parent component
+    useImperativeHandle(ref, () => ({
+      resetSelection: () => {
+        setSelectedRows([]);
+      },
+    }));
 
-    const handleChangePage = (event: unknown, newPage: number) => {
+    const handleChangePage = (_event: unknown, newPage: number) => {
       setPage(newPage);
     };
 
@@ -67,6 +82,45 @@ const CommonTable = forwardRef<HTMLTableElement, CommonTableProps>(
       setPage(0);
     };
 
+    const handleSelectAllClick = (
+      event: React.ChangeEvent<HTMLInputElement>
+    ) => {
+      if (event.target.checked) {
+        setSelectedRows(rows);
+      } else {
+        setSelectedRows([]);
+      }
+    };
+
+    const handleRowSelect = (row: Record<string, unknown>) => {
+      const selectedIndex = selectedRows.findIndex(
+        (selectedRow) =>
+          (selectedRow._id && selectedRow._id === row._id) ||
+          (selectedRow.code && selectedRow.code === row.code) ||
+          selectedRow === row
+      );
+      let newSelected: Record<string, unknown>[] = [];
+
+      if (selectedIndex === -1) {
+        newSelected = [...selectedRows, row];
+      } else {
+        newSelected = selectedRows.filter(
+          (_, index) => index !== selectedIndex
+        );
+      }
+
+      setSelectedRows(newSelected);
+    };
+
+    const isRowSelected = (row: Record<string, unknown>) => {
+      return selectedRows.some(
+        (selectedRow) =>
+          (selectedRow._id && selectedRow._id === row._id) ||
+          (selectedRow.code && selectedRow.code === row.code) ||
+          selectedRow === row
+      );
+    };
+
     if (loading) {
       return (
         <Paper sx={{ width: "100%", overflow: "hidden" }}>
@@ -74,6 +128,11 @@ const CommonTable = forwardRef<HTMLTableElement, CommonTableProps>(
             <Table stickyHeader aria-label="sticky table">
               <TableHead>
                 <TableRow>
+                  {rowSelection && (
+                    <TableCell padding="checkbox">
+                      <Checkbox disabled />
+                    </TableCell>
+                  )}
                   {columns.map((column) => (
                     <TableCell
                       key={column.id}
@@ -90,7 +149,9 @@ const CommonTable = forwardRef<HTMLTableElement, CommonTableProps>(
                   .fill(0)
                   .map((_, index) => (
                     <TableRow key={index}>
-                      <TableCell colSpan={columns.length}>
+                      <TableCell
+                        colSpan={columns.length + (rowSelection ? 1 : 0)}
+                      >
                         <Skeleton sx={{ width: "100%" }} height={40} />
                       </TableCell>
                     </TableRow>
@@ -111,10 +172,29 @@ const CommonTable = forwardRef<HTMLTableElement, CommonTableProps>(
 
     return (
       <Paper sx={{ width: "100%", overflow: "hidden" }}>
+        {rowSelection && bulkAction && selectedRows.length > 0 && (
+          <Box sx={{ p: 2, backgroundColor: "action.selected" }}>
+            {bulkAction(selectedRows)}
+          </Box>
+        )}
         <TableContainer sx={{ maxHeight: height }}>
           <Table stickyHeader aria-label="sticky table">
             <TableHead>
               <TableRow>
+                {rowSelection && (
+                  <TableCell padding="checkbox">
+                    <Checkbox
+                      indeterminate={
+                        selectedRows.length > 0 &&
+                        selectedRows.length < rows.length
+                      }
+                      checked={
+                        rows.length > 0 && selectedRows.length === rows.length
+                      }
+                      onChange={handleSelectAllClick}
+                    />
+                  </TableCell>
+                )}
                 {columns.map((column) => (
                   <TableCell
                     key={column.id}
@@ -128,23 +208,44 @@ const CommonTable = forwardRef<HTMLTableElement, CommonTableProps>(
             </TableHead>
             <TableBody>
               {tableRows.map((row, index) => {
+                const isSelected = isRowSelected(row);
+                const rowKey = String(row.code || row._id || index);
                 return (
                   <>
                     <TableRow
                       hover
-                      onClick={() => onRowClick?.(row)}
+                      onClick={() => {
+                        if (rowSelection) {
+                          handleRowSelect(row);
+                        } else {
+                          onRowClick?.(row);
+                        }
+                      }}
                       role="checkbox"
                       tabIndex={-1}
-                      key={row.code || row._id || index}
+                      key={rowKey}
                       ref={
                         isLazyTable && tableRows.length === index + 1
                           ? ref
                           : null
                       }
+                      selected={isSelected}
                       sx={{
-                        cursor: onRowClick ? "pointer" : "default",
+                        cursor:
+                          rowSelection || onRowClick ? "pointer" : "default",
                       }}
                     >
+                      {rowSelection && (
+                        <TableCell padding="checkbox">
+                          <Checkbox
+                            checked={isSelected}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleRowSelect(row);
+                            }}
+                          />
+                        </TableCell>
+                      )}
                       {columns.map((column) => {
                         const value = row[column.id] || "-";
                         return (
@@ -162,7 +263,7 @@ const CommonTable = forwardRef<HTMLTableElement, CommonTableProps>(
               })}
               {isLazyLoading && (
                 <TableRow>
-                  <TableCell colSpan={columns.length}>
+                  <TableCell colSpan={columns.length + (rowSelection ? 1 : 0)}>
                     <Skeleton height={40} />
                   </TableCell>
                 </TableRow>
@@ -181,9 +282,16 @@ const CommonTable = forwardRef<HTMLTableElement, CommonTableProps>(
             {customFooterLeftComponent ? (
               customFooterLeftComponent
             ) : (
-              <Typography variant="body2">
-                Total Records: {rows.length}
-              </Typography>
+              <Stack direction="row" spacing={2} alignItems="center">
+                <Typography variant="body2">
+                  Total Records: {rows.length}
+                </Typography>
+                {rowSelection && selectedRows.length > 0 && (
+                  <Typography variant="body2" color="primary">
+                    {selectedRows.length} selected
+                  </Typography>
+                )}
+              </Stack>
             )}
             <TablePagination
               rowsPerPageOptions={[10, 25, 100]}
