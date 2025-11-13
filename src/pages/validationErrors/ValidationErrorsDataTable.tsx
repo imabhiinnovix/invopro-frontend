@@ -210,11 +210,12 @@ export const ValidationErrorsDataTable: React.FC<
           </Typography>
         </>
       }
-      rowSelection={true}
+      rowSelection={isLatest === false ? false : true}
       bulkAction={(selectedRows) => (
         <Stack direction="row" spacing={2} justifyContent="flex-end">
           <PrimaryButton
             onClick={() => handleDiscardSelectedRows?.(selectedRows)}
+            disabled={isLatest === false}
           >
             Discard {selectedRows.length} items
           </PrimaryButton>
