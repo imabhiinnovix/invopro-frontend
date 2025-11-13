@@ -36,12 +36,14 @@ export default function ValidationErrors() {
     page: 0,
     pageSize: 10,
   });
+  const [resetSelections, setResetSelections] = useState(false);
   const [debouncedSearchValue, setDebouncedSearchValue] = useState(searchValue);
   const navigate = useNavigate();
   const [dialog, setDialog] = useState<{
     open: boolean;
-    type: "discardAll" | "discardRow" | "resolveRow";
+    type: "discardAll" | "discardRow" | "resolveRow" | "discardSelectedRow";
     rowData?: any;
+    selectedRows?: any[];
   }>({ open: false, type: "discardAll" });
 
   useEffect(() => {
@@ -86,15 +88,15 @@ export default function ValidationErrors() {
     (item: any) => item?.dataSourceVersion?._id === id
   );
   let isLatest = false;
-  if(dataSourceIdForPayload && dataSourceIdForPayload?._id){
+  if (dataSourceIdForPayload && dataSourceIdForPayload?._id) {
     isLatest = true;
-  }else{
-    dataSourceIdForPayload = commonDataSourceList?.find((item: any) =>
-      Array.isArray(item?.allDataSourceVersions) &&
-      item.allDataSourceVersions.some((v: any) => v._id === id)
+  } else {
+    dataSourceIdForPayload = commonDataSourceList?.find(
+      (item: any) =>
+        Array.isArray(item?.allDataSourceVersions) &&
+        item.allDataSourceVersions.some((v: any) => v._id === id)
     );
   }
-
 
   const validationErrorList = useGet<any>(
     [
@@ -120,6 +122,10 @@ export default function ValidationErrors() {
 
   const handleResolveRow = (rowData: any) => {
     setDialog({ open: true, type: "resolveRow", rowData });
+  };
+
+  const handleDiscardSelectedRows = (selectedRows: any[]) => {
+    setDialog({ open: true, type: "discardSelectedRow", selectedRows });
   };
 
   const handleEditRow = async (rowData: any) => {
@@ -228,6 +234,19 @@ export default function ValidationErrors() {
           url: `${POST.RESOLVE_DATA_IMPORT_ERROR}`,
           payload,
         });
+      } else if (dialog?.type === "discardSelectedRow") {
+        const payload = {
+          action: "discard",
+          dataSourceVersionId: id,
+          dataSourceId: dialog.selectedRows?.[0]?.dataSourceId,
+          rowNumber: dialog.selectedRows.map((row: any) => row.rowNumber),
+        };
+
+        response = await discardRow.mutateAsync({
+          url: `${POST.RESOLVE_DATA_IMPORT_ERROR}`,
+          payload,
+        });
+        setResetSelections(true);
       }
 
       if (response?.success) {
@@ -241,6 +260,9 @@ export default function ValidationErrors() {
         } else if (dialog.type === "resolveRow") {
           successMessage =
             response?.message || "Unique constraint resolved successfully";
+        } else if (dialog.type === "discardSelectedRow") {
+          successMessage =
+            response?.message || "Selected rows discarded successfully";
         }
 
         toast.success(successMessage);
@@ -255,6 +277,8 @@ export default function ValidationErrors() {
         errorMessage = "Failed to discard row";
       } else if (dialog.type === "resolveRow") {
         errorMessage = "Failed to resolve unique constraint";
+      } else if (dialog.type === "discardSelectedRow") {
+        errorMessage = "Failed to discard selected rows";
       }
 
       toast.error(errorMessage);
@@ -353,6 +377,9 @@ export default function ValidationErrors() {
             rowCount={validationErrorList?.data?.totalCount || 0}
             validationErrorList={validationErrorList}
             isLoadingRowDetail={isLoadingRowDetail}
+            handleDiscardSelectedRows={handleDiscardSelectedRows}
+            resetSelections={resetSelections}
+            setResetSelections={setResetSelections}
             isLatest={isLatest}
           />
         </CardContent>
@@ -370,6 +397,8 @@ export default function ValidationErrors() {
             ? "Are you sure want to Discard all data?"
             : dialog.type === "resolveRow"
             ? "Are you sure you want to resolve this?"
+            : dialog.type === "discardSelectedRow"
+            ? `Are you sure you want to discard ${dialog.selectedRows.length} selected row(s)?`
             : `Are you sure you want to discard "${dialog.rowData?.fileName}" at row ${dialog.rowData?.fileRowNumber}?`
         }
         confirmText={
