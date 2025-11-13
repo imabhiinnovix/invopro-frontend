@@ -46,7 +46,7 @@ import CommonPageHeader from "../../components/atom/commonPageHeader";
 import PrimaryButton from "../../components/common/PrimaryButton";
 import SearchField from "../../components/common/SearchField";
 import DialogContainer from "../../components/molecule/dialog";
-import { checkPermission } from "../../utils/utils";
+import { checkPermission, formatDate } from "../../utils/utils";
 import { PermissionsMap } from "../../utils/constants";
 
 interface NotificationType {
@@ -101,6 +101,9 @@ const columns: GridColDef[] = [
     width: 250,
     disableColumnMenu: true,
     resizable: true,
+    renderCell: (params) => {
+      return params.row.updatedAt ? formatDate(params.row.updatedAt) : '-';
+    }
   },
   {
     field: "status",

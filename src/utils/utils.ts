@@ -63,19 +63,24 @@ export const formatDate = (dateString?: string): string => {
   if (!dateString) return "-";
   try {
     const date = new Date(dateString);
+
+    // Get user's current timezone dynamically
+    const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
     const formattedDate = date.toLocaleDateString("en-GB", {
       day: "2-digit",
       month: "short",
       year: "numeric",
-      timeZone: "Asia/Kolkata",
+      timeZone: userTimeZone,
     });
+
     const formattedTime = date.toLocaleTimeString("en-US", {
       hour: "2-digit",
       minute: "2-digit",
       second: "2-digit",
       hour12: true, // Enables AM/PM
-      timeZone: "Asia/Kolkata",
+      timeZone: userTimeZone,
     });
+
     return `${formattedDate} ${formattedTime}`;
   } catch {
     return "-";

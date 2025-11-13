@@ -26,6 +26,7 @@ import { Attribute, EntityRequestPayload } from "./types";
 import { STYLE_GUIDE } from "../../../styles";
 import { useComponentTypography } from "../../../hooks/useComponentTypography";
 import CommonTable from "../../common/table";
+import { formatDate } from "../../../utils/utils";
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
   [`&.${tableCellClasses.head}`]: {
@@ -258,7 +259,7 @@ const EntityTable: React.FC<EntityTableProps> = ({
       label: "Created At",
       minWidth: 200,
       renderCell: (row: Record<string, unknown>) => {
-        return row.createdAt ? new Date(row.createdAt).toLocaleString() : "-";
+        return row.createdAt ? formatDate(row.createdAt) : "-";
       },
     },
     {
@@ -267,7 +268,7 @@ const EntityTable: React.FC<EntityTableProps> = ({
       minWidth: 200,
       // { id: "createdAt", label: "Created At", minWidth: 170 },
       renderCell: (row: Record<string, unknown>) => {
-        return row.updatedAt ? new Date(row.updatedAt).toLocaleString() : "-";
+        return row.updatedAt ? formatDate(row.updatedAt) : "-";
       },
     },
     {

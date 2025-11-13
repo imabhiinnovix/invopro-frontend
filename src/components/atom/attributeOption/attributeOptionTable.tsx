@@ -26,6 +26,7 @@ import CreateUpdateAttributeOption from "./createUpdateAttributeOption";
 import { STYLE_GUIDE } from "../../../styles";
 import { useComponentTypography } from "../../../hooks/useComponentTypography";
 import CommonTable from "../../common/table";
+import { formatDate } from "../../../utils/utils";
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
   [`&.${tableCellClasses.head}`]: {
@@ -256,7 +257,7 @@ const AttributeOptionTable: React.FC<AttributeOptionTableProps> = ({
       label: "Created At",
       minWidth: 230,
       renderCell: (row: Record<string, unknown>) => {
-        return row.createdAt ? new Date(row.createdAt).toLocaleString() : "-";
+        return row.createdAt ? formatDate(row.createdAt) : "-";
       },
     },
     {
@@ -264,7 +265,7 @@ const AttributeOptionTable: React.FC<AttributeOptionTableProps> = ({
       label: "Updated At",
       minWidth: 230,
       renderCell: (row: Record<string, unknown>) => {
-        return row.updatedAt ? new Date(row.updatedAt).toLocaleString() : "-";
+        return row.updatedAt ? formatDate(row.updatedAt) : "-";
       },
     },
     {

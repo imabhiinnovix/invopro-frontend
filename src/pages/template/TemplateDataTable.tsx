@@ -21,6 +21,7 @@ import useGet from "../../hooks/useGet";
 import { CustomPagination } from "../../components/common/pagination/customPagination";
 import { GET } from "../../services/apiRoutes";
 import { toast } from "react-toastify";
+import { formatDate } from "../../utils/utils";
 
 interface Template {
   _id: string;
@@ -62,6 +63,9 @@ const columns: GridColDef[] = [
     width: 250,
     disableColumnMenu: true,
     resizable: true,
+    renderCell: (params) => {
+      return params.row.updatedAt ? formatDate(params.row.updatedAt) : '-';
+    }
   },
   {
     field: "status",

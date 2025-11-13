@@ -45,7 +45,7 @@ import DialogContainer from "../../components/molecule/dialog";
 import PrimaryButton from "../../components/common/PrimaryButton";
 import { useSelector } from "react-redux";
 import { RootState } from "../../store";
-import { checkPermission } from "../../utils/utils";
+import { checkPermission, formatDate, formatDateWithoutTime } from "../../utils/utils";
 import { PermissionsMap } from "../../utils/constants";
 
 interface ProductSubscription {
@@ -604,8 +604,8 @@ export default function Organization() {
                         }`.trim()
                       : "-",
                     description: org.description,
-                    createdAt: new Date(org.createdAt).toLocaleDateString(),
-                    updatedAt: new Date(org.updatedAt).toLocaleDateString(),
+                    createdAt: formatDate(org.createdAt),
+                    updatedAt: formatDate(org.updatedAt),
                     productAccess: (
                       <Button
                         size="small"
@@ -1965,7 +1965,7 @@ export default function Organization() {
                     <Typography variant="body2">
                       License Expires At:{" "}
                       {item.licenseExpiresAt
-                        ? new Date(item.licenseExpiresAt).toLocaleDateString()
+                        ? formatDateWithoutTime(item.licenseExpiresAt)
                         : "-"}
                     </Typography>
                   </Box>
