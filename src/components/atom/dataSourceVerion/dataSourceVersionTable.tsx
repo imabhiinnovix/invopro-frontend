@@ -661,6 +661,7 @@ const DataSourceVersionTable: React.FC<AttributeOptionTableProps> = ({
   return (
     <CommonTable
       columns={columns}
+      loading={false}
       isLazyLoading={dataSourceVersionList.isFetching}
       rows={dataSourceVersion || []}
       height="calc(100vh - 200px)"
@@ -706,7 +707,7 @@ const DataSourceVersionTable: React.FC<AttributeOptionTableProps> = ({
           </>
         );
       }}
-      ref={lastElementRef}
+      lastElementRef={lastElementRef}
     />
   );
 
