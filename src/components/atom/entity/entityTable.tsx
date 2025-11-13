@@ -300,10 +300,11 @@ const EntityTable: React.FC<EntityTableProps> = ({
     <CommonTable
       columns={columns}
       rows={entities}
+      loading={false}
       isLazyLoading={entitiesList.isFetching}
       height="calc(100vh - 200px)"
       isLazyTable={true}
-      ref={lastElementRef}
+      lastElementRef={lastElementRef}
       collpasible={(row, index) => {
         return (
           row &&

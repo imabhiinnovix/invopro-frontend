@@ -317,10 +317,11 @@ const AttributeOptionTable: React.FC<AttributeOptionTableProps> = ({
     <CommonTable
       columns={columns}
       rows={attributes || []}
+      loading={false}
       isLazyLoading={attributeList.isFetching}
       height="calc(100vh - 200px)"
       isLazyTable={true}
-      ref={lastElementRef}
+      lastElementRef={lastElementRef}
       collpasible={(row, index) => {
         return (
           row &&

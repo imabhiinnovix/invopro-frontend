@@ -1535,10 +1535,11 @@ const ReportRequestTable: React.FC<AttributeOptionTableProps> = ({
     <CommonTable
       columns={columns}
       rows={reportRequests || []}
+      loading={false}
       isLazyLoading={reportRequestList.isFetching}
       height="calc(100vh - 300px)"
       isLazyTable={true}
-      ref={lastElementRef}
+      lastElementRef={lastElementRef}
     />
   );
 

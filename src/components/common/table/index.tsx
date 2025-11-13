@@ -23,6 +23,10 @@ interface Column {
   renderCell?: (row: Record<string, unknown>, index?: number) => any; // eslint-disable-line @typescript-eslint/no-explicit-any
 }
 
+export interface CommonTableRef {
+  resetSelection: () => void;
+}
+
 interface CommonTableProps {
   columns: Column[];
   rows: Record<string, unknown>[];
@@ -39,9 +43,10 @@ interface CommonTableProps {
   customFooterRightComponent?: React.ReactNode;
   rowSelection?: boolean;
   bulkAction?: (selectedRows: Record<string, unknown>[]) => React.ReactNode;
+  lastElementRef?: (node: HTMLTableRowElement | null) => void;
 }
 
-const CommonTable = forwardRef<HTMLTableElement, CommonTableProps>(
+const CommonTable = forwardRef<CommonTableRef, CommonTableProps>(
   (
     {
       columns,
@@ -55,6 +60,7 @@ const CommonTable = forwardRef<HTMLTableElement, CommonTableProps>(
       customFooterLeftComponent,
       rowSelection = false,
       bulkAction,
+      lastElementRef,
     },
     ref
   ) => {
@@ -66,7 +72,6 @@ const CommonTable = forwardRef<HTMLTableElement, CommonTableProps>(
 
     // Expose resetSelection method to parent component
     useImperativeHandle(ref, () => {
-      if (!rowSelection) return null;
       return {
         resetSelection: () => {
           setSelectedRows([]);
@@ -74,7 +79,7 @@ const CommonTable = forwardRef<HTMLTableElement, CommonTableProps>(
       };
     });
 
-    const handleChangePage = (event: unknown, newPage: number) => {
+    const handleChangePage = (_event: unknown, newPage: number) => {
       setPage(newPage);
     };
 
@@ -229,7 +234,7 @@ const CommonTable = forwardRef<HTMLTableElement, CommonTableProps>(
                       key={rowKey}
                       ref={
                         isLazyTable && tableRows.length === index + 1
-                          ? ref
+                          ? lastElementRef
                           : null
                       }
                       selected={isSelected}

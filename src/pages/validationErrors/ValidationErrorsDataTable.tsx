@@ -200,6 +200,7 @@ export const ValidationErrorsDataTable: React.FC<
       ref={tableRef}
       columns={columns}
       rows={rows || []}
+      loading={false}
       height="calc(100vh - 400px)"
       customFooterLeftComponent={
         <>
