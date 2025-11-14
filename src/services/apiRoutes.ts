@@ -49,9 +49,8 @@ export const POST = {
   CREATE_DEPARTMENT: "/common/department/create",
   CREATE_TEMPLATE: "/notivix/notification-setting/template/create",
   NOTIFICATION_SUMMARY: "notivix/notification-setting/type/summary",
-    RESEND_NOTIFICATION: "/notivix/notification-setting/prepared/notification/resend",
-
-
+  RESEND_NOTIFICATION: "/notivix/notification-setting/prepared/notification/resend",
+  DASHBOARD_WIDGET_DATA_EXPORT: "/common/dataSource/getWidgetDataByFilter/export",
 };
 
 export const PUT = {
