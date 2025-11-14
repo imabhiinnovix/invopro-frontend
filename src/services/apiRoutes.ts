@@ -106,6 +106,7 @@ export const GET = {
   DATA_SOURCE_LIST: "/common/dataSource/list",
   ATTRIBUTE_OPTIONS_LIST: "/common/attributeOptions/get/",
   SOURCE_VERSION_DATA: "common/dataSourceVersion/versionData",
+  SOURCE_DATA_VERSION_EXPORT: "common/dataSourceVersion/versionData/export",
   DASHBOARD_LIST: "/common/dashboard/list",
   WIDGET_TYPE_LIST: "/common/widgetType/list",
   DASHBOARD_WIDGET_GET_CHART_DATA: "/common/dashboard/widget/getWidgets",

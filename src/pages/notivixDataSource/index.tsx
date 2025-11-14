@@ -279,6 +279,17 @@ export default function NotivixDataSource() {
     )}`,
     !!valueId
   );
+
+  const sourceDataVersionExport = useGet<ApiResponse>(
+    ["sourceDataVersionExport", valueId || ""],
+    GET?.SOURCE_DATA_VERSION_EXPORT +
+      `?dataSourceId=${encodeURIComponent(
+        valueId || ""
+      )}&sort=${encodeURIComponent(
+        JSON.stringify({ Title: 1 })
+      )}&selectedFields=${encodeURIComponent(JSON.stringify([]))}`,
+    false
+  );
   useEffect(() => {
     if (processingStatus === "completed") {
       queryClient.invalidateQueries({ queryKey: ["sourceVersionData"] });
@@ -301,6 +312,12 @@ export default function NotivixDataSource() {
       valueId || "",
     ]);
   }, [queryClient, paginationModelMemo, debouncedSearchValue, valueId]);
+
+  useEffect(() => {
+    if (sourceDataVersionExport.isSuccess) {
+      console.log("The data is exported successfully");
+    }
+  }, [sourceDataVersionExport]);
 
   const switchToEditMode = useCallback(() => {
     setModalMode("edit");
@@ -599,6 +616,10 @@ export default function NotivixDataSource() {
     }
   };
 
+  const handleExport = () => {
+    sourceDataVersionExport.refetch();
+  };
+
   return (
     <Box
       sx={{
@@ -677,6 +698,7 @@ export default function NotivixDataSource() {
         dataSourceId={valueId || ""}
         shouldAllowAdd={shouldAllowAdd}
         shouldAllowImport={shouldAllowImport}
+        handleExport={handleExport}
       />
 
       <NotivixDataModal
