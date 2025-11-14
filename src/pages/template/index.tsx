@@ -229,6 +229,8 @@ export default function Template() {
         shouldAllowAdd={shouldAllowAdd}
         shouldAllowEdit={shouldAllowEdit}
         shouldAllowDelete={shouldAllowDelete}
+        deleteTemplate={deleteTemplate}
+        setTemplateReload={setTemplateReload}
       />
 
       <TemplateModal

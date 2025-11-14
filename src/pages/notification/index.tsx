@@ -48,6 +48,8 @@ import SearchField from "../../components/common/SearchField";
 import DialogContainer from "../../components/molecule/dialog";
 import { checkPermission, formatDate } from "../../utils/utils";
 import { PermissionsMap } from "../../utils/constants";
+import Switch from "@mui/material/Switch";
+
 
 interface NotificationType {
   _id: string;
@@ -107,18 +109,78 @@ const columns: GridColDef[] = [
   },
   {
     field: "status",
-    headerName: "Status",
+    headerName: "Enable/Disable",
     width: 250,
     disableColumnMenu: true,
     resizable: true,
-    renderCell: (params) => (
-      <Chip
-        label={params.row.status}
-        size="small"
-        color={params.row.status === "active" ? "success" : "error"}
-        variant="outlined"
+    renderCell: (params) => {
+    // Normalize status strings here (use 'active' / 'inactive')
+    const serverStatus = String(params.row.status || "").toLowerCase();
+    const [checked, setChecked] = React.useState(serverStatus === "active");
+    const [loading, setLoading] = React.useState(false);
+
+    // ALWAYS sync when params.row.status changes (fixes virtualization / reused cells)
+    React.useEffect(() => {
+      const s = String(params.row.status || "").toLowerCase();
+      setChecked(s === "active");
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [params.row.status, params.id]); // keep in sync when row data or id changes
+
+    const handleToggle = async () => {
+      if (loading) return;
+      const prevChecked = checked;
+      const newChecked = !checked;
+      const newStatus = newChecked ? "active" : "inactive"; // use consistent names
+
+      // optimistic UI
+      setChecked(newChecked);
+      setLoading(true);
+
+      try {
+        await params.row.deleteNotificationType.mutate(
+          {
+            // send status as query param since DELETE doesn't accept body
+            url: `${DELETE.DELETE_NOTIFICATION_TYPE}/${params.row._id}?status=${newStatus}`,
+          },
+          {
+            onSuccess: (res: any) => {
+              if (res?.success) {
+                toast.success(
+                  `Notification ${newStatus === "active" ? "activated" : "deactivated"} successfully`
+                );
+                // update the row in the grid so other cells read the new status
+                params.api.updateRows([{ ...params.row, status: newStatus }]);
+              } else {
+                toast.error(res?.message || "Failed to update status");
+                setChecked(prevChecked); // revert
+              }
+            },
+            onError: () => {
+              toast.error("Error updating notification status");
+              setChecked(prevChecked); // revert
+            },
+            onSettled: () => setLoading(false),
+          }
+        );
+      } catch (err) {
+        toast.error("Something went wrong: "+err);
+        setChecked(prevChecked);
+        setLoading(false);
+      }
+    };
+    const isDisabled =
+      loading || !params.row.shouldAllowEdit || !params.row.shouldAllowDelete;
+    return (
+      <Switch
+        checked={checked}
+        onChange={handleToggle}
+        color="success"
+        disabled={isDisabled}
+        // add a stable key to help React reuse correctly if needed
+        key={`${params.id}-status-switch`}
       />
-    ),
+    );
+  },
   },
   {
     field: "actions",
@@ -148,7 +210,7 @@ const columns: GridColDef[] = [
             <VisibilityIcon />
           </Button>
         </Tooltip> */}
-        <Tooltip title="Delete" arrow>
+        {/* <Tooltip title="Delete" arrow>
           <Button
             variant="text"
             onClick={() => params.row.handleDelete(params.row._id)}
@@ -157,7 +219,7 @@ const columns: GridColDef[] = [
           >
             <DeleteIcon />
           </Button>
-        </Tooltip>
+        </Tooltip> */}
       </Box>
     ),
   },
@@ -441,6 +503,8 @@ export default function NotificationTypes() {
               handleDelete,
               shouldAllowEdit,
               shouldAllowDelete,
+              deleteNotificationType,
+              setNotificationTypeReload
             }))}
             columns={columns}
             initialState={{ pagination: { paginationModel } }}
