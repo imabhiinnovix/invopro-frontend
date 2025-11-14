@@ -29,6 +29,8 @@ import { DataSourceListPayload } from "../../components/atom/sideNav/types";
 import { setDataSourceList } from "../dataSources/dataSourceActions";
 import { useAppDispatch } from "../../storeHooks";
 import { PermissionsMap } from "../../utils/constants";
+import DialogContainer from "../../components/molecule/dialog";
+import PrimaryButton from "../../components/common/PrimaryButton";
 
 interface ApiResponse {
   data: any[];
@@ -280,6 +282,10 @@ export default function NotivixDataSource() {
     !!valueId
   );
 
+  const [showExportSuccessDialog, setShowExportSuccessDialog] = useState<
+    string | null
+  >(null);
+
   const sourceDataVersionExport = useGet<ApiResponse>(
     ["sourceDataVersionExport", valueId || ""],
     GET?.SOURCE_DATA_VERSION_EXPORT +
@@ -314,10 +320,16 @@ export default function NotivixDataSource() {
   }, [queryClient, paginationModelMemo, debouncedSearchValue, valueId]);
 
   useEffect(() => {
-    if (sourceDataVersionExport.isSuccess) {
-      console.log("The data is exported successfully");
+    if (sourceDataVersionExport.isSuccess && sourceDataVersionExport.data) {
+      setShowExportSuccessDialog(
+        "Your data has started exporting. You can view its status in the Jobs page."
+      );
     }
-  }, [sourceDataVersionExport]);
+  }, [
+    sourceDataVersionExport.isSuccess,
+    sourceDataVersionExport.data,
+    sourceDataVersionExport.dataUpdatedAt,
+  ]);
 
   const switchToEditMode = useCallback(() => {
     setModalMode("edit");
@@ -620,6 +632,8 @@ export default function NotivixDataSource() {
     sourceDataVersionExport.refetch();
   };
 
+  console.log({ showExportSuccessDialog });
+
   return (
     <Box
       sx={{
@@ -728,6 +742,31 @@ export default function NotivixDataSource() {
           dataSourceId={valueId}
           filterFlag="isFilterEnable"
         />
+      )}
+      {!!showExportSuccessDialog && (
+        <DialogContainer
+          open={!!showExportSuccessDialog}
+          onClose={() => {
+            setShowExportSuccessDialog(null);
+          }}
+          title="Export Data"
+          actions={
+            <>
+              <PrimaryButton
+                variant="contained"
+                onClick={() => {
+                  setShowExportSuccessDialog(null);
+                  navigate("/jobs");
+                }}
+              >
+                Go to Jobs
+              </PrimaryButton>
+            </>
+          }
+          maxWidth="xs"
+        >
+          <Typography>{showExportSuccessDialog}</Typography>
+        </DialogContainer>
       )}
     </Box>
   );

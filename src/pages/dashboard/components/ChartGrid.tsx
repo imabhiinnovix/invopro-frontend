@@ -100,6 +100,8 @@ import { RootState } from "../../../reducers";
 import { POST } from "../../../services/apiRoutes";
 import usePost from "../../../hooks/usePost";
 import PrimaryButton from "../../../components/common/PrimaryButton";
+import DialogContainer from "../../../components/molecule/dialog";
+import { useNavigate } from "react-router-dom";
 
 // Register ChartJS components
 ChartJS.register(
@@ -371,6 +373,10 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
     widgetTypes: state.dashboard.widgetTypes,
     dashboards: state.dashboard.dashboards || [],
   }));
+  const [showExportSuccessDialog, setShowExportSuccessDialog] = useState<
+    string | null
+  >(null);
+  const navigate = useNavigate();
   //   useEffect(() => {
   //   dispatch(fetchChartData({ dashboardId, dashboardFilters  }));
   // }, [dispatch, dashboardId]); // re-fetch when dashboard changes
@@ -1011,7 +1017,11 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
   const dashboardWidgetDataExportPost = usePost<any, any>(
     [""],
     (data) => {
-      console.log(data);
+      // console.log(data);
+      // console.log("The data is exported successfully");
+      setShowExportSuccessDialog(
+        "Your data has started exporting. You can view its status in the Jobs page."
+      );
     },
     true
   );
@@ -3430,8 +3440,11 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
                     variant="contained"
                     onClick={handleDashboardWidgetDataExport}
                     startIcon={<IosShareIcon />}
+                    disabled={dashboardWidgetDataExportPost.isPending}
                   >
-                    Export
+                    {dashboardWidgetDataExportPost.isPending
+                      ? "Exporting..."
+                      : "Export"}
                   </PrimaryButton>
                   <IconButton
                     onClick={handleDrillDownClose}
@@ -3622,6 +3635,30 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
           )}
         </Box>
       </FullScreenModal>
+
+      {!!showExportSuccessDialog && (
+        <DialogContainer
+          open={!!showExportSuccessDialog}
+          onClose={() => setShowExportSuccessDialog(null)}
+          title="Export Data"
+          actions={
+            <>
+              <PrimaryButton
+                variant="contained"
+                onClick={() => {
+                  setShowExportSuccessDialog(null);
+                  navigate("/jobs");
+                }}
+              >
+                Go to Jobs
+              </PrimaryButton>
+            </>
+          }
+          maxWidth="xs"
+        >
+          <Typography>{showExportSuccessDialog}</Typography>
+        </DialogContainer>
+      )}
     </>
   );
 };
