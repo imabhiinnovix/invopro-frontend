@@ -2945,16 +2945,86 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
                     } // Cycle through colors
                   >
                     <CardContent>
-                      <ChartTitle
-                        sx={{
-                          color:
-                            SABIC_COLORS_NUMBER[
-                              index % SABIC_COLORS_NUMBER.length
-                            ] === "#939598"
-                              ? "#FFFFFF"
-                              : "#939598",
-                        }}
-                      ></ChartTitle>
+                      {/* ---------- Number card header with only Edit menu in edit mode ---------- */}
+<Box
+  sx={{
+    width: "100%",
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    mb: 1,
+  }}
+>
+  {/* optional chart title — keep it empty if you don't want text */}
+  <ChartTitle
+    sx={{
+      color:
+        SABIC_COLORS_NUMBER[index % SABIC_COLORS_NUMBER.length] ===
+        "#939598"
+          ? "#FFFFFF"
+          : "#939598",
+      p: 0,
+      mr: 1,
+    }}
+  />
+
+  {/* edit/menu button (only in edit mode) */}
+  {/* Header Action Buttons */}
+<Box sx={{ display: "flex", gap: 1 }}>
+  {/* Maximize */}
+  {isEditMode && (
+    <IconButton
+      size="small"
+      onClick={(e) => {
+        e.stopPropagation();
+        handleFullViewClick(chart);   // same function used by other charts
+      }}
+      sx={{
+        opacity: 0.7,
+        "&:hover": { opacity: 1 },
+      }}
+    >
+      <FullscreenIcon />
+    </IconButton>
+  )}
+
+  {/* Export */}
+  {isEditMode && (
+    <IconButton
+      size="small"
+      onClick={(e) => {
+        e.stopPropagation();
+        handleExportMenuClick(e, chart);   // same export menu function
+      }}
+      sx={{
+        opacity: 0.7,
+        "&:hover": { opacity: 1 },
+      }}
+    >
+      <DownloadIcon />
+    </IconButton>
+  )}
+
+  {/* Edit / Delete Menu */}
+  {isEditMode &&
+    (shouldAllowWidgetUpdate || shouldAllowWidgetDelete) && (
+      <IconButton
+        size="small"
+        onClick={(e) => {
+          e.stopPropagation();
+          handleMenuClick(e, chart);
+        }}
+        sx={{
+          opacity: 0.7,
+          "&:hover": { opacity: 1 },
+        }}
+      >
+        <MoreVertIcon />
+      </IconButton>
+    )}
+</Box>
+
+</Box>
                       <ChartContainer
                         className="number-chart"
                         onWheel={handleWheel}
