@@ -95,7 +95,7 @@ export default function Template() {
         toast.error("Error deleting template");
       }
     },
-    true
+    false
   );
 
   useEffect(() => {
