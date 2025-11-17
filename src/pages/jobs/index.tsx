@@ -6,37 +6,6 @@ import useGet from "../../hooks/useGet";
 import { GET } from "../../services/apiRoutes";
 import useFileDownload from "../../hooks/useFiledownload";
 
-const sampleData = [
-  {
-    id: 1,
-    name: "Data Export Job 1",
-    status: "Pending",
-    createdAt: "2021-01-01",
-    updatedAt: "2021-01-01",
-  },
-  {
-    id: 2,
-    name: "Data Export Job 2",
-    status: "Completed",
-    createdAt: "2021-01-01",
-    updatedAt: "2021-01-01",
-  },
-  {
-    id: 3,
-    name: "Data Export Job 3",
-    status: "Failed",
-    createdAt: "2021-01-01",
-    updatedAt: "2021-01-01",
-  },
-  {
-    id: 4,
-    name: "Data Export Job 4",
-    status: "Cancelled",
-    createdAt: "2021-01-01",
-    updatedAt: "2021-01-01",
-  },
-];
-
 const columns = [
   {
     id: "name",
@@ -91,15 +60,20 @@ const Jobs = () => {
     true
   );
 
-  const downloadRequestFile = useFileDownload<Blob>((data) => {
-    console.log("data", data);
-    // const fileName = 'sample';
-    // const blob = new Blob([data], { type: "application/octet-stream" });
-    // const link = document.createElement("a");
-    // const url = URL.createObjectURL(blob);
-    // link.href = url;
-    // link.download = fileName;
-  });
+  const downloadRequestFile = useFileDownload<Blob>(
+    (data, fileName = "sample.xlsx") => {
+      console.log("data", data);
+      const blob = new Blob([data], { type: "application/octet-stream" });
+      const link = document.createElement("a");
+      const url = URL.createObjectURL(blob);
+      link.href = url;
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    }
+  );
 
   const rows = downloadRequestList?.data?.data?.map((item: any) => ({
     id: item._id,
@@ -110,6 +84,7 @@ const Jobs = () => {
     downloadRequestFile: () =>
       downloadRequestFile.mutate({
         url: GET?.DOWNLOAD_REQUEST_FILE + `/${encodeURIComponent(item._id)}`,
+        fileName: item.fileName,
       }),
   }));
 
