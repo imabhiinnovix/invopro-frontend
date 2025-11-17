@@ -2,6 +2,9 @@ import { Chip, IconButton } from "@mui/material";
 import CommonPageHeader from "../../components/atom/commonPageHeader";
 import CommonTable from "../../components/common/table";
 import CloudDownloadIcon from "@mui/icons-material/CloudDownload";
+import useGet from "../../hooks/useGet";
+import { GET } from "../../services/apiRoutes";
+import useFileDownload from "../../hooks/useFiledownload";
 
 const sampleData = [
   {
@@ -54,9 +57,9 @@ const columns = [
         <Chip
           label={row.status}
           color={
-            row.status === "Pending"
+            row.status === "pending"
               ? "warning"
-              : row.status === "Completed"
+              : row.status === "completed"
               ? "success"
               : "error"
           }
@@ -69,9 +72,9 @@ const columns = [
     label: "Actions",
     minWidth: 170,
     renderCell: (row: Record<string, unknown>) => {
-      if (row.status === "Completed") {
+      if (row.status === "completed") {
         return (
-          <IconButton color="primary">
+          <IconButton color="primary" onClick={() => row.downloadRequestFile()}>
             <CloudDownloadIcon />
           </IconButton>
         );
@@ -82,13 +85,42 @@ const columns = [
 ];
 
 const Jobs = () => {
+  const downloadRequestList = useGet<any[]>(
+    [`downloadRequestList`],
+    GET?.DOWNLOAD_REQUEST_LIST,
+    true
+  );
+
+  const downloadRequestFile = useFileDownload<Blob>((data) => {
+    console.log("data", data);
+    // const fileName = 'sample';
+    // const blob = new Blob([data], { type: "application/octet-stream" });
+    // const link = document.createElement("a");
+    // const url = URL.createObjectURL(blob);
+    // link.href = url;
+    // link.download = fileName;
+  });
+
+  const rows = downloadRequestList?.data?.data?.map((item: any) => ({
+    id: item._id,
+    name: item.fileName,
+    status: item.status,
+    createdAt: item.createdAt,
+    filePath: item.filePath,
+    downloadRequestFile: () =>
+      downloadRequestFile.mutate({
+        url: GET?.DOWNLOAD_REQUEST_FILE + `/${encodeURIComponent(item._id)}`,
+      }),
+  }));
+
   return (
-    <div>
+    <div className="p-4">
       <CommonPageHeader title="Data Export Jobs" actions={<></>} />
       <CommonTable
         columns={columns}
-        rows={sampleData}
+        rows={rows || []}
         height="calc(100vh - 100px)"
+        loading={downloadRequestList?.isPending}
       />
     </div>
   );

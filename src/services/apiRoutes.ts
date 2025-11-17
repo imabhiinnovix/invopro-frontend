@@ -144,4 +144,6 @@ export const GET = {
   DEPARTMENT_LIST: "/common/department/list",
   DESIGNATION_LIST: "/common/designation/list",
   ERROR_ROW_DATA: "/common/dataImportError/data",
+  DOWNLOAD_REQUEST_LIST: "/common/download-request/list",
+  DOWNLOAD_REQUEST_FILE: "common/download-request/download",
 };
