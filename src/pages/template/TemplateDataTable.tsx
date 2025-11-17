@@ -1,6 +1,7 @@
 import * as React from "react";
 import { useState, useEffect } from "react";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
+import Switch from "@mui/material/Switch";
 import {
   Box,
   Card,
@@ -19,7 +20,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import { useUnifiedTheme } from "../../hooks/useUnifiedTheme";
 import useGet from "../../hooks/useGet";
 import { CustomPagination } from "../../components/common/pagination/customPagination";
-import { GET } from "../../services/apiRoutes";
+import { DELETE, GET } from "../../services/apiRoutes";
 import { toast } from "react-toastify";
 import { formatDate } from "../../utils/utils";
 
@@ -67,21 +68,82 @@ const columns: GridColDef[] = [
       return params.row.updatedAt ? formatDate(params.row.updatedAt) : '-';
     }
   },
-  {
-    field: "status",
-    headerName: "Status",
-    width: 250,
-    disableColumnMenu: true,
-    resizable: true,
-    renderCell: (params) => (
-      <Chip
-        label={params.value || "Unknown"}
-        size="small"
-        color={params.value === "active" ? "success" : "error"}
-        variant="outlined"
+{
+  field: "status",
+  headerName: "Enable/Disable",
+  width: 180,
+  disableColumnMenu: true,
+  resizable: true,
+  renderCell: (params) => {
+    // Normalize status strings here (use 'active' / 'in-active')
+    const serverStatus = String(params.row.status || "").toLowerCase();
+    const [checked, setChecked] = React.useState(serverStatus === "active");
+    const [loading, setLoading] = React.useState(false);
+
+    // ALWAYS sync when params.row.status changes (fixes virtualization / reused cells)
+    React.useEffect(() => {
+      const s = String(params.row.status || "").toLowerCase();
+      setChecked(s === "active");
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [params.row.status, params.id]); // keep in sync when row data or id changes
+
+    const handleToggle = async () => {
+      if (loading) return;
+      const prevChecked = checked;
+      const newChecked = !checked;
+      const newStatus = newChecked ? "active" : "in-active"; // use consistent names
+
+      // optimistic UI
+      setChecked(newChecked);
+      setLoading(true);
+
+      try {
+        await params.row.deleteTemplate.mutate(
+          {
+            // send status as query param since DELETE doesn't accept body
+            url: `${DELETE.DELETE_TEMPLATE}/${params.row._id}?status=${newStatus}`,
+          },
+          {
+            onSuccess: (res: any) => {
+              if (res?.success) {
+                toast.success(
+                  `Template ${newStatus === "active" ? "activated" : "deactivated"} successfully`
+                );
+                // update the row in the grid so other cells read the new status
+                params.api.updateRows([{ ...params.row, status: newStatus }]);
+              } else {
+                toast.error(res?.message || "Failed to update status");
+                setChecked(prevChecked); // revert
+              }
+            },
+            onError: () => {
+              toast.error("Error updating template status");
+              setChecked(prevChecked); // revert
+            },
+            onSettled: () => setLoading(false),
+          }
+        );
+      } catch (err) {
+        toast.error("Something went wrong");
+        setChecked(prevChecked);
+        setLoading(false);
+      }
+    };
+    const isDisabled =
+      loading || !params.row.shouldAllowEdit || !params.row.shouldAllowDelete;
+    return (
+      <Switch
+        checked={checked}
+        onChange={handleToggle}
+        color="success"
+        disabled={isDisabled}
+        // add a stable key to help React reuse correctly if needed
+        key={`${params.id}-status-switch`}
       />
-    ),
+    );
   },
+}
+,
   {
     field: "actions",
     headerName: "Actions",
@@ -110,7 +172,7 @@ const columns: GridColDef[] = [
             <VisibilityIcon />
           </Button>
         </Tooltip>
-        <Tooltip title="Delete" arrow>
+        {/* <Tooltip title="Delete" arrow>
           <Button
             variant="text"
             onClick={() => params.row.handleDelete(params.row._id)}
@@ -119,7 +181,7 @@ const columns: GridColDef[] = [
           >
             <DeleteIcon />
           </Button>
-        </Tooltip>
+        </Tooltip> */}
       </Box>
     ),
   },
@@ -145,6 +207,9 @@ interface TemplateDataTableProps {
   shouldAllowAdd: boolean;
   shouldAllowEdit: boolean;
   shouldAllowDelete: boolean;
+  deleteTemplate: any;
+  setTemplateReload: any;
+
 }
 
 export function TemplateDataTable({
@@ -163,6 +228,8 @@ export function TemplateDataTable({
   filterValues,
   templateReload,
   loading,
+  deleteTemplate,
+  setTemplateReload
 }: TemplateDataTableProps) {
   const theme = useUnifiedTheme();
   const perPageItem = paginationModel.pageSize;
@@ -216,6 +283,8 @@ export function TemplateDataTable({
           handleDelete: onDeleteTemplate,
           shouldAllowEdit,
           shouldAllowDelete,
+          deleteTemplate,
+          setTemplateReload,
         }))
       : [];
 
