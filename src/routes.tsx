@@ -37,6 +37,7 @@ import ProfilePage from "./pages/profilePage";
 import Designation from "./pages/designation";
 import Department from "./pages/department";
 import Template from "./pages/template";
+import Jobs from "./pages/jobs";
 
 const AppRoutes = () => {
   const token = getAuthToken();
@@ -102,6 +103,7 @@ const AppRoutes = () => {
           <Route path="/designation" element={<Designation />} />
           <Route path="/department" element={<Department />} />
           <Route path="/template" element={<Template />} />
+          <Route path="/jobs" element={<Jobs />} />
         </Route>
       </Route>
 

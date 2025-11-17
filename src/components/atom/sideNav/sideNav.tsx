@@ -20,6 +20,7 @@ import SourceIcon from "@mui/icons-material/Source";
 import HomeIcon from "@mui/icons-material/Home";
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import NotificationsActiveIcon from "@mui/icons-material/NotificationsActive";
+import TaskIcon from "@mui/icons-material/Task";
 import AssessmentIcon from "@mui/icons-material/Assessment";
 import PaletteIcon from "@mui/icons-material/Palette";
 import BrushIcon from "@mui/icons-material/Brush";
@@ -506,7 +507,8 @@ export default function SideNav() {
                           openNotificationSettings) ||
                         (item.name === "Settings" && openReportSettings) ||
                         (item.name === "Theme Settings" && openThemeSettings) ||
-                        (item.name === "IP Report Constants" && openDataSources) ||
+                        (item.name === "IP Report Constants" &&
+                          openDataSources) ||
                         (item.name === "System Settings" && openSystemSettings)
                       }
                       collapsibleComp={
@@ -1246,6 +1248,11 @@ function getNavItems(
       name: "VixAI Insights",
       icon: createIcon(AutoAwesomeIcon, "/VixAi-Insights", theme),
       route: "/VixAi-Insights",
+    },
+    {
+      name: "Data Export Jobs",
+      icon: createIcon(TaskIcon, "/jobs", theme),
+      route: "/jobs",
     },
     getSystemSettingsItems(
       dataSourceList,

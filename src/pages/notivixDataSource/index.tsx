@@ -29,6 +29,8 @@ import { DataSourceListPayload } from "../../components/atom/sideNav/types";
 import { setDataSourceList } from "../dataSources/dataSourceActions";
 import { useAppDispatch } from "../../storeHooks";
 import { PermissionsMap } from "../../utils/constants";
+import DialogContainer from "../../components/molecule/dialog";
+import PrimaryButton from "../../components/common/PrimaryButton";
 
 interface ApiResponse {
   data: any[];
@@ -279,6 +281,21 @@ export default function NotivixDataSource() {
     )}`,
     !!valueId
   );
+
+  const [showExportSuccessDialog, setShowExportSuccessDialog] = useState<
+    string | null
+  >(null);
+
+  const sourceDataVersionExport = useGet<ApiResponse>(
+    ["sourceDataVersionExport", valueId || ""],
+    GET?.SOURCE_DATA_VERSION_EXPORT +
+      `?dataSourceId=${encodeURIComponent(
+        valueId || ""
+      )}&sort=${encodeURIComponent(
+        JSON.stringify({ Title: 1 })
+      )}&selectedFields=${encodeURIComponent(JSON.stringify([]))}`,
+    false
+  );
   useEffect(() => {
     if (processingStatus === "completed") {
       queryClient.invalidateQueries({ queryKey: ["sourceVersionData"] });
@@ -301,6 +318,18 @@ export default function NotivixDataSource() {
       valueId || "",
     ]);
   }, [queryClient, paginationModelMemo, debouncedSearchValue, valueId]);
+
+  useEffect(() => {
+    if (sourceDataVersionExport.isSuccess && sourceDataVersionExport.data) {
+      setShowExportSuccessDialog(
+        "Your data has started exporting. You can view its status in the Jobs page."
+      );
+    }
+  }, [
+    sourceDataVersionExport.isSuccess,
+    sourceDataVersionExport.data,
+    sourceDataVersionExport.dataUpdatedAt,
+  ]);
 
   const switchToEditMode = useCallback(() => {
     setModalMode("edit");
@@ -599,6 +628,12 @@ export default function NotivixDataSource() {
     }
   };
 
+  const handleExport = () => {
+    sourceDataVersionExport.refetch();
+  };
+
+  console.log({ showExportSuccessDialog });
+
   return (
     <Box
       sx={{
@@ -677,6 +712,7 @@ export default function NotivixDataSource() {
         dataSourceId={valueId || ""}
         shouldAllowAdd={shouldAllowAdd}
         shouldAllowImport={shouldAllowImport}
+        handleExport={handleExport}
       />
 
       <NotivixDataModal
@@ -706,6 +742,31 @@ export default function NotivixDataSource() {
           dataSourceId={valueId}
           filterFlag="isFilterEnable"
         />
+      )}
+      {!!showExportSuccessDialog && (
+        <DialogContainer
+          open={!!showExportSuccessDialog}
+          onClose={() => {
+            setShowExportSuccessDialog(null);
+          }}
+          title="Export Data"
+          actions={
+            <>
+              <PrimaryButton
+                variant="contained"
+                onClick={() => {
+                  setShowExportSuccessDialog(null);
+                  navigate("/jobs");
+                }}
+              >
+                Go to Jobs
+              </PrimaryButton>
+            </>
+          }
+          maxWidth="xs"
+        >
+          <Typography>{showExportSuccessDialog}</Typography>
+        </DialogContainer>
       )}
     </Box>
   );

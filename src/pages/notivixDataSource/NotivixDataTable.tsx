@@ -19,6 +19,7 @@ import ImportFile from "../../components/common/importFile/ImportFile";
 import dayjs from "dayjs";
 import SearchField from "../../components/common/SearchField";
 import PrimaryButton from "../../components/common/PrimaryButton";
+import IosShareIcon from "@mui/icons-material/IosShare";
 
 interface TableSectionProps {
   rows: any[];
@@ -40,6 +41,7 @@ interface TableSectionProps {
   dataSourceId: string;
   shouldAllowAdd: boolean;
   shouldAllowImport: boolean;
+  handleExport: () => void;
 }
 
 const renderCellValue = (value: any) => {
@@ -89,6 +91,7 @@ export const NotivixDataTable: React.FC<TableSectionProps> = ({
   dataSourceId,
   shouldAllowAdd,
   shouldAllowImport,
+  handleExport,
 }) => {
   // Use ref to track previous dataSourceId
   const prevDataSourceIdRef = React.useRef<string>(dataSourceId);
@@ -233,6 +236,13 @@ export const NotivixDataTable: React.FC<TableSectionProps> = ({
                   }
                 />
               )}
+              <PrimaryButton
+                variant="contained"
+                startIcon={<IosShareIcon />}
+                onClick={handleExport}
+              >
+                Export
+              </PrimaryButton>
             </Box>
           </Box>
           {rows.length > 0 ? (
