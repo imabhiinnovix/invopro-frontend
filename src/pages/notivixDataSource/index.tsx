@@ -291,9 +291,11 @@ export default function NotivixDataSource() {
     GET?.SOURCE_DATA_VERSION_EXPORT +
       `?dataSourceId=${encodeURIComponent(
         valueId || ""
-      )}&sort=${encodeURIComponent(
-        JSON.stringify({ Title: 1 })
-      )}&selectedFields=${encodeURIComponent(JSON.stringify([]))}`,
+      )}&sort=${encodeURIComponent(JSON.stringify({ Title: 1 }))}
+      &selectedFields=${encodeURIComponent(JSON.stringify([]))}
+      &filters=${encodeURIComponent(JSON.stringify(filter))}
+      &search=${encodeURIComponent(debouncedSearchValue || "")}
+      `,
     false
   );
   useEffect(() => {
