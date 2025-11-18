@@ -5,6 +5,7 @@ import CloudDownloadIcon from "@mui/icons-material/CloudDownload";
 import useGet from "../../hooks/useGet";
 import { GET } from "../../services/apiRoutes";
 import useFileDownload from "../../hooks/useFiledownload";
+import { formatDate } from "../../utils/utils";
 
 const columns = [
   {
@@ -16,6 +17,9 @@ const columns = [
     id: "createdAt",
     label: "Created At",
     minWidth: 170,
+    renderCell: (row: Record<string, unknown>) => {
+      return <span>{formatDate(row.createdAt)}</span>;
+    },
   },
   {
     id: "status",
