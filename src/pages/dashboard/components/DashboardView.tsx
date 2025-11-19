@@ -2037,6 +2037,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               endDate: end.format("YYYY-MM-DD"),
             },
             "Derived.Case Status": statusToggle,
+            "Derived.Handled By": "In House"
           };
         } else if (statusToggle === "Completed") {
           return {
@@ -2046,6 +2047,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               endDate: end.format("YYYY-MM-DD"),
             },
             "Derived.Case Status": statusToggle,
+            "Derived.Handled By": "In House"
           };
         }
         return prev;
@@ -2076,6 +2078,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               endDate: thirtyDaysAfter.format("YYYY-MM-DD"),
             },
             "Derived.Case Status": statusToggle,
+            "Derived.Handled By": "In House"
           };
         } else if (statusToggle === "Completed") {
           const today = new DateObject(); // Current date
@@ -2089,9 +2092,10 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               endDate: today.format("YYYY-MM-DD"),
             },
             "Derived.Case Status": statusToggle,
+            "Derived.Handled By": "In House"
           };
         }
-        return { ...prev, "Derived.Case Status": statusToggle };
+        return { ...prev, "Derived.Case Status": statusToggle, "Derived.Handled By": "In House" };
       });
     }
   }, [currentDashboard]);
@@ -2127,6 +2131,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               endDate: thirtyDaysAfter.format("YYYY-MM-DD"),
             },
             "Derived.Case Status": newStatus,
+            "Derived.Handled By": "In House"
           };
         } else if (newStatus === "Completed") {
           const today = new DateObject(); // Current date
@@ -2140,9 +2145,10 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               endDate: today.format("YYYY-MM-DD"),
             },
             "Derived.Case Status": newStatus,
+            "Derived.Handled By": "In House"
           };
         }
-        return { ...rest, "Derived.Case Status": newStatus };
+        return { ...rest, "Derived.Case Status": newStatus, "Derived.Handled By": "In House" };
       });
     }
   };
