@@ -2392,6 +2392,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
   useEffect(() => {
     setIsEditMode(false);
+    setIsAddChartModalOpen(false);
+    setIsEditChartModalOpen(false);
     if (location.state?.enableEditMode) {
       setIsEditMode(true);
     }
