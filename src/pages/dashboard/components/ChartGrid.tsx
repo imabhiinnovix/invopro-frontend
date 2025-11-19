@@ -533,11 +533,19 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
   };
 
   const handleEditClick = () => {
-    if (selectedChart) {
-      onEditChart(selectedChart);
-    }
-    handleMenuClose();
-  };
+  if (!selectedChart) return;
+
+  handleMenuClose();
+
+  // Reset previous editor state
+  onEditChart(null);
+
+  // Load new chart editor
+  setTimeout(() => {
+    onEditChart(selectedChart);
+  }, 10);
+};
+
 
   const handleFullViewClick = (chart: ChartResponse) => {
     setSelectedChart(chart);
