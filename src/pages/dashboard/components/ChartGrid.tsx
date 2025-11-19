@@ -769,6 +769,58 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
     elements: ActiveElement[],
     event: any
   ) => {
+
+     // 👉 Allow direct click for NUMBER CHART
+  if (chart.widgetTypeId?.chartType === "number") {
+    setSelectedChart(chart);
+    setDrillDownOpen(true);
+    setCurrentPage(1);
+
+    // Build simple payload for number chart
+    const payload = {
+      dataSourceId: chart.dataSourceId?._id,
+      entityId: chart.dataSourceId?.entityId,
+      conditions: chart.conditions || [],
+      dashboardFilters: {
+        startVersionValue,
+        endVersionValue,
+        versionValue,
+        filters: { ...dashboardFilters }
+      },
+      page: 1,
+      limit: itemsPerPage,
+      dashBoardType: currentDashboard?.settings?.dashboardType,
+    };
+
+    setDrillDownPayload(payload);
+
+    try {
+      const response = await axiosInstance.post(
+        "/common/dataSource/getWidgetDataByFilter",
+        payload
+      );
+
+      if (response.data.success) {
+        const drillDownData = response.data.data;
+        setDrillDownData(drillDownData);
+        setTotalPages(response.data.pagination.totalPages);
+        setTotalRecords(response.data.pagination.totalRecords);
+
+        if (drillDownData?.length) {
+          setDrillDownColumns(
+            Object.keys(drillDownData[0]).filter((k) => k !== "_id")
+          );
+        } else {
+          setDrillDownColumns([]);
+        }
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to fetch details");
+    }
+
+    return; // STOP HERE FOR NUMBER CHARTS
+  }
     if (!elements || !elements.length) return;
 
     setSelectedChart(chart);
@@ -3065,20 +3117,32 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
                         </Box>
                       </Box>
                       <ChartContainer
-                        className="number-chart"
-                        onWheel={handleWheel}
-                        sx={{
-                          mt: -2,
-                          backgroundColor: "transparent",
-                          display: "flex",
-                          flexDirection: "column",
-                          justifyContent: "flex-start",
-                          alignItems: "flex-start",
-                          width: "100%",
-                        }}
-                      >
-                        {renderChart(chart)}
-                      </ChartContainer>
+  onClick={(e) => {
+    e.stopPropagation();
+    handleFullViewClick(chart);
+    handleChartClick(chart);  // auto-run ALL DATA
+  }}
+  className="number-chart"
+  onWheel={handleWheel}
+  sx={{
+    mt: -2,
+    backgroundColor: "transparent",
+    display: "flex",
+    flexDirection: "column",
+    justifyContent: "flex-start",
+    alignItems: "flex-start",
+    width: "100%",
+    cursor: "pointer",
+    transition: "transform 0.2s ease, opacity 0.2s ease",
+    "&:hover": {
+      transform: "scale(1.02)",
+      opacity: 0.9,
+    },
+  }}
+>
+  {renderChart(chart)}
+</ChartContainer>
+
                     </CardContent>
                   </NumberCard>
                 </Grid>
@@ -3444,7 +3508,6 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
             >
               All Data
             </Button>
-
             <IconButton
               onClick={handleFullViewClose}
               size="small"
@@ -3471,6 +3534,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
           }}
         >
           {/* Chart section - takes full height initially, 60% when drill-down is open */}
+          {selectedChart?.widgetTypeId?.chartType !== "number" && (
           <Box
             sx={{
               flex: drillDownOpen ? 0.6 : 1,
@@ -3485,7 +3549,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
               {selectedChart && renderChart(selectedChart)}
             </FullScreenChartContainer>
           </Box>
-
+          )}
           {/* Drill-down section - only visible when drillDownOpen is true */}
           {drillDownOpen && (
             <Box
@@ -3525,6 +3589,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
                       ? "Exporting..."
                       : "Export"}
                   </PrimaryButton>
+                  {selectedChart?.widgetTypeId?.chartType !== "number" && (
                   <IconButton
                     onClick={handleDrillDownClose}
                     size="small"
@@ -3538,6 +3603,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
                   >
                     <CloseIcon />
                   </IconButton>
+                  )}
                 </Stack>
               </Box>
 
