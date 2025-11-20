@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useAppDispatch, useAppSelector } from "../../../storeHooks";
 import IosShareIcon from "@mui/icons-material/IosShare";
+import FilterListIcon from "@mui/icons-material/FilterList";
 import {
   fetchChartData,
   deleteWidget,
@@ -97,11 +98,12 @@ import { checkPermission, formatDateWithoutTime } from "../../../utils/utils";
 import { PermissionsMap } from "../../../utils/constants";
 import { useSelector } from "react-redux";
 import { RootState } from "../../../reducers";
-import { POST } from "../../../services/apiRoutes";
+import { GET, POST } from "../../../services/apiRoutes";
 import usePost from "../../../hooks/usePost";
 import PrimaryButton from "../../../components/common/PrimaryButton";
 import DialogContainer from "../../../components/molecule/dialog";
 import { useNavigate } from "react-router-dom";
+import NotivixFiltersModal from "../../notivixDashboard/components/NotivixFiltersModal";
 
 // Register ChartJS components
 ChartJS.register(
@@ -410,6 +412,106 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
   const itemsPerPage = 10;
 
   const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [isFiltersModalOpen, setIsFiltersModalOpen] = useState(false);
+  const [localDashboardFilters, setLocalDashboardFilters] =
+    useState<any>(dashboardFilters);
+
+  console.log("widgetData", widgetData);
+  const [fullscreenWidgetData, setFullscreenWidgetData] = useState<any>(
+    widgetData[selectedChart?._id]
+  );
+
+  useEffect(() => {
+    if (dashboardFilters) {
+      setLocalDashboardFilters(dashboardFilters);
+    }
+  }, [selectedChart]);
+
+  const getUpdatedWidgetData = usePost(
+    ["getUpdatedWidgetData"],
+    (data) => {
+      const essentialData = {
+        _id: selectedChart?._id,
+        createdBy: selectedChart?.createdBy,
+        dataSourceFieldSettings: selectedChart?.dataSourceId?.fieldSettings,
+
+        dashboardId: selectedChart?.dashboardId,
+        organizationId: selectedChart?.organizationId,
+        name: selectedChart?.name,
+        position: selectedChart?.position,
+        dimensions: selectedChart?.dimensions,
+        groupBy: selectedChart?.groupBy,
+        aggregation: selectedChart?.aggregation,
+        conditions: selectedChart?.conditions,
+        isActive: selectedChart?.isActive,
+        createdAt: selectedChart?.createdAt,
+        updatedAt: selectedChart?.updatedAt,
+        widgetTypeId: selectedChart?.widgetTypeId,
+        dataSourceId: selectedChart?.dataSourceId,
+        data: {
+          label: data.data.label,
+          dataSourceFieldSettings: selectedChart?.dataSourceId?.fieldSettings,
+
+          widgetData: data.data.widgetData.map((item) => {
+            return {
+              ...item,
+            };
+          }),
+          totalCount: data.data.totalCount,
+        },
+      };
+
+      console.log("getUpdatedWidgetData essentialData", essentialData);
+      setFullscreenWidgetData(essentialData);
+    },
+    true
+  );
+
+  const handleApplyFilters = async (filters: any) => {
+    console.log("filters>>>>>>>>>>", filters);
+    if (Object.keys(filters).length > 0) {
+      setLocalDashboardFilters(filters);
+
+      getUpdatedWidgetData?.mutate({
+        url: GET.DASHBOARD_WIDGET_DATA,
+        payload: {
+          dataSourceId: selectedChart?.dataSourceId?._id,
+          dataSourceFieldSettings: selectedChart?.dataSourceId?.fieldSettings,
+          entityId: selectedChart?.dataSourceId?.entityId,
+          dimensions: selectedChart?.dimensions,
+          groupBy: selectedChart?.groupBy,
+          conditions: selectedChart?.conditions,
+          aggregation: selectedChart?.aggregation,
+          widgetType: selectedChart?.widgetTypeId?.chartType,
+          dashboardFilters: {
+            startVersionValue:
+              currentDashboard?.settings?.dashboardType === "trend"
+                ? startVersionValue || ""
+                : "",
+            endVersionValue:
+              currentDashboard?.settings?.dashboardType === "trend"
+                ? endVersionValue || ""
+                : "",
+            versionValue:
+              currentDashboard?.settings?.dashboardType === "trend"
+                ? ""
+                : versionValue || "",
+            dynamicVersionValue:
+              currentDashboard?.settings?.dashboardType === "trend"
+                ? ""
+                : versionValue
+                ? ""
+                : "1m",
+            filters: { ...filters },
+          },
+          dashBoardType: currentDashboard?.settings?.dashboardType || "normal",
+          isIncremental: selectedChart?.isIncremental,
+        },
+      });
+
+      setDrillDownOpen(false);
+    }
+  };
 
   const allCharts = [...charts, ...temporaryCharts];
   const numberCharts = allCharts.filter(
@@ -552,6 +654,8 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
     setDrillDownTitle("");
     setRowsPerPage(10);
     setDrillDownPayload(null);
+    setFullscreenWidgetData(null);
+    setLocalDashboardFilters(dashboardFilters);
   };
 
   const handleExportImage = async (format: "png" | "jpg") => {
@@ -1105,9 +1209,14 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
   // Helper: pick color by index
   const getColor = (index: number) => SABIC_COLORS[index % SABIC_COLORS.length];
 
-  const getChartData = (chart: ChartResponse) => {
-    const chartData =
-      widgetData[chart._id]?.data?.widgetData || chart.data || [];
+  const getChartData = (
+    chart: ChartResponse,
+    fullscreenWidgetData: any = null
+  ) => {
+    let chartData = widgetData[chart._id]?.data?.widgetData || chart.data || [];
+    if (fullscreenWidgetData) {
+      chartData = fullscreenWidgetData.data?.widgetData;
+    }
     const chartType = chart.widgetTypeId?.chartType || "line";
     const groupBy = chart.groupBy || [];
 
@@ -2045,8 +2154,11 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
   };
 
   // Enhanced renderChart function that handles ALL chart types
-  const renderChart = (chart: ChartResponse) => {
-    const chartData = getChartData(chart);
+  const renderChart = (
+    chart: ChartResponse,
+    fullscreenWidgetData: any = null
+  ) => {
+    const chartData = getChartData(chart, fullscreenWidgetData);
     const chartType = chart.widgetTypeId?.chartType || "line";
     const options = getChartOptions(chartType, chart);
     const chartId = `chart-${chart._id}`;
@@ -3418,7 +3530,29 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
           <Typography variant="h6">{selectedChart?.name}</Typography>
 
           <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-            <Button
+            <PrimaryButton
+              variant="outlined"
+              startIcon={<FilterListIcon />}
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsFiltersModalOpen(true);
+              }}
+              sx={{
+                display: isDefaultNotivix ? "flex" : "none",
+              }}
+            >
+              Filters
+            </PrimaryButton>
+            <PrimaryButton
+              variant="outlined"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleShowAllData(selectedChart, []);
+              }}
+            >
+              All Data
+            </PrimaryButton>
+            {/* <Button
               variant="outlined"
               // startIcon={<VisibilityIcon />}
               onClick={(e) => {
@@ -3435,7 +3569,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
               }}
             >
               All Data
-            </Button>
+            </Button> */}
 
             <IconButton
               onClick={handleFullViewClose}
@@ -3474,7 +3608,8 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
             }}
           >
             <FullScreenChartContainer>
-              {selectedChart && renderChart(selectedChart)}
+              {selectedChart &&
+                renderChart(selectedChart, fullscreenWidgetData)}
             </FullScreenChartContainer>
           </Box>
 
@@ -3706,6 +3841,18 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
           )}
         </Box>
       </FullScreenModal>
+
+      {isFiltersModalOpen && (
+        <NotivixFiltersModal
+          open={isFiltersModalOpen}
+          onClose={() => setIsFiltersModalOpen(false)}
+          onApplyFilters={handleApplyFilters}
+          currentFilters={localDashboardFilters}
+          dataSourceId={currentDashboard?.settings?.dataSource?._id} // Pass your dataSourceId here
+          filterFlag="isFilterEnable" // Specify which flag to use for filtering
+          isLoading={false}
+        />
+      )}
 
       {!!showExportSuccessDialog && (
         <DialogContainer
