@@ -40,6 +40,8 @@ import {
   FieldSetting,
   AttachmentFieldItem,
 } from "../../types/template";
+import DialogContainer from "../../components/molecule/dialog";
+import PrimaryButton from "../../components/common/PrimaryButton";
 
 export function TemplateModal({
   open,
@@ -410,6 +412,852 @@ export function TemplateModal({
   const isFormValid = formState.isValid;
   const isFormDirty = formState.isDirty;
   const isSaving = createTemplate.isLoading || updateTemplate.isLoading;
+
+  return (
+    <>
+      <DialogContainer
+        open={open}
+        onClose={onClose}
+        title={
+          mode === "add"
+            ? "Add Template"
+            : mode === "edit"
+            ? "Edit Template"
+            : "View Template"
+        }
+        actions={
+          <>
+            <PrimaryButton onClick={onClose} variant="outlined">
+              {mode === "view" ? "Close" : "Cancel"}
+            </PrimaryButton>
+
+            {mode !== "view" && (
+              <>
+                <PrimaryButton
+                  variant="outlined"
+                  onClick={handlePreview}
+                  disabled={!isFormDirty || isSaving}
+                >
+                  Preview
+                </PrimaryButton>
+                <PrimaryButton
+                  onClick={handleSubmit(onSubmit)}
+                  variant="contained"
+                  disabled={!isFormValid || !isFormDirty || isSaving}
+                >
+                  {mode === "add" ? "Save Template" : "Update Template"}
+                </PrimaryButton>
+              </>
+            )}
+          </>
+        }
+      >
+        <Box>
+          <form onSubmit={handleSubmit(onSubmit)}>
+            <Grid container spacing={3}>
+              {/* Name Field */}
+              <Grid item xs={12} sm={6}>
+                {mode === "view" ? (
+                  <>
+                    <Typography
+                      variant="subtitle2"
+                      sx={{ mb: 1, fontWeight: 600 }}
+                    >
+                      Name
+                    </Typography>
+                    <Box
+                      sx={{
+                        padding: 1.5,
+                        borderRadius: 2,
+                        backgroundColor: "#f5f5f5",
+                        color: theme.palette.text.primary,
+                        border: "1px solid #e0e0e0",
+                      }}
+                    >
+                      {displayData?.name || rowData?.name || "-"}
+                    </Box>
+                  </>
+                ) : (
+                  <Controller
+                    name="name"
+                    control={control}
+                    rules={{ required: "Name is required" }}
+                    render={({ field, fieldState }) => (
+                      <TextField
+                        {...field}
+                        label="Name"
+                        placeholder="Enter template name"
+                        variant="outlined"
+                        fullWidth
+                        size="small"
+                        required
+                        error={!!fieldState.error}
+                        helperText={fieldState.error?.message}
+                        disabled={isSaving}
+                        InputProps={{
+                          sx: { borderRadius: 2 },
+                        }}
+                      />
+                    )}
+                  />
+                )}
+              </Grid>
+
+              {/* Code Field */}
+              <Grid item xs={12} sm={6}>
+                {mode === "view" ? (
+                  <>
+                    <Typography
+                      variant="subtitle2"
+                      sx={{ mb: 1, fontWeight: 600 }}
+                    >
+                      Code
+                    </Typography>
+                    <Box
+                      sx={{
+                        padding: 1.5,
+                        borderRadius: 2,
+                        backgroundColor: "#f5f5f5",
+                        color: theme.palette.text.primary,
+                        border: "1px solid #e0e0e0",
+                      }}
+                    >
+                      {displayData?.code || rowData?.code || "-"}
+                    </Box>
+                  </>
+                ) : (
+                  <Controller
+                    name="code"
+                    control={control}
+                    render={({ field, fieldState }) => (
+                      <TextField
+                        {...field}
+                        label="Code"
+                        placeholder="Auto-generated from name"
+                        variant="outlined"
+                        fullWidth
+                        size="small"
+                        // Removed disabled={mode === "add"} to allow editing in add mode
+                        error={!!fieldState.error}
+                        helperText={fieldState.error?.message}
+                        InputProps={{
+                          sx: { borderRadius: 2 },
+                        }}
+                      />
+                    )}
+                  />
+                )}
+              </Grid>
+
+              {/* Subject Field */}
+              <Grid item xs={12}>
+                {mode === "view" ? (
+                  <>
+                    <Typography
+                      variant="subtitle2"
+                      sx={{ mb: 1, fontWeight: 600 }}
+                    >
+                      Subject
+                    </Typography>
+                    <Box
+                      sx={{
+                        padding: 1.5,
+                        borderRadius: 2,
+                        backgroundColor: "#f5f5f5",
+                        color: theme.palette.text.primary,
+                        border: "1px solid #e0e0e0",
+                      }}
+                    >
+                      {displayData?.subject || rowData?.subject || "-"}
+                    </Box>
+                  </>
+                ) : (
+                  <Controller
+                    name="subject"
+                    control={control}
+                    rules={{ required: "Subject is required" }}
+                    render={({ field, fieldState }) => (
+                      <TextField
+                        {...field}
+                        label="Subject"
+                        placeholder="Enter subject"
+                        variant="outlined"
+                        fullWidth
+                        size="small"
+                        required
+                        error={!!fieldState.error}
+                        helperText={fieldState.error?.message}
+                        disabled={isSaving}
+                        InputProps={{
+                          sx: { borderRadius: 2 },
+                        }}
+                      />
+                    )}
+                  />
+                )}
+              </Grid>
+
+              {/* Type Field */}
+              <Grid item xs={12} sm={6}>
+                {mode === "view" ? (
+                  <>
+                    <Typography
+                      variant="subtitle2"
+                      sx={{ mb: 1, fontWeight: 600 }}
+                    >
+                      Type
+                    </Typography>
+                    <Box
+                      sx={{
+                        padding: 1.5,
+                        borderRadius: 2,
+                        backgroundColor: "#f5f5f5",
+                        color: theme.palette.text.primary,
+                        border: "1px solid #e0e0e0",
+                        textTransform: "capitalize",
+                      }}
+                    >
+                      {displayData?.type || rowData?.type || "-"}
+                    </Box>
+                  </>
+                ) : (
+                  <Controller
+                    name="type"
+                    control={control}
+                    rules={{ required: "Type is required" }}
+                    render={({ field, fieldState }) => (
+                      <FormControl
+                        fullWidth
+                        error={!!fieldState.error}
+                        size="small"
+                      >
+                        <InputLabel required>Type</InputLabel>
+                        <Select
+                          {...field}
+                          label="Type"
+                          disabled={isSaving}
+                          sx={{ borderRadius: 2 }}
+                        >
+                          <MenuItem value="overall">Overall</MenuItem>
+                          <MenuItem value="single">Single</MenuItem>
+                        </Select>
+                        {fieldState.error && (
+                          <Typography
+                            variant="caption"
+                            color="error"
+                            sx={{ mt: 0.5, ml: 2 }}
+                          >
+                            {fieldState.error.message}
+                          </Typography>
+                        )}
+                      </FormControl>
+                    )}
+                  />
+                )}
+              </Grid>
+
+              {/* Data Source Field */}
+              <Grid item xs={12} sm={6}>
+                {mode === "view" ? (
+                  <>
+                    <Typography
+                      variant="subtitle2"
+                      sx={{ mb: 1, fontWeight: 600 }}
+                    >
+                      Data Source
+                    </Typography>
+                    <Box
+                      sx={{
+                        padding: 1.5,
+                        borderRadius: 2,
+                        backgroundColor: "#f5f5f5",
+                        color: theme.palette.text.primary,
+                        border: "1px solid #e0e0e0",
+                      }}
+                    >
+                      {getDataSourceName(
+                        displayData?.dataSourceId || rowData?.dataSourceId || ""
+                      )}
+                    </Box>
+                  </>
+                ) : (
+                  <Controller
+                    name="dataSourceId"
+                    control={control}
+                    rules={{ required: "Data Source is required" }}
+                    render={({ field, fieldState }) => (
+                      <FormControl
+                        fullWidth
+                        error={!!fieldState.error}
+                        size="small"
+                      >
+                        <InputLabel required>Data Source</InputLabel>
+                        <Select
+                          {...field}
+                          label="Data Source"
+                          disabled={isSaving}
+                          sx={{ borderRadius: 2 }}
+                        >
+                          {updatedList.map((ds: DataSource) => (
+                            <MenuItem key={ds._id} value={ds._id}>
+                              {ds.name}
+                            </MenuItem>
+                          ))}
+                        </Select>
+                        {fieldState.error && (
+                          <Typography
+                            variant="caption"
+                            color="error"
+                            sx={{ mt: 0.5, ml: 2 }}
+                          >
+                            {fieldState.error.message}
+                          </Typography>
+                        )}
+                      </FormControl>
+                    )}
+                  />
+                )}
+              </Grid>
+
+              {/* Editor Section */}
+              <Grid item xs={12}>
+                {mode === "view" ? (
+                  <>
+                    <Box
+                      sx={{
+                        padding: 2,
+                        borderRadius: 2,
+                        backgroundColor: "#f5f5f5",
+                        color: theme.palette.text.primary,
+                        border: "1px solid #e0e0e0",
+                        minHeight: "200px",
+                        maxHeight: "400px",
+                        overflow: "auto",
+                        "& img": {
+                          maxWidth: "100%",
+                          height: "auto",
+                        },
+                      }}
+                      dangerouslySetInnerHTML={{
+                        __html:
+                          displayData?.body ||
+                          rowData?.body ||
+                          "<p>No content</p>",
+                      }}
+                    />
+                  </>
+                ) : (
+                  <Controller
+                    name="body"
+                    control={control}
+                    rules={{ required: "Body content is required" }}
+                    render={({ field, fieldState }) => (
+                      <Box>
+                        <Box
+                          sx={{
+                            "& .quill": {
+                              borderRadius: 2,
+                              border: fieldState.error
+                                ? "2px solid #d32f2f"
+                                : "1px solid #c4c4c4",
+                            },
+                            "& .ql-container": {
+                              minHeight: "250px",
+                              fontSize: "14px",
+                              borderBottomLeftRadius: 2,
+                              borderBottomRightRadius: 2,
+                              fontFamily: theme.typography.fontFamily,
+                            },
+                            "& .ql-toolbar": {
+                              borderTopLeftRadius: 2,
+                              borderTopRightRadius: 2,
+                              backgroundColor: "#f5f5f5",
+                            },
+                            "& .ql-editor": {
+                              minHeight: "250px",
+                            },
+                            "& .ql-editor.ql-blank::before": {
+                              fontStyle: "normal",
+                              color: "#9e9e9e",
+                            },
+                          }}
+                        >
+                          <ReactQuill
+                            theme="snow"
+                            value={field.value}
+                            onChange={field.onChange}
+                            modules={modules}
+                            formats={formats}
+                            placeholder="✨ Write your template content here... You can use AI to help generate content!"
+                          />
+                        </Box>
+                        {fieldState.error && (
+                          <Typography
+                            variant="caption"
+                            color="error"
+                            sx={{ mt: 1, ml: 2, display: "block" }}
+                          >
+                            {fieldState.error.message}
+                          </Typography>
+                        )}
+                      </Box>
+                    )}
+                  />
+                )}
+              </Grid>
+
+              {/* Attachment Type */}
+              <Grid item xs={12} sm={4}>
+                {mode === "view" ? (
+                  <>
+                    <Typography
+                      variant="subtitle2"
+                      sx={{ mb: 1, fontWeight: 600 }}
+                    >
+                      Attachment Type
+                    </Typography>
+                    <Box
+                      sx={{
+                        padding: 1.5,
+                        borderRadius: 2,
+                        backgroundColor: "#f5f5f5",
+                        color: theme.palette.text.primary,
+                        border: "1px solid #e0e0e0",
+                        textTransform: "uppercase",
+                      }}
+                    >
+                      {displayData?.attachmentType || "-"}
+                    </Box>
+                  </>
+                ) : (
+                  <Controller
+                    name="attachmentType"
+                    control={control}
+                    render={({ field }) => (
+                      <FormControl fullWidth size="small">
+                        <InputLabel>Attachment Type</InputLabel>
+                        <Select
+                          {...field}
+                          label="Attachment Type"
+                          disabled={isSaving}
+                          sx={{ borderRadius: 2 }}
+                        >
+                          <MenuItem value="excel">Excel</MenuItem>
+                          <MenuItem value="csv">CSV</MenuItem>
+                        </Select>
+                      </FormControl>
+                    )}
+                  />
+                )}
+              </Grid>
+
+              {/* File Name */}
+              <Grid item xs={12} sm={4}>
+                {mode === "view" ? (
+                  <>
+                    <Typography
+                      variant="subtitle2"
+                      sx={{ mb: 1, fontWeight: 600 }}
+                    >
+                      File Name
+                    </Typography>
+                    <Box
+                      sx={{
+                        padding: 1.5,
+                        borderRadius: 2,
+                        backgroundColor: "#f5f5f5",
+                        color: theme.palette.text.primary,
+                        border: "1px solid #e0e0e0",
+                      }}
+                    >
+                      {displayData?.attachmentFileName || "-"}
+                    </Box>
+                  </>
+                ) : (
+                  <Controller
+                    name="attachmentFileName"
+                    control={control}
+                    render={({ field }) => (
+                      <TextField
+                        {...field}
+                        label="File Name"
+                        placeholder="Enter file name"
+                        variant="outlined"
+                        fullWidth
+                        size="small"
+                        disabled={isSaving}
+                        InputProps={{
+                          sx: { borderRadius: 2 },
+                        }}
+                      />
+                    )}
+                  />
+                )}
+              </Grid>
+
+              {/* Field List */}
+              <Grid item xs={12} sm={4}>
+                {mode === "view" ? (
+                  <>
+                    <Typography
+                      variant="subtitle2"
+                      sx={{ mb: 1, fontWeight: 600 }}
+                    >
+                      Field List
+                    </Typography>
+                    <Box
+                      sx={{
+                        padding: 1.5,
+                        borderRadius: 2,
+                        backgroundColor: "#f5f5f5",
+                        color: theme.palette.text.primary,
+                        border: "1px solid #e0e0e0",
+                        minHeight: "56px",
+                        display: "flex",
+                        flexWrap: "wrap",
+                        gap: 0.5,
+                        alignItems: "center",
+                      }}
+                    >
+                      {displayData?.attachmentFieldList?.length
+                        ? displayData.attachmentFieldList.map(
+                            (label: string, index: number) => (
+                              <Chip
+                                key={index}
+                                label={label}
+                                size="small"
+                                sx={{ backgroundColor: "#e3f2fd" }}
+                              />
+                            )
+                          )
+                        : "-"}
+                    </Box>
+                  </>
+                ) : (
+                  <Controller
+                    name="attachmentFieldList"
+                    control={control}
+                    render={({ field }) => (
+                      <FormControl fullWidth size="small">
+                        <InputLabel>Field List</InputLabel>
+                        <Select
+                          {...field}
+                          multiple
+                          label="Field List"
+                          disabled={isSaving || !selectedDataSourceId}
+                          sx={{ borderRadius: 2 }}
+                          input={<OutlinedInput label="Field List" />}
+                          renderValue={(selected) => (
+                            <Box
+                              sx={{
+                                display: "flex",
+                                flexWrap: "wrap",
+                                gap: 0.5,
+                              }}
+                            >
+                              {(selected as string[]).map((value) => (
+                                <Chip key={value} label={value} size="small" />
+                              ))}
+                            </Box>
+                          )}
+                        >
+                          {availableFields.map((field: FieldSetting) => (
+                            <MenuItem key={field.label} value={field.label}>
+                              {field.label}
+                            </MenuItem>
+                          ))}
+                        </Select>
+                      </FormControl>
+                    )}
+                  />
+                )}
+              </Grid>
+
+              {/* Group By Section */}
+              <Grid item xs={12}>
+                {mode === "view" ? (
+                  <>
+                    <Typography
+                      variant="subtitle2"
+                      sx={{ mb: 1, fontWeight: 600 }}
+                    >
+                      Group By
+                    </Typography>
+                    <Box
+                      sx={{
+                        padding: 1.5,
+                        borderRadius: 2,
+                        backgroundColor: "#f5f5f5",
+                        color: theme.palette.text?.primary,
+                        border: "1px solid #e0e0e0",
+                        minHeight: "56px",
+                        display: "flex",
+                        flexWrap: "wrap",
+                        gap: 0.5,
+                        alignItems: "center",
+                      }}
+                    >
+                      {displayData?.groupBy?.length
+                        ? displayData.groupBy.map(
+                            (label: string, index: number) => (
+                              <Chip
+                                key={index}
+                                label={label}
+                                size="small"
+                                color="primary"
+                              />
+                            )
+                          )
+                        : "-"}
+                    </Box>
+                  </>
+                ) : (
+                  <Controller
+                    name="groupBy"
+                    control={control}
+                    render={({ field }) => (
+                      <FormControl fullWidth size="small">
+                        <InputLabel>Group By</InputLabel>
+                        <Select
+                          {...field}
+                          multiple
+                          label="Group By"
+                          disabled={isSaving}
+                          sx={{ borderRadius: 2 }}
+                          input={<OutlinedInput label="Group By" />}
+                          renderValue={(selected) => (
+                            <Box
+                              sx={{
+                                display: "flex",
+                                flexWrap: "wrap",
+                                gap: 0.5,
+                              }}
+                            >
+                              {(selected as string[]).map((value) => (
+                                <Chip
+                                  key={value}
+                                  label={value}
+                                  size="small"
+                                  color="primary"
+                                />
+                              ))}
+                            </Box>
+                          )}
+                        >
+                          {availableFields.map((field: FieldSetting) => (
+                            <MenuItem key={field.label} value={field.label}>
+                              {field.label}
+                            </MenuItem>
+                          ))}
+                        </Select>
+                      </FormControl>
+                    )}
+                  />
+                )}
+              </Grid>
+            </Grid>
+
+            {isSaving && (
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  my: 3,
+                  gap: 2,
+                }}
+              >
+                <CircularProgress size={32} />
+                <Typography variant="body2" color="text.secondary">
+                  {mode === "add"
+                    ? "Creating template..."
+                    : "Updating template..."}
+                </Typography>
+              </Box>
+            )}
+          </form>
+        </Box>
+      </DialogContainer>
+      {/* Preview Modal */}
+      <DialogContainer
+        open={showPreview}
+        onClose={() => setShowPreview(false)}
+        title="Email Template Preview"
+        maxWidth="md"
+        actions={
+          <PrimaryButton
+            onClick={() => setShowPreview(false)}
+            variant="outlined"
+          >
+            Close Preview
+          </PrimaryButton>
+        }
+      >
+        <Box>
+          {previewData && (
+            <Box>
+              {/* Preview Header - Compact */}
+              <Box
+                sx={{
+                  mb: 2,
+                  p: 1.5,
+                  backgroundColor: theme.palette.background.paper,
+                  borderRadius: 2,
+                  border: "1px solid #e0e0e0",
+                }}
+              >
+                <Typography
+                  variant="subtitle1"
+                  sx={{ fontWeight: 600, mb: 0.5 }}
+                >
+                  {previewData.name}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  {previewData.type === "overall"
+                    ? "Overall Report"
+                    : "Single Report"}{" "}
+                  •{getDataSourceName(previewData.dataSourceId)}
+                </Typography>
+              </Box>
+
+              {/* Subject Preview - Compact */}
+              <Box sx={{ mb: 2 }}>
+                <Typography
+                  variant="subtitle2"
+                  sx={{ fontWeight: 600, mb: 0.5 }}
+                >
+                  Subject
+                </Typography>
+                <Box
+                  sx={{
+                    p: 1.5,
+                    backgroundColor: "#f5f5f5",
+                    borderRadius: 2,
+                    border: "1px solid #e0e0e0",
+                    color: theme.palette.text.primary,
+                  }}
+                >
+                  <Typography variant="body2">{previewData.subject}</Typography>
+                </Box>
+              </Box>
+
+              {/* Body Preview - Compact */}
+              <Box sx={{ mb: 2 }}>
+                <Typography
+                  variant="subtitle2"
+                  sx={{ fontWeight: 600, mb: 0.5 }}
+                >
+                  Body Content
+                </Typography>
+                <Box
+                  sx={{
+                    p: 1.5,
+                    backgroundColor: "#f5f5f5",
+                    borderRadius: 2,
+                    border: "1px solid #e0e0e0",
+                    minHeight: "150px",
+                    maxHeight: "300px",
+                    overflow: "auto",
+                    fontSize: "0.875rem",
+                  }}
+                  dangerouslySetInnerHTML={{ __html: previewData.body }}
+                />
+              </Box>
+
+              {/* Attachment Settings Preview - Compact */}
+              {previewData.attachmentType && (
+                <Box sx={{ mb: 2 }}>
+                  <Typography
+                    variant="subtitle2"
+                    sx={{ fontWeight: 600, mb: 0.5 }}
+                  >
+                    Attachment Settings
+                  </Typography>
+                  <Box
+                    sx={{
+                      p: 1.5,
+                      backgroundColor: "#f5f5f5",
+                      borderRadius: 2,
+                      border: "1px solid #e0e0e0",
+                    }}
+                  >
+                    <Typography variant="body2" sx={{ mb: 0.5 }}>
+                      Type:{" "}
+                      <span
+                        style={{ textTransform: "uppercase", fontWeight: 500 }}
+                      >
+                        {previewData.attachmentType}
+                      </span>
+                    </Typography>
+                    <Typography variant="body2" sx={{ mb: 0.5 }}>
+                      File Name:{" "}
+                      <span style={{ fontWeight: 500 }}>
+                        {previewData.attachmentFileName}
+                      </span>
+                    </Typography>
+                    <Typography variant="body2" sx={{ mb: 0.5 }}>
+                      Fields:{" "}
+                      {previewData.attachmentFieldList.length > 0
+                        ? previewData.attachmentFieldList.map(
+                            (field: string, index: number) => (
+                              <Chip
+                                key={index}
+                                label={field}
+                                size="small"
+                                sx={{
+                                  ml: 0.5,
+                                  backgroundColor: "#e3f2fd",
+                                  height: "24px",
+                                  fontSize: "0.75rem",
+                                }}
+                              />
+                            )
+                          )
+                        : "None"}
+                    </Typography>
+                  </Box>
+                </Box>
+              )}
+
+              {/* Group By Preview - Compact */}
+              {previewData.groupBy.length > 0 && (
+                <Box sx={{ mb: 2 }}>
+                  <Typography
+                    variant="subtitle2"
+                    sx={{ fontWeight: 600, mb: 0.5 }}
+                  >
+                    Group By Fields
+                  </Typography>
+                  <Box
+                    sx={{
+                      p: 1.5,
+                      backgroundColor: "#f5f5f5",
+                      borderRadius: 2,
+                      border: "1px solid #e0e0e0",
+                    }}
+                  >
+                    <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
+                      {previewData.groupBy.map(
+                        (field: string, index: number) => (
+                          <Chip
+                            key={index}
+                            label={field}
+                            size="small"
+                            color="primary"
+                            sx={{ height: "24px", fontSize: "0.75rem" }}
+                          />
+                        )
+                      )}
+                    </Box>
+                  </Box>
+                </Box>
+              )}
+            </Box>
+          )}
+        </Box>
+      </DialogContainer>
+    </>
+  );
 
   return (
     <>
