@@ -848,10 +848,11 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
         ? clickedDataFilter[datasetIndex]
         : clickedDataFilter[0];
     if (
-      "ReportCriticalEvent" in clickedData &&
+      clickedData && "ReportCriticalEvent" in clickedData &&
       ["Critical", "Other"].includes(datasetLabel)
     ) {
       clickedData = clickedDataFilter.find((item: ChartDataItem) => {
+        if (!item) return false;
         const currentClickedCriticality =
           datasetLabel === "Critical" ? "Y" : "N";
         return (
