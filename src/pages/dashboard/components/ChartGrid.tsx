@@ -846,7 +846,30 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
     let clickedData =
       clickedDataFilter?.length > 1
         ? clickedDataFilter[datasetIndex]
-        : clickedDataFilter[0];
+        : clickedDataFilter[0];    
+  // =======================================================================
+  // ✔ NEW: Resolve mapped groupBy → actual field labels
+  // =======================================================================
+  const getGroupByFields = () => {
+    if (!chart.groupBy) return '';
+
+    if (Array.isArray(chart.groupBy)) {
+      return chart.groupBy.map((g) => {
+        const field = chart.dataSourceId?.fieldSettings?.find(
+          (f: any) => f.mappedAttributeName === g
+        );
+        return field?.label || g; // mapped label from fieldSettings
+      });
+    }
+
+    const field = chart.dataSourceId?.fieldSettings?.find(
+      (f: any) => f.mappedAttributeName === chart.groupBy
+    );
+
+    return field?.label || chart.groupBy;
+  };
+  const groupByField: string = getGroupByFields();
+  if(groupByField){ 
     if (
       clickedData && "ReportCriticalEvent" in clickedData &&
       ["Critical", "Other"].includes(datasetLabel)
@@ -860,7 +883,16 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
           item["ReportCriticalEvent"] === currentClickedCriticality
         );
       });
+    }else{
+      clickedData = clickedDataFilter.find((item: ChartDataItem) => {
+        if (!item) return false;
+        return (
+          groupByField in item &&
+          item[groupByField] === datasetLabel
+        );
+      });
     }
+  }
 
     if (clickedData) {
       setDrillDownTitle(`${clickedData.name} - ${datasetLabel}`);
