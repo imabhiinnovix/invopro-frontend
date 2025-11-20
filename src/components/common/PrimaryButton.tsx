@@ -10,7 +10,7 @@ export default function PrimaryButton({
   ...rest
 }: {
   icon?: React.ReactNode;
-  onClick?: () => void;
+  onClick?: (e: React.MouseEvent<HTMLButtonElement>) => void;
   sx?: SxProps<Theme>;
   children: React.ReactNode;
   rest?: Omit<ButtonProps, "children" | "onClick" | "sx">;
