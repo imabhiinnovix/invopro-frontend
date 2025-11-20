@@ -44,6 +44,7 @@ interface CommonTableProps {
   rowSelection?: boolean;
   bulkAction?: (selectedRows: Record<string, unknown>[]) => React.ReactNode;
   lastElementRef?: (node: HTMLTableRowElement | null) => void;
+  rowSelectionCondition?: (row: Record<string, unknown>) => boolean;
 }
 
 const CommonTable = forwardRef<CommonTableRef, CommonTableProps>(
@@ -61,6 +62,7 @@ const CommonTable = forwardRef<CommonTableRef, CommonTableProps>(
       rowSelection = false,
       bulkAction,
       lastElementRef,
+      rowSelectionCondition,
     },
     ref
   ) => {
@@ -94,7 +96,11 @@ const CommonTable = forwardRef<CommonTableRef, CommonTableProps>(
       event: React.ChangeEvent<HTMLInputElement>
     ) => {
       if (event.target.checked) {
-        setSelectedRows(rows);
+        let filteredRows = rows;
+        if (rowSelectionCondition) {
+          filteredRows = rows.filter(rowSelectionCondition);
+        }
+        setSelectedRows(filteredRows);
       } else {
         setSelectedRows([]);
       }
@@ -196,9 +202,9 @@ const CommonTable = forwardRef<CommonTableRef, CommonTableProps>(
                         selectedRows.length > 0 &&
                         selectedRows.length < rows.length
                       }
-                      checked={
-                        rows.length > 0 && selectedRows.length === rows.length
-                      }
+                      // checked={
+                      //   rows.length > 0 && selectedRows.length === rows.length
+                      // }
                       onChange={handleSelectAllClick}
                     />
                   </TableCell>
@@ -223,6 +229,12 @@ const CommonTable = forwardRef<CommonTableRef, CommonTableProps>(
                     <TableRow
                       hover
                       onClick={() => {
+                        if (
+                          rowSelectionCondition &&
+                          !rowSelectionCondition(row)
+                        ) {
+                          return;
+                        }
                         if (rowSelection) {
                           handleRowSelect(row);
                         } else {
@@ -246,9 +258,19 @@ const CommonTable = forwardRef<CommonTableRef, CommonTableProps>(
                       {rowSelection && (
                         <TableCell padding="checkbox">
                           <Checkbox
+                            disabled={
+                              rowSelectionCondition &&
+                              !rowSelectionCondition(row)
+                            }
                             checked={isSelected}
                             onClick={(e) => {
                               e.stopPropagation();
+                              if (
+                                rowSelectionCondition &&
+                                !rowSelectionCondition(row)
+                              ) {
+                                return;
+                              }
                               handleRowSelect(row);
                             }}
                           />
