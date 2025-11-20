@@ -160,7 +160,10 @@ export const ValidationErrorsDataTable: React.FC<
             <Tooltip title="Discard" arrow>
               <Button
                 variant="text"
-                onClick={() => row.handleDiscard(row)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  row.handleDiscard(row);
+                }}
                 sx={{ minWidth: "auto" }}
                 disabled={isDiscarded || isResolved || isLatest === false}
               >
@@ -211,6 +214,7 @@ export const ValidationErrorsDataTable: React.FC<
         </>
       }
       rowSelection={isLatest === false ? false : true}
+      rowSelectionCondition={(row) => (row.status === "open" ? true : false)}
       bulkAction={(selectedRows) => (
         <Stack direction="row" spacing={2} justifyContent="flex-end">
           <PrimaryButton
