@@ -601,7 +601,10 @@ export default function SideNav() {
                                               key={dashboard._id}
                                               onClick={() =>
                                                 navigate(
-                                                  `/dashboard/${dashboard._id}`
+                                                  `/dashboard/${dashboard._id}`,
+                                                  {
+                                                    state: { enableEditMode: false },
+                                                  }
                                                 )
                                               }
                                               label={dashboard.name}

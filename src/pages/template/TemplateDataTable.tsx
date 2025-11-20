@@ -106,9 +106,9 @@ const columns: GridColDef[] = [
           {
             onSuccess: (res: any) => {
               if (res?.success) {
-                toast.success(
-                  `Template ${newStatus === "active" ? "activated" : "deactivated"} successfully`
-                );
+                // toast.success(
+                //   `Template ${newStatus === "active" ? "activated" : "deactivated"} successfully`
+                // );
                 // update the row in the grid so other cells read the new status
                 params.api.updateRows([{ ...params.row, status: newStatus }]);
               } else {

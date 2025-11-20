@@ -635,10 +635,17 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
   };
 
   const handleEditClick = () => {
-    if (selectedChart) {
-      onEditChart(selectedChart);
-    }
+    if (!selectedChart) return;
+
     handleMenuClose();
+
+    // Reset previous editor state
+    onEditChart(null);
+
+    // Load new chart editor
+    setTimeout(() => {
+      onEditChart(selectedChart);
+    }, 10);
   };
 
   const handleFullViewClick = (chart: ChartResponse) => {
@@ -865,6 +872,57 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
     elements: ActiveElement[],
     event: any
   ) => {
+    // 👉 Allow direct click for NUMBER CHART
+    if (chart.widgetTypeId?.chartType === "number") {
+      setSelectedChart(chart);
+      setDrillDownOpen(true);
+      setCurrentPage(1);
+
+      // Build simple payload for number chart
+      const payload = {
+        dataSourceId: chart.dataSourceId?._id,
+        entityId: chart.dataSourceId?.entityId,
+        conditions: chart.conditions || [],
+        dashboardFilters: {
+          startVersionValue,
+          endVersionValue,
+          versionValue,
+          filters: { ...dashboardFilters },
+        },
+        page: 1,
+        limit: itemsPerPage,
+        dashBoardType: currentDashboard?.settings?.dashboardType,
+      };
+
+      setDrillDownPayload(payload);
+
+      try {
+        const response = await axiosInstance.post(
+          "/common/dataSource/getWidgetDataByFilter",
+          payload
+        );
+
+        if (response.data.success) {
+          const drillDownData = response.data.data;
+          setDrillDownData(drillDownData);
+          setTotalPages(response.data.pagination.totalPages);
+          setTotalRecords(response.data.pagination.totalRecords);
+
+          if (drillDownData?.length) {
+            setDrillDownColumns(
+              Object.keys(drillDownData[0]).filter((k) => k !== "_id")
+            );
+          } else {
+            setDrillDownColumns([]);
+          }
+        }
+      } catch (err) {
+        console.error(err);
+        toast.error("Failed to fetch details");
+      }
+
+      return; // STOP HERE FOR NUMBER CHARTS
+    }
     if (!elements || !elements.length) return;
 
     setSelectedChart(chart);
@@ -892,10 +950,12 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
         ? clickedDataFilter[datasetIndex]
         : clickedDataFilter[0];
     if (
+      clickedData &&
       "ReportCriticalEvent" in clickedData &&
       ["Critical", "Other"].includes(datasetLabel)
     ) {
       clickedData = clickedDataFilter.find((item: ChartDataItem) => {
+        if (!item) return false;
         const currentClickedCriticality =
           datasetLabel === "Critical" ? "Y" : "N";
         return (
@@ -3169,6 +3229,11 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
                         </Box>
                       </Box>
                       <ChartContainer
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleFullViewClick(chart);
+                          handleChartClick(chart); // auto-run ALL DATA
+                        }}
                         className="number-chart"
                         onWheel={handleWheel}
                         sx={{
@@ -3179,6 +3244,12 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
                           justifyContent: "flex-start",
                           alignItems: "flex-start",
                           width: "100%",
+                          cursor: "pointer",
+                          transition: "transform 0.2s ease, opacity 0.2s ease",
+                          "&:hover": {
+                            transform: "scale(1.02)",
+                            opacity: 0.9,
+                          },
                         }}
                       >
                         {renderChart(chart)}
@@ -3552,25 +3623,6 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
             >
               All Data
             </PrimaryButton>
-            {/* <Button
-              variant="outlined"
-              // startIcon={<VisibilityIcon />}
-              onClick={(e) => {
-                e.stopPropagation();
-                handleShowAllData(selectedChart, []);
-              }}
-              sx={{
-                color: theme.palette.primary.main,
-                borderColor: theme.palette.primary.main,
-                "&:hover": {
-                  backgroundColor: theme.palette.action.hover,
-                  borderColor: theme.palette.primary.dark,
-                },
-              }}
-            >
-              All Data
-            </Button> */}
-
             <IconButton
               onClick={handleFullViewClose}
               size="small"
@@ -3597,22 +3649,23 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
           }}
         >
           {/* Chart section - takes full height initially, 60% when drill-down is open */}
-          <Box
-            sx={{
-              flex: drillDownOpen ? 0.6 : 1,
-              minHeight: drillDownOpen ? "60vh" : "100vh",
-              overflow: "hidden",
-              borderBottom: drillDownOpen
-                ? `1px solid ${theme.palette.divider}`
-                : "none",
-            }}
-          >
-            <FullScreenChartContainer>
-              {selectedChart &&
-                renderChart(selectedChart, fullscreenWidgetData)}
-            </FullScreenChartContainer>
-          </Box>
-
+          {selectedChart?.widgetTypeId?.chartType !== "number" && (
+            <Box
+              sx={{
+                flex: drillDownOpen ? 0.6 : 1,
+                minHeight: drillDownOpen ? "60vh" : "100vh",
+                overflow: "hidden",
+                borderBottom: drillDownOpen
+                  ? `1px solid ${theme.palette.divider}`
+                  : "none",
+              }}
+            >
+              <FullScreenChartContainer>
+                {selectedChart &&
+                  renderChart(selectedChart, fullscreenWidgetData)}
+              </FullScreenChartContainer>
+            </Box>
+          )}
           {/* Drill-down section - only visible when drillDownOpen is true */}
           {drillDownOpen && (
             <Box
@@ -3652,19 +3705,21 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
                       ? "Exporting..."
                       : "Export"}
                   </PrimaryButton>
-                  <IconButton
-                    onClick={handleDrillDownClose}
-                    size="small"
-                    sx={{
-                      color: theme.palette.text.secondary,
-                      "&:hover": {
-                        color: theme.palette.text.primary,
-                        backgroundColor: theme.palette.action.hover,
-                      },
-                    }}
-                  >
-                    <CloseIcon />
-                  </IconButton>
+                  {selectedChart?.widgetTypeId?.chartType !== "number" && (
+                    <IconButton
+                      onClick={handleDrillDownClose}
+                      size="small"
+                      sx={{
+                        color: theme.palette.text.secondary,
+                        "&:hover": {
+                          color: theme.palette.text.primary,
+                          backgroundColor: theme.palette.action.hover,
+                        },
+                      }}
+                    >
+                      <CloseIcon />
+                    </IconButton>
+                  )}
                 </Stack>
               </Box>
 
