@@ -1677,6 +1677,7 @@ interface NotivixFiltersModalProps {
   dataSourceId: string;
   filterFlag?: "isFilterEnable" | "isDashboardFilter";
   isLoading?: boolean;
+  defaultFilters?: Record<string, any>;
 }
 
 interface FieldSetting {
@@ -1781,6 +1782,7 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
   dataSourceId,
   filterFlag = "isFilterEnable",
   isLoading = false,
+  defaultFilters = {},
 }) => {
   const theme = useUnifiedTheme();
   const { getButtonSx } = useComponentTypography();
@@ -1977,7 +1979,6 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
 
   const handleApplyFilters = () => {
     const transformedFilters: Record<string, any> = {};
-
     Object.entries(filters).forEach(([filterKey, value]) => {
       const entityOption = entityFieldOptionsMap[filterKey];
 
@@ -1996,16 +1997,16 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
         }
       }
     });
-
     onApplyFilters(transformedFilters);
     onClose();
   };
 
   const handleClearFilters = () => {
-    setFilters({});
+    setFilters(defaultFilters || {});
     setDateRangeValues({}); // Changed: Clear all date range values
     setFocusedFields({}); // Changed: Clear all focused fields
-    onApplyFilters({});
+    onApplyFilters(defaultFilters || {});
+    onClose();
   };
 
   const handleFilterChange = (uniqueKey: string, value: any) => {

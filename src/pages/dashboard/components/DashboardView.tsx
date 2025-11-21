@@ -2037,7 +2037,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               endDate: end.format("YYYY-MM-DD"),
             },
             "Derived.Case Status": statusToggle,
-            "Derived.Handled By": "In House"
+            "Derived.Handled By": "In House",
           };
         } else if (statusToggle === "Completed") {
           return {
@@ -2047,7 +2047,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               endDate: end.format("YYYY-MM-DD"),
             },
             "Derived.Case Status": statusToggle,
-            "Derived.Handled By": "In House"
+            "Derived.Handled By": "In House",
           };
         }
         return prev;
@@ -2078,7 +2078,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               endDate: thirtyDaysAfter.format("YYYY-MM-DD"),
             },
             "Derived.Case Status": statusToggle,
-            "Derived.Handled By": "In House"
+            "Derived.Handled By": "In House",
           };
         } else if (statusToggle === "Completed") {
           const today = new DateObject(); // Current date
@@ -2092,10 +2092,14 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               endDate: today.format("YYYY-MM-DD"),
             },
             "Derived.Case Status": statusToggle,
-            "Derived.Handled By": "In House"
+            "Derived.Handled By": "In House",
           };
         }
-        return { ...prev, "Derived.Case Status": statusToggle, "Derived.Handled By": "In House" };
+        return {
+          ...prev,
+          "Derived.Case Status": statusToggle,
+          "Derived.Handled By": "In House",
+        };
       });
     }
   }, [currentDashboard]);
@@ -2131,7 +2135,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               endDate: thirtyDaysAfter.format("YYYY-MM-DD"),
             },
             "Derived.Case Status": newStatus,
-            "Derived.Handled By": "In House"
+            "Derived.Handled By": "In House",
           };
         } else if (newStatus === "Completed") {
           const today = new DateObject(); // Current date
@@ -2145,10 +2149,14 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               endDate: today.format("YYYY-MM-DD"),
             },
             "Derived.Case Status": newStatus,
-            "Derived.Handled By": "In House"
+            "Derived.Handled By": "In House",
           };
         }
-        return { ...rest, "Derived.Case Status": newStatus, "Derived.Handled By": "In House" };
+        return {
+          ...rest,
+          "Derived.Case Status": newStatus,
+          "Derived.Handled By": "In House",
+        };
       });
     }
   };
@@ -3320,7 +3328,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           </Box>
         )}
       </Box>
-      {currentDashboard?.isDefaultNotivix === true ? (
+      {currentDashboard?.isDefaultNotivix === true && isFiltersModalOpen ? (
         <NotivixFiltersModal
           open={isFiltersModalOpen}
           onClose={handleCloseFiltersModal}
@@ -3329,6 +3337,17 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           dataSourceId={currentDashboard?.settings?.dataSource?._id} // Pass your dataSourceId here
           filterFlag="isFilterEnable" // Specify which flag to use for filtering
           isLoading={dataSourceDetailsLoading}
+          defaultFilters={{
+            ...dashboardFilters,
+            "Derived.Case Status": "Pending",
+            "Derived.Handled By": "In House",
+            DueDate: {
+              startDate: new DateObject().format("YYYY-MM-DD"),
+              endDate: new DateObject(new DateObject())
+                .add(1, "month")
+                .format("YYYY-MM-DD"),
+            },
+          }}
         />
       ) : (
         ""
