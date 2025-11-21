@@ -104,6 +104,7 @@ import PrimaryButton from "../../../components/common/PrimaryButton";
 import DialogContainer from "../../../components/molecule/dialog";
 import { useNavigate } from "react-router-dom";
 import NotivixFiltersModal from "../../notivixDashboard/components/NotivixFiltersModal";
+import { DateObject } from "react-multi-date-picker";
 
 // Register ChartJS components
 ChartJS.register(
@@ -416,7 +417,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
   const [localDashboardFilters, setLocalDashboardFilters] =
     useState<any>(dashboardFilters);
 
-  console.log("widgetData", widgetData);
+  // console.log("widgetData", widgetData);
   const [fullscreenWidgetData, setFullscreenWidgetData] = useState<any>(
     widgetData[selectedChart?._id]
   );
@@ -1095,19 +1096,37 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
 
     try {
       const payload = {
-        dataSourceId: chart.dataSourceId?._id,
-        entityId: chart.dataSourceId?.entityId,
-        conditions: chart.conditions || [],
-        dimensions: [], // Empty array for all data
+        dataSourceId: selectedChart?.dataSourceId?._id,
+        dataSourceFieldSettings: selectedChart?.dataSourceId?.fieldSettings,
+        entityId: selectedChart?.dataSourceId?.entityId,
+        dimensions: selectedChart?.dimensions,
+        groupBy: selectedChart?.groupBy,
+        conditions: selectedChart?.conditions,
+        aggregation: selectedChart?.aggregation,
+        widgetType: selectedChart?.widgetTypeId?.chartType,
         dashboardFilters: {
-          startVersionValue: startVersionValue,
-          endVersionValue: endVersionValue,
-          versionValue: versionValue,
+          startVersionValue:
+            currentDashboard?.settings?.dashboardType === "trend"
+              ? startVersionValue || ""
+              : "",
+          endVersionValue:
+            currentDashboard?.settings?.dashboardType === "trend"
+              ? endVersionValue || ""
+              : "",
+          versionValue:
+            currentDashboard?.settings?.dashboardType === "trend"
+              ? ""
+              : versionValue || "",
+          dynamicVersionValue:
+            currentDashboard?.settings?.dashboardType === "trend"
+              ? ""
+              : versionValue
+              ? ""
+              : "1m",
+          filters: { ...localDashboardFilters },
         },
-        groupBy: [], // Empty array for all data
-        page: 1,
-        limit: itemsPerPage,
-        dashBoardType: currentDashboard?.settings?.dashboardType,
+        dashBoardType: currentDashboard?.settings?.dashboardType || "normal",
+        isIncremental: selectedChart?.isIncremental,
       };
 
       setDrillDownPayload(payload);
@@ -3938,6 +3957,17 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
           dataSourceId={currentDashboard?.settings?.dataSource?._id} // Pass your dataSourceId here
           filterFlag="isFilterEnable" // Specify which flag to use for filtering
           isLoading={false}
+          defaultFilters={{
+            ...dashboardFilters,
+            "Derived.Case Status": "Pending",
+            "Derived.Handled By": "In House",
+            DueDate: {
+              startDate: new DateObject().format("YYYY-MM-DD"),
+              endDate: new DateObject(new DateObject())
+                .add(1, "month")
+                .format("YYYY-MM-DD"),
+            },
+          }}
         />
       )}
 
