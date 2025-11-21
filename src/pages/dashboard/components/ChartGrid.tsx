@@ -953,7 +953,9 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
   // ✔ NEW: Resolve mapped groupBy → actual field labels
   // =======================================================================
   const getGroupByFields = () => {
-    if (!chart.groupBy) return '';
+    if (!chart.groupBy || (Array.isArray(chart.groupBy) && chart.groupBy.length === 0)) {
+      return null;
+    }
 
     if (Array.isArray(chart.groupBy)) {
       return chart.groupBy.map((g) => {
@@ -970,7 +972,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
 
     return field?.label || chart.groupBy;
   };
-  const groupByField: string = getGroupByFields();
+  let groupByField: string | string[] | null = getGroupByFields();
   if(groupByField){ 
     if (
       clickedData &&
@@ -989,6 +991,9 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
     }else{
       clickedData = clickedDataFilter.find((item: ChartDataItem) => {
         if (!item) return false;
+        if(Array.isArray(groupByField) && groupByField.length > 0){
+          groupByField = groupByField[0];
+        }
         return (
           groupByField in item &&
           item[groupByField] === datasetLabel
