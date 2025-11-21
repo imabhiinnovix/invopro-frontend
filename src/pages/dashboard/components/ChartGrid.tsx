@@ -973,7 +973,18 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
 
     return field?.label || chart.groupBy;
   };
-  let groupByField: string | string[] | null = getGroupByFields();
+  let groupByField = getGroupByFields();
+   const normalizedGroupBy =
+      Array.isArray(groupByField)
+        ? (groupByField.length > 0 ? groupByField[0] : null)
+        : (typeof groupByField === "string" && groupByField.trim() !== "" ? groupByField.trim() : null);
+
+    // Reset groupBy when it contains time-based groupings
+    if (["yearly", "monthly", "weekly", "daily"].includes(normalizedGroupBy)) {
+      groupByField = null;
+    }
+      // console.log('groupByField',groupByField,clickedData,clickedDataFilter);
+
   if(groupByField){ 
     if (
       clickedData &&
@@ -1034,7 +1045,9 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
             ? chart.dimensions.map((dim) => ({ [dim]: clickedData.name }))
             : [{ [chart.dimensions]: clickedData.name }]
           : [];
-        const groupBy = getGroupBy();
+        const groupBy = ["yearly", "monthly", "weekly", "daily"].includes(normalizedGroupBy) 
+                      ? chart.groupBy
+                      : getGroupBy();
 
         const payload = {
           dataSourceId: chart.dataSourceId?._id,
@@ -1334,7 +1347,18 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
       chartData = fullscreenWidgetData.data?.widgetData;
     }
     const chartType = chart.widgetTypeId?.chartType || "line";
-    const groupBy = chart.groupBy || [];
+    let groupBy = chart.groupBy || [];
+
+    const normalizedGroupBy =
+      Array.isArray(groupBy)
+        ? (groupBy.length > 0 ? groupBy[0] : null)
+        : (typeof groupBy === "string" && groupBy.trim() !== "" ? groupBy.trim() : null);
+
+    // Reset groupBy when it contains time-based groupings
+    if (["yearly", "monthly", "weekly", "daily"].includes(normalizedGroupBy)) {
+      groupBy = [];
+    }
+
 
     // Check for empty data
     if (
