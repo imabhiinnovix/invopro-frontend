@@ -685,10 +685,11 @@ const handleSubmit = async (e: React.FormEvent) => {
   // append static groupBy options
   return [
     ...base,
-    { name: "monthly", type: "string", label: "monthly" },
-    { name: "weekly", type: "string", label: "weekly" },
-    { name: "yearly", type: "string", label: "yearly" },
-    { name: "daily", type: "string", label: "daily" }, // optional
+    { name: "monthly", type: "string", label: "Monthly" },
+    { name: "weekly", type: "string", label: "Weekly" },
+    { name: "yearly", type: "string", label: "Yearly" },
+    { name: "daily", type: "string", label: "Daily" }, // optional
+    { name: "quarterly", type: "string", label: "Quarterly" }
   ];
 };
 

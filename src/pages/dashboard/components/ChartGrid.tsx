@@ -980,7 +980,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
         : (typeof groupByField === "string" && groupByField.trim() !== "" ? groupByField.trim() : null);
 
     // Reset groupBy when it contains time-based groupings
-    if (["yearly", "monthly", "weekly", "daily"].includes(normalizedGroupBy)) {
+    if (["yearly", "monthly", "weekly", "daily","quarterly"].includes(normalizedGroupBy)) {
       groupByField = null;
     }
       // console.log('groupByField',groupByField,clickedData,clickedDataFilter);
@@ -1045,7 +1045,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
             ? chart.dimensions.map((dim) => ({ [dim]: clickedData.name }))
             : [{ [chart.dimensions]: clickedData.name }]
           : [];
-        const groupBy = ["yearly", "monthly", "weekly", "daily"].includes(normalizedGroupBy) 
+        const groupBy = ["yearly", "monthly", "weekly", "daily", "quarterly"].includes(normalizedGroupBy) 
                       ? chart.groupBy
                       : getGroupBy();
 
@@ -1355,7 +1355,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
         : (typeof groupBy === "string" && groupBy.trim() !== "" ? groupBy.trim() : null);
 
     // Reset groupBy when it contains time-based groupings
-    if (["yearly", "monthly", "weekly", "daily"].includes(normalizedGroupBy)) {
+    if (["yearly", "monthly", "weekly", "daily", "quarterly"].includes(normalizedGroupBy)) {
       groupBy = [];
     }
 
