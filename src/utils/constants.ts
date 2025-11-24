@@ -255,4 +255,7 @@ export type PermissionResourceCode = 'get' | 'list' | 'update' | 'create'
 
 export const AI_INSIGHT_URL = "http://127.0.0.1:5000/new-landing-page"; // TODO: change to the actual production URL
 export const AI_INSIGHT_SESSION_ID = "04166e4d613a476a90341ddfd374e86e"; // TODO: change to the actual production session ID
+
+// Polling intervals (in milliseconds)
+export const DOWNLOAD_REQUEST_POLLING_INTERVAL = 5000; // 5 seconds
  
