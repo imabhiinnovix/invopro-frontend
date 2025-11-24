@@ -1,4 +1,5 @@
 import { Chip, IconButton } from "@mui/material";
+import { useEffect } from "react";
 import CommonPageHeader from "../../components/atom/commonPageHeader";
 import CommonTable from "../../components/common/table";
 import CloudDownloadIcon from "@mui/icons-material/CloudDownload";
@@ -6,6 +7,7 @@ import useGet from "../../hooks/useGet";
 import { GET } from "../../services/apiRoutes";
 import useFileDownload from "../../hooks/useFiledownload";
 import { formatDate } from "../../utils/utils";
+import { DOWNLOAD_REQUEST_POLLING_INTERVAL } from "../../utils/constants";
 
 const columns = [
   {
@@ -63,6 +65,15 @@ const Jobs = () => {
     GET?.DOWNLOAD_REQUEST_LIST,
     true
   );
+
+  // Polling logic using useEffect
+  useEffect(() => {
+    const interval = setInterval(() => {
+      downloadRequestList.refetch();
+    }, DOWNLOAD_REQUEST_POLLING_INTERVAL);
+
+    return () => clearInterval(interval);
+  }, [downloadRequestList]);
 
   const downloadRequestFile = useFileDownload<Blob>(
     (data, fileName = "sample.xlsx") => {

@@ -3060,7 +3060,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           )}
         </Box>
 
-        <Box sx={{ mr: STYLE_GUIDE.SPACING.s4 }}>
+        {/* <Box sx={{ mr: STYLE_GUIDE.SPACING.s4 }}>
           {isEditMode ? (
             <StyledSelect
               label="Theme"
@@ -3076,7 +3076,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               ))}
             </StyledSelect>
           ) : null}
-        </Box>
+        </Box> */}
 
         <Box sx={{ display: "flex", gap: STYLE_GUIDE.SPACING.s4 }}>
           {isEditMode ? (
