@@ -658,14 +658,32 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
     }
   };
 
+  // const getAttributeOptions = (): DataSourceAttribute[] => {
+  //   return (
+  //     selectedDataSource?.fieldSettings?.map((field) => ({
+  //       name: field.mappedAttributeName,
+  //       type: field.type || "string",
+  //       label: field.label,
+  //     })) || []
+  //   );
+  // };
+
   const getAttributeOptions = (): DataSourceAttribute[] => {
-    return (
+    const base =
       selectedDataSource?.fieldSettings?.map((field) => ({
         name: field.mappedAttributeName,
         type: field.type || "string",
         label: field.label,
-      })) || []
-    );
+      })) || [];
+
+    // append static groupBy options
+    return [
+      ...base,
+      { name: "monthly", type: "string", label: "monthly" },
+      { name: "weekly", type: "string", label: "weekly" },
+      { name: "yearly", type: "string", label: "yearly" },
+      { name: "daily", type: "string", label: "daily" }, // optional
+    ];
   };
 
   const handleClearDimension = () => {
