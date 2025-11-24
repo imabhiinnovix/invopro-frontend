@@ -3688,9 +3688,11 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
                 e.stopPropagation();
                 setIsFiltersModalOpen(true);
               }}
-              sx={{
-                display: isDefaultNotivix ? "flex" : "none",
-              }}
+              sx={
+                {
+                  // display: isDefaultNotivix ? "flex" : "none",
+                }
+              }
             >
               Filters
             </PrimaryButton>

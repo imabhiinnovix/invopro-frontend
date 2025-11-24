@@ -231,26 +231,25 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
   const { widgetTypes, dataSources, widgetTypesLoading, dataSourcesLoading } =
     useAppSelector((state) => state.dashboard);
 
-
   const [formData, setFormData] = useState<ChartFormData>({
-  name: initialData?.name || `Chart - ${new Date().toLocaleString()}`,
-  dimensions: arrayToString(initialData?.dimensions),
-  groupBy: arrayToString(initialData?.groupBy),
-  aggregation: initialData?.aggregation || {
-    type: "count",
-    attributeName: "",
-  },
-  position: initialData?.position || {
-    x: 0,
-    y: 0,
-    index: 0,
-  },
-  conditions: initialData?.conditions || [],
-  dataSourceId: initialData?.dataSourceId?._id || "",
-  widgetTypeId: initialData?.widgetTypeId?._id || "",
-  dashboardId,
-  isIncremental: initialData?.isIncremental || false,
-});
+    name: initialData?.name || `Chart - ${new Date().toLocaleString()}`,
+    dimensions: arrayToString(initialData?.dimensions),
+    groupBy: arrayToString(initialData?.groupBy),
+    aggregation: initialData?.aggregation || {
+      type: "count",
+      attributeName: "",
+    },
+    position: initialData?.position || {
+      x: 0,
+      y: 0,
+      index: 0,
+    },
+    conditions: initialData?.conditions || [],
+    dataSourceId: initialData?.dataSourceId?._id || "",
+    widgetTypeId: initialData?.widgetTypeId?._id || "",
+    dashboardId,
+    isIncremental: initialData?.isIncremental || false,
+  });
 
   const [selectedDataSource, setSelectedDataSource] =
     useState<DataSource | null>(null);
@@ -258,50 +257,48 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
   const [fieldTypes, setFieldTypes] = useState<{ [key: string]: string }>({});
   const [fieldErrors, setFieldErrors] = useState<{ [key: string]: string }>({});
 
-  
-
   useEffect(() => {
-  if (open && initialData) {
-    if (!formData.name && !formData.dimensions && !formData.groupBy) {
-      setFormData({
-        name: initialData.name,
-        dimensions: arrayToString(initialData.dimensions),
-        groupBy: arrayToString(initialData.groupBy),
-        aggregation: initialData.aggregation,
-        position: initialData?.position || { x: 0, y: 0, index: 0 },
-        conditions: initialData.conditions,
-        dataSourceId: initialData.dataSourceId?._id || "",
-        widgetTypeId: initialData.widgetTypeId?._id || "",
-        dashboardId,
-        isIncremental: initialData.isIncremental || false,
-      });
-
-      if (initialData.dataSourceId?._id) {
-        dispatch(fetchAllDataSources()).then(() => {
-          const dataSource = dataSources.find(
-            (ds) => ds._id === initialData.dataSourceId?._id
-          );
-          if (dataSource) {
-            setSelectedDataSource(dataSource);
-          }
+    if (open && initialData) {
+      if (!formData.name && !formData.dimensions && !formData.groupBy) {
+        setFormData({
+          name: initialData.name,
+          dimensions: arrayToString(initialData.dimensions),
+          groupBy: arrayToString(initialData.groupBy),
+          aggregation: initialData.aggregation,
+          position: initialData?.position || { x: 0, y: 0, index: 0 },
+          conditions: initialData.conditions,
+          dataSourceId: initialData.dataSourceId?._id || "",
+          widgetTypeId: initialData.widgetTypeId?._id || "",
+          dashboardId,
+          isIncremental: initialData.isIncremental || false,
         });
+
+        if (initialData.dataSourceId?._id) {
+          dispatch(fetchAllDataSources()).then(() => {
+            const dataSource = dataSources.find(
+              (ds) => ds._id === initialData.dataSourceId?._id
+            );
+            if (dataSource) {
+              setSelectedDataSource(dataSource);
+            }
+          });
+        }
       }
+    } else if (!open) {
+      setFormData({
+        name: "",
+        dimensions: "",
+        groupBy: "",
+        aggregation: { type: "count", attributeName: "" },
+        position: { x: 0, y: 0, index: 0 },
+        conditions: [],
+        dataSourceId: "",
+        widgetTypeId: "",
+        dashboardId,
+        isIncremental: false,
+      });
     }
-  } else if (!open) {
-    setFormData({
-      name: "",
-      dimensions: "",
-      groupBy: "",
-      aggregation: { type: "count", attributeName: "" },
-      position: { x: 0, y: 0, index: 0 },
-      conditions: [],
-      dataSourceId: "",
-      widgetTypeId: "",
-      dashboardId,
-      isIncremental: false,
-    });
-  }
-}, [open, initialData, dashboardId, dispatch, dataSources]);
+  }, [open, initialData, dashboardId, dispatch, dataSources]);
 
   useEffect(() => {
     if (open) {
@@ -435,7 +432,7 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
     const value = event.target.value;
     const fieldType = fieldTypes[index];
 
-    if (fieldType === "date" || fieldType === 'date-range') {
+    if (fieldType === "date" || fieldType === "date-range") {
       // Format date to YYYY-MM-DD
       const formattedDate = formatDateToYYYYMMDD(value);
       handleConditionChange(index, "value", formattedDate);
@@ -496,178 +493,175 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
     handleChange("groupBy", newGroupBy);
   };
 
-  
   // Updated to use fieldSettings
   const handleFieldErrors = (errors?: ErrorResponse[]) => {
-  if (errors && errors.length > 0) {
-    const newFieldErrors: { [key: string]: string } = {};
-    errors.forEach((err: ErrorResponse) => {
-      if (err.fieldName && err.message) {
-        newFieldErrors[err.fieldName] = err.message;
-      }
-    });
-    setFieldErrors(newFieldErrors);
-  }
-};
-
-const handleAxiosError = (error: unknown) => {
-  if (axios.isAxiosError(error) && error.response?.data) {
-    handleFieldErrors(error.response.data.errors);
-    const errorMessage =
-      error.response.data.message ||
-      error.response.data.error ||
-      "Failed to add chart";
-    toast.error(errorMessage);
-  } else if (
-    typeof error === "object" &&
-    error !== null &&
-    "message" in error
-  ) {
-    toast.error((error as { message: string }).message);
-  } else {
-    toast.error("Failed to add chart");
-  }
-};
- 
-
- 
-// 🔹 Normalizer (make sure it's declared above handleSubmit)
-// const toArray = (value?: string | string[]): string[] => {
-//   if (Array.isArray(value)) return value;
-//   if (typeof value === "string" && value.trim() !== "") {
-//     return value.split(",").map((g) => g.trim()).filter(Boolean);
-//   }
-//   return [];
-// };
-
-const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
-  setFieldErrors({});
-
-  try {
-    const dashboardType =
-      currentDashboard?.settings?.dashboardType || "normal";
-
-    const formattedVersionValue = versionValue
-      ? DateTime.fromISO(versionValue).toFormat("yyyy-LL")
-      : "";
-
-    const dimensionsArray = isTrend
-      ? versionValue
-        ? ["versionValue"]
-        : []
-      : toArray(formData.dimensions);
-
-    const groupByArray = toArray(formData.groupBy);
-
-    if (onSave) {
-      await onSave({
-        ...formData,
-        dimensions: dimensionsArray,
-        groupBy: groupByArray,
+    if (errors && errors.length > 0) {
+      const newFieldErrors: { [key: string]: string } = {};
+      errors.forEach((err: ErrorResponse) => {
+        if (err.fieldName && err.message) {
+          newFieldErrors[err.fieldName] = err.message;
+        }
       });
+      setFieldErrors(newFieldErrors);
+    }
+  };
+
+  const handleAxiosError = (error: unknown) => {
+    if (axios.isAxiosError(error) && error.response?.data) {
+      handleFieldErrors(error.response.data.errors);
+      const errorMessage =
+        error.response.data.message ||
+        error.response.data.error ||
+        "Failed to add chart";
+      toast.error(errorMessage);
+    } else if (
+      typeof error === "object" &&
+      error !== null &&
+      "message" in error
+    ) {
+      toast.error((error as { message: string }).message);
     } else {
-      // Call widget API
-      const widgetResponse = await axiosInstance.post<WidgetDataResponse>(
-        GET.DASHBOARD_WIDGET_DATA,
-        {
-          dataSourceId: formData.dataSourceId,
-          entityId: selectedDataSource?.entityId._id,
+      toast.error("Failed to add chart");
+    }
+  };
+
+  // 🔹 Normalizer (make sure it's declared above handleSubmit)
+  // const toArray = (value?: string | string[]): string[] => {
+  //   if (Array.isArray(value)) return value;
+  //   if (typeof value === "string" && value.trim() !== "") {
+  //     return value.split(",").map((g) => g.trim()).filter(Boolean);
+  //   }
+  //   return [];
+  // };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setFieldErrors({});
+
+    try {
+      const dashboardType =
+        currentDashboard?.settings?.dashboardType || "normal";
+
+      const formattedVersionValue = versionValue
+        ? DateTime.fromISO(versionValue).toFormat("yyyy-LL")
+        : "";
+
+      const dimensionsArray = isTrend
+        ? versionValue
+          ? ["versionValue"]
+          : []
+        : toArray(formData.dimensions);
+
+      const groupByArray = toArray(formData.groupBy);
+
+      if (onSave) {
+        await onSave({
+          ...formData,
           dimensions: dimensionsArray,
           groupBy: groupByArray,
-          conditions: formData.conditions.map((condition) => ({
-            ...condition,
-            _id: condition._id || uuidv4(),
-          })),
-          aggregation: formData.aggregation,
-          widgetType:
-            widgetTypes.find((wt) => wt._id === formData.widgetTypeId)
-              ?.chartType || "",
-          dashboardFilters:
-            dashboardType === "trend"
-              ? {
-                  startVersionValue: startVersionValue || "",
-                  endVersionValue: endVersionValue || "",
-                  versionValue: "",
-                  dynamicVersionValue: "",
-                }
-              : {
-                  startVersionValue: "",
-                  endVersionValue: "",
-                  versionValue: formattedVersionValue,
-                  dynamicVersionValue: formattedVersionValue ? "" : "1m",
-                },
-          dashBoardType: dashboardType,
-          isIncremental: formData.isIncremental || false,
-        }
-      );
-
-      if (widgetResponse.data.success) {
-        // Save widget
-        const saveResponse = await dispatch(
-          saveWidgets({
-            widgets: [
-              {
-                dashboardId: dashboardId,
-                widgetTypeId: formData.widgetTypeId,
-                name: formData.name,
-                dimensions: dimensionsArray,
-                groupBy: groupByArray,
-                aggregation: formData.aggregation,
-                position: formData.position,
-                conditions: formData.conditions.map((condition) => ({
-                  field: condition.field,
-                  operator: condition.operator,
-                  value: condition.value,
-                })),
-                dataSourceId: formData.dataSourceId,
-                entityId: selectedDataSource?.entityId._id || "",
-                isIncremental: formData.isIncremental || false,
-              },
-            ],
-          })
-        ).unwrap();
-
-        if (saveResponse.success) {
-          await dispatch(
-            fetchChartData({
-              dashboardId,
-              dashboardType,
-
-              startVersionValue:
-                dashboardType === "trend" ? startVersionValue : "",
-              endVersionValue:
-                dashboardType === "trend" ? endVersionValue : "",
-              versionValue:
-                dashboardType === "trend" ? "" : formattedVersionValue,
-              dynamicVersionValue:
-                dashboardType === "trend"
-                  ? ""
-                  : formattedVersionValue
-                  ? ""
-                  : "1m",
-            })
-          );
-          toast.success("Chart saved successfully!");
-          onClose();
-        } else {
-          handleFieldErrors(saveResponse.errors);
-          toast.error(saveResponse.message || "Failed to save chart");
-        }
+        });
       } else {
-        handleFieldErrors(widgetResponse.data.errors);
-        toast.error(widgetResponse.data.message || "Failed to add chart");
+        // Call widget API
+        const widgetResponse = await axiosInstance.post<WidgetDataResponse>(
+          GET.DASHBOARD_WIDGET_DATA,
+          {
+            dataSourceId: formData.dataSourceId,
+            entityId: selectedDataSource?.entityId._id,
+            dimensions: dimensionsArray,
+            groupBy: groupByArray,
+            conditions: formData.conditions.map((condition) => ({
+              ...condition,
+              _id: condition._id || uuidv4(),
+            })),
+            aggregation: formData.aggregation,
+            widgetType:
+              widgetTypes.find((wt) => wt._id === formData.widgetTypeId)
+                ?.chartType || "",
+            dashboardFilters:
+              dashboardType === "trend"
+                ? {
+                    startVersionValue: startVersionValue || "",
+                    endVersionValue: endVersionValue || "",
+                    versionValue: "",
+                    dynamicVersionValue: "",
+                  }
+                : {
+                    startVersionValue: "",
+                    endVersionValue: "",
+                    versionValue: formattedVersionValue,
+                    dynamicVersionValue: formattedVersionValue ? "" : "1m",
+                  },
+            dashBoardType: dashboardType,
+            isIncremental: formData.isIncremental || false,
+          }
+        );
+
+        if (widgetResponse.data.success) {
+          // Save widget
+          const saveResponse = await dispatch(
+            saveWidgets({
+              widgets: [
+                {
+                  dashboardId: dashboardId,
+                  widgetTypeId: formData.widgetTypeId,
+                  name: formData.name,
+                  dimensions: dimensionsArray,
+                  groupBy: groupByArray,
+                  aggregation: formData.aggregation,
+                  position: formData.position,
+                  conditions: formData.conditions.map((condition) => ({
+                    field: condition.field,
+                    operator: condition.operator,
+                    value: condition.value,
+                  })),
+                  dataSourceId: formData.dataSourceId,
+                  entityId: selectedDataSource?.entityId._id || "",
+                  isIncremental: formData.isIncremental || false,
+                },
+              ],
+            })
+          ).unwrap();
+
+          if (saveResponse.success) {
+            await dispatch(
+              fetchChartData({
+                dashboardId,
+                dashboardType,
+
+                startVersionValue:
+                  dashboardType === "trend" ? startVersionValue : "",
+                endVersionValue:
+                  dashboardType === "trend" ? endVersionValue : "",
+                versionValue:
+                  dashboardType === "trend" ? "" : formattedVersionValue,
+                dynamicVersionValue:
+                  dashboardType === "trend"
+                    ? ""
+                    : formattedVersionValue
+                    ? ""
+                    : "1m",
+              })
+            );
+            toast.success("Chart saved successfully!");
+            onClose();
+          } else {
+            handleFieldErrors(saveResponse.errors);
+            toast.error(saveResponse.message || "Failed to save chart");
+          }
+        } else {
+          handleFieldErrors(widgetResponse.data.errors);
+          toast.error(widgetResponse.data.message || "Failed to add chart");
+        }
       }
+    } catch (error) {
+      handleAxiosError(error);
     }
-  } catch (error) {
-    handleAxiosError(error);
-  }
-};
+  };
 
   // const getAttributeOptions = (): DataSourceAttribute[] => {
   //   return (
   //     selectedDataSource?.fieldSettings?.map((field) => ({
-  //       name: field.mappedAttributeName, 
+  //       name: field.mappedAttributeName,
   //       type: field.type || "string",
   //       label: field.label,
   //     })) || []
@@ -692,7 +686,6 @@ const handleSubmit = async (e: React.FormEvent) => {
     { name: "quarterly", type: "string", label: "Quarterly" }
   ];
 };
-
 
   const handleClearDimension = () => {
     handleChange("dimensions", "");
@@ -750,16 +743,15 @@ const handleSubmit = async (e: React.FormEvent) => {
         const groupByField = visibleFields.find(
           (f) => f.fieldName === "groupBy"
         );
-
         if (groupByField) {
           return (
             <FormSection key="dimensions-groupby">
               <FormRow>
                 <FormControl fullWidth size="small">
-                  <InputLabel>{label}</InputLabel>
+                  <InputLabel>X-Axis</InputLabel>
                   <StyledSelect
                     value={formData.dimensions}
-                    label={label}
+                    label="X-Axis"
                     onChange={handleDimensionChange}
                     disabled={isSubmitting || isTrend}
                     error={!!fieldErrors["Dimension"]}
@@ -947,7 +939,7 @@ const handleSubmit = async (e: React.FormEvent) => {
       case "aggregation":
         return (
           <FormSection key={fieldName}>
-            <SectionTitle>{label}</SectionTitle>
+            <SectionTitle>Y-Axis</SectionTitle>
             <FormRow>
               <FormControl fullWidth size="small">
                 <InputLabel>Type</InputLabel>
@@ -1038,7 +1030,8 @@ const handleSubmit = async (e: React.FormEvent) => {
                     ))}
                   </StyledSelect>
                 </FormControl>
-                {(fieldTypes[index] === "date" || fieldTypes[index] === "date-range") ? (
+                {fieldTypes[index] === "date" ||
+                fieldTypes[index] === "date-range" ? (
                   <TextField
                     label="Value"
                     type="date"
@@ -1093,14 +1086,25 @@ const handleSubmit = async (e: React.FormEvent) => {
                           STYLE_GUIDE.COLORS.inputFocusFallback,
                       },
                       "& .MuiInputBase-input": {
-                        color: `${theme.getInputTextColor() || theme.palette.text.primary} !important`,
+                        color: `${
+                          theme.getInputTextColor() ||
+                          theme.palette.text.primary
+                        } !important`,
                       },
                       "& .MuiInputBase-input::placeholder": {
-                        color: `${theme.palette.text.secondary || "#666"} !important`,
+                        color: `${
+                          theme.palette.text.secondary || "#666"
+                        } !important`,
                       },
                       "& .MuiInputBase-input:-webkit-autofill": {
-                        WebkitTextFillColor: `${theme.getInputTextColor() || theme.palette.text.primary} !important`,
-                        WebkitBoxShadow: `0 0 0 1000px ${theme.dashboardTheme?.colors?.background?.paper || "#ffffff"} inset !important`,
+                        WebkitTextFillColor: `${
+                          theme.getInputTextColor() ||
+                          theme.palette.text.primary
+                        } !important`,
+                        WebkitBoxShadow: `0 0 0 1000px ${
+                          theme.dashboardTheme?.colors?.background?.paper ||
+                          "#ffffff"
+                        } inset !important`,
                       },
                     }}
                   />
@@ -1155,14 +1159,25 @@ const handleSubmit = async (e: React.FormEvent) => {
                           STYLE_GUIDE.COLORS.inputFocusFallback,
                       },
                       "& .MuiInputBase-input": {
-                        color: `${theme.getInputTextColor() || theme.palette.text.primary} !important`,
+                        color: `${
+                          theme.getInputTextColor() ||
+                          theme.palette.text.primary
+                        } !important`,
                       },
                       "& .MuiInputBase-input::placeholder": {
-                        color: `${theme.palette.text.secondary || "#666"} !important`,
+                        color: `${
+                          theme.palette.text.secondary || "#666"
+                        } !important`,
                       },
                       "& .MuiInputBase-input:-webkit-autofill": {
-                        WebkitTextFillColor: `${theme.getInputTextColor() || theme.palette.text.primary} !important`,
-                        WebkitBoxShadow: `0 0 0 1000px ${theme.dashboardTheme?.colors?.background?.paper || "#ffffff"} inset !important`,
+                        WebkitTextFillColor: `${
+                          theme.getInputTextColor() ||
+                          theme.palette.text.primary
+                        } !important`,
+                        WebkitBoxShadow: `0 0 0 1000px ${
+                          theme.dashboardTheme?.colors?.background?.paper ||
+                          "#ffffff"
+                        } inset !important`,
                       },
                     }}
                   />
@@ -1268,14 +1283,20 @@ const handleSubmit = async (e: React.FormEvent) => {
                   STYLE_GUIDE.COLORS.inputFocusFallback,
               },
               "& .MuiInputBase-input": {
-                color: `${theme.getInputTextColor() || theme.palette.text.primary} !important`,
+                color: `${
+                  theme.getInputTextColor() || theme.palette.text.primary
+                } !important`,
               },
               "& .MuiInputBase-input::placeholder": {
                 color: `${theme.palette.text.secondary || "#666"} !important`,
               },
               "& .MuiInputBase-input:-webkit-autofill": {
-                WebkitTextFillColor: `${theme.getInputTextColor() || theme.palette.text.primary} !important`,
-                WebkitBoxShadow: `0 0 0 1000px ${theme.dashboardTheme?.colors?.background?.paper || "#ffffff"} inset !important`,
+                WebkitTextFillColor: `${
+                  theme.getInputTextColor() || theme.palette.text.primary
+                } !important`,
+                WebkitBoxShadow: `0 0 0 1000px ${
+                  theme.dashboardTheme?.colors?.background?.paper || "#ffffff"
+                } inset !important`,
               },
             }}
           />
@@ -1522,7 +1543,8 @@ const handleSubmit = async (e: React.FormEvent) => {
                           )}
                         </StyledSelect>
                       </FormControl>
-                      {(fieldTypes[index] === "date" || fieldTypes[index] === "date-range") ? (
+                      {fieldTypes[index] === "date" ||
+                      fieldTypes[index] === "date-range" ? (
                         <TextField
                           label="Value"
                           type="date"
@@ -1581,14 +1603,25 @@ const handleSubmit = async (e: React.FormEvent) => {
                                 STYLE_GUIDE.COLORS.inputFocusFallback,
                             },
                             "& .MuiInputBase-input": {
-                              color: `${theme.getInputTextColor() || theme.palette.text.primary} !important`,
+                              color: `${
+                                theme.getInputTextColor() ||
+                                theme.palette.text.primary
+                              } !important`,
                             },
                             "& .MuiInputBase-input::placeholder": {
-                              color: `${theme.palette.text.secondary || "#666"} !important`,
+                              color: `${
+                                theme.palette.text.secondary || "#666"
+                              } !important`,
                             },
                             "& .MuiInputBase-input:-webkit-autofill": {
-                              WebkitTextFillColor: `${theme.getInputTextColor() || theme.palette.text.primary} !important`,
-                              WebkitBoxShadow: `0 0 0 1000px ${theme.dashboardTheme?.colors?.background?.paper || "#ffffff"} inset !important`,
+                              WebkitTextFillColor: `${
+                                theme.getInputTextColor() ||
+                                theme.palette.text.primary
+                              } !important`,
+                              WebkitBoxShadow: `0 0 0 1000px ${
+                                theme.dashboardTheme?.colors?.background
+                                  ?.paper || "#ffffff"
+                              } inset !important`,
                             },
                           }}
                         />
@@ -1647,14 +1680,25 @@ const handleSubmit = async (e: React.FormEvent) => {
                                 STYLE_GUIDE.COLORS.inputFocusFallback,
                             },
                             "& .MuiInputBase-input": {
-                              color: `${theme.getInputTextColor() || theme.palette.text.primary} !important`,
+                              color: `${
+                                theme.getInputTextColor() ||
+                                theme.palette.text.primary
+                              } !important`,
                             },
                             "& .MuiInputBase-input::placeholder": {
-                              color: `${theme.palette.text.secondary || "#666"} !important`,
+                              color: `${
+                                theme.palette.text.secondary || "#666"
+                              } !important`,
                             },
                             "& .MuiInputBase-input:-webkit-autofill": {
-                              WebkitTextFillColor: `${theme.getInputTextColor() || theme.palette.text.primary} !important`,
-                              WebkitBoxShadow: `0 0 0 1000px ${theme.dashboardTheme?.colors?.background?.paper || "#ffffff"} inset !important`,
+                              WebkitTextFillColor: `${
+                                theme.getInputTextColor() ||
+                                theme.palette.text.primary
+                              } !important`,
+                              WebkitBoxShadow: `0 0 0 1000px ${
+                                theme.dashboardTheme?.colors?.background
+                                  ?.paper || "#ffffff"
+                              } inset !important`,
                             },
                           }}
                         />
@@ -1718,8 +1762,8 @@ const handleSubmit = async (e: React.FormEvent) => {
                 ? "Updating..."
                 : "Creating..."
               : initialData
-                ? "Update"
-                : "Create"}
+              ? "Update"
+              : "Create"}
           </StyledButton>
         </ConfigurationFooter>
       ) : (
