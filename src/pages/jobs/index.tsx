@@ -1,5 +1,12 @@
-import { Chip, IconButton } from "@mui/material";
-import { useEffect } from "react";
+import {
+  Chip,
+  IconButton,
+  Paper,
+  Stack,
+  TablePagination,
+  Typography,
+} from "@mui/material";
+import { useEffect, useState } from "react";
 import CommonPageHeader from "../../components/atom/commonPageHeader";
 import CommonTable from "../../components/common/table";
 import CloudDownloadIcon from "@mui/icons-material/CloudDownload";
@@ -60,9 +67,13 @@ const columns = [
 ];
 
 const Jobs = () => {
+  const [currentPage, setCurrentPage] = useState(1);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+  // const [totalPages, setTotalPages] = useState(0);
+  const [totalRecords, setTotalRecords] = useState(0);
   const downloadRequestList = useGet<any[]>(
-    [`downloadRequestList`],
-    GET?.DOWNLOAD_REQUEST_LIST,
+    [`downloadRequestList`, currentPage, rowsPerPage],
+    GET?.DOWNLOAD_REQUEST_LIST + `?page=${currentPage}&limit=${rowsPerPage}`,
     true
   );
 
@@ -73,7 +84,19 @@ const Jobs = () => {
     }, DOWNLOAD_REQUEST_POLLING_INTERVAL);
 
     return () => clearInterval(interval);
-  }, [downloadRequestList]);
+  }, [downloadRequestList, currentPage, rowsPerPage]);
+
+  useEffect(() => {
+    if (downloadRequestList?.data?.pagination) {
+      // setTotalPages(
+      //   Math.ceil(
+      //     (downloadRequestList?.data?.pagination?.totalRecords || 0) /
+      //       rowsPerPage
+      //   )
+      // );
+      setTotalRecords(downloadRequestList?.data?.pagination?.totalRecords || 0);
+    }
+  }, [downloadRequestList?.data?.pagination]);
 
   const downloadRequestFile = useFileDownload<Blob>(
     (data, fileName = "sample.xlsx") => {
@@ -109,9 +132,43 @@ const Jobs = () => {
       <CommonTable
         columns={columns}
         rows={rows || []}
-        height="calc(100vh - 100px)"
+        height="calc(100vh - 300px)"
         loading={downloadRequestList?.isPending}
+        isLazyTable={true}
       />
+      <Paper>
+        <Stack
+          direction="row"
+          justifyContent="space-between"
+          alignItems="center"
+          sx={{
+            pl: 2,
+            pr: 2,
+          }}
+        >
+          <Stack direction="row" spacing={2} alignItems="center">
+            <Typography variant="body2">
+              Total Records: {totalRecords || 0}
+            </Typography>
+          </Stack>
+          <TablePagination
+            rowsPerPageOptions={[10, 25, 100]}
+            component="div"
+            count={totalRecords || 0}
+            rowsPerPage={rowsPerPage}
+            page={currentPage - 1}
+            onPageChange={(_event, value) => setCurrentPage(value + 1)}
+            onRowsPerPageChange={(event) => {
+              setRowsPerPage(+event.target.value);
+              setCurrentPage(1);
+            }}
+            labelDisplayedRows={({ page }) => {
+              const totalPages = Math.ceil((totalRecords || 0) / rowsPerPage);
+              return `Page ${page + 1} of ${totalPages}`;
+            }}
+          />
+        </Stack>
+      </Paper>
     </div>
   );
 };
