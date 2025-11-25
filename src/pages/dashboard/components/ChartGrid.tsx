@@ -959,70 +959,77 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
     let clickedData =
       clickedDataFilter?.length > 1
         ? clickedDataFilter[datasetIndex]
-        : clickedDataFilter[0];    
-  // =======================================================================
-  // ✔ NEW: Resolve mapped groupBy → actual field labels
-  // =======================================================================
-  const getGroupByFields = () => {
-    if (!chart.groupBy || (Array.isArray(chart.groupBy) && chart.groupBy.length === 0)) {
-      return null;
-    }
+        : clickedDataFilter[0];
+    // =======================================================================
+    // ✔ NEW: Resolve mapped groupBy → actual field labels
+    // =======================================================================
+    const getGroupByFields = () => {
+      if (
+        !chart.groupBy ||
+        (Array.isArray(chart.groupBy) && chart.groupBy.length === 0)
+      ) {
+        return null;
+      }
 
-    if (Array.isArray(chart.groupBy)) {
-      return chart.groupBy.map((g) => {
-        const field = chart.dataSourceId?.fieldSettings?.find(
-          (f: any) => f.mappedAttributeName === g
-        );
-        return field?.label || g; // mapped label from fieldSettings
-      });
-    }
+      if (Array.isArray(chart.groupBy)) {
+        return chart.groupBy.map((g) => {
+          const field = chart.dataSourceId?.fieldSettings?.find(
+            (f: any) => f.mappedAttributeName === g
+          );
+          return field?.label || g; // mapped label from fieldSettings
+        });
+      }
 
-    const field = chart.dataSourceId?.fieldSettings?.find(
-      (f: any) => f.mappedAttributeName === chart.groupBy
-    );
+      const field = chart.dataSourceId?.fieldSettings?.find(
+        (f: any) => f.mappedAttributeName === chart.groupBy
+      );
 
-    return field?.label || chart.groupBy;
-  };
-  let groupByField = getGroupByFields();
-   const normalizedGroupBy =
-      Array.isArray(groupByField)
-        ? (groupByField.length > 0 ? groupByField[0] : null)
-        : (typeof groupByField === "string" && groupByField.trim() !== "" ? groupByField.trim() : null);
+      return field?.label || chart.groupBy;
+    };
+    let groupByField = getGroupByFields();
+    const normalizedGroupBy = Array.isArray(groupByField)
+      ? groupByField.length > 0
+        ? groupByField[0]
+        : null
+      : typeof groupByField === "string" && groupByField.trim() !== ""
+      ? groupByField.trim()
+      : null;
 
     // Reset groupBy when it contains time-based groupings
-    if (["yearly", "monthly", "weekly", "daily","quarterly"].includes(normalizedGroupBy)) {
+    if (
+      ["yearly", "monthly", "weekly", "daily", "quarterly"].includes(
+        normalizedGroupBy
+      )
+    ) {
       groupByField = null;
     }
-      // console.log('groupByField',groupByField,clickedData,clickedDataFilter);
+    // console.log('groupByField',groupByField,clickedData,clickedDataFilter);
 
-  if(groupByField){ 
-    if (
-      clickedData &&
-      "ReportCriticalEvent" in clickedData &&
-      ["Critical", "Other"].includes(datasetLabel)
-    ) {
-      clickedData = clickedDataFilter.find((item: ChartDataItem) => {
-        if (!item) return false;
-        const currentClickedCriticality =
-          datasetLabel === "Critical" ? "Y" : "N";
-        return (
-          "ReportCriticalEvent" in item &&
-          item["ReportCriticalEvent"] === currentClickedCriticality
-        );
-      });
-    }else{
-      clickedData = clickedDataFilter.find((item: ChartDataItem) => {
-        if (!item) return false;
-        if(Array.isArray(groupByField) && groupByField.length > 0){
-          groupByField = groupByField[0];
-        }
-        return (
-          groupByField in item &&
-          item[groupByField] === datasetLabel
-        );
-      });
+    if (groupByField) {
+      if (
+        clickedData &&
+        "ReportCriticalEvent" in clickedData &&
+        ["Critical", "Other"].includes(datasetLabel)
+      ) {
+        clickedData = clickedDataFilter.find((item: ChartDataItem) => {
+          if (!item) return false;
+          const currentClickedCriticality =
+            datasetLabel === "Critical" ? "Y" : "N";
+          return (
+            "ReportCriticalEvent" in item &&
+            item["ReportCriticalEvent"] === currentClickedCriticality
+          );
+        });
+      } else {
+        clickedData = clickedDataFilter.find((item: ChartDataItem) => {
+          if (!item) return false;
+          if (Array.isArray(groupByField) && groupByField.length > 0) {
+            groupByField = groupByField[0];
+          }
+          return groupByField in item && item[groupByField] === datasetLabel;
+        });
+      }
     }
-  }
 
     if (clickedData) {
       setDrillDownTitle(`${clickedData.name} - ${datasetLabel}`);
@@ -1055,9 +1062,15 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
             ? chart.dimensions.map((dim) => ({ [dim]: clickedData.name }))
             : [{ [chart.dimensions]: clickedData.name }]
           : [];
-        const groupBy = ["yearly", "monthly", "weekly", "daily", "quarterly"].includes(normalizedGroupBy) 
-                      ? chart.groupBy
-                      : getGroupBy();
+        const groupBy = [
+          "yearly",
+          "monthly",
+          "weekly",
+          "daily",
+          "quarterly",
+        ].includes(normalizedGroupBy)
+          ? chart.groupBy
+          : getGroupBy();
 
         const payload = {
           dataSourceId: chart.dataSourceId?._id,
@@ -1359,16 +1372,22 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
     const chartType = chart.widgetTypeId?.chartType || "line";
     let groupBy = chart.groupBy || [];
 
-    const normalizedGroupBy =
-      Array.isArray(groupBy)
-        ? (groupBy.length > 0 ? groupBy[0] : null)
-        : (typeof groupBy === "string" && groupBy.trim() !== "" ? groupBy.trim() : null);
+    const normalizedGroupBy = Array.isArray(groupBy)
+      ? groupBy.length > 0
+        ? groupBy[0]
+        : null
+      : typeof groupBy === "string" && groupBy.trim() !== ""
+      ? groupBy.trim()
+      : null;
 
     // Reset groupBy when it contains time-based groupings
-    if (["yearly", "monthly", "weekly", "daily", "quarterly"].includes(normalizedGroupBy)) {
+    if (
+      ["yearly", "monthly", "weekly", "daily", "quarterly"].includes(
+        normalizedGroupBy
+      )
+    ) {
       groupBy = [];
     }
-
 
     // Check for empty data
     if (
@@ -3995,7 +4014,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
           onClose={() => setIsFiltersModalOpen(false)}
           onApplyFilters={handleApplyFilters}
           currentFilters={localDashboardFilters}
-          dataSourceId={currentDashboard?.settings?.dataSource?._id} // Pass your dataSourceId here
+          dataSourceId={selectedChart?.dataSourceId?._id || ""} // Pass your dataSourceId here
           filterFlag="isFilterEnable" // Specify which flag to use for filtering
           isLoading={false}
           defaultFilters={{

@@ -126,8 +126,6 @@ const Jobs = () => {
       }),
   }));
 
-  console.log({ rows, currentPage });
-
   return (
     <div className="p-4">
       <CommonPageHeader title="Data Export Jobs" actions={<></>} />
