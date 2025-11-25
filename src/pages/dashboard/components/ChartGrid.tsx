@@ -613,9 +613,19 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
 
       if (result.success) {
         toast.success("Chart deleted successfully!");
-        dispatch(
-          fetchChartData({ dashboardId, dashboardFilters, isDefaultNotivix })
-        );
+        if (isDefaultNotivix) {
+          dispatch(
+            fetchChartData({ dashboardId, dashboardFilters, isDefaultNotivix })
+          );
+        } else {
+          dispatch(
+            fetchChartData({
+              dashboardId,
+              dashboardFilters: {},
+              isDefaultNotivix,
+            })
+          );
+        }
       } else {
         toast.error(result.message || "Failed to delete chart");
       }

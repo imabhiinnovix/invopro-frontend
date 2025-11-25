@@ -2356,7 +2356,9 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             startVersionValue,
             endVersionValue,
             versionValue,
-            dashboardFilters,
+            dashboardFilters: currentDashboard?.isDefaultNotivix
+              ? dashboardFilters
+              : {},
           })
         );
       } else if (
