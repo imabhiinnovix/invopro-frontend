@@ -146,4 +146,5 @@ export const GET = {
   ERROR_ROW_DATA: "/common/dataImportError/data",
   DOWNLOAD_REQUEST_LIST: "/common/download-request/list",
   DOWNLOAD_REQUEST_FILE: "common/download-request/download",
+  GET_DASHBOARD_WIDGET_PLOT_TYPES: "/common/dashboard/widget/getPlotTypes",
 };

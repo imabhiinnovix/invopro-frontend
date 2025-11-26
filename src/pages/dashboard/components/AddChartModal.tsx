@@ -48,6 +48,7 @@ import { STYLE_GUIDE } from "../../../styles";
 import axios from "axios";
 import { useUnifiedTheme } from "../../../hooks/useUnifiedTheme";
 import { arrayToString, toArray } from "../../../utils/utils";
+import useGet from "../../../hooks/useGet";
 
 interface Position {
   x: number;
@@ -61,6 +62,7 @@ interface Aggregation {
 }
 
 export interface ChartFormData {
+  plotType: string;
   name: string;
   dimensions: string | string[];
   groupBy: string | string[];
@@ -230,6 +232,13 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
   const dispatch = useAppDispatch();
   const { widgetTypes, dataSources, widgetTypesLoading, dataSourcesLoading } =
     useAppSelector((state) => state.dashboard);
+
+  const { data: plotTypes } = useGet<{
+    success: boolean;
+    data: string[];
+  }>([`plotTypes`], GET.GET_DASHBOARD_WIDGET_PLOT_TYPES);
+
+  console.log("plotTypes:", plotTypes);
 
   const [formData, setFormData] = useState<ChartFormData>({
     name: initialData?.name || `Chart - ${new Date().toLocaleString()}`,
@@ -493,6 +502,15 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
     handleChange("groupBy", newGroupBy);
   };
 
+  const handlePlotTypeChange = (event: SelectChangeEvent<unknown>) => {
+    const newPlotType = event.target.value as string;
+    handleChange("plotType", newPlotType);
+  };
+
+  const handleClearPlotType = () => {
+    handleChange("plotType", "");
+  };
+
   // Updated to use fieldSettings
   const handleFieldErrors = (errors?: ErrorResponse[]) => {
     if (errors && errors.length > 0) {
@@ -553,13 +571,13 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
         : toArray(formData.dimensions);
 
       const groupByArray = toArray(formData.groupBy);
-
       if (onSave) {
         await onSave({
           ...formData,
           dimensions: dimensionsArray,
           groupBy: groupByArray,
         });
+        onClose();
       } else {
         // Call widget API
         const widgetResponse = await axiosInstance.post<WidgetDataResponse>(
@@ -669,23 +687,43 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
   // };
 
   const getAttributeOptions = (): DataSourceAttribute[] => {
-  const base =
-    selectedDataSource?.fieldSettings?.map((field) => ({
-      name: field.mappedAttributeName,
-      type: field.type || "string",
-      label: field.label,
-    })) || [];
+    console.log("selectedDataSource", selectedDataSource);
+    const base =
+      selectedDataSource?.fieldSettings?.map((field) => ({
+        name: field.mappedAttributeName,
+        type: field.type || "string",
+        label: field.label,
+      })) || [];
 
-  // append static groupBy options
-  return [
-    ...base,
-    { name: "monthly", type: "string", label: "Monthly" },
-    { name: "weekly", type: "string", label: "Weekly" },
-    { name: "yearly", type: "string", label: "Yearly" },
-    { name: "daily", type: "string", label: "Daily" }, // optional
-    { name: "quarterly", type: "string", label: "Quarterly" }
-  ];
-};
+    // append static groupBy options
+    return [
+      ...base,
+      // { name: "monthly", type: "string", label: "Monthly" },
+      // { name: "weekly", type: "string", label: "Weekly" },
+      // { name: "yearly", type: "string", label: "Yearly" },
+      // { name: "daily", type: "string", label: "Daily" }, // optional
+      // { name: "quarterly", type: "string", label: "Quarterly" },
+    ];
+  };
+
+  const isGroupByOrDimensionOfDateType = () => {
+    const groupBy = formData.groupBy;
+    const dimensions = formData.dimensions;
+
+    const groupByDateType =
+      selectedDataSource?.fieldSettings?.find(
+        (field) => field.mappedAttributeName === groupBy
+      )?.type === "date" || false;
+
+    const dimensionsDateType =
+      selectedDataSource?.fieldSettings?.find(
+        (field) => field.mappedAttributeName === dimensions
+      )?.type === "date" || false;
+
+    console.log("groupByDateType", groupByDateType);
+    console.log("dimensionsDateType", dimensionsDateType);
+    return groupByDateType || dimensionsDateType;
+  };
 
   const handleClearDimension = () => {
     handleChange("dimensions", "");
@@ -786,7 +824,6 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
                     )}
                   </StyledSelect>
                 </FormControl>
-
                 <FormControl fullWidth size="small">
                   <InputLabel>{groupByField.label}</InputLabel>
                   <StyledSelect
@@ -822,6 +859,44 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
                   </StyledSelect>
                 </FormControl>
               </FormRow>
+              {isGroupByOrDimensionOfDateType() && (
+                <FormRow>
+                  <FormControl fullWidth size="small">
+                    <InputLabel>Plot Type</InputLabel>
+                    <StyledSelect
+                      value={formData.plotType || null}
+                      label={"Plot Type"}
+                      onChange={handlePlotTypeChange}
+                      disabled={isSubmitting}
+                      error={!!fieldErrors["Plot Type"]}
+                      endAdornment={
+                        formData.plotType && (
+                          <InputAdornment position="end">
+                            <IconButton
+                              size="small"
+                              onClick={handleClearPlotType}
+                              edge="end"
+                              sx={{ mr: 1 }}
+                            >
+                              <ClearIcon fontSize="small" />
+                            </IconButton>
+                          </InputAdornment>
+                        )
+                      }
+                    >
+                      {plotTypes?.data?.map((plotType) => (
+                        <MenuItem
+                          key={plotType.type}
+                          value={plotType.type}
+                          // disabled={plotType.type === formData.dimensions}
+                        >
+                          {plotType.label}
+                        </MenuItem>
+                      ))}
+                    </StyledSelect>
+                  </FormControl>
+                </FormRow>
+              )}
               {fieldErrors["GroupBy"] && (
                 <FormHelperText error>{fieldErrors["GroupBy"]}</FormHelperText>
               )}
@@ -832,10 +907,10 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
             <FormSection key={fieldName}>
               <FormRow>
                 <FormControl fullWidth size="small">
-                  <InputLabel>{label}</InputLabel>
+                  <InputLabel>X-Axis</InputLabel>
                   <StyledSelect
                     value={formData.dimensions}
-                    label={label}
+                    label={"X-Axis"}
                     onChange={handleDimensionChange}
                     disabled={isSubmitting || isTrend}
                     error={!!fieldErrors["Dimension"]}
