@@ -62,7 +62,7 @@ interface Aggregation {
 }
 
 export interface ChartFormData {
-  plotType: string;
+  plotType: string | string[];
   name: string;
   dimensions: string | string[];
   groupBy: string | string[];
@@ -571,11 +571,13 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
         : toArray(formData.dimensions);
 
       const groupByArray = toArray(formData.groupBy);
+      const plotType = toArray(formData.plotType);
       if (onSave) {
         await onSave({
           ...formData,
           dimensions: dimensionsArray,
           groupBy: groupByArray,
+          plotType: plotType,
         });
         onClose();
       } else {
