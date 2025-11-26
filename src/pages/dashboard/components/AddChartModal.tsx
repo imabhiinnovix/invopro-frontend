@@ -242,6 +242,7 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
 
   const [formData, setFormData] = useState<ChartFormData>({
     name: initialData?.name || `Chart - ${new Date().toLocaleString()}`,
+    plotType: arrayToString(initialData?.plotType) || "",
     dimensions: arrayToString(initialData?.dimensions),
     groupBy: arrayToString(initialData?.groupBy),
     aggregation: initialData?.aggregation || {

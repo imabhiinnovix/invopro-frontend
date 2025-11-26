@@ -86,6 +86,7 @@ export interface ChartResponse {
     chartType: string;
   };
   isIncremental: boolean;
+  plotType: string[];
 }
 
 export interface Operator {
