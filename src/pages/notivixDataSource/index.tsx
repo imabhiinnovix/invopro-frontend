@@ -154,7 +154,6 @@ function getPermsForDataSource(dataSourceName: string, permissions: any, dataSou
     const partialKeyMatches = Object.keys(
       permissions[PermissionsMap.DATA_SOURCE]
     ).filter((key) => key.includes(cleanedDataSourceName) || key.includes(cleanedDataSourceCode));
-    console.log('partialKeyMatches',partialKeyMatches,permissions);
     partialKeyMatches.forEach((key) => {
       const perm = checkPermission(
         permissions,
