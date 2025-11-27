@@ -145,14 +145,23 @@ function getPermsForDataSource(dataSourceName: string, permissions: any) {
       keys[2]
     );
   } else if (dataSourceName && permissions) {
-    const cleanedDataSourceName = dataSourceName
-      .toLowerCase()
-      .replace(" ", "_");
+    // const cleanedDataSourceName = dataSourceName
+    //   .toLowerCase()
+    //   .replace(" ", "_");
 
-    // extract permissions in which partial key matches with dataSourceName
-    const partialKeyMatches = Object.keys(
-      permissions[PermissionsMap.DATA_SOURCE]
-    ).filter((key) => key.includes(cleanedDataSourceName));
+    // // extract permissions in which partial key matches with dataSourceName
+    // const partialKeyMatches = Object.keys(
+    //   permissions[PermissionsMap.DATA_SOURCE]
+    // ).filter((key) => key.includes(cleanedDataSourceName));
+    const cleanedDataSourceName = dataSourceName
+  .toLowerCase()
+  .replace(/[\s_]+/g, ""); // remove spaces & underscores
+
+const partialKeyMatches = Object.keys(
+  permissions[PermissionsMap.DATA_SOURCE]
+).filter((key) =>
+  key.toLowerCase().replace(/[\s_]+/g, "").includes(cleanedDataSourceName)
+);
     partialKeyMatches.forEach((key) => {
       const perm = checkPermission(
         permissions,
