@@ -3340,7 +3340,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           filterFlag="isFilterEnable" // Specify which flag to use for filtering
           isLoading={dataSourceDetailsLoading}
           defaultFilters={{
-            ...dashboardFilters,
             "Derived.Case Status": "Pending",
             "Derived.Handled By": "In House",
             DueDate: {

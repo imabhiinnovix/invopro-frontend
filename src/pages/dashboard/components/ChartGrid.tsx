@@ -4018,7 +4018,6 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
           filterFlag="isFilterEnable" // Specify which flag to use for filtering
           isLoading={false}
           defaultFilters={{
-            ...dashboardFilters,
             "Derived.Case Status": "Pending",
             "Derived.Handled By": "In House",
             DueDate: {
