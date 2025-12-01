@@ -37,7 +37,7 @@ interface ApiResponse {
   totalCount: number;
 }
 
-function getPermsForDataSource(dataSourceName: string, permissions: any) {
+function getPermsForDataSource(dataSourceName: string, permissions: any, dataSourceCode: string) {
   let permissionData = {
     shouldAllowAdd: false,
     shouldAllowEdit: false,
@@ -148,11 +148,12 @@ function getPermsForDataSource(dataSourceName: string, permissions: any) {
     const cleanedDataSourceName = dataSourceName
       .toLowerCase()
       .replace(" ", "_");
+    const cleanedDataSourceCode = dataSourceCode.replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
 
     // extract permissions in which partial key matches with dataSourceName
     const partialKeyMatches = Object.keys(
       permissions[PermissionsMap.DATA_SOURCE]
-    ).filter((key) => key.includes(cleanedDataSourceName));
+    ).filter((key) => key.includes(cleanedDataSourceName) || key.includes(cleanedDataSourceCode));
     partialKeyMatches.forEach((key) => {
       const perm = checkPermission(
         permissions,
@@ -241,7 +242,7 @@ export default function NotivixDataSource() {
     "upload"
   );
   const { shouldAllowAdd, shouldAllowEdit, shouldAllowDelete } =
-    getPermsForDataSource(listCurrentData?.name || "", permissions);
+    getPermsForDataSource(listCurrentData?.name || "", permissions, listCurrentData?.code || "");
 
   const handleOpenFiltersModal = () => {
     setIsFiltersModalOpen(true);
