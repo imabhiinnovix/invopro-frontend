@@ -216,6 +216,7 @@ export interface ChartResponse {
   };
   dimensions: string[];
   groupBy: string[];
+  plotType: string[];
   aggregation: {
     type: string;
     attributeName: string;
@@ -266,6 +267,7 @@ export interface WidgetResponse {
     dataSourceId: DataSourceDetails;
     dimensions: string[];
     groupBy: string[];
+    plotType: string[];
     conditions: {
       field: string;
       operator: string;
@@ -402,6 +404,7 @@ export type DrillDownPayload = {
   conditions?: Record<string, unknown>[];
   dimensions?: Record<string, unknown>[];
   groupBy?: Record<string, unknown>[];
+  plotType?: Record<string, unknown>[];
   page?: number;
   limit?: number;
 };

@@ -274,6 +274,7 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
           name: initialData.name,
           dimensions: arrayToString(initialData.dimensions),
           groupBy: arrayToString(initialData.groupBy),
+          plotType: arrayToString(initialData.plotType),
           aggregation: initialData.aggregation,
           position: initialData?.position || { x: 0, y: 0, index: 0 },
           conditions: initialData.conditions,
@@ -299,6 +300,7 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
         name: "",
         dimensions: "",
         groupBy: "",
+        plotType: "",
         aggregation: { type: "count", attributeName: "" },
         position: { x: 0, y: 0, index: 0 },
         conditions: [],
@@ -590,6 +592,7 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
             entityId: selectedDataSource?.entityId._id,
             dimensions: dimensionsArray,
             groupBy: groupByArray,
+            plotType: plotType,
             conditions: formData.conditions.map((condition) => ({
               ...condition,
               _id: condition._id || uuidv4(),
@@ -628,6 +631,7 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
                   name: formData.name,
                   dimensions: dimensionsArray,
                   groupBy: groupByArray,
+                  plotType: plotType,
                   aggregation: formData.aggregation,
                   position: formData.position,
                   conditions: formData.conditions.map((condition) => ({

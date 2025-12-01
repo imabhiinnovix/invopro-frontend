@@ -442,6 +442,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
         position: selectedChart?.position,
         dimensions: selectedChart?.dimensions,
         groupBy: selectedChart?.groupBy,
+        plotType: selectedChart?.plotType,
         aggregation: selectedChart?.aggregation,
         conditions: selectedChart?.conditions,
         isActive: selectedChart?.isActive,
@@ -481,6 +482,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
           entityId: selectedChart?.dataSourceId?.entityId,
           dimensions: selectedChart?.dimensions,
           groupBy: selectedChart?.groupBy,
+          plotType: selectedChart?.plotType,
           conditions: selectedChart?.conditions,
           aggregation: selectedChart?.aggregation,
           widgetType: selectedChart?.widgetTypeId?.chartType,
@@ -987,22 +989,22 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
       return field?.label || chart.groupBy;
     };
     let groupByField = getGroupByFields();
-    const normalizedGroupBy = Array.isArray(groupByField)
-      ? groupByField.length > 0
-        ? groupByField[0]
-        : null
-      : typeof groupByField === "string" && groupByField.trim() !== ""
-      ? groupByField.trim()
-      : null;
+    // const normalizedGroupBy = Array.isArray(groupByField)
+    //   ? groupByField.length > 0
+    //     ? groupByField[0]
+    //     : null
+    //   : typeof groupByField === "string" && groupByField.trim() !== ""
+    //   ? groupByField.trim()
+    //   : null;
 
-    // Reset groupBy when it contains time-based groupings
-    if (
-      ["yearly", "monthly", "weekly", "daily", "quarterly"].includes(
-        normalizedGroupBy
-      )
-    ) {
-      groupByField = null;
-    }
+    // // Reset groupBy when it contains time-based groupings
+    // if (
+    //   ["yearly", "monthly", "weekly", "daily", "quarterly"].includes(
+    //     normalizedGroupBy
+    //   )
+    // ) {
+    //   groupByField = null;
+    // }
     // console.log('groupByField',groupByField,clickedData,clickedDataFilter);
 
     if (groupByField) {
@@ -1062,15 +1064,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
             ? chart.dimensions.map((dim) => ({ [dim]: clickedData.name }))
             : [{ [chart.dimensions]: clickedData.name }]
           : [];
-        const groupBy = [
-          "yearly",
-          "monthly",
-          "weekly",
-          "daily",
-          "quarterly",
-        ].includes(normalizedGroupBy)
-          ? chart.groupBy
-          : getGroupBy();
+        const groupBy = getGroupBy();
 
         const payload = {
           dataSourceId: chart.dataSourceId?._id,
@@ -1086,6 +1080,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
             filters: { ...dashboardFilters },
           },
           groupBy,
+          plotType: chart.plotType || [],
           page: 1,
           limit: itemsPerPage,
           dashBoardType: currentDashboard?.settings?.dashboardType,
@@ -1142,6 +1137,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
         entityId: selectedChart?.dataSourceId?.entityId,
         dimensions: selectedChart?.dimensions,
         groupBy: selectedChart?.groupBy,
+        plotType: selectedChart?.plotType,
         conditions: selectedChart?.conditions,
         aggregation: selectedChart?.aggregation,
         widgetType: selectedChart?.widgetTypeId?.chartType,
@@ -1372,22 +1368,22 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
     const chartType = chart.widgetTypeId?.chartType || "line";
     let groupBy = chart.groupBy || [];
 
-    const normalizedGroupBy = Array.isArray(groupBy)
-      ? groupBy.length > 0
-        ? groupBy[0]
-        : null
-      : typeof groupBy === "string" && groupBy.trim() !== ""
-      ? groupBy.trim()
-      : null;
+    // const normalizedGroupBy = Array.isArray(groupBy)
+    //   ? groupBy.length > 0
+    //     ? groupBy[0]
+    //     : null
+    //   : typeof groupBy === "string" && groupBy.trim() !== ""
+    //   ? groupBy.trim()
+    //   : null;
 
     // Reset groupBy when it contains time-based groupings
-    if (
-      ["yearly", "monthly", "weekly", "daily", "quarterly"].includes(
-        normalizedGroupBy
-      )
-    ) {
-      groupBy = [];
-    }
+    // if (
+    //   ["yearly", "monthly", "weekly", "daily", "quarterly"].includes(
+    //     normalizedGroupBy
+    //   )
+    // ) {
+    //   groupBy = [];
+    // }
 
     // Check for empty data
     if (
