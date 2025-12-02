@@ -96,7 +96,7 @@ export const NotivixDataModal: React.FC<ModelSectionProps> = ({
       const fieldType = attribute.type;
       const value = formData[fieldName];
       if (value !== undefined && value !== null && value !== "") {
-        if (fieldType === "date" && value) {
+        if ((fieldType === "date" || fieldType === "date-range") && value) {
           rowData[fieldName] = dayjs(value).toISOString();
         } else if (fieldType === "boolean") {
           rowData[fieldName] = value ? "true" : "false";
@@ -317,7 +317,7 @@ export const NotivixDataModal: React.FC<ModelSectionProps> = ({
     if (isViewMode) {
       let displayValue: any = value ?? "-";
 
-      if (attribute.type === "date" && displayValue !== "-") {
+      if ((attribute.type === "date" || attribute.type === "date-range") && displayValue !== "-") {
         displayValue = dayjs(displayValue).format("DD-MMM-YYYY");
       }
 

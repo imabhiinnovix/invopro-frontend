@@ -718,17 +718,21 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
     const dimensions = formData.dimensions;
 
     const groupByDateType =
-      selectedDataSource?.fieldSettings?.find(
-        (field) => field.mappedAttributeName === groupBy
-      )?.type === "date" || false;
+  ["date", "date-range"].includes(
+    selectedDataSource?.fieldSettings?.find(
+      (f) => f.mappedAttributeName === groupBy
+    )?.type
+  );
 
-    const dimensionsDateType =
-      selectedDataSource?.fieldSettings?.find(
-        (field) => field.mappedAttributeName === dimensions
-      )?.type === "date" || false;
+  const dimensionsDateType =
+  ["date", "date-range"].includes(
+    selectedDataSource?.fieldSettings?.find(
+      (f) => f.mappedAttributeName === dimensions
+    )?.type
+  );
 
-    console.log("groupByDateType", groupByDateType);
-    console.log("dimensionsDateType", dimensionsDateType);
+    // console.log("groupByDateType", groupByDateType);
+    // console.log("dimensionsDateType", dimensionsDateType);
     return groupByDateType || dimensionsDateType;
   };
 
