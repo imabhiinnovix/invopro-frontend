@@ -265,7 +265,7 @@ export default function NotificationTypes() {
     "delete"
   );
 
-  const { control, handleSubmit, reset } = useForm<NotificationTypePostPayload>(
+  const { control, handleSubmit, reset, watch } = useForm<NotificationTypePostPayload>(
     {
       defaultValues: {
         name: "",
@@ -437,6 +437,20 @@ export default function NotificationTypes() {
     setPaginationModel({ ...paginationModel, page: 0 });
   };
 
+
+// FIX: Watch live form values inside modal
+const watchedValues = watch();
+
+// FIX: Compare form values with existing filterValues
+const isFilterChanged = () => {
+  return (
+    watchedValues.name !== filterValues.name ||
+    // (watchedValues.organizationId || "") !== filterValues.organizationId ||
+    (watchedValues.status || "") !== filterValues.status
+  );
+};
+
+
   return (
     <Box sx={{ p: STYLE_GUIDE.SPACING.s2 }}>
       <CommonPageHeader
@@ -550,11 +564,7 @@ export default function NotificationTypes() {
               onClick={handleSubmit(onSubmit)}
               variant="contained"
               sx={{ borderRadius: "8px" }}
-              disabled={
-                !filterValues.name &&
-                !filterValues.organizationId &&
-                !filterValues.status
-              }
+              disabled={!isFilterChanged()}
             >
               Apply
             </Button>
@@ -586,7 +596,7 @@ export default function NotificationTypes() {
             )}
           />
 
-          <Controller
+          {/* <Controller
             name="organizationId"
             control={control}
             render={({ field }) => (
@@ -600,7 +610,7 @@ export default function NotificationTypes() {
                 }}
               />
             )}
-          />
+          /> */}
 
           <Controller
             name="status"
@@ -623,8 +633,8 @@ export default function NotificationTypes() {
                   }
                 >
                   <MenuItem value="">All</MenuItem>
-                  <MenuItem value="active">Active</MenuItem>
-                  <MenuItem value="inactive">Inactive</MenuItem>
+                  <MenuItem value="active">Enable</MenuItem>
+                  <MenuItem value="inactive">Disable</MenuItem>
                 </Select>
               </FormControl>
             )}
