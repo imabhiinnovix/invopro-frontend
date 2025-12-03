@@ -531,6 +531,9 @@ export default function Organization() {
     setSelectedOrganizationForUsers(null);
   };
 
+  const [deletedIds, setDeletedIds] = useState<string[]>([]);
+
+
   return (
     <Box
       sx={{
@@ -778,6 +781,7 @@ export default function Organization() {
                                     productId,
                                     totalLicenses: "",
                                     licenseExpiresAt: "",
+                                    organizationProductSubscriptionId: ""
                                   });
                                 }}
                               >
@@ -925,29 +929,18 @@ export default function Organization() {
           WE NOW HANDLE FLAT API RESPONSE → GROUP BY LATEST MEDIUM
       ------------------------------------------------------------------- */}
       {mediumListDataWithOrg?.data?.length > 0 && (() => {
-        const flatList = mediumListDataWithOrg.data;
+  const mediumList = mediumListDataWithOrg.data; // <-- SHOW ALL ROWS
 
-        // GROUP BY MEDIUM AND PICK LATEST updatedAt
-        const latestMediumMap: Record<string, any> = {};
+  return (
+    <Box sx={{ mb: 3 }}>
+      <Typography variant="subtitle2" sx={{ mb: 2 }}>
+        Existing Medium Settings:
+      </Typography>
 
-        flatList.forEach((item: any) => {
-          if (
-            !latestMediumMap[item.medium] ||
-            new Date(item.updatedAt) > new Date(latestMediumMap[item.medium].updatedAt)
-          ) {
-            latestMediumMap[item.medium] = item;
-          }
-        });
+      {mediumList
+        .filter((medium: any) => !deletedIds.includes(medium._id)) // hide deleted row
+        .map((medium: any) => {
 
-        const mediumList = Object.values(latestMediumMap);
-
-        return (
-          <Box sx={{ mb: 3 }}>
-            <Typography variant="subtitle2" sx={{ mb: 2 }}>
-              Existing Medium Settings:
-            </Typography>
-
-            {mediumList.map((medium: any, idx: number) => {
               const mediumId = medium._id;
               const isEditing = editingMediumId === mediumId;
 
@@ -1071,8 +1064,13 @@ export default function Organization() {
                       color="error"
                       onClick={() => {
                         deleteMedium.mutate({
-                          url: `/notification-setting/medium/delete/${medium._id}`,
+                          url: `${DELETE.DELETE_MEDIUM}`,
+                          payload: {
+                            ids: [medium._id]
+                          }
                         });
+                            // hide the row immediately
+                         setDeletedIds((prev) => [...prev, medium._id]);
                       }}
                     >
                       <DeleteIcon />
