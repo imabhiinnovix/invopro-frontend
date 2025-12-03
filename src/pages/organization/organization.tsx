@@ -353,6 +353,7 @@ export default function Organization() {
           await createMedium.mutateAsync({
             url: `${POST.CREATE_MEDIUM}`,
             payload: {
+              organizationId:selectedOrg._id,
               productId: notivixProduct.productId,
               mediumSettings: formData.mediumSettings.map((ms: any) => ({
                 medium: ms.medium,
@@ -429,6 +430,7 @@ export default function Organization() {
           await createMedium.mutateAsync({
             url: POST.CREATE_MEDIUM,
             payload: {
+              organizationId:selectedOrg._id,
               productId: notivixProduct.productId,
               mediumSettings: formData.mediumSettings.map((ms: any) => ({
                 medium: ms.medium,
