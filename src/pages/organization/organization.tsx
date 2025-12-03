@@ -52,6 +52,7 @@ interface ProductSubscription {
   productId: string;
   totalLicenses: string;
   licenseExpiresAt: string;
+  organizationProductSubscriptionId: string;
 }
 
 interface MediumSetting {
@@ -349,9 +350,10 @@ export default function Organization() {
         });
 
         if (notivixProduct) {
-          await updateMedium.mutateAsync({
-            url: `${PUT.UPDATE_MEDIUM}/${notivixProduct.productId}`,
+          await createMedium.mutateAsync({
+            url: `${POST.CREATE_MEDIUM}`,
             payload: {
+              productId: notivixProduct.productId,
               mediumSettings: formData.mediumSettings.map((ms: any) => ({
                 medium: ms.medium,
                 fromAddress: ms.fromAddress,
@@ -407,7 +409,7 @@ export default function Organization() {
             (ps: any) => ({
               productId: ps.productId,
               totalLicenses: Number(ps.totalLicenses),
-              licenseExpiresAt: ps.licenseExpiresAt,
+              licenseExpiresAt: ps.licenseExpiresAt
             })
           ),
         },
@@ -502,6 +504,7 @@ export default function Organization() {
         productId: item.productId?._id || item.productId,
         totalLicenses: String(item.totalLicenses || ""),
         licenseExpiresAt: item.licenseExpiresAt || "",
+        organizationProductSubscriptionId: item?._id
       }));
       const productIds = productSubs.map((ps: any) => ps.productId);
       setValue("productIds", productIds);
@@ -904,347 +907,276 @@ export default function Organization() {
                       </Grid>
                     ))}
 
-                    {(() => {
-                      const hasNotivixProduct = fields.some((field: any) => {
-                        const product = productOptions.find(
-                          (p) => p._id === field.productId
-                        );
-                        return (
-                          product && product.name?.toLowerCase() === "notivix"
-                        );
-                      });
+                  {(() => {
+  const hasNotivixProduct = fields.some((field: any) => {
+    const product = productOptions.find((p) => p._id === field.productId);
+    return product && product.name?.toLowerCase() === "notivix";
+  });
 
-                      if (!hasNotivixProduct) return null;
+  if (!hasNotivixProduct) return null;
 
-                      return (
-                        <Grid item xs={12}>
-                          <Typography variant="h6" sx={{ mt: 3, mb: 2 }}>
-                            Channel Settings for Notivix
-                          </Typography>
+  return (
+    <Grid item xs={12}>
+      <Typography variant="h6" sx={{ mt: 3, mb: 2 }}>
+        Channel Settings for Notivix
+      </Typography>
 
-                          {mediumListDataWithOrg?.data &&
-                            mediumListDataWithOrg.data.length > 0 && (
-                              <Box sx={{ mb: 3 }}>
-                                <Typography variant="subtitle2" sx={{ mb: 2 }}>
-                                  Existing Medium Settings:
-                                </Typography>
-                                {mediumListDataWithOrg.data.map(
-                                  (item: any, itemIdx: number) =>
-                                    item.mediumSettings &&
-                                    item.mediumSettings.map(
-                                      (medium: any, mediumIdx: number) => {
-                                        const mediumId = `${itemIdx}-${mediumIdx}`;
-                                        const isEditing =
-                                          editingMediumId === mediumId;
+      {/* ------------------------------------------------------------------
+          WE NOW HANDLE FLAT API RESPONSE → GROUP BY LATEST MEDIUM
+      ------------------------------------------------------------------- */}
+      {mediumListDataWithOrg?.data?.length > 0 && (() => {
+        const flatList = mediumListDataWithOrg.data;
 
-                                        return (
-                                          <Grid
-                                            container
-                                            spacing={2}
-                                            key={mediumId}
-                                            sx={{
-                                              m: 2,
-                                              width: "100%",
-                                              border: "1px solid #eee",
-                                              borderRadius:
-                                                STYLE_GUIDE.SPACING.s1,
-                                              p: 2,
-                                            }}
-                                          >
-                                            <Grid item xs={2}>
-                                              <FormControl
-                                                fullWidth
-                                                margin="dense"
-                                              >
-                                                <InputLabel>Medium</InputLabel>
-                                                <Select
-                                                  value={medium.medium}
-                                                  label="Medium"
-                                                  disabled
-                                                >
-                                                  {[
-                                                    "email",
-                                                    "sms",
-                                                    "whatsapp",
-                                                    "inapp",
-                                                  ].map((med) => (
-                                                    <MenuItem
-                                                      key={med}
-                                                      value={med}
-                                                    >
-                                                      {med}
-                                                    </MenuItem>
-                                                  ))}
-                                                </Select>
-                                              </FormControl>
-                                            </Grid>
-                                            <Grid item xs={3}>
-                                              <TextField
-                                                label="From Address"
-                                                value={medium.fromAddress || ""}
-                                                fullWidth
-                                                margin="dense"
-                                                disabled={!isEditing}
-                                                onChange={(e) => {
-                                                  if (isEditing) {
-                                                    medium.fromAddress =
-                                                      e.target.value;
-                                                    setForceUpdate(
-                                                      (prev) => prev + 1
-                                                    );
-                                                  }
-                                                }}
-                                              />
-                                            </Grid>
-                                            <Grid item xs={3}>
-                                              <TextField
-                                                label="Service Name"
-                                                value={medium.serviceName || ""}
-                                                fullWidth
-                                                margin="dense"
-                                                disabled={!isEditing}
-                                                onChange={(e) => {
-                                                  if (isEditing) {
-                                                    medium.serviceName =
-                                                      e.target.value;
-                                                    setForceUpdate(
-                                                      (prev) => prev + 1
-                                                    );
-                                                  }
-                                                }}
-                                              />
-                                            </Grid>
-                                            <Grid item xs={3}>
-                                              <TextField
-                                                label="API Key"
-                                                value={medium.apiKey || ""}
-                                                type="password"
-                                                fullWidth
-                                                margin="dense"
-                                                disabled={!isEditing}
-                                                onChange={(e) => {
-                                                  if (isEditing) {
-                                                    medium.apiKey =
-                                                      e.target.value;
-                                                    setForceUpdate(
-                                                      (prev) => prev + 1
-                                                    );
-                                                  }
-                                                }}
-                                              />
-                                            </Grid>
-                                            <Grid
-                                              item
-                                              xs={1}
-                                              sx={{
-                                                display: "flex",
-                                                alignItems: "center",
-                                                justifyContent: "center",
-                                              }}
-                                            >
-                                              <IconButton
-                                                aria-label={
-                                                  isEditing ? "Save" : "Edit"
-                                                }
-                                                color={
-                                                  isEditing
-                                                    ? "default"
-                                                    : "primary"
-                                                }
-                                                onClick={async () => {
-                                                  if (isEditing) {
-                                                    const currentMediumSettings =
-                                                      getValues(
-                                                        "mediumSettings"
-                                                      ) || [];
-                                                    const updatedMediumSettings =
-                                                      currentMediumSettings.map(
-                                                        (
-                                                          ms: any,
-                                                          idx: number
-                                                        ) => {
-                                                          if (
-                                                            idx ===
-                                                            Number(mediumIdx)
-                                                          ) {
-                                                            return {
-                                                              ...ms,
-                                                              fromAddress:
-                                                                medium.fromAddress,
-                                                              serviceName:
-                                                                medium.serviceName,
-                                                              apiKey:
-                                                                medium.apiKey,
-                                                              enabled:
-                                                                medium.enabled,
-                                                            };
-                                                          }
-                                                          return ms;
-                                                        }
-                                                      );
-                                                    setValue(
-                                                      "mediumSettings",
-                                                      updatedMediumSettings
-                                                    );
+        // GROUP BY MEDIUM AND PICK LATEST updatedAt
+        const latestMediumMap: Record<string, any> = {};
 
-                                                    await updateMedium.mutateAsync(
-                                                      {
-                                                        url: `${PUT.UPDATE_MEDIUM}/${item._id}`,
-                                                        payload: {
-                                                          productId:
-                                                            "6870c9e335f4e90221de9ed1",
-                                                          medium: medium.medium,
-                                                          fromAddress:
-                                                            medium.fromAddress,
-                                                          serviceName:
-                                                            medium.serviceName,
-                                                          apiKey: medium.apiKey,
-                                                          enabled:
-                                                            medium.enabled,
-                                                        },
-                                                      }
-                                                    );
+        flatList.forEach((item: any) => {
+          if (
+            !latestMediumMap[item.medium] ||
+            new Date(item.updatedAt) > new Date(latestMediumMap[item.medium].updatedAt)
+          ) {
+            latestMediumMap[item.medium] = item;
+          }
+        });
 
-                                                    console.log(
-                                                      "Save medium:",
-                                                      medium
-                                                    );
-                                                    setEditingMediumId(null);
-                                                  } else {
-                                                    setEditingMediumId(
-                                                      mediumId
-                                                    );
-                                                  }
-                                                }}
-                                              >
-                                                {isEditing ? (
-                                                  <SaveIcon />
-                                                ) : (
-                                                  <EditIcon />
-                                                )}
-                                              </IconButton>
-                                              <IconButton
-                                                aria-label="Delete"
-                                                color="error"
-                                                onClick={() => {
-                                                  deleteMedium.mutate({
-                                                    url: `/notification-setting/medium/delete/${item._id}`,
-                                                  });
-                                                }}
-                                              >
-                                                <DeleteIcon />
-                                              </IconButton>
-                                            </Grid>
-                                            <Grid
-                                              item
-                                              xs={12}
-                                              sx={{
-                                                display: "flex",
-                                                alignItems: "center",
-                                                justifyContent: "space-between",
-                                                mt: 1,
-                                              }}
-                                            >
-                                              <FormControlLabel
-                                                control={
-                                                  <Switch
-                                                    checked={medium.enabled}
-                                                    disabled={!isEditing}
-                                                    color="primary"
-                                                    onChange={(e) => {
-                                                      if (isEditing) {
-                                                        medium.enabled =
-                                                          e.target.checked;
-                                                        setForceUpdate(
-                                                          (prev) => prev + 1
-                                                        );
-                                                      }
-                                                    }}
-                                                  />
-                                                }
-                                                label="Enabled"
-                                              />
-                                            </Grid>
-                                          </Grid>
-                                        );
-                                      }
-                                    )
-                                )}
-                              </Box>
-                            )}
+        const mediumList = Object.values(latestMediumMap);
 
-                          {(() => {
-                            const usedMediums = mediumFields.map(
-                              (f: any) => f.medium
-                            );
-                            const availableMediums = [
-                              "email",
-                              "sms",
-                              "whatsapp",
-                              "inapp",
-                            ].filter((m) => !usedMediums.includes(m));
-                            if (availableMediums.length === 0) return null;
-                            return (
-                              <Box
-                                sx={{
-                                  display: "flex",
-                                  alignItems: "center",
-                                  gap: 2,
-                                  mb: 2,
-                                }}
-                              >
-                                {!showMediumDropdown ? (
-                                  <Button
-                                    variant="outlined"
-                                    startIcon={<span>+</span>}
-                                    onClick={() => setShowMediumDropdown(true)}
-                                    sx={{ minWidth: 200 }}
-                                    disabled={!shouldAllowMediumAdd}
-                                  >
-                                    Add Medium
-                                  </Button>
-                                ) : (
-                                  <FormControl
-                                    sx={{ minWidth: 200 }}
-                                    size="small"
-                                  >
-                                    <InputLabel id="add-medium-label">
-                                      Add Medium
-                                    </InputLabel>
-                                    <Select
-                                      labelId="add-medium-label"
-                                      value={""}
-                                      label="Add Medium"
-                                      onChange={(e) => {
-                                        const medium = e.target.value;
-                                        if (!medium) return;
-                                        appendMedium({
-                                          medium,
-                                          fromAddress: "",
-                                          serviceName: "",
-                                          apiKey: "",
-                                          enabled: true,
-                                        });
-                                        setShowMediumDropdown(false);
-                                      }}
-                                    >
-                                      <MenuItem value="" disabled>
-                                        Select medium to add
-                                      </MenuItem>
-                                      {availableMediums.map((medium) => (
-                                        <MenuItem key={medium} value={medium}>
-                                          {medium}
-                                        </MenuItem>
-                                      ))}
-                                    </Select>
-                                  </FormControl>
-                                )}
-                              </Box>
-                            );
-                          })()}
-                        </Grid>
-                      );
-                    })()}
+        return (
+          <Box sx={{ mb: 3 }}>
+            <Typography variant="subtitle2" sx={{ mb: 2 }}>
+              Existing Medium Settings:
+            </Typography>
+
+            {mediumList.map((medium: any, idx: number) => {
+              const mediumId = medium._id;
+              const isEditing = editingMediumId === mediumId;
+
+              return (
+                <Grid
+                  container
+                  spacing={2}
+                  key={mediumId}
+                  sx={{
+                    m: 2,
+                    width: "100%",
+                    border: "1px solid #eee",
+                    borderRadius: STYLE_GUIDE.SPACING.s1,
+                    p: 2,
+                  }}
+                >
+                  {/* MEDIUM NAME */}
+                  <Grid item xs={2}>
+                    <FormControl fullWidth margin="dense">
+                      <InputLabel>Medium</InputLabel>
+                      <Select value={medium.medium} disabled label="Medium">
+                        {["email", "sms", "whatsapp", "inapp"].map((m) => (
+                          <MenuItem key={m} value={m}>
+                            {m}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                  </Grid>
+
+                  {/* FROM ADDRESS */}
+                  <Grid item xs={3}>
+                    <TextField
+                      label="From Address"
+                      value={medium.fromAddress || ""}
+                      fullWidth
+                      margin="dense"
+                      disabled={!isEditing}
+                      onChange={(e) => {
+                        if (isEditing) {
+                          medium.fromAddress = e.target.value;
+                          setForceUpdate((p) => p + 1);
+                        }
+                      }}
+                    />
+                  </Grid>
+
+                  {/* SERVICE NAME */}
+                  <Grid item xs={3}>
+                    <TextField
+                      label="Service Name"
+                      value={medium.serviceName || ""}
+                      fullWidth
+                      margin="dense"
+                      disabled={!isEditing}
+                      onChange={(e) => {
+                        if (isEditing) {
+                          medium.serviceName = e.target.value;
+                          setForceUpdate((p) => p + 1);
+                        }
+                      }}
+                    />
+                  </Grid>
+
+                  {/* API KEY */}
+                  <Grid item xs={3}>
+                    <TextField
+                      label="API Key"
+                      value={medium.apiKey || ""}
+                      type="password"
+                      fullWidth
+                      margin="dense"
+                      disabled={!isEditing}
+                      onChange={(e) => {
+                        if (isEditing) {
+                          medium.apiKey = e.target.value;
+                          setForceUpdate((p) => p + 1);
+                        }
+                      }}
+                    />
+                  </Grid>
+
+                  {/* ACTION BUTTONS */}
+                  <Grid
+                    item
+                    xs={1}
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    <IconButton
+                      aria-label={isEditing ? "Save" : "Edit"}
+                      color={isEditing ? "default" : "primary"}
+                      onClick={async () => {
+                        if (isEditing) {
+                          await updateMedium.mutateAsync({
+                            url: `${PUT.UPDATE_MEDIUM}/${medium._id}`,
+                            payload: {
+                              productId: "6870c9e335f4e90221de9ed1",
+                              medium: medium.medium,
+                              fromAddress: medium.fromAddress,
+                              serviceName: medium.serviceName,
+                              apiKey: medium.apiKey,
+                              enabled: medium.enabled,
+                            },
+                          });
+
+                          setEditingMediumId(null);
+                        } else {
+                          setEditingMediumId(mediumId);
+                        }
+                      }}
+                    >
+                      {isEditing ? <SaveIcon /> : <EditIcon />}
+                    </IconButton>
+
+                    <IconButton
+                      aria-label="Delete"
+                      color="error"
+                      onClick={() => {
+                        deleteMedium.mutate({
+                          url: `/notification-setting/medium/delete/${medium._id}`,
+                        });
+                      }}
+                    >
+                      <DeleteIcon />
+                    </IconButton>
+                  </Grid>
+
+                  {/* ENABLED SWITCH */}
+                  <Grid
+                    item
+                    xs={12}
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      mt: 1,
+                    }}
+                  >
+                    <FormControlLabel
+                      control={
+                        <Switch
+                          checked={medium.enabled}
+                          disabled={!isEditing}
+                          onChange={(e) => {
+                            if (isEditing) {
+                              medium.enabled = e.target.checked;
+                              setForceUpdate((p) => p + 1);
+                            }
+                          }}
+                        />
+                      }
+                      label="Enabled"
+                    />
+                  </Grid>
+                </Grid>
+              );
+            })}
+          </Box>
+        );
+      })()}
+
+      {/* ----------------------------------  
+            ADD MEDIUM (UNCHANGED)
+      ---------------------------------- */}
+      {(() => {
+        const usedMediums = mediumFields.map((f: any) => f.medium);
+        const availableMediums = ["email", "sms", "whatsapp", "inapp"].filter(
+          (m) => !usedMediums.includes(m)
+        );
+
+        if (availableMediums.length === 0) return null;
+
+        return (
+          <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 2 }}>
+            {!showMediumDropdown ? (
+              <Button
+                variant="outlined"
+                startIcon={<span>+</span>}
+                onClick={() => setShowMediumDropdown(true)}
+                sx={{ minWidth: 200 }}
+                disabled={!shouldAllowMediumAdd}
+              >
+                Add Medium
+              </Button>
+            ) : (
+              <FormControl sx={{ minWidth: 200 }} size="small">
+                <InputLabel id="add-medium-label">Add Medium</InputLabel>
+                <Select
+                  labelId="add-medium-label"
+                  value={""}
+                  label="Add Medium"
+                  onChange={(e) => {
+                    const medium = e.target.value;
+                    if (!medium) return;
+
+                    appendMedium({
+                      medium,
+                      fromAddress: "",
+                      serviceName: "",
+                      apiKey: "",
+                      enabled: true,
+                    });
+
+                    setShowMediumDropdown(false);
+                  }}
+                >
+                  <MenuItem value="" disabled>
+                    Select medium to add
+                  </MenuItem>
+                  {availableMediums.map((medium) => (
+                    <MenuItem key={medium} value={medium}>
+                      {medium}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            )}
+          </Box>
+        );
+      })()}
+    </Grid>
+  );
+})()}
+
+
 
                     {(mediumFields || []).map((field: any, idx) => (
                       <Grid
