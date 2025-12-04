@@ -2265,9 +2265,12 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         return;
       }
 
-      // Create PDF in portrait A4
+      const isLandscape = gridColumns === 2 || gridColumns === 3;
+      const chartsPerRow = gridColumns;
+      const chartsPerPage = gridColumns === 1 ? 2 : chartsPerRow;
+
       const pdf = new jsPDF({
-        orientation: "portrait",
+        orientation: isLandscape ? "landscape" : "portrait",
         unit: "mm",
         format: "a4",
       });
@@ -2275,9 +2278,20 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
       const pageWidth = pdf.internal.pageSize.getWidth();
       const pageHeight = pdf.internal.pageSize.getHeight();
       const margin = 10;
-      const chartWidth = pageWidth - 2 * margin;
-      const chartHeight = (pageHeight - 3 * margin) / 2;
-      const chartsPerPage = 2;
+
+      let chartWidth: number;
+      let chartHeight: number;
+
+      if (gridColumns === 1) {
+        chartWidth = pageWidth - 2 * margin;
+        chartHeight = (pageHeight - 3 * margin) / 2;
+      } else if (gridColumns === 2) {
+        chartWidth = (pageWidth - 3 * margin) / 2;
+        chartHeight = pageHeight - 2 * margin;
+      } else {
+        chartWidth = (pageWidth - 4 * margin) / 3;
+        chartHeight = pageHeight - 2 * margin;
+      }
 
       let chartIndex = 0;
 
@@ -2288,9 +2302,18 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           pdf.addPage();
         }
 
-        const positionOnPage = chartIndex % chartsPerPage;
-        const xPos = margin;
-        const yPos = margin + positionOnPage * (chartHeight + margin);
+        let xPos: number;
+        let yPos: number;
+
+        if (gridColumns === 1) {
+          const positionOnPage = chartIndex % chartsPerPage;
+          xPos = margin;
+          yPos = margin + positionOnPage * (chartHeight + margin);
+        } else {
+          const colIndex = chartIndex % chartsPerRow;
+          xPos = margin + colIndex * (chartWidth + margin);
+          yPos = margin;
+        }
 
         try {
           const canvas = await html2canvas(card, {
