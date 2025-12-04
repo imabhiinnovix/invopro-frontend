@@ -472,7 +472,12 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
   const handleApplyFilters = async (filters: any) => {
     console.log("filters>>>>>>>>>>", filters);
     if (Object.keys(filters).length > 0) {
+  if (filters.__reset) {
+    filters = {};
+    setLocalDashboardFilters({});     // backend gets empty filters
+  }else{
       setLocalDashboardFilters(filters);
+  }
 
       getUpdatedWidgetData?.mutate({
         url: GET.DASHBOARD_WIDGET_DATA,

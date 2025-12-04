@@ -2002,10 +2002,10 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
   };
 
   const handleClearFilters = () => {
-    setFilters(defaultFilters || {});
+    setFilters({...defaultFilters, __reset: Date.now()} || {});
     setDateRangeValues({}); // Changed: Clear all date range values
     setFocusedFields({}); // Changed: Clear all focused fields
-    onApplyFilters(defaultFilters || {});
+    onApplyFilters({...defaultFilters, __reset: Date.now()} || {});
     onClose();
   };
 

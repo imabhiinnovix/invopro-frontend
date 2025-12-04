@@ -252,6 +252,11 @@ export const fetchChartData = createAsyncThunk(
   ) => {
     if(!dashboardType && isDefaultNotivix) return []
 
+    if (dashboardFilters.__reset) {
+      const { __reset, ...cleanFilters } = dashboardFilters;
+      dashboardFilters = cleanFilters;
+    }
+
     const response = await axiosInstance.get<ChartDataResponse>(
       `${GET.DASHBOARD_WIDGET_GET_CHART_DATA}/${dashboardId}`
     );
