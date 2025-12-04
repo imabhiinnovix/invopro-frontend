@@ -327,8 +327,8 @@ export default function Report() {
                 {/* {console.log('allDetailData', allDetailData)} */}
                 {allDetailData &&
                   allDetailData.status === "completed" &&
-                  allDetailData.customReportId?._id ===
-                    "67c7fa3493d10de5c51ae7c1" && (
+                  allDetailData.customReportId?.reportName ===
+                    "Supplemental IP" && (
                     <Tooltip title="Intermediate Download" arrow>
                       <Button variant="text" sx={{ minWidth: "auto" }}>
                         <DownloadForOfflineIcon

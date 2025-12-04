@@ -1458,7 +1458,7 @@ const ReportRequestTable: React.FC<AttributeOptionTableProps> = ({
               "-"
             )}
             {row.status === "completed" &&
-              row.customReportId?._id === "67c7fa3493d10de5c51ae7c1" && (
+              row.customReportId?.reportName === "Supplemental IP" && (
                 <Tooltip title="Intermediate Download" arrow>
                   <Button
                     variant="text"
