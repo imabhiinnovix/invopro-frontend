@@ -1847,6 +1847,7 @@ import {
   MenuItem,
   SelectChangeEvent,
   Tooltip,
+  CircularProgress,
 } from "@mui/material";
 import StyledSelect from "../../../components/atom/common/StyledSelect";
 import AddIcon from "@mui/icons-material/Add";
@@ -1887,10 +1888,13 @@ import { GridFilterListIcon } from "@mui/x-data-grid";
 import { ToggleButton, ToggleButtonGroup } from "@mui/material";
 import DatePicker, { DateObject } from "react-multi-date-picker";
 import FilterListIcon from "@mui/icons-material/FilterList";
+import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
 import { useSelector } from "react-redux";
 import { RootState } from "../../../store";
 import { checkPermission } from "../../../utils/utils";
 import { PermissionsMap } from "../../../utils/constants";
+import html2canvas from "html2canvas";
+import jsPDF from "jspdf";
 
 interface DashboardViewProps {
   title: string;
@@ -1913,8 +1917,10 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   );
   const [gridColumns, setGridColumns] = useState(2);
   const [selectedTheme, setSelectedTheme] = useState<string>("");
+  const [isExportingPdf, setIsExportingPdf] = useState(false);
 
   const inputRef = useRef<HTMLInputElement>(null);
+  const dashboardContainerRef = useRef<HTMLDivElement>(null);
   const { id: dashboardId } = useParams();
   const location = useLocation();
   const dispatch = useAppDispatch();
@@ -1925,7 +1931,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   const currentDashboard = dashboards.find((d) => d._id === dashboardId);
   const [isFiltersModalOpen, setIsFiltersModalOpen] = useState(false);
   const [dashboardFilters, setDashboardFilters] = useState<any>({});
-  console.log("Dashboard Filters-------------------3----:", dashboardFilters);
   const { dataSourceDetails, dataSourceDetailsLoading } = useAppSelector(
     (state) => state.notivixDashboard
   );
@@ -1971,7 +1976,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
   // Handle predefined range selection
   const handlePredefinedRangeSelection = (value: string) => {
-    console.log("Selected predefined range:", value);
     const today = new DateObject();
     let start, end;
 
@@ -2238,6 +2242,134 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
       }
     }
   };
+
+  const handleExportPDF = async () => {
+    if (!dashboardContainerRef.current || !currentDashboard) {
+      toast.error("Dashboard content not available for export");
+      return;
+    }
+
+    setIsExportingPdf(true);
+
+    try {
+      const dashboardName = currentDashboard.name || "Dashboard";
+
+      // Find all chart cards
+      const chartCards = dashboardContainerRef.current.querySelectorAll(
+        ".MuiCard-root, [class*='StyledCard']"
+      ) as NodeListOf<HTMLElement>;
+
+      if (chartCards.length === 0) {
+        toast.error("No charts found to export");
+        setIsExportingPdf(false);
+        return;
+      }
+
+      const isLandscape = gridColumns === 2 || gridColumns === 3;
+      const chartsPerRow = gridColumns;
+      const chartsPerPage = gridColumns === 1 ? 2 : chartsPerRow;
+
+      const pdf = new jsPDF({
+        orientation: isLandscape ? "landscape" : "portrait",
+        unit: "mm",
+        format: "a4",
+      });
+
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+      const margin = 10;
+
+      let chartWidth: number;
+      let chartHeight: number;
+
+      if (gridColumns === 1) {
+        chartWidth = pageWidth - 2 * margin;
+        chartHeight = (pageHeight - 3 * margin) / 2;
+      } else if (gridColumns === 2) {
+        chartWidth = (pageWidth - 3 * margin) / 2;
+        chartHeight = pageHeight - 2 * margin;
+      } else {
+        chartWidth = (pageWidth - 4 * margin) / 3;
+        chartHeight = pageHeight - 2 * margin;
+      }
+
+      let chartIndex = 0;
+
+      for (let i = 0; i < chartCards.length; i++) {
+        const card = chartCards[i];
+
+        if (chartIndex > 0 && chartIndex % chartsPerPage === 0) {
+          pdf.addPage();
+        }
+
+        let xPos: number;
+        let yPos: number;
+
+        if (gridColumns === 1) {
+          const positionOnPage = chartIndex % chartsPerPage;
+          xPos = margin;
+          yPos = margin + positionOnPage * (chartHeight + margin);
+        } else {
+          const colIndex = chartIndex % chartsPerRow;
+          xPos = margin + colIndex * (chartWidth + margin);
+          yPos = margin;
+        }
+
+        try {
+          const canvas = await html2canvas(card, {
+            scale: 2,
+            useCORS: true,
+            logging: false,
+            backgroundColor: "#ffffff",
+            ignoreElements: (element) => {
+              return (
+                element.classList.contains("MuiIconButton-root") ||
+                element.tagName === "svg" ||
+                element.classList.contains("MuiSvgIcon-root")
+              );
+            },
+          });
+
+          const imgData = canvas.toDataURL("image/jpeg", 0.95);
+          const imgWidth = canvas.width;
+          const imgHeight = canvas.height;
+
+          const aspectRatio = imgWidth / imgHeight;
+          let finalWidth = chartWidth;
+          let finalHeight = chartWidth / aspectRatio;
+
+          if (finalHeight > chartHeight) {
+            finalHeight = chartHeight;
+            finalWidth = chartHeight * aspectRatio;
+          }
+
+          const offsetX = xPos + (chartWidth - finalWidth) / 2;
+          const offsetY = yPos + (chartHeight - finalHeight) / 2;
+
+          pdf.addImage(
+            imgData,
+            "JPEG",
+            offsetX,
+            offsetY,
+            finalWidth,
+            finalHeight
+          );
+          chartIndex++;
+        } catch (error) {
+          console.error(`Error processing chart ${i + 1}:`, error);
+        }
+      }
+
+      pdf.save(`${dashboardName}.pdf`);
+      toast.success("Dashboard exported as PDF successfully!");
+    } catch (error) {
+      console.error("PDF export error:", error);
+      toast.error("Failed to export dashboard as PDF");
+    } finally {
+      setIsExportingPdf(false);
+    }
+  };
+
   const validationSchema = yup.object({
     versionValue: yup.string().nullable().optional(),
     startDate: yup
@@ -2335,14 +2467,9 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   useEffect(() => {
     if (dashboardId) {
       const hasFilters = Object.keys(dashboardFilters).length > 0;
-      // console.log("Dashboard Filters-------------------4----:", dashboardFilters);
       if (!hasFilters && currentDashboard?.isDefaultNotivix) {
         return;
       }
-      console.log(
-        "Dashboard Filters-------------------5----:",
-        dashboardFilters
-      );
 
       if (
         currentDashboard?.settings?.dashboardType === "normal" &&
@@ -2629,7 +2756,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     }
   };
 
-  console.log("dashboardFilters", currentDashboard.isDefaultNotivix);
   return (
     <Box
       sx={{
@@ -3130,6 +3256,22 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               >
                 Save
               </Button>
+              <Button
+                onClick={handleExportPDF}
+                color="primary"
+                variant="contained"
+                disabled={isExportingPdf}
+                startIcon={
+                  isExportingPdf ? (
+                    <CircularProgress size={20} color="inherit" />
+                  ) : (
+                    <PictureAsPdfIcon />
+                  )
+                }
+                sx={{ ...getButtonSx(), px: STYLE_GUIDE.SPACING.s6 }}
+              >
+                {isExportingPdf ? "Exporting..." : "Export"}
+              </Button>
             </>
           ) : (
             <>
@@ -3209,6 +3351,25 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                   Edit
                 </Button>
               )}
+              <Button
+                onClick={handleExportPDF}
+                color="primary"
+                variant="contained"
+                disabled={isExportingPdf}
+                startIcon={
+                  isExportingPdf ? (
+                    <CircularProgress size={20} color="inherit" />
+                  ) : (
+                    <PictureAsPdfIcon />
+                  )
+                }
+                sx={{
+                  borderRadius: "8px",
+                  minWidth: "140px",
+                }}
+              >
+                {isExportingPdf ? "Exporting..." : "Export"}
+              </Button>
             </>
           )}
         </Box>
@@ -3224,6 +3385,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         }}
       >
         <Box
+          ref={dashboardContainerRef}
           sx={{
             flex: 1,
             overflow: "auto",
