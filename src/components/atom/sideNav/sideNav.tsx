@@ -1428,6 +1428,10 @@ function getSystemSettingsItems(
               permissions,
               PermissionsMap.DEPARTMENT,
               "list"
+            ) && checkPermission(
+              permissions,
+              PermissionsMap.DEPARTMENT,
+              "update"
             ),
           },
           {
@@ -1438,6 +1442,10 @@ function getSystemSettingsItems(
               permissions,
               PermissionsMap.DESIGNATION,
               "list"
+            ) && checkPermission(
+              permissions,
+              PermissionsMap.DESIGNATION,
+              "update"
             ),
           },
           {
