@@ -1847,6 +1847,7 @@ import {
   MenuItem,
   SelectChangeEvent,
   Tooltip,
+  CircularProgress,
 } from "@mui/material";
 import StyledSelect from "../../../components/atom/common/StyledSelect";
 import AddIcon from "@mui/icons-material/Add";
@@ -1887,10 +1888,14 @@ import { GridFilterListIcon } from "@mui/x-data-grid";
 import { ToggleButton, ToggleButtonGroup } from "@mui/material";
 import DatePicker, { DateObject } from "react-multi-date-picker";
 import FilterListIcon from "@mui/icons-material/FilterList";
+import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
 import { useSelector } from "react-redux";
 import { RootState } from "../../../store";
 import { checkPermission } from "../../../utils/utils";
 import { PermissionsMap } from "../../../utils/constants";
+import html2canvas from "html2canvas";
+import jsPDF from "jspdf";
+import logo from "../../../assets/logo.png";
 
 interface DashboardViewProps {
   title: string;
@@ -1913,8 +1918,10 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   );
   const [gridColumns, setGridColumns] = useState(2);
   const [selectedTheme, setSelectedTheme] = useState<string>("");
+  const [isExportingPdf, setIsExportingPdf] = useState(false);
 
   const inputRef = useRef<HTMLInputElement>(null);
+  const dashboardContainerRef = useRef<HTMLDivElement>(null);
   const { id: dashboardId } = useParams();
   const location = useLocation();
   const dispatch = useAppDispatch();
@@ -1925,7 +1932,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   const currentDashboard = dashboards.find((d) => d._id === dashboardId);
   const [isFiltersModalOpen, setIsFiltersModalOpen] = useState(false);
   const [dashboardFilters, setDashboardFilters] = useState<any>({});
-  console.log("Dashboard Filters-------------------3----:", dashboardFilters);
   const { dataSourceDetails, dataSourceDetailsLoading } = useAppSelector(
     (state) => state.notivixDashboard
   );
@@ -1971,7 +1977,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
   // Handle predefined range selection
   const handlePredefinedRangeSelection = (value: string) => {
-    console.log("Selected predefined range:", value);
     const today = new DateObject();
     let start, end;
 
@@ -2238,6 +2243,283 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
       }
     }
   };
+
+  const handleExportPDF = async () => {
+    if (!dashboardContainerRef.current || !currentDashboard) {
+      toast.error("Dashboard content not available for export");
+      return;
+    }
+
+    setIsExportingPdf(true);
+
+    try {
+      const dashboardName = currentDashboard.name || "Dashboard";
+
+      const allCards = dashboardContainerRef.current.querySelectorAll(
+        "[data-widget-type]"
+      ) as NodeListOf<HTMLElement>;
+
+      let cardsToProcess = allCards;
+      if (allCards.length === 0) {
+        cardsToProcess = dashboardContainerRef.current.querySelectorAll(
+          ".MuiCard-root"
+        ) as NodeListOf<HTMLElement>;
+      }
+
+      if (cardsToProcess.length === 0) {
+        toast.error("No widgets found to export");
+        setIsExportingPdf(false);
+        return;
+      }
+
+      const numberWidgets: HTMLElement[] = [];
+      const chartWidgets: HTMLElement[] = [];
+
+      cardsToProcess.forEach((card) => {
+        const widgetType = card.getAttribute("data-widget-type");
+        if (widgetType === "number") {
+          numberWidgets.push(card);
+        } else {
+          chartWidgets.push(card);
+        }
+      });
+
+      const pdf = new jsPDF({
+        orientation: "landscape",
+        unit: "mm",
+        format: "a4",
+      });
+
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+      const margin = 10;
+      const headerHeight = 25;
+
+      const addHeader = async () => {
+        try {
+          const logoWidth = 30;
+          const logoHeight = 12;
+          pdf.addImage(logo, "PNG", margin, margin, logoWidth, logoHeight);
+
+          pdf.setFontSize(16);
+          pdf.setFont("helvetica", "bold");
+          pdf.text(dashboardName, margin + logoWidth + 10, margin + 8);
+
+          pdf.setFontSize(10);
+          pdf.setFont("helvetica", "normal");
+          const currentDate = new Date().toLocaleDateString("en-US", {
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+          });
+          pdf.text(currentDate, pageWidth - margin - 40, margin + 8);
+
+          pdf.setDrawColor(200, 200, 200);
+          pdf.setLineWidth(0.5);
+          pdf.line(
+            margin,
+            margin + headerHeight - 5,
+            pageWidth - margin,
+            margin + headerHeight - 5
+          );
+        } catch (error) {
+          console.error("Error adding header:", error);
+          pdf.setFontSize(16);
+          pdf.setFont("helvetica", "bold");
+          pdf.text(dashboardName, margin, margin + 8);
+
+          pdf.setDrawColor(200, 200, 200);
+          pdf.setLineWidth(0.5);
+          pdf.line(
+            margin,
+            margin + headerHeight - 5,
+            pageWidth - margin,
+            margin + headerHeight - 5
+          );
+        }
+      };
+
+      await addHeader();
+
+      let currentY = margin + headerHeight;
+
+      const addNewPage = async () => {
+        pdf.addPage();
+        await addHeader();
+        currentY = margin + headerHeight;
+      };
+
+      if (numberWidgets.length > 0) {
+        const numberWidgetColumns = 3;
+        const numberWidgetWidth =
+          (pageWidth - (numberWidgetColumns + 1) * margin) /
+          numberWidgetColumns;
+        const numberWidgetHeight = 35;
+        const numberWidgetsPerPage = 6;
+
+        for (let i = 0; i < numberWidgets.length; i++) {
+          const widgetIndex = i % numberWidgetsPerPage;
+          const rowIndex = Math.floor(widgetIndex / numberWidgetColumns);
+          const colIndex = widgetIndex % numberWidgetColumns;
+
+          if (i > 0 && widgetIndex === 0) {
+            await addNewPage();
+          }
+
+          const xPos = margin + colIndex * (numberWidgetWidth + margin);
+          const yPos = currentY + rowIndex * (numberWidgetHeight + margin);
+
+          try {
+            const canvas = await html2canvas(numberWidgets[i], {
+              scale: 2,
+              useCORS: true,
+              logging: false,
+              backgroundColor: "#ffffff",
+              ignoreElements: (element) => {
+                return (
+                  element.classList.contains("MuiIconButton-root") ||
+                  element.tagName === "svg" ||
+                  element.classList.contains("MuiSvgIcon-root")
+                );
+              },
+            });
+
+            const imgData = canvas.toDataURL("image/jpeg", 0.95);
+            const imgWidth = canvas.width;
+            const imgHeight = canvas.height;
+
+            const aspectRatio = imgWidth / imgHeight;
+            let finalWidth = numberWidgetWidth;
+            let finalHeight = numberWidgetWidth / aspectRatio;
+
+            if (finalHeight > numberWidgetHeight) {
+              finalHeight = numberWidgetHeight;
+              finalWidth = numberWidgetHeight * aspectRatio;
+            }
+
+            const offsetX = xPos + (numberWidgetWidth - finalWidth) / 2;
+            const offsetY = yPos + (numberWidgetHeight - finalHeight) / 2;
+
+            pdf.addImage(
+              imgData,
+              "JPEG",
+              offsetX,
+              offsetY,
+              finalWidth,
+              finalHeight
+            );
+          } catch (error) {
+            console.error(`Error processing number widget ${i + 1}:`, error);
+          }
+        }
+
+        const numberWidgetRows = Math.ceil(
+          numberWidgets.length / numberWidgetColumns
+        );
+        currentY += numberWidgetRows * (numberWidgetHeight + margin) + margin;
+      }
+
+      if (chartWidgets.length > 0) {
+        const chartsPerRow = gridColumns;
+        let chartWidth: number;
+        const chartHeight = pageHeight - headerHeight - 2 * margin;
+
+        if (gridColumns === 1) {
+          chartWidth = pageWidth - 2 * margin;
+        } else if (gridColumns === 2) {
+          chartWidth = (pageWidth - 3 * margin) / 2;
+        } else {
+          chartWidth = (pageWidth - 4 * margin) / 3;
+        }
+
+        const remainingSpace = pageHeight - currentY - margin;
+
+        if (numberWidgets.length > 0 && remainingSpace < chartHeight) {
+          await addNewPage();
+        }
+
+        for (let i = 0; i < chartWidgets.length; i++) {
+          let xPos: number;
+          let yPos: number;
+
+          if (gridColumns === 1) {
+            xPos = margin;
+            yPos = currentY;
+          } else {
+            const colIndex = i % chartsPerRow;
+            xPos = margin + colIndex * (chartWidth + margin);
+            yPos = currentY;
+          }
+
+          try {
+            const canvas = await html2canvas(chartWidgets[i], {
+              scale: 2,
+              useCORS: true,
+              logging: false,
+              backgroundColor: "#ffffff",
+              ignoreElements: (element) => {
+                return (
+                  element.classList.contains("MuiIconButton-root") ||
+                  element.tagName === "svg" ||
+                  element.classList.contains("MuiSvgIcon-root")
+                );
+              },
+            });
+
+            const imgData = canvas.toDataURL("image/jpeg", 0.95);
+            const imgWidth = canvas.width;
+            const imgHeight = canvas.height;
+
+            const aspectRatio = imgWidth / imgHeight;
+            let finalWidth = chartWidth;
+            let finalHeight = chartWidth / aspectRatio;
+
+            if (finalHeight > chartHeight) {
+              finalHeight = chartHeight;
+              finalWidth = chartHeight * aspectRatio;
+            }
+
+            const offsetX = xPos + (chartWidth - finalWidth) / 2;
+            const offsetY = yPos + (chartHeight - finalHeight) / 2;
+
+            pdf.addImage(
+              imgData,
+              "JPEG",
+              offsetX,
+              offsetY,
+              finalWidth,
+              finalHeight
+            );
+
+            if (gridColumns === 1) {
+              if (i < chartWidgets.length - 1) {
+                await addNewPage();
+              }
+            } else {
+              const colIndex = i % chartsPerRow;
+              if (
+                colIndex === chartsPerRow - 1 &&
+                i < chartWidgets.length - 1
+              ) {
+                await addNewPage();
+              }
+            }
+          } catch (error) {
+            console.error(`Error processing chart ${i + 1}:`, error);
+          }
+        }
+      }
+
+      pdf.save(`${dashboardName}.pdf`);
+      toast.success("Dashboard exported as PDF successfully!");
+    } catch (error) {
+      console.error("PDF export error:", error);
+      toast.error("Failed to export dashboard as PDF");
+    } finally {
+      setIsExportingPdf(false);
+    }
+  };
+
   const validationSchema = yup.object({
     versionValue: yup.string().nullable().optional(),
     startDate: yup
@@ -2335,14 +2617,9 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   useEffect(() => {
     if (dashboardId) {
       const hasFilters = Object.keys(dashboardFilters).length > 0;
-      // console.log("Dashboard Filters-------------------4----:", dashboardFilters);
       if (!hasFilters && currentDashboard?.isDefaultNotivix) {
         return;
       }
-      console.log(
-        "Dashboard Filters-------------------5----:",
-        dashboardFilters
-      );
 
       if (
         currentDashboard?.settings?.dashboardType === "normal" &&
@@ -2629,7 +2906,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     }
   };
 
-  console.log("dashboardFilters", currentDashboard.isDefaultNotivix);
   return (
     <Box
       sx={{
@@ -3130,6 +3406,22 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               >
                 Save
               </Button>
+              <Button
+                onClick={handleExportPDF}
+                color="primary"
+                variant="contained"
+                disabled={isExportingPdf}
+                startIcon={
+                  isExportingPdf ? (
+                    <CircularProgress size={20} color="inherit" />
+                  ) : (
+                    <PictureAsPdfIcon />
+                  )
+                }
+                sx={{ ...getButtonSx(), px: STYLE_GUIDE.SPACING.s6 }}
+              >
+                {isExportingPdf ? "Exporting..." : "Export"}
+              </Button>
             </>
           ) : (
             <>
@@ -3209,6 +3501,25 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                   Edit
                 </Button>
               )}
+              <Button
+                onClick={handleExportPDF}
+                color="primary"
+                variant="contained"
+                disabled={isExportingPdf}
+                startIcon={
+                  isExportingPdf ? (
+                    <CircularProgress size={20} color="inherit" />
+                  ) : (
+                    <PictureAsPdfIcon />
+                  )
+                }
+                sx={{
+                  borderRadius: "8px",
+                  minWidth: "140px",
+                }}
+              >
+                {isExportingPdf ? "Exporting..." : "Export"}
+              </Button>
             </>
           )}
         </Box>
@@ -3224,6 +3535,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         }}
       >
         <Box
+          ref={dashboardContainerRef}
           sx={{
             flex: 1,
             overflow: "auto",
