@@ -3255,6 +3255,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
                     backgroundColor={
                       SABIC_COLORS_NUMBER[index % SABIC_COLORS_NUMBER.length]
                     } // Cycle through colors
+                    data-widget-type="number"
                   >
                     <CardContent>
                       {/* ---------- Number card header with only Edit menu in edit mode ---------- */}
@@ -3510,7 +3511,10 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
                   setNewSaveChartName={setNewSaveChartName}
                 />
               )}
-              <StyledCard sx={{ ...getCardSx() }}>
+              <StyledCard
+                sx={{ ...getCardSx() }}
+                data-widget-type={chart.widgetTypeId?.chartType || "chart"}
+              >
                 <CardContent
                   sx={{
                     flexGrow: 1,
