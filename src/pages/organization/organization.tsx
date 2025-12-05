@@ -514,10 +514,10 @@ export default function Organization() {
       replace(productSubs);
     }
   }, [editOpen, selectedOrg, productAccessData, productAccessOrgId]);
-
+  const isUserSuperUser = isSuperUser();
   const handleRowClick = (org: any, _rowIndex: number) => {
     if (!shouldAllowUserList) return;
-    const isUserSuperUser = isSuperUser();
+    
 
     const organizationIdForUsers = isUserSuperUser ? org._id : null;
 
@@ -749,7 +749,8 @@ export default function Organization() {
                         )}
                       />
                     </Grid>
-
+                  {isUserSuperUser && (
+  <>
                     <Grid item xs={12}>
                       {(() => {
                         const usedProductIds = fields.map(
@@ -807,6 +808,7 @@ export default function Organization() {
                         );
                       })()}
                     </Grid>
+                    
 
                     {(fields || []).map((field, idx) => (
                       <Grid
@@ -912,6 +914,8 @@ export default function Organization() {
                         </Grid>
                       </Grid>
                     ))}
+                    </>
+)}
 
                   {(() => {
   const hasNotivixProduct = fields.some((field: any) => {
