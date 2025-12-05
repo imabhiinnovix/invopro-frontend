@@ -1361,6 +1361,11 @@ function getSystemSettingsItems(
         icon: createIcon(TopicIcon, "/data-src", theme),
         route: "/data-src",
         isBold: true,
+        shouldShow: checkPermission(
+        permissions,
+        PermissionsMap.DATA_SOURCE,
+        "list"
+      ),
       },
       {
         name: "IP Report Constants",
@@ -1368,6 +1373,11 @@ function getSystemSettingsItems(
         route: "#",
         isBold: true,
         subItems: themeSettingsDataSources,
+        shouldShow: checkPermission(
+        permissions,
+        PermissionsMap.DATA_SOURCE_VERSION,
+        "list"
+      ),
       },
       ...constantDataSources,
       {
