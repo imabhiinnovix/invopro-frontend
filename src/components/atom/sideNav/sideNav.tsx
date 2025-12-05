@@ -1364,7 +1364,7 @@ function getSystemSettingsItems(
         shouldShow: checkPermission(
         permissions,
         PermissionsMap.DATA_SOURCE,
-        "list"
+        "update"
       ),
       },
       {
