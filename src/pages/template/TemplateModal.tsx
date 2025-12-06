@@ -42,6 +42,7 @@ import {
 } from "../../types/template";
 import DialogContainer from "../../components/molecule/dialog";
 import PrimaryButton from "../../components/common/PrimaryButton";
+import { STYLE_GUIDE } from "../../styles";
 
 export function TemplateModal({
   open,
@@ -461,7 +462,9 @@ export function TemplateModal({
                   <>
                     <Typography
                       variant="subtitle2"
-                      sx={{ mb: 1, fontWeight: 600 }}
+                      sx={{ mb: 1, fontWeight: 600, fontFamily: STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary,
+                        fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
+                        color: STYLE_GUIDE.COLORS.textPrimary, }}
                     >
                       Name
                     </Typography>
@@ -470,8 +473,10 @@ export function TemplateModal({
                         padding: 1.5,
                         borderRadius: 2,
                         backgroundColor: "#f5f5f5",
-                        color: theme.palette.text.primary,
                         border: "1px solid #e0e0e0",
+                        fontFamily: STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary,
+                        fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
+                        color: STYLE_GUIDE.COLORS.textPrimary,
                       }}
                     >
                       {displayData?.name || rowData?.name || "-"}
@@ -509,7 +514,9 @@ export function TemplateModal({
                   <>
                     <Typography
                       variant="subtitle2"
-                      sx={{ mb: 1, fontWeight: 600 }}
+                      sx={{ mb: 1, fontWeight: 600, fontFamily: STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary,
+                        fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
+                        color: STYLE_GUIDE.COLORS.textPrimary, }}
                     >
                       Code
                     </Typography>
@@ -518,8 +525,10 @@ export function TemplateModal({
                         padding: 1.5,
                         borderRadius: 2,
                         backgroundColor: "#f5f5f5",
-                        color: theme.palette.text.primary,
                         border: "1px solid #e0e0e0",
+                         fontFamily: STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary,
+                        fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
+                        color: STYLE_GUIDE.COLORS.textPrimary,
                       }}
                     >
                       {displayData?.code || rowData?.code || "-"}
@@ -555,7 +564,9 @@ export function TemplateModal({
                   <>
                     <Typography
                       variant="subtitle2"
-                      sx={{ mb: 1, fontWeight: 600 }}
+                      sx={{ mb: 1, fontWeight: 600, fontFamily: STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary,
+                        fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
+                        color: STYLE_GUIDE.COLORS.textPrimary, }}
                     >
                       Subject
                     </Typography>
@@ -564,8 +575,10 @@ export function TemplateModal({
                         padding: 1.5,
                         borderRadius: 2,
                         backgroundColor: "#f5f5f5",
-                        color: theme.palette.text.primary,
                         border: "1px solid #e0e0e0",
+                         fontFamily: STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary,
+                        fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
+                        color: STYLE_GUIDE.COLORS.textPrimary,
                       }}
                     >
                       {displayData?.subject || rowData?.subject || "-"}
@@ -603,7 +616,9 @@ export function TemplateModal({
                   <>
                     <Typography
                       variant="subtitle2"
-                      sx={{ mb: 1, fontWeight: 600 }}
+                      sx={{ mb: 1, fontWeight: 600, fontFamily: STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary,
+                        fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
+                        color: STYLE_GUIDE.COLORS.textPrimary, }}
                     >
                       Type
                     </Typography>
@@ -612,9 +627,11 @@ export function TemplateModal({
                         padding: 1.5,
                         borderRadius: 2,
                         backgroundColor: "#f5f5f5",
-                        color: theme.palette.text.primary,
                         border: "1px solid #e0e0e0",
                         textTransform: "capitalize",
+                         fontFamily: STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary,
+                        fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
+                        color: STYLE_GUIDE.COLORS.textPrimary,
                       }}
                     >
                       {displayData?.type || rowData?.type || "-"}
@@ -662,7 +679,9 @@ export function TemplateModal({
                   <>
                     <Typography
                       variant="subtitle2"
-                      sx={{ mb: 1, fontWeight: 600 }}
+                      sx={{ mb: 1, fontWeight: 600, fontFamily: STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary,
+                        fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
+                        color: STYLE_GUIDE.COLORS.textPrimary, }}
                     >
                       Data Source
                     </Typography>
@@ -671,8 +690,10 @@ export function TemplateModal({
                         padding: 1.5,
                         borderRadius: 2,
                         backgroundColor: "#f5f5f5",
-                        color: theme.palette.text.primary,
                         border: "1px solid #e0e0e0",
+                         fontFamily: STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary,
+                        fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
+                        color: STYLE_GUIDE.COLORS.textPrimary,
                       }}
                     >
                       {getDataSourceName(
@@ -728,7 +749,6 @@ export function TemplateModal({
                         padding: 2,
                         borderRadius: 2,
                         backgroundColor: "#f5f5f5",
-                        color: theme.palette.text.primary,
                         border: "1px solid #e0e0e0",
                         minHeight: "200px",
                         maxHeight: "400px",
@@ -737,6 +757,9 @@ export function TemplateModal({
                           maxWidth: "100%",
                           height: "auto",
                         },
+                         fontFamily: STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary,
+                        fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
+                        color: STYLE_GUIDE.COLORS.textPrimary,
                       }}
                       dangerouslySetInnerHTML={{
                         __html:
@@ -812,7 +835,9 @@ export function TemplateModal({
                   <>
                     <Typography
                       variant="subtitle2"
-                      sx={{ mb: 1, fontWeight: 600 }}
+                      sx={{ mb: 1, fontWeight: 600, fontFamily: STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary,
+                        fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
+                        color: STYLE_GUIDE.COLORS.textPrimary, }}
                     >
                       Attachment Type
                     </Typography>
@@ -821,9 +846,11 @@ export function TemplateModal({
                         padding: 1.5,
                         borderRadius: 2,
                         backgroundColor: "#f5f5f5",
-                        color: theme.palette.text.primary,
                         border: "1px solid #e0e0e0",
                         textTransform: "uppercase",
+                         fontFamily: STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary,
+                        fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
+                        color: STYLE_GUIDE.COLORS.textPrimary,
                       }}
                     >
                       {displayData?.attachmentType || "-"}
@@ -857,7 +884,9 @@ export function TemplateModal({
                   <>
                     <Typography
                       variant="subtitle2"
-                      sx={{ mb: 1, fontWeight: 600 }}
+                      sx={{ mb: 1, fontWeight: 600, fontFamily: STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary,
+                        fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
+                        color: STYLE_GUIDE.COLORS.textPrimary, }}
                     >
                       File Name
                     </Typography>
@@ -866,8 +895,10 @@ export function TemplateModal({
                         padding: 1.5,
                         borderRadius: 2,
                         backgroundColor: "#f5f5f5",
-                        color: theme.palette.text.primary,
                         border: "1px solid #e0e0e0",
+                         fontFamily: STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary,
+                        fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
+                        color: STYLE_GUIDE.COLORS.textPrimary,
                       }}
                     >
                       {displayData?.attachmentFileName || "-"}
@@ -901,7 +932,9 @@ export function TemplateModal({
                   <>
                     <Typography
                       variant="subtitle2"
-                      sx={{ mb: 1, fontWeight: 600 }}
+                      sx={{ mb: 1, fontWeight: 600, fontFamily: STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary,
+                        fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
+                        color: STYLE_GUIDE.COLORS.textPrimary, }}
                     >
                       Field List
                     </Typography>
@@ -910,13 +943,15 @@ export function TemplateModal({
                         padding: 1.5,
                         borderRadius: 2,
                         backgroundColor: "#f5f5f5",
-                        color: theme.palette.text.primary,
                         border: "1px solid #e0e0e0",
                         minHeight: "56px",
                         display: "flex",
                         flexWrap: "wrap",
                         gap: 0.5,
                         alignItems: "center",
+                         fontFamily: STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary,
+                        fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
+                        color: STYLE_GUIDE.COLORS.textPrimary,
                       }}
                     >
                       {displayData?.attachmentFieldList?.length
@@ -979,7 +1014,9 @@ export function TemplateModal({
                   <>
                     <Typography
                       variant="subtitle2"
-                      sx={{ mb: 1, fontWeight: 600 }}
+                      sx={{ mb: 1, fontWeight: 600, fontFamily: STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary,
+                        fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
+                        color: STYLE_GUIDE.COLORS.textPrimary, }}
                     >
                       Group By
                     </Typography>
@@ -988,13 +1025,15 @@ export function TemplateModal({
                         padding: 1.5,
                         borderRadius: 2,
                         backgroundColor: "#f5f5f5",
-                        color: theme.palette.text?.primary,
                         border: "1px solid #e0e0e0",
                         minHeight: "56px",
                         display: "flex",
                         flexWrap: "wrap",
                         gap: 0.5,
                         alignItems: "center",
+                         fontFamily: STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary,
+                        fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
+                        color: STYLE_GUIDE.COLORS.textPrimary,
                       }}
                     >
                       {displayData?.groupBy?.length
