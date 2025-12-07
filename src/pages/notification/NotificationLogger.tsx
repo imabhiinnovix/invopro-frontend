@@ -1956,7 +1956,7 @@ export default function NotificationLogger() {
   const handleConfirmTrigger = () => {
     triggerNotification.mutate({
       url: POST.TRIGGER_NOTIFICATION,
-      payload: { isForce: "false" },
+      payload: { isForce: true },
     });
   };
 
