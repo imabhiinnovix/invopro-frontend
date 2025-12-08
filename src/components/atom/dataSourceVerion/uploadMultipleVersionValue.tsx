@@ -953,6 +953,19 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
           </Table>
         </TableContainer>
       </Stack>
+      {(isLoadingReportUpload || processingCount > 0) && (
+          <Backdrop
+            sx={(theme) => ({ color: "#fff", zIndex: theme.zIndex.modal + 1 })}
+            open={true}
+          >
+            <Box sx={{ width: "80%", textAlign: "center" }}>
+              <Typography variant="h6" mb={2}>
+                {processingCount > 0 ? `Validating ...` : `Uploading ...`}
+              </Typography>
+              <LinearProgress />
+            </Box>
+          </Backdrop>
+        )}
     </DialogContainer>
   );
 
