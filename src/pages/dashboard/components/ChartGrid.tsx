@@ -517,7 +517,8 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
         },
       });
 
-      setDrillDownOpen(false);
+      setDrillDownOpen(true);
+      handleShowAllData(selectedChart, filters || {});
     }
   };
 
@@ -669,6 +670,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
   const handleFullViewClick = (chart: ChartResponse) => {
     setSelectedChart(chart);
     setFullViewOpen(true);
+    handleShowAllData(chart, localDashboardFilters);
   };
 
   const handleFullViewClose = () => {
@@ -1125,10 +1127,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
     }
   };
 
-  const handleShowAllData = async (
-    chart: ChartResponse,
-    elements: ActiveElement[]
-  ) => {
+  const handleShowAllData = async (chart: ChartResponse, filters: any) => {
     setSelectedChart(chart);
     setDrillDownTitle(`${chart.name} - All Data`);
     setDrillDownOpen(true);
@@ -1137,15 +1136,15 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
 
     try {
       const payload = {
-        dataSourceId: selectedChart?.dataSourceId?._id,
-        dataSourceFieldSettings: selectedChart?.dataSourceId?.fieldSettings,
-        entityId: selectedChart?.dataSourceId?.entityId,
-        dimensions: selectedChart?.dimensions,
-        groupBy: selectedChart?.groupBy,
-        plotType: selectedChart?.plotType,
-        conditions: selectedChart?.conditions,
-        aggregation: selectedChart?.aggregation,
-        widgetType: selectedChart?.widgetTypeId?.chartType,
+        dataSourceId: chart?.dataSourceId?._id,
+        dataSourceFieldSettings: chart?.dataSourceId?.fieldSettings,
+        entityId: chart?.dataSourceId?.entityId,
+        dimensions: chart?.dimensions,
+        groupBy: chart?.groupBy,
+        plotType: chart?.plotType,
+        conditions: chart?.conditions,
+        aggregation: chart?.aggregation,
+        widgetType: chart?.widgetTypeId?.chartType,
         dashboardFilters: {
           startVersionValue:
             currentDashboard?.settings?.dashboardType === "trend"
@@ -1165,10 +1164,10 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
               : versionValue
               ? ""
               : "1m",
-          filters: { ...localDashboardFilters },
+          filters: { ...filters },
         },
         dashBoardType: currentDashboard?.settings?.dashboardType || "normal",
-        isIncremental: selectedChart?.isIncremental,
+        isIncremental: chart?.isIncremental,
       };
 
       setDrillDownPayload(payload);
@@ -1202,6 +1201,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
       setIsDrillDownLoading(false);
     }
   };
+
   const handleDrillDownClose = () => {
     setDrillDownOpen(false);
     setDrillDownData([]);
@@ -3734,7 +3734,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
               variant="outlined"
               onClick={(e) => {
                 e.stopPropagation();
-                handleShowAllData(selectedChart, []);
+                handleShowAllData(selectedChart, localDashboardFilters);
               }}
             >
               All Data

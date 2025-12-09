@@ -161,12 +161,10 @@ const CommonTable = forwardRef<CommonTableRef, CommonTableProps>(
         const aValue = a[sortBy];
         const bValue = b[sortBy];
 
-        // Handle null/undefined values
         if (aValue == null && bValue == null) return 0;
         if (aValue == null) return 1;
         if (bValue == null) return -1;
 
-        // Handle different types
         let comparison = 0;
         if (typeof aValue === "string" && typeof bValue === "string") {
           comparison = aValue.localeCompare(bValue, undefined, {
@@ -176,7 +174,6 @@ const CommonTable = forwardRef<CommonTableRef, CommonTableProps>(
         } else if (typeof aValue === "number" && typeof bValue === "number") {
           comparison = aValue - bValue;
         } else {
-          // Fallback to string comparison
           comparison = String(aValue).localeCompare(String(bValue), undefined, {
             numeric: true,
             sensitivity: "base",
@@ -232,7 +229,6 @@ const CommonTable = forwardRef<CommonTableRef, CommonTableProps>(
         </Paper>
       );
     }
-    // Sort rows first
     const sortedRows = sortRows(rows);
 
     let tableRows = sortedRows;
