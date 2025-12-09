@@ -197,12 +197,14 @@ export default function Frequency({
       field: "frequency",
       headerName: "Frequency",
       width: 120,
+      sortable: true,
       valueGetter: (params) => params || "-",
     },
     {
       field: "schedulerStartDate",
       headerName: "Start Date",
       width: 150,
+      sortable: true,
       valueGetter: (params) => {
         const date = params;
         return date
@@ -218,18 +220,21 @@ export default function Frequency({
       field: "acknowledgeRequired",
       headerName: "Acknowledge Required",
       width: 150,
+      sortable: true,
       valueGetter: (params) => (params ? "Yes" : "No"),
     },
     {
       field: "attachmentRequired",
       headerName: "Attachment Required",
       width: 150,
+      sortable: true,
       valueGetter: (params) => (params ? "Yes" : "No"),
     },
     {
       field: "templateId",
       headerName: "Template",
       width: 180,
+      sortable: true,
       valueGetter: (params) => {
         const template = params?.name;
         return template || "-";
@@ -239,6 +244,7 @@ export default function Frequency({
       field: "medium",
       headerName: "Notification Method",
       width: 180,
+      sortable: true,
       valueGetter: (params) => {
         const medium = params?.medium;
         return medium || "-";

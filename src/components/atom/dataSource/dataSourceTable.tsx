@@ -305,10 +305,34 @@ const DataSourceTable: React.FC<AttributeOptionTableProps> = ({
     },
   ];
 
+  const transformedRows = dataSource.map((item) => ({
+    ...item,
+    name: item.name || "",
+    description: item.description || "",
+    code: item.code || "",
+    versionType: item.versionType || "",
+    entityName: item.entityId?.name || "",
+    createdBy: item.createdBy
+      ? `${item.createdBy.firstName || ""} ${
+          item.createdBy.lastName ? " " + item.createdBy.lastName : ""
+        }`.trim()
+      : "",
+    updatedBy: item.updatedBy
+      ? `${item.updatedBy.firstName || ""} ${
+          item.updatedBy.lastName ? " " + item.updatedBy.lastName : ""
+        }`.trim()
+      : "",
+    createdAt: item.createdAt ? new Date(item.createdAt).getTime() : 0,
+    createdAtDisplay: item.createdAt,
+    updatedAt: item.updatedAt ? new Date(item.updatedAt).getTime() : 0,
+    updatedAtDisplay: item.updatedAt,
+    status: item.isActive ? "Active" : "Inactive",
+  }));
+
   return (
     <CommonTable
       columns={columns}
-      rows={dataSource}
+      rows={transformedRows}
       loading={dataSourceList.isFetching}
       height="calc(100vh - 250px)"
     />

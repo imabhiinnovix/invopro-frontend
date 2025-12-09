@@ -43,6 +43,7 @@ const columns: GridColDef[] = [
     width: 250,
     disableColumnMenu: true,
     resizable: true,
+    sortable: true,
   },
   {
     field: "status",
@@ -50,6 +51,7 @@ const columns: GridColDef[] = [
     width: 250,
     disableColumnMenu: true,
     resizable: true,
+    sortable: true,
     renderCell: (params) => (
       <Chip
         label={params.value || "Unknown"}

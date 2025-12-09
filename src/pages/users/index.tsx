@@ -80,6 +80,7 @@ const columns: GridColDef[] = [
     width: 200,
     disableColumnMenu: true,
     resizable: true,
+    sortable: true,
   },
   {
     field: "lastName",
@@ -87,6 +88,7 @@ const columns: GridColDef[] = [
     width: 200,
     disableColumnMenu: true,
     resizable: true,
+    sortable: true,
   },
   {
     field: "email",
@@ -94,6 +96,7 @@ const columns: GridColDef[] = [
     width: 200,
     disableColumnMenu: true,
     resizable: true,
+    sortable: true,
   },
   {
     field: "mobile",
@@ -101,6 +104,7 @@ const columns: GridColDef[] = [
     width: 200,
     disableColumnMenu: true,
     resizable: true,
+    sortable: true,
     valueFormatter: (params: { value: unknown }) => (params ? params : "-"),
   },
   {
@@ -109,6 +113,7 @@ const columns: GridColDef[] = [
     width: 200,
     disableColumnMenu: true,
     resizable: true,
+    sortable: false,
     renderCell: (params: GridRenderCellParams) => (
       <Box
         sx={{
@@ -137,6 +142,7 @@ const columns: GridColDef[] = [
     width: 200,
     disableColumnMenu: true,
     resizable: true,
+    sortable: true,
     renderCell: (params: GridRenderCellParams) => (
       <Typography variant="body2">{params.value || "-"}</Typography>
     ),
@@ -147,6 +153,7 @@ const columns: GridColDef[] = [
     width: 200,
     disableColumnMenu: true,
     resizable: true,
+    sortable: true,
     renderCell: (params: GridRenderCellParams) => (
       <Typography variant="body2">{params.value || "-"}</Typography>
     ),
@@ -157,6 +164,7 @@ const columns: GridColDef[] = [
     width: 100,
     disableColumnMenu: true,
     resizable: true,
+    sortable: true,
     renderCell: (params: GridRenderCellParams) => (
       <Chip
         label={params.value as string}
@@ -172,6 +180,7 @@ const columns: GridColDef[] = [
     width: 100,
     disableColumnMenu: true,
     resizable: true,
+    sortable: true,
     renderCell: (params: GridRenderCellParams) => (
       <Chip
         label={(params.value as boolean) ? "Yes" : "No"}

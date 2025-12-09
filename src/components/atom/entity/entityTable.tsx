@@ -303,10 +303,31 @@ const EntityTable: React.FC<EntityTableProps> = ({
     },
   ];
 
+  const transformedRows = entities.map((item) => ({
+    ...item,
+    name: item.name || "",
+    description: item.description || "",
+    createdBy: item.createdBy
+      ? `${item.createdBy.firstName || ""} ${
+          item.createdBy.lastName ? " " + item.createdBy.lastName : ""
+        }`.trim()
+      : "",
+    updatedBy: item.updatedBy
+      ? `${item.updatedBy.firstName || ""} ${
+          item.updatedBy.lastName ? " " + item.updatedBy.lastName : ""
+        }`.trim()
+      : "",
+    createdAt: item.createdAt ? new Date(item.createdAt).getTime() : 0,
+    createdAtDisplay: item.createdAt,
+    updatedAt: item.updatedAt ? new Date(item.updatedAt).getTime() : 0,
+    updatedAtDisplay: item.updatedAt,
+    status: item.isActive ? "Active" : "Inactive",
+  }));
+
   return (
     <CommonTable
       columns={columns}
-      rows={entities}
+      rows={transformedRows}
       loading={false}
       isLazyLoading={entitiesList.isFetching}
       height="calc(100vh - 200px)"

@@ -69,6 +69,7 @@ export const ValidationErrorsDataTable: React.FC<
       width: 140,
       disableColumnMenu: true,
       resizable: true,
+      sortable: true,
     },
     {
       id: "fileName",
@@ -76,6 +77,7 @@ export const ValidationErrorsDataTable: React.FC<
       width: 200,
       disableColumnMenu: true,
       resizable: true,
+      sortable: true,
     },
     {
       id: "errorMessage",
@@ -83,6 +85,7 @@ export const ValidationErrorsDataTable: React.FC<
       width: 300,
       disableColumnMenu: true,
       resizable: true,
+      sortable: true,
     },
     {
       id: "fileAttributeValue",
@@ -90,6 +93,7 @@ export const ValidationErrorsDataTable: React.FC<
       width: 150,
       disableColumnMenu: true,
       resizable: true,
+      sortable: true,
     },
     {
       id: "status",
@@ -97,6 +101,7 @@ export const ValidationErrorsDataTable: React.FC<
       width: 100,
       disableColumnMenu: true,
       resizable: true,
+      sortable: true,
       renderCell: (row: Record<string, unknown>) => {
         let chipColor = "default";
         let chipVariant = "outlined";

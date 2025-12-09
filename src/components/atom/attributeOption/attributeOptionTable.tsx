@@ -209,11 +209,13 @@ const AttributeOptionTable: React.FC<AttributeOptionTableProps> = ({
       id: "attributeName",
       label: "Name",
       minWidth: 170,
+      sortable: true,
     },
     {
       id: "attributeValue",
       label: "Attribute Option",
       minWidth: 170,
+      sortable: true,
       renderCell: (row: Record<string, unknown>, index?: number) => {
         return row.attributeValue?.length ? (
           <IconButton
@@ -236,6 +238,7 @@ const AttributeOptionTable: React.FC<AttributeOptionTableProps> = ({
       id: "createdBy",
       label: "Created By",
       minWidth: 170,
+      sortable: true,
       renderCell: (row: Record<string, unknown>) => {
         return row.createdBy
           ? `${row.createdBy?.firstName} ${row.createdBy?.lastName}`
@@ -246,6 +249,7 @@ const AttributeOptionTable: React.FC<AttributeOptionTableProps> = ({
       id: "updatedBy",
       label: "Updated By",
       minWidth: 170,
+      sortable: true,
       renderCell: (row: Record<string, unknown>) => {
         return row.updatedBy
           ? `${row.updatedBy?.firstName} ${row.updatedBy?.lastName}`
@@ -256,6 +260,7 @@ const AttributeOptionTable: React.FC<AttributeOptionTableProps> = ({
       id: "createdAt",
       label: "Created At",
       minWidth: 230,
+      sortable: true,
       renderCell: (row: Record<string, unknown>) => {
         return row.createdAt ? formatDate(row.createdAt) : "-";
       },
@@ -264,6 +269,7 @@ const AttributeOptionTable: React.FC<AttributeOptionTableProps> = ({
       id: "updatedAt",
       label: "Updated At",
       minWidth: 230,
+      sortable: true,
       renderCell: (row: Record<string, unknown>) => {
         return row.updatedAt ? formatDate(row.updatedAt) : "-";
       },
@@ -272,6 +278,7 @@ const AttributeOptionTable: React.FC<AttributeOptionTableProps> = ({
       id: "status",
       label: "Status",
       minWidth: 170,
+      sortable: true,
       renderCell: (row: Record<string, unknown>) => {
         return row.isActive ? (
           <Typography
@@ -300,6 +307,7 @@ const AttributeOptionTable: React.FC<AttributeOptionTableProps> = ({
       id: "actions",
       label: "Actions",
       minWidth: 170,
+      sortable: false,
       renderCell: (row: Record<string, unknown>) => {
         return (
           <CreateUpdateAttributeOption
@@ -313,10 +321,30 @@ const AttributeOptionTable: React.FC<AttributeOptionTableProps> = ({
     },
   ];
 
+  const transformedRows = (attributes || []).map((item) => ({
+    ...item,
+    attributeName: item.attributeName || "",
+    createdBy: item.createdBy
+      ? `${item.createdBy.firstName || ""} ${
+          item.createdBy.lastName ? " " + item.createdBy.lastName : ""
+        }`.trim()
+      : "",
+    updatedBy: item.updatedBy
+      ? `${item.updatedBy.firstName || ""} ${
+          item.updatedBy.lastName ? " " + item.updatedBy.lastName : ""
+        }`.trim()
+      : "",
+    createdAt: item.createdAt ? new Date(item.createdAt).getTime() : 0,
+    createdAtDisplay: item.createdAt,
+    updatedAt: item.updatedAt ? new Date(item.updatedAt).getTime() : 0,
+    updatedAtDisplay: item.updatedAt,
+    status: item.isActive ? "Active" : "Inactive",
+  }));
+
   return (
     <CommonTable
       columns={columns}
-      rows={attributes || []}
+      rows={transformedRows}
       loading={false}
       isLazyLoading={attributeList.isFetching}
       height="calc(100vh - 200px)"
