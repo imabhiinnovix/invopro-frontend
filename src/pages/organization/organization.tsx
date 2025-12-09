@@ -31,7 +31,7 @@ import SaveIcon from "@mui/icons-material/Save";
 import { useState, useContext } from "react";
 import { STYLE_GUIDE } from "../../styles";
 import { useComponentTypography } from "../../hooks";
-import ThemeTable from "../../components/atom/table/ThemeTable";
+import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import usePost from "../../hooks/usePost";
 import { POST } from "../../services/apiRoutes";
 import CommonDatePicker from "../../components/common/datePicker/datePicker";
@@ -45,7 +45,11 @@ import DialogContainer from "../../components/molecule/dialog";
 import PrimaryButton from "../../components/common/PrimaryButton";
 import { useSelector } from "react-redux";
 import { RootState } from "../../store";
-import { checkPermission, formatDate, formatDateWithoutTime } from "../../utils/utils";
+import {
+  checkPermission,
+  formatDate,
+  formatDateWithoutTime,
+} from "../../utils/utils";
 import { PermissionsMap } from "../../utils/constants";
 
 interface ProductSubscription {
@@ -588,76 +592,177 @@ export default function Organization() {
                 Failed to load organizations.
               </Typography>
             ) : (
-              <ThemeTable
-                columns={[
-                  { key: "name", label: "Name" },
-                  { key: "code", label: "Code" },
-                  { key: "status", label: "Status" },
-                  { key: "owner", label: "Owner" },
-                  { key: "description", label: "Description" },
-                  { key: "createdAt", label: "Created At" },
-                  { key: "updatedAt", label: "Updated At" },
-                  { key: "productAccess", label: "Product Access" },
-                  { key: "action", label: "Action" },
-                ]}
+              <DataGrid
                 rows={
                   data?.data?.map((org) => ({
+                    id: org._id,
                     _id: org._id,
-                    name: org.name,
-                    code: org.code,
-                    status: org.status,
+                    name: org.name || "",
+                    code: org.code || "",
+                    status: org.status || "",
                     owner: org.owner
                       ? `${org.owner.firstName || ""} ${
                           org.owner.lastName || ""
                         }`.trim()
-                      : "-",
-                    description: org.description,
-                    createdAt: formatDate(org.createdAt),
-                    updatedAt: formatDate(org.updatedAt),
-                    productAccess: (
-                      <Button
-                        size="small"
-                        variant="outlined"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleProductAccessView(org._id);
-                        }}
-                      >
-                        View
-                      </Button>
-                    ),
-                    action: (
-                      <>
-                        <IconButton
-                          disabled={!shouldAllowEdit}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleEditOpen(org);
-                          }}
-                          size="small"
-                          title="Edit"
-                        >
-                          <EditIcon fontSize="small" />
-                        </IconButton>
-                        <IconButton
-                          disabled={!shouldAllowDelete}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleDeleteOpen(org);
-                          }}
-                          size="small"
-                          title="Delete"
-                        >
-                          <DeleteIcon fontSize="small" />
-                        </IconButton>
-                      </>
-                    ),
+                      : "",
+                    description: org.description || "",
+                    createdAt: org.createdAt
+                      ? new Date(org.createdAt).getTime()
+                      : 0,
+                    createdAtDisplay: org.createdAt,
+                    updatedAt: org.updatedAt
+                      ? new Date(org.updatedAt).getTime()
+                      : 0,
+                    updatedAtDisplay: org.updatedAt,
+                    originalData: org,
                   })) || []
                 }
-                stickyHeader={true}
-                onRowClick={handleRowClick}
+                columns={[
+                  {
+                    field: "name",
+                    headerName: "Name",
+                    width: 170,
+                    sortable: true,
+                  },
+                  {
+                    field: "code",
+                    headerName: "Code",
+                    width: 170,
+                    sortable: true,
+                  },
+                  {
+                    field: "status",
+                    headerName: "Status",
+                    width: 170,
+                    sortable: true,
+                  },
+                  {
+                    field: "owner",
+                    headerName: "Owner",
+                    width: 170,
+                    sortable: true,
+                  },
+                  {
+                    field: "description",
+                    headerName: "Description",
+                    width: 200,
+                    sortable: true,
+                  },
+                  {
+                    field: "createdAt",
+                    headerName: "Created At",
+                    width: 170,
+                    sortable: true,
+                    renderCell: (params) => {
+                      const createdAtDisplay = params.row.createdAtDisplay as
+                        | string
+                        | undefined;
+                      return (
+                        <span>
+                          {createdAtDisplay
+                            ? formatDate(createdAtDisplay)
+                            : "-"}
+                        </span>
+                      );
+                    },
+                  },
+                  {
+                    field: "updatedAt",
+                    headerName: "Updated At",
+                    width: 170,
+                    sortable: true,
+                    renderCell: (params) => {
+                      const updatedAtDisplay = params.row.updatedAtDisplay as
+                        | string
+                        | undefined;
+                      return (
+                        <span>
+                          {updatedAtDisplay
+                            ? formatDate(updatedAtDisplay)
+                            : "-"}
+                        </span>
+                      );
+                    },
+                  },
+                  {
+                    field: "productAccess",
+                    headerName: "Product Access",
+                    width: 170,
+                    sortable: false,
+                    renderCell: (params) => {
+                      const orgId = params.row._id as string | undefined;
+                      if (!orgId) return null;
+                      return (
+                        <Button
+                          size="small"
+                          variant="outlined"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleProductAccessView(orgId);
+                          }}
+                        >
+                          View
+                        </Button>
+                      );
+                    },
+                  },
+                  {
+                    field: "action",
+                    headerName: "Action",
+                    width: 170,
+                    sortable: false,
+                    renderCell: (params) => {
+                      const org = params.row.originalData as any;
+                      if (!org) return null;
+                      return (
+                        <>
+                          <IconButton
+                            disabled={!shouldAllowEdit}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleEditOpen(org);
+                            }}
+                            size="small"
+                            title="Edit"
+                          >
+                            <EditIcon fontSize="small" />
+                          </IconButton>
+                          <IconButton
+                            disabled={!shouldAllowDelete}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDeleteOpen(org);
+                            }}
+                            size="small"
+                            title="Delete"
+                          >
+                            <DeleteIcon fontSize="small" />
+                          </IconButton>
+                        </>
+                      );
+                    },
+                  },
+                ]}
+                loading={isLoading}
+                getRowId={(row) => row._id}
+                disableColumnMenu
+                onRowClick={(params) => {
+                  const org = params.row.originalData as any;
+                  if (org) {
+                    handleRowClick(org, 0);
+                  }
+                }}
                 sx={{
-                  p: 0,
+                  "& .MuiDataGrid-cell": {
+                    display: "flex",
+                    alignItems: "center",
+                  },
+                  "& .MuiDataGrid-row": {
+                    "&:hover": {
+                      backgroundColor: "action.hover",
+                      cursor: "pointer",
+                    },
+                  },
                 }}
               />
             )}

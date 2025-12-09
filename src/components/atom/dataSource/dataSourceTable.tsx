@@ -204,26 +204,31 @@ const DataSourceTable: React.FC<AttributeOptionTableProps> = ({
       id: "name",
       label: "Name",
       minWidth: 170,
+      sortable: true,
     },
     {
       id: "description",
       label: "Description",
       minWidth: 170,
+      sortable: true,
     },
     {
       id: "code",
       label: "Code",
       minWidth: 170,
+      sortable: true,
     },
     {
       id: "versionType",
       label: "Version Type",
       minWidth: 170,
+      sortable: true,
     },
     {
       id: "entityName",
       label: "Entity Name",
       minWidth: 170,
+      sortable: true,
       renderCell: (row: Record<string, unknown>) => {
         return row.entityId?.name || "-";
       },
@@ -232,6 +237,7 @@ const DataSourceTable: React.FC<AttributeOptionTableProps> = ({
       id: "createdBy",
       label: "Created By",
       minWidth: 170,
+      sortable: true,
       renderCell: (row: Record<string, unknown>) => {
         return row.createdBy
           ? `${row.createdBy?.firstName} ${row.createdBy?.lastName}`
@@ -242,6 +248,7 @@ const DataSourceTable: React.FC<AttributeOptionTableProps> = ({
       id: "updatedBy",
       label: "Updated By",
       minWidth: 170,
+      sortable: true,
       renderCell: (row: Record<string, unknown>) => {
         console.log(row.updatedBy);
         return row.updatedBy?.firstName && row.updatedBy?.lastName
@@ -253,6 +260,7 @@ const DataSourceTable: React.FC<AttributeOptionTableProps> = ({
       id: "createdAt",
       label: "Created At",
       minWidth: 270,
+      sortable: true,
       renderCell: (row: Record<string, unknown>) => {
         return row.createdAt ? formatDate(row.createdAt) : "-";
       },
@@ -261,6 +269,7 @@ const DataSourceTable: React.FC<AttributeOptionTableProps> = ({
       id: "updatedAt",
       label: "Updated At",
       minWidth: 270,
+      sortable: true,
       renderCell: (row: Record<string, unknown>) => {
         return row.updatedAt ? formatDate(row.updatedAt) : "-";
       },
@@ -269,6 +278,7 @@ const DataSourceTable: React.FC<AttributeOptionTableProps> = ({
       id: "status",
       label: "Status",
       minWidth: 170,
+      sortable: true,
       renderCell: (row: Record<string, unknown>) => {
         return row.isActive ? (
           <Chip label="Active" color="success" />
@@ -281,6 +291,7 @@ const DataSourceTable: React.FC<AttributeOptionTableProps> = ({
       id: "actions",
       label: "Actions",
       minWidth: 170,
+      sortable: false,
       renderCell: (row: Record<string, unknown>) => {
         return (
           <CreateUpdateDataSource

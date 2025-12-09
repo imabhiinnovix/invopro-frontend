@@ -549,12 +549,14 @@ const DataSourceVersionTable: React.FC<AttributeOptionTableProps> = ({
       id: "dataSourceName",
       label: "Data Source Name",
       minWidth: 250,
+      sortable: true,
       renderCell: (row: Record<string, unknown>) => {
-        return row.dataSourceId?.name || "-";
+        const dataSourceId = row.dataSourceId;
+        return dataSourceId?.name || "-";
       },
     },
 
-    { id: "versionValue", label: "Period", minWidth: 170 },
+    { id: "versionValue", label: "Period", minWidth: 170, sortable: true },
 
     // {
     //   id: "dataSourceName",
@@ -564,11 +566,13 @@ const DataSourceVersionTable: React.FC<AttributeOptionTableProps> = ({
     //     return row.fileName || "-";
     //   },
     // },
-    { id: "fileName", label: "File Name" },
+    { id: "fileName", label: "File Name", sortable: true },
     {
       id: "mappings",
       label: "Mappings",
-      renderCell: (row: Record<string, unknown>, index: number) => {
+      sortable: false,
+      renderCell: (row: Record<string, unknown>, index?: number) => {
+        if (index === undefined) return "-";
         return row.mappings ? (
           <IconButton
             aria-label="expand row"
@@ -611,6 +615,7 @@ const DataSourceVersionTable: React.FC<AttributeOptionTableProps> = ({
       id: "createdBy",
       label: "Created By",
       minWidth: 200,
+      sortable: true,
       renderCell: (row: Record<string, unknown>) => {
         return row.createdBy ? (
           <Typography variant="body2" color="text.secondary">
@@ -625,15 +630,17 @@ const DataSourceVersionTable: React.FC<AttributeOptionTableProps> = ({
       id: "createdAt",
       label: "Created At",
       minWidth: 200,
+      sortable: true,
       renderCell: (row: Record<string, unknown>) => {
         return row.createdAt ? new Date(row.createdAt).toLocaleString() : "-";
       },
     },
-    { id: "versionName", label: "Version ID", minWidth: 170 },
+    { id: "versionName", label: "Version ID", minWidth: 170, sortable: true },
     {
       id: "status",
       label: "Status",
       minWidth: 170,
+      sortable: true,
       renderCell: (row: Record<string, unknown>) => {
         return row.status ? (
           <Typography variant="body2" color="text.secondary">
@@ -648,6 +655,7 @@ const DataSourceVersionTable: React.FC<AttributeOptionTableProps> = ({
       id: "error",
       label: "Error",
       minWidth: 170,
+      sortable: false,
       renderCell: (row: Record<string, unknown>) => {
         return row.status === "failed" ? (
           <ErrorDialog dataSourceVersionId={row._id} />
@@ -658,12 +666,28 @@ const DataSourceVersionTable: React.FC<AttributeOptionTableProps> = ({
     },
   ];
 
+  // Transform rows to match column IDs for sorting
+  const transformedRows = (dataSourceVersion || []).map((row) => ({
+    ...row,
+    dataSourceName: row.dataSourceId?.name || "",
+    versionValue: row.versionValue || "",
+    fileName: row.fileName || "",
+    createdBy: row.createdBy
+      ? `${row.createdBy.firstName || ""}${
+          row.createdBy.lastName ? " " + row.createdBy.lastName : ""
+        }`.trim()
+      : "",
+    createdAt: row.createdAt ? new Date(row.createdAt).getTime() : 0,
+    versionName: row.versionName || "",
+    status: row.status || "",
+  }));
+
   return (
     <CommonTable
       columns={columns}
       loading={false}
       isLazyLoading={dataSourceVersionList.isFetching}
-      rows={dataSourceVersion || []}
+      rows={transformedRows}
       height="calc(100vh - 200px)"
       isLazyTable={true}
       collpasible={(row, index) => {

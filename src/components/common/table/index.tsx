@@ -7,6 +7,7 @@ import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TablePagination from "@mui/material/TablePagination";
 import TableRow from "@mui/material/TableRow";
+import TableSortLabel from "@mui/material/TableSortLabel";
 import Skeleton from "@mui/material/Skeleton";
 import { forwardRef, useImperativeHandle } from "react";
 import Box from "@mui/material/Box";
@@ -21,6 +22,7 @@ interface Column {
   align?: "right";
   format?: (value: number) => string;
   renderCell?: (row: Record<string, unknown>, index?: number) => any; // eslint-disable-line @typescript-eslint/no-explicit-any
+  sortable?: boolean;
 }
 
 export interface CommonTableRef {
@@ -71,6 +73,10 @@ const CommonTable = forwardRef<CommonTableRef, CommonTableProps>(
     const [selectedRows, setSelectedRows] = React.useState<
       Record<string, unknown>[]
     >([]);
+    const [sortBy, setSortBy] = React.useState<string | null>(null);
+    const [sortDirection, setSortDirection] = React.useState<"asc" | "desc">(
+      "asc"
+    );
 
     // Expose resetSelection method to parent component
     useImperativeHandle(ref, () => {
@@ -135,6 +141,52 @@ const CommonTable = forwardRef<CommonTableRef, CommonTableProps>(
       );
     };
 
+    const handleSort = (columnId: string) => {
+      const column = columns.find((col) => col.id === columnId);
+      if (!column || !column.sortable) return;
+
+      if (sortBy === columnId) {
+        setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+      } else {
+        setSortBy(columnId);
+        setSortDirection("asc");
+      }
+      // setPage(0);
+    };
+
+    const sortRows = (rowsToSort: Record<string, unknown>[]) => {
+      if (!sortBy) return rowsToSort;
+
+      return [...rowsToSort].sort((a, b) => {
+        const aValue = a[sortBy];
+        const bValue = b[sortBy];
+
+        // Handle null/undefined values
+        if (aValue == null && bValue == null) return 0;
+        if (aValue == null) return 1;
+        if (bValue == null) return -1;
+
+        // Handle different types
+        let comparison = 0;
+        if (typeof aValue === "string" && typeof bValue === "string") {
+          comparison = aValue.localeCompare(bValue, undefined, {
+            numeric: true,
+            sensitivity: "base",
+          });
+        } else if (typeof aValue === "number" && typeof bValue === "number") {
+          comparison = aValue - bValue;
+        } else {
+          // Fallback to string comparison
+          comparison = String(aValue).localeCompare(String(bValue), undefined, {
+            numeric: true,
+            sensitivity: "base",
+          });
+        }
+
+        return sortDirection === "asc" ? comparison : -comparison;
+      });
+    };
+
     if (loading) {
       return (
         <Paper sx={{ width: "100%", overflow: "hidden" }}>
@@ -153,7 +205,11 @@ const CommonTable = forwardRef<CommonTableRef, CommonTableProps>(
                       align={column.align}
                       style={{ minWidth: column.minWidth }}
                     >
-                      {column.label}
+                      {column.sortable ? (
+                        <TableSortLabel disabled>{column.label}</TableSortLabel>
+                      ) : (
+                        column.label
+                      )}
                     </TableCell>
                   ))}
                 </TableRow>
@@ -176,9 +232,12 @@ const CommonTable = forwardRef<CommonTableRef, CommonTableProps>(
         </Paper>
       );
     }
-    let tableRows = rows;
+    // Sort rows first
+    const sortedRows = sortRows(rows);
+
+    let tableRows = sortedRows;
     if (!isLazyTable) {
-      tableRows = rows.slice(
+      tableRows = sortedRows.slice(
         page * rowsPerPage,
         page * rowsPerPage + rowsPerPage
       );
@@ -214,8 +273,24 @@ const CommonTable = forwardRef<CommonTableRef, CommonTableProps>(
                     key={column.id}
                     align={column.align}
                     style={{ minWidth: column.minWidth }}
+                    sortDirection={sortBy === column.id ? sortDirection : false}
                   >
-                    {column.label}
+                    {column.sortable ? (
+                      <TableSortLabel
+                        active={sortBy === column.id}
+                        direction={sortBy === column.id ? sortDirection : "asc"}
+                        onClick={() => handleSort(column.id)}
+                        sx={{
+                          "& .MuiTableSortLabel-icon": {
+                            opacity: sortBy === column.id ? 1 : 0.3,
+                          },
+                        }}
+                      >
+                        {column.label}
+                      </TableSortLabel>
+                    ) : (
+                      column.label
+                    )}
                   </TableCell>
                 ))}
               </TableRow>
@@ -314,7 +389,7 @@ const CommonTable = forwardRef<CommonTableRef, CommonTableProps>(
             ) : (
               <Stack direction="row" spacing={2} alignItems="center">
                 <Typography variant="body2">
-                  Total Records: {rows.length}
+                  Total Records: {sortedRows.length}
                 </Typography>
                 {rowSelection && selectedRows.length > 0 && (
                   <Typography variant="body2" color="primary">
@@ -326,13 +401,13 @@ const CommonTable = forwardRef<CommonTableRef, CommonTableProps>(
             <TablePagination
               rowsPerPageOptions={[10, 25, 100]}
               component="div"
-              count={rows.length}
+              count={sortedRows.length}
               rowsPerPage={rowsPerPage}
               page={page}
               onPageChange={handleChangePage}
               onRowsPerPageChange={handleChangeRowsPerPage}
               labelDisplayedRows={({ page }) => {
-                const totalPages = Math.ceil(rows.length / rowsPerPage);
+                const totalPages = Math.ceil(sortedRows.length / rowsPerPage);
                 return `Page ${page + 1} of ${totalPages}`;
               }}
             />
