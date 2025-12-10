@@ -1035,7 +1035,8 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
                   onChange={handleAggregationTypeChange}
                   disabled={isSubmitting}
                 >
-                  <MenuItem value="Count">Count</MenuItem>
+                  <MenuItem value="distinctCount">Distinct Count</MenuItem>
+                  <MenuItem value="Count">Total Count</MenuItem>
                   <MenuItem value="Sum">Sum</MenuItem>
                   <MenuItem value="Average">Average</MenuItem>
                 </StyledSelect>
@@ -1546,6 +1547,7 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
                         onChange={handleAggregationTypeChange}
                         disabled={isSubmitting}
                       >
+                        <MenuItem value="distinctCount">Distinct Count</MenuItem>
                         <MenuItem value="Count">Count</MenuItem>
                         <MenuItem value="Sum">Sum</MenuItem>
                         <MenuItem value="Average">Average</MenuItem>

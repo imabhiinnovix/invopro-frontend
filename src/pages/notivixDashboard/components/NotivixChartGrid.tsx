@@ -976,6 +976,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
             endVersionValue: endVersionValue,
             versionValue: versionValue,
           },
+          aggregation: chart.aggregation,
           groupBy,
           page: 1,
           limit: itemsPerPage,

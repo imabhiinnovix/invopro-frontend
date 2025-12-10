@@ -901,6 +901,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
         dataSourceId: chart.dataSourceId?._id,
         entityId: chart.dataSourceId?.entityId,
         conditions: chart.conditions || [],
+        aggregation: chart.aggregation,
         dashboardFilters: {
           startVersionValue,
           endVersionValue,
@@ -1086,6 +1087,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
           },
           groupBy,
           plotType: chart.plotType || [],
+          aggregation: chart.aggregation,
           page: 1,
           limit: itemsPerPage,
           dashBoardType: currentDashboard?.settings?.dashboardType,
