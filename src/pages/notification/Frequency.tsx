@@ -1371,7 +1371,6 @@ export default function Frequency({
                       }
                     }}
                     label="Template"
-                    displayEmpty
                     aria-label="Select template"
                     MenuProps={{
                       PaperProps: {
@@ -1406,7 +1405,6 @@ export default function Frequency({
                       }
                     }}
                     label="Method"
-                    displayEmpty
                     renderValue={(selected) =>
                       mediumList.data?.data?.find(
                         (medium) => medium._id === selected
@@ -1414,7 +1412,7 @@ export default function Frequency({
                     }
                     aria-label="Select notification method"
                   >
-                    <MenuItem value="">Select Method...</MenuItem>
+                    {/* <MenuItem value="">Select Method...</MenuItem> */}
                     {mediumList.data?.data?.map((option) => (
                       <MenuItem key={option._id} value={option._id}>
                         {option.medium}

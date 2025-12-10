@@ -354,7 +354,7 @@ const ConditionRuleBuilder = ({
                 onChange={(e) => updateValue(e.target.value === "true")}
                 label="Select..."
               >
-                <MenuItem value="">Select...</MenuItem>
+                {/* <MenuItem value="">Select...</MenuItem> */}
                 <MenuItem value="true">True</MenuItem>
                 <MenuItem value="false">False</MenuItem>
               </Select>
@@ -396,7 +396,7 @@ const ConditionRuleBuilder = ({
                   onChange={(e) => updateTimeUnit(e.target.value)}
                   label="Time Unit"
                 >
-                  <MenuItem value="">Select...</MenuItem>
+                  {/* <MenuItem value="">Select...</MenuItem> */}
                   {timeUnitOptions.map((option) => (
                     <MenuItem key={option.value} value={option.value}>
                       {option.label}
@@ -459,7 +459,7 @@ const ConditionRuleBuilder = ({
           label="Select..."
           sx={isMultiple ? { minHeight: 80 } : {}}
         >
-          {!isMultiple && <MenuItem value="">Select...</MenuItem>}
+          {/* {!isMultiple && <MenuItem value="">Select...</MenuItem>} */}
           {options.map((option) => (
             <MenuItem key={option} value={option}>
               {option}
@@ -508,7 +508,7 @@ const ConditionRuleBuilder = ({
               }}
               label="Select field..."
             >
-              <MenuItem value="">Select field...</MenuItem>
+              {/* <MenuItem value="">Select field...</MenuItem> */}
               {fieldOptionsRef.current.map((option) => (
                 <MenuItem key={option.value} value={option.value}>
                   {option.label}
@@ -525,7 +525,7 @@ const ConditionRuleBuilder = ({
               }
               label="Select operator..."
             >
-              <MenuItem value="">Select operator...</MenuItem>
+              {/* <MenuItem value="">Select operator...</MenuItem> */}
               {operatorListRef.current.isLoading ? (
                 <MenuItem disabled>Loading operators...</MenuItem>
               ) : (
@@ -798,7 +798,9 @@ const ConditionRuleBuilder = ({
         triggerFieldId: "",
         isActive: true,
         conditionGroups: conditionGroup ? [conditionGroup] : [],
-        conditionSummaryGroups: summaryConditionGroup ? [summaryConditionGroup] : [],
+        conditionSummaryGroups: summaryConditionGroup
+          ? [summaryConditionGroup]
+          : [],
       };
     };
 
@@ -852,7 +854,7 @@ const ConditionRuleBuilder = ({
                   }
                   label="Data Source"
                 >
-                  <MenuItem value="">Select DataSource...</MenuItem>
+                  {/* <MenuItem value="">Select DataSource...</MenuItem> */}
                   {notificationTypeList?.map((entity) => (
                     <MenuItem key={entity._id} value={entity._id}>
                       {entity.name}
@@ -1005,7 +1007,7 @@ export default function EditNotificationTypes() {
             logic: firstGroup.group_operator,
             rules: transformedRules,
           },
-          _id: backendData._id
+          _id: backendData._id,
         };
         setInitialNotification(newInitialNotification);
         setNotificationTypeId(backendData._id);
