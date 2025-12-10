@@ -45,6 +45,7 @@ const columns: GridColDef[] = [
     width: 250,
     disableColumnMenu: true,
     resizable: true,
+    sortable: true,
   },
   {
     field: "userId",
@@ -52,11 +53,12 @@ const columns: GridColDef[] = [
     width: 250,
     disableColumnMenu: true,
     resizable: true,
+    sortable: true,
     renderCell: (params) => {
-        return params.row.userId
-          ? `${params.row.userId?.firstName} ${params.row.userId?.lastName}`
-          : "-";
-      },
+      return params.row.userId
+        ? `${params.row.userId?.firstName} ${params.row.userId?.lastName}`
+        : "-";
+    },
   },
   {
     field: "updatedAt",
@@ -64,86 +66,87 @@ const columns: GridColDef[] = [
     width: 250,
     disableColumnMenu: true,
     resizable: true,
+    sortable: true,
     renderCell: (params) => {
-      return params.row.updatedAt ? formatDate(params.row.updatedAt) : '-';
-    }
+      return params.row.updatedAt ? formatDate(params.row.updatedAt) : "-";
+    },
   },
-{
-  field: "status",
-  headerName: "Enable/Disable",
-  width: 180,
-  disableColumnMenu: true,
-  resizable: true,
-  renderCell: (params) => {
-    // Normalize status strings here (use 'active' / 'in-active')
-    const serverStatus = String(params.row.status || "").toLowerCase();
-    const [checked, setChecked] = React.useState(serverStatus === "active");
-    const [loading, setLoading] = React.useState(false);
+  {
+    field: "status",
+    headerName: "Enable/Disable",
+    width: 180,
+    disableColumnMenu: true,
+    resizable: true,
+    sortable: true,
+    renderCell: (params) => {
+      // Normalize status strings here (use 'active' / 'in-active')
+      const serverStatus = String(params.row.status || "").toLowerCase();
+      const [checked, setChecked] = React.useState(serverStatus === "active");
+      const [loading, setLoading] = React.useState(false);
 
-    // ALWAYS sync when params.row.status changes (fixes virtualization / reused cells)
-    React.useEffect(() => {
-      const s = String(params.row.status || "").toLowerCase();
-      setChecked(s === "active");
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [params.row.status, params.id]); // keep in sync when row data or id changes
+      // ALWAYS sync when params.row.status changes (fixes virtualization / reused cells)
+      React.useEffect(() => {
+        const s = String(params.row.status || "").toLowerCase();
+        setChecked(s === "active");
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+      }, [params.row.status, params.id]); // keep in sync when row data or id changes
 
-    const handleToggle = async () => {
-      if (loading) return;
-      const prevChecked = checked;
-      const newChecked = !checked;
-      const newStatus = newChecked ? "active" : "in-active"; // use consistent names
+      const handleToggle = async () => {
+        if (loading) return;
+        const prevChecked = checked;
+        const newChecked = !checked;
+        const newStatus = newChecked ? "active" : "in-active"; // use consistent names
 
-      // optimistic UI
-      setChecked(newChecked);
-      setLoading(true);
+        // optimistic UI
+        setChecked(newChecked);
+        setLoading(true);
 
-      try {
-        await params.row.deleteTemplate.mutate(
-          {
-            // send status as query param since DELETE doesn't accept body
-            url: `${DELETE.DELETE_TEMPLATE}/${params.row._id}?status=${newStatus}`,
-          },
-          {
-            onSuccess: (res: any) => {
-              if (res?.success) {
-                // toast.success(
-                //   `Template ${newStatus === "active" ? "activated" : "deactivated"} successfully`
-                // );
-                // update the row in the grid so other cells read the new status
-                params.api.updateRows([{ ...params.row, status: newStatus }]);
-              } else {
-                toast.error(res?.message || "Failed to update status");
+        try {
+          await params.row.deleteTemplate.mutate(
+            {
+              // send status as query param since DELETE doesn't accept body
+              url: `${DELETE.DELETE_TEMPLATE}/${params.row._id}?status=${newStatus}`,
+            },
+            {
+              onSuccess: (res: any) => {
+                if (res?.success) {
+                  // toast.success(
+                  //   `Template ${newStatus === "active" ? "activated" : "deactivated"} successfully`
+                  // );
+                  // update the row in the grid so other cells read the new status
+                  params.api.updateRows([{ ...params.row, status: newStatus }]);
+                } else {
+                  toast.error(res?.message || "Failed to update status");
+                  setChecked(prevChecked); // revert
+                }
+              },
+              onError: () => {
+                toast.error("Error updating template status");
                 setChecked(prevChecked); // revert
-              }
-            },
-            onError: () => {
-              toast.error("Error updating template status");
-              setChecked(prevChecked); // revert
-            },
-            onSettled: () => setLoading(false),
-          }
-        );
-      } catch (err) {
-        toast.error("Something went wrong");
-        setChecked(prevChecked);
-        setLoading(false);
-      }
-    };
-    const isDisabled =
-      loading || !params.row.shouldAllowEdit || !params.row.shouldAllowDelete;
-    return (
-      <Switch
-        checked={checked}
-        onChange={handleToggle}
-        color="success"
-        disabled={isDisabled}
-        // add a stable key to help React reuse correctly if needed
-        key={`${params.id}-status-switch`}
-      />
-    );
+              },
+              onSettled: () => setLoading(false),
+            }
+          );
+        } catch (err) {
+          toast.error("Something went wrong");
+          setChecked(prevChecked);
+          setLoading(false);
+        }
+      };
+      const isDisabled =
+        loading || !params.row.shouldAllowEdit || !params.row.shouldAllowDelete;
+      return (
+        <Switch
+          checked={checked}
+          onChange={handleToggle}
+          color="success"
+          disabled={isDisabled}
+          // add a stable key to help React reuse correctly if needed
+          key={`${params.id}-status-switch`}
+        />
+      );
+    },
   },
-}
-,
   {
     field: "actions",
     headerName: "Actions",
@@ -209,7 +212,6 @@ interface TemplateDataTableProps {
   shouldAllowDelete: boolean;
   deleteTemplate: any;
   setTemplateReload: any;
-
 }
 
 export function TemplateDataTable({
@@ -229,7 +231,7 @@ export function TemplateDataTable({
   templateReload,
   loading,
   deleteTemplate,
-  setTemplateReload
+  setTemplateReload,
 }: TemplateDataTableProps) {
   const theme = useUnifiedTheme();
   const perPageItem = paginationModel.pageSize;

@@ -1987,6 +1987,7 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
         value === undefined ||
         value === null ||
         value === "" ||
+        value === "all" ||
         (Array.isArray(value) && value.length === 0);
 
       if (entityOption && !isEmptyValue) {
@@ -2002,10 +2003,10 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
   };
 
   const handleClearFilters = () => {
-    setFilters({...defaultFilters, __reset: Date.now()} || {});
+    setFilters({ ...defaultFilters, __reset: Date.now() } || {});
     setDateRangeValues({}); // Changed: Clear all date range values
     setFocusedFields({}); // Changed: Clear all focused fields
-    onApplyFilters({...defaultFilters, __reset: Date.now()} || {});
+    onApplyFilters({ ...defaultFilters, __reset: Date.now() } || {});
     onClose();
   };
 
@@ -2385,7 +2386,7 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
                 },
               }}
             >
-              <MenuItem value="">All {field.label}</MenuItem>
+              <MenuItem value="all">All {field.label}</MenuItem>
               {options.map((option) => (
                 <MenuItem key={option} value={option}>
                   {option}

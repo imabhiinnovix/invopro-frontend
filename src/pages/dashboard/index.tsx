@@ -36,6 +36,7 @@ import PrimaryButton from "../../components/common/PrimaryButton";
 import { checkPermission } from "../../utils/utils";
 import { PermissionsMap } from "../../utils/constants";
 import { useSelector } from "react-redux";
+import { RootState } from "../../reducers";
 
 const Dashboard = () => {
   const theme = useUnifiedTheme();
@@ -206,21 +207,25 @@ const Dashboard = () => {
       id: "name",
       label: "Name",
       minWidth: 170,
+      sortable: true,
     },
     {
       id: "createdBy",
       label: "Created By",
       minWidth: 170,
+      sortable: true,
     },
     {
       id: "type",
       label: "Type",
       minWidth: 170,
+      sortable: true,
     },
     {
       id: "actions",
       label: "Actions",
       minWidth: 170,
+      sortable: false,
       renderCell: (row: Record<string, unknown>) => {
         if (!shouldAllowDashboardDelete) return null;
         return (

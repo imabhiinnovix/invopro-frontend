@@ -62,6 +62,7 @@ const columns: GridColDef[] = [
     width: 150,
     disableColumnMenu: true,
     resizable: true,
+    sortable: true,
   },
   {
     field: "resourceType",
@@ -69,6 +70,7 @@ const columns: GridColDef[] = [
     width: 150,
     disableColumnMenu: true,
     resizable: true,
+    sortable: true,
   },
   {
     field: "status",
@@ -76,6 +78,7 @@ const columns: GridColDef[] = [
     width: 100,
     disableColumnMenu: true,
     resizable: true,
+    sortable: true,
     renderCell: (params) => (
       <Chip
         label={params.value || "Unknown"}
@@ -91,6 +94,7 @@ const columns: GridColDef[] = [
     width: 150,
     disableColumnMenu: true,
     resizable: true,
+    sortable: true,
     renderCell: (params) => params.value?.name || "-",
   },
   {
@@ -99,12 +103,14 @@ const columns: GridColDef[] = [
     width: 100,
     disableColumnMenu: true,
     resizable: true,
+    sortable: true,
     renderCell: (params) => params.row.methodName || params.row.method || "-", // Prioritize methodName, fallback to method
   },
   {
     field: "actions",
     headerName: "Actions",
     width: 150,
+    sortable: false,
     disableColumnMenu: true,
     sortable: false,
     resizable: false,

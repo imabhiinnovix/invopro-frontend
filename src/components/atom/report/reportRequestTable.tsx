@@ -1072,26 +1072,6 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
   },
 }));
 
-const StyledButton = styled(Button)(({ theme }) => ({
-  textTransform: "none",
-  borderRadius: STYLE_GUIDE.SPACING.s2,
-  padding: "6px 12px",
-  marginRight: "8px",
-  fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
-  fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.bold,
-  minWidth: "80px",
-  backgroundColor: theme.palette.primary.main,
-  color: theme.palette.primary.contrastText,
-  "&:hover": {
-    backgroundColor: theme.palette.primary.dark,
-    transform: "translateY(-1px)",
-    boxShadow: theme.shadows[2],
-  },
-  "&:active": {
-    transform: "translateY(0)",
-  },
-}));
-
 interface AttributeOptionTableProps {
   reload: boolean; // reload is now a boolean
   setReload: React.Dispatch<React.SetStateAction<boolean>>;
@@ -1172,7 +1152,7 @@ const ReportRequestTable: React.FC<AttributeOptionTableProps> = ({
   const intermediateSupplementalDownloadFile = (
     fileName: string,
     // fileId: string,
-    row: any
+    row: ReportRequestResponse
   ) => {
     // setIntermediateDownloadRequestId(fileId);
     setDownLoadFileName(fileName);
@@ -1224,7 +1204,7 @@ const ReportRequestTable: React.FC<AttributeOptionTableProps> = ({
   useEffect(() => {
     if (!notProcessingReportRequestDetails?.data?.data) return;
 
-    const dataMap: Map<string, any> = new Map(
+    const dataMap: Map<string, ReportRequestResponse> = new Map(
       notProcessingReportRequestDetails.data.data.map((item) => [
         item._id,
         item,
@@ -1334,57 +1314,72 @@ const ReportRequestTable: React.FC<AttributeOptionTableProps> = ({
       id: "reportName",
       label: "Report Name",
       minWidth: 170,
-      renderCell: (row: ReportRequestResponse) => {
-        return row.customReportId?.reportName || "-";
+      sortable: true,
+      renderCell: (row: Record<string, unknown>) => {
+        const reportRow = row as unknown as ReportRequestResponse;
+        return reportRow.customReportId?.reportName || "-";
       },
     },
     {
       id: "period",
       label: "Period",
-      renderCell: (row: ReportRequestResponse) => {
-        return row.versionValue || "-";
+      sortable: true,
+      renderCell: (row: Record<string, unknown>) => {
+        const reportRow = row as unknown as ReportRequestResponse;
+        return reportRow.versionValue || "-";
       },
     },
     {
       id: "status",
       label: "Status",
-      renderCell: (row: ReportRequestResponse) => {
+      sortable: true,
+      renderCell: (row: Record<string, unknown>) => {
+        const reportRow = row as unknown as ReportRequestResponse;
         const color =
-          row.status === "completed"
+          reportRow.status === "completed"
             ? "success.main"
-            : row.status === "processing"
+            : reportRow.status === "processing"
             ? "warning.main"
-            : row.status === "failed"
+            : reportRow.status === "failed"
             ? "error.main"
             : "text.primary";
-        return <Typography color={color}>{row.status || "-"}</Typography>;
+        return <Typography color={color}>{reportRow.status || "-"}</Typography>;
       },
     },
     {
       id: "preparedBy",
       label: "Prepared By",
-      renderCell: (row: ReportRequestResponse) => {
-        return `${row.createdBy?.firstName || ""} ${
-          row.createdBy?.lastName ? " " + row.createdBy.lastName : ""
+      sortable: true,
+      renderCell: (row: Record<string, unknown>) => {
+        const reportRow = row as unknown as ReportRequestResponse;
+        return `${reportRow.createdBy?.firstName || ""} ${
+          reportRow.createdBy?.lastName
+            ? " " + reportRow.createdBy.lastName
+            : ""
         }`;
       },
     },
     {
       id: "preparedOn",
       label: "Prepared On",
-      renderCell: (row: ReportRequestResponse) => {
-        return row.createdAt ? new Date(row.createdAt).toLocaleString() : "-";
+      sortable: true,
+      renderCell: (row: Record<string, unknown>) => {
+        const reportRow = row as unknown as ReportRequestResponse;
+        return reportRow.createdAt
+          ? new Date(reportRow.createdAt).toLocaleString()
+          : "-";
       },
     },
     {
       id: "actions",
       label: "Actions",
-      align: "right",
-      renderCell: (row: ReportRequestResponse) => {
-        console.log("row in action", row);
+      align: "right" as const,
+      sortable: false,
+      renderCell: (row: Record<string, unknown>) => {
+        const reportRow = row as unknown as ReportRequestResponse;
         return (
           <Stack direction="row" justifyContent="flex-end" alignItems="center">
-            {row.status === "completed" ? (
+            {reportRow.status === "completed" ? (
               <Box
                 sx={{
                   display: "flex",
@@ -1394,7 +1389,7 @@ const ReportRequestTable: React.FC<AttributeOptionTableProps> = ({
               >
                 {exportFile.isPending &&
                 !!downloadRequestId &&
-                downloadRequestId === row._id ? (
+                downloadRequestId === reportRow._id ? (
                   <Box
                     sx={{
                       width: 27,
@@ -1419,8 +1414,8 @@ const ReportRequestTable: React.FC<AttributeOptionTableProps> = ({
                       disabled={!shouldAllowDownload}
                       onClick={() => {
                         downloadFile(
-                          `${row.customReportId?.reportName}-${row.versionValue}.xlsx`,
-                          row._id
+                          `${reportRow.customReportId?.reportName}-${reportRow.versionValue}.xlsx`,
+                          reportRow._id
                         );
                       }}
                     >
@@ -1441,10 +1436,10 @@ const ReportRequestTable: React.FC<AttributeOptionTableProps> = ({
                   <Button variant="text" sx={{ minWidth: "auto" }}>
                     <VisibilityIcon
                       onClick={() => {
-                        setAllDetailData(row);
-                        setViewReportRequestId(row._id);
+                        setAllDetailData(reportRow);
+                        setViewReportRequestId(reportRow._id);
                         setViewReportNameWithVersionValue(
-                          `${row.customReportId?.reportName}-${row.versionValue}`
+                          `${reportRow.customReportId?.reportName}-${reportRow.versionValue}`
                         );
                       }}
                       //  sx={{ color: theme.getIconColor() }}
@@ -1457,8 +1452,8 @@ const ReportRequestTable: React.FC<AttributeOptionTableProps> = ({
             ) : (
               "-"
             )}
-            {row.status === "completed" &&
-              row.customReportId?.reportName === "Supplemental IP" && (
+            {reportRow.status === "completed" &&
+              reportRow.customReportId?.reportName === "Supplemental IP" && (
                 <Tooltip title="Intermediate Download" arrow>
                   <Button
                     variant="text"
@@ -1468,8 +1463,8 @@ const ReportRequestTable: React.FC<AttributeOptionTableProps> = ({
                     <SimCardDownloadIcon
                       onClick={() => {
                         intermediateSupplementalDownloadFile(
-                          `${row.customReportId?.reportName}-intermediate-${row.versionValue}.xlsx`,
-                          row
+                          `${reportRow.customReportId?.reportName}-intermediate-${reportRow.versionValue}.xlsx`,
+                          reportRow
                         );
                       }}
                     />
@@ -1477,64 +1472,77 @@ const ReportRequestTable: React.FC<AttributeOptionTableProps> = ({
                 </Tooltip>
               )}
 
-            {row.status === "completed" && row.intermediateReportId && (
-              <Box
-                sx={{
-                  display: "flex",
-                  justifyContent: "flex-end",
-                  alignItems: "center",
-                }}
-              >
-                {exportFile.isPending &&
-                !!intermediateDownloadRequestId &&
-                intermediateDownloadRequestId === row._id ? (
-                  <Box
-                    sx={{
-                      width: 27,
-                      height: 27,
-                      borderRadius: "50%",
-                      border: "3px solid #f3f3f3",
-                      borderTop: "3px solid #3498db",
-                      animation: "spin 1s linear infinite",
-                      "@keyframes spin": {
-                        "0%": { transform: "rotate(0deg)" },
-                        "100%": { transform: "rotate(360deg)" },
-                      },
-                      mr: 1,
-                    }}
-                  />
-                ) : (
-                  <Tooltip title="Intermediate Download" arrow>
-                    <Button
-                      variant="text"
-                      sx={{ minWidth: "auto" }}
-                      disabled={!shouldAllowIntermediateDownload}
-                    >
-                      <SimCardDownloadIcon
-                        onClick={() => {
-                          setDownloadRequestId("");
-                          setDownLoadFileName("");
-                          intermediateDownloadFile(
-                            `${row.customReportId?.reportName}-intermediate-${row.versionValue}.xlsx`,
-                            row._id
-                          );
-                        }}
-                      />
-                    </Button>
-                  </Tooltip>
-                )}
-              </Box>
-            )}
+            {reportRow.status === "completed" &&
+              reportRow.intermediateReportId && (
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "flex-end",
+                    alignItems: "center",
+                  }}
+                >
+                  {exportFile.isPending &&
+                  !!intermediateDownloadRequestId &&
+                  intermediateDownloadRequestId === reportRow._id ? (
+                    <Box
+                      sx={{
+                        width: 27,
+                        height: 27,
+                        borderRadius: "50%",
+                        border: "3px solid #f3f3f3",
+                        borderTop: "3px solid #3498db",
+                        animation: "spin 1s linear infinite",
+                        "@keyframes spin": {
+                          "0%": { transform: "rotate(0deg)" },
+                          "100%": { transform: "rotate(360deg)" },
+                        },
+                        mr: 1,
+                      }}
+                    />
+                  ) : (
+                    <Tooltip title="Intermediate Download" arrow>
+                      <Button
+                        variant="text"
+                        sx={{ minWidth: "auto" }}
+                        disabled={!shouldAllowIntermediateDownload}
+                      >
+                        <SimCardDownloadIcon
+                          onClick={() => {
+                            setDownloadRequestId("");
+                            setDownLoadFileName("");
+                            intermediateDownloadFile(
+                              `${reportRow.customReportId?.reportName}-intermediate-${reportRow.versionValue}.xlsx`,
+                              reportRow._id
+                            );
+                          }}
+                        />
+                      </Button>
+                    </Tooltip>
+                  )}
+                </Box>
+              )}
           </Stack>
         );
       },
     },
   ];
 
+  const transformedRows = (reportRequests || []).map((row) => ({
+    ...row,
+    reportName: row.customReportId?.reportName || "",
+    period: row.versionValue || "",
+    status: row.status || "",
+    preparedBy:
+      `${row.createdBy?.firstName || ""}${
+        row.createdBy?.lastName ? " " + row.createdBy.lastName : ""
+      }`.trim() || "",
+    preparedOn: row.createdAt ? new Date(row.createdAt).getTime() : 0,
+  }));
+
   return (
     <CommonTable
       columns={columns}
-      rows={reportRequests || []}
+      rows={transformedRows}
       loading={false}
       isLazyLoading={reportRequestList.isFetching}
       height="calc(100vh - 300px)"

@@ -21,11 +21,13 @@ const columns = [
     id: "name",
     label: "Name",
     minWidth: 170,
+    sortable: true,
   },
   {
     id: "createdAt",
     label: "Created At",
     minWidth: 170,
+    sortable: true,
     renderCell: (row: Record<string, unknown>) => {
       return <span>{formatDate(row.createdAt)}</span>;
     },
@@ -34,14 +36,16 @@ const columns = [
     id: "status",
     label: "Status",
     minWidth: 170,
+    sortable: true,
     renderCell: (row: Record<string, unknown>) => {
+      const status = row.status as string | undefined;
       return (
         <Chip
-          label={row.status}
+          label={status || "-"}
           color={
-            row.status === "pending"
+            status === "pending"
               ? "warning"
-              : row.status === "completed"
+              : status === "completed"
               ? "success"
               : "error"
           }
@@ -53,10 +57,15 @@ const columns = [
     id: "actions",
     label: "Actions",
     minWidth: 170,
+    sortable: false,
     renderCell: (row: Record<string, unknown>) => {
-      if (row.status === "completed") {
+      const status = row.status as string | undefined;
+      const downloadRequestFile = row.downloadRequestFile as
+        | (() => void)
+        | undefined;
+      if (status === "completed" && downloadRequestFile) {
         return (
-          <IconButton color="primary" onClick={() => row.downloadRequestFile()}>
+          <IconButton color="primary" onClick={downloadRequestFile}>
             <CloudDownloadIcon />
           </IconButton>
         );
@@ -115,9 +124,10 @@ const Jobs = () => {
 
   const rows = downloadRequestList?.data?.data?.map((item: any) => ({
     id: item._id,
-    name: item.fileName,
-    status: item.status,
-    createdAt: item.createdAt,
+    name: item.fileName || "",
+    status: item.status || "",
+    createdAt: item.createdAt ? new Date(item.createdAt).getTime() : 0,
+    createdAtDisplay: item.createdAt,
     filePath: item.filePath,
     downloadRequestFile: () =>
       downloadRequestFile.mutate({

@@ -197,12 +197,14 @@ export default function Frequency({
       field: "frequency",
       headerName: "Frequency",
       width: 120,
+      sortable: true,
       valueGetter: (params) => params || "-",
     },
     {
       field: "schedulerStartDate",
       headerName: "Start Date",
       width: 150,
+      sortable: true,
       valueGetter: (params) => {
         const date = params;
         return date
@@ -218,18 +220,21 @@ export default function Frequency({
       field: "acknowledgeRequired",
       headerName: "Acknowledge Required",
       width: 150,
+      sortable: true,
       valueGetter: (params) => (params ? "Yes" : "No"),
     },
     {
       field: "attachmentRequired",
       headerName: "Attachment Required",
       width: 150,
+      sortable: true,
       valueGetter: (params) => (params ? "Yes" : "No"),
     },
     {
       field: "templateId",
       headerName: "Template",
       width: 180,
+      sortable: true,
       valueGetter: (params) => {
         const template = params?.name;
         return template || "-";
@@ -239,6 +244,7 @@ export default function Frequency({
       field: "medium",
       headerName: "Notification Method",
       width: 180,
+      sortable: true,
       valueGetter: (params) => {
         const medium = params?.medium;
         return medium || "-";
@@ -1365,7 +1371,6 @@ export default function Frequency({
                       }
                     }}
                     label="Template"
-                    displayEmpty
                     aria-label="Select template"
                     MenuProps={{
                       PaperProps: {
@@ -1400,7 +1405,6 @@ export default function Frequency({
                       }
                     }}
                     label="Method"
-                    displayEmpty
                     renderValue={(selected) =>
                       mediumList.data?.data?.find(
                         (medium) => medium._id === selected
@@ -1408,7 +1412,7 @@ export default function Frequency({
                     }
                     aria-label="Select notification method"
                   >
-                    <MenuItem value="">Select Method...</MenuItem>
+                    {/* <MenuItem value="">Select Method...</MenuItem> */}
                     {mediumList.data?.data?.map((option) => (
                       <MenuItem key={option._id} value={option._id}>
                         {option.medium}

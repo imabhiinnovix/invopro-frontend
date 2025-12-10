@@ -242,7 +242,7 @@ export function RoleModal({
           onFilterApply({
             name: data.name,
             organizationId: data.organizationId || "",
-            status: data.status || "",
+            status: data.status === "all" ? "" : data.status || "",
           });
           return;
         }
@@ -487,7 +487,7 @@ export function RoleModal({
                             )
                           }
                         >
-                          <MenuItem value="">All</MenuItem>
+                          <MenuItem value="all">All</MenuItem>
                           <MenuItem value="active">Active</MenuItem>
                           <MenuItem value="inactive">Inactive</MenuItem>
                         </Select>

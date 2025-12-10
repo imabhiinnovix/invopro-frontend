@@ -79,8 +79,6 @@ const ProfilePage = () => {
     "upload"
   );
 
-  console.log(shouldAllowDelete, shouldAllowView, shouldAllowUpload);
-
   const [profile, setProfile] = useState({
     personal: {
       firstName: "",
@@ -521,7 +519,7 @@ const ProfilePage = () => {
     setDeleteModalOpen(false);
   };
 
-  const renderFormFields = (section, fields, disabledFields = []) => {
+  const renderFormFields = (section, fields, disabledFields: string[] = []) => {
     return fields.map((field) => {
       const isDisabled =
         disabledFields.includes(field.id) || !editModes[section];
@@ -531,7 +529,9 @@ const ProfilePage = () => {
             <FormControl
               fullWidth
               disabled={isDisabled}
-              variant={editModes[section] ? "outlined" : "filled"}
+              variant={
+                editModes[section] && !isDisabled ? "outlined" : "filled"
+              }
               size="small"
               sx={{ "& .MuiOutlinedInput-root": { borderRadius: 2 } }}
             >
@@ -614,7 +614,9 @@ const ProfilePage = () => {
                 handleInputChange(section, field.id, e.target.value)
               }
               disabled={isDisabled}
-              variant={editModes[section] ? "outlined" : "filled"}
+              variant={
+                editModes[section] && !isDisabled ? "outlined" : "filled"
+              }
               type={field.type || "text"}
               size="small"
               sx={{ "& .MuiOutlinedInput-root": { borderRadius: 2 } }}
@@ -825,6 +827,8 @@ const ProfilePage = () => {
             <CardContent sx={{ pt: 2 }}>
               <Grid container spacing={2}>
                 {renderFormFields("personal", personalFields, [
+                  "firstName",
+                  "lastName",
                   "email",
                   "company",
                   "departmentId",

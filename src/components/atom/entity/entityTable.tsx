@@ -210,12 +210,13 @@ const EntityTable: React.FC<EntityTableProps> = ({
   }
 
   const columns = [
-    { id: "name", label: "Name", minWidth: 170 },
-    { id: "description", label: "Description", minWidth: 170 },
+    { id: "name", label: "Name", minWidth: 170, sortable: true },
+    { id: "description", label: "Description", minWidth: 170, sortable: true },
     {
       id: "attributes",
       label: "Attributes",
       minWidth: 170,
+      sortable: false,
       renderCell: (row: Record<string, unknown>, index?: number) => {
         return row.attributes?.length ? (
           <IconButton
@@ -238,6 +239,7 @@ const EntityTable: React.FC<EntityTableProps> = ({
       id: "createdBy",
       label: "Created By",
       minWidth: 170,
+      sortable: true,
       renderCell: (row: Record<string, unknown>) => {
         return row.createdBy
           ? `${row.createdBy?.firstName} ${row.createdBy?.lastName}`
@@ -246,8 +248,9 @@ const EntityTable: React.FC<EntityTableProps> = ({
     },
     {
       id: "updatedBy",
-      label: "Updat  ed By",
+      label: "Updated By",
       minWidth: 170,
+      sortable: true,
       renderCell: (row: Record<string, unknown>) => {
         return row.updatedBy
           ? `${row.updatedBy?.firstName} ${row.updatedBy?.lastName}`
@@ -258,6 +261,7 @@ const EntityTable: React.FC<EntityTableProps> = ({
       id: "createdAt",
       label: "Created At",
       minWidth: 200,
+      sortable: true,
       renderCell: (row: Record<string, unknown>) => {
         return row.createdAt ? formatDate(row.createdAt) : "-";
       },
@@ -267,6 +271,7 @@ const EntityTable: React.FC<EntityTableProps> = ({
       label: "Updated At",
       minWidth: 200,
       // { id: "createdAt", label: "Created At", minWidth: 170 },
+      sortable: true,
       renderCell: (row: Record<string, unknown>) => {
         return row.updatedAt ? formatDate(row.updatedAt) : "-";
       },
@@ -275,6 +280,7 @@ const EntityTable: React.FC<EntityTableProps> = ({
       id: "status",
       label: "Status",
       minWidth: 170,
+      sortable: true,
       renderCell: (row: Record<string, unknown>) => {
         return row.isActive ? "Active" : "Inactive";
       },
@@ -283,6 +289,7 @@ const EntityTable: React.FC<EntityTableProps> = ({
       id: "actions",
       label: "Actions",
       minWidth: 170,
+      sortable: false,
       renderCell: (row: Record<string, unknown>) => {
         return (
           <CreateUpdateEntity
@@ -296,10 +303,31 @@ const EntityTable: React.FC<EntityTableProps> = ({
     },
   ];
 
+  const transformedRows = entities.map((item) => ({
+    ...item,
+    name: item.name || "",
+    description: item.description || "",
+    createdBy: item.createdBy
+      ? `${item.createdBy.firstName || ""} ${
+          item.createdBy.lastName ? " " + item.createdBy.lastName : ""
+        }`.trim()
+      : "",
+    updatedBy: item.updatedBy
+      ? `${item.updatedBy.firstName || ""} ${
+          item.updatedBy.lastName ? " " + item.updatedBy.lastName : ""
+        }`.trim()
+      : "",
+    createdAt: item.createdAt ? new Date(item.createdAt).getTime() : 0,
+    createdAtDisplay: item.createdAt,
+    updatedAt: item.updatedAt ? new Date(item.updatedAt).getTime() : 0,
+    updatedAtDisplay: item.updatedAt,
+    status: item.isActive ? "Active" : "Inactive",
+  }));
+
   return (
     <CommonTable
       columns={columns}
-      rows={entities}
+      rows={transformedRows}
       loading={false}
       isLazyLoading={entitiesList.isFetching}
       height="calc(100vh - 200px)"
