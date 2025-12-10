@@ -529,7 +529,9 @@ const ProfilePage = () => {
             <FormControl
               fullWidth
               disabled={isDisabled}
-              variant={editModes[section] ? "outlined" : "filled"}
+              variant={
+                editModes[section] && !isDisabled ? "outlined" : "filled"
+              }
               size="small"
               sx={{ "& .MuiOutlinedInput-root": { borderRadius: 2 } }}
             >
@@ -612,7 +614,9 @@ const ProfilePage = () => {
                 handleInputChange(section, field.id, e.target.value)
               }
               disabled={isDisabled}
-              variant={editModes[section] ? "outlined" : "filled"}
+              variant={
+                editModes[section] && !isDisabled ? "outlined" : "filled"
+              }
               type={field.type || "text"}
               size="small"
               sx={{ "& .MuiOutlinedInput-root": { borderRadius: 2 } }}
