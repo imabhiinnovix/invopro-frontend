@@ -38,6 +38,7 @@ import Designation from "./pages/designation";
 import Department from "./pages/department";
 import Template from "./pages/template";
 import Jobs from "./pages/jobs";
+import SourceList from "./pages/sourceList";
 
 const AppRoutes = () => {
   const token = getAuthToken();
@@ -104,6 +105,10 @@ const AppRoutes = () => {
           <Route path="/department" element={<Department />} />
           <Route path="/template" element={<Template />} />
           <Route path="/jobs" element={<Jobs />} />
+          <Route
+            path="/system-settings/charts/source-list"
+            element={<SourceList />}
+          />
         </Route>
       </Route>
 

@@ -17,7 +17,7 @@ export interface Attribute {
   optionAttributeId?: string;
   cleaner?: string[];
   referenceEntitySetting?: {
-   refEntityId?: string;
+    refEntityId?: string;
     refEntityField?: string;
     relationType?: string;
   };
@@ -49,7 +49,7 @@ export interface DataSourceRequestPayload {
 }
 
 export interface DataSourceType {
-  _id?: string;
+  _id: string;
   name: string;
   entityId?: any;
   code?: string;
@@ -60,6 +60,7 @@ export interface DataSourceType {
   updatedBy?: UpdatedBy;
   createdAt?: string;
   updatedAt?: string;
+  visibility?: "primary" | "secondary" | "hide";
 }
 
 export interface DataSourceResponse {

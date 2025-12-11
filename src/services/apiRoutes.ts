@@ -49,8 +49,10 @@ export const POST = {
   CREATE_DEPARTMENT: "/common/department/create",
   CREATE_TEMPLATE: "/notivix/notification-setting/template/create",
   NOTIFICATION_SUMMARY: "notivix/notification-setting/type/summary",
-  RESEND_NOTIFICATION: "/notivix/notification-setting/prepared/notification/resend",
-  DASHBOARD_WIDGET_DATA_EXPORT: "/common/dataSource/getWidgetDataByFilter/export",
+  RESEND_NOTIFICATION:
+    "/notivix/notification-setting/prepared/notification/resend",
+  DASHBOARD_WIDGET_DATA_EXPORT:
+    "/common/dataSource/getWidgetDataByFilter/export",
 };
 
 export const PUT = {
@@ -95,7 +97,6 @@ export const GET = {
   Get_Entity_By_Id: "common/entities",
   Attribute_Option_List: "/common/attributeOptions/list",
   Attribute_Option_Get: "/common/attributeOptions/get",
-  Data_Source_List: "/common/dataSource/list",
   Data_Source_Code: "/common/dataSource/code",
   Data_Source_Version: "/common/dataSourceVersion",
   Data_Source: "/common/dataSource/dataSourceId",
@@ -132,7 +133,6 @@ export const GET = {
   NOTIFICATION_TYPE_LIST: "/notivix/notification-setting/type/list",
   TEMPLATE_LIST: "/notivix/notification-setting/template/list",
   MEDIUM_LIST: "/notivix/notification-setting/medium/list",
-  DATASOURCE_API_LIST: "/common/dataSource/list",
   FREQUENCY_LIST: "notivix/notification-setting/frequency/list",
   FREQUENCY_DETAIL: "notivix/notification-setting/frequency",
   NOTIFICATION_SETTING_TYPE_DETAIL: "/notivix/notification-setting/type",

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import {
   Button,
   FormControl,
@@ -14,6 +14,7 @@ import {
   CardContent,
   Card,
   FormHelperText,
+  ListSubheader,
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import AddIcon from "@mui/icons-material/Add";
@@ -92,6 +93,15 @@ interface AddChartModalProps {
   setOpenSaveChart?: (open: boolean) => void;
   setChartSaveSettingData?: (chart: ChartResponse) => void;
   setNewSaveChartName?: (name: string) => void;
+}
+
+type DataSourceWithVisibility = DataSource & {
+  visibility?: "primary" | "secondary" | string;
+};
+
+interface GroupedDataSources {
+  primary: DataSource[];
+  secondary: DataSource[];
 }
 
 const FormSection = styled(Box)(({ theme }) => ({
@@ -233,6 +243,25 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
   const dispatch = useAppDispatch();
   const { widgetTypes, dataSources, widgetTypesLoading, dataSourcesLoading } =
     useAppSelector((state) => state.dashboard);
+
+  const groupedDataSources = useMemo<GroupedDataSources>(() => {
+    const primary: DataSource[] = [];
+    const secondary: DataSource[] = [];
+
+    dataSources.forEach((source) => {
+      const sourceWithVisibility =
+        source as unknown as DataSourceWithVisibility;
+      const visibility = sourceWithVisibility.visibility?.toLowerCase();
+
+      if (visibility === "primary") {
+        primary.push(source);
+      } else if (visibility === "secondary") {
+        secondary.push(source);
+      }
+    });
+
+    return { primary, secondary };
+  }, [dataSources]);
 
   const { data: plotTypes } = useGet<{
     success: boolean;
@@ -1503,11 +1532,26 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
                 label="Data Source"
                 disabled={dataSourcesLoading}
               >
-                {dataSources.map((source) => (
-                  <MenuItem key={source._id} value={source._id}>
-                    {source.name}
-                  </MenuItem>
-                ))}
+                {groupedDataSources.primary.length > 0 && (
+                  <>
+                    <ListSubheader>Primary</ListSubheader>
+                    {groupedDataSources.primary.map((source) => (
+                      <MenuItem key={source._id} value={source._id}>
+                        {source.name}
+                      </MenuItem>
+                    ))}
+                  </>
+                )}
+                {groupedDataSources.secondary.length > 0 && (
+                  <>
+                    <ListSubheader>Secondary</ListSubheader>
+                    {groupedDataSources.secondary.map((source) => (
+                      <MenuItem key={source._id} value={source._id}>
+                        {source.name}
+                      </MenuItem>
+                    ))}
+                  </>
+                )}
                 {dataSourcesLoading && (
                   <MenuItem disabled>
                     <Box

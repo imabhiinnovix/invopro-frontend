@@ -68,6 +68,8 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import TopicIcon from "@mui/icons-material/Topic";
 import AccountBalanceIcon from "@mui/icons-material/AccountBalance";
 import BusinessCenterIcon from "@mui/icons-material/BusinessCenter";
+import InsertChartOutlinedIcon from "@mui/icons-material/InsertChartOutlined";
+import FormatListBulletedIcon from "@mui/icons-material/FormatListBulleted";
 import { UseQueryResult } from "@tanstack/react-query";
 import { checkPermission, PermissionMap } from "../../../utils/utils";
 import { PermissionsMap } from "../../../utils/constants";
@@ -183,6 +185,7 @@ export default function SideNav() {
   const [openThemeSettings, setOpenThemeSettings] = React.useState(false);
   const [openSystemSettings, setOpenSystemSettings] = React.useState(false);
   const [openDataSources, setOpenDataSources] = React.useState(false);
+  const [openChartsSettings, setOpenChartsSettings] = React.useState(false);
   const [newDashboardName, setNewDashboardName] = React.useState("");
   const [dashboardType, setDashboardType] = React.useState<
     "normal" | "trend" | "fixed"
@@ -238,7 +241,11 @@ export default function SideNav() {
   const dataSourceListAPI = useGet<{
     success: boolean;
     data: DataSourceListData[];
-  }>(["dataSourceList"], GET?.DATA_SOURCE_LIST + `?canEditInline=true`, true);
+  }>(
+    ["dataSourceListAPI"],
+    GET?.DATA_SOURCE_LIST + `?canEditInline=true`,
+    true
+  );
 
   const dataSourceNotivixListAPI = useGet<DataSourceListPayload>(
     ["dataSourceNotivixList"],
@@ -603,7 +610,9 @@ export default function SideNav() {
                                                 navigate(
                                                   `/dashboard/${dashboard._id}`,
                                                   {
-                                                    state: { enableEditMode: false },
+                                                    state: {
+                                                      enableEditMode: false,
+                                                    },
                                                   }
                                                 )
                                               }
@@ -753,18 +762,52 @@ export default function SideNav() {
                                                           ) {
                                                             return null;
                                                           }
+
+                                                          const hasDeepItems =
+                                                            nestedItem.subItems &&
+                                                            nestedItem.subItems
+                                                              .length > 0;
+
+                                                          if (!hasDeepItems) {
+                                                            return (
+                                                              <MainListItem
+                                                                key={
+                                                                  nestedItem.name
+                                                                }
+                                                                route={
+                                                                  nestedItem.route
+                                                                }
+                                                                isNested={true}
+                                                                icon={
+                                                                  nestedItem.icon
+                                                                }
+                                                                label={
+                                                                  nestedItem.name
+                                                                }
+                                                                title={
+                                                                  nestedItem.name
+                                                                }
+                                                                onClick={(
+                                                                  e
+                                                                ) => {
+                                                                  e.stopPropagation();
+                                                                  e.preventDefault();
+                                                                  handleNestedItemClick(
+                                                                    nestedItem.route
+                                                                  );
+                                                                }}
+                                                              />
+                                                            );
+                                                          }
+
                                                           return (
                                                             <MainListItem
+                                                              key={
+                                                                nestedItem.name
+                                                              }
                                                               route={
                                                                 nestedItem.route
                                                               }
-                                                              onClick={(e) => {
-                                                                e.stopPropagation();
-                                                                e.preventDefault();
-                                                                handleNestedItemClick(
-                                                                  nestedItem.route
-                                                                );
-                                                              }}
                                                               isNested={true}
                                                               icon={
                                                                 nestedItem.icon
@@ -774,6 +817,83 @@ export default function SideNav() {
                                                               }
                                                               title={
                                                                 nestedItem.name
+                                                              }
+                                                              onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                e.preventDefault();
+                                                                setOpenChartsSettings(
+                                                                  (prev) =>
+                                                                    !prev
+                                                                );
+                                                              }}
+                                                              isExpanded={
+                                                                openChartsSettings
+                                                              }
+                                                              collapsibleComp={
+                                                                <Collapse
+                                                                  in={
+                                                                    openChartsSettings
+                                                                  }
+                                                                  timeout="auto"
+                                                                  unmountOnExit
+                                                                >
+                                                                  <SubItemScroller>
+                                                                    <List
+                                                                      component="div"
+                                                                      disablePadding
+                                                                      sx={{
+                                                                        pl: STYLE_GUIDE
+                                                                          .SPACING
+                                                                          .s4,
+                                                                      }}
+                                                                    >
+                                                                      {nestedItem.subItems?.map(
+                                                                        (
+                                                                          deepItem
+                                                                        ) => {
+                                                                          if (
+                                                                            deepItem.shouldShow !==
+                                                                              undefined &&
+                                                                            !deepItem.shouldShow
+                                                                          ) {
+                                                                            return null;
+                                                                          }
+                                                                          return (
+                                                                            <MainListItem
+                                                                              key={
+                                                                                deepItem.name
+                                                                              }
+                                                                              route={
+                                                                                deepItem.route
+                                                                              }
+                                                                              isNested={
+                                                                                true
+                                                                              }
+                                                                              icon={
+                                                                                deepItem.icon
+                                                                              }
+                                                                              label={
+                                                                                deepItem.name
+                                                                              }
+                                                                              title={
+                                                                                deepItem.name
+                                                                              }
+                                                                              onClick={(
+                                                                                e
+                                                                              ) => {
+                                                                                e.stopPropagation();
+                                                                                e.preventDefault();
+                                                                                handleNestedItemClick(
+                                                                                  deepItem.route
+                                                                                );
+                                                                              }}
+                                                                            />
+                                                                          );
+                                                                        }
+                                                                      )}
+                                                                    </List>
+                                                                  </SubItemScroller>
+                                                                </Collapse>
                                                               }
                                                             />
                                                           );
@@ -1361,15 +1481,9 @@ function getSystemSettingsItems(
         icon: createIcon(TopicIcon, "/data-src", theme),
         route: "/data-src",
         isBold: true,
-        shouldShow: checkPermission(
-        permissions,
-        PermissionsMap.DATA_SOURCE,
-        "list"
-      ) && checkPermission(
-        permissions,
-        PermissionsMap.DATA_SOURCE,
-        "update"
-      ),
+        shouldShow:
+          checkPermission(permissions, PermissionsMap.DATA_SOURCE, "list") &&
+          checkPermission(permissions, PermissionsMap.DATA_SOURCE, "update"),
       },
       {
         name: "IP Report Constants",
@@ -1378,10 +1492,10 @@ function getSystemSettingsItems(
         isBold: true,
         subItems: themeSettingsDataSources,
         shouldShow: checkPermission(
-        permissions,
-        PermissionsMap.DATA_SOURCE_VERSION,
-        "list"
-      ),
+          permissions,
+          PermissionsMap.DATA_SOURCE_VERSION,
+          "list"
+        ),
       },
       ...constantDataSources,
       {
@@ -1424,29 +1538,55 @@ function getSystemSettingsItems(
             name: "Department",
             icon: createIcon(AccountBalanceIcon, "/department", theme),
             route: "/department",
-            shouldShow: checkPermission(
-              permissions,
-              PermissionsMap.DEPARTMENT,
-              "list"
-            ) && checkPermission(
-              permissions,
-              PermissionsMap.DEPARTMENT,
-              "update"
-            ),
+            shouldShow:
+              checkPermission(permissions, PermissionsMap.DEPARTMENT, "list") &&
+              checkPermission(permissions, PermissionsMap.DEPARTMENT, "update"),
           },
           {
             name: "Designation",
             icon: createIcon(BusinessCenterIcon, "/designation", theme),
             route: "/designation",
-            shouldShow: checkPermission(
-              permissions,
-              PermissionsMap.DESIGNATION,
-              "list"
-            ) && checkPermission(
-              permissions,
-              PermissionsMap.DESIGNATION,
-              "update"
+            shouldShow:
+              checkPermission(
+                permissions,
+                PermissionsMap.DESIGNATION,
+                "list"
+              ) &&
+              checkPermission(
+                permissions,
+                PermissionsMap.DESIGNATION,
+                "update"
+              ),
+          },
+          {
+            name: "Charts",
+            icon: createIcon(
+              InsertChartOutlinedIcon,
+              "/system-settings/charts/source-list",
+              theme
             ),
+            route: "#",
+            // shouldShow: checkPermission(
+            //   permissions,
+            //   PermissionsMap.SOURCE_LIST,
+            //   "list"
+            // ),
+            subItems: [
+              {
+                name: "Source List",
+                icon: createIcon(
+                  FormatListBulletedIcon,
+                  "/system-settings/charts/source-list",
+                  theme
+                ),
+                route: "/system-settings/charts/source-list",
+                // shouldShow: checkPermission(
+                //   permissions,
+                //   PermissionsMap.SOURCE_LIST,
+                //   "list"
+                // ),
+              },
+            ],
           },
           {
             name: "My Profile",
