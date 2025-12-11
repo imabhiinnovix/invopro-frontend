@@ -1238,7 +1238,7 @@ function getNavItems(
       shouldShow: checkPermission(
         permissions,
         PermissionsMap.CUSTOM_REPORT,
-        "list"
+        "list_requests"
       ),
     },
     {
@@ -1379,7 +1379,7 @@ function getSystemSettingsItems(
         subItems: themeSettingsDataSources,
         shouldShow: checkPermission(
         permissions,
-        PermissionsMap.DATA_SOURCE_VERSION,
+        PermissionsMap.CUSTOM_REPORT,
         "list"
       ),
       },
