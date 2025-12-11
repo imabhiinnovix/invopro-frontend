@@ -1,4 +1,4 @@
-import { FieldSetting } from './../pages/notivixDashboard/types';
+import { FieldSetting } from "./../pages/notivixDashboard/types";
 export interface ErrorResponse {
   fieldName: string;
   message: string;
@@ -64,6 +64,7 @@ export interface DataSourceAttribute {
 export interface ChartResponse {
   _id: string;
   name: string;
+  description?: string;
   dimensions: string[];
   groupBy: string[];
   aggregation: {
@@ -126,4 +127,4 @@ export interface Condition {
   operator: string;
   value: string;
   _id?: string;
-} 
+}

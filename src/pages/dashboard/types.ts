@@ -45,7 +45,7 @@ export interface FieldConfig {
   display: boolean;
   required: boolean;
   multiple: boolean;
-  type: 'text' | 'select' | 'multiselect' | 'number' | 'checkbox' | 'date';
+  type: "text" | "select" | "multiselect" | "number" | "checkbox" | "date";
   label: string;
   defaultValue: any;
 }
@@ -171,7 +171,7 @@ export interface DashboardSliceState {
   temporaryCharts: TemporaryChart[];
   chartsLoading: boolean;
   chartsError: string | null;
-  widgetData: Record<string, WidgetResponse['data']>;
+  widgetData: Record<string, WidgetResponse["data"]>;
 }
 
 export interface WidgetDetails {
@@ -209,6 +209,7 @@ export interface ChartResponse {
   dashboardId?: string;
   organizationId: string;
   name: string;
+  description?: string;
   position?: {
     x: number;
     y: number;
