@@ -476,55 +476,55 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
   );
 
   const handleApplyFilters = async (filters: any) => {
-    if (Object.keys(filters).length > 0) {
-      if (filters.__reset) {
-        filters = {};
-        setLocalDashboardFilters({});
-      } else {
-        setLocalDashboardFilters(filters);
-      }
-
-      getUpdatedWidgetData?.mutate({
-        url: GET.DASHBOARD_WIDGET_DATA,
-        payload: {
-          dataSourceId: selectedChart?.dataSourceId?._id,
-          dataSourceFieldSettings: selectedChart?.dataSourceId?.fieldSettings,
-          entityId: selectedChart?.dataSourceId?.entityId,
-          dimensions: selectedChart?.dimensions,
-          groupBy: selectedChart?.groupBy,
-          plotType: selectedChart?.plotType,
-          conditions: selectedChart?.conditions,
-          aggregation: selectedChart?.aggregation,
-          widgetType: selectedChart?.widgetTypeId?.chartType,
-          dashboardFilters: {
-            startVersionValue:
-              currentDashboard?.settings?.dashboardType === "trend"
-                ? startVersionValue || ""
-                : "",
-            endVersionValue:
-              currentDashboard?.settings?.dashboardType === "trend"
-                ? endVersionValue || ""
-                : "",
-            versionValue:
-              currentDashboard?.settings?.dashboardType === "trend"
-                ? ""
-                : versionValue || "",
-            dynamicVersionValue:
-              currentDashboard?.settings?.dashboardType === "trend"
-                ? ""
-                : versionValue
-                ? ""
-                : "1m",
-            filters: { ...filters },
-          },
-          dashBoardType: currentDashboard?.settings?.dashboardType || "normal",
-          isIncremental: selectedChart?.isIncremental,
-        },
-      });
-
-      setDrillDownOpen(true);
-      handleShowAllData(selectedChart, filters || {});
+    // if (Object.keys(filters).length > 0) {
+    if (filters.__reset) {
+      filters = {};
+      setLocalDashboardFilters({});
+    } else {
+      setLocalDashboardFilters(filters);
     }
+
+    getUpdatedWidgetData?.mutate({
+      url: GET.DASHBOARD_WIDGET_DATA,
+      payload: {
+        dataSourceId: selectedChart?.dataSourceId?._id,
+        dataSourceFieldSettings: selectedChart?.dataSourceId?.fieldSettings,
+        entityId: selectedChart?.dataSourceId?.entityId,
+        dimensions: selectedChart?.dimensions,
+        groupBy: selectedChart?.groupBy,
+        plotType: selectedChart?.plotType,
+        conditions: selectedChart?.conditions,
+        aggregation: selectedChart?.aggregation,
+        widgetType: selectedChart?.widgetTypeId?.chartType,
+        dashboardFilters: {
+          startVersionValue:
+            currentDashboard?.settings?.dashboardType === "trend"
+              ? startVersionValue || ""
+              : "",
+          endVersionValue:
+            currentDashboard?.settings?.dashboardType === "trend"
+              ? endVersionValue || ""
+              : "",
+          versionValue:
+            currentDashboard?.settings?.dashboardType === "trend"
+              ? ""
+              : versionValue || "",
+          dynamicVersionValue:
+            currentDashboard?.settings?.dashboardType === "trend"
+              ? ""
+              : versionValue
+              ? ""
+              : "1m",
+          filters: { ...filters },
+        },
+        dashBoardType: currentDashboard?.settings?.dashboardType || "normal",
+        isIncremental: selectedChart?.isIncremental,
+      },
+    });
+
+    setDrillDownOpen(true);
+    handleShowAllData(selectedChart, filters || {});
+    // }
   };
 
   const allCharts = [...charts, ...temporaryCharts];
@@ -3907,7 +3907,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
               variant="outlined"
               onClick={(e) => {
                 e.stopPropagation();
-                handleShowAllData(selectedChart, localDashboardFilters);
+                handleApplyFilters({ __reset: Date.now() });
               }}
             >
               All Data
