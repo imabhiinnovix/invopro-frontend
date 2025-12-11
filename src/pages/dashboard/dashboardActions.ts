@@ -247,7 +247,6 @@ export const storeWidgetData = (payload: {
   widgetId: string;
   data: CombinedWidgetData;
 }) => {
-  console.log("storeWidgetData payload:", payload);
   return {
     type: "dashboard/storeWidgetData",
     payload,
@@ -334,7 +333,6 @@ export const fetchChartData = createAsyncThunk(
                     isIncremental: chart.isIncremental,
                   }
                 );
-              console.log("widgetResponse", widgetResponse);
 
               if (widgetResponse.data.success) {
                 // Only store essential data

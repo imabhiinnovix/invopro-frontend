@@ -470,14 +470,12 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
         },
       };
 
-      console.log("getUpdatedWidgetData essentialData", essentialData);
       setFullscreenWidgetData(essentialData);
     },
     true
   );
 
   const handleApplyFilters = async (filters: any) => {
-    console.log("filters>>>>>>>>>>", filters);
     if (Object.keys(filters).length > 0) {
       if (filters.__reset) {
         filters = {};

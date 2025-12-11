@@ -2464,7 +2464,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               matchedChart = charts.find((c) => c.name === chartName);
             }
           }
-          console.log("matchedChart", matchedChart, widgetElement);
 
           if (matchedChart) {
             const descriptionElement =
@@ -2825,6 +2824,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
       setIsEditMode(false);
       setIsAddChartModalOpen(false);
+      setSelectedChart(null);
+      setIsEditChartModalOpen(false);
     } else {
       setIsEditMode(!isEditMode);
     }

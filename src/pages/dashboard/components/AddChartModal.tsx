@@ -239,8 +239,6 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
     data: string[];
   }>([`plotTypes`], GET.GET_DASHBOARD_WIDGET_PLOT_TYPES);
 
-  console.log("plotTypes:", plotTypes);
-
   const [formData, setFormData] = useState<ChartFormData>({
     name: initialData?.name || `Chart - ${new Date().toLocaleString()}`,
     description: initialData?.description || "",
@@ -483,7 +481,6 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
   const handleDataSourceChange = (event: SelectChangeEvent<unknown>) => {
     const selectedDs = dataSources.find((ds) => ds._id === event.target.value);
     if (selectedDs) {
-      console.log("selectedDs", selectedDs);
       setSelectedDataSource(selectedDs);
       setFormData((prev) => ({
         ...prev,
@@ -720,7 +717,6 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
   // };
 
   const getAttributeOptions = (): DataSourceAttribute[] => {
-    console.log("selectedDataSource", selectedDataSource);
     const base =
       selectedDataSource?.fieldSettings?.map((field) => ({
         name: field.mappedAttributeName,
@@ -969,7 +965,6 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
                       <MenuItem value="versionValue">Period</MenuItem>
                     ) : (
                       getAttributeOptions().map((attr) => {
-                        console.log("Field option:", attr); // Debug log
                         return (
                           <MenuItem
                             key={attr.name}
@@ -1639,7 +1634,9 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
                         onChange={handleAggregationTypeChange}
                         disabled={isSubmitting}
                       >
-                        <MenuItem value="distinctCount">Distinct Count</MenuItem>
+                        <MenuItem value="distinctCount">
+                          Distinct Count
+                        </MenuItem>
                         <MenuItem value="Count">Count</MenuItem>
                         <MenuItem value="Sum">Sum</MenuItem>
                         <MenuItem value="Average">Average</MenuItem>
