@@ -1941,6 +1941,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   const [dateRange, setDateRange] = useState<DateObject[] | null>(null);
   const [isDateRangeFocused, setIsDateRangeFocused] = useState(false);
   const { themes } = useAppSelector((state) => state.theme);
+  const charts = useAppSelector((state) => state.dashboard.charts);
 
   const postGridColumns = usePost([""]);
 
@@ -2451,6 +2452,28 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             yPos = currentY;
           }
 
+          const widgetElement = chartWidgets[i];
+          let matchedChart: ChartResponse | undefined;
+
+          const chartNameElement = widgetElement.querySelector(
+            "h6, .MuiTypography-root, [class*='chart-name'], [class*='ChartTitle']"
+          );
+          if (chartNameElement && charts.length > 0) {
+            const chartName = chartNameElement.textContent?.trim();
+            if (chartName) {
+              matchedChart = charts.find((c) => c.name === chartName);
+            }
+          }
+
+          if (matchedChart) {
+            const descriptionElement =
+              widgetElement.querySelector("#chart-description");
+
+            if (descriptionElement) {
+              descriptionElement.textContent = matchedChart.description || "";
+            }
+          }
+
           try {
             const canvas = await html2canvas(chartWidgets[i], {
               scale: 2,
@@ -2801,6 +2824,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
       setIsEditMode(false);
       setIsAddChartModalOpen(false);
+      setSelectedChart(null);
+      setIsEditChartModalOpen(false);
     } else {
       setIsEditMode(!isEditMode);
     }

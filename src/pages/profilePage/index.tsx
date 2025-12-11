@@ -533,7 +533,34 @@ const ProfilePage = () => {
                 editModes[section] && !isDisabled ? "outlined" : "filled"
               }
               size="small"
-              sx={{ "& .MuiOutlinedInput-root": { borderRadius: 2 } }}
+              sx={{
+                "& .MuiFilledInput-root": {
+                  backgroundColor: isDisabled ? "#f7f7f7" : undefined,
+                  borderRadius: 2,
+                  "&:before": {
+                    border: "none",
+                  },
+                  "&:after": {
+                    border: "none",
+                  },
+                },
+
+                "& .MuiFilledInput-root.Mui-disabled": {
+                  backgroundColor: "#f0f0f0 !important",
+                  color: "#333",
+                  WebkitTextFillColor: "#333 !important",
+                  "&:before": {
+                    border: "none",
+                  },
+                },
+
+                "& .MuiInputLabel-root.Mui-disabled": {
+                  color: "#777",
+                  "&:before": {
+                    border: "none",
+                  },
+                },
+              }}
             >
               <InputLabel>{field.label}</InputLabel>
               <Select
@@ -571,7 +598,31 @@ const ProfilePage = () => {
               disabled={isDisabled}
               variant={editModes[section] ? "outlined" : "filled"}
               size="small"
-              sx={{ "& .MuiOutlinedInput-root": { borderRadius: 2 } }}
+              sx={{
+                "& .MuiFilledInput-root": {
+                  backgroundColor: isDisabled ? "#f7f7f7" : undefined,
+                  borderRadius: 2,
+                  "&:before": {
+                    border: "none",
+                  },
+                },
+
+                "& .MuiFilledInput-root.Mui-disabled": {
+                  backgroundColor: "#f0f0f0 !important",
+                  color: "#333",
+                  WebkitTextFillColor: "#333 !important",
+                  "&:before": {
+                    border: "none",
+                  },
+                },
+
+                "& .MuiInputLabel-root.Mui-disabled": {
+                  color: "#777",
+                  "&:before": {
+                    border: "none",
+                  },
+                },
+              }}
               InputProps={{
                 endAdornment: (
                   <InputAdornment position="end">
@@ -619,7 +670,32 @@ const ProfilePage = () => {
               }
               type={field.type || "text"}
               size="small"
-              sx={{ "& .MuiOutlinedInput-root": { borderRadius: 2 } }}
+              sx={{
+                "& .MuiFilledInput-root": {
+                  backgroundColor: isDisabled ? "#f7f7f7" : undefined,
+                  borderRadius: 2,
+                  "&:before": {
+                    border: "none",
+                  },
+                  "&:after": {
+                    border: "none",
+                  },
+                },
+                "& .MuiFilledInput-root.Mui-disabled": {
+                  backgroundColor: "#f0f0f0 !important",
+                  color: "#333",
+                  WebkitTextFillColor: "#333 !important",
+                  "&:before": {
+                    border: "none",
+                  },
+                },
+                "& .MuiInputLabel-root.Mui-disabled": {
+                  color: "#777",
+                  "&:before": {
+                    border: "none",
+                  },
+                },
+              }}
             />
           </Grid>
         );
@@ -830,9 +906,6 @@ const ProfilePage = () => {
                   "firstName",
                   "lastName",
                   "email",
-                  "company",
-                  "departmentId",
-                  "designationId",
                 ])}
                 {editModes.personal && (
                   <Grid
@@ -992,7 +1065,27 @@ const ProfilePage = () => {
                       disabled
                       variant="filled"
                       size="small"
-                      sx={{ "& .MuiFilledInput-root": { borderRadius: 2 } }}
+                      sx={{
+                        "& .MuiFilledInput-root": {
+                          borderRadius: 2,
+                          "&:before": {
+                            border: "none",
+                          },
+                          "&:after": {
+                            border: "none",
+                          },
+                        },
+
+                        "& .MuiFilledInput-root.Mui-disabled": {
+                          backgroundColor: "#f0f0f0 !important",
+                          color: "#333",
+                          WebkitTextFillColor: "#333 !important",
+                        },
+
+                        "& .MuiInputLabel-root.Mui-disabled": {
+                          color: "#777",
+                        },
+                      }}
                     />
                   </Grid>
                 </Grid>

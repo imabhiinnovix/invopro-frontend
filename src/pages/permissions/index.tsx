@@ -112,7 +112,6 @@ const columns: GridColDef[] = [
     width: 150,
     sortable: false,
     disableColumnMenu: true,
-    sortable: false,
     resizable: false,
     renderCell: (params) => {
       const hasDataSourceName = !!params.row.dataSourceId?.name;

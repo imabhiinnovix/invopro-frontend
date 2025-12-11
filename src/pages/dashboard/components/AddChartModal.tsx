@@ -64,6 +64,7 @@ interface Aggregation {
 export interface ChartFormData {
   plotType: string | string[];
   name: string;
+  description: string;
   dimensions: string | string[];
   groupBy: string | string[];
   aggregation: Aggregation;
@@ -238,10 +239,9 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
     data: string[];
   }>([`plotTypes`], GET.GET_DASHBOARD_WIDGET_PLOT_TYPES);
 
-  console.log("plotTypes:", plotTypes);
-
   const [formData, setFormData] = useState<ChartFormData>({
     name: initialData?.name || `Chart - ${new Date().toLocaleString()}`,
+    description: initialData?.description || "",
     plotType: arrayToString(initialData?.plotType) || "",
     dimensions: arrayToString(initialData?.dimensions),
     groupBy: arrayToString(initialData?.groupBy),
@@ -272,6 +272,7 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
       if (!formData.name && !formData.dimensions && !formData.groupBy) {
         setFormData({
           name: initialData.name,
+          description: initialData?.description || "",
           dimensions: arrayToString(initialData.dimensions),
           groupBy: arrayToString(initialData.groupBy),
           plotType: arrayToString(initialData.plotType),
@@ -298,6 +299,7 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
     } else if (!open) {
       setFormData({
         name: "",
+        description: "",
         dimensions: "",
         groupBy: "",
         plotType: "",
@@ -348,6 +350,16 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
       ...prev,
       [field]: value,
     }));
+  };
+
+  const countWords = (text: string): number => {
+    if (!text || text.trim() === "") return 0;
+
+    const words = text
+      .trim()
+      .split(/\s+/)
+      .filter((word) => word.length > 0);
+    return words.length;
   };
 
   const handleAggregationChange = (field: keyof Aggregation, value: string) => {
@@ -469,7 +481,6 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
   const handleDataSourceChange = (event: SelectChangeEvent<unknown>) => {
     const selectedDs = dataSources.find((ds) => ds._id === event.target.value);
     if (selectedDs) {
-      console.log("selectedDs", selectedDs);
       setSelectedDataSource(selectedDs);
       setFormData((prev) => ({
         ...prev,
@@ -559,6 +570,17 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
     e.preventDefault();
     setFieldErrors({});
 
+    const descriptionWordCount = countWords(formData.description);
+    if (descriptionWordCount > 100) {
+      setFieldErrors({
+        description: `Description exceeds the maximum word limit of 100 words. Current: ${descriptionWordCount} words.`,
+      });
+      toast.error(
+        `Description exceeds the maximum word limit of 100 words. Please reduce it to 100 words or less.`
+      );
+      return;
+    }
+
     try {
       const dashboardType =
         currentDashboard?.settings?.dashboardType || "normal";
@@ -629,6 +651,7 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
                   dashboardId: dashboardId,
                   widgetTypeId: formData.widgetTypeId,
                   name: formData.name,
+                  description: formData.description,
                   dimensions: dimensionsArray,
                   groupBy: groupByArray,
                   plotType: plotType,
@@ -694,7 +717,6 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
   // };
 
   const getAttributeOptions = (): DataSourceAttribute[] => {
-    console.log("selectedDataSource", selectedDataSource);
     const base =
       selectedDataSource?.fieldSettings?.map((field) => ({
         name: field.mappedAttributeName,
@@ -717,19 +739,17 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
     const groupBy = formData.groupBy;
     const dimensions = formData.dimensions;
 
-    const groupByDateType =
-  ["date", "date-range"].includes(
-    selectedDataSource?.fieldSettings?.find(
-      (f) => f.mappedAttributeName === groupBy
-    )?.type
-  );
+    const groupByDateType = ["date", "date-range"].includes(
+      selectedDataSource?.fieldSettings?.find(
+        (f) => f.mappedAttributeName === groupBy
+      )?.type
+    );
 
-  const dimensionsDateType =
-  ["date", "date-range"].includes(
-    selectedDataSource?.fieldSettings?.find(
-      (f) => f.mappedAttributeName === dimensions
-    )?.type
-  );
+    const dimensionsDateType = ["date", "date-range"].includes(
+      selectedDataSource?.fieldSettings?.find(
+        (f) => f.mappedAttributeName === dimensions
+      )?.type
+    );
 
     // console.log("groupByDateType", groupByDateType);
     // console.log("dimensionsDateType", dimensionsDateType);
@@ -945,7 +965,6 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
                       <MenuItem value="versionValue">Period</MenuItem>
                     ) : (
                       getAttributeOptions().map((attr) => {
-                        console.log("Field option:", attr); // Debug log
                         return (
                           <MenuItem
                             key={attr.name}
@@ -1387,6 +1406,74 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
               },
             }}
           />
+          <Box>
+            <TextField
+              fullWidth
+              label="Description"
+              value={formData.description}
+              onChange={(e) => handleChange("description", e.target.value)}
+              disabled={isSubmitting}
+              size="small"
+              multiline
+              rows={3}
+              error={
+                countWords(formData.description) > 100 ||
+                !!fieldErrors["description"]
+              }
+              helperText={
+                fieldErrors["description"] ||
+                (countWords(formData.description) > 100
+                  ? `Word limit exceeded. Maximum 100 words allowed. (${countWords(
+                      formData.description
+                    )} / 100 words)`
+                  : `${countWords(formData.description)} / 100 words`)
+              }
+              FormHelperTextProps={{
+                sx: {
+                  textAlign: "right",
+                },
+              }}
+              sx={{
+                "& .MuiOutlinedInput-root": {
+                  borderRadius: STYLE_GUIDE.SPACING.s2,
+                  alignItems: "flex-start",
+                  mb: 2,
+                  paddingRight: STYLE_GUIDE.SPACING.s2,
+                  fontSize: "14px",
+                  backgroundColor:
+                    theme.dashboardTheme?.colors?.background?.paper ||
+                    "#ffffff",
+                },
+                "& .MuiInputLabel-root": {
+                  color:
+                    theme.palette.text.secondary ||
+                    STYLE_GUIDE.COLORS.darkBorderFocus,
+                },
+                "& .MuiInputLabel-root.Mui-focused": {
+                  color:
+                    theme.input?.focusBorder ||
+                    theme.input?.focusBorderFallback ||
+                    STYLE_GUIDE.COLORS.inputFocusFallback,
+                },
+                "& .MuiInputBase-input": {
+                  color: `${
+                    theme.getInputTextColor() || theme.palette.text.primary
+                  } !important`,
+                },
+                "& .MuiInputBase-input::placeholder": {
+                  color: `${theme.palette.text.secondary || "#666"} !important`,
+                },
+                "& .MuiInputBase-input:-webkit-autofill": {
+                  WebkitTextFillColor: `${
+                    theme.getInputTextColor() || theme.palette.text.primary
+                  } !important`,
+                  WebkitBoxShadow: `0 0 0 1000px ${
+                    theme.dashboardTheme?.colors?.background?.paper || "#ffffff"
+                  } inset !important`,
+                },
+              }}
+            />
+          </Box>
         </FirstFormSection>
 
         <FormSection>
@@ -1547,7 +1634,9 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
                         onChange={handleAggregationTypeChange}
                         disabled={isSubmitting}
                       >
-                        <MenuItem value="distinctCount">Distinct Count</MenuItem>
+                        <MenuItem value="distinctCount">
+                          Distinct Count
+                        </MenuItem>
                         <MenuItem value="Count">Count</MenuItem>
                         <MenuItem value="Sum">Sum</MenuItem>
                         <MenuItem value="Average">Average</MenuItem>

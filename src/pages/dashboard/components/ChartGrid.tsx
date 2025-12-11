@@ -81,6 +81,7 @@ import CloseIcon from "@mui/icons-material/Close";
 import ImageIcon from "@mui/icons-material/Image";
 import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
 import DownloadIcon from "@mui/icons-material/Download";
+import DescriptionIcon from "@mui/icons-material/Description";
 import TableChartIcon from "@mui/icons-material/TableChart";
 import { toast } from "react-toastify";
 import jsPDF from "jspdf";
@@ -105,6 +106,8 @@ import DialogContainer from "../../../components/molecule/dialog";
 import { useNavigate } from "react-router-dom";
 import NotivixFiltersModal from "../../notivixDashboard/components/NotivixFiltersModal";
 import { DateObject } from "react-multi-date-picker";
+import logo from "../../../assets/logo.png";
+import html2canvas from "html2canvas";
 
 // Register ChartJS components
 ChartJS.register(
@@ -385,6 +388,9 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
   // }, [dispatch, dashboardId]); // re-fetch when dashboard changes
   // console.log("dashboarf>>>>>>>>>>",dashboardFilters)
   const [drillDownColumns, setDrillDownColumns] = useState<string[]>([]);
+  const [expandedDescriptions, setExpandedDescriptions] = useState<Set<string>>(
+    new Set()
+  );
 
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [selectedChart, setSelectedChart] = useState<ChartResponse | null>(
@@ -416,6 +422,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
   const [isFiltersModalOpen, setIsFiltersModalOpen] = useState(false);
   const [localDashboardFilters, setLocalDashboardFilters] =
     useState<any>(dashboardFilters);
+  const [isExportingPdf, setIsExportingPdf] = useState(false);
 
   // console.log("widgetData", widgetData);
   const [fullscreenWidgetData, setFullscreenWidgetData] = useState<any>(
@@ -463,63 +470,61 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
         },
       };
 
-      console.log("getUpdatedWidgetData essentialData", essentialData);
       setFullscreenWidgetData(essentialData);
     },
     true
   );
 
   const handleApplyFilters = async (filters: any) => {
-    console.log("filters>>>>>>>>>>", filters);
-    if (Object.keys(filters).length > 0) {
-  if (filters.__reset) {
-    filters = {};
-    setLocalDashboardFilters({});     // backend gets empty filters
-  }else{
+    // if (Object.keys(filters).length > 0) {
+    if (filters.__reset) {
+      filters = {};
+      setLocalDashboardFilters({});
+    } else {
       setLocalDashboardFilters(filters);
-  }
-
-      getUpdatedWidgetData?.mutate({
-        url: GET.DASHBOARD_WIDGET_DATA,
-        payload: {
-          dataSourceId: selectedChart?.dataSourceId?._id,
-          dataSourceFieldSettings: selectedChart?.dataSourceId?.fieldSettings,
-          entityId: selectedChart?.dataSourceId?.entityId,
-          dimensions: selectedChart?.dimensions,
-          groupBy: selectedChart?.groupBy,
-          plotType: selectedChart?.plotType,
-          conditions: selectedChart?.conditions,
-          aggregation: selectedChart?.aggregation,
-          widgetType: selectedChart?.widgetTypeId?.chartType,
-          dashboardFilters: {
-            startVersionValue:
-              currentDashboard?.settings?.dashboardType === "trend"
-                ? startVersionValue || ""
-                : "",
-            endVersionValue:
-              currentDashboard?.settings?.dashboardType === "trend"
-                ? endVersionValue || ""
-                : "",
-            versionValue:
-              currentDashboard?.settings?.dashboardType === "trend"
-                ? ""
-                : versionValue || "",
-            dynamicVersionValue:
-              currentDashboard?.settings?.dashboardType === "trend"
-                ? ""
-                : versionValue
-                ? ""
-                : "1m",
-            filters: { ...filters },
-          },
-          dashBoardType: currentDashboard?.settings?.dashboardType || "normal",
-          isIncremental: selectedChart?.isIncremental,
-        },
-      });
-
-      setDrillDownOpen(true);
-      handleShowAllData(selectedChart, filters || {});
     }
+
+    getUpdatedWidgetData?.mutate({
+      url: GET.DASHBOARD_WIDGET_DATA,
+      payload: {
+        dataSourceId: selectedChart?.dataSourceId?._id,
+        dataSourceFieldSettings: selectedChart?.dataSourceId?.fieldSettings,
+        entityId: selectedChart?.dataSourceId?.entityId,
+        dimensions: selectedChart?.dimensions,
+        groupBy: selectedChart?.groupBy,
+        plotType: selectedChart?.plotType,
+        conditions: selectedChart?.conditions,
+        aggregation: selectedChart?.aggregation,
+        widgetType: selectedChart?.widgetTypeId?.chartType,
+        dashboardFilters: {
+          startVersionValue:
+            currentDashboard?.settings?.dashboardType === "trend"
+              ? startVersionValue || ""
+              : "",
+          endVersionValue:
+            currentDashboard?.settings?.dashboardType === "trend"
+              ? endVersionValue || ""
+              : "",
+          versionValue:
+            currentDashboard?.settings?.dashboardType === "trend"
+              ? ""
+              : versionValue || "",
+          dynamicVersionValue:
+            currentDashboard?.settings?.dashboardType === "trend"
+              ? ""
+              : versionValue
+              ? ""
+              : "1m",
+          filters: { ...filters },
+        },
+        dashBoardType: currentDashboard?.settings?.dashboardType || "normal",
+        isIncremental: selectedChart?.isIncremental,
+      },
+    });
+
+    setDrillDownOpen(true);
+    handleShowAllData(selectedChart, filters || {});
+    // }
   };
 
   const allCharts = [...charts, ...temporaryCharts];
@@ -711,30 +716,120 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
   };
 
   const handleExportPDF = async () => {
-    if (!selectedChart) return;
+    if (!selectedChart) {
+      toast.error("No chart selected for export");
+      return;
+    }
 
     try {
-      const chartId = `chart-${selectedChart._id}`;
-      const chartInstance = chartRefs.current[chartId];
+      setIsExportingPdf(true);
 
-      if (!chartInstance) {
-        toast.error("Chart instance not found");
+      const pdf = new jsPDF({
+        orientation: "landscape",
+        unit: "mm",
+        format: "a4",
+      });
+
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+      const margin = 10;
+      const headerHeight = 25;
+
+      const addHeader = () => {
+        try {
+          const logoWidth = 30;
+          const logoHeight = 12;
+
+          pdf.addImage(logo, "PNG", margin, margin, logoWidth, logoHeight);
+
+          pdf.setFontSize(16);
+          pdf.setFont("helvetica", "bold");
+          pdf.text(selectedChart.name, margin + logoWidth + 10, margin + 8);
+
+          pdf.setFontSize(10);
+          pdf.setFont("helvetica", "normal");
+          const currentDate = new Date().toLocaleDateString("en-US", {
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+          });
+          pdf.text(currentDate, pageWidth - margin - 40, margin + 8);
+
+          pdf.setDrawColor(200, 200, 200);
+          pdf.setLineWidth(0.5);
+          pdf.line(
+            margin,
+            margin + headerHeight - 5,
+            pageWidth - margin,
+            margin + headerHeight - 5
+          );
+        } catch (error) {
+          console.error("Error adding header:", error);
+        }
+      };
+
+      addHeader();
+
+      const currentY = margin + headerHeight;
+
+      const widgetSelector = `[data-chart-id="${selectedChart._id}"]`;
+      const widgetElement = document.querySelector(
+        widgetSelector
+      ) as HTMLElement;
+
+      if (!widgetElement) {
+        toast.error("Chart DOM element not found");
+        setIsExportingPdf(false);
         return;
       }
 
-      const imgData = chartInstance.toBase64Image();
-      const pdf = new jsPDF("landscape");
-      const imgProps = pdf.getImageProperties(imgData);
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+      const descriptionElement =
+        widgetElement.querySelector("#chart-description");
+      if (descriptionElement && selectedChart.description) {
+        descriptionElement.textContent = selectedChart.description;
+      }
 
-      pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
+      const canvas = await html2canvas(widgetElement, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: "#ffffff",
+        logging: false,
+        ignoreElements: (el) => {
+          return (
+            el.classList.contains("MuiIconButton-root") ||
+            el.tagName === "svg" ||
+            el.classList.contains("MuiSvgIcon-root")
+          );
+        },
+      });
+
+      const imgData = canvas.toDataURL("image/jpeg", 0.95);
+
+      const imgWidth = canvas.width;
+      const imgHeight = canvas.height;
+
+      const aspectRatio = imgWidth / imgHeight;
+
+      let finalWidth = pageWidth - 2 * margin;
+      let finalHeight = finalWidth / aspectRatio;
+
+      if (finalHeight > pageHeight - currentY - margin) {
+        finalHeight = pageHeight - currentY - margin;
+        finalWidth = finalHeight * aspectRatio;
+      }
+
+      const xPos = margin + (pageWidth - 2 * margin - finalWidth) / 2;
+      const yPos = currentY;
+
+      pdf.addImage(imgData, "JPEG", xPos, yPos, finalWidth, finalHeight);
+
       pdf.save(`${selectedChart.name}.pdf`);
-
       toast.success("Chart exported as PDF successfully!");
     } catch (error) {
-      toast.error("Failed to export chart as PDF");
       console.error("PDF export error:", error);
+      toast.error("Failed to export chart as PDF");
+    } finally {
+      setIsExportingPdf(false);
     }
   };
 
@@ -3230,6 +3325,68 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
     }
   };
 
+  const renderDescription = (chart: ChartResponse) => {
+    const description = chart.description || "";
+    const isExpanded = expandedDescriptions.has(chart._id);
+    const maxLength = 100;
+    const shouldTruncate = description.length > maxLength;
+
+    if (!description) {
+      return null;
+    }
+
+    if (!shouldTruncate) {
+      return (
+        <Typography
+          variant="body2"
+          sx={{
+            color: "text.secondary",
+            fontSize: "0.875rem",
+          }}
+          id="chart-description"
+        >
+          {description}
+        </Typography>
+      );
+    }
+
+    return (
+      <Typography
+        variant="body2"
+        sx={{
+          color: "text.secondary",
+          fontSize: "0.875rem",
+        }}
+        id="chart-description"
+      >
+        {isExpanded ? description : `${description.substring(0, maxLength)}...`}
+        <Box
+          component="span"
+          onClick={() => {
+            const newExpanded = new Set(expandedDescriptions);
+            if (isExpanded) {
+              newExpanded.delete(chart._id);
+            } else {
+              newExpanded.add(chart._id);
+            }
+            setExpandedDescriptions(newExpanded);
+          }}
+          sx={{
+            color: "primary.main",
+            cursor: "pointer",
+            fontWeight: 500,
+            ml: 0.5,
+            "&:hover": {
+              textDecoration: "underline",
+            },
+          }}
+        >
+          {isExpanded ? " Show less" : " Show more"}
+        </Box>
+      </Typography>
+    );
+  };
+
   return (
     <>
       <Grid
@@ -3516,6 +3673,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
               <StyledCard
                 sx={{ ...getCardSx() }}
                 data-widget-type={chart.widgetTypeId?.chartType || "chart"}
+                data-chart-id={chart._id}
               >
                 <CardContent
                   sx={{
@@ -3599,12 +3757,25 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
                   <Box
                     sx={{
                       mt: "auto",
-                      textAlign: "right",
-                      fontWeight: "bold",
-                      color: "primary.main",
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      gap: 2,
                     }}
                   >
-                    Total:{widgetData[chart._id]?.data?.totalCount}
+                    <Box sx={{ flex: 1, textAlign: "left" }}>
+                      {renderDescription(chart)}
+                    </Box>
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        fontWeight: "bold",
+                        color: "primary.main",
+                        textAlign: "right",
+                      }}
+                    >
+                      Total: {widgetData[chart._id]?.data?.totalCount}
+                    </Typography>
                   </Box>
                 </CardContent>
               </StyledCard>
@@ -3660,7 +3831,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
           <ImageIcon sx={{ mr: 1, fontSize: 20 }} />
           Export as JPG
         </MenuItem>
-        <MenuItem onClick={handleExportPDF}>
+        <MenuItem onClick={handleExportPDF} disabled={isExportingPdf}>
           <PictureAsPdfIcon sx={{ mr: 1, fontSize: 20 }} />
           Export as PDF
         </MenuItem>
@@ -3736,7 +3907,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
               variant="outlined"
               onClick={(e) => {
                 e.stopPropagation();
-                handleShowAllData(selectedChart, localDashboardFilters);
+                handleApplyFilters({ __reset: Date.now() });
               }}
             >
               All Data
@@ -3782,6 +3953,68 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
                 {selectedChart &&
                   renderChart(selectedChart, fullscreenWidgetData)}
               </FullScreenChartContainer>
+            </Box>
+          )}
+          {selectedChart?.description && (
+            <Box
+              sx={{
+                p: 3,
+                borderTop: `1px solid ${theme.palette.divider}`,
+                backgroundColor:
+                  theme.palette.mode === "dark"
+                    ? "rgba(255, 255, 255, 0.02)"
+                    : "rgba(0, 0, 0, 0.01)",
+                flexShrink: 0,
+                position: "relative",
+              }}
+            >
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "flex-start",
+                  gap: 1.5,
+                  mb: 1.5,
+                }}
+              >
+                <DescriptionIcon
+                  sx={{
+                    color: theme.palette.primary.main,
+                    fontSize: "1.25rem",
+                    mt: 0.25,
+                    flexShrink: 0,
+                  }}
+                />
+                <Typography
+                  variant="subtitle2"
+                  sx={{
+                    color: theme.palette.text.primary,
+                    fontWeight: 600,
+                    fontSize: "0.875rem",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.5px",
+                  }}
+                >
+                  Description
+                </Typography>
+              </Box>
+              <Box
+                sx={{
+                  pl: 4.5,
+                }}
+              >
+                <Typography
+                  variant="body1"
+                  sx={{
+                    color: theme.palette.text.primary,
+                    fontSize: "0.9375rem",
+                    lineHeight: 1.7,
+                    whiteSpace: "pre-wrap",
+                    wordBreak: "break-word",
+                  }}
+                >
+                  {selectedChart.description}
+                </Typography>
+              </Box>
             </Box>
           )}
           {/* Drill-down section - only visible when drillDownOpen is true */}

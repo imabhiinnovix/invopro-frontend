@@ -300,7 +300,6 @@ const dashboardSlice = createSlice({
       .addCase(
         fetchWidgetSettingBasedOnNaturalLanguage.fulfilled,
         (state, action: PayloadAction<any>) => {
-          console.log("action", action);
           state.chartsLoading = false;
           state.charts.push(action.payload.data as any);
         }
@@ -437,7 +436,6 @@ const dashboardSlice = createSlice({
       })
       .addCase(saveWidgets.rejected, (state, action) => {
         state.chartsLoading = false;
-        console.log(action);
         state.chartsError = action.error.message || "Failed to save widgets";
       })
       // Share users actions
