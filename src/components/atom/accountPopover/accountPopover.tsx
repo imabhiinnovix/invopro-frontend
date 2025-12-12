@@ -11,7 +11,7 @@ import IconButton from "@mui/material/IconButton";
 import MenuItem, { menuItemClasses } from "@mui/material/MenuItem";
 import { AuthContext } from "../../../context/AuthContext";
 import { useNavigate } from "react-router-dom";
-import { clearLocalStorage } from "../../../utils/handleLocalStorage";
+
 import { STYLE_GUIDE } from "../../../styles";
 import { RootState } from "../../../store";
 import { checkPermission } from "../../../utils/utils";
@@ -28,7 +28,7 @@ export function AccountPopover() {
   const [openPopover, setOpenPopover] = useState<HTMLButtonElement | null>(
     null
   );
-  const { userDetails, initialization, clearAuthContext, isAuthUser } =
+  const { userDetails, initialization, logout, isAuthUser } =
     useContext(AuthContext);
   const permissions = useSelector(
     (state: RootState) => state.userPermission.permissions
@@ -52,12 +52,10 @@ export function AccountPopover() {
     setOpenPopover(null);
   }, []);
 
-  const logout = useCallback(() => {
-    clearAuthContext();
-    clearLocalStorage();
+  const handleLogoutClick = useCallback(() => {
+    logout();
     handleClosePopover();
-    navigate("/login");
-  }, [clearAuthContext, handleClosePopover, navigate]);
+  }, [logout, handleClosePopover]);
 
   useEffect(() => {
     if (!isAuthUser) {
@@ -171,7 +169,7 @@ export function AccountPopover() {
             fullWidth
             color="error"
             variant="text"
-            onClick={logout}
+            onClick={handleLogoutClick}
             sx={{ height: 30 }}
           >
             Logout

@@ -49,7 +49,6 @@ import { CreateDashboardModal } from "./components/CreateDashboardModal";
 import LogoutIcon from "@mui/icons-material/Logout";
 import logo from "../../../assets/ReportiVix-logo.png";
 import { AuthContext } from "../../../context/AuthContext";
-import { clearLocalStorage } from "../../../utils/handleLocalStorage";
 import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
 import { STYLE_GUIDE } from "../../../styles";
 import SettingsIcon from "@mui/icons-material/Settings";
@@ -392,10 +391,10 @@ export default function SideNav() {
     setDashboardToDelete(null);
   };
 
+  const { logout } = useContext(AuthContext);
+
   const handleLogout = () => {
-    clearAuthContext();
-    clearLocalStorage();
-    navigate("/login");
+    logout();
   };
 
   const navItems: NavItem[] = useMemo(() => {
@@ -603,7 +602,9 @@ export default function SideNav() {
                                                 navigate(
                                                   `/dashboard/${dashboard._id}`,
                                                   {
-                                                    state: { enableEditMode: false },
+                                                    state: {
+                                                      enableEditMode: false,
+                                                    },
                                                   }
                                                 )
                                               }
@@ -1361,15 +1362,9 @@ function getSystemSettingsItems(
         icon: createIcon(TopicIcon, "/data-src", theme),
         route: "/data-src",
         isBold: true,
-        shouldShow: checkPermission(
-        permissions,
-        PermissionsMap.DATA_SOURCE,
-        "list"
-      ) && checkPermission(
-        permissions,
-        PermissionsMap.DATA_SOURCE,
-        "update"
-      ),
+        shouldShow:
+          checkPermission(permissions, PermissionsMap.DATA_SOURCE, "list") &&
+          checkPermission(permissions, PermissionsMap.DATA_SOURCE, "update"),
       },
       {
         name: "IP Report Constants",
@@ -1378,10 +1373,10 @@ function getSystemSettingsItems(
         isBold: true,
         subItems: themeSettingsDataSources,
         shouldShow: checkPermission(
-        permissions,
-        PermissionsMap.CUSTOM_REPORT,
-        "list"
-      ),
+          permissions,
+          PermissionsMap.CUSTOM_REPORT,
+          "list"
+        ),
       },
       ...constantDataSources,
       {
@@ -1424,29 +1419,25 @@ function getSystemSettingsItems(
             name: "Department",
             icon: createIcon(AccountBalanceIcon, "/department", theme),
             route: "/department",
-            shouldShow: checkPermission(
-              permissions,
-              PermissionsMap.DEPARTMENT,
-              "list"
-            ) && checkPermission(
-              permissions,
-              PermissionsMap.DEPARTMENT,
-              "update"
-            ),
+            shouldShow:
+              checkPermission(permissions, PermissionsMap.DEPARTMENT, "list") &&
+              checkPermission(permissions, PermissionsMap.DEPARTMENT, "update"),
           },
           {
             name: "Designation",
             icon: createIcon(BusinessCenterIcon, "/designation", theme),
             route: "/designation",
-            shouldShow: checkPermission(
-              permissions,
-              PermissionsMap.DESIGNATION,
-              "list"
-            ) && checkPermission(
-              permissions,
-              PermissionsMap.DESIGNATION,
-              "update"
-            ),
+            shouldShow:
+              checkPermission(
+                permissions,
+                PermissionsMap.DESIGNATION,
+                "list"
+              ) &&
+              checkPermission(
+                permissions,
+                PermissionsMap.DESIGNATION,
+                "update"
+              ),
           },
           {
             name: "My Profile",
