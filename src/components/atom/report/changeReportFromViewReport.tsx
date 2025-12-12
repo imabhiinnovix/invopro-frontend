@@ -115,17 +115,30 @@ export default function ReportSelection({
 
   // Handle submit button click
   const handleSubmit = () => {
-    if (selectedReport && selectedVersion) {
-      const data = versions.find((v) => v._id === selectedVersion);
-      if (data) {
-        setAllDetailData(data);
-        setViewReportRequestId(data._id);
-        setViewReportNameWithVersionValue(
-          `${data.customReportId?.reportName}-${data.versionValue}`
-        );
-      }
-    }
-  };
+  if (selectedReport && selectedVersion) {
+    const selectedVersionData = versions.find((v) => v._id === selectedVersion);
+    if (!selectedVersionData) return;
+
+    // Merge old detail data + new version data
+    setAllDetailData((prev) => {
+      if (!prev) return selectedVersionData;
+
+      return {
+        ...prev,                // keep previous keys like intermediateReportId, status, createdBy, etc.
+        ...selectedVersionData, // override with latest version data
+        versionValue: selectedVersionData.versionValue,
+        customReportId: selectedVersionData.customReportId,
+      };
+    });
+
+    setViewReportRequestId(selectedVersionData._id);
+
+    setViewReportNameWithVersionValue(
+      `${selectedVersionData.customReportId?.reportName}-${selectedVersionData.versionValue}`
+    );
+  }
+};
+
 
   const lastReportRowRef = useRef<IntersectionObserver | null>(null);
 
