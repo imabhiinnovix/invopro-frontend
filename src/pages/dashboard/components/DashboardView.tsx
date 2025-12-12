@@ -2460,22 +2460,11 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           );
           if (chartNameElement && charts.length > 0) {
             const chartName = chartNameElement.textContent?.trim();
-            if (chartName) {
-              matchedChart = charts.find((c) => c.name === chartName);
-            }
-          }
-
-          if (matchedChart) {
-            const descriptionElement =
-              widgetElement.querySelector("#chart-description");
-
-            if (descriptionElement) {
-              descriptionElement.textContent = matchedChart.description || "";
-            }
+            matchedChart = charts.find((c) => c.name === chartName);
           }
 
           try {
-            const canvas = await html2canvas(chartWidgets[i], {
+            const canvas = await html2canvas(widgetElement, {
               scale: 2,
               useCORS: true,
               logging: false,
@@ -2492,18 +2481,42 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             const imgData = canvas.toDataURL("image/jpeg", 0.95);
             const imgWidth = canvas.width;
             const imgHeight = canvas.height;
-
             const aspectRatio = imgWidth / imgHeight;
+
+            const descriptionText = matchedChart?.description || "";
+            let summaryHeight = 0;
+
+            if (descriptionText) {
+              pdf.setFont("helvetica", "bold");
+              pdf.setFontSize(12);
+
+              const summaryTitleHeight = 6;
+
+              pdf.setFont("helvetica", "normal");
+              pdf.setFontSize(10);
+
+              const wrappedText = pdf.splitTextToSize(
+                descriptionText,
+                chartWidth - 2
+              );
+
+              const descriptionHeight = wrappedText.length * 5;
+
+              summaryHeight = summaryTitleHeight + descriptionHeight + 8;
+            }
+
             let finalWidth = chartWidth;
             let finalHeight = chartWidth / aspectRatio;
 
-            if (finalHeight > chartHeight) {
-              finalHeight = chartHeight;
-              finalWidth = chartHeight * aspectRatio;
+            const maxChartHeight = chartHeight - summaryHeight;
+
+            if (finalHeight > maxChartHeight) {
+              finalHeight = maxChartHeight;
+              finalWidth = finalHeight * aspectRatio;
             }
 
             const offsetX = xPos + (chartWidth - finalWidth) / 2;
-            const offsetY = yPos + (chartHeight - finalHeight) / 2;
+            const offsetY = yPos;
 
             pdf.addImage(
               imgData,
@@ -2513,6 +2526,26 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               finalWidth,
               finalHeight
             );
+
+            if (matchedChart?.description) {
+              let summaryY = offsetY + finalHeight + 6;
+
+              pdf.setFont("helvetica", "bold");
+              pdf.setFontSize(12);
+              pdf.text("Summary", xPos, summaryY);
+
+              summaryY += 6;
+
+              pdf.setFont("helvetica", "normal");
+              pdf.setFontSize(10);
+
+              const wrappedText = pdf.splitTextToSize(
+                matchedChart.description,
+                chartWidth - 2
+              );
+
+              pdf.text(wrappedText, xPos, summaryY);
+            }
 
             if (gridColumns === 1) {
               if (i < chartWidgets.length - 1) {

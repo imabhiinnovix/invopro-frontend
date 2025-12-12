@@ -128,7 +128,8 @@ const StyledCard = styled(Card)(({ theme }) => ({
   minHeight: 500,
   display: "flex",
   flexDirection: "column",
-  borderRadius: theme.shape.borderRadius,
+  borderTopLeftRadius: theme.shape.borderRadius,
+  borderTopRightRadius: theme.shape.borderRadius,
   boxShadow: theme.shadows[1],
   transition: "all 0.3s ease-in-out",
   backgroundColor: theme.palette.background.paper,
@@ -770,7 +771,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
 
       addHeader();
 
-      const currentY = margin + headerHeight;
+      let currentY = margin + headerHeight;
 
       const widgetSelector = `[data-chart-id="${selectedChart._id}"]`;
       const widgetElement = document.querySelector(
@@ -781,12 +782,6 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
         toast.error("Chart DOM element not found");
         setIsExportingPdf(false);
         return;
-      }
-
-      const descriptionElement =
-        widgetElement.querySelector("#chart-description");
-      if (descriptionElement && selectedChart.description) {
-        descriptionElement.textContent = selectedChart.description;
       }
 
       const canvas = await html2canvas(widgetElement, {
@@ -804,17 +799,31 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
       });
 
       const imgData = canvas.toDataURL("image/jpeg", 0.95);
-
       const imgWidth = canvas.width;
       const imgHeight = canvas.height;
-
       const aspectRatio = imgWidth / imgHeight;
 
       let finalWidth = pageWidth - 2 * margin;
       let finalHeight = finalWidth / aspectRatio;
 
-      if (finalHeight > pageHeight - currentY - margin) {
-        finalHeight = pageHeight - currentY - margin;
+      const descriptionText = selectedChart.description || "";
+      pdf.setFontSize(12);
+      pdf.setFont("helvetica", "bold");
+
+      const summaryTitleHeight = 8; // approx
+      const descriptionLines = pdf.splitTextToSize(
+        descriptionText,
+        pageWidth - margin * 2
+      );
+      const descriptionHeight = descriptionLines.length * 5;
+
+      const requiredSummarySpace = summaryTitleHeight + descriptionHeight;
+
+      const maxChartHeight =
+        pageHeight - currentY - margin - requiredSummarySpace;
+
+      if (finalHeight > maxChartHeight) {
+        finalHeight = maxChartHeight;
         finalWidth = finalHeight * aspectRatio;
       }
 
@@ -822,6 +831,26 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
       const yPos = currentY;
 
       pdf.addImage(imgData, "JPEG", xPos, yPos, finalWidth, finalHeight);
+
+      currentY = yPos + finalHeight + 10;
+
+      if (selectedChart.description) {
+        pdf.setFont("helvetica", "bold");
+        pdf.setFontSize(12);
+        pdf.text("Summary", margin, currentY);
+
+        currentY += 6;
+
+        pdf.setFont("helvetica", "normal");
+        pdf.setFontSize(10);
+
+        const wrappedText = pdf.splitTextToSize(
+          selectedChart.description,
+          pageWidth - margin * 2
+        );
+
+        pdf.text(wrappedText, margin, currentY);
+      }
 
       pdf.save(`${selectedChart.name}.pdf`);
       toast.success("Chart exported as PDF successfully!");
@@ -3653,6 +3682,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
               }
               gap={isNaturalLangauage ? 4 : 0}
               p={isNaturalLangauage ? 2 : 0}
+              direction="column"
             >
               {isNaturalLangauage && (
                 <AddChartModal
@@ -3670,6 +3700,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
                   setNewSaveChartName={setNewSaveChartName}
                 />
               )}
+
               <StyledCard
                 sx={{ ...getCardSx() }}
                 data-widget-type={chart.widgetTypeId?.chartType || "chart"}
@@ -3685,11 +3716,8 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
                   }}
                 >
                   <ChartTitle>
-                    <ChartTitleText>
-                      {chart.name}
-                      {/* {widgetData[chart._id]?.data?.label &&
-                        ` (${widgetData[chart._id]?.data?.label})`} */}
-                    </ChartTitleText>
+                    <ChartTitleText>{chart.name}</ChartTitleText>
+
                     <Box sx={{ display: "flex", gap: 1 }}>
                       <IconButton
                         size="small"
@@ -3758,20 +3786,15 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
                     sx={{
                       mt: "auto",
                       display: "flex",
-                      justifyContent: "space-between",
+                      justifyContent: "flex-end",
                       alignItems: "center",
-                      gap: 2,
                     }}
                   >
-                    <Box sx={{ flex: 1, textAlign: "left" }}>
-                      {renderDescription(chart)}
-                    </Box>
                     <Typography
                       variant="body2"
                       sx={{
                         fontWeight: "bold",
                         color: "primary.main",
-                        textAlign: "right",
                       }}
                     >
                       Total: {widgetData[chart._id]?.data?.totalCount}
@@ -3779,6 +3802,34 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
                   </Box>
                 </CardContent>
               </StyledCard>
+
+              {chart?.description ? (
+                <Box
+                  sx={{
+                    p: 1,
+                    borderBottomLeftRadius: theme.shape.borderRadius,
+                    borderBottomRightRadius: theme.shape.borderRadius,
+                    backgroundColor: "#fafafa",
+                    borderLeft: "1px solid #eee",
+                    borderRight: "1px solid #eee",
+                    borderBottom: "1px solid #eee",
+                    fontSize: "0.9rem",
+                    color: "#555",
+                  }}
+                >
+                  <Typography
+                    variant="subtitle2"
+                    sx={{
+                      fontWeight: 600,
+                      mb: 0.5,
+                    }}
+                  >
+                    Summary
+                  </Typography>
+
+                  {renderDescription(chart)}
+                </Box>
+              ) : null}
             </Grid>
           </>
         ))}
@@ -3976,14 +4027,6 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
                   mb: 1.5,
                 }}
               >
-                <DescriptionIcon
-                  sx={{
-                    color: theme.palette.primary.main,
-                    fontSize: "1.25rem",
-                    mt: 0.25,
-                    flexShrink: 0,
-                  }}
-                />
                 <Typography
                   variant="subtitle2"
                   sx={{
@@ -3994,7 +4037,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
                     letterSpacing: "0.5px",
                   }}
                 >
-                  Description
+                  Summary
                 </Typography>
               </Box>
               <Box
