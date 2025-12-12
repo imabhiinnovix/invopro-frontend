@@ -317,7 +317,9 @@ export default function NotificationTypes() {
       filterValues.name
     )}&organizationId=${encodeURIComponent(
       filterValues.organizationId
-    )}&status=${encodeURIComponent(filterValues.status)}`,
+    )}&status=${encodeURIComponent(
+      filterValues.status === "all" ? "" : filterValues.status
+    )}`,
     true
   );
 
@@ -422,6 +424,7 @@ export default function NotificationTypes() {
       organizationId: "",
       status: "",
     });
+    handleCloseModal();
   };
 
   const onSubmit = async (data: NotificationTypePostPayload) => {
@@ -632,7 +635,7 @@ export default function NotificationTypes() {
                     )
                   }
                 >
-                  <MenuItem value="">All</MenuItem>
+                  <MenuItem value="all">All</MenuItem>
                   <MenuItem value="active">Enable</MenuItem>
                   <MenuItem value="inactive">Disable</MenuItem>
                 </Select>

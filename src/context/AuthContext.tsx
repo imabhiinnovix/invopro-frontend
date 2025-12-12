@@ -1,12 +1,26 @@
-
-import { createContext, Dispatch, ReactNode, SetStateAction, useEffect, useState } from 'react';
-import useGet from '../hooks/useGet';
-import { GET } from '../services/apiRoutes';
-import { queryClient } from '../main';
-import { useDispatch, useSelector } from 'react-redux';
-import type { AppDispatch, RootState } from '../store';
-import { setCurrentUser, clearCurrentUser, setPermissions } from '../reducers/userSlice'; 
-import { NewBackendPermission } from '../utils/utils';
+import {
+  createContext,
+  Dispatch,
+  ReactNode,
+  SetStateAction,
+  useEffect,
+  useState,
+  useCallback,
+  useRef,
+} from "react";
+import { useIdleTimer } from "react-idle-timer";
+import { clearLocalStorage, getAuthToken } from "../utils/handleLocalStorage";
+import useGet from "../hooks/useGet";
+import { GET } from "../services/apiRoutes";
+import { queryClient } from "../main";
+import { useDispatch, useSelector } from "react-redux";
+import type { AppDispatch, RootState } from "../store";
+import {
+  setCurrentUser,
+  clearCurrentUser,
+  setPermissions,
+} from "../reducers/userSlice";
+import { NewBackendPermission } from "../utils/utils";
 
 interface AuthProviderProps {
   children: ReactNode;
@@ -15,7 +29,7 @@ interface AuthProviderProps {
 type searchTerms = {
   query: string;
   colorCode?: string;
-  matchType: 'partial' | 'exact';
+  matchType: "partial" | "exact";
   count?: number;
   proximity: boolean;
   proximityInfo: { type: string; value: string };
@@ -53,7 +67,7 @@ export type UserResponse = {
       isSuperUser?: boolean;
     }>;
     settings: {
-      RPPos: 'left' | 'right' | 'bottom' | 'top';
+      RPPos: "left" | "right" | "bottom" | "top";
       showOccurrenceCount: boolean;
       showOccurrenceCountTerm: boolean;
       RPDimensions: {
@@ -88,6 +102,7 @@ export interface AuthContextType {
   setIsAuthUser: Dispatch<SetStateAction<boolean>>;
   isAuthUser: boolean;
   clearAuthContext: () => void;
+  logout: () => void;
   refreshUserDetails: () => void;
   isSuperUser: () => boolean;
   getOrganizationIdForUsers: () => string | null;
@@ -99,6 +114,7 @@ const defaultAuthContext: AuthContextType = {
   setIsAuthUser: () => {},
   isAuthUser: false,
   clearAuthContext: () => {},
+  logout: () => {},
   refreshUserDetails: () => {},
   isSuperUser: () => false,
   getOrganizationIdForUsers: () => null,
@@ -108,28 +124,46 @@ export const AuthContext = createContext<AuthContextType>(defaultAuthContext);
 
 const AuthProvider = ({ children }: AuthProviderProps) => {
   const [isAuthUser, setIsAuthUser] = useState(false);
-  const [userDetails, setUserDetails] = useState<UserResponse | undefined>(undefined);
+  const [userDetails, setUserDetails] = useState<UserResponse | undefined>(
+    undefined
+  );
   const dispatch = useDispatch<AppDispatch>();
-  const { currentUser } = useSelector((state: RootState) => state.userPermission);
+  const { currentUser } = useSelector(
+    (state: RootState) => state.userPermission
+  );
 
-  const userDetailsAPI = useGet<UserResponse>(['userDetails'], GET.USER_DETAILS, !!isAuthUser);
+  const userDetailsAPI = useGet<UserResponse>(
+    ["userDetails"],
+    GET.USER_DETAILS,
+    !!isAuthUser
+  );
 
   useEffect(() => {
     if (userDetailsAPI.isLoading) {
       return;
     }
-    if (userDetailsAPI.isSuccess && userDetailsAPI.data && isAuthUser && !currentUser) {
+    if (
+      userDetailsAPI.isSuccess &&
+      userDetailsAPI.data &&
+      isAuthUser &&
+      !currentUser
+    ) {
       setUserDetails(userDetailsAPI.data);
       dispatch(setCurrentUser(userDetailsAPI.data.data));
-      dispatch(setPermissions(userDetailsAPI.data.data.permissionIds as unknown as NewBackendPermission[]));
+      dispatch(
+        setPermissions(
+          userDetailsAPI.data.data
+            .permissionIds as unknown as NewBackendPermission[]
+        )
+      );
     }
     if (userDetailsAPI.isError) {
-      console.error('Failed to fetch user details:', userDetailsAPI.error);
+      console.error("Failed to fetch user details:", userDetailsAPI.error);
     }
   }, [userDetailsAPI, isAuthUser, dispatch, currentUser]);
 
   useEffect(() => {
-    const isAuthenticated = localStorage.getItem('token') || sessionStorage.getItem('token');
+    const isAuthenticated = getAuthToken();
     if (isAuthenticated && !isAuthUser) {
       initialization();
     }
@@ -153,8 +187,76 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
     }
   };
 
+  const logout = useCallback(() => {
+    clearLocalStorage();
+    clearAuthContext();
+    // navigate to login
+    window.location.href = "/login";
+  }, [clearAuthContext]);
+
+  const idleTimeoutMs = 30 * 60 * 1000; // 30 minutes
+  const hiddenTimerRef = useRef<number | null>(null);
+
+  const _hasToken = Boolean(getAuthToken());
+  const _hasLocalToken = Boolean(localStorage.getItem("token"));
+  useIdleTimer({
+    timeout: idleTimeoutMs,
+    onIdle: () => {
+      if (isAuthUser && _hasToken) {
+        // alert("You have been logged out due to inactivity.");
+        logout();
+      }
+    },
+    events: ["mousemove", "keydown", "mousedown", "touchstart", "scroll"],
+    debounce: 500,
+    crossTab: _hasLocalToken,
+  });
+
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        hiddenTimerRef.current = window.setTimeout(() => {
+          if (isAuthUser) {
+            // alert("You have been logged out due to inactivity.");
+            logout();
+          }
+        }, idleTimeoutMs);
+      } else {
+        if (hiddenTimerRef.current) {
+          clearTimeout(hiddenTimerRef.current);
+          hiddenTimerRef.current = null;
+        }
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    const handleStorage = (e: StorageEvent) => {
+      if (e.key === "token") {
+        if (e.newValue === null) {
+          clearAuthContext();
+          window.location.href = "/login";
+        } else {
+          if (!isAuthUser) {
+            initialization();
+          }
+        }
+      }
+    };
+    window.addEventListener("storage", handleStorage);
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      window.removeEventListener("storage", handleStorage);
+      if (hiddenTimerRef.current) {
+        clearTimeout(hiddenTimerRef.current);
+        hiddenTimerRef.current = null;
+      }
+    };
+  }, [logout, isAuthUser]);
+
   const isSuperUser = () => {
-    const hasSuperUserRole = userDetails?.data?.roleIds?.some(role => role.isSuperUser === true) || false;
+    const hasSuperUserRole =
+      userDetails?.data?.roleIds?.some((role) => role.isSuperUser === true) ||
+      false;
     return hasSuperUserRole;
   };
 
@@ -170,6 +272,7 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
         setIsAuthUser,
         clearAuthContext,
         isAuthUser,
+        logout,
         refreshUserDetails,
         isSuperUser,
         getOrganizationIdForUsers,
