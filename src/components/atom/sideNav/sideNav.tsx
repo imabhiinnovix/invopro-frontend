@@ -1289,6 +1289,11 @@ function getNavItems(
     name: "Notifications Logs",
     icon: createIcon(NotificationsIcon, "/notification-logs", theme),
     route: "/notification-logs",
+    shouldShow: checkPermission(
+    permissions,
+    PermissionsMap.NOTIFICATION_LOGS,
+    "list"
+  ),
   };
   const Template = {
     name: "Templates",
@@ -1323,6 +1328,11 @@ function getNavItems(
     ...loadingIndicator,
     NotificationLogsMenuItem,
   ];
+  const visibleDataSourceItems = Array.isArray(dataSourceItems)
+  ? dataSourceItems.filter(item => item.shouldShow !== false)
+  : [];
+
+const shouldShowNotifications = visibleDataSourceItems.length > 0;
 
   return [
     {
@@ -1365,6 +1375,7 @@ function getNavItems(
       icon: createIcon(NotificationsIcon, "/data-source", theme),
       route: "/data-source",
       subItems: dataSourceItems,
+      shouldShow: shouldShowNotifications
     },
     {
       name: "VixAI Insights",
