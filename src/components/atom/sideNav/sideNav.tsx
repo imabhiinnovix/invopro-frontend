@@ -49,7 +49,6 @@ import { CreateDashboardModal } from "./components/CreateDashboardModal";
 import LogoutIcon from "@mui/icons-material/Logout";
 import logo from "../../../assets/ReportiVix-logo.png";
 import { AuthContext } from "../../../context/AuthContext";
-import { clearLocalStorage } from "../../../utils/handleLocalStorage";
 import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
 import { STYLE_GUIDE } from "../../../styles";
 import SettingsIcon from "@mui/icons-material/Settings";
@@ -399,10 +398,10 @@ export default function SideNav() {
     setDashboardToDelete(null);
   };
 
+  const { logout } = useContext(AuthContext);
+
   const handleLogout = () => {
-    clearAuthContext();
-    clearLocalStorage();
-    navigate("/login");
+    logout();
   };
 
   const navItems: NavItem[] = useMemo(() => {
@@ -1358,7 +1357,7 @@ function getNavItems(
       shouldShow: checkPermission(
         permissions,
         PermissionsMap.CUSTOM_REPORT,
-        "list"
+        "list_requests"
       ),
     },
     {
@@ -1493,7 +1492,7 @@ function getSystemSettingsItems(
         subItems: themeSettingsDataSources,
         shouldShow: checkPermission(
           permissions,
-          PermissionsMap.DATA_SOURCE_VERSION,
+          PermissionsMap.CUSTOM_REPORT,
           "list"
         ),
       },

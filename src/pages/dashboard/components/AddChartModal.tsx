@@ -381,14 +381,11 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
     }));
   };
 
-  const countWords = (text: string): number => {
-    if (!text || text.trim() === "") return 0;
+  const countCharacters = (text: string): number => {
+    if (!text) return 0;
 
-    const words = text
-      .trim()
-      .split(/\s+/)
-      .filter((word) => word.length > 0);
-    return words.length;
+    const trimmed = text.trim();
+    return trimmed.length;
   };
 
   const handleAggregationChange = (field: keyof Aggregation, value: string) => {
@@ -603,13 +600,13 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
     e.preventDefault();
     setFieldErrors({});
 
-    const descriptionWordCount = countWords(formData.description);
-    if (descriptionWordCount > 100) {
+    const descriptionCount = countCharacters(formData.description);
+    if (descriptionCount > 250) {
       setFieldErrors({
-        description: `Description exceeds the maximum word limit of 100 words. Current: ${descriptionWordCount} words.`,
+        description: `Description exceeds the maximum character limit of 250 characters. Current: ${descriptionCount} characters.`,
       });
       toast.error(
-        `Description exceeds the maximum word limit of 100 words. Please reduce it to 100 words or less.`
+        `Description exceeds the maximum character limit of 250 characters. Please reduce it to 250 characters or less.`
       );
       return;
     }
@@ -1540,16 +1537,16 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
               multiline
               rows={3}
               error={
-                countWords(formData.description) > 100 ||
+                countCharacters(formData.description) > 250 ||
                 !!fieldErrors["description"]
               }
               helperText={
                 fieldErrors["description"] ||
-                (countWords(formData.description) > 100
-                  ? `Word limit exceeded. Maximum 100 words allowed. (${countWords(
+                (countCharacters(formData.description) > 250
+                  ? `Character limit exceeded. Maximum 250 characters allowed. (${countCharacters(
                       formData.description
-                    )} / 100 words)`
-                  : `${countWords(formData.description)} / 100 words`)
+                    )} / 250 characters)`
+                  : `${countCharacters(formData.description)} / 250 characters`)
               }
               FormHelperTextProps={{
                 sx: {

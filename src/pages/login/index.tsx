@@ -13,7 +13,7 @@ import * as yup from "yup";
 
 import { POST } from "../../services/apiRoutes";
 import {
-  clearLocalStorage,
+  clearSessionStorage,
   getAuthToken,
   setAuthToken,
   setRoleId,
@@ -80,7 +80,7 @@ function Login() {
   );
 
   useLayoutEffect(() => {
-    clearLocalStorage();
+    clearSessionStorage();
   }, []);
 
   const LoginSchema = yup.object().shape({

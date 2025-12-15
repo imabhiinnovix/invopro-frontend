@@ -1,19 +1,28 @@
 export const getAuthToken = () => {
-  return localStorage.getItem('token');
+  return sessionStorage.getItem("token") || localStorage.getItem("token");
 };
 
-export const setAuthToken = (token: string) => {
-  return localStorage.setItem('token', token);
+export const setAuthToken = (token: string, persistent = false) => {
+  if (persistent) {
+    localStorage.setItem("token", token);
+  } else {
+    sessionStorage.setItem("token", token);
+  }
 };
 
 export const getRoleId = () => {
-  return localStorage?.getItem('role');
+  return localStorage?.getItem("role");
 };
 
 export const setRoleId = (id: string) => {
-  return localStorage.setItem('role', id);
+  return localStorage.setItem("role", id);
 };
 
 export const clearLocalStorage = () => {
+  sessionStorage.clear();
   return localStorage.clear();
+};
+
+export const clearSessionStorage = () => {
+  return sessionStorage.clear();
 };
