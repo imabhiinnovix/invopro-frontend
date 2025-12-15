@@ -10,6 +10,7 @@ export interface FieldSetting {
   type?: string;
   mappedAttributeName?: string;
   optionAttributeId?: string | null;
+  visibility?: "primary" | "secondary" | "hide";
 }
 
 export interface Template {

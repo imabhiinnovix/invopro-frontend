@@ -248,7 +248,7 @@ export default function Permissions() {
   // Get Datasource
   const dataSourceApiList = useGet<any>(
     ["dataSourceApiList"],
-    `${GET?.DATASOURCE_API_LIST}?isAllowPermission=true&paginate=false`,
+    `${GET?.DATA_SOURCE_LIST}?isAllowPermission=true&paginate=false`,
     true
   );
   const dataSource = dataSourceApiList?.data?.data;

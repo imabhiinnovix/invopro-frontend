@@ -78,7 +78,7 @@ const DataSourceTable: React.FC<AttributeOptionTableProps> = ({
     totalCount: number;
   }>(
     [`dataSourceList-${currentPage}`],
-    GET?.Data_Source_List + `?page=${currentPage}&limit=${perPageItem}`,
+    GET?.DATA_SOURCE_LIST + `?page=${currentPage}&limit=${perPageItem}`,
     !!currentPage
   );
 

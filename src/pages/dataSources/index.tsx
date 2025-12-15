@@ -1104,7 +1104,11 @@ const DataSources = () => {
   const dataSourceListAPI = useGet<{
     success: boolean;
     data: DataSourceListData[];
-  }>(["dataSourceList"], GET?.DATA_SOURCE_LIST + `?canEditInline=true`, true);
+  }>(
+    ["dataSourceListAPI"],
+    GET?.DATA_SOURCE_LIST + `?canEditInline=true`,
+    true
+  );
 
   // Fix: Correctly extract data from the API response
   const dataSourceList = useMemo(() => {

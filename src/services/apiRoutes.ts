@@ -49,8 +49,12 @@ export const POST = {
   CREATE_DEPARTMENT: "/common/department/create",
   CREATE_TEMPLATE: "/notivix/notification-setting/template/create",
   NOTIFICATION_SUMMARY: "notivix/notification-setting/type/summary",
-  RESEND_NOTIFICATION: "/notivix/notification-setting/prepared/notification/resend",
-  DASHBOARD_WIDGET_DATA_EXPORT: "/common/dataSource/getWidgetDataByFilter/export",
+  RESEND_NOTIFICATION:
+    "/notivix/notification-setting/prepared/notification/resend",
+  DASHBOARD_WIDGET_DATA_EXPORT:
+    "/common/dataSource/getWidgetDataByFilter/export",
+  ORGANIZATION_VISIBILITY_SETTING_CREATE:
+    "/common/organization-visibility-setting/create",
 };
 
 export const PUT = {
@@ -70,6 +74,8 @@ export const PUT = {
   UPDATE_DESIGNATION: "/common/designation/update",
   UPDATE_DEPARTMENT: "/common/department/update",
   UPDATE_TEMPLATE: "/notivix/notification-setting/template/update",
+  ORGANIZATION_VISIBILITY_SETTING_UPDATE:
+    "/common/organization-visibility-setting/update",
 };
 
 export const DELETE = {
@@ -95,7 +101,6 @@ export const GET = {
   Get_Entity_By_Id: "common/entities",
   Attribute_Option_List: "/common/attributeOptions/list",
   Attribute_Option_Get: "/common/attributeOptions/get",
-  Data_Source_List: "/common/dataSource/list",
   Data_Source_Code: "/common/dataSource/code",
   Data_Source_Version: "/common/dataSourceVersion",
   Data_Source: "/common/dataSource/dataSourceId",
@@ -132,7 +137,6 @@ export const GET = {
   NOTIFICATION_TYPE_LIST: "/notivix/notification-setting/type/list",
   TEMPLATE_LIST: "/notivix/notification-setting/template/list",
   MEDIUM_LIST: "/notivix/notification-setting/medium/list",
-  DATASOURCE_API_LIST: "/common/dataSource/list",
   FREQUENCY_LIST: "notivix/notification-setting/frequency/list",
   FREQUENCY_DETAIL: "notivix/notification-setting/frequency",
   NOTIFICATION_SETTING_TYPE_DETAIL: "/notivix/notification-setting/type",
@@ -147,4 +151,6 @@ export const GET = {
   DOWNLOAD_REQUEST_LIST: "/common/download-request/list",
   DOWNLOAD_REQUEST_FILE: "common/download-request/download",
   GET_DASHBOARD_WIDGET_PLOT_TYPES: "/common/dashboard/widget/getPlotTypes",
+  ORGANIZATION_VISIBILITY_SETTING_LIST:
+    "/common/organization-visibility-setting/list",
 };
