@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useContext } from "react";
 import {
   Avatar,
   Button,
@@ -48,12 +48,14 @@ import PrimaryButton from "../../components/common/PrimaryButton";
 import DialogContainer from "../../components/molecule/dialog";
 import { checkPermission } from "../../utils/utils";
 import { PermissionsMap } from "../../utils/constants";
+import { AuthContext } from "../../context/AuthContext";
 
 const ProfilePage = () => {
   const userProfile = useSelector(
     (state: RootState) => state.userPermission?.currentUser
   );
   const dispatch = useDispatch();
+  const { refreshUserDetails } = useContext(AuthContext);
 
   const userDetailsAPI = useGet<UserResponse>(
     ["userDetails"],
@@ -141,6 +143,7 @@ const ProfilePage = () => {
   const [passwordError, setPasswordError] = useState("");
   const [fileName, setFileName] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [isEditingProfilePic, setIsEditingProfilePic] = useState(false);
 
   const departmentList = useGet<{
     success: boolean;
@@ -326,6 +329,7 @@ const ProfilePage = () => {
     if (freshData.data?.data) {
       dispatch(setCurrentUser(freshData.data.data));
     }
+    refreshUserDetails();
   };
 
   const handlePasswordChange = async (e) => {
@@ -450,7 +454,7 @@ const ProfilePage = () => {
         },
       });
       if (response.success) {
-        toast.success("Profile picture uploaded successfully!");
+        // toast.success("Profile picture uploaded successfully!");
 
         setImagePreview(null);
         setFileName(null);
@@ -468,12 +472,14 @@ const ProfilePage = () => {
       );
     } finally {
       setIsUploading(false);
+      setIsEditingProfilePic(false);
     }
   };
 
   const handleImagePreviewDelete = () => {
     setImagePreview(null);
     setFileName(null);
+    setIsEditingProfilePic(false);
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
@@ -485,6 +491,7 @@ const ProfilePage = () => {
 
   const handleDeleteClick = () => {
     setDeleteModalOpen(true);
+    setIsEditingProfilePic(false);
   };
 
   const handleDeleteConfirm = async () => {
@@ -793,7 +800,28 @@ const ProfilePage = () => {
               accept="image/jpeg, image/png"
               style={{ display: "none" }}
             />
-            {!imagePreview && (
+
+            {!imagePreview && !isEditingProfilePic && (
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "center",
+                  gap: 1,
+                  mb: 2,
+                }}
+              >
+                {shouldAllowUpload && (
+                  <PrimaryButton
+                    variant="outlined"
+                    startIcon={<EditIcon />}
+                    onClick={() => setIsEditingProfilePic(true)}
+                  >
+                    Edit
+                  </PrimaryButton>
+                )}
+              </Box>
+            )}
+            {!imagePreview && isEditingProfilePic && (
               <>
                 <Box
                   sx={{
@@ -825,9 +853,44 @@ const ProfilePage = () => {
                       </PrimaryButton>
                     )}
                 </Box>
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "center",
+                    gap: 1,
+                    mb: 2,
+                  }}
+                >
+                  <PrimaryButton
+                    variant="outlined"
+                    startIcon={<CancelIcon />}
+                    onClick={() => setIsEditingProfilePic(false)}
+                    size="small"
+                  >
+                    Cancel
+                  </PrimaryButton>
+                </Box>
               </>
             )}
-            {imagePreview && (
+            {imagePreview && !isEditingProfilePic && (
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "center",
+                  gap: 1,
+                  mb: 2,
+                }}
+              >
+                <PrimaryButton
+                  variant="outlined"
+                  startIcon={<EditIcon />}
+                  onClick={() => setIsEditingProfilePic(true)}
+                >
+                  Edit
+                </PrimaryButton>
+              </Box>
+            )}
+            {imagePreview && isEditingProfilePic && (
               <Box
                 sx={{
                   display: "flex",

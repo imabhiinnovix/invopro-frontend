@@ -3461,6 +3461,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 variant="contained"
                 startIcon={<DoneIcon />}
                 sx={{ ...getButtonSx(), px: STYLE_GUIDE.SPACING.s6 }}
+                disabled={isAddChartModalOpen || isEditChartModalOpen}
               >
                 Save
               </Button>
