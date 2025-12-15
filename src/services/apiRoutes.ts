@@ -53,6 +53,8 @@ export const POST = {
     "/notivix/notification-setting/prepared/notification/resend",
   DASHBOARD_WIDGET_DATA_EXPORT:
     "/common/dataSource/getWidgetDataByFilter/export",
+  ORGANIZATION_VISIBILITY_SETTING_CREATE:
+    "/common/organization-visibility-setting/create",
 };
 
 export const PUT = {

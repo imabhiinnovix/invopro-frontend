@@ -1,3 +1,5 @@
+import { FieldSetting } from "../../../types/template";
+
 export interface Attribute {
   name: string;
   type:
@@ -61,6 +63,7 @@ export interface DataSourceType {
   createdAt?: string;
   updatedAt?: string;
   visibility?: "primary" | "secondary" | "hide";
+  fieldSettings?: FieldSetting[];
 }
 
 export interface DataSourceResponse {

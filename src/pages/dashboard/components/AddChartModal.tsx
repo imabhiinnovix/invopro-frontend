@@ -507,22 +507,26 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
     return `${year}-${month}-${day}`;
   };
 
-  const handleDataSourceChange = (event: SelectChangeEvent<unknown>) => {
-    const selectedDs = dataSources.find((ds) => ds._id === event.target.value);
-    if (selectedDs) {
-      setSelectedDataSource(selectedDs);
-      setFormData((prev) => ({
-        ...prev,
-        dataSourceId: event.target.value as string,
-        dimensions: [],
-        groupBy: [],
-        aggregation: {
-          ...prev.aggregation,
-          attributeName: "",
-        },
-        conditions: [],
-      }));
-    }
+  const handleDataSourceChange = (event: SelectChangeEvent<string>) => {
+    const selectedId = event.target.value;
+
+    const selectedDs = dataSources.find((ds) => ds._id === selectedId);
+
+    if (!selectedDs) return;
+
+    setSelectedDataSource(selectedDs);
+
+    setFormData((prev) => ({
+      ...prev,
+      dataSourceId: selectedId,
+      dimensions: [],
+      groupBy: [],
+      aggregation: {
+        ...prev.aggregation,
+        attributeName: "",
+      },
+      conditions: [],
+    }));
   };
 
   const handleAggregationTypeChange = (event: SelectChangeEvent<unknown>) => {
@@ -735,34 +739,30 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
     }
   };
 
-  // const getAttributeOptions = (): DataSourceAttribute[] => {
-  //   return (
-  //     selectedDataSource?.fieldSettings?.map((field) => ({
-  //       name: field.mappedAttributeName,
-  //       type: field.type || "string",
-  //       label: field.label,
-  //     })) || []
-  //   );
-  // };
+  const groupedAttributeOptions = useMemo(() => {
+    const primary: DataSourceAttribute[] = [];
+    const secondary: DataSourceAttribute[] = [];
 
-  const getAttributeOptions = (): DataSourceAttribute[] => {
-    const base =
-      selectedDataSource?.fieldSettings?.map((field) => ({
+    selectedDataSource?.fieldSettings?.forEach((field) => {
+      const attr: DataSourceAttribute = {
         name: field.mappedAttributeName,
         type: field.type || "string",
         label: field.label,
-      })) || [];
+      };
 
-    // append static groupBy options
-    return [
-      ...base,
-      // { name: "monthly", type: "string", label: "Monthly" },
-      // { name: "weekly", type: "string", label: "Weekly" },
-      // { name: "yearly", type: "string", label: "Yearly" },
-      // { name: "daily", type: "string", label: "Daily" }, // optional
-      // { name: "quarterly", type: "string", label: "Quarterly" },
-    ];
-  };
+      const visibility = field.visibility?.toLowerCase();
+
+      if (visibility === "primary") {
+        primary.push(attr);
+      } else if (visibility === "secondary") {
+        secondary.push(attr);
+      }
+    });
+
+    return { primary, secondary };
+  }, [selectedDataSource?.fieldSettings]);
+
+  console.log(selectedDataSource);
 
   const isGroupByOrDimensionOfDateType = () => {
     const groupBy = formData.groupBy;
@@ -869,19 +869,38 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
                       )
                     }
                   >
-                    {isTrend ? (
+                    {isTrend && (
                       <MenuItem value="versionValue">Period</MenuItem>
-                    ) : (
-                      getAttributeOptions().map((attr) => (
+                    )}
+
+                    {!isTrend && groupedAttributeOptions.primary.length > 0 && (
+                      <ListSubheader disableSticky>Primary</ListSubheader>
+                    )}
+                    {!isTrend &&
+                      groupedAttributeOptions.primary.map((attr) => (
                         <MenuItem
-                          key={attr.name}
+                          key={`primary-${attr.name}`}
                           value={attr.name}
                           disabled={attr.name === formData.groupBy}
                         >
-                          {attr.label} {/* Show label to user */}
+                          {attr.label}
                         </MenuItem>
-                      ))
-                    )}
+                      ))}
+
+                    {!isTrend &&
+                      groupedAttributeOptions.secondary.length > 0 && (
+                        <ListSubheader disableSticky>Secondary</ListSubheader>
+                      )}
+                    {!isTrend &&
+                      groupedAttributeOptions.secondary.map((attr) => (
+                        <MenuItem
+                          key={`secondary-${attr.name}`}
+                          value={attr.name}
+                          disabled={attr.name === formData.groupBy}
+                        >
+                          {attr.label}
+                        </MenuItem>
+                      ))}
                   </StyledSelect>
                 </FormControl>
                 <FormControl fullWidth size="small">
@@ -907,13 +926,29 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
                       )
                     }
                   >
-                    {getAttributeOptions().map((attr) => (
+                    {groupedAttributeOptions.primary.length > 0 && (
+                      <ListSubheader disableSticky>Primary</ListSubheader>
+                    )}
+                    {groupedAttributeOptions.primary.map((attr) => (
                       <MenuItem
-                        key={attr.name}
+                        key={`primary-${attr.name}`}
                         value={attr.name}
                         disabled={attr.name === formData.dimensions}
                       >
-                        {attr.label} {/* Show label to user */}
+                        {attr.label}
+                      </MenuItem>
+                    ))}
+
+                    {groupedAttributeOptions.secondary.length > 0 && (
+                      <ListSubheader disableSticky>Secondary</ListSubheader>
+                    )}
+                    {groupedAttributeOptions.secondary.map((attr) => (
+                      <MenuItem
+                        key={`secondary-${attr.name}`}
+                        value={attr.name}
+                        disabled={attr.name === formData.dimensions}
+                      >
+                        {attr.label}
                       </MenuItem>
                     ))}
                   </StyledSelect>
@@ -990,21 +1025,37 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
                       )
                     }
                   >
-                    {isTrend ? (
+                    {isTrend && (
                       <MenuItem value="versionValue">Period</MenuItem>
-                    ) : (
-                      getAttributeOptions().map((attr) => {
-                        return (
-                          <MenuItem
-                            key={attr.name}
-                            value={attr.name}
-                            disabled={attr.name === formData.groupBy}
-                          >
-                            {attr.label} {/* Show label to user */}
-                          </MenuItem>
-                        );
-                      })
                     )}
+                    {!isTrend && groupedAttributeOptions.primary.length > 0 && (
+                      <ListSubheader disableSticky>Primary</ListSubheader>
+                    )}
+                    {!isTrend &&
+                      groupedAttributeOptions.primary.map((attr) => (
+                        <MenuItem
+                          key={`primary-${attr.name}`}
+                          value={attr.name}
+                          disabled={attr.name === formData.groupBy}
+                        >
+                          {attr.label}
+                        </MenuItem>
+                      ))}
+
+                    {!isTrend &&
+                      groupedAttributeOptions.secondary.length > 0 && (
+                        <ListSubheader disableSticky>Secondary</ListSubheader>
+                      )}
+                    {!isTrend &&
+                      groupedAttributeOptions.secondary.map((attr) => (
+                        <MenuItem
+                          key={`secondary-${attr.name}`}
+                          value={attr.name}
+                          disabled={attr.name === formData.groupBy}
+                        >
+                          {attr.label}
+                        </MenuItem>
+                      ))}
                   </StyledSelect>
                 </FormControl>
               </FormRow>
@@ -1052,13 +1103,29 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
                     )
                   }
                 >
-                  {getAttributeOptions().map((attr) => (
+                  {groupedAttributeOptions.primary.length > 0 && (
+                    <ListSubheader disableSticky>Primary</ListSubheader>
+                  )}
+                  {groupedAttributeOptions.primary.map((attr) => (
                     <MenuItem
-                      key={attr.name}
+                      key={`primary-${attr.name}`}
                       value={attr.name}
                       disabled={attr.name === formData.dimensions}
                     >
-                      {attr.label} {/* Show label to user */}
+                      {attr.label}
+                    </MenuItem>
+                  ))}
+
+                  {groupedAttributeOptions.secondary.length > 0 && (
+                    <ListSubheader disableSticky>Secondary</ListSubheader>
+                  )}
+                  {groupedAttributeOptions.secondary.map((attr) => (
+                    <MenuItem
+                      key={`secondary-${attr.name}`}
+                      value={attr.name}
+                      disabled={attr.name === formData.dimensions}
+                    >
+                      {attr.label}
                     </MenuItem>
                   ))}
                 </StyledSelect>
@@ -1098,9 +1165,21 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
                   onChange={handleAggregationAttributeChange}
                   disabled={isSubmitting}
                 >
-                  {getAttributeOptions().map((attr) => (
-                    <MenuItem key={attr.name} value={attr.name}>
-                      {attr.label} {/* Show label to user */}
+                  {groupedAttributeOptions.primary.length > 0 && (
+                    <ListSubheader disableSticky>Primary</ListSubheader>
+                  )}
+                  {groupedAttributeOptions.primary.map((attr) => (
+                    <MenuItem key={`primary-${attr.name}`} value={attr.name}>
+                      {attr.label}
+                    </MenuItem>
+                  ))}
+
+                  {groupedAttributeOptions.secondary.length > 0 && (
+                    <ListSubheader disableSticky>Secondary</ListSubheader>
+                  )}
+                  {groupedAttributeOptions.secondary.map((attr) => (
+                    <MenuItem key={`secondary-${attr.name}`} value={attr.name}>
+                      {attr.label}
                     </MenuItem>
                   ))}
                 </StyledSelect>
@@ -1141,9 +1220,24 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
                     onChange={(e) => handleConditionFieldChange(index, e)}
                     disabled={isSubmitting}
                   >
-                    {getAttributeOptions().map((attr) => (
-                      <MenuItem key={attr.name} value={attr.name}>
-                        {attr.label} {/* Show label to user */}
+                    {groupedAttributeOptions.primary.length > 0 && (
+                      <ListSubheader disableSticky>Primary</ListSubheader>
+                    )}
+                    {groupedAttributeOptions.primary.map((attr) => (
+                      <MenuItem key={`primary-${attr.name}`} value={attr.name}>
+                        {attr.label}
+                      </MenuItem>
+                    ))}
+
+                    {groupedAttributeOptions.secondary.length > 0 && (
+                      <ListSubheader disableSticky>Secondary</ListSubheader>
+                    )}
+                    {groupedAttributeOptions.secondary.map((attr) => (
+                      <MenuItem
+                        key={`secondary-${attr.name}`}
+                        value={attr.name}
+                      >
+                        {attr.label}
                       </MenuItem>
                     ))}
                   </StyledSelect>
@@ -1532,39 +1626,35 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
                 label="Data Source"
                 disabled={dataSourcesLoading}
               >
-                {groupedDataSources.primary.length > 0 && (
-                  <>
-                    <ListSubheader>Primary</ListSubheader>
-                    {groupedDataSources.primary.map((source) => (
-                      <MenuItem key={source._id} value={source._id}>
-                        {source.name}
-                      </MenuItem>
-                    ))}
-                  </>
-                )}
-                {groupedDataSources.secondary.length > 0 && (
-                  <>
-                    <ListSubheader>Secondary</ListSubheader>
-                    {groupedDataSources.secondary.map((source) => (
-                      <MenuItem key={source._id} value={source._id}>
-                        {source.name}
-                      </MenuItem>
-                    ))}
-                  </>
-                )}
                 {dataSourcesLoading && (
                   <MenuItem disabled>
-                    <Box
-                      sx={{
-                        display: "flex",
-                        justifyContent: "center",
-                        width: "100%",
-                      }}
-                    >
+                    <Box sx={{ width: "100%", textAlign: "center" }}>
                       Loading...
                     </Box>
                   </MenuItem>
                 )}
+                {!dataSourcesLoading &&
+                  groupedDataSources.primary.length > 0 && [
+                    <ListSubheader key="primary" disableSticky>
+                      Primary
+                    </ListSubheader>,
+                    ...groupedDataSources.primary.map((source) => (
+                      <MenuItem key={source._id} value={source._id}>
+                        {source.name}
+                      </MenuItem>
+                    )),
+                  ]}
+                {!dataSourcesLoading &&
+                  groupedDataSources.secondary.length > 0 && [
+                    <ListSubheader key="secondary" disableSticky>
+                      Secondary
+                    </ListSubheader>,
+                    ...groupedDataSources.secondary.map((source) => (
+                      <MenuItem key={source._id} value={source._id}>
+                        {source.name}
+                      </MenuItem>
+                    )),
+                  ]}
               </StyledSelect>
             </FormControl>
           </FormRow>
@@ -1604,20 +1694,42 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
                           )
                         }
                       >
-                        {isTrend ? (
+                        {isTrend && (
                           <MenuItem value="versionValue">Period</MenuItem>
-                        ) : (
-                          getAttributeOptions().map((attr) => (
+                        )}
+                        {!isTrend &&
+                          groupedAttributeOptions.primary.length > 0 && (
+                            <ListSubheader disableSticky>Primary</ListSubheader>
+                          )}
+                        {!isTrend &&
+                          groupedAttributeOptions.primary.map((attr) => (
                             <MenuItem
-                              key={attr.name}
+                              key={`primary-${attr.name}`}
                               value={attr.name}
                               disabled={attr.name === formData.groupBy}
                             >
-                              {attr.label} {/* Show label to user */}
+                              {attr.label}
                             </MenuItem>
-                          ))
-                        )}
+                          ))}
+
+                        {!isTrend &&
+                          groupedAttributeOptions.secondary.length > 0 && (
+                            <ListSubheader disableSticky>
+                              Secondary
+                            </ListSubheader>
+                          )}
+                        {!isTrend &&
+                          groupedAttributeOptions.secondary.map((attr) => (
+                            <MenuItem
+                              key={`secondary-${attr.name}`}
+                              value={attr.name}
+                              disabled={attr.name === formData.groupBy}
+                            >
+                              {attr.label}
+                            </MenuItem>
+                          ))}
                       </StyledSelect>
+
                       {fieldErrors["Dimension"] && (
                         <FormHelperText error>
                           {fieldErrors["Dimension"]}
@@ -1648,13 +1760,29 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
                           )
                         }
                       >
-                        {getAttributeOptions().map((attr) => (
+                        {groupedAttributeOptions.primary.length > 0 && (
+                          <ListSubheader disableSticky>Primary</ListSubheader>
+                        )}
+                        {groupedAttributeOptions.primary.map((attr) => (
                           <MenuItem
-                            key={attr.name}
+                            key={`primary-${attr.name}`}
                             value={attr.name}
                             disabled={attr.name === formData.dimensions}
                           >
-                            {attr.label} {/* Show label to user */}
+                            {attr.label}
+                          </MenuItem>
+                        ))}
+
+                        {groupedAttributeOptions.secondary.length > 0 && (
+                          <ListSubheader disableSticky>Secondary</ListSubheader>
+                        )}
+                        {groupedAttributeOptions.secondary.map((attr) => (
+                          <MenuItem
+                            key={`secondary-${attr.name}`}
+                            value={attr.name}
+                            disabled={attr.name === formData.dimensions}
+                          >
+                            {attr.label}
                           </MenuItem>
                         ))}
                       </StyledSelect>
@@ -1695,9 +1823,27 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
                         onChange={handleAggregationAttributeChange}
                         disabled={isSubmitting}
                       >
-                        {getAttributeOptions().map((attr) => (
-                          <MenuItem key={attr.name} value={attr.name}>
-                            {attr.label} {/* Show label to user */}
+                        {groupedAttributeOptions.primary.length > 0 && (
+                          <ListSubheader disableSticky>Primary</ListSubheader>
+                        )}
+                        {groupedAttributeOptions.primary.map((attr) => (
+                          <MenuItem
+                            key={`primary-${attr.name}`}
+                            value={attr.name}
+                          >
+                            {attr.label}
+                          </MenuItem>
+                        ))}
+
+                        {groupedAttributeOptions.secondary.length > 0 && (
+                          <ListSubheader disableSticky>Secondary</ListSubheader>
+                        )}
+                        {groupedAttributeOptions.secondary.map((attr) => (
+                          <MenuItem
+                            key={`secondary-${attr.name}`}
+                            value={attr.name}
+                          >
+                            {attr.label}
                           </MenuItem>
                         ))}
                       </StyledSelect>
@@ -1735,9 +1881,29 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
                           onChange={(e) => handleConditionFieldChange(index, e)}
                           disabled={isSubmitting}
                         >
-                          {getAttributeOptions().map((attr) => (
-                            <MenuItem key={attr.name} value={attr.name}>
-                              {attr.label} {/* Show label to user */}
+                          {groupedAttributeOptions.primary.length > 0 && (
+                            <ListSubheader disableSticky>Primary</ListSubheader>
+                          )}
+                          {groupedAttributeOptions.primary.map((attr) => (
+                            <MenuItem
+                              key={`primary-${attr.name}`}
+                              value={attr.name}
+                            >
+                              {attr.label}
+                            </MenuItem>
+                          ))}
+
+                          {groupedAttributeOptions.secondary.length > 0 && (
+                            <ListSubheader disableSticky>
+                              Secondary
+                            </ListSubheader>
+                          )}
+                          {groupedAttributeOptions.secondary.map((attr) => (
+                            <MenuItem
+                              key={`secondary-${attr.name}`}
+                              value={attr.name}
+                            >
+                              {attr.label}
                             </MenuItem>
                           ))}
                         </StyledSelect>

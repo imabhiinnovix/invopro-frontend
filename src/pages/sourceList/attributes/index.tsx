@@ -1,90 +1,94 @@
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import {
   Box,
   Card,
   CardContent,
-  CircularProgress,
   FormControlLabel,
   Radio,
   RadioGroup,
   Stack,
   Typography,
+  IconButton,
 } from "@mui/material";
-import { STYLE_GUIDE } from "../../styles";
-import useGet from "../../hooks/useGet";
-import usePost from "../../hooks/usePost";
-import { GET, POST } from "../../services/apiRoutes";
-import { useUnifiedTheme } from "../../hooks/useUnifiedTheme";
-import { useComponentTypography } from "../../hooks/useComponentTypography";
-import { SourcePreference } from "./types";
-import { DataSourceType } from "../../components/atom/dataSource/types";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import { STYLE_GUIDE } from "../../../styles";
+import usePost from "../../../hooks/usePost";
+import { POST } from "../../../services/apiRoutes";
+import { useUnifiedTheme } from "../../../hooks/useUnifiedTheme";
+import { useComponentTypography } from "../../../hooks/useComponentTypography";
+import { FieldVisibilityPreference } from "./types";
+import { DataSourceType } from "../../../components/atom/dataSource/types";
 
-// -------------------------------------------------------------------------------
-
-// -------------------------------------------------------------------------------
-
-const SourceList = () => {
+const SourceAttributes = () => {
+  const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
+  const source = location.state?.source as DataSourceType | undefined;
+  
   const [selections, setSelections] = useState<
-    Record<string, SourcePreference>
+    Record<string, FieldVisibilityPreference>
   >({});
 
   const theme = useUnifiedTheme();
   const { getHeadingSx } = useComponentTypography();
 
-  const dataSourceList = useGet<{
-    success: boolean;
-    data: DataSourceType[];
-    totalCount: number;
-  }>([`dataSourceList`], GET?.DATA_SOURCE_LIST, true);
+  const fieldSettings = useMemo(
+    () => source?.fieldSettings ?? [],
+    [source]
+  );
 
-  const sources = useMemo(
-    () => dataSourceList.data?.data ?? [],
-    [dataSourceList.data]
+  const sourceName = useMemo(
+    () => source?.name ?? "",
+    [source]
   );
 
   useEffect(() => {
-    if (!sources.length) return;
+    if (!fieldSettings.length) return;
 
     setSelections((prev) => {
       const next = { ...prev };
-      sources.forEach((item) => {
-        if (!item._id) return;
+      fieldSettings.forEach((field) => {
+        if (!field.attributeId) return;
 
-        if (!next[item._id] && item.visibility) {
-          next[item._id] = item.visibility;
+        if (!next[field.attributeId] && field.visibility) {
+          next[field.attributeId] = field.visibility;
         }
       });
 
       return next;
     });
-  }, [sources]);
+  }, [fieldSettings]);
 
-  const createVisibilitySetting = usePost<
-    { dataSourceId: string; visibility: SourcePreference },
+  const createFieldVisibilitySetting = usePost<
+    { dataSourceId: string; attributeId: string; visibility: FieldVisibilityPreference },
     { success: boolean; message: string }
-  >([`dataSourceList`], undefined, true);
+  >([`dataSourceDetail`, id ?? ""], undefined, true);
 
-  const handlePreferenceChange = (id: string, value: SourcePreference) => {
+  const handlePreferenceChange = (
+    attributeId: string,
+    value: FieldVisibilityPreference
+  ) => {
     setSelections((prev) => ({
       ...prev,
-      [id]: value,
+      [attributeId]: value,
     }));
 
-    createVisibilitySetting.mutate({
+    if (!id) return;
+
+    createFieldVisibilitySetting.mutate({
       url: POST.ORGANIZATION_VISIBILITY_SETTING_CREATE,
       payload: {
         dataSourceId: id,
+        attributeId,
         visibility: value,
       },
     });
   };
 
-  const handleSourceClick = (source: DataSourceType) => {
-    navigate(`/system-settings/charts/source-list/attributes/${source._id}`, {
-      state: { source },
-    });
+
+  const handleBack = () => {
+    navigate("/system-settings/charts/source-list");
   };
 
   return (
@@ -96,15 +100,20 @@ const SourceList = () => {
         gap: STYLE_GUIDE.SPACING.s4,
       }}
     >
-      <Typography
-        variant="h4"
-        sx={{
-          ...getHeadingSx(),
-          mb: STYLE_GUIDE?.SPACING?.s3,
-        }}
-      >
-        Source List
-      </Typography>
+      <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+        <IconButton onClick={handleBack} sx={{ p: 1 }}>
+          <ArrowBackIcon />
+        </IconButton>
+        <Typography
+          variant="h4"
+          sx={{
+            ...getHeadingSx(),
+            mb: 0,
+          }}
+        >
+          {sourceName} - Field Settings
+        </Typography>
+      </Box>
 
       <Card
         sx={{
@@ -114,7 +123,7 @@ const SourceList = () => {
         }}
       >
         <CardContent sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
-          {dataSourceList.isLoading ? (
+          {!source ? (
             <Box
               sx={{
                 display: "flex",
@@ -123,22 +132,19 @@ const SourceList = () => {
                 minHeight: 200,
               }}
             >
-              <CircularProgress />
+              <Typography color="text.secondary">
+                No source data available. Please navigate from the source list.
+              </Typography>
             </Box>
-          ) : dataSourceList.isError ? (
-            <Typography color="error">
-              Unable to load sources. Please try again.
-            </Typography>
-          ) : !sources.length ? (
+          ) : !fieldSettings.length ? (
             <Typography color="text.secondary">
-              No data sources available.
+              No field settings available for this source.
             </Typography>
           ) : (
             <Stack spacing={2}>
-              {sources.map((source) => (
+              {fieldSettings.map((field) => (
                 <Box
-                  key={source._id}
-                  onClick={() => handleSourceClick(source)}
+                  key={field.attributeId}
                   sx={{
                     display: "flex",
                     flexDirection: "column",
@@ -147,13 +153,6 @@ const SourceList = () => {
                     borderRadius: 2,
                     border: `1px solid ${theme.palette.divider}`,
                     backgroundColor: theme.palette.background.paper,
-                    cursor: "pointer",
-                    transition: "all 0.2s ease-in-out",
-                    "&:hover": {
-                      transform: "translateY(-2px)",
-                      boxShadow: theme.shadows[4],
-                      borderColor: theme.palette.primary.main,
-                    },
                   }}
                 >
                   <Box
@@ -167,16 +166,16 @@ const SourceList = () => {
                   >
                     <Box>
                       <Typography variant="subtitle1" fontWeight={600}>
-                        {source.name}
+                        {field.label}
                       </Typography>
                     </Box>
                     <RadioGroup
                       row
-                      value={selections[source._id] || "hide"}
+                      value={selections[field.attributeId] || "hide"}
                       onChange={(event) =>
                         handlePreferenceChange(
-                          source._id,
-                          event.target.value as SourcePreference
+                          field.attributeId,
+                          event.target.value as FieldVisibilityPreference
                         )
                       }
                     >
@@ -207,4 +206,4 @@ const SourceList = () => {
   );
 };
 
-export default SourceList;
+export default SourceAttributes;
