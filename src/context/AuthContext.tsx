@@ -142,20 +142,17 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
     if (userDetailsAPI.isLoading) {
       return;
     }
-    if (
-      userDetailsAPI.isSuccess &&
-      userDetailsAPI.data &&
-      isAuthUser &&
-      !currentUser
-    ) {
+    if (userDetailsAPI.isSuccess && userDetailsAPI.data && isAuthUser) {
       setUserDetails(userDetailsAPI.data);
-      dispatch(setCurrentUser(userDetailsAPI.data.data));
-      dispatch(
-        setPermissions(
-          userDetailsAPI.data.data
-            .permissionIds as unknown as NewBackendPermission[]
-        )
-      );
+      if (!currentUser) {
+        dispatch(setCurrentUser(userDetailsAPI.data.data));
+        dispatch(
+          setPermissions(
+            userDetailsAPI.data.data
+              .permissionIds as unknown as NewBackendPermission[]
+          )
+        );
+      }
     }
     if (userDetailsAPI.isError) {
       console.error("Failed to fetch user details:", userDetailsAPI.error);
