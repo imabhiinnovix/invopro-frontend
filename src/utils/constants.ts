@@ -253,7 +253,7 @@ export const PermissionsMap = {
   ROLE: "Role",
   PERMISSION: "Permission",
   USER: "User",
-  SOURCE_LIST: "Source List",
+  SOURCE_LIST: "Organization Visibility Setting",
 } as const;
 
 export type PermissionResourceType = keyof typeof PermissionsMap;

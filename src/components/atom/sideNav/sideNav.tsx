@@ -1565,11 +1565,11 @@ function getSystemSettingsItems(
               theme
             ),
             route: "#",
-            // shouldShow: checkPermission(
-            //   permissions,
-            //   PermissionsMap.SOURCE_LIST,
-            //   "list"
-            // ),
+            shouldShow: checkPermission(
+              permissions,
+              PermissionsMap.SOURCE_LIST,
+              "list"
+            ),
             subItems: [
               {
                 name: "Source List",
@@ -1579,11 +1579,11 @@ function getSystemSettingsItems(
                   theme
                 ),
                 route: "/system-settings/charts/source-list",
-                // shouldShow: checkPermission(
-                //   permissions,
-                //   PermissionsMap.SOURCE_LIST,
-                //   "list"
-                // ),
+                shouldShow: checkPermission(
+                  permissions,
+                  PermissionsMap.SOURCE_LIST,
+                  "list"
+                ),
               },
             ],
           },
