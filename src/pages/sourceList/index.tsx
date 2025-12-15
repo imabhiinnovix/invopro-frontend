@@ -14,7 +14,8 @@ import {
 import { STYLE_GUIDE } from "../../styles";
 import useGet from "../../hooks/useGet";
 import usePost from "../../hooks/usePost";
-import { GET, POST } from "../../services/apiRoutes";
+import usePut from "../../hooks/usePut";
+import { GET, POST, PUT } from "../../services/apiRoutes";
 import { useUnifiedTheme } from "../../hooks/useUnifiedTheme";
 import { useComponentTypography } from "../../hooks/useComponentTypography";
 import { SourcePreference } from "./types";
@@ -66,19 +67,57 @@ const SourceList = () => {
     { success: boolean; message: string }
   >([`dataSourceList`], undefined, true);
 
-  const handlePreferenceChange = (id: string, value: SourcePreference) => {
+  const updateVisibilitySetting = usePut<
+    { visibility: SourcePreference; dataSourceId: string },
+    { success: boolean; message: string }
+  >([`dataSourceList`], undefined, true);
+
+  const { data: visibilitySettingsData } = useGet<{
+    data: Array<{
+      _id: string;
+      dataSourceId: string;
+      visibility: SourcePreference;
+    }>;
+  }>(
+    [`visibilitySettingsList`],
+    `${GET.ORGANIZATION_VISIBILITY_SETTING_LIST}`,
+    true
+  );
+
+  const handlePreferenceChange = (
+    event: React.MouseEvent,
+    id: string,
+    value: SourcePreference
+  ) => {
+    event.preventDefault();
+    event.stopPropagation();
+
     setSelections((prev) => ({
       ...prev,
       [id]: value,
     }));
 
-    createVisibilitySetting.mutate({
-      url: POST.ORGANIZATION_VISIBILITY_SETTING_CREATE,
-      payload: {
-        dataSourceId: id,
-        visibility: value,
-      },
-    });
+    const existingSetting = visibilitySettingsData?.data?.find(
+      (setting) => setting.dataSourceId === id
+    );
+
+    if (existingSetting) {
+      updateVisibilitySetting.mutate({
+        url: `${PUT.ORGANIZATION_VISIBILITY_SETTING_UPDATE}/${existingSetting._id}`,
+        payload: {
+          dataSourceId: existingSetting.dataSourceId,
+          visibility: value,
+        },
+      });
+    } else {
+      createVisibilitySetting.mutate({
+        url: POST.ORGANIZATION_VISIBILITY_SETTING_CREATE,
+        payload: {
+          dataSourceId: id,
+          visibility: value,
+        },
+      });
+    }
   };
 
   const handleSourceClick = (source: DataSourceType) => {
@@ -175,10 +214,12 @@ const SourceList = () => {
                       value={selections[source._id] || "hide"}
                       onChange={(event) =>
                         handlePreferenceChange(
+                          event as unknown as React.MouseEvent,
                           source._id,
                           event.target.value as SourcePreference
                         )
                       }
+                      onClick={(event) => event.stopPropagation()}
                     >
                       <FormControlLabel
                         value="primary"

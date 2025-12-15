@@ -74,6 +74,8 @@ export const PUT = {
   UPDATE_DESIGNATION: "/common/designation/update",
   UPDATE_DEPARTMENT: "/common/department/update",
   UPDATE_TEMPLATE: "/notivix/notification-setting/template/update",
+  ORGANIZATION_VISIBILITY_SETTING_UPDATE:
+    "/common/organization-visibility-setting/update",
 };
 
 export const DELETE = {
@@ -149,4 +151,6 @@ export const GET = {
   DOWNLOAD_REQUEST_LIST: "/common/download-request/list",
   DOWNLOAD_REQUEST_FILE: "common/download-request/download",
   GET_DASHBOARD_WIDGET_PLOT_TYPES: "/common/dashboard/widget/getPlotTypes",
+  ORGANIZATION_VISIBILITY_SETTING_LIST:
+    "/common/organization-visibility-setting/list",
 };

@@ -14,7 +14,9 @@ import {
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { STYLE_GUIDE } from "../../../styles";
 import usePost from "../../../hooks/usePost";
-import { POST } from "../../../services/apiRoutes";
+import useGet from "../../../hooks/useGet";
+import usePut from "../../../hooks/usePut";
+import { POST, GET, PUT } from "../../../services/apiRoutes";
 import { useUnifiedTheme } from "../../../hooks/useUnifiedTheme";
 import { useComponentTypography } from "../../../hooks/useComponentTypography";
 import { FieldVisibilityPreference } from "./types";
@@ -25,7 +27,7 @@ const SourceAttributes = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const source = location.state?.source as DataSourceType | undefined;
-  
+
   const [selections, setSelections] = useState<
     Record<string, FieldVisibilityPreference>
   >({});
@@ -33,15 +35,9 @@ const SourceAttributes = () => {
   const theme = useUnifiedTheme();
   const { getHeadingSx } = useComponentTypography();
 
-  const fieldSettings = useMemo(
-    () => source?.fieldSettings ?? [],
-    [source]
-  );
+  const fieldSettings = useMemo(() => source?.fieldSettings ?? [], [source]);
 
-  const sourceName = useMemo(
-    () => source?.name ?? "",
-    [source]
-  );
+  const sourceName = useMemo(() => source?.name ?? "", [source]);
 
   useEffect(() => {
     if (!fieldSettings.length) return;
@@ -61,31 +57,99 @@ const SourceAttributes = () => {
   }, [fieldSettings]);
 
   const createFieldVisibilitySetting = usePost<
-    { dataSourceId: string; attributeId: string; visibility: FieldVisibilityPreference },
+    {
+      dataSourceId: string;
+      attributeId: string;
+      visibility: FieldVisibilityPreference;
+    },
     { success: boolean; message: string }
   >([`dataSourceDetail`, id ?? ""], undefined, true);
 
+  const updateFieldVisibilitySetting = usePut<
+    {
+      dataSourceId: string;
+      attributeId: string;
+      visibility: FieldVisibilityPreference;
+    },
+    { success: boolean; message: string }
+  >([`dataSourceDetail`, id ?? ""], undefined, true);
+
+  const { data: visibilitySettingsData } = useGet<{
+    data: Array<{
+      _id: string;
+      dataSourceId: string;
+      attributeId: string;
+      visibility: FieldVisibilityPreference;
+    }>;
+  }>(
+    [`visibilitySettings`, id ?? ""],
+    `${GET.ORGANIZATION_VISIBILITY_SETTING_LIST}?dataSourceId=${id}`,
+    !!id
+  );
+
+  console.log("visibilitySettingsData", visibilitySettingsData);
+
   const handlePreferenceChange = (
+    event: React.MouseEvent,
     attributeId: string,
     value: FieldVisibilityPreference
   ) => {
+    event.stopPropagation();
+
     setSelections((prev) => ({
       ...prev,
       [attributeId]: value,
     }));
 
+    const updatedSource = source
+      ? {
+          ...source,
+          fieldSettings:
+            source.fieldSettings?.map((field) =>
+              field.attributeId === attributeId
+                ? { ...field, visibility: value }
+                : field
+            ) || [],
+        }
+      : undefined;
+
+    navigate(
+      {
+        pathname: location.pathname,
+      },
+      {
+        replace: true,
+        state: { ...location.state, source: updatedSource },
+      }
+    );
+
     if (!id) return;
 
-    createFieldVisibilitySetting.mutate({
-      url: POST.ORGANIZATION_VISIBILITY_SETTING_CREATE,
-      payload: {
-        dataSourceId: id,
-        attributeId,
-        visibility: value,
-      },
-    });
-  };
+    const existingSetting = visibilitySettingsData?.data?.find(
+      (setting) =>
+        setting.attributeId === attributeId && setting.dataSourceId === id
+    );
 
+    if (existingSetting) {
+      updateFieldVisibilitySetting.mutate({
+        url: `${PUT.ORGANIZATION_VISIBILITY_SETTING_UPDATE}/${existingSetting._id}`,
+        payload: {
+          dataSourceId: existingSetting?.dataSourceId,
+          attributeId: existingSetting?.attributeId,
+          visibility: value,
+        },
+      });
+    } else {
+      createFieldVisibilitySetting.mutate({
+        url: POST.ORGANIZATION_VISIBILITY_SETTING_CREATE,
+        payload: {
+          dataSourceId: id,
+          attributeId,
+          visibility: value,
+        },
+      });
+    }
+  };
 
   const handleBack = () => {
     navigate("/system-settings/charts/source-list");
@@ -174,6 +238,7 @@ const SourceAttributes = () => {
                       value={selections[field.attributeId] || "hide"}
                       onChange={(event) =>
                         handlePreferenceChange(
+                          event as unknown as React.MouseEvent,
                           field.attributeId,
                           event.target.value as FieldVisibilityPreference
                         )
