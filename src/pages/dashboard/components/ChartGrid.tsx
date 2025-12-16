@@ -728,12 +728,17 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
     try {
       setIsDeleting(true);
       const result = await dispatch(deleteWidget(selectedChart._id)).unwrap();
-
       if (result.success) {
         toast.success("Chart deleted successfully!");
         if (isDefaultNotivix) {
           dispatch(
-            fetchChartData({ dashboardId, dashboardFilters, isDefaultNotivix })
+            fetchChartData({
+              dashboardId,
+              dashboardFilters,
+              isDefaultNotivix,
+              dashboardType:
+                currentDashboard?.settings?.dashboardType || "normal",
+            })
           );
         } else {
           dispatch(
@@ -741,6 +746,8 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
               dashboardId,
               dashboardFilters: {},
               isDefaultNotivix,
+              dashboardType:
+                currentDashboard?.settings?.dashboardType || "normal",
             })
           );
         }

@@ -1689,6 +1689,7 @@ interface FieldSetting {
   isFilterEnable: boolean;
   isDerived?: boolean;
   optionAttributeId?: string;
+  mappedAttributeName?: string;
 }
 
 interface EntityFieldOption {
@@ -1848,8 +1849,8 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
     dataSourceQuery.data?.data.entityFieldOptions?.forEach((option) => {
       // Create unique key by combining attributeId with refAttributeId array
       const refKey =
-        option.value.refAttributeId?.length > 0
-          ? `-${option.value.refAttributeId.join("-")}`
+        (option.value.refAttributeId?.length || 0) > 0
+          ? `-${option.value.refAttributeId!.join("-")}`
           : "";
       const uniqueKey = `${option.label}${option.value.attributeId}${refKey}`;
       map[uniqueKey] = option;
@@ -1862,22 +1863,17 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
     const map: Record<string, EntityFieldOption> = {};
     let originalAttributeId: string;
     dataSourceQuery.data?.data.entityFieldOptions?.forEach((option) => {
-      let isFieldSettingExist = filteredFieldSettings.filter(
-        (field) => field["mappedAttributeName"] == option.label
-      );
-      if (isFieldSettingExist.length > 0) {
-        originalAttributeId = option?.value?.attributeId;
-        if (option?.value?.refAttributeId?.length > 0) {
-          originalAttributeId =
-            option?.value?.refAttributeId[
-              option?.value?.refAttributeId?.length - 1
-            ];
-        }
-        map[originalAttributeId] = option;
+      originalAttributeId = option?.value?.attributeId;
+      if (option?.value?.refAttributeId?.length > 0) {
+        originalAttributeId =
+          option?.value?.refAttributeId[
+            option?.value?.refAttributeId?.length - 1
+          ];
       }
+      map[originalAttributeId] = option;
     });
     return map;
-  }, [dataSourceQuery.data, filteredFieldSettings]);
+  }, [dataSourceQuery.data]);
 
   // Memoize entity attribute option map
   const entityAttributeOptionMap = useMemo(() => {
@@ -2003,10 +1999,10 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
   };
 
   const handleClearFilters = () => {
-    setFilters({ ...defaultFilters, __reset: Date.now() } || {});
+    setFilters({ ...defaultFilters, __reset: Date.now() });
     setDateRangeValues({}); // Changed: Clear all date range values
     setFocusedFields({}); // Changed: Clear all focused fields
-    onApplyFilters({ ...defaultFilters, __reset: Date.now() } || {});
+    onApplyFilters({ ...defaultFilters, __reset: Date.now() });
     onClose();
   };
 
@@ -2061,7 +2057,8 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
   useEffect(() => {
     if (
       !dataSourceQuery.data ||
-      Object.keys(entityFieldOptionsMap).length === 0
+      (!filteredFieldSettings.length &&
+        Object.keys(entityFieldOptionsMap).length === 0)
     )
       return;
 
@@ -2070,36 +2067,61 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
 
     if (currentFilters && Object.keys(currentFilters).length > 0) {
       Object.entries(currentFilters).forEach(([filterLabel, value]) => {
-        // Handle derived fields
-        if (filterLabel.startsWith("Derived.")) {
-          const actualLabel = filterLabel.replace("Derived.", "");
+        let isDerived = false;
+        let actualLabel = filterLabel;
 
-          Object.entries(entityFieldOptionsMap).forEach(
-            ([uniqueKey, entityOption]) => {
-              if (
-                entityOption.label === actualLabel &&
-                entityOption.value.isDerived
-              ) {
-                reverseTransformedFilters[uniqueKey] = value;
-              }
-            }
-          );
+        if (filterLabel.startsWith("Derived.")) {
+          actualLabel = filterLabel.replace("Derived.", "");
+          isDerived = true;
+        }
+
+        const matchedField = filteredFieldSettings.find((field) => {
+          const fieldIsDerived = !!field.isDerived;
+          if (fieldIsDerived !== isDerived) return false;
+
+          if (field.label === actualLabel) return true;
+
+          if (
+            field.mappedAttributeName &&
+            field.mappedAttributeName.startsWith(actualLabel)
+          ) {
+            return true;
+          }
+
+          return false;
+        });
+
+        if (matchedField) {
+          const refKey =
+            matchedField.refAttributeId?.length > 0
+              ? `-${matchedField.refAttributeId!.join("-")}`
+              : "";
+          let originalAttributeId = matchedField.attributeId;
+          if (matchedField.refAttributeId?.length > 0) {
+            originalAttributeId =
+              matchedField.refAttributeId![
+                matchedField.refAttributeId!.length - 1
+              ];
+          }
+
+          const option =
+            entityFieldOptionsMapByAttributeId[originalAttributeId];
+          const prefixLabel = option?.label || "";
+
+          const uniqueKey = `${prefixLabel}${matchedField.attributeId}${refKey}`;
+
+          reverseTransformedFilters[uniqueKey] = value;
         } else {
-          // Handle regular fields
-          Object.entries(entityFieldOptionsMap).forEach(
-            ([uniqueKey, entityOption]) => {
-              if (
-                entityOption.label === filterLabel &&
-                !entityOption.value.isDerived
-              ) {
-                reverseTransformedFilters[uniqueKey] = value;
-              }
-            }
+          const matchingEntry = Object.entries(entityFieldOptionsMap).find(
+            ([, opt]) =>
+              opt.label === actualLabel && !!opt.value.isDerived === isDerived
           );
+          if (matchingEntry) {
+            reverseTransformedFilters[matchingEntry[0]] = value;
+          }
         }
       });
 
-      // Handle date-range fields specifically
       Object.entries(reverseTransformedFilters).forEach(
         ([uniqueKey, value]) => {
           const fieldSetting = filteredFieldSettings.find((field) => {
@@ -2110,12 +2132,12 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
             let originalAttributeId = field.attributeId;
             if (field?.refAttributeId?.length > 0) {
               originalAttributeId =
-                field.refAttributeId[field.refAttributeId.length - 1];
+                field.refAttributeId![field.refAttributeId!.length - 1];
             }
-            const fieldUniqueKey = `${
+            const prefixLabel =
               entityFieldOptionsMapByAttributeId[originalAttributeId]?.label ||
-              ""
-            }${field.attributeId}${refKey}`;
+              "";
+            const fieldUniqueKey = `${prefixLabel}${field.attributeId}${refKey}`;
             return fieldUniqueKey === uniqueKey;
           });
 
@@ -2161,14 +2183,14 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
     // Generate the same unique key used in entityFieldOptionsMap
     const refKey =
       field.refAttributeId?.length > 0
-        ? `-${field.refAttributeId.join("-")}`
+        ? `-${field.refAttributeId!.join("-")}`
         : "";
     // Get options based on field type
     let options: string[] = [];
     let originalAttributeId: string = field?.attributeId;
     if (field?.refAttributeId?.length > 0) {
       originalAttributeId =
-        field.refAttributeId[field.refAttributeId.length - 1];
+        field.refAttributeId![field.refAttributeId!.length - 1];
     }
     if (
       field.type === "option" ||
