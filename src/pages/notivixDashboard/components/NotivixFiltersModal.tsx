@@ -2077,7 +2077,7 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
           Object.entries(entityFieldOptionsMap).forEach(
             ([uniqueKey, entityOption]) => {
               if (
-                entityOption.label.toLowerCase().startsWith(actualLabel.toLowerCase()) &&
+                entityOption.label === actualLabel &&
                 entityOption.value.isDerived
               ) {
                 reverseTransformedFilters[uniqueKey] = value;
