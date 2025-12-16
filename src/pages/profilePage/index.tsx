@@ -715,7 +715,7 @@ const ProfilePage = () => {
     { id: "lastName", label: "Last Name" },
     { id: "email", label: "Email" },
     { id: "mobile", label: "Mobile", type: "tel" },
-    { id: "company", label: "Company" },
+    { id: "company", label: "Organization" },
     {
       id: "departmentId",
       label: "Department",
@@ -969,6 +969,7 @@ const ProfilePage = () => {
                   "firstName",
                   "lastName",
                   "email",
+                  "company",
                 ])}
                 {editModes.personal && (
                   <Grid

@@ -11,14 +11,15 @@ import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 
-import { POST } from "../../services/apiRoutes";
+import { POST, GET } from "../../services/apiRoutes";
+import axiosInstance from "../../services/axiosInstance";
 import {
   clearSessionStorage,
   getAuthToken,
   setAuthToken,
   setRoleId,
 } from "../../utils/handleLocalStorage";
-import { roleId } from "../../utils/constants";
+
 import { AuthContext, AuthContextType } from "../../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import usePost from "../../hooks/usePost";
@@ -52,21 +53,34 @@ function Login() {
     AuthContext
   ) as AuthContextType;
 
+  const navigate = useNavigate();
+
   useEffect(() => {
     const token = getAuthToken();
     if (token) {
-      if (userDetails?.data?.roleId === roleId?.SUPER_ADMIN) {
-        navigate("/dashboard");
-      } else if (userDetails?.data?.roleId === roleId?.ADMIN) {
-        navigate("/dashboard");
-      } else {
-        navigate("/dashboard");
-      }
+      const checkAndRedirectInfo = async () => {
+        try {
+          const { data } = await axiosInstance.get(GET.DASHBOARD_LIST);
+          if (
+            data?.success &&
+            Array.isArray(data?.data) &&
+            data.data.length > 0
+          ) {
+            navigate(`/dashboard/${data.data[0]._id}`);
+          } else {
+            navigate("/dashboard");
+          }
+        } catch (error) {
+          navigate("/dashboard");
+        }
+      };
+      
+      checkAndRedirectInfo();
       setRoleId(String(userDetails?.data?.roleId));
     }
   }, [userDetails]);
 
-  const navigate = useNavigate();
+
 
   const getLogin = usePost<getLoginPayload, getLoginResponse>(
     [""],

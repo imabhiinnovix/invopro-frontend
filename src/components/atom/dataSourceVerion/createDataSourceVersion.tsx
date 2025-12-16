@@ -216,6 +216,7 @@ const CreateDataSourceVersion: React.FC<CreateDataSourceVersionProps> = ({
           mappings: JSON.stringify(formData.mappings),
           separator: JSON.stringify(formData.separator),
           versionValue: formattedVersion,
+          versionName,
         },
       });
     }

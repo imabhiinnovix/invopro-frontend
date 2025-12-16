@@ -752,6 +752,7 @@ export default function Users({
                 "& .MuiOutlinedInput-root": {
                   borderRadius: STYLE_GUIDE.SPACING.s2,
                 },
+                display: "none",
               }}
             />
           )}

@@ -10,7 +10,8 @@ import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 
-import { POST } from "../../services/apiRoutes";
+import { POST, GET } from "../../services/apiRoutes";
+import axiosInstance from "../../services/axiosInstance";
 import { Button } from "@mui/material";
 
 import {
@@ -46,11 +47,28 @@ const VerifyOTP = () => {
   useEffect(() => {
     const token = getAuthToken();
     if (token) {
+      const checkAndRedirectInfo = async () => {
+        try {
+          const { data } = await axiosInstance.get(GET.DASHBOARD_LIST);
+          if (
+            data?.success &&
+            Array.isArray(data?.data) &&
+            data.data.length > 0
+          ) {
+            navigate(`/dashboard/${data.data[0]._id}`);
+          } else {
+            navigate("/dashboard");
+          }
+        } catch (error) {
+          navigate("/dashboard");
+        }
+      };
+
       setTimeout(() => {
         if (userDetails?.data?.roleId === roleId?.SUPER_ADMIN) {
           navigate("/superadmin/dashboard");
         } else {
-          navigate("/dashboard");
+          checkAndRedirectInfo();
         }
       }, 10);
       setRoleId(String(userDetails?.data?.roleId));

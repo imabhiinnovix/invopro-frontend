@@ -3498,7 +3498,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 {currentDashboard?.settings?.dashboardType === "normal" &&
                 !currentDashboard?.isDefaultNotivix ? (
                   <Box>
-                    <CommonDatePicker
+                    {/* <CommonDatePicker
                       name="versionValue"
                       control={control}
                       views={["year", "month"]}
@@ -3513,7 +3513,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                         },
                         borderRadius: "8px",
                       }}
-                    />
+                    /> */}
                   </Box>
                 ) : currentDashboard?.settings?.dashboardType === "trend" ? (
                   <Stack direction="row" spacing={STYLE_GUIDE.SPACING.s6}>
