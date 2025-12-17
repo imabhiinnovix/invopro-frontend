@@ -2213,11 +2213,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   const handleApplyFilters = async (filters: any) => {
     if (Object.keys(filters).length > 0) {
       setDashboardFilters(filters);
-      setStatusToggle(
-        filters["Derived.Case Status"]
-          ? filters["Derived.Case Status"]
-          : "Pending"
-      );
+
+      setStatusToggle(filters["Derived.Case Status"]);
 
       // Fix: Use DateObject instead of Date
       if (
