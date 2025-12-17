@@ -1975,55 +1975,25 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
 
   const handleApplyFilters = () => {
     const transformedFilters: Record<string, any> = {};
+
     Object.entries(filters).forEach(([filterKey, value]) => {
-      const matchedField = filteredFieldSettings.find((field) => {
-        const refKey =
-          (field.refAttributeId?.length || 0) > 0
-            ? `-${field.refAttributeId!.join("-")}`
-            : "";
-        let originalAttributeId = field.attributeId;
-        if ((field?.refAttributeId?.length || 0) > 0) {
-          originalAttributeId =
-            field.refAttributeId![field.refAttributeId!.length - 1];
-        }
-        const prefixLabel =
-          entityFieldOptionsMapByAttributeId[originalAttributeId]?.label || "";
-        const fieldUniqueKey = `${prefixLabel}${field.attributeId}${refKey}`;
-        return fieldUniqueKey === filterKey;
-      });
+      const entityOption = entityFieldOptionsMap[filterKey];
 
       const isEmptyValue =
         value === undefined ||
         value === null ||
         value === "" ||
-        value === "all" ||
         (Array.isArray(value) && value.length === 0);
 
-      if (matchedField && !isEmptyValue) {
-        let label = matchedField.label;
-        if (label === "Status") {
-          label = "Case Status";
-        }
-        if (matchedField.isDerived) {
-          transformedFilters[`Derived.${label}`] = value;
+      if (entityOption && !isEmptyValue) {
+        if (entityOption?.value?.isDerived) {
+          transformedFilters[`Derived.${entityOption.label}`] = value;
         } else {
-          transformedFilters[label] = value;
-        }
-      } else if (!matchedField && !isEmptyValue) {
-        const entityOption = entityFieldOptionsMap[filterKey];
-        if (entityOption) {
-          let label = entityOption.label;
-          if (label === "Status") {
-            label = "Case Status";
-          }
-          if (entityOption?.value?.isDerived) {
-            transformedFilters[`Derived.${label}`] = value;
-          } else {
-            transformedFilters[label] = value;
-          }
+          transformedFilters[entityOption.label] = value;
         }
       }
     });
+
     onApplyFilters(transformedFilters);
     onClose();
   };
@@ -2032,7 +2002,7 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
     setFilters({ ...defaultFilters, __reset: Date.now() });
     setDateRangeValues({}); // Changed: Clear all date range values
     setFocusedFields({}); // Changed: Clear all focused fields
-    onApplyFilters({ ...defaultFilters, __reset: Date.now() });
+    onApplyFilters({ ...defaultFilters });
     onClose();
   };
 
@@ -2200,12 +2170,12 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
     if (filtersChanged || dateRangeValuesChanged || dataSourceChanged) {
       setFilters(reverseTransformedFilters);
       setDateRangeValues(newDateRangeValues);
-      prevFiltersRef.current = reverseTransformedFilters;
-      prevDateRangeValuesRef.current = newDateRangeValues;
+    }
+    prevFiltersRef.current = reverseTransformedFilters;
+    prevDateRangeValuesRef.current = newDateRangeValues;
 
-      if (dataSourceChanged) {
-        prevDataSourceIdRef.current = dataSourceId;
-      }
+    if (dataSourceChanged) {
+      prevDataSourceIdRef.current = dataSourceId;
     }
   }, [
     currentFilters,

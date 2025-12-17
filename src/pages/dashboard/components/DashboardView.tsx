@@ -2042,8 +2042,9 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               startDate: start.format("YYYY-MM-DD"),
               endDate: end.format("YYYY-MM-DD"),
             },
-            "Derived.Case Status": statusToggle,
-            "Derived.Handled By": "In House",
+            // "Derived.Case Status": statusToggle,
+            "Derived.Case Status SABIC": statusToggle,
+            "Derived.Handled By SABIC": "In House",
           };
         } else if (statusToggle === "Completed") {
           return {
@@ -2052,8 +2053,9 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               startDate: start.format("YYYY-MM-DD"),
               endDate: end.format("YYYY-MM-DD"),
             },
-            "Derived.Case Status": statusToggle,
-            "Derived.Handled By": "In House",
+            // "Derived.Case Status": statusToggle,
+            "Derived.Case Status SABIC": statusToggle,
+            "Derived.Handled By SABIC": "In House",
           };
         }
         return prev;
@@ -2083,8 +2085,9 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               startDate: today.format("YYYY-MM-DD"),
               endDate: thirtyDaysAfter.format("YYYY-MM-DD"),
             },
-            "Derived.Case Status": statusToggle,
-            "Derived.Handled By": "In House",
+            // "Derived.Case Status": statusToggle,
+            "Derived.Case Status SABIC": statusToggle,
+            "Derived.Handled By SABIC": "In House",
           };
         } else if (statusToggle === "Completed") {
           const today = new DateObject(); // Current date
@@ -2097,14 +2100,16 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               startDate: thirtyDaysAgo.format("YYYY-MM-DD"),
               endDate: today.format("YYYY-MM-DD"),
             },
-            "Derived.Case Status": statusToggle,
-            "Derived.Handled By": "In House",
+            // "Derived.Case Status": statusToggle,
+            "Derived.Case Status SABIC": statusToggle,
+            "Derived.Handled By SABIC": "In House",
           };
         }
         return {
           ...prev,
-          "Derived.Case Status": statusToggle,
-          "Derived.Handled By": "In House",
+          // "Derived.Case Status": statusToggle,
+          "Derived.Case Status SABIC": statusToggle,
+          "Derived.Handled By SABIC": "In House",
         };
       });
     }
@@ -2140,8 +2145,9 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               startDate: today.format("YYYY-MM-DD"),
               endDate: thirtyDaysAfter.format("YYYY-MM-DD"),
             },
-            "Derived.Case Status": newStatus,
-            "Derived.Handled By": "In House",
+            // "Derived.Case Status": newStatus,
+            "Derived.Case Status SABIC": newStatus,
+            "Derived.Handled By SABIC": "In House",
           };
         } else if (newStatus === "Completed") {
           const today = new DateObject(); // Current date
@@ -2154,14 +2160,16 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               startDate: thirtyDaysAgo.format("YYYY-MM-DD"),
               endDate: today.format("YYYY-MM-DD"),
             },
-            "Derived.Case Status": newStatus,
-            "Derived.Handled By": "In House",
+            // "Derived.Case Status": newStatus,
+            "Derived.Case Status SABIC": newStatus,
+            "Derived.Handled By SABIC": "In House",
           };
         }
         return {
           ...rest,
-          "Derived.Case Status": newStatus,
-          "Derived.Handled By": "In House",
+          // "Derived.Case Status": newStatus,
+          "Derived.Case Status SABIC": newStatus,
+          "Derived.Handled By SABIC": "In House",
         };
       });
     }
@@ -2214,7 +2222,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     if (Object.keys(filters).length > 0) {
       setDashboardFilters(filters);
 
-      setStatusToggle(filters["Derived.Case Status"]);
+      setStatusToggle(filters["Derived.Case Status SABIC"]);
 
       // Fix: Use DateObject instead of Date
       if (
