@@ -2052,6 +2052,7 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
   // Refs to track previous state values
   const prevFiltersRef = useRef<Record<string, any>>({});
   const prevDateRangeValuesRef = useRef<Record<string, DateObject[]>>({});
+  const prevDataSourceIdRef = useRef<string>(dataSourceId);
 
   // Effect to transform currentFilters
   useEffect(() => {
@@ -2064,6 +2065,8 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
 
     const reverseTransformedFilters: Record<string, any> = {};
     const newDateRangeValues: Record<string, DateObject[]> = {};
+
+    const dataSourceChanged = prevDataSourceIdRef.current !== dataSourceId;
 
     if (currentFilters && Object.keys(currentFilters).length > 0) {
       Object.entries(currentFilters).forEach(([filterLabel, value]) => {
@@ -2157,7 +2160,6 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
       );
     }
 
-    // Only update state if values have actually changed
     const filtersChanged =
       JSON.stringify(reverseTransformedFilters) !==
       JSON.stringify(prevFiltersRef.current);
@@ -2165,11 +2167,15 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
       JSON.stringify(newDateRangeValues) !==
       JSON.stringify(prevDateRangeValuesRef.current);
 
-    if (filtersChanged || dateRangeValuesChanged) {
+    if (filtersChanged || dateRangeValuesChanged || dataSourceChanged) {
       setFilters(reverseTransformedFilters);
       setDateRangeValues(newDateRangeValues);
       prevFiltersRef.current = reverseTransformedFilters;
       prevDateRangeValuesRef.current = newDateRangeValues;
+
+      if (dataSourceChanged) {
+        prevDataSourceIdRef.current = dataSourceId;
+      }
     }
   }, [
     currentFilters,
@@ -2177,6 +2183,7 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
     entityFieldOptionsMap,
     filteredFieldSettings,
     entityFieldOptionsMapByAttributeId,
+    dataSourceId,
   ]);
 
   const renderFilterField = (field: FieldSetting) => {

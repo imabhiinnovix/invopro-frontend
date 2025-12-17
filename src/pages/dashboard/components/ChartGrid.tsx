@@ -538,7 +538,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
     if (dashboardFilters) {
       setLocalDashboardFilters(dashboardFilters);
     }
-  }, [selectedChart]);
+  }, [selectedChart, dashboardFilters]);
 
   const getUpdatedWidgetData = usePost(
     ["getUpdatedWidgetData"],
