@@ -75,11 +75,11 @@ const ProfilePage = () => {
     PermissionsMap.USER_PROFILE_IMAGE,
     "get"
   );
-  const shouldAllowUpload = checkPermission(
-    permissions,
-    PermissionsMap.FILE_UPLOAD,
-    "upload"
-  );
+  // const shouldAllowUpload = checkPermission(
+  //   permissions,
+  //   PermissionsMap.FILE_UPLOAD,
+  //   "upload"
+  // );
 
   const [profile, setProfile] = useState({
     personal: {
@@ -810,15 +810,15 @@ const ProfilePage = () => {
                   mb: 2,
                 }}
               >
-                {shouldAllowUpload && (
-                  <PrimaryButton
-                    variant="outlined"
-                    startIcon={<EditIcon />}
-                    onClick={() => setIsEditingProfilePic(true)}
-                  >
-                    Edit
-                  </PrimaryButton>
-                )}
+                {/* {shouldAllowUpload && ( */}
+                <PrimaryButton
+                  variant="outlined"
+                  startIcon={<EditIcon />}
+                  onClick={() => setIsEditingProfilePic(true)}
+                >
+                  Edit
+                </PrimaryButton>
+                {/* )} */}
               </Box>
             )}
             {!imagePreview && isEditingProfilePic && (
@@ -831,15 +831,15 @@ const ProfilePage = () => {
                     mb: 2,
                   }}
                 >
-                  {shouldAllowUpload && (
-                    <PrimaryButton
-                      variant="outlined"
-                      startIcon={<UploadIcon />}
-                      onClick={triggerFileInput}
-                    >
-                      Upload
-                    </PrimaryButton>
-                  )}
+                  {/* {shouldAllowUpload && ( */}
+                  <PrimaryButton
+                    variant="outlined"
+                    startIcon={<UploadIcon />}
+                    onClick={triggerFileInput}
+                  >
+                    Upload
+                  </PrimaryButton>
+                  {/* )} */}
                   {profileImage !== "/default-avatar.png" &&
                     shouldAllowDelete && (
                       <PrimaryButton

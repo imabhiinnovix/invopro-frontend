@@ -46,6 +46,7 @@ function getPermsForDataSource(
     shouldAllowAdd: false,
     shouldAllowEdit: false,
     shouldAllowDelete: false,
+    shouldAllowImport: false,
   };
   if (dataSourceName == "CaseList") {
     const keys = ["case_list_create", "case_list_update", "case_list_delete"];
@@ -63,6 +64,11 @@ function getPermsForDataSource(
       permissions,
       PermissionsMap.DATA_SOURCE,
       keys[2]
+    );
+    permissionData.shouldAllowImport = checkPermission(
+      permissions,
+      PermissionsMap.DATA_SOURCE,
+      keys[0]
     );
   } else if (dataSourceName == "Formality Officer") {
     const keys = [
@@ -85,6 +91,11 @@ function getPermsForDataSource(
       PermissionsMap.DATA_SOURCE,
       keys[2]
     );
+    permissionData.shouldAllowImport = checkPermission(
+      permissions,
+      PermissionsMap.DATA_SOURCE,
+      keys[0]
+    );
   } else if (dataSourceName == "IP Counsels") {
     const keys = [
       "ip_counsel_create",
@@ -105,6 +116,11 @@ function getPermsForDataSource(
       permissions,
       PermissionsMap.DATA_SOURCE,
       keys[2]
+    );
+    permissionData.shouldAllowImport = checkPermission(
+      permissions,
+      PermissionsMap.DATA_SOURCE,
+      keys[0]
     );
   } else if (dataSourceName == "Action Due") {
     const keys = [
@@ -127,6 +143,11 @@ function getPermsForDataSource(
       PermissionsMap.DATA_SOURCE,
       keys[2]
     );
+    permissionData.shouldAllowImport = checkPermission(
+      permissions,
+      PermissionsMap.DATA_SOURCE,
+      keys[0]
+    );
   } else if (dataSourceName == "Test User details") {
     const keys = [
       "testuserdetails_list",
@@ -147,6 +168,11 @@ function getPermsForDataSource(
       permissions,
       PermissionsMap.DATA_SOURCE,
       keys[2]
+    );
+    permissionData.shouldAllowImport = checkPermission(
+      permissions,
+      PermissionsMap.DATA_SOURCE,
+      keys[0]
     );
   } else if (dataSourceName && permissions) {
     const cleanedDataSourceName = dataSourceName
@@ -172,6 +198,7 @@ function getPermsForDataSource(
       );
       if (key.includes("create")) {
         permissionData.shouldAllowAdd = perm;
+        permissionData.shouldAllowImport = perm;
       } else if (key.includes("update")) {
         permissionData.shouldAllowEdit = perm;
       } else if (key.includes("delete")) {
@@ -246,17 +273,17 @@ export default function NotivixDataSource() {
   const permissions = useSelector(
     (state: RootState) => state.userPermission.permissions
   );
-  const shouldAllowImport = checkPermission(
+
+  const {
+    shouldAllowAdd,
+    shouldAllowEdit,
+    shouldAllowDelete,
+    shouldAllowImport,
+  } = getPermsForDataSource(
+    listCurrentData?.name || "",
     permissions,
-    PermissionsMap.FILE_UPLOAD,
-    "upload"
+    listCurrentData?.code || ""
   );
-  const { shouldAllowAdd, shouldAllowEdit, shouldAllowDelete } =
-    getPermsForDataSource(
-      listCurrentData?.name || "",
-      permissions,
-      listCurrentData?.code || ""
-    );
 
   const handleOpenFiltersModal = () => {
     setIsFiltersModalOpen(true);
