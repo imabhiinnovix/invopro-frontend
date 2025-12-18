@@ -1636,7 +1636,6 @@ import {
   Select,
   MenuItem,
   Chip,
-  Stack,
   Checkbox,
   ListItemText,
   FormControlLabel,
@@ -1650,7 +1649,7 @@ import useGet from "../../../hooks/useGet";
 import axiosInstance from "../../../services/axiosInstance";
 import { GET } from "../../../services/apiRoutes";
 import { useQueryClient } from "@tanstack/react-query";
-import DatePicker, { Calendar, DateObject } from "react-multi-date-picker";
+import DatePicker, { DateObject } from "react-multi-date-picker";
 import "react-multi-date-picker/styles/colors/purple.css";
 import DialogContainer from "../../../components/molecule/dialog";
 
@@ -1864,11 +1863,11 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
     let originalAttributeId: string;
     dataSourceQuery.data?.data.entityFieldOptions?.forEach((option) => {
       originalAttributeId = option?.value?.attributeId;
-      if (option?.value?.refAttributeId?.length > 0) {
+      if ((option?.value?.refAttributeId?.length || 0) > 0) {
         originalAttributeId =
-          option?.value?.refAttributeId[
+          option?.value?.refAttributeId?.[
             option?.value?.refAttributeId?.length - 1
-          ];
+          ] ?? "";
       }
       map[originalAttributeId] = option;
     });
@@ -1881,9 +1880,9 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
     let originalAttributeId: string;
     dataSourceQuery.data?.data?.fieldSettings.forEach((attr) => {
       originalAttributeId = attr?.attributeId;
-      if (attr?.refAttributeId?.length > 0) {
+      if ((attr?.refAttributeId?.length || 0) > 0) {
         originalAttributeId =
-          attr.refAttributeId[attr.refAttributeId.length - 1];
+          attr.refAttributeId?.[attr.refAttributeId.length - 1] ?? "";
       }
       attrMap[originalAttributeId] = entityFieldOptionsMapByAttributeId[
         originalAttributeId
@@ -1952,14 +1951,14 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
             field.type === "text-with-option"
           ) {
             originalAttributeId = field?.attributeId;
-            if (field?.refAttributeId?.length > 0) {
+            if ((field?.refAttributeId?.length || 0) > 0) {
               originalAttributeId =
-                field?.refAttributeId[field?.refAttributeId.length - 1];
+                field?.refAttributeId?.[field?.refAttributeId.length - 1] ?? "";
             }
             if (field.isDerived) {
               // Fetch derived field options
               await fetchDerivedFieldOptions(originalAttributeId);
-            } else if (!!entityAttributeOptionMap[originalAttributeId]) {
+            } else if (entityAttributeOptionMap[originalAttributeId]) {
               // Fetch regular attribute options
               await fetchAttributeOptions(
                 entityAttributeOptionMap[originalAttributeId]!
@@ -2096,15 +2095,15 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
 
         if (matchedField) {
           const refKey =
-            matchedField.refAttributeId?.length > 0
+            (matchedField.refAttributeId?.length || 0) > 0
               ? `-${matchedField.refAttributeId!.join("-")}`
               : "";
           let originalAttributeId = matchedField.attributeId;
-          if (matchedField.refAttributeId?.length > 0) {
+          if ((matchedField.refAttributeId?.length || 0) > 0) {
             originalAttributeId =
-              matchedField.refAttributeId![
-                matchedField.refAttributeId!.length - 1
-              ];
+              matchedField.refAttributeId?.[
+                matchedField.refAttributeId?.length - 1
+              ] ?? "";
           }
 
           const option =
@@ -2129,13 +2128,13 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
         ([uniqueKey, value]) => {
           const fieldSetting = filteredFieldSettings.find((field) => {
             const refKey =
-              field.refAttributeId?.length > 0
-                ? `-${field?.refAttributeId.join("-")}`
+              (field.refAttributeId?.length || 0) > 0
+                ? `-${field?.refAttributeId?.join("-")}`
                 : "";
             let originalAttributeId = field.attributeId;
-            if (field?.refAttributeId?.length > 0) {
+            if ((field?.refAttributeId?.length || 0) > 0) {
               originalAttributeId =
-                field.refAttributeId![field.refAttributeId!.length - 1];
+                field.refAttributeId?.[field.refAttributeId?.length - 1] ?? "";
             }
             const prefixLabel =
               entityFieldOptionsMapByAttributeId[originalAttributeId]?.label ||
@@ -2189,13 +2188,13 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
   const renderFilterField = (field: FieldSetting) => {
     // Generate the same unique key used in entityFieldOptionsMap
     const refKey =
-      field.refAttributeId?.length > 0
+      (field.refAttributeId?.length || 0) > 0
         ? `-${field.refAttributeId!.join("-")}`
         : "";
     // Get options based on field type
     let options: string[] = [];
     let originalAttributeId: string = field?.attributeId;
-    if (field?.refAttributeId?.length > 0) {
+    if ((field?.refAttributeId?.length || 0) > 0) {
       originalAttributeId =
         field.refAttributeId![field.refAttributeId!.length - 1];
     }
@@ -2293,10 +2292,10 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
           />
         );
 
-      case "date-range":
+      case "date-range": {
         // Changed: Use field-specific state for date range
-        const fieldDateRangeValue = dateRangeValues[uniqueKey] || [];
-        const isFieldFocused = focusedFields[uniqueKey] || false;
+        const fieldDateRangeValue = dateRangeValues?.[uniqueKey] || [];
+        const isFieldFocused = focusedFields?.[uniqueKey] || false;
 
         return (
           <Box key={uniqueKey}>
@@ -2389,6 +2388,7 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
             </Box>
           </Box>
         );
+      }
       case "option":
         return (
           <FormControl key={uniqueKey} fullWidth size="small">

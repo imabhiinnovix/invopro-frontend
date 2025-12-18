@@ -779,6 +779,7 @@ export default function NotivixDataSource() {
           onApplyFilters={handleFilter}
           dataSourceId={valueId}
           filterFlag="isFilterEnable"
+          currentFilters={filter}
         />
       )}
       {!!showExportSuccessDialog && (
