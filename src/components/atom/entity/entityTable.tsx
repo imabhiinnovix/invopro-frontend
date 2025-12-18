@@ -241,9 +241,7 @@ const EntityTable: React.FC<EntityTableProps> = ({
       minWidth: 170,
       sortable: true,
       renderCell: (row: Record<string, unknown>) => {
-        return row.createdBy
-          ? `${row.createdBy?.firstName} ${row.createdBy?.lastName}`
-          : "-";
+        return row.createdBy ? `${row.createdBy}` : "-";
       },
     },
     {

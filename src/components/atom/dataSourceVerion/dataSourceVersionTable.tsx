@@ -619,7 +619,7 @@ const DataSourceVersionTable: React.FC<AttributeOptionTableProps> = ({
       renderCell: (row: Record<string, unknown>) => {
         return row.createdBy ? (
           <Typography variant="body2" color="text.secondary">
-            {row.createdBy.firstName} {row.createdBy.lastName}
+            {row?.createdBy ?? "-"}
           </Typography>
         ) : (
           "-"
