@@ -1,5 +1,10 @@
 import { styled } from "@mui/material";
-import { ArcElement, BarElement, Chart as ChartJS, PointElement } from "chart.js";
+import {
+  ArcElement,
+  BarElement,
+  Chart as ChartJS,
+  PointElement,
+} from "chart.js";
 import { PermissionResourceCode, PermissionResourceType } from "./constants";
 
 export function objectToFormData(
@@ -133,10 +138,13 @@ export interface NewBackendPermission {
   isSuperUser: boolean;
   createdAt: string;
   updatedAt: string;
+  isChangeable?: boolean;
   __v: number;
 }
 
-type BackendPermission = OriginalBackendPermission | NewBackendPermission;
+export type BackendPermission =
+  | OriginalBackendPermission
+  | NewBackendPermission;
 
 export interface PermissionMap {
   [resourceType: string]: {
@@ -147,6 +155,9 @@ export interface PermissionMap {
       permissionId: string;
       dataSourceId?: string;
       methodName?: string;
+      methodValue?: string;
+      method?: string;
+      isChangeable?: boolean;
     };
   };
 }
@@ -162,8 +173,15 @@ export const formatPermissions = (
     const permissionId = isOriginalStructure ? perm.permissionId : perm._id;
     const resourceType = perm.resourceType;
     const resourceCode = perm.resourceCode;
-    const allowed = isOriginalStructure ? perm.allowed : true;
-    const dataSourceId = isOriginalStructure ? perm.dataSourceId : undefined;
+    const allowed = isOriginalStructure
+      ? (perm as OriginalBackendPermission).allowed
+      : true;
+    const isChangeable = isOriginalStructure
+      ? (perm as any).isChangeable
+      : (perm as NewBackendPermission).isChangeable;
+    const dataSourceId = isOriginalStructure
+      ? (perm as OriginalBackendPermission).dataSourceId
+      : undefined;
     const backendMethod = isOriginalStructure ? perm.method : undefined;
     // const methodName = isOriginalStructure ? perm.method : undefined;
     if (!permissionId || !resourceType || !resourceCode) {
@@ -238,6 +256,7 @@ export const formatPermissions = (
       resourceType,
       method: backendMethod,
       permissionId,
+      isChangeable,
       ...(dataSourceId != null && { dataSourceId }),
       ...(normalizedMethod && {
         methodValue: methodMapping[normalizedMethod] || normalizedMethod,
@@ -284,7 +303,7 @@ export const formatPermissions = (
 //     const allowed = isOriginalStructure ? perm.allowed : true;
 //     const dataSourceId = isOriginalStructure ? perm.dataSourceId : undefined;
 //     const backendMethod = isOriginalStructure ? perm.method : undefined;
-    
+
 //     if (!permissionId || !resourceType || !resourceCode) {
 //       console.warn(
 //         `Invalid permission at index ${index}:`,
@@ -325,10 +344,10 @@ export const formatPermissions = (
 //     }
 
 //     // Determine method value using helper functions (priority order)
-//     const methodValue = 
-//       perm.methodName ||                                    
-//       extractFromResourceCode(perm.resourceCode) ||         
-//       mapHttpMethod(perm.method) ||                         
+//     const methodValue =
+//       perm.methodName ||
+//       extractFromResourceCode(perm.resourceCode) ||
+//       mapHttpMethod(perm.method) ||
 //       'unknown';
 
 //     let formattedKey: string;
@@ -443,7 +462,6 @@ export const barLabelsPlugin = {
   },
 };
 
-
 export const sliceLabelsPlugin = {
   id: "sliceLabels",
   afterDraw(chart: ChartJS) {
@@ -525,8 +543,6 @@ export const sliceLabelsPlugin = {
     });
   },
 };
-
-
 
 export const pointLabelsPlugin = {
   id: "pointLabels",
@@ -689,7 +705,6 @@ export const polarAreaLabelsPlugin = {
   },
 };
 
-
 export const arrayToString = (value?: string[] | string): string => {
   if (Array.isArray(value)) {
     return value.join(", ");
@@ -700,16 +715,22 @@ export const arrayToString = (value?: string[] | string): string => {
 export const toArray = (value?: string | string[]): string[] => {
   if (Array.isArray(value)) return value;
   if (typeof value === "string" && value.trim() !== "") {
-    return value.split(",").map((g) => g.trim()).filter(Boolean);
+    return value
+      .split(",")
+      .map((g) => g.trim())
+      .filter(Boolean);
   }
   return [];
 };
 
-
-export const checkPermission = (permissions:PermissionMap|null, permissionFor:PermissionResourceType, permissionType:PermissionResourceCode) => {
-  let permissionsData = permissions 
+export const checkPermission = (
+  permissions: PermissionMap | null,
+  permissionFor: PermissionResourceType,
+  permissionType: PermissionResourceCode
+) => {
+  let permissionsData = permissions;
   if (!permissions) {
     permissionsData = JSON.parse(localStorage.getItem("permissions") || "{}");
   }
   return permissionsData?.[permissionFor]?.[permissionType]?.allowed ?? false;
-}
+};

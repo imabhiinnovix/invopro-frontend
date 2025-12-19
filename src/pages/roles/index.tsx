@@ -1,23 +1,14 @@
 import * as React from "react";
 import { useState, useEffect } from "react";
-import {
-  Box,
-  Typography,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Button,
-} from "@mui/material";
+import { useNavigate } from "react-router-dom";
+import { Box, Button, Typography } from "@mui/material";
 
 import useDelete from "../../hooks/useDelete";
 import { DELETE } from "../../services/apiRoutes";
-import { useQueryClient } from "@tanstack/react-query";
 import { RoleDataTable } from "./RoleDataTable";
 import { RoleModal } from "./RoleModal";
 import { toast } from "react-toastify";
 import { STYLE_GUIDE } from "../../styles";
-import { useComponentTypography } from "../../hooks";
 import CommonPageHeader from "../../components/atom/commonPageHeader";
 import DialogContainer from "../../components/molecule/dialog";
 import PrimaryButton from "../../components/common/PrimaryButton";
@@ -41,16 +32,10 @@ interface RolePostResponse {
 }
 
 export default function Roles() {
-  const queryClient = useQueryClient();
-
   const [openModal, setOpenModal] = useState(false);
-  const [modalMode, setModalMode] = useState<
-    "add" | "edit" | "view" | "filter" | null
-  >(null);
+  const [modalMode, setModalMode] = useState<"view" | "filter" | null>(null);
   const [openDialog, setOpenDialog] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
-  const [editRoleId, setEditRoleId] = useState<string | null>(null);
-  const [rowData, setRowData] = useState<string | null>(null);
 
   const [searchValue, setSearchValue] = useState("");
   const [paginationModel, setPaginationModel] = useState({
@@ -63,28 +48,28 @@ export default function Roles() {
     organizationId: "",
     status: "",
   });
-  const { getHeadingSx } = useComponentTypography();
+  const navigate = useNavigate();
   const permissions = useSelector(
     (state: RootState) => state.userPermission.permissions
   );
   const shouldAllowAdd = checkPermission(
     permissions,
-    PermissionsMap.ROLE,
+    PermissionsMap.ROLE as any,
     "create"
   );
   const shouldAllowEdit = checkPermission(
     permissions,
-    PermissionsMap.ROLE,
+    PermissionsMap.ROLE as any,
     "update"
   );
   const shouldAllowDelete = checkPermission(
     permissions,
-    PermissionsMap.ROLE,
+    PermissionsMap.ROLE as any,
     "delete"
   );
 
   // DELETE API
-  const deleteRole = useDelete<null, RolePostResponse>(
+  const deleteRole = useDelete<RolePostResponse>(
     ["deleteRole"],
     (data) => {
       if (data?.success) {
@@ -104,23 +89,19 @@ export default function Roles() {
   }, [roleReload]);
 
   const handleAddRole = () => {
-    setModalMode("add");
-    setOpenModal(true);
+    navigate("/roles/add");
   };
 
   const handleEdit = (row: Role) => {
-    setRowData(row?.name);
-    setEditRoleId(row._id);
-    setModalMode("edit");
-    setOpenModal(true);
+    navigate(`/roles/edit/${row._id}`, {
+      state: { name: row.name, roleType: row.roleType },
+    });
   };
 
   const handleView = (row: Role) => {
-    setRowData(row?.name);
-
-    setEditRoleId(row._id);
-    setModalMode("view");
-    setOpenModal(true);
+    navigate(`/roles/view/${row._id}`, {
+      state: { name: row.name, roleType: row.roleType },
+    });
   };
 
   const handleDelete = (id: string) => {
@@ -138,7 +119,6 @@ export default function Roles() {
   const handleCloseModal = () => {
     setOpenModal(false);
     setModalMode(null);
-    setEditRoleId(null);
   };
 
   const handleCloseDialog = () => {
@@ -152,7 +132,7 @@ export default function Roles() {
         await deleteRole.mutate({
           url: `${DELETE.DELETE_ROLE}/${deleteId}`,
         });
-      } catch (error) {
+      } catch (error: any) {
         toast.error("Error deleting role", error);
       }
     }
@@ -197,6 +177,7 @@ export default function Roles() {
     >
       <CommonPageHeader
         title="Roles"
+        onBack={() => navigate(-1)}
         actions={
           shouldAllowAdd && (
             <Button variant="contained" color="primary" onClick={handleAddRole}>
@@ -218,22 +199,9 @@ export default function Roles() {
         setPaginationModel={setPaginationModel}
         filterValues={filterValues}
         roleReload={roleReload}
-        loading={deleteRole.isLoading}
+        loading={deleteRole.isPending}
         shouldAllowEdit={shouldAllowEdit}
         shouldAllowDelete={shouldAllowDelete}
-      />
-
-      <RoleModal
-        rowData={rowData}
-        open={openModal}
-        onClose={handleCloseModal}
-        mode={modalMode}
-        editRoleId={editRoleId}
-        filterValues={filterValues}
-        onFilterApply={handleFilterApply}
-        onFilterReset={handleFilterReset}
-        onRoleCreated={handleRoleCreated}
-        onRoleUpdated={handleRoleUpdated}
       />
 
       <DialogContainer
@@ -253,7 +221,7 @@ export default function Roles() {
             <PrimaryButton
               onClick={handleConfirmDelete}
               color="error"
-              disabled={deleteRole.isLoading}
+              disabled={deleteRole.isPending}
               sx={{ borderRadius: "8px" }}
             >
               Yes

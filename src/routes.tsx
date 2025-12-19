@@ -4,7 +4,6 @@ import SendOTP from "./pages/loginOTP/sendOTP";
 import VerifyOTP from "./pages/loginOTP/verifyOTP";
 import AuthProtect from "./Auth/AuthProtect";
 import SuperAdminProtect from "./Auth/SuperAdminProtect";
-import AdminSuperAdminProtect from "./Auth/AdminSuperAdminProtect";
 import Dashboard from "./pages/dashboard";
 import CommonLayout from "./components/molecule/layout/commonLayout";
 import AttributeOption from "./pages/attributeOption";
@@ -23,6 +22,7 @@ import DataSourceVersion from "./pages/dataSourceVersion";
 import ReportSettings from "./pages/report-settings";
 import Users from "./pages/users";
 import Roles from "./pages/roles";
+import RolePage from "./pages/roles/RolePage";
 import Organization from "./pages/organization/organization";
 import Permissions from "./pages/permissions";
 import NotivixDashboard from "./pages/notivixDashboard";
@@ -95,6 +95,9 @@ const AppRoutes = () => {
           <Route path="/permissions" element={<Permissions />} />
           {/* <Route path="/notivix/settings/roles" element={<Roles />} /> */}
           <Route path="/roles" element={<Roles />} />
+          <Route path="/roles/add" element={<RolePage mode="add" />} />
+          <Route path="/roles/edit/:id" element={<RolePage mode="edit" />} />
+          <Route path="/roles/view/:id" element={<RolePage mode="view" />} />
 
           <Route path="/organization" element={<Organization />} />
           <Route path="/data-source-new/:id" element={<NotivixDataSource />} />

@@ -29,8 +29,8 @@ export interface PermissionPostPayload {
   method: string;
   dataSourceId: string;
   resourceType?: string;
-  code?: string; 
-  methodName?: string; 
+  code?: string;
+  methodName?: string;
 }
 
 export interface DataSource {
@@ -38,8 +38,6 @@ export interface DataSource {
   name: string;
   code?: string;
 }
-
-
 
 export interface PermissionDetail {
   _id: string;
@@ -51,6 +49,7 @@ export interface PermissionDetail {
   resourceCode?: string;
   status: string;
   isSuperUser: boolean;
+  isChangeable?: boolean;
   organizationId?: string;
   createdAt: string;
   updatedAt: string;
@@ -60,6 +59,7 @@ export interface RoleDetail {
   _id: string;
   permissionId: PermissionDetail;
   roleId: string;
+  isChangeable?: boolean;
   status: string;
   __v: number;
   createdAt: string;
@@ -81,9 +81,11 @@ export interface RolePostPayload {
   name: string;
   organizationId?: string;
   status?: string;
+  roleType?: string;
   permissionIds: string[];
+  defaultDashboardIds?: string[];
 }
- export interface RolePostResponse {
+export interface RolePostResponse {
   success: boolean;
   data: Role;
 }
@@ -107,4 +109,11 @@ export interface RoleModalProps {
   onFilterReset: () => void;
   onRoleCreated: () => void;
   onRoleUpdated: () => void;
+}
+
+export interface RoleListResponse {
+  success: boolean;
+  message: string;
+  data: Role[];
+  totalCount: number;
 }

@@ -3550,21 +3550,22 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                   </Stack>
                 ) : null}
               </Box>
-              {shouldAllowDashboardUpdate && (
-                <Button
-                  onClick={handleEditModeToggle}
-                  // color="primary"
-                  variant="contained"
-                  startIcon={<EditIcon />}
-                  // sx={{ ...getButtonSx() }}
-                  sx={{
-                    borderRadius: "8px",
-                    width: "120px",
-                  }}
-                >
-                  Edit
-                </Button>
-              )}
+              {shouldAllowDashboardUpdate &&
+                !currentDashboard?.isRoleDefault && (
+                  <Button
+                    onClick={handleEditModeToggle}
+                    // color="primary"
+                    variant="contained"
+                    startIcon={<EditIcon />}
+                    // sx={{ ...getButtonSx() }}
+                    sx={{
+                      borderRadius: "8px",
+                      width: "120px",
+                    }}
+                  >
+                    Edit
+                  </Button>
+                )}
               <Button
                 onClick={handleExportPDF}
                 color="primary"

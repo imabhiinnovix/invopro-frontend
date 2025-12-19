@@ -101,7 +101,13 @@ const columns: GridColDef[] = [
             variant="text"
             onClick={() => params.row.handleDelete(params.row._id)}
             sx={{ minWidth: "auto", color: "error.main" }}
-            disabled={!params.row._id || !params.row.shouldAllowDelete}
+            disabled={
+              !params.row._id ||
+              !params.row.shouldAllowDelete ||
+              ["super admin", "admin", "user"].includes(
+                params.row.name?.toLowerCase()
+              )
+            }
           >
             <DeleteIcon />
           </Button>

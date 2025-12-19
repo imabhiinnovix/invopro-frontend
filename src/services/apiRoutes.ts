@@ -55,6 +55,7 @@ export const POST = {
     "/common/dataSource/getWidgetDataByFilter/export",
   ORGANIZATION_VISIBILITY_SETTING_CREATE:
     "/common/organization-visibility-setting/create",
+  CREATE_ROLE_DEFAULT_DASHBOARD: "/common/role-default-dashboard/create",
 };
 
 export const PUT = {
@@ -76,6 +77,7 @@ export const PUT = {
   UPDATE_TEMPLATE: "/notivix/notification-setting/template/update",
   ORGANIZATION_VISIBILITY_SETTING_UPDATE:
     "/common/organization-visibility-setting/update",
+  UPDATE_ROLE_DEFAULT_DASHBOARD: "/common/role-default-dashboard/update",
 };
 
 export const DELETE = {
@@ -153,4 +155,5 @@ export const GET = {
   GET_DASHBOARD_WIDGET_PLOT_TYPES: "/common/dashboard/widget/getPlotTypes",
   ORGANIZATION_VISIBILITY_SETTING_LIST:
     "/common/organization-visibility-setting/list",
+  ROLE_DEFAULT_DASHBOARD_LIST: "/common/role-default-dashboard/list",
 };
