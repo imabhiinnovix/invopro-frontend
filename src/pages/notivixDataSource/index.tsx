@@ -293,7 +293,10 @@ export default function NotivixDataSource() {
     setIsFiltersModalOpen(false);
   };
   const handleFilter = async (filters: any) => {
-    setFilter(filters);
+    const cleanedFilters = Object.fromEntries(
+      Object.entries(filters).filter(([_, value]) => value !== "all")
+    );
+    setFilter(cleanedFilters);
   };
 
   // Reset page to 0 when search value changes
@@ -328,6 +331,7 @@ export default function NotivixDataSource() {
   useEffect(() => {
     setFilter({});
   }, [valueId]);
+
   const sourceVersionData = useGet<ApiResponse>(
     [
       "sourceVersionData",
