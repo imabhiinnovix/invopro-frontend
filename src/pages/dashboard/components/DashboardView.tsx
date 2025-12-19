@@ -2198,7 +2198,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               endDate,
             },
           };
-        } else if (statusToggle === "Completed" && DateTaken) {
+        } else if (statusToggle === "Completed") {
           return {
             ...rest,
             DateTaken: {
