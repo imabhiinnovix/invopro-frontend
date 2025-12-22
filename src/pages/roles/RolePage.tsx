@@ -528,12 +528,11 @@ export default function RolePage({ mode: propMode }: RolePageProps) {
                   />
                 </Grid>
               )}
-              {["super admin", "admin", "user"].includes(
+              {!["super admin", "admin", "user"].includes(
                 state?.name?.toLowerCase() ?? ""
               ) &&
-                state.roleType !== null && (
+                state?.roleType !== null && (
                   <Grid item xs={12} md={6}>
-                    (
                     <Controller
                       name="roleType"
                       control={control}
@@ -576,7 +575,6 @@ export default function RolePage({ mode: propMode }: RolePageProps) {
                         </FormControl>
                       )}
                     />
-                    )
                   </Grid>
                 )}
 
