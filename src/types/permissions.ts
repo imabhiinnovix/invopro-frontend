@@ -81,7 +81,7 @@ export interface RolePostPayload {
   name: string;
   organizationId?: string;
   status?: string;
-  roleType?: string;
+  roleType: string | null;
   permissionIds: string[];
   defaultDashboardIds?: string[];
 }

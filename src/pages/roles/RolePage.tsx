@@ -52,7 +52,7 @@ export default function RolePage({ mode: propMode }: RolePageProps) {
   const { id: editRoleId } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const location = useLocation();
-  const state = location.state as { name?: string };
+  const state = location.state as { name?: string; roleType: string | null };
   const theme = useUnifiedTheme();
   const queryClient = useQueryClient();
   const dispatch = useDispatch();
@@ -76,10 +76,16 @@ export default function RolePage({ mode: propMode }: RolePageProps) {
       (acc, resourceType: string) => ({
         ...acc,
         [resourceType]: Object.keys(permissions[resourceType] ?? {}).reduce(
-          (permAcc, permKey: string) => ({
-            ...permAcc,
-            [permKey]: { allowed: false, isChangeable: true },
-          }),
+          (permAcc, permKey: string) => {
+            return {
+              ...permAcc,
+              [permKey]: {
+                allowed: false,
+                isChangeable:
+                  permissions[resourceType][permKey]?.isChangeable ?? true,
+              },
+            };
+          },
           {} as Record<string, { allowed: boolean; isChangeable: boolean }>
         ),
       }),
@@ -230,11 +236,7 @@ export default function RolePage({ mode: propMode }: RolePageProps) {
         name: state?.name || (firstItem.roleId as any)?.name || "",
         organizationId: (firstItem.roleId as any)?.organizationId || "",
         status: (firstItem.roleId as any)?.status || "active",
-        roleType:
-          state?.roleType ||
-          (firstItem.roleId as any)?.roleType ||
-          (firstItem.roleId as any)?._id ||
-          "",
+        roleType: state?.roleType,
         permissionIds: permissionsValue.map((p) => p._id),
         defaultDashboardIds: getValues("defaultDashboardIds"),
       });
@@ -266,12 +268,6 @@ export default function RolePage({ mode: propMode }: RolePageProps) {
       setValue("defaultDashboardIds", dashboardIds);
     }
   }, [roleDefaultDashboards.data, mode, setValue]);
-
-  console.log(
-    "defaultDashboardIds",
-    watch("defaultDashboardIds")
-    // dashboardIds
-  );
 
   useEffect(() => {
     if (roleDetail.isLoading && (mode === "edit" || mode === "view")) {
@@ -532,48 +528,57 @@ export default function RolePage({ mode: propMode }: RolePageProps) {
                   />
                 </Grid>
               )}
-              <Grid item xs={12} md={6}>
-                <Controller
-                  name="roleType"
-                  control={control}
-                  rules={
-                    mode === "add" ? { required: "Role Type is required" } : {}
-                  }
-                  render={({ field, fieldState }) => (
-                    <FormControl
-                      fullWidth
-                      error={!!fieldState.error}
-                      sx={{
-                        "& .MuiOutlinedInput-root": {
-                          borderRadius: "8px",
-                        },
-                      }}
-                    >
-                      <InputLabel>Role Type *</InputLabel>
-                      <Select
-                        {...field}
-                        label="Role Type *"
-                        disabled={mode === "view"}
-                      >
-                        {filterRoleTypes?.map((role) => (
-                          <MenuItem key={role._id} value={role._id}>
-                            {role.name}
-                          </MenuItem>
-                        ))}
-                      </Select>
-                      {fieldState.error && (
-                        <Typography
-                          variant="caption"
-                          color="error"
-                          sx={{ mt: 0.5, ml: 1.5 }}
+              {["super admin", "admin", "user"].includes(
+                state?.name?.toLowerCase() ?? ""
+              ) &&
+                state.roleType !== null && (
+                  <Grid item xs={12} md={6}>
+                    (
+                    <Controller
+                      name="roleType"
+                      control={control}
+                      rules={
+                        mode === "add"
+                          ? { required: "Role Type is required" }
+                          : {}
+                      }
+                      render={({ field, fieldState }) => (
+                        <FormControl
+                          fullWidth
+                          error={!!fieldState.error}
+                          sx={{
+                            "& .MuiOutlinedInput-root": {
+                              borderRadius: "8px",
+                            },
+                          }}
                         >
-                          {fieldState.error.message}
-                        </Typography>
+                          <InputLabel>Role Type *</InputLabel>
+                          <Select
+                            {...field}
+                            label="Role Type *"
+                            disabled={mode === "view"}
+                          >
+                            {filterRoleTypes?.map((role) => (
+                              <MenuItem key={role._id} value={role._id}>
+                                {role.name}
+                              </MenuItem>
+                            ))}
+                          </Select>
+                          {fieldState.error && (
+                            <Typography
+                              variant="caption"
+                              color="error"
+                              sx={{ mt: 0.5, ml: 1.5 }}
+                            >
+                              {fieldState.error.message}
+                            </Typography>
+                          )}
+                        </FormControl>
                       )}
-                    </FormControl>
-                  )}
-                />
-              </Grid>
+                    />
+                    )
+                  </Grid>
+                )}
 
               <Grid item xs={12} md={6}>
                 <Controller

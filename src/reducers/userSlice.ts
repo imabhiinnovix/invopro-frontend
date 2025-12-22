@@ -108,7 +108,7 @@ const userSlice = createSlice({
         state.error = "Invalid permissions data";
         return;
       }
-      state.permissions = formatPermissions(action.payload);
+      // state.permissions = formatPermissions(action.payload);
 
       state.permissions = formatPermissions(action.payload);
     },

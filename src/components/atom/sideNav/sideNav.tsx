@@ -1037,7 +1037,7 @@ function MainListItem({
   const theme = useUnifiedTheme();
   const location = useLocation();
   const isRouteActive = (route: string) => {
-    return location.pathname === route;
+    return location.pathname.startsWith(route);
   };
 
   let spacing = isMainItem ? STYLE_GUIDE.SPACING.s4 : STYLE_GUIDE.SPACING.s8;
@@ -1290,10 +1290,10 @@ function getNavItems(
     icon: createIcon(NotificationsIcon, "/notification-logs", theme),
     route: "/notification-logs",
     shouldShow: checkPermission(
-    permissions,
-    PermissionsMap.NOTIFICATION_LOGS,
-    "list"
-  ),
+      permissions,
+      PermissionsMap.NOTIFICATION_LOGS,
+      "list"
+    ),
   };
   const Template = {
     name: "Templates",
@@ -1329,10 +1329,10 @@ function getNavItems(
     NotificationLogsMenuItem,
   ];
   const visibleDataSourceItems = Array.isArray(dataSourceItems)
-  ? dataSourceItems.filter(item => item.shouldShow !== false)
-  : [];
+    ? dataSourceItems.filter((item) => item.shouldShow !== false)
+    : [];
 
-const shouldShowNotifications = visibleDataSourceItems.length > 0;
+  const shouldShowNotifications = visibleDataSourceItems.length > 0;
 
   return [
     {
@@ -1375,7 +1375,7 @@ const shouldShowNotifications = visibleDataSourceItems.length > 0;
       icon: createIcon(NotificationsIcon, "/data-source", theme),
       route: "/data-source",
       subItems: dataSourceItems,
-      shouldShow: shouldShowNotifications
+      shouldShow: shouldShowNotifications,
     },
     {
       name: "VixAI Insights",
