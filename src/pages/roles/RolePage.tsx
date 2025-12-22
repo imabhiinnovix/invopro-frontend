@@ -93,18 +93,25 @@ export default function RolePage({ mode: propMode }: RolePageProps) {
   const [selectedPermissions, setSelectedPermissions] =
     useState(initialPermissions);
 
-  const { control, handleSubmit, reset, setValue, watch, formState } =
-    useForm<RolePostPayload>({
-      defaultValues: {
-        name: "",
-        organizationId: "",
-        status: "",
-        roleType: "",
-        permissionIds: [],
-        defaultDashboardIds: [],
-      },
-      mode: "onChange",
-    });
+  const {
+    control,
+    handleSubmit,
+    reset,
+    setValue,
+    watch,
+    formState,
+    getValues,
+  } = useForm<RolePostPayload>({
+    defaultValues: {
+      name: "",
+      organizationId: "",
+      status: "",
+      roleType: "",
+      permissionIds: [],
+      defaultDashboardIds: [],
+    },
+    mode: "onChange",
+  });
 
   const { dashboards } = useAppSelector((state) => state.dashboard);
 
@@ -157,12 +164,12 @@ export default function RolePage({ mode: propMode }: RolePageProps) {
     selectedRoleType
       ? `${GET.ROLE_DETAIL}/${selectedRoleType}?page=${permissionPage}&limit=10`
       : "",
-    !!selectedRoleType && mode === "add"
+    !!selectedRoleType && mode !== "view"
   );
 
   useEffect(() => {
     if (
-      mode === "add" &&
+      mode !== "view" &&
       selectedRoleDetail.data?.success &&
       Array.isArray(selectedRoleDetail.data?.data)
     ) {
@@ -229,8 +236,7 @@ export default function RolePage({ mode: propMode }: RolePageProps) {
           (firstItem.roleId as any)?._id ||
           "",
         permissionIds: permissionsValue.map((p) => p._id),
-        defaultDashboardIds:
-          (firstItem.roleId as any)?.defaultDashboardIds || [],
+        defaultDashboardIds: getValues("defaultDashboardIds"),
       });
 
       setSelectedPermissions(permState);
@@ -256,9 +262,16 @@ export default function RolePage({ mode: propMode }: RolePageProps) {
             ? item.dashboardId.map((d: any) => d._id)
             : []
       );
+
       setValue("defaultDashboardIds", dashboardIds);
     }
   }, [roleDefaultDashboards.data, mode, setValue]);
+
+  console.log(
+    "defaultDashboardIds",
+    watch("defaultDashboardIds")
+    // dashboardIds
+  );
 
   useEffect(() => {
     if (roleDetail.isLoading && (mode === "edit" || mode === "view")) {
@@ -395,6 +408,7 @@ export default function RolePage({ mode: propMode }: RolePageProps) {
             name: data.name.trim(),
             status: data.status || "active",
             permissionIds: selectedPermissionIds,
+            roleType: data.roleType,
           };
           await updateRole.mutate({
             url: `${PUT.UPDATE_ROLE}/${editRoleId}`,
@@ -458,33 +472,35 @@ export default function RolePage({ mode: propMode }: RolePageProps) {
                       message: "Enter at least 2 characters",
                     },
                   }}
-                  disabled={
-                    mode === "view" ||
-                    (mode === "edit" &&
-                      ["super admin", "admin", "user"].includes(
-                        state?.name?.toLowerCase()
-                      ))
-                  }
-                  render={({ field, fieldState }) => (
-                    <TextField
-                      {...field}
-                      disabled={field.disabled}
-                      label="Role Name *"
-                      placeholder="Enter role name"
-                      variant="outlined"
-                      fullWidth
-                      error={!!fieldState.error}
-                      helperText={fieldState.error?.message || " "}
-                      sx={{
-                        "& .MuiOutlinedInput-root": {
-                          borderRadius: "8px",
-                          backgroundColor: field.disabled
-                            ? "rgba(0, 0, 0, 0.04)"
-                            : "inherit",
-                        },
-                      }}
-                    />
-                  )}
+                  render={({ field, fieldState }) => {
+                    const isDisabled =
+                      mode === "view" ||
+                      (mode === "edit" &&
+                        ["super admin", "admin", "user"].includes(
+                          state?.name?.toLowerCase()
+                        ));
+
+                    return (
+                      <TextField
+                        {...field}
+                        disabled={isDisabled}
+                        label="Role Name *"
+                        placeholder="Enter role name"
+                        variant="outlined"
+                        fullWidth
+                        error={!!fieldState.error}
+                        helperText={fieldState.error?.message || " "}
+                        sx={{
+                          "& .MuiOutlinedInput-root": {
+                            borderRadius: "8px",
+                            backgroundColor: isDisabled
+                              ? "rgba(0, 0, 0, 0.04)"
+                              : "inherit",
+                          },
+                        }}
+                      />
+                    );
+                  }}
                 />
               </Grid>
 
@@ -493,7 +509,6 @@ export default function RolePage({ mode: propMode }: RolePageProps) {
                   <Controller
                     name="status"
                     control={control}
-                    disabled={mode === "view"}
                     render={({ field }) => (
                       <FormControl
                         fullWidth
@@ -504,7 +519,11 @@ export default function RolePage({ mode: propMode }: RolePageProps) {
                         }}
                       >
                         <InputLabel>Status</InputLabel>
-                        <Select {...field} label="Status">
+                        <Select
+                          {...field}
+                          label="Status"
+                          disabled={mode === "view"}
+                        >
                           <MenuItem value="active">Active</MenuItem>
                           <MenuItem value="inactive">Inactive</MenuItem>
                         </Select>
@@ -517,8 +536,9 @@ export default function RolePage({ mode: propMode }: RolePageProps) {
                 <Controller
                   name="roleType"
                   control={control}
-                  rules={{ required: "Role Type is required" }}
-                  disabled={mode === "view" || mode === "edit"}
+                  rules={
+                    mode === "add" ? { required: "Role Type is required" } : {}
+                  }
                   render={({ field, fieldState }) => (
                     <FormControl
                       fullWidth
@@ -530,7 +550,11 @@ export default function RolePage({ mode: propMode }: RolePageProps) {
                       }}
                     >
                       <InputLabel>Role Type *</InputLabel>
-                      <Select {...field} label="Role Type *">
+                      <Select
+                        {...field}
+                        label="Role Type *"
+                        disabled={mode === "view"}
+                      >
                         {filterRoleTypes?.map((role) => (
                           <MenuItem key={role._id} value={role._id}>
                             {role.name}
@@ -555,7 +579,6 @@ export default function RolePage({ mode: propMode }: RolePageProps) {
                 <Controller
                   name="defaultDashboardIds"
                   control={control}
-                  disabled={mode === "view"}
                   render={({ field }) => (
                     <FormControl
                       fullWidth
@@ -569,6 +592,7 @@ export default function RolePage({ mode: propMode }: RolePageProps) {
                       <Select
                         {...field}
                         multiple
+                        disabled={mode === "view"}
                         label="Default Dashboards"
                         input={<OutlinedInput label="Default Dashboards" />}
                         renderValue={(selected) => (
@@ -622,70 +646,90 @@ export default function RolePage({ mode: propMode }: RolePageProps) {
                       p: 2,
                     }}
                   >
-                    {Object.keys(selectedPermissions).map((resourceType) => (
-                      <Box
-                        key={resourceType}
-                        sx={{
-                          border: `1px solid ${theme.palette.divider}`,
-                          p: 2,
-                          borderRadius: "8px",
-                          mb: 2,
-                          "&:last-child": { mb: 0 },
-                        }}
-                      >
-                        <Typography
-                          variant="subtitle1"
+                    {Object.keys(selectedPermissions).map((resourceType) => {
+                      const hasChangeablePermissions = Object.keys(
+                        selectedPermissions[resourceType]
+                      ).some(
+                        (permKey) =>
+                          selectedPermissions[resourceType][permKey]
+                            .isChangeable
+                      );
+
+                      if (!hasChangeablePermissions) {
+                        return null;
+                      }
+
+                      return (
+                        <Box
+                          key={resourceType}
                           sx={{
+                            border: `1px solid ${theme.palette.divider}`,
+                            p: 2,
+                            borderRadius: "8px",
                             mb: 2,
-                            fontWeight: 700,
-                            color: theme.palette.primary.main,
+                            "&:last-child": { mb: 0 },
                           }}
                         >
-                          {resourceType}
-                        </Typography>
+                          <Typography
+                            variant="subtitle1"
+                            sx={{
+                              mb: 2,
+                              fontWeight: 700,
+                              color: theme.palette.primary.main,
+                            }}
+                          >
+                            {resourceType}
+                          </Typography>
 
-                        <Grid container spacing={1}>
-                          {Object.keys(selectedPermissions[resourceType]).map(
-                            (permKey) => {
-                              if (
-                                !selectedPermissions[resourceType][permKey]
-                                  .isChangeable
-                              )
-                                return null;
-                              return (
-                                <Grid item xs={12} sm={6} md={3} key={permKey}>
-                                  <FormControlLabel
-                                    control={
-                                      <Checkbox
-                                        checked={
-                                          selectedPermissions[resourceType][
-                                            permKey
-                                          ].allowed
-                                        }
-                                        onChange={() =>
-                                          handleCheckboxChange(
-                                            resourceType,
-                                            permKey
-                                          )
-                                        }
-                                        disabled={mode === "view"}
-                                        sx={{
-                                          color: theme.palette.primary.main,
-                                          "&.Mui-checked": {
+                          <Grid container spacing={1}>
+                            {Object.keys(selectedPermissions[resourceType]).map(
+                              (permKey) => {
+                                if (
+                                  !selectedPermissions[resourceType][permKey]
+                                    .isChangeable
+                                )
+                                  return null;
+                                return (
+                                  <Grid
+                                    item
+                                    xs={12}
+                                    sm={6}
+                                    md={3}
+                                    key={permKey}
+                                  >
+                                    <FormControlLabel
+                                      control={
+                                        <Checkbox
+                                          checked={
+                                            selectedPermissions[resourceType][
+                                              permKey
+                                            ].allowed
+                                          }
+                                          onChange={() =>
+                                            handleCheckboxChange(
+                                              resourceType,
+                                              permKey
+                                            )
+                                          }
+                                          disabled={mode === "view"}
+                                          sx={{
                                             color: theme.palette.primary.main,
-                                          },
-                                        }}
-                                      />
-                                    }
-                                    label={formatPermissionName(permKey)}
-                                  />
-                                </Grid>
-                              );
-                            }
-                          )}
-                        </Grid>
-                      </Box>
-                    ))}
+                                            "&.Mui-checked": {
+                                              color: theme.palette.primary.main,
+                                            },
+                                          }}
+                                        />
+                                      }
+                                      label={formatPermissionName(permKey)}
+                                    />
+                                  </Grid>
+                                );
+                              }
+                            )}
+                          </Grid>
+                        </Box>
+                      );
+                    })}
                   </Box>
                 )}
               </Grid>

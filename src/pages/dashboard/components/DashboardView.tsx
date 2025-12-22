@@ -2085,7 +2085,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               startDate: today.format("YYYY-MM-DD"),
               endDate: thirtyDaysAfter.format("YYYY-MM-DD"),
             },
-            // "Derived.Case Status": statusToggle,
             "Derived.Case Status": statusToggle,
             "Derived.Handled By": "In House",
           };
@@ -2100,14 +2099,12 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               startDate: thirtyDaysAgo.format("YYYY-MM-DD"),
               endDate: today.format("YYYY-MM-DD"),
             },
-            // "Derived.Case Status": statusToggle,
             "Derived.Case Status": statusToggle,
             "Derived.Handled By": "In House",
           };
         }
         return {
           ...prev,
-          // "Derived.Case Status": statusToggle,
           "Derived.Case Status": statusToggle,
           "Derived.Handled By": "In House",
         };
@@ -2219,6 +2216,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     setIsFiltersModalOpen(false);
   };
   const handleApplyFilters = async (filters: any) => {
+    console.log("filters", filters);
     if (Object.keys(filters).length > 0) {
       setDashboardFilters(filters);
 
