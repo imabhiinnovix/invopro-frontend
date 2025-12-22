@@ -256,8 +256,8 @@ export default function Users({
   const rolesQuery = useGet<RoleListResponse>(
     ["roles", organizationId || "all"],
     organizationId
-      ? `${GET.Roles_List}?organizationId=${organizationId}`
-      : GET.Roles_List,
+      ? `${GET.Roles_List}?organizationId=${organizationId}&paginate=false`
+      : `${GET.Roles_List}?paginate=false`,
     true
   );
 
