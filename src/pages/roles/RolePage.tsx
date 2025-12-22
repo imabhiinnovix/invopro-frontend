@@ -73,22 +73,25 @@ export default function RolePage({ mode: propMode }: RolePageProps) {
   // Memoize initial permissions
   const initialPermissions = React.useMemo(() => {
     return Object.keys(permissions ?? {}).reduce(
-      (acc, resourceType: string) => ({
-        ...acc,
-        [resourceType]: Object.keys(permissions[resourceType] ?? {}).reduce(
-          (permAcc, permKey: string) => {
-            return {
-              ...permAcc,
-              [permKey]: {
-                allowed: false,
-                isChangeable:
-                  permissions[resourceType][permKey]?.isChangeable ?? true,
-              },
-            };
-          },
-          {} as Record<string, { allowed: boolean; isChangeable: boolean }>
-        ),
-      }),
+      (acc, resourceType: string) => {
+        return {
+          ...acc,
+          [resourceType]: Object.keys(permissions[resourceType] ?? {}).reduce(
+            (permAcc, permKey: string) => {
+              return {
+                ...permAcc,
+                [permKey]: {
+                  allowed: false,
+                  isChangeable:
+                    permissions?.[resourceType]?.[permKey]?.isChangeable ??
+                    false,
+                },
+              };
+            },
+            {} as Record<string, { allowed: boolean; isChangeable: boolean }>
+          ),
+        };
+      },
       {} as Record<
         string,
         Record<string, { allowed: boolean; isChangeable: boolean }>
@@ -185,14 +188,16 @@ export default function RolePage({ mode: propMode }: RolePageProps) {
           isChangeable: perm.isChangeable,
         }));
       const formatted = formatPermissions(permissionsValue);
-
       const permState = { ...initialPermissions };
+
       Object.keys(permState).forEach((resourceType) => {
         Object.keys(permState[resourceType]).forEach((permKey) => {
           permState[resourceType][permKey] = {
             allowed: formatted[resourceType]?.[permKey]?.allowed || false,
             isChangeable:
-              formatted[resourceType]?.[permKey]?.isChangeable ?? true,
+              formatted[resourceType]?.[permKey]?.isChangeable ??
+              initialPermissions[resourceType]?.[permKey]?.isChangeable ??
+              false,
           };
         });
       });
@@ -227,7 +232,9 @@ export default function RolePage({ mode: propMode }: RolePageProps) {
           permState[resourceType][permKey] = {
             allowed: formatted[resourceType]?.[permKey]?.allowed || false,
             isChangeable:
-              formatted[resourceType]?.[permKey]?.isChangeable ?? true,
+              formatted[resourceType]?.[permKey]?.isChangeable ??
+              initialPermissions[resourceType]?.[permKey]?.isChangeable ??
+              false,
           };
         });
       });
@@ -323,11 +330,7 @@ export default function RolePage({ mode: propMode }: RolePageProps) {
     async (data) => {
       if (data?.success) {
         const formData = watch();
-        if (
-          formData.defaultDashboardIds &&
-          formData.defaultDashboardIds.length > 0 &&
-          editRoleId
-        ) {
+        if (editRoleId) {
           await updateDefaultDashboard.mutateAsync({
             url: `${PUT.UPDATE_ROLE_DEFAULT_DASHBOARD}/${editRoleId}`,
             payload: {
