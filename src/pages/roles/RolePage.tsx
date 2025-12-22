@@ -311,13 +311,19 @@ export default function RolePage({ mode: propMode }: RolePageProps) {
           formData.defaultDashboardIds &&
           formData.defaultDashboardIds.length > 0
         ) {
-          await setDefaultDashboard.mutateAsync({
-            url: POST.CREATE_ROLE_DEFAULT_DASHBOARD,
-            payload: {
-              roleId: data.role._id,
-              dashboardId: formData.defaultDashboardIds,
-            },
-          });
+          const defaultDashboardData = roleDefaultDashboards.data?.data;
+          const shouldCreate =
+            !defaultDashboardData || defaultDashboardData.length === 0;
+
+          if (shouldCreate) {
+            await setDefaultDashboard.mutateAsync({
+              url: POST.CREATE_ROLE_DEFAULT_DASHBOARD,
+              payload: {
+                roleId: data.role._id,
+                dashboardId: formData.defaultDashboardIds,
+              },
+            });
+          }
         }
         navigate("/roles");
       }
@@ -331,12 +337,45 @@ export default function RolePage({ mode: propMode }: RolePageProps) {
       if (data?.success) {
         const formData = watch();
         if (editRoleId) {
-          await updateDefaultDashboard.mutateAsync({
-            url: `${PUT.UPDATE_ROLE_DEFAULT_DASHBOARD}/${editRoleId}`,
-            payload: {
-              dashboardId: formData.defaultDashboardIds,
-            },
-          });
+          const defaultDashboardData = roleDefaultDashboards.data?.data;
+          const shouldUpdate =
+            defaultDashboardData &&
+            defaultDashboardData.length > 0 &&
+            Array.isArray(defaultDashboardData[0]?.dashboardId) &&
+            defaultDashboardData[0].dashboardId.length === 0;
+
+          const shouldCreate =
+            !defaultDashboardData || defaultDashboardData.length === 0;
+
+          if (shouldUpdate || shouldCreate) {
+            if (
+              shouldCreate &&
+              formData.defaultDashboardIds &&
+              formData.defaultDashboardIds.length > 0
+            ) {
+              await setDefaultDashboard.mutateAsync({
+                url: POST.CREATE_ROLE_DEFAULT_DASHBOARD,
+                payload: {
+                  roleId: editRoleId,
+                  dashboardId: formData.defaultDashboardIds,
+                },
+              });
+            } else if (shouldUpdate) {
+              await updateDefaultDashboard.mutateAsync({
+                url: `${PUT.UPDATE_ROLE_DEFAULT_DASHBOARD}/${editRoleId}`,
+                payload: {
+                  dashboardId: formData.defaultDashboardIds,
+                },
+              });
+            }
+          } else {
+            await updateDefaultDashboard.mutateAsync({
+              url: `${PUT.UPDATE_ROLE_DEFAULT_DASHBOARD}/${editRoleId}`,
+              payload: {
+                dashboardId: formData.defaultDashboardIds,
+              },
+            });
+          }
         }
 
         queryClient.invalidateQueries({ queryKey: ["userDetails"] });
