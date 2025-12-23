@@ -1954,6 +1954,12 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     "update"
   );
 
+   const shouldAllowDefaultDashboardUpdate = checkPermission(
+    permissions,
+    PermissionsMap.DEFAULT_DASHBOARD,
+    "update"
+  );
+
   const shouldAllowWidgetCreate = checkPermission(
     permissions,
     PermissionsMap.DASHBOARD,
@@ -3549,7 +3555,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 ) : null}
               </Box>
               {shouldAllowDashboardUpdate &&
-                !currentDashboard?.isRoleDefault && (
+                (!currentDashboard?.isRoleDefault || shouldAllowDefaultDashboardUpdate) && (
                   <Button
                     onClick={handleEditModeToggle}
                     // color="primary"

@@ -255,6 +255,7 @@ export const PermissionsMap = {
   USER: "User",
   SOURCE_LIST: "Organization Visibility Setting",
   NOTIFICATION_LOGS: "Notification Prepared",
+  DEFAULT_DASHBOARD: "Default Dashboard"
 } as const;
 
 export type PermissionResourceType = keyof typeof PermissionsMap;
