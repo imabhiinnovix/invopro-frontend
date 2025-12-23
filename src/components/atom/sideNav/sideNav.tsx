@@ -1581,11 +1581,17 @@ function getSystemSettingsItems(
             name: "Business Unit",
             icon: createIcon(AccountBalanceIcon, "/business-unit", theme),
             route: "/business-unit",
-            shouldShow: checkPermission(
-              permissions,
-              PermissionsMap.BUSINESS_UNIT,
-              "list"
-            ),
+            shouldShow:
+              checkPermission(
+                permissions,
+                PermissionsMap.BUSINESS_UNIT,
+                "list"
+              ) &&
+              checkPermission(
+                permissions,
+                PermissionsMap.BUSINESS_UNIT,
+                "update"
+              ),
           },
           {
             name: "Designation",
