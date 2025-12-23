@@ -66,7 +66,15 @@ function Login() {
             Array.isArray(data?.data) &&
             data.data.length > 0
           ) {
-            navigate(`/dashboard/${data.data[0]._id}`);
+            // 1️ find first role default dashboard
+            const roleDefaultDashboard = data.data.find(
+              (dashboard: any) => dashboard.isRoleDefault === true
+            );
+
+            // 2️ decide which dashboard to open
+            const dashboardToOpen = roleDefaultDashboard || data.data[0];
+
+            navigate(`/dashboard/${dashboardToOpen._id}`);
           } else {
             navigate("/dashboard");
           }
