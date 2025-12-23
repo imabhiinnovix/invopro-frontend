@@ -81,6 +81,12 @@ const Dashboard = () => {
     "get"
   );
 
+  const shouldAllowDefaultDashboardDelete = checkPermission(
+    permissions,
+    PermissionsMap.DEFAULT_DASHBOARD,
+    "delete"
+  );
+
   useEffect(() => {
     if (!dashboards.length) {
       dispatch(fetchDashboardList()).finally(() => setIsLoading(false));
@@ -227,7 +233,7 @@ const Dashboard = () => {
       minWidth: 170,
       sortable: false,
       renderCell: (row: Record<string, unknown>) => {
-        if (!shouldAllowDashboardDelete) return null;
+        if (!shouldAllowDashboardDelete || (row.originalData?.isRoleDefault && !shouldAllowDefaultDashboardDelete)) return null;
         return (
           <Box>
             <Tooltip title="Delete Dashboard">

@@ -256,6 +256,7 @@ export const PermissionsMap = {
   SOURCE_LIST: "Organization Visibility Setting",
   NOTIFICATION_LOGS: "Notification Prepared",
   BUSINESS_UNIT: "BusinessUnit",
+  DEFAULT_DASHBOARD: "Default Dashboard"
 } as const;
 
 export type PermissionResourceType =
