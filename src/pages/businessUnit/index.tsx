@@ -100,6 +100,7 @@ export default function BusinessUnit() {
       if (data?.success) {
         setBusinessUnitReload(true);
         handleCloseDialog();
+        queryClient.invalidateQueries({ queryKey: ["businessUnitList"] });
       } else {
         toast.error("Error deleting business unit");
       }
@@ -165,6 +166,8 @@ export default function BusinessUnit() {
       } catch (error) {
         toast.error("Error deleting Business Unit");
       }
+    } else {
+      toast.error("Invalid Business Unit ID");
     }
   };
 

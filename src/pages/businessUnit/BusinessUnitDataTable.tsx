@@ -21,6 +21,7 @@ import { GET } from "../../services/apiRoutes";
 import { toast } from "react-toastify";
 import { BUPaginationModelType } from ".";
 import { formatDateWithoutTime } from "../../utils/utils";
+import DeleteIcon from "@mui/icons-material/Delete";
 
 interface BusinessUnitData {
   _id: string;
@@ -100,7 +101,7 @@ const columns: GridColDef[] = [
             <VisibilityIcon />
           </Button>
         </Tooltip>
-        {/* <Tooltip title="Delete" arrow>
+        <Tooltip title="Delete" arrow>
           <Button
             variant="text"
             onClick={() => params.row.handleDelete(params.row._id)}
@@ -109,7 +110,7 @@ const columns: GridColDef[] = [
           >
             <DeleteIcon />
           </Button>
-        </Tooltip> */}
+        </Tooltip>
       </Box>
     ),
   },
