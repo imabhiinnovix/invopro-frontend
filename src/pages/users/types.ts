@@ -31,13 +31,16 @@ export interface User {
   roleIds: Role[];
   firstName: string;
   lastName: string;
-  mobile: string;  
+  mobile: string;
   isVerified: boolean;
   status: string;
   organizationProductSubscriptionIds: OrganizationProductSubscription[];
   createdAt: string;
   updatedAt: string;
   __v: number;
+  departmentId?: string;
+  designationId?: string;
+  businessUnit?: string[];
 }
 
 export interface UserListResponse {
@@ -56,6 +59,9 @@ export interface CreateUserPayload {
   roleIds: string[];
   mobile?: string;
   organizationProductSubscriptionIds: string[];
+  departmentId?: string;
+  businessUnit: string[];
+  designationId?: string;
 }
 
 export interface CreateUserResponse {
@@ -76,4 +82,4 @@ export interface ProductSubscriptionListResponse {
   message: string;
   data: OrganizationProductSubscription[];
   totalCount: number;
-} 
+}

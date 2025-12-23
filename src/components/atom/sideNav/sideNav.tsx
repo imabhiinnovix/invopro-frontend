@@ -1553,6 +1553,16 @@ function getSystemSettingsItems(
               checkPermission(permissions, PermissionsMap.DEPARTMENT, "update"),
           },
           {
+            name: "Business Unit",
+            icon: createIcon(AccountBalanceIcon, "/business-unit", theme),
+            route: "/business-unit",
+            shouldShow: checkPermission(
+              permissions,
+              PermissionsMap.BUSINESS_UNIT,
+              "list"
+            ),
+          },
+          {
             name: "Designation",
             icon: createIcon(BusinessCenterIcon, "/designation", theme),
             route: "/designation",

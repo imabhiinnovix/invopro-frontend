@@ -77,6 +77,7 @@ interface OrganizationFormValues {
   productIds: string[];
   productSubscriptions: ProductSubscription[];
   mediumSettings: MediumSetting[];
+  businessUnitCode?: string;
 }
 
 export default function Organization() {
@@ -179,6 +180,7 @@ export default function Organization() {
       productIds: [],
       productSubscriptions: [],
       mediumSettings: [],
+      businessUnitCode: "",
     },
     mode: "onChange",
   });
@@ -417,6 +419,7 @@ export default function Organization() {
               licenseExpiresAt: ps.licenseExpiresAt,
             })
           ),
+          businessUnitCode: formData.businessUnitCode || "",
         },
       });
 
@@ -848,6 +851,24 @@ export default function Organization() {
                             margin="normal"
                             error={!!errors.domain}
                             helperText={errors.domain?.message}
+                          />
+                        )}
+                      />
+                    </Grid>
+                    <Grid item xs={12}>
+                      <Controller
+                        name="businessUnitCode"
+                        control={control}
+                        // rules={{ required: "Business unit code is required" }}
+                        defaultValue={selectedOrg.businessUnitCode || ""}
+                        render={({ field }) => (
+                          <TextField
+                            {...field}
+                            label="Business Unit Code"
+                            fullWidth
+                            margin="normal"
+                            error={!!errors.businessUnitCode}
+                            helperText={errors.businessUnitCode?.message}
                           />
                         )}
                       />
@@ -1658,6 +1679,23 @@ export default function Organization() {
                         margin="normal"
                         error={!!errors.code}
                         helperText={errors.code?.message}
+                      />
+                    )}
+                  />
+                </Grid>
+                <Grid item xs={12}>
+                  <Controller
+                    name="businessUnitCode"
+                    control={control}
+                    // rules={{ required: "Business unit code is required" }}
+                    render={({ field }) => (
+                      <TextField
+                        {...field}
+                        label="Business Unit Code"
+                        fullWidth
+                        margin="normal"
+                        error={!!errors.businessUnitCode}
+                        helperText={errors.businessUnitCode?.message}
                       />
                     )}
                   />
