@@ -1272,7 +1272,6 @@ function getNavItems(
 const monthlyDataSources = matchedDataSources
   .filter((item) => item.versionType === "monthly")
   .filter((item) => {
-    console.log('item',item,dsPerms);
     const nameKey = (item.name == 'CaseList' ? 'Case List' : (item?.name || ""))
       .toLowerCase()
       .replace(/\s+/g, "_");
