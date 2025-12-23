@@ -56,6 +56,8 @@ export const POST = {
   ORGANIZATION_VISIBILITY_SETTING_CREATE:
     "/common/organization-visibility-setting/create",
   CREATE_ROLE_DEFAULT_DASHBOARD: "/common/role-default-dashboard/create",
+
+  CREATE_BUSINESS_UNIT: "/common/business-unit/create",
 };
 
 export const PUT = {
@@ -78,6 +80,8 @@ export const PUT = {
   ORGANIZATION_VISIBILITY_SETTING_UPDATE:
     "/common/organization-visibility-setting/update",
   UPDATE_ROLE_DEFAULT_DASHBOARD: "/common/role-default-dashboard/update",
+
+  UPDATE_BUSINESS_UNIT: "/common/business-unit/update",
 };
 
 export const DELETE = {
@@ -91,6 +95,8 @@ export const DELETE = {
   DELETE_VERSION_ROW: "/common/dataSourceVersion/versionData/delete",
   DELETE_USER_IMAGE: "/common/user/image",
   DELETE_TEMPLATE: "/notivix/notification-setting/template/delete",
+
+  DELETE_BUSINESS_UNIT: "/common/business-unit/delete",
 };
 
 export const GET = {
@@ -156,4 +162,6 @@ export const GET = {
   ORGANIZATION_VISIBILITY_SETTING_LIST:
     "/common/organization-visibility-setting/list",
   ROLE_DEFAULT_DASHBOARD_LIST: "/common/role-default-dashboard/list",
+
+  BUSINESS_UNIT_LIST: "/common/business-unit/list",
 };

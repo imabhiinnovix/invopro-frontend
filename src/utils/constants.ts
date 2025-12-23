@@ -255,12 +255,19 @@ export const PermissionsMap = {
   USER: "User",
   SOURCE_LIST: "Organization Visibility Setting",
   NOTIFICATION_LOGS: "Notification Prepared",
+  BUSINESS_UNIT: "BusinessUnit",
   DEFAULT_DASHBOARD: "Default Dashboard"
 } as const;
 
-export type PermissionResourceType = keyof typeof PermissionsMap;
+export type PermissionResourceType =
+  (typeof PermissionsMap)[keyof typeof PermissionsMap];
 
-export type PermissionResourceCode = "get" | "list" | "update" | "create" | "delete";
+export type PermissionResourceCode =
+  | "get"
+  | "list"
+  | "update"
+  | "create"
+  | "delete";
 
 export const AI_INSIGHT_URL = "http://127.0.0.1:5000/new-landing-page"; // TODO: change to the actual production URL
 export const AI_INSIGHT_SESSION_ID = "04166e4d613a476a90341ddfd374e86e"; // TODO: change to the actual production session ID

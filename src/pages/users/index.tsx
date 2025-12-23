@@ -41,6 +41,7 @@ import {
 import { Department } from "../designation/DesignationModal";
 import DialogContainer from "../../components/molecule/dialog";
 import PrimaryButton from "../../components/common/PrimaryButton";
+import { BusinessUnitDataApiResponse } from "../businessUnit/BusinessUnitDataTable";
 
 interface UsersProps {
   organizationId?: string;
@@ -71,6 +72,7 @@ interface UserRowData {
   handleDelete: (id: string) => void;
   shouldAllowUserEdit: boolean;
   shouldAllowUserDelete: boolean;
+  businessUnit?: string[];
 }
 
 const columns: GridColDef[] = [
@@ -279,6 +281,12 @@ export default function Users({
     data: any[];
   }>(["designationList"], GET?.DESIGNATION_LIST, true);
 
+  const businessUnitListForUser = useGet<BusinessUnitDataApiResponse>(
+    ["businessUnitListForUser"],
+    `${GET.BUSINESS_UNIT_LIST}?paginate=false`,
+    true
+  );
+
   const createUserMutation = usePost<CreateUserPayload, CreateUserResponse>(
     ["users", organizationId || "all"],
     () => {
@@ -318,6 +326,7 @@ export default function Users({
     departmentId: "",
     designationId: "",
     status: "active" as "active" | "inactive",
+    businessUnit: [] as string[],
   });
 
   const handleEdit = (row: UserRowData) => {
@@ -342,6 +351,7 @@ export default function Users({
       departmentId: row.departmentId || "",
       designationId: row.designationId || "",
       status: row.status,
+      businessUnit: row.businessUnit || [],
     });
     setModalMode("edit");
     setUserIdForEdit(row.id);
@@ -370,6 +380,7 @@ export default function Users({
       departmentId: row.departmentId || "",
       designationId: row.designationId || "",
       status: row.status,
+      businessUnit: row.businessUnit || [],
     });
     setModalMode("view");
     setOpenModal(true);
@@ -393,6 +404,7 @@ export default function Users({
       departmentId: "",
       designationId: "",
       status: "active",
+      businessUnit: [],
     });
     setModalMode("add");
     setOpenModal(true);
@@ -413,6 +425,7 @@ export default function Users({
       departmentId: "",
       designationId: "",
       status: "active",
+      businessUnit: [],
     });
   };
 
@@ -446,6 +459,7 @@ export default function Users({
         organizationId: organizationId || undefined,
         departmentId: formData.departmentId || undefined,
         designationId: formData.designationId || undefined,
+        businessUnit: formData.businessUnit || [],
       };
       createUserMutation.mutate({
         url: POST.Create_User,
@@ -462,6 +476,7 @@ export default function Users({
         mobile: formData.mobile,
         departmentId: formData.departmentId || undefined,
         designationId: formData.designationId || undefined,
+        businessUnit: formData.businessUnit || [],
       };
       if (formData.password) {
         updatePayload.password = formData.password;
@@ -502,6 +517,7 @@ export default function Users({
         designationName: designation?.name,
         isVerified: user.isVerified,
         status: user.status as "active" | "inactive",
+        businessUnit: user.businessUnit || [],
         handleEdit,
         handleView,
         handleDelete,
@@ -908,6 +924,40 @@ export default function Users({
               <TextField
                 {...params}
                 label="Designation"
+                variant="outlined"
+                sx={{
+                  "& .MuiOutlinedInput-root": {
+                    borderRadius: STYLE_GUIDE.SPACING.s2,
+                  },
+                }}
+              />
+            )}
+          />
+
+          <Autocomplete
+            sx={{
+              height: 56,
+            }}
+            multiple
+            options={businessUnitListForUser?.data?.data || []}
+            getOptionLabel={(option) => option.name}
+            value={
+              businessUnitListForUser?.data?.data?.filter((sub) =>
+                formData.businessUnit.includes(sub._id)
+              ) || []
+            }
+            onChange={(_, newValue) =>
+              setFormData({
+                ...formData,
+                businessUnit: newValue.map((sub) => sub._id),
+              })
+            }
+            disabled={modalMode === "view"}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label="Business Unit"
+                required
                 variant="outlined"
                 sx={{
                   "& .MuiOutlinedInput-root": {
