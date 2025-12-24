@@ -90,6 +90,7 @@ const ProfilePage = () => {
       company: "",
       departmentId: "",
       designationId: "",
+      businessUnit: [],
     },
     address: {
       address: "",
@@ -114,6 +115,7 @@ const ProfilePage = () => {
       company: "",
       departmentId: "",
       designationId: "",
+      businessUnit: [],
     },
     address: {
       address: "",
@@ -186,6 +188,9 @@ const ProfilePage = () => {
           company: userProfile?.organizationId?.name || "",
           departmentId: userProfile?.departmentId?._id || "",
           designationId: userProfile?.designationId?._id || "",
+          businessUnit:
+            userProfile?.businessUnit?.map((unit) => unit.name)?.join(", ") ||
+            "",
         },
         address: {
           address: userProfile?.address || "",
@@ -666,6 +671,7 @@ const ProfilePage = () => {
           <Grid item xs={12} sm={6} key={field.id}>
             <TextField
               fullWidth
+              multiline
               label={field.label}
               value={profile[section][field.id]}
               onChange={(e) =>
@@ -714,8 +720,12 @@ const ProfilePage = () => {
     { id: "firstName", label: "First Name" },
     { id: "lastName", label: "Last Name" },
     { id: "email", label: "Email" },
-    { id: "mobile", label: "Mobile", type: "tel" },
     { id: "company", label: "Organization" },
+    {
+      id: "businessUnit",
+      label: "Business Unit",
+    },
+    { id: "mobile", label: "Mobile", type: "tel" },
     {
       id: "departmentId",
       label: "Department",
@@ -970,6 +980,7 @@ const ProfilePage = () => {
                   "lastName",
                   "email",
                   "company",
+                  "businessUnit",
                 ])}
                 {editModes.personal && (
                   <Grid
@@ -1052,30 +1063,24 @@ const ProfilePage = () => {
               boxShadow: "0 4px 20px rgba(0,0,0,0.08)",
             }}
           >
-            <Box
-              sx={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                px: 2,
-                pt: 2,
-              }}
-            >
-              <CardHeader
-                title="Change Password"
-                titleTypographyProps={{ fontWeight: 600 }}
-                sx={{ p: 0 }}
-              />
-              {!editModes.password && (
-                <PrimaryButton
-                  variant="contained"
-                  startIcon={<EditIcon />}
-                  onClick={() => toggleEditMode("password")}
-                >
-                  Change
-                </PrimaryButton>
-              )}
-            </Box>
+            <CardHeader
+              title="Change Password"
+              titleTypographyProps={{ fontWeight: 600 }}
+              action={
+                !editModes.password ? (
+                  <PrimaryButton
+                    variant="contained"
+                    startIcon={<EditIcon />}
+                    onClick={() => toggleEditMode("password")}
+                  >
+                    Change
+                  </PrimaryButton>
+                ) : (
+                  <></>
+                )
+              }
+              sx={{ pb: 1 }}
+            />
             <Divider />
             <CardContent sx={{ pt: 2 }}>
               {editModes.password ? (
