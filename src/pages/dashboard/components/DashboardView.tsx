@@ -2224,7 +2224,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     setIsFiltersModalOpen(false);
   };
   const handleApplyFilters = async (filters: any) => {
-    console.log("filters", filters);
     if (Object.keys(filters).length > 0) {
       setDashboardFilters(filters);
 

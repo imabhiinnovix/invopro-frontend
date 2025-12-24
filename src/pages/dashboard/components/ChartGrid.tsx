@@ -4563,16 +4563,20 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
           dataSourceId={selectedChart?.dataSourceId?._id || ""} // Pass your dataSourceId here
           filterFlag="isFilterEnable" // Specify which flag to use for filtering
           isLoading={false}
-          defaultFilters={{
-            "Derived.Case Status": "Pending",
-            "Derived.Handled By": "In House",
-            DueDate: {
-              startDate: new DateObject().format("YYYY-MM-DD"),
-              endDate: new DateObject(new DateObject())
-                .add(1, "month")
-                .format("YYYY-MM-DD"),
-            },
-          }}
+          defaultFilters={
+            isDefaultNotivix
+              ? {
+                  "Derived.Case Status": "Pending",
+                  "Derived.Handled By": "In House",
+                  DueDate: {
+                    startDate: new DateObject().format("YYYY-MM-DD"),
+                    endDate: new DateObject(new DateObject())
+                      .add(1, "month")
+                      .format("YYYY-MM-DD"),
+                  },
+                }
+              : {}
+          }
         />
       )}
 
