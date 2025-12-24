@@ -3319,6 +3319,9 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                         style={{
                           fontSize: "14px",
                         }}
+                        maxDate={
+                          statusToggle === "Completed" ? new Date() : undefined
+                        }
                         // Remove inputClass, use inputProps with full width
                         inputProps={{
                           style: {
