@@ -233,7 +233,12 @@ const Dashboard = () => {
       minWidth: 170,
       sortable: false,
       renderCell: (row: Record<string, unknown>) => {
-        if (!shouldAllowDashboardDelete || (row.originalData?.isRoleDefault && !shouldAllowDefaultDashboardDelete)) return null;
+        if (
+          !shouldAllowDashboardDelete ||
+          (row.originalData?.isRoleDefault &&
+            !shouldAllowDefaultDashboardDelete)
+        )
+          return null;
         return (
           <Box>
             <Tooltip title="Delete Dashboard">

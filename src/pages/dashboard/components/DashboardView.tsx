@@ -1954,7 +1954,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     "update"
   );
 
-   const shouldAllowDefaultDashboardUpdate = checkPermission(
+  const shouldAllowDefaultDashboardUpdate = checkPermission(
     permissions,
     PermissionsMap.DEFAULT_DASHBOARD,
     "update"
@@ -2115,6 +2115,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           "Derived.Handled By": "In House",
         };
       });
+    } else {
+      setDashboardFilters({});
     }
   }, [currentDashboard]);
 
@@ -3555,7 +3557,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 ) : null}
               </Box>
               {shouldAllowDashboardUpdate &&
-                (!currentDashboard?.isRoleDefault || shouldAllowDefaultDashboardUpdate) && (
+                (!currentDashboard?.isRoleDefault ||
+                  shouldAllowDefaultDashboardUpdate) && (
                   <Button
                     onClick={handleEditModeToggle}
                     // color="primary"
