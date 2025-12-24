@@ -125,7 +125,7 @@ export default function RolePage({ mode: propMode }: RolePageProps) {
   const { dashboards } = useAppSelector((state) => state.dashboard);
 
   const selectedRoleType = watch("roleType");
-  const [permissionPage] = useState(2);
+  const [permissionPage] = useState(1);
 
   const roleDetail = useGet<RoleDetailResponse>(
     ["roleDetail", editRoleId || ""],
@@ -168,16 +168,47 @@ export default function RolePage({ mode: propMode }: RolePageProps) {
     }
   }, [mode, roleTypes.data, setValue]);
 
+  /**
+   * Prevents API call on initial render using isRoleChanged.
+   * Enables API only when roleType actually changes,
+   * avoiding permission overwrite (setSelectedPermissions) on first load.
+   */
+
+  const prevRoleRef = useRef<string | undefined>(undefined);
+
+  const isRoleChanged = React.useMemo(() => {
+    if (selectedRoleType) {
+      setTimeout(() => {
+        prevRoleRef.current = selectedRoleType;
+      }, 500);
+      return (
+        prevRoleRef.current !== undefined &&
+        prevRoleRef.current !== selectedRoleType
+      );
+    } else {
+      return false;
+    }
+  }, [selectedRoleType]);
+
   const selectedRoleDetail = useGet<RoleDetailResponse>(
     ["selectedRoleDetail", selectedRoleType, permissionPage],
     selectedRoleType
       ? `${GET.ROLE_DETAIL}/${selectedRoleType}?page=${permissionPage}&limit=10`
       : "",
-    !!selectedRoleType && mode !== "view"
+    isRoleChanged && mode !== "view"
   );
 
   useEffect(() => {
+    return () => {
+      if (prevRoleRef.current) {
+        prevRoleRef.current = undefined;
+      }
+    };
+  }, []);
+
+  useEffect(() => {
     if (
+      isRoleChanged &&
       mode !== "view" &&
       selectedRoleDetail.data?.success &&
       Array.isArray(selectedRoleDetail.data?.data)

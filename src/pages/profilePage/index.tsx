@@ -672,6 +672,7 @@ const ProfilePage = () => {
             <TextField
               fullWidth
               multiline
+              maxRows={1}
               label={field.label}
               value={profile[section][field.id]}
               onChange={(e) =>
