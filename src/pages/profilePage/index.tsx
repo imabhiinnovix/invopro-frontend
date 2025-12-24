@@ -1135,15 +1135,12 @@ const ProfilePage = () => {
                       disabled
                       variant="filled"
                       size="small"
+                      InputProps={{
+                        disableUnderline: true,
+                      }}
                       sx={{
                         "& .MuiFilledInput-root": {
                           borderRadius: 2,
-                          "&:before": {
-                            border: "none",
-                          },
-                          "&:after": {
-                            border: "none",
-                          },
                         },
 
                         "& .MuiFilledInput-root.Mui-disabled": {
