@@ -1268,36 +1268,27 @@ function getNavItems(
 ) {
   const dsPerms = permissions?.[PermissionsMap.DATA_SOURCE] || {};
 
-
-const monthlyDataSources = matchedDataSources
-  .filter((item) => item.versionType === "monthly")
-  .filter((item) => {
-    const nameKey = (item.name == 'CaseList' ? 'Case List' : (item?.name || ""))
-      .toLowerCase()
-      .replace(/\s+/g, "_");
-    console.log('nameKey',nameKey);
-    const codeKey = (item?.code || "")
-      .replace(/[^a-zA-Z0-9]/g, "")
-      .toLowerCase();
-    console.log(Object.keys(dsPerms).some(
-      (key) =>
-        key.includes("list")  &&
-        (key.includes(nameKey) || key.includes(codeKey)) &&
-        checkPermission(permissions, PermissionsMap.DATA_SOURCE, key)
-    ));
-    return Object.keys(dsPerms).some(
-      (key) =>
-        key.endsWith("list")  &&
-        (key.includes(nameKey) || key.includes(codeKey)) &&
-        checkPermission(permissions, PermissionsMap.DATA_SOURCE, key)
-    );
-  })
-  .map((item) => ({
-    name: item?.name ?? "",
-    icon: createIcon(SourceIcon, `/data-source-new/${item?._id}`, theme),
-    route: `/data-source-new/${item?._id}`,
-  }));
-
+  const monthlyDataSources = matchedDataSources
+    .filter((item) => item.versionType === "monthly")
+    .filter((item) => {
+      const nameKey = (item.name == "CaseList" ? "Case List" : item?.name || "")
+        .toLowerCase()
+        .replace(/\s+/g, "_");
+      const codeKey = (item?.code || "")
+        .replace(/[^a-zA-Z0-9]/g, "")
+        .toLowerCase();
+      return Object.keys(dsPerms).some(
+        (key) =>
+          key.endsWith("list") &&
+          (key.includes(nameKey) || key.includes(codeKey)) &&
+          checkPermission(permissions, PermissionsMap.DATA_SOURCE, key)
+      );
+    })
+    .map((item) => ({
+      name: item?.name ?? "",
+      icon: createIcon(SourceIcon, `/data-source-new/${item?._id}`, theme),
+      route: `/data-source-new/${item?._id}`,
+    }));
 
   const alertsMenuItem = {
     name: "Alerts Settings",
