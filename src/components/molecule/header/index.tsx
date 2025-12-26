@@ -8,15 +8,33 @@ import { AccountPopover } from "../../atom/accountPopover/accountPopover";
 // import { useNav } from "../../../context/NavContext";
 import { STYLE_GUIDE } from "../../../styles";
 import { useUnifiedTheme } from "../../../hooks/useUnifiedTheme";
+import UserDropdown from "./UserDropdown";
+import { jwtDecode } from "jwt-decode";
+import { getAuthToken } from "../../../utils/handleLocalStorage";
+import { useContext, useEffect, useState } from "react";
+import { AuthContext } from "../../../context/AuthContext";
 
 const Header = () => {
+  const [showUserDropdown, setShowUserDropdown] = useState(false);
   const { pathname } = useLocation();
-  // const { openNav, setOpenNav } = useNav();
-  // const handleClick = () => {
-  //   // Use the functional update form correctly
-  //   setOpenNav(!openNav); // This toggles the value of `openNav`
-  // };
   const theme = useUnifiedTheme();
+  const token = getAuthToken();
+  const { userDetails } = useContext(AuthContext);
+
+  useEffect(() => {
+    if (token) {
+      try {
+        const decoded: any = jwtDecode(token);
+        setShowUserDropdown(
+          !!(decoded.isImpersonation && decoded.impersonatorUserId) ||
+            userDetails?.data.roleIds[0].name === "Super Admin" ||
+            userDetails?.data.roleIds[0].name === "Admin"
+        );
+      } catch (error) {
+        console.error("Error decoding token:", error);
+      }
+    }
+  }, [userDetails?.data]);
 
   return (
     <>
@@ -67,10 +85,20 @@ const Header = () => {
               />
               {/* <img src={logo} alt="Logo" /> */}
             </Box>
-            <Box display="flex" alignItems="center" justifyContent="center">
+            <Box
+              display="flex"
+              alignItems="center"
+              justifyContent="center"
+              gap={2}
+            >
               {!["/login", "/otp-login", "/otp-login/otp"].includes(
                 pathname
-              ) && <AccountPopover />}
+              ) && (
+                <>
+                  {showUserDropdown && <UserDropdown />}
+                  <AccountPopover />
+                </>
+              )}
             </Box>
           </Box>
         </Toolbar>

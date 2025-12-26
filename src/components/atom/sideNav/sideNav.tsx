@@ -48,6 +48,7 @@ import { SubItemsList } from "./components/SubItemsList";
 import { CreateDashboardModal } from "./components/CreateDashboardModal";
 import LogoutIcon from "@mui/icons-material/Logout";
 import logo from "../../../assets/ReportiVix-logo.png";
+import footerLogo from "../../../assets/innovix-logo.png";
 import { AuthContext } from "../../../context/AuthContext";
 import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
 import { STYLE_GUIDE } from "../../../styles";
@@ -452,12 +453,12 @@ export default function SideNav() {
           sx={{
             display: "flex",
             flexDirection: "column",
-            height: "100%",
+            height: "calc(100% - 60px)",
             width: openNav ? drawerWidth : `calc(${theme.spacing(7)} + 1px)`,
             overflow: "auto",
             borderRight: `1px solid ${theme.palette.divider}`,
             bgcolor: "#f9f9f9",
-            py: 2,
+            py: 1,
           }}
         >
           <Box
@@ -486,7 +487,6 @@ export default function SideNav() {
             <List
               sx={{
                 pt: 0,
-                pb: "50px",
               }}
             >
               {navItems.map((item, i) => {
@@ -980,6 +980,26 @@ export default function SideNav() {
                 );
               })}
             </List>
+          </Box>
+          {/* Footer Logo Section */}
+          <Box
+            sx={{
+              height: "60px",
+              display: "flex",
+              alignItems: "end",
+              justifyContent: "center",
+              flexShrink: 0,
+              gap: 1,
+            }}
+          >
+            <Box component="span" sx={{ mb: 1.5, fontSize: "14px" }}>
+              Powered By
+            </Box>
+            <img
+              src={footerLogo}
+              alt="Innovix Labs"
+              style={{ width: "30%", height: "100%" }}
+            />
           </Box>
         </Box>
       </Drawer>

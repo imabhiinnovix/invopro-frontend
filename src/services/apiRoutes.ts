@@ -13,6 +13,7 @@ export const POST = {
   DELETE_WIDGET: "/common/dashboard/widget/delete",
   SAVE_WIDGETS: "/common/dashboard/widget/save",
   CREATE_USER: "common/auth/create-user",
+  ASSUME_SESSION: "/common/auth/assume-session",
   UPDATE_USER: "/common/users/update/",
   DELETE_USER: "/common/users/delete/",
   ORGANIZATION_ACTIVE: "/organizations/updateStatus/",
@@ -101,7 +102,6 @@ export const DELETE = {
 
 export const GET = {
   USER_DETAILS: "/common/user/get-current-user",
-  USER_LIST: "/common/users/list",
   GET_USER: "/common/users/",
   GET_ORGANIZATION: "/organizations/",
   Entity_List: "/common/entities/list",
@@ -133,7 +133,7 @@ export const GET = {
   Organization_List: "/common/organization/list",
   Product_List: "/common/product/list",
   Product_Subscription_List: "/common/product-subscription/list",
-  User_List: "/common/user/list",
+  USER_LIST: "/common/user/list",
   Roles_List: "/common/role/list",
   PERMISSION_LIST: "/common/permission/list",
   ROLE_LIST: "/common/role/list",

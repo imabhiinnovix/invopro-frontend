@@ -312,16 +312,14 @@ const ProfilePage = () => {
       setPasswordError("Passwords do not match");
       return false;
     }
-    const hasLetter = /[a-zA-Z]/.test(newPassword);
-    const hasNumber = /[0-9]/.test(newPassword);
-    const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(newPassword);
     if (newPassword.length < 8) {
       setPasswordError("Password must be at least 8 characters long");
       return false;
     }
-    if (!hasLetter || !hasNumber || !hasSpecialChar) {
+    const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_])\S+$/;
+    if (!regex.test(newPassword)) {
       setPasswordError(
-        "Password must contain at least one letter, one number, and one special character"
+        "Password must contain at least one uppercase, one lowercase, one number and one special character"
       );
       return false;
     }
@@ -607,6 +605,11 @@ const ProfilePage = () => {
               onChange={(e) =>
                 handleInputChange(section, field.id, e.target.value)
               }
+              onBlur={() => {
+                if (section === "password") {
+                  validatePasswords();
+                }
+              }}
               disabled={isDisabled}
               variant={editModes[section] ? "outlined" : "filled"}
               size="small"

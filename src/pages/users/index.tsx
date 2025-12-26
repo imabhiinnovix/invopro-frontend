@@ -246,12 +246,21 @@ export default function Users({
   );
   const [openDialog, setOpenDialog] = useState(false);
   const [userIdForEdit, setUserIdForEdit] = useState<string | null>(null);
+  const [passwordError, setPasswordError] = useState("");
+
+  const validatePassword = (password: string) => {
+    if (password.length < 8) return "Password must be at least 8 characters";
+    const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_])\S+$/;
+    if (!regex.test(password))
+      return "Password must contain at least one uppercase, one lowercase, one number and one special character";
+    return "";
+  };
 
   const usersQuery = useGet<UserListResponse>(
     ["users", organizationId || "all"],
     organizationId
-      ? `${GET.User_List}?organizationId=${organizationId}`
-      : GET.User_List,
+      ? `${GET.USER_LIST}?organizationId=${organizationId}`
+      : GET.USER_LIST,
     true
   );
 
@@ -427,6 +436,7 @@ export default function Users({
       status: "active",
       businessUnit: [],
     });
+    setPasswordError("");
   };
 
   const handleCloseDialog = () => {
@@ -539,7 +549,8 @@ export default function Users({
     !!formData.email.trim() &&
     (!isAddMode || !!formData.password.trim()) &&
     formData.roleIds.length > 0 &&
-    formData.organizationProductSubscriptionIds.length > 0;
+    formData.organizationProductSubscriptionIds.length > 0 &&
+    !passwordError;
 
   return (
     <Box
@@ -710,12 +721,22 @@ export default function Users({
             <TextField
               label="Password"
               value={formData.password}
-              onChange={(e) =>
-                setFormData({ ...formData, password: e.target.value })
-              }
+              onChange={(e) => {
+                const newPassword = e.target.value;
+                setFormData({ ...formData, password: newPassword });
+              }}
+              onBlur={() => {
+                if (formData.password) {
+                  setPasswordError(validatePassword(formData.password));
+                } else {
+                  setPasswordError("");
+                }
+              }}
               variant="outlined"
               fullWidth
               required
+              error={!!passwordError}
+              helperText={passwordError}
               type="password"
               sx={{
                 "& .MuiOutlinedInput-root": {
