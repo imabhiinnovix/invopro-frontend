@@ -136,7 +136,7 @@ function SendOTP() {
           >
             Login with
             <Link
-              href="/login"
+              onClick={() => navigate("/login")}
               sx={{
                 marginLeft: STYLE_GUIDE.SPACING.s1,
                 cursor: "pointer",

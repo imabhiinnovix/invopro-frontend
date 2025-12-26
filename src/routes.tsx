@@ -1,5 +1,6 @@
 import { Route, Routes, Navigate } from "react-router-dom";
 import Login from "./pages/login";
+import ForgotPassword from "./pages/forgotPassword";
 import SendOTP from "./pages/loginOTP/sendOTP";
 import VerifyOTP from "./pages/loginOTP/verifyOTP";
 import AuthProtect from "./Auth/AuthProtect";
@@ -55,6 +56,7 @@ const AppRoutes = () => {
 
       {/* Public Routes */}
       <Route path="/login" element={<Login />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/otp-login" element={<SendOTP />} />
       <Route path="/otp-login/otp" element={<VerifyOTP />} />
       <Route

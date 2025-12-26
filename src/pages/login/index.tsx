@@ -179,6 +179,20 @@ function Login() {
             error={!!errors.password}
             helperText={errors.password?.message}
           />
+          <Box className="flex justify-end">
+            <Link
+              onClick={() => navigate("/forgot-password")}
+              sx={{
+                cursor: "pointer",
+                fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.medium,
+                color: STYLE_GUIDE.COLORS.primary,
+                fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base,
+                textDecoration: "none",
+              }}
+            >
+              Forgot Password?
+            </Link>
+          </Box>
           {!getLogin.isPending && !getLogin.isSuccess ? (
             <LoadingButton
               fullWidth
@@ -225,7 +239,7 @@ function Login() {
           >
             Login with
             <Link
-              href="/otp-login"
+              onClick={() => navigate("/otp-login")}
               sx={{
                 marginLeft: STYLE_GUIDE.SPACING.s1,
                 cursor: "pointer",
