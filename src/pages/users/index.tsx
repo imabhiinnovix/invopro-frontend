@@ -47,6 +47,7 @@ import DialogContainer from "../../components/molecule/dialog";
 import PrimaryButton from "../../components/common/PrimaryButton";
 import { BusinessUnitDataApiResponse } from "../businessUnit/BusinessUnitDataTable";
 import { CustomPagination } from "../../components/common/pagination/customPagination";
+import { queryClient } from "../../main";
 
 interface UsersProps {
   organizationId?: string;
@@ -310,7 +311,9 @@ export default function Users({
 
   const createUserMutation = usePost<CreateUserPayload, CreateUserResponse>(
     ["users", organizationId || "all", String(paginationModel.page + 1)],
-    () => {
+    async () => {
+      sessionStorage.removeItem("Users");
+      await queryClient.refetchQueries({ queryKey: ["users"] });
       handleCloseModal();
     },
     true
@@ -318,7 +321,9 @@ export default function Users({
 
   const updateUserMutation = usePut<CreateUserPayload, CreateUserResponse>(
     ["users", organizationId || "all", String(paginationModel.page + 1)],
-    () => {
+    async () => {
+      sessionStorage.removeItem("Users");
+      await queryClient.refetchQueries({ queryKey: ["users"] });
       handleCloseModal();
     },
     true
@@ -326,7 +331,9 @@ export default function Users({
 
   const deleteUserMutation = useDelete<any>(
     ["users", organizationId || "all", String(paginationModel.page + 1)],
-    () => {
+    async () => {
+      sessionStorage.removeItem("Users");
+      await queryClient.refetchQueries({ queryKey: ["users"] });
       handleCloseDialog();
     },
     true
