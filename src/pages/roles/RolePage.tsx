@@ -141,13 +141,13 @@ export default function RolePage({ mode: propMode }: RolePageProps) {
 
   useEffect(() => {
     if (mode === "add") {
-      reset({
-        name: "",
-        organizationId: "",
-        status: "active",
-        roleType: "",
-        permissionIds: [],
-      });
+      // reset({
+      //   name: "",
+      //   organizationId: "",
+      //   status: "active",
+      //   roleType: "",
+      //   permissionIds: [],
+      // });
       setSelectedPermissions(initialPermissions);
     }
   }, [mode, initialPermissions, reset]);
@@ -195,7 +195,7 @@ export default function RolePage({ mode: propMode }: RolePageProps) {
     selectedRoleType
       ? `${GET.ROLE_DETAIL}/${selectedRoleType}?page=${permissionPage}&limit=10`
       : "",
-    isRoleChanged && mode !== "view"
+    mode !== "view" && (isRoleChanged || mode === "add")
   );
 
   useEffect(() => {
@@ -208,8 +208,8 @@ export default function RolePage({ mode: propMode }: RolePageProps) {
 
   useEffect(() => {
     if (
-      isRoleChanged &&
       mode !== "view" &&
+      (isRoleChanged || mode === "add") &&
       selectedRoleDetail.data?.success &&
       Array.isArray(selectedRoleDetail.data?.data)
     ) {

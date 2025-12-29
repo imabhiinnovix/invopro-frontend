@@ -81,6 +81,7 @@ interface OrganizationFormValues {
   mediumSettings: MediumSetting[];
   businessUnitCode?: string;
   allowedDomains: { value: string }[];
+  activatePasswordOTP: boolean;
 }
 
 export default function Organization() {
@@ -185,6 +186,7 @@ export default function Organization() {
       mediumSettings: [],
       businessUnitCode: "",
       allowedDomains: [],
+      activatePasswordOTP: true,
     },
     mode: "onChange",
   });
@@ -310,6 +312,7 @@ export default function Organization() {
       "allowedDomains",
       (org.allowedDomains || []).map((d: string) => ({ value: d }))
     );
+    setValue("activatePasswordOTP", org.activatePasswordOTP !== false);
 
     const isUserSuperUser = isSuperUser();
     const organizationIdForUsers = isUserSuperUser ? org._id : null;
@@ -365,6 +368,7 @@ export default function Organization() {
           status: rest.status === "active" ? "active" : "inactive",
           owner: rest.owner,
           allowedDomains: formData.allowedDomains.map((d: any) => d.value),
+          activatePasswordOTP: formData.activatePasswordOTP,
         },
       });
 
@@ -444,6 +448,7 @@ export default function Organization() {
           allowedDomains: (formData.allowedDomains || []).map(
             (d: any) => d.value
           ),
+          activatePasswordOTP: formData.activatePasswordOTP,
         },
       });
 
@@ -1629,7 +1634,25 @@ export default function Organization() {
                       </Grid>
                     ))}
 
-                    <Grid item xs={12}>
+                    <Grid item xs={6} sx={{ pt: "0px !important" }}>
+                      <Controller
+                        name="activatePasswordOTP"
+                        control={control}
+                        render={({ field: { value, onChange } }) => (
+                          <FormControlLabel
+                            control={
+                              <Switch
+                                checked={value}
+                                onChange={(e) => onChange(e.target.checked)}
+                                color="primary"
+                              />
+                            }
+                            label={value ? "OTP Required" : "OTP Not Required"}
+                          />
+                        )}
+                      />
+                    </Grid>
+                    <Grid item xs={6} sx={{ pt: "0px !important" }}>
                       <Controller
                         name="status"
                         control={control}
@@ -2218,6 +2241,24 @@ export default function Organization() {
                     </Grid>
                   </Grid>
                 ))}
+                <Grid item xs={12}>
+                  <Controller
+                    name="activatePasswordOTP"
+                    control={control}
+                    render={({ field: { value, onChange } }) => (
+                      <FormControlLabel
+                        control={
+                          <Switch
+                            checked={value}
+                            onChange={(e) => onChange(e.target.checked)}
+                            color="primary"
+                          />
+                        }
+                        label={value ? "OTP Required" : "OTP Not Required"}
+                      />
+                    )}
+                  />
+                </Grid>
               </Grid>
             </form>
           </DialogContainer>

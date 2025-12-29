@@ -21,8 +21,9 @@ interface TextFieldProps {
   margin?: "dense" | "normal";
   type?: string;
   variant?: "outlined" | "standard" | "filled";
-  size?: "small" | "medium" | "undefined";
+  size?: "small" | "medium";
   value?: string;
+  disabled?: boolean;
 }
 
 const TextField = forwardRef<HTMLInputElement, TextFieldProps>(

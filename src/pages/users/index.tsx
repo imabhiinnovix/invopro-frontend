@@ -20,9 +20,13 @@ import {
   MenuItem,
   CircularProgress,
   Autocomplete,
+  InputAdornment,
+  IconButton,
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
+import Visibility from "@mui/icons-material/Visibility";
+import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import { useUnifiedTheme } from "../../hooks/useUnifiedTheme";
 import { STYLE_GUIDE } from "../../styles";
 import { GET, POST, PUT, DELETE } from "../../services/apiRoutes";
@@ -247,6 +251,7 @@ export default function Users({
   const [openDialog, setOpenDialog] = useState(false);
   const [userIdForEdit, setUserIdForEdit] = useState<string | null>(null);
   const [passwordError, setPasswordError] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
 
   const validatePassword = (password: string) => {
     if (password.length < 8) return "Password must be at least 8 characters";
@@ -360,7 +365,10 @@ export default function Users({
       departmentId: row.departmentId || "",
       designationId: row.designationId || "",
       status: row.status,
-      businessUnit: row.businessUnit || [],
+      businessUnit:
+        Array.isArray(row?.businessUnit) && row.businessUnit.length > 0
+          ? row.businessUnit
+          : ["all"],
     });
     setModalMode("edit");
     setUserIdForEdit(row.id);
@@ -389,7 +397,10 @@ export default function Users({
       departmentId: row.departmentId || "",
       designationId: row.designationId || "",
       status: row.status,
-      businessUnit: row.businessUnit || [],
+      businessUnit:
+        Array.isArray(row?.businessUnit) && row.businessUnit.length > 0
+          ? row.businessUnit
+          : ["all"],
     });
     setModalMode("view");
     setOpenModal(true);
@@ -469,7 +480,9 @@ export default function Users({
         organizationId: organizationId || undefined,
         departmentId: formData.departmentId || undefined,
         designationId: formData.designationId || undefined,
-        businessUnit: formData.businessUnit || [],
+        businessUnit: formData.businessUnit.includes("all")
+          ? []
+          : formData.businessUnit,
       };
       createUserMutation.mutate({
         url: POST.Create_User,
@@ -486,7 +499,9 @@ export default function Users({
         mobile: formData.mobile,
         departmentId: formData.departmentId || undefined,
         designationId: formData.designationId || undefined,
-        businessUnit: formData.businessUnit || [],
+        businessUnit: formData.businessUnit.includes("all")
+          ? []
+          : formData.businessUnit,
       };
       if (formData.password) {
         updatePayload.password = formData.password;
@@ -717,7 +732,7 @@ export default function Users({
               },
             }}
           />
-          {modalMode === "add" && (
+          {modalMode !== "view" && (
             <TextField
               label="Password"
               value={formData.password}
@@ -737,11 +752,24 @@ export default function Users({
               required
               error={!!passwordError}
               helperText={passwordError}
-              type="password"
+              type={showPassword ? "text" : "password"}
               sx={{
                 "& .MuiOutlinedInput-root": {
                   borderRadius: STYLE_GUIDE.SPACING.s2,
                 },
+              }}
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      aria-label="toggle password visibility"
+                      onClick={() => setShowPassword(!showPassword)}
+                      edge="end"
+                    >
+                      {showPassword ? <VisibilityOff /> : <Visibility />}
+                    </IconButton>
+                  </InputAdornment>
+                ),
               }}
             />
           )}
@@ -960,19 +988,33 @@ export default function Users({
               height: 56,
             }}
             multiple
-            options={businessUnitListForUser?.data?.data || []}
+            options={[
+              { _id: "all", name: "All" },
+              ...(businessUnitListForUser?.data?.data || []),
+            ]}
             getOptionLabel={(option) => option.name}
             value={
-              businessUnitListForUser?.data?.data?.filter((sub) =>
-                formData.businessUnit.includes(sub._id)
-              ) || []
+              formData.businessUnit.includes("all")
+                ? [{ _id: "all", name: "All" }]
+                : businessUnitListForUser?.data?.data?.filter((sub) =>
+                    formData.businessUnit.includes(sub._id)
+                  ) || []
             }
-            onChange={(_, newValue) =>
-              setFormData({
-                ...formData,
-                businessUnit: newValue.map((sub) => sub._id),
-              })
-            }
+            onChange={(_, newValue) => {
+              const hasAll = newValue.some((option) => option._id === "all");
+
+              if (hasAll) {
+                setFormData({
+                  ...formData,
+                  businessUnit: ["all"],
+                });
+              } else {
+                setFormData({
+                  ...formData,
+                  businessUnit: newValue.map((sub) => sub._id),
+                });
+              }
+            }}
             disabled={modalMode === "view"}
             renderInput={(params) => (
               <TextField
