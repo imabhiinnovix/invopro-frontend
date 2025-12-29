@@ -257,7 +257,7 @@ export function DepartmentDataTable({
           paginationMode="server"
           sx={{ overflow: "visible" }}
           loading={loading || departmentList.isLoading}
-          rowCount={departmentList?.data?.totalCount || 0}
+          rowCount={departmentList?.data?.totalCount}
           paginationModel={paginationModel}
           onPaginationModelChange={setPaginationModel}
           slots={{

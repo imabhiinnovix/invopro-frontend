@@ -40,7 +40,7 @@ export default function Roles() {
   const [searchValue, setSearchValue] = useState("");
   const [paginationModel, setPaginationModel] = useState({
     page: 0,
-    pageSize: 50,
+    pageSize: 10,
   });
   const [roleReload, setRoleReload] = useState(false);
   const [filterValues, setFilterValues] = useState({

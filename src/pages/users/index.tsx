@@ -46,6 +46,7 @@ import { Department } from "../designation/DesignationModal";
 import DialogContainer from "../../components/molecule/dialog";
 import PrimaryButton from "../../components/common/PrimaryButton";
 import { BusinessUnitDataApiResponse } from "../businessUnit/BusinessUnitDataTable";
+import { CustomPagination } from "../../components/common/pagination/customPagination";
 
 interface UsersProps {
   organizationId?: string;
@@ -252,6 +253,10 @@ export default function Users({
   const [userIdForEdit, setUserIdForEdit] = useState<string | null>(null);
   const [passwordError, setPasswordError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [paginationModel, setPaginationModel] = useState({
+    page: 0,
+    pageSize: 10,
+  });
 
   const validatePassword = (password: string) => {
     if (password.length < 8) return "Password must be at least 8 characters";
@@ -262,10 +267,12 @@ export default function Users({
   };
 
   const usersQuery = useGet<UserListResponse>(
-    ["users", organizationId || "all"],
+    ["users", organizationId || "all", String(paginationModel.page + 1)],
     organizationId
-      ? `${GET.USER_LIST}?organizationId=${organizationId}`
-      : GET.USER_LIST,
+      ? `${GET.USER_LIST}?organizationId=${organizationId}&page=${paginationModel.page}&limit=${paginationModel.pageSize}`
+      : `${GET.USER_LIST}?page=${paginationModel.page + 1}&limit=${
+          paginationModel.pageSize
+        }`,
     true
   );
 
@@ -302,27 +309,24 @@ export default function Users({
   );
 
   const createUserMutation = usePost<CreateUserPayload, CreateUserResponse>(
-    ["users", organizationId || "all"],
+    ["users", organizationId || "all", String(paginationModel.page + 1)],
     () => {
-      usersQuery.refetch();
       handleCloseModal();
     },
     true
   );
 
   const updateUserMutation = usePut<CreateUserPayload, CreateUserResponse>(
-    ["users", organizationId || "all"],
+    ["users", organizationId || "all", String(paginationModel.page + 1)],
     () => {
-      usersQuery.refetch();
       handleCloseModal();
     },
     true
   );
 
   const deleteUserMutation = useDelete<any>(
-    ["users", organizationId || "all"],
+    ["users", organizationId || "all", String(paginationModel.page + 1)],
     () => {
-      usersQuery.refetch();
       handleCloseDialog();
     },
     true
@@ -424,7 +428,7 @@ export default function Users({
       departmentId: "",
       designationId: "",
       status: "active",
-      businessUnit: [],
+      businessUnit: ["all"],
     });
     setModalMode("add");
     setOpenModal(true);
@@ -445,7 +449,7 @@ export default function Users({
       departmentId: "",
       designationId: "",
       status: "active",
-      businessUnit: [],
+      businessUnit: ["all"],
     });
     setPasswordError("");
   };
@@ -633,9 +637,24 @@ export default function Users({
               rows={transformedUsers}
               columns={columns}
               disableColumnMenu
-              hideFooter={true}
               sx={{
                 overflow: "visible",
+              }}
+              loading={usersQuery.isLoading}
+              paginationModel={paginationModel}
+              initialState={{ pagination: { paginationModel } }}
+              onPaginationModelChange={setPaginationModel}
+              pageSizeOptions={[10, 20, 50]}
+              paginationMode="server"
+              rowCount={usersQuery?.data?.totalCount}
+              slots={{
+                pagination: () => (
+                  <CustomPagination
+                    paginationModel={paginationModel}
+                    setPaginationModel={setPaginationModel}
+                    rowCount={usersQuery?.data?.totalCount || 0}
+                  />
+                ),
               }}
             />
           )}
@@ -1000,27 +1019,29 @@ export default function Users({
                     formData.businessUnit.includes(sub._id)
                   ) || []
             }
-            onChange={(_, newValue) => {
-              const hasAll = newValue.some((option) => option._id === "all");
+            onChange={(_, newValue, _reason, details) => {
+              const selectedId = details?.option?._id;
 
-              if (hasAll) {
-                setFormData({
-                  ...formData,
-                  businessUnit: ["all"],
-                });
+              let businessUnit: string[];
+
+              if (selectedId === "all") {
+                businessUnit = ["all"];
               } else {
-                setFormData({
-                  ...formData,
-                  businessUnit: newValue.map((sub) => sub._id),
-                });
+                businessUnit = newValue
+                  .map((o) => o._id)
+                  .filter((id) => id !== "all");
               }
+
+              setFormData((prev) => ({
+                ...prev,
+                businessUnit,
+              }));
             }}
             disabled={modalMode === "view"}
             renderInput={(params) => (
               <TextField
                 {...params}
                 label="Business Unit"
-                required
                 variant="outlined"
                 sx={{
                   "& .MuiOutlinedInput-root": {
