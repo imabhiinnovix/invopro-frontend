@@ -33,7 +33,11 @@ const UserDropdown = () => {
     }
   }, [userDetails]);
 
-  const usersQuery = useGet<UserListResponse>(["users"], GET.USER_LIST);
+  const usersQuery = useGet<UserListResponse>(
+    ["users"],
+    GET.USER_LIST,
+    sessionStorage.getItem("Users") ? false : true
+  );
 
   const assumeSessionMutation = usePost<
     { accessUserId: string },
@@ -62,9 +66,49 @@ const UserDropdown = () => {
     }
   }, [userDetails?.data]);
 
+  const userIdToMatch = originalUserId ?? userDetails?.data?._id;
+
+  useEffect(() => {
+    if (!usersQuery.data?.data) return;
+    const { currentUser, otherUsers } = usersQuery.data?.data?.reduce(
+      (acc, user) => {
+        if (user._id === userIdToMatch) {
+          acc.currentUser.push(user);
+        } else {
+          acc.otherUsers.push(user);
+        }
+        return acc;
+      },
+      { currentUser: [], otherUsers: [] }
+    ) ?? { currentUser: [], otherUsers: [] };
+
+    const filteredOtherUsers = otherUsers.filter((user) => {
+      return (
+        user?.roleIds[0]?.name === "User" ||
+        user?.roleIds[0]?.roleType?.name === "User"
+      );
+    });
+
+    const tempUsers = [...currentUser, ...filteredOtherUsers].map((user) => {
+      return {
+        _id: user._id,
+        firstName: user.firstName,
+        lastName: user.lastName,
+      };
+    });
+
+    if (!decodedToken?.isImpersonation) {
+      sessionStorage.setItem("Users", JSON.stringify(tempUsers));
+    }
+  }, [usersQuery.data?.data]);
+
   const handleChange = (event: SelectChangeEvent<string>) => {
     const userId = event.target.value;
     setSelectedUser(userId);
+
+    // if (userId === decodedToken?.impersonatorUserId) {
+    //   sessionStorage.removeItem("Users");
+    // }
 
     if (userId) {
       assumeSessionMutation.mutate({
@@ -85,8 +129,7 @@ const UserDropdown = () => {
           label="User"
           onChange={handleChange}
         >
-          <MenuItem value={originalUserId}>Current User</MenuItem>
-          {usersQuery.data?.data?.map((user) => (
+          {JSON.parse(sessionStorage.getItem("Users") || "[]").map((user) => (
             <MenuItem key={user._id} value={user._id}>
               {user.firstName} {user.lastName}{" "}
               {(originalUserId
