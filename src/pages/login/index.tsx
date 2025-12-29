@@ -82,13 +82,11 @@ function Login() {
           navigate("/dashboard");
         }
       };
-      
+
       checkAndRedirectInfo();
       setRoleId(String(userDetails?.data?.roleId));
     }
   }, [userDetails]);
-
-
 
   const getLogin = usePost<getLoginPayload, getLoginResponse>(
     [""],
@@ -114,7 +112,15 @@ function Login() {
         "Invalid email address"
       )
       .max(50, "Email is too long"),
-    password: yup.string().required("Password is required"),
+    // password: yup.string().required("Password is required"),
+    password: yup
+      .string()
+      .required("Password is required")
+      // .min(8, "Password must be at least 8 characters")
+      // .matches(
+      //   /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_])\S+$/,
+      //   "Password must contain at least one uppercase, one lowercase, one number and one special character"
+      // ),
   });
 
   const {

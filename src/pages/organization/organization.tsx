@@ -28,6 +28,8 @@ import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import SaveIcon from "@mui/icons-material/Save";
+import CancelIcon from "@mui/icons-material/Cancel";
+import AddIcon from "@mui/icons-material/Add";
 import { useState, useContext } from "react";
 import { STYLE_GUIDE } from "../../styles";
 import { useComponentTypography } from "../../hooks";
@@ -78,6 +80,7 @@ interface OrganizationFormValues {
   productSubscriptions: ProductSubscription[];
   mediumSettings: MediumSetting[];
   businessUnitCode?: string;
+  allowedDomains: { value: string }[];
 }
 
 export default function Organization() {
@@ -181,6 +184,7 @@ export default function Organization() {
       productSubscriptions: [],
       mediumSettings: [],
       businessUnitCode: "",
+      allowedDomains: [],
     },
     mode: "onChange",
   });
@@ -201,6 +205,15 @@ export default function Organization() {
     name: "mediumSettings",
   });
 
+  const {
+    fields: domainFields,
+    append: appendDomain,
+    remove: removeDomain,
+  } = useFieldArray<OrganizationFormValues>({
+    control,
+    name: "allowedDomains",
+  });
+
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [selectedOrg, setSelectedOrg] = useState<any>(null);
@@ -219,6 +232,7 @@ export default function Organization() {
   const [organizationIdForMedium, setOrganizationIdForMedium] = useState<
     string | null
   >(null);
+  const [domainInput, setDomainInput] = useState("");
   const [_forceUpdate, setForceUpdate] = useState(0);
 
   const theme = useUnifiedTheme();
@@ -292,12 +306,16 @@ export default function Organization() {
     setValue("domain", org.domain || "");
     setValue("status", org.status || "inactive");
     setValue("owner", org.owner?._id || "");
+    setValue(
+      "allowedDomains",
+      (org.allowedDomains || []).map((d: string) => ({ value: d }))
+    );
 
     const isUserSuperUser = isSuperUser();
     const organizationIdForUsers = isUserSuperUser ? org._id : null;
 
     setOrganizationIdForMedium(organizationIdForUsers);
-
+    setDomainInput("");
     replaceMedium([]);
 
     if (org.mediumSettings && Array.isArray(org.mediumSettings)) {
@@ -346,6 +364,7 @@ export default function Organization() {
           code: selectedOrg.code,
           status: rest.status === "active" ? "active" : "inactive",
           owner: rest.owner,
+          allowedDomains: formData.allowedDomains.map((d: any) => d.value),
         },
       });
 
@@ -389,8 +408,10 @@ export default function Organization() {
       productIds: [],
       productSubscriptions: [],
       mediumSettings: [],
+      allowedDomains: [],
     });
     setCreateOpen(true);
+    setDomainInput("");
     setShowMediumDropdown(false);
     // Ensure medium fields are cleared
     replaceMedium([]);
@@ -420,6 +441,9 @@ export default function Organization() {
             })
           ),
           businessUnitCode: formData.businessUnitCode || "",
+          allowedDomains: (formData.allowedDomains || []).map(
+            (d: any) => d.value
+          ),
         },
       });
 
@@ -846,7 +870,7 @@ export default function Organization() {
                         render={({ field }) => (
                           <TextField
                             {...field}
-                            label="Domain"
+                            label="Primary Domain"
                             fullWidth
                             margin="normal"
                             error={!!errors.domain}
@@ -854,6 +878,74 @@ export default function Organization() {
                           />
                         )}
                       />
+                    </Grid>
+                    <Grid item xs={12}>
+                      <Typography
+                        variant="body2"
+                        sx={{ mb: 1, fontWeight: 500 }}
+                      >
+                        Allowed Domains
+                      </Typography>
+                      <Box sx={{ display: "flex", gap: 1, mb: 1 }}>
+                        <TextField
+                          placeholder="Add a domain (e.g. example.com)"
+                          size="small"
+                          fullWidth
+                          value={domainInput}
+                          onChange={(e) => setDomainInput(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                              e.preventDefault();
+                              if (domainInput.trim()) {
+                                appendDomain({ value: domainInput.trim() });
+                                setDomainInput("");
+                              }
+                            }
+                          }}
+                          InputProps={{
+                            endAdornment: (
+                              <IconButton
+                                size="small"
+                                color="primary"
+                                onClick={() => {
+                                  if (domainInput.trim()) {
+                                    appendDomain({ value: domainInput.trim() });
+                                    setDomainInput("");
+                                  }
+                                }}
+                              >
+                                <AddIcon />
+                              </IconButton>
+                            ),
+                          }}
+                        />
+                      </Box>
+                      <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
+                        {domainFields.map((field, idx) => (
+                          <Box
+                            key={field.id}
+                            sx={{
+                              display: "inline-flex",
+                              alignItems: "center",
+                              bgcolor: "primary.main",
+                              color: "primary.contrastText",
+                              px: 1,
+                              py: 0.5,
+                              borderRadius: 1,
+                              fontSize: "0.8125rem",
+                            }}
+                          >
+                            <span>{field.value}</span>
+                            <IconButton
+                              size="small"
+                              onClick={() => removeDomain(idx)}
+                              sx={{ ml: 0.5, p: 0, color: "inherit" }}
+                            >
+                              <CancelIcon sx={{ fontSize: 16 }} />
+                            </IconButton>
+                          </Box>
+                        ))}
+                      </Box>
                     </Grid>
                     <Grid item xs={12}>
                       <Controller
@@ -1657,7 +1749,7 @@ export default function Organization() {
                     render={({ field }) => (
                       <TextField
                         {...field}
-                        label="Domain"
+                        label="Primary Domain"
                         fullWidth
                         margin="normal"
                         error={!!errors.domain}
@@ -1665,6 +1757,71 @@ export default function Organization() {
                       />
                     )}
                   />
+                </Grid>
+                <Grid item xs={12}>
+                  <Typography variant="body2" sx={{ mb: 1, fontWeight: 500 }}>
+                    Allowed Domains
+                  </Typography>
+                  <Box sx={{ display: "flex", gap: 1, mb: 1 }}>
+                    <TextField
+                      placeholder="Add a domain (e.g. example.com)"
+                      size="small"
+                      fullWidth
+                      value={domainInput}
+                      onChange={(e) => setDomainInput(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          if (domainInput.trim()) {
+                            appendDomain({ value: domainInput.trim() });
+                            setDomainInput("");
+                          }
+                        }
+                      }}
+                      InputProps={{
+                        endAdornment: (
+                          <IconButton
+                            size="small"
+                            color="primary"
+                            onClick={() => {
+                              if (domainInput.trim()) {
+                                appendDomain({ value: domainInput.trim() });
+                                setDomainInput("");
+                              }
+                            }}
+                          >
+                            <AddIcon />
+                          </IconButton>
+                        ),
+                      }}
+                    />
+                  </Box>
+                  <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
+                    {domainFields.map((field, idx) => (
+                      <Box
+                        key={field.id}
+                        sx={{
+                          display: "inline-flex",
+                          alignItems: "center",
+                          bgcolor: "primary.main",
+                          color: "primary.contrastText",
+                          px: 1,
+                          py: 0.5,
+                          borderRadius: 1,
+                          fontSize: "0.8125rem",
+                        }}
+                      >
+                        <span>{field.value}</span>
+                        <IconButton
+                          size="small"
+                          onClick={() => removeDomain(idx)}
+                          sx={{ ml: 0.5, p: 0, color: "inherit" }}
+                        >
+                          <CancelIcon sx={{ fontSize: 16 }} />
+                        </IconButton>
+                      </Box>
+                    ))}
+                  </Box>
                 </Grid>
                 <Grid item xs={12}>
                   <Controller
