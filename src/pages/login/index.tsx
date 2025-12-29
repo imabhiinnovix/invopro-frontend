@@ -328,26 +328,24 @@ function Login() {
               </Link>
             )}
           </Box>
-          {!getLogin.isPending &&
-          !getLogin.isSuccess &&
-          !verifyOTP.isPending &&
-          !showOtp ? (
-            <LoadingButton
-              fullWidth
-              size="large"
-              type="submit"
-              color="primary"
-              variant="contained"
-              sx={{
-                ...getButtonSx(),
-                fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.bold,
-              }}
-            >
-              Sign in
-            </LoadingButton>
-          ) : !showOtp ? (
-            <ProgressBar />
-          ) : null}
+          {!showOtp &&
+            (getLogin.isPending ? (
+              <ProgressBar />
+            ) : (
+              <LoadingButton
+                fullWidth
+                size="large"
+                type="submit"
+                color="primary"
+                variant="contained"
+                sx={{
+                  ...getButtonSx(),
+                  fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.bold,
+                }}
+              >
+                Sign in
+              </LoadingButton>
+            ))}
 
           <Divider
             sx={{
