@@ -1,4 +1,4 @@
-import { useEffect, useContext, useLayoutEffect } from "react";
+import { useEffect, useContext, useLayoutEffect, useState } from "react";
 
 import Box from "@mui/material/Box";
 import Link from "@mui/material/Link";
@@ -7,9 +7,10 @@ import TextField from "../../components/atom/TextField";
 
 import Typography from "@mui/material/Typography";
 import LoadingButton from "@mui/lab/LoadingButton";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
+import { MuiOtpInput } from "mui-one-time-password-input";
 
 import { POST, GET } from "../../services/apiRoutes";
 import axiosInstance from "../../services/axiosInstance";
@@ -28,6 +29,8 @@ import logo from "../../assets/logo.png";
 import { STYLE_GUIDE } from "../../styles";
 import { useComponentTypography } from "../../hooks/useComponentTypography";
 import { LoginFlowLayout } from "../../components/atom/LoginFlowLayout";
+import useCountdown from "../../hooks/useCountdown";
+import { Button } from "@mui/material";
 
 interface getLoginPayload {
   email: string;
@@ -37,14 +40,19 @@ interface getLoginPayload {
 interface getLoginResponse {
   success: boolean;
   message: string;
+  code?: string;
   data: {
     token: string;
   };
 }
-
+interface verifyOtpPayload {
+  email: string;
+  otp: string;
+}
 interface userCredType {
   email: string;
   password: string;
+  otp?: string;
 }
 
 function Login() {
@@ -54,6 +62,7 @@ function Login() {
   ) as AuthContextType;
 
   const navigate = useNavigate();
+  const [showOtp, setShowOtp] = useState(false);
 
   useEffect(() => {
     const token = getAuthToken();
@@ -92,12 +101,31 @@ function Login() {
     [""],
     (data) => {
       if (data?.success) {
+        // if (data?.code === "OTP_REQUIRED") {
+        if (data?.code === "OTP_REQUIRED") {
+          setShowOtp(true);
+          resetCountdown();
+        } else if (data?.code === "OTP_NOT_REQUIRED") {
+          setAuthToken(data?.data?.token);
+          setIsAuthUser(true);
+        }
+      }
+    },
+    true
+  );
+
+  const verifyOTP = usePost<verifyOtpPayload, getLoginResponse>(
+    [""],
+    (data) => {
+      if (data?.success) {
         setAuthToken(data?.data?.token);
         setIsAuthUser(true);
       }
     },
     true
   );
+
+  const { countdown, isButtonDisabled, resetCountdown } = useCountdown(60);
 
   useLayoutEffect(() => {
     clearSessionStorage();
@@ -116,26 +144,48 @@ function Login() {
     password: yup
       .string()
       .required("Password is required")
-      // .min(8, "Password must be at least 8 characters")
-      // .matches(
-      //   /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_])\S+$/,
-      //   "Password must contain at least one uppercase, one lowercase, one number and one special character"
-      // ),
+      .min(8, "Password must be at least 8 characters")
+      .matches(
+        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_])\S+$/,
+        "Password must contain at least one uppercase, one lowercase, one number and one special character"
+      ),
+    otp: yup.string().when("$showOtp", {
+      is: true,
+      then: (schema: any) => schema.required("OTP is required"),
+      otherwise: (schema: any) => schema.notRequired(),
+    }),
   });
 
   const {
     register,
     handleSubmit,
+    getValues,
+    control,
     formState: { errors },
   } = useForm<userCredType>({
     mode: "all",
     reValidateMode: "onChange",
     resolver: yupResolver(LoginSchema),
+    context: { showOtp },
   });
 
   const onSubmit = async (data: userCredType) => {
-    const userCred = { email: data?.email, password: data?.password };
-    getLogin.mutate({ url: POST.LOGIN, payload: userCred });
+    if (showOtp) {
+      const payload: verifyOtpPayload = {
+        email: getValues("email") as string,
+        otp: data.otp as string,
+      };
+      verifyOTP.mutate({ url: POST.VERIFY_OTP, payload });
+    } else {
+      const userCred = { email: data?.email, password: data?.password };
+      getLogin.mutate({ url: POST.LOGIN, payload: userCred });
+    }
+  };
+
+  const handleResendOTP = () => {
+    const data = { email: getValues("email"), password: getValues("password") };
+    getLogin?.mutate({ url: POST.LOGIN, payload: data });
+    resetCountdown();
   };
 
   return (
@@ -165,6 +215,7 @@ function Login() {
             label="Email address"
             placeholder="example@gmail.com"
             required
+            disabled={showOtp}
             error={!!errors.email}
             helperText={errors.email?.message}
           />
@@ -175,32 +226,130 @@ function Login() {
             label="Password"
             placeholder="@Demo1234"
             required
+            disabled={showOtp}
             isPasswordField
             error={!!errors.password}
             helperText={errors.password?.message}
           />
-          {!getLogin.isPending && !getLogin.isSuccess ? (
-            <LoadingButton
-              fullWidth
-              size="large"
-              type="submit"
-              color="primary"
-              variant="contained"
-              sx={{
-                ...getButtonSx(),
-                fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.bold,
+
+          {showOtp && (
+            <Controller
+              name="otp"
+              control={control}
+              defaultValue=""
+              rules={{
+                required: "OTP is required",
+                validate: (value) =>
+                  (value && value.length === 6) || "OTP must be 6 digits long",
               }}
-            >
-              Sign in
-            </LoadingButton>
-          ) : (
-            <ProgressBar />
+              render={({ field, fieldState: { error } }) => (
+                <Box>
+                  <MuiOtpInput
+                    {...field}
+                    value={field.value}
+                    onChange={(value) => field.onChange(value)}
+                    length={6}
+                  />
+                  {error && <p style={{ color: "red" }}>{error.message}</p>}
+                  <Box
+                    display="flex"
+                    justifyContent="flex-end"
+                    alignItems="center"
+                    m={STYLE_GUIDE.SPACING.s2}
+                  >
+                    <Button
+                      variant="text"
+                      onClick={handleResendOTP}
+                      disabled={isButtonDisabled}
+                      sx={{
+                        color: isButtonDisabled ? "gray" : "black",
+                        cursor: isButtonDisabled ? "not-allowed" : "pointer",
+                        "&:disabled": {
+                          color: "gray",
+                        },
+                      }}
+                    >
+                      Re-send OTP
+                    </Button>
+                    {countdown > 0 && (
+                      <Typography variant="body2" color="text.secondary">
+                        ({countdown}s)
+                      </Typography>
+                    )}
+                  </Box>
+
+                  {!verifyOTP?.isPending && !verifyOTP.isSuccess ? (
+                    <LoadingButton
+                      fullWidth
+                      size="large"
+                      type="submit"
+                      color="primary"
+                      variant="contained"
+                      sx={{
+                        ...getButtonSx(),
+                        fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.bold,
+                      }}
+                    >
+                      Login with OTP
+                    </LoadingButton>
+                  ) : (
+                    <ProgressBar />
+                  )}
+                </Box>
+              )}
+            />
           )}
+          <Box className="flex justify-end">
+            {showOtp ? (
+              <Link
+                onClick={() => setShowOtp(false)}
+                sx={{
+                  cursor: "pointer",
+                  fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.medium,
+                  color: STYLE_GUIDE.COLORS.primary,
+                  fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base,
+                  textDecoration: "none",
+                }}
+              >
+                Change Email
+              </Link>
+            ) : (
+              <Link
+                onClick={() => navigate("/forgot-password")}
+                sx={{
+                  cursor: "pointer",
+                  fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.medium,
+                  color: STYLE_GUIDE.COLORS.primary,
+                  fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base,
+                  textDecoration: "none",
+                }}
+              >
+                Forgot Password?
+              </Link>
+            )}
+          </Box>
+          {!showOtp &&
+            (getLogin.isPending ? (
+              <ProgressBar />
+            ) : (
+              <LoadingButton
+                fullWidth
+                size="large"
+                type="submit"
+                color="primary"
+                variant="contained"
+                sx={{
+                  ...getButtonSx(),
+                  fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.bold,
+                }}
+              >
+                Sign in
+              </LoadingButton>
+            ))}
 
           <Divider
             sx={{
-              marginTop: STYLE_GUIDE.SPACING.s6,
-              marginBottom: STYLE_GUIDE.SPACING.s4,
+              marginTop: STYLE_GUIDE.SPACING.s2,
               "&::before, &::after": {
                 borderTopStyle: "dashed",
                 borderColor: STYLE_GUIDE.COLORS.divider,
@@ -225,7 +374,7 @@ function Login() {
           >
             Login with
             <Link
-              href="/otp-login"
+              onClick={() => navigate("/otp-login")}
               sx={{
                 marginLeft: STYLE_GUIDE.SPACING.s1,
                 cursor: "pointer",

@@ -1802,6 +1802,13 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
     {}
   );
 
+  const caseStatusValue = useMemo(() => {
+    const caseStatusEntry = Object.entries(filters).find(([key]) =>
+      key.startsWith("Case Status")
+    );
+    return caseStatusEntry ? caseStatusEntry[1] : undefined;
+  }, [filters]);
+
   const queryClient = useQueryClient();
 
   // Fetch data source details
@@ -2358,6 +2365,12 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
                   }}
                   portalTarget={document.body}
                   zIndex={9999}
+                  maxDate={
+                    field.label === "DateTaken" &&
+                    caseStatusValue === "Completed"
+                      ? new Date()
+                      : undefined
+                  }
                 />
               </Box>
               {fieldDateRangeValue.length > 0 && (
@@ -2631,6 +2644,7 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
             },
           }}
         >
+          {console.log("filters", filters)}
           {filteredFieldSettings.map((field) => renderFilterField(field))}
         </Box>
       )}

@@ -252,7 +252,7 @@ export function RoleDataTable({
           paginationMode="server"
           sx={{ overflow: "visible" }}
           loading={loading || roleList.isLoading}
-          rowCount={roleList?.data?.totalCount || 0}
+          rowCount={roleList?.data?.totalCount}
           paginationModel={paginationModel}
           onPaginationModelChange={setPaginationModel}
           slots={{

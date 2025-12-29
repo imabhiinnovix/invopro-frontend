@@ -4,6 +4,7 @@ export const POST = {
   HELP_DESK_SUPPORT: "/support/create",
   CHANGE_PASSWORD: "/users/change-password",
   SEND_OTP: "common/auth/send-otp",
+  RESET_PASSWORD: "/common/auth/reset-password",
   VERIFY_OTP: "common/auth/verify-otp",
   CREATE_DASHBOARD: "/common/dashboard/create",
   UPDATE_DASHBOARD: "/common/dashboard/update",

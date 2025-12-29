@@ -157,7 +157,7 @@ const ProfilePage = () => {
     data: any[];
   }>(["designationList"], GET?.DESIGNATION_LIST, true);
 
-  const changePassword = usePut(["changePassword"]);
+  const changePassword = usePut([""], () => {}, true);
   const deleteImage = useDelete(["deleteImage"]);
   const updateUserProfile = usePut(["updateUserProfile"]);
   const uploadImage = useFilePostData<
@@ -349,8 +349,6 @@ const ProfilePage = () => {
         },
       });
       if (response.success) {
-        toast.success("Password changed successfully!");
-
         setProfile((prev) => ({
           ...prev,
           password: {
@@ -365,14 +363,9 @@ const ProfilePage = () => {
         }));
 
         await refreshUserData();
-      } else {
-        throw new Error(response.message || "Failed to change password");
       }
     } catch (error) {
       console.error("Password change error:", error);
-      toast.error(
-        error.message || "Failed to change password. Please try again."
-      );
     }
   };
 

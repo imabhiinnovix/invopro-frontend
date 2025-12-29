@@ -1,4 +1,4 @@
-import { useState, useContext, useEffect } from "react";
+import { useState, useContext, useEffect, useMemo } from "react";
 import {
   FormControl,
   InputLabel,
@@ -18,25 +18,79 @@ import { jwtDecode } from "jwt-decode";
 
 // ------------------------------------------------------------------------
 
+const USERS_STORAGE_KEY = "Users";
+const REFETCH_USERS_FLAG = "RefetchUsers";
+
+interface DecodedToken {
+  impersonatorUserId?: string;
+  isImpersonation?: boolean;
+  userId?: string;
+  [key: string]: unknown;
+}
+
+interface SimplifiedUser {
+  _id: string;
+  firstName: string;
+  lastName: string;
+}
+
+// ------------------------------------------------------------------------
+
+const getUsersFromStorage = (): SimplifiedUser[] => {
+  try {
+    const stored = sessionStorage.getItem(USERS_STORAGE_KEY);
+    return stored ? JSON.parse(stored) : [];
+  } catch (error) {
+    console.error("Error parsing users from sessionStorage:", error);
+    return [];
+  }
+};
+
+const setUsersInStorage = (users: SimplifiedUser[]): void => {
+  try {
+    sessionStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(users));
+  } catch (error) {
+    console.error("Error storing users in sessionStorage:", error);
+  }
+};
+
+const decodeAuthToken = (token: string): DecodedToken | null => {
+  try {
+    return jwtDecode<DecodedToken>(token);
+  } catch (error) {
+    console.error("Error decoding token:", error);
+    return null;
+  }
+};
+
+const hasUserRole = (user: any): boolean => {
+  return (
+    user?.roleIds?.[0]?.name === "User" ||
+    user?.roleIds?.[0]?.roleType?.name === "User"
+  );
+};
+
+// ------------------------------------------------------------------------
+
 const UserDropdown = () => {
   const { userDetails } = useContext(AuthContext);
-  const [selectedUser, setSelectedUser] = useState<string>(
-    userDetails?.data?._id || ""
-  );
-  const [decodedToken, setDecodedToken] = useState({});
   const navigate = useNavigate();
   const token = getAuthToken();
 
-  useEffect(() => {
-    if (userDetails?.data?._id) {
-      setSelectedUser(userDetails.data._id);
-    }
-  }, [userDetails]);
+  const [selectedUser, setSelectedUser] = useState<string>("");
+  const [cachedUsers, setCachedUsers] = useState<SimplifiedUser[]>([]);
+
+  const decodedToken = useMemo<DecodedToken | null>(() => {
+    return token ? decodeAuthToken(token) : null;
+  }, [token]);
+
+  const originalUserId =
+    decodedToken?.impersonatorUserId ?? userDetails?.data?._id;
 
   const usersQuery = useGet<UserListResponse>(
     ["users"],
     GET.USER_LIST,
-    sessionStorage.getItem("Users") ? false : true
+    !sessionStorage.getItem(USERS_STORAGE_KEY)
   );
 
   const assumeSessionMutation = usePost<
@@ -45,70 +99,81 @@ const UserDropdown = () => {
   >(
     [""],
     (data) => {
-      console.log(data);
-      setAuthToken(data?.data?.token);
-      navigate("/dashboard");
-      window.location.reload();
+      if (data?.data?.token) {
+        setAuthToken(data.data.token);
+        navigate("/dashboard");
+        window.location.reload();
+      }
     },
     true
   );
 
-  const originalUserId = decodedToken?.impersonatorUserId;
+  const processedUsers = useMemo<SimplifiedUser[]>(() => {
+    if (!usersQuery.data?.data) return [];
 
-  useEffect(() => {
-    if (token) {
-      try {
-        const decoded: any = jwtDecode(token);
-        setDecodedToken(decoded);
-      } catch (error) {
-        console.error("Error decoding token:", error);
+    const users = usersQuery.data.data;
+    const currentUserList: any[] = [];
+    const otherUsersList: any[] = [];
+
+    users.forEach((user) => {
+      if (user._id === originalUserId) {
+        currentUserList.push(user);
+      } else {
+        otherUsersList.push(user);
       }
-    }
-  }, [userDetails?.data]);
+    });
 
-  const userIdToMatch = originalUserId ?? userDetails?.data?._id;
+    const filteredOtherUsers = otherUsersList.filter(hasUserRole);
+
+    return [...currentUserList, ...filteredOtherUsers].map((user) => ({
+      _id: user._id,
+      firstName: user.firstName,
+      lastName: user.lastName,
+    }));
+  }, [usersQuery.data?.data, originalUserId]);
 
   useEffect(() => {
-    if (!usersQuery.data?.data) return;
-    const { currentUser, otherUsers } = usersQuery.data?.data?.reduce(
-      (acc, user) => {
-        if (user._id === userIdToMatch) {
-          acc.currentUser.push(user);
-        } else {
-          acc.otherUsers.push(user);
-        }
-        return acc;
-      },
-      { currentUser: [], otherUsers: [] }
-    ) ?? { currentUser: [], otherUsers: [] };
-
-    const filteredOtherUsers = otherUsers.filter((user) => {
-      return (
-        user?.roleIds[0]?.name === "User" ||
-        user?.roleIds[0]?.roleType?.name === "User"
-      );
-    });
-
-    const tempUsers = [...currentUser, ...filteredOtherUsers].map((user) => {
-      return {
-        _id: user._id,
-        firstName: user.firstName,
-        lastName: user.lastName,
-      };
-    });
-
-    if (!decodedToken?.isImpersonation) {
-      sessionStorage.setItem("Users", JSON.stringify(tempUsers));
+    if (userDetails?.data?._id) {
+      setSelectedUser(userDetails.data._id);
     }
-  }, [usersQuery.data?.data]);
+  }, [userDetails?.data?._id]);
+
+  useEffect(() => {
+    if (processedUsers.length > 0 && !decodedToken?.isImpersonation) {
+      setUsersInStorage(processedUsers);
+      setCachedUsers(processedUsers);
+    }
+  }, [processedUsers, decodedToken?.isImpersonation]);
+
+  useEffect(() => {
+    const storedUsers = getUsersFromStorage();
+    if (storedUsers.length > 0) {
+      setCachedUsers(storedUsers);
+    }
+  }, []);
+
+  useEffect(() => {
+    const shouldRefetch = sessionStorage.getItem(REFETCH_USERS_FLAG);
+
+    if (shouldRefetch === "true") {
+      sessionStorage.removeItem(REFETCH_USERS_FLAG);
+
+      sessionStorage.removeItem(USERS_STORAGE_KEY);
+      setCachedUsers([]);
+
+      usersQuery.refetch();
+    }
+  }, []);
+
+  const displayUsers = cachedUsers.length > 0 ? cachedUsers : processedUsers;
 
   const handleChange = (event: SelectChangeEvent<string>) => {
     const userId = event.target.value;
     setSelectedUser(userId);
 
-    // if (userId === decodedToken?.impersonatorUserId) {
-    //   sessionStorage.removeItem("Users");
-    // }
+    if (userId === originalUserId) {
+      sessionStorage.setItem(REFETCH_USERS_FLAG, "true");
+    }
 
     if (userId) {
       assumeSessionMutation.mutate({
@@ -129,12 +194,10 @@ const UserDropdown = () => {
           label="User"
           onChange={handleChange}
         >
-          {JSON.parse(sessionStorage.getItem("Users") || "[]").map((user) => (
+          {displayUsers.map((user) => (
             <MenuItem key={user._id} value={user._id}>
-              {user.firstName} {user.lastName}{" "}
-              {(originalUserId
-                ? originalUserId === user._id
-                : userDetails?.data._id === user._id) && "(Current User)"}
+              {user.firstName} {user.lastName}
+              {originalUserId === user._id && " (Current User)"}
             </MenuItem>
           ))}
         </Select>

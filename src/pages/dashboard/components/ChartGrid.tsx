@@ -4029,7 +4029,6 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
                   </ChartContainer>
                   <Box
                     sx={{
-                      mt: "auto",
                       display: "flex",
                       justifyContent: "flex-end",
                       alignItems: "center",
