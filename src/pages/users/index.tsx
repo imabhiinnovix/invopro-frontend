@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useContext, useState, useMemo } from "react";
 import { DataGrid, GridColDef, GridRenderCellParams } from "@mui/x-data-grid";
 import {
   Box,
@@ -48,6 +48,9 @@ import PrimaryButton from "../../components/common/PrimaryButton";
 import { BusinessUnitDataApiResponse } from "../businessUnit/BusinessUnitDataTable";
 import { CustomPagination } from "../../components/common/pagination/customPagination";
 import { queryClient } from "../../main";
+import { useDispatch } from "react-redux";
+import { setUserListStale } from "../../reducers/userSlice";
+import { AuthContext } from "../../context/AuthContext";
 
 interface UsersProps {
   organizationId?: string;
@@ -81,163 +84,6 @@ interface UserRowData {
   businessUnit?: string[];
 }
 
-const columns: GridColDef[] = [
-  {
-    field: "firstName",
-    headerName: "First Name",
-    width: 200,
-    disableColumnMenu: true,
-    resizable: true,
-    sortable: true,
-  },
-  {
-    field: "lastName",
-    headerName: "Last Name",
-    width: 200,
-    disableColumnMenu: true,
-    resizable: true,
-    sortable: true,
-  },
-  {
-    field: "email",
-    headerName: "Email",
-    width: 200,
-    disableColumnMenu: true,
-    resizable: true,
-    sortable: true,
-  },
-  {
-    field: "mobile",
-    headerName: "Mobile",
-    width: 200,
-    disableColumnMenu: true,
-    resizable: true,
-    sortable: true,
-    valueFormatter: (params: { value: unknown }) => (params ? params : "-"),
-  },
-  {
-    field: "roleNames",
-    headerName: "Roles",
-    width: 200,
-    disableColumnMenu: true,
-    resizable: true,
-    sortable: false,
-    renderCell: (params: GridRenderCellParams) => (
-      <Box
-        sx={{
-          display: "flex",
-          gap: STYLE_GUIDE.SPACING.s1,
-          flexWrap: "wrap",
-          width: "100%",
-          height: "100%",
-          alignItems: "center",
-        }}
-      >
-        {(params.value as string[])?.map((roleName: string) => (
-          <Chip
-            key={roleName}
-            label={roleName}
-            size="small"
-            variant="outlined"
-          />
-        )) || "-"}
-      </Box>
-    ),
-  },
-  {
-    field: "departmentName",
-    headerName: "Department",
-    width: 200,
-    disableColumnMenu: true,
-    resizable: true,
-    sortable: true,
-    renderCell: (params: GridRenderCellParams) => (
-      <Typography variant="body2">{params.value || "-"}</Typography>
-    ),
-  },
-  {
-    field: "designationName",
-    headerName: "Designation",
-    width: 200,
-    disableColumnMenu: true,
-    resizable: true,
-    sortable: true,
-    renderCell: (params: GridRenderCellParams) => (
-      <Typography variant="body2">{params.value || "-"}</Typography>
-    ),
-  },
-  {
-    field: "status",
-    headerName: "Status",
-    width: 100,
-    disableColumnMenu: true,
-    resizable: true,
-    sortable: true,
-    renderCell: (params: GridRenderCellParams) => (
-      <Chip
-        label={params.value as string}
-        size="small"
-        color={(params.value as string) === "active" ? "success" : "error"}
-        variant="outlined"
-      />
-    ),
-  },
-  {
-    field: "isVerified",
-    headerName: "Verified",
-    width: 100,
-    disableColumnMenu: true,
-    resizable: true,
-    sortable: true,
-    renderCell: (params: GridRenderCellParams) => (
-      <Chip
-        label={(params.value as boolean) ? "Yes" : "No"}
-        size="small"
-        color={(params.value as boolean) ? "success" : "warning"}
-        variant="outlined"
-      />
-    ),
-  },
-  {
-    field: "actions",
-    headerName: "Actions",
-    width: 150,
-    disableColumnMenu: true,
-    sortable: false,
-    resizable: false,
-    renderCell: (params: GridRenderCellParams) => (
-      <Box sx={{ display: "flex", gap: STYLE_GUIDE.SPACING.s2 }}>
-        <Tooltip title="Edit" arrow>
-          <Button
-            variant="text"
-            onClick={() =>
-              (params.row as UserRowData).handleEdit(params.row as UserRowData)
-            }
-            sx={{ minWidth: "auto" }}
-            disabled={!(params.row as UserRowData).shouldAllowUserEdit}
-          >
-            <EditIcon />
-          </Button>
-        </Tooltip>
-        <Tooltip title="Delete" arrow>
-          <Button
-            variant="text"
-            onClick={() =>
-              (params.row as UserRowData).handleDelete(
-                (params.row as UserRowData).id
-              )
-            }
-            sx={{ minWidth: "auto", color: "error.main" }}
-            disabled={!(params.row as UserRowData).shouldAllowUserDelete}
-          >
-            <DeleteIcon />
-          </Button>
-        </Tooltip>
-      </Box>
-    ),
-  },
-];
-
 export default function Users({
   organizationId,
   shouldAllowUserCreate,
@@ -246,10 +92,178 @@ export default function Users({
   shouldAllowProductSubscriptionListing,
 }: UsersProps) {
   const theme = useUnifiedTheme();
+  const { userDetails } = useContext(AuthContext);
+
+  const columns: GridColDef[] = useMemo(
+    () => [
+      {
+        field: "firstName",
+        headerName: "First Name",
+        width: 200,
+        disableColumnMenu: true,
+        resizable: true,
+        sortable: true,
+      },
+      {
+        field: "lastName",
+        headerName: "Last Name",
+        width: 200,
+        disableColumnMenu: true,
+        resizable: true,
+        sortable: true,
+      },
+      {
+        field: "email",
+        headerName: "Email",
+        width: 200,
+        disableColumnMenu: true,
+        resizable: true,
+        sortable: true,
+      },
+      {
+        field: "mobile",
+        headerName: "Mobile",
+        width: 200,
+        disableColumnMenu: true,
+        resizable: true,
+        sortable: true,
+        valueFormatter: (params: { value: unknown }) => (params ? params : "-"),
+      },
+      {
+        field: "roleNames",
+        headerName: "Roles",
+        width: 200,
+        disableColumnMenu: true,
+        resizable: true,
+        sortable: false,
+        renderCell: (params: GridRenderCellParams) => (
+          <Box
+            sx={{
+              display: "flex",
+              gap: STYLE_GUIDE.SPACING.s1,
+              flexWrap: "wrap",
+              width: "100%",
+              height: "100%",
+              alignItems: "center",
+            }}
+          >
+            {(params.value as string[])?.map((roleName: string) => (
+              <Chip
+                key={roleName}
+                label={roleName}
+                size="small"
+                variant="outlined"
+              />
+            )) || "-"}
+          </Box>
+        ),
+      },
+      {
+        field: "departmentName",
+        headerName: "Department",
+        width: 200,
+        disableColumnMenu: true,
+        resizable: true,
+        sortable: true,
+        renderCell: (params: GridRenderCellParams) => (
+          <Typography variant="body2">{params.value || "-"}</Typography>
+        ),
+      },
+      {
+        field: "designationName",
+        headerName: "Designation",
+        width: 200,
+        disableColumnMenu: true,
+        resizable: true,
+        sortable: true,
+        renderCell: (params: GridRenderCellParams) => (
+          <Typography variant="body2">{params.value || "-"}</Typography>
+        ),
+      },
+      {
+        field: "status",
+        headerName: "Status",
+        width: 100,
+        disableColumnMenu: true,
+        resizable: true,
+        sortable: true,
+        renderCell: (params: GridRenderCellParams) => (
+          <Chip
+            label={params.value as string}
+            size="small"
+            color={(params.value as string) === "active" ? "success" : "error"}
+            variant="outlined"
+          />
+        ),
+      },
+      {
+        field: "isVerified",
+        headerName: "Verified",
+        width: 100,
+        disableColumnMenu: true,
+        resizable: true,
+        sortable: true,
+        renderCell: (params: GridRenderCellParams) => (
+          <Chip
+            label={(params.value as boolean) ? "Yes" : "No"}
+            size="small"
+            color={(params.value as boolean) ? "success" : "warning"}
+            variant="outlined"
+          />
+        ),
+      },
+      {
+        field: "actions",
+        headerName: "Actions",
+        width: 150,
+        disableColumnMenu: true,
+        sortable: false,
+        resizable: false,
+        renderCell: (params: GridRenderCellParams) => (
+          <Box sx={{ display: "flex", gap: STYLE_GUIDE.SPACING.s2 }}>
+            <Tooltip title="Edit" arrow>
+              <Button
+                variant="text"
+                onClick={() =>
+                  (params.row as UserRowData).handleEdit(
+                    params.row as UserRowData
+                  )
+                }
+                sx={{ minWidth: "auto" }}
+                disabled={!(params.row as UserRowData).shouldAllowUserEdit}
+              >
+                <EditIcon />
+              </Button>
+            </Tooltip>
+            <Tooltip title="Delete" arrow>
+              <Button
+                variant="text"
+                onClick={() =>
+                  (params.row as UserRowData).handleDelete(
+                    (params.row as UserRowData).id
+                  )
+                }
+                sx={{ minWidth: "auto", color: "error.main" }}
+                disabled={
+                  !(params.row as UserRowData).shouldAllowUserDelete ||
+                  (params.row as UserRowData).id === userDetails?.data?._id
+                }
+              >
+                <DeleteIcon />
+              </Button>
+              {console.log("userDetails", userDetails)}
+            </Tooltip>
+          </Box>
+        ),
+      },
+    ],
+    [userDetails]
+  );
   const [openModal, setOpenModal] = useState(false);
   const [modalMode, setModalMode] = useState<"add" | "edit" | "view" | null>(
     null
   );
+  const dispatch = useDispatch();
   const [openDialog, setOpenDialog] = useState(false);
   const [userIdForEdit, setUserIdForEdit] = useState<string | null>(null);
   const [passwordError, setPasswordError] = useState("");
@@ -312,8 +326,7 @@ export default function Users({
   const createUserMutation = usePost<CreateUserPayload, CreateUserResponse>(
     ["users", organizationId || "all", String(paginationModel.page + 1)],
     async () => {
-      sessionStorage.removeItem("Users");
-      await queryClient.refetchQueries({ queryKey: ["users"] });
+      dispatch(setUserListStale(true));
       handleCloseModal();
     },
     true
@@ -322,8 +335,7 @@ export default function Users({
   const updateUserMutation = usePut<CreateUserPayload, CreateUserResponse>(
     ["users", organizationId || "all", String(paginationModel.page + 1)],
     async () => {
-      sessionStorage.removeItem("Users");
-      await queryClient.refetchQueries({ queryKey: ["users"] });
+      dispatch(setUserListStale(true));
       handleCloseModal();
     },
     true
@@ -332,8 +344,7 @@ export default function Users({
   const deleteUserMutation = useDelete<any>(
     ["users", organizationId || "all", String(paginationModel.page + 1)],
     async () => {
-      sessionStorage.removeItem("Users");
-      await queryClient.refetchQueries({ queryKey: ["users"] });
+      dispatch(setUserListStale(true));
       handleCloseDialog();
     },
     true
@@ -876,20 +887,19 @@ export default function Users({
             sx={{
               height: 56,
             }}
-            multiple
             options={rolesQuery.data?.data || []}
             getOptionLabel={(option) => option.name}
             value={
-              rolesQuery.data?.data?.filter((role) =>
+              rolesQuery.data?.data?.find((role) =>
                 formData.roleIds.includes(role._id)
-              ) || []
+              ) || null
             }
-            onChange={(_, newValue) =>
+            onChange={(_, newValue) => {
               setFormData({
                 ...formData,
-                roleIds: newValue.map((role) => role._id),
-              })
-            }
+                roleIds: newValue ? [newValue._id] : [],
+              });
+            }}
             disabled={modalMode === "view"}
             renderInput={(params) => (
               <TextField

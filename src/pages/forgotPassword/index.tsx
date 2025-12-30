@@ -156,7 +156,7 @@ const ForgotPassword = () => {
           <Typography variant="body1">
             {step === "SEND_EMAIL"
               ? "Enter your email to receive an OTP"
-              : "Enter the OTP and your new password"}
+              : "Enter the OTP to reset your password"}
           </Typography>
         </Box>
         <form
@@ -187,7 +187,7 @@ const ForgotPassword = () => {
                     fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.bold,
                   }}
                 >
-                  Send OTP
+                  Submit
                 </LoadingButton>
               ) : (
                 <ProgressBar />
