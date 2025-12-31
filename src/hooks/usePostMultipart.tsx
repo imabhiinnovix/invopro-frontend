@@ -23,12 +23,14 @@ const objectToFormData = <TRequest,>(
     const formKey = namespace ? `${namespace}[${property}]` : property;
     const value = obj[property];
 
-    if (value instanceof Date) {
+    if (value instanceof File) {
+      fd.append(formKey, value);
+    } else if (value instanceof Date) {
       fd.append(formKey, value.toISOString());
     } else if (
       Array.isArray(value) &&
       value.length > 0 &&
-      (value[0] instanceof File || value[0] instanceof Blob)
+      (value instanceof File || value instanceof Blob)
     ) {
       value.forEach((file: File) => {
         fd.append(formKey, file);

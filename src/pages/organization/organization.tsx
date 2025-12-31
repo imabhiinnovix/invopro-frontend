@@ -269,6 +269,11 @@ export default function Organization() {
   const [_forceUpdate, setForceUpdate] = useState(0);
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
+  const [paginationModel, setPaginationModel] = useState({
+    page: 0,
+    pageSize: 10,
+  });
+
   const logoInputRef = useRef<HTMLInputElement>(null);
   const triggerLogoUpload = () => {
     logoInputRef.current?.click();
@@ -280,7 +285,17 @@ export default function Organization() {
     success: boolean;
     data: any[];
     totalCount: number;
-  }>(["organizationList"], GET.Organization_List, true);
+  }>(
+    [
+      "organizationList",
+      String(paginationModel.page + 1),
+      String(paginationModel.pageSize),
+    ],
+    `${GET.Organization_List}?page=${paginationModel.page + 1}&limit=${
+      paginationModel.pageSize
+    }`,
+    true
+  );
 
   const deleteOrg = useDelete<any>(
     ["organizationList"],
@@ -388,7 +403,8 @@ export default function Organization() {
       setValue("gst", org.gst || "");
       setValue("pan", org.pan || "");
       if (org.logo) {
-        setLogoPreview(org.logo); // Assuming logo is a URL
+        setLogoPreview(org.logo);
+        setValue("logo", null);
       }
 
       const isUserSuperUser = isSuperUser();
@@ -444,6 +460,7 @@ export default function Organization() {
     setEditingMediumId(null);
     replaceMedium([]);
     setLogoPreview(null);
+    setValue("logo", null);
   };
 
   const handleDeleteOpen = (org: any) => {
@@ -505,6 +522,8 @@ export default function Organization() {
           productId: ps.productId,
           totalLicenses: Number(ps.totalLicenses),
           licenseExpiresAt: ps.licenseExpiresAt,
+          organizationProductSubscriptionId:
+            ps.organizationProductSubscriptionId,
         })),
         status: rest.status === "active" ? "active" : "inactive",
         activatePasswordOTP: formData.activatePasswordOTP,
@@ -897,6 +916,14 @@ export default function Organization() {
                     },
                   },
                 }}
+                pagination
+                paginationMode="server"
+                rowCount={data?.totalCount ?? 0}
+                paginationModel={paginationModel}
+                onPaginationModelChange={(model) => {
+                  setPaginationModel(model);
+                }}
+                pageSizeOptions={[10, 20, 50]}
               />
             )}
           </Box>
@@ -990,352 +1017,16 @@ export default function Organization() {
                   />
                 </Box>
                 <Grid container spacing={2}>
-                  {/* Basic Details Section */}
-                  <Grid size={12}>
-                    <Typography
-                      variant="subtitle2"
-                      fontWeight={600}
-                      color="text.secondary"
-                      sx={{ textTransform: "uppercase", mt: 1 }}
-                    >
-                      Basic Details
-                    </Typography>
-                    <Divider sx={{ mt: 0.5 }} />
-                  </Grid>
-
-                  <Grid size={6}>
-                    <Box sx={{ display: "flex", alignItems: "center" }}>
-                      <Controller
-                        name="name"
-                        control={control}
-                        rules={{ required: "Name is required" }}
-                        defaultValue={selectedOrg?.name}
-                        render={({ field }) => (
-                          <TextField
-                            {...field}
-                            required
-                            label="Name"
-                            fullWidth
-                            error={!!errors.name}
-                            helperText={errors.name?.message}
-                          />
-                        )}
-                      />
-                    </Box>
-                  </Grid>
-
-                  <Grid size={6}>
-                    <Box sx={{ display: "flex", alignItems: "center" }}>
-                      <Controller
-                        name="description"
-                        control={control}
-                        defaultValue={selectedOrg?.description || ""}
-                        render={({ field }) => (
-                          <TextField {...field} label="Description" fullWidth />
-                        )}
-                      />
-                    </Box>
-                  </Grid>
-
-                  {!selectedOrg ? (
-                    <Grid size={6}>
-                      <Box sx={{ display: "flex", alignItems: "center" }}>
-                        <Controller
-                          name="code"
-                          control={control}
-                          rules={{ required: "Code is required" }}
-                          render={({ field }) => (
-                            <TextField
-                              {...field}
-                              required
-                              label="Code"
-                              fullWidth
-                              error={!!errors.code}
-                              helperText={errors.code?.message}
-                            />
-                          )}
-                        />
-                      </Box>
-                    </Grid>
-                  ) : null}
-                  <Grid size={6}>
-                    <Box sx={{ display: "flex", alignItems: "center" }}>
-                      <Controller
-                        name="businessUnitCode"
-                        control={control}
-                        render={({ field }) => (
-                          <TextField
-                            {...field}
-                            label="Business Unit Code"
-                            fullWidth
-                            error={!!errors.businessUnitCode}
-                            helperText={errors.businessUnitCode?.message}
-                          />
-                        )}
-                      />
-                    </Box>
-                  </Grid>
-
-                  {/* Contact & Domains Section */}
-                  <Grid size={12} sx={{ mt: 2 }}>
-                    <Typography
-                      variant="subtitle2"
-                      fontWeight={600}
-                      color="text.secondary"
-                      sx={{ textTransform: "uppercase" }}
-                    >
-                      Contact & Domains
-                    </Typography>
-                    <Divider sx={{ mt: 0.5 }} />
-                  </Grid>
-
-                  <Grid size={6}>
-                    <Box sx={{ display: "flex", alignItems: "center" }}>
-                      <Controller
-                        name="phone"
-                        control={control}
-                        render={({ field }) => (
-                          <TextField {...field} label="Phone" fullWidth />
-                        )}
-                      />
-                    </Box>
-                  </Grid>
-
-                  <Grid size={6}>
-                    <Box sx={{ display: "flex", alignItems: "center" }}>
-                      <Controller
-                        name="domain"
-                        control={control}
-                        rules={{ required: "Domain is required" }}
-                        defaultValue={selectedOrg?.domain || ""}
-                        render={({ field }) => (
-                          <TextField
-                            {...field}
-                            required
-                            label="Primary Domain"
-                            fullWidth
-                            error={!!errors.domain}
-                            helperText={errors.domain?.message}
-                          />
-                        )}
-                      />
-                    </Box>
-                  </Grid>
-
-                  <Grid size={6}>
-                    <Box sx={{ display: "flex", alignItems: "center" }}>
-                      <TextField
-                        placeholder="Add a domain (e.g. example.com)"
-                        fullWidth
-                        value={domainInput}
-                        onChange={(e) => setDomainInput(e.target.value)}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter") {
-                            e.preventDefault();
-                            if (domainInput.trim()) {
-                              appendDomain({ value: domainInput.trim() });
-                              setDomainInput("");
-                            }
-                          }
-                        }}
-                        InputProps={{
-                          endAdornment: (
-                            <IconButton
-                              size="small"
-                              color="primary"
-                              onClick={() => {
-                                if (domainInput.trim()) {
-                                  appendDomain({ value: domainInput.trim() });
-                                  setDomainInput("");
-                                }
-                              }}
-                            >
-                              <AddIcon />
-                            </IconButton>
-                          ),
-                        }}
-                        label="Allowed Domains"
-                      />
-                    </Box>
-                    <Box
-                      sx={{
-                        display: "flex",
-                        flexWrap: "wrap",
-                        gap: 1,
-                        alignItems: "start",
-                        mt: 1,
-                      }}
-                    >
-                      {domainFields.map((field, idx) => (
-                        <Box
-                          key={field.id}
-                          sx={{
-                            display: "inline-flex",
-                            alignItems: "center",
-                            bgcolor: "primary.main",
-                            color: "primary.contrastText",
-                            px: 1,
-                            py: 0.5,
-                            borderRadius: 1,
-                            fontSize: "0.8125rem",
-                          }}
-                        >
-                          <span>{field.value}</span>
-                          <IconButton
-                            size="small"
-                            onClick={() => removeDomain(idx)}
-                            sx={{ ml: 0.5, p: 0, color: "inherit" }}
-                          >
-                            <CancelIcon sx={{ fontSize: 16 }} />
-                          </IconButton>
-                        </Box>
-                      ))}
-                    </Box>
-                  </Grid>
-
-                  {/* Address Section */}
-                  <Grid size={12} sx={{ mt: 2 }}>
-                    <Typography
-                      variant="subtitle2"
-                      fontWeight={600}
-                      color="text.secondary"
-                      sx={{ textTransform: "uppercase" }}
-                    >
-                      Address
-                    </Typography>
-                    <Divider sx={{ mt: 0.5 }} />
-                  </Grid>
-
-                  <Grid size={6}>
-                    <Box sx={{ display: "flex", alignItems: "center" }}>
-                      <Controller
-                        name="address1"
-                        control={control}
-                        render={({ field }) => (
-                          <TextField
-                            {...field}
-                            label="Address Line 1"
-                            fullWidth
-                          />
-                        )}
-                      />
-                    </Box>
-                  </Grid>
-                  <Grid size={6}>
-                    <Box sx={{ display: "flex", alignItems: "center" }}>
-                      <Controller
-                        name="address2"
-                        control={control}
-                        render={({ field }) => (
-                          <TextField
-                            {...field}
-                            label="Address Line 2"
-                            fullWidth
-                          />
-                        )}
-                      />
-                    </Box>
-                  </Grid>
-                  <Grid size={3}>
-                    <Box sx={{ display: "flex", alignItems: "center" }}>
-                      <Controller
-                        name="city"
-                        control={control}
-                        render={({ field }) => (
-                          <TextField {...field} label="City" fullWidth />
-                        )}
-                      />
-                    </Box>
-                  </Grid>
-                  <Grid size={3}>
-                    <Box sx={{ display: "flex", alignItems: "center" }}>
-                      <Controller
-                        name="state"
-                        control={control}
-                        render={({ field }) => (
-                          <TextField {...field} label="State" fullWidth />
-                        )}
-                      />
-                    </Box>
-                  </Grid>
-                  <Grid size={3}>
-                    <Box sx={{ display: "flex", alignItems: "center" }}>
-                      <Controller
-                        name="zip"
-                        control={control}
-                        render={({ field }) => (
-                          <TextField {...field} label="Zip" fullWidth />
-                        )}
-                      />
-                    </Box>
-                  </Grid>
-                  <Grid size={3}>
-                    <Box sx={{ display: "flex", alignItems: "center" }}>
-                      <Controller
-                        name="country"
-                        control={control}
-                        rules={{ required: "Country is required" }}
-                        render={({ field }) => (
-                          <TextField
-                            {...field}
-                            required
-                            label="Country"
-                            fullWidth
-                            error={!!errors.country}
-                            helperText={errors.country?.message}
-                          />
-                        )}
-                      />
-                    </Box>
-                  </Grid>
-
-                  {/* Legal & Tax Section */}
-                  <Grid size={12} sx={{ mt: 2 }}>
-                    <Typography
-                      variant="subtitle2"
-                      fontWeight={600}
-                      color="text.secondary"
-                      sx={{ textTransform: "uppercase" }}
-                    >
-                      Legal & Tax Information
-                    </Typography>
-                    <Divider sx={{ mt: 0.5 }} />
-                  </Grid>
-
-                  <Grid size={6}>
-                    <Box sx={{ display: "flex", alignItems: "center" }}>
-                      <Controller
-                        name="gst"
-                        control={control}
-                        render={({ field }) => (
-                          <TextField {...field} label="GST" fullWidth />
-                        )}
-                      />
-                    </Box>
-                  </Grid>
-                  <Grid size={6}>
-                    <Box sx={{ display: "flex", alignItems: "center" }}>
-                      <Controller
-                        name="pan"
-                        control={control}
-                        render={({ field }) => (
-                          <TextField {...field} label="PAN" fullWidth />
-                        )}
-                      />
-                    </Box>
-                  </Grid>
-
                   {/* Super Admin Section (Only for Create) */}
                   {!selectedOrg && (
                     <>
                       <Grid size={12} sx={{ mt: 2 }}>
                         <Typography
-                          variant="subtitle2"
+                          variant="body2"
                           fontWeight={600}
-                          color="text.secondary"
-                          sx={{ textTransform: "uppercase" }}
+                          sx={{ mt: 1 }}
                         >
-                          Super Admin Configuration
+                          User Details
                         </Typography>
                         <Divider sx={{ mt: 0.5 }} />
                       </Grid>
@@ -1439,7 +1130,326 @@ export default function Organization() {
                       </Grid>
                     </>
                   )}
-                  <Grid size={12}>
+
+                  {/* Basic Details Section */}
+                  <Grid size={12} sx={{ mt: 2 }}>
+                    <Typography variant="body2" fontWeight={600} sx={{ mt: 1 }}>
+                      Organization Details
+                    </Typography>
+                    <Divider sx={{ mt: 0.5 }} />
+                  </Grid>
+
+                  <Grid size={6}>
+                    <Box sx={{ display: "flex", alignItems: "center" }}>
+                      <Controller
+                        name="name"
+                        control={control}
+                        rules={{ required: "Name is required" }}
+                        defaultValue={selectedOrg?.name}
+                        render={({ field }) => (
+                          <TextField
+                            {...field}
+                            required
+                            label="Name"
+                            fullWidth
+                            error={!!errors.name}
+                            helperText={errors.name?.message}
+                          />
+                        )}
+                      />
+                    </Box>
+                  </Grid>
+
+                  <Grid size={6}>
+                    <Box sx={{ display: "flex", alignItems: "center" }}>
+                      <Controller
+                        name="description"
+                        control={control}
+                        defaultValue={selectedOrg?.description || ""}
+                        render={({ field }) => (
+                          <TextField {...field} label="Description" fullWidth />
+                        )}
+                      />
+                    </Box>
+                  </Grid>
+
+                  {!selectedOrg ? (
+                    <Grid size={6}>
+                      <Box sx={{ display: "flex", alignItems: "center" }}>
+                        <Controller
+                          name="code"
+                          control={control}
+                          rules={{ required: "Code is required" }}
+                          render={({ field }) => (
+                            <TextField
+                              {...field}
+                              required
+                              label="Code"
+                              fullWidth
+                              error={!!errors.code}
+                              helperText={errors.code?.message}
+                            />
+                          )}
+                        />
+                      </Box>
+                    </Grid>
+                  ) : null}
+                  <Grid size={6}>
+                    <Box sx={{ display: "flex", alignItems: "center" }}>
+                      <Controller
+                        name="businessUnitCode"
+                        control={control}
+                        render={({ field }) => (
+                          <TextField
+                            {...field}
+                            label="Business Unit Code"
+                            fullWidth
+                            error={!!errors.businessUnitCode}
+                            helperText={errors.businessUnitCode?.message}
+                          />
+                        )}
+                      />
+                    </Box>
+                  </Grid>
+
+                  <Grid size={6}>
+                    <Box sx={{ display: "flex", alignItems: "center" }}>
+                      <Controller
+                        name="phone"
+                        control={control}
+                        render={({ field }) => (
+                          <TextField {...field} label="Phone" fullWidth />
+                        )}
+                      />
+                    </Box>
+                  </Grid>
+
+                  {/* Address Section */}
+                  <Grid size={12} sx={{ mt: 2 }}>
+                    <Typography variant="body2" fontWeight={600} sx={{ mt: 1 }}>
+                      Address
+                    </Typography>
+                    <Divider sx={{ mt: 0.5 }} />
+                  </Grid>
+
+                  <Grid size={6}>
+                    <Box sx={{ display: "flex", alignItems: "center" }}>
+                      <Controller
+                        name="address1"
+                        control={control}
+                        render={({ field }) => (
+                          <TextField
+                            {...field}
+                            label="Address Line 1"
+                            fullWidth
+                          />
+                        )}
+                      />
+                    </Box>
+                  </Grid>
+                  <Grid size={6}>
+                    <Box sx={{ display: "flex", alignItems: "center" }}>
+                      <Controller
+                        name="address2"
+                        control={control}
+                        render={({ field }) => (
+                          <TextField
+                            {...field}
+                            label="Address Line 2"
+                            fullWidth
+                          />
+                        )}
+                      />
+                    </Box>
+                  </Grid>
+                  <Grid size={3}>
+                    <Box sx={{ display: "flex", alignItems: "center" }}>
+                      <Controller
+                        name="city"
+                        control={control}
+                        render={({ field }) => (
+                          <TextField {...field} label="City" fullWidth />
+                        )}
+                      />
+                    </Box>
+                  </Grid>
+                  <Grid size={3}>
+                    <Box sx={{ display: "flex", alignItems: "center" }}>
+                      <Controller
+                        name="state"
+                        control={control}
+                        render={({ field }) => (
+                          <TextField {...field} label="State" fullWidth />
+                        )}
+                      />
+                    </Box>
+                  </Grid>
+                  <Grid size={3}>
+                    <Box sx={{ display: "flex", alignItems: "center" }}>
+                      <Controller
+                        name="zip"
+                        control={control}
+                        render={({ field }) => (
+                          <TextField {...field} label="Zip" fullWidth />
+                        )}
+                      />
+                    </Box>
+                  </Grid>
+                  <Grid size={3}>
+                    <Box sx={{ display: "flex", alignItems: "center" }}>
+                      <Controller
+                        name="country"
+                        control={control}
+                        rules={{ required: "Country is required" }}
+                        render={({ field }) => (
+                          <TextField
+                            {...field}
+                            required
+                            label="Country"
+                            fullWidth
+                            error={!!errors.country}
+                            helperText={errors.country?.message}
+                          />
+                        )}
+                      />
+                    </Box>
+                  </Grid>
+
+                  {/* Legal & Tax Section */}
+                  <Grid size={12} sx={{ mt: 2 }}>
+                    <Typography variant="body2" fontWeight={600} sx={{ mt: 1 }}>
+                      Legal & Tax Information
+                    </Typography>
+                    <Divider sx={{ mt: 0.5 }} />
+                  </Grid>
+
+                  <Grid size={6}>
+                    <Box sx={{ display: "flex", alignItems: "center" }}>
+                      <Controller
+                        name="gst"
+                        control={control}
+                        render={({ field }) => (
+                          <TextField {...field} label="GST" fullWidth />
+                        )}
+                      />
+                    </Box>
+                  </Grid>
+                  <Grid size={6}>
+                    <Box sx={{ display: "flex", alignItems: "center" }}>
+                      <Controller
+                        name="pan"
+                        control={control}
+                        render={({ field }) => (
+                          <TextField {...field} label="PAN" fullWidth />
+                        )}
+                      />
+                    </Box>
+                  </Grid>
+
+                  {/* Domains Section */}
+                  <Grid size={12} sx={{ mt: 2 }}>
+                    <Typography variant="body2" fontWeight={600} sx={{ mt: 1 }}>
+                      Domains
+                    </Typography>
+                    <Divider sx={{ mt: 0.5 }} />
+                  </Grid>
+
+                  <Grid size={6}>
+                    <Box sx={{ display: "flex", alignItems: "center" }}>
+                      <Controller
+                        name="domain"
+                        control={control}
+                        rules={{ required: "Domain is required" }}
+                        defaultValue={selectedOrg?.domain || ""}
+                        render={({ field }) => (
+                          <TextField
+                            {...field}
+                            required
+                            label="Primary Domain"
+                            fullWidth
+                            error={!!errors.domain}
+                            helperText={errors.domain?.message}
+                          />
+                        )}
+                      />
+                    </Box>
+                  </Grid>
+
+                  <Grid size={6}>
+                    <Box sx={{ display: "flex", alignItems: "center" }}>
+                      <TextField
+                        placeholder="Add a domain (e.g. example.com)"
+                        fullWidth
+                        value={domainInput}
+                        onChange={(e) => setDomainInput(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            e.preventDefault();
+                            if (domainInput.trim()) {
+                              appendDomain({ value: domainInput.trim() });
+                              setDomainInput("");
+                            }
+                          }
+                        }}
+                        InputProps={{
+                          endAdornment: (
+                            <IconButton
+                              size="small"
+                              color="primary"
+                              onClick={() => {
+                                if (domainInput.trim()) {
+                                  appendDomain({ value: domainInput.trim() });
+                                  setDomainInput("");
+                                }
+                              }}
+                            >
+                              <AddIcon />
+                            </IconButton>
+                          ),
+                        }}
+                        label="Allowed Domains"
+                      />
+                    </Box>
+                    <Box
+                      sx={{
+                        display: "flex",
+                        flexWrap: "wrap",
+                        gap: 1,
+                        alignItems: "start",
+                        mt: 1,
+                      }}
+                    >
+                      {domainFields.map((field, idx) => (
+                        <Box
+                          key={field.id}
+                          sx={{
+                            display: "inline-flex",
+                            alignItems: "center",
+                            bgcolor: "primary.main",
+                            color: "primary.contrastText",
+                            px: 1,
+                            py: 0.5,
+                            borderRadius: 1,
+                            fontSize: "0.8125rem",
+                          }}
+                        >
+                          <span>{field.value}</span>
+                          <IconButton
+                            size="small"
+                            onClick={() => removeDomain(idx)}
+                            sx={{ ml: 0.5, p: 0, color: "inherit" }}
+                          >
+                            <CancelIcon sx={{ fontSize: 16 }} />
+                          </IconButton>
+                        </Box>
+                      ))}
+                    </Box>
+                  </Grid>
+
+                  <Grid size={12} sx={{ mt: 2 }}>
+                    <Typography variant="body2" fontWeight={600} sx={{ mt: 1 }}>
+                      Product License
+                    </Typography>
                     <Divider sx={{ mt: 0.5 }} />
                   </Grid>
 
@@ -1448,40 +1458,55 @@ export default function Organization() {
                       <Grid size={12}>
                         {!selectedOrg
                           ? shouldAllowProductListing && (
-                              <Controller
-                                name="productIds"
-                                control={control}
-                                rules={{
-                                  required: "At least one product is required",
-                                }}
-                                render={({ field }) => (
-                                  <Autocomplete
-                                    multiple
-                                    options={productOptions}
-                                    getOptionLabel={(option) => option.name}
-                                    value={productOptions.filter((option) =>
-                                      field.value?.includes(option._id)
-                                    )}
-                                    onChange={(_, newValue) => {
-                                      field.onChange(
-                                        newValue.map((option) => option._id)
-                                      );
-                                    }}
-                                    isOptionEqualToValue={(option, value) =>
-                                      option._id === value._id
-                                    }
-                                    renderInput={(params) => (
-                                      <TextField
-                                        {...params}
-                                        required
-                                        label="Products"
-                                        error={!!errors.productIds}
-                                        helperText={errors.productIds?.message}
-                                      />
-                                    )}
-                                  />
-                                )}
-                              />
+                              <Box
+                                sx={{ display: "flex", alignItems: "center" }}
+                              >
+                                <Controller
+                                  name="productIds"
+                                  control={control}
+                                  rules={{
+                                    required:
+                                      "At least one product is required",
+                                  }}
+                                  render={({ field }) => (
+                                    <Autocomplete
+                                      multiple
+                                      fullWidth
+                                      options={productOptions}
+                                      getOptionLabel={(option) => option.name}
+                                      value={productOptions.filter((option) =>
+                                        field.value?.includes(option._id)
+                                      )}
+                                      onChange={(_, newValue) => {
+                                        field.onChange(
+                                          newValue.map((option) => option._id)
+                                        );
+                                      }}
+                                      isOptionEqualToValue={(option, value) =>
+                                        option._id === value._id
+                                      }
+                                      renderInput={(params) => (
+                                        <Box
+                                          sx={{
+                                            display: "flex",
+                                            alignItems: "center",
+                                          }}
+                                        >
+                                          <TextField
+                                            {...params}
+                                            required
+                                            label="Products"
+                                            error={!!errors.productIds}
+                                            helperText={
+                                              errors.productIds?.message
+                                            }
+                                          />
+                                        </Box>
+                                      )}
+                                    />
+                                  )}
+                                />
+                              </Box>
                             )
                           : (() => {
                               const usedProductIds = fields.map(
@@ -1668,7 +1693,7 @@ export default function Organization() {
                       );
                     });
 
-                    if (!hasNotivixProduct) return null;
+                    if (!hasNotivixProduct || !selectedOrg) return null;
 
                     return (
                       <Grid size={12}>
@@ -2181,7 +2206,10 @@ export default function Organization() {
                     </Grid>
                   ))}
 
-                  <Grid size={12}>
+                  <Grid size={12} sx={{ mt: 2 }}>
+                    <Typography variant="body2" fontWeight={600} sx={{ mt: 1 }}>
+                      Settings
+                    </Typography>
                     <Divider sx={{ mt: 0.5 }} />
                   </Grid>
 

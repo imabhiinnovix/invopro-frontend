@@ -284,7 +284,9 @@ export default function Users({
   const usersQuery = useGet<UserListResponse>(
     ["users", organizationId || "all", String(paginationModel.page + 1)],
     organizationId
-      ? `${GET.USER_LIST}?organizationId=${organizationId}&page=${paginationModel.page}&limit=${paginationModel.pageSize}`
+      ? `${GET.USER_LIST}?organizationId=${organizationId}&page=${
+          paginationModel.page + 1
+        }&limit=${paginationModel.pageSize}`
       : `${GET.USER_LIST}?page=${paginationModel.page + 1}&limit=${
           paginationModel.pageSize
         }`,
