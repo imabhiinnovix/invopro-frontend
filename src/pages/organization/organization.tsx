@@ -1444,15 +1444,14 @@ export default function Organization() {
                     </Box>
                   </Grid>
 
-                  <Grid size={12} sx={{ mt: 2 }}>
-                    <Typography variant="body2" fontWeight={600} sx={{ mt: 1 }}>
-                      Product License
-                    </Typography>
-                    <Divider sx={{ mt: 0.5 }} />
-                  </Grid>
-
                   {isUserSuperUser && (
                     <>
+                     <Grid size={12} sx={{ mt: 2 }}>
+                      <Typography variant="body2" fontWeight={600} sx={{ mt: 1 }}>
+                        Product License
+                      </Typography>
+                      <Divider sx={{ mt: 0.5 }} />
+                    </Grid>
                       <Grid size={12}>
                         {!selectedOrg
                           ? shouldAllowProductListing && (
