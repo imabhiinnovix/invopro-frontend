@@ -1039,21 +1039,23 @@ export default function Organization() {
 
                   {!selectedOrg ? (
                     <Grid size={6}>
-                      <Controller
-                        name="code"
-                        control={control}
-                        rules={{ required: "Code is required" }}
-                        render={({ field }) => (
-                          <TextField
-                            {...field}
-                            required
-                            label="Code"
-                            fullWidth
-                            error={!!errors.code}
-                            helperText={errors.code?.message}
-                          />
-                        )}
-                      />
+                      <Box sx={{ display: "flex", alignItems: "center" }}>
+                        <Controller
+                          name="code"
+                          control={control}
+                          rules={{ required: "Code is required" }}
+                          render={({ field }) => (
+                            <TextField
+                              {...field}
+                              required
+                              label="Code"
+                              fullWidth
+                              error={!!errors.code}
+                              helperText={errors.code?.message}
+                            />
+                          )}
+                        />
+                      </Box>
                     </Grid>
                   ) : null}
                   <Grid size={6}>

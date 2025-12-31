@@ -18,15 +18,16 @@ const objectToFormData = <TRequest,>(
 ): FormData => {
   const fd = form || new FormData();
   for (const property in obj) {
-    if (!obj.hasOwnProperty(property)) continue;
+    if (!Object.prototype.hasOwnProperty.call(obj, property)) continue;
     const formKey = namespace ? `${namespace}[${property}]` : property;
     const value = obj[property];
+
     if (value instanceof Date) {
       fd.append(formKey, value.toISOString());
     } else if (
       Array.isArray(value) &&
       value.length > 0 &&
-      value[0] instanceof File
+      (value[0] instanceof File || value[0] instanceof Blob)
     ) {
       value.forEach((file: File) => {
         fd.append(formKey, file);
@@ -38,11 +39,7 @@ const objectToFormData = <TRequest,>(
     ) {
       objectToFormData(value, fd, formKey);
     } else if (value !== undefined && value !== null) {
-      if (value instanceof Blob) {
-        fd.append(formKey, value);
-      } else {
-        fd.append(formKey, String(value));
-      }
+      fd.append(formKey, String(value));
     }
   }
   return fd;
