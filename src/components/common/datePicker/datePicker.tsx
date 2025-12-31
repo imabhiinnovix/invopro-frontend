@@ -108,6 +108,8 @@ interface CommonDatePickerProps<T extends FieldValues> {
   disabled?: boolean;
   sx?: SxProps<Theme>;
   disableFuture?: boolean;
+  disablePast?: boolean;
+  margin?: "none" | "dense" | "normal";
 }
 
 const CommonDatePicker = <T extends FieldValues>(
@@ -123,6 +125,8 @@ const CommonDatePicker = <T extends FieldValues>(
     disabled = false,
     sx,
     disableFuture = false,
+    disablePast = false,
+    margin,
   } = props;
 
   const [tempDate, setTempDate] = useState<DateTime | null>(
@@ -147,6 +151,7 @@ const CommonDatePicker = <T extends FieldValues>(
               onChange={(date) => setTempDate(date)}
               disabled={disabled}
               disableFuture={disableFuture}
+              disablePast={disablePast}
               maxDate={disableFuture ? DateTime.now() : undefined}
               closeOnSelect={false}
               onAccept={() => onChange(tempDate?.toISO())}
@@ -156,6 +161,7 @@ const CommonDatePicker = <T extends FieldValues>(
                   error: !!error,
                   helperText: error?.message,
                   size: "small",
+                  margin: margin,
                   sx: {
                     "& .MuiOutlinedInput-root": {
                       backgroundColor: "white",

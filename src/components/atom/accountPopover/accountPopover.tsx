@@ -1,4 +1,4 @@
-import { useState, useCallback, useContext, useEffect } from "react";
+import { useState, useCallback, useContext, useEffect, useMemo } from "react";
 
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
@@ -17,10 +17,28 @@ import { RootState } from "../../../store";
 import { checkPermission } from "../../../utils/utils";
 import { PermissionsMap } from "../../../utils/constants";
 import { useSelector } from "react-redux";
+import { jwtDecode } from "jwt-decode";
+import { getAuthToken } from "../../../utils/handleLocalStorage";
 
 interface MenuItem {
   label: string;
 }
+
+interface DecodedToken {
+  impersonatorUserId?: string;
+  isImpersonation?: boolean;
+  userId?: string;
+  [key: string]: unknown;
+}
+
+const decodeAuthToken = (token: string): DecodedToken | null => {
+  try {
+    return jwtDecode<DecodedToken>(token);
+  } catch (error) {
+    console.error("Error decoding token:", error);
+    return null;
+  }
+};
 
 export function AccountPopover() {
   const menuData: MenuItem[] = [];
@@ -38,6 +56,14 @@ export function AccountPopover() {
     PermissionsMap.USER_PROFILE_IMAGE,
     "get"
   );
+  const token = getAuthToken();
+
+  const decodedToken = useMemo<DecodedToken | null>(() => {
+    return token ? decodeAuthToken(token) : null;
+  }, [token]);
+
+  const originalUserId =
+    decodedToken?.impersonatorUserId ?? userDetails?.data?._id;
 
   const { imagePath } = userDetails?.data || {};
   const handleOpenPopover = useCallback(
@@ -132,49 +158,23 @@ export function AccountPopover() {
           </Typography>
         </Box>
 
-        <Divider sx={{ borderStyle: "dashed" }} />
+        {originalUserId === userDetails?.data?._id ? (
+          <>
+            <Divider sx={{ borderStyle: "dashed" }} />
 
-        {/* <MenuList
-          disablePadding
-          sx={{
-            p: STYLE_GUIDE.SPACING.s2,
-            gap: STYLE_GUIDE.SPACING.s1,
-            display: "flex",
-            flexDirection: "column",
-            [`& .${menuItemClasses.root}`]: {
-              px: STYLE_GUIDE.SPACING.s2,
-              gap: STYLE_GUIDE.SPACING.s4,
-              borderRadius: 0.75,
-              color: STYLE_GUIDE.COLORS.textMediumGray,
-              "&:hover": { color: STYLE_GUIDE.COLORS.textDarkGray },
-              [`&.${menuItemClasses.selected}`]: {
-                color: STYLE_GUIDE.COLORS.textDarkGray,
-                bgcolor: STYLE_GUIDE.COLORS.backgroundHover,
-                fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold,
-              },
-            },
-          }}
-        >
-          {menuData?.map((option) => (
-            <MenuItem
-              key={option.label}
-            >
-              {option.label}
-            </MenuItem>
-          ))}
-        </MenuList> */}
-
-        <Box sx={{ p: STYLE_GUIDE.SPACING.s2 }}>
-          <Button
-            fullWidth
-            color="error"
-            variant="text"
-            onClick={handleLogoutClick}
-            sx={{ height: 30 }}
-          >
-            Logout
-          </Button>
-        </Box>
+            <Box sx={{ p: STYLE_GUIDE.SPACING.s2 }}>
+              <Button
+                fullWidth
+                color="error"
+                variant="text"
+                onClick={handleLogoutClick}
+                sx={{ height: 30 }}
+              >
+                Logout
+              </Button>
+            </Box>
+          </>
+        ) : null}
       </Popover>
     </>
   );

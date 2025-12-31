@@ -15,6 +15,9 @@ import { getAuthToken, setAuthToken } from "../../../utils/handleLocalStorage";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../../../context/AuthContext";
 import { jwtDecode } from "jwt-decode";
+import { useSelector, useDispatch } from "react-redux";
+import { RootState } from "../../../store";
+import { setUserListStale } from "../../../reducers/userSlice";
 
 // ------------------------------------------------------------------------
 
@@ -79,6 +82,10 @@ const UserDropdown = () => {
 
   const [selectedUser, setSelectedUser] = useState<string>("");
   const [cachedUsers, setCachedUsers] = useState<SimplifiedUser[]>([]);
+  const dispatch = useDispatch();
+  const { isUserListStale } = useSelector(
+    (state: RootState) => state.userPermission
+  );
 
   const decodedToken = useMemo<DecodedToken | null>(() => {
     return token ? decodeAuthToken(token) : null;
@@ -89,7 +96,7 @@ const UserDropdown = () => {
 
   const usersQuery = useGet<UserListResponse>(
     ["users"],
-    GET.USER_LIST,
+    `${GET.USER_LIST}?paginate=false`,
     !sessionStorage.getItem(USERS_STORAGE_KEY)
   );
 
@@ -153,6 +160,15 @@ const UserDropdown = () => {
   }, []);
 
   useEffect(() => {
+    if (isUserListStale) {
+      setCachedUsers([]);
+      usersQuery.refetch().then(() => {
+        dispatch(setUserListStale(false));
+      });
+    }
+  }, [isUserListStale, usersQuery, dispatch]);
+
+  useEffect(() => {
     const shouldRefetch = sessionStorage.getItem(REFETCH_USERS_FLAG);
 
     if (shouldRefetch === "true") {
@@ -186,12 +202,12 @@ const UserDropdown = () => {
   return (
     <Box sx={{ minWidth: 200 }}>
       <FormControl fullWidth size="small">
-        <InputLabel id="user-select-label">User</InputLabel>
+        <InputLabel id="user-select-label">Login as</InputLabel>
         <Select
           labelId="user-select-label"
           id="user-select"
           value={selectedUser}
-          label="User"
+          label="Login as"
           onChange={handleChange}
         >
           {displayUsers.map((user) => (

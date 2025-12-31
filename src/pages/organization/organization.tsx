@@ -3,7 +3,6 @@ import {
   Typography,
   TextField,
   Button,
-  Grid,
   CircularProgress,
   Switch,
   FormControlLabel,
@@ -11,7 +10,15 @@ import {
   MenuItem,
   InputLabel,
   FormControl,
+  DialogContentText,
+  Avatar,
+  Badge,
+  Divider,
+  InputAdornment,
 } from "@mui/material";
+import Visibility from "@mui/icons-material/Visibility";
+import VisibilityOff from "@mui/icons-material/VisibilityOff";
+import Grid from "@mui/material/Grid2";
 import { useForm, Controller, useFieldArray } from "react-hook-form";
 import { useUnifiedTheme } from "../../hooks/useUnifiedTheme";
 import useGet from "../../hooks/useGet";
@@ -19,14 +26,10 @@ import { GET } from "../../services/apiRoutes";
 import usePut from "../../hooks/usePut";
 import useDelete from "../../hooks/useDelete";
 import { PUT, DELETE } from "../../services/apiRoutes";
-import Dialog from "@mui/material/Dialog";
-import DialogTitle from "@mui/material/DialogTitle";
 import DialogContent from "@mui/material/DialogContent";
-import DialogActions from "@mui/material/DialogActions";
 import IconButton from "@mui/material/IconButton";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
-import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import SaveIcon from "@mui/icons-material/Save";
 import CancelIcon from "@mui/icons-material/Cancel";
 import AddIcon from "@mui/icons-material/Add";
@@ -36,9 +39,7 @@ import { useComponentTypography } from "../../hooks";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import usePost from "../../hooks/usePost";
 import { POST } from "../../services/apiRoutes";
-import CommonDatePicker from "../../components/common/datePicker/datePicker";
-import DialogContentText from "@mui/material/DialogContentText";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import Users from "../users";
 import { AuthContext } from "../../context/AuthContext";
 import Autocomplete from "@mui/material/Autocomplete";
@@ -53,6 +54,10 @@ import {
   formatDateWithoutTime,
 } from "../../utils/utils";
 import { PermissionsMap } from "../../utils/constants";
+import usePostMultipart from "../../hooks/usePostMultipart";
+import usePutMultipart from "../../hooks/usePutMultipart";
+import { toast } from "react-toastify";
+import CommonDatePicker from "../../components/common/datePicker/datePicker";
 
 interface ProductSubscription {
   productId: string;
@@ -82,6 +87,20 @@ interface OrganizationFormValues {
   businessUnitCode?: string;
   allowedDomains: { value: string }[];
   activatePasswordOTP: boolean;
+  phone?: string;
+  address1?: string;
+  address2?: string;
+  city?: string;
+  state?: string;
+  zip?: string;
+  country?: string;
+  gst?: string;
+  pan?: string;
+  email?: string;
+  password?: string;
+  firstName?: string;
+  lastName?: string;
+  logo?: File | string | null;
 }
 
 export default function Organization() {
@@ -186,7 +205,21 @@ export default function Organization() {
       mediumSettings: [],
       businessUnitCode: "",
       allowedDomains: [],
-      activatePasswordOTP: true,
+      activatePasswordOTP: false,
+      phone: "",
+      address1: "",
+      address2: "",
+      city: "",
+      state: "",
+      zip: "",
+      country: "",
+      gst: "",
+      pan: "",
+      email: "",
+      password: "",
+      firstName: "",
+      lastName: "",
+      logo: null,
     },
     mode: "onChange",
   });
@@ -216,12 +249,10 @@ export default function Organization() {
     name: "allowedDomains",
   });
 
-  const [editOpen, setEditOpen] = useState(false);
+  const [orgModalOpen, setOrgModalOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [selectedOrg, setSelectedOrg] = useState<any>(null);
-  const [formLoading, setFormLoading] = useState(false);
-  const [createOpen, setCreateOpen] = useState(false);
-  const [createLoading, setCreateLoading] = useState(false);
+  const [orgModalLoading, setOrgModalLoading] = useState(false);
   const [productAccessOpen, setProductAccessOpen] = useState(false);
   const [productAccessOrgId, setProductAccessOrgId] = useState<string | null>(
     null
@@ -236,6 +267,17 @@ export default function Organization() {
   >(null);
   const [domainInput, setDomainInput] = useState("");
   const [_forceUpdate, setForceUpdate] = useState(0);
+  const [logoPreview, setLogoPreview] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
+  const [paginationModel, setPaginationModel] = useState({
+    page: 0,
+    pageSize: 10,
+  });
+
+  const logoInputRef = useRef<HTMLInputElement>(null);
+  const triggerLogoUpload = () => {
+    logoInputRef.current?.click();
+  };
 
   const theme = useUnifiedTheme();
 
@@ -243,7 +285,17 @@ export default function Organization() {
     success: boolean;
     data: any[];
     totalCount: number;
-  }>(["organizationList"], GET.Organization_List, true);
+  }>(
+    [
+      "organizationList",
+      String(paginationModel.page + 1),
+      String(paginationModel.pageSize),
+    ],
+    `${GET.Organization_List}?page=${paginationModel.page + 1}&limit=${
+      paginationModel.pageSize
+    }`,
+    true
+  );
 
   const deleteOrg = useDelete<any>(
     ["organizationList"],
@@ -255,20 +307,20 @@ export default function Organization() {
     true
   );
 
-  const updateOrg = usePut<any, any>(
+  const updateOrg = usePutMultipart<any, any>(
     ["organizationList"],
     () => {
-      setEditOpen(false);
+      setOrgModalOpen(false);
       setSelectedOrg(null);
       refetch();
     },
     true
   );
 
-  const createOrg = usePost<any, any>(
+  const createOrg = usePostMultipart<any, any>(
     ["organizationList"],
     () => {
-      setCreateOpen(false);
+      setOrgModalOpen(false);
       refetch();
     },
     true
@@ -299,43 +351,116 @@ export default function Organization() {
     !!productAccessOrgId
   );
 
-  const handleEditOpen = (org: any) => {
-    setSelectedOrg(org);
-    setEditOpen(true);
-    setProductAccessOrgId(org._id);
-    setValue("name", org.name || "");
-    setValue("description", org.description || "");
-    setValue("domain", org.domain || "");
-    setValue("status", org.status || "inactive");
-    setValue("owner", org.owner?._id || "");
-    setValue(
-      "allowedDomains",
-      (org.allowedDomains || []).map((d: string) => ({ value: d }))
-    );
-    setValue("activatePasswordOTP", org.activatePasswordOTP !== false);
-
-    const isUserSuperUser = isSuperUser();
-    const organizationIdForUsers = isUserSuperUser ? org._id : null;
-
-    setOrganizationIdForMedium(organizationIdForUsers);
-    setDomainInput("");
-    replaceMedium([]);
-
-    if (org.mediumSettings && Array.isArray(org.mediumSettings)) {
-      setValue("mediumSettings", org.mediumSettings);
-      replaceMedium(org.mediumSettings);
+  const handleLogoChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      if (!file.type.match("image/jpeg") && !file.type.match("image/png")) {
+        toast.error("Only JPG or PNG files are allowed");
+        return;
+      }
+      if (file.size > 20 * 1024 * 1024) {
+        toast.error("Image size must be at most 20MB");
+        return;
+      }
+      setValue("logo", file, { shouldValidate: true });
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setLogoPreview(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
     }
-    setShowMediumDropdown(false);
-    refetchProductAccess();
   };
 
-  const handleEditClose = () => {
-    setEditOpen(false);
+  const handleOrgModalOpen = (org?: any) => {
+    setDomainInput("");
+    setShowMediumDropdown(false);
+    replaceMedium([]);
+    setEditingMediumId(null);
+
+    if (org) {
+      setSelectedOrg(org);
+      setOrgModalOpen(true);
+      setProductAccessOrgId(org._id);
+      setValue("name", org.name || "");
+      setValue("description", org.description || "");
+      setValue("domain", org.domain || "");
+      setValue("status", org.status || "inactive");
+      setValue("owner", org.owner?._id || "");
+      setValue("code", org.code || "");
+      setValue("businessUnitCode", org.businessUnitCode || "");
+      setValue(
+        "allowedDomains",
+        (org.allowedDomains || []).map((d: string) => ({ value: d }))
+      );
+      setValue("activatePasswordOTP", org.activatePasswordOTP !== false);
+      setValue("phone", org.phone || "");
+      setValue("address1", org.address1 || "");
+      setValue("address2", org.address2 || "");
+      setValue("city", org.city || "");
+      setValue("state", org.state || "");
+      setValue("zip", org.zip || "");
+      setValue("country", org.country || "");
+      setValue("gst", org.gst || "");
+      setValue("pan", org.pan || "");
+      if (org.logo) {
+        setLogoPreview(org.logo);
+        setValue("logo", null);
+      }
+
+      const isUserSuperUser = isSuperUser();
+      const organizationIdForUsers = isUserSuperUser ? org._id : null;
+      setOrganizationIdForMedium(organizationIdForUsers);
+
+      if (org.mediumSettings && Array.isArray(org.mediumSettings)) {
+        setValue("mediumSettings", org.mediumSettings);
+        replaceMedium(org.mediumSettings);
+      }
+      refetchProductAccess();
+    } else {
+      setSelectedOrg(null);
+      reset({
+        name: "",
+        description: "",
+        domain: "",
+        code: "",
+        owner: "",
+        status: "active",
+        productIds: [],
+        productSubscriptions: [],
+        mediumSettings: [],
+        allowedDomains: [],
+        businessUnitCode: "",
+        activatePasswordOTP: false,
+        phone: "",
+        address1: "",
+        address2: "",
+        city: "",
+        state: "",
+        zip: "",
+        country: "",
+        gst: "",
+        pan: "",
+        email: "",
+        password: "",
+        firstName: "",
+        lastName: "",
+      });
+      setOrgModalOpen(true);
+      setOrganizationIdForMedium(null);
+      setProductAccessOrgId(null);
+      setLogoPreview(null);
+    }
+  };
+
+  const handleOrgModalClose = () => {
+    setOrgModalOpen(false);
     setSelectedOrg(null);
     setShowMediumDropdown(false);
     setOrganizationIdForMedium(null);
     setEditingMediumId(null);
     replaceMedium([]);
+    setLogoPreview(null);
+    setValue("logo", null);
   };
 
   const handleDeleteOpen = (org: any) => {
@@ -356,137 +481,132 @@ export default function Organization() {
     }
   };
 
-  const handleEditSubmit = async (formData: any) => {
-    setFormLoading(true);
-    try {
-      const { productIds, mediumSettings, ...rest } = formData;
-      await updateOrg.mutateAsync({
-        url: `${PUT.UPDATE_ORGANIZATION}${selectedOrg._id}`,
-        payload: {
-          ...rest,
-          code: selectedOrg.code,
-          status: rest.status === "active" ? "active" : "inactive",
-          owner: rest.owner,
-          allowedDomains: formData.allowedDomains.map((d: any) => d.value),
-          activatePasswordOTP: formData.activatePasswordOTP,
-        },
-      });
+  const handleOrgModalSubmit = async (formData: any) => {
+    setOrgModalLoading(true);
 
-      if (formData.mediumSettings && formData.mediumSettings.length > 0) {
-        const notivixProduct = formData.productSubscriptions.find((ps: any) => {
-          const product = productOptions.find((p) => p._id === ps.productId);
-          return product && product.name?.toLowerCase() === "notivix";
+    try {
+      const { productIds, logo, ...rest } = formData;
+      const payload = {
+        files: formData.logo,
+        name: formData.name,
+        description: formData.description,
+
+        code: formData.code,
+
+        businessUnitCode: formData.businessUnitCode || "",
+        phone: formData.phone,
+        domain: formData.domain,
+        allowedDomains: (formData.allowedDomains || []).map(
+          (d: any) => d.value
+        ),
+        address1: formData.address1,
+        address2: formData.address2,
+        city: formData.city,
+        state: formData.state,
+        zip: formData.zip,
+        country: formData.country,
+        gst: formData.gst,
+        pan: formData.pan,
+
+        ...(!selectedOrg && {
+          email: formData.email,
+          password: formData.password,
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+        }),
+
+        productIds: formData.productSubscriptions.map(
+          (ps: any) => ps.productId
+        ),
+        productSubscriptions: formData.productSubscriptions.map((ps: any) => ({
+          productId: ps.productId,
+          totalLicenses: Number(ps.totalLicenses),
+          licenseExpiresAt: ps.licenseExpiresAt,
+          organizationProductSubscriptionId:
+            ps.organizationProductSubscriptionId,
+        })),
+        status: rest.status === "active" ? "active" : "inactive",
+        activatePasswordOTP: formData.activatePasswordOTP,
+      };
+
+      if (selectedOrg) {
+        await updateOrg.mutateAsync({
+          url: `${PUT.UPDATE_ORGANIZATION}${selectedOrg._id}`,
+          payload,
         });
 
-        if (notivixProduct) {
-          await createMedium.mutateAsync({
-            url: `${POST.CREATE_MEDIUM}`,
-            payload: {
-              organizationId: selectedOrg._id,
-              productId: notivixProduct.productId,
-              mediumSettings: formData.mediumSettings.map((ms: any) => ({
-                medium: ms.medium,
-                fromAddress: ms.fromAddress,
-                serviceName: ms.serviceName,
-                apiKey: ms.apiKey,
-                enabled: ms.enabled,
-              })),
-            },
-          });
+        if (formData.mediumSettings && formData.mediumSettings.length > 0) {
+          const notivixProduct = formData.productSubscriptions.find(
+            (ps: any) => {
+              const product = productOptions.find(
+                (p) => p._id === ps.productId
+              );
+              return product && product.name?.toLowerCase() === "notivix";
+            }
+          );
+
+          if (notivixProduct) {
+            await createMedium.mutateAsync({
+              url: `${POST.CREATE_MEDIUM}`,
+              payload: {
+                organizationId: selectedOrg._id,
+                productId: notivixProduct.productId,
+                mediumSettings: formData.mediumSettings.map((ms: any) => ({
+                  medium: ms.medium,
+                  fromAddress: ms.fromAddress,
+                  serviceName: ms.serviceName,
+                  apiKey: ms.apiKey,
+                  enabled: ms.enabled,
+                })),
+              },
+            });
+          }
         }
-      }
-
-      replaceMedium([]);
-    } finally {
-      setFormLoading(false);
-    }
-  };
-
-  const handleCreateOpen = () => {
-    reset({
-      name: "",
-      description: "",
-      domain: "",
-      code: "",
-      owner: "",
-      productIds: [],
-      productSubscriptions: [],
-      mediumSettings: [],
-      allowedDomains: [],
-    });
-    setCreateOpen(true);
-    setDomainInput("");
-    setShowMediumDropdown(false);
-    // Ensure medium fields are cleared
-    replaceMedium([]);
-  };
-  const handleCreateClose = () => {
-    setCreateOpen(false);
-    setShowMediumDropdown(false);
-    // Clear medium fields when closing
-    replaceMedium([]);
-  };
-
-  const handleCreateSubmit = async (formData: any) => {
-    setCreateLoading(true);
-    try {
-      const createResponse = await createOrg.mutateAsync({
-        url: POST.Create_Organization,
-        payload: {
-          name: formData.name,
-          description: formData.description,
-          domain: formData.domain,
-          code: formData.code,
-          productSubscriptions: formData.productSubscriptions.map(
-            (ps: any) => ({
-              productId: ps.productId,
-              totalLicenses: Number(ps.totalLicenses),
-              licenseExpiresAt: ps.licenseExpiresAt,
-            })
-          ),
-          businessUnitCode: formData.businessUnitCode || "",
-          allowedDomains: (formData.allowedDomains || []).map(
-            (d: any) => d.value
-          ),
-          activatePasswordOTP: formData.activatePasswordOTP,
-        },
-      });
-
-      if (
-        formData.mediumSettings &&
-        formData.mediumSettings.length > 0 &&
-        createResponse.data?._id
-      ) {
-        const notivixProduct = formData.productSubscriptions.find((ps: any) => {
-          const product = productOptions.find((p) => p._id === ps.productId);
-          return product && product.name?.toLowerCase() === "notivix";
+      } else {
+        const createResponse = await createOrg.mutateAsync({
+          url: POST.Create_Organization,
+          payload,
         });
 
-        if (notivixProduct) {
-          await createMedium.mutateAsync({
-            url: POST.CREATE_MEDIUM,
-            payload: {
-              organizationId: selectedOrg._id,
-              productId: notivixProduct.productId,
-              mediumSettings: formData.mediumSettings.map((ms: any) => ({
-                medium: ms.medium,
-                fromAddress: ms.fromAddress,
-                serviceName: ms.serviceName,
-                apiKey: ms.apiKey,
-                enabled: ms.enabled,
-              })),
-            },
-          });
+        if (
+          formData.mediumSettings &&
+          formData.mediumSettings.length > 0 &&
+          createResponse.data?._id
+        ) {
+          const notivixProduct = formData.productSubscriptions.find(
+            (ps: any) => {
+              const product = productOptions.find(
+                (p) => p._id === ps.productId
+              );
+              return product && product.name?.toLowerCase() === "notivix";
+            }
+          );
+
+          if (notivixProduct) {
+            await createMedium.mutateAsync({
+              url: POST.CREATE_MEDIUM,
+              payload: {
+                organizationId: selectedOrg._id,
+                productId: notivixProduct.productId,
+                mediumSettings: formData.mediumSettings.map((ms: any) => ({
+                  medium: ms.medium,
+                  fromAddress: ms.fromAddress,
+                  serviceName: ms.serviceName,
+                  apiKey: ms.apiKey,
+                  enabled: ms.enabled,
+                })),
+              },
+            });
+          }
         }
       }
-
       replaceMedium([]);
+    } catch (error) {
+      console.error(error);
     } finally {
-      setCreateLoading(false);
+      setOrgModalLoading(false);
     }
   };
-
-  const { getHeadingSx } = useComponentTypography();
 
   const { data: productListData } = useGet<{
     success: boolean;
@@ -500,7 +620,7 @@ export default function Organization() {
     organizationIdForMedium
       ? `${GET.MEDIUM_LIST}?organizationId=${organizationIdForMedium}&productId=6870c9e335f4e90221de9ed1`
       : `${GET.MEDIUM_LIST}`,
-    Boolean(editOpen && selectedOrg)
+    Boolean(orgModalOpen && selectedOrg)
   );
 
   const selectedProductIds = watch("productIds") || [];
@@ -532,7 +652,7 @@ export default function Organization() {
 
   useEffect(() => {
     if (
-      editOpen &&
+      orgModalOpen &&
       selectedOrg &&
       productAccessData &&
       Array.isArray(productAccessData.data) &&
@@ -549,7 +669,7 @@ export default function Organization() {
       setValue("productSubscriptions", productSubs);
       replace(productSubs);
     }
-  }, [editOpen, selectedOrg, productAccessData, productAccessOrgId]);
+  }, [orgModalOpen, selectedOrg, productAccessData, productAccessOrgId]);
   const isUserSuperUser = isSuperUser();
   const handleRowClick = (org: any, _rowIndex: number) => {
     if (!shouldAllowUserList) return;
@@ -586,7 +706,7 @@ export default function Organization() {
                 <Button
                   variant="contained"
                   color="primary"
-                  onClick={handleCreateOpen}
+                  onClick={() => handleOrgModalOpen()}
                 >
                   Create
                 </Button>
@@ -750,7 +870,7 @@ export default function Organization() {
                             disabled={!shouldAllowEdit}
                             onClick={(e) => {
                               e.stopPropagation();
-                              handleEditOpen(org);
+                              handleOrgModalOpen(org);
                             }}
                             size="small"
                             title="Edit"
@@ -794,14 +914,22 @@ export default function Organization() {
                     },
                   },
                 }}
+                pagination
+                paginationMode="server"
+                rowCount={data?.totalCount ?? 0}
+                paginationModel={paginationModel}
+                onPaginationModelChange={(model) => {
+                  setPaginationModel(model);
+                }}
+                pageSizeOptions={[10, 20, 50]}
               />
             )}
           </Box>
 
           <DialogContainer
-            open={editOpen}
-            onClose={handleEditClose}
-            title="Edit Organization"
+            open={orgModalOpen}
+            onClose={handleOrgModalClose}
+            title={selectedOrg ? "Edit Organization" : "Create Organization"}
             maxWidth="md"
             fullWidth
             actions={
@@ -809,10 +937,10 @@ export default function Organization() {
                 <PrimaryButton
                   type="submit"
                   variant="contained"
-                  onClick={handleSubmit(handleEditSubmit)}
+                  onClick={handleSubmit(handleOrgModalSubmit)}
                   disabled={
                     !isValid ||
-                    fields.length === 0 ||
+                    (selectedOrg ? fields.length === 0 : false) ||
                     fields.some((f, idx) => {
                       const err =
                         errors.productSubscriptions &&
@@ -821,241 +949,643 @@ export default function Organization() {
                     })
                   }
                 >
-                  {formLoading ? "Saving..." : "Save"}
+                  {orgModalLoading
+                    ? selectedOrg
+                      ? "Saving..."
+                      : "Creating..."
+                    : selectedOrg
+                    ? "Save"
+                    : "Create"}
                 </PrimaryButton>
               </>
             }
           >
             <DialogContent>
-              {selectedOrg && (
-                <form
-                  onSubmit={handleSubmit(handleEditSubmit)}
-                  style={{ marginTop: 8 }}
+              <form
+                onSubmit={handleSubmit(handleOrgModalSubmit)}
+                style={{ marginTop: 8 }}
+              >
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "center",
+                    mb: 4,
+                    mt: 2,
+                  }}
                 >
-                  <Grid container spacing={2}>
-                    <Grid item xs={12}>
+                  <Badge
+                    overlap="circular"
+                    anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+                    badgeContent={
+                      <IconButton
+                        onClick={triggerLogoUpload}
+                        sx={{
+                          bgcolor: "primary.main",
+                          color: "white",
+                          "&:hover": { bgcolor: "primary.dark" },
+                          width: 32,
+                          height: 32,
+                          boxShadow: 2,
+                        }}
+                        size="small"
+                      >
+                        <EditIcon sx={{ fontSize: 18 }} />
+                      </IconButton>
+                    }
+                  >
+                    <Avatar
+                      src={logoPreview || ""}
+                      sx={{
+                        width: 120,
+                        height: 120,
+                        border: `3px solid ${theme.palette.divider}`,
+                        bgcolor: "background.paper",
+                        fontSize: "3rem",
+                      }}
+                    >
+                      {!logoPreview && (watch("name")?.charAt(0) || "O")}
+                    </Avatar>
+                  </Badge>
+                  <input
+                    type="file"
+                    ref={logoInputRef}
+                    hidden
+                    onChange={handleLogoChange}
+                    accept="image/*"
+                  />
+                </Box>
+                <Grid container spacing={2}>
+                  {/* Super Admin Section (Only for Create) */}
+                  {!selectedOrg && (
+                    <>
+                      <Grid size={12} sx={{ mt: 2 }}>
+                        <Typography
+                          variant="body2"
+                          fontWeight={600}
+                          sx={{ mt: 1 }}
+                        >
+                          User Details
+                        </Typography>
+                        <Divider sx={{ mt: 0.5 }} />
+                      </Grid>
+
+                      <Grid size={6}>
+                        <Box sx={{ display: "flex", alignItems: "center" }}>
+                          <Controller
+                            name="firstName"
+                            control={control}
+                            rules={{ required: "First Name is required" }}
+                            render={({ field }) => (
+                              <TextField
+                                {...field}
+                                required
+                                label="First Name"
+                                fullWidth
+                                error={!!errors.firstName}
+                                helperText={errors.firstName?.message}
+                              />
+                            )}
+                          />
+                        </Box>
+                      </Grid>
+                      <Grid size={6}>
+                        <Box sx={{ display: "flex", alignItems: "center" }}>
+                          <Controller
+                            name="lastName"
+                            control={control}
+                            render={({ field }) => (
+                              <TextField
+                                {...field}
+                                label="Last Name"
+                                fullWidth
+                              />
+                            )}
+                          />
+                        </Box>
+                      </Grid>
+
+                      <Grid size={6}>
+                        <Box sx={{ display: "flex", alignItems: "center" }}>
+                          <Controller
+                            name="email"
+                            control={control}
+                            rules={{ required: "Email is required" }}
+                            render={({ field }) => (
+                              <TextField
+                                {...field}
+                                required
+                                label="Email"
+                                fullWidth
+                                error={!!errors.email}
+                                helperText={errors.email?.message}
+                              />
+                            )}
+                          />
+                        </Box>
+                      </Grid>
+
+                      <Grid size={6}>
+                        <Box sx={{ display: "flex", alignItems: "center" }}>
+                          <Controller
+                            name="password"
+                            control={control}
+                            rules={{ required: "Password is required" }}
+                            render={({ field }) => (
+                              <TextField
+                                {...field}
+                                required
+                                label="Password"
+                                type={showPassword ? "text" : "password"}
+                                fullWidth
+                                error={!!errors.password}
+                                helperText={errors.password?.message}
+                                InputProps={{
+                                  endAdornment: (
+                                    <InputAdornment position="end">
+                                      <IconButton
+                                        aria-label="toggle password visibility"
+                                        onClick={() =>
+                                          setShowPassword((show) => !show)
+                                        }
+                                        onMouseDown={(event) =>
+                                          event.preventDefault()
+                                        }
+                                        edge="end"
+                                      >
+                                        {showPassword ? (
+                                          <VisibilityOff />
+                                        ) : (
+                                          <Visibility />
+                                        )}
+                                      </IconButton>
+                                    </InputAdornment>
+                                  ),
+                                }}
+                              />
+                            )}
+                          />
+                        </Box>
+                      </Grid>
+                    </>
+                  )}
+
+                  {/* Basic Details Section */}
+                  <Grid size={12} sx={{ mt: 2 }}>
+                    <Typography variant="body2" fontWeight={600} sx={{ mt: 1 }}>
+                      Organization Details
+                    </Typography>
+                    <Divider sx={{ mt: 0.5 }} />
+                  </Grid>
+
+                  <Grid size={6}>
+                    <Box sx={{ display: "flex", alignItems: "center" }}>
                       <Controller
                         name="name"
                         control={control}
                         rules={{ required: "Name is required" }}
-                        defaultValue={selectedOrg.name}
+                        defaultValue={selectedOrg?.name}
                         render={({ field }) => (
                           <TextField
                             {...field}
+                            required
                             label="Name"
                             fullWidth
-                            margin="normal"
                             error={!!errors.name}
                             helperText={errors.name?.message}
                           />
                         )}
                       />
-                    </Grid>
-                    <Grid item xs={12}>
+                    </Box>
+                  </Grid>
+
+                  <Grid size={6}>
+                    <Box sx={{ display: "flex", alignItems: "center" }}>
                       <Controller
                         name="description"
                         control={control}
-                        defaultValue={selectedOrg.description || ""}
+                        defaultValue={selectedOrg?.description || ""}
                         render={({ field }) => (
-                          <TextField
-                            {...field}
-                            label="Description"
-                            fullWidth
-                            margin="normal"
-                          />
+                          <TextField {...field} label="Description" fullWidth />
                         )}
                       />
-                    </Grid>
-                    <Grid item xs={12}>
-                      <Controller
-                        name="domain"
-                        control={control}
-                        rules={{ required: "Domain is required" }}
-                        defaultValue={selectedOrg.domain || ""}
-                        render={({ field }) => (
-                          <TextField
-                            {...field}
-                            label="Primary Domain"
-                            fullWidth
-                            margin="normal"
-                            error={!!errors.domain}
-                            helperText={errors.domain?.message}
-                          />
-                        )}
-                      />
-                    </Grid>
-                    <Grid item xs={12}>
-                      <Typography
-                        variant="body2"
-                        sx={{ mb: 1, fontWeight: 500 }}
-                      >
-                        Allowed Domains
-                      </Typography>
-                      <Box sx={{ display: "flex", gap: 1, mb: 1 }}>
-                        <TextField
-                          placeholder="Add a domain (e.g. example.com)"
-                          size="small"
-                          fullWidth
-                          value={domainInput}
-                          onChange={(e) => setDomainInput(e.target.value)}
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter") {
-                              e.preventDefault();
-                              if (domainInput.trim()) {
-                                appendDomain({ value: domainInput.trim() });
-                                setDomainInput("");
-                              }
-                            }
-                          }}
-                          InputProps={{
-                            endAdornment: (
-                              <IconButton
-                                size="small"
-                                color="primary"
-                                onClick={() => {
-                                  if (domainInput.trim()) {
-                                    appendDomain({ value: domainInput.trim() });
-                                    setDomainInput("");
-                                  }
-                                }}
-                              >
-                                <AddIcon />
-                              </IconButton>
-                            ),
-                          }}
+                    </Box>
+                  </Grid>
+
+                  {!selectedOrg ? (
+                    <Grid size={6}>
+                      <Box sx={{ display: "flex", alignItems: "center" }}>
+                        <Controller
+                          name="code"
+                          control={control}
+                          rules={{ required: "Code is required" }}
+                          render={({ field }) => (
+                            <TextField
+                              {...field}
+                              required
+                              label="Code"
+                              fullWidth
+                              error={!!errors.code}
+                              helperText={errors.code?.message}
+                            />
+                          )}
                         />
                       </Box>
-                      <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
-                        {domainFields.map((field, idx) => (
-                          <Box
-                            key={field.id}
-                            sx={{
-                              display: "inline-flex",
-                              alignItems: "center",
-                              bgcolor: "primary.main",
-                              color: "primary.contrastText",
-                              px: 1,
-                              py: 0.5,
-                              borderRadius: 1,
-                              fontSize: "0.8125rem",
-                            }}
-                          >
-                            <span>{field.value}</span>
-                            <IconButton
-                              size="small"
-                              onClick={() => removeDomain(idx)}
-                              sx={{ ml: 0.5, p: 0, color: "inherit" }}
-                            >
-                              <CancelIcon sx={{ fontSize: 16 }} />
-                            </IconButton>
-                          </Box>
-                        ))}
-                      </Box>
                     </Grid>
-                    <Grid item xs={12}>
+                  ) : null}
+                  <Grid size={6}>
+                    <Box sx={{ display: "flex", alignItems: "center" }}>
                       <Controller
                         name="businessUnitCode"
                         control={control}
-                        // rules={{ required: "Business unit code is required" }}
-                        defaultValue={selectedOrg.businessUnitCode || ""}
                         render={({ field }) => (
                           <TextField
                             {...field}
                             label="Business Unit Code"
                             fullWidth
-                            margin="normal"
                             error={!!errors.businessUnitCode}
                             helperText={errors.businessUnitCode?.message}
                           />
                         )}
                       />
-                    </Grid>
-                    {isUserSuperUser && (
-                      <>
-                        <Grid item xs={12}>
-                          {(() => {
-                            const usedProductIds = fields.map(
-                              (f: any) => (f as any).productId
-                            );
-                            const availableProducts = productOptions.filter(
-                              (p) => !usedProductIds.includes(p._id)
-                            );
-                            if (availableProducts.length === 0) return null;
-                            return (
-                              <Box
-                                sx={{
-                                  display: "flex",
-                                  alignItems: "center",
-                                  gap: 2,
-                                  mb: 2,
-                                }}
-                              >
-                                <FormControl
-                                  sx={{ minWidth: 200 }}
-                                  size="small"
-                                >
-                                  <InputLabel id="add-product-label">
-                                    Add Product
-                                  </InputLabel>
-                                  <Select
-                                    labelId="add-product-label"
-                                    value={""}
-                                    label="Add Product"
-                                    onChange={(e) => {
-                                      const productId = e.target.value;
-                                      if (!productId) return;
-                                      append({
-                                        productId,
-                                        totalLicenses: "",
-                                        licenseExpiresAt: "",
-                                        organizationProductSubscriptionId: "",
-                                      });
-                                    }}
-                                  >
-                                    <MenuItem value="" disabled>
-                                      Select product to add
-                                    </MenuItem>
-                                    {availableProducts.map((product) => (
-                                      <MenuItem
-                                        key={product._id}
-                                        value={product._id}
-                                      >
-                                        {product.name}
-                                      </MenuItem>
-                                    ))}
-                                  </Select>
-                                </FormControl>
-                                <Typography
-                                  variant="body2"
-                                  color="textSecondary"
-                                >
-                                  Add a new product subscription
-                                </Typography>
-                              </Box>
-                            );
-                          })()}
-                        </Grid>
+                    </Box>
+                  </Grid>
 
-                        {(fields || []).map((field, idx) => (
-                          <Grid
-                            container
-                            spacing={2}
-                            alignItems="flex-end"
-                            key={field.id}
-                            sx={{
-                              m: 2,
-                              width: "100%",
-                              border: "1px solid #eee",
-                              borderRadius: STYLE_GUIDE.SPACING.s1,
-                            }}
+                  <Grid size={6}>
+                    <Box sx={{ display: "flex", alignItems: "center" }}>
+                      <Controller
+                        name="phone"
+                        control={control}
+                        render={({ field }) => (
+                          <TextField {...field} label="Phone" fullWidth />
+                        )}
+                      />
+                    </Box>
+                  </Grid>
+
+                  {/* Address Section */}
+                  <Grid size={12} sx={{ mt: 2 }}>
+                    <Typography variant="body2" fontWeight={600} sx={{ mt: 1 }}>
+                      Address
+                    </Typography>
+                    <Divider sx={{ mt: 0.5 }} />
+                  </Grid>
+
+                  <Grid size={6}>
+                    <Box sx={{ display: "flex", alignItems: "center" }}>
+                      <Controller
+                        name="address1"
+                        control={control}
+                        render={({ field }) => (
+                          <TextField
+                            {...field}
+                            label="Address Line 1"
+                            fullWidth
+                          />
+                        )}
+                      />
+                    </Box>
+                  </Grid>
+                  <Grid size={6}>
+                    <Box sx={{ display: "flex", alignItems: "center" }}>
+                      <Controller
+                        name="address2"
+                        control={control}
+                        render={({ field }) => (
+                          <TextField
+                            {...field}
+                            label="Address Line 2"
+                            fullWidth
+                          />
+                        )}
+                      />
+                    </Box>
+                  </Grid>
+                  <Grid size={3}>
+                    <Box sx={{ display: "flex", alignItems: "center" }}>
+                      <Controller
+                        name="city"
+                        control={control}
+                        render={({ field }) => (
+                          <TextField {...field} label="City" fullWidth />
+                        )}
+                      />
+                    </Box>
+                  </Grid>
+                  <Grid size={3}>
+                    <Box sx={{ display: "flex", alignItems: "center" }}>
+                      <Controller
+                        name="state"
+                        control={control}
+                        render={({ field }) => (
+                          <TextField {...field} label="State" fullWidth />
+                        )}
+                      />
+                    </Box>
+                  </Grid>
+                  <Grid size={3}>
+                    <Box sx={{ display: "flex", alignItems: "center" }}>
+                      <Controller
+                        name="zip"
+                        control={control}
+                        render={({ field }) => (
+                          <TextField {...field} label="Zip" fullWidth />
+                        )}
+                      />
+                    </Box>
+                  </Grid>
+                  <Grid size={3}>
+                    <Box sx={{ display: "flex", alignItems: "center" }}>
+                      <Controller
+                        name="country"
+                        control={control}
+                        rules={{ required: "Country is required" }}
+                        render={({ field }) => (
+                          <TextField
+                            {...field}
+                            required
+                            label="Country"
+                            fullWidth
+                            error={!!errors.country}
+                            helperText={errors.country?.message}
+                          />
+                        )}
+                      />
+                    </Box>
+                  </Grid>
+
+                  {/* Legal & Tax Section */}
+                  <Grid size={12} sx={{ mt: 2 }}>
+                    <Typography variant="body2" fontWeight={600} sx={{ mt: 1 }}>
+                      Legal & Tax Information
+                    </Typography>
+                    <Divider sx={{ mt: 0.5 }} />
+                  </Grid>
+
+                  <Grid size={6}>
+                    <Box sx={{ display: "flex", alignItems: "center" }}>
+                      <Controller
+                        name="gst"
+                        control={control}
+                        render={({ field }) => (
+                          <TextField {...field} label="GST" fullWidth />
+                        )}
+                      />
+                    </Box>
+                  </Grid>
+                  <Grid size={6}>
+                    <Box sx={{ display: "flex", alignItems: "center" }}>
+                      <Controller
+                        name="pan"
+                        control={control}
+                        render={({ field }) => (
+                          <TextField {...field} label="PAN" fullWidth />
+                        )}
+                      />
+                    </Box>
+                  </Grid>
+
+                  {/* Domains Section */}
+                  <Grid size={12} sx={{ mt: 2 }}>
+                    <Typography variant="body2" fontWeight={600} sx={{ mt: 1 }}>
+                      Domains
+                    </Typography>
+                    <Divider sx={{ mt: 0.5 }} />
+                  </Grid>
+
+                  <Grid size={6}>
+                    <Box sx={{ display: "flex", alignItems: "center" }}>
+                      <Controller
+                        name="domain"
+                        control={control}
+                        rules={{ required: "Domain is required" }}
+                        defaultValue={selectedOrg?.domain || ""}
+                        render={({ field }) => (
+                          <TextField
+                            {...field}
+                            required
+                            label="Primary Domain"
+                            fullWidth
+                            error={!!errors.domain}
+                            helperText={errors.domain?.message}
+                          />
+                        )}
+                      />
+                    </Box>
+                  </Grid>
+
+                  <Grid size={6}>
+                    <Box sx={{ display: "flex", alignItems: "center" }}>
+                      <TextField
+                        placeholder="Add a domain (e.g. example.com)"
+                        fullWidth
+                        value={domainInput}
+                        onChange={(e) => setDomainInput(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            e.preventDefault();
+                            if (domainInput.trim()) {
+                              appendDomain({ value: domainInput.trim() });
+                              setDomainInput("");
+                            }
+                          }
+                        }}
+                        InputProps={{
+                          endAdornment: (
+                            <IconButton
+                              size="small"
+                              color="primary"
+                              onClick={() => {
+                                if (domainInput.trim()) {
+                                  appendDomain({ value: domainInput.trim() });
+                                  setDomainInput("");
+                                }
+                              }}
+                            >
+                              <AddIcon />
+                            </IconButton>
+                          ),
+                        }}
+                        label="Allowed Domains"
+                      />
+                    </Box>
+                    <Box
+                      sx={{
+                        display: "flex",
+                        flexWrap: "wrap",
+                        gap: 1,
+                        alignItems: "start",
+                        mt: 1,
+                      }}
+                    >
+                      {domainFields.map((field, idx) => (
+                        <Box
+                          key={field.id}
+                          sx={{
+                            display: "inline-flex",
+                            alignItems: "center",
+                            bgcolor: "primary.main",
+                            color: "primary.contrastText",
+                            px: 1,
+                            py: 0.5,
+                            borderRadius: 1,
+                            fontSize: "0.8125rem",
+                          }}
+                        >
+                          <span>{field.value}</span>
+                          <IconButton
+                            size="small"
+                            onClick={() => removeDomain(idx)}
+                            sx={{ ml: 0.5, p: 0, color: "inherit" }}
                           >
-                            <Grid item xs={3}>
+                            <CancelIcon sx={{ fontSize: 16 }} />
+                          </IconButton>
+                        </Box>
+                      ))}
+                    </Box>
+                  </Grid>
+
+                  <Grid size={12} sx={{ mt: 2 }}>
+                    <Typography variant="body2" fontWeight={600} sx={{ mt: 1 }}>
+                      Product License
+                    </Typography>
+                    <Divider sx={{ mt: 0.5 }} />
+                  </Grid>
+
+                  {isUserSuperUser && (
+                    <>
+                      <Grid size={12}>
+                        {!selectedOrg
+                          ? shouldAllowProductListing && (
+                              <Box
+                                sx={{ display: "flex", alignItems: "center" }}
+                              >
+                                <Controller
+                                  name="productIds"
+                                  control={control}
+                                  rules={{
+                                    required:
+                                      "At least one product is required",
+                                  }}
+                                  render={({ field }) => (
+                                    <Autocomplete
+                                      multiple
+                                      fullWidth
+                                      options={productOptions}
+                                      getOptionLabel={(option) => option.name}
+                                      value={productOptions.filter((option) =>
+                                        field.value?.includes(option._id)
+                                      )}
+                                      onChange={(_, newValue) => {
+                                        field.onChange(
+                                          newValue.map((option) => option._id)
+                                        );
+                                      }}
+                                      isOptionEqualToValue={(option, value) =>
+                                        option._id === value._id
+                                      }
+                                      renderInput={(params) => (
+                                        <Box
+                                          sx={{
+                                            display: "flex",
+                                            alignItems: "center",
+                                          }}
+                                        >
+                                          <TextField
+                                            {...params}
+                                            required
+                                            label="Products"
+                                            error={!!errors.productIds}
+                                            helperText={
+                                              errors.productIds?.message
+                                            }
+                                          />
+                                        </Box>
+                                      )}
+                                    />
+                                  )}
+                                />
+                              </Box>
+                            )
+                          : (() => {
+                              const usedProductIds = fields.map(
+                                (f: any) => (f as any).productId
+                              );
+                              const availableProducts = productOptions.filter(
+                                (p) => !usedProductIds.includes(p._id)
+                              );
+                              if (availableProducts.length === 0) return null;
+                              return (
+                                <Box
+                                  sx={{
+                                    display: "flex",
+                                    justifyContent: "center",
+                                    flexDirection: "column",
+                                    gap: 1,
+                                  }}
+                                >
+                                  <FormControl sx={{ minWidth: 200 }} fullWidth>
+                                    <InputLabel id="add-product-label">
+                                      Add Product
+                                    </InputLabel>
+                                    <Select
+                                      labelId="add-product-label"
+                                      value={""}
+                                      label="Add Product"
+                                      onChange={(e) => {
+                                        const productId = e.target.value;
+                                        if (!productId) return;
+                                        append({
+                                          productId,
+                                          totalLicenses: "",
+                                          licenseExpiresAt: "",
+                                          organizationProductSubscriptionId: "",
+                                        });
+                                      }}
+                                    >
+                                      <MenuItem value="" disabled>
+                                        Select product to add
+                                      </MenuItem>
+                                      {availableProducts.map((product) => (
+                                        <MenuItem
+                                          key={product._id}
+                                          value={product._id}
+                                        >
+                                          {product.name}
+                                        </MenuItem>
+                                      ))}
+                                    </Select>
+                                  </FormControl>
+                                  <Typography
+                                    variant="body2"
+                                    color="textSecondary"
+                                  >
+                                    Add a new product subscription
+                                  </Typography>
+                                </Box>
+                              );
+                            })()}
+                      </Grid>
+
+                      {(fields || []).map((field, idx) => (
+                        <Grid
+                          container
+                          spacing={2}
+                          key={field.id}
+                          sx={{
+                            p: 2,
+                            width: "100%",
+                            border: "1px solid #eee",
+                            borderRadius: STYLE_GUIDE.SPACING.s1,
+                          }}
+                        >
+                          <Grid size={3}>
+                            <Box sx={{ display: "flex", alignItems: "center" }}>
                               <Controller
                                 name={`productSubscriptions.${idx}.productId`}
                                 control={control}
                                 rules={{ required: "Product is required" }}
                                 render={({ field }) => (
-                                  <FormControl fullWidth margin="dense">
+                                  <FormControl fullWidth size="small">
                                     <InputLabel>Product</InputLabel>
                                     <Select {...field} label="Product">
                                       {productOptions.map((product) => (
@@ -1070,8 +1600,10 @@ export default function Organization() {
                                   </FormControl>
                                 )}
                               />
-                            </Grid>
-                            <Grid item xs={3}>
+                            </Box>
+                          </Grid>
+                          <Grid size={3}>
+                            <Box sx={{ display: "flex", alignItems: "center" }}>
                               <Controller
                                 name={`productSubscriptions.${idx}.totalLicenses`}
                                 control={control}
@@ -1088,7 +1620,7 @@ export default function Organization() {
                                     label="Total Licenses"
                                     type="number"
                                     fullWidth
-                                    margin="dense"
+                                    size="small"
                                     error={
                                       !!errors.productSubscriptions &&
                                       (errors.productSubscriptions as any)[idx]
@@ -1105,8 +1637,10 @@ export default function Organization() {
                                   />
                                 )}
                               />
-                            </Grid>
-                            <Grid item xs={4}>
+                            </Box>
+                          </Grid>
+                          <Grid size={4}>
+                            <Box sx={{ display: "flex", alignItems: "center" }}>
                               <Controller
                                 name={`productSubscriptions.${idx}.licenseExpiresAt`}
                                 control={control}
@@ -1119,98 +1653,100 @@ export default function Organization() {
                                     control={control}
                                     label="License Expiry Date"
                                     views={["year", "month", "day"]}
-                                    sx={{ marginTop: 1 }}
+                                    disablePast={true}
                                   />
                                 )}
                               />
-                            </Grid>
-                            <Grid
-                              item
-                              xs={2}
-                              sx={{
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: "center",
-                              }}
-                            >
-                              <IconButton
-                                aria-label="Remove"
-                                color="error"
-                                onClick={() => remove(idx)}
-                                disabled={fields.length === 1}
-                              >
-                                <DeleteIcon />
-                              </IconButton>
-                            </Grid>
+                            </Box>
                           </Grid>
-                        ))}
-                      </>
-                    )}
+                          <Grid
+                            size={2}
+                            sx={{
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                            }}
+                          >
+                            <IconButton
+                              aria-label="Remove"
+                              color="error"
+                              onClick={() => remove(idx)}
+                              disabled={fields.length === 1}
+                            >
+                              <DeleteIcon />
+                            </IconButton>
+                          </Grid>
+                        </Grid>
+                      ))}
+                    </>
+                  )}
 
-                    {(() => {
-                      const hasNotivixProduct = fields.some((field: any) => {
-                        const product = productOptions.find(
-                          (p) => p._id === field.productId
-                        );
-                        return (
-                          product && product.name?.toLowerCase() === "notivix"
-                        );
-                      });
-
-                      if (!hasNotivixProduct) return null;
-
+                  {(() => {
+                    const hasNotivixProduct = fields.some((field: any) => {
+                      const product = productOptions.find(
+                        (p) => p._id === field.productId
+                      );
                       return (
-                        <Grid item xs={12}>
-                          <Typography variant="h6" sx={{ mt: 3, mb: 2 }}>
-                            Channel Settings for Notivix
-                          </Typography>
+                        product && product.name?.toLowerCase() === "notivix"
+                      );
+                    });
 
-                          {/* ------------------------------------------------------------------
-          WE NOW HANDLE FLAT API RESPONSE → GROUP BY LATEST MEDIUM
-      ------------------------------------------------------------------- */}
-                          {mediumListDataWithOrg?.data?.length > 0 &&
-                            (() => {
-                              const mediumList = mediumListDataWithOrg.data; // <-- SHOW ALL ROWS
+                    if (!hasNotivixProduct || !selectedOrg) return null;
 
-                              return (
-                                <Box sx={{ mb: 3 }}>
-                                  <Typography
-                                    variant="subtitle2"
-                                    sx={{ mb: 2 }}
-                                  >
-                                    Existing Medium Settings:
-                                  </Typography>
+                    return (
+                      <Grid size={12}>
+                        <Typography
+                          variant="body2"
+                          sx={{ fontWeight: 600, mt: 3, mb: 2 }}
+                        >
+                          Channel Settings for Notivix
+                        </Typography>
 
-                                  {mediumList
-                                    .filter(
-                                      (medium: any) =>
-                                        !deletedIds.includes(medium._id)
-                                    ) // hide deleted row
-                                    .map((medium: any) => {
-                                      const mediumId = medium._id;
-                                      const isEditing =
-                                        editingMediumId === mediumId;
+                        {/* ------------------------------------------------------------------
+                            WE NOW HANDLE FLAT API RESPONSE → GROUP BY LATEST MEDIUM
+                            ------------------------------------------------------------------- */}
+                        {mediumListDataWithOrg?.data?.length > 0 &&
+                          (() => {
+                            const mediumList = mediumListDataWithOrg?.data; // <-- SHOW ALL ROWS
 
-                                      return (
-                                        <Grid
-                                          container
-                                          spacing={2}
-                                          key={mediumId}
-                                          sx={{
-                                            m: 2,
-                                            width: "100%",
-                                            border: "1px solid #eee",
-                                            borderRadius:
-                                              STYLE_GUIDE.SPACING.s1,
-                                            p: 2,
-                                          }}
-                                        >
-                                          {/* MEDIUM NAME */}
-                                          <Grid item xs={2}>
-                                            <FormControl
-                                              fullWidth
-                                              margin="dense"
-                                            >
+                            return (
+                              <Box sx={{ mb: 3 }}>
+                                <Typography variant="subtitle2" sx={{ mb: 2 }}>
+                                  Existing Medium Settings:
+                                </Typography>
+
+                                {mediumList
+                                  ?.filter(
+                                    (medium: any) =>
+                                      !deletedIds.includes(medium._id)
+                                  ) // hide deleted row
+                                  ?.map((medium: any) => {
+                                    const mediumId = medium._id;
+                                    const isEditing =
+                                      editingMediumId === mediumId;
+
+                                    return (
+                                      <Grid
+                                        container
+                                        spacing={2}
+                                        key={mediumId}
+                                        sx={{
+                                          m: 2,
+                                          width: "100%",
+                                          border: "1px solid #eee",
+                                          borderRadius: STYLE_GUIDE.SPACING.s1,
+                                          p: 2,
+                                        }}
+                                      >
+                                        {/* MEDIUM NAME */}
+                                        <Grid size={5}>
+                                          <Box
+                                            sx={{
+                                              display: "flex",
+                                              alignItems: "center",
+                                            }}
+                                          >
+                                            <FormControl fullWidth size="small">
                                               <InputLabel>Medium</InputLabel>
                                               <Select
                                                 value={medium.medium}
@@ -1229,15 +1765,22 @@ export default function Organization() {
                                                 ))}
                                               </Select>
                                             </FormControl>
-                                          </Grid>
+                                          </Box>
+                                        </Grid>
 
-                                          {/* FROM ADDRESS */}
-                                          <Grid item xs={3}>
+                                        {/* FROM ADDRESS */}
+                                        <Grid size={5}>
+                                          <Box
+                                            sx={{
+                                              display: "flex",
+                                              alignItems: "center",
+                                            }}
+                                          >
                                             <TextField
                                               label="From Address"
                                               value={medium.fromAddress || ""}
                                               fullWidth
-                                              margin="dense"
+                                              size="small"
                                               disabled={!isEditing}
                                               onChange={(e) => {
                                                 if (isEditing) {
@@ -1247,15 +1790,91 @@ export default function Organization() {
                                                 }
                                               }}
                                             />
-                                          </Grid>
+                                          </Box>
+                                        </Grid>
 
-                                          {/* SERVICE NAME */}
-                                          <Grid item xs={3}>
+                                        {/* ACTION BUTTONS */}
+                                        <Grid
+                                          size={2}
+                                          sx={{
+                                            display: "flex",
+                                            alignItems: "center",
+                                            justifyContent: "center",
+                                          }}
+                                        >
+                                          <IconButton
+                                            aria-label={
+                                              isEditing ? "Save" : "Edit"
+                                            }
+                                            color={
+                                              isEditing ? "default" : "primary"
+                                            }
+                                            size="small"
+                                            onClick={async () => {
+                                              if (isEditing) {
+                                                await updateMedium.mutateAsync({
+                                                  url: `${PUT.UPDATE_MEDIUM}/${medium._id}`,
+                                                  payload: {
+                                                    productId:
+                                                      "6870c9e335f4e90221de9ed1",
+                                                    medium: medium.medium,
+                                                    fromAddress:
+                                                      medium.fromAddress,
+                                                    serviceName:
+                                                      medium.serviceName,
+                                                    apiKey: medium.apiKey,
+                                                    enabled: medium.enabled,
+                                                  },
+                                                });
+
+                                                setEditingMediumId(null);
+                                              } else {
+                                                setEditingMediumId(mediumId);
+                                              }
+                                            }}
+                                          >
+                                            {isEditing ? (
+                                              <SaveIcon />
+                                            ) : (
+                                              <EditIcon />
+                                            )}
+                                          </IconButton>
+
+                                          <IconButton
+                                            aria-label="Delete"
+                                            color="error"
+                                            size="small"
+                                            onClick={() => {
+                                              deleteMedium.mutate({
+                                                url: `${DELETE.DELETE_MEDIUM}`,
+                                                payload: {
+                                                  ids: [medium._id],
+                                                },
+                                              });
+                                              // hide the row immediately
+                                              setDeletedIds((prev) => [
+                                                ...prev,
+                                                medium._id,
+                                              ]);
+                                            }}
+                                          >
+                                            <DeleteIcon />
+                                          </IconButton>
+                                        </Grid>
+
+                                        {/* SERVICE NAME */}
+                                        <Grid size={5}>
+                                          <Box
+                                            sx={{
+                                              display: "flex",
+                                              alignItems: "center",
+                                            }}
+                                          >
                                             <TextField
                                               label="Service Name"
                                               value={medium.serviceName || ""}
                                               fullWidth
-                                              margin="dense"
+                                              size="small"
                                               disabled={!isEditing}
                                               onChange={(e) => {
                                                 if (isEditing) {
@@ -1265,16 +1884,23 @@ export default function Organization() {
                                                 }
                                               }}
                                             />
-                                          </Grid>
+                                          </Box>
+                                        </Grid>
 
-                                          {/* API KEY */}
-                                          <Grid item xs={3}>
+                                        {/* API KEY */}
+                                        <Grid size={5}>
+                                          <Box
+                                            sx={{
+                                              display: "flex",
+                                              alignItems: "center",
+                                            }}
+                                          >
                                             <TextField
                                               label="API Key"
                                               value={medium.apiKey || ""}
                                               type="password"
                                               fullWidth
-                                              margin="dense"
+                                              size="small"
                                               disabled={!isEditing}
                                               onChange={(e) => {
                                                 if (isEditing) {
@@ -1284,94 +1910,28 @@ export default function Organization() {
                                                 }
                                               }}
                                             />
-                                          </Grid>
+                                          </Box>
+                                        </Grid>
 
-                                          {/* ACTION BUTTONS */}
-                                          <Grid
-                                            item
-                                            xs={1}
+                                        {/* ENABLED SWITCH */}
+                                        <Grid
+                                          size={2}
+                                          sx={{
+                                            display: "flex",
+                                            alignItems: "center",
+                                            justifyContent: "space-between",
+                                          }}
+                                        >
+                                          <Box
                                             sx={{
                                               display: "flex",
                                               alignItems: "center",
-                                              justifyContent: "center",
-                                            }}
-                                          >
-                                            <IconButton
-                                              aria-label={
-                                                isEditing ? "Save" : "Edit"
-                                              }
-                                              color={
-                                                isEditing
-                                                  ? "default"
-                                                  : "primary"
-                                              }
-                                              onClick={async () => {
-                                                if (isEditing) {
-                                                  await updateMedium.mutateAsync(
-                                                    {
-                                                      url: `${PUT.UPDATE_MEDIUM}/${medium._id}`,
-                                                      payload: {
-                                                        productId:
-                                                          "6870c9e335f4e90221de9ed1",
-                                                        medium: medium.medium,
-                                                        fromAddress:
-                                                          medium.fromAddress,
-                                                        serviceName:
-                                                          medium.serviceName,
-                                                        apiKey: medium.apiKey,
-                                                        enabled: medium.enabled,
-                                                      },
-                                                    }
-                                                  );
-
-                                                  setEditingMediumId(null);
-                                                } else {
-                                                  setEditingMediumId(mediumId);
-                                                }
-                                              }}
-                                            >
-                                              {isEditing ? (
-                                                <SaveIcon />
-                                              ) : (
-                                                <EditIcon />
-                                              )}
-                                            </IconButton>
-
-                                            <IconButton
-                                              aria-label="Delete"
-                                              color="error"
-                                              onClick={() => {
-                                                deleteMedium.mutate({
-                                                  url: `${DELETE.DELETE_MEDIUM}`,
-                                                  payload: {
-                                                    ids: [medium._id],
-                                                  },
-                                                });
-                                                // hide the row immediately
-                                                setDeletedIds((prev) => [
-                                                  ...prev,
-                                                  medium._id,
-                                                ]);
-                                              }}
-                                            >
-                                              <DeleteIcon />
-                                            </IconButton>
-                                          </Grid>
-
-                                          {/* ENABLED SWITCH */}
-                                          <Grid
-                                            item
-                                            xs={12}
-                                            sx={{
-                                              display: "flex",
-                                              alignItems: "center",
-                                              justifyContent: "space-between",
-                                              mt: 1,
                                             }}
                                           >
                                             <FormControlLabel
                                               control={
                                                 <Switch
+                                                  size="small"
                                                   checked={medium.enabled}
                                                   disabled={!isEditing}
                                                   onChange={(e) => {
@@ -1387,114 +1947,112 @@ export default function Organization() {
                                               }
                                               label="Enabled"
                                             />
-                                          </Grid>
+                                          </Box>
                                         </Grid>
-                                      );
-                                    })}
-                                </Box>
-                              );
-                            })()}
-
-                          {/* ----------------------------------  
-            ADD MEDIUM (UNCHANGED)
-      ---------------------------------- */}
-                          {(() => {
-                            const usedMediums = mediumFields.map(
-                              (f: any) => f.medium
-                            );
-                            const availableMediums = [
-                              "email",
-                              "sms",
-                              "whatsapp",
-                              "inapp",
-                            ].filter((m) => !usedMediums.includes(m));
-
-                            if (availableMediums.length === 0) return null;
-
-                            return (
-                              <Box
-                                sx={{
-                                  display: "flex",
-                                  alignItems: "center",
-                                  gap: 2,
-                                  mb: 2,
-                                }}
-                              >
-                                {!showMediumDropdown ? (
-                                  <Button
-                                    variant="outlined"
-                                    startIcon={<span>+</span>}
-                                    onClick={() => setShowMediumDropdown(true)}
-                                    sx={{ minWidth: 200 }}
-                                    disabled={!shouldAllowMediumAdd}
-                                  >
-                                    Add Medium
-                                  </Button>
-                                ) : (
-                                  <FormControl
-                                    sx={{ minWidth: 200 }}
-                                    size="small"
-                                  >
-                                    <InputLabel id="add-medium-label">
-                                      Add Medium
-                                    </InputLabel>
-                                    <Select
-                                      labelId="add-medium-label"
-                                      value={""}
-                                      label="Add Medium"
-                                      onChange={(e) => {
-                                        const medium = e.target.value;
-                                        if (!medium) return;
-
-                                        appendMedium({
-                                          medium,
-                                          fromAddress: "",
-                                          serviceName: "",
-                                          apiKey: "",
-                                          enabled: true,
-                                        });
-
-                                        setShowMediumDropdown(false);
-                                      }}
-                                    >
-                                      <MenuItem value="" disabled>
-                                        Select medium to add
-                                      </MenuItem>
-                                      {availableMediums.map((medium) => (
-                                        <MenuItem key={medium} value={medium}>
-                                          {medium}
-                                        </MenuItem>
-                                      ))}
-                                    </Select>
-                                  </FormControl>
-                                )}
+                                      </Grid>
+                                    );
+                                  })}
                               </Box>
                             );
                           })()}
-                        </Grid>
-                      );
-                    })()}
 
-                    {(mediumFields || []).map((field: any, idx) => (
-                      <Grid
-                        container
-                        spacing={2}
-                        key={field.id}
-                        sx={{
-                          m: 2,
-                          width: "100%",
-                          border: "1px solid #eee",
-                          borderRadius: STYLE_GUIDE.SPACING.s1,
-                          p: 2,
-                        }}
-                      >
-                        <Grid item xs={2}>
+                        {/* ----------------------------------  
+                            ADD MEDIUM (UNCHANGED)
+                            ---------------------------------- */}
+                        {(() => {
+                          const usedMediums = mediumFields.map(
+                            (f: any) => f.medium
+                          );
+                          const availableMediums = [
+                            "email",
+                            "sms",
+                            "whatsapp",
+                            "inapp",
+                          ].filter((m) => !usedMediums.includes(m));
+
+                          if (availableMediums.length === 0) return null;
+
+                          return (
+                            <Box
+                              sx={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 2,
+                              }}
+                            >
+                              {!showMediumDropdown ? (
+                                <Button
+                                  variant="outlined"
+                                  startIcon={<span>+</span>}
+                                  onClick={() => setShowMediumDropdown(true)}
+                                  disabled={!shouldAllowMediumAdd}
+                                  fullWidth
+                                >
+                                  Add Medium
+                                </Button>
+                              ) : (
+                                <FormControl fullWidth>
+                                  <InputLabel id="add-medium-label">
+                                    Add Medium
+                                  </InputLabel>
+                                  <Select
+                                    labelId="add-medium-label"
+                                    value={""}
+                                    label="Add Medium"
+                                    onChange={(e) => {
+                                      const medium = e.target.value;
+                                      if (!medium) return;
+
+                                      appendMedium({
+                                        medium,
+                                        fromAddress: "",
+                                        serviceName: "",
+                                        apiKey: "",
+                                        enabled: true,
+                                      });
+
+                                      setShowMediumDropdown(false);
+                                    }}
+                                  >
+                                    <MenuItem value="" disabled>
+                                      Select medium to add
+                                    </MenuItem>
+                                    {availableMediums.map((medium) => (
+                                      <MenuItem key={medium} value={medium}>
+                                        {medium}
+                                      </MenuItem>
+                                    ))}
+                                  </Select>
+                                </FormControl>
+                              )}
+                            </Box>
+                          );
+                        })()}
+                      </Grid>
+                    );
+                  })()}
+
+                  {(mediumFields || []).map((field: any, idx) => (
+                    <Grid
+                      container
+                      spacing={2}
+                      key={field.id}
+                      sx={{
+                        m: 2,
+                        width: "100%",
+                        border: "1px solid #eee",
+                        borderRadius: STYLE_GUIDE.SPACING.s1,
+                        p: 2,
+                      }}
+                    >
+                      <Grid size={5}>
+                        <Box sx={{ display: "flex", alignItems: "center" }}>
                           <Controller
                             name={`mediumSettings.${idx}.medium`}
                             control={control}
                             rules={{ required: "Medium is required" }}
                             render={({ field }) => (
-                              <FormControl fullWidth margin="dense">
+                              <FormControl fullWidth size="small">
                                 <InputLabel>Medium</InputLabel>
                                 <Select {...field} label="Medium" disabled>
                                   {["email", "sms", "whatsapp", "inapp"].map(
@@ -1508,8 +2066,10 @@ export default function Organization() {
                               </FormControl>
                             )}
                           />
-                        </Grid>
-                        <Grid item xs={3}>
+                        </Box>
+                      </Grid>
+                      <Grid size={5}>
+                        <Box sx={{ display: "flex", alignItems: "center" }}>
                           <Controller
                             name={`mediumSettings.${idx}.fromAddress`}
                             control={control}
@@ -1519,7 +2079,7 @@ export default function Organization() {
                                 {...field}
                                 label="From Address"
                                 fullWidth
-                                margin="dense"
+                                size="small"
                                 error={
                                   !!errors.mediumSettings &&
                                   (errors.mediumSettings as any)[idx]
@@ -1534,8 +2094,29 @@ export default function Organization() {
                               />
                             )}
                           />
-                        </Grid>
-                        <Grid item xs={3}>
+                        </Box>
+                      </Grid>
+
+                      <Grid
+                        size={2}
+                        sx={{
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                        }}
+                      >
+                        <IconButton
+                          aria-label="Remove"
+                          color="error"
+                          onClick={() => removeMedium(idx)}
+                          size="small"
+                        >
+                          <DeleteIcon />
+                        </IconButton>
+                      </Grid>
+
+                      <Grid size={5}>
+                        <Box sx={{ display: "flex", alignItems: "center" }}>
                           <Controller
                             name={`mediumSettings.${idx}.serviceName`}
                             control={control}
@@ -1545,7 +2126,7 @@ export default function Organization() {
                                 {...field}
                                 label="Service Name"
                                 fullWidth
-                                margin="dense"
+                                size="small"
                                 error={
                                   !!errors.mediumSettings &&
                                   (errors.mediumSettings as any)[idx]
@@ -1560,8 +2141,10 @@ export default function Organization() {
                               />
                             )}
                           />
-                        </Grid>
-                        <Grid item xs={3}>
+                        </Box>
+                      </Grid>
+                      <Grid size={5}>
+                        <Box sx={{ display: "flex", alignItems: "center" }}>
                           <Controller
                             name={`mediumSettings.${idx}.apiKey`}
                             control={control}
@@ -1572,7 +2155,7 @@ export default function Organization() {
                                 label="API Key"
                                 type="password"
                                 fullWidth
-                                margin="dense"
+                                size="small"
                                 error={
                                   !!errors.mediumSettings &&
                                   (errors.mediumSettings as any)[idx]?.apiKey
@@ -1586,34 +2169,19 @@ export default function Organization() {
                               />
                             )}
                           />
-                        </Grid>
-                        <Grid
-                          item
-                          xs={1}
-                          sx={{
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                          }}
-                        >
-                          <IconButton
-                            aria-label="Remove"
-                            color="error"
-                            onClick={() => removeMedium(idx)}
-                          >
-                            <DeleteIcon />
-                          </IconButton>
-                        </Grid>
-                        <Grid
-                          item
-                          xs={12}
-                          sx={{
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "space-between",
-                            mt: 1,
-                          }}
-                        >
+                        </Box>
+                      </Grid>
+
+                      <Grid
+                        size={2}
+                        sx={{
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "space-between",
+                          mt: 1,
+                        }}
+                      >
+                        <Box sx={{ display: "flex", alignItems: "center" }}>
                           <Controller
                             name={`mediumSettings.${idx}.enabled`}
                             control={control}
@@ -1624,17 +2192,30 @@ export default function Organization() {
                                     checked={value}
                                     onChange={onChange}
                                     color="primary"
+                                    size="small"
                                   />
                                 }
                                 label="Enabled"
                               />
                             )}
                           />
-                        </Grid>
+                        </Box>
                       </Grid>
-                    ))}
+                    </Grid>
+                  ))}
 
-                    <Grid item xs={6} sx={{ pt: "0px !important" }}>
+                  <Grid size={12} sx={{ mt: 2 }}>
+                    <Typography variant="body2" fontWeight={600} sx={{ mt: 1 }}>
+                      Settings
+                    </Typography>
+                    <Divider sx={{ mt: 0.5 }} />
+                  </Grid>
+
+                  <Grid size={6}>
+                    <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                      2 Factor Authentication
+                    </Typography>
+                    <Box sx={{ display: "flex", pt: 1 }}>
                       <Controller
                         name="activatePasswordOTP"
                         control={control}
@@ -1647,20 +2228,21 @@ export default function Organization() {
                                 color="primary"
                               />
                             }
-                            label={value ? "OTP Required" : "OTP Not Required"}
+                            label={
+                              value
+                                ? "OTP Required While Login"
+                                : "OTP Not Required While Login"
+                            }
                           />
                         )}
                       />
-                    </Grid>
-                    <Grid item xs={6} sx={{ pt: "0px !important" }}>
+                    </Box>
+                  </Grid>
+                  {selectedOrg && (
+                    <Grid size={6}>
                       <Controller
                         name="status"
                         control={control}
-                        defaultValue={
-                          selectedOrg.status === "active"
-                            ? "active"
-                            : "inactive"
-                        }
                         render={({ field: { value, onChange } }) => (
                           <FormControlLabel
                             control={
@@ -1677,9 +2259,9 @@ export default function Organization() {
                         )}
                       />
                     </Grid>
-                  </Grid>
-                </form>
-              )}
+                  )}
+                </Grid>
+              </form>
             </DialogContent>
           </DialogContainer>
 
@@ -1704,563 +2286,6 @@ export default function Organization() {
             <Typography>
               Are you sure you want to delete this organization?
             </Typography>
-          </DialogContainer>
-
-          <DialogContainer
-            open={createOpen}
-            onClose={handleCreateClose}
-            maxWidth="md"
-            title="Create Organization"
-            actions={
-              <>
-                <PrimaryButton
-                  type="submit"
-                  variant="contained"
-                  onClick={handleSubmit(handleCreateSubmit)}
-                  disabled={!isValid || createLoading}
-                >
-                  {createLoading ? "Creating..." : "Create"}
-                </PrimaryButton>
-              </>
-            }
-          >
-            <form
-              onSubmit={handleSubmit(handleCreateSubmit)}
-              style={{ marginTop: 8 }}
-              noValidate
-            >
-              <Grid container spacing={2}>
-                <Grid item xs={12}>
-                  <Controller
-                    name="name"
-                    control={control}
-                    rules={{ required: "Name is required" }}
-                    render={({ field }) => (
-                      <TextField
-                        {...field}
-                        label="Name"
-                        fullWidth
-                        margin="normal"
-                        error={!!errors.name}
-                        helperText={errors.name?.message}
-                      />
-                    )}
-                  />
-                </Grid>
-                <Grid item xs={12}>
-                  <Controller
-                    name="description"
-                    control={control}
-                    rules={{ required: "Description is required" }}
-                    render={({ field }) => (
-                      <TextField
-                        {...field}
-                        label="Description"
-                        fullWidth
-                        margin="normal"
-                        error={!!errors.description}
-                        helperText={errors.description?.message}
-                      />
-                    )}
-                  />
-                </Grid>
-                <Grid item xs={12}>
-                  <Controller
-                    name="domain"
-                    control={control}
-                    rules={{ required: "Domain is required" }}
-                    render={({ field }) => (
-                      <TextField
-                        {...field}
-                        label="Primary Domain"
-                        fullWidth
-                        margin="normal"
-                        error={!!errors.domain}
-                        helperText={errors.domain?.message}
-                      />
-                    )}
-                  />
-                </Grid>
-                <Grid item xs={12}>
-                  <Typography variant="body2" sx={{ mb: 1, fontWeight: 500 }}>
-                    Allowed Domains
-                  </Typography>
-                  <Box sx={{ display: "flex", gap: 1, mb: 1 }}>
-                    <TextField
-                      placeholder="Add a domain (e.g. example.com)"
-                      size="small"
-                      fullWidth
-                      value={domainInput}
-                      onChange={(e) => setDomainInput(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter") {
-                          e.preventDefault();
-                          if (domainInput.trim()) {
-                            appendDomain({ value: domainInput.trim() });
-                            setDomainInput("");
-                          }
-                        }
-                      }}
-                      InputProps={{
-                        endAdornment: (
-                          <IconButton
-                            size="small"
-                            color="primary"
-                            onClick={() => {
-                              if (domainInput.trim()) {
-                                appendDomain({ value: domainInput.trim() });
-                                setDomainInput("");
-                              }
-                            }}
-                          >
-                            <AddIcon />
-                          </IconButton>
-                        ),
-                      }}
-                    />
-                  </Box>
-                  <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
-                    {domainFields.map((field, idx) => (
-                      <Box
-                        key={field.id}
-                        sx={{
-                          display: "inline-flex",
-                          alignItems: "center",
-                          bgcolor: "primary.main",
-                          color: "primary.contrastText",
-                          px: 1,
-                          py: 0.5,
-                          borderRadius: 1,
-                          fontSize: "0.8125rem",
-                        }}
-                      >
-                        <span>{field.value}</span>
-                        <IconButton
-                          size="small"
-                          onClick={() => removeDomain(idx)}
-                          sx={{ ml: 0.5, p: 0, color: "inherit" }}
-                        >
-                          <CancelIcon sx={{ fontSize: 16 }} />
-                        </IconButton>
-                      </Box>
-                    ))}
-                  </Box>
-                </Grid>
-                <Grid item xs={12}>
-                  <Controller
-                    name="code"
-                    control={control}
-                    rules={{ required: "Code is required" }}
-                    render={({ field }) => (
-                      <TextField
-                        {...field}
-                        label="Code"
-                        fullWidth
-                        margin="normal"
-                        error={!!errors.code}
-                        helperText={errors.code?.message}
-                      />
-                    )}
-                  />
-                </Grid>
-                <Grid item xs={12}>
-                  <Controller
-                    name="businessUnitCode"
-                    control={control}
-                    // rules={{ required: "Business unit code is required" }}
-                    render={({ field }) => (
-                      <TextField
-                        {...field}
-                        label="Business Unit Code"
-                        fullWidth
-                        margin="normal"
-                        error={!!errors.businessUnitCode}
-                        helperText={errors.businessUnitCode?.message}
-                      />
-                    )}
-                  />
-                </Grid>
-                {shouldAllowProductListing && (
-                  <Grid item xs={12}>
-                    <Controller
-                      name="productIds"
-                      control={control}
-                      rules={{ required: "At least one product is required" }}
-                      render={({ field }) => (
-                        <Autocomplete
-                          multiple
-                          options={productOptions}
-                          getOptionLabel={(option) => option.name}
-                          value={productOptions.filter((option) =>
-                            field.value?.includes(option._id)
-                          )}
-                          onChange={(_, newValue) => {
-                            field.onChange(
-                              newValue.map((option) => option._id)
-                            );
-                          }}
-                          isOptionEqualToValue={(option, value) =>
-                            option._id === value._id
-                          }
-                          renderInput={(params) => (
-                            <TextField
-                              {...params}
-                              label="Products"
-                              margin="normal"
-                              error={!!errors.productIds}
-                              helperText={errors.productIds?.message}
-                            />
-                          )}
-                        />
-                      )}
-                    />
-                  </Grid>
-                )}
-                {(fields || []).map((field, idx) => (
-                  <Grid
-                    container
-                    spacing={2}
-                    alignItems="flex-end"
-                    key={field.id}
-                    sx={{
-                      m: 2,
-                      width: "100%",
-                      border: "1px solid #eee",
-                      borderRadius: STYLE_GUIDE.SPACING.s1,
-                    }}
-                  >
-                    <Grid item xs={3}>
-                      <Controller
-                        name={`productSubscriptions.${idx}.productId`}
-                        control={control}
-                        rules={{ required: "Product is required" }}
-                        render={({ field }) => (
-                          <FormControl fullWidth margin="dense">
-                            <InputLabel>Product</InputLabel>
-                            <Select {...field} label="Product" disabled>
-                              {productOptions.map((product) => (
-                                <MenuItem key={product._id} value={product._id}>
-                                  {product.name}
-                                </MenuItem>
-                              ))}
-                            </Select>
-                          </FormControl>
-                        )}
-                      />
-                    </Grid>
-                    <Grid item xs={3}>
-                      <Controller
-                        name={`productSubscriptions.${idx}.totalLicenses`}
-                        control={control}
-                        rules={{
-                          required: "Total Licenses is required",
-                          min: { value: 1, message: "Must be at least 1" },
-                        }}
-                        render={({ field }) => (
-                          <TextField
-                            {...field}
-                            label="Total Licenses"
-                            type="number"
-                            fullWidth
-                            margin="dense"
-                            error={
-                              !!errors.productSubscriptions &&
-                              (errors.productSubscriptions as any)[idx]
-                                ?.totalLicenses
-                            }
-                            helperText={
-                              (errors.productSubscriptions &&
-                                (errors.productSubscriptions as any)[idx]
-                                  ?.totalLicenses?.message) ||
-                              ""
-                            }
-                            inputProps={{ min: 1 }}
-                          />
-                        )}
-                      />
-                    </Grid>
-                    <Grid item xs={4}>
-                      <Controller
-                        name={`productSubscriptions.${idx}.licenseExpiresAt`}
-                        control={control}
-                        rules={{
-                          required: "License Expiry Date is required",
-                        }}
-                        render={({ field }) => (
-                          <CommonDatePicker
-                            {...field}
-                            control={control}
-                            label="License Expiry Date"
-                            views={["year", "month", "day"]}
-                            sx={{ marginTop: 1 }}
-                          />
-                        )}
-                      />
-                    </Grid>
-                  </Grid>
-                ))}
-
-                {(() => {
-                  const hasNotivixProduct = fields.some((field: any) => {
-                    const product = productOptions.find(
-                      (p) => p._id === field.productId
-                    );
-                    return product && product.name?.toLowerCase() === "notivix";
-                  });
-
-                  if (!hasNotivixProduct) return null;
-
-                  return (
-                    <Grid item xs={12}>
-                      <Typography variant="h6" sx={{ mt: 3, mb: 2 }}>
-                        Medium Settings for Notivix
-                      </Typography>
-                      {(() => {
-                        const usedMediums = mediumFields.map(
-                          (f: any) => f.medium
-                        );
-                        const availableMediums = [
-                          "email",
-                          "sms",
-                          "whatsapp",
-                          "inapp",
-                        ].filter((m) => !usedMediums.includes(m));
-                        if (availableMediums.length === 0) return null;
-                        return (
-                          <Box
-                            sx={{
-                              display: "flex",
-                              alignItems: "center",
-                              gap: 2,
-                              mb: 2,
-                            }}
-                          >
-                            {!showMediumDropdown ? (
-                              <Button
-                                variant="outlined"
-                                startIcon={<span>+</span>}
-                                onClick={() => setShowMediumDropdown(true)}
-                                sx={{ minWidth: 200 }}
-                              >
-                                Add Medium
-                              </Button>
-                            ) : (
-                              <FormControl sx={{ minWidth: 200 }} size="small">
-                                <InputLabel id="add-medium-label">
-                                  Add Medium
-                                </InputLabel>
-                                <Select
-                                  labelId="add-medium-label"
-                                  value={""}
-                                  label="Add Medium"
-                                  onChange={(e) => {
-                                    const medium = e.target.value;
-                                    if (!medium) return;
-                                    appendMedium({
-                                      medium,
-                                      fromAddress: "",
-                                      serviceName: "",
-                                      apiKey: "",
-                                      enabled: true,
-                                    });
-                                    setShowMediumDropdown(false);
-                                  }}
-                                >
-                                  <MenuItem value="" disabled>
-                                    Select medium to add
-                                  </MenuItem>
-                                  {availableMediums.map((medium) => (
-                                    <MenuItem key={medium} value={medium}>
-                                      {medium}
-                                    </MenuItem>
-                                  ))}
-                                </Select>
-                              </FormControl>
-                            )}
-                          </Box>
-                        );
-                      })()}
-                    </Grid>
-                  );
-                })()}
-
-                {(mediumFields || []).map((field: any, idx) => (
-                  <Grid
-                    container
-                    spacing={2}
-                    key={field.id}
-                    sx={{
-                      m: 2,
-                      width: "100%",
-                      border: "1px solid #eee",
-                      borderRadius: STYLE_GUIDE.SPACING.s1,
-                      p: 2,
-                    }}
-                  >
-                    <Grid item xs={2}>
-                      <Controller
-                        name={`mediumSettings.${idx}.medium`}
-                        control={control}
-                        rules={{ required: "Medium is required" }}
-                        render={({ field }) => (
-                          <FormControl fullWidth margin="dense">
-                            <InputLabel>Medium</InputLabel>
-                            <Select {...field} label="Medium" disabled>
-                              {["email", "sms", "whatsapp", "inapp"].map(
-                                (medium) => (
-                                  <MenuItem key={medium} value={medium}>
-                                    {medium}
-                                  </MenuItem>
-                                )
-                              )}
-                            </Select>
-                          </FormControl>
-                        )}
-                      />
-                    </Grid>
-                    <Grid item xs={3}>
-                      <Controller
-                        name={`mediumSettings.${idx}.fromAddress`}
-                        control={control}
-                        rules={{ required: "From Address is required" }}
-                        render={({ field }) => (
-                          <TextField
-                            {...field}
-                            label="From Address"
-                            fullWidth
-                            margin="dense"
-                            error={
-                              !!errors.mediumSettings &&
-                              (errors.mediumSettings as any)[idx]?.fromAddress
-                            }
-                            helperText={
-                              (errors.mediumSettings &&
-                                (errors.mediumSettings as any)[idx]?.fromAddress
-                                  ?.message) ||
-                              ""
-                            }
-                          />
-                        )}
-                      />
-                    </Grid>
-                    <Grid item xs={3}>
-                      <Controller
-                        name={`mediumSettings.${idx}.serviceName`}
-                        control={control}
-                        rules={{ required: "Service Name is required" }}
-                        render={({ field }) => (
-                          <TextField
-                            {...field}
-                            label="Service Name"
-                            fullWidth
-                            margin="dense"
-                            error={
-                              !!errors.mediumSettings &&
-                              (errors.mediumSettings as any)[idx]?.serviceName
-                            }
-                            helperText={
-                              (errors.mediumSettings &&
-                                (errors.mediumSettings as any)[idx]?.serviceName
-                                  ?.message) ||
-                              ""
-                            }
-                          />
-                        )}
-                      />
-                    </Grid>
-                    <Grid item xs={3}>
-                      <Controller
-                        name={`mediumSettings.${idx}.apiKey`}
-                        control={control}
-                        rules={{ required: "API Key is required" }}
-                        render={({ field }) => (
-                          <TextField
-                            {...field}
-                            label="API Key"
-                            type="password"
-                            fullWidth
-                            margin="dense"
-                            error={
-                              !!errors.mediumSettings &&
-                              (errors.mediumSettings as any)[idx]?.apiKey
-                            }
-                            helperText={
-                              (errors.mediumSettings &&
-                                (errors.mediumSettings as any)[idx]?.apiKey
-                                  ?.message) ||
-                              ""
-                            }
-                          />
-                        )}
-                      />
-                    </Grid>
-                    <Grid
-                      item
-                      xs={1}
-                      sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                      }}
-                    >
-                      <IconButton
-                        aria-label="Remove"
-                        color="error"
-                        onClick={() => removeMedium(idx)}
-                      >
-                        <DeleteIcon />
-                      </IconButton>
-                    </Grid>
-                    {/* Second row for Enabled toggle */}
-                    <Grid
-                      item
-                      xs={12}
-                      sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "space-between",
-                        mt: 1,
-                      }}
-                    >
-                      <Controller
-                        name={`mediumSettings.${idx}.enabled`}
-                        control={control}
-                        render={({ field: { value, onChange } }) => (
-                          <FormControlLabel
-                            control={
-                              <Switch
-                                checked={value}
-                                onChange={onChange}
-                                color="primary"
-                              />
-                            }
-                            label="Enabled"
-                          />
-                        )}
-                      />
-                    </Grid>
-                  </Grid>
-                ))}
-                <Grid item xs={12}>
-                  <Controller
-                    name="activatePasswordOTP"
-                    control={control}
-                    render={({ field: { value, onChange } }) => (
-                      <FormControlLabel
-                        control={
-                          <Switch
-                            checked={value}
-                            onChange={(e) => onChange(e.target.checked)}
-                            color="primary"
-                          />
-                        }
-                        label={value ? "OTP Required" : "OTP Not Required"}
-                      />
-                    )}
-                  />
-                </Grid>
-              </Grid>
-            </form>
           </DialogContainer>
 
           {/* Product Access Modal */}

@@ -944,7 +944,7 @@ export default function AddNotificationTypes() {
   const updatedList = list
     ? list.filter((item) => item?.isShowMenu === true)
     : [];
-  const createNotification = usePost(["createNotification"]);
+  const createNotification = usePost(["createNotification"], () => {}, true);
   const notificationResponse = usePost(["notificationResponse"]);
   const navigate = useNavigate();
 
@@ -971,22 +971,19 @@ export default function AddNotificationTypes() {
     const formData = {
       notification: notificationData,
     };
-    console.log("Form Submission Data:", JSON.stringify(formData, null, 2));
     try {
       const response = await createNotification.mutateAsync({
         url: `${POST.CREATE_NOTIFICATION_TYPE}`,
         payload: notificationData,
       });
-      console.log("Notification created successfully:", response);
       if (response.success && response.data?._id) {
         setNotificationTypeId(response.data?._id);
-        toast.success("Notification created successfully!");
         setExpanded((prev) => ({ ...prev, condition: false, reminder: true }));
       } else {
         throw new Error("Notification creation failed or no ID returned");
       }
     } catch (error) {
-      toast.error(
+      console.error(
         error.message || "Failed to create notification. Please try again."
       );
     }

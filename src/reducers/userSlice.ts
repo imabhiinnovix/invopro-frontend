@@ -82,6 +82,7 @@ interface UserState {
   permissions: PermissionMap | null;
   loading: boolean;
   error: string | null;
+  isUserListStale: boolean;
 }
 
 const initialState: UserState = {
@@ -89,6 +90,7 @@ const initialState: UserState = {
   permissions: null,
   loading: false,
   error: null,
+  isUserListStale: false,
 };
 
 const userSlice = createSlice({
@@ -118,6 +120,9 @@ const userSlice = createSlice({
     setError(state, action: PayloadAction<string | null>) {
       state.error = action.payload;
     },
+    setUserListStale(state, action: PayloadAction<boolean>) {
+      state.isUserListStale = action.payload;
+    },
   },
 });
 
@@ -127,5 +132,6 @@ export const {
   setPermissions,
   setLoading,
   setError,
+  setUserListStale,
 } = userSlice.actions;
 export default userSlice.reducer;
