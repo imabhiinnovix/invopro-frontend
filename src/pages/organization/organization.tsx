@@ -54,7 +54,8 @@ import {
   formatDateWithoutTime,
 } from "../../utils/utils";
 import { PermissionsMap } from "../../utils/constants";
-import useFilePostData from "../../hooks/usePostMultipart";
+import usePostMultipart from "../../hooks/usePostMultipart";
+import usePutMultipart from "../../hooks/usePutMultipart";
 import { toast } from "react-toastify";
 import CommonDatePicker from "../../components/common/datePicker/datePicker";
 
@@ -291,7 +292,7 @@ export default function Organization() {
     true
   );
 
-  const updateOrg = usePut<any, any>(
+  const updateOrg = usePutMultipart<any, any>(
     ["organizationList"],
     () => {
       setOrgModalOpen(false);
@@ -301,21 +302,13 @@ export default function Organization() {
     true
   );
 
-  const createOrg = usePost<any, any>(
+  const createOrg = usePostMultipart<any, any>(
     ["organizationList"],
     () => {
       setOrgModalOpen(false);
       refetch();
     },
     true
-  );
-
-  const uploadLogo = useFilePostData<any, any>(
-    ["uploadLogo"],
-    (data) => {
-      // Success handling handled inline in submit
-    },
-    { showToast: false }
   );
 
   const createMedium = usePost<any, any>(["organizationList"], () => {}, true);
@@ -473,50 +466,53 @@ export default function Organization() {
 
   const handleOrgModalSubmit = async (formData: any) => {
     setOrgModalLoading(true);
-    let logoPath = null;
 
     try {
-      if (formData.logo instanceof File) {
-        const uploadResponse = await uploadLogo.mutateAsync({
-          url: POST.FILE_UPLOAD,
-          payload: {
-            files: formData.logo,
-            operation: "profile",
-          },
-        });
+      const { productIds, logo, ...rest } = formData;
+      const payload = {
+        files: formData.logo,
+        name: formData.name,
+        description: formData.description,
 
-        if (uploadResponse && (uploadResponse as any).success) {
-          const responseData = (uploadResponse as any).data;
-          logoPath = responseData.imagePath;
-        }
-      } else if (typeof formData.logo === "string") {
-        logoPath = formData.logo;
-      }
+        code: formData.code,
+
+        businessUnitCode: formData.businessUnitCode || "",
+        phone: formData.phone,
+        domain: formData.domain,
+        allowedDomains: (formData.allowedDomains || []).map(
+          (d: any) => d.value
+        ),
+        address1: formData.address1,
+        address2: formData.address2,
+        city: formData.city,
+        state: formData.state,
+        zip: formData.zip,
+        country: formData.country,
+        gst: formData.gst,
+        pan: formData.pan,
+
+        ...(!selectedOrg && {
+          email: formData.email,
+          password: formData.password,
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+        }),
+
+        productIds: formData.productSubscriptions.map(
+          (ps: any) => ps.productId
+        ),
+        productSubscriptions: formData.productSubscriptions.map((ps: any) => ({
+          productId: ps.productId,
+          totalLicenses: Number(ps.totalLicenses),
+          licenseExpiresAt: ps.licenseExpiresAt,
+        })),
+        status: rest.status === "active" ? "active" : "inactive",
+        activatePasswordOTP: formData.activatePasswordOTP,
+      };
+
+      console.log("payload", payload);
 
       if (selectedOrg) {
-        const { productIds, logo, ...rest } = formData;
-        const payload = {
-          ...rest,
-          productIds: formData.productSubscriptions.map(
-            (ps: any) => ps.productId
-          ),
-          code: selectedOrg.code,
-          status: rest.status === "active" ? "active" : "inactive",
-          owner: rest.owner,
-          allowedDomains: formData.allowedDomains.map((d: any) => d.value),
-          activatePasswordOTP: formData.activatePasswordOTP,
-          phone: formData.phone,
-          address1: formData.address1,
-          address2: formData.address2,
-          city: formData.city,
-          state: formData.state,
-          zip: formData.zip,
-          country: formData.country,
-          gst: formData.gst,
-          pan: formData.pan,
-          logo: logoPath,
-        };
-
         await updateOrg.mutateAsync({
           url: `${PUT.UPDATE_ORGANIZATION}${selectedOrg._id}`,
           payload,
@@ -550,43 +546,6 @@ export default function Organization() {
           }
         }
       } else {
-        const { logo, ...rest } = formData;
-        const payload = {
-          name: formData.name,
-          description: formData.description,
-          domain: formData.domain,
-          code: formData.code,
-          productSubscriptions: formData.productSubscriptions.map(
-            (ps: any) => ({
-              productId: ps.productId,
-              totalLicenses: Number(ps.totalLicenses),
-              licenseExpiresAt: ps.licenseExpiresAt,
-            })
-          ),
-          productIds: formData.productSubscriptions.map(
-            (ps: any) => ps.productId
-          ),
-          businessUnitCode: formData.businessUnitCode || "",
-          allowedDomains: (formData.allowedDomains || []).map(
-            (d: any) => d.value
-          ),
-          activatePasswordOTP: formData.activatePasswordOTP,
-          phone: formData.phone,
-          address1: formData.address1,
-          address2: formData.address2,
-          city: formData.city,
-          state: formData.state,
-          zip: formData.zip,
-          country: formData.country,
-          gst: formData.gst,
-          pan: formData.pan,
-          email: formData.email,
-          password: formData.password,
-          firstName: formData.firstName,
-          lastName: formData.lastName,
-          logo: logoPath,
-        };
-
         const createResponse = await createOrg.mutateAsync({
           url: POST.Create_Organization,
           payload,
@@ -631,8 +590,6 @@ export default function Organization() {
       setOrgModalLoading(false);
     }
   };
-
-  const { getHeadingSx } = useComponentTypography();
 
   const { data: productListData } = useGet<{
     success: boolean;

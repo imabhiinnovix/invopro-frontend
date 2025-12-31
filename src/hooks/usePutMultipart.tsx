@@ -7,6 +7,9 @@ type onSuccess<TResponse> = (data: TResponse) => void;
 type onError = (
   error: AxiosError<{ success: boolean; message?: string }>
 ) => void;
+type ApiBaseResponse = {
+  message?: string;
+};
 
 const objectToFormData = <TRequest,>(
   obj: TRequest,
@@ -45,12 +48,12 @@ const objectToFormData = <TRequest,>(
   return fd;
 };
 
-const filePostFetcher = async <TRequest, TResponse>(
+const filePutFetcher = async <TRequest, TResponse>(
   url: string,
   payload: TRequest
 ): Promise<TResponse> => {
   const formData = objectToFormData(payload);
-  const response = await axiosInstance.post(url, formData, {
+  const response = await axiosInstance.put(url, formData, {
     headers: {
       "Content-Type": "multipart/form-data",
     },
@@ -58,7 +61,7 @@ const filePostFetcher = async <TRequest, TResponse>(
   return response.data;
 };
 
-const usePostMultipart = <TRequest, TResponse>(
+const usePutMultipart = <TRequest, TResponse extends ApiBaseResponse>(
   key: string[],
   onSuccess?: onSuccess<TResponse>,
   showToast: boolean = false,
@@ -68,7 +71,7 @@ const usePostMultipart = <TRequest, TResponse>(
 
   return useMutation<TResponse, unknown, { url: string; payload: TRequest }>({
     mutationFn: ({ url, payload }) =>
-      filePostFetcher<TRequest, TResponse>(url, payload),
+      filePutFetcher<TRequest, TResponse>(url, payload),
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: key });
 
@@ -95,4 +98,4 @@ const usePostMultipart = <TRequest, TResponse>(
   });
 };
 
-export default usePostMultipart;
+export default usePutMultipart;

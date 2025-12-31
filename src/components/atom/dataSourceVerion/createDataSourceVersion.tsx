@@ -26,7 +26,7 @@ import FileUploadButton from "../file/fileUploadButton";
 import ExcelJS from "exceljs";
 import { toast } from "react-toastify";
 import CommonSelect from "../../common/dropdown/commonSelect";
-import useFilePostData from "../../../hooks/usePostMultipart";
+import usePostMultipart from "../../../hooks/usePostMultipart";
 import { STYLE_GUIDE } from "../../../styles";
 import { useUnifiedTheme } from "../../../hooks/useUnifiedTheme";
 import { useComponentTypography } from "../../../hooks";
@@ -127,7 +127,7 @@ const CreateDataSourceVersion: React.FC<CreateDataSourceVersionProps> = ({
     !!watch("dataSourceId")
   );
 
-  const { mutate, isPending } = useFilePostData<
+  const { mutate, isPending } = usePostMultipart<
     { files: File; operation: string },
     { message: string; data?: any }
   >(
@@ -136,7 +136,7 @@ const CreateDataSourceVersion: React.FC<CreateDataSourceVersionProps> = ({
       setReload(true);
       handleCancel();
     },
-    { showToast: true }
+    true
   );
 
   useEffect(() => {

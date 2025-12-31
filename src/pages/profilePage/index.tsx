@@ -36,7 +36,7 @@ import {
 } from "@mui/icons-material";
 import useGet from "../../hooks/useGet";
 import usePut from "../../hooks/usePut";
-import useFilePostData from "../../hooks/usePostMultipart";
+import usePostMultipart from "../../hooks/usePostMultipart";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { GET, PUT, POST, DELETE } from "../../services/apiRoutes";
@@ -160,7 +160,7 @@ const ProfilePage = () => {
   const changePassword = usePut([""], () => {}, true);
   const deleteImage = useDelete(["deleteImage"]);
   const updateUserProfile = usePut(["updateUserProfile"]);
-  const uploadImage = useFilePostData<
+  const uploadImage = usePostMultipart<
     { files: File; operation: string },
     { message: string; data?: any }
   >(
@@ -168,7 +168,7 @@ const ProfilePage = () => {
     (data) => {
       toast.success(data.message);
     },
-    { showToast: false }
+    false
   );
 
   const filteredDesignations = selectedDepartmentId
