@@ -96,7 +96,7 @@ const UserDropdown = () => {
 
   const usersQuery = useGet<UserListResponse>(
     ["users"],
-    GET.USER_LIST,
+    `${GET.USER_LIST}?paginate=false`,
     !sessionStorage.getItem(USERS_STORAGE_KEY)
   );
 

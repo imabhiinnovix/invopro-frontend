@@ -529,8 +529,6 @@ export default function Organization() {
         activatePasswordOTP: formData.activatePasswordOTP,
       };
 
-      console.log("payload", payload);
-
       if (selectedOrg) {
         await updateOrg.mutateAsync({
           url: `${PUT.UPDATE_ORGANIZATION}${selectedOrg._id}`,
