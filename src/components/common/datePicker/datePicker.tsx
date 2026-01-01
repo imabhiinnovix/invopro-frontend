@@ -81,7 +81,7 @@
 
 // export default CommonDatePicker;
 
-import { useState } from "react";
+import { useState, forwardRef } from "react";
 import {
   Controller,
   Control,
@@ -112,9 +112,10 @@ interface CommonDatePickerProps<T extends FieldValues> {
   margin?: "none" | "dense" | "normal";
 }
 
-const CommonDatePicker = <T extends FieldValues>(
-  props: CommonDatePickerProps<T>
-) => {
+function CommonDatePickerInner<T extends FieldValues>(
+  props: CommonDatePickerProps<T>,
+  ref: React.ForwardedRef<HTMLDivElement>
+) {
   const {
     control,
     name,
@@ -145,6 +146,7 @@ const CommonDatePicker = <T extends FieldValues>(
         return (
           <LocalizationProvider dateAdapter={AdapterLuxon}>
             <MobileDatePicker
+              ref={ref}
               label={label}
               views={views}
               value={tempDate || currentValue || null}
@@ -180,6 +182,14 @@ const CommonDatePicker = <T extends FieldValues>(
       }}
     />
   );
-};
+}
+
+const CommonDatePicker = forwardRef(CommonDatePickerInner) as <
+  T extends FieldValues
+>(
+  props: CommonDatePickerProps<T> & {
+    ref?: React.ForwardedRef<HTMLDivElement>;
+  }
+) => React.ReactElement;
 
 export default CommonDatePicker;

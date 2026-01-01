@@ -26,6 +26,7 @@
     "@types/redux-thunk": "^2.1.32",
     "axios": "^1.7.9",
     "chart.js": "^4.5.0",
+    "country-state-city": "^3.2.1",
     "date-fns": "^4.1.0",
     "dayjs": "^1.11.13",
     "exceljs": "^4.4.0",

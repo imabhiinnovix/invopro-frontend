@@ -1,5 +1,5 @@
 import { StrictMode } from "react";
-import { createRoot } from "react-dom/client";
+import { createRoot, Root } from "react-dom/client";
 
 import App from "./App.tsx";
 
@@ -9,7 +9,19 @@ import { Provider } from "react-redux";
 import { store } from "./reducers";
 
 export const queryClient = new QueryClient();
-createRoot(document.getElementById("root")!).render(
+
+declare global {
+  interface Window {
+    __root?: Root;
+  }
+}
+
+const rootElement = document.getElementById("root")!;
+
+// Type-safe root creation
+const root = window.__root || (window.__root = createRoot(rootElement));
+
+root.render(
   <StrictMode>
     <Provider store={store}>
       <QueryClientProvider client={queryClient}>

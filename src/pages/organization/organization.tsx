@@ -58,6 +58,10 @@ import usePostMultipart from "../../hooks/usePostMultipart";
 import usePutMultipart from "../../hooks/usePutMultipart";
 import { toast } from "react-toastify";
 import CommonDatePicker from "../../components/common/datePicker/datePicker";
+import LocationAutocomplete, {
+  validateLocationValues,
+} from "../../components/common/location/LocationAutocomplete";
+import { State, City } from "country-state-city";
 
 interface ProductSubscription {
   productId: string;
@@ -281,6 +285,53 @@ export default function Organization() {
 
   const theme = useUnifiedTheme();
 
+  const selectedCountry = watch("country");
+  const selectedState = watch("state");
+  const currentStateValue = watch("state");
+  const currentCityValue = watch("city");
+
+  useEffect(() => {
+    if (selectedCountry) {
+      if (currentStateValue) {
+        try {
+          const states = State.getStatesOfCountry(selectedCountry);
+          const stateExists = states.some(
+            (s) =>
+              s.isoCode === currentStateValue || s.name === currentStateValue
+          );
+          if (!stateExists) {
+            setValue("state", "");
+            setValue("city", "");
+          }
+        } catch {
+          setValue("state", "");
+          setValue("city", "");
+        }
+      }
+    } else {
+      setValue("state", "");
+      setValue("city", "");
+    }
+  }, [selectedCountry, currentStateValue, setValue]);
+
+  useEffect(() => {
+    if (selectedState && selectedCountry) {
+      if (currentCityValue) {
+        try {
+          const cities = City.getCitiesOfState(selectedCountry, selectedState);
+          const cityExists = cities.some((c) => c.name === currentCityValue);
+          if (!cityExists) {
+            setValue("city", "");
+          }
+        } catch {
+          setValue("city", "");
+        }
+      }
+    } else if (!selectedState) {
+      setValue("city", "");
+    }
+  }, [selectedState, selectedCountry, currentCityValue, setValue]);
+
   const { data, isLoading, error, refetch } = useGet<{
     success: boolean;
     data: any[];
@@ -396,10 +447,17 @@ export default function Organization() {
       setValue("phone", org.phone || "");
       setValue("address1", org.address1 || "");
       setValue("address2", org.address2 || "");
-      setValue("city", org.city || "");
-      setValue("state", org.state || "");
+
+      const { country, state, city } = validateLocationValues(
+        org.country,
+        org.state,
+        org.city
+      );
+
+      setValue("country", country);
+      setValue("state", state);
+      setValue("city", city);
       setValue("zip", org.zip || "");
-      setValue("country", org.country || "");
       setValue("gst", org.gst || "");
       setValue("pan", org.pan || "");
       if (org.logo) {
@@ -1261,26 +1319,36 @@ export default function Organization() {
                     </Box>
                   </Grid>
                   <Grid size={3}>
-                    <Box sx={{ display: "flex", alignItems: "center" }}>
-                      <Controller
-                        name="city"
-                        control={control}
-                        render={({ field }) => (
-                          <TextField {...field} label="City" fullWidth />
-                        )}
-                      />
-                    </Box>
+                    <LocationAutocomplete
+                      control={control}
+                      name="country"
+                      label="Country"
+                      locationType="country"
+                      errors={errors}
+                      rules={{ required: "Country is required" }}
+                      required
+                    />
                   </Grid>
                   <Grid size={3}>
-                    <Box sx={{ display: "flex", alignItems: "center" }}>
-                      <Controller
-                        name="state"
-                        control={control}
-                        render={({ field }) => (
-                          <TextField {...field} label="State" fullWidth />
-                        )}
-                      />
-                    </Box>
+                    <LocationAutocomplete
+                      control={control}
+                      name="state"
+                      label="State"
+                      locationType="state"
+                      selectedCountry={selectedCountry}
+                      errors={errors}
+                    />
+                  </Grid>
+                  <Grid size={3}>
+                    <LocationAutocomplete
+                      control={control}
+                      name="city"
+                      label="City"
+                      locationType="city"
+                      selectedCountry={selectedCountry}
+                      selectedState={selectedState}
+                      errors={errors}
+                    />
                   </Grid>
                   <Grid size={3}>
                     <Box sx={{ display: "flex", alignItems: "center" }}>
@@ -1289,25 +1357,6 @@ export default function Organization() {
                         control={control}
                         render={({ field }) => (
                           <TextField {...field} label="Zip" fullWidth />
-                        )}
-                      />
-                    </Box>
-                  </Grid>
-                  <Grid size={3}>
-                    <Box sx={{ display: "flex", alignItems: "center" }}>
-                      <Controller
-                        name="country"
-                        control={control}
-                        rules={{ required: "Country is required" }}
-                        render={({ field }) => (
-                          <TextField
-                            {...field}
-                            required
-                            label="Country"
-                            fullWidth
-                            error={!!errors.country}
-                            helperText={errors.country?.message}
-                          />
                         )}
                       />
                     </Box>
@@ -1446,12 +1495,16 @@ export default function Organization() {
 
                   {isUserSuperUser && (
                     <>
-                     <Grid size={12} sx={{ mt: 2 }}>
-                      <Typography variant="body2" fontWeight={600} sx={{ mt: 1 }}>
-                        Product License
-                      </Typography>
-                      <Divider sx={{ mt: 0.5 }} />
-                    </Grid>
+                      <Grid size={12} sx={{ mt: 2 }}>
+                        <Typography
+                          variant="body2"
+                          fontWeight={600}
+                          sx={{ mt: 1 }}
+                        >
+                          Product License
+                        </Typography>
+                        <Divider sx={{ mt: 0.5 }} />
+                      </Grid>
                       <Grid size={12}>
                         {!selectedOrg
                           ? shouldAllowProductListing && (

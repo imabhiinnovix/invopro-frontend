@@ -1,3 +1,4 @@
+import { forwardRef } from "react";
 import {
   Autocomplete,
   AutocompleteProps,
@@ -21,19 +22,22 @@ interface StyledAutocompleteProps<
   textFieldProps?: Partial<TextFieldProps>;
 }
 
-const StyledAutocomplete = <
+function StyledAutocompleteInner<
   T,
   Multiple extends boolean | undefined = undefined,
   DisableClearable extends boolean | undefined = undefined,
   FreeSolo extends boolean | undefined = undefined
->({
-  label,
-  error = false,
-  helperText,
-  textFieldProps = {},
-  sx = {},
-  ...props
-}: StyledAutocompleteProps<T, Multiple, DisableClearable, FreeSolo>) => {
+>(
+  {
+    label,
+    error = false,
+    helperText,
+    textFieldProps = {},
+    sx = {},
+    ...props
+  }: StyledAutocompleteProps<T, Multiple, DisableClearable, FreeSolo>,
+  ref: React.ForwardedRef<HTMLDivElement>
+) {
   const theme = useUnifiedTheme();
 
   const autocompleteSx = {
@@ -162,6 +166,7 @@ const StyledAutocomplete = <
   return (
     <Autocomplete
       {...props}
+      ref={ref}
       sx={autocompleteSx}
       ListboxProps={paperProps}
       renderInput={(params) => (
@@ -175,6 +180,17 @@ const StyledAutocomplete = <
       )}
     />
   );
-};
+}
+
+const StyledAutocomplete = forwardRef(StyledAutocompleteInner) as <
+  T,
+  Multiple extends boolean | undefined = undefined,
+  DisableClearable extends boolean | undefined = undefined,
+  FreeSolo extends boolean | undefined = undefined
+>(
+  props: StyledAutocompleteProps<T, Multiple, DisableClearable, FreeSolo> & {
+    ref?: React.ForwardedRef<HTMLDivElement>;
+  }
+) => React.ReactElement;
 
 export default StyledAutocomplete;
