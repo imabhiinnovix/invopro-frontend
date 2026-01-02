@@ -7,7 +7,7 @@ import {
   Path,
   RegisterOptions,
 } from "react-hook-form";
-import { Box } from "@mui/material";
+import { SxProps, Theme, TextFieldProps } from "@mui/material";
 import StyledAutocomplete from "../../atom/common/StyledAutocomplete";
 import {
   Country,
@@ -32,10 +32,10 @@ export const validateCountry = (
 
   try {
     const countries = Country.getAllCountries();
-    const countryExists = countries.some(
+    const countryExists = countries.find(
       (c) => c.isoCode === countryValue || c.name === countryValue
     );
-    return countryExists ? countryValue : "";
+    return countryExists ? countryExists.isoCode : "";
   } catch {
     return "";
   }
@@ -55,10 +55,10 @@ export const validateState = (
 
   try {
     const states = State.getStatesOfCountry(countryValue);
-    const stateExists = states.some(
+    const stateExists = states.find(
       (s) => s.isoCode === stateValue || s.name === stateValue
     );
-    return stateExists ? stateValue : "";
+    return stateExists ? stateExists.isoCode : "";
   } catch {
     return "";
   }
@@ -80,8 +80,8 @@ export const validateCity = (
 
   try {
     const cities = City.getCitiesOfState(countryValue, stateValue);
-    const cityExists = cities.some((c) => c.name === cityValue);
-    return cityExists ? cityValue : "";
+    const cityExists = cities.find((c) => c.name === cityValue);
+    return cityExists ? cityExists.name : "";
   } catch {
     return "";
   }
@@ -121,6 +121,10 @@ interface LocationAutocompleteProps<T extends FieldValues> {
   rules?: RegisterOptions<T>;
   required?: boolean;
   fullWidth?: boolean;
+  disabled?: boolean;
+  sx?: SxProps<Theme>;
+  variant?: TextFieldProps["variant"];
+  size?: TextFieldProps["size"];
 }
 
 interface LocationOption {
@@ -139,12 +143,17 @@ const LocationAutocomplete = <T extends FieldValues>({
   rules = {},
   required = false,
   fullWidth = true,
+  disabled = false,
+  sx = {},
+  variant,
+  size,
 }: LocationAutocompleteProps<T>) => {
   const options = useMemo<LocationOption[]>(() => {
     try {
       switch (locationType) {
         case "country": {
           const countries = Country.getAllCountries();
+
           return countries.map((country: ICountry) => ({
             label: country.name,
             value: country.isoCode,
@@ -178,63 +187,65 @@ const LocationAutocomplete = <T extends FieldValues>({
   const fieldError = errors?.[name];
   const error = !!fieldError;
   const isDisabled =
+    disabled ||
     (locationType === "state" && !selectedCountry) ||
     (locationType === "city" && (!selectedCountry || !selectedState));
 
   return (
-    <Box sx={{ display: "flex", alignItems: "center" }}>
-      <Controller
-        name={name}
-        control={control}
-        rules={rules}
-        render={({ field }) => {
-          const selectedOption =
-            options.find((option) => option.value === field.value) || null;
+    <Controller
+      name={name}
+      control={control}
+      rules={rules}
+      render={({ field }) => {
+        const selectedOption =
+          options.find((option) => option.value === field.value) || null;
 
-          return (
-            <StyledAutocomplete<LocationOption>
-              {...field}
-              value={selectedOption}
-              options={options}
-              label={label}
-              error={error}
-              helperText={fieldError?.message as string}
-              fullWidth={fullWidth}
-              getOptionLabel={(option) => option?.label || ""}
-              isOptionEqualToValue={(option, value) =>
-                option.value === value.value
-              }
-              onChange={(_, newValue) => {
-                field.onChange(newValue?.value || "");
-              }}
-              disabled={isDisabled}
-              sx={{
-                "& .MuiOutlinedInput-root.Mui-disabled": {
-                  cursor: "not-allowed",
-                  "& fieldset": {
-                    borderColor: "action.disabled",
-                  },
-                  "& input": {
-                    color: "action.disabled",
-                    WebkitTextFillColor: "action.disabled",
-                  },
+        return (
+          <StyledAutocomplete<LocationOption>
+            {...field}
+            value={selectedOption}
+            options={options}
+            label={label}
+            error={error}
+            helperText={fieldError?.message as string}
+            fullWidth={fullWidth}
+            getOptionLabel={(option) => option?.label || ""}
+            isOptionEqualToValue={(option, value) =>
+              option.value === value.value
+            }
+            onChange={(_, newValue) => {
+              field.onChange(newValue?.value || "");
+            }}
+            disabled={isDisabled}
+            sx={{
+              "& .MuiOutlinedInput-root.Mui-disabled": {
+                cursor: "not-allowed",
+                "& fieldset": {
+                  borderColor: "action.disabled",
                 },
-                "& .MuiInputLabel-root.Mui-disabled": {
+                "& input": {
                   color: "action.disabled",
+                  WebkitTextFillColor: "action.disabled",
                 },
-                "& .MuiAutocomplete-endAdornment": {
-                  color: isDisabled ? "action.disabled" : undefined,
-                },
-              }}
-              textFieldProps={{
-                required,
-                disabled: isDisabled,
-              }}
-            />
-          );
-        }}
-      />
-    </Box>
+              },
+              "& .MuiInputLabel-root.Mui-disabled": {
+                color: "action.disabled",
+              },
+              "& .MuiAutocomplete-endAdornment": {
+                color: isDisabled ? "action.disabled" : undefined,
+              },
+              ...sx,
+            }}
+            textFieldProps={{
+              required,
+              disabled: isDisabled,
+              variant,
+              size,
+            }}
+          />
+        );
+      }}
+    />
   );
 };
 

@@ -7,11 +7,6 @@ import {
   Typography,
   TextField,
   Button,
-  Modal,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
   Tooltip,
   Chip,
   FormControl,
@@ -27,7 +22,6 @@ import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
-import { useUnifiedTheme } from "../../hooks/useUnifiedTheme";
 import { STYLE_GUIDE } from "../../styles";
 import { GET, POST, PUT, DELETE } from "../../services/apiRoutes";
 import useGet from "../../hooks/useGet";
@@ -47,10 +41,15 @@ import DialogContainer from "../../components/molecule/dialog";
 import PrimaryButton from "../../components/common/PrimaryButton";
 import { BusinessUnitDataApiResponse } from "../businessUnit/BusinessUnitDataTable";
 import { CustomPagination } from "../../components/common/pagination/customPagination";
-import { queryClient } from "../../main";
 import { useDispatch } from "react-redux";
 import { setUserListStale } from "../../reducers/userSlice";
 import { AuthContext } from "../../context/AuthContext";
+import { useForm } from "react-hook-form";
+import LocationAutocomplete, {
+  validateLocationValues,
+} from "../../components/common/location/LocationAutocomplete";
+import { State, City } from "country-state-city";
+import { useEffect } from "react";
 
 interface UsersProps {
   organizationId?: string;
@@ -91,7 +90,6 @@ export default function Users({
   shouldAllowUserDelete,
   shouldAllowProductSubscriptionListing,
 }: UsersProps) {
-  const theme = useUnifiedTheme();
   const { userDetails } = useContext(AuthContext);
 
   const columns: GridColDef[] = useMemo(
@@ -251,7 +249,6 @@ export default function Users({
               >
                 <DeleteIcon />
               </Button>
-              {console.log("userDetails", userDetails)}
             </Tooltip>
           </Box>
         ),
@@ -316,7 +313,7 @@ export default function Users({
 
   const designationList = useGet<{
     success: boolean;
-    data: any[];
+    data: Array<{ _id: string; name: string; departmentId: { _id: string } }>;
   }>(["designationList"], GET?.DESIGNATION_LIST, true);
 
   const businessUnitListForUser = useGet<BusinessUnitDataApiResponse>(
@@ -343,7 +340,7 @@ export default function Users({
     true
   );
 
-  const deleteUserMutation = useDelete<any>(
+  const deleteUserMutation = useDelete<{ success: boolean; message: string }>(
     ["users", organizationId || "all", String(paginationModel.page + 1)],
     async () => {
       dispatch(setUserListStale(true));
@@ -365,15 +362,130 @@ export default function Users({
     designationId: "",
     status: "active" as "active" | "inactive",
     businessUnit: [] as string[],
+    address: "",
+    country: "",
+    state: "",
+    city: "",
+    postalCode: "",
   });
 
-  const handleEdit = (row: UserRowData) => {
-    // Find the department and designation objects from the fetched lists
-    const department = departmentList.data?.data?.find(
-      (dept) => dept._id === row.departmentId
-    );
-    const designation = designationList.data?.data?.find(
-      (design) => design._id === row.designationId
+  const {
+    control: formControl,
+    watch,
+    reset,
+  } = useForm({
+    defaultValues: {
+      address: "",
+      country: "",
+      state: "",
+      city: "",
+      postalCode: "",
+    },
+  });
+
+  const selectedCountry = watch("country");
+  const selectedState = watch("state");
+  const currentCity = watch("city");
+
+  useEffect(() => {
+    if (selectedCountry) {
+      if (selectedState) {
+        try {
+          const states = State.getStatesOfCountry(selectedCountry);
+          const stateExists = states.some(
+            (s) => s.isoCode === selectedState || s.name === selectedState
+          );
+          if (!stateExists) {
+            reset((prevValues) => ({
+              ...prevValues,
+              state: "",
+              city: "",
+            }));
+            setFormData((prev) => ({
+              ...prev,
+              state: "",
+              city: "",
+            }));
+          }
+        } catch {
+          reset((prevValues) => ({
+            ...prevValues,
+            state: "",
+            city: "",
+          }));
+          setFormData((prev) => ({
+            ...prev,
+            state: "",
+            city: "",
+          }));
+        }
+      }
+    } else {
+      reset((prevValues) => ({
+        ...prevValues,
+        state: "",
+        city: "",
+      }));
+      setFormData((prev) => ({
+        ...prev,
+        state: "",
+        city: "",
+      }));
+    }
+  }, [selectedCountry, selectedState, reset]);
+
+  useEffect(() => {
+    if (selectedState && selectedCountry) {
+      if (currentCity) {
+        try {
+          const cities = City.getCitiesOfState(selectedCountry, selectedState);
+          const cityExists = cities.some((c) => c.name === currentCity);
+          if (!cityExists) {
+            reset((prevValues) => ({
+              ...prevValues,
+              city: "",
+            }));
+            setFormData((prev) => ({
+              ...prev,
+              city: "",
+            }));
+          }
+        } catch {
+          reset((prevValues) => ({
+            ...prevValues,
+            city: "",
+          }));
+          setFormData((prev) => ({
+            ...prev,
+            city: "",
+          }));
+        }
+      }
+    } else if (!selectedState) {
+      reset((prevValues) => ({
+        ...prevValues,
+        city: "",
+      }));
+      setFormData((prev) => ({
+        ...prev,
+        city: "",
+      }));
+    }
+  }, [selectedState, selectedCountry, currentCity, reset]);
+
+  const handleEdit = (
+    row: UserRowData & {
+      address?: string;
+      country?: string;
+      state?: string;
+      city?: string;
+      postalCode?: string;
+    }
+  ) => {
+    const { country, state, city } = validateLocationValues(
+      row.country,
+      row.state,
+      row.city
     );
 
     setFormData({
@@ -393,19 +505,37 @@ export default function Users({
         Array.isArray(row?.businessUnit) && row.businessUnit.length > 0
           ? row.businessUnit
           : ["all"],
+      address: row.address || "",
+      country: country,
+      state: state,
+      city: city,
+      postalCode: row.postalCode || "",
+    });
+    reset({
+      address: row.address || "",
+      country: country,
+      state: state,
+      city: city,
+      postalCode: row.postalCode || "",
     });
     setModalMode("edit");
     setUserIdForEdit(row.id);
     setOpenModal(true);
   };
 
-  const handleView = (row: UserRowData) => {
-    // Find the department and designation objects from the fetched lists
-    const department = departmentList.data?.data?.find(
-      (dept) => dept._id === row.departmentId
-    );
-    const designation = designationList.data?.data?.find(
-      (design) => design._id === row.designationId
+  const handleView = (
+    row: UserRowData & {
+      address?: string;
+      country?: string;
+      state?: string;
+      city?: string;
+      postalCode?: string;
+    }
+  ) => {
+    const { country, state, city } = validateLocationValues(
+      row.country,
+      row.state,
+      row.city
     );
 
     setFormData({
@@ -425,6 +555,18 @@ export default function Users({
         Array.isArray(row?.businessUnit) && row.businessUnit.length > 0
           ? row.businessUnit
           : ["all"],
+      address: row.address || "",
+      country: country,
+      state: state,
+      city: city,
+      postalCode: row.postalCode || "",
+    });
+    reset({
+      address: row.address || "",
+      country: country,
+      state: state,
+      city: city,
+      postalCode: row.postalCode || "",
     });
     setModalMode("view");
     setOpenModal(true);
@@ -449,6 +591,18 @@ export default function Users({
       designationId: "",
       status: "active",
       businessUnit: ["all"],
+      address: "",
+      country: "",
+      state: "",
+      city: "",
+      postalCode: "",
+    });
+    reset({
+      address: "",
+      country: "",
+      state: "",
+      city: "",
+      postalCode: "",
     });
     setModalMode("add");
     setOpenModal(true);
@@ -470,6 +624,18 @@ export default function Users({
       designationId: "",
       status: "active",
       businessUnit: ["all"],
+      address: "",
+      country: "",
+      state: "",
+      city: "",
+      postalCode: "",
+    });
+    reset({
+      address: "",
+      country: "",
+      state: "",
+      city: "",
+      postalCode: "",
     });
     setPasswordError("");
   };
@@ -491,6 +657,24 @@ export default function Users({
   };
 
   const handleSave = async () => {
+    const countryValue = watch("country") || formData.country || "";
+    const stateValue = watch("state") || formData.state || "";
+    const cityValue = watch("city") || formData.city || "";
+
+    const { country, state, city } = validateLocationValues(
+      countryValue,
+      stateValue,
+      cityValue
+    );
+
+    const addressData = {
+      address: watch("address") || formData.address || "",
+      country: country,
+      state: state,
+      city: city,
+      postalCode: watch("postalCode") || formData.postalCode || "",
+    };
+
     if (modalMode === "add") {
       const payload: CreateUserPayload = {
         email: formData.email,
@@ -507,13 +691,18 @@ export default function Users({
         businessUnit: formData.businessUnit.includes("all")
           ? []
           : formData.businessUnit,
+        address: addressData.address || undefined,
+        country: addressData.country || undefined,
+        state: addressData.state || undefined,
+        city: addressData.city || undefined,
+        postalCode: addressData.postalCode || undefined,
       };
       createUserMutation.mutate({
         url: POST.Create_User,
         payload,
       });
     } else if (modalMode === "edit" && userIdForEdit) {
-      const updatePayload: any = {
+      const updatePayload: Record<string, unknown> = {
         firstName: formData.firstName,
         lastName: formData.lastName,
         organizationId: organizationId || undefined,
@@ -526,13 +715,18 @@ export default function Users({
         businessUnit: formData.businessUnit.includes("all")
           ? []
           : formData.businessUnit,
+        address: addressData.address || undefined,
+        country: addressData.country || undefined,
+        state: addressData.state || undefined,
+        city: addressData.city || undefined,
+        postalCode: addressData.postalCode || undefined,
       };
       if (formData.password) {
         updatePayload.password = formData.password;
       }
       updateUserMutation.mutate({
         url: `${PUT.UPDATE_USER}${userIdForEdit}`,
-        payload: updatePayload,
+        payload: updatePayload as unknown as CreateUserPayload,
       });
     } else {
       handleCloseModal();
@@ -567,6 +761,11 @@ export default function Users({
         isVerified: user.isVerified,
         status: user.status as "active" | "inactive",
         businessUnit: user.businessUnit || [],
+        address: user.address,
+        country: user.country,
+        state: user.state,
+        city: user.city,
+        postalCode: user.postalCode,
         handleEdit,
         handleView,
         handleDelete,
@@ -1069,6 +1268,78 @@ export default function Users({
                 }}
               />
             )}
+          />
+          <TextField
+            label="Address"
+            value={watch("address") || formData.address}
+            onChange={(e) => {
+              setFormData({ ...formData, address: e.target.value });
+            }}
+            disabled={modalMode === "view"}
+            variant="outlined"
+            fullWidth
+            multiline
+            rows={2}
+            sx={{
+              "& .MuiOutlinedInput-root": {
+                borderRadius: STYLE_GUIDE.SPACING.s2,
+              },
+            }}
+          />
+
+          <LocationAutocomplete
+            control={formControl}
+            name="country"
+            label="Country"
+            locationType="country"
+            errors={{}}
+          />
+
+          <LocationAutocomplete
+            control={formControl}
+            name="state"
+            label="State"
+            locationType="state"
+            selectedCountry={selectedCountry || formData.country}
+            errors={{}}
+          />
+
+          <LocationAutocomplete
+            control={formControl}
+            name="city"
+            label="City"
+            locationType="city"
+            selectedCountry={selectedCountry || formData.country}
+            selectedState={selectedState || formData.state}
+            errors={{}}
+          />
+          <TextField
+            label="Postal Code"
+            value={watch("postalCode") || formData.postalCode}
+            onChange={(e) => {
+              const value = e.target.value;
+              if (value === "" || /^\d+$/.test(value)) {
+                setFormData({ ...formData, postalCode: value });
+              }
+            }}
+            onKeyPress={(e) => {
+              if (!/[0-9]/.test(e.key)) {
+                e.preventDefault();
+              }
+            }}
+            disabled={modalMode === "view"}
+            variant="outlined"
+            fullWidth
+            type="tel"
+            inputProps={{
+              inputMode: "numeric",
+              pattern: "[0-9]*",
+            }}
+            sx={{
+              "& .MuiOutlinedInput-root": {
+                borderRadius: STYLE_GUIDE.SPACING.s2,
+              },
+            }}
           />
         </Box>
       </DialogContainer>
