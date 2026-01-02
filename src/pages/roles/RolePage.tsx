@@ -139,6 +139,32 @@ export default function RolePage({ mode: propMode }: RolePageProps) {
     !!editRoleId && (mode === "edit" || mode === "view")
   );
 
+  const dashboardNameMap = React.useMemo(() => {
+    const map = new Map<string, string>();
+
+    dashboards.forEach((dashboard) => {
+      map.set(dashboard._id, dashboard.name);
+    });
+
+    if (roleDefaultDashboards.data?.success) {
+      const responseData = roleDefaultDashboards.data.data;
+
+      if (Array.isArray(responseData)) {
+        responseData.forEach((item) => {
+          if (Array.isArray(item.dashboardId)) {
+            item.dashboardId.forEach((dashboard) => {
+              if (dashboard._id && dashboard.name) {
+                map.set(dashboard._id, dashboard.name);
+              }
+            });
+          }
+        });
+      }
+    }
+
+    return map;
+  }, [dashboards, roleDefaultDashboards.data]);
+
   useEffect(() => {
     if (mode === "add") {
       // reset({
@@ -671,23 +697,34 @@ export default function RolePage({ mode: propMode }: RolePageProps) {
                         disabled={mode === "view"}
                         label="Default Dashboards"
                         input={<OutlinedInput label="Default Dashboards" />}
-                        renderValue={(selected) => (
-                          <Box
-                            sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}
-                          >
-                            {(selected as string[]).map((value) => {
-                              const dashboard = dashboards.find(
-                                (d) => d._id === value
-                              );
-                              return (
-                                <Chip
-                                  key={value}
-                                  label={dashboard ? dashboard.name : value}
-                                />
-                              );
-                            })}
-                          </Box>
-                        )}
+                        renderValue={(selected) => {
+                          if (
+                            !selected ||
+                            (selected as string[]).length === 0
+                          ) {
+                            return <Box />;
+                          }
+                          return (
+                            <Box
+                              sx={{
+                                display: "flex",
+                                flexWrap: "wrap",
+                                gap: 0.5,
+                              }}
+                            >
+                              {(selected as string[]).map((value) => {
+                                const dashboardName =
+                                  dashboardNameMap.get(value);
+                                return (
+                                  <Chip
+                                    key={value}
+                                    label={dashboardName || value}
+                                  />
+                                );
+                              })}
+                            </Box>
+                          );
+                        }}
                       >
                         {dashboards?.map((dashboard) => (
                           <MenuItem key={dashboard._id} value={dashboard._id}>

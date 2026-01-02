@@ -41,6 +41,11 @@ export interface User {
   departmentId?: string;
   designationId?: string;
   businessUnit?: string[];
+  address?: string;
+  country?: string;
+  state?: string;
+  city?: string;
+  postalCode?: string;
 }
 
 export interface UserListResponse {
@@ -62,6 +67,11 @@ export interface CreateUserPayload {
   departmentId?: string;
   businessUnit: string[];
   designationId?: string;
+  address?: string;
+  country?: string;
+  state?: string;
+  city?: string;
+  postalCode?: string;
 }
 
 export interface CreateUserResponse {

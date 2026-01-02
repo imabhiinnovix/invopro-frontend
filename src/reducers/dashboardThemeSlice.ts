@@ -1,32 +1,32 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { DashboardTheme } from '../types/dashboardTheme';
-import { STYLE_GUIDE } from '../styles';
-import { TYPOGRAPHY } from '../styles/typography';
-import { createCompleteTheme } from '../utils/themeUtils';
+import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { DashboardTheme } from "../types/dashboardTheme";
+import { STYLE_GUIDE } from "../styles";
+import { TYPOGRAPHY } from "../styles/typography";
+import { createCompleteTheme } from "../utils/themeUtils";
 
 const generateId = () => Math.random().toString(36).substr(2, 9);
 
 const getThemeFromStorage = (): string | null => {
   try {
-    return localStorage.getItem('dashboardThemeName');
+    return localStorage.getItem("dashboardThemeName");
   } catch (error) {
-    console.error('Error reading theme from localStorage:', error);
+    console.error("Error reading theme from localStorage:", error);
     return null;
   }
 };
 
 const saveThemeToStorage = (themeName: string): void => {
   try {
-    localStorage.setItem('dashboardThemeName', themeName);
+    localStorage.setItem("dashboardThemeName", themeName);
   } catch (error) {
-    console.error('Error');
+    console.error("Error");
   }
 };
 
 const getDefaultTheme = (): DashboardTheme => ({
   _id: generateId(),
-  name: 'Default Theme',
-  description: 'Default dashboard theme based on style guide',
+  name: "Default Theme",
+  description: "Default dashboard theme based on style guide",
   colors: {
     primary: {
       main: STYLE_GUIDE.COLORS.primary,
@@ -35,8 +35,8 @@ const getDefaultTheme = (): DashboardTheme => ({
     },
     secondary: {
       main: STYLE_GUIDE.COLORS.materialBlue,
-      light: '#42a5f5',
-      dark: '#1565c0',
+      light: "#42a5f5",
+      dark: "#1565c0",
       contrastText: STYLE_GUIDE.COLORS.white,
     },
     inputText: STYLE_GUIDE.COLORS.textDarkGray,
@@ -109,14 +109,14 @@ const getDefaultTheme = (): DashboardTheme => ({
       fontWeight: TYPOGRAPHY.fontWeight.medium,
     },
     dialog: {
-      fontFamily: '',
-      fontSize: '',
-      fontWeight: ''
-    }
+      fontFamily: "",
+      fontSize: "",
+      fontWeight: "",
+    },
   },
   components: {
     button: {
-      textTransform: 'none',
+      textTransform: "none",
     },
     card: {
       boxShadow: STYLE_GUIDE.SHADOWS.sm,
@@ -169,14 +169,14 @@ const getDefaultTheme = (): DashboardTheme => ({
       titleFontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
       titleFontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.bold,
       contentColor: STYLE_GUIDE.COLORS.textDarkGray,
-      contentFontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.hero,
+      contentFontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base,
       overlayColor: STYLE_GUIDE.COLORS.WhiteLight,
-      titleFontFamily: STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary
-    }
+      titleFontFamily: STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary,
+    },
   },
   shadows: STYLE_GUIDE.SHADOWS,
   layout: {
-    maxWidth: '1200px',
+    maxWidth: "1200px",
   },
   customFonts: [],
   isDefault: true,
@@ -185,9 +185,7 @@ const getDefaultTheme = (): DashboardTheme => ({
   updatedAt: new Date().toISOString(),
 });
 
-const sampleThemes: DashboardTheme[] = [
-  getDefaultTheme(),
-];
+const sampleThemes: DashboardTheme[] = [getDefaultTheme()];
 
 interface OrganizationThemeInfo {
   organizationId: string;
@@ -208,14 +206,16 @@ interface DashboardThemeState {
 
 const getInitialCurrentTheme = (): DashboardTheme => {
   const savedThemeName = getThemeFromStorage();
-  
+
   if (savedThemeName) {
-    const savedTheme = sampleThemes.find(theme => theme.name === savedThemeName);
+    const savedTheme = sampleThemes.find(
+      (theme) => theme.name === savedThemeName
+    );
     if (savedTheme) {
       return savedTheme;
     }
   }
-  
+
   return sampleThemes[0];
 };
 
@@ -230,7 +230,7 @@ const initialState: DashboardThemeState = {
 };
 
 const dashboardThemeSlice = createSlice({
-  name: 'dashboardTheme',
+  name: "dashboardTheme",
   initialState,
   reducers: {
     clearError: (state) => {
@@ -242,7 +242,10 @@ const dashboardThemeSlice = createSlice({
     setCurrentTheme: (state, action: PayloadAction<DashboardTheme | null>) => {
       state.dashboardTheme = action.payload;
     },
-    createDashboardTheme: (state, action: PayloadAction<Partial<DashboardTheme>>) => {
+    createDashboardTheme: (
+      state,
+      action: PayloadAction<Partial<DashboardTheme>>
+    ) => {
       const newTheme: DashboardTheme = {
         ...createCompleteTheme(action.payload),
         _id: generateId(),
@@ -250,11 +253,14 @@ const dashboardThemeSlice = createSlice({
         updatedAt: new Date().toISOString(),
       };
       state.themes.push(newTheme);
-      state.success = 'Theme created successfully';
+      state.success = "Theme created successfully";
     },
-    updateDashboardTheme: (state, action: PayloadAction<{ id: string; themeData: Partial<DashboardTheme> }>) => {
+    updateDashboardTheme: (
+      state,
+      action: PayloadAction<{ id: string; themeData: Partial<DashboardTheme> }>
+    ) => {
       const { id, themeData } = action.payload;
-      const index = state.themes.findIndex(theme => theme._id === id);
+      const index = state.themes.findIndex((theme) => theme._id === id);
       if (index !== -1) {
         const updatedTheme = {
           ...createCompleteTheme({ ...state.themes[index], ...themeData }),
@@ -262,22 +268,22 @@ const dashboardThemeSlice = createSlice({
           updatedAt: new Date().toISOString(),
         };
         state.themes[index] = updatedTheme;
-        
+
         if (state.dashboardTheme && state.dashboardTheme._id === id) {
           state.dashboardTheme = updatedTheme;
         }
-        
-        state.success = 'Theme updated successfully';
+
+        state.success = "Theme updated successfully";
       }
     },
     deleteDashboardTheme: (state, action: PayloadAction<string>) => {
       const themeId = action.payload;
-      state.themes = state.themes.filter(theme => theme._id !== themeId);
-      state.success = 'Theme deleted successfully';
+      state.themes = state.themes.filter((theme) => theme._id !== themeId);
+      state.success = "Theme deleted successfully";
     },
     duplicateDashboardTheme: (state, action: PayloadAction<string>) => {
       const themeId = action.payload;
-      const originalTheme = state.themes.find(theme => theme._id === themeId);
+      const originalTheme = state.themes.find((theme) => theme._id === themeId);
       if (originalTheme) {
         const duplicatedTheme: DashboardTheme = {
           ...originalTheme,
@@ -289,40 +295,44 @@ const dashboardThemeSlice = createSlice({
           updatedAt: new Date().toISOString(),
         };
         state.themes.push(duplicatedTheme);
-        state.success = 'Theme duplicated successfully';
+        state.success = "Theme duplicated successfully";
       }
     },
     applyDashboardTheme: (state, action: PayloadAction<string>) => {
       const themeId = action.payload;
-      const themeToApply = state.themes.find(theme => theme._id === themeId);
+      const themeToApply = state.themes.find((theme) => theme._id === themeId);
       if (themeToApply) {
         state.dashboardTheme = themeToApply;
         saveThemeToStorage(themeToApply.name);
-        state.success = 'Theme applied successfully';
+        state.success = "Theme applied successfully";
       }
     },
     resetToDefaultTheme: (state) => {
-      const defaultTheme = state.themes.find(theme => theme.isDefault) || state.themes[0];
+      const defaultTheme =
+        state.themes.find((theme) => theme.isDefault) || state.themes[0];
       state.dashboardTheme = defaultTheme;
       state.currentTheme = defaultTheme;
       saveThemeToStorage(defaultTheme.name);
-      state.success = 'Reset to default theme successfully';
+      state.success = "Reset to default theme successfully";
     },
     setDashboardTheme: (state, action: PayloadAction<DashboardTheme>) => {
       state.currentTheme = action.payload;
       state.dashboardTheme = action.payload;
       saveThemeToStorage(action.payload.name);
-      state.success = 'Theme applied successfully';
+      state.success = "Theme applied successfully";
     },
-    setOrganizationTheme: (state, action: PayloadAction<OrganizationThemeInfo>) => {
+    setOrganizationTheme: (
+      state,
+      action: PayloadAction<OrganizationThemeInfo>
+    ) => {
       state.organizationTheme = action.payload;
     },
   },
 });
 
-export const { 
-  clearError, 
-  clearSuccess, 
+export const {
+  clearError,
+  clearSuccess,
   setCurrentTheme,
   createDashboardTheme,
   updateDashboardTheme,
@@ -334,4 +344,4 @@ export const {
   setOrganizationTheme,
 } = dashboardThemeSlice.actions;
 
-export default dashboardThemeSlice.reducer; 
+export default dashboardThemeSlice.reducer;

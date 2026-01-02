@@ -1,27 +1,44 @@
-import React from 'react';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
-import { useAppSelector } from '../storeHooks';
-import { theme as baseTheme } from '../theme/theme';
-import { STYLE_GUIDE } from '../styles';
-import { TypographyProvider, useTypography } from '../context/TypographyContext';
+import React from "react";
+import { ThemeProvider, createTheme } from "@mui/material/styles";
+import { useAppSelector } from "../storeHooks";
+import { theme as baseTheme } from "../theme/theme";
+import { STYLE_GUIDE } from "../styles";
+import {
+  TypographyProvider,
+  useTypography,
+} from "../context/TypographyContext";
 
 interface UnifiedThemeProviderProps {
   children: React.ReactNode;
 }
 
-const UnifiedThemeProviderInner: React.FC<UnifiedThemeProviderProps> = ({ children }) => {
-  const { dashboardTheme } = useAppSelector((state) => ({
-    dashboardTheme: state.dashboardTheme.dashboardTheme,
-  }));
+const UnifiedThemeProviderInner: React.FC<UnifiedThemeProviderProps> = ({
+  children,
+}) => {
+  const dashboardTheme = useAppSelector(
+    (state) => state.dashboardTheme.dashboardTheme
+  );
   const { typographySettings } = useTypography();
 
-  const effectiveTypographySettings = dashboardTheme?.typography ? {
-    fontFamily: dashboardTheme.typography.fontFamily,
-    fontSize: dashboardTheme.typography.fontSize,
-    fontWeight: dashboardTheme.typography.fontWeight,
-  } : typographySettings;
+  const effectiveTypographySettings = dashboardTheme?.typography
+    ? {
+        fontFamily: dashboardTheme.typography.fontFamily,
+        fontSize: dashboardTheme.typography.fontSize,
+        fontWeight: dashboardTheme.typography.fontWeight,
+      }
+    : typographySettings;
 
-  const getComponentTypography = (componentType: 'headings' | 'body' | 'buttons' | 'cards' | 'inputs' | 'tables' | 'navigation' | 'dialog') => {
+  const getComponentTypography = (
+    componentType:
+      | "headings"
+      | "body"
+      | "buttons"
+      | "cards"
+      | "inputs"
+      | "tables"
+      | "navigation"
+      | "dialog"
+  ) => {
     if (!dashboardTheme?.typography) {
       return effectiveTypographySettings;
     }
@@ -29,9 +46,14 @@ const UnifiedThemeProviderInner: React.FC<UnifiedThemeProviderProps> = ({ childr
     const componentTypography = dashboardTheme.typography[componentType];
     if (componentTypography) {
       return {
-        fontFamily: componentTypography.fontFamily || dashboardTheme.typography.fontFamily,
-        fontSize: componentTypography.fontSize || dashboardTheme.typography.fontSize,
-        fontWeight: componentTypography.fontWeight || dashboardTheme.typography.fontWeight,
+        fontFamily:
+          componentTypography.fontFamily ||
+          dashboardTheme.typography.fontFamily,
+        fontSize:
+          componentTypography.fontSize || dashboardTheme.typography.fontSize,
+        fontWeight:
+          componentTypography.fontWeight ||
+          dashboardTheme.typography.fontWeight,
       };
     }
 
@@ -51,66 +73,66 @@ const UnifiedThemeProviderInner: React.FC<UnifiedThemeProviderProps> = ({ childr
         fontSize: parseInt(effectiveTypographySettings.fontSize),
         h1: {
           ...baseTheme.typography.h1,
-          fontFamily: getComponentTypography('headings').fontFamily,
-          fontWeight: parseInt(getComponentTypography('headings').fontWeight),
-          fontSize: getComponentTypography('headings').fontSize,
+          fontFamily: getComponentTypography("headings").fontFamily,
+          fontWeight: parseInt(getComponentTypography("headings").fontWeight),
+          fontSize: getComponentTypography("headings").fontSize,
         },
         h2: {
           ...baseTheme.typography.h2,
-          fontFamily: getComponentTypography('headings').fontFamily,
-          fontWeight: parseInt(getComponentTypography('headings').fontWeight),
-          fontSize: getComponentTypography('headings').fontSize,
+          fontFamily: getComponentTypography("headings").fontFamily,
+          fontWeight: parseInt(getComponentTypography("headings").fontWeight),
+          fontSize: getComponentTypography("headings").fontSize,
         },
         h3: {
           ...baseTheme.typography.h3,
-          fontFamily: getComponentTypography('headings').fontFamily,
-          fontWeight: parseInt(getComponentTypography('headings').fontWeight),
-          fontSize: getComponentTypography('headings').fontSize,
+          fontFamily: getComponentTypography("headings").fontFamily,
+          fontWeight: parseInt(getComponentTypography("headings").fontWeight),
+          fontSize: getComponentTypography("headings").fontSize,
         },
         h4: {
           ...baseTheme.typography.h4,
-          fontFamily: getComponentTypography('headings').fontFamily,
-          fontWeight: parseInt(getComponentTypography('headings').fontWeight),
-          fontSize: getComponentTypography('headings').fontSize,
+          fontFamily: getComponentTypography("headings").fontFamily,
+          fontWeight: parseInt(getComponentTypography("headings").fontWeight),
+          fontSize: getComponentTypography("headings").fontSize,
         },
         h5: {
           ...baseTheme.typography.h5,
-          fontFamily: getComponentTypography('headings').fontFamily,
-          fontWeight: parseInt(getComponentTypography('headings').fontWeight),
-          fontSize: getComponentTypography('headings').fontSize,
+          fontFamily: getComponentTypography("headings").fontFamily,
+          fontWeight: parseInt(getComponentTypography("headings").fontWeight),
+          fontSize: getComponentTypography("headings").fontSize,
         },
         h6: {
           ...baseTheme.typography.h6,
-          fontFamily: getComponentTypography('headings').fontFamily,
-          fontWeight: parseInt(getComponentTypography('headings').fontWeight),
-          fontSize: getComponentTypography('headings').fontSize,
+          fontFamily: getComponentTypography("headings").fontFamily,
+          fontWeight: parseInt(getComponentTypography("headings").fontWeight),
+          fontSize: getComponentTypography("headings").fontSize,
         },
         body1: {
           ...baseTheme.typography.body1,
-          fontFamily: getComponentTypography('body').fontFamily,
-          fontSize: getComponentTypography('body').fontSize,
-          fontWeight: parseInt(getComponentTypography('body').fontWeight),
+          fontFamily: getComponentTypography("body").fontFamily,
+          fontSize: getComponentTypography("body").fontSize,
+          fontWeight: parseInt(getComponentTypography("body").fontWeight),
         },
         body2: {
           ...baseTheme.typography.body2,
-          fontFamily: getComponentTypography('body').fontFamily,
-          fontSize: getComponentTypography('body').fontSize,
-          fontWeight: parseInt(getComponentTypography('body').fontWeight),
+          fontFamily: getComponentTypography("body").fontFamily,
+          fontSize: getComponentTypography("body").fontSize,
+          fontWeight: parseInt(getComponentTypography("body").fontWeight),
         },
         button: {
           ...baseTheme.typography.button,
-          fontFamily: getComponentTypography('buttons').fontFamily,
-          fontWeight: parseInt(getComponentTypography('buttons').fontWeight),
+          fontFamily: getComponentTypography("buttons").fontFamily,
+          fontWeight: parseInt(getComponentTypography("buttons").fontWeight),
         },
         caption: {
           ...baseTheme.typography.caption,
-          fontFamily: getComponentTypography('body').fontFamily,
-          fontWeight: parseInt(getComponentTypography('body').fontWeight),
+          fontFamily: getComponentTypography("body").fontFamily,
+          fontWeight: parseInt(getComponentTypography("body").fontWeight),
         },
         overline: {
           ...baseTheme.typography.overline,
-          fontFamily: getComponentTypography('body').fontFamily,
-          fontWeight: parseInt(getComponentTypography('body').fontWeight),
+          fontFamily: getComponentTypography("body").fontFamily,
+          fontWeight: parseInt(getComponentTypography("body").fontWeight),
         },
       },
     };
@@ -152,7 +174,9 @@ const UnifiedThemeProviderInner: React.FC<UnifiedThemeProviderProps> = ({ childr
         input: {
           text: dashboardTheme.colors.inputText,
           border: dashboardTheme.colors.inputBorder,
-          focusBorder: dashboardTheme.components?.input?.focusBorderColor || baseTheme.palette.primary.main,
+          focusBorder:
+            dashboardTheme.components?.input?.focusBorderColor ||
+            baseTheme.palette.primary.main,
         },
         dropdown: {
           background: dashboardTheme.colors.dropdownBg,
@@ -166,12 +190,24 @@ const UnifiedThemeProviderInner: React.FC<UnifiedThemeProviderProps> = ({ childr
           focusedLabel: dashboardTheme.colors.dropdownFocusedLabel,
         },
         table: {
-          headerBackground: dashboardTheme.components?.table?.headerBackground || STYLE_GUIDE.COLORS.backgroundLightGray,
-          headerText: dashboardTheme.components?.table?.headerText || STYLE_GUIDE.COLORS.textGray,
-          rowOddBackground: dashboardTheme.components?.table?.rowOddBackground || STYLE_GUIDE.COLORS.backgroundDefault,
-          rowEvenBackground: dashboardTheme.components?.table?.rowEvenBackground || STYLE_GUIDE.COLORS.white,
-          rowHoverBackground: dashboardTheme.components?.table?.rowHoverBackground || STYLE_GUIDE.COLORS.backgroundHover,
-          rowText: dashboardTheme.components?.table?.rowText || STYLE_GUIDE.COLORS.textDarkGray,
+          headerBackground:
+            dashboardTheme.components?.table?.headerBackground ||
+            STYLE_GUIDE.COLORS.backgroundLightGray,
+          headerText:
+            dashboardTheme.components?.table?.headerText ||
+            STYLE_GUIDE.COLORS.textGray,
+          rowOddBackground:
+            dashboardTheme.components?.table?.rowOddBackground ||
+            STYLE_GUIDE.COLORS.backgroundDefault,
+          rowEvenBackground:
+            dashboardTheme.components?.table?.rowEvenBackground ||
+            STYLE_GUIDE.COLORS.white,
+          rowHoverBackground:
+            dashboardTheme.components?.table?.rowHoverBackground ||
+            STYLE_GUIDE.COLORS.backgroundHover,
+          rowText:
+            dashboardTheme.components?.table?.rowText ||
+            STYLE_GUIDE.COLORS.textDarkGray,
         },
         card: {
           background: dashboardTheme.colors.background.card,
@@ -200,36 +236,59 @@ const UnifiedThemeProviderInner: React.FC<UnifiedThemeProviderProps> = ({ childr
         MuiButton: {
           styleOverrides: {
             root: {
-              textTransform: dashboardTheme.components?.button?.textTransform || 'none',
-              fontFamily: `${getComponentTypography('buttons').fontFamily} !important`,
-              fontWeight: parseInt(getComponentTypography('buttons').fontWeight),
-              fontSize: getComponentTypography('buttons').fontSize,
+              textTransform:
+                dashboardTheme.components?.button?.textTransform || "none",
+              fontFamily: `${
+                getComponentTypography("buttons").fontFamily
+              } !important`,
+              fontWeight: parseInt(
+                getComponentTypography("buttons").fontWeight
+              ),
+              fontSize: getComponentTypography("buttons").fontSize,
             },
             text: {
-              fontFamily: `${getComponentTypography('buttons').fontFamily} !important`,
-              fontWeight: parseInt(getComponentTypography('buttons').fontWeight),
-              fontSize: getComponentTypography('buttons').fontSize,
+              fontFamily: `${
+                getComponentTypography("buttons").fontFamily
+              } !important`,
+              fontWeight: parseInt(
+                getComponentTypography("buttons").fontWeight
+              ),
+              fontSize: getComponentTypography("buttons").fontSize,
             },
             outlined: {
-              fontFamily: `${getComponentTypography('buttons').fontFamily} !important`,
-              fontWeight: parseInt(getComponentTypography('buttons').fontWeight),
-              fontSize: getComponentTypography('buttons').fontSize,
+              fontFamily: `${
+                getComponentTypography("buttons").fontFamily
+              } !important`,
+              fontWeight: parseInt(
+                getComponentTypography("buttons").fontWeight
+              ),
+              fontSize: getComponentTypography("buttons").fontSize,
             },
             contained: {
-              fontFamily: `${getComponentTypography('buttons').fontFamily} !important`,
-              fontWeight: parseInt(getComponentTypography('buttons').fontWeight),
-              fontSize: getComponentTypography('buttons').fontSize,
+              fontFamily: `${
+                getComponentTypography("buttons").fontFamily
+              } !important`,
+              fontWeight: parseInt(
+                getComponentTypography("buttons").fontWeight
+              ),
+              fontSize: getComponentTypography("buttons").fontSize,
             },
           },
         },
         MuiCard: {
           styleOverrides: {
             root: {
-              boxShadow: dashboardTheme.components?.card?.boxShadow || STYLE_GUIDE.SHADOWS.sm,
-              backgroundColor: dashboardTheme.colors.background.card || STYLE_GUIDE.COLORS.backgroundSurface,
-              fontFamily: `${getComponentTypography('cards').fontFamily} !important`,
-              fontWeight: parseInt(getComponentTypography('cards').fontWeight),
-              fontSize: getComponentTypography('cards').fontSize,
+              boxShadow:
+                dashboardTheme.components?.card?.boxShadow ||
+                STYLE_GUIDE.SHADOWS.sm,
+              backgroundColor:
+                dashboardTheme.colors.background.card ||
+                STYLE_GUIDE.COLORS.backgroundSurface,
+              fontFamily: `${
+                getComponentTypography("cards").fontFamily
+              } !important`,
+              fontWeight: parseInt(getComponentTypography("cards").fontWeight),
+              fontSize: getComponentTypography("cards").fontSize,
             },
           },
         },
@@ -237,20 +296,33 @@ const UnifiedThemeProviderInner: React.FC<UnifiedThemeProviderProps> = ({ childr
         MuiDialog: {
           styleOverrides: {
             paper: {
-              backgroundColor: dashboardTheme.components?.dialog?.backgroundColor || STYLE_GUIDE.COLORS.white,
-              border: `1px solid ${dashboardTheme.components?.dialog?.borderColor || dashboardTheme.colors.border}`,
-              boxShadow: dashboardTheme.components?.dialog?.boxShadow || STYLE_GUIDE.SHADOWS.lg,
-              borderRadius: dashboardTheme.components?.dialog?.borderRadius || '8px',
+              backgroundColor:
+                dashboardTheme.components?.dialog?.backgroundColor ||
+                STYLE_GUIDE.COLORS.white,
+              border: `1px solid ${
+                dashboardTheme.components?.dialog?.borderColor ||
+                dashboardTheme.colors.border
+              }`,
+              boxShadow:
+                dashboardTheme.components?.dialog?.boxShadow ||
+                STYLE_GUIDE.SHADOWS.lg,
+              borderRadius:
+                dashboardTheme.components?.dialog?.borderRadius || "8px",
             },
           },
         },
         MuiDialogTitle: {
           styleOverrides: {
             root: {
-              color: dashboardTheme.components?.dialog?.titleColor || dashboardTheme.colors.text.primary,
-              fontSize: dashboardTheme.components?.dialog?.titleFontSize || '1.25rem',
-              fontWeight: dashboardTheme.components?.dialog?.titleFontWeight || STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold,
-              padding: '16px 24px',
+              color:
+                dashboardTheme.components?.dialog?.titleColor ||
+                dashboardTheme.colors.text.primary,
+              fontSize:
+                dashboardTheme.components?.dialog?.titleFontSize || "1.25rem",
+              fontWeight:
+                dashboardTheme.components?.dialog?.titleFontWeight ||
+                STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold,
+              padding: "16px 24px",
               borderBottom: `1px solid ${dashboardTheme.colors.divider}`,
             },
           },
@@ -258,38 +330,54 @@ const UnifiedThemeProviderInner: React.FC<UnifiedThemeProviderProps> = ({ childr
         MuiDialogContent: {
           styleOverrides: {
             root: {
-              color: dashboardTheme.components?.dialog?.contentColor || dashboardTheme.colors.text.primary,
-              fontSize: dashboardTheme.components?.dialog?.contentFontSize || '1rem',
-              padding: '16px 24px',
-              fontFamily: `${getComponentTypography('body').fontFamily} !important`,
-              fontWeight: parseInt(getComponentTypography('body').fontWeight),
+              color:
+                dashboardTheme.components?.dialog?.contentColor ||
+                dashboardTheme.colors.text.primary,
+              fontSize:
+                dashboardTheme.components?.dialog?.contentFontSize || "1rem",
+              padding: "16px 24px",
+              fontFamily: `${
+                getComponentTypography("body").fontFamily
+              } !important`,
+              fontWeight: parseInt(getComponentTypography("body").fontWeight),
             },
           },
         },
 
-
         MuiPaper: {
           styleOverrides: {
             root: {
-              boxShadow: dashboardTheme.components?.paper?.boxShadow || STYLE_GUIDE.SHADOWS.sm,
-              backgroundColor: dashboardTheme.colors.background.paper || STYLE_GUIDE.COLORS.white,
-              fontFamily: `${getComponentTypography('cards').fontFamily} !important`,
-              fontWeight: parseInt(getComponentTypography('cards').fontWeight),
-              fontSize: getComponentTypography('cards').fontSize,
+              boxShadow:
+                dashboardTheme.components?.paper?.boxShadow ||
+                STYLE_GUIDE.SHADOWS.sm,
+              backgroundColor:
+                dashboardTheme.colors.background.paper ||
+                STYLE_GUIDE.COLORS.white,
+              fontFamily: `${
+                getComponentTypography("cards").fontFamily
+              } !important`,
+              fontWeight: parseInt(getComponentTypography("cards").fontWeight),
+              fontSize: getComponentTypography("cards").fontSize,
             },
           },
         },
         MuiTableRow: {
           styleOverrides: {
             root: {
-              '&:nth-of-type(odd)': {
-                backgroundColor: dashboardTheme.components?.table?.rowOddBackground || STYLE_GUIDE.COLORS.backgroundDefault,
+              "&:nth-of-type(odd)": {
+                backgroundColor:
+                  dashboardTheme.components?.table?.rowOddBackground ||
+                  STYLE_GUIDE.COLORS.backgroundDefault,
               },
-              '&:nth-of-type(even)': {
-                backgroundColor: dashboardTheme.components?.table?.rowEvenBackground || STYLE_GUIDE.COLORS.white,
+              "&:nth-of-type(even)": {
+                backgroundColor:
+                  dashboardTheme.components?.table?.rowEvenBackground ||
+                  STYLE_GUIDE.COLORS.white,
               },
-              '&:hover': {
-                backgroundColor: dashboardTheme.components?.table?.rowHoverBackground || STYLE_GUIDE.COLORS.backgroundHover,
+              "&:hover": {
+                backgroundColor:
+                  dashboardTheme.components?.table?.rowHoverBackground ||
+                  STYLE_GUIDE.COLORS.backgroundHover,
               },
             },
           },
@@ -297,149 +385,223 @@ const UnifiedThemeProviderInner: React.FC<UnifiedThemeProviderProps> = ({ childr
         MuiTypography: {
           styleOverrides: {
             root: {
-              fontFamily: `${getComponentTypography('body').fontFamily} !important`,
-              fontWeight: parseInt(getComponentTypography('body').fontWeight),
-              fontSize: getComponentTypography('body').fontSize,
+              fontFamily: `${
+                getComponentTypography("body").fontFamily
+              } !important`,
+              fontWeight: parseInt(getComponentTypography("body").fontWeight),
+              fontSize: getComponentTypography("body").fontSize,
             },
             h1: {
-              fontFamily: `${getComponentTypography('headings').fontFamily} !important`,
-              fontWeight: parseInt(getComponentTypography('headings').fontWeight),
-              fontSize: getComponentTypography('headings').fontSize,
+              fontFamily: `${
+                getComponentTypography("headings").fontFamily
+              } !important`,
+              fontWeight: parseInt(
+                getComponentTypography("headings").fontWeight
+              ),
+              fontSize: getComponentTypography("headings").fontSize,
             },
             h2: {
-              fontFamily: `${getComponentTypography('headings').fontFamily} !important`,
-              fontWeight: parseInt(getComponentTypography('headings').fontWeight),
-              fontSize: getComponentTypography('headings').fontSize,
+              fontFamily: `${
+                getComponentTypography("headings").fontFamily
+              } !important`,
+              fontWeight: parseInt(
+                getComponentTypography("headings").fontWeight
+              ),
+              fontSize: getComponentTypography("headings").fontSize,
             },
             h3: {
-              fontFamily: `${getComponentTypography('headings').fontFamily} !important`,
-              fontWeight: parseInt(getComponentTypography('headings').fontWeight),
-              fontSize: getComponentTypography('headings').fontSize,
+              fontFamily: `${
+                getComponentTypography("headings").fontFamily
+              } !important`,
+              fontWeight: parseInt(
+                getComponentTypography("headings").fontWeight
+              ),
+              fontSize: getComponentTypography("headings").fontSize,
             },
             h4: {
-              fontFamily: `${getComponentTypography('headings').fontFamily} !important`,
-              fontWeight: parseInt(getComponentTypography('headings').fontWeight),
-              fontSize: getComponentTypography('headings').fontSize,
+              fontFamily: `${
+                getComponentTypography("headings").fontFamily
+              } !important`,
+              fontWeight: parseInt(
+                getComponentTypography("headings").fontWeight
+              ),
+              fontSize: getComponentTypography("headings").fontSize,
             },
             h5: {
-              fontFamily: `${getComponentTypography('headings').fontFamily} !important`,
-              fontWeight: parseInt(getComponentTypography('headings').fontWeight),
-              fontSize: getComponentTypography('headings').fontSize,
+              fontFamily: `${
+                getComponentTypography("headings").fontFamily
+              } !important`,
+              fontWeight: parseInt(
+                getComponentTypography("headings").fontWeight
+              ),
+              fontSize: getComponentTypography("headings").fontSize,
             },
             h6: {
-              fontFamily: `${getComponentTypography('headings').fontFamily} !important`,
-              fontWeight: parseInt(getComponentTypography('headings').fontWeight),
-              fontSize: getComponentTypography('headings').fontSize,
+              fontFamily: `${
+                getComponentTypography("headings").fontFamily
+              } !important`,
+              fontWeight: parseInt(
+                getComponentTypography("headings").fontWeight
+              ),
+              fontSize: getComponentTypography("headings").fontSize,
             },
             body1: {
-              fontFamily: `${getComponentTypography('body').fontFamily} !important`,
-              fontWeight: parseInt(getComponentTypography('body').fontWeight),
-              fontSize: getComponentTypography('body').fontSize,
+              fontFamily: `${
+                getComponentTypography("body").fontFamily
+              } !important`,
+              fontWeight: parseInt(getComponentTypography("body").fontWeight),
+              fontSize: getComponentTypography("body").fontSize,
             },
             body2: {
-              fontFamily: `${getComponentTypography('body').fontFamily} !important`,
-              fontWeight: parseInt(getComponentTypography('body').fontWeight),
-              fontSize: getComponentTypography('body').fontSize,
+              fontFamily: `${
+                getComponentTypography("body").fontFamily
+              } !important`,
+              fontWeight: parseInt(getComponentTypography("body").fontWeight),
+              fontSize: getComponentTypography("body").fontSize,
             },
           },
         },
         MuiInputBase: {
           styleOverrides: {
             root: {
-              fontFamily: `${getComponentTypography('inputs').fontFamily} !important`,
-              fontWeight: parseInt(getComponentTypography('inputs').fontWeight),
-              fontSize: getComponentTypography('inputs').fontSize,
+              fontFamily: `${
+                getComponentTypography("inputs").fontFamily
+              } !important`,
+              fontWeight: parseInt(getComponentTypography("inputs").fontWeight),
+              fontSize: getComponentTypography("inputs").fontSize,
             },
             input: {
-              fontFamily: `${getComponentTypography('inputs').fontFamily} !important`,
-              fontWeight: parseInt(getComponentTypography('inputs').fontWeight),
-              fontSize: getComponentTypography('inputs').fontSize,
+              fontFamily: `${
+                getComponentTypography("inputs").fontFamily
+              } !important`,
+              fontWeight: parseInt(getComponentTypography("inputs").fontWeight),
+              fontSize: getComponentTypography("inputs").fontSize,
             },
           },
         },
         MuiInputLabel: {
           styleOverrides: {
             root: {
-              fontFamily: `${getComponentTypography('inputs').fontFamily} !important`,
-              fontWeight: parseInt(getComponentTypography('inputs').fontWeight),
-              fontSize: getComponentTypography('inputs').fontSize,
+              fontFamily: `${
+                getComponentTypography("inputs").fontFamily
+              } !important`,
+              fontWeight: parseInt(getComponentTypography("inputs").fontWeight),
+              fontSize: getComponentTypography("inputs").fontSize,
             },
           },
         },
         MuiTextField: {
           styleOverrides: {
             root: {
-              fontFamily: `${getComponentTypography('inputs').fontFamily} !important`,
-              fontWeight: parseInt(getComponentTypography('inputs').fontWeight),
-              fontSize: getComponentTypography('inputs').fontSize,
+              fontFamily: `${
+                getComponentTypography("inputs").fontFamily
+              } !important`,
+              fontWeight: parseInt(getComponentTypography("inputs").fontWeight),
+              fontSize: getComponentTypography("inputs").fontSize,
             },
           },
         },
         MuiListItemButton: {
           styleOverrides: {
             root: {
-              fontFamily: `${getComponentTypography('navigation').fontFamily} !important`,
-              fontWeight: parseInt(getComponentTypography('navigation').fontWeight),
-              fontSize: getComponentTypography('navigation').fontSize,
+              fontFamily: `${
+                getComponentTypography("navigation").fontFamily
+              } !important`,
+              fontWeight: parseInt(
+                getComponentTypography("navigation").fontWeight
+              ),
+              fontSize: getComponentTypography("navigation").fontSize,
             },
           },
         },
         MuiListItemText: {
           styleOverrides: {
             root: {
-              fontFamily: `${getComponentTypography('navigation').fontFamily} !important`,
-              fontWeight: parseInt(getComponentTypography('navigation').fontWeight),
-              fontSize: getComponentTypography('navigation').fontSize,
+              fontFamily: `${
+                getComponentTypography("navigation").fontFamily
+              } !important`,
+              fontWeight: parseInt(
+                getComponentTypography("navigation").fontWeight
+              ),
+              fontSize: getComponentTypography("navigation").fontSize,
             },
             primary: {
-              fontFamily: `${getComponentTypography('navigation').fontFamily} !important`,
-              fontWeight: parseInt(getComponentTypography('navigation').fontWeight),
-              fontSize: getComponentTypography('navigation').fontSize,
+              fontFamily: `${
+                getComponentTypography("navigation").fontFamily
+              } !important`,
+              fontWeight: parseInt(
+                getComponentTypography("navigation").fontWeight
+              ),
+              fontSize: getComponentTypography("navigation").fontSize,
             },
             secondary: {
-              fontFamily: `${getComponentTypography('navigation').fontFamily} !important`,
-              fontWeight: parseInt(getComponentTypography('navigation').fontWeight),
-              fontSize: getComponentTypography('navigation').fontSize,
+              fontFamily: `${
+                getComponentTypography("navigation").fontFamily
+              } !important`,
+              fontWeight: parseInt(
+                getComponentTypography("navigation").fontWeight
+              ),
+              fontSize: getComponentTypography("navigation").fontSize,
             },
           },
         },
         MuiListItem: {
           styleOverrides: {
             root: {
-              fontFamily: `${getComponentTypography('navigation').fontFamily} !important`,
-              fontWeight: parseInt(getComponentTypography('navigation').fontWeight),
-              fontSize: getComponentTypography('navigation').fontSize,
+              fontFamily: `${
+                getComponentTypography("navigation").fontFamily
+              } !important`,
+              fontWeight: parseInt(
+                getComponentTypography("navigation").fontWeight
+              ),
+              fontSize: getComponentTypography("navigation").fontSize,
             },
           },
         },
         MuiList: {
           styleOverrides: {
             root: {
-              fontFamily: `${getComponentTypography('navigation').fontFamily} !important`,
-              fontWeight: parseInt(getComponentTypography('navigation').fontWeight),
-              fontSize: getComponentTypography('navigation').fontSize,
+              fontFamily: `${
+                getComponentTypography("navigation").fontFamily
+              } !important`,
+              fontWeight: parseInt(
+                getComponentTypography("navigation").fontWeight
+              ),
+              fontSize: getComponentTypography("navigation").fontSize,
             },
           },
         },
         MuiTableCell: {
           styleOverrides: {
             root: {
-              fontFamily: `${getComponentTypography('tables').fontFamily} !important`,
-              fontWeight: parseInt(getComponentTypography('tables').fontWeight),
-              fontSize: getComponentTypography('tables').fontSize,
+              fontFamily: `${
+                getComponentTypography("tables").fontFamily
+              } !important`,
+              fontWeight: parseInt(getComponentTypography("tables").fontWeight),
+              fontSize: getComponentTypography("tables").fontSize,
             },
             head: {
-              backgroundColor: dashboardTheme.components?.table?.headerBackground || STYLE_GUIDE.COLORS.backgroundLightGray,
-              color: dashboardTheme.components?.table?.headerText || STYLE_GUIDE.COLORS.textGray,
+              backgroundColor:
+                dashboardTheme.components?.table?.headerBackground ||
+                STYLE_GUIDE.COLORS.backgroundLightGray,
+              color:
+                dashboardTheme.components?.table?.headerText ||
+                STYLE_GUIDE.COLORS.textGray,
               fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold,
-              fontFamily: `${getComponentTypography('tables').fontFamily} !important`,
-              fontSize: getComponentTypography('tables').fontSize,
+              fontFamily: `${
+                getComponentTypography("tables").fontFamily
+              } !important`,
+              fontSize: getComponentTypography("tables").fontSize,
             },
             body: {
-              color: dashboardTheme.components?.table?.rowText || STYLE_GUIDE.COLORS.textDarkGray,
-              fontFamily: `${getComponentTypography('tables').fontFamily} !important`,
-              fontWeight: parseInt(getComponentTypography('tables').fontWeight),
-              fontSize: getComponentTypography('tables').fontSize,
+              color:
+                dashboardTheme.components?.table?.rowText ||
+                STYLE_GUIDE.COLORS.textDarkGray,
+              fontFamily: `${
+                getComponentTypography("tables").fontFamily
+              } !important`,
+              fontWeight: parseInt(getComponentTypography("tables").fontWeight),
+              fontSize: getComponentTypography("tables").fontSize,
             },
           },
         },
@@ -447,109 +609,153 @@ const UnifiedThemeProviderInner: React.FC<UnifiedThemeProviderProps> = ({ childr
         MuiDataGrid: {
           styleOverrides: {
             root: {
-              fontFamily: `${getComponentTypography('tables').fontFamily} !important`,
-              fontWeight: parseInt(getComponentTypography('tables').fontWeight),
-              fontSize: getComponentTypography('tables').fontSize,
-              border: 'none',
-              backgroundColor: dashboardTheme.colors.background.paper || STYLE_GUIDE.COLORS.white,
+              fontFamily: `${
+                getComponentTypography("tables").fontFamily
+              } !important`,
+              fontWeight: parseInt(getComponentTypography("tables").fontWeight),
+              fontSize: getComponentTypography("tables").fontSize,
+              border: "none",
+              backgroundColor:
+                dashboardTheme.colors.background.paper ||
+                STYLE_GUIDE.COLORS.white,
             },
             columnHeaders: {
-              backgroundColor: `${dashboardTheme.components?.table?.headerBackground || STYLE_GUIDE.COLORS.backgroundLightGray} !important`,
-              color: `${dashboardTheme.components?.table?.headerText || STYLE_GUIDE.COLORS.textGray} !important`,
+              backgroundColor: `${
+                dashboardTheme.components?.table?.headerBackground ||
+                STYLE_GUIDE.COLORS.backgroundLightGray
+              } !important`,
+              color: `${
+                dashboardTheme.components?.table?.headerText ||
+                STYLE_GUIDE.COLORS.textGray
+              } !important`,
               fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold,
-              fontFamily: `${getComponentTypography('tables').fontFamily} !important`,
-              fontSize: getComponentTypography('tables').fontSize,
+              fontFamily: `${
+                getComponentTypography("tables").fontFamily
+              } !important`,
+              fontSize: getComponentTypography("tables").fontSize,
               borderBottom: `2px solid ${dashboardTheme.colors.divider}`,
             },
             columnHeaderTitle: {
               fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold,
-              color: `${dashboardTheme.components?.table?.headerText || STYLE_GUIDE.COLORS.textGray} !important`,
-              fontFamily: `${getComponentTypography('tables').fontFamily} !important`,
-              fontSize: getComponentTypography('tables').fontSize,
+              color: `${
+                dashboardTheme.components?.table?.headerText ||
+                STYLE_GUIDE.COLORS.textGray
+              } !important`,
+              fontFamily: `${
+                getComponentTypography("tables").fontFamily
+              } !important`,
+              fontSize: getComponentTypography("tables").fontSize,
             },
             columnHeader: {
-              outline: 'none',
-              '&:focus, &:focus-within': {
-                outline: 'none',
+              outline: "none",
+              "&:focus, &:focus-within": {
+                outline: "none",
               },
-              '& .MuiDataGrid-columnSeparator': {
+              "& .MuiDataGrid-columnSeparator": {
                 color: `${dashboardTheme.colors.primary.main} !important`,
-                '&:hover': {
+                "&:hover": {
                   color: `${dashboardTheme.colors.primary.light} !important`,
                 },
               },
             },
             cell: {
-              color: `${dashboardTheme.components?.table?.rowText || STYLE_GUIDE.COLORS.textDarkGray} !important`,
+              color: `${
+                dashboardTheme.components?.table?.rowText ||
+                STYLE_GUIDE.COLORS.textDarkGray
+              } !important`,
               borderBottom: `1px solid ${dashboardTheme.colors.divider}`,
-              borderRight: 'none',
-              outline: 'none',
-              fontFamily: `${getComponentTypography('tables').fontFamily} !important`,
-              fontWeight: parseInt(getComponentTypography('tables').fontWeight),
-              fontSize: getComponentTypography('tables').fontSize,
+              borderRight: "none",
+              outline: "none",
+              fontFamily: `${
+                getComponentTypography("tables").fontFamily
+              } !important`,
+              fontWeight: parseInt(getComponentTypography("tables").fontWeight),
+              fontSize: getComponentTypography("tables").fontSize,
             },
             row: {
-              '&:nth-of-type(odd)': {
-                backgroundColor: `${dashboardTheme.components?.table?.rowOddBackground || STYLE_GUIDE.COLORS.backgroundDefault} !important`,
+              "&:nth-of-type(odd)": {
+                backgroundColor: `${
+                  dashboardTheme.components?.table?.rowOddBackground ||
+                  STYLE_GUIDE.COLORS.backgroundDefault
+                } !important`,
               },
-              '&:nth-of-type(even)': {
-                backgroundColor: `${dashboardTheme.components?.table?.rowEvenBackground || STYLE_GUIDE.COLORS.white} !important`,
+              "&:nth-of-type(even)": {
+                backgroundColor: `${
+                  dashboardTheme.components?.table?.rowEvenBackground ||
+                  STYLE_GUIDE.COLORS.white
+                } !important`,
               },
-              '&:hover': {
-                backgroundColor: `${dashboardTheme.components?.table?.rowHoverBackground || STYLE_GUIDE.COLORS.backgroundHover} !important`,
+              "&:hover": {
+                backgroundColor: `${
+                  dashboardTheme.components?.table?.rowHoverBackground ||
+                  STYLE_GUIDE.COLORS.backgroundHover
+                } !important`,
               },
-              '&.Mui-selected': {
+              "&.Mui-selected": {
                 backgroundColor: `${dashboardTheme.colors.primary.light}20 !important`,
-                '&:hover': {
+                "&:hover": {
                   backgroundColor: `${dashboardTheme.colors.primary.light}30 !important`,
                 },
               },
             },
             footerContainer: {
-              backgroundColor: dashboardTheme.colors.background.paper || STYLE_GUIDE.COLORS.white,
+              backgroundColor:
+                dashboardTheme.colors.background.paper ||
+                STYLE_GUIDE.COLORS.white,
               borderTop: `1px solid ${dashboardTheme.colors.divider}`,
               color: dashboardTheme.colors.text.primary,
-              fontFamily: `${getComponentTypography('tables').fontFamily} !important`,
-              fontWeight: parseInt(getComponentTypography('tables').fontWeight),
-              fontSize: getComponentTypography('tables').fontSize,
+              fontFamily: `${
+                getComponentTypography("tables").fontFamily
+              } !important`,
+              fontWeight: parseInt(getComponentTypography("tables").fontWeight),
+              fontSize: getComponentTypography("tables").fontSize,
             },
             pagination: {
-              fontFamily: `${getComponentTypography('tables').fontFamily} !important`,
-              fontWeight: parseInt(getComponentTypography('tables').fontWeight),
-              fontSize: getComponentTypography('tables').fontSize,
+              fontFamily: `${
+                getComponentTypography("tables").fontFamily
+              } !important`,
+              fontWeight: parseInt(getComponentTypography("tables").fontWeight),
+              fontSize: getComponentTypography("tables").fontSize,
             },
             virtualScroller: {
-              backgroundColor: dashboardTheme.colors.background.paper || STYLE_GUIDE.COLORS.white,
+              backgroundColor:
+                dashboardTheme.colors.background.paper ||
+                STYLE_GUIDE.COLORS.white,
             },
             overlay: {
-              backgroundColor: dashboardTheme.colors.background.paper || STYLE_GUIDE.COLORS.white,
+              backgroundColor:
+                dashboardTheme.colors.background.paper ||
+                STYLE_GUIDE.COLORS.white,
               color: dashboardTheme.colors.text.primary,
-              fontFamily: `${getComponentTypography('tables').fontFamily} !important`,
-              fontWeight: parseInt(getComponentTypography('tables').fontWeight),
-              fontSize: getComponentTypography('tables').fontSize,
+              fontFamily: `${
+                getComponentTypography("tables").fontFamily
+              } !important`,
+              fontWeight: parseInt(getComponentTypography("tables").fontWeight),
+              fontSize: getComponentTypography("tables").fontSize,
             },
           },
         },
       },
       dashboardTheme,
     });
-  }, [dashboardTheme, typographySettings, effectiveTypographySettings, getComponentTypography]);
+  }, [
+    dashboardTheme,
+    typographySettings,
+    effectiveTypographySettings,
+    getComponentTypography,
+  ]);
 
-  return (
-    <ThemeProvider theme={unifiedTheme}>
-      {children}
-    </ThemeProvider>
-  );
+  return <ThemeProvider theme={unifiedTheme}>{children}</ThemeProvider>;
 };
 
-const UnifiedThemeProvider: React.FC<UnifiedThemeProviderProps> = ({ children }) => {
+const UnifiedThemeProvider: React.FC<UnifiedThemeProviderProps> = ({
+  children,
+}) => {
   return (
     <TypographyProvider>
-      <UnifiedThemeProviderInner>
-        {children}
-      </UnifiedThemeProviderInner>
+      <UnifiedThemeProviderInner>{children}</UnifiedThemeProviderInner>
     </TypographyProvider>
   );
 };
 
-export default UnifiedThemeProvider; 
+export default UnifiedThemeProvider;

@@ -784,8 +784,6 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
     return { primary, secondary };
   }, [selectedDataSource?.fieldSettings]);
 
-  console.log(selectedDataSource);
-
   const isGroupByOrDimensionOfDateType = () => {
     const groupBy = formData.groupBy;
     const dimensions = formData.dimensions;
@@ -840,7 +838,17 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
 
     const fieldType = fieldSetting.type;
     const operatorType = operators.find((op) => op.fieldType === fieldType);
-    return operatorType?.operators || [];
+
+    const operatorList =
+      operatorType?.fieldType === "date" ||
+      operatorType?.fieldType === "date-range"
+        ? operatorType?.operators.filter((opr) =>
+            ["before", "after", "on", "noton", "blank", "notblank"].includes(
+              opr.operatorKey
+            )
+          ) || []
+        : operatorType?.operators || [];
+    return operatorList || [];
   };
 
   const getSelectedWidgetType = () => {

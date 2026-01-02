@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useContext } from "react";
+import { useState, useRef, useEffect, useContext } from "react";
 import {
   Avatar,
   Button,
@@ -17,10 +17,6 @@ import {
   InputLabel,
   Select,
   MenuItem,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
   Alert,
   FormHelperText,
   CircularProgress,
@@ -34,6 +30,7 @@ import {
   Visibility,
   VisibilityOff,
 } from "@mui/icons-material";
+import { useForm } from "react-hook-form";
 import useGet from "../../hooks/useGet";
 import usePut from "../../hooks/usePut";
 import usePostMultipart from "../../hooks/usePostMultipart";
@@ -48,7 +45,11 @@ import PrimaryButton from "../../components/common/PrimaryButton";
 import DialogContainer from "../../components/molecule/dialog";
 import { checkPermission } from "../../utils/utils";
 import { PermissionsMap } from "../../utils/constants";
-import { AuthContext } from "../../context/AuthContext";
+import { AuthContext, UserResponse } from "../../context/AuthContext";
+import LocationAutocomplete, {
+  validateLocationValues,
+} from "../../components/common/location/LocationAutocomplete";
+import { State, City } from "country-state-city";
 
 const ProfilePage = () => {
   const userProfile = useSelector(
@@ -147,6 +148,128 @@ const ProfilePage = () => {
   const [isUploading, setIsUploading] = useState(false);
   const [isEditingProfilePic, setIsEditingProfilePic] = useState(false);
 
+  const {
+    control: addressFormControl,
+    watch: watchAddress,
+    reset: resetAddress,
+  } = useForm({
+    defaultValues: {
+      address: "",
+      country: "",
+      state: "",
+      city: "",
+      postalCode: "",
+    },
+  });
+
+  const selectedCountry = watchAddress("country");
+  const selectedState = watchAddress("state");
+  const currentCity = watchAddress("city");
+
+  useEffect(() => {
+    if (selectedCountry) {
+      if (selectedState) {
+        try {
+          const states = State.getStatesOfCountry(selectedCountry);
+          const stateExists = states.some(
+            (s) => s.isoCode === selectedState || s.name === selectedState
+          );
+          if (!stateExists) {
+            resetAddress((prevValues) => ({
+              ...prevValues,
+              state: "",
+              city: "",
+            }));
+            setProfile((prev) => ({
+              ...prev,
+              address: {
+                ...prev.address,
+                state: "",
+                city: "",
+              },
+            }));
+          }
+        } catch {
+          resetAddress((prevValues) => ({
+            ...prevValues,
+            state: "",
+            city: "",
+          }));
+          setProfile((prev) => ({
+            ...prev,
+            address: {
+              ...prev.address,
+              state: "",
+              city: "",
+            },
+          }));
+        }
+      }
+    } else {
+      resetAddress((prevValues) => ({
+        ...prevValues,
+        state: "",
+        city: "",
+      }));
+      setProfile((prev) => ({
+        ...prev,
+        address: {
+          ...prev.address,
+          state: "",
+          city: "",
+        },
+      }));
+    }
+  }, [selectedCountry, selectedState, resetAddress]);
+
+  useEffect(() => {
+    if (selectedState && selectedCountry) {
+      if (currentCity) {
+        try {
+          const cities = City.getCitiesOfState(selectedCountry, selectedState);
+          const cityExists = cities.some((c) => c.name === currentCity);
+          if (!cityExists) {
+            resetAddress((prevValues) => ({
+              ...prevValues,
+              city: "",
+            }));
+            setProfile((prev) => ({
+              ...prev,
+              address: {
+                ...prev.address,
+                city: "",
+              },
+            }));
+          }
+        } catch {
+          resetAddress((prevValues) => ({
+            ...prevValues,
+            city: "",
+          }));
+          setProfile((prev) => ({
+            ...prev,
+            address: {
+              ...prev.address,
+              city: "",
+            },
+          }));
+        }
+      }
+    } else if (!selectedState) {
+      resetAddress((prevValues) => ({
+        ...prevValues,
+        city: "",
+      }));
+      setProfile((prev) => ({
+        ...prev,
+        address: {
+          ...prev.address,
+          city: "",
+        },
+      }));
+    }
+  }, [selectedState, selectedCountry, currentCity, resetAddress]);
+
   const departmentList = useGet<{
     success: boolean;
     data: any[];
@@ -179,6 +302,12 @@ const ProfilePage = () => {
 
   useEffect(() => {
     if (userProfile) {
+      const { country, state, city } = validateLocationValues(
+        userProfile?.country,
+        userProfile?.state,
+        userProfile?.city
+      );
+
       const newProfile = {
         personal: {
           firstName: userProfile?.firstName || "",
@@ -194,9 +323,9 @@ const ProfilePage = () => {
         },
         address: {
           address: userProfile?.address || "",
-          city: userProfile?.city || "",
-          state: userProfile?.state || "",
-          country: userProfile?.country || "",
+          city: city,
+          state: state,
+          country: country,
           postalCode: userProfile?.postalCode || "",
         },
         password: {
@@ -211,12 +340,19 @@ const ProfilePage = () => {
         personal: { ...newProfile.personal },
         address: { ...newProfile.address },
       });
+      resetAddress({
+        address: newProfile.address.address,
+        country: country,
+        state: state,
+        city: city,
+        postalCode: newProfile.address.postalCode,
+      });
       if (shouldAllowView) {
         setProfileImage(userProfile?.imagePath || "/default-avatar.png");
       }
       setSelectedDepartmentId(userProfile?.departmentId?._id || "");
     }
-  }, [userProfile]);
+  }, [userProfile, resetAddress, shouldAllowView]);
 
   const handleDepartmentChange = (e) => {
     const departmentId = e.target.value;
@@ -369,8 +505,61 @@ const ProfilePage = () => {
     }
   };
 
+  const isAddressEmpty = () => {
+    const countryValue =
+      watchAddress("country") || profile.address.country || "";
+    const stateValue = watchAddress("state") || profile.address.state || "";
+    const cityValue = watchAddress("city") || profile.address.city || "";
+    const addressValue = profile.address.address || "";
+    const postalCodeValue = profile.address.postalCode || "";
+
+    return (
+      !countryValue &&
+      !stateValue &&
+      !cityValue &&
+      !addressValue &&
+      !postalCodeValue
+    );
+  };
+
   const handleSaveChanges = async (section) => {
     try {
+      let addressData;
+      if (section === "address") {
+        // Validate that at least one field is filled
+        if (isAddressEmpty()) {
+          toast.error("Please fill at least one address field before saving.");
+          return;
+        }
+
+        const countryValue =
+          watchAddress("country") || profile.address.country || "";
+        const stateValue = watchAddress("state") || profile.address.state || "";
+        const cityValue = watchAddress("city") || profile.address.city || "";
+
+        const { country, state, city } = validateLocationValues(
+          countryValue,
+          stateValue,
+          cityValue
+        );
+
+        addressData = {
+          address: profile.address.address,
+          country: country,
+          state: state,
+          city: city,
+          postalCode: profile.address.postalCode,
+        };
+      } else {
+        addressData = {
+          address: profile.address.address,
+          country: profile.address.country,
+          state: profile.address.state,
+          city: profile.address.city,
+          postalCode: profile.address.postalCode,
+        };
+      }
+
       const payload = {
         firstName: profile.personal.firstName,
         lastName: profile.personal.lastName,
@@ -378,11 +567,7 @@ const ProfilePage = () => {
         mobile: profile.personal.mobile,
         departmentId: profile.personal.departmentId,
         designationId: profile.personal.designationId,
-        address: profile.address.address,
-        city: profile.address.city,
-        state: profile.address.state,
-        country: profile.address.country,
-        postalCode: profile.address.postalCode,
+        ...addressData,
       };
       const response = await updateUserProfile.mutateAsync({
         url: PUT.UPDATE_CURRENT_USER,
@@ -396,11 +581,21 @@ const ProfilePage = () => {
           [section]: false,
         }));
 
-        // Update originalProfile with saved values
-        setOriginalProfile((prev) => ({
-          ...prev,
-          [section]: { ...profile[section] },
-        }));
+        if (section === "address") {
+          setProfile((prev) => ({
+            ...prev,
+            address: addressData,
+          }));
+          setOriginalProfile((prev) => ({
+            ...prev,
+            address: addressData,
+          }));
+        } else {
+          setOriginalProfile((prev) => ({
+            ...prev,
+            [section]: { ...profile[section] },
+          }));
+        }
 
         await refreshUserData();
       } else {
@@ -737,14 +932,6 @@ const ProfilePage = () => {
     },
   ];
 
-  const addressFields = [
-    { id: "address", label: "Address" },
-    { id: "city", label: "City" },
-    { id: "state", label: "State" },
-    { id: "country", label: "Country" },
-    { id: "postalCode", label: "Postal Code", type: "tel" },
-  ];
-
   const passwordFields = [
     {
       id: "currentPassword",
@@ -1031,7 +1218,210 @@ const ProfilePage = () => {
             <Divider />
             <CardContent sx={{ pt: 2 }}>
               <Grid container spacing={2}>
-                {renderFormFields("address", addressFields)}
+                <Grid item xs={12}>
+                  <TextField
+                    fullWidth
+                    multiline
+                    rows={2}
+                    label="Address"
+                    value={profile.address.address}
+                    onChange={(e) => {
+                      handleInputChange("address", "address", e.target.value);
+                    }}
+                    disabled={!editModes.address}
+                    variant={editModes.address ? "outlined" : "filled"}
+                    size="small"
+                    sx={{
+                      "& .MuiFilledInput-root": {
+                        backgroundColor: !editModes.address
+                          ? "#f7f7f7"
+                          : undefined,
+                        borderRadius: 2,
+                        "&:before": {
+                          border: "none",
+                        },
+                      },
+                      "& .MuiFilledInput-root.Mui-disabled": {
+                        backgroundColor: "#f0f0f0 !important",
+                        color: "#333",
+                        WebkitTextFillColor: "#333 !important",
+                      },
+                      "& .MuiInputLabel-root.Mui-disabled": {
+                        color: "#777",
+                      },
+                    }}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <LocationAutocomplete
+                    control={addressFormControl}
+                    name="country"
+                    label="Country"
+                    locationType="country"
+                    errors={{}}
+                    disabled={!editModes.address}
+                    variant={editModes.address ? "outlined" : "filled"}
+                    size="small"
+                    sx={{
+                      "& .MuiFilledInput-root": {
+                        backgroundColor: !editModes.address
+                          ? "#f7f7f7"
+                          : undefined,
+                        borderRadius: 2,
+                        "&:before": {
+                          border: "none",
+                        },
+                        "&:after": {
+                          border: "none",
+                        },
+                      },
+                      "& .MuiFilledInput-root.Mui-disabled": {
+                        backgroundColor: "#f0f0f0 !important",
+                        color: "#333",
+                        WebkitTextFillColor: "#333 !important",
+                        "&:before": {
+                          border: "none",
+                        },
+                      },
+                      "& .MuiInputLabel-root.Mui-disabled": {
+                        color: "#777",
+                        "&:before": {
+                          border: "none",
+                        },
+                      },
+                    }}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <LocationAutocomplete
+                    control={addressFormControl}
+                    name="state"
+                    label="State"
+                    locationType="state"
+                    selectedCountry={selectedCountry || profile.address.country}
+                    errors={{}}
+                    disabled={!editModes.address}
+                    variant={editModes.address ? "outlined" : "filled"}
+                    size="small"
+                    sx={{
+                      "& .MuiFilledInput-root": {
+                        backgroundColor: !editModes.address
+                          ? "#f7f7f7"
+                          : undefined,
+                        borderRadius: 2,
+                        "&:before": {
+                          border: "none",
+                        },
+                        "&:after": {
+                          border: "none",
+                        },
+                      },
+                      "& .MuiFilledInput-root.Mui-disabled": {
+                        backgroundColor: "#f0f0f0 !important",
+                        color: "#333",
+                        WebkitTextFillColor: "#333 !important",
+                        "&:before": {
+                          border: "none",
+                        },
+                      },
+                      "& .MuiInputLabel-root.Mui-disabled": {
+                        color: "#777",
+                        "&:before": {
+                          border: "none",
+                        },
+                      },
+                    }}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <LocationAutocomplete
+                    control={addressFormControl}
+                    name="city"
+                    label="City"
+                    locationType="city"
+                    selectedCountry={selectedCountry || profile.address.country}
+                    selectedState={selectedState || profile.address.state}
+                    errors={{}}
+                    disabled={!editModes.address}
+                    variant={editModes.address ? "outlined" : "filled"}
+                    size="small"
+                    sx={{
+                      "& .MuiFilledInput-root": {
+                        backgroundColor: !editModes.address
+                          ? "#f7f7f7"
+                          : undefined,
+                        borderRadius: 2,
+                        "&:before": {
+                          border: "none",
+                        },
+                        "&:after": {
+                          border: "none",
+                        },
+                      },
+                      "& .MuiFilledInput-root.Mui-disabled": {
+                        backgroundColor: "#f0f0f0 !important",
+                        color: "#333",
+                        WebkitTextFillColor: "#333 !important",
+                        "&:before": {
+                          border: "none",
+                        },
+                      },
+                      "& .MuiInputLabel-root.Mui-disabled": {
+                        color: "#777",
+                        "&:before": {
+                          border: "none",
+                        },
+                      },
+                    }}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    fullWidth
+                    label="Postal Code"
+                    value={profile.address.postalCode}
+                    onChange={(e) => {
+                      const value = e.target.value.replace(/\D/g, "");
+                      handleInputChange("address", "postalCode", value);
+                    }}
+                    disabled={!editModes.address}
+                    variant={editModes.address ? "outlined" : "filled"}
+                    type="tel"
+                    size="small"
+                    inputProps={{
+                      inputMode: "numeric",
+                      pattern: "[0-9]*",
+                    }}
+                    sx={{
+                      "& .MuiFilledInput-root": {
+                        backgroundColor: !editModes.address
+                          ? "#f7f7f7"
+                          : undefined,
+                        borderRadius: 2,
+                        "&:before": {
+                          border: "none",
+                        },
+                        "&:after": {
+                          border: "none",
+                        },
+                      },
+                      "& .MuiFilledInput-root.Mui-disabled": {
+                        backgroundColor: "#f0f0f0 !important",
+                        color: "#333",
+                        WebkitTextFillColor: "#333 !important",
+                        "&:before": {
+                          border: "none",
+                        },
+                      },
+                      "& .MuiInputLabel-root.Mui-disabled": {
+                        color: "#777",
+                        "&:before": {
+                          border: "none",
+                        },
+                      },
+                    }}
+                  />
+                </Grid>
                 {editModes.address && (
                   <Grid
                     item
@@ -1043,7 +1433,7 @@ const ProfilePage = () => {
                       color="primary"
                       startIcon={<SaveIcon />}
                       onClick={() => handleSaveChanges("address")}
-                      disabled={updateUserProfile.isLoading}
+                      disabled={updateUserProfile.isLoading || isAddressEmpty()}
                     >
                       {updateUserProfile.isLoading
                         ? "Saving..."
