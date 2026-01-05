@@ -3084,17 +3084,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
           plugins: {
             ...baseOptions.plugins,
             legend: {
-              position: "bottom" as const,
-              labels: {
-                usePointStyle: true,
-                color:
-                  widgetTheme?.legend?.labels?.color ||
-                  theme.palette.text.primary,
-                padding: widgetTheme?.legend?.labels?.padding ?? 15,
-                font: { size: widgetTheme?.legend?.labels?.font?.size ?? 12 },
-                boxWidth: widgetTheme?.legend?.labels?.boxWidth ?? 10,
-                boxHeight: widgetTheme?.legend?.labels?.boxHeight ?? 10,
-              },
+              display: false,
             },
           },
         };

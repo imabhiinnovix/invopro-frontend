@@ -2290,7 +2290,7 @@ export default function Organization() {
                       />
                     </Box>
                   </Grid>
-                  {selectedOrg && (
+                  {selectedOrg && isSuperUser() && (
                     <Grid size={6}>
                       <Controller
                         name="status"
