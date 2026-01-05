@@ -626,12 +626,12 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
     setFieldErrors({});
 
     const descriptionCount = countCharacters(formData.description);
-    if (descriptionCount > 250) {
+    if (descriptionCount > 1000) {
       setFieldErrors({
-        description: `Description exceeds the maximum character limit of 250 characters. Current: ${descriptionCount} characters.`,
+        description: `Description exceeds the maximum character limit of 1000 characters. Current: ${descriptionCount} characters.`,
       });
       toast.error(
-        `Description exceeds the maximum character limit of 250 characters. Please reduce it to 250 characters or less.`
+        `Description exceeds the maximum character limit of 1000 characters. Please reduce it to 1000 characters or less.`
       );
       return;
     }
@@ -1759,16 +1759,16 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
               multiline
               rows={3}
               error={
-                countCharacters(formData.description) > 250 ||
+                countCharacters(formData.description) > 1000 ||
                 !!fieldErrors["description"]
               }
               helperText={
                 fieldErrors["description"] ||
-                (countCharacters(formData.description) > 250
-                  ? `Character limit exceeded. Maximum 250 characters allowed. (${countCharacters(
+                (countCharacters(formData.description) > 1000
+                  ? `Character limit exceeded. Maximum 1000 characters allowed. (${countCharacters(
                       formData.description
-                    )} / 250 characters)`
-                  : `${countCharacters(formData.description)} / 250 characters`)
+                    )} / 1000 characters)`
+                  : `${countCharacters(formData.description)} / 1000 characters`)
               }
               FormHelperTextProps={{
                 sx: {
