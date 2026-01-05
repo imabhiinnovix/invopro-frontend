@@ -172,7 +172,17 @@ export const htmlLegendPlugin = {
 };
 
 const getOrCreateLegendList = (chart: any, id: string) => {
-  const legendContainer = document.getElementById(id);
+  const fullScreenModal = document.querySelector('[role="dialog"]');
+  let legendContainer: HTMLElement | null = null;
+
+  if (fullScreenModal) {
+    legendContainer = fullScreenModal.querySelector(`#${id}`) as HTMLElement;
+  }
+
+  if (!legendContainer) {
+    legendContainer = document.getElementById(id);
+  }
+
   let listContainer = legendContainer?.querySelector("ul");
 
   if (!listContainer) {
@@ -574,7 +584,6 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
           totalCount: data.data.totalCount,
         },
       };
-
       setFullscreenWidgetData(essentialData);
     },
     true
@@ -3075,17 +3084,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
           plugins: {
             ...baseOptions.plugins,
             legend: {
-              position: "bottom" as const,
-              labels: {
-                usePointStyle: true,
-                color:
-                  widgetTheme?.legend?.labels?.color ||
-                  theme.palette.text.primary,
-                padding: widgetTheme?.legend?.labels?.padding ?? 15,
-                font: { size: widgetTheme?.legend?.labels?.font?.size ?? 12 },
-                boxWidth: widgetTheme?.legend?.labels?.boxWidth ?? 10,
-                boxHeight: widgetTheme?.legend?.labels?.boxHeight ?? 10,
-              },
+              display: false,
             },
           },
         };

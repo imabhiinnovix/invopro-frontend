@@ -638,7 +638,8 @@ export default function Frequency({
       "Every weekday (Monday to Friday)",
       "Custom...",
     ];
-    if (isCustomRecurrence && repeatOption && !options.includes(repeatOption)) {
+
+    if (repeatOption && !options.includes(repeatOption)) {
       options.push(repeatOption);
     }
     return options;
@@ -1350,7 +1351,18 @@ export default function Frequency({
                 }}
               >
                 {getRepeatOptions().map((option) => (
-                  <MenuItem key={option} value={option}>
+                  <MenuItem
+                    key={option}
+                    value={option}
+                    onClick={() => {
+                      if (
+                        option === "Custom..." &&
+                        repeatOption === "Custom..."
+                      ) {
+                        setCustomRecurrenceOpen(true);
+                      }
+                    }}
+                  >
                     {option}
                   </MenuItem>
                 ))}
