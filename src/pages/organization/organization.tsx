@@ -282,6 +282,7 @@ export default function Organization() {
   const triggerLogoUpload = () => {
     logoInputRef.current?.click();
   };
+  const isUpdatingDomainsRef = useRef(false);
 
   const theme = useUnifiedTheme();
 
@@ -1424,72 +1425,200 @@ export default function Organization() {
 
                   <Grid size={6}>
                     <Box sx={{ display: "flex", alignItems: "center" }}>
-                      <TextField
-                        placeholder="Add a domain (e.g. example.com)"
+                      <Autocomplete
+                        multiple
+                        freeSolo
                         fullWidth
-                        value={domainInput}
-                        onChange={(e) => setDomainInput(e.target.value)}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter") {
-                            e.preventDefault();
-                            if (domainInput.trim()) {
-                              appendDomain({ value: domainInput.trim() });
-                              setDomainInput("");
+                        options={[]}
+                        value={domainFields.map(
+                          (field) => (field as { value: string }).value
+                        )}
+                        isOptionEqualToValue={(option, value) =>
+                          option.toLowerCase() === value.toLowerCase()
+                        }
+                        getOptionLabel={(option) =>
+                          typeof option === "string" ? option : ""
+                        }
+                        onChange={(_, newValue) => {
+                          if (isUpdatingDomainsRef.current) {
+                            return;
+                          }
+
+                          const trimmedDomains = newValue
+                            .filter(
+                              (domain) =>
+                                domain &&
+                                typeof domain === "string" &&
+                                domain.trim()
+                            )
+                            .map((domain) => domain.trim());
+
+                          const seen = new Set<string>();
+                          const uniqueDomains: string[] = [];
+                          trimmedDomains.forEach((domain) => {
+                            const lowerDomain = domain.toLowerCase();
+                            if (!seen.has(lowerDomain)) {
+                              seen.add(lowerDomain);
+                              uniqueDomains.push(domain);
                             }
+                          });
+
+                          const currentValues = domainFields.map((field) =>
+                            (field as { value: string }).value.toLowerCase()
+                          );
+                          const currentValuesSet = new Set(currentValues);
+
+                          const newValuesSet = new Set(
+                            uniqueDomains.map((d) => d.toLowerCase())
+                          );
+                          const setsEqual =
+                            currentValuesSet.size === newValuesSet.size &&
+                            [...currentValuesSet].every((val) =>
+                              newValuesSet.has(val)
+                            );
+
+                          if (!setsEqual) {
+                            isUpdatingDomainsRef.current = true;
+
+                            const removeCount = domainFields.length;
+                            for (let i = removeCount - 1; i >= 0; i--) {
+                              removeDomain(i);
+                            }
+
+                            uniqueDomains.forEach((domain) => {
+                              appendDomain({ value: domain });
+                            });
+
+                            setDomainInput("");
+
+                            setTimeout(() => {
+                              isUpdatingDomainsRef.current = false;
+                            }, 0);
                           }
                         }}
-                        InputProps={{
-                          endAdornment: (
-                            <IconButton
-                              size="small"
-                              color="primary"
-                              onClick={() => {
-                                if (domainInput.trim()) {
-                                  appendDomain({ value: domainInput.trim() });
-                                  setDomainInput("");
-                                }
-                              }}
-                            >
-                              <AddIcon />
-                            </IconButton>
-                          ),
+                        onInputChange={(_, newInputValue, reason) => {
+                          if (reason === "input") {
+                            setDomainInput(newInputValue);
+                          }
                         }}
-                        label="Allowed Domains"
+                        inputValue={domainInput}
+                        renderInput={(params) => (
+                          <TextField
+                            {...params}
+                            placeholder="Add a domain (e.g. example.com)"
+                            label="Allowed Domains"
+                            InputProps={{
+                              ...params.InputProps,
+                              endAdornment: (
+                                <>
+                                  {params.InputProps.endAdornment}
+                                  <IconButton
+                                    size="small"
+                                    color="primary"
+                                    disabled={!domainInput.trim()}
+                                    onClick={(e) => {
+                                      e.preventDefault();
+                                      e.stopPropagation();
+                                      if (
+                                        domainInput.trim() &&
+                                        !isUpdatingDomainsRef.current
+                                      ) {
+                                        const trimmedDomain =
+                                          domainInput.trim();
+                                        const lowerDomain =
+                                          trimmedDomain.toLowerCase();
+                                        const exists = domainFields.some(
+                                          (field) =>
+                                            (
+                                              field as { value: string }
+                                            ).value.toLowerCase() ===
+                                            lowerDomain
+                                        );
+                                        if (!exists) {
+                                          isUpdatingDomainsRef.current = true;
+                                          const currentValues =
+                                            domainFields.map(
+                                              (field) =>
+                                                (field as { value: string })
+                                                  .value
+                                            );
+                                          const newValues = [
+                                            ...currentValues,
+                                            trimmedDomain,
+                                          ];
+
+                                          const removeCount =
+                                            domainFields.length;
+                                          for (
+                                            let i = removeCount - 1;
+                                            i >= 0;
+                                            i--
+                                          ) {
+                                            removeDomain(i);
+                                          }
+
+                                          newValues.forEach((domain) => {
+                                            appendDomain({ value: domain });
+                                          });
+
+                                          setDomainInput("");
+
+                                          setTimeout(() => {
+                                            isUpdatingDomainsRef.current =
+                                              false;
+                                          }, 0);
+                                        }
+                                      }
+                                    }}
+                                  >
+                                    <AddIcon />
+                                  </IconButton>
+                                </>
+                              ),
+                            }}
+                          />
+                        )}
+                        renderTags={(value, getTagProps) =>
+                          value.map((option, index) => {
+                            const { key } = getTagProps({ index });
+                            return (
+                              <Box
+                                key={key}
+                                sx={{
+                                  display: "inline-flex",
+                                  alignItems: "center",
+                                  bgcolor: "primary.main",
+                                  color: "primary.contrastText",
+                                  px: 1,
+                                  py: 0.5,
+                                  borderRadius: 1,
+                                  fontSize: "0.8125rem",
+                                  mr: 0.5,
+                                  mb: 0.5,
+                                }}
+                              >
+                                <span>{option}</span>
+                                <IconButton
+                                  size="small"
+                                  onClick={() => {
+                                    const fieldIndex = domainFields.findIndex(
+                                      (field) =>
+                                        (field as { value: string }).value ===
+                                        option
+                                    );
+                                    if (fieldIndex !== -1) {
+                                      removeDomain(fieldIndex);
+                                    }
+                                  }}
+                                  sx={{ ml: 0.5, p: 0, color: "inherit" }}
+                                >
+                                  <CancelIcon sx={{ fontSize: 16 }} />
+                                </IconButton>
+                              </Box>
+                            );
+                          })
+                        }
                       />
-                    </Box>
-                    <Box
-                      sx={{
-                        display: "flex",
-                        flexWrap: "wrap",
-                        gap: 1,
-                        alignItems: "start",
-                        mt: 1,
-                      }}
-                    >
-                      {domainFields.map((field, idx) => (
-                        <Box
-                          key={field.id}
-                          sx={{
-                            display: "inline-flex",
-                            alignItems: "center",
-                            bgcolor: "primary.main",
-                            color: "primary.contrastText",
-                            px: 1,
-                            py: 0.5,
-                            borderRadius: 1,
-                            fontSize: "0.8125rem",
-                          }}
-                        >
-                          <span>{field.value}</span>
-                          <IconButton
-                            size="small"
-                            onClick={() => removeDomain(idx)}
-                            sx={{ ml: 0.5, p: 0, color: "inherit" }}
-                          >
-                            <CancelIcon sx={{ fontSize: 16 }} />
-                          </IconButton>
-                        </Box>
-                      ))}
                     </Box>
                   </Grid>
 
