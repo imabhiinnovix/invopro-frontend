@@ -1,5 +1,5 @@
 import * as React from "react";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import {
   Box,
   Typography,
@@ -14,7 +14,6 @@ import {
   CircularProgress,
   Chip,
   OutlinedInput,
-  Divider,
   Paper,
   Dialog,
   DialogTitle,
@@ -22,8 +21,7 @@ import {
   DialogActions,
 } from "@mui/material";
 import { useForm, Controller } from "react-hook-form";
-import ReactQuill from "react-quill";
-import "react-quill/dist/quill.snow.css";
+import JoditEditor from "jodit-react";
 import { useUnifiedTheme } from "../../hooks/useUnifiedTheme";
 import useGet from "../../hooks/useGet";
 import usePut from "../../hooks/usePut";
@@ -82,6 +80,8 @@ export function TemplateModal({
 
   const watchedName = watch("name");
 
+  const timeoutRef = useRef(null);
+
   // Transform name to code: lowercase and replace spaces with underscores
   useEffect(() => {
     // Only auto-generate code in add mode
@@ -128,38 +128,367 @@ export function TemplateModal({
     true
   );
 
-  // Quill editor modules configuration
-  const modules = {
-    toolbar:
-      mode === "view"
-        ? false
-        : [
-            [{ header: [1, 2, 3, false] }],
-            ["bold", "italic", "underline", "strike"],
-            [{ list: "ordered" }, { list: "bullet" }],
-            [{ indent: "-1" }, { indent: "+1" }],
-            [{ color: [] }, { background: [] }],
-            [{ align: [] }],
-            ["link", "image"],
-            ["clean"],
-          ],
-  };
+  const editorConfig = React.useMemo(
+    () => ({
+      // Basic settings
+      readonly: mode === "view",
+      disabled: false,
+      placeholder:
+        mode === "view"
+          ? ""
+          : "✨ Write your template content here... You can use AI to help generate content!",
 
-  const formats = [
-    "header",
-    "bold",
-    "italic",
-    "underline",
-    "strike",
-    "list",
-    "bullet",
-    "indent",
-    "color",
-    "background",
-    "align",
-    "link",
-    "image",
-  ];
+      // Editor dimensions
+      height: 400,
+      minHeight: 300,
+      maxHeight: 600,
+      width: "auto",
+
+      // Toolbar configuration
+      toolbar: mode === "view" ? false : true,
+      toolbarSticky: true,
+      toolbarDisableStickyForMobile: true,
+      toolbarAdaptive: false,
+
+      // Complete toolbar buttons configuration
+      buttons: [
+        "source",
+        "|",
+        "bold",
+        "italic",
+        "underline",
+        "strikethrough",
+        "|",
+        "superscript",
+        "subscript",
+        "|",
+        "ul",
+        "ol",
+        "|",
+        "outdent",
+        "indent",
+        "|",
+        "font",
+        "fontsize",
+        "brush",
+        "paragraph",
+        "|",
+        "image",
+        "file",
+        "video",
+        "table",
+        "link",
+        "unlink",
+        "|",
+        "align",
+        "undo",
+        "redo",
+        "|",
+        "hr",
+        "eraser",
+        "copyformat",
+        "|",
+        "fullsize",
+        "print",
+        "preview",
+        "|",
+        "find",
+        "selectall",
+      ],
+
+      // Button size for responsive design
+      buttonsMD: [
+        "bold",
+        "italic",
+        "underline",
+        "|",
+        "ul",
+        "ol",
+        "|",
+        "font",
+        "fontsize",
+        "brush",
+        "|",
+        "align",
+        "|",
+        "link",
+        "image",
+        "|",
+        "undo",
+        "redo",
+      ],
+      buttonsSM: [
+        "bold",
+        "italic",
+        "|",
+        "ul",
+        "ol",
+        "|",
+        "fontsize",
+        "|",
+        "link",
+        "image",
+      ],
+      buttonsXS: ["bold", "italic", "|", "ul", "ol"],
+
+      // Image upload configuration
+      uploader: {
+        insertImageAsBase64URI: true,
+        imagesExtensions: ["jpg", "png", "jpeg", "gif", "svg", "webp"],
+        withCredentials: false,
+        format: "json",
+        method: "POST",
+      },
+
+      // File browser
+      filebrowser: {
+        ajax: {
+          url: "",
+        },
+        uploader: {
+          insertImageAsBase64URI: true,
+        },
+      },
+
+      // Image editing
+      image: {
+        openOnDblClick: true,
+        editSrc: true,
+        editStyle: true,
+        editAlt: true,
+        editTitle: true,
+        editClass: true,
+        editId: true,
+        editAlign: true,
+        editSize: true,
+        editBorderRadius: true,
+        editMargins: true,
+        useImageEditor: true,
+        selectImageAfterClose: true,
+      },
+
+      // Link settings
+      link: {
+        followOnDblClick: false,
+        processVideoLink: true,
+        openLinkDialogOnDblClick: true,
+        removeLinkAfterFormat: true,
+        noFollowCheckbox: true,
+        openInNewTabCheckbox: true,
+      },
+
+      // Table settings
+      table: {
+        selectionCellStyle: "border: 1px double #1e88e5 !important;",
+        allowCellSelection: true,
+        useExtraClassesOptions: false,
+      },
+
+      // Paste handling
+      askBeforePasteHTML: false,
+      askBeforePasteFromWord: false,
+      defaultActionOnPaste: "insert_clear_html" as const,
+      processPasteHTML: true,
+
+      // Enter behavior
+      enter: "p" as const,
+      defaultLineHeight: 1.5,
+
+      // Formatting
+      cleanHTML: {
+        timeout: 300,
+        removeEmptyElements: true,
+        fillEmptyParagraph: true,
+        replaceNBSP: true,
+        replaceOldTags: {
+          i: "em",
+          b: "strong",
+        } as const,
+      },
+
+      // Spellcheck
+      spellcheck: true,
+
+      // Direction (LTR/RTL)
+      direction: "ltr" as const,
+      language: "en",
+
+      // Autosave
+      enableDragAndDropFileToEditor: true,
+
+      // Beautify HTML
+      beautifyHTML: true,
+
+      // Status bar (hide it)
+      showCharsCounter: false,
+      showWordsCounter: false,
+      showXPathInStatusbar: false,
+
+      // Inline popup
+      toolbarInlineForSelection: false,
+
+      addNewLine: false,
+
+      // Placeholder settings
+      showPlaceholder: true,
+      useNativeTooltip: false,
+
+      // Tab behavior
+      tabIndex: 0,
+
+      // Autofocus
+      autofocus: false,
+
+      // Events can be added if needed
+      events: {},
+
+      // Allow resize by user
+      allowResizeX: false,
+      allowResizeY: false,
+
+      // Iframe mode
+      iframe: false,
+
+      // Theme
+      theme: "default",
+
+      // Color picker
+      colors: {
+        greyscale: [
+          "#000000",
+          "#434343",
+          "#666666",
+          "#999999",
+          "#B7B7B7",
+          "#CCCCCC",
+          "#D9D9D9",
+          "#EFEFEF",
+          "#F3F3F3",
+          "#FFFFFF",
+        ],
+        palette: [
+          "#980000",
+          "#FF0000",
+          "#FF9900",
+          "#FFFF00",
+          "#00F0F0",
+          "#00FFFF",
+          "#4A86E8",
+          "#0000FF",
+          "#9900FF",
+          "#FF00FF",
+        ],
+        full: [
+          "#E6B8AF",
+          "#F4CCCC",
+          "#FCE5CD",
+          "#FFF2CC",
+          "#D9EAD3",
+          "#D0E0E3",
+          "#C9DAF8",
+          "#CFE2F3",
+          "#D9D2E9",
+          "#EAD1DC",
+          "#DD7E6B",
+          "#EA9999",
+          "#F9CB9C",
+          "#FFE599",
+          "#B6D7A8",
+          "#A2C4C9",
+          "#A4C2F4",
+          "#9FC5E8",
+          "#B4A7D6",
+          "#D5A6BD",
+          "#CC4125",
+          "#E06666",
+          "#F6B26B",
+          "#FFD966",
+          "#93C47D",
+          "#76A5AF",
+          "#6D9EEB",
+          "#6FA8DC",
+          "#8E7CC3",
+          "#C27BA0",
+          "#A61C00",
+          "#CC0000",
+          "#E69138",
+          "#F1C232",
+          "#6AA84F",
+          "#45818E",
+          "#3C78D8",
+          "#3D85C6",
+          "#674EA7",
+          "#A64D79",
+          "#85200C",
+          "#990000",
+          "#B45F06",
+          "#BF9000",
+          "#38761D",
+          "#134F5C",
+          "#1155CC",
+          "#0B5394",
+          "#351C75",
+          "#733554",
+          "#5B0F00",
+          "#660000",
+          "#783F04",
+          "#7F6000",
+          "#274E13",
+          "#0C343D",
+          "#1C4587",
+          "#073763",
+          "#20124D",
+          "#4C1130",
+        ],
+      },
+
+      // Controls for different elements
+      controls: {
+        font: {
+          list: {
+            Arial: "Arial",
+            Georgia: "Georgia",
+            Impact: "Impact",
+            Tahoma: "Tahoma",
+            "Times New Roman": "Times New Roman",
+            Verdana: "Verdana",
+            "Courier New": "Courier New",
+          },
+        },
+        fontsize: {
+          list: [
+            "8",
+            "9",
+            "10",
+            "11",
+            "12",
+            "14",
+            "16",
+            "18",
+            "20",
+            "24",
+            "28",
+            "32",
+            "36",
+            "48",
+            "72",
+          ],
+        },
+        paragraph: {
+          list: {
+            p: "Paragraph",
+            h1: "Heading 1",
+            h2: "Heading 2",
+            h3: "Heading 3",
+            h4: "Heading 4",
+            blockquote: "Quote",
+            pre: "Code",
+          },
+        },
+      },
+    }),
+    [mode]
+  );
 
   // Helper function to transform labels to attachment field items
   const transformLabelsToAttachmentFieldItems = (
@@ -367,41 +696,16 @@ export function TemplateModal({
       finalSubject = `${data.subject} - ${currentDate}`;
     }
 
-    // Wrap body content in full HTML structure for email
-    const fullHtmlBody = `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>${finalSubject}</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      line-height: 1.6;
-      color: #333;
-      max-width: 800px;
-      margin: 0 auto;
-      padding: 20px;
-    }
-  </style>
-</head>
-<body>
-  ${data.body}
-</body>
-</html>`;
-
     const payload: TemplatePostPayload = {
       name: data.name,
       code: data.code,
       subject: finalSubject,
-      body: fullHtmlBody,
+      body: data.body,
       type: data.type,
       dataSourceId: data.dataSourceId,
       attachmentSettings,
       groupBy,
     };
-
-    console.log("🔍 Backend Payload:", JSON.stringify(payload, null, 2));
 
     if (mode === "add") {
       createTemplate.mutate({
@@ -438,7 +742,26 @@ export function TemplateModal({
   const isFormDirty = formState.isDirty;
   const isSaving = createTemplate.isLoading || updateTemplate.isLoading;
 
-  console.log("formState", watch("body"));
+  const debouncedOnChange = useCallback(
+    (content) => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+
+      timeoutRef.current = setTimeout(() => {
+        setValue("body", content);
+      }, 300);
+    },
+    [setValue]
+  );
+
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, []);
 
   return (
     <>
@@ -470,7 +793,7 @@ export function TemplateModal({
                 <PrimaryButton
                   onClick={handleSubmit(onSubmit)}
                   variant="contained"
-                  disabled={!isFormValid || !isFormDirty || isSaving}
+                  disabled={isSaving}
                 >
                   {mode === "add" ? "Save Template" : "Update Template"}
                 </PrimaryButton>
@@ -820,57 +1143,41 @@ export function TemplateModal({
                     name="body"
                     control={control}
                     rules={{ required: "Body content is required" }}
-                    render={({ field, fieldState }) => (
-                      <Box>
-                        <Box
-                          sx={{
-                            "& .quill": {
+                    render={({ field, fieldState }) => {
+                      return (
+                        <Box>
+                          <Box
+                            sx={{
                               borderRadius: 2,
                               border: fieldState.error
                                 ? "2px solid #d32f2f"
                                 : "1px solid #c4c4c4",
-                            },
-                            "& .ql-container": {
-                              minHeight: "250px",
-                              fontSize: "14px",
-                              borderBottomLeftRadius: 2,
-                              borderBottomRightRadius: 2,
-                              fontFamily: theme.typography.fontFamily,
-                            },
-                            "& .ql-toolbar": {
-                              borderTopLeftRadius: 2,
-                              borderTopRightRadius: 2,
-                              backgroundColor: "#f5f5f5",
-                            },
-                            "& .ql-editor": {
-                              minHeight: "250px",
-                            },
-                            "& .ql-editor.ql-blank::before": {
-                              fontStyle: "normal",
-                              color: "#9e9e9e",
-                            },
-                          }}
-                        >
-                          <ReactQuill
-                            theme="snow"
-                            value={field.value}
-                            onChange={field.onChange}
-                            modules={modules}
-                            formats={formats}
-                            placeholder="✨ Write your template content here... You can use AI to help generate content!"
-                          />
-                        </Box>
-                        {fieldState.error && (
-                          <Typography
-                            variant="caption"
-                            color="error"
-                            sx={{ mt: 1, ml: 2, display: "block" }}
+                              overflow: "hidden",
+                              "& .jodit-container": {
+                                border: "none !important",
+                                borderRadius: 2,
+                              },
+                            }}
                           >
-                            {fieldState.error.message}
-                          </Typography>
-                        )}
-                      </Box>
-                    )}
+                            <JoditEditor
+                              value={field.value}
+                              config={editorConfig}
+                              onChange={debouncedOnChange}
+                            />
+                          </Box>
+
+                          {fieldState.error && (
+                            <Typography
+                              variant="caption"
+                              color="error"
+                              sx={{ mt: 1, ml: 2, display: "block" }}
+                            >
+                              {fieldState.error.message}
+                            </Typography>
+                          )}
+                        </Box>
+                      );
+                    }}
                   />
                 )}
               </Grid>
@@ -1720,40 +2027,32 @@ export function TemplateModal({
                         <Box>
                           <Box
                             sx={{
-                              "& .quill": {
+                              "& .jodit-container": {
                                 borderRadius: 2,
                                 border: fieldState.error
                                   ? "2px solid #d32f2f"
                                   : "1px solid #c4c4c4",
                               },
-                              "& .ql-container": {
-                                minHeight: "250px",
+                              "& .jodit-workplace": {
+                                minHeight: "300px",
                                 fontSize: "14px",
-                                borderBottomLeftRadius: 2,
-                                borderBottomRightRadius: 2,
                                 fontFamily: theme.typography.fontFamily,
                               },
-                              "& .ql-toolbar": {
-                                borderTopLeftRadius: 2,
-                                borderTopRightRadius: 2,
-                                backgroundColor: "#f5f5f5",
+                              "& .jodit-toolbar-button": {
+                                height: "28px",
+                                width: "28px",
                               },
-                              "& .ql-editor": {
-                                minHeight: "250px",
-                              },
-                              "& .ql-editor.ql-blank::before": {
-                                fontStyle: "normal",
-                                color: "#9e9e9e",
+                              "& .jodit-status-bar": {
+                                display: "none",
                               },
                             }}
                           >
-                            <ReactQuill
-                              theme="snow"
+                            <JoditEditor
                               value={field.value}
-                              onChange={field.onChange}
-                              modules={modules}
-                              formats={formats}
-                              placeholder="✨ Write your template content here... You can use AI to help generate content!"
+                              config={editorConfig}
+                              onBlur={(newContent) =>
+                                field.onChange(newContent)
+                              }
                             />
                           </Box>
                           {fieldState.error && (
