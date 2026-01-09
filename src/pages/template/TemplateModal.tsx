@@ -750,7 +750,7 @@ export function TemplateModal({
 
       timeoutRef.current = setTimeout(() => {
         setValue("body", content);
-      }, 300);
+      }, 1000);
     },
     [setValue]
   );
