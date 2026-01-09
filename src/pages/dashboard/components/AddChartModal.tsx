@@ -323,6 +323,19 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
 
   useEffect(() => {
     if (open && initialData) {
+      setShowMoreOptions({
+        dataSource: true,
+        dimensions: true,
+        groupBy1: true,
+        groupBy2: true,
+        groupBy3: true,
+        aggregationAttribute1: true,
+        aggregationAttribute2: true,
+        filtersField1: true,
+        filtersField2: true,
+        xAxis1: true,
+        xAxis2: true,
+      })
       if (!formData.name && !formData.dimensions && !formData.groupBy) {
         setFormData({
           name: initialData.name,
@@ -2511,7 +2524,12 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
             variant="contained"
             color="primary"
             disabled={
-              isSubmitting || !formData.widgetTypeId || !formData.dataSourceId
+              isSubmitting || 
+              !formData.widgetTypeId || 
+              !formData.dataSourceId ||
+              !formData.dimensions || 
+              !formData.groupBy || 
+              !formData.aggregation.attributeName
             }
             sx={{
               fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.medium,

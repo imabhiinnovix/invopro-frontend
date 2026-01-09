@@ -3789,7 +3789,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
         )}
 
         {otherCharts?.map((chart: any) => (
-          <>
+          <React.Fragment key={chart._id}>
             {isNaturalLangauage && (
               <>
                 <Divider
@@ -4016,7 +4016,9 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
                       }}
                     >
                       <Box sx={{ flex: 1, minHeight: 0, width: "100%" }}>
+                      <Box sx={{ height: "400px", width: "100%" }}>
                         {renderChart(chart)}
+                        </Box>
                       </Box>
                       <Box sx={{ flexShrink: 0, width: "100%" }}>
                         <div
@@ -4075,7 +4077,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
                 </Box>
               ) : null}
             </Grid>
-          </>
+          </React.Fragment>
         ))}
 
         {chartsLoading && isNaturalLangauage && (
