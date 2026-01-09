@@ -1922,6 +1922,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
   const inputRef = useRef<HTMLInputElement>(null);
   const dashboardContainerRef = useRef<HTMLDivElement>(null);
+  const fetchChartDataAbortRef = useRef<(() => void) | null>(null);
   const { id: dashboardId } = useParams();
   const location = useLocation();
   const dispatch = useAppDispatch();
@@ -2687,18 +2688,20 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         return;
       }
 
+      let thunkPromise: any = null;
+
       if (
         currentDashboard?.settings?.dashboardType === "normal" &&
         hasFilters
       ) {
-        dispatch(
+        thunkPromise = dispatch(
           fetchChartData({
             dashboardId,
             // versionValue: formattedVersionValue || "",
             dashboardType: "normal",
             startVersionValue,
             endVersionValue,
-            versionValue,
+            versionValue: versionValue || undefined,
             dashboardFilters: currentDashboard?.isDefaultNotivix
               ? dashboardFilters
               : {},
@@ -2713,7 +2716,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         !hasErrors &&
         hasFilters
       ) {
-        dispatch(
+        thunkPromise = dispatch(
           fetchChartData({
             dashboardId,
             versionValue: undefined,
@@ -2724,13 +2727,28 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           })
         );
       } else if (!currentDashboard?.isDefaultNotivix) {
-        dispatch(
+        thunkPromise = dispatch(
           fetchChartData({
             dashboardId,
             dashboardFilters,
           })
         );
       }
+
+      if (thunkPromise && typeof thunkPromise.abort === 'function') {
+        fetchChartDataAbortRef.current = () => {
+          thunkPromise.abort();
+        };
+      } else {
+        fetchChartDataAbortRef.current = null;
+      }
+
+      return () => {
+        if (fetchChartDataAbortRef.current) {
+          fetchChartDataAbortRef.current();
+          fetchChartDataAbortRef.current = null;
+        }
+      };
     }
   }, [
     currentDashboard?.settings?.dashboardType,
@@ -2740,7 +2758,9 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     formattedVersionValue,
     hasErrors,
     startVersionValue,
+    versionValue,
     dashboardFilters,
+    currentDashboard?.isDefaultNotivix,
   ]);
 
   useEffect(() => {

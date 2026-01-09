@@ -275,7 +275,7 @@ export const fetchChartData = createAsyncThunk(
       dashboardFilters: any;
       isDefaultNotivix?: boolean;
     },
-    { dispatch }
+    { dispatch, signal }
   ) => {
     if (!dashboardType && isDefaultNotivix) return [];
 
@@ -284,9 +284,19 @@ export const fetchChartData = createAsyncThunk(
       dashboardFilters = cleanFilters;
     }
 
-    const response = await axiosInstance.get<ChartDataResponse>(
-      `${GET.DASHBOARD_WIDGET_GET_CHART_DATA}/${dashboardId}`
-    );
+    let response;
+    try {
+      response = await axiosInstance.get<ChartDataResponse>(
+        `${GET.DASHBOARD_WIDGET_GET_CHART_DATA}/${dashboardId}`,
+        { signal }
+      );
+    } catch (error: any) {
+      if (axios.isCancel(error) || error?.code === 'ERR_CANCELED' || (error instanceof Error && error.message === "canceled")) {
+        throw error;
+      }
+      throw error;
+    }
+
     // Make additional API calls for each chart
     if (response.data.success && response.data.data) {
       // Process charts in batches of 3 to avoid overwhelming the system
@@ -295,10 +305,22 @@ export const fetchChartData = createAsyncThunk(
       // console.log('response22222222', charts);
 
       for (let i = 0; i < charts.length; i += batchSize) {
+        if (signal?.aborted) {
+          const abortError = new Error("Request aborted");
+          abortError.name = "AbortError";
+          throw abortError;
+        }
+
         const batch = charts.slice(i, i + batchSize);
         await Promise.all(
           batch.map(async (chart) => {
             try {
+              if (signal?.aborted) {
+                const abortError = new Error("Request aborted");
+                abortError.name = "AbortError";
+                throw abortError;
+              }
+
               const widgetResponse =
                 await axiosInstance.post<WidgetDataResponse>(
                   GET.DASHBOARD_WIDGET_DATA,
@@ -331,7 +353,8 @@ export const fetchChartData = createAsyncThunk(
                     },
                     dashBoardType: dashboardType || "normal",
                     isIncremental: chart.isIncremental,
-                  }
+                  },
+                  { signal }
                 );
 
               if (widgetResponse.data.success) {
@@ -373,7 +396,10 @@ export const fetchChartData = createAsyncThunk(
                   storeWidgetData({ widgetId: chart._id, data: essentialData })
                 );
               }
-            } catch (error) {
+            } catch (error: any) {
+              if (axios.isCancel(error) || error?.code === 'ERR_CANCELED' || (error instanceof Error && (error.message === "Request aborted" || error.message === "canceled"))) {
+                return; 
+              }
               console.error(
                 `Failed to fetch widget data for chart ${chart._id}:`,
                 error

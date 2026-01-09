@@ -485,6 +485,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
     chartsError,
     widgetData,
     dashboards,
+    chartsLoadedOnce,
   } = useAppSelector((state) => ({
     charts: state.dashboard.charts,
     temporaryCharts: state.dashboard.temporaryCharts,
@@ -493,6 +494,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
     widgetData: state.dashboard.widgetData,
     widgetTypes: state.dashboard.widgetTypes,
     dashboards: state.dashboard.dashboards || [],
+    chartsLoadedOnce: state.dashboard.chartsLoadedOnce,
   }));
   const [showExportSuccessDialog, setShowExportSuccessDialog] = useState<
     string | null
@@ -1508,7 +1510,13 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
     }
   }
 
-  if ((!allCharts || allCharts.length === 0) && !isNaturalLangauage) {
+  if (
+    (!allCharts || allCharts.length === 0) &&
+    !isNaturalLangauage &&
+    !chartsLoading &&
+    !chartsError &&
+    chartsLoadedOnce
+  ) {
     return (
       <EmptyContainer>
         <Typography color="text.secondary" variant="h6">
@@ -3789,7 +3797,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
         )}
 
         {otherCharts?.map((chart: any) => (
-          <>
+          <React.Fragment key={chart._id}>
             {isNaturalLangauage && (
               <>
                 <Divider
@@ -4016,7 +4024,9 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
                       }}
                     >
                       <Box sx={{ flex: 1, minHeight: 0, width: "100%" }}>
+                      <Box sx={{ height: "400px", width: "100%" }}>
                         {renderChart(chart)}
+                        </Box>
                       </Box>
                       <Box sx={{ flexShrink: 0, width: "100%" }}>
                         <div
@@ -4075,7 +4085,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
                 </Box>
               ) : null}
             </Grid>
-          </>
+          </React.Fragment>
         ))}
 
         {chartsLoading && isNaturalLangauage && (

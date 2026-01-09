@@ -2528,7 +2528,7 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
               !formData.widgetTypeId || 
               !formData.dataSourceId ||
               !formData.dimensions || 
-              !formData.groupBy || 
+              !formData.aggregation.type || 
               !formData.aggregation.attributeName
             }
             sx={{
