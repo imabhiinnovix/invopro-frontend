@@ -54,6 +54,7 @@ interface DashboardSliceState {
   temporaryCharts: TemporaryChart[];
   chartsLoading: boolean;
   chartsError: string | null;
+  chartsLoadedOnce: boolean;
   widgetData: Record<string, WidgetResponse["data"]>;
   shareUsers: string[];
   shareUsersLoading: boolean;
@@ -284,13 +285,20 @@ const dashboardSlice = createSlice({
         (state, action: PayloadAction<ChartDataResponse>) => {
           state.chartsLoading = false;
           state.charts = action.payload?.data || [];
+          state.chartsLoadedOnce = true;
         }
       )
       .addCase(fetchChartData.rejected, (state, action) => {
-        state.chartsLoading = false;
-
-        state.chartsError =
-          action.error.message || "Failed to fetch chart data";
+        if (action.error.name === "AbortError" || action.error.message === "Aborted" || action.error.message?.includes("aborted")) {
+          state.chartsError = null;
+          if (!state.chartsLoading) {
+            state.chartsLoading = false;
+          }
+        } else {
+          state.chartsLoading = false;
+          state.chartsError =
+            action.error.message || "Failed to fetch chart data";
+        }
       })
       //chartdata from nlquery
       .addCase(fetchWidgetSettingBasedOnNaturalLanguage.pending, (state) => {
@@ -403,7 +411,7 @@ const dashboardSlice = createSlice({
       })
       .addCase(updateWidget.rejected, (state, action) => {
         state.chartsLoading = false;
-        state.chartsError = action.error.message || "Failed to update widget";
+        // state.chartsError = action.error.message || "Failed to update widget";
       })
       .addCase(saveWidgets.pending, (state) => {
         state.chartsLoading = true;

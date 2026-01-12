@@ -485,6 +485,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
     chartsError,
     widgetData,
     dashboards,
+    chartsLoadedOnce,
   } = useAppSelector((state) => ({
     charts: state.dashboard.charts,
     temporaryCharts: state.dashboard.temporaryCharts,
@@ -493,6 +494,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
     widgetData: state.dashboard.widgetData,
     widgetTypes: state.dashboard.widgetTypes,
     dashboards: state.dashboard.dashboards || [],
+    chartsLoadedOnce: state.dashboard.chartsLoadedOnce,
   }));
   const [showExportSuccessDialog, setShowExportSuccessDialog] = useState<
     string | null
@@ -1508,7 +1510,13 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
     }
   }
 
-  if ((!allCharts || allCharts.length === 0) && !isNaturalLangauage) {
+  if (
+    (!allCharts || allCharts.length === 0) &&
+    !isNaturalLangauage &&
+    !chartsLoading &&
+    !chartsError &&
+    chartsLoadedOnce
+  ) {
     return (
       <EmptyContainer>
         <Typography color="text.secondary" variant="h6">
