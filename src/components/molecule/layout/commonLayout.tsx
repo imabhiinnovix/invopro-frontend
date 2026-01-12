@@ -173,6 +173,7 @@ const CommonLayout = () => {
             overflowY: "auto",
             overflowX: "hidden",
           }}
+          id="main-screen-content"
         >
           <Outlet />
         </Box>

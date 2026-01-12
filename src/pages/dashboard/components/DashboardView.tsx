@@ -2735,7 +2735,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         );
       }
 
-      if (thunkPromise && typeof thunkPromise.abort === 'function') {
+      if (thunkPromise && typeof thunkPromise.abort === "function") {
         fetchChartDataAbortRef.current = () => {
           thunkPromise.abort();
         };
@@ -2793,6 +2793,18 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   useEffect(() => {
     dispatch(fetchThemeList());
   }, [dispatch]);
+
+  useEffect(() => {
+    if (isEditChartModalOpen && selectedChart) {
+      const mainContent = document.getElementById("main-screen-content");
+      if (mainContent) {
+        mainContent.scrollTo({
+          top: 0,
+          behavior: "smooth",
+        });
+      }
+    }
+  }, [isEditChartModalOpen, selectedChart]);
 
   useEffect(() => {
     if (currentDashboard?.settings) {
@@ -2908,6 +2920,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   const handleEditChart = (chart: ChartResponse) => {
     setSelectedChart(chart);
     setIsEditChartModalOpen(true);
+    setIsAddChartModalOpen(false);
   };
 
   const handleCloseEditModal = () => {
@@ -3482,7 +3495,10 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                   variant="contained"
                   color="primary"
                   startIcon={<AddIcon />}
-                  onClick={() => setIsAddChartModalOpen(true)}
+                  onClick={() => {
+                    setIsAddChartModalOpen(true);
+                    setIsEditChartModalOpen(false);
+                  }}
                   sx={{ ...getButtonSx(), px: STYLE_GUIDE.SPACING.s6 }}
                 >
                   Add Chart

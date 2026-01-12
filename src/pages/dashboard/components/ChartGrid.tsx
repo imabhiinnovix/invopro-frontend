@@ -9,6 +9,7 @@ import {
   fetchDashboardList,
   saveWidgets,
 } from "../dashboardActions";
+import LazyWidget from "./LazyWidget";
 import {
   Grid,
   Card,
@@ -3656,140 +3657,151 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
             <Grid container spacing={STYLE_GUIDE.SPACING.s4}>
               {numberCharts.map((chart: any, index: number) => (
                 <Grid item xs={12} md={4} key={chart._id}>
-                  <NumberCard
-                    sx={{ ...getCardSx() }}
-                    backgroundColor={
-                      SABIC_COLORS_NUMBER[index % SABIC_COLORS_NUMBER.length]
-                    } // Cycle through colors
-                    data-widget-type="number"
+                  <LazyWidget
+                    chart={chart}
+                    dashboardType={currentDashboard?.settings?.dashboardType}
+                    startVersionValue={startVersionValue}
+                    endVersionValue={endVersionValue}
+                    versionValue={versionValue}
+                    dashboardFilters={localDashboardFilters}
+                    hasData={!!widgetData[chart._id]}
                   >
-                    <CardContent>
-                      {/* ---------- Number card header with only Edit menu in edit mode ---------- */}
-                      <Box
-                        sx={{
-                          width: "100%",
-                          display: "flex",
-                          justifyContent: "space-between",
-                          alignItems: "center",
-                          mb: 1,
-                        }}
-                      >
-                        {/* optional chart title — keep it empty if you don't want text */}
-                        <ChartTitle
+                    <NumberCard
+                      sx={{ ...getCardSx() }}
+                      backgroundColor={
+                        SABIC_COLORS_NUMBER[index % SABIC_COLORS_NUMBER.length]
+                      } // Cycle through colors
+                      data-widget-type="number"
+                    >
+                      <CardContent>
+                        {/* ---------- Number card header with only Edit menu in edit mode ---------- */}
+                        <Box
                           sx={{
-                            color:
-                              SABIC_COLORS_NUMBER[
-                                index % SABIC_COLORS_NUMBER.length
-                              ] === "#939598"
-                                ? "#FFFFFF"
-                                : "#939598",
-                            p: 0,
-                            mr: 1,
+                            width: "100%",
+                            display: "flex",
+                            justifyContent: "space-between",
+                            alignItems: "center",
+                            mb: 1,
                           }}
-                        />
+                        >
+                          {/* optional chart title — keep it empty if you don't want text */}
+                          <ChartTitle
+                            sx={{
+                              color:
+                                SABIC_COLORS_NUMBER[
+                                  index % SABIC_COLORS_NUMBER.length
+                                ] === "#939598"
+                                  ? "#FFFFFF"
+                                  : "#939598",
+                              p: 0,
+                              mr: 1,
+                            }}
+                          />
 
-                        {/* edit/menu button (only in edit mode) */}
-                        {/* Header Action Buttons */}
-                        <Box sx={{ display: "flex", gap: 1 }}>
-                          {/* Maximize */}
-                          {isEditMode && (
-                            <IconButton
-                              size="small"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleFullViewClick(chart); // same function used by other charts
-                              }}
-                              sx={{
-                                opacity: 0.7,
-                                "&:hover": { opacity: 1 },
-                              }}
-                            >
-                              <FullscreenIcon />
-                            </IconButton>
-                          )}
-
-                          {/* Export */}
-                          {isEditMode && (
-                            <IconButton
-                              size="small"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleExportMenuClick(e, chart); // same export menu function
-                              }}
-                              sx={{
-                                opacity: 0.7,
-                                "&:hover": { opacity: 1 },
-                              }}
-                            >
-                              <DownloadIcon />
-                            </IconButton>
-                          )}
-
-                          {/* Edit / Delete Menu */}
-                          {isEditMode &&
-                            (shouldAllowWidgetUpdate ||
-                              shouldAllowWidgetDelete) && (
+                          {/* edit/menu button (only in edit mode) */}
+                          {/* Header Action Buttons */}
+                          <Box sx={{ display: "flex", gap: 1 }}>
+                            {/* Maximize */}
+                            {isEditMode && (
                               <IconButton
                                 size="small"
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  handleMenuClick(e, chart);
+                                  handleFullViewClick(chart); // same function used by other charts
                                 }}
                                 sx={{
                                   opacity: 0.7,
                                   "&:hover": { opacity: 1 },
                                 }}
                               >
-                                <MoreVertIcon />
+                                <FullscreenIcon />
                               </IconButton>
                             )}
+
+                            {/* Export */}
+                            {isEditMode && (
+                              <IconButton
+                                size="small"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleExportMenuClick(e, chart); // same export menu function
+                                }}
+                                sx={{
+                                  opacity: 0.7,
+                                  "&:hover": { opacity: 1 },
+                                }}
+                              >
+                                <DownloadIcon />
+                              </IconButton>
+                            )}
+
+                            {/* Edit / Delete Menu */}
+                            {isEditMode &&
+                              (shouldAllowWidgetUpdate ||
+                                shouldAllowWidgetDelete) && (
+                                <IconButton
+                                  size="small"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleMenuClick(e, chart);
+                                  }}
+                                  sx={{
+                                    opacity: 0.7,
+                                    "&:hover": { opacity: 1 },
+                                  }}
+                                >
+                                  <MoreVertIcon />
+                                </IconButton>
+                              )}
+                          </Box>
                         </Box>
-                      </Box>
-                      <ChartContainer
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleFullViewClick(chart);
-                          handleChartClick(chart); // auto-run ALL DATA
-                        }}
-                        className="number-chart"
-                        onWheel={handleWheel}
-                        sx={{
-                          mt: -2,
-                          backgroundColor: "transparent",
-                          display: "flex",
-                          flexDirection: "column",
-                          justifyContent: "flex-start",
-                          alignItems: "flex-start",
-                          width: "100%",
-                          cursor: "pointer",
-                          transition: "transform 0.2s ease, opacity 0.2s ease",
-                          "&:hover": {
-                            transform: "scale(1.02)",
-                            opacity: 0.9,
-                          },
-                        }}
-                      >
-                        <Box
+                        <ChartContainer
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleFullViewClick(chart);
+                            handleChartClick(chart); // auto-run ALL DATA
+                          }}
+                          className="number-chart"
+                          onWheel={handleWheel}
                           sx={{
+                            mt: -2,
+                            backgroundColor: "transparent",
                             display: "flex",
                             flexDirection: "column",
+                            justifyContent: "flex-start",
+                            alignItems: "flex-start",
                             width: "100%",
-                            height: "100%",
+                            cursor: "pointer",
+                            transition:
+                              "transform 0.2s ease, opacity 0.2s ease",
+                            "&:hover": {
+                              transform: "scale(1.02)",
+                              opacity: 0.9,
+                            },
                           }}
                         >
-                          <Box sx={{ flex: 1, minHeight: 0, width: "100%" }}>
-                            {renderChart(chart)}
+                          <Box
+                            sx={{
+                              display: "flex",
+                              flexDirection: "column",
+                              width: "100%",
+                              height: "100%",
+                            }}
+                          >
+                            <Box sx={{ flex: 1, minHeight: 0, width: "100%" }}>
+                              {renderChart(chart)}
+                            </Box>
+                            <Box sx={{ flexShrink: 0, width: "100%" }}>
+                              <div
+                                id={`legend-container-${chart._id}`}
+                                style={{ marginTop: "8px" }}
+                              ></div>
+                            </Box>
                           </Box>
-                          <Box sx={{ flexShrink: 0, width: "100%" }}>
-                            <div
-                              id={`legend-container-${chart._id}`}
-                              style={{ marginTop: "8px" }}
-                            ></div>
-                          </Box>
-                        </Box>
-                      </ChartContainer>
-                    </CardContent>
-                  </NumberCard>
+                        </ChartContainer>
+                      </CardContent>
+                    </NumberCard>
+                  </LazyWidget>
                 </Grid>
               ))}
             </Grid>
@@ -3936,126 +3948,136 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
                 />
               )}
 
-              <StyledCard
-                sx={{ ...getCardSx() }}
-                data-widget-type={chart.widgetTypeId?.chartType || "chart"}
-                data-chart-id={chart._id}
+              <LazyWidget
+                chart={chart}
+                dashboardType={currentDashboard?.settings?.dashboardType}
+                startVersionValue={startVersionValue}
+                endVersionValue={endVersionValue}
+                versionValue={versionValue}
+                dashboardFilters={localDashboardFilters}
+                hasData={!!widgetData[chart._id]}
               >
-                <CardContent
-                  sx={{
-                    flexGrow: 1,
-                    p: 3,
-                    display: "flex",
-                    flexDirection: "column",
-                    height: "100%",
-                  }}
+                <StyledCard
+                  sx={{ ...getCardSx() }}
+                  data-widget-type={chart.widgetTypeId?.chartType || "chart"}
+                  data-chart-id={chart._id}
                 >
-                  <ChartTitle>
-                    <ChartTitleText>{chart.name}</ChartTitleText>
-
-                    <Box sx={{ display: "flex", gap: 1 }}>
-                      <IconButton
-                        size="small"
-                        onClick={() => handleFullViewClick(chart)}
-                        sx={{
-                          opacity: 0.7,
-                          "&:hover": { opacity: 1 },
-                        }}
-                      >
-                        <FullscreenIcon />
-                      </IconButton>
-                      <IconButton
-                        size="small"
-                        onClick={(e) => handleExportMenuClick(e, chart)}
-                        sx={{
-                          opacity: 0.7,
-                          "&:hover": { opacity: 1 },
-                        }}
-                      >
-                        <DownloadIcon />
-                      </IconButton>
-                      {isEditMode &&
-                        (shouldAllowWidgetUpdate ||
-                          shouldAllowWidgetDelete) && (
-                          <IconButton
-                            size="small"
-                            onClick={(e) => handleMenuClick(e, chart)}
-                            sx={{
-                              opacity: 0.7,
-                              "&:hover": { opacity: 1 },
-                            }}
-                          >
-                            <MoreVertIcon />
-                          </IconButton>
-                        )}
-                    </Box>
-                  </ChartTitle>
-                  <Divider
-                    sx={{ width: "100%", mt: 0.2, borderBottomWidth: "2px" }}
-                  />
-                  <ChartContainer
-                    className={
-                      (chart.widgetTypeId?.chartType || "line") === "pie"
-                        ? "pie-chart"
-                        : (chart.widgetTypeId?.chartType || "line") ===
-                          "horizontalBar"
-                        ? "horizontal-bar-chart"
-                        : (chart.widgetTypeId?.chartType || "line") ===
-                          "tabular"
-                        ? "table-chart"
-                        : (chart.widgetTypeId?.chartType || "line") ===
-                          "multiSeriesPie"
-                        ? "pie-chart"
-                        : (chart.widgetTypeId?.chartType || "line") ===
-                            "stackedBarLine" ||
-                          (chart.widgetTypeId?.chartType || "line") ===
-                            "comboBarLine"
-                        ? "combo-chart"
-                        : "line-chart"
-                    }
-                    onWheel={handleWheel}
+                  <CardContent
+                    sx={{
+                      flexGrow: 1,
+                      p: 3,
+                      display: "flex",
+                      flexDirection: "column",
+                      height: "100%",
+                    }}
                   >
+                    <ChartTitle>
+                      <ChartTitleText>{chart.name}</ChartTitleText>
+
+                      <Box sx={{ display: "flex", gap: 1 }}>
+                        <IconButton
+                          size="small"
+                          onClick={() => handleFullViewClick(chart)}
+                          sx={{
+                            opacity: 0.7,
+                            "&:hover": { opacity: 1 },
+                          }}
+                        >
+                          <FullscreenIcon />
+                        </IconButton>
+                        <IconButton
+                          size="small"
+                          onClick={(e) => handleExportMenuClick(e, chart)}
+                          sx={{
+                            opacity: 0.7,
+                            "&:hover": { opacity: 1 },
+                          }}
+                        >
+                          <DownloadIcon />
+                        </IconButton>
+                        {isEditMode &&
+                          (shouldAllowWidgetUpdate ||
+                            shouldAllowWidgetDelete) && (
+                            <IconButton
+                              size="small"
+                              onClick={(e) => handleMenuClick(e, chart)}
+                              sx={{
+                                opacity: 0.7,
+                                "&:hover": { opacity: 1 },
+                              }}
+                            >
+                              <MoreVertIcon />
+                            </IconButton>
+                          )}
+                      </Box>
+                    </ChartTitle>
+                    <Divider
+                      sx={{ width: "100%", mt: 0.2, borderBottomWidth: "2px" }}
+                    />
+                    <ChartContainer
+                      className={
+                        (chart.widgetTypeId?.chartType || "line") === "pie"
+                          ? "pie-chart"
+                          : (chart.widgetTypeId?.chartType || "line") ===
+                            "horizontalBar"
+                          ? "horizontal-bar-chart"
+                          : (chart.widgetTypeId?.chartType || "line") ===
+                            "tabular"
+                          ? "table-chart"
+                          : (chart.widgetTypeId?.chartType || "line") ===
+                            "multiSeriesPie"
+                          ? "pie-chart"
+                          : (chart.widgetTypeId?.chartType || "line") ===
+                              "stackedBarLine" ||
+                            (chart.widgetTypeId?.chartType || "line") ===
+                              "comboBarLine"
+                          ? "combo-chart"
+                          : "line-chart"
+                      }
+                      onWheel={handleWheel}
+                    >
+                      <Box
+                        sx={{
+                          display: "flex",
+                          flexDirection: "column",
+                          width: "100%",
+                          height: "100%",
+                        }}
+                      >
+                        <Box sx={{ flex: 1, minHeight: 0, width: "100%" }}>
+                          <Box sx={{ height: "400px", width: "100%" }}>
+                            {renderChart(chart)}
+                          </Box>
+                        </Box>
+                        <Box sx={{ flexShrink: 0, width: "100%" }}>
+                          <div
+                            id={`legend-container-${chart._id}`}
+                            style={{ marginTop: "8px" }}
+                          ></div>
+                        </Box>
+                      </Box>
+                    </ChartContainer>
                     <Box
                       sx={{
                         display: "flex",
-                        flexDirection: "column",
-                        width: "100%",
-                        height: "100%",
+                        justifyContent: "flex-end",
+                        alignItems: "center",
+                        mt: 1,
                       }}
                     >
-                      <Box sx={{ flex: 1, minHeight: 0, width: "100%" }}>
-                      <Box sx={{ height: "400px", width: "100%" }}>
-                        {renderChart(chart)}
-                        </Box>
-                      </Box>
-                      <Box sx={{ flexShrink: 0, width: "100%" }}>
-                        <div
-                          id={`legend-container-${chart._id}`}
-                          style={{ marginTop: "8px" }}
-                        ></div>
-                      </Box>
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          fontWeight: "bold",
+                          color: "primary.main",
+                        }}
+                      >
+                        Total: {widgetData[chart._id]?.data?.totalCount}
+                      </Typography>
                     </Box>
-                  </ChartContainer>
-                  <Box
-                    sx={{
-                      display: "flex",
-                      justifyContent: "flex-end",
-                      alignItems: "center",
-                      mt: 1,
-                    }}
-                  >
-                    <Typography
-                      variant="body2"
-                      sx={{
-                        fontWeight: "bold",
-                        color: "primary.main",
-                      }}
-                    >
-                      Total: {widgetData[chart._id]?.data?.totalCount}
-                    </Typography>
-                  </Box>
-                </CardContent>
-              </StyledCard>
+                  </CardContent>
+                </StyledCard>
+              </LazyWidget>
 
               {chart?.description ? (
                 <Box
