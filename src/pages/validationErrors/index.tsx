@@ -27,6 +27,9 @@ import { AttributeOptionRequestPayload } from "../../components/atom/attributeOp
 import { STYLE_GUIDE } from "../../styles";
 import axios from "axios";
 import axiosInstance from "../../services/axiosInstance";
+import PrimaryButton from "../../components/common/PrimaryButton";
+import DialogContainer from "../../components/molecule/dialog";
+import IosShareIcon from "@mui/icons-material/IosShare";
 
 export default function ValidationErrors() {
   const { id } = useParams<{ id: string }>();
@@ -70,6 +73,7 @@ export default function ValidationErrors() {
   const [isLoadingRowDetail, setIsLoadingRowDetail] = useState(false);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showExportSuccessDialog, setShowExportSuccessDialog] = useState(false);
 
   const discardAllSubmit = usePost(["discardAllSubmit"]);
   const discardRow = usePost(["discardRow"]);
@@ -287,6 +291,33 @@ export default function ValidationErrors() {
     }
   };
 
+  const validationErrorListExport = useGet<any>(
+    [
+      "validationErrorListExport",
+      String(paginationModel.page + 1),
+      debouncedSearchValue,
+      dataSourceIdForPayload?._id,
+    ],
+    id && dataSourceIdForPayload?._id
+      ? `${GET?.VALIDATION_ERROR_LIST}?page=${paginationModel.page + 1}&limit=${
+          paginationModel.pageSize
+        }&dataSourceVersionId=${id}&dataSourceId=${
+          dataSourceIdForPayload._id
+        }&search=${encodeURIComponent(debouncedSearchValue)}&type=export`
+      : null,
+    false
+  );
+
+  useEffect(() => {
+    if (validationErrorListExport.isSuccess) {
+      setShowExportSuccessDialog(true);
+    }
+  }, [validationErrorListExport.isSuccess]);
+
+  const handleDashboardWidgetDataExport = () => {
+    validationErrorListExport.refetch();
+  };
+
   return (
     <Box
       sx={{
@@ -364,6 +395,17 @@ export default function ValidationErrors() {
               >
                 Discard All & Submit
               </Button>
+
+              <PrimaryButton
+                variant="contained"
+                onClick={handleDashboardWidgetDataExport}
+                startIcon={<IosShareIcon />}
+                disabled={validationErrorListExport.isFetching}
+              >
+                {validationErrorListExport.isFetching
+                  ? "Exporting..."
+                  : "Export"}
+              </PrimaryButton>
             </Box>
           </Box>
           <Box sx={{ color: STYLE_GUIDE.COLORS.primary }}>
@@ -384,6 +426,31 @@ export default function ValidationErrors() {
           />
         </CardContent>
       </Card>
+
+      <DialogContainer
+        open={showExportSuccessDialog}
+        onClose={() => setShowExportSuccessDialog(false)}
+        title="Export Data"
+        actions={
+          <>
+            <PrimaryButton
+              variant="contained"
+              onClick={() => {
+                setShowExportSuccessDialog(false);
+                navigate("/jobs");
+              }}
+            >
+              Go to Jobs
+            </PrimaryButton>
+          </>
+        }
+        maxWidth="xs"
+      >
+        <Typography>
+          Your data has started exporting. You can view its status in the Jobs
+          page.
+        </Typography>
+      </DialogContainer>
 
       <ConfirmationDialog
         open={dialog.open}

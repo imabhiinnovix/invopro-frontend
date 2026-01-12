@@ -123,11 +123,27 @@ const AIInsightPage: React.FC = () => {
           Ask questions about your data and get AI-powered insights
         </Typography>
       </Stack>
-      <iframe
-        src={`${AI_INSIGHT_URL}?session_id=${AI_INSIGHT_SESSION_ID}`}
-        width="100%"
-        height="100%"
-      />
+      {window.location.hostname === "app.reportivix.com" ? (
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            height: "100%",
+            width: "100%",
+          }}
+        >
+          <Typography variant="h4" color="text.secondary">
+            Coming Soon
+          </Typography>
+        </Box>
+      ) : (
+        <iframe
+          src={`${AI_INSIGHT_URL}?session_id=${AI_INSIGHT_SESSION_ID}`}
+          width="100%"
+          height="100%"
+        />
+      )}
     </Stack>
   );
 };

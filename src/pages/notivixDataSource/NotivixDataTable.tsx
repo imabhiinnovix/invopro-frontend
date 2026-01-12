@@ -9,6 +9,7 @@ import {
   Button,
   InputAdornment,
   Tooltip,
+  CircularProgress,
 } from "@mui/material";
 import { STYLE_GUIDE } from "../../styles";
 import SearchIcon from "@mui/icons-material/Search";
@@ -287,6 +288,18 @@ export const NotivixDataTable: React.FC<TableSectionProps> = ({
                 ),
               }}
             />
+          ) : loading && rows.length === 0 ? (
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                height: "calc(100vh - 280px)",
+                width: "100%",
+              }}
+            >
+              <CircularProgress />
+            </Box>
           ) : (
             <Box
               sx={{

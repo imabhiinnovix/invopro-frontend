@@ -675,21 +675,6 @@ export default function NotivixDataSource() {
     setColumns((prev) => [...prev, actionsColumn]);
   }, [columns, handleView, handleEdit, handleDelete]);
 
-  if (loading && rows.length === 0) {
-    return (
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          height: "100vh",
-          width: "100%",
-        }}
-      >
-        <CircularProgress />
-      </Box>
-    );
-  }
   const handleCompleteImport = () => {
     const id = listCurrentData?.dataSourceVersion?._id;
     if (id) {
