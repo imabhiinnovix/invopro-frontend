@@ -672,7 +672,7 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
           groupBy: groupByArray,
           plotType: plotType,
         });
-        onClose();
+        // onClose();
       } else {
         // Call widget API
         const widgetResponse = await axiosInstance.post<WidgetDataResponse>(
