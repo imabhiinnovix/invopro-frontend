@@ -12,7 +12,7 @@ import "./App.css";
 
 function App() {
   return (
-    <Provider store={store}>
+    // <Provider store={store}>
       <UnifiedThemeProvider>
         <BrowserRouter>
           <GlobalPollingManager />
@@ -24,7 +24,7 @@ function App() {
           </AuthProvider>
         </BrowserRouter>
       </UnifiedThemeProvider>
-    </Provider>
+    // </Provider>
   );
 }
 

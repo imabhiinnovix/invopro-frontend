@@ -411,7 +411,7 @@ const dashboardSlice = createSlice({
       })
       .addCase(updateWidget.rejected, (state, action) => {
         state.chartsLoading = false;
-        state.chartsError = action.error.message || "Failed to update widget";
+        // state.chartsError = action.error.message || "Failed to update widget";
       })
       .addCase(saveWidgets.pending, (state) => {
         state.chartsLoading = true;
