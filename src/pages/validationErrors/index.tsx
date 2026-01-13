@@ -117,7 +117,7 @@ export default function ValidationErrors() {
           dataSourceIdForPayload._id
         }&search=${encodeURIComponent(debouncedSearchValue)}`
       : null,
-    true
+    !!(id && dataSourceIdForPayload?._id)
   );
 
   const handleDiscardRow = (rowData: any) => {

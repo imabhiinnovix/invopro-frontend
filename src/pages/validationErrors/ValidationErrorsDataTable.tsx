@@ -1,39 +1,12 @@
 import * as React from "react";
-import { DataGrid, GridColDef } from "@mui/x-data-grid";
-import { Box, Tooltip, Button, Chip, Typography, Stack } from "@mui/material";
+import { Box, Tooltip, Button, Chip, Typography, Stack, Skeleton, CircularProgress } from "@mui/material";
 import SwipeUpIcon from "@mui/icons-material/SwipeUp";
 import RemoveCircleIcon from "@mui/icons-material/RemoveCircle";
-import { CustomPagination } from "../../components/common/pagination/customPagination";
 import FileDownloadDoneIcon from "@mui/icons-material/FileDownloadDone";
-import CommonTable from "../../components/common/table";
+import CommonTable, { CommonTableRef } from "../../components/common/table";
 import PrimaryButton from "../../components/common/PrimaryButton";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useMemo } from "react";
 
-const CustomFooter = ({
-  paginationModel,
-  setPaginationModel,
-  rowCount,
-  validationErrorList,
-}) => {
-  return (
-    <Box
-      sx={{ display: "flex", justifyContent: "space-between", padding: "8px" }}
-    >
-      <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-        <Typography variant="body2">
-          {validationErrorList.data?.totalActionCount} of{" "}
-          {validationErrorList.data?.totalCount} Resolved
-        </Typography>
-      </Box>
-
-      <CustomPagination
-        paginationModel={paginationModel}
-        setPaginationModel={setPaginationModel}
-        rowCount={rowCount}
-      />
-    </Box>
-  );
-};
 
 interface ValidationErrorsDataTableProps {
   rows: any[];
@@ -60,51 +33,108 @@ export const ValidationErrorsDataTable: React.FC<
   setResetSelections,
   isLatest,
 }) => {
-  const tableRef = useRef(null);
+  const tableRef = useRef<CommonTableRef>(null);
+  const loading = validationErrorList?.isLoading || validationErrorList?.isFetching || false;
 
-  const columns: GridColDef[] = [
+  const displayRows = useMemo(() => {
+    if (rows.length > 0) {
+      return rows;
+    }
+    if (loading) {
+      return Array.from({ length: paginationModel.pageSize }, (_, i) => ({
+        _id: `loading-placeholder-${i}`,
+        fileRowNumber: "",
+        fileName: "",
+        errorMessage: "",
+        fileAttributeValue: "",
+        status: "",
+      }));
+    }
+    return [];
+  }, [rows, loading, paginationModel.pageSize]);
+
+  const columns = useMemo(() => [
     {
       id: "fileRowNumber",
       label: "Row Number",
-      width: 140,
-      disableColumnMenu: true,
-      resizable: true,
+      minWidth: 140,
       sortable: true,
+      renderCell: (row: Record<string, unknown>) => {
+        if (loading && (row.fileRowNumber == null || row.fileRowNumber === "")) {
+          return (
+            <Box sx={{ width: "100%", py: 1 }}>
+              <Skeleton variant="text" width="80%" height={20} />
+            </Box>
+          );
+        }
+        return row.fileRowNumber || "-";
+      },
     },
     {
       id: "fileName",
       label: "File Name",
-      width: 200,
-      disableColumnMenu: true,
-      resizable: true,
+      minWidth: 200,
       sortable: true,
+      renderCell: (row: Record<string, unknown>) => {
+        if (loading && (row.fileName == null || row.fileName === "")) {
+          return (
+            <Box sx={{ width: "100%", py: 1 }}>
+              <Skeleton variant="text" width="80%" height={20} />
+            </Box>
+          );
+        }
+        return row.fileName || "-";
+      },
     },
     {
       id: "errorMessage",
       label: "Error Message",
-      width: 300,
-      disableColumnMenu: true,
-      resizable: true,
+      minWidth: 300,
       sortable: true,
+      renderCell: (row: Record<string, unknown>) => {
+        if (loading && (row.errorMessage == null || row.errorMessage === "")) {
+          return (
+            <Box sx={{ width: "100%", py: 1 }}>
+              <Skeleton variant="text" width="80%" height={20} />
+              <Skeleton variant="text" width="60%" height={20} />
+            </Box>
+          );
+        }
+        return row.errorMessage || "-";
+      },
     },
     {
       id: "fileAttributeValue",
       label: "Attribute Value",
-      width: 150,
-      disableColumnMenu: true,
-      resizable: true,
+      minWidth: 150,
       sortable: true,
+      renderCell: (row: Record<string, unknown>) => {
+        if (loading && (row.fileAttributeValue == null || row.fileAttributeValue === "")) {
+          return (
+            <Box sx={{ width: "100%", py: 1 }}>
+              <Skeleton variant="text" width="80%" height={20} />
+            </Box>
+          );
+        }
+        return row.fileAttributeValue || "-";
+      },
     },
     {
       id: "status",
       label: "Status",
-      width: 100,
-      disableColumnMenu: true,
-      resizable: true,
+      minWidth: 100,
       sortable: true,
       renderCell: (row: Record<string, unknown>) => {
-        let chipColor = "default";
-        let chipVariant = "outlined";
+        if (loading && (row.status == null || row.status === "")) {
+          return (
+            <Box sx={{ width: "100%", py: 1 }}>
+              <Skeleton variant="rectangular" width={80} height={24} sx={{ borderRadius: 1 }} />
+            </Box>
+          );
+        }
+
+        let chipColor: "default" | "success" | "primary" | "error" = "default";
+        let chipVariant: "outlined" | "filled" = "outlined";
 
         if (row.status === "resolved") {
           chipColor = "success";
@@ -114,11 +144,10 @@ export const ValidationErrorsDataTable: React.FC<
         } else {
           chipColor = "error";
         }
-        // console.log("row", row);
 
         return (
           <Chip
-            label={row.status || "Unknown"}
+            label={(row.status as string) || "Unknown"}
             size="small"
             color={chipColor}
             variant={chipVariant}
@@ -129,13 +158,29 @@ export const ValidationErrorsDataTable: React.FC<
     {
       id: "actions",
       label: "Actions",
-      width: 150,
-      disableColumnMenu: true,
+      minWidth: 150,
       sortable: false,
-      resizable: false,
       renderCell: (row: Record<string, unknown>) => {
+        if (row._id?.toString().startsWith("loading-placeholder-")) {
+          return (
+            <Box
+              sx={{
+                display: "flex",
+                gap: 1,
+                py: 1,
+              }}
+            >
+              <Skeleton variant="circular" width={32} height={32} />
+              <Skeleton variant="circular" width={32} height={32} />
+            </Box>
+          );
+        }
+
         const isDiscarded = row.status === "discarded";
         const isResolved = row.status === "resolved";
+        const handleResolve = row.handleResolve as ((row: Record<string, unknown>) => void) | undefined;
+        const handleEdit = row.handleEdit as ((row: Record<string, unknown>) => void) | undefined;
+        const handleDiscard = row.handleDiscard as ((row: Record<string, unknown>) => void) | undefined;
 
         return (
           <Box sx={{ display: "flex", gap: 1 }}>
@@ -143,7 +188,7 @@ export const ValidationErrorsDataTable: React.FC<
               <Tooltip title="Resolve" arrow>
                 <Button
                   variant="text"
-                  onClick={() => row.handleResolve(row)}
+                  onClick={() => handleResolve?.(row)}
                   sx={{ minWidth: "auto" }}
                   disabled={isLatest === false}
                 >
@@ -154,7 +199,7 @@ export const ValidationErrorsDataTable: React.FC<
               <Tooltip title="Take Action" arrow>
                 <Button
                   variant="text"
-                  onClick={() => row.handleEdit(row)}
+                  onClick={() => handleEdit?.(row)}
                   sx={{ minWidth: "auto" }}
                   disabled={isResolved || isLatest === false}
                 >
@@ -167,7 +212,7 @@ export const ValidationErrorsDataTable: React.FC<
                 variant="text"
                 onClick={(e) => {
                   e.stopPropagation();
-                  row.handleDiscard(row);
+                  handleDiscard?.(row);
                 }}
                 sx={{ minWidth: "auto" }}
                 disabled={isDiscarded || isResolved || isLatest === false}
@@ -179,35 +224,36 @@ export const ValidationErrorsDataTable: React.FC<
         );
       },
     },
-  ];
-
-  // Conditionally render the footer only when validationErrorList.data is available
-  const renderFooter = () => {
-    if (validationErrorList?.data) {
-      return (
-        <CustomFooter
-          paginationModel={paginationModel}
-          setPaginationModel={setPaginationModel}
-          rowCount={rowCount}
-          validationErrorList={validationErrorList}
-        />
-      );
-    }
-    return null;
-  };
+  ], [loading, isLatest]);
 
   useEffect(() => {
     if (resetSelections) {
       tableRef.current?.resetSelection();
       setResetSelections(false);
     }
-  }, [resetSelections]);
+  }, [resetSelections, setResetSelections]);
+
+  if (loading && columns.length === 0) {
+    return (
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "calc(100vh - 400px)",
+          width: "100%",
+        }}
+      >
+        <CircularProgress />
+      </Box>
+    );
+  }
 
   return (
     <CommonTable
       ref={tableRef}
       columns={columns}
-      rows={rows || []}
+      rows={displayRows}
       loading={false}
       height="calc(100vh - 400px)"
       customFooterLeftComponent={
@@ -233,23 +279,4 @@ export const ValidationErrorsDataTable: React.FC<
     />
   );
 
-  return (
-    <DataGrid
-      rows={rows}
-      columns={columns}
-      initialState={{ pagination: { paginationModel } }}
-      disableColumnMenu
-      paginationMode="server"
-      sx={{
-        overflow: "visible",
-      }}
-      rowCount={rowCount}
-      paginationModel={paginationModel}
-      checkboxSelection={false}
-      isRowSelectable={() => false}
-      slots={{
-        footer: renderFooter,
-      }}
-    />
-  );
 };

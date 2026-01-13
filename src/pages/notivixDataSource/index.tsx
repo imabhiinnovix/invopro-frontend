@@ -13,7 +13,7 @@ import {
   Button,
   Tooltip,
   Typography,
-  CircularProgress,
+  Skeleton,
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import VisibilityIcon from "@mui/icons-material/Visibility";
@@ -248,6 +248,7 @@ export default function NotivixDataSource() {
       dispatch(setDataSourceList(dataSourceNotivixListAPI.data.data));
     }
   }, [dataSourceNotivixListAPI.data, dispatch]);
+  
   // Effect to listen for status changes
   useEffect(() => {
     const handleStatusChange = () => {
@@ -543,23 +544,16 @@ export default function NotivixDataSource() {
   }, [formData, modalMode, handleCloseModal]);
 
   useEffect(() => {
-    setLoading(sourceVersionData.isLoading);
-  }, [sourceVersionData.isLoading]);
+    setLoading(sourceVersionData.isLoading || sourceVersionData.isFetching);
+  }, [sourceVersionData.isLoading, sourceVersionData.isFetching]);
 
   useEffect(() => {
-    if (sourceVersionData.isLoading || sourceVersionData.error) {
-      return;
-    }
-    const rawData = sourceVersionData?.data?.data || [];
-    const totalCount = sourceVersionData?.data?.totalCount || 0;
-    if (!Array.isArray(rawData)) {
-      setRows([]);
-      setRowCount(0);
+    if (!listCurrentData?.fieldSettings) {
       setColumns([]);
       return;
     }
     const displayFields =
-      listCurrentData?.fieldSettings?.filter(
+      listCurrentData.fieldSettings.filter(
         (field) => field.isDisplayEnable && field.mappedAttributeName
       ) || [];
     const columns = displayFields.map((field) => ({
@@ -604,6 +598,28 @@ export default function NotivixDataSource() {
         );
       },
     }));
+    setColumns(columns);
+  }, [listCurrentData?.fieldSettings]);
+
+  useEffect(() => {
+    if (sourceVersionData.isLoading || sourceVersionData.error) {
+      if (sourceVersionData.error) {
+        setRows([]);
+        setRowCount(0);
+      }
+      return;
+    }
+    const rawData = sourceVersionData?.data?.data || [];
+    const totalCount = sourceVersionData?.data?.totalCount || 0;
+    if (!Array.isArray(rawData)) {
+      setRows([]);
+      setRowCount(0);
+      return;
+    }
+    const displayFields =
+      listCurrentData?.fieldSettings?.filter(
+        (field) => field.isDisplayEnable && field.mappedAttributeName
+      ) || [];
     const formattedRows = rawData.map((item) => {
       const row = { _id: item._id || item.id };
       displayFields.forEach((field) => {
@@ -616,8 +632,7 @@ export default function NotivixDataSource() {
     });
     setRows(formattedRows);
     setRowCount(totalCount);
-    setColumns(columns);
-  }, [sourceVersionData.data, listCurrentData?.fieldSettings]);
+  }, [sourceVersionData.data, sourceVersionData.isLoading, sourceVersionData.error, listCurrentData?.fieldSettings]);
 
   useEffect(() => {
     if (columns.length === 0) return;
@@ -629,51 +644,68 @@ export default function NotivixDataSource() {
       flex: 1,
       sortable: false,
       renderHeader: () => <Typography>Actions</Typography>,
-      renderCell: (params: any) => (
-        <Box sx={{ display: "flex", gap: 1 }}>
-          <Tooltip title="View" arrow>
-            <Button
-              size="small"
-              onClick={() => handleView(params.row._id)}
+      renderCell: (params: any) => {
+        if (params.row._id?.toString().startsWith("loading-placeholder-")) {
+          return (
+            <Box
               sx={{
-                minWidth: "auto",
-                color: STYLE_GUIDE?.COLORS?.primaryDark || "#3f51b5",
+                display: "flex",
+                gap: 1,
+                py: 1,
               }}
             >
-              <VisibilityIcon />
-            </Button>
-          </Tooltip>
-          <Tooltip title="Edit" arrow>
-            <Button
-              size="small"
-              onClick={() => handleEdit(params.row._id)}
-              disabled={!shouldAllowEdit}
-              sx={{
-                minWidth: "auto",
-                color: STYLE_GUIDE?.COLORS?.primaryDark || "#3f51b5",
-              }}
-            >
-              <EditIcon />
-            </Button>
-          </Tooltip>
-          <Tooltip title="Delete" arrow>
-            <Button
-              size="small"
-              onClick={() => handleDelete(params.row._id)}
-              disabled={!shouldAllowDelete}
-              sx={{
-                minWidth: "auto",
-                color: STYLE_GUIDE?.COLORS?.error || "#d32f2f",
-              }}
-            >
-              <DeleteIcon />
-            </Button>
-          </Tooltip>
-        </Box>
-      ),
+              <Skeleton variant="circular" width={32} height={32} />
+              <Skeleton variant="circular" width={32} height={32} />
+              <Skeleton variant="circular" width={32} height={32} />
+            </Box>
+          );
+        }
+        return (
+          <Box sx={{ display: "flex", gap: 1 }}>
+            <Tooltip title="View" arrow>
+              <Button
+                size="small"
+                onClick={() => handleView(params.row._id)}
+                sx={{
+                  minWidth: "auto",
+                  color: STYLE_GUIDE?.COLORS?.primaryDark || "#3f51b5",
+                }}
+              >
+                <VisibilityIcon />
+              </Button>
+            </Tooltip>
+            <Tooltip title="Edit" arrow>
+              <Button
+                size="small"
+                onClick={() => handleEdit(params.row._id)}
+                disabled={!shouldAllowEdit}
+                sx={{
+                  minWidth: "auto",
+                  color: STYLE_GUIDE?.COLORS?.primaryDark || "#3f51b5",
+                }}
+              >
+                <EditIcon />
+              </Button>
+            </Tooltip>
+            <Tooltip title="Delete" arrow>
+              <Button
+                size="small"
+                onClick={() => handleDelete(params.row._id)}
+                disabled={!shouldAllowDelete}
+                sx={{
+                  minWidth: "auto",
+                  color: STYLE_GUIDE?.COLORS?.error || "#d32f2f",
+                }}
+              >
+                <DeleteIcon />
+              </Button>
+            </Tooltip>
+          </Box>
+        );
+      },
     };
     setColumns((prev) => [...prev, actionsColumn]);
-  }, [columns, handleView, handleEdit, handleDelete]);
+  }, [columns, handleView, handleEdit, handleDelete, shouldAllowEdit, shouldAllowDelete]);
 
   const handleCompleteImport = () => {
     const id = listCurrentData?.dataSourceVersion?._id;

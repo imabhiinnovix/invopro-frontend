@@ -1,8 +1,8 @@
 import React, { useEffect, useRef, useState } from "react";
-import { useAppDispatch } from "../../../storeHooks";
-import { fetchWidgetDataLazy } from "../dashboardActions";
+import { useAppDispatch, useAppSelector } from "../../../storeHooks";
+import { fetchWidgetDataLazy, storeWidgetData } from "../dashboardActions";
 import { Box, CircularProgress, Typography } from "@mui/material";
-import { ChartResponse } from "../types";
+import { ChartResponse, CombinedWidgetData } from "../types";
 
 interface LazyWidgetProps {
   chart: ChartResponse;
@@ -15,7 +15,7 @@ interface LazyWidgetProps {
   children: React.ReactNode;
 }
 
-const LazyWidget: React.FC<LazyWidgetProps> = ({
+const LazyWidget = ({
   chart,
   dashboardType,
   startVersionValue,
@@ -24,13 +24,25 @@ const LazyWidget: React.FC<LazyWidgetProps> = ({
   dashboardFilters,
   hasData,
   children,
-}) => {
+}: LazyWidgetProps) => {
   const dispatch = useAppDispatch();
   const containerRef = useRef<HTMLDivElement>(null);
   const [isLoading, setIsLoading] = useState(false);
+  
+  const cachedWidgetData = useAppSelector((state) =>
+    state.dashboard.storeWidgetData.find((item) => item.widgetId === chart._id)
+  );
 
   useEffect(() => {
     if (hasData) return;
+
+    if (cachedWidgetData) {
+      dispatch(storeWidgetData({ 
+        widgetId: chart._id, 
+        data: cachedWidgetData.data as unknown as CombinedWidgetData
+      }));
+      return;
+    }
 
     let observer: IntersectionObserver | null = null;
     const currentContainer = containerRef.current;
@@ -87,6 +99,7 @@ const LazyWidget: React.FC<LazyWidgetProps> = ({
     endVersionValue,
     versionValue,
     dashboardFilters,
+    cachedWidgetData,
   ]);
 
   return (
@@ -101,7 +114,7 @@ const LazyWidget: React.FC<LazyWidgetProps> = ({
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            minHeight: 300,
+            minHeight: 450,
             bgcolor: "background.paper",
             borderRadius: 1,
           }}
