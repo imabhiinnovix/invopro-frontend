@@ -6,6 +6,7 @@ import FileDownloadDoneIcon from "@mui/icons-material/FileDownloadDone";
 import CommonTable, { CommonTableRef } from "../../components/common/table";
 import PrimaryButton from "../../components/common/PrimaryButton";
 import { useEffect, useRef, useMemo } from "react";
+import { formatDate } from "../../utils/utils";
 
 
 interface ValidationErrorsDataTableProps {
@@ -153,6 +154,38 @@ export const ValidationErrorsDataTable: React.FC<
             variant={chipVariant}
           />
         );
+      },
+    },
+    {
+      id: "createdAt",
+      label: "Created At",
+      minWidth: 200,
+      sortable: true,
+      renderCell: (row: Record<string, unknown>) => {
+        if (loading && (row.createdAt == null || row.createdAt === "")) {
+          return (
+            <Box sx={{ width: "100%", py: 1 }}>
+              <Skeleton variant="text" width="80%" height={20} />
+            </Box>
+          );
+        }
+        return formatDate(row.createdAt) || "-";
+      },
+    },
+    {
+      id: "updatedAt",
+      label: "Updated At",
+      minWidth: 200,
+      sortable: true,
+      renderCell: (row: Record<string, unknown>) => {
+        if (loading && (row.updatedAt == null || row.updatedAt === "")) {
+          return (
+            <Box sx={{ width: "100%", py: 1 }}>
+              <Skeleton variant="text" width="80%" height={20} />
+            </Box>
+          );
+        }
+        return formatDate(row.updatedAt) || "-";
       },
     },
     {
