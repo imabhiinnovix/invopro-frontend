@@ -15,7 +15,7 @@ import DeleteSweepIcon from "@mui/icons-material/DeleteSweep";
 import useGet from "../../hooks/useGet";
 import usePost from "../../hooks/usePost";
 import { GET, POST } from "../../services/apiRoutes";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { toast } from "react-toastify";
 import { useQueryClient } from "@tanstack/react-query";
 import { ValidationErrorsDataTable } from "./ValidationErrorsDataTable";
@@ -76,7 +76,7 @@ export default function ValidationErrors() {
   const [showExportSuccessDialog, setShowExportSuccessDialog] = useState(false);
 
   const discardAllSubmit = usePost(["discardAllSubmit"]);
-  const discardRow = usePost(["discardRow"]);
+  const discardRow = usePost(["discardRow"], () => {}, true);
   const resolveRow = usePost(["resolveRow"]);
 
   const attributeList = useGet<{
@@ -102,22 +102,37 @@ export default function ValidationErrors() {
     );
   }
 
+  const { state } = useLocation();
+  const isReportRequest = state?.isReportRequest;
+
+  if (isReportRequest) {
+    isLatest = true;
+  }
+
   const validationErrorList = useGet<any>(
     [
       "validationErrorList",
       String(paginationModel.page + 1),
       String(paginationModel.pageSize),
       debouncedSearchValue,
-      dataSourceIdForPayload?._id,
+      dataSourceIdForPayload?._id || id || "",
     ],
-    id && dataSourceIdForPayload?._id
-      ? `${GET?.VALIDATION_ERROR_LIST}?page=${paginationModel.page + 1}&limit=${
-          paginationModel.pageSize
-        }&dataSourceVersionId=${id}&dataSourceId=${
-          dataSourceIdForPayload._id
-        }&search=${encodeURIComponent(debouncedSearchValue)}`
-      : null,
-    !!(id && dataSourceIdForPayload?._id)
+    id
+      ? dataSourceIdForPayload?._id
+        ? `${GET?.VALIDATION_ERROR_LIST}?page=${
+            paginationModel.page + 1
+          }&limit=${
+            paginationModel.pageSize
+          }&dataSourceVersionId=${id}&dataSourceId=${
+            dataSourceIdForPayload?._id || ""
+          }&search=${encodeURIComponent(debouncedSearchValue || "")}`
+        : `${GET?.VALIDATION_ERROR_LIST}?page=${
+            paginationModel.page + 1
+          }&limit=${paginationModel.pageSize}&reportRequestId=${
+            id || ""
+          }&search=${encodeURIComponent(debouncedSearchValue || "")}`
+      : "",
+    !!id
   );
 
   const handleDiscardRow = (rowData: any) => {
@@ -137,7 +152,9 @@ export default function ValidationErrors() {
     setSelectedRow(rowData);
 
     try {
-      const url = `${GET.ERROR_ROW_DATA}?dataSourceVersionId=${rowData.dataSourceVersionId}&dataSourceId=${rowData.dataSourceId}&rowNumber=${rowData.rowNumber}&errorId=${rowData._id}`;
+      const url = isReportRequest
+        ? `${GET.ERROR_ROW_DATA}?reportRequestId=${id}&rowNumber=${rowData.rowNumber}&errorId=${rowData._id}`
+        : `${GET.ERROR_ROW_DATA}?dataSourceVersionId=${rowData.dataSourceVersionId}&dataSourceId=${rowData.dataSourceId}&rowNumber=${rowData.rowNumber}&errorId=${rowData._id}`;
 
       const response = await axiosInstance.get(url);
 
@@ -199,7 +216,7 @@ export default function ValidationErrors() {
   };
 
   const handleConfirmAction = async () => {
-    if (!id || !dataSourceId) {
+    if (!id || (!dataSourceId && !isReportRequest)) {
       handleCloseDialog();
       return;
     }
@@ -208,22 +225,33 @@ export default function ValidationErrors() {
       let response;
 
       if (dialog.type === "discardAll") {
-        const payload = {
-          action: "discardAllSubmit",
-          dataSourceVersionId: id,
-          dataSourceId: dataSourceId,
-        };
+        const payload = isReportRequest
+          ? {
+              action: "discardAllSubmit",
+              reportRequestId: id,
+            }
+          : {
+              action: "discardAllSubmit",
+              dataSourceVersionId: id,
+              dataSourceId: dataSourceId,
+            };
         response = await discardAllSubmit.mutateAsync({
           url: `${POST.RESOLVE_DATA_IMPORT_ERROR}`,
           payload,
         });
       } else if (dialog?.type === "discardRow") {
-        const payload = {
-          action: "discard",
-          dataSourceVersionId: id,
-          dataSourceId: dialog.rowData.dataSourceId,
-          rowNumber: dialog.rowData.rowNumber,
-        };
+        const payload = isReportRequest
+          ? {
+              action: "discard",
+              reportRequestId: id,
+              rowNumber: dialog.rowData.rowNumber,
+            }
+          : {
+              action: "discard",
+              dataSourceVersionId: id,
+              dataSourceId: dialog.rowData.dataSourceId,
+              rowNumber: dialog.rowData.rowNumber,
+            };
         response = await discardRow.mutateAsync({
           url: `${POST.RESOLVE_DATA_IMPORT_ERROR}`,
           payload,
@@ -239,12 +267,20 @@ export default function ValidationErrors() {
           payload,
         });
       } else if (dialog?.type === "discardSelectedRow") {
-        const payload = {
-          action: "discard",
-          dataSourceVersionId: id,
-          dataSourceId: dialog.selectedRows?.[0]?.dataSourceId,
-          rowNumber: dialog.selectedRows.map((row: any) => row.rowNumber),
-        };
+        const payload = isReportRequest
+          ? {
+              action: "discard",
+              reportRequestId: id,
+              rowNumber:
+                dialog.selectedRows?.map((row: any) => row.rowNumber) || [],
+            }
+          : {
+              action: "discard",
+              dataSourceVersionId: id,
+              dataSourceId: dialog.selectedRows?.[0]?.dataSourceId,
+              rowNumber:
+                dialog.selectedRows?.map((row: any) => row.rowNumber) || [],
+            };
 
         response = await discardRow.mutateAsync({
           url: `${POST.RESOLVE_DATA_IMPORT_ERROR}`,
@@ -254,38 +290,19 @@ export default function ValidationErrors() {
       }
 
       if (response?.success) {
-        let successMessage;
         if (dialog.type === "discardAll") {
-          successMessage =
-            response?.message || "All rows discarded successfully";
-          navigate(`/data-source-new/${response?.data?.dataSourceId}`);
-        } else if (dialog.type === "discardRow") {
-          successMessage = response?.message || "Row discarded successfully";
-        } else if (dialog.type === "resolveRow") {
-          successMessage =
-            response?.message || "Unique constraint resolved successfully";
-        } else if (dialog.type === "discardSelectedRow") {
-          successMessage =
-            response?.message || "Selected rows discarded successfully";
+          if (response?.data?.dataSourceId) {
+            navigate(`/data-source-new/${response?.data?.dataSourceId}`);
+          } else {
+            navigate(-1);
+          }
         }
 
-        toast.success(successMessage);
         queryClient.invalidateQueries(["validationErrorList"]);
       }
       handleCloseDialog();
     } catch (error) {
-      let errorMessage;
-      if (dialog.type === "discardAll") {
-        errorMessage = "Failed to discard all rows";
-      } else if (dialog.type === "discardRow") {
-        errorMessage = "Failed to discard row";
-      } else if (dialog.type === "resolveRow") {
-        errorMessage = "Failed to resolve unique constraint";
-      } else if (dialog.type === "discardSelectedRow") {
-        errorMessage = "Failed to discard selected rows";
-      }
-
-      toast.error(errorMessage);
+      console.error("Error submitting action:", error);
     } finally {
       setIsSubmitting(false);
     }
@@ -296,15 +313,27 @@ export default function ValidationErrors() {
       "validationErrorListExport",
       String(paginationModel.page + 1),
       debouncedSearchValue,
-      dataSourceIdForPayload?._id,
+      dataSourceIdForPayload?._id || id || "",
     ],
-    id && dataSourceIdForPayload?._id
-      ? `${GET?.VALIDATION_ERROR_LIST}?page=${paginationModel.page + 1}&limit=${
-          paginationModel.pageSize
-        }&dataSourceVersionId=${id}&dataSourceId=${
-          dataSourceIdForPayload._id
-        }&search=${encodeURIComponent(debouncedSearchValue)}&type=export`
-      : null,
+    id
+      ? dataSourceIdForPayload?._id
+        ? `${GET?.VALIDATION_ERROR_LIST}?page=${
+            paginationModel.page + 1
+          }&limit=${
+            paginationModel.pageSize
+          }&dataSourceVersionId=${id}&dataSourceId=${
+            dataSourceIdForPayload?._id || ""
+          }&search=${encodeURIComponent(
+            debouncedSearchValue || ""
+          )}&type=export`
+        : `${GET?.VALIDATION_ERROR_LIST}?page=${
+            paginationModel.page + 1
+          }&limit=${paginationModel.pageSize}&reportRequestId=${
+            id || ""
+          }&search=${encodeURIComponent(
+            debouncedSearchValue || ""
+          )}&type=export`
+      : "",
     false
   );
 

@@ -1030,6 +1030,8 @@ import { useUnifiedTheme } from "../../../hooks/useUnifiedTheme";
 import { useComponentTypography } from "../../../hooks/useComponentTypography";
 import CommonTable from "../../common/table";
 import CSVDownloadIcon from "../../../assets/csv-download.png";
+import { useNavigate } from "react-router-dom";
+import ReportProblemIcon from "@mui/icons-material/ReportProblem";
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
   [`&.${tableCellClasses.head}`]: {
@@ -1112,6 +1114,7 @@ const ReportRequestTable: React.FC<AttributeOptionTableProps> = ({
   const [downloadRequestId, setDownloadRequestId] = useState("");
   const [intermediateDownloadRequestId, setIntermediateDownloadRequestId] =
     useState("");
+  const navigate = useNavigate();
 
   const theme = useUnifiedTheme();
   const { getHeadingSx, getTableSx } = useComponentTypography();
@@ -1449,6 +1452,20 @@ const ReportRequestTable: React.FC<AttributeOptionTableProps> = ({
                   {/* </StyledButton> */}
                 </Tooltip>
               </Box>
+            ) : reportRow.status === "failed" ? (
+              <Tooltip title="Validation Errors" arrow>
+                <Button
+                  variant="text"
+                  sx={{ minWidth: "auto", color: "error.main" }}
+                  onClick={() => {
+                    navigate(`/validation-errors/${reportRow._id}`, {
+                      state: { isReportRequest: true },
+                    });
+                  }}
+                >
+                  <ReportProblemIcon />
+                </Button>
+              </Tooltip>
             ) : (
               "-"
             )}
