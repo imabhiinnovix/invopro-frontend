@@ -1345,6 +1345,8 @@ const ReportRequestTable: React.FC<AttributeOptionTableProps> = ({
             ? "warning.main"
             : reportRow.status === "failed"
             ? "error.main"
+            : reportRow.status === "error"
+            ? "error.main"
             : "text.primary";
         return <Typography color={color}>{reportRow.status || "-"}</Typography>;
       },
@@ -1452,7 +1454,7 @@ const ReportRequestTable: React.FC<AttributeOptionTableProps> = ({
                   {/* </StyledButton> */}
                 </Tooltip>
               </Box>
-            ) : reportRow.status === "failed" ? (
+            ) : reportRow.status === "error" ? (
               <Tooltip title="Validation Errors" arrow>
                 <Button
                   variant="text"

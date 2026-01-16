@@ -67,6 +67,12 @@ export default function ValidationErrors() {
     };
   }, [searchValue]);
 
+  useEffect(() => {
+    return () => {
+      queryClient.removeQueries({ queryKey: ["validationErrorList"] });
+    };
+  }, [queryClient]);
+
   const [actionModalOpen, setActionModalOpen] = useState(false);
   const [selectedRow, setSelectedRow] = useState<any>(null);
   const [rowDetailData, setRowDetailData] = useState<any>(null);
