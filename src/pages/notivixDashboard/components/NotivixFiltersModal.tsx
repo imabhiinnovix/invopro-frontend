@@ -2644,7 +2644,6 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
             },
           }}
         >
-          {console.log("filters", filters)}
           {filteredFieldSettings.map((field) => renderFilterField(field))}
         </Box>
       )}

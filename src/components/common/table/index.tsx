@@ -47,6 +47,11 @@ interface CommonTableProps {
   bulkAction?: (selectedRows: Record<string, unknown>[]) => React.ReactNode;
   lastElementRef?: (node: HTMLTableRowElement | null) => void;
   rowSelectionCondition?: (row: Record<string, unknown>) => boolean;
+  totalCount?: number;
+  page?: number;
+  rowsPerPage?: number;
+  onPageChange?: (page: number) => void;
+  onRowsPerPageChange?: (rowsPerPage: number) => void;
 }
 
 const CommonTable = forwardRef<CommonTableRef, CommonTableProps>(
@@ -65,11 +70,23 @@ const CommonTable = forwardRef<CommonTableRef, CommonTableProps>(
       bulkAction,
       lastElementRef,
       rowSelectionCondition,
+      totalCount,
+      page: controlledPage,
+      rowsPerPage: controlledRowsPerPage,
+      onPageChange,
+      onRowsPerPageChange,
     },
     ref
   ) => {
-    const [page, setPage] = React.useState(0);
-    const [rowsPerPage, setRowsPerPage] = React.useState(10);
+    const isServerSidePagination = totalCount !== undefined;
+    const [pageState, setPageState] = React.useState(0);
+    const [rowsPerPageState, setRowsPerPageState] = React.useState(10);
+
+    const page = isServerSidePagination ? controlledPage ?? 0 : pageState;
+    const rowsPerPage = isServerSidePagination
+      ? controlledRowsPerPage ?? 10
+      : rowsPerPageState;
+
     const [selectedRows, setSelectedRows] = React.useState<
       Record<string, unknown>[]
     >([]);
@@ -88,14 +105,23 @@ const CommonTable = forwardRef<CommonTableRef, CommonTableProps>(
     });
 
     const handleChangePage = (_event: unknown, newPage: number) => {
-      setPage(newPage);
+      if (isServerSidePagination) {
+        onPageChange?.(newPage);
+      } else {
+        setPageState(newPage);
+      }
     };
 
     const handleChangeRowsPerPage = (
       event: React.ChangeEvent<HTMLInputElement>
     ) => {
-      setRowsPerPage(+event.target.value);
-      setPage(0);
+      const newRowsPerPage = +event.target.value;
+      if (isServerSidePagination) {
+        onRowsPerPageChange?.(newRowsPerPage);
+      } else {
+        setRowsPerPageState(newRowsPerPage);
+        setPageState(0);
+      }
     };
 
     const handleSelectAllClick = (
@@ -232,7 +258,7 @@ const CommonTable = forwardRef<CommonTableRef, CommonTableProps>(
     const sortedRows = sortRows(rows);
 
     let tableRows = sortedRows;
-    if (!isLazyTable) {
+    if (!isLazyTable && !isServerSidePagination) {
       tableRows = sortedRows.slice(
         page * rowsPerPage,
         page * rowsPerPage + rowsPerPage
@@ -373,7 +399,7 @@ const CommonTable = forwardRef<CommonTableRef, CommonTableProps>(
           </Table>
         </TableContainer>
 
-        {!isLazyTable && !loading && (
+        {(!isLazyTable || isServerSidePagination) && !loading && (
           <Stack
             direction="row"
             justifyContent="space-between"
@@ -385,7 +411,8 @@ const CommonTable = forwardRef<CommonTableRef, CommonTableProps>(
             ) : (
               <Stack direction="row" spacing={2} alignItems="center">
                 <Typography variant="body2">
-                  Total Records: {sortedRows.length}
+                  Total Records:{" "}
+                  {isServerSidePagination ? totalCount : sortedRows.length}
                 </Typography>
                 {rowSelection && selectedRows.length > 0 && (
                   <Typography variant="body2" color="primary">
@@ -397,13 +424,16 @@ const CommonTable = forwardRef<CommonTableRef, CommonTableProps>(
             <TablePagination
               rowsPerPageOptions={[10, 25, 100]}
               component="div"
-              count={sortedRows.length}
+              count={isServerSidePagination ? totalCount : sortedRows.length}
               rowsPerPage={rowsPerPage}
               page={page}
               onPageChange={handleChangePage}
               onRowsPerPageChange={handleChangeRowsPerPage}
               labelDisplayedRows={({ page }) => {
-                const totalPages = Math.ceil(sortedRows.length / rowsPerPage);
+                const totalItems = isServerSidePagination
+                  ? totalCount
+                  : sortedRows.length;
+                const totalPages = Math.ceil(totalItems / rowsPerPage);
                 return `Page ${page + 1} of ${totalPages}`;
               }}
             />

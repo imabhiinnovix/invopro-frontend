@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, useMemo } from "react";
 import { useAppDispatch, useAppSelector } from "../../../storeHooks";
 import IosShareIcon from "@mui/icons-material/IosShare";
 import FilterListIcon from "@mui/icons-material/FilterList";
@@ -542,7 +542,14 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
     useState<any>(dashboardFilters);
   const [isExportingPdf, setIsExportingPdf] = useState(false);
 
-  // console.log("widgetData", widgetData);
+  const [batchLoadingState, setBatchLoadingState] = useState<{
+    [batchIndex: number]: {
+      loadingCount: number;
+      loadedCount: number;
+      totalCount: number;
+    };
+  }>({});
+
   const [fullscreenWidgetData, setFullscreenWidgetData] = useState<any>(
     widgetData[selectedChart?._id]
   );
@@ -648,8 +655,10 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
   const numberCharts = allCharts.filter(
     (chart) => chart.widgetTypeId?.chartType === "number"
   );
-  const otherCharts = allCharts.filter(
-    (chart) => chart.widgetTypeId?.chartType !== "number"
+  const otherCharts = useMemo(
+    () =>
+      allCharts.filter((chart) => chart.widgetTypeId?.chartType !== "number"),
+    [charts, temporaryCharts]
   );
 
   const permissions = useSelector(
@@ -673,6 +682,108 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
     "save_widgets"
   );
 
+  const getBatchIndex = (widgetIndex: number) =>
+    Math.floor(widgetIndex / gridColumns);
+
+  const isBatchReady = (batchIndex: number) => {
+    if (batchIndex === 0) return true;
+
+    for (let i = 0; i < batchIndex; i++) {
+      const batch = batchLoadingState[i];
+      if (!batch || batch.loadedCount !== batch.totalCount) {
+        return false;
+      }
+      if (batch.loadingCount > 0) {
+        return false;
+      }
+    }
+
+    return true;
+  };
+
+  const handleWidgetLoadStart = (batchIndex: number) => {
+    setBatchLoadingState((prev) => {
+      const currentBatch = prev[batchIndex] || {
+        loadingCount: 0,
+        loadedCount: 0,
+        totalCount: 0,
+      };
+      return {
+        ...prev,
+        [batchIndex]: {
+          ...currentBatch,
+          loadingCount: currentBatch.loadingCount + 1,
+        },
+      };
+    });
+  };
+
+  const handleWidgetLoadComplete = (batchIndex: number) => {
+    setBatchLoadingState((prev) => {
+      const currentBatch = prev[batchIndex] || {
+        loadingCount: 0,
+        loadedCount: 0,
+        totalCount: 0,
+      };
+      return {
+        ...prev,
+        [batchIndex]: {
+          ...currentBatch,
+          loadingCount: Math.max(0, currentBatch.loadingCount - 1),
+          loadedCount: currentBatch.loadedCount + 1,
+        },
+      };
+    });
+  };
+
+  useEffect(() => {
+    if (numberCharts.length === 0 && otherCharts.length === 0) {
+      setBatchLoadingState({});
+      return;
+    }
+
+    const batches: {
+      [batchIndex: number]: {
+        loadingCount: number;
+        loadedCount: number;
+        totalCount: number;
+      };
+    } = {};
+
+    numberCharts.forEach((chart, index) => {
+      const batchIdx = Math.floor(index / 3);
+      if (!batches[batchIdx]) {
+        batches[batchIdx] = {
+          loadingCount: 0,
+          loadedCount: 0,
+          totalCount: 0,
+        };
+      }
+      batches[batchIdx].totalCount += 1;
+      if (widgetData[chart._id]) {
+        batches[batchIdx].loadedCount += 1;
+      }
+    });
+
+    otherCharts.forEach((chart, index) => {
+      const batchIdx = Math.floor(index / gridColumns);
+      if (!batches[batchIdx]) {
+        batches[batchIdx] = {
+          loadingCount: 0,
+          loadedCount: 0,
+          totalCount: 0,
+        };
+      }
+      batches[batchIdx].totalCount += 1;
+      if (widgetData[chart._id]) {
+        batches[batchIdx].loadedCount += 1;
+      }
+    });
+
+    setBatchLoadingState(batches);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [otherCharts, gridColumns]);
+
   const bottomRef: any = isNaturalLangauage
     ? useRef<HTMLDivElement | null>(null)
     : "";
@@ -681,7 +792,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
     if (isNaturalLangauage) {
       bottomRef?.current?.scrollIntoView({ behavior: "smooth" });
     }
-  }, [chartsLoading, isNaturalLangauage]);
+  }, [bottomRef, chartsLoading, isNaturalLangauage]);
 
   const widgetTheme = useAppSelector((state) => state.dashboard.widgetTheme);
 
@@ -3655,460 +3766,587 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
         {numberCharts.length > 0 && (
           <Grid item xs={12}>
             <Grid container spacing={STYLE_GUIDE.SPACING.s4}>
-              {numberCharts.map((chart: any, index: number) => (
-                <Grid item xs={12} md={4} key={chart._id}>
-                  <LazyWidget
-                    chart={chart}
-                    dashboardType={currentDashboard?.settings?.dashboardType}
-                    startVersionValue={startVersionValue}
-                    endVersionValue={endVersionValue}
-                    versionValue={versionValue}
-                    dashboardFilters={localDashboardFilters}
-                    hasData={!!widgetData[chart._id]}
-                  >
-                    <NumberCard
-                      sx={{ ...getCardSx() }}
-                      backgroundColor={
-                        SABIC_COLORS_NUMBER[index % SABIC_COLORS_NUMBER.length]
-                      } // Cycle through colors
-                      data-widget-type="number"
-                    >
-                      <CardContent>
-                        {/* ---------- Number card header with only Edit menu in edit mode ---------- */}
+              {numberCharts.map((chart: any, index: number) => {
+                const batchIndex = Math.floor(index / 3);
+                const ready = isBatchReady(batchIndex);
+
+                if (!ready) {
+                  const isLastInBatch =
+                    index === numberCharts.length - 1 ||
+                    Math.floor(index / 3) !== batchIndex;
+
+                  const isNextBatchToLoad =
+                    batchIndex === 0 ? false : isBatchReady(batchIndex - 1);
+
+                  if (isLastInBatch && isNextBatchToLoad) {
+                    return (
+                      <Grid
+                        key={`batch-loading-${batchIndex}`}
+                        item
+                        xs={12}
+                        sx={{
+                          display: "flex",
+                          justifyContent: "center",
+                          alignItems: "center",
+                          mt: 3,
+                          py: 4,
+                        }}
+                      >
                         <Box
                           sx={{
-                            width: "100%",
                             display: "flex",
-                            justifyContent: "space-between",
                             alignItems: "center",
-                            mb: 1,
+                            justifyContent: "center",
+                            gap: 1,
                           }}
                         >
-                          {/* optional chart title — keep it empty if you don't want text */}
-                          <ChartTitle
+                          <CircularProgress size={32} />
+                          <Typography
+                            variant="body1"
+                            color="text.secondary"
+                            fontWeight={500}
+                          >
+                            Loading...
+                          </Typography>
+                        </Box>
+                      </Grid>
+                    );
+                  }
+                  return null;
+                }
+
+                return (
+                  <Grid
+                    item
+                    xs={12}
+                    md={4}
+                    key={chart._id}
+                    justifyContent="center"
+                  >
+                    <LazyWidget
+                      chart={chart}
+                      dashboardType={currentDashboard?.settings?.dashboardType}
+                      startVersionValue={startVersionValue}
+                      endVersionValue={endVersionValue}
+                      versionValue={versionValue}
+                      dashboardFilters={localDashboardFilters}
+                      hasData={!!widgetData[chart._id]}
+                      loaderHeight={70}
+                      isBatchReady={ready}
+                      onLoadStart={() => handleWidgetLoadStart(batchIndex)}
+                      onLoadComplete={() =>
+                        handleWidgetLoadComplete(batchIndex)
+                      }
+                    >
+                      <NumberCard
+                        sx={{ ...getCardSx() }}
+                        backgroundColor={
+                          SABIC_COLORS_NUMBER[
+                            index % SABIC_COLORS_NUMBER.length
+                          ]
+                        } // Cycle through colors
+                        data-widget-type="number"
+                      >
+                        <CardContent>
+                          {/* ---------- Number card header with only Edit menu in edit mode ---------- */}
+                          <Box
                             sx={{
-                              color:
-                                SABIC_COLORS_NUMBER[
-                                  index % SABIC_COLORS_NUMBER.length
-                                ] === "#939598"
-                                  ? "#FFFFFF"
-                                  : "#939598",
-                              p: 0,
-                              mr: 1,
+                              width: "100%",
+                              display: "flex",
+                              justifyContent: "space-between",
+                              alignItems: "center",
+                              mb: 1,
                             }}
-                          />
+                          >
+                            {/* optional chart title — keep it empty if you don't want text */}
+                            <ChartTitle
+                              sx={{
+                                color:
+                                  SABIC_COLORS_NUMBER[
+                                    index % SABIC_COLORS_NUMBER.length
+                                  ] === "#939598"
+                                    ? "#FFFFFF"
+                                    : "#939598",
+                                p: 0,
+                                mr: 1,
+                              }}
+                            />
 
-                          {/* edit/menu button (only in edit mode) */}
-                          {/* Header Action Buttons */}
-                          <Box sx={{ display: "flex", gap: 1 }}>
-                            {/* Maximize */}
-                            {isEditMode && (
-                              <IconButton
-                                size="small"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleFullViewClick(chart); // same function used by other charts
-                                }}
-                                sx={{
-                                  opacity: 0.7,
-                                  "&:hover": { opacity: 1 },
-                                }}
-                              >
-                                <FullscreenIcon />
-                              </IconButton>
-                            )}
-
-                            {/* Export */}
-                            {isEditMode && (
-                              <IconButton
-                                size="small"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleExportMenuClick(e, chart); // same export menu function
-                                }}
-                                sx={{
-                                  opacity: 0.7,
-                                  "&:hover": { opacity: 1 },
-                                }}
-                              >
-                                <DownloadIcon />
-                              </IconButton>
-                            )}
-
-                            {/* Edit / Delete Menu */}
-                            {isEditMode &&
-                              (shouldAllowWidgetUpdate ||
-                                shouldAllowWidgetDelete) && (
+                            {/* edit/menu button (only in edit mode) */}
+                            {/* Header Action Buttons */}
+                            <Box sx={{ display: "flex", gap: 1 }}>
+                              {/* Maximize */}
+                              {isEditMode && (
                                 <IconButton
                                   size="small"
                                   onClick={(e) => {
                                     e.stopPropagation();
-                                    handleMenuClick(e, chart);
+                                    handleFullViewClick(chart); // same function used by other charts
                                   }}
                                   sx={{
                                     opacity: 0.7,
                                     "&:hover": { opacity: 1 },
                                   }}
                                 >
-                                  <MoreVertIcon />
+                                  <FullscreenIcon />
                                 </IconButton>
                               )}
+
+                              {/* Export */}
+                              {isEditMode && (
+                                <IconButton
+                                  size="small"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleExportMenuClick(e, chart); // same export menu function
+                                  }}
+                                  sx={{
+                                    opacity: 0.7,
+                                    "&:hover": { opacity: 1 },
+                                  }}
+                                >
+                                  <DownloadIcon />
+                                </IconButton>
+                              )}
+
+                              {/* Edit / Delete Menu */}
+                              {isEditMode &&
+                                (shouldAllowWidgetUpdate ||
+                                  shouldAllowWidgetDelete) && (
+                                  <IconButton
+                                    size="small"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleMenuClick(e, chart);
+                                    }}
+                                    sx={{
+                                      opacity: 0.7,
+                                      "&:hover": { opacity: 1 },
+                                    }}
+                                  >
+                                    <MoreVertIcon />
+                                  </IconButton>
+                                )}
+                            </Box>
                           </Box>
-                        </Box>
-                        <ChartContainer
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleFullViewClick(chart);
-                            handleChartClick(chart); // auto-run ALL DATA
-                          }}
-                          className="number-chart"
-                          onWheel={handleWheel}
-                          sx={{
-                            mt: -2,
-                            backgroundColor: "transparent",
-                            display: "flex",
-                            flexDirection: "column",
-                            justifyContent: "flex-start",
-                            alignItems: "flex-start",
-                            width: "100%",
-                            cursor: "pointer",
-                            transition:
-                              "transform 0.2s ease, opacity 0.2s ease",
-                            "&:hover": {
-                              transform: "scale(1.02)",
-                              opacity: 0.9,
-                            },
-                          }}
-                        >
-                          <Box
+                          <ChartContainer
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleFullViewClick(chart);
+                              handleChartClick(chart, [], e); // auto-run ALL DATA
+                            }}
+                            className="number-chart"
+                            onWheel={handleWheel}
                             sx={{
+                              mt: -2,
+                              backgroundColor: "transparent",
                               display: "flex",
                               flexDirection: "column",
+                              justifyContent: "flex-start",
+                              alignItems: "flex-start",
                               width: "100%",
-                              height: "100%",
+                              cursor: "pointer",
+                              transition:
+                                "transform 0.2s ease, opacity 0.2s ease",
+                              "&:hover": {
+                                transform: "scale(1.02)",
+                                opacity: 0.9,
+                              },
                             }}
                           >
-                            <Box sx={{ flex: 1, minHeight: 0, width: "100%" }}>
-                              {renderChart(chart)}
+                            <Box
+                              sx={{
+                                display: "flex",
+                                flexDirection: "column",
+                                width: "100%",
+                                height: "100%",
+                              }}
+                            >
+                              <Box
+                                sx={{ flex: 1, minHeight: 0, width: "100%" }}
+                              >
+                                {renderChart(chart)}
+                              </Box>
+                              <Box sx={{ flexShrink: 0, width: "100%" }}>
+                                <div
+                                  id={`legend-container-${chart._id}`}
+                                  style={{ marginTop: "8px" }}
+                                ></div>
+                              </Box>
                             </Box>
-                            <Box sx={{ flexShrink: 0, width: "100%" }}>
-                              <div
-                                id={`legend-container-${chart._id}`}
-                                style={{ marginTop: "8px" }}
-                              ></div>
-                            </Box>
-                          </Box>
-                        </ChartContainer>
-                      </CardContent>
-                    </NumberCard>
-                  </LazyWidget>
-                </Grid>
-              ))}
+                          </ChartContainer>
+                        </CardContent>
+                      </NumberCard>
+                    </LazyWidget>
+                  </Grid>
+                );
+              })}
             </Grid>
           </Grid>
         )}
 
-        {otherCharts?.map((chart: any) => (
-          <React.Fragment key={chart._id}>
-            {isNaturalLangauage && (
-              <>
-                <Divider
-                  sx={{ width: "100%", mt: 2, borderBottomWidth: "2px" }}
-                />
-                <Divider
-                  sx={{ width: "100%", mt: 0.2, borderBottomWidth: "2px" }}
-                />
-                <Grid item xs={12}>
-                  <Box
-                    sx={{
-                      display: "flex",
-                      justifyContent: "flex-end",
-                      width: "100%",
-                      mt: 2,
-                    }}
-                  >
-                    <Box display="flex" alignItems="center" gap={1}>
-                      <Box
-                        sx={{
-                          backgroundColor: "#e0f7fa",
-                          color: "#000",
-                          padding: "12px 16px",
-                          borderRadius: "16px",
-                          wordBreak: "break-word",
-                          flexShrink: 1,
-                        }}
-                      >
-                        <Typography
-                          variant="body2"
-                          fontWeight={STYLE_GUIDE.TYPOGRAPHY.fontWeight.regular}
-                        >
-                          {chart?.userQuery}
-                        </Typography>
-                      </Box>
-                      <Avatar
-                        sx={{
-                          bgcolor: "purple",
-                          width: 40,
-                          height: 40,
-                          fontSize: 20,
-                        }}
-                      >
-                        U
-                      </Avatar>
-                    </Box>
-                  </Box>
-                </Grid>
-                <Grid item xs={12}>
-                  <Box
-                    sx={{
-                      display: "flex",
-                      justifyContent: "flex-start",
-                      width: "100%",
-                      mt: 2,
-                    }}
-                  >
-                    <Box display="flex" alignItems="center" gap={1}>
-                      <Avatar
-                        sx={{
-                          bgcolor: "green",
-                          width: 40,
-                          height: 40,
-                          fontSize: 20,
-                        }}
-                      >
-                        AI
-                      </Avatar>
-                      <Box
-                        sx={{
-                          backgroundColor: "lightgray",
-                          color: "#000",
-                          padding: "12px 16px",
-                          borderRadius: "16px",
-                          wordBreak: "break-word",
-                          flexShrink: 1,
-                        }}
-                      >
-                        <Typography
-                          variant="body2"
-                          fontWeight={STYLE_GUIDE.TYPOGRAPHY.fontWeight.regular}
-                        >
-                          Here's the result based on your query:{" "}
-                          {chart?.userQuery}
-                        </Typography>
-                      </Box>
-                    </Box>
-                  </Box>
-                </Grid>
+        {otherCharts?.map((chart: any, index: number) => {
+          const batchIndex = getBatchIndex(index);
+          const ready = isBatchReady(batchIndex);
 
-                <SaveWidgetModel
-                  open={openSaveChart}
-                  onClose={() => {
-                    setOpenSaveChart(false);
+          if (!ready) {
+            const isLastInBatch =
+              index === otherCharts.length - 1 ||
+              getBatchIndex(index + 1) !== batchIndex;
+
+            const isNextBatchToLoad =
+              batchIndex === 0 ? false : isBatchReady(batchIndex - 1);
+
+            if (isLastInBatch && isNextBatchToLoad) {
+              return (
+                <Grid
+                  key={`batch-loading-${batchIndex}`}
+                  item
+                  xs={12}
+                  sx={{
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    mt: 3,
+                    py: 4,
                   }}
-                  onNameChange={setNewSaveChartName}
-                  dashboardList={dashboards}
-                  newChartName={newSaveChartName}
-                  dashBoardId={chartSaveDashboardId}
-                  onDashboardChange={setChartSaveDashboardId}
-                  onCreate={handleSaveWidget}
-                  isCreating={isChartSaving}
-                />
-              </>
-            )}
-            <Grid
-              item
-              xs={12}
-              md={
-                isAddChartModalOpen || isEditChartModalOpen
-                  ? 12
-                  : gridColumns === 1
-                  ? 12
-                  : gridColumns === 2
-                  ? 6
-                  : 4
-              }
-              gap={isNaturalLangauage ? 4 : 0}
-              p={isNaturalLangauage ? 2 : 0}
-              direction="column"
-            >
-              {isNaturalLangauage && (
-                <AddChartModal
-                  open={true}
-                  onClose={() => {}}
-                  isSubmitting={false}
-                  dashboardId={""}
-                  initialData={chart}
-                  isNaturalLangauage={true}
-                  onSave={(formData) =>
-                    handleChartUpdate({ ...chart, ...formData })
-                  }
-                  setOpenSaveChart={setOpenSaveChart}
-                  setChartSaveSettingData={setChartSaveSettingData}
-                  setNewSaveChartName={setNewSaveChartName}
-                />
-              )}
-
-              <LazyWidget
-                chart={chart}
-                dashboardType={currentDashboard?.settings?.dashboardType}
-                startVersionValue={startVersionValue}
-                endVersionValue={endVersionValue}
-                versionValue={versionValue}
-                dashboardFilters={localDashboardFilters}
-                hasData={!!widgetData[chart._id]}
-              >
-                <StyledCard
-                  sx={{ ...getCardSx() }}
-                  data-widget-type={chart.widgetTypeId?.chartType || "chart"}
-                  data-chart-id={chart._id}
                 >
-                  <CardContent
+                  <Box
                     sx={{
-                      flexGrow: 1,
-                      p: 3,
                       display: "flex",
-                      flexDirection: "column",
-                      height: "100%",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      gap: 1,
                     }}
                   >
-                    <ChartTitle>
-                      <ChartTitleText>{chart.name}</ChartTitleText>
-
-                      <Box sx={{ display: "flex", gap: 1 }}>
-                        <IconButton
-                          size="small"
-                          onClick={() => handleFullViewClick(chart)}
-                          sx={{
-                            opacity: 0.7,
-                            "&:hover": { opacity: 1 },
-                          }}
-                        >
-                          <FullscreenIcon />
-                        </IconButton>
-                        <IconButton
-                          size="small"
-                          onClick={(e) => handleExportMenuClick(e, chart)}
-                          sx={{
-                            opacity: 0.7,
-                            "&:hover": { opacity: 1 },
-                          }}
-                        >
-                          <DownloadIcon />
-                        </IconButton>
-                        {isEditMode &&
-                          (shouldAllowWidgetUpdate ||
-                            shouldAllowWidgetDelete) && (
-                            <IconButton
-                              size="small"
-                              onClick={(e) => handleMenuClick(e, chart)}
-                              sx={{
-                                opacity: 0.7,
-                                "&:hover": { opacity: 1 },
-                              }}
-                            >
-                              <MoreVertIcon />
-                            </IconButton>
-                          )}
-                      </Box>
-                    </ChartTitle>
-                    <Divider
-                      sx={{ width: "100%", mt: 0.2, borderBottomWidth: "2px" }}
-                    />
-                    <ChartContainer
-                      className={
-                        (chart.widgetTypeId?.chartType || "line") === "pie"
-                          ? "pie-chart"
-                          : (chart.widgetTypeId?.chartType || "line") ===
-                            "horizontalBar"
-                          ? "horizontal-bar-chart"
-                          : (chart.widgetTypeId?.chartType || "line") ===
-                            "tabular"
-                          ? "table-chart"
-                          : (chart.widgetTypeId?.chartType || "line") ===
-                            "multiSeriesPie"
-                          ? "pie-chart"
-                          : (chart.widgetTypeId?.chartType || "line") ===
-                              "stackedBarLine" ||
-                            (chart.widgetTypeId?.chartType || "line") ===
-                              "comboBarLine"
-                          ? "combo-chart"
-                          : "line-chart"
-                      }
-                      onWheel={handleWheel}
+                    <CircularProgress size={32} />
+                    <Typography
+                      variant="body1"
+                      color="text.secondary"
+                      fontWeight={500}
                     >
-                      <Box
-                        sx={{
-                          display: "flex",
-                          flexDirection: "column",
-                          width: "100%",
-                          height: "100%",
-                        }}
-                      >
-                        <Box sx={{ flex: 1, minHeight: 0, width: "100%" }}>
-                          <Box sx={{ height: "400px", width: "100%" }}>
-                            {renderChart(chart)}
-                          </Box>
-                        </Box>
-                        <Box sx={{ flexShrink: 0, width: "100%" }}>
-                          <div
-                            id={`legend-container-${chart._id}`}
-                            style={{ marginTop: "8px" }}
-                          ></div>
-                        </Box>
-                      </Box>
-                    </ChartContainer>
+                      Loading...
+                    </Typography>
+                  </Box>
+                </Grid>
+              );
+            }
+            return null;
+          }
+
+          return (
+            <React.Fragment key={chart._id}>
+              {isNaturalLangauage && (
+                <>
+                  <Divider
+                    sx={{ width: "100%", mt: 2, borderBottomWidth: "2px" }}
+                  />
+                  <Divider
+                    sx={{ width: "100%", mt: 0.2, borderBottomWidth: "2px" }}
+                  />
+                  <Grid item xs={12}>
                     <Box
                       sx={{
                         display: "flex",
                         justifyContent: "flex-end",
-                        alignItems: "center",
-                        mt: 1,
+                        width: "100%",
+                        mt: 2,
                       }}
                     >
-                      <Typography
-                        variant="body2"
+                      <Box display="flex" alignItems="center" gap={1}>
+                        <Box
+                          sx={{
+                            backgroundColor: "#e0f7fa",
+                            color: "#000",
+                            padding: "12px 16px",
+                            borderRadius: "16px",
+                            wordBreak: "break-word",
+                            flexShrink: 1,
+                          }}
+                        >
+                          <Typography
+                            variant="body2"
+                            fontWeight={
+                              STYLE_GUIDE.TYPOGRAPHY.fontWeight.regular
+                            }
+                          >
+                            {chart?.userQuery}
+                          </Typography>
+                        </Box>
+                        <Avatar
+                          sx={{
+                            bgcolor: "purple",
+                            width: 40,
+                            height: 40,
+                            fontSize: 20,
+                          }}
+                        >
+                          U
+                        </Avatar>
+                      </Box>
+                    </Box>
+                  </Grid>
+                  <Grid item xs={12}>
+                    <Box
+                      sx={{
+                        display: "flex",
+                        justifyContent: "flex-start",
+                        width: "100%",
+                        mt: 2,
+                      }}
+                    >
+                      <Box display="flex" alignItems="center" gap={1}>
+                        <Avatar
+                          sx={{
+                            bgcolor: "green",
+                            width: 40,
+                            height: 40,
+                            fontSize: 20,
+                          }}
+                        >
+                          AI
+                        </Avatar>
+                        <Box
+                          sx={{
+                            backgroundColor: "lightgray",
+                            color: "#000",
+                            padding: "12px 16px",
+                            borderRadius: "16px",
+                            wordBreak: "break-word",
+                            flexShrink: 1,
+                          }}
+                        >
+                          <Typography
+                            variant="body2"
+                            fontWeight={
+                              STYLE_GUIDE.TYPOGRAPHY.fontWeight.regular
+                            }
+                          >
+                            Here's the result based on your query:{" "}
+                            {chart?.userQuery}
+                          </Typography>
+                        </Box>
+                      </Box>
+                    </Box>
+                  </Grid>
+
+                  <SaveWidgetModel
+                    open={openSaveChart}
+                    onClose={() => {
+                      setOpenSaveChart(false);
+                    }}
+                    onNameChange={setNewSaveChartName}
+                    dashboardList={dashboards}
+                    newChartName={newSaveChartName}
+                    dashBoardId={chartSaveDashboardId}
+                    onDashboardChange={setChartSaveDashboardId}
+                    onCreate={handleSaveWidget}
+                    isCreating={isChartSaving}
+                  />
+                </>
+              )}
+              <Grid
+                item
+                xs={12}
+                md={
+                  isAddChartModalOpen || isEditChartModalOpen
+                    ? 12
+                    : gridColumns === 1
+                    ? 12
+                    : gridColumns === 2
+                    ? 6
+                    : 4
+                }
+                gap={isNaturalLangauage ? 4 : 0}
+                p={isNaturalLangauage ? 2 : 0}
+                direction="column"
+              >
+                {isNaturalLangauage && (
+                  <AddChartModal
+                    open={true}
+                    onClose={() => {}}
+                    isSubmitting={false}
+                    dashboardId={""}
+                    initialData={chart}
+                    isNaturalLangauage={true}
+                    onSave={(formData) =>
+                      handleChartUpdate({ ...chart, ...formData })
+                    }
+                    setOpenSaveChart={setOpenSaveChart}
+                    setChartSaveSettingData={setChartSaveSettingData}
+                    setNewSaveChartName={setNewSaveChartName}
+                  />
+                )}
+
+                <LazyWidget
+                  chart={chart}
+                  dashboardType={currentDashboard?.settings?.dashboardType}
+                  startVersionValue={startVersionValue}
+                  endVersionValue={endVersionValue}
+                  versionValue={versionValue}
+                  dashboardFilters={localDashboardFilters}
+                  hasData={!!widgetData[chart._id]}
+                  isBatchReady={ready}
+                  onLoadStart={() => handleWidgetLoadStart(batchIndex)}
+                  onLoadComplete={() => handleWidgetLoadComplete(batchIndex)}
+                >
+                  <StyledCard
+                    sx={{ ...getCardSx() }}
+                    data-widget-type={chart.widgetTypeId?.chartType || "chart"}
+                    data-chart-id={chart._id}
+                  >
+                    <CardContent
+                      sx={{
+                        flexGrow: 1,
+                        p: 3,
+                        display: "flex",
+                        flexDirection: "column",
+                        height: "100%",
+                      }}
+                    >
+                      <ChartTitle>
+                        <ChartTitleText>{chart.name}</ChartTitleText>
+
+                        <Box sx={{ display: "flex", gap: 1 }}>
+                          <IconButton
+                            size="small"
+                            onClick={() => handleFullViewClick(chart)}
+                            sx={{
+                              opacity: 0.7,
+                              "&:hover": { opacity: 1 },
+                            }}
+                          >
+                            <FullscreenIcon />
+                          </IconButton>
+                          <IconButton
+                            size="small"
+                            onClick={(e) => handleExportMenuClick(e, chart)}
+                            sx={{
+                              opacity: 0.7,
+                              "&:hover": { opacity: 1 },
+                            }}
+                          >
+                            <DownloadIcon />
+                          </IconButton>
+                          {isEditMode &&
+                            (shouldAllowWidgetUpdate ||
+                              shouldAllowWidgetDelete) && (
+                              <IconButton
+                                size="small"
+                                onClick={(e) => handleMenuClick(e, chart)}
+                                sx={{
+                                  opacity: 0.7,
+                                  "&:hover": { opacity: 1 },
+                                }}
+                              >
+                                <MoreVertIcon />
+                              </IconButton>
+                            )}
+                        </Box>
+                      </ChartTitle>
+                      <Divider
                         sx={{
-                          fontWeight: "bold",
-                          color: "primary.main",
+                          width: "100%",
+                          mt: 0.2,
+                          borderBottomWidth: "2px",
+                        }}
+                      />
+                      <ChartContainer
+                        className={
+                          (chart.widgetTypeId?.chartType || "line") === "pie"
+                            ? "pie-chart"
+                            : (chart.widgetTypeId?.chartType || "line") ===
+                              "horizontalBar"
+                            ? "horizontal-bar-chart"
+                            : (chart.widgetTypeId?.chartType || "line") ===
+                              "tabular"
+                            ? "table-chart"
+                            : (chart.widgetTypeId?.chartType || "line") ===
+                              "multiSeriesPie"
+                            ? "pie-chart"
+                            : (chart.widgetTypeId?.chartType || "line") ===
+                                "stackedBarLine" ||
+                              (chart.widgetTypeId?.chartType || "line") ===
+                                "comboBarLine"
+                            ? "combo-chart"
+                            : "line-chart"
+                        }
+                        onWheel={handleWheel}
+                      >
+                        <Box
+                          sx={{
+                            display: "flex",
+                            flexDirection: "column",
+                            width: "100%",
+                            height: "100%",
+                          }}
+                        >
+                          <Box sx={{ flex: 1, minHeight: 0, width: "100%" }}>
+                            <Box sx={{ height: "400px", width: "100%" }}>
+                              {renderChart(chart)}
+                            </Box>
+                          </Box>
+                          <Box sx={{ flexShrink: 0, width: "100%" }}>
+                            <div
+                              id={`legend-container-${chart._id}`}
+                              style={{ marginTop: "8px" }}
+                            ></div>
+                          </Box>
+                        </Box>
+                      </ChartContainer>
+                      <Box
+                        sx={{
+                          display: "flex",
+                          justifyContent: "flex-end",
+                          alignItems: "center",
+                          mt: 1,
                         }}
                       >
-                        Total: {widgetData[chart._id]?.data?.totalCount}
-                      </Typography>
-                    </Box>
-                  </CardContent>
-                </StyledCard>
-              </LazyWidget>
+                        <Typography
+                          variant="body2"
+                          sx={{
+                            fontWeight: "bold",
+                            color: "primary.main",
+                          }}
+                        >
+                          Total: {widgetData[chart._id]?.data?.totalCount}
+                        </Typography>
+                      </Box>
+                    </CardContent>
+                  </StyledCard>
+                </LazyWidget>
 
-              {chart?.description ? (
-                <Box
-                  sx={{
-                    p: 1,
-                    borderBottomLeftRadius: theme.shape.borderRadius,
-                    borderBottomRightRadius: theme.shape.borderRadius,
-                    backgroundColor: "#fafafa",
-                    borderLeft: "1px solid #eee",
-                    borderRight: "1px solid #eee",
-                    borderBottom: "1px solid #eee",
-                    fontSize: "0.9rem",
-                    color: "#555",
-                  }}
-                >
-                  <Typography
-                    variant="subtitle2"
+                {chart?.description ? (
+                  <Box
                     sx={{
-                      fontWeight: 600,
-                      mb: 0.5,
+                      p: 1,
+                      borderBottomLeftRadius: theme.shape.borderRadius,
+                      borderBottomRightRadius: theme.shape.borderRadius,
+                      backgroundColor: "#fafafa",
+                      borderLeft: "1px solid #eee",
+                      borderRight: "1px solid #eee",
+                      borderBottom: "1px solid #eee",
+                      fontSize: "0.9rem",
+                      color: "#555",
                     }}
                   >
-                    Summary
-                  </Typography>
+                    <Typography
+                      variant="subtitle2"
+                      sx={{
+                        fontWeight: 600,
+                        mb: 0.5,
+                      }}
+                    >
+                      Summary
+                    </Typography>
 
-                  {renderDescription(chart)}
-                </Box>
-              ) : null}
-            </Grid>
-          </React.Fragment>
-        ))}
+                    {renderDescription(chart)}
+                  </Box>
+                ) : null}
+              </Grid>
+            </React.Fragment>
+          );
+        })}
 
         {chartsLoading && isNaturalLangauage && (
           <Grid

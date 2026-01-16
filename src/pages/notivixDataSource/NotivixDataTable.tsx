@@ -118,13 +118,13 @@ export const NotivixDataTable: React.FC<TableSectionProps> = ({
   );
 
   const displayRows = React.useMemo(() => {
-    if (rows.length > 0) {
-      return rows;
-    }
-    if (columns.length > 0 && loading) {
+    if (loading && columns.length > 0) {
       return Array.from({ length: paginationModel.pageSize }, (_, i) => ({
         _id: `loading-placeholder-${i}`,
       }));
+    }
+    if (rows.length > 0) {
+      return rows;
     }
     return [];
   }, [rows, columns.length, loading, paginationModel.pageSize]);
@@ -276,7 +276,12 @@ export const NotivixDataTable: React.FC<TableSectionProps> = ({
               columns={formattedColumns}
               getRowId={(row) => row._id}
               paginationMode="server"
-              rowCount={rowCount || (loading && displayRows.length > 0 ? paginationModel.pageSize : 0)}
+              rowCount={
+                rowCount ||
+                (loading && displayRows.length > 0
+                  ? paginationModel.pageSize
+                  : 0)
+              }
               paginationModel={paginationModelMemo}
               onPaginationModelChange={setPaginationModel}
               disableColumnMenu

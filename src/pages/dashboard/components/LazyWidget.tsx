@@ -1,7 +1,7 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useCallback } from "react";
 import { useAppDispatch, useAppSelector } from "../../../storeHooks";
 import { fetchWidgetDataLazy, storeWidgetData } from "../dashboardActions";
-import { Box, CircularProgress, Typography } from "@mui/material";
+import { Box, CircularProgress, Stack, Typography } from "@mui/material";
 import { ChartResponse, CombinedWidgetData } from "../types";
 
 interface LazyWidgetProps {
@@ -13,6 +13,10 @@ interface LazyWidgetProps {
   dashboardFilters?: any;
   hasData: boolean;
   children: React.ReactNode;
+  isBatchReady?: boolean;
+  onLoadStart?: () => void;
+  onLoadComplete?: () => void;
+  loaderHeight?: number;
 }
 
 const LazyWidget = ({
@@ -24,52 +28,77 @@ const LazyWidget = ({
   dashboardFilters,
   hasData,
   children,
+  isBatchReady = true,
+  onLoadStart,
+  onLoadComplete,
+  loaderHeight = 450,
 }: LazyWidgetProps) => {
   const dispatch = useAppDispatch();
   const containerRef = useRef<HTMLDivElement>(null);
   const [isLoading, setIsLoading] = useState(false);
-  
+  const [isInViewport, setIsInViewport] = useState(false);
+
   const cachedWidgetData = useAppSelector((state) =>
     state.dashboard.storeWidgetData.find((item) => item.widgetId === chart._id)
   );
+
+  const loadData = useCallback(async () => {
+    setIsLoading(true);
+    onLoadStart?.();
+    try {
+      await dispatch(
+        fetchWidgetDataLazy({
+          chart,
+          dashboardType,
+          startVersionValue,
+          endVersionValue,
+          versionValue,
+          dashboardFilters,
+        })
+      ).unwrap();
+    } catch (err) {
+      console.error("Failed to load widget data:", err);
+    } finally {
+      setIsLoading(false);
+      onLoadComplete?.();
+    }
+  }, [
+    dispatch,
+    chart,
+    dashboardType,
+    startVersionValue,
+    endVersionValue,
+    versionValue,
+    dashboardFilters,
+    onLoadStart,
+    onLoadComplete,
+  ]);
+
+  useEffect(() => {
+    if (hasData || isLoading || !isInViewport || !isBatchReady) return;
+    loadData();
+  }, [isBatchReady, isInViewport, hasData, isLoading, loadData]);
 
   useEffect(() => {
     if (hasData) return;
 
     if (cachedWidgetData) {
-      dispatch(storeWidgetData({ 
-        widgetId: chart._id, 
-        data: cachedWidgetData.data as unknown as CombinedWidgetData
-      }));
+      dispatch(
+        storeWidgetData({
+          widgetId: chart._id,
+          data: cachedWidgetData.data as unknown as CombinedWidgetData,
+        })
+      );
       return;
     }
 
     let observer: IntersectionObserver | null = null;
     const currentContainer = containerRef.current;
 
-    const loadData = async () => {
-      setIsLoading(true);
-      try {
-        await dispatch(
-          fetchWidgetDataLazy({
-            chart,
-            dashboardType,
-            startVersionValue,
-            endVersionValue,
-            versionValue,
-            dashboardFilters,
-          })
-        ).unwrap();
-      } catch (err) {
-        console.error("Failed to load widget data:", err);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
     observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting && !isLoading && !hasData) {
+        setIsInViewport(entry.isIntersecting);
+        if (entry.isIntersecting && !isLoading && !hasData && isBatchReady) {
           loadData();
         }
       },
@@ -100,6 +129,10 @@ const LazyWidget = ({
     versionValue,
     dashboardFilters,
     cachedWidgetData,
+    isBatchReady,
+    onLoadStart,
+    onLoadComplete,
+    loadData,
   ]);
 
   return (
@@ -114,18 +147,19 @@ const LazyWidget = ({
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            minHeight: 450,
+            minHeight: loaderHeight,
             bgcolor: "background.paper",
             borderRadius: 1,
           }}
         >
           {isLoading ? (
-            <CircularProgress size={24} />
-          ) : (
-            <Typography variant="body2" color="text.secondary">
-              Loading...
-            </Typography>
-          )}
+            <Stack alignItems="center" justifyContent="center">
+              <CircularProgress size={24} />
+              <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
+                Loading...
+              </Typography>
+            </Stack>
+          ) : null}
         </Box>
       )}
     </div>
