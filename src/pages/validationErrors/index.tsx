@@ -158,9 +158,10 @@ export default function ValidationErrors() {
     setSelectedRow(rowData);
 
     try {
-      const url = isReportRequest
-        ? `${GET.ERROR_ROW_DATA}?reportRequestId=${id}&rowNumber=${rowData.rowNumber}&errorId=${rowData._id}`
-        : `${GET.ERROR_ROW_DATA}?dataSourceVersionId=${rowData.dataSourceVersionId}&dataSourceId=${rowData.dataSourceId}&rowNumber=${rowData.rowNumber}&errorId=${rowData._id}`;
+      // const url = isReportRequest
+      //   ? `${GET.ERROR_ROW_DATA}?reportRequestId=${id}&rowNumber=${rowData.rowNumber}&errorId=${rowData._id}`
+      //   : `${GET.ERROR_ROW_DATA}?dataSourceVersionId=${rowData.dataSourceVersionId}&dataSourceId=${rowData.dataSourceId}&rowNumber=${rowData.rowNumber}&errorId=${rowData._id}`;
+      const url = `${GET.ERROR_ROW_DATA}?dataSourceVersionId=${rowData.dataSourceVersionId}&dataSourceId=${rowData.dataSourceId}&rowNumber=${rowData.rowNumber}&errorId=${rowData._id}`;
 
       const response = await axiosInstance.get(url);
 

@@ -1235,7 +1235,7 @@ export const ValidationErrorModal: React.FC<ValidationErrorModalProps> = ({
         }
       }
       // Handle error code 1002
-      if ((errorCode === "1002" || errorCode === "1001") && dataSourceId) {
+      if ((errorCode === "1002" || errorCode === "1001" || errorCode === '1004') && dataSourceId) {
         const matched = commonDataSourceList?.find(
           (ds) => ds._id === dataSourceId
         );
@@ -1339,7 +1339,7 @@ export const ValidationErrorModal: React.FC<ValidationErrorModalProps> = ({
 
       // For error code 1002, get rowData from rowDetailData if available
       let sourceData = rowData;
-      if ((errorCode === "1002" || errorCode === "1001") && rowDetailData) {
+      if ((errorCode === "1002" || errorCode === "1001" || errorCode === "1004") && rowDetailData) {
         sourceData = rowDetailData?.rowData || rowData;
       }
 
@@ -1485,7 +1485,7 @@ export const ValidationErrorModal: React.FC<ValidationErrorModalProps> = ({
         } else if (attribute.type === "multioption") {
           // Get the original value from the source data
           let sourceData = rowData;
-          if (errorCode === "1002" && rowDetailData) {
+          if ((errorCode === "1002" || errorCode === "1004") && rowDetailData) {
             sourceData = rowDetailData?.rowData || rowData;
           }
 
@@ -1496,11 +1496,11 @@ export const ValidationErrorModal: React.FC<ValidationErrorModalProps> = ({
             rowDataPayload[fieldName] = value;
           } else {
             // If the original value was not an array, convert array to string
-            if (Array.isArray(value)) {
-              rowDataPayload[fieldName] = value.join("|");
-            } else {
+            // if (Array.isArray(value)) {
+            //   rowDataPayload[fieldName] = value.join("|");
+            // } else {
               rowDataPayload[fieldName] = value;
-            }
+            // }
           }
         } else {
           rowDataPayload[fieldName] = value;
@@ -1523,7 +1523,7 @@ export const ValidationErrorModal: React.FC<ValidationErrorModalProps> = ({
         fileAttributeValue: rowData.fileAttributeValue,
         attributeName: rowData.attributeName,
       };
-    } else if (errorCode === "1002") {
+    } else if (errorCode === "1002" || errorCode === "1004") {
       return {
         action: "update",
         rowData: rowDataPayload,
@@ -1688,7 +1688,7 @@ export const ValidationErrorModal: React.FC<ValidationErrorModalProps> = ({
       attribute._id === refAttributeId;
 
     const isTargetAttributeFor1002 =
-      errorCode === "1002" &&
+      (errorCode === "1002" || errorCode === "1004") &&
       refAttributeId &&
       attribute._id === refAttributeId;
 
@@ -1794,7 +1794,7 @@ export const ValidationErrorModal: React.FC<ValidationErrorModalProps> = ({
               }
               return option.label || "";
             }}
-            value={selectedOption || fieldValue || ""}
+            value={selectedOption || ""}
             onChange={(e, value) => {
               if (!isDisabled) {
                 if (typeof value === "string") {
@@ -1866,10 +1866,16 @@ export const ValidationErrorModal: React.FC<ValidationErrorModalProps> = ({
         // Get the array of IDs from form data
         const selectedIds = formData[fieldName] || [];
         // Convert IDs to full option objects
-        const selectedOptions = selectedIds.map((id: string) => {
-          const option = multioptionOptions.find((opt) => opt.id === id);
-          return option || { id, label: id };
-        });
+        // const selectedOptions = selectedIds.map((id: string) => {
+        //   const option = multioptionOptions.find((opt) => opt.id === id);
+        //   return option || { id, label: id };
+        // });
+        const selectedOptions = selectedIds
+                        .map((id: string) =>
+                          multioptionOptions.find((opt) => opt.id === id)
+                        )
+                        .filter(Boolean); // removes invalid values
+
 
         const isReferenceMulti = !!attribute.referenceEntitySetting;
         return (
@@ -1884,7 +1890,7 @@ export const ValidationErrorModal: React.FC<ValidationErrorModalProps> = ({
               }
               return option.label || "";
             }}
-            value={selectedOptions}
+            value={selectedOptions || ""}
             onChange={(e, value) => {
               if (!isDisabled) {
                 const values = value.map((item) => {

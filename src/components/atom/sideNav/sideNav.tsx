@@ -249,7 +249,7 @@ export default function SideNav() {
 
   const dataSourceNotivixListAPI = useGet<DataSourceListPayload>(
     ["dataSourceNotivixList"],
-    GET?.DATA_SOURCE_LIST + `?isShowMenu=true`
+    GET?.DATA_SOURCE_LIST + `?paginate=false`
   );
 
   // const dataSourceList = useMemo(() => {
