@@ -251,13 +251,13 @@ export default function ValidationErrors() {
           ? {
               action: "discard",
               reportRequestId: id,
-              rowNumber: dialog.rowData.rowNumber,
+              rowNumber: dialog.rowData._id,
             }
           : {
               action: "discard",
               dataSourceVersionId: id,
               dataSourceId: dialog.rowData.dataSourceId,
-              rowNumber: dialog.rowData.rowNumber,
+              rowNumber: dialog.rowData._id,
             };
         response = await discardRow.mutateAsync({
           url: `${POST.RESOLVE_DATA_IMPORT_ERROR}`,
@@ -267,7 +267,7 @@ export default function ValidationErrors() {
         const payload = {
           action: "unique",
           dataSourceVersionId: id,
-          rowNumber: dialog.rowData.rowNumber,
+          rowNumber: dialog.rowData._id,
         };
         response = await resolveRow.mutateAsync({
           url: `${POST.RESOLVE_DATA_IMPORT_ERROR}`,
@@ -279,14 +279,14 @@ export default function ValidationErrors() {
               action: "discard",
               reportRequestId: id,
               rowNumber:
-                dialog.selectedRows?.map((row: any) => row.rowNumber) || [],
+                dialog.selectedRows?.map((row: any) => row._id) || [],
             }
           : {
               action: "discard",
               dataSourceVersionId: id,
               dataSourceId: dialog.selectedRows?.[0]?.dataSourceId,
               rowNumber:
-                dialog.selectedRows?.map((row: any) => row.rowNumber) || [],
+                dialog.selectedRows?.map((row: any) => row._id) || [],
             };
 
         response = await discardRow.mutateAsync({

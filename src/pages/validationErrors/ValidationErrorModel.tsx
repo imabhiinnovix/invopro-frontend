@@ -1527,7 +1527,7 @@ export const ValidationErrorModal: React.FC<ValidationErrorModalProps> = ({
       return {
         action: "update",
         rowData: rowDataPayload,
-        rowNumber: rowData.rowNumber,
+        rowNumber: rowData._id,
         dataSourceVersionId: rowData.dataSourceVersionId,
         dataSourceId: rowData.dataSourceId,
         attributeType: rowData.attributeType,
@@ -1538,7 +1538,7 @@ export const ValidationErrorModal: React.FC<ValidationErrorModalProps> = ({
       return {
         action: "update",
         rowData: rowDataPayload,
-        rowNumber: rowData.rowNumber,
+        rowNumber: rowData._id,
         dataSourceVersionId: rowData.dataSourceVersionId,
         dataSourceId: rowData.dataSourceId,
         attributeType: rowData.attributeType,
