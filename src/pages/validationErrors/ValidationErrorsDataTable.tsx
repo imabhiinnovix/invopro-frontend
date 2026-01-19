@@ -15,6 +15,7 @@ import FileDownloadDoneIcon from "@mui/icons-material/FileDownloadDone";
 import CommonTable, { CommonTableRef } from "../../components/common/table";
 import PrimaryButton from "../../components/common/PrimaryButton";
 import { useEffect, useRef, useMemo } from "react";
+import { formatDate } from "../../utils/utils";
 
 interface ValidationErrorsDataTableProps {
   rows: any[];
@@ -139,6 +140,25 @@ export const ValidationErrorsDataTable: React.FC<
         },
       },
       {
+        id: "createdAt",
+        label: "Created At",
+        minWidth: 200,
+        sortable: true,
+        renderCell: (row: Record<string, unknown>) => {
+          return row.createdAt ? formatDate(row.createdAt as string) : "-";
+        },
+      },
+      {
+        id: "updatedAt",
+        label: "Updated At",
+        minWidth: 200,
+        // { id: "createdAt", label: "Created At", minWidth: 170 },
+        sortable: true,
+        renderCell: (row: Record<string, unknown>) => {
+          return row.updatedAt ? formatDate(row.updatedAt as string) : "-";
+        },
+      },
+      {
         id: "status",
         label: "Status",
         minWidth: 100,
@@ -256,7 +276,7 @@ export const ValidationErrorsDataTable: React.FC<
         },
       },
     ],
-    [loading, isLatest]
+    [loading, isLatest],
   );
 
   useEffect(() => {
