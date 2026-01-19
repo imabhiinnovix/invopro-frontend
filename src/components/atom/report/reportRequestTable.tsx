@@ -1482,7 +1482,7 @@ const ReportRequestTable: React.FC<AttributeOptionTableProps> = ({
                     });
                   }}
                 >
-                  Complete report
+                  Fix Errors
                 </Button>
               </Tooltip>
             ) : (
