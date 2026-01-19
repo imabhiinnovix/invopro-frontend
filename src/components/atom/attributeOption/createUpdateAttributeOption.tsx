@@ -26,6 +26,7 @@ import { useUnifiedTheme } from "../../../hooks/useUnifiedTheme";
 import { useComponentTypography } from "../../../hooks/useComponentTypography";
 import DialogContainer from "../../molecule/dialog";
 import PrimaryButton from "../../common/PrimaryButton";
+import CommonSelect from "../../common/dropdown/commonSelect";
 
 interface CreateUpdateAttributeOptionProps {
   setAttributeOptionReload: React.Dispatch<React.SetStateAction<boolean>>;
@@ -43,6 +44,7 @@ const CreateUpdateAttributeOption: React.FC<
       defaultValues: {
         attributeName: data?.attributeName ?? "",
         attributeValue: data?.attributeValue ?? [],
+        isPopulateFixed: data?.isPopulateFixed === 1 ? "Yes" : "No",
       },
     });
 
@@ -54,6 +56,7 @@ const CreateUpdateAttributeOption: React.FC<
     reset({
       attributeName: data?.attributeName ?? "",
       attributeValue: data?.attributeValue ?? [],
+      isPopulateFixed: data?.isPopulateFixed === 1 ? "Yes" : "No",
     });
   }, [data, reset]);
 
@@ -72,7 +75,7 @@ const CreateUpdateAttributeOption: React.FC<
   const handleDeleteValue = (value: string) => {
     setValue(
       "attributeValue",
-      attributeValue.filter((v) => v !== value)
+      attributeValue.filter((v) => v !== value),
     );
   };
 
@@ -87,7 +90,7 @@ const CreateUpdateAttributeOption: React.FC<
         handleFormClose();
       }
     },
-    true
+    true,
   );
   const updateAttributeOptions = usePut<
     AttributeOptionRequestPayload,
@@ -100,19 +103,24 @@ const CreateUpdateAttributeOption: React.FC<
         handleFormClose();
       }
     },
-    true
+    true,
   );
 
   const onSubmitHandler = (formData: AttributeOptionRequestPayload) => {
+    const tempPayload: AttributeOptionRequestPayload = {
+      ...formData,
+      isPopulateFixed: formData?.isPopulateFixed === "Yes" ? 1 : 0,
+    };
+
     if (data && data._id) {
       updateAttributeOptions.mutate({
         url: `${PUT.UPDATE_ATTRIBUTE_OPTION}/${data._id}`,
-        payload: formData,
+        payload: tempPayload,
       });
     } else {
       createAttributeOptions.mutate({
         url: POST.CREATE_ATTRIBUTE_OPTION,
-        payload: formData,
+        payload: tempPayload,
       });
     }
   };
@@ -185,7 +193,7 @@ const CreateUpdateAttributeOption: React.FC<
                           <IconButton
                             onClick={() => {
                               const input = document.querySelector(
-                                'input[name="attributeValue"]'
+                                'input[name="attributeValue"]',
                               ) as HTMLInputElement;
                               const value = input?.value.trim();
                               if (value) {
@@ -216,6 +224,13 @@ const CreateUpdateAttributeOption: React.FC<
               </Box>
             </Box>
           )}
+        />
+        <CommonSelect
+          control={control}
+          name="isPopulateFixed"
+          label="List Fixed"
+          options={["Yes", "No"]}
+          clearable={false}
         />
       </DialogContainer>
 

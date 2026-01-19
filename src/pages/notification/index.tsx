@@ -41,7 +41,6 @@ import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { STYLE_GUIDE } from "../../styles";
-import { useComponentTypography } from "../../hooks";
 import CommonPageHeader from "../../components/atom/commonPageHeader";
 import PrimaryButton from "../../components/common/PrimaryButton";
 import SearchField from "../../components/common/SearchField";
@@ -163,7 +162,7 @@ const columns: GridColDef[] = [
                 setChecked(prevChecked); // revert
               },
               onSettled: () => setLoading(false),
-            }
+            },
           );
         } catch (err) {
           toast.error("Something went wrong: " + err);
@@ -232,7 +231,7 @@ export default function NotificationTypes() {
   const theme = useUnifiedTheme();
   const Navigate = useNavigate();
   const { permissions } = useSelector(
-    (state: RootState) => state.userPermission
+    (state: RootState) => state.userPermission,
   );
   const [openModal, setOpenModal] = useState(false);
   const [modalMode, setModalMode] = useState<"filter" | null>(null);
@@ -251,21 +250,21 @@ export default function NotificationTypes() {
     status: "",
   });
 
-  const { getHeadingSx } = useComponentTypography();
+  // const { getHeadingSx } = useComponentTypography();
   const shouldAllowAdd = checkPermission(
     permissions,
     PermissionsMap.NOTIFICATION_SETTING_TYPE,
-    "create"
+    "create",
   );
   const shouldAllowEdit = checkPermission(
     permissions,
     PermissionsMap.NOTIFICATION_SETTING_TYPE,
-    "update"
+    "update",
   );
   const shouldAllowDelete = checkPermission(
     permissions,
     PermissionsMap.NOTIFICATION_SETTING_TYPE,
-    "delete"
+    "delete",
   );
 
   const { control, handleSubmit, reset, watch } =
@@ -312,18 +311,18 @@ export default function NotificationTypes() {
     `${GET.NOTIFICATION_TYPE_LIST}?page=${
       paginationModel.page + 1
     }&limit=${perPageItem}&search=${encodeURIComponent(
-      debouncedSearchValue
+      debouncedSearchValue,
     )}&name=${encodeURIComponent(
-      filterValues.name
+      filterValues.name,
     )}&organizationId=${encodeURIComponent(
-      filterValues.organizationId
+      filterValues.organizationId,
     )}&status=${encodeURIComponent(
-      filterValues.status === "all" ? "" : filterValues.status
+      filterValues.status === "all" ? "" : filterValues.status,
     )}`,
-    true
+    true,
   );
 
-  const deleteNotificationType = useDelete<null, NotificationTypePostResponse>(
+  const deleteNotificationType = useDelete<null | NotificationTypePostResponse>(
     ["deleteNotificationType"],
     (data) => {
       if (data?.success) {
@@ -333,7 +332,7 @@ export default function NotificationTypes() {
         toast.error("Error");
       }
     },
-    false
+    false,
   );
 
   useEffect(() => {
@@ -529,9 +528,9 @@ export default function NotificationTypes() {
             paginationMode="server"
             sx={{ overflow: "visible", height: "calc(100vh - 280px)" }}
             loading={
-              notificationTypeList.isLoading || deleteNotificationType.isLoading
+              notificationTypeList.isLoading || deleteNotificationType.isPending
             }
-            rowCount={notificationTypeList?.data?.pagination?.totalRecords || 0}
+            rowCount={notificationTypeList?.data?.pagination?.totalRecords}
             paginationModel={paginationModel}
             onPaginationModelChange={setPaginationModel}
             slots={{
@@ -631,7 +630,7 @@ export default function NotificationTypes() {
                   label="Status"
                   onChange={(e) =>
                     field.onChange(
-                      e.target.value === "" ? undefined : e.target.value
+                      e.target.value === "" ? undefined : e.target.value,
                     )
                   }
                 >
@@ -663,7 +662,7 @@ export default function NotificationTypes() {
               variant="contained"
               color="error"
               sx={{ borderRadius: "8px" }}
-              disabled={deleteNotificationType.isLoading}
+              disabled={deleteNotificationType.isPending}
             >
               Yes
             </Button>

@@ -72,11 +72,11 @@ const AttributeOptionTable: React.FC<AttributeOptionTableProps> = ({
 }) => {
   const { getTableSx } = useComponentTypography();
   const [attributes, setAttributes] = useState<AttributeOptionRequestPayload[]>(
-    []
+    [],
   );
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [expandedRows, setExpandedRows] = useState<{ [key: number]: boolean }>(
-    {}
+    {},
   );
   const [isInitialized, setIsInitialized] = useState<boolean>(false);
 
@@ -92,7 +92,7 @@ const AttributeOptionTable: React.FC<AttributeOptionTableProps> = ({
   }>(
     [`attributeList`, String(currentPage)],
     GET?.Attribute_Option_List + `?page=${currentPage}&limit=${perPageItem}`,
-    !!currentPage
+    !!currentPage,
   );
 
   // Handle reload - reset to page 1 and clear existing data
@@ -156,7 +156,7 @@ const AttributeOptionTable: React.FC<AttributeOptionTableProps> = ({
       attributeList.isFetching,
       attributes.length,
       attributeList?.data?.totalCount,
-    ]
+    ],
   );
 
   const renderAttributes = (attributes: string[] = []): JSX.Element => (
@@ -240,9 +240,7 @@ const AttributeOptionTable: React.FC<AttributeOptionTableProps> = ({
       minWidth: 170,
       sortable: true,
       renderCell: (row: Record<string, unknown>) => {
-        return row.createdBy
-          ? `${row.createdBy?.firstName} ${row.createdBy?.lastName}`
-          : "-";
+        return row.createdBy ? row.createdBy : "-";
       },
     },
     {
@@ -251,9 +249,7 @@ const AttributeOptionTable: React.FC<AttributeOptionTableProps> = ({
       minWidth: 170,
       sortable: true,
       renderCell: (row: Record<string, unknown>) => {
-        return row.updatedBy
-          ? `${row.updatedBy?.firstName} ${row.updatedBy?.lastName}`
-          : "-";
+        return row.updatedBy ? row.updatedBy : "-";
       },
     },
     {
@@ -262,7 +258,7 @@ const AttributeOptionTable: React.FC<AttributeOptionTableProps> = ({
       minWidth: 230,
       sortable: true,
       renderCell: (row: Record<string, unknown>) => {
-        return row.createdAt ? formatDate(row.createdAt) : "-";
+        return row.createdAt ? formatDate(row.createdAt) || "-" : "-";
       },
     },
     {
@@ -271,7 +267,7 @@ const AttributeOptionTable: React.FC<AttributeOptionTableProps> = ({
       minWidth: 230,
       sortable: true,
       renderCell: (row: Record<string, unknown>) => {
-        return row.updatedAt ? formatDate(row.updatedAt) : "-";
+        return row.updatedAt ? formatDate(row.updatedAt) || "-" : "-";
       },
     },
     {

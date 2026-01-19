@@ -1031,7 +1031,6 @@ import { useComponentTypography } from "../../../hooks/useComponentTypography";
 import CommonTable from "../../common/table";
 import CSVDownloadIcon from "../../../assets/csv-download.png";
 import { useNavigate } from "react-router-dom";
-import ReportProblemIcon from "@mui/icons-material/ReportProblem";
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
   [`&.${tableCellClasses.head}`]: {
@@ -1104,7 +1103,7 @@ const ReportRequestTable: React.FC<AttributeOptionTableProps> = ({
   shouldAllowIntermediateDownload,
 }) => {
   const [reportRequests, setReportRequests] = useState<ReportRequestResponse[]>(
-    []
+    [],
   );
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [downloadFileName, setDownLoadFileName] = useState("");
@@ -1155,7 +1154,7 @@ const ReportRequestTable: React.FC<AttributeOptionTableProps> = ({
   const intermediateSupplementalDownloadFile = (
     fileName: string,
     // fileId: string,
-    row: ReportRequestResponse
+    row: ReportRequestResponse,
   ) => {
     // setIntermediateDownloadRequestId(fileId);
     setDownLoadFileName(fileName);
@@ -1172,14 +1171,14 @@ const ReportRequestTable: React.FC<AttributeOptionTableProps> = ({
     GET?.Custom_Report +
       "/listReportRequest" +
       `?page=${currentPage}&limit=${perPageItem}`,
-    !!currentPage
+    !!currentPage,
   );
 
   const notProcessingReportRequestDetails = useGet<ReportRequestData>(
     [`notprocesssingReportRequestList`, String(processingRequestCount)],
     GET?.Custom_Report +
       `/listReportRequest?page=1&limit=10&status=notprocessing`,
-    !!processingRequestCount
+    !!processingRequestCount,
   );
 
   useEffect(() => {
@@ -1211,13 +1210,13 @@ const ReportRequestTable: React.FC<AttributeOptionTableProps> = ({
       notProcessingReportRequestDetails.data.data.map((item) => [
         item._id,
         item,
-      ])
+      ]),
     );
 
     setReportRequests((prevRequests) =>
       prevRequests.map((data) =>
-        dataMap.has(data._id) ? { ...dataMap.get(data._id)! } : data
-      )
+        dataMap.has(data._id) ? { ...dataMap.get(data._id)! } : data,
+      ),
     );
   }, [notProcessingReportRequestDetails]);
 
@@ -1289,7 +1288,7 @@ const ReportRequestTable: React.FC<AttributeOptionTableProps> = ({
       reportRequestList.isFetching,
       reportRequests.length,
       reportRequestList?.data?.totalCount,
-    ]
+    ],
   );
 
   if (!reportRequestList.isFetching && !reportRequests.length) {
@@ -1342,12 +1341,12 @@ const ReportRequestTable: React.FC<AttributeOptionTableProps> = ({
           reportRow.status === "completed"
             ? "success.main"
             : reportRow.status === "processing"
-            ? "warning.main"
-            : reportRow.status === "failed"
-            ? "error.main"
-            : reportRow.status === "error"
-            ? "error.main"
-            : "text.primary";
+              ? "warning.main"
+              : reportRow.status === "failed"
+                ? "error.main"
+                : reportRow.status === "error"
+                  ? "error.main"
+                  : "text.primary";
         return <Typography color={color}>{reportRow.status || "-"}</Typography>;
       },
     },
@@ -1420,7 +1419,7 @@ const ReportRequestTable: React.FC<AttributeOptionTableProps> = ({
                       onClick={() => {
                         downloadFile(
                           `${reportRow.customReportId?.reportName}-${reportRow.versionValue}.xlsx`,
-                          reportRow._id
+                          reportRow._id,
                         );
                       }}
                     >
@@ -1444,7 +1443,7 @@ const ReportRequestTable: React.FC<AttributeOptionTableProps> = ({
                         setAllDetailData(reportRow);
                         setViewReportRequestId(reportRow._id);
                         setViewReportNameWithVersionValue(
-                          `${reportRow.customReportId?.reportName}-${reportRow.versionValue}`
+                          `${reportRow.customReportId?.reportName}-${reportRow.versionValue}`,
                         );
                       }}
                       //  sx={{ color: theme.getIconColor() }}
@@ -1455,17 +1454,35 @@ const ReportRequestTable: React.FC<AttributeOptionTableProps> = ({
                 </Tooltip>
               </Box>
             ) : reportRow.status === "error" ? (
-              <Tooltip title="Validation Errors" arrow>
+              <Tooltip title="This report has errors. Click to fix them." arrow>
                 <Button
                   variant="text"
-                  sx={{ minWidth: "auto", color: "error.main" }}
+                  sx={{
+                    fontSize: "0.75rem",
+                    fontWeight: 600,
+                    color: "error.main",
+
+                    border: "1px solid",
+                    borderColor: "error.main",
+                    borderRadius: "6px",
+
+                    px: 1,
+                    py: 0.25,
+                    minWidth: 0,
+
+                    textTransform: "none",
+                    "&:hover": {
+                      backgroundColor: "error.lighter",
+                      borderColor: "error.dark",
+                    },
+                  }}
                   onClick={() => {
                     navigate(`/validation-errors/${reportRow._id}`, {
                       state: { isReportRequest: true },
                     });
                   }}
                 >
-                  <ReportProblemIcon />
+                  Complete report
                 </Button>
               </Tooltip>
             ) : (
@@ -1483,7 +1500,7 @@ const ReportRequestTable: React.FC<AttributeOptionTableProps> = ({
                       onClick={() => {
                         intermediateSupplementalDownloadFile(
                           `${reportRow.customReportId?.reportName}-intermediate-${reportRow.versionValue}.xlsx`,
-                          reportRow
+                          reportRow,
                         );
                       }}
                     />
@@ -1531,7 +1548,7 @@ const ReportRequestTable: React.FC<AttributeOptionTableProps> = ({
                             setDownLoadFileName("");
                             intermediateDownloadFile(
                               `${reportRow.customReportId?.reportName}-intermediate-${reportRow.versionValue}.xlsx`,
-                              reportRow._id
+                              reportRow._id,
                             );
                           }}
                         />
@@ -1665,10 +1682,10 @@ const ReportRequestTable: React.FC<AttributeOptionTableProps> = ({
                     data.status === "completed"
                       ? "success.main"
                       : data.status === "processing"
-                      ? "warning.main"
-                      : data.status === "failed"
-                      ? "error.main"
-                      : "text.primary",
+                        ? "warning.main"
+                        : data.status === "failed"
+                          ? "error.main"
+                          : "text.primary",
                   fontWeight: 500,
                 }}
               >
@@ -1734,7 +1751,7 @@ const ReportRequestTable: React.FC<AttributeOptionTableProps> = ({
                             onClick={() => {
                               downloadFile(
                                 `${data.customReportId?.reportName}-${data.versionValue}.xlsx`,
-                                data._id
+                                data._id,
                               );
                             }}
                             // sx={{ mr: 2 }}
@@ -1775,7 +1792,7 @@ const ReportRequestTable: React.FC<AttributeOptionTableProps> = ({
                             setAllDetailData(data);
                             setViewReportRequestId(data._id);
                             setViewReportNameWithVersionValue(
-                              `${data.customReportId?.reportName}-${data.versionValue}`
+                              `${data.customReportId?.reportName}-${data.versionValue}`,
                             );
                           }}
                           //  sx={{ color: theme.getIconColor() }}
@@ -1834,7 +1851,7 @@ const ReportRequestTable: React.FC<AttributeOptionTableProps> = ({
                             onClick={() => {
                               intermediateDownloadFile(
                                 `${data.customReportId?.reportName}-intermediate-${data.versionValue}.xlsx`,
-                                data._id
+                                data._id,
                               );
                             }}
                             // sx={{ mr: 2 }}
