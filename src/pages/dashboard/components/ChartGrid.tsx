@@ -137,7 +137,7 @@ export const htmlLegendPlugin = {
         } else {
           chart.setDatasetVisibility(
             item.datasetIndex,
-            !chart.isDatasetVisible(item.datasetIndex)
+            !chart.isDatasetVisible(item.datasetIndex),
           );
         }
         chart.update();
@@ -235,7 +235,7 @@ ChartJS.register(
   ArcElement,
   BarElement,
   RadialLinearScale,
-  htmlLegendPlugin
+  htmlLegendPlugin,
 );
 
 const StyledCard = styled(Card)(({ theme }) => ({
@@ -507,12 +507,12 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
   // console.log("dashboarf>>>>>>>>>>",dashboardFilters)
   const [drillDownColumns, setDrillDownColumns] = useState<string[]>([]);
   const [expandedDescriptions, setExpandedDescriptions] = useState<Set<string>>(
-    new Set()
+    new Set(),
   );
 
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [selectedChart, setSelectedChart] = useState<ChartResponse | null>(
-    null
+    null,
   );
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -543,7 +543,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
   const [isExportingPdf, setIsExportingPdf] = useState(false);
 
   const [batchLoadingState, setBatchLoadingState] = useState<{
-    [batchIndex: number]: {
+    [key: string]: {
       loadingCount: number;
       loadedCount: number;
       totalCount: number;
@@ -551,7 +551,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
   }>({});
 
   const [fullscreenWidgetData, setFullscreenWidgetData] = useState<any>(
-    widgetData[selectedChart?._id]
+    widgetData[selectedChart?._id],
   );
 
   useEffect(() => {
@@ -596,7 +596,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
       };
       setFullscreenWidgetData(essentialData);
     },
-    true
+    true,
   );
 
   const handleApplyFilters = async (filters: any) => {
@@ -637,8 +637,8 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
             currentDashboard?.settings?.dashboardType === "trend"
               ? ""
               : versionValue
-              ? ""
-              : "1m",
+                ? ""
+                : "1m",
           filters: { ...filters },
         },
         dashBoardType: currentDashboard?.settings?.dashboardType || "normal",
@@ -651,45 +651,47 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
     // }
   };
 
-  const allCharts = [...charts, ...temporaryCharts];
-  const numberCharts = allCharts.filter(
-    (chart) => chart.widgetTypeId?.chartType === "number"
+  const allCharts = useMemo(
+    () => [...charts, ...temporaryCharts],
+    [charts, temporaryCharts],
+  );
+  const numberCharts = useMemo(
+    () =>
+      allCharts.filter((chart) => chart.widgetTypeId?.chartType === "number"),
+    [allCharts],
   );
   const otherCharts = useMemo(
     () =>
       allCharts.filter((chart) => chart.widgetTypeId?.chartType !== "number"),
-    [charts, temporaryCharts]
+    [allCharts],
   );
 
   const permissions = useSelector(
-    (state: RootState) => state.userPermission?.permissions
+    (state: RootState) => state.userPermission?.permissions,
   );
   const shouldAllowWidgetDelete = checkPermission(
     permissions,
     PermissionsMap.DASHBOARD,
-    "delete_widget"
+    "delete_widget",
   );
 
   const shouldAllowWidgetUpdate = checkPermission(
     permissions,
     PermissionsMap.DASHBOARD,
-    "update_widget"
+    "update_widget",
   );
 
   const shouldAllowWidgetSave = checkPermission(
     permissions,
     PermissionsMap.DASHBOARD,
-    "save_widgets"
+    "save_widgets",
   );
 
-  const getBatchIndex = (widgetIndex: number) =>
-    Math.floor(widgetIndex / gridColumns);
-
-  const isBatchReady = (batchIndex: number) => {
+  const isBatchReady = (batchIndex: number, type: "number" | "other") => {
     if (batchIndex === 0) return true;
 
     for (let i = 0; i < batchIndex; i++) {
-      const batch = batchLoadingState[i];
+      const batch = batchLoadingState[`${type}-${i}`];
       if (!batch || batch.loadedCount !== batch.totalCount) {
         return false;
       }
@@ -701,16 +703,20 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
     return true;
   };
 
-  const handleWidgetLoadStart = (batchIndex: number) => {
+  const handleWidgetLoadStart = (
+    batchIndex: number,
+    type: "number" | "other",
+  ) => {
     setBatchLoadingState((prev) => {
-      const currentBatch = prev[batchIndex] || {
+      const key = `${type}-${batchIndex}`;
+      const currentBatch = prev[key] || {
         loadingCount: 0,
         loadedCount: 0,
         totalCount: 0,
       };
       return {
         ...prev,
-        [batchIndex]: {
+        [key]: {
           ...currentBatch,
           loadingCount: currentBatch.loadingCount + 1,
         },
@@ -718,19 +724,22 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
     });
   };
 
-  const handleWidgetLoadComplete = (batchIndex: number) => {
+  const handleWidgetLoadComplete = (
+    batchIndex: number,
+    type: "number" | "other",
+  ) => {
     setBatchLoadingState((prev) => {
-      const currentBatch = prev[batchIndex] || {
+      const key = `${type}-${batchIndex}`;
+      const currentBatch = prev[key] || {
         loadingCount: 0,
         loadedCount: 0,
         totalCount: 0,
       };
       return {
         ...prev,
-        [batchIndex]: {
+        [key]: {
           ...currentBatch,
           loadingCount: Math.max(0, currentBatch.loadingCount - 1),
-          loadedCount: currentBatch.loadedCount + 1,
         },
       };
     });
@@ -743,7 +752,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
     }
 
     const batches: {
-      [batchIndex: number]: {
+      [key: string]: {
         loadingCount: number;
         loadedCount: number;
         totalCount: number;
@@ -752,37 +761,37 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
 
     numberCharts.forEach((chart, index) => {
       const batchIdx = Math.floor(index / 3);
-      if (!batches[batchIdx]) {
-        batches[batchIdx] = {
+      const key = `number-${batchIdx}`;
+      if (!batches[key]) {
+        batches[key] = {
           loadingCount: 0,
           loadedCount: 0,
           totalCount: 0,
         };
       }
-      batches[batchIdx].totalCount += 1;
+      batches[key].totalCount += 1;
       if (widgetData[chart._id]) {
-        batches[batchIdx].loadedCount += 1;
+        batches[key].loadedCount += 1;
       }
     });
 
     otherCharts.forEach((chart, index) => {
       const batchIdx = Math.floor(index / gridColumns);
-      if (!batches[batchIdx]) {
-        batches[batchIdx] = {
+      const key = `other-${batchIdx}`;
+      if (!batches[key]) {
+        batches[key] = {
           loadingCount: 0,
           loadedCount: 0,
           totalCount: 0,
         };
       }
-      batches[batchIdx].totalCount += 1;
+      batches[key].totalCount += 1;
       if (widgetData[chart._id]) {
-        batches[batchIdx].loadedCount += 1;
+        batches[key].loadedCount += 1;
       }
     });
-
     setBatchLoadingState(batches);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [otherCharts, gridColumns]);
+  }, [numberCharts, otherCharts, gridColumns, widgetData]);
 
   const bottomRef: any = isNaturalLangauage
     ? useRef<HTMLDivElement | null>(null)
@@ -808,10 +817,10 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
       // console.log(data);
       // console.log("The data is exported successfully");
       setShowExportSuccessDialog(
-        "Your data has started exporting. You can view its status in the Jobs page."
+        "Your data has started exporting. You can view its status in the Jobs page.",
       );
     },
-    true
+    true,
   );
 
   // useEffect(() => {
@@ -828,7 +837,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
 
   const handleMenuClick = (
     event: React.MouseEvent<HTMLElement>,
-    chart: ChartResponse
+    chart: ChartResponse,
   ) => {
     event.stopPropagation();
     setAnchorEl(event.currentTarget);
@@ -861,7 +870,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
               isDefaultNotivix,
               dashboardType:
                 currentDashboard?.settings?.dashboardType || "normal",
-            })
+            }),
           );
         } else {
           dispatch(
@@ -871,7 +880,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
               isDefaultNotivix,
               dashboardType:
                 currentDashboard?.settings?.dashboardType || "normal",
-            })
+            }),
           );
         }
       } else {
@@ -996,7 +1005,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
             margin,
             margin + headerHeight - 5,
             pageWidth - margin,
-            margin + headerHeight - 5
+            margin + headerHeight - 5,
           );
         } catch (error) {
           console.error("Error adding header:", error);
@@ -1009,7 +1018,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
 
       const widgetSelector = `[data-chart-id="${selectedChart._id}"]`;
       const widgetElement = document.querySelector(
-        widgetSelector
+        widgetSelector,
       ) as HTMLElement;
 
       if (!widgetElement) {
@@ -1047,7 +1056,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
       const summaryTitleHeight = 8; // approx
       const descriptionLines = pdf.splitTextToSize(
         descriptionText,
-        pageWidth - margin * 2
+        pageWidth - margin * 2,
       );
       const descriptionHeight = descriptionLines.length * 5;
 
@@ -1080,7 +1089,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
 
         const wrappedText = pdf.splitTextToSize(
           selectedChart.description,
-          pageWidth - margin * 2
+          pageWidth - margin * 2,
         );
 
         pdf.text(wrappedText, margin, currentY);
@@ -1160,7 +1169,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
         ...datasets.map((dataset, i) =>
           "label" in dataset
             ? escapeCSV((dataset as { label: string }).label)
-            : `Series ${i + 1}`
+            : `Series ${i + 1}`,
         ),
       ];
       csvContent += headers.join(",") + "\n";
@@ -1192,7 +1201,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
 
   const handleExportMenuClick = (
     event: React.MouseEvent<HTMLElement>,
-    chart: ChartResponse
+    chart: ChartResponse,
   ) => {
     event.stopPropagation();
     if (chart.widgetTypeId?.chartType === "tabular") {
@@ -1227,7 +1236,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
 
       const response = await axiosInstance.post(
         "/common/dataSource/getWidgetDataByFilter",
-        payload
+        payload,
       );
 
       if (response.data.success) {
@@ -1248,7 +1257,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
   const handleChartClick = async (
     chart: ChartResponse,
     elements: ActiveElement[],
-    event: any
+    event: any,
   ) => {
     // 👉 Allow direct click for NUMBER CHART
     if (chart.widgetTypeId?.chartType === "number") {
@@ -1278,7 +1287,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
       try {
         const response = await axiosInstance.post(
           "/common/dataSource/getWidgetDataByFilter",
-          payload
+          payload,
         );
 
         if (response.data.success) {
@@ -1289,7 +1298,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
 
           if (drillDownData?.length) {
             setDrillDownColumns(
-              Object.keys(drillDownData[0]).filter((k) => k !== "_id")
+              Object.keys(drillDownData[0]).filter((k) => k !== "_id"),
             );
           } else {
             setDrillDownColumns([]);
@@ -1342,14 +1351,14 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
       if (Array.isArray(chart.groupBy)) {
         return chart.groupBy.map((g) => {
           const field = chart.dataSourceId?.fieldSettings?.find(
-            (f: any) => f.mappedAttributeName === g
+            (f: any) => f.mappedAttributeName === g,
           );
           return field?.label || g; // mapped label from fieldSettings
         });
       }
 
       const field = chart.dataSourceId?.fieldSettings?.find(
-        (f: any) => f.mappedAttributeName === chart.groupBy
+        (f: any) => f.mappedAttributeName === chart.groupBy,
       );
 
       return field?.label || chart.groupBy;
@@ -1413,7 +1422,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
             const matchedField =
               chart &&
               chart.dataSourceId.fieldSettings?.find(
-                (f: any) => f.mappedAttributeName === group
+                (f: any) => f.mappedAttributeName === group,
               );
             const groupField = matchedField ? matchedField.label : group;
             return { [group]: clickedData[groupField] };
@@ -1457,7 +1466,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
 
         const response = await axiosInstance.post(
           "/common/dataSource/getWidgetDataByFilter",
-          payload
+          payload,
         );
 
         if (response.data.success) {
@@ -1469,7 +1478,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
           // Set drill-down columns from the response data
           if (drillDownData && drillDownData.length > 0) {
             const columns = Object.keys(drillDownData[0]).filter(
-              (key) => key !== "_id"
+              (key) => key !== "_id",
             );
             setDrillDownColumns(columns);
           } else {
@@ -1522,8 +1531,8 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
             currentDashboard?.settings?.dashboardType === "trend"
               ? ""
               : versionValue
-              ? ""
-              : "1m",
+                ? ""
+                : "1m",
           filters: { ...filters },
         },
         dashBoardType: currentDashboard?.settings?.dashboardType || "normal",
@@ -1534,7 +1543,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
 
       const response = await axiosInstance.post(
         "/common/dataSource/getWidgetDataByFilter",
-        payload
+        payload,
       );
       if (response.data.success) {
         const drillDownData = response.data.data;
@@ -1545,7 +1554,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
         // Set drill-down columns from the response data
         if (drillDownData && drillDownData.length > 0) {
           const columns = Object.keys(drillDownData[0]).filter(
-            (key) => key !== "_id"
+            (key) => key !== "_id",
           );
           setDrillDownColumns(columns);
         } else {
@@ -1572,7 +1581,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
 
   const handlePageChange = async (
     event: React.ChangeEvent<unknown>,
-    value: number
+    value: number,
   ) => {
     if (!selectedChart || !drillDownPayload) return;
 
@@ -1585,7 +1594,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
 
       const response = await axiosInstance.post(
         "/common/dataSource/getWidgetDataByFilter",
-        payload
+        payload,
       );
 
       if (response.data.success) {
@@ -1642,7 +1651,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
     const newFormData = {
       ...formData,
       chartType: widgetTypes?.find(
-        (data) => data?._id === formData.widgetTypeId
+        (data) => data?._id === formData.widgetTypeId,
       )?.chartType,
     };
 
@@ -1684,7 +1693,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
               isIncremental: chartSaveSettingData.isIncremental || false,
             },
           ],
-        })
+        }),
       ).unwrap();
 
       if (result.success) {
@@ -1717,7 +1726,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
     const groupFieldKey = groupBy[0];
 
     const matchedField = chart?.dataSourceId?.fieldSettings?.find(
-      (f: any) => f.mappedAttributeName === groupFieldKey
+      (f: any) => f.mappedAttributeName === groupFieldKey,
     );
 
     return matchedField ? matchedField.label : groupFieldKey;
@@ -1730,7 +1739,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
 
   const getChartData = (
     chart: ChartResponse,
-    fullscreenWidgetData: any = null
+    fullscreenWidgetData: any = null,
   ) => {
     let chartData = widgetData[chart._id]?.data?.widgetData || chart.data || [];
     if (fullscreenWidgetData) {
@@ -1777,7 +1786,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
           groupBy,
           chartType === "area",
           chart,
-          ""
+          "",
         );
 
       case "verticalBar":
@@ -1837,7 +1846,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
       groupBy: string[],
       isArea: boolean,
       chart: any,
-      timePeriodLabel: string
+      timePeriodLabel: string,
     ) {
       const labels = Array.from(new Set(data.map((item) => item.name)));
 
@@ -1864,7 +1873,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
 
       // Find the field settings for the groupBy field to get the display label
       const matchedField = chart.dataSourceId.fieldSettings?.find(
-        (f: any) => f.mappedAttributeName === groupFieldKey
+        (f: any) => f.mappedAttributeName === groupFieldKey,
       );
 
       // Use the field label if found, otherwise use the key
@@ -1872,7 +1881,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
 
       // Get all unique group values (e.g., Attorney names)
       const uniqueGroups = Array.from(
-        new Set(data.map((item) => item[groupField] || "Unknown"))
+        new Set(data.map((item) => item[groupField] || "Unknown")),
       );
 
       // Create a dataset for each group
@@ -1881,7 +1890,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
         const groupData = labels.map((label) => {
           const dataPoint = data.find(
             (item) =>
-              item.name === label && (item[groupField] || "Unknown") === group
+              item.name === label && (item[groupField] || "Unknown") === group,
           );
           return dataPoint ? dataPoint.data : 0;
         });
@@ -1908,7 +1917,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
       data: any[],
       groupBy: string[],
       chartType: string,
-      chart: any
+      chart: any,
     ) {
       const labels = Array.from(new Set(data.map((item) => item.name)));
 
@@ -1930,19 +1939,19 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
       const groupFieldKey = groupBy[0];
 
       const matchedField = chart.dataSourceId.fieldSettings?.find(
-        (f: any) => f.mappedAttributeName === groupFieldKey
+        (f: any) => f.mappedAttributeName === groupFieldKey,
       );
 
       const groupField = matchedField ? matchedField.label : groupFieldKey;
 
       const uniqueGroups = Array.from(
-        new Set(data.map((item) => item[groupField]).filter(Boolean))
+        new Set(data.map((item) => item[groupField]).filter(Boolean)),
       );
 
       const datasets = uniqueGroups.map((group, i) => {
         const values = labels.map((label) => {
           const found = data?.find(
-            (item) => item?.name === label && item[groupField] === group
+            (item) => item?.name === label && item[groupField] === group,
           );
           return found ? found.data : 0;
         });
@@ -1971,7 +1980,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
     function processPieData(
       data: PieItem[],
       groupBy: string[] = [],
-      chart?: any
+      chart?: any,
     ) {
       const labels = Array.from(new Set(data.map((item) => item.name)));
 
@@ -1984,7 +1993,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
         const attributeFieldKey = chart?.aggregation?.attributeName;
 
         const matchedAttributeField = chart?.dataSourceId.fieldSettings?.find(
-          (f: any) => f.mappedAttributeName === attributeFieldKey
+          (f: any) => f.mappedAttributeName === attributeFieldKey,
         );
 
         const groupAttributeField = matchedAttributeField
@@ -2011,14 +2020,14 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
 
       const groupField = resolveGroupField(groupBy, chart);
       const uniqueGroups = Array.from(
-        new Set(data.map((item) => item[groupField] ?? "Unknown"))
+        new Set(data.map((item) => item[groupField] ?? "Unknown")),
       );
 
       const datasets = uniqueGroups.map((group, groupIndex) => {
         const values = labels?.map((label) => {
           const found = data?.find(
             (item) =>
-              item.name === label && (item[groupField] ?? "Unknown") === group
+              item.name === label && (item[groupField] ?? "Unknown") === group,
           );
           return found?.data ?? 0;
         });
@@ -2043,7 +2052,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
         const attributeFieldKey = chart?.aggregation?.attributeName;
 
         const matchedAttributeField = chart?.dataSourceId.fieldSettings?.find(
-          (f: any) => f.mappedAttributeName === attributeFieldKey
+          (f: any) => f.mappedAttributeName === attributeFieldKey,
         );
 
         const groupAttributeField = matchedAttributeField
@@ -2071,13 +2080,13 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
 
       const groupField = resolveGroupField(groupBy, chart);
       const uniqueGroups = Array.from(
-        new Set(data.map((item) => item[groupField]).filter(Boolean))
+        new Set(data.map((item) => item[groupField]).filter(Boolean)),
       );
 
       const datasets = uniqueGroups.map((group, i) => {
         const values = labels?.map((label) => {
           const found = data?.find(
-            (item) => item.name === label && item[groupField] === group
+            (item) => item.name === label && item[groupField] === group,
           );
           return found ? found.data : 0;
         });
@@ -2105,7 +2114,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
         const attributeFieldKey = chart?.aggregation?.attributeName;
 
         const matchedAttributeField = chart?.dataSourceId.fieldSettings?.find(
-          (f: any) => f.mappedAttributeName === attributeFieldKey
+          (f: any) => f.mappedAttributeName === attributeFieldKey,
         );
 
         const groupAttributeField = matchedAttributeField
@@ -2129,7 +2138,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
 
       const groupField = resolveGroupField(groupBy, chart);
       const uniqueGroups = Array.from(
-        new Set(data.map((item) => item[groupField]).filter(Boolean))
+        new Set(data.map((item) => item[groupField]).filter(Boolean)),
       );
 
       const datasets = uniqueGroups.map((group, i) => {
@@ -2162,7 +2171,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
     function processBubbleData(
       data: BubbleItem[],
       groupBy: string[] = [],
-      chart: any
+      chart: any,
     ) {
       if (!groupBy || groupBy.length === 0) {
         const bubbleData = data.map((item, index) => ({
@@ -2185,7 +2194,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
 
       const groupField = resolveGroupField(groupBy, chart);
       const uniqueGroups = Array.from(
-        new Set(data.map((item) => item[groupField] ?? "Unknown"))
+        new Set(data.map((item) => item[groupField] ?? "Unknown")),
       );
 
       const datasets = uniqueGroups.map((group, index) => {
@@ -2212,7 +2221,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
       data: any[],
       groupBy: string[],
       chartType: string,
-      chart: any
+      chart: any,
     ) {
       const labels = Array.from(new Set(data.map((item) => item.name)));
 
@@ -2238,7 +2247,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
         const attributeFieldKey = chart?.aggregation?.attributeName;
 
         const matchedAttributeField = chart?.dataSourceId.fieldSettings?.find(
-          (f: any) => f.mappedAttributeName === attributeFieldKey
+          (f: any) => f.mappedAttributeName === attributeFieldKey,
         );
 
         const groupAttributeField = matchedAttributeField
@@ -2272,19 +2281,19 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
       const groupFieldKey = groupBy[0];
 
       const matchedField = chart?.dataSourceId.fieldSettings?.find(
-        (f: any) => f.mappedAttributeName === groupFieldKey
+        (f: any) => f.mappedAttributeName === groupFieldKey,
       );
 
       const groupField = matchedField ? matchedField.label : groupFieldKey;
 
       const uniqueGroups = Array.from(
-        new Set(data?.map((item) => item[groupField]).filter(Boolean))
+        new Set(data?.map((item) => item[groupField]).filter(Boolean)),
       );
 
       const barDatasets = uniqueGroups.map((group, i) => {
         const values = labels?.map((label) => {
           const found = data?.find(
-            (item) => item?.name === label && item[groupField] === group
+            (item) => item?.name === label && item[groupField] === group,
           );
           return found ? found.data : 0;
         });
@@ -2304,7 +2313,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
       const totals = labels?.map((label) => {
         return uniqueGroups?.reduce((sum, group) => {
           const found = data?.find(
-            (item) => item.name === label && item[groupField] === group
+            (item) => item.name === label && item[groupField] === group,
           );
           return sum + (found ? found.data : 0);
         }, 0);
@@ -2313,7 +2322,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
       const attributeFieldKey = chart?.aggregation?.attributeName;
 
       const matchedAttributeField = chart?.dataSourceId.fieldSettings?.find(
-        (f: any) => f.mappedAttributeName === attributeFieldKey
+        (f: any) => f.mappedAttributeName === attributeFieldKey,
       );
 
       const groupAttributeField = matchedAttributeField
@@ -2347,7 +2356,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
       data: any[],
       groupBy: string[],
       chartType: string,
-      chart: any
+      chart: any,
     ) {
       const hasWidgetDataStructure = data.length > 0 && data[0].widgetData;
 
@@ -2356,7 +2365,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
 
         const dimensionFieldKey = chart?.dimensions?.[0];
         const matchedDimensionField = chart?.dataSourceId?.fieldSettings?.find(
-          (f: any) => f.mappedAttributeName === dimensionFieldKey
+          (f: any) => f.mappedAttributeName === dimensionFieldKey,
         );
         const dimensionLabel = matchedDimensionField
           ? matchedDimensionField.label
@@ -2375,7 +2384,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
           const groupFieldKey = groupBy[0];
 
           const matchedGroupField = chart?.dataSourceId?.fieldSettings?.find(
-            (f: any) => f.mappedAttributeName === groupFieldKey
+            (f: any) => f.mappedAttributeName === groupFieldKey,
           );
           const groupFieldLabel = matchedGroupField
             ? matchedGroupField.label
@@ -2454,7 +2463,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
           const values = labels.map((label) => {
             const monthData = data.find((d) => d.label === label);
             const itemData = monthData?.widgetData?.find(
-              (item: any) => item.name === dimensionValue
+              (item: any) => item.name === dimensionValue,
             );
             return itemData ? itemData.data : 0;
           });
@@ -2501,20 +2510,20 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
       if (groupBy && groupBy.length > 0) {
         const groupFieldKey = groupBy[0];
         const matchedField = chart?.dataSourceId?.fieldSettings?.find(
-          (f: any) => f.mappedAttributeName === groupFieldKey
+          (f: any) => f.mappedAttributeName === groupFieldKey,
         );
         const groupField = matchedField ? matchedField.label : groupFieldKey;
 
         const uniqueGroups = Array.from(
           new Set(
-            data.map((item) => item[groupField] as string).filter(Boolean)
-          )
+            data.map((item) => item[groupField] as string).filter(Boolean),
+          ),
         );
 
         // Get dimension field
         const dimensionFieldKey = chart?.dimensions?.[0];
         const matchedDimensionField = chart?.dataSourceId?.fieldSettings?.find(
-          (f: any) => f.mappedAttributeName === dimensionFieldKey
+          (f: any) => f.mappedAttributeName === dimensionFieldKey,
         );
         const dimensionLabel = matchedDimensionField
           ? matchedDimensionField.label
@@ -2547,7 +2556,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
         const lineDatasets = uniqueGroups.map((group, i) => {
           const values = labels.map((name) => {
             const dataPoint = data.find(
-              (item) => item.name === name && item[groupField] === group
+              (item) => item.name === name && item[groupField] === group,
             );
             return dataPoint ? dataPoint.data : 0;
           });
@@ -2592,7 +2601,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
 
       const dimensionFieldKey = chart?.dimensions?.[0];
       const matchedDimensionField = chart?.dataSourceId?.fieldSettings?.find(
-        (f: any) => f.mappedAttributeName === dimensionFieldKey
+        (f: any) => f.mappedAttributeName === dimensionFieldKey,
       );
       const dimensionLabel = matchedDimensionField
         ? matchedDimensionField.label
@@ -2642,7 +2651,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
     function processTimeSeriesData(
       data: TimeSeriesItem[],
       groupBy: string[] = [],
-      chart?: any
+      chart?: any,
     ) {
       if (!groupBy || groupBy.length === 0) {
         const timeData = data.map((item) => ({
@@ -2665,7 +2674,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
 
       const groupField = resolveGroupField(groupBy, chart);
       const uniqueGroups = Array.from(
-        new Set(data.map((item) => item[groupField] ?? "Unknown"))
+        new Set(data.map((item) => item[groupField] ?? "Unknown")),
       );
 
       const datasets = uniqueGroups.map((group, index) => {
@@ -2692,7 +2701,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
   // Enhanced renderChart function that handles ALL chart types
   const renderChart = (
     chart: ChartResponse,
-    fullscreenWidgetData: any = null
+    fullscreenWidgetData: any = null,
   ) => {
     const chartData = getChartData(chart, fullscreenWidgetData);
     const chartType = chart.widgetTypeId?.chartType || "line";
@@ -2907,13 +2916,13 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
 
   const getLabelForField = (
     field: string | undefined,
-    fieldSettings: FieldSetting[] = []
+    fieldSettings: FieldSetting[] = [],
   ): string | undefined => {
     if (!field) return field;
 
     // direct match by mappedAttributeName
     const matched = fieldSettings?.find(
-      (fs) => fs.mappedAttributeName === field
+      (fs) => fs.mappedAttributeName === field,
     );
     return matched?.label || field;
   };
@@ -3595,10 +3604,10 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
                             {cellValue == null || cellValue === ""
                               ? "-"
                               : typeof cellValue === "number"
-                              ? cellValue.toLocaleString()
-                              : isDateField
-                              ? formatDateWithoutTime(cellValue)
-                              : cellValue}
+                                ? cellValue.toLocaleString()
+                                : isDateField
+                                  ? formatDateWithoutTime(cellValue)
+                                  : cellValue}
                           </TableCell>
                         );
                       })}
@@ -3661,7 +3670,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
               const value = row[column];
               return typeof value === "number" ? value : `"${value}"`;
             })
-            .join(",")
+            .join(","),
         ),
       ].join("\n");
 
@@ -3768,7 +3777,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
             <Grid container spacing={STYLE_GUIDE.SPACING.s4}>
               {numberCharts.map((chart: any, index: number) => {
                 const batchIndex = Math.floor(index / 3);
-                const ready = isBatchReady(batchIndex);
+                const ready = isBatchReady(batchIndex, "number");
 
                 if (!ready) {
                   const isLastInBatch =
@@ -3776,7 +3785,9 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
                     Math.floor(index / 3) !== batchIndex;
 
                   const isNextBatchToLoad =
-                    batchIndex === 0 ? false : isBatchReady(batchIndex - 1);
+                    batchIndex === 0
+                      ? false
+                      : isBatchReady(batchIndex - 1, "number");
 
                   if (isLastInBatch && isNextBatchToLoad) {
                     return (
@@ -3833,9 +3844,11 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
                       hasData={!!widgetData[chart._id]}
                       loaderHeight={70}
                       isBatchReady={ready}
-                      onLoadStart={() => handleWidgetLoadStart(batchIndex)}
+                      onLoadStart={() =>
+                        handleWidgetLoadStart(batchIndex, "number")
+                      }
                       onLoadComplete={() =>
-                        handleWidgetLoadComplete(batchIndex)
+                        handleWidgetLoadComplete(batchIndex, "number")
                       }
                     >
                       <NumberCard
@@ -3986,17 +3999,15 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
         )}
 
         {otherCharts?.map((chart: any, index: number) => {
-          const batchIndex = getBatchIndex(index);
-          const ready = isBatchReady(batchIndex);
-
+          const batchIndex = Math.floor(index / gridColumns);
+          const ready = isBatchReady(batchIndex, "other");
           if (!ready) {
             const isLastInBatch =
               index === otherCharts.length - 1 ||
-              getBatchIndex(index + 1) !== batchIndex;
+              Math.floor((index + 1) / gridColumns) !== batchIndex;
 
             const isNextBatchToLoad =
-              batchIndex === 0 ? false : isBatchReady(batchIndex - 1);
-
+              batchIndex === 0 ? false : isBatchReady(batchIndex - 1, "other");
             if (isLastInBatch && isNextBatchToLoad) {
               return (
                 <Grid
@@ -4152,10 +4163,10 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
                   isAddChartModalOpen || isEditChartModalOpen
                     ? 12
                     : gridColumns === 1
-                    ? 12
-                    : gridColumns === 2
-                    ? 6
-                    : 4
+                      ? 12
+                      : gridColumns === 2
+                        ? 6
+                        : 4
                 }
                 gap={isNaturalLangauage ? 4 : 0}
                 p={isNaturalLangauage ? 2 : 0}
@@ -4187,8 +4198,10 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
                   dashboardFilters={localDashboardFilters}
                   hasData={!!widgetData[chart._id]}
                   isBatchReady={ready}
-                  onLoadStart={() => handleWidgetLoadStart(batchIndex)}
-                  onLoadComplete={() => handleWidgetLoadComplete(batchIndex)}
+                  onLoadStart={() => handleWidgetLoadStart(batchIndex, "other")}
+                  onLoadComplete={() =>
+                    handleWidgetLoadComplete(batchIndex, "other")
+                  }
                 >
                   <StyledCard
                     sx={{ ...getCardSx() }}
@@ -4256,20 +4269,20 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
                           (chart.widgetTypeId?.chartType || "line") === "pie"
                             ? "pie-chart"
                             : (chart.widgetTypeId?.chartType || "line") ===
-                              "horizontalBar"
-                            ? "horizontal-bar-chart"
-                            : (chart.widgetTypeId?.chartType || "line") ===
-                              "tabular"
-                            ? "table-chart"
-                            : (chart.widgetTypeId?.chartType || "line") ===
-                              "multiSeriesPie"
-                            ? "pie-chart"
-                            : (chart.widgetTypeId?.chartType || "line") ===
-                                "stackedBarLine" ||
-                              (chart.widgetTypeId?.chartType || "line") ===
-                                "comboBarLine"
-                            ? "combo-chart"
-                            : "line-chart"
+                                "horizontalBar"
+                              ? "horizontal-bar-chart"
+                              : (chart.widgetTypeId?.chartType || "line") ===
+                                  "tabular"
+                                ? "table-chart"
+                                : (chart.widgetTypeId?.chartType || "line") ===
+                                    "multiSeriesPie"
+                                  ? "pie-chart"
+                                  : (chart.widgetTypeId?.chartType ||
+                                        "line") === "stackedBarLine" ||
+                                      (chart.widgetTypeId?.chartType ||
+                                        "line") === "comboBarLine"
+                                    ? "combo-chart"
+                                    : "line-chart"
                         }
                         onWheel={handleWheel}
                       >
@@ -4749,10 +4762,10 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
                                   {cellValue == null || cellValue === ""
                                     ? "-"
                                     : typeof cellValue === "number"
-                                    ? cellValue.toLocaleString()
-                                    : isDateField
-                                    ? formatDateWithoutTime(cellValue)
-                                    : cellValue}
+                                      ? cellValue.toLocaleString()
+                                      : isDateField
+                                        ? formatDateWithoutTime(cellValue)
+                                        : cellValue}
                                 </TableCell>
                               );
                             })}
