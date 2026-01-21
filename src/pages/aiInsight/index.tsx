@@ -10,6 +10,7 @@ import { GET } from "../../services/apiRoutes";
 import { useUnifiedTheme } from "../../hooks/useUnifiedTheme";
 import { useComponentTypography } from "../../hooks/useComponentTypography";
 import { AI_INSIGHT_SESSION_ID, AI_INSIGHT_URL } from "../../utils/constants";
+import { getAuthToken } from "../../utils/handleLocalStorage";
 
 const validationSchema = yup.object().shape({
   query: yup.string().required("Please enter your question"),
@@ -106,6 +107,8 @@ const AIInsightPage: React.FC = () => {
     insightMutation.mutate(userQuery);
   };
 
+  const token = getAuthToken();
+
   return (
     <Stack height="100%" width="100%">
       <Stack
@@ -139,7 +142,7 @@ const AIInsightPage: React.FC = () => {
         </Box>
       ) : (
         <iframe
-          src={`${AI_INSIGHT_URL}?session_id=${AI_INSIGHT_SESSION_ID}`}
+          src={`${AI_INSIGHT_URL}?session_id=${AI_INSIGHT_SESSION_ID}&token=${token}`}
           width="100%"
           height="100%"
         />
