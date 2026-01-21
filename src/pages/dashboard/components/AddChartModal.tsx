@@ -335,7 +335,7 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
         filtersField2: true,
         xAxis1: true,
         xAxis2: true,
-      })
+      });
       if (!formData.name && !formData.dimensions && !formData.groupBy) {
         setFormData({
           name: initialData.name,
@@ -355,7 +355,7 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
         if (initialData.dataSourceId?._id) {
           dispatch(fetchAllDataSources()).then(() => {
             const dataSource = dataSources.find(
-              (ds) => ds._id === initialData.dataSourceId?._id
+              (ds) => ds._id === initialData.dataSourceId?._id,
             );
             if (dataSource) {
               setSelectedDataSource(dataSource);
@@ -392,7 +392,7 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
   useEffect(() => {
     if (formData.dataSourceId) {
       const dataSource = dataSources.find(
-        (ds) => ds._id === formData.dataSourceId
+        (ds) => ds._id === formData.dataSourceId,
       );
       setSelectedDataSource(dataSource || null);
     } else {
@@ -409,9 +409,14 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
     }
   }, [isTrend, open, formData.dataSourceId]);
 
+  const selectedWidgetType = widgetTypes.find(
+    (type) => type._id === formData.widgetTypeId,
+  );
+  const isNumberChart = selectedWidgetType?.chartType === "number";
+
   const handleChange = (
     field: keyof ChartFormData,
-    value: string | boolean | number | Position | Aggregation | Condition[]
+    value: string | boolean | number | Position | Aggregation | Condition[],
   ) => {
     setFormData((prev) => ({
       ...prev,
@@ -439,12 +444,12 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
   const handleConditionChange = (
     index: number,
     field: keyof Condition,
-    value: string
+    value: string,
   ) => {
     setFormData((prev) => ({
       ...prev,
       conditions: prev.conditions.map((condition, i) =>
-        i === index ? { ...condition, [field]: value } : condition
+        i === index ? { ...condition, [field]: value } : condition,
       ),
     }));
   };
@@ -478,7 +483,7 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
 
   const handleSelectChange = (
     field: keyof ChartFormData,
-    event: SelectChangeEvent<unknown>
+    event: SelectChangeEvent<unknown>,
   ) => {
     handleChange(field, event.target.value as string);
   };
@@ -486,19 +491,19 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
   const handleConditionSelectChange = (
     index: number,
     field: keyof Condition,
-    event: SelectChangeEvent<unknown>
+    event: SelectChangeEvent<unknown>,
   ) => {
     handleConditionChange(index, field, event.target.value as string);
   };
 
   const handleConditionFieldChange = (
     index: number,
-    event: SelectChangeEvent<unknown>
+    event: SelectChangeEvent<unknown>,
   ) => {
     const fieldName = event.target.value as string;
     // Find the field in fieldSettings using mappedAttributeName
     const fieldSetting = selectedDataSource?.fieldSettings?.find(
-      (field) => field.mappedAttributeName === fieldName
+      (field) => field.mappedAttributeName === fieldName,
     );
 
     if (fieldSetting) {
@@ -515,7 +520,7 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
 
   const handleConditionValueInputChange = (
     index: number,
-    event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
     const value = event.target.value;
     const fieldType = fieldTypes[index];
@@ -569,7 +574,7 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
   };
 
   const handleAggregationAttributeChange = (
-    event: SelectChangeEvent<unknown>
+    event: SelectChangeEvent<unknown>,
   ) => {
     handleAggregationChange("attributeName", event.target.value as string);
   };
@@ -644,7 +649,7 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
         description: `Description exceeds the maximum character limit of 1000 characters. Current: ${descriptionCount} characters.`,
       });
       toast.error(
-        `Description exceeds the maximum character limit of 1000 characters. Please reduce it to 1000 characters or less.`
+        `Description exceeds the maximum character limit of 1000 characters. Please reduce it to 1000 characters or less.`,
       );
       return;
     }
@@ -707,7 +712,7 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
                   },
             dashBoardType: dashboardType,
             isIncremental: formData.isIncremental || false,
-          }
+          },
         );
 
         if (widgetResponse.data.success) {
@@ -735,7 +740,7 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
                   isIncremental: formData.isIncremental || false,
                 },
               ],
-            })
+            }),
           ).unwrap();
 
           if (saveResponse.success) {
@@ -754,9 +759,9 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
                   dashboardType === "trend"
                     ? ""
                     : formattedVersionValue
-                    ? ""
-                    : "1m",
-              })
+                      ? ""
+                      : "1m",
+              }),
             );
             toast.success("Chart saved successfully!");
             onClose();
@@ -803,14 +808,14 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
 
     const groupByDateType = ["date", "date-range"].includes(
       selectedDataSource?.fieldSettings?.find(
-        (f) => f.mappedAttributeName === groupBy
-      )?.type
+        (f) => f.mappedAttributeName === groupBy,
+      )?.type,
     );
 
     const dimensionsDateType = ["date", "date-range"].includes(
       selectedDataSource?.fieldSettings?.find(
-        (f) => f.mappedAttributeName === dimensions
-      )?.type
+        (f) => f.mappedAttributeName === dimensions,
+      )?.type,
     );
 
     // console.log("groupByDateType", groupByDateType);
@@ -832,7 +837,7 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
         GET.OPERATOR_LIST,
         {
           fieldType: "all",
-        }
+        },
       );
       if (response.data.success) {
         setOperators(response.data.data);
@@ -845,7 +850,7 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
   // Updated to use fieldSettings
   const getOperatorsForField = (fieldName: string): Operator[] => {
     const fieldSetting = selectedDataSource?.fieldSettings?.find(
-      (field) => field.mappedAttributeName === fieldName
+      (field) => field.mappedAttributeName === fieldName,
     );
     if (!fieldSetting) return [];
 
@@ -857,8 +862,8 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
       operatorType?.fieldType === "date-range"
         ? operatorType?.operators.filter((opr) =>
             ["before", "after", "on", "noton", "blank", "notblank"].includes(
-              opr.operatorKey
-            )
+              opr.operatorKey,
+            ),
           ) || []
         : operatorType?.operators || [];
     return operatorList || [];
@@ -882,7 +887,7 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
       case "dimensions":
         const visibleFields = getVisibleFields();
         const groupByField = visibleFields.find(
-          (f) => f.fieldName === "groupBy"
+          (f) => f.fieldName === "groupBy",
         );
         if (groupByField) {
           return (
@@ -1207,7 +1212,7 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
       case "groupBy":
         const visibleFieldsList = getVisibleFields();
         const dimensionsField = visibleFieldsList.find(
-          (f) => f.fieldName === "dimensions"
+          (f) => f.fieldName === "dimensions",
         );
         if (dimensionsField) {
           return null;
@@ -1502,7 +1507,7 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
                       isSubmitting ||
                       !condition.operator ||
                       !getOperatorsForField(condition.field).find(
-                        (op) => op.operatorKey === condition.operator
+                        (op) => op.operatorKey === condition.operator,
                       )?.valueRequired
                     }
                     size="small"
@@ -1578,7 +1583,7 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
                       isSubmitting ||
                       !condition.operator ||
                       !getOperatorsForField(condition.field).find(
-                        (op) => op.operatorKey === condition.operator
+                        (op) => op.operatorKey === condition.operator,
                       )?.valueRequired
                     }
                     size="small"
@@ -1779,7 +1784,7 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
                 fieldErrors["description"] ||
                 (countCharacters(formData.description) > 1000
                   ? `Character limit exceeded. Maximum 1000 characters allowed. (${countCharacters(
-                      formData.description
+                      formData.description,
                     )} / 1000 characters)`
                   : `${countCharacters(formData.description)} / 1000 characters`)
               }
@@ -1932,7 +1937,7 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
           <>
             {getVisibleFields().length > 0 ? (
               getVisibleFields().map((fieldConfig) =>
-                renderDynamicField(fieldConfig)
+                renderDynamicField(fieldConfig),
               )
             ) : (
               <>
@@ -2313,7 +2318,7 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
                               >
                                 {operator.operatorName}
                               </MenuItem>
-                            )
+                            ),
                           )}
                         </StyledSelect>
                       </FormControl>
@@ -2330,7 +2335,7 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
                             isSubmitting ||
                             !condition.operator ||
                             !getOperatorsForField(condition.field).find(
-                              (op) => op.operatorKey === condition.operator
+                              (op) => op.operatorKey === condition.operator,
                             )?.valueRequired
                           }
                           size="small"
@@ -2410,7 +2415,7 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
                             isSubmitting ||
                             !condition.operator ||
                             !getOperatorsForField(condition.field).find(
-                              (op) => op.operatorKey === condition.operator
+                              (op) => op.operatorKey === condition.operator,
                             )?.valueRequired
                           }
                           size="small"
@@ -2524,11 +2529,11 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
             variant="contained"
             color="primary"
             disabled={
-              isSubmitting || 
-              !formData.widgetTypeId || 
+              isSubmitting ||
+              !formData.widgetTypeId ||
               !formData.dataSourceId ||
-              !formData.dimensions || 
-              !formData.aggregation.type || 
+              (!formData.dimensions && !isNumberChart) ||
+              !formData.aggregation.type ||
               !formData.aggregation.attributeName
             }
             sx={{
@@ -2541,8 +2546,8 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
                 ? "Updating..."
                 : "Creating..."
               : initialData
-              ? "Update"
-              : "Create"}
+                ? "Update"
+                : "Create"}
           </StyledButton>
         </ConfigurationFooter>
       ) : (
