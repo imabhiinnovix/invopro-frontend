@@ -23,6 +23,7 @@ export interface Attribute {
     refEntityField?: string;
     relationType?: string;
   };
+  isOptionFixed?: boolean;
 }
 
 interface CreatedBy {

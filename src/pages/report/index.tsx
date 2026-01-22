@@ -55,22 +55,22 @@ export default function Report() {
 
   const { getHeadingSx, getButtonSx } = useComponentTypography();
   const permissions = useSelector(
-    (state: RootState) => state.userPermission.permissions
+    (state: RootState) => state.userPermission.permissions,
   );
   const shouldAllowGenerateReport = checkPermission(
     permissions,
     PermissionsMap.CUSTOM_REPORT,
-    "generate"
+    "generate",
   );
   const shouldAllowDownload = checkPermission(
     permissions,
     PermissionsMap.CUSTOM_REPORT,
-    "download"
+    "download",
   );
   const shouldAllowIntermediateDownload = checkPermission(
     permissions,
     PermissionsMap.CUSTOM_REPORT,
-    "download_supplemental_intermediate"
+    "download_supplemental_intermediate",
   );
 
   const exportFile = useFileDownload<Blob>((data) => {
@@ -108,7 +108,7 @@ export default function Report() {
   const intermediateSupplementalDownloadFile = (
     fileName: string,
     // fileId: string,
-    row: any
+    row: any,
   ) => {
     // setIntermediateDownloadRequestId(fileId);
     setDownLoadFileName(fileName);
@@ -255,7 +255,7 @@ export default function Report() {
                     {allDetailData?.versionValue
                       ? DateTime.fromFormat(
                           allDetailData.versionValue,
-                          "yyyy-MM"
+                          "yyyy-MM",
                         ).toFormat("LLLL yyyy")
                       : ""}
                   </Box>{" "}
@@ -268,7 +268,7 @@ export default function Report() {
                   on{" "}
                   {allDetailData?.createdAt
                     ? DateTime.fromISO(allDetailData.createdAt).toFormat(
-                        "dd LLL yyyy hh:mm a"
+                        "dd LLL yyyy hh:mm a",
                       )
                     : ""}
                 </Typography>
@@ -335,7 +335,7 @@ export default function Report() {
                           onClick={() => {
                             intermediateSupplementalDownloadFile(
                               `${allDetailData.customReportId?.reportName}-intermediate-${allDetailData.versionValue}.xlsx`,
-                              allDetailData
+                              allDetailData,
                             );
                           }}
                         />
@@ -377,7 +377,7 @@ export default function Report() {
                             onClick={() => {
                               intermediateDownloadFile(
                                 `${allDetailData.customReportId?.reportName}-intermediate-${allDetailData.versionValue}.xlsx`,
-                                allDetailData._id
+                                allDetailData._id,
                               );
                             }}
                             // sx={{ ...getButtonSx(), mr: 1 }}
@@ -416,7 +416,7 @@ export default function Report() {
                       onClick={() => {
                         downloadFile(
                           `${allDetailData?.customReportId?.reportName}-${allDetailData?.versionValue}.xlsx`,
-                          allDetailData?._id || ""
+                          allDetailData?._id || "",
                         );
                       }}
                       // sx={{
@@ -460,7 +460,7 @@ export default function Report() {
         <Box ref={tabRef}>
           <ScrollableTabNavigation
             tabs={(allDetailData?.dataSourceVersion ?? []).filter(
-              (tab) => !tab.isIntermediate
+              (tab) => !tab.isIntermediate,
             )}
             activeTab={activeTab}
             setActiveTab={setActiveTab}
@@ -481,7 +481,7 @@ export default function Report() {
                   maxHeight={maxHeight}
                   isView={true}
                 />
-              )
+              ),
           )}
 
           {/* To download pdf */}

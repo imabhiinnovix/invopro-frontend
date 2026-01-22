@@ -18,6 +18,7 @@ export interface AttributeOptionResponse {
 export interface AttributeOptionRequestPayload {
   attributeName: string;
   attributeValue: string[];
+  isPopulateFixed?: 0 | 1 | "Yes" | "No";
   isActive?: boolean;
   _id: string;
   createdBy?: CreatedBy;

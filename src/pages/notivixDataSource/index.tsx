@@ -8,13 +8,7 @@ import useGet from "../../hooks/useGet";
 import useDelete from "../../hooks/useDelete";
 import { STYLE_GUIDE } from "../../styles";
 import { NotivixDataTable } from "./NotivixDataTable";
-import {
-  Box,
-  Button,
-  Tooltip,
-  Typography,
-  CircularProgress,
-} from "@mui/material";
+import { Box, Button, Tooltip, Typography, Skeleton } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -218,7 +212,6 @@ export default function NotivixDataSource() {
   const queryClient = useQueryClient();
   const [rows, setRows] = useState<any[]>([]);
   const [rowCount, setRowCount] = useState(0);
-  const [columns, setColumns] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [openModal, setOpenModal] = useState(false);
   const [modalMode, setModalMode] = useState<
@@ -248,6 +241,7 @@ export default function NotivixDataSource() {
       dispatch(setDataSourceList(dataSourceNotivixListAPI.data.data));
     }
   }, [dataSourceNotivixListAPI.data, dispatch]);
+
   // Effect to listen for status changes
   useEffect(() => {
     const handleStatusChange = () => {
@@ -263,7 +257,7 @@ export default function NotivixDataSource() {
   }, []);
 
   const { list } = useSelector((state: RootState) => state.dataSource);
-  const listCurrentData = list.find((item) => item._id === valueId);
+  const listCurrentData = list?.find((item) => item._id === valueId);
 
   const deleteVersionRow = useDelete(["deleteVersionRow"]);
 
@@ -381,13 +375,15 @@ export default function NotivixDataSource() {
 
   // Function to refresh data after successful save
   const refreshData = useCallback(() => {
-    queryClient.invalidateQueries([
-      "sourceVersionData",
-      String(paginationModelMemo.page + 1),
-      String(paginationModelMemo.pageSize),
-      debouncedSearchValue,
-      valueId || "",
-    ]);
+    queryClient.invalidateQueries({
+      queryKey: [
+        "sourceVersionData",
+        String(paginationModelMemo.page + 1),
+        String(paginationModelMemo.pageSize),
+        debouncedSearchValue,
+        valueId || "",
+      ],
+    });
   }, [queryClient, paginationModelMemo, debouncedSearchValue, valueId]);
 
   useEffect(() => {
@@ -435,7 +431,7 @@ export default function NotivixDataSource() {
         console.error(`Row with ID ${id} not found`);
       }
     },
-    [sourceVersionData?.data]
+    [sourceVersionData?.data?.data]
   );
 
   const handleEdit = useCallback(
@@ -474,6 +470,134 @@ export default function NotivixDataSource() {
     setDeleteId(id);
     setOpenDialog(true);
   }, []);
+
+  const columns = useMemo(() => {
+    if (!listCurrentData?.fieldSettings) {
+      return [];
+    }
+    const displayFields =
+      listCurrentData.fieldSettings.filter(
+        (field) => field.isDisplayEnable && field.mappedAttributeName
+      ) || [];
+    const baseColumns = displayFields.map((field) => ({
+      field: field.mappedAttributeName,
+      headerName: field.label,
+      flex: 1,
+      sortable: field.isSortingEnable,
+      renderHeader: (params: any) => {
+        const headerText = params.colDef.headerName || "";
+        return headerText.length > 10 ? (
+          <Tooltip title={headerText} arrow>
+            <Typography
+              sx={{
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap",
+              }}
+            >
+              {headerText}
+            </Typography>
+          </Tooltip>
+        ) : (
+          <Typography>{headerText}</Typography>
+        );
+      },
+      renderCell: (params: any) => {
+        const cellValue = params.value != null ? String(params.value) : "";
+        return cellValue.length > 10 ? (
+          <Tooltip title={cellValue} arrow>
+            <Typography
+              sx={{
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap",
+              }}
+            >
+              {cellValue}
+            </Typography>
+          </Tooltip>
+        ) : (
+          <Typography>{cellValue}</Typography>
+        );
+      },
+    }));
+
+    const actionsColumn = {
+      field: "actions",
+      headerName: "Actions",
+      width: 150,
+      sortable: false,
+      renderHeader: () => <Typography>Actions</Typography>,
+      renderCell: (params: any) => {
+        if (params.row._id?.toString().startsWith("loading-placeholder-")) {
+          return (
+            <Box
+              sx={{
+                display: "flex",
+                gap: 1,
+                py: 1,
+              }}
+            >
+              <Skeleton variant="circular" width={32} height={32} />
+              <Skeleton variant="circular" width={32} height={32} />
+              <Skeleton variant="circular" width={32} height={32} />
+            </Box>
+          );
+        }
+        return (
+          <Box sx={{ display: "flex", gap: 1 }}>
+            <Tooltip title="View" arrow>
+              <Button
+                size="small"
+                onClick={() => handleView(params.row._id)}
+                sx={{
+                  minWidth: "auto",
+                  color: STYLE_GUIDE?.COLORS?.primaryDark || "#3f51b5",
+                }}
+              >
+                <VisibilityIcon />
+              </Button>
+            </Tooltip>
+            <Tooltip title="Edit" arrow>
+              <Button
+                size="small"
+                onClick={() => handleEdit(params.row._id)}
+                disabled={!shouldAllowEdit}
+                sx={{
+                  minWidth: "auto",
+                  color: STYLE_GUIDE?.COLORS?.primaryDark || "#3f51b5",
+                }}
+              >
+                <EditIcon />
+              </Button>
+            </Tooltip>
+            <Tooltip title="Delete" arrow>
+              <Button
+                size="small"
+                onClick={() => handleDelete(params.row._id)}
+                disabled={!shouldAllowDelete}
+                sx={{
+                  minWidth: "auto",
+                  color: STYLE_GUIDE?.COLORS?.error || "#d32f2f",
+                }}
+              >
+                <DeleteIcon />
+              </Button>
+            </Tooltip>
+          </Box>
+        );
+      },
+    };
+
+    return [...baseColumns, actionsColumn];
+  }, [
+    listCurrentData?.fieldSettings,
+    handleView,
+    handleEdit,
+    handleDelete,
+    shouldAllowEdit,
+    shouldAllowDelete,
+  ]);
 
   const handleAddNotification = useCallback(() => {
     const newFormData: Record<string, any> = { id: "" };
@@ -518,7 +642,7 @@ export default function NotivixDataSource() {
       refreshData();
 
       handleCloseDialog();
-    } catch (error) {
+    } catch (error: any) {
       toast.error(`Error: ${error.message || "Failed to delete record"}`);
     }
   }, [deleteId, valueId, refreshData, handleCloseDialog, deleteVersionRow]);
@@ -543,11 +667,15 @@ export default function NotivixDataSource() {
   }, [formData, modalMode, handleCloseModal]);
 
   useEffect(() => {
-    setLoading(sourceVersionData.isLoading);
-  }, [sourceVersionData.isLoading]);
+    setLoading(sourceVersionData.isLoading || sourceVersionData.isFetching);
+  }, [sourceVersionData.isLoading, sourceVersionData.isFetching]);
 
   useEffect(() => {
     if (sourceVersionData.isLoading || sourceVersionData.error) {
+      if (sourceVersionData.error) {
+        setRows([]);
+        setRowCount(0);
+      }
       return;
     }
     const rawData = sourceVersionData?.data?.data || [];
@@ -555,57 +683,14 @@ export default function NotivixDataSource() {
     if (!Array.isArray(rawData)) {
       setRows([]);
       setRowCount(0);
-      setColumns([]);
       return;
     }
     const displayFields =
       listCurrentData?.fieldSettings?.filter(
         (field) => field.isDisplayEnable && field.mappedAttributeName
       ) || [];
-    const columns = displayFields.map((field) => ({
-      field: field.mappedAttributeName,
-      headerName: field.label,
-      flex: 1,
-      sortable: field.isSortingEnable,
-      renderHeader: (params: any) => {
-        const headerText = params.colDef.headerName || "";
-        return headerText.length > 10 ? (
-          <Tooltip title={headerText} arrow>
-            <Typography
-              sx={{
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-                whiteSpace: "nowrap",
-              }}
-            >
-              {headerText}
-            </Typography>
-          </Tooltip>
-        ) : (
-          <Typography>{headerText}</Typography>
-        );
-      },
-      renderCell: (params: any) => {
-        const cellValue = params.value != null ? String(params.value) : "";
-        return cellValue.length > 10 ? (
-          <Tooltip title={cellValue} arrow>
-            <Typography
-              sx={{
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-                whiteSpace: "nowrap",
-              }}
-            >
-              {cellValue}
-            </Typography>
-          </Tooltip>
-        ) : (
-          <Typography>{cellValue}</Typography>
-        );
-      },
-    }));
     const formattedRows = rawData.map((item) => {
-      const row = { _id: item._id || item.id };
+      const row: Record<string, any> = { _id: item._id || item.id };
       displayFields.forEach((field) => {
         row[field.mappedAttributeName] =
           item.rowData?.[field.mappedAttributeName] ||
@@ -616,80 +701,13 @@ export default function NotivixDataSource() {
     });
     setRows(formattedRows);
     setRowCount(totalCount);
-    setColumns(columns);
-  }, [sourceVersionData.data, listCurrentData?.fieldSettings]);
+  }, [
+    sourceVersionData.data,
+    sourceVersionData.isLoading,
+    sourceVersionData.error,
+    listCurrentData?.fieldSettings,
+  ]);
 
-  useEffect(() => {
-    if (columns.length === 0) return;
-    const hasActionsColumn = columns.some((col) => col.field === "actions");
-    if (hasActionsColumn) return;
-    const actionsColumn = {
-      field: "actions",
-      headerName: "Actions",
-      flex: 1,
-      sortable: false,
-      renderHeader: () => <Typography>Actions</Typography>,
-      renderCell: (params: any) => (
-        <Box sx={{ display: "flex", gap: 1 }}>
-          <Tooltip title="View" arrow>
-            <Button
-              size="small"
-              onClick={() => handleView(params.row._id)}
-              sx={{
-                minWidth: "auto",
-                color: STYLE_GUIDE?.COLORS?.primaryDark || "#3f51b5",
-              }}
-            >
-              <VisibilityIcon />
-            </Button>
-          </Tooltip>
-          <Tooltip title="Edit" arrow>
-            <Button
-              size="small"
-              onClick={() => handleEdit(params.row._id)}
-              disabled={!shouldAllowEdit}
-              sx={{
-                minWidth: "auto",
-                color: STYLE_GUIDE?.COLORS?.primaryDark || "#3f51b5",
-              }}
-            >
-              <EditIcon />
-            </Button>
-          </Tooltip>
-          <Tooltip title="Delete" arrow>
-            <Button
-              size="small"
-              onClick={() => handleDelete(params.row._id)}
-              disabled={!shouldAllowDelete}
-              sx={{
-                minWidth: "auto",
-                color: STYLE_GUIDE?.COLORS?.error || "#d32f2f",
-              }}
-            >
-              <DeleteIcon />
-            </Button>
-          </Tooltip>
-        </Box>
-      ),
-    };
-    setColumns((prev) => [...prev, actionsColumn]);
-  }, [columns, handleView, handleEdit, handleDelete]);
-
-  if (loading && rows.length === 0) {
-    return (
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          height: "100vh",
-          width: "100%",
-        }}
-      >
-        <CircularProgress />
-      </Box>
-    );
-  }
   const handleCompleteImport = () => {
     const id = listCurrentData?.dataSourceVersion?._id;
     if (id) {
@@ -783,7 +801,6 @@ export default function NotivixDataSource() {
         shouldAllowImport={shouldAllowImport}
         handleExport={handleExport}
       />
-
       <NotivixDataModal
         openModal={openModal}
         modalMode={modalMode}

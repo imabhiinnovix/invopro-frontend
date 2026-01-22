@@ -19,10 +19,10 @@ export const fetchDashboardList = createAsyncThunk(
   "dashboard/fetchList",
   async () => {
     const { data } = await axiosInstance.get<DashboardListResponse>(
-      GET.DASHBOARD_LIST
+      GET.DASHBOARD_LIST,
     );
     return data;
-  }
+  },
 );
 
 export const createDashboard = createAsyncThunk(
@@ -34,7 +34,7 @@ export const createDashboard = createAsyncThunk(
       dynamicVersionValue: string;
       dataSourceId?: string;
     },
-    { rejectWithValue }
+    { rejectWithValue },
   ) => {
     try {
       const requestPayload = {
@@ -49,7 +49,7 @@ export const createDashboard = createAsyncThunk(
       };
       const { data } = await axiosInstance.post<DashboardListResponse>(
         POST.CREATE_DASHBOARD,
-        requestPayload
+        requestPayload,
       );
       if (!data.success) {
         return rejectWithValue({
@@ -65,7 +65,7 @@ export const createDashboard = createAsyncThunk(
         message: "Failed to create dashboard. Please try again.",
       });
     }
-  }
+  },
 );
 
 export const deleteDashboard = createAsyncThunk(
@@ -74,7 +74,7 @@ export const deleteDashboard = createAsyncThunk(
     try {
       const { data } = await axiosInstance.post(
         `${POST.DELETE_DASHBOARD}/${dashboardId}`,
-        {}
+        {},
       );
       return data;
     } catch (error) {
@@ -85,11 +85,11 @@ export const deleteDashboard = createAsyncThunk(
         message: "Failed to delete dashboard. Please try again.",
       });
     }
-  }
+  },
 );
 
 export const setDashboardList = (
-  dashboards: DashboardListResponse["data"]
+  dashboards: DashboardListResponse["data"],
 ) => ({
   type: "dashboard/setList",
   payload: dashboards,
@@ -124,7 +124,7 @@ export const createWidget = createAsyncThunk(
     try {
       const { data } = await axiosInstance.post<CreateWidgetResponse>(
         POST.CREATE_WIDGET,
-        payload
+        payload,
       );
       if (data.success) {
         return data;
@@ -138,17 +138,17 @@ export const createWidget = createAsyncThunk(
         message: "Failed to create widget. Please try again.",
       });
     }
-  }
+  },
 );
 
 export const fetchWidgetTypes = createAsyncThunk(
   "dashboard/fetchWidgetTypes",
   async () => {
     const { data } = await axiosInstance.get<WidgetTypeResponse>(
-      GET.WIDGET_TYPE_LIST
+      GET.WIDGET_TYPE_LIST,
     );
     return data;
-  }
+  },
 );
 
 export const fetchDataSources = createAsyncThunk(
@@ -156,7 +156,7 @@ export const fetchDataSources = createAsyncThunk(
   async (page: number = 1, { rejectWithValue }) => {
     try {
       const { data } = await axiosInstance.get<DataSourceResponse>(
-        `${GET.DATA_SOURCE_LIST}?paginate=true&page=${page}&limit=10`
+        `${GET.DATA_SOURCE_LIST}?paginate=true&page=${page}&limit=10`,
       );
       return data;
     } catch (error) {
@@ -165,7 +165,7 @@ export const fetchDataSources = createAsyncThunk(
       }
       return rejectWithValue({ message: "Failed to fetch data sources" });
     }
-  }
+  },
 );
 
 export const fetchAllDataSources = createAsyncThunk(
@@ -174,7 +174,7 @@ export const fetchAllDataSources = createAsyncThunk(
     try {
       // First fetch the first page to get total count
       const firstPageResponse = await axiosInstance.get<DataSourceResponse>(
-        `${GET.DATA_SOURCE_LIST}?paginate=true&page=1&limit=10`
+        `${GET.DATA_SOURCE_LIST}?paginate=true&page=1&limit=10`,
       );
 
       const { data: firstPageData, totalCount } = firstPageResponse.data;
@@ -190,8 +190,8 @@ export const fetchAllDataSources = createAsyncThunk(
         for (let page = 2; page <= totalPages; page++) {
           additionalPagePromises.push(
             axiosInstance.get<DataSourceResponse>(
-              `${GET.DATA_SOURCE_LIST}?paginate=true&page=${page}&limit=10`
-            )
+              `${GET.DATA_SOURCE_LIST}?paginate=true&page=${page}&limit=10`,
+            ),
           );
         }
 
@@ -215,7 +215,7 @@ export const fetchAllDataSources = createAsyncThunk(
       }
       return rejectWithValue({ message: "Failed to fetch all data sources" });
     }
-  }
+  },
 );
 
 export const loadMoreDataSources = createAsyncThunk(
@@ -223,7 +223,7 @@ export const loadMoreDataSources = createAsyncThunk(
   async (page: number, { rejectWithValue }) => {
     try {
       const { data } = await axiosInstance.get<DataSourceResponse>(
-        `${GET.DATA_SOURCE_LIST}?paginate=true&page=${page}&limit=10`
+        `${GET.DATA_SOURCE_LIST}?paginate=true&page=${page}&limit=10`,
       );
       return data;
     } catch (error) {
@@ -232,7 +232,7 @@ export const loadMoreDataSources = createAsyncThunk(
       }
       return rejectWithValue({ message: "Failed to load more data sources" });
     }
-  }
+  },
 );
 
 //TODO
@@ -246,6 +246,7 @@ export const loadMoreDataSources = createAsyncThunk(
 export const storeWidgetData = (payload: {
   widgetId: string;
   data: CombinedWidgetData;
+  shouldCache?: boolean;
 }) => {
   return {
     type: "dashboard/storeWidgetData",
@@ -275,7 +276,7 @@ export const fetchChartData = createAsyncThunk(
       dashboardFilters: any;
       isDefaultNotivix?: boolean;
     },
-    { dispatch, signal }
+    { dispatch, signal },
   ) => {
     if (!dashboardType && isDefaultNotivix) return [];
 
@@ -288,132 +289,245 @@ export const fetchChartData = createAsyncThunk(
     try {
       response = await axiosInstance.get<ChartDataResponse>(
         `${GET.DASHBOARD_WIDGET_GET_CHART_DATA}/${dashboardId}`,
-        { signal }
+        { signal },
       );
     } catch (error: any) {
-      if (axios.isCancel(error) || error?.code === 'ERR_CANCELED' || (error instanceof Error && error.message === "canceled")) {
+      if (
+        axios.isCancel(error) ||
+        error?.code === "ERR_CANCELED" ||
+        (error instanceof Error && error.message === "canceled")
+      ) {
         throw error;
       }
       throw error;
     }
 
     // Make additional API calls for each chart
-    if (response.data.success && response.data.data) {
-      // Process charts in batches of 3 to avoid overwhelming the system
-      const batchSize = 3;
-      const charts = response.data.data;
-      // console.log('response22222222', charts);
+    // if (response.data.success && response.data.data) {
+    //   // Process charts in batches of 3 to avoid overwhelming the system
+    //   const batchSize = 3;
+    //   const charts = response.data.data;
+    //   // console.log('response22222222', charts);
 
-      for (let i = 0; i < charts.length; i += batchSize) {
-        if (signal?.aborted) {
-          const abortError = new Error("Request aborted");
-          abortError.name = "AbortError";
-          throw abortError;
-        }
+    //   for (let i = 0; i < charts.length; i += batchSize) {
+    //     if (signal?.aborted) {
+    //       const abortError = new Error("Request aborted");
+    //       abortError.name = "AbortError";
+    //       throw abortError;
+    //     }
 
-        const batch = charts.slice(i, i + batchSize);
-        await Promise.all(
-          batch.map(async (chart) => {
-            try {
-              if (signal?.aborted) {
-                const abortError = new Error("Request aborted");
-                abortError.name = "AbortError";
-                throw abortError;
-              }
+    //     const batch = charts.slice(i, i + batchSize);
+    //     await Promise.all(
+    //       batch.map(async (chart) => {
+    //         try {
+    //           if (signal?.aborted) {
+    //             const abortError = new Error("Request aborted");
+    //             abortError.name = "AbortError";
+    //             throw abortError;
+    //           }
 
-              const widgetResponse =
-                await axiosInstance.post<WidgetDataResponse>(
-                  GET.DASHBOARD_WIDGET_DATA,
-                  {
-                    dataSourceId: chart.dataSourceId?._id,
-                    dataSourceFieldSettings: chart.dataSourceId?.fieldSettings,
-                    entityId: chart.dataSourceId?.entityId,
-                    dimensions: chart.dimensions,
-                    groupBy: chart.groupBy,
-                    plotType: chart.plotType,
-                    conditions: chart.conditions,
-                    aggregation: chart.aggregation,
-                    widgetType: chart.widgetTypeId?.chartType,
-                    dashboardFilters: {
-                      startVersionValue:
-                        dashboardType === "trend"
-                          ? startVersionValue || ""
-                          : "",
-                      endVersionValue:
-                        dashboardType === "trend" ? endVersionValue || "" : "",
-                      versionValue:
-                        dashboardType === "trend" ? "" : versionValue || "",
-                      dynamicVersionValue:
-                        dashboardType === "trend"
-                          ? ""
-                          : versionValue
-                          ? ""
-                          : "1m",
-                      filters: { ...dashboardFilters },
-                    },
-                    dashBoardType: dashboardType || "normal",
-                    isIncremental: chart.isIncremental,
-                  },
-                  { signal }
-                );
+    //           const widgetResponse =
+    //             await axiosInstance.post<WidgetDataResponse>(
+    //               GET.DASHBOARD_WIDGET_DATA,
+    //               {
+    //                 dataSourceId: chart.dataSourceId?._id,
+    //                 dataSourceFieldSettings: chart.dataSourceId?.fieldSettings,
+    //                 entityId: chart.dataSourceId?.entityId,
+    //                 dimensions: chart.dimensions,
+    //                 groupBy: chart.groupBy,
+    //                 plotType: chart.plotType,
+    //                 conditions: chart.conditions,
+    //                 aggregation: chart.aggregation,
+    //                 widgetType: chart.widgetTypeId?.chartType,
+    //                 dashboardFilters: {
+    //                   startVersionValue:
+    //                     dashboardType === "trend"
+    //                       ? startVersionValue || ""
+    //                       : "",
+    //                   endVersionValue:
+    //                     dashboardType === "trend" ? endVersionValue || "" : "",
+    //                   versionValue:
+    //                     dashboardType === "trend" ? "" : versionValue || "",
+    //                   dynamicVersionValue:
+    //                     dashboardType === "trend"
+    //                       ? ""
+    //                       : versionValue
+    //                       ? ""
+    //                       : "1m",
+    //                   filters: { ...dashboardFilters },
+    //                 },
+    //                 dashBoardType: dashboardType || "normal",
+    //                 isIncremental: chart.isIncremental,
+    //               },
+    //               { signal }
+    //             );
 
-              if (widgetResponse.data.success) {
-                // Only store essential data
-                const essentialData = {
-                  _id: chart._id,
-                  createdBy: chart.createdBy,
-                  dataSourceFieldSettings: chart.dataSourceId?.fieldSettings,
+    //           if (widgetResponse.data.success) {
+    //             // Only store essential data
+    //             const essentialData = {
+    //               _id: chart._id,
+    //               createdBy: chart.createdBy,
+    //               dataSourceFieldSettings: chart.dataSourceId?.fieldSettings,
 
-                  dashboardId: chart.dashboardId,
-                  organizationId: chart.organizationId,
-                  name: chart.name,
-                  position: chart.position,
-                  dimensions: chart.dimensions,
-                  groupBy: chart.groupBy,
-                  plotType: chart.plotType,
-                  aggregation: chart.aggregation,
-                  conditions: chart.conditions,
-                  isActive: chart.isActive,
-                  createdAt: chart.createdAt,
-                  updatedAt: chart.updatedAt,
-                  widgetTypeId: chart.widgetTypeId,
-                  dataSourceId: chart.dataSourceId,
-                  data: {
-                    label: widgetResponse.data.data.label,
-                    dataSourceFieldSettings: chart.dataSourceId?.fieldSettings,
+    //               dashboardId: chart.dashboardId,
+    //               organizationId: chart.organizationId,
+    //               name: chart.name,
+    //               position: chart.position,
+    //               dimensions: chart.dimensions,
+    //               groupBy: chart.groupBy,
+    //               plotType: chart.plotType,
+    //               aggregation: chart.aggregation,
+    //               conditions: chart.conditions,
+    //               isActive: chart.isActive,
+    //               createdAt: chart.createdAt,
+    //               updatedAt: chart.updatedAt,
+    //               widgetTypeId: chart.widgetTypeId,
+    //               dataSourceId: chart.dataSourceId,
+    //               data: {
+    //                 label: widgetResponse.data.data.label,
+    //                 dataSourceFieldSettings: chart.dataSourceId?.fieldSettings,
 
-                    widgetData: widgetResponse.data.data.widgetData.map(
-                      (item) => {
-                        return {
-                          ...item,
-                        };
-                      }
-                    ),
-                    totalCount: widgetResponse.data.data.totalCount,
-                  },
-                };
-                dispatch(
-                  storeWidgetData({ widgetId: chart._id, data: essentialData })
-                );
-              }
-            } catch (error: any) {
-              if (axios.isCancel(error) || error?.code === 'ERR_CANCELED' || (error instanceof Error && (error.message === "Request aborted" || error.message === "canceled"))) {
-                return; 
-              }
-              console.error(
-                `Failed to fetch widget data for chart ${chart._id}:`,
-                error
-              );
-            }
-          })
-        );
-      }
-    }
+    //                 widgetData: widgetResponse.data.data.widgetData.map(
+    //                   (item) => {
+    //                     return {
+    //                       ...item,
+    //                     };
+    //                   }
+    //                 ),
+    //                 totalCount: widgetResponse.data.data.totalCount,
+    //               },
+    //             };
+    //             dispatch(
+    //               storeWidgetData({ widgetId: chart._id, data: essentialData })
+    //             );
+    //           }
+    //         } catch (error: any) {
+    //           if (axios.isCancel(error) || error?.code === 'ERR_CANCELED' || (error instanceof Error && (error.message === "Request aborted" || error.message === "canceled"))) {
+    //             return;
+    //           }
+    //           console.error(
+    //             `Failed to fetch widget data for chart ${chart._id}:`,
+    //             error
+    //           );
+    //         }
+    //       })
+    //     );
+    //   }
+    // }
 
     return response.data;
-  }
+  },
 );
 
+export const fetchWidgetDataLazy = createAsyncThunk(
+  "dashboard/fetchWidgetDataLazy",
+  async (
+    {
+      chart,
+      dashboardType,
+      startVersionValue,
+      endVersionValue,
+      versionValue,
+      dashboardFilters,
+      isDefaultNotivix,
+    }: {
+      chart: any;
+      dashboardType?: string;
+      startVersionValue?: string;
+      endVersionValue?: string;
+      versionValue?: string;
+      dashboardFilters?: any;
+      isDefaultNotivix?: boolean;
+    },
+    { dispatch, signal },
+  ) => {
+    try {
+      if (signal?.aborted) {
+        throw new Error("Request aborted");
+      }
+
+      const widgetResponse = await axiosInstance.post<WidgetDataResponse>(
+        GET.DASHBOARD_WIDGET_DATA,
+        {
+          dataSourceId: chart.dataSourceId?._id,
+          dataSourceFieldSettings: chart.dataSourceId?.fieldSettings,
+          entityId: chart.dataSourceId?.entityId,
+          dimensions: chart.dimensions,
+          groupBy: chart.groupBy,
+          plotType: chart.plotType,
+          conditions: chart.conditions,
+          aggregation: chart.aggregation,
+          widgetType: chart.widgetTypeId?.chartType,
+          dashboardFilters: {
+            startVersionValue:
+              dashboardType === "trend" ? startVersionValue || "" : "",
+            endVersionValue:
+              dashboardType === "trend" ? endVersionValue || "" : "",
+            versionValue: dashboardType === "trend" ? "" : versionValue || "",
+            dynamicVersionValue:
+              dashboardType === "trend" ? "" : versionValue ? "" : "1m",
+            filters: { ...dashboardFilters },
+          },
+          dashBoardType: dashboardType || "normal",
+          isIncremental: chart.isIncremental,
+        },
+        { signal },
+      );
+
+      if (widgetResponse.data.success) {
+        const essentialData = {
+          _id: chart._id,
+          createdBy: chart.createdBy,
+          dataSourceFieldSettings: chart.dataSourceId?.fieldSettings,
+          dashboardId: chart.dashboardId,
+          organizationId: chart.organizationId,
+          name: chart.name,
+          position: chart.position,
+          dimensions: chart.dimensions,
+          groupBy: chart.groupBy,
+          plotType: chart.plotType,
+          aggregation: chart.aggregation,
+          conditions: chart.conditions,
+          isActive: chart.isActive,
+          createdAt: chart.createdAt,
+          updatedAt: chart.updatedAt,
+          widgetTypeId: chart.widgetTypeId,
+          dataSourceId: chart.dataSourceId,
+          data: {
+            label: widgetResponse.data.data.label,
+            dataSourceFieldSettings: chart.dataSourceId?.fieldSettings,
+            widgetData: widgetResponse.data.data.widgetData.map((item) => ({
+              ...item,
+            })),
+            totalCount: widgetResponse.data.data.totalCount,
+          },
+        };
+        dispatch(
+          storeWidgetData({
+            widgetId: chart._id,
+            data: essentialData,
+            shouldCache: !isDefaultNotivix,
+          }),
+        );
+      }
+      return widgetResponse.data;
+    } catch (error: any) {
+      if (
+        axios.isCancel(error) ||
+        error?.code === "ERR_CANCELED" ||
+        (error instanceof Error &&
+          (error.message === "Request aborted" || error.message === "canceled"))
+      ) {
+        throw error;
+      }
+      console.error(
+        `Failed to fetch widget data for chart ${chart._id}:`,
+        error,
+      );
+      throw error;
+    }
+  },
+);
 export const fetchIndividualWidgetData = createAsyncThunk(
   "nlQuery/getIndividualData",
   async (chart: any, { rejectWithValue, dispatch }) => {
@@ -428,7 +542,7 @@ export const fetchIndividualWidgetData = createAsyncThunk(
           conditions: chart.conditions,
           aggregation: chart.aggregation,
           widgetType: chart.chartType,
-        }
+        },
       );
       if (widgetResponse.data.success) {
         // Combine the chart metadata with the new data
@@ -447,7 +561,7 @@ export const fetchIndividualWidgetData = createAsyncThunk(
       }
       return rejectWithValue({ message: "Failed to fetch query result" });
     }
-  }
+  },
 );
 
 export const fetchWidgetSettingBasedOnNaturalLanguage = createAsyncThunk(
@@ -455,7 +569,7 @@ export const fetchWidgetSettingBasedOnNaturalLanguage = createAsyncThunk(
   async (userQuery: string, { rejectWithValue, dispatch }) => {
     try {
       const { data } = await axiosInstance.get<ChartResponse>(
-        `${GET.NL_Query}/getData?userQuery=${encodeURIComponent(userQuery)}`
+        `${GET.NL_Query}/getData?userQuery=${encodeURIComponent(userQuery)}`,
       );
 
       const finalData: any = data?.data || {};
@@ -468,7 +582,7 @@ export const fetchWidgetSettingBasedOnNaturalLanguage = createAsyncThunk(
       }
       return rejectWithValue({ message: "Failed to fetch query result" });
     }
-  }
+  },
 );
 
 export const deleteWidget = createAsyncThunk(
@@ -477,7 +591,7 @@ export const deleteWidget = createAsyncThunk(
     try {
       const { data } = await axiosInstance.post(
         `${POST.DELETE_WIDGET}/${widgetId}`,
-        {}
+        {},
       );
       return data;
     } catch (error) {
@@ -488,7 +602,7 @@ export const deleteWidget = createAsyncThunk(
         message: "Failed to delete widget. Please try again.",
       });
     }
-  }
+  },
 );
 
 interface UpdateWidgetPayload extends CreateWidgetPayload {
@@ -507,7 +621,7 @@ export const updateWidget = createAsyncThunk(
     try {
       const { data } = await axiosInstance.post<UpdateWidgetResponse>(
         `${POST.UPDATE_WIDGET}/${payload._id}`,
-        payload
+        payload,
       );
       if (data.success) {
         return data;
@@ -521,7 +635,7 @@ export const updateWidget = createAsyncThunk(
         message: "Failed to update widget. Please try again.",
       });
     }
-  }
+  },
 );
 
 interface SaveWidgetsPayload {
@@ -558,7 +672,7 @@ export const saveWidgets = createAsyncThunk(
     try {
       const { data } = await axiosInstance.post<CreateWidgetResponse>(
         POST.SAVE_WIDGETS,
-        payload
+        payload,
       );
       return data;
     } catch (error) {
@@ -569,7 +683,7 @@ export const saveWidgets = createAsyncThunk(
         message: "Failed to share dashboard. Please try again.",
       });
     }
-  }
+  },
 );
 
 export const fetchDashboardShareUsers = createAsyncThunk(
@@ -581,7 +695,7 @@ export const fetchDashboardShareUsers = createAsyncThunk(
       data: string[];
     }>(`/dashboardShare/list/${dashboardId}`);
     return data;
-  }
+  },
 );
 
 interface ShareDashboardPayload {
@@ -612,7 +726,7 @@ export const shareDashboard = createAsyncThunk(
         message: "Failed to share dashboard. Please try again.",
       });
     }
-  }
+  },
 );
 
 export const fetchWidgetTheme = createAsyncThunk(
@@ -624,7 +738,7 @@ export const fetchWidgetTheme = createAsyncThunk(
       data: Theme;
     }>(`${GET.WIDGET_THEME}/${dashboardWidgetThemeId}`);
     return data;
-  }
+  },
 );
 
 export const selectDashboardTheme = createAsyncThunk(
@@ -638,8 +752,8 @@ export const selectDashboardTheme = createAsyncThunk(
   }) => {
     const { data } = await axiosInstance.post(
       `/common/dashboard/selectTheme/${dashboardId}`,
-      { widgetThemeId }
+      { widgetThemeId },
     );
     return data;
-  }
+  },
 );

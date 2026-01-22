@@ -64,6 +64,7 @@ interface FormAttribute {
   transformations: string[];
   cleaner: string[];
   isReferenceEditable: boolean | "HIDE" | "VIEW" | "EDIT";
+  isOptionFixed: "Yes" | "No";
 }
 
 interface FormEntityRequestPayload {
@@ -185,19 +186,29 @@ const AttributeField: React.FC<AttributeFieldProps> = ({
           defaultValue={attribute.type || ""}
         />
         {["option", "multioption", "text-with-option"].includes(
-          watchedType
+          watchedType,
         ) && (
-          <CommonDropdownSearch
-            control={control}
-            name={`attributes.${index}.optionAttributeId`}
-            label="Attribute Options"
-            apiUrl={`${GET.Attribute_Option_List}`}
-            labelName="attributeName"
-            labelValue="_id"
-            defaultValue={attribute.optionAttributeId || ""}
-            apiName="attributeOption"
-            defaultDataUrl={`${GET.Attribute_Option_Get}`}
-          />
+          <>
+            <CommonSelect
+              control={control}
+              name={`attributes.${index}.isOptionFixed`}
+              label="List Fixed"
+              options={["Yes", "No"]}
+              defaultValue={attribute.isOptionFixed || "No"}
+              clearable={false}
+            />
+            <CommonDropdownSearch
+              control={control}
+              name={`attributes.${index}.optionAttributeId`}
+              label="Attribute Options"
+              apiUrl={`${GET.Attribute_Option_List}`}
+              labelName="attributeName"
+              labelValue="_id"
+              defaultValue={attribute.optionAttributeId || ""}
+              apiName="attributeOption"
+              defaultDataUrl={`${GET.Attribute_Option_Get}`}
+            />
+          </>
         )}
         <CommonSelect
           control={control}
@@ -323,6 +334,7 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
           transformations: [],
           cleaner: [],
           isReferenceEditable: "HIDE",
+          isOptionFixed: "No",
         },
       ],
     },
@@ -330,7 +342,6 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
 
   useEffect(() => {
     if (open && data) {
-      console.log("Resetting form with data:", data);
       reset({
         name: data?.name ?? "",
         description: data?.description ?? "",
@@ -340,15 +351,17 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
           type: attr.type ?? "",
           required: attr.required ? "Mandatory" : "Not Mandatory",
           optionAttributeId: attr.optionAttributeId ?? "",
+          isOptionFixed: attr.isOptionFixed === true ? "Yes" : "No",
           _id: attr._id ?? "",
           refEntityId:
             typeof attr.referenceEntitySetting?.refEntityId === "object"
-              ? (attr.referenceEntitySetting?.refEntityId as any)?._id ?? ""
-              : attr.referenceEntitySetting?.refEntityId ?? "",
+              ? ((attr.referenceEntitySetting?.refEntityId as any)?._id ?? "")
+              : (attr.referenceEntitySetting?.refEntityId ?? ""),
           refEntityField:
             typeof attr.referenceEntitySetting?.refEntityField === "object"
-              ? (attr.referenceEntitySetting?.refEntityField as any)?.name ?? ""
-              : attr.referenceEntitySetting?.refEntityField ?? "",
+              ? ((attr.referenceEntitySetting?.refEntityField as any)?.name ??
+                "")
+              : (attr.referenceEntitySetting?.refEntityField ?? ""),
           relationType: attr.referenceEntitySetting?.relationType ?? "",
           validation: attr.validation ?? [],
           transformations: attr.transformations ?? [],
@@ -361,6 +374,7 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
             type: "",
             required: "Not Mandatory",
             optionAttributeId: "",
+            isOptionFixed: "No",
             refEntityId: "",
             refEntityField: "",
             relationType: "",
@@ -373,7 +387,7 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
       });
       console.log(
         "Form reset complete, attributes length:",
-        data?.attributes?.length || 1
+        data?.attributes?.length || 1,
       );
     }
   }, [open, data, reset]);
@@ -393,6 +407,7 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
             type: "",
             required: "Not Mandatory",
             optionAttributeId: "",
+            isOptionFixed: "No",
             refEntityId: "",
             refEntityField: "",
             relationType: "",
@@ -411,9 +426,7 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
     name: "attributes",
   });
 
-  useEffect(() => {
-    console.log("Fields length after render:", fields.length);
-  }, [fields]);
+  useEffect(() => {}, [fields]);
 
   const [referenceEntityNames, setReferenceEntityNames] = useState<{
     [key: number]: string[];
@@ -431,7 +444,7 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
       ?.map((attr) =>
         typeof attr.refEntityId === "object"
           ? (attr.refEntityId as any)?._id
-          : attr.refEntityId
+          : attr.refEntityId,
       )
       .join(",") || "";
 
@@ -474,9 +487,8 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
             }));
           })
           .catch((error) => {
-            console.error(`Failed to fetch entity ${entityId}:`, error);
             toast.error(
-              `Failed to load reference entity data for ID ${entityId}`
+              `Failed to load reference entity data for ID ${entityId}`,
             );
             setReferenceEntityNames((prev) => ({ ...prev, [index]: [] }));
             setReferenceEntityTypes((prev) => ({ ...prev, [index]: [] }));
@@ -489,7 +501,7 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
         attributes?.map((attr) =>
           typeof attr.refEntityId === "object"
             ? (attr.refEntityId as any)?._id
-            : attr.refEntityId
+            : attr.refEntityId,
         ) || [];
     }
   }, [open, isFormReady, attributes, referenceEntityIdsString]);
@@ -519,7 +531,7 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
             await workbook.xlsx.load(arrayBuffer);
           } catch {
             toast.error(
-              "Failed to load the Excel file. Ensure the file is valid."
+              "Failed to load the Excel file. Ensure the file is valid.",
             );
             setFileName(null);
             setFile(null);
@@ -552,6 +564,7 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
                   mappingName: actualHeaderName,
                   type: "text",
                   optionAttributeId: "",
+                  isOptionFixed: "No",
                   refEntityId: "",
                   refEntityField: "",
                   relationType: "",
@@ -586,7 +599,7 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
           setFileUploadLoader(false);
         } catch (e) {
           toast.error(
-            "Something went wrong while processing the file. Please try again."
+            "Something went wrong while processing the file. Please try again.",
           );
           setFileName(null);
           setFile(null);
@@ -609,7 +622,7 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
         reset();
       }
     },
-    true
+    true,
   );
 
   const updateEntity = usePut<EntityRequestPayload, EntityResponse>(
@@ -623,30 +636,39 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
         reset();
       }
     },
-    true
+    true,
   );
 
   const onSubmit = (formData: FormEntityRequestPayload) => {
     const isReferenceDataLoaded = attributes?.every(
-      (_, index) => referenceEntityNames[index] && referenceEntityTypes[index]
+      (_, index) => referenceEntityNames[index] && referenceEntityTypes[index],
     );
     if (!isReferenceDataLoaded) {
       toast.error("Reference entity data is still loading. Please wait.");
       return;
     }
-    console.log("Form data before processing222222222222:", formData);
+
     const newAttributes = formData.attributes?.map((data, index) => {
-      const { refEntityId, refEntityField, relationType, ...rest } = data;
+      const {
+        refEntityId,
+        refEntityField,
+        relationType,
+        isOptionFixed,
+        ...rest
+      } = data;
       const updated: any = {
         ...rest,
         required: data.required === "Mandatory" ? true : false,
         isReferenceEditable: data.isReferenceEditable || "HIDE",
       };
-      console.log("2222:", updated);
 
-      if (!["option", "multioption", "text-with-option"].includes(data.type)) {
+      if (["option", "multioption", "text-with-option"].includes(data.type)) {
+        updated.isOptionFixed = isOptionFixed === "Yes" ? true : false;
+      } else {
         updated.optionAttributeId = "";
+        updated.isOptionFixed = false;
       }
+
       if (refEntityId && refEntityField && relationType) {
         const selectedName = refEntityField;
         const typeIndex = referenceEntityNames[index]?.indexOf(selectedName);
@@ -662,10 +684,10 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
       }
       return updated;
     });
+
     const newFormData = { ...formData, attributes: newAttributes };
-    console.log("newFormData:", newFormData);
+
     if (data && data._id) {
-      console.log("Updating entity with ID:", data._id);
       updateEntity.mutate({
         url: `${POST.UPDATE_ENTITY}/${data._id}`,
         payload: newFormData,
@@ -701,7 +723,7 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
                   type="submit"
                   onClick={handleSubmit(onSubmit)}
                   disabled={attributes?.some(
-                    (_, index) => isLoadingReferences[index]
+                    (_, index) => isLoadingReferences[index],
                   )}
                 >
                   Save Entity
@@ -779,6 +801,7 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
                   transformations: [],
                   cleaner: [],
                   isReferenceEditable: "HIDE",
+                  isOptionFixed: "No",
                 });
                 setReferenceEntityNames((prev) => ({
                   ...prev,
@@ -973,6 +996,7 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
                     type: "",
                     required: "Not Mandatory",
                     optionAttributeId: "",
+                    isOptionFixed: "No",
                     refEntityId: "",
                     refEntityField: "",
                     relationType: "",
@@ -1019,7 +1043,7 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
                 color="primary"
                 sx={{ fontSize: 18, fontWeight: "bold", p: 1, pl: 2, pr: 2 }}
                 disabled={attributes?.some(
-                  (_, index) => isLoadingReferences[index]
+                  (_, index) => isLoadingReferences[index],
                 )}
               >
                 Save Entity

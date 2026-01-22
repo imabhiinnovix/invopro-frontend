@@ -5,13 +5,11 @@ import {
   Card,
   CardContent,
   Typography,
-  TextField,
-  Button,
-  InputAdornment,
   Tooltip,
+  Skeleton,
+  CircularProgress,
 } from "@mui/material";
 import { STYLE_GUIDE } from "../../styles";
-import SearchIcon from "@mui/icons-material/Search";
 import FilterListIcon from "@mui/icons-material/FilterList";
 import AddIcon from "@mui/icons-material/Add";
 import { CustomPagination } from "../../components/common/pagination/customPagination";
@@ -119,6 +117,18 @@ export const NotivixDataTable: React.FC<TableSectionProps> = ({
     [paginationModel.page, paginationModel.pageSize]
   );
 
+  const displayRows = React.useMemo(() => {
+    if (loading && columns.length > 0) {
+      return Array.from({ length: paginationModel.pageSize }, (_, i) => ({
+        _id: `loading-placeholder-${i}`,
+      }));
+    }
+    if (rows.length > 0) {
+      return rows;
+    }
+    return [];
+  }, [rows, columns.length, loading, paginationModel.pageSize]);
+
   const formattedColumns = React.useMemo(() => {
     return columns.map((column) => {
       if (column.field === "actions") {
@@ -129,6 +139,20 @@ export const NotivixDataTable: React.FC<TableSectionProps> = ({
         ...column,
         renderCell: (params: any) => {
           const value = params.value;
+
+          if (loading && (value == null || value === "")) {
+            return (
+              <Box
+                sx={{
+                  width: "100%",
+                  py: 1,
+                }}
+              >
+                <Skeleton variant="text" width="80%" height={20} />
+                <Skeleton variant="text" width="80%" height={20} />
+              </Box>
+            );
+          }
 
           if (
             column.field.toLowerCase().includes("date") &&
@@ -182,7 +206,7 @@ export const NotivixDataTable: React.FC<TableSectionProps> = ({
         }),
       };
     });
-  }, [columns]);
+  }, [columns, loading]);
 
   return (
     <>
@@ -245,14 +269,19 @@ export const NotivixDataTable: React.FC<TableSectionProps> = ({
               </PrimaryButton>
             </Box>
           </Box>
-          {rows.length > 0 ? (
+          {formattedColumns.length > 0 ? (
             <DataGrid
-              loading={loading}
-              rows={rows}
+              loading={false}
+              rows={displayRows}
               columns={formattedColumns}
               getRowId={(row) => row._id}
               paginationMode="server"
-              rowCount={rowCount}
+              rowCount={
+                rowCount ||
+                (loading && displayRows.length > 0
+                  ? paginationModel.pageSize
+                  : 0)
+              }
               paginationModel={paginationModelMemo}
               onPaginationModelChange={setPaginationModel}
               disableColumnMenu
@@ -287,6 +316,18 @@ export const NotivixDataTable: React.FC<TableSectionProps> = ({
                 ),
               }}
             />
+          ) : loading && formattedColumns.length === 0 ? (
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                height: "calc(100vh - 280px)",
+                width: "100%",
+              }}
+            >
+              <CircularProgress />
+            </Box>
           ) : (
             <Box
               sx={{

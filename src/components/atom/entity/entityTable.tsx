@@ -77,7 +77,7 @@ const EntityTable: React.FC<EntityTableProps> = ({
   const [currentPage, setCurrentPage] = useState<number>(1);
 
   const [expandedRows, setExpandedRows] = useState<{ [key: number]: boolean }>(
-    {}
+    {},
   );
 
   const toggleRow = (index: number): void => {
@@ -93,7 +93,7 @@ const EntityTable: React.FC<EntityTableProps> = ({
   }>(
     [`entityList`, String(currentPage)],
     GET?.Entity_List + `?page=${currentPage}&limit=${perPageItem}`,
-    !!currentPage
+    !!currentPage,
   );
 
   useEffect(() => {
@@ -148,7 +148,7 @@ const EntityTable: React.FC<EntityTableProps> = ({
         lastRowRef.current.observe(node);
       }
     },
-    [entitiesList.isFetching] // Add the correct dependency
+    [entitiesList.isFetching], // Add the correct dependency
   );
 
   const renderAttributes = (attributes: Attribute[] = []): JSX.Element => (
@@ -250,9 +250,7 @@ const EntityTable: React.FC<EntityTableProps> = ({
       minWidth: 170,
       sortable: true,
       renderCell: (row: Record<string, unknown>) => {
-        return row.updatedBy
-          ? `${row.updatedBy?.firstName} ${row.updatedBy?.lastName}`
-          : "-";
+        return row?.updatedBy ? row?.updatedBy : "-";
       },
     },
     {
@@ -332,21 +330,16 @@ const EntityTable: React.FC<EntityTableProps> = ({
       isLazyTable={true}
       lastElementRef={lastElementRef}
       collpasible={(row, index) => {
-        return (
-          row &&
-          row.attributes &&
-          row.attributes?.length > 0 && (
-            <StyledTableRow>
-              <TableCell
-                style={{ paddingBottom: 0, paddingTop: 0 }}
-                colSpan={9}
-              >
-                <Collapse in={expandedRows[index]} timeout="auto" unmountOnExit>
-                  {renderAttributes(row.attributes)}
-                </Collapse>
-              </TableCell>
-            </StyledTableRow>
-          )
+        return row && row.attributes && row.attributes?.length > 0 ? (
+          <StyledTableRow>
+            <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={9}>
+              <Collapse in={expandedRows[index]} timeout="auto" unmountOnExit>
+                {renderAttributes(row.attributes)}
+              </Collapse>
+            </TableCell>
+          </StyledTableRow>
+        ) : (
+          <></>
         );
       }}
     />

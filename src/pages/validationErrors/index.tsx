@@ -15,7 +15,7 @@ import DeleteSweepIcon from "@mui/icons-material/DeleteSweep";
 import useGet from "../../hooks/useGet";
 import usePost from "../../hooks/usePost";
 import { GET, POST } from "../../services/apiRoutes";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { toast } from "react-toastify";
 import { useQueryClient } from "@tanstack/react-query";
 import { ValidationErrorsDataTable } from "./ValidationErrorsDataTable";
@@ -27,6 +27,10 @@ import { AttributeOptionRequestPayload } from "../../components/atom/attributeOp
 import { STYLE_GUIDE } from "../../styles";
 import axios from "axios";
 import axiosInstance from "../../services/axiosInstance";
+import PrimaryButton from "../../components/common/PrimaryButton";
+import DialogContainer from "../../components/molecule/dialog";
+import IosShareIcon from "@mui/icons-material/IosShare";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 
 export default function ValidationErrors() {
   const { id } = useParams<{ id: string }>();
@@ -64,15 +68,22 @@ export default function ValidationErrors() {
     };
   }, [searchValue]);
 
+  useEffect(() => {
+    return () => {
+      queryClient.removeQueries({ queryKey: ["validationErrorList"] });
+    };
+  }, [queryClient]);
+
   const [actionModalOpen, setActionModalOpen] = useState(false);
   const [selectedRow, setSelectedRow] = useState<any>(null);
   const [rowDetailData, setRowDetailData] = useState<any>(null);
   const [isLoadingRowDetail, setIsLoadingRowDetail] = useState(false);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showExportSuccessDialog, setShowExportSuccessDialog] = useState(false);
 
   const discardAllSubmit = usePost(["discardAllSubmit"]);
-  const discardRow = usePost(["discardRow"]);
+  const discardRow = usePost(["discardRow"], () => {}, true);
   const resolveRow = usePost(["resolveRow"]);
 
   const attributeList = useGet<{
@@ -81,11 +92,11 @@ export default function ValidationErrors() {
   }>([`attributeList`], GET?.Attribute_Option_List + `?paginate=false`);
 
   const commonDataSourceList = useSelector(
-    (state: RootState) => state.dataSource?.list
+    (state: RootState) => state.dataSource?.list,
   );
 
   let dataSourceIdForPayload = commonDataSourceList?.find(
-    (item: any) => item?.dataSourceVersion?._id === id
+    (item: any) => item?.dataSourceVersion?._id === id,
   );
   let isLatest = false;
   if (dataSourceIdForPayload && dataSourceIdForPayload?._id) {
@@ -94,8 +105,15 @@ export default function ValidationErrors() {
     dataSourceIdForPayload = commonDataSourceList?.find(
       (item: any) =>
         Array.isArray(item?.allDataSourceVersions) &&
-        item.allDataSourceVersions.some((v: any) => v._id === id)
+        item.allDataSourceVersions.some((v: any) => v._id === id),
     );
+  }
+
+  const { state } = useLocation();
+  const isReportRequest = state?.isReportRequest;
+
+  if (isReportRequest) {
+    isLatest = true;
   }
 
   const validationErrorList = useGet<any>(
@@ -104,16 +122,24 @@ export default function ValidationErrors() {
       String(paginationModel.page + 1),
       String(paginationModel.pageSize),
       debouncedSearchValue,
-      dataSourceIdForPayload?._id,
+      dataSourceIdForPayload?._id || id || "",
     ],
-    id && dataSourceIdForPayload?._id
-      ? `${GET?.VALIDATION_ERROR_LIST}?page=${paginationModel.page + 1}&limit=${
-          paginationModel.pageSize
-        }&dataSourceVersionId=${id}&dataSourceId=${
-          dataSourceIdForPayload._id
-        }&search=${encodeURIComponent(debouncedSearchValue)}`
-      : null,
-    true
+    id
+      ? dataSourceIdForPayload?._id
+        ? `${GET?.VALIDATION_ERROR_LIST}?page=${
+            paginationModel.page + 1
+          }&limit=${
+            paginationModel.pageSize
+          }&dataSourceVersionId=${id}&dataSourceId=${
+            dataSourceIdForPayload?._id || ""
+          }&search=${encodeURIComponent(debouncedSearchValue || "")}`
+        : `${GET?.VALIDATION_ERROR_LIST}?page=${
+            paginationModel.page + 1
+          }&limit=${paginationModel.pageSize}&reportRequestId=${
+            id || ""
+          }&search=${encodeURIComponent(debouncedSearchValue || "")}`
+      : "",
+    !!id,
   );
 
   const handleDiscardRow = (rowData: any) => {
@@ -133,6 +159,9 @@ export default function ValidationErrors() {
     setSelectedRow(rowData);
 
     try {
+      // const url = isReportRequest
+      //   ? `${GET.ERROR_ROW_DATA}?reportRequestId=${id}&rowNumber=${rowData.rowNumber}&errorId=${rowData._id}`
+      //   : `${GET.ERROR_ROW_DATA}?dataSourceVersionId=${rowData.dataSourceVersionId}&dataSourceId=${rowData.dataSourceId}&rowNumber=${rowData.rowNumber}&errorId=${rowData._id}`;
       const url = `${GET.ERROR_ROW_DATA}?dataSourceVersionId=${rowData.dataSourceVersionId}&dataSourceId=${rowData.dataSourceId}&rowNumber=${rowData.rowNumber}&errorId=${rowData._id}`;
 
       const response = await axiosInstance.get(url);
@@ -172,7 +201,7 @@ export default function ValidationErrors() {
   const dataSourceId = firstItem?.dataSourceId || null;
 
   const currentDataSource = commonDataSourceList?.find(
-    (ds) => ds?._id === dataSourceId
+    (ds) => ds?._id === dataSourceId,
   );
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -195,7 +224,7 @@ export default function ValidationErrors() {
   };
 
   const handleConfirmAction = async () => {
-    if (!id || !dataSourceId) {
+    if (!id || (!dataSourceId && !isReportRequest)) {
       handleCloseDialog();
       return;
     }
@@ -204,22 +233,33 @@ export default function ValidationErrors() {
       let response;
 
       if (dialog.type === "discardAll") {
-        const payload = {
-          action: "discardAllSubmit",
-          dataSourceVersionId: id,
-          dataSourceId: dataSourceId,
-        };
+        const payload = isReportRequest
+          ? {
+              action: "discardAllSubmit",
+              reportRequestId: id,
+            }
+          : {
+              action: "discardAllSubmit",
+              dataSourceVersionId: id,
+              dataSourceId: dataSourceId,
+            };
         response = await discardAllSubmit.mutateAsync({
           url: `${POST.RESOLVE_DATA_IMPORT_ERROR}`,
           payload,
         });
       } else if (dialog?.type === "discardRow") {
-        const payload = {
-          action: "discard",
-          dataSourceVersionId: id,
-          dataSourceId: dialog.rowData.dataSourceId,
-          rowNumber: dialog.rowData.rowNumber,
-        };
+        const payload = isReportRequest
+          ? {
+              action: "discard",
+              reportRequestId: id,
+              rowNumber: dialog.rowData._id,
+            }
+          : {
+              action: "discard",
+              dataSourceVersionId: id,
+              dataSourceId: dialog.rowData.dataSourceId,
+              rowNumber: dialog.rowData._id,
+            };
         response = await discardRow.mutateAsync({
           url: `${POST.RESOLVE_DATA_IMPORT_ERROR}`,
           payload,
@@ -228,19 +268,25 @@ export default function ValidationErrors() {
         const payload = {
           action: "unique",
           dataSourceVersionId: id,
-          rowNumber: dialog.rowData.rowNumber,
+          rowNumber: dialog.rowData._id,
         };
         response = await resolveRow.mutateAsync({
           url: `${POST.RESOLVE_DATA_IMPORT_ERROR}`,
           payload,
         });
       } else if (dialog?.type === "discardSelectedRow") {
-        const payload = {
-          action: "discard",
-          dataSourceVersionId: id,
-          dataSourceId: dialog.selectedRows?.[0]?.dataSourceId,
-          rowNumber: dialog.selectedRows.map((row: any) => row.rowNumber),
-        };
+        const payload = isReportRequest
+          ? {
+              action: "discard",
+              reportRequestId: id,
+              rowNumber: dialog.selectedRows?.map((row: any) => row._id) || [],
+            }
+          : {
+              action: "discard",
+              dataSourceVersionId: id,
+              dataSourceId: dialog.selectedRows?.[0]?.dataSourceId,
+              rowNumber: dialog.selectedRows?.map((row: any) => row._id) || [],
+            };
 
         response = await discardRow.mutateAsync({
           url: `${POST.RESOLVE_DATA_IMPORT_ERROR}`,
@@ -250,41 +296,61 @@ export default function ValidationErrors() {
       }
 
       if (response?.success) {
-        let successMessage;
         if (dialog.type === "discardAll") {
-          successMessage =
-            response?.message || "All rows discarded successfully";
-          navigate(`/data-source-new/${response?.data?.dataSourceId}`);
-        } else if (dialog.type === "discardRow") {
-          successMessage = response?.message || "Row discarded successfully";
-        } else if (dialog.type === "resolveRow") {
-          successMessage =
-            response?.message || "Unique constraint resolved successfully";
-        } else if (dialog.type === "discardSelectedRow") {
-          successMessage =
-            response?.message || "Selected rows discarded successfully";
+          if (response?.data?.dataSourceId) {
+            navigate(`/data-source-new/${response?.data?.dataSourceId}`);
+          } else {
+            navigate(-1);
+          }
         }
 
-        toast.success(successMessage);
         queryClient.invalidateQueries(["validationErrorList"]);
       }
       handleCloseDialog();
     } catch (error) {
-      let errorMessage;
-      if (dialog.type === "discardAll") {
-        errorMessage = "Failed to discard all rows";
-      } else if (dialog.type === "discardRow") {
-        errorMessage = "Failed to discard row";
-      } else if (dialog.type === "resolveRow") {
-        errorMessage = "Failed to resolve unique constraint";
-      } else if (dialog.type === "discardSelectedRow") {
-        errorMessage = "Failed to discard selected rows";
-      }
-
-      toast.error(errorMessage);
+      console.error("Error submitting action:", error);
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const validationErrorListExport = useGet<any>(
+    [
+      "validationErrorListExport",
+      String(paginationModel.page + 1),
+      debouncedSearchValue,
+      dataSourceIdForPayload?._id || id || "",
+    ],
+    id
+      ? dataSourceIdForPayload?._id
+        ? `${GET?.VALIDATION_ERROR_LIST}?page=${
+            paginationModel.page + 1
+          }&limit=${
+            paginationModel.pageSize
+          }&dataSourceVersionId=${id}&dataSourceId=${
+            dataSourceIdForPayload?._id || ""
+          }&search=${encodeURIComponent(
+            debouncedSearchValue || "",
+          )}&type=export`
+        : `${GET?.VALIDATION_ERROR_LIST}?page=${
+            paginationModel.page + 1
+          }&limit=${paginationModel.pageSize}&reportRequestId=${
+            id || ""
+          }&search=${encodeURIComponent(
+            debouncedSearchValue || "",
+          )}&type=export`
+      : "",
+    false,
+  );
+
+  useEffect(() => {
+    if (validationErrorListExport.isSuccess) {
+      setShowExportSuccessDialog(true);
+    }
+  }, [validationErrorListExport.isSuccess]);
+
+  const handleDashboardWidgetDataExport = () => {
+    validationErrorListExport.refetch();
   };
 
   return (
@@ -306,7 +372,15 @@ export default function ValidationErrors() {
           lineHeight: STYLE_GUIDE.TYPOGRAPHY.lineHeight.normal,
         }}
       >
-        Validation Errors{" "}
+        <Button
+          variant="text"
+          onClick={() => navigate(-1)}
+          sx={{ padding: 0, minWidth: "auto", marginRight: "10px" }}
+          disabled={isLatest === false}
+        >
+          <ArrowBackIcon />
+        </Button>
+        Validation Errors
       </Typography>
       <Card
         sx={{
@@ -364,6 +438,17 @@ export default function ValidationErrors() {
               >
                 Discard All & Submit
               </Button>
+
+              <PrimaryButton
+                variant="contained"
+                onClick={handleDashboardWidgetDataExport}
+                startIcon={<IosShareIcon />}
+                disabled={validationErrorListExport.isFetching}
+              >
+                {validationErrorListExport.isFetching
+                  ? "Exporting..."
+                  : "Export"}
+              </PrimaryButton>
             </Box>
           </Box>
           <Box sx={{ color: STYLE_GUIDE.COLORS.primary }}>
@@ -385,6 +470,31 @@ export default function ValidationErrors() {
         </CardContent>
       </Card>
 
+      <DialogContainer
+        open={showExportSuccessDialog}
+        onClose={() => setShowExportSuccessDialog(false)}
+        title="Export Data"
+        actions={
+          <>
+            <PrimaryButton
+              variant="contained"
+              onClick={() => {
+                setShowExportSuccessDialog(false);
+                navigate("/jobs");
+              }}
+            >
+              Go to Jobs
+            </PrimaryButton>
+          </>
+        }
+        maxWidth="xs"
+      >
+        <Typography>
+          Your data has started exporting. You can view its status in the Jobs
+          page.
+        </Typography>
+      </DialogContainer>
+
       <ConfirmationDialog
         open={dialog.open}
         onClose={handleCloseDialog}
@@ -396,17 +506,17 @@ export default function ValidationErrors() {
           dialog.type === "discardAll"
             ? "Are you sure want to Discard all data?"
             : dialog.type === "resolveRow"
-            ? "Are you sure you want to resolve this?"
-            : dialog.type === "discardSelectedRow"
-            ? `Are you sure you want to discard ${dialog.selectedRows.length} selected row(s)?`
-            : `Are you sure you want to discard "${dialog.rowData?.fileName}" at row ${dialog.rowData?.fileRowNumber}?`
+              ? "Are you sure you want to resolve this?"
+              : dialog.type === "discardSelectedRow"
+                ? `Are you sure you want to discard ${dialog.selectedRows.length} selected row(s)?`
+                : `Are you sure you want to discard "${dialog.rowData?.fileName}" at row ${dialog.rowData?.fileRowNumber}?`
         }
         confirmText={
           dialog.type === "discardAll"
             ? "Confirm"
             : dialog.type === "resolveRow"
-            ? "Yes"
-            : "Discard"
+              ? "Yes"
+              : "Discard"
         }
         confirmButtonColor="error"
         isSubmitting={isSubmitting}

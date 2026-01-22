@@ -110,7 +110,7 @@ export function TemplateModal({
     true,
     (error) => {
       console.error("❌ Error creating template:", error);
-    }
+    },
   );
 
   const updateTemplate = usePut<TemplatePostPayload, TemplatePostResponse>(
@@ -125,7 +125,7 @@ export function TemplateModal({
         console.error("❌ Failed to update Template:", data?.message);
       }
     },
-    true
+    true,
   );
 
   const editorConfig = React.useMemo(
@@ -288,23 +288,23 @@ export function TemplateModal({
       askBeforePasteHTML: false,
       askBeforePasteFromWord: false,
       defaultActionOnPaste: "insert_clear_html" as const,
-      processPasteHTML: true,
+      processPasteHTML: false,
 
-      // Enter behavior
-      enter: "p" as const,
+      enter: "BR" as const,
       defaultLineHeight: 1.5,
 
       // Formatting
       cleanHTML: {
         timeout: 300,
-        removeEmptyElements: true,
-        fillEmptyParagraph: true,
-        replaceNBSP: true,
-        replaceOldTags: {
-          i: "em",
-          b: "strong",
-        } as const,
+        removeEmptyElements: false,
+        fillEmptyParagraph: false,
+        replaceNBSP: false, // Don't replace non-breaking spaces
+        replaceOldTags: false, // Don't replace old tags
       },
+
+      // Preserve all tags and attributes for template syntax
+      allowTags: true,
+      removeEmptyBlocks: false,
 
       // Spellcheck
       spellcheck: true,
@@ -487,12 +487,12 @@ export function TemplateModal({
         },
       },
     }),
-    [mode]
+    [mode],
   );
 
   // Helper function to transform labels to attachment field items
   const transformLabelsToAttachmentFieldItems = (
-    labels: string[]
+    labels: string[],
   ): AttachmentFieldItem[] => {
     if (!selectedDataSource?.fieldSettings) {
       console.warn("Field settings not available for transformation");
@@ -502,7 +502,7 @@ export function TemplateModal({
     return labels
       .map((label) => {
         const fieldSetting = selectedDataSource.fieldSettings.find(
-          (fs) => fs.label === label
+          (fs) => fs.label === label,
         );
         if (fieldSetting) {
           return {
@@ -525,7 +525,7 @@ export function TemplateModal({
     return labels
       .map((label) => {
         const fieldSetting = selectedDataSource.fieldSettings.find(
-          (fs) => fs.label === label
+          (fs) => fs.label === label,
         );
         if (fieldSetting) {
           return {
@@ -541,7 +541,7 @@ export function TemplateModal({
   // Get selected data source and its field settings
   const selectedDataSourceId = watch("dataSourceId");
   const selectedDataSource = updatedList.find(
-    (ds) => ds._id === selectedDataSourceId
+    (ds) => ds._id === selectedDataSourceId,
   );
   const availableFields = selectedDataSource?.fieldSettings || [];
 
@@ -549,7 +549,7 @@ export function TemplateModal({
   const getFieldLabel = (attributeId?: string) => {
     if (!selectedDataSource?.fieldSettings || !attributeId) return "";
     const field = selectedDataSource.fieldSettings.find(
-      (fs) => fs.attributeId === attributeId
+      (fs) => fs.attributeId === attributeId,
     );
     return field?.label || "";
   };
@@ -572,7 +572,7 @@ export function TemplateModal({
           attachmentSettings.fieldList
             ?.map((fs) => {
               const field = availableFields.find(
-                (f) => f.attributeId === fs?.attributeId
+                (f) => f.attributeId === fs?.attributeId,
               );
               return field?.label || "";
             })
@@ -582,7 +582,7 @@ export function TemplateModal({
           rowData?.groupBy
             ?.map((gs) => {
               const field = availableFields.find(
-                (f) => f.attributeId === gs?.attributeId
+                (f) => f.attributeId === gs?.attributeId,
               );
               return field?.label || "";
             })
@@ -637,14 +637,14 @@ export function TemplateModal({
           if (!rowData) return null;
 
           const selectedDataSource = updatedList.find(
-            (ds) => ds._id === rowData.dataSourceId
+            (ds) => ds._id === rowData.dataSourceId,
           );
           const availableFields = selectedDataSource?.fieldSettings || [];
 
           const getLabelByAttributeId = (attributeId?: string) => {
             if (!attributeId) return "";
             const field = availableFields.find(
-              (f) => f.attributeId === attributeId
+              (f) => f.attributeId === attributeId,
             );
             return field?.label || "";
           };
@@ -669,7 +669,7 @@ export function TemplateModal({
 
   const onSubmit = (data: TemplateFormData) => {
     const fieldList = transformLabelsToAttachmentFieldItems(
-      data.attachmentFieldList
+      data.attachmentFieldList,
     );
 
     // Build attachmentSettings as an array
@@ -752,7 +752,7 @@ export function TemplateModal({
         setValue("body", content);
       }, 1000);
     },
-    [setValue]
+    [setValue],
   );
 
   useEffect(() => {
@@ -772,8 +772,8 @@ export function TemplateModal({
           mode === "add"
             ? "Add Template"
             : mode === "edit"
-            ? "Edit Template"
-            : "View Template"
+              ? "Edit Template"
+              : "View Template"
         }
         actions={
           <>
@@ -1066,7 +1066,9 @@ export function TemplateModal({
                       }}
                     >
                       {getDataSourceName(
-                        displayData?.dataSourceId || rowData?.dataSourceId || ""
+                        displayData?.dataSourceId ||
+                          rowData?.dataSourceId ||
+                          "",
                       )}
                     </Box>
                   </>
@@ -1328,7 +1330,7 @@ export function TemplateModal({
                                 size="small"
                                 sx={{ backgroundColor: "#e3f2fd" }}
                               />
-                            )
+                            ),
                           )
                         : "-"}
                     </Box>
@@ -1414,7 +1416,7 @@ export function TemplateModal({
                                 size="small"
                                 color="primary"
                               />
-                            )
+                            ),
                           )
                         : "-"}
                     </Box>
@@ -1619,7 +1621,7 @@ export function TemplateModal({
                                   fontSize: "0.75rem",
                                 }}
                               />
-                            )
+                            ),
                           )
                         : "None"}
                     </Typography>
@@ -1654,7 +1656,7 @@ export function TemplateModal({
                             color="primary"
                             sx={{ height: "24px", fontSize: "0.75rem" }}
                           />
-                        )
+                        ),
                       )}
                     </Box>
                   </Box>
@@ -1948,7 +1950,7 @@ export function TemplateModal({
                         {getDataSourceName(
                           displayData?.dataSourceId ||
                             rowData?.dataSourceId ||
-                            ""
+                            "",
                         )}
                       </Box>
                     </>
@@ -2192,7 +2194,7 @@ export function TemplateModal({
                                   size="small"
                                   sx={{ backgroundColor: "#e3f2fd" }}
                                 />
-                              )
+                              ),
                             )
                           : "-"}
                       </Box>
@@ -2274,7 +2276,7 @@ export function TemplateModal({
                                   size="small"
                                   color="primary"
                                 />
-                              )
+                              ),
                             )
                           : "-"}
                       </Box>
@@ -2553,7 +2555,7 @@ export function TemplateModal({
                                   fontSize: "0.75rem",
                                 }}
                               />
-                            )
+                            ),
                           )
                         : "None"}
                     </Typography>
@@ -2588,7 +2590,7 @@ export function TemplateModal({
                             color="primary"
                             sx={{ height: "24px", fontSize: "0.75rem" }}
                           />
-                        )
+                        ),
                       )}
                     </Box>
                   </Box>

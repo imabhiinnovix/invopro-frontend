@@ -1,4 +1,3 @@
-import { store } from "./../../reducers/index";
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import {
   DashboardListResponse,
@@ -98,16 +97,22 @@ const dashboardSlice = createSlice({
   reducers: {
     storeWidgetData: (
       state,
-      action: PayloadAction<{ widgetId: string; data: WidgetResponse["data"] }>
+      action: PayloadAction<{
+        widgetId: string;
+        data: WidgetResponse["data"];
+        shouldCache?: boolean;
+      }>,
     ) => {
-      const exists = state.storeWidgetData.some(
-        (item) => item.widgetId === action.payload.widgetId
-      );
-      if (!exists) {
-        state.storeWidgetData.push({
-          widgetId: action.payload.widgetId,
-          data: action.payload.data,
-        });
+      if (action.payload.shouldCache !== false) {
+        const exists = state.storeWidgetData.some(
+          (item) => item.widgetId === action.payload.widgetId,
+        );
+        if (!exists) {
+          state.storeWidgetData.push({
+            widgetId: action.payload.widgetId,
+            data: action.payload.data,
+          });
+        }
       }
 
       state.widgetData[action.payload.widgetId] = action.payload.data;
@@ -116,9 +121,14 @@ const dashboardSlice = createSlice({
       state.widgetData = {};
       state.charts = [];
     },
+    clearAllCaches: (state) => {
+      state.widgetData = {};
+      state.charts = [];
+      state.storeWidgetData = [];
+    },
     updateChartsData: (
       state,
-      action: PayloadAction<{ widgetId: string; data: WidgetResponse["data"] }>
+      action: PayloadAction<{ widgetId: string; data: WidgetResponse["data"] }>,
     ) => {
       state.charts = state.charts.map((chart) =>
         chart._id === action.payload.widgetId
@@ -136,7 +146,7 @@ const dashboardSlice = createSlice({
               conditions: action.payload.data.conditions.map(
                 (condition: Condition) => {
                   const existingCondition = chart.conditions.find(
-                    (c) => c.field === condition.field
+                    (c) => c.field === condition.field,
                   );
                   return {
                     field: condition.field,
@@ -144,7 +154,7 @@ const dashboardSlice = createSlice({
                     value: condition.value,
                     _id: existingCondition?._id || condition._id || "",
                   };
-                }
+                },
               ),
               dataSourceId: action.payload.data.dataSourceId,
               widgetTypeId: {
@@ -152,7 +162,7 @@ const dashboardSlice = createSlice({
                 chartType: action.payload.data?.chartType || "line",
               },
             }
-          : chart
+          : chart,
       );
     },
     addTemporaryChart: (state, action: PayloadAction<TemporaryChart>) => {
@@ -160,10 +170,10 @@ const dashboardSlice = createSlice({
     },
     updateTemporaryChart: (
       state,
-      action: PayloadAction<{ id: string; chart: TemporaryChart }>
+      action: PayloadAction<{ id: string; chart: TemporaryChart }>,
     ) => {
       const index = state.temporaryCharts.findIndex(
-        (chart) => chart._id === action.payload.id
+        (chart) => chart._id === action.payload.id,
       );
       if (index !== -1) {
         state.temporaryCharts[index] = action.payload.chart;
@@ -171,7 +181,7 @@ const dashboardSlice = createSlice({
     },
     removeTemporaryChart: (state, action: PayloadAction<string>) => {
       state.temporaryCharts = state.temporaryCharts.filter(
-        (chart) => chart._id !== action.payload
+        (chart) => chart._id !== action.payload,
       );
     },
     clearTemporaryCharts: (state) => {
@@ -192,7 +202,7 @@ const dashboardSlice = createSlice({
           state.dashboards = Array.isArray(action.payload.data)
             ? action.payload.data
             : [action.payload.data];
-        }
+        },
       )
       .addCase(fetchDashboardList.rejected, (state, action) => {
         state.loading = false;
@@ -208,7 +218,7 @@ const dashboardSlice = createSlice({
         (state, action: PayloadAction<WidgetTypeResponse>) => {
           state.widgetTypesLoading = false;
           state.widgetTypes = action.payload.data;
-        }
+        },
       )
       .addCase(fetchWidgetTypes.rejected, (state, action) => {
         state.widgetTypesLoading = false;
@@ -227,7 +237,7 @@ const dashboardSlice = createSlice({
           state.dataSources = action.payload.data;
           state.dataSourcesTotalCount = action.payload.totalCount;
           state.dataSourcesHasMore = action.payload.data.length === 10;
-        }
+        },
       )
       .addCase(fetchDataSources.rejected, (state, action) => {
         state.dataSourcesLoading = false;
@@ -248,7 +258,7 @@ const dashboardSlice = createSlice({
           state.dataSourcesTotalCount = action.payload.totalCount;
           state.dataSourcesHasMore = false;
           state.dataSourcesPage = 1;
-        }
+        },
       )
       .addCase(fetchAllDataSources.rejected, (state, action) => {
         state.dataSourcesLoading = false;
@@ -268,7 +278,7 @@ const dashboardSlice = createSlice({
           state.dataSourcesTotalCount = action.payload.totalCount;
           state.dataSourcesHasMore = action.payload.data.length === 10;
           state.dataSourcesPage += 1;
-        }
+        },
       )
       .addCase(loadMoreDataSources.rejected, (state, action) => {
         state.dataSourcesLoading = false;
@@ -286,10 +296,14 @@ const dashboardSlice = createSlice({
           state.chartsLoading = false;
           state.charts = action.payload?.data || [];
           state.chartsLoadedOnce = true;
-        }
+        },
       )
       .addCase(fetchChartData.rejected, (state, action) => {
-        if (action.error.name === "AbortError" || action.error.message === "Aborted" || action.error.message?.includes("aborted")) {
+        if (
+          action.error.name === "AbortError" ||
+          action.error.message === "Aborted" ||
+          action.error.message?.includes("aborted")
+        ) {
           state.chartsError = null;
           if (!state.chartsLoading) {
             state.chartsLoading = false;
@@ -310,7 +324,7 @@ const dashboardSlice = createSlice({
         (state, action: PayloadAction<any>) => {
           state.chartsLoading = false;
           state.charts.push(action.payload.data as any);
-        }
+        },
       )
       .addCase(
         fetchWidgetSettingBasedOnNaturalLanguage.rejected,
@@ -318,7 +332,7 @@ const dashboardSlice = createSlice({
           state.chartsLoading = false;
           state.chartsError =
             action.error.message || "Failed to fetch chart data";
-        }
+        },
       )
       // Delete widget actions
       .addCase(deleteWidget.pending, (state) => {
@@ -329,7 +343,7 @@ const dashboardSlice = createSlice({
         state.chartsLoading = false;
         if (action.payload.success) {
           state.charts = state.charts.filter(
-            (chart) => chart._id !== action.meta.arg
+            (chart) => chart._id !== action.meta.arg,
           );
         }
       })
@@ -357,7 +371,7 @@ const dashboardSlice = createSlice({
               (condition: Condition) => ({
                 ...condition,
                 _id: condition._id || "",
-              })
+              }),
             ),
           };
           state.charts = [...(state.charts as any), chartData];
@@ -392,7 +406,7 @@ const dashboardSlice = createSlice({
                   conditions: updatedWidget.conditions.map(
                     (condition: Condition) => {
                       const existingCondition = chart.conditions.find(
-                        (c) => c.field === condition.field
+                        (c) => c.field === condition.field,
                       );
                       return {
                         field: condition.field,
@@ -400,12 +414,12 @@ const dashboardSlice = createSlice({
                         value: condition.value,
                         _id: existingCondition?._id || condition._id || "",
                       };
-                    }
+                    },
                   ),
                   dataSourceId: updatedWidget.dataSourceId as any,
                   widgetTypeId: updatedWidget.widgetTypeId as any,
                 }
-              : chart
+              : chart,
           );
         }
       })
@@ -484,6 +498,7 @@ export const {
   removeTemporaryChart,
   clearTemporaryCharts,
   resetChartAndWidgetData,
+  clearAllCaches,
 } = dashboardSlice.actions;
 
 export default dashboardSlice.reducer;
