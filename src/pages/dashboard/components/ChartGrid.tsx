@@ -3850,6 +3850,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
                       onLoadComplete={() =>
                         handleWidgetLoadComplete(batchIndex, "number")
                       }
+                      isDefaultNotivix={isDefaultNotivix}
                     >
                       <NumberCard
                         sx={{ ...getCardSx() }}
@@ -4202,6 +4203,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
                   onLoadComplete={() =>
                     handleWidgetLoadComplete(batchIndex, "other")
                   }
+                  isDefaultNotivix={isDefaultNotivix}
                 >
                   <StyledCard
                     sx={{ ...getCardSx() }}

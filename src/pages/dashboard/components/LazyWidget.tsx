@@ -17,6 +17,7 @@ interface LazyWidgetProps {
   onLoadStart?: () => void;
   onLoadComplete?: () => void;
   loaderHeight?: number;
+  isDefaultNotivix?: boolean;
 }
 
 const LazyWidget = ({
@@ -32,6 +33,7 @@ const LazyWidget = ({
   onLoadStart,
   onLoadComplete,
   loaderHeight = 450,
+  isDefaultNotivix,
 }: LazyWidgetProps) => {
   const dispatch = useAppDispatch();
   const containerRef = useRef<HTMLDivElement>(null);
@@ -54,6 +56,7 @@ const LazyWidget = ({
           endVersionValue,
           versionValue,
           dashboardFilters,
+          isDefaultNotivix,
         }),
       ).unwrap();
     } catch (err) {
@@ -72,6 +75,7 @@ const LazyWidget = ({
     dashboardFilters,
     onLoadStart,
     onLoadComplete,
+    isDefaultNotivix,
   ]);
 
   useEffect(() => {
