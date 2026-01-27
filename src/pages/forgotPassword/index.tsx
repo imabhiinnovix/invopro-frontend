@@ -42,7 +42,7 @@ const ForgotPassword = () => {
       .required("Email is Required")
       .matches(
         /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/,
-        "Invalid email address"
+        "Invalid email address",
       )
       .max(50, "Email is too long"),
     otp: yup.string().when("$step", {
@@ -61,7 +61,7 @@ const ForgotPassword = () => {
           .min(8, "Password must be at least 8 characters")
           .matches(
             /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_])\S+$/,
-            "Password must contain at least one uppercase, one lowercase, one number and one special character"
+            "Password must contain at least one uppercase, one lowercase, one number and one special character",
           ),
       otherwise: (schema) => schema.notRequired(),
     }),
@@ -95,7 +95,7 @@ const ForgotPassword = () => {
         resetCountdown();
       }
     },
-    true
+    true,
   );
 
   const resetPasswordMutation = usePost<any, any>(
@@ -105,7 +105,7 @@ const ForgotPassword = () => {
         navigate("/login");
       }
     },
-    true
+    true,
   );
 
   const handleResendOTP = () => {
@@ -169,6 +169,7 @@ const ForgotPassword = () => {
                 {...register("email")}
                 fullWidth
                 name="email"
+                autoComplete="off"
                 label="Email address"
                 placeholder="example@gmail.com"
                 required
@@ -246,6 +247,7 @@ const ForgotPassword = () => {
                 {...register("newPassword")}
                 fullWidth
                 name="newPassword"
+                autoComplete="new-password"
                 label="New Password"
                 placeholder="@Demo1234"
                 required
@@ -257,6 +259,7 @@ const ForgotPassword = () => {
                 {...register("confirmPassword")}
                 fullWidth
                 name="confirmPassword"
+                autoComplete="new-password"
                 label="Confirm Password"
                 placeholder="@Demo1234"
                 required

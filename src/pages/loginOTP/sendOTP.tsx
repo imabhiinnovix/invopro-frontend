@@ -33,7 +33,7 @@ function SendOTP() {
         }
       }, 10);
     },
-    true
+    true,
   );
 
   const LoginSchema = yup.object().shape({
@@ -42,7 +42,7 @@ function SendOTP() {
       .required("Email is Required")
       .matches(
         /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/,
-        "Invalid email address"
+        "Invalid email address",
       )
       .max(50, "Email is too long"),
   });
@@ -91,6 +91,7 @@ function SendOTP() {
             required
             error={!!errors.email}
             helperText={errors.email?.message}
+            autoComplete="off"
           />
 
           {!sendOTP?.isPending && !sendOTP.isSuccess ? (
