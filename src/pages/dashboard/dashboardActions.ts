@@ -446,6 +446,51 @@ export const fetchWidgetDataLazy = createAsyncThunk(
         throw new Error("Request aborted");
       }
 
+      if (chart.widgetKind === "image") {
+        const imageResponse = await axiosInstance.get(
+          `${GET.DASHBOARD_WIDGET_IMAGE}/${chart._id}`,
+          {
+            headers: {
+              Authorization:
+                axiosInstance.defaults.headers.common.Authorization,
+            },
+            signal,
+          },
+        );
+
+        if (imageResponse.data.success) {
+          const essentialData = {
+            _id: chart._id,
+            createdBy: chart.createdBy,
+            dashboardId: chart.dashboardId,
+            organizationId: chart.organizationId,
+            name: chart.name,
+            position: chart.position,
+            widgetKind: chart.widgetKind,
+            dimensions: chart.dimensions || [],
+            groupBy: chart.groupBy || [],
+            plotType: chart.plotType || [],
+            aggregation: chart.aggregation,
+            conditions: chart.conditions || [],
+            isActive: chart.isActive,
+            createdAt: chart.createdAt,
+            updatedAt: chart.updatedAt,
+            widgetTypeId: chart.widgetTypeId,
+            dataSourceId: chart.dataSourceId,
+            data: imageResponse.data.data,
+          };
+
+          dispatch(
+            storeWidgetData({
+              widgetId: chart._id,
+              data: essentialData,
+              shouldCache: !isDefaultNotivix,
+            }),
+          );
+          return imageResponse.data;
+        }
+      }
+
       const widgetResponse = await axiosInstance.post<WidgetDataResponse>(
         GET.DASHBOARD_WIDGET_DATA,
         {

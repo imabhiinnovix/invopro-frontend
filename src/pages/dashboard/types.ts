@@ -210,6 +210,8 @@ export interface ChartResponse {
   organizationId: string;
   name: string;
   description?: string;
+  widgetKind?: string;
+  image?: string;
   position?: {
     x: number;
     y: number;

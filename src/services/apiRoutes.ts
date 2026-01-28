@@ -125,6 +125,7 @@ export const GET = {
   DASHBOARD_WIDGET_GET_CHART_DATA: "/common/dashboard/widget/getWidgets",
   DASHBOARD_WIDGET: "/dashboard/widget",
   DASHBOARD_WIDGET_DATA: "/common/dashboard/widget/getWidgetData",
+  DASHBOARD_WIDGET_IMAGE: "/common/dashboard/widget/image",
   FIXED_DASHBOARD_WIDGET_DATA: "/common/dataSourceVersion/chartData",
   OPERATOR_LIST: "/common/operator/list",
   WIDGET_THEME: "/common/widgetTheme",
