@@ -6,6 +6,7 @@ import { DashboardView } from "./components/DashboardView";
 import { toast } from "react-toastify";
 import axiosInstance from "../../services/axiosInstance";
 import { POST } from "../../services/apiRoutes";
+import usePost from "../../hooks/usePost";
 import {
   Box,
   Typography,
@@ -61,30 +62,41 @@ const Dashboard = () => {
   const [dataSourceId, setDataSourceId] = useState<string>("");
 
   const permissions = useSelector(
-    (state: RootState) => state.userPermission?.permissions
+    (state: RootState) => state.userPermission?.permissions,
   );
 
   const shouldAllowDashboardCreate = checkPermission(
     permissions,
     PermissionsMap.DASHBOARD,
-    "create"
+    "create",
   );
   const shouldAllowDashboardDelete = checkPermission(
     permissions,
     PermissionsMap.DASHBOARD,
-    "delete"
+    "delete",
   );
 
   const shouldAllowDashboardGet = checkPermission(
     permissions,
     PermissionsMap.DASHBOARD,
-    "get"
+    "get",
   );
 
   const shouldAllowDefaultDashboardDelete = checkPermission(
     permissions,
     PermissionsMap.DEFAULT_DASHBOARD,
-    "delete"
+    "delete",
+  );
+
+  const updateDashboardMutation = usePost<
+    { name: string },
+    { success: boolean; message: string }
+  >(
+    ["dashboards"],
+    () => {
+      dispatch(fetchDashboardList());
+    },
+    true,
   );
 
   useEffect(() => {
@@ -101,17 +113,11 @@ const Dashboard = () => {
     }
   }, [id, dispatch]);
 
-  const handleTitleChange = async (newTitle: string) => {
-    try {
-      await axiosInstance.post(`${POST.UPDATE_DASHBOARD}/${id}`, {
-        name: newTitle,
-      });
-      dispatch(fetchDashboardList());
-      toast.success("Dashboard name updated successfully!");
-    } catch (error) {
-      console.error("Failed to update dashboard name:", error);
-      toast.error("Failed to update dashboard name. Please try again.");
-    }
+  const handleTitleChange = (newTitle: string) => {
+    updateDashboardMutation.mutate({
+      url: `${POST.UPDATE_DASHBOARD}/${id}`,
+      payload: { name: newTitle },
+    });
   };
 
   const handleEdit = (dashboardId: string) => {
@@ -131,7 +137,7 @@ const Dashboard = () => {
       try {
         setIsDeleting(true);
         await axiosInstance.post(
-          `${POST.DELETE_DASHBOARD}/${dashboardToDelete._id}`
+          `${POST.DELETE_DASHBOARD}/${dashboardToDelete._id}`,
         );
         dispatch(fetchDashboardList());
         toast.success("Dashboard deleted successfully!");
@@ -165,7 +171,7 @@ const Dashboard = () => {
             dashboardType,
             dynamicVersionValue: timePeriod,
             ...(dashboardType === "fixed" && { dataSourceId: dataSourceId }),
-          })
+          }),
         ).unwrap()) as DashboardListResponse;
         await dispatch(fetchDashboardList());
         setOpenCreateModal(false);
@@ -191,8 +197,8 @@ const Dashboard = () => {
           error && typeof error === "object" && "payload" in error
             ? (error.payload as { message?: string })?.message
             : error && typeof error === "object" && "message" in error
-            ? (error as { message?: string })?.message
-            : "Failed to create dashboard. Please try again.";
+              ? (error as { message?: string })?.message
+              : "Failed to create dashboard. Please try again.";
         toast.error(errorMessage);
       } finally {
         setIsCreating(false);

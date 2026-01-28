@@ -110,7 +110,7 @@ const FocusAwareInput = React.memo(
         error={error}
       />
     );
-  }
+  },
 );
 
 const ConditionRuleBuilder = ({
@@ -122,7 +122,8 @@ const ConditionRuleBuilder = ({
   initialNotification,
 }) => {
   const organizationId = useSelector(
-    (state: RootState) => state.userPermission?.currentUser?.organizationId?._id
+    (state: RootState) =>
+      state.userPermission?.currentUser?.organizationId?._id,
   );
   const [notification, setNotification] = useState(initialNotification);
   const { list } = useSelector((state: RootState) => state.dataSource);
@@ -167,7 +168,7 @@ const ConditionRuleBuilder = ({
   useEffect(() => {
     if (notification.entityId && list) {
       const selectedEntity = list.find(
-        (item) => item._id === notification.entityId
+        (item) => item._id === notification.entityId,
       );
 
       if (selectedEntity?.fieldSettings) {
@@ -220,10 +221,10 @@ const ConditionRuleBuilder = ({
     const field = fieldOptionsRef.current.find((f) => f.value === rule.field);
     const operators =
       operatorListRef.current.data?.data?.find(
-        (op) => op.fieldType === field?.type
+        (op) => op.fieldType === field?.type,
       )?.operators || [];
     const selectedOperator = operators?.find(
-      (op) => op.operatorKey === rule.operator
+      (op) => op.operatorKey === rule.operator,
     );
     return selectedOperator?.valueRequired && !rule.value;
   };
@@ -241,7 +242,7 @@ const ConditionRuleBuilder = ({
       const updatedNotification = JSON.parse(JSON.stringify(prev));
       const group = getGroupByPath(
         updatedNotification.conditionGroup,
-        groupPath
+        groupPath,
       );
       group.rules.push(newRule);
       return updatedNotification;
@@ -259,7 +260,7 @@ const ConditionRuleBuilder = ({
       const updatedNotification = JSON.parse(JSON.stringify(prev));
       const group = getGroupByPath(
         updatedNotification.conditionGroup,
-        groupPath
+        groupPath,
       );
       group.rules.push(newGroup);
       return updatedNotification;
@@ -271,7 +272,7 @@ const ConditionRuleBuilder = ({
       const updatedNotification = JSON.parse(JSON.stringify(prev));
       const group = getGroupByPath(
         updatedNotification.conditionGroup,
-        groupPath
+        groupPath,
       );
       group.rules.splice(index, 1);
       return updatedNotification;
@@ -283,7 +284,7 @@ const ConditionRuleBuilder = ({
       const updatedNotification = JSON.parse(JSON.stringify(prev));
       const group = getGroupByPath(
         updatedNotification.conditionGroup,
-        groupPath
+        groupPath,
       );
 
       if (group && group.rules && group.rules[index]) {
@@ -291,13 +292,13 @@ const ConditionRuleBuilder = ({
 
         if (field === "operator") {
           const selectedField = fieldOptionsRef.current.find(
-            (f) => f.value === group.rules[index].field
+            (f) => f.value === group.rules[index].field,
           );
           const operators = operatorListRef.current.data?.data?.find(
-            (op) => op.fieldType === selectedField?.type
+            (op) => op.fieldType === selectedField?.type,
           )?.operators;
           const selectedOperator = operators?.find(
-            (op) => op.operatorKey === value
+            (op) => op.operatorKey === value,
           );
           if (selectedOperator && !selectedOperator.valueRequired) {
             group.rules[index].value = "";
@@ -315,7 +316,7 @@ const ConditionRuleBuilder = ({
       const updatedNotification = JSON.parse(JSON.stringify(prev));
       const group = getGroupByPath(
         updatedNotification.conditionGroup,
-        groupPath
+        groupPath,
       );
       if (group) {
         group.logic = logic;
@@ -330,10 +331,10 @@ const ConditionRuleBuilder = ({
       if (!field) return null;
       const operators =
         operatorListRef.current.data?.data?.find(
-          (op) => op.fieldType === field?.type
+          (op) => op.fieldType === field?.type,
         )?.operators || [];
       const selectedOperator = operators?.find(
-        (op) => op.operatorKey === rule.operator
+        (op) => op.operatorKey === rule.operator,
       );
       const valueRequired = selectedOperator?.valueRequired ?? true;
 
@@ -427,7 +428,7 @@ const ConditionRuleBuilder = ({
           );
       }
     },
-    [updateRule, validateValue]
+    [updateRule, validateValue],
   );
 
   const renderSelectField = useCallback((rule, updateValue, hasError) => {
@@ -478,11 +479,11 @@ const ConditionRuleBuilder = ({
   const RuleComponent = memo(
     ({ rule, groupPath, index }) => {
       const selectedField = fieldOptionsRef.current.find(
-        (f) => f.value === rule.field
+        (f) => f.value === rule.field,
       );
       const operators =
         operatorListRef.current.data?.data?.find(
-          (op) => op.fieldType === selectedField?.type
+          (op) => op.fieldType === selectedField?.type,
         )?.operators || [];
 
       return (
@@ -554,7 +555,7 @@ const ConditionRuleBuilder = ({
         prevProps.groupPath === nextProps.groupPath &&
         prevProps.index === nextProps.index
       );
-    }
+    },
   );
 
   const GroupComponent = memo(({ group, groupPath = [], isRoot = false }) => {
@@ -727,7 +728,7 @@ const ConditionRuleBuilder = ({
             }
           } else {
             const fieldOption = fieldOptionsRef.current.find(
-              (f) => f.value === rule.field
+              (f) => f.value === rule.field,
             );
             if (fieldOption && rule.field && rule.operator) {
               const condition = {
@@ -762,7 +763,7 @@ const ConditionRuleBuilder = ({
             }
           } else {
             const fieldOption = fieldOptionsRef.current.find(
-              (f) => f.value === rule.field
+              (f) => f.value === rule.field,
             );
             if (fieldOption && rule.field && rule.operator) {
               const condition = {
@@ -785,10 +786,10 @@ const ConditionRuleBuilder = ({
         return result.conditions.length > 0 ? result : null;
       };
       const conditionGroup = transformGroup(
-        notificationRef.current.conditionGroup
+        notificationRef.current.conditionGroup,
       );
       const summaryConditionGroup = transformGroupSummary(
-        notificationRef.current.conditionGroup
+        notificationRef.current.conditionGroup,
       );
       return {
         name: notificationRef.current.name || "",
@@ -891,34 +892,34 @@ export default function EditNotificationTypes() {
   const { getHeadingSx } = useComponentTypography();
 
   const permissions = useSelector(
-    (state: RootState) => state.userPermission.permissions
+    (state: RootState) => state.userPermission.permissions,
   );
   const shouldAllowScheduler = checkPermission(
     permissions,
     PermissionsMap.NOTIFICATION_SETTING_FREQUENCY,
-    "list"
+    "list",
   );
 
   const shouldAllowSchedulerCreate = checkPermission(
     permissions,
     PermissionsMap.NOTIFICATION_SETTING_FREQUENCY,
-    "create"
+    "create",
   );
   const shouldAllowSchedulerUpdate = checkPermission(
     permissions,
     PermissionsMap.NOTIFICATION_SETTING_FREQUENCY,
-    "update"
+    "update",
   );
   const shouldAllowSchedulerDelete = checkPermission(
     permissions,
     PermissionsMap.NOTIFICATION_SETTING_FREQUENCY,
-    "delete"
+    "delete",
   );
 
   const shouldAllowSchedulerGet = checkPermission(
     permissions,
     PermissionsMap.NOTIFICATION_SETTING_FREQUENCY,
-    "get"
+    "get",
   );
 
   const [notificationData, setNotificationData] = useState({});
@@ -930,12 +931,16 @@ export default function EditNotificationTypes() {
   const updatedList = list
     ? list.filter((item) => item?.isShowMenu === true)
     : [];
-  const updateNotification = usePut(["updateNotification"]);
+  const updateNotification = usePut(
+    ["notificationDetails", id],
+    () => {},
+    true,
+  );
 
   const notificationDataFetch = useGet(
     ["notificationDetails", id],
     id ? `${GET.NOTIFICATION_SETTING_TYPE_DETAIL}/${id}` : null,
-    !!id
+    !!id,
   );
 
   const navigate = useNavigate();
@@ -944,7 +949,7 @@ export default function EditNotificationTypes() {
     if (notificationDataFetch.data?.data && list) {
       const backendData = notificationDataFetch.data.data;
       const selectedEntity = list.find(
-        (item) => item._id === backendData.dataSourceId
+        (item) => item._id === backendData.dataSourceId,
       );
       let newFieldOptions = [];
       if (selectedEntity?.fieldSettings) {
@@ -1020,7 +1025,7 @@ export default function EditNotificationTypes() {
       toast.error("Failed to load notification data");
       console.error(
         "Error fetching notification:",
-        notificationDataFetch.error
+        notificationDataFetch.error,
       );
     }
   }, [notificationDataFetch.error]);
@@ -1043,16 +1048,12 @@ export default function EditNotificationTypes() {
         payload: notificationData,
       });
       if (response.success) {
-        toast.success("Notification updated successfully!");
         setExpanded((prev) => ({ ...prev, condition: false, reminder: true }));
       } else {
         throw new Error("Notification update failed");
       }
     } catch (error) {
       console.error("Error updating notification:", error);
-      toast.error(
-        error.message || "Failed to update notification. Please try again."
-      );
     }
   };
 
