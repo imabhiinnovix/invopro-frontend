@@ -713,7 +713,7 @@ interface SaveWidgetsPayload {
 
 export const saveWidgets = createAsyncThunk(
   "dashboard/saveWidgets",
-  async (payload: SaveWidgetsPayload, { rejectWithValue }) => {
+  async (payload: SaveWidgetsPayload) => {
     try {
       const { data } = await axiosInstance.post<CreateWidgetResponse>(
         POST.SAVE_WIDGETS,
@@ -722,11 +722,9 @@ export const saveWidgets = createAsyncThunk(
       return data;
     } catch (error) {
       if (axios.isAxiosError(error) && error.response?.data) {
-        return rejectWithValue(error.response.data);
+        return error.response.data;
       }
-      return rejectWithValue({
-        message: "Failed to share dashboard. Please try again.",
-      });
+      return "Failed to share dashboard. Please try again.";
     }
   },
 );
