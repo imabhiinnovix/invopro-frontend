@@ -348,7 +348,12 @@ const ProfilePage = () => {
         postalCode: newProfile.address.postalCode,
       });
       if (shouldAllowView) {
-        setProfileImage(userProfile?.imagePath || "/default-avatar.png");
+        const imagePath = userProfile?.imagePath || "/default-avatar.png";
+        const imageWithNoCache =
+          imagePath !== "/default-avatar.png"
+            ? `${imagePath}?t=${Date.now()}`
+            : imagePath;
+        setProfileImage(imageWithNoCache);
       }
       setSelectedDepartmentId(userProfile?.departmentId?._id || "");
     }

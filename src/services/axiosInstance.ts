@@ -21,7 +21,11 @@ axiosInstance.interceptors.request.use(
       delete config.headers.Authorization;
     }
 
-    if (config.data && typeof config.data === "object") {
+    if (
+      config.data &&
+      typeof config.data === "object" &&
+      !(config.data instanceof FormData)
+    ) {
       config.data = sanitizeInputBatch(config.data);
 
       if (import.meta.env.DEV) {
