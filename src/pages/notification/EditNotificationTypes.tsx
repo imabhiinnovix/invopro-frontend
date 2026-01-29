@@ -922,10 +922,35 @@ export default function EditNotificationTypes() {
     "get",
   );
 
+  type Rule = {
+    id: string;
+    field: string;
+    operator: string;
+    value: string;
+    timeUnit?: string;
+  };
+
+  type ConditionGroup = {
+    id: string;
+    logic: string;
+    rules: Array<Rule | ConditionGroup>;
+  };
+
+  type InitialNotificationType = {
+    name: string;
+    entityId: string;
+    conditionGroup: {
+      logic: string;
+      rules: Array<Rule | ConditionGroup>;
+    };
+    _id: string;
+  } | null;
+
   const [notificationData, setNotificationData] = useState({});
   const [notificationTypeId, setNotificationTypeId] = useState(id);
   const [fieldOptions, setFieldOptions] = useState([]);
-  const [initialNotification, setInitialNotification] = useState(null);
+  const [initialNotification, setInitialNotification] =
+    useState<InitialNotificationType>(null);
 
   const { list } = useSelector((state: RootState) => state.dataSource);
   const updatedList = list
@@ -964,7 +989,7 @@ export default function EditNotificationTypes() {
       setFieldOptions(newFieldOptions);
 
       const transformConditions = (conditions) => {
-        return conditions.map((condition, index) => {
+        return conditions?.map((condition, index) => {
           if (
             condition.conditions &&
             Array.isArray(condition.conditions) &&
@@ -1001,22 +1026,23 @@ export default function EditNotificationTypes() {
           }
         });
       };
-
       const firstGroup = backendData.conditionGroups[0];
-      if (firstGroup) {
-        const transformedRules = transformConditions(firstGroup.conditions);
-        const newInitialNotification = {
-          name: backendData.name,
-          entityId: backendData.dataSourceId,
-          conditionGroup: {
-            logic: firstGroup.group_operator,
-            rules: transformedRules,
-          },
-          _id: backendData._id,
-        };
-        setInitialNotification(newInitialNotification);
-        setNotificationTypeId(backendData._id);
-      }
+      // if (firstGroup) {
+      const transformedRules = transformConditions(
+        firstGroup?.conditions || [],
+      );
+      const newInitialNotification = {
+        name: backendData.name,
+        entityId: backendData.dataSourceId,
+        conditionGroup: {
+          logic: firstGroup?.group_operator,
+          rules: transformedRules,
+        },
+        _id: backendData._id,
+      };
+      setInitialNotification(newInitialNotification);
+      setNotificationTypeId(backendData._id);
+      // }
     }
   }, [notificationDataFetch.data, list]);
 
