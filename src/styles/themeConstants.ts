@@ -117,13 +117,13 @@ export const getDefaultDashboardTheme = (): DashboardTheme => ({
     },
     table: {
       boxShadow: STYLE_GUIDE.SHADOWS.sm,
-      headerBackground: STYLE_GUIDE.COLORS.backgroundLightGray,
-      headerText: STYLE_GUIDE.COLORS.textGray,
-      rowOddBackground: STYLE_GUIDE.COLORS.backgroundDefault,
+      headerBackground: STYLE_GUIDE.COLORS.white,
+      headerText: STYLE_GUIDE.COLORS.tableHeaderText,
+      rowOddBackground: STYLE_GUIDE.COLORS.white,
       rowEvenBackground: STYLE_GUIDE.COLORS.white,
       rowHoverBackground: STYLE_GUIDE.COLORS.backgroundHover,
-      rowText: STYLE_GUIDE.COLORS.textDarkGray,
-      borderColor: STYLE_GUIDE.COLORS.divider,
+      rowText: STYLE_GUIDE.COLORS.tableBodyText,
+      borderColor: STYLE_GUIDE.COLORS.tableBorder,
     },
     navigation: {
       backgroundColor: STYLE_GUIDE.COLORS.white,
@@ -475,13 +475,17 @@ export const createMuiThemeFromDashboardTheme = (dashboardTheme: DashboardTheme)
       MuiButton: {
         styleOverrides: {
           root: {
+            transition: 'all 0.2s ease-in-out',
+            '&:hover': {
+              transform: 'translateY(-1px)',
+            },
+            '&:active': {
+              transform: 'translateY(0)',
+            },
             '&.MuiButton-contained': {
               '&.MuiButton-colorPrimary': {
                 backgroundColor: dashboardTheme.colors.primary.main,
                 color: dashboardTheme.colors.primary.contrastText,
-                '&:hover': {
-                  backgroundColor: dashboardTheme.colors.primary.light,
-                },
                 '&:active': {
                   backgroundColor: dashboardTheme.colors.background.default,
                 },
@@ -489,9 +493,6 @@ export const createMuiThemeFromDashboardTheme = (dashboardTheme: DashboardTheme)
               '&.MuiButton-colorSecondary': {
                 backgroundColor: dashboardTheme.colors.secondary.main,
                 color: dashboardTheme.colors.secondary.contrastText,
-                '&:hover': {
-                  backgroundColor: dashboardTheme.colors.secondary.light,
-                },
                 '&:active': {
                   backgroundColor: dashboardTheme.colors.secondary.dark,
                 },

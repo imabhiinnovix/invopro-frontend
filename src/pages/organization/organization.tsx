@@ -29,7 +29,7 @@ import { PUT, DELETE } from "../../services/apiRoutes";
 import DialogContent from "@mui/material/DialogContent";
 import IconButton from "@mui/material/IconButton";
 import EditIcon from "@mui/icons-material/Edit";
-import DeleteIcon from "@mui/icons-material/Delete";
+import DeleteOutlined from "@mui/icons-material/DeleteOutlined";
 import SaveIcon from "@mui/icons-material/Save";
 import CancelIcon from "@mui/icons-material/Cancel";
 import AddIcon from "@mui/icons-material/Add";
@@ -916,16 +916,17 @@ export default function Organization() {
                     },
                   },
                   {
-                    field: "action",
-                    headerName: "Action",
-                    width: 170,
+                    field: "actions",
+                    headerName: "Actions",
+                    minWidth: 100,
                     sortable: false,
                     renderCell: (params) => {
                       const org = params.row.originalData as any;
                       if (!org) return null;
                       return (
-                        <>
+                        <Box sx={{ display: "flex", gap: 0.5 }}>
                           <IconButton
+                            color="primary"
                             disabled={!shouldAllowEdit}
                             onClick={(e) => {
                               e.stopPropagation();
@@ -933,10 +934,14 @@ export default function Organization() {
                             }}
                             size="small"
                             title="Edit"
+                            sx={{
+                              "&:not(.Mui-disabled)": { color: "primary.main" },
+                            }}
                           >
                             <EditIcon fontSize="small" />
                           </IconButton>
                           <IconButton
+                            color="primary"
                             disabled={!shouldAllowDelete}
                             onClick={(e) => {
                               e.stopPropagation();
@@ -944,10 +949,13 @@ export default function Organization() {
                             }}
                             size="small"
                             title="Delete"
+                            sx={{
+                              "&:not(.Mui-disabled)": { color: "primary.main" },
+                            }}
                           >
-                            <DeleteIcon fontSize="small" />
+                            <DeleteOutlined fontSize="small" />
                           </IconButton>
-                        </>
+                        </Box>
                       );
                     },
                   },
@@ -955,6 +963,7 @@ export default function Organization() {
                 loading={isLoading}
                 getRowId={(row) => row._id}
                 disableColumnMenu
+                disableVirtualization
                 onRowClick={(params) => {
                   const org = params.row.originalData as any;
                   if (org) {
@@ -1854,7 +1863,7 @@ export default function Organization() {
                               onClick={() => remove(idx)}
                               disabled={fields.length === 1}
                             >
-                              <DeleteIcon />
+                              <DeleteOutlined />
                             </IconButton>
                           </Grid>
                         </Grid>
@@ -2039,7 +2048,7 @@ export default function Organization() {
                                               ]);
                                             }}
                                           >
-                                            <DeleteIcon />
+                                            <DeleteOutlined />
                                           </IconButton>
                                         </Grid>
 
@@ -2292,7 +2301,7 @@ export default function Organization() {
                           onClick={() => removeMedium(idx)}
                           size="small"
                         >
-                          <DeleteIcon />
+                          <DeleteOutlined />
                         </IconButton>
                       </Grid>
 

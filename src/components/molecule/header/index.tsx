@@ -1,11 +1,8 @@
-import { AppBar, Toolbar, Box } from "@mui/material";
-
+import { AppBar, Toolbar, Box, IconButton, Typography } from "@mui/material";
+import MenuIcon from "@mui/icons-material/Menu";
 import { useLocation } from "react-router-dom";
-
-import logo from "../../../assets/logo.png";
 import { AccountPopover } from "../../atom/accountPopover/accountPopover";
-// import { Menu as MenuIcon } from "@mui/icons-material";
-// import { useNav } from "../../../context/NavContext";
+import { useNav } from "../../../context/NavContext";
 import { STYLE_GUIDE } from "../../../styles";
 import { useUnifiedTheme } from "../../../hooks/useUnifiedTheme";
 import UserDropdown from "./UserDropdown";
@@ -13,6 +10,11 @@ import { jwtDecode } from "jwt-decode";
 import { getAuthToken } from "../../../utils/handleLocalStorage";
 import { useContext, useEffect, useState } from "react";
 import { AuthContext } from "../../../context/AuthContext";
+import { ThemeSwitcherButton } from "../../common/ThemeSwitcher/ThemeSwitcher";
+import logo from "../../../assets/reportiVix-logo-2.png";
+
+const HEADER_TITLE = "Analytics Dashboard";
+const FAVICON_SRC = "/Reportivix-fav-32.png";
 
 const Header = () => {
   const [showUserDropdown, setShowUserDropdown] = useState(false);
@@ -20,6 +22,7 @@ const Header = () => {
   const theme = useUnifiedTheme();
   const token = getAuthToken();
   const { userDetails } = useContext(AuthContext);
+  const { openNav, setOpenNav } = useNav();
 
   useEffect(() => {
     if (token) {
@@ -36,6 +39,14 @@ const Header = () => {
     }
   }, [userDetails?.data]);
 
+  const handleMenuClick = () => {
+    setOpenNav(!openNav);
+  };
+
+  const isPublicRoute = ["/login", "/otp-login", "/otp-login/otp"].includes(
+    pathname
+  );
+
   return (
     <>
       <AppBar
@@ -43,63 +54,113 @@ const Header = () => {
         color="inherit"
         elevation={2}
         sx={{
-          height: 60,
-          bgcolor: "#f9f9f9",
+          bgcolor: theme.palette.background.paper,
           borderBottom: `1px solid ${theme.palette.divider}`,
           boxShadow: "none",
         }}
       >
-        <Toolbar>
+        <Toolbar
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            width: "100%",
+            pl: { xs: 0, sm: 0 },
+            pr: { xs: 2, sm: 2.5 }
+          }}
+        >
+          {/* Left: Logo (full when sidebar open, favicon when collapsed) */}
           <Box
-            component="a"
-            // href="/"
-            gap={STYLE_GUIDE.SPACING.s2}
             sx={{
               display: "flex",
-              alignContent: "center",
-              justifyContent: "space-between", // Adjust layout based on screen size
-              width: "100%", // Ensure Box takes up full width
+              alignItems: "center",
+              justifyContent: "flex-start",
+              gap: 1.5,
+              width: {
+                xs: "auto",
+                sm: openNav ? "250px" : `calc(${theme.spacing(7)} + 1px)`,
+              },
+              flexShrink: 0,
+              pl: { xs: 0, sm: openNav ? 2.5 : 1 },
+              pr: { xs: 0, sm: openNav ? 0 : 1 },
+              height: 64,
+              borderRight: `1px solid ${theme.palette.divider}`,
+              transition: "width 225ms ease-in-out",
             }}
           >
-            <Box gap={0} display="flex" alignItems="center">
-              {/* {!["/login", "/otp-login", "/otp-login/otp"].includes(
-                pathname
-              ) && (
-                <IconButton
-                  edge="start"
-                  color="inherit"
-                  aria-label="menu"
-                  onClick={(event) => {
-                    event.preventDefault(); // Prevents any default behavior (like page reload)
-                    handleClick(); // Toggles the nav state
-                  }}
-                >
-                  <MenuIcon />
-                </IconButton>
-              )} */}
+            {!isPublicRoute && (
               <Box
                 component="img"
-                src={logo}
-                alt="Logo"
-                sx={{ width: "auto", height: 60 }}
+                src={openNav ? logo : FAVICON_SRC}
+                alt="Reportivix Logo"
+                sx={{
+                  height: "auto",
+                  width: openNav ? "150px" : 32,
+                  maxHeight: 40,
+                  objectFit: "contain",
+                  transition: "width 225ms ease-in-out",
+                }}
               />
-              {/* <img src={logo} alt="Logo" /> */}
-            </Box>
+            )}
+          </Box>
+
+          {/* Right: Page Title (over content area) */}
+          {!isPublicRoute && (
             <Box
-              display="flex"
-              alignItems="center"
-              justifyContent="center"
-              gap={2}
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "flex-start",
+                flex: 1,
+                pl: {xs: 0, sm: 2}
+              }}
             >
-              {!["/login", "/otp-login", "/otp-login/otp"].includes(
-                pathname
-              ) && (
-                <>
-                  {showUserDropdown && <UserDropdown />}
-                  <AccountPopover />
-                </>
-              )}
+              <IconButton
+                edge="start"
+                color="inherit"
+                aria-label="menu"
+                onClick={handleMenuClick}
+                sx={{
+                  color: STYLE_GUIDE.COLORS.textPrimary,
+                  ml: { xs: 0, sm: 0},
+                  "&:hover": {
+                    backgroundColor: STYLE_GUIDE.COLORS.backgroundHover,
+                  },
+                }}
+              >
+                <MenuIcon />
+              </IconButton>
+              <Typography
+                variant="h6"
+                sx={{
+                  fontWeight: 600,
+                  ml: { xs: 0, sm: 2 },
+                  color: STYLE_GUIDE.COLORS.textPrimary,
+                  fontSize: { xs: "1rem", sm: "1.125rem" },
+                }}
+              >
+                {HEADER_TITLE}
+              </Typography>
             </Box>
+          )}
+
+          {/* Right: User Actions */}
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "flex-end",
+              gap: 2,
+              flex: 1,
+            }}
+          >
+            {!isPublicRoute && (
+              <>
+                <ThemeSwitcherButton />
+                {showUserDropdown && <UserDropdown />}
+                <AccountPopover />
+              </>
+            )}
           </Box>
         </Toolbar>
       </AppBar>

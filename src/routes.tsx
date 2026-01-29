@@ -68,6 +68,7 @@ const AppRoutes = () => {
       <Route element={<AuthProtect />}>
         <Route element={<CommonLayout />}>
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/dashboard/create" element={<Dashboard />} />
           <Route path="/dashboard/overview" element={<DashboardOverview />} />
           <Route path="/dashboard/analytics" element={<DashboardAnalytics />} />
           <Route path="/dashboard/:id" element={<Dashboard />} />
@@ -82,6 +83,7 @@ const AppRoutes = () => {
           <Route path="/report-settings" element={<ReportSettings />} />
           {/* // Notivix routes */}
           <Route path="/dashboard" element={<NotivixDashboard />} />
+          <Route path="/dashboard/create" element={<NotivixDashboard />} />
           <Route path="/dashboard/:id" element={<NotivixDashboard />} />
           <Route path="/notification" element={<Notification />} />
           <Route path="/notification-types" element={<Notification />} />

@@ -1800,7 +1800,7 @@ const columns: GridColDef[] = [
   {
     field: "actions",
     headerName: "Actions",
-    width: 250,
+    minWidth: 100,
     disableColumnMenu: true,
     sortable: false,
     resizable: false,
@@ -2053,6 +2053,7 @@ export default function NotificationLogger() {
             columns={columns}
             initialState={{ pagination: { paginationModel } }}
             disableColumnMenu
+            disableVirtualization
             paginationMode="server"
             loading={notificationLogList.isLoading}
             rowCount={notificationLogList?.data?.pagination.totalRecords || 0}

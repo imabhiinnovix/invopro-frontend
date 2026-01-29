@@ -380,6 +380,7 @@ export interface ChartGridProps {
   dashboardId: string;
   isEditMode: boolean;
   onEditChart: (chart: ChartResponse) => void;
+  onEditModeToggle?: () => void;
   isAddChartModalOpen: boolean;
   isEditChartModalOpen: boolean;
   gridColumns: number;

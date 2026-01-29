@@ -25,7 +25,7 @@ import {
   Edit as EditIcon,
   Save as SaveIcon,
   Cancel as CancelIcon,
-  Delete as DeleteIcon,
+  DeleteOutlined,
   CloudUpload as UploadIcon,
   Visibility,
   VisibilityOff,
@@ -1039,7 +1039,7 @@ const ProfilePage = () => {
                       <PrimaryButton
                         variant="outlined"
                         color="error"
-                        startIcon={<DeleteIcon />}
+                        startIcon={<DeleteOutlined />}
                         onClick={handleDeleteClick}
                         size="small"
                       >
@@ -1113,7 +1113,7 @@ const ProfilePage = () => {
                 <PrimaryButton
                   variant="outlined"
                   color="error"
-                  startIcon={<DeleteIcon />}
+                  startIcon={<DeleteOutlined />}
                   onClick={handleImagePreviewDelete}
                 >
                   Cancel
@@ -1562,7 +1562,7 @@ const ProfilePage = () => {
               onClick={handleDeleteConfirm}
               color="error"
               disabled={isDeleting}
-              startIcon={<DeleteIcon />}
+              startIcon={<DeleteOutlined />}
             >
               {isDeleting ? "Deleting..." : "Delete"}
             </PrimaryButton>

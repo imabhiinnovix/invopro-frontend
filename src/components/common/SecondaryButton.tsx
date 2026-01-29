@@ -2,10 +2,10 @@ import { ButtonProps, SxProps, Theme } from "@mui/material";
 import StyledButton from "./StyledButton";
 
 /**
- * Primary Button - Filled background with theme color
- * @deprecated Use StyledButton with variant="primary" instead
+ * Secondary Button - Outlined style with theme color
+ * @deprecated Use StyledButton with variant="secondary" instead
  */
-export default function PrimaryButton({
+export default function SecondaryButton({
   icon,
   onClick,
   sx,
@@ -20,7 +20,7 @@ export default function PrimaryButton({
 } & Omit<ButtonProps, "children" | "onClick" | "sx">) {
   return (
     <StyledButton
-      variant="primary"
+      variant="secondary"
       icon={icon}
       onClick={onClick}
       sx={sx}

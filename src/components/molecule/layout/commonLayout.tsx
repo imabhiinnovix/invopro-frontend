@@ -169,7 +169,7 @@ const CommonLayout = () => {
           sx={{
             flex: 1,
             height: "100%",
-            p: STYLE_GUIDE.SPACING.s3,
+            p: STYLE_GUIDE.SPACING.s5,
             overflowY: "auto",
             overflowX: "hidden",
           }}

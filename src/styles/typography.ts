@@ -16,7 +16,8 @@ export const TYPOGRAPHY = {
       xxxl: '30px',
       xxxxl: '36px',  
       display: '48px',
-      hero: '64px'
+      hero: '64px',
+      pageTitle: '30px'
     },
     
     fontWeight: {

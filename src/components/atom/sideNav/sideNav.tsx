@@ -1,4 +1,4 @@
-import { styled, Theme, CSSObject } from "@mui/material/styles";
+import { styled, Theme, CSSObject } from "@mui/material";
 import Box from "@mui/material/Box";
 import MuiDrawer from "@mui/material/Drawer";
 import List from "@mui/material/List";
@@ -47,14 +47,13 @@ import { DeleteConfirmationModal } from "./components/DeleteConfirmationModal";
 import { SubItemsList } from "./components/SubItemsList";
 import { CreateDashboardModal } from "./components/CreateDashboardModal";
 import LogoutIcon from "@mui/icons-material/Logout";
-import logo from "../../../assets/ReportiVix-logo.png";
-import footerLogo from "../../../assets/innovix-logo.png";
 import { AuthContext } from "../../../context/AuthContext";
 import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
 import { STYLE_GUIDE } from "../../../styles";
 import SettingsIcon from "@mui/icons-material/Settings";
 import { useUnifiedTheme } from "../../../hooks/useUnifiedTheme";
 import { useComponentTypography } from "../../../hooks/useComponentTypography";
+import { useThemeColor } from "../../../hooks/useThemeColor";
 import BusinessIcon from "@mui/icons-material/Business";
 import AssignmentIndIcon from "@mui/icons-material/AssignmentInd";
 import useGet from "../../../hooks/useGet";
@@ -64,7 +63,7 @@ import HorizontalSplitIcon from "@mui/icons-material/HorizontalSplit";
 import ManageAccountsIcon from "@mui/icons-material/ManageAccounts";
 import EventAvailableIcon from "@mui/icons-material/EventAvailable";
 import ArrowDropDownCircleIcon from "@mui/icons-material/ArrowDropDownCircle";
-import DeleteIcon from "@mui/icons-material/Delete";
+import DeleteOutlined from "@mui/icons-material/DeleteOutlined";
 import TopicIcon from "@mui/icons-material/Topic";
 import AccountBalanceIcon from "@mui/icons-material/AccountBalance";
 import BusinessCenterIcon from "@mui/icons-material/BusinessCenter";
@@ -116,7 +115,7 @@ const Drawer = styled(MuiDrawer, {
   position: "static",
   backgroundColor: STYLE_GUIDE.COLORS.white,
   "& .MuiPaper-root": {
-    backgroundColor: theme.palette.background.paper,
+    backgroundColor: STYLE_GUIDE.COLORS.white,
     border: "none",
     height: "100%",
     position: "static",
@@ -132,10 +131,10 @@ const Drawer = styled(MuiDrawer, {
   },
   "& .MuiListItemButton-root": {
     "&.Mui-selected, &.Mui-selected:hover": {
-      backgroundColor: theme.palette.action.hover,
+      backgroundColor: STYLE_GUIDE.COLORS.themeColorLight,
     },
     "&:hover": {
-      backgroundColor: theme.palette.action.hover,
+      backgroundColor: STYLE_GUIDE.COLORS.backgroundHover,
     },
   },
   variants: [
@@ -176,6 +175,7 @@ export default function SideNav() {
   const theme = useUnifiedTheme();
   const { getNavigationSx } = useComponentTypography();
   const { openNav } = useNav();
+  const themeColor = useThemeColor();
   const [openSettings, setOpenSettings] = React.useState(false);
   const [openDashboard, setOpenDashboard] = React.useState(false);
   const [openNotificationSettings, setOpenNotificationSettings] =
@@ -413,7 +413,8 @@ export default function SideNav() {
       dataSourceNotivixListAPI,
       theme,
       location,
-      permissions
+      permissions,
+      themeColor.themeColor
     );
   }, [
     loading,
@@ -455,15 +456,17 @@ export default function SideNav() {
             flexDirection: "column",
             height: "calc(100% - 60px)",
             width: openNav ? drawerWidth : `calc(${theme.spacing(7)} + 1px)`,
-            overflow: "auto",
+            overflow: "hidden",
             borderRight: `1px solid ${theme.palette.divider}`,
-            bgcolor: "#f9f9f9",
-            py: 1,
+            bgcolor: theme.palette.background.paper,
+            py: 0,
           }}
         >
+
+          {/* Navigation Items */}
           <Box
             sx={{
-              py: 0,
+              py: 2,
               flex: 1,
               overflowY: "auto",
               overflowX: "hidden",
@@ -487,6 +490,7 @@ export default function SideNav() {
             <List
               sx={{
                 pt: 0,
+                px: 1,
               }}
             >
               {navItems.map((item, i) => {
@@ -575,12 +579,13 @@ export default function SideNav() {
                                     {/* Create New Dashboard Button */}
                                     {shouldAllowDashboardCreate && (
                                       <MainListItem
-                                        onClick={() => setOpenCreateModal(true)}
+                                        onClick={() => navigate("/dashboard/create")}
                                         label="New Dashboards"
                                         icon={
                                           <AddIcon
                                             sx={{
                                               fontSize: "14px",
+                                              lineheight: "20px",
                                               color: theme.getIconColor(),
                                             }}
                                           />
@@ -981,26 +986,47 @@ export default function SideNav() {
               })}
             </List>
           </Box>
-          {/* Footer Logo Section */}
-          <Box
-            sx={{
-              height: "60px",
-              display: "flex",
-              alignItems: "end",
-              justifyContent: "center",
-              flexShrink: 0,
-              gap: 1,
-            }}
-          >
-            <Box component="span" sx={{ mb: 1.5, fontSize: "14px" }}>
-              Powered By
+          {/* Help Section */}
+          {openNav && (
+            <Box
+              sx={{
+                px: 2,
+                py: 2,
+                mt: "auto",
+                flexShrink: 0,
+                backgroundColor: themeColor.themeColorLight,
+                borderRadius: "8px",
+                mx: 1.5,
+                mb: 2,
+              }}
+            >
+              <Typography
+                sx={{
+                  fontSize: "12px",
+                  fontWeight: 500,
+                  color: STYLE_GUIDE.COLORS.black,
+                }}
+              >
+                Need help?
+              </Typography>
+              <Typography
+                sx={{
+                  fontSize: "12px",
+                  color: STYLE_GUIDE.COLORS.textSecondary,
+                  cursor: "pointer",
+                  "&:hover": {
+                    color: themeColor.themeColor,
+                  },
+                }}
+                onClick={() => {
+                  // TODO: Add link to documentation when available
+                  window.open("https://docs.reportivix.com", "_blank");
+                }}
+              >
+                Check our documentation
+              </Typography>
             </Box>
-            <img
-              src={footerLogo}
-              alt="Innovix Labs"
-              style={{ width: "30%", height: "100%" }}
-            />
-          </Box>
+          )}
         </Box>
       </Drawer>
       <CreateDashboardModal
@@ -1055,12 +1081,13 @@ function MainListItem({
 }) {
   const { getNavigationSx } = useComponentTypography();
   const theme = useUnifiedTheme();
+  const themeColor = useThemeColor();
   const location = useLocation();
   const isRouteActive = (route: string) => {
     return location.pathname.startsWith(route);
   };
 
-  let spacing = isMainItem ? STYLE_GUIDE.SPACING.s4 : STYLE_GUIDE.SPACING.s8;
+  let spacing = isMainItem ? STYLE_GUIDE.SPACING.s3 : STYLE_GUIDE.SPACING.s7;
   if (isNested) {
     spacing = STYLE_GUIDE.SPACING.s12;
   }
@@ -1078,16 +1105,6 @@ function MainListItem({
         py: 0.25,
       }}
     >
-      {!isMainItem && (
-        <Box
-          sx={{
-            backgroundColor: isActive ? theme.palette.primary.main : "#e2e2e2",
-            left: `calc(${spacing} - 8px)`,
-          }}
-          className="absolute h-full w-[2px] top-0"
-        ></Box>
-      )}
-
       <Tooltip title={title} placement="right">
         <ListItemButton
           disabled={disabled} // Apply disabled state
@@ -1099,29 +1116,28 @@ function MainListItem({
             }
           }}
           sx={{
-            minHeight: 36,
+            minHeight: 40,
             px: STYLE_GUIDE.SPACING.s2,
             pl: spacing,
-            // borderRadius: "6px",
+            borderRadius: "8px",
             transition: "all 0.2s ease-in-out",
-            // backgroundColor: isActive
-            //   ? theme.palette.action.selected
-            //   : "transparent",
+            backgroundColor: isActive
+              ? themeColor.themeColorLight
+              : "transparent",
             "&:hover": {
               backgroundColor: isActive
-                ? theme.palette.action.selected
-                : theme.palette.action.hover,
-              // transform: "translateX(2px)",
+                ? themeColor.themeColorLight
+                : STYLE_GUIDE.COLORS.backgroundHover,
             },
             color: isActive
-              ? theme.palette.primary.main
-              : theme.palette.text.primary,
+              ? themeColor.themeColor
+              : STYLE_GUIDE.COLORS.textSecondary,
           }}
         >
           {icon && showListItemIcon && (
             <ListItemIcon
               sx={{
-                minWidth: 24,
+                minWidth: 20,
                 mr: 1.25,
                 justifyContent: "center",
                 display: "flex",
@@ -1129,8 +1145,8 @@ function MainListItem({
                 "& .MuiSvgIcon-root": {
                   fontSize: 20,
                   color: isActive
-                    ? theme.palette.primary.main
-                    : theme.palette.text.secondary,
+                    ? themeColor.themeColor
+                    : STYLE_GUIDE.COLORS.textSecondary,
                   transition: "color 0.2s ease-in-out",
                 },
               }}
@@ -1149,11 +1165,11 @@ function MainListItem({
                 whiteSpace: "nowrap",
                 overflow: "hidden",
                 textOverflow: "ellipsis",
-                fontSize: isMainItem ? 13 : 12,
+                fontSize: isMainItem ? 14 : 13,
                 fontWeight: isActive ? 600 : isMainItem ? 500 : 400,
                 color: isActive
-                  ? theme.palette.primary.main
-                  : theme.palette.text.primary,
+                  ? themeColor.themeColor
+                  : STYLE_GUIDE.COLORS.textSecondary,
                 lineHeight: 1.5,
                 transition: "all 0.2s ease-in-out",
               },
@@ -1173,8 +1189,8 @@ function MainListItem({
                   sx={{
                     fontSize: 20,
                     color: isActive
-                      ? theme.palette.primary.main
-                      : theme.palette.text.secondary,
+                      ? themeColor.themeColor
+                      : STYLE_GUIDE.COLORS.textSecondary,
                     transition: "all 0.2s ease-in-out",
                   }}
                 />
@@ -1183,8 +1199,8 @@ function MainListItem({
                   sx={{
                     fontSize: 20,
                     color: isActive
-                      ? theme.palette.primary.main
-                      : theme.palette.text.secondary,
+                      ? themeColor.themeColor
+                      : STYLE_GUIDE.COLORS.textSecondary,
                     transition: "all 0.2s ease-in-out",
                   }}
                 />
@@ -1231,8 +1247,8 @@ function SubItemScroller({ children }: { children: React.ReactNode }) {
 }
 
 function NumberIcon({ number, route }: { number: number; route: string }) {
-  const theme = useUnifiedTheme();
-
+  const location = useLocation();
+  const themeColor = useThemeColor();
   const isRouteActive = (route: string) => {
     return location.pathname === route;
   };
@@ -1243,7 +1259,7 @@ function NumberIcon({ number, route }: { number: number; route: string }) {
         height: 20,
         borderRadius: "50%",
         backgroundColor: isRouteActive(route)
-          ? theme.palette.primary.main
+          ? themeColor.themeColor
           : "#00000094",
         display: "flex",
         alignItems: "center",
@@ -1260,15 +1276,17 @@ function NumberIcon({ number, route }: { number: number; route: string }) {
 const createIcon = (
   IconComponent: React.ElementType,
   route: string,
-  theme: Theme
+  theme: Theme,
+  location: Location,
+  themeColor: string
 ) => {
   return (
     <IconComponent
       sx={{
         fontSize: "20px",
         color: location.pathname.startsWith(route)
-          ? theme.palette.primary.main
-          : theme.palette.text.secondary,
+          ? themeColor
+          : STYLE_GUIDE.COLORS.textSecondary,
       }}
     />
   );
@@ -1284,7 +1302,8 @@ function getNavItems(
   dataSourceNotivixListAPI: UseQueryResult<DataSourceListPayload>,
   theme: any,
   location: Location,
-  permissions: PermissionMap
+  permissions: PermissionMap,
+  themeColor: string
 ) {
   const dsPerms = permissions?.[PermissionsMap.DATA_SOURCE] || {};
 
@@ -1306,13 +1325,13 @@ function getNavItems(
     })
     .map((item) => ({
       name: item?.name ?? "",
-      icon: createIcon(SourceIcon, `/data-source-new/${item?._id}`, theme),
+      icon: createIcon(SourceIcon, `/data-source-new/${item?._id}`, theme, location, themeColor),
       route: `/data-source-new/${item?._id}`,
     }));
 
   const alertsMenuItem = {
     name: "Alerts Settings",
-    icon: createIcon(NotificationsActiveIcon, "/notification", theme),
+    icon: createIcon(NotificationsActiveIcon, "/notification", theme, location, themeColor),
     route: "/notification",
     shouldShow: checkPermission(
       permissions,
@@ -1323,7 +1342,7 @@ function getNavItems(
 
   const NotificationLogsMenuItem = {
     name: "Notifications Logs",
-    icon: createIcon(NotificationsIcon, "/notification-logs", theme),
+    icon: createIcon(NotificationsIcon, "/notification-logs", theme, location, themeColor),
     route: "/notification-logs",
     shouldShow: checkPermission(
       permissions,
@@ -1333,7 +1352,7 @@ function getNavItems(
   };
   const Template = {
     name: "Templates",
-    icon: createIcon(ArticleIcon, "/template", theme),
+    icon: createIcon(ArticleIcon, "/template", theme, location, themeColor),
     route: "/template",
     shouldShow: checkPermission(
       permissions,
@@ -1398,7 +1417,7 @@ function getNavItems(
     },
     {
       name: "Reports",
-      icon: createIcon(AssessmentIcon, "/reports", theme),
+      icon: createIcon(AssessmentIcon, "/reports", theme, location, themeColor),
       route: "/reports",
       shouldShow: checkPermission(
         permissions,
@@ -1408,40 +1427,44 @@ function getNavItems(
     },
     {
       name: "Notifications",
-      icon: createIcon(NotificationsIcon, "/data-source", theme),
+      icon: createIcon(NotificationsIcon, "/data-source", theme, location, themeColor),
       route: "/data-source",
       subItems: dataSourceItems,
       shouldShow: shouldShowNotifications,
     },
     {
       name: "VixAI Insights",
-      icon: createIcon(AutoAwesomeIcon, "/VixAi-Insights", theme),
+      icon: createIcon(AutoAwesomeIcon, "/VixAi-Insights", theme, location, themeColor),
       route: "/VixAi-Insights",
     },
     {
       name: "Data Export Jobs",
-      icon: createIcon(TaskIcon, "/jobs", theme),
+      icon: createIcon(TaskIcon, "/jobs", theme, location, themeColor),
       route: "/jobs",
     },
     getSystemSettingsItems(
       dataSourceList,
       matchedDataSources,
       permissions,
-      theme
+      theme,
+      location,
+      themeColor
     ),
   ];
 }
 
 function getSystemSettingsItems(
-  dataSourceList,
-  matchedDataSources,
+  dataSourceList: any,
+  matchedDataSources: any,
   permissions: PermissionMap,
-  theme: Theme
+  theme: Theme,
+  location: any,
+  themeColor: string
 ) {
   // Data sources for Theme Settings submenu
   const themeSettingsDataSources = dataSourceList.map((item) => ({
     name: item?.name ?? "",
-    icon: createIcon(SourceIcon, `/data-source/${item?._id}`, theme),
+    icon: createIcon(SourceIcon, `/data-source/${item?._id}`, theme, location, themeColor),
     route: `/data-source/${item?._id}`,
   }));
 
@@ -1455,24 +1478,30 @@ function getSystemSettingsItems(
           icon = createIcon(
             EventAvailableIcon,
             `/data-source-new/${item?._id}`,
-            theme
+            theme,
+            location,
+            themeColor
           );
           break;
         case "IP Counsels":
-          icon = createIcon(PersonIcon, `/data-source-new/${item?._id}`, theme);
+          icon = createIcon(PersonIcon, `/data-source-new/${item?._id}`, theme, location, themeColor);
           break;
         case "Formality Officer":
           icon = createIcon(
             HorizontalSplitIcon,
             `/data-source-new/${item?._id}`,
-            theme
+            theme,
+            location,
+            themeColor
           );
           break;
         default:
           icon = createIcon(
             EventAvailableIcon,
             `/data-source-new/${item?._id}`,
-            theme
+            theme,
+            location,
+            themeColor
           );
           break;
       }
@@ -1486,12 +1515,12 @@ function getSystemSettingsItems(
 
   return {
     name: "Settings",
-    icon: createIcon(SettingsIcon, "/settings", theme),
+    icon: createIcon(SettingsIcon, "/settings", theme, location, themeColor),
     route: "/settings",
     subItems: [
       {
         name: "Attribute Option",
-        icon: createIcon(ArrowDropDownCircleIcon, "/attribute-option", theme),
+        icon: createIcon(ArrowDropDownCircleIcon, "/attribute-option", theme, location, themeColor),
         route: "/attribute-option",
         isBold: true,
         // shouldShow: checkPermission(
@@ -1503,7 +1532,7 @@ function getSystemSettingsItems(
       },
       {
         name: "Data Upload",
-        icon: createIcon(CloudUploadIcon, "/data-src-version", theme),
+        icon: createIcon(CloudUploadIcon, "/data-src-version", theme, location, themeColor),
         route: "/data-src-version",
         shouldShow: checkPermission(
           permissions,
@@ -1513,7 +1542,7 @@ function getSystemSettingsItems(
       },
       {
         name: "Entity",
-        icon: createIcon(CheckBoxOutlineBlankIcon, "/entity", theme),
+        icon: createIcon(CheckBoxOutlineBlankIcon, "/entity", theme, location, themeColor),
         route: "/entity",
         isBold: true,
         shouldShow: checkPermission(
@@ -1524,7 +1553,7 @@ function getSystemSettingsItems(
       },
       {
         name: "Data Source",
-        icon: createIcon(TopicIcon, "/data-src", theme),
+        icon: createIcon(TopicIcon, "/data-src", theme, location, themeColor),
         route: "/data-src",
         isBold: true,
         shouldShow:
@@ -1533,7 +1562,7 @@ function getSystemSettingsItems(
       },
       {
         name: "IP Report Constants",
-        icon: createIcon(SourceIcon, "/datasources", theme),
+        icon: createIcon(SourceIcon, "/datasources", theme, location, themeColor),
         route: "#",
         isBold: true,
         subItems: themeSettingsDataSources,
@@ -1546,13 +1575,13 @@ function getSystemSettingsItems(
       ...constantDataSources,
       {
         name: "System Settings",
-        icon: createIcon(ManageAccountsIcon, "/system-settings", theme),
+        icon: createIcon(ManageAccountsIcon, "/system-settings", theme, location, themeColor),
         route: "#",
         isBold: true,
         subItems: [
           {
             name: "Roles",
-            icon: createIcon(AssignmentIndIcon, "/roles", theme),
+            icon: createIcon(AssignmentIndIcon, "/roles", theme, location, themeColor),
             route: "/roles",
             shouldShow: checkPermission(
               permissions,
@@ -1562,7 +1591,7 @@ function getSystemSettingsItems(
           },
           {
             name: "Organization",
-            icon: createIcon(BusinessIcon, "/organization", theme),
+            icon: createIcon(BusinessIcon, "/organization", theme, location, themeColor),
             route: "/organization",
             shouldShow: checkPermission(
               permissions,
@@ -1572,7 +1601,7 @@ function getSystemSettingsItems(
           },
           {
             name: "Permission",
-            icon: createIcon(KeyIcon, "/permissions", theme),
+            icon: createIcon(KeyIcon, "/permissions", theme, location, themeColor),
             route: "/permissions",
             shouldShow: checkPermission(
               permissions,
@@ -1582,7 +1611,7 @@ function getSystemSettingsItems(
           },
           {
             name: "Department",
-            icon: createIcon(AccountBalanceIcon, "/department", theme),
+            icon: createIcon(AccountBalanceIcon, "/department", theme, location, themeColor),
             route: "/department",
             shouldShow:
               checkPermission(permissions, PermissionsMap.DEPARTMENT, "list") &&
@@ -1590,7 +1619,7 @@ function getSystemSettingsItems(
           },
           {
             name: "Business Unit",
-            icon: createIcon(AccountBalanceIcon, "/business-unit", theme),
+            icon: createIcon(AccountBalanceIcon, "/business-unit", theme, location, themeColor),
             route: "/business-unit",
             shouldShow:
               checkPermission(
@@ -1606,7 +1635,7 @@ function getSystemSettingsItems(
           },
           {
             name: "Designation",
-            icon: createIcon(BusinessCenterIcon, "/designation", theme),
+            icon: createIcon(BusinessCenterIcon, "/designation", theme, location, themeColor),
             route: "/designation",
             shouldShow:
               checkPermission(
@@ -1625,7 +1654,9 @@ function getSystemSettingsItems(
             icon: createIcon(
               InsertChartOutlinedIcon,
               "/system-settings/charts/source-list",
-              theme
+              theme,
+              location,
+              themeColor
             ),
             route: "#",
             shouldShow: checkPermission(
@@ -1639,7 +1670,9 @@ function getSystemSettingsItems(
                 icon: createIcon(
                   FormatListBulletedIcon,
                   "/system-settings/charts/source-list",
-                  theme
+                  theme,
+                  location,
+                  themeColor
                 ),
                 route: "/system-settings/charts/source-list",
                 shouldShow: checkPermission(
@@ -1652,7 +1685,7 @@ function getSystemSettingsItems(
           },
           {
             name: "My Profile",
-            icon: createIcon(ManageAccountsIcon, "/profile", theme),
+            icon: createIcon(ManageAccountsIcon, "/profile", theme, location, themeColor),
             route: "/profile",
           },
         ],

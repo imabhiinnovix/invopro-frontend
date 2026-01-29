@@ -21,7 +21,7 @@ import { GET } from "../../services/apiRoutes";
 import { toast } from "react-toastify";
 import { BUPaginationModelType } from ".";
 import { formatDateWithoutTime } from "../../utils/utils";
-import DeleteIcon from "@mui/icons-material/Delete";
+import DeleteOutlined from "@mui/icons-material/DeleteOutlined";
 
 interface BusinessUnitData {
   _id: string;
@@ -76,7 +76,7 @@ const columns: GridColDef[] = [
   {
     field: "actions",
     headerName: "Actions",
-    width: 250,
+    minWidth: 100,
     disableColumnMenu: true,
     sortable: false,
     resizable: false,
@@ -104,11 +104,12 @@ const columns: GridColDef[] = [
         <Tooltip title="Delete" arrow>
           <Button
             variant="text"
+            color="primary"
             onClick={() => params.row.handleDelete(params.row._id)}
-            sx={{ minWidth: "auto", color: "error.main" }}
+            sx={{ minWidth: "auto" }}
             disabled={!params.row._id}
           >
-            <DeleteIcon />
+            <DeleteOutlined />
           </Button>
         </Tooltip>
       </Box>
@@ -268,6 +269,7 @@ export function BusinessUnitDataTable({
           paginationModel={paginationModel}
           onPaginationModelChange={setPaginationModel}
           disableColumnMenu
+          disableVirtualization
           initialState={{ pagination: { paginationModel } }}
           pageSizeOptions={[10, 20]}
           sx={{ overflow: "visible" }}

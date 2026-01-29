@@ -4,7 +4,6 @@ import {
   Typography,
   TextField,
   Button,
-  ButtonGroup,
   Stack,
   MenuItem,
   SelectChangeEvent,
@@ -13,9 +12,7 @@ import StyledSelect from "../../../components/atom/common/StyledSelect";
 import AddIcon from "@mui/icons-material/Add";
 import EditIcon from "@mui/icons-material/Edit";
 import DoneIcon from "@mui/icons-material/Done";
-import PauseIcon from "@mui/icons-material/Pause";
 import ViewColumnIcon from "@mui/icons-material/ViewColumn";
-import SquareIcon from "@mui/icons-material/Square";
 import FilterListIcon from "@mui/icons-material/FilterList";
 import { useParams, useLocation } from "react-router-dom";
 import { ChartGrid } from "./NotivixChartGrid";
@@ -589,33 +586,48 @@ export const NotivixDashboardView: React.FC<DashboardViewProps> = ({
         <Box sx={{ display: "flex", gap: STYLE_GUIDE.SPACING.s4 }}>
           {isEditMode ? (
             <>
-              <ButtonGroup
-                variant="outlined"
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  borderRadius: 1,
+                  py: 0.25,
+                  px: 0.5,
+                }}
                 aria-label="grid columns"
-                size="small"
               >
+                <ViewColumnIcon sx={{ fontSize: 20, mr: 0.5 }} />
                 <Button
+                  size="small"
                   onClick={() => handleGridColumns(1)}
-                  variant={gridColumns === 1 ? "contained" : "outlined"}
-                  sx={{ px: STYLE_GUIDE.SPACING.s6 }}
+                  variant={gridColumns === 1 ? "contained" : "text"}
+                  sx={{ minWidth: 32, px: 0.75 }}
                 >
-                  <SquareIcon />
+                  1
                 </Button>
+                <Typography component="span" sx={{ color: "text.secondary", px: 0.25 }}>
+                  |
+                </Typography>
                 <Button
+                  size="small"
                   onClick={() => handleGridColumns(2)}
-                  variant={gridColumns === 2 ? "contained" : "outlined"}
-                  sx={{ px: STYLE_GUIDE.SPACING.s6 }}
+                  variant={gridColumns === 2 ? "contained" : "text"}
+                  sx={{ minWidth: 32, px: 0.75 }}
                 >
-                  <PauseIcon />
+                  2
                 </Button>
+                <Typography component="span" sx={{ color: "text.secondary", px: 0.25 }}>
+                  |
+                </Typography>
                 <Button
+                  size="small"
                   onClick={() => handleGridColumns(3)}
-                  variant={gridColumns === 3 ? "contained" : "outlined"}
-                  sx={{ px: STYLE_GUIDE.SPACING.s6 }}
+                  variant={gridColumns === 3 ? "contained" : "text"}
+                  sx={{ minWidth: 32, px: 0.75 }}
                 >
-                  <ViewColumnIcon />
+                  3
                 </Button>
-              </ButtonGroup>
+              </Box>
               <Button
                 variant="contained"
                 color="primary"

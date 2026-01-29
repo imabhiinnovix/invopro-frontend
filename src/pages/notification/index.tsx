@@ -30,7 +30,7 @@ import FilterListIcon from "@mui/icons-material/FilterList";
 import AddIcon from "@mui/icons-material/Add";
 import EditIcon from "@mui/icons-material/Edit";
 import VisibilityIcon from "@mui/icons-material/Visibility";
-import DeleteIcon from "@mui/icons-material/Delete";
+import DeleteOutlined from "@mui/icons-material/DeleteOutlined";
 import { useUnifiedTheme } from "../../hooks/useUnifiedTheme";
 import useGet from "../../hooks/useGet";
 import useDelete from "../../hooks/useDelete";
@@ -187,7 +187,7 @@ const columns: GridColDef[] = [
   {
     field: "actions",
     headerName: "Actions",
-    width: 250,
+    minWidth: 100,
     disableColumnMenu: true,
     sortable: false,
     resizable: false,
@@ -219,7 +219,7 @@ const columns: GridColDef[] = [
             sx={{ minWidth: "auto", color: "error.main" }}
             disabled={!params.row._id || !params.row.shouldAllowDelete}
           >
-            <DeleteIcon />
+            <DeleteOutlined />
           </Button>
         </Tooltip> */}
       </Box>
@@ -525,6 +525,7 @@ export default function NotificationTypes() {
             columns={columns}
             initialState={{ pagination: { paginationModel } }}
             disableColumnMenu
+            disableVirtualization
             paginationMode="server"
             sx={{ overflow: "visible", height: "calc(100vh - 280px)" }}
             loading={

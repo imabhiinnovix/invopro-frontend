@@ -23,6 +23,7 @@ import { STYLE_GUIDE } from "../../../styles";
 import { useComponentTypography } from "../../../hooks/useComponentTypography";
 import CommonTable from "../../common/table";
 import { formatDate } from "../../../utils/utils";
+import EditIcon from "@mui/icons-material/Edit";
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
   [`&.${tableCellClasses.head}`]: {
@@ -297,7 +298,15 @@ const DataSourceTable: React.FC<AttributeOptionTableProps> = ({
           <CreateUpdateDataSource
             setReload={setReload}
             title="Update Data Source"
-            CustomButton={<Button disabled={!shouldAllowEdit}>Edit</Button>}
+            CustomButton={
+            <Button
+              variant="text"
+              disabled={!shouldAllowEdit}
+              sx={{ minWidth: "auto" }}
+            >
+              <EditIcon />
+            </Button>
+          }
             data={row as any}
           />
         );
@@ -421,7 +430,11 @@ const DataSourceTable: React.FC<AttributeOptionTableProps> = ({
                 <CreateUpdateDataSource
                   setReload={setReload}
                   title="Update Data Source"
-                  CustomButton={<Button>Edit</Button>}
+                  CustomButton={
+                  <Button variant="text" sx={{ minWidth: "auto" }}>
+                    <EditIcon />
+                  </Button>
+                }
                   data={data}
                 />
               </StyledTableCell>

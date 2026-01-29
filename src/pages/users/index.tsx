@@ -19,7 +19,7 @@ import {
   IconButton,
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
-import DeleteIcon from "@mui/icons-material/Delete";
+import DeleteOutlined from "@mui/icons-material/DeleteOutlined";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import { STYLE_GUIDE } from "../../styles";
@@ -213,7 +213,7 @@ export default function Users({
       {
         field: "actions",
         headerName: "Actions",
-        width: 150,
+        minWidth: 100,
         disableColumnMenu: true,
         sortable: false,
         resizable: false,
@@ -236,18 +236,19 @@ export default function Users({
             <Tooltip title="Delete" arrow>
               <Button
                 variant="text"
+                color="primary"
                 onClick={() =>
                   (params.row as UserRowData).handleDelete(
                     (params.row as UserRowData).id
                   )
                 }
-                sx={{ minWidth: "auto", color: "error.main" }}
+                sx={{ minWidth: "auto" }}
                 disabled={
                   !(params.row as UserRowData).shouldAllowUserDelete ||
                   (params.row as UserRowData).id === userDetails?.data?._id
                 }
               >
-                <DeleteIcon />
+                <DeleteOutlined />
               </Button>
             </Tooltip>
           </Box>
@@ -856,6 +857,7 @@ export default function Users({
               rows={transformedUsers}
               columns={columns}
               disableColumnMenu
+              disableVirtualization
               sx={{
                 overflow: "visible",
               }}

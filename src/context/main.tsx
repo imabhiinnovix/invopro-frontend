@@ -2,6 +2,7 @@ import { ReactNode } from 'react';
 import AuthProvider from './AuthContext';
 import GeneralProvider from './GeneralContext';
 import { NavProvider } from './NavContext';
+import { AppThemeProvider } from './AppThemeContext';
 
 interface MainProviderProps {
   children: ReactNode;
@@ -9,11 +10,13 @@ interface MainProviderProps {
 
 const MainProvider = ({ children }: MainProviderProps) => {
   return (
-    <AuthProvider>
-      <GeneralProvider>
-        <NavProvider>{children}</NavProvider>
-      </GeneralProvider>
-    </AuthProvider>
+    <AppThemeProvider>
+      <AuthProvider>
+        <GeneralProvider>
+          <NavProvider>{children}</NavProvider>
+        </GeneralProvider>
+      </AuthProvider>
+    </AppThemeProvider>
   );
 };
 

@@ -12,7 +12,7 @@ import {
 } from '@mui/material';
 import {
   Edit as EditIcon,
-  Delete as DeleteIcon,
+  DeleteOutlined,
   ContentCopy as DuplicateIcon,
   CheckCircle as ApplyIcon,
   Palette as PaletteIcon,
@@ -244,7 +244,7 @@ const DashboardThemePreview: React.FC<DashboardThemePreviewProps> = ({
                     }
                   }}
                 >
-                  <DeleteIcon fontSize="small" />
+                  <DeleteOutlined fontSize="small" />
                 </IconButton>
               </span>
             </Tooltip>

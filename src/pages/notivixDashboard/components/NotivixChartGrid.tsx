@@ -63,7 +63,7 @@ import {
 import { ChartResponse, Dashboard } from "../types";
 import { styled } from "@mui/material/styles";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
-import DeleteIcon from "@mui/icons-material/Delete";
+import DeleteOutlined from "@mui/icons-material/DeleteOutlined";
 import EditIcon from "@mui/icons-material/Edit";
 import FullscreenIcon from "@mui/icons-material/Fullscreen";
 import CloseIcon from "@mui/icons-material/Close";
@@ -2750,7 +2750,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
             Edit
           </MenuItem>
           <MenuItem onClick={handleDeleteClick} sx={{ color: "error.main" }}>
-            <DeleteIcon sx={{ mr: 1, fontSize: 20 }} />
+            <DeleteOutlined sx={{ mr: 1, fontSize: 20 }} />
             Delete
           </MenuItem>
         </Menu>

@@ -19,6 +19,7 @@ import {
 } from "@mui/material";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
+import EditIcon from "@mui/icons-material/Edit";
 import useGet from "../../../hooks/useGet";
 import { GET } from "../../../services/apiRoutes";
 import CreateUpdateEntity from "./createUpdateEntity";
@@ -291,7 +292,15 @@ const EntityTable: React.FC<EntityTableProps> = ({
           <CreateUpdateEntity
             setReloadEntity={setReloadEntity}
             title="Update Entity"
-            CustomButton={<Button disabled={!shouldAllowEdit}>Edit</Button>}
+            CustomButton={
+            <Button
+              variant="text"
+              disabled={!shouldAllowEdit}
+              sx={{ minWidth: "auto" }}
+            >
+              <EditIcon />
+            </Button>
+          }
             data={row as any}
           />
         );
@@ -441,7 +450,11 @@ const EntityTable: React.FC<EntityTableProps> = ({
                   <CreateUpdateEntity
                     setReloadEntity={setReloadEntity}
                     title="Update Entity"
-                    CustomButton={<Button>Edit</Button>}
+                    CustomButton={
+                    <Button variant="text" sx={{ minWidth: "auto" }}>
+                      <EditIcon />
+                    </Button>
+                  }
                     data={data}
                   />
                 </StyledTableCell>

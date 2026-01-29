@@ -220,13 +220,13 @@ export const createCompleteTheme = (baseTheme: Partial<DashboardTheme>): Dashboa
       },
       table: {
         boxShadow: STYLE_GUIDE.SHADOWS.sm,
-        headerBackground: STYLE_GUIDE.COLORS.backgroundLightGray,
-        headerText: STYLE_GUIDE.COLORS.textGray,
-        rowOddBackground: STYLE_GUIDE.COLORS.backgroundDefault,
+        headerBackground: STYLE_GUIDE.COLORS.white,
+        headerText: STYLE_GUIDE.COLORS.tableHeaderText,
+        rowOddBackground: STYLE_GUIDE.COLORS.white,
         rowEvenBackground: STYLE_GUIDE.COLORS.white,
         rowHoverBackground: STYLE_GUIDE.COLORS.backgroundHover,
-        rowText: STYLE_GUIDE.COLORS.textDarkGray,
-        borderColor: STYLE_GUIDE.COLORS.divider,
+        rowText: STYLE_GUIDE.COLORS.tableBodyText,
+        borderColor: STYLE_GUIDE.COLORS.tableBorder,
       },
       navigation: {
         backgroundColor: STYLE_GUIDE.COLORS.white,

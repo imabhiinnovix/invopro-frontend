@@ -16,7 +16,7 @@ import SearchIcon from "@mui/icons-material/Search";
 import AddIcon from "@mui/icons-material/Add";
 import EditIcon from "@mui/icons-material/Edit";
 import VisibilityIcon from "@mui/icons-material/Visibility";
-import DeleteIcon from "@mui/icons-material/Delete";
+import DeleteOutlined from "@mui/icons-material/DeleteOutlined";
 import { useUnifiedTheme } from "../../hooks/useUnifiedTheme";
 import useGet from "../../hooks/useGet";
 import { CustomPagination } from "../../components/common/pagination/customPagination";
@@ -150,7 +150,7 @@ const columns: GridColDef[] = [
   {
     field: "actions",
     headerName: "Actions",
-    width: 250,
+    minWidth: 100,
     disableColumnMenu: true,
     sortable: false,
     resizable: false,
@@ -182,7 +182,7 @@ const columns: GridColDef[] = [
             sx={{ minWidth: "auto", color: "error.main" }}
             disabled={!params.row._id || !params.row.shouldAllowDelete}
           >
-            <DeleteIcon />
+            <DeleteOutlined />
           </Button>
         </Tooltip> */}
       </Box>
@@ -339,6 +339,7 @@ export function TemplateDataTable({
           initialState={{ pagination: { paginationModel } }}
           pageSizeOptions={[10, 20]}
           disableColumnMenu
+          disableVirtualization
           paginationMode="server"
           sx={{ overflow: "visible" }}
           loading={loading || templateList.isLoading}

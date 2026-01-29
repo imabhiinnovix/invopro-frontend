@@ -7,6 +7,7 @@ import {
   TypographyProvider,
   useTypography,
 } from "../context/TypographyContext";
+import { useAppTheme } from "../context/AppThemeContext";
 
 interface UnifiedThemeProviderProps {
   children: React.ReactNode;
@@ -19,6 +20,7 @@ const UnifiedThemeProviderInner: React.FC<UnifiedThemeProviderProps> = ({
     (state) => state.dashboardTheme.dashboardTheme
   );
   const { typographySettings } = useTypography();
+  const { theme: appTheme } = useAppTheme();
 
   const effectiveTypographySettings = dashboardTheme?.typography
     ? {
@@ -65,8 +67,34 @@ const UnifiedThemeProviderInner: React.FC<UnifiedThemeProviderProps> = ({
   };
 
   const unifiedTheme = React.useMemo(() => {
+    // Dark mode color definitions
+    const isDarkMode = appTheme.mode === "dark";
+    const darkBackground = {
+      default: "#121212",
+      paper: "#1E1E1E",
+    };
+    const darkText = {
+      primary: "#FFFFFF",
+      secondary: "rgba(255, 255, 255, 0.7)",
+      disabled: "rgba(255, 255, 255, 0.5)",
+    };
+    const darkDivider = "rgba(255, 255, 255, 0.12)";
+
     const baseThemeWithTypography = {
       ...baseTheme,
+      palette: {
+        ...baseTheme.palette,
+        mode: appTheme.mode,
+        primary: {
+          ...baseTheme.palette.primary,
+          main: appTheme.primaryColor,
+        },
+        background: isDarkMode
+          ? darkBackground
+          : baseTheme.palette.background,
+        text: isDarkMode ? darkText : baseTheme.palette.text,
+        divider: isDarkMode ? darkDivider : baseTheme.palette.divider,
+      },
       typography: {
         ...baseTheme.typography,
         fontFamily: effectiveTypographySettings.fontFamily,
@@ -145,8 +173,9 @@ const UnifiedThemeProviderInner: React.FC<UnifiedThemeProviderProps> = ({
       ...baseThemeWithTypography,
       palette: {
         ...baseThemeWithTypography.palette,
+        mode: appTheme.mode,
         primary: {
-          main: dashboardTheme.colors.primary.main,
+          main: appTheme.primaryColor,
           light: dashboardTheme.colors.primary.light,
           dark: dashboardTheme.colors.primary.main,
           contrastText: dashboardTheme.colors.primary.contrastText,
@@ -157,16 +186,23 @@ const UnifiedThemeProviderInner: React.FC<UnifiedThemeProviderProps> = ({
           dark: dashboardTheme.colors.secondary.dark,
           contrastText: dashboardTheme.colors.secondary.contrastText,
         },
-        background: {
-          default: dashboardTheme.colors.background.default,
-          paper: dashboardTheme.colors.background.paper,
-        },
-        text: {
-          primary: dashboardTheme.colors.text.primary,
-          secondary: dashboardTheme.colors.text.secondary,
-          disabled: dashboardTheme.colors.text.disabled,
-        },
-        divider: dashboardTheme.colors.divider,
+        background: isDarkMode
+          ? {
+              default: darkBackground.default,
+              paper: darkBackground.paper,
+            }
+          : {
+              default: dashboardTheme.colors.background.default,
+              paper: dashboardTheme.colors.background.paper,
+            },
+        text: isDarkMode
+          ? darkText
+          : {
+              primary: dashboardTheme.colors.text.primary,
+              secondary: dashboardTheme.colors.text.secondary,
+              disabled: dashboardTheme.colors.text.disabled,
+            },
+        divider: isDarkMode ? darkDivider : dashboardTheme.colors.divider,
         border: {
           main: dashboardTheme.colors.border,
           hover: dashboardTheme.colors.borderHover,
@@ -245,6 +281,13 @@ const UnifiedThemeProviderInner: React.FC<UnifiedThemeProviderProps> = ({
                 getComponentTypography("buttons").fontWeight
               ),
               fontSize: getComponentTypography("buttons").fontSize,
+              transition: "all 0.2s ease-in-out",
+              "&:hover": {
+                transform: "translateY(-1px)",
+              },
+              "&:active": {
+                transform: "translateY(0)",
+              },
             },
             text: {
               fontFamily: `${
@@ -578,7 +621,7 @@ const UnifiedThemeProviderInner: React.FC<UnifiedThemeProviderProps> = ({
                 getComponentTypography("tables").fontFamily
               } !important`,
               fontWeight: parseInt(getComponentTypography("tables").fontWeight),
-              fontSize: getComponentTypography("tables").fontSize,
+              fontSize: `${ STYLE_GUIDE.TYPOGRAPHY.fontSize.small } !important`,
             },
             head: {
               backgroundColor:
@@ -605,7 +648,7 @@ const UnifiedThemeProviderInner: React.FC<UnifiedThemeProviderProps> = ({
             },
           },
         },
-        // DataGrid specific styling
+        // DataGrid specific styling (matches modern table design)
         MuiDataGrid: {
           styleOverrides: {
             root: {
@@ -614,37 +657,69 @@ const UnifiedThemeProviderInner: React.FC<UnifiedThemeProviderProps> = ({
               } !important`,
               fontWeight: parseInt(getComponentTypography("tables").fontWeight),
               fontSize: getComponentTypography("tables").fontSize,
-              border: "none",
+              border: `1px solid ${STYLE_GUIDE.COLORS.tableBorder}`,
+              borderRadius: "10px",
+              overflow: "hidden",
               backgroundColor:
                 dashboardTheme.colors.background.paper ||
                 STYLE_GUIDE.COLORS.white,
-            },
+              // Sticky Actions column (right) – narrow, opaque so content doesn’t show through
+              '& .MuiDataGrid-cell[data-field="actions"]': {
+                position: 'sticky',
+                right: 0,
+                backgroundColor: `${
+                  dashboardTheme.colors.background.paper || '#ffffff'
+                } !important`,
+                zIndex: 1,
+                minWidth: 140,
+                width: 'unset',
+                maxWidth: 'unset',
+                borderLeft: `1px solid ${dashboardTheme.components?.table?.borderColor || STYLE_GUIDE.COLORS.tableBorder}`,
+              },
+              '& .MuiDataGrid-row:hover .MuiDataGrid-cell[data-field="actions"]': {
+                backgroundColor: `${
+                  dashboardTheme.components?.table?.rowHoverBackground ||
+                  STYLE_GUIDE.COLORS.backgroundHover
+                } !important`,
+              },
+              '& .MuiDataGrid-columnHeaders [data-field="actions"]': {
+                position: 'sticky',
+                right: 0,
+                backgroundColor: `${
+                  dashboardTheme.components?.table?.headerBackground || '#ffffff'
+                } !important`,
+                zIndex: 31,
+                minWidth: 140,
+                width: 'unset',
+                maxWidth: 'unset',
+              },
+            } as React.CSSProperties & Record<string, unknown>,
             columnHeaders: {
               backgroundColor: `${
                 dashboardTheme.components?.table?.headerBackground ||
-                STYLE_GUIDE.COLORS.backgroundLightGray
+                STYLE_GUIDE.COLORS.white
               } !important`,
               color: `${
                 dashboardTheme.components?.table?.headerText ||
-                STYLE_GUIDE.COLORS.textGray
+                STYLE_GUIDE.COLORS.tableHeaderText
               } !important`,
               fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold,
               fontFamily: `${
                 getComponentTypography("tables").fontFamily
               } !important`,
-              fontSize: getComponentTypography("tables").fontSize,
-              borderBottom: `2px solid ${dashboardTheme.colors.divider}`,
+              fontSize: `${STYLE_GUIDE.TYPOGRAPHY.fontSize.small} !important`,
+              borderBottom: `1px solid ${dashboardTheme.components?.table?.borderColor || STYLE_GUIDE.COLORS.tableBorder}`,
             },
             columnHeaderTitle: {
               fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold,
               color: `${
                 dashboardTheme.components?.table?.headerText ||
-                STYLE_GUIDE.COLORS.textGray
+                STYLE_GUIDE.COLORS.tableHeaderText
               } !important`,
               fontFamily: `${
                 getComponentTypography("tables").fontFamily
               } !important`,
-              fontSize: getComponentTypography("tables").fontSize,
+              fontSize: `${STYLE_GUIDE.TYPOGRAPHY.fontSize.small} !important`,
             },
             columnHeader: {
               outline: "none",
@@ -661,22 +736,22 @@ const UnifiedThemeProviderInner: React.FC<UnifiedThemeProviderProps> = ({
             cell: {
               color: `${
                 dashboardTheme.components?.table?.rowText ||
-                STYLE_GUIDE.COLORS.textDarkGray
+                STYLE_GUIDE.COLORS.tableBodyText
               } !important`,
-              borderBottom: `1px solid ${dashboardTheme.colors.divider}`,
+              borderBottom: `1px solid ${dashboardTheme.components?.table?.borderColor || STYLE_GUIDE.COLORS.tableBorder}`,
               borderRight: "none",
               outline: "none",
               fontFamily: `${
                 getComponentTypography("tables").fontFamily
               } !important`,
               fontWeight: parseInt(getComponentTypography("tables").fontWeight),
-              fontSize: getComponentTypography("tables").fontSize,
+              fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
             },
             row: {
               "&:nth-of-type(odd)": {
                 backgroundColor: `${
                   dashboardTheme.components?.table?.rowOddBackground ||
-                  STYLE_GUIDE.COLORS.backgroundDefault
+                  STYLE_GUIDE.COLORS.white
                 } !important`,
               },
               "&:nth-of-type(even)": {
@@ -743,6 +818,8 @@ const UnifiedThemeProviderInner: React.FC<UnifiedThemeProviderProps> = ({
     typographySettings,
     effectiveTypographySettings,
     getComponentTypography,
+    appTheme.mode,
+    appTheme.primaryColor,
   ]);
 
   return <ThemeProvider theme={unifiedTheme}>{children}</ThemeProvider>;

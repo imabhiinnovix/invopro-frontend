@@ -275,6 +275,7 @@ export const NotivixDataTable: React.FC<TableSectionProps> = ({
               rows={displayRows}
               columns={formattedColumns}
               getRowId={(row) => row._id}
+              disableVirtualization
               paginationMode="server"
               rowCount={
                 rowCount ||

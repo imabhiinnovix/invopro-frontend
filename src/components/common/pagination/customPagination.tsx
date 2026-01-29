@@ -62,7 +62,7 @@ export const CustomPagination: React.FC<CustomPaginationProps> = ({
                   borderColor: STYLE_GUIDE?.COLORS?.divider || "#e0e0e0",
                 },
                 "&:hover fieldset": {
-                  borderColor: STYLE_GUIDE?.COLORS?.primaryDark || "#3f51b5",
+                  borderColor: "primary.main",
                 },
               },
             }}
@@ -77,6 +77,8 @@ export const CustomPagination: React.FC<CustomPaginationProps> = ({
         <Tooltip title="First Page" arrow>
           <span>
             <Button
+              color="primary"
+              variant="text"
               disabled={paginationModel.page === 0}
               onClick={() =>
                 setPaginationModel({ ...paginationModel, page: 0 })
@@ -84,7 +86,6 @@ export const CustomPagination: React.FC<CustomPaginationProps> = ({
               sx={{
                 minWidth: "auto",
                 mx: 1,
-                color: STYLE_GUIDE?.COLORS?.primaryDark || "#3f51b5",
                 "&:hover": {
                   backgroundColor:
                     STYLE_GUIDE?.COLORS?.backgroundDefault || "#f1f5f9",
@@ -101,6 +102,8 @@ export const CustomPagination: React.FC<CustomPaginationProps> = ({
         <Tooltip title="Previous Page" arrow>
           <span>
             <Button
+              color="primary"
+              variant="text"
               disabled={paginationModel.page === 0}
               onClick={() =>
                 setPaginationModel({
@@ -111,7 +114,6 @@ export const CustomPagination: React.FC<CustomPaginationProps> = ({
               sx={{
                 minWidth: "auto",
                 mx: 1,
-                color: STYLE_GUIDE?.COLORS?.primaryDark || "#3f51b5",
                 "&:hover": {
                   backgroundColor:
                     STYLE_GUIDE?.COLORS?.backgroundDefault || "#f1f5f9",
@@ -131,6 +133,8 @@ export const CustomPagination: React.FC<CustomPaginationProps> = ({
         <Tooltip title="Next Page" arrow>
           <span>
             <Button
+              color="primary"
+              variant="text"
               disabled={paginationModel.page >= totalPages - 1}
               onClick={() =>
                 setPaginationModel({
@@ -141,7 +145,6 @@ export const CustomPagination: React.FC<CustomPaginationProps> = ({
               sx={{
                 minWidth: "auto",
                 mx: 1,
-                color: STYLE_GUIDE?.COLORS?.primaryDark || "#3f51b5",
                 "&:hover": {
                   backgroundColor:
                     STYLE_GUIDE?.COLORS?.backgroundDefault || "#f1f5f9",
@@ -158,6 +161,8 @@ export const CustomPagination: React.FC<CustomPaginationProps> = ({
         <Tooltip title="Last Page" arrow>
           <span>
             <Button
+              color="primary"
+              variant="text"
               disabled={paginationModel.page >= totalPages - 1}
               onClick={() =>
                 setPaginationModel({
@@ -168,7 +173,6 @@ export const CustomPagination: React.FC<CustomPaginationProps> = ({
               sx={{
                 minWidth: "auto",
                 mx: 1,
-                color: STYLE_GUIDE?.COLORS?.primaryDark || "#3f51b5",
                 "&:hover": {
                   backgroundColor:
                     STYLE_GUIDE?.COLORS?.backgroundDefault || "#f1f5f9",

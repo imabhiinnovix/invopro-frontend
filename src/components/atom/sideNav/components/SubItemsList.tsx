@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { List, ListItem, ListItemButton, ListItemIcon, ListItemText, IconButton, Menu, MenuItem } from '@mui/material';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import ShareIcon from '@mui/icons-material/Share';
-import DeleteIcon from '@mui/icons-material/Delete';
+import DeleteOutlined from '@mui/icons-material/DeleteOutlined';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Dashboard } from '../../../../pages/dashboard/types';
 import { ShareDashboardModal } from './ShareDashboardModal';
@@ -227,7 +227,7 @@ export const SubItemsList: React.FC<SubItemsListProps> = ({
         </MenuItem>
         <MenuItem onClick={handleDelete} sx={{ '& .MuiListItemText-root': { ...getNavigationSx() } }}>
           <ListItemIcon>
-            <DeleteIcon fontSize="small" sx={{ color: 'red' }} />
+            <DeleteOutlined fontSize="small" sx={{ color: 'red' }} />
           </ListItemIcon>
           Delete
         </MenuItem>

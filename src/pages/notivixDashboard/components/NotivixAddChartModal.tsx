@@ -18,7 +18,7 @@ import {
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import AddIcon from '@mui/icons-material/Add';
-import DeleteIcon from '@mui/icons-material/Delete';
+import DeleteOutlined from '@mui/icons-material/DeleteOutlined';
 import ClearIcon from '@mui/icons-material/Clear';
 import { useAppDispatch, useAppSelector } from '../../../storeHooks';
 import { fetchWidgetTypes, fetchAllDataSources, saveWidgets, fetchChartData } from '../notivixDashboardActions';
@@ -1062,7 +1062,7 @@ export const NotivixAddChartModal: React.FC<AddChartModalProps> = ({
                   />
                 )}
                 <IconButton onClick={() => removeCondition(index)} disabled={isSubmitting} size="small">
-                  <DeleteIcon />
+                  <DeleteOutlined />
                 </IconButton>
               </FormRow>
             ))}
@@ -1563,7 +1563,7 @@ export const NotivixAddChartModal: React.FC<AddChartModalProps> = ({
                         />
                       )}
                       <IconButton onClick={() => removeCondition(index)} disabled={isSubmitting} size="small">
-                        <DeleteIcon />
+                        <DeleteOutlined />
                       </IconButton>
                     </FormRow>
                   ))}

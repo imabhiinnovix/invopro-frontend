@@ -27,7 +27,7 @@ import FilterListIcon from "@mui/icons-material/FilterList";
 import AddIcon from "@mui/icons-material/Add";
 import EditIcon from "@mui/icons-material/Edit";
 import VisibilityIcon from "@mui/icons-material/Visibility";
-import DeleteIcon from "@mui/icons-material/Delete";
+import DeleteOutlined from "@mui/icons-material/DeleteOutlined";
 import { useUnifiedTheme } from "../../hooks/useUnifiedTheme";
 import { STYLE_GUIDE } from "../../styles";
 import useGet from "../../hooks/useGet";
@@ -109,7 +109,7 @@ const columns: GridColDef[] = [
   {
     field: "actions",
     headerName: "Actions",
-    width: 150,
+    minWidth: 100,
     sortable: false,
     disableColumnMenu: true,
     resizable: false,
@@ -141,11 +141,12 @@ const columns: GridColDef[] = [
           <Tooltip title="Delete" arrow>
             <Button
               variant="text"
+              color="primary"
               onClick={() => params.row.handleDelete(params.row._id)}
-              sx={{ minWidth: "auto", color: "error.main" }}
+              sx={{ minWidth: "auto" }}
               disabled={!params.row._id || !params.row.shouldAllowDelete}
             >
-              <DeleteIcon />
+              <DeleteOutlined />
             </Button>
           </Tooltip>
         </Box>
@@ -619,6 +620,7 @@ export default function Permissions() {
             initialState={{ pagination: { paginationModel } }}
             pageSizeOptions={[5, 10, 20]}
             disableColumnMenu
+            disableVirtualization
             paginationMode="server"
             sx={{
               overflow: "visible",

@@ -75,8 +75,9 @@ import {
 } from "../types";
 import { styled } from "@mui/material/styles";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
-import DeleteIcon from "@mui/icons-material/Delete";
+import DeleteOutlined from "@mui/icons-material/DeleteOutlined";
 import EditIcon from "@mui/icons-material/Edit";
+import AddIcon from "@mui/icons-material/Add";
 import FullscreenIcon from "@mui/icons-material/Fullscreen";
 import CloseIcon from "@mui/icons-material/Close";
 import ImageIcon from "@mui/icons-material/Image";
@@ -98,6 +99,7 @@ import { useUnifiedTheme } from "../../../hooks/useUnifiedTheme";
 import { useComponentTypography } from "../../../hooks/useComponentTypography";
 import { checkPermission, formatDateWithoutTime } from "../../../utils/utils";
 import { PermissionsMap } from "../../../utils/constants";
+import { StyledButton } from "../../../components/common";
 import { useSelector } from "react-redux";
 import { RootState } from "../../../reducers";
 import { GET, POST } from "../../../services/apiRoutes";
@@ -376,6 +378,7 @@ const ErrorContainer = styled(Box)(({ theme }) => ({
 
 const EmptyContainer = styled(Box)(({ theme }) => ({
   display: "flex",
+  flexDirection: "column",
   justifyContent: "center",
   alignItems: "center",
   minHeight: "400px",
@@ -462,6 +465,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
   isDefaultNotivix,
   isEditMode,
   onEditChart,
+  onEditModeToggle,
   isAddChartModalOpen,
   isEditChartModalOpen,
   gridColumns,
@@ -1631,9 +1635,28 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
   ) {
     return (
       <EmptyContainer>
-        <Typography color="text.secondary" variant="h6">
-          No charts available
+        <Typography variant="h6" sx={{
+          color: STYLE_GUIDE.COLORS.black,
+          fontSize: '1.125rem',
+          marginBottom: 1
+        }}>
+          Your dashboard is empty
         </Typography>
+        <Typography variant="body1" sx={{
+          color: STYLE_GUIDE.COLORS.textSecondary,
+          marginBottom: 3
+        }}>
+          Start by adding widgets to visualize your data.
+        </Typography>
+        {!isEditMode && 
+          <StyledButton
+            variant="primary"
+            icon={<AddIcon />}
+            onClick={onEditModeToggle}
+          >
+            Add Your First Widget
+          </StyledButton>
+        }
       </EmptyContainer>
     );
   }
@@ -4376,7 +4399,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
         )}
         {shouldAllowWidgetDelete && (
           <MenuItem onClick={handleDeleteClick} sx={{ color: "error.main" }}>
-            <DeleteIcon sx={{ mr: 1, fontSize: 20 }} />
+            <DeleteOutlined sx={{ mr: 1, fontSize: 20 }} />
             Delete
           </MenuItem>
         )}

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "../../storeHooks";
 import { fetchDashboardList, createDashboard, deleteDashboard } from "./notivixDashboardActions";
 import { NotivixDashboardView } from "./components/NotivixDashboardView";
@@ -21,9 +21,13 @@ import {
   Tooltip,
   alpha,
   Skeleton,
+  TextField,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
-import DeleteIcon from "@mui/icons-material/Delete";
+import ViewColumnIcon from "@mui/icons-material/ViewColumn";
+import SaveIcon from "@mui/icons-material/Save";
+import DeleteOutlined from "@mui/icons-material/DeleteOutlined";
+import { StyledButton } from "../../components/common";
 import { DeleteConfirmationModal } from "../../components/atom/sideNav/components/DeleteConfirmationModal";
 import { CreateDashboardModal } from "../../components/atom/sideNav/components/CreateDashboardModal";
 import { Dashboard as DashboardType, DashboardListResponse } from "./types";
@@ -36,8 +40,10 @@ const NotivixDashboard = () => {
   const theme = useUnifiedTheme();
   const { getHeadingSx, getButtonSx, getTableSx } = useComponentTypography();
   const { id } = useParams();
+  const location = useLocation();
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
+  const isCreatePage = location.pathname === "/dashboard/create";
   const dashboards = useAppSelector((state) => state.notivixDashboard.dashboards);
   const currentDashboard = dashboards.find((d) => d._id === id);
   const [openCreateModal, setOpenCreateModal] = useState(false);
@@ -53,6 +59,7 @@ const NotivixDashboard = () => {
   );
   const [timePeriod, setTimePeriod] = useState<string>("1m");
   const [dataSourceId, setDataSourceId] = useState<string>("");
+  const [createGridColumns, setCreateGridColumns] = useState(2);
 
   useEffect(() => {
     if (!dashboards.length) {
@@ -183,6 +190,204 @@ const NotivixDashboard = () => {
     setDataSourceId("");
   };
 
+  const handleSaveNewDashboard = async () => {
+    if (!newDashboardName.trim()) {
+      toast.error("Please enter a dashboard name");
+      return;
+    }
+    try {
+      setIsCreating(true);
+      const response = (await dispatch(
+        createDashboard({
+          name: newDashboardName.trim(),
+          dashboardType: "normal",
+          dynamicVersionValue: "1m",
+        })
+      ).unwrap()) as DashboardListResponse;
+      await dispatch(fetchDashboardList());
+      toast.success(response.message || "Notivix Dashboard created successfully!");
+      dispatch(resetChartAndWidgetData());
+      const newDashboard = response?.data;
+      if (newDashboard && Array.isArray(newDashboard) && newDashboard.length > 0) {
+        navigate(`/dashboard/${newDashboard[0]._id}`, {
+          state: { enableEditMode: true },
+        });
+      } else if (newDashboard && typeof newDashboard === "object" && "_id" in newDashboard) {
+        navigate(`/dashboard/${newDashboard._id}`, {
+          state: { enableEditMode: true },
+        });
+      }
+    } catch (error:
+      | { payload?: { message: string }; message?: string }
+      | unknown) {
+      console.error("Failed to create Notivix dashboard:", error);
+      const errorMessage =
+        error && typeof error === "object" && "payload" in error
+          ? (error.payload as { message?: string })?.message
+          : error && typeof error === "object" && "message" in error
+          ? (error as { message?: string })?.message
+          : "Failed to create Notivix dashboard. Please try again.";
+      toast.error(errorMessage);
+    } finally {
+      setIsCreating(false);
+    }
+  };
+
+  // Create new dashboard page (/dashboard/create) — same layout as edit screen
+  if (isCreatePage) {
+    return (
+      <Box
+        sx={{
+          height: "100%",
+          display: "flex",
+          flexDirection: "column",
+          overflow: "hidden",
+          p: STYLE_GUIDE.SPACING.s2,
+          backgroundColor: theme.palette.background.paper,
+        }}
+      >
+        <Typography
+          variant="h4"
+          component="h1"
+          sx={{
+            fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.pageTitle,
+            fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.bold,
+            color: STYLE_GUIDE.COLORS.black,
+          }}
+        >
+          {newDashboardName.trim() || "New Dashboard"}
+        </Typography>
+        <Typography
+          variant="body1"
+          component="div"
+          sx={{
+            fontSize: "1rem",
+            marginTop: "0.25rem",
+            color: STYLE_GUIDE.COLORS.textSecondary,
+          }}
+        >
+          Your analytics overview for the current period.
+        </Typography>
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            flexShrink: 0,
+            gap: STYLE_GUIDE.SPACING.s4,
+            borderBottom: 1,
+            borderColor: "divider",
+            pb: STYLE_GUIDE.SPACING.s2,
+            pt: STYLE_GUIDE.SPACING.s2,
+          }}
+        >
+          <Box sx={{ flex: 1, mr: STYLE_GUIDE.SPACING.s4 }}>
+            <TextField
+              autoFocus
+              size="small"
+              fullWidth
+              placeholder="Dashboard name"
+              value={newDashboardName}
+              onChange={(e) => setNewDashboardName(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") handleSaveNewDashboard();
+              }}
+              sx={{
+                "& .MuiOutlinedInput-root": {
+                  borderRadius: STYLE_GUIDE.SPACING.s2,
+                  fontSize: "14px",
+                  backgroundColor: theme.palette.background.paper,
+                  "& fieldset": { borderColor: theme.palette.divider },
+                },
+              }}
+            />
+          </Box>
+          <Box sx={{ display: "flex", gap: STYLE_GUIDE.SPACING.s4 }}>
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                borderRadius: 1,
+                py: 0.25,
+                px: 0.5,
+              }}
+              aria-label="grid columns"
+            >
+              <ViewColumnIcon sx={{ fontSize: 20, mr: 0.5 }} />
+              <Button
+                size="small"
+                onClick={() => setCreateGridColumns(1)}
+                variant={createGridColumns === 1 ? "contained" : "text"}
+                sx={{ minWidth: 32, px: 0.75 }}
+              >
+                1
+              </Button>
+              <Typography component="span" sx={{ color: "text.secondary", px: 0.25 }}>|</Typography>
+              <Button
+                size="small"
+                onClick={() => setCreateGridColumns(2)}
+                variant={createGridColumns === 2 ? "contained" : "text"}
+                sx={{ minWidth: 32, px: 0.75 }}
+              >
+                2
+              </Button>
+              <Typography component="span" sx={{ color: "text.secondary", px: 0.25 }}>|</Typography>
+              <Button
+                size="small"
+                onClick={() => setCreateGridColumns(3)}
+                variant={createGridColumns === 3 ? "contained" : "text"}
+                sx={{ minWidth: 32, px: 0.75 }}
+              >
+                3
+              </Button>
+            </Box>
+            <StyledButton variant="secondary" icon={<AddIcon />} disabled>
+              Add Widget
+            </StyledButton>
+            <StyledButton
+              variant="primary"
+              icon={<SaveIcon />}
+              onClick={handleSaveNewDashboard}
+              disabled={!newDashboardName.trim() || isCreating}
+            >
+              {isCreating ? "Saving..." : "Save Dashboard"}
+            </StyledButton>
+          </Box>
+        </Box>
+        <Box
+          sx={{
+            flex: 1,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            overflow: "auto",
+          }}
+        >
+          <Typography
+            variant="h6"
+            sx={{
+              color: STYLE_GUIDE.COLORS.black,
+              fontSize: "1.125rem",
+              marginBottom: 1,
+            }}
+          >
+            Your dashboard is empty
+          </Typography>
+          <Typography
+            variant="body1"
+            sx={{
+              color: STYLE_GUIDE.COLORS.textSecondary,
+              marginBottom: 3,
+            }}
+          >
+            Start by adding widgets to visualize your data.
+          </Typography>
+        </Box>
+      </Box>
+    );
+  }
+
   // If no ID is provided, show the dashboard list view
   if (!id) {
     return (
@@ -216,7 +421,7 @@ const NotivixDashboard = () => {
           <Button
             variant="contained"
             startIcon={<AddIcon />}
-            onClick={() => setOpenCreateModal(true)}
+            onClick={() => navigate("/dashboard/create")}
             sx={{
               ...getButtonSx(),
               backgroundColor: STYLE_GUIDE.COLORS.primary,
@@ -339,7 +544,7 @@ const NotivixDashboard = () => {
                                 },
                               }}
                             >
-                              <DeleteIcon fontSize="small" />
+                              <DeleteOutlined fontSize="small" />
                             </IconButton>
                           </Tooltip>
                         </Box>

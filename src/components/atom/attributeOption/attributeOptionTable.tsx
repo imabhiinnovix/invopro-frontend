@@ -19,6 +19,7 @@ import {
 } from "@mui/material";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
+import EditIcon from "@mui/icons-material/Edit";
 import useGet from "../../../hooks/useGet";
 import { GET } from "../../../services/apiRoutes";
 import { AttributeOptionRequestPayload } from "./types";
@@ -309,7 +310,15 @@ const AttributeOptionTable: React.FC<AttributeOptionTableProps> = ({
           <CreateUpdateAttributeOption
             setAttributeOptionReload={setAttributeOptionReload}
             title="Update Attribute Option"
-            CustomButton={<Button disabled={!shouldAllowEdit}>Edit</Button>}
+            CustomButton={
+            <Button
+              variant="text"
+              disabled={!shouldAllowEdit}
+              sx={{ minWidth: "auto" }}
+            >
+              <EditIcon />
+            </Button>
+          }
             data={row}
           />
         );
@@ -456,7 +465,11 @@ const AttributeOptionTable: React.FC<AttributeOptionTableProps> = ({
                   <CreateUpdateAttributeOption
                     setAttributeOptionReload={setAttributeOptionReload}
                     title="Update Attribute Option"
-                    CustomButton={<Button>Edit</Button>}
+                    CustomButton={
+                    <Button variant="text" sx={{ minWidth: "auto" }}>
+                      <EditIcon />
+                    </Button>
+                  }
                     data={data}
                   />
                 </StyledTableCell>

@@ -11,7 +11,7 @@ import { NotivixDataTable } from "./NotivixDataTable";
 import { Box, Button, Tooltip, Typography, Skeleton } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import VisibilityIcon from "@mui/icons-material/Visibility";
-import DeleteIcon from "@mui/icons-material/Delete";
+import DeleteOutlined from "@mui/icons-material/DeleteOutlined";
 import { AttributeOptionRequestPayload } from "../../components/atom/attributeOption/types";
 import { NotivixDataModal } from "./NotivixDataModal";
 import { useQueryClient } from "@tanstack/react-query";
@@ -525,7 +525,7 @@ export default function NotivixDataSource() {
     const actionsColumn = {
       field: "actions",
       headerName: "Actions",
-      width: 150,
+      minWidth: 100,
       sortable: false,
       renderHeader: () => <Typography>Actions</Typography>,
       renderCell: (params: any) => {
@@ -548,24 +548,25 @@ export default function NotivixDataSource() {
           <Box sx={{ display: "flex", gap: 1 }}>
             <Tooltip title="View" arrow>
               <Button
+                variant="text"
                 size="small"
+                color="primary"
                 onClick={() => handleView(params.row._id)}
-                sx={{
-                  minWidth: "auto",
-                  color: STYLE_GUIDE?.COLORS?.primaryDark || "#3f51b5",
-                }}
+                sx={{ minWidth: "auto" }}
               >
                 <VisibilityIcon />
               </Button>
             </Tooltip>
             <Tooltip title="Edit" arrow>
               <Button
+                variant="text"
                 size="small"
+                color="primary"
                 onClick={() => handleEdit(params.row._id)}
                 disabled={!shouldAllowEdit}
                 sx={{
                   minWidth: "auto",
-                  color: STYLE_GUIDE?.COLORS?.primaryDark || "#3f51b5",
+                  "&:not(.Mui-disabled)": { color: "primary.main" },
                 }}
               >
                 <EditIcon />
@@ -573,15 +574,14 @@ export default function NotivixDataSource() {
             </Tooltip>
             <Tooltip title="Delete" arrow>
               <Button
+                variant="text"
                 size="small"
+                color="primary"
                 onClick={() => handleDelete(params.row._id)}
                 disabled={!shouldAllowDelete}
-                sx={{
-                  minWidth: "auto",
-                  color: STYLE_GUIDE?.COLORS?.error || "#d32f2f",
-                }}
+                sx={{ minWidth: "auto" }}
               >
-                <DeleteIcon />
+                <DeleteOutlined />
               </Button>
             </Tooltip>
           </Box>

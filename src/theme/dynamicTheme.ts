@@ -58,12 +58,12 @@ export const createDynamicTheme = (typographyOptions: DynamicThemeOptions = {}):
         focusedLabel: STYLE_GUIDE.COLORS.primary
       },
       table: {
-        headerBackground: STYLE_GUIDE.COLORS.backgroundLightGray,
-        headerText: STYLE_GUIDE.COLORS.textGray,
-        rowOddBackground: STYLE_GUIDE.COLORS.backgroundDefault,
+        headerBackground: STYLE_GUIDE.COLORS.white,
+        headerText: STYLE_GUIDE.COLORS.tableHeaderText,
+        rowOddBackground: STYLE_GUIDE.COLORS.white,
         rowEvenBackground: STYLE_GUIDE.COLORS.white,
         rowHoverBackground: STYLE_GUIDE.COLORS.backgroundHover,
-        rowText: STYLE_GUIDE.COLORS.textDarkGray,
+        rowText: STYLE_GUIDE.COLORS.tableBodyText,
       },
     },
     typography: {
@@ -137,26 +137,68 @@ export const createDynamicTheme = (typographyOptions: DynamicThemeOptions = {}):
             textTransform: 'none',
             fontFamily,
             fontWeight: parseInt(fontWeight),
+            transition: 'all 0.2s ease-in-out',
+            '&:hover': {
+              transform: 'translateY(-1px)',
+            },
+            '&:active': {
+              transform: 'translateY(0)',
+            },
           },
         },
       },
       MuiTableContainer: {
         styleOverrides: {
           root: {
-            boxShadow: commonValues.boxShadow,
+            borderRadius: '10px',
+            border: `1px solid ${STYLE_GUIDE.COLORS.tableBorder}`,
+            overflow: 'hidden',
+            backgroundColor: STYLE_GUIDE.COLORS.white,
           },
         },
       },
       MuiTableHead: {
         styleOverrides: {
           root: {
-            backgroundColor: STYLE_GUIDE.COLORS.backgroundLightGray,
+            backgroundColor: STYLE_GUIDE.COLORS.white,
             '& .MuiTableCell-root': {
-              backgroundColor: STYLE_GUIDE.COLORS.backgroundLightGray,
-              color: STYLE_GUIDE.COLORS.textGray,
+              backgroundColor: STYLE_GUIDE.COLORS.white,
+              color: STYLE_GUIDE.COLORS.tableHeaderText,
               fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold,
-              borderBottom: `2px solid ${STYLE_GUIDE.COLORS.divider}`,
+              borderBottom: `1px solid ${STYLE_GUIDE.COLORS.tableBorder}`,
+              padding: '14px 16px',
               fontFamily,
+            },
+          },
+        },
+      },
+      MuiTableCell: {
+        styleOverrides: {
+          root: {
+            color: STYLE_GUIDE.COLORS.tableBodyText,
+            borderBottom: `1px solid ${STYLE_GUIDE.COLORS.tableBorder}`,
+            padding: '14px 16px',
+            fontFamily,
+            fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
+          },
+        },
+      },
+      MuiTableRow: {
+        styleOverrides: {
+          root: {
+            backgroundColor: STYLE_GUIDE.COLORS.white,
+            fontFamily,
+            '&:nth-of-type(odd), &:nth-of-type(even)': {
+              backgroundColor: STYLE_GUIDE.COLORS.white,
+            },
+            '&:hover': {
+              backgroundColor: STYLE_GUIDE.COLORS.backgroundHover,
+            },
+            '&.Mui-selected': {
+              backgroundColor: `${commonValues.colors.primary.light}15`,
+              '&:hover': {
+                backgroundColor: `${commonValues.colors.primary.light}25`,
+              },
             },
           },
         },

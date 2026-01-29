@@ -2,11 +2,11 @@ export const COLORS = {
   primary: "#a136a1",
   primaryLight: "#b459b4",
   primaryDark: "#8c2d8c",
-  textSecondary: "#666666",
+  textSecondary: "#64748B",
   textPrimary: "#333333",
 
   white: "#ffffff",
-  black: "#000000",
+  black: "#020817",
   transparent: "transparent",
 
   backgroundDefault: "#f1f5f9",
@@ -57,6 +57,13 @@ export const COLORS = {
   borderGray: "#95a5a6",
   divider: "#e0e0e0",
   divider2: "#e9ecef",
+
+  // Table design (modern clean table)
+  tableHeaderText: "#6F767E",
+  tableBodyText: "#2B2B2B",
+  tableBorder: "#E0E0E0",
+  statusActiveBg: "#6F42C1",
+  statusPendingBg: "#DC3545",
   loadingBorder: "#f3f3f3",
   borderPrimary: "#ced4da",
   indigo600: "#1565c0",
@@ -66,6 +73,11 @@ export const COLORS = {
   white200: "#f7f9fb",
 
   purple: "rgb(142, 25, 210)",
+
+  // Theme color - easily configurable for future color updates
+  themeColor: "#4F3DA9",
+  themeColorLight: "rgba(79, 61, 169, 0.1)", // Light purple for active backgrounds
+  themeColorDark: "#3D2E85", // Darker shade for hover states
 
   blackLight: "rgba(0, 0, 0, 0.6)",
   blackBorderPrimary: "rgba(0, 0, 0, 0.5)",

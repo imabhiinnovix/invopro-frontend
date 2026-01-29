@@ -13,7 +13,7 @@ import {
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
-import DeleteIcon from '@mui/icons-material/Delete';
+import DeleteOutlined from '@mui/icons-material/DeleteOutlined';
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
 import { STYLE_GUIDE } from '../../../styles';
@@ -186,7 +186,7 @@ const FilterColumnsEditor: React.FC<Props> = ({
                               color="error"
                               size="small"
                               onClick={() => onDeleteColumn(column._id)}
-                              startIcon={<DeleteIcon />}
+                              startIcon={<DeleteOutlined />}
                               sx={getButtonSx()}
                             >
                               Delete

@@ -18,7 +18,7 @@ import {
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import AddIcon from "@mui/icons-material/Add";
-import DeleteIcon from "@mui/icons-material/Delete";
+import DeleteOutlined from "@mui/icons-material/DeleteOutlined";
 import ClearIcon from "@mui/icons-material/Clear";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
@@ -1648,7 +1648,7 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
                   disabled={isSubmitting}
                   size="small"
                 >
-                  <DeleteIcon />
+                  <DeleteOutlined />
                 </IconButton>
               </FormRow>
             ))}
@@ -2482,7 +2482,7 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
                         disabled={isSubmitting}
                         size="small"
                       >
-                        <DeleteIcon />
+                        <DeleteOutlined />
                       </IconButton>
                     </FormRow>
                   ))}

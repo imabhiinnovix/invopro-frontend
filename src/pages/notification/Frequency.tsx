@@ -34,7 +34,7 @@ import {
   ChevronLeft,
   ChevronRight,
   CalendarMonthOutlined,
-  Delete as DeleteIcon,
+  DeleteOutlined,
   Edit as EditIcon,
   Visibility as VisibilityIcon,
 } from "@mui/icons-material";
@@ -253,7 +253,7 @@ export default function Frequency({
     {
       field: "actions",
       headerName: "Actions",
-      width: 200,
+      minWidth: 100,
       sortable: false,
       renderCell: (params) => (
         <Box sx={{ display: "flex", gap: 1 }}>
@@ -279,12 +279,12 @@ export default function Frequency({
           </Tooltip>
           <Tooltip title="Delete" placement="top">
             <IconButton
-              color="error"
+              color="primary"
               aria-label="delete"
               onClick={() => handleDeleteClick(params.row)}
               disabled={!shouldAllowSchedulerDelete}
             >
-              <DeleteIcon />
+              <DeleteOutlined />
             </IconButton>
           </Tooltip>
         </Box>

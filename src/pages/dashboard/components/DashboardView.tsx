@@ -1842,7 +1842,6 @@ import {
   Typography,
   TextField,
   Button,
-  ButtonGroup,
   Stack,
   MenuItem,
   SelectChangeEvent,
@@ -1852,10 +1851,8 @@ import {
 import StyledSelect from "../../../components/atom/common/StyledSelect";
 import AddIcon from "@mui/icons-material/Add";
 import EditIcon from "@mui/icons-material/Edit";
-import DoneIcon from "@mui/icons-material/Done";
-import PauseIcon from "@mui/icons-material/Pause";
+import SaveIcon from "@mui/icons-material/Save";
 import ViewColumnIcon from "@mui/icons-material/ViewColumn";
-import SquareIcon from "@mui/icons-material/Square";
 import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 import "react-multi-date-picker/styles/colors/purple.css";
 
@@ -1896,6 +1893,7 @@ import { PermissionsMap } from "../../../utils/constants";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 import logo from "../../../assets/logo.png";
+import { StyledButton } from "../../../components/common";
 
 interface DashboardViewProps {
   title: string;
@@ -3020,12 +3018,24 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         variant="h4"
         component="h1"
         sx={{
-          ...getHeadingSx(),
+          fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.pageTitle,
           mr: STYLE_GUIDE.SPACING.s4,
-          fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.medium,
+          fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.bold,
+          color: STYLE_GUIDE.COLORS.black
         }}
       >
         {title}
+      </Typography>
+      <Typography
+        variant="body1"
+        component="div"
+        sx={{
+          fontSize: '1rem',
+          marginTop: '0.25rem',
+          color: STYLE_GUIDE.COLORS.textSecondary
+        }}
+      >
+        Your analytics overview for the current period.
       </Typography>
       <Box
         sx={{
@@ -3463,61 +3473,71 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         <Box sx={{ display: "flex", gap: STYLE_GUIDE.SPACING.s4 }}>
           {isEditMode ? (
             <>
-              <ButtonGroup
-                variant="outlined"
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  borderRadius: 1,
+                  py: 0.25,
+                  px: 0.5,
+                }}
                 aria-label="grid columns"
-                size="small"
               >
+                <ViewColumnIcon sx={{ fontSize: 20, mr: 0.5 }} />
                 <Button
+                  size="small"
                   onClick={() => handleGridColumns(1)}
-                  variant={gridColumns === 1 ? "contained" : "outlined"}
-                  sx={{ px: STYLE_GUIDE.SPACING.s6 }}
+                  variant={gridColumns === 1 ? "contained" : "text"}
+                  sx={{ minWidth: 32, px: 0.75 }}
                 >
-                  <SquareIcon />
+                  1
                 </Button>
+                <Typography component="span" sx={{ color: "text.secondary", px: 0.25 }}>
+                  |
+                </Typography>
                 <Button
+                  size="small"
                   onClick={() => handleGridColumns(2)}
-                  variant={gridColumns === 2 ? "contained" : "outlined"}
-                  sx={{ px: STYLE_GUIDE.SPACING.s6 }}
+                  variant={gridColumns === 2 ? "contained" : "text"}
+                  sx={{ minWidth: 32, px: 0.75 }}
                 >
-                  <PauseIcon />
+                  2
                 </Button>
+                <Typography component="span" sx={{ color: "text.secondary", px: 0.25 }}>
+                  |
+                </Typography>
                 <Button
+                  size="small"
                   onClick={() => handleGridColumns(3)}
-                  variant={gridColumns === 3 ? "contained" : "outlined"}
-                  sx={{ px: STYLE_GUIDE.SPACING.s6 }}
+                  variant={gridColumns === 3 ? "contained" : "text"}
+                  sx={{ minWidth: 32, px: 0.75 }}
                 >
-                  <ViewColumnIcon />
+                  3
                 </Button>
-              </ButtonGroup>
+              </Box>
               {shouldAllowWidgetCreate && (
-                <Button
-                  variant="contained"
-                  color="primary"
-                  startIcon={<AddIcon />}
+                <StyledButton 
+                  variant="secondary"
+                  icon={<AddIcon />}
                   onClick={() => {
                     setIsAddChartModalOpen(true);
                     setIsEditChartModalOpen(false);
                   }}
-                  sx={{ ...getButtonSx(), px: STYLE_GUIDE.SPACING.s6 }}
                 >
-                  Add Chart
-                </Button>
+                  Add Widget
+                </StyledButton>
               )}
-              <Button
+              <StyledButton 
+                variant="primary"
+                icon={<SaveIcon />}
                 onClick={handleEditModeToggle}
-                color="success"
-                variant="contained"
-                startIcon={<DoneIcon />}
-                sx={{ ...getButtonSx(), px: STYLE_GUIDE.SPACING.s6 }}
                 disabled={isAddChartModalOpen || isEditChartModalOpen}
               >
-                Save
-              </Button>
-              <Button
+                Save Dashboard
+              </StyledButton>
+              <StyledButton 
+                variant="primary"
                 onClick={handleExportPDF}
-                color="primary"
-                variant="contained"
                 disabled={isExportingPdf}
                 startIcon={
                   isExportingPdf ? (
@@ -3526,10 +3546,9 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                     <PictureAsPdfIcon />
                   )
                 }
-                sx={{ ...getButtonSx(), px: STYLE_GUIDE.SPACING.s6 }}
               >
                 {isExportingPdf ? "Exporting..." : "Export"}
-              </Button>
+              </StyledButton>
             </>
           ) : (
             <>
@@ -3681,6 +3700,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               dashboardId={dashboardId}
               isEditMode={isEditMode}
               onEditChart={handleEditChart}
+              onEditModeToggle={() => setIsEditMode(true)}
               isAddChartModalOpen={isAddChartModalOpen}
               isEditChartModalOpen={isEditChartModalOpen}
               gridColumns={gridColumns}

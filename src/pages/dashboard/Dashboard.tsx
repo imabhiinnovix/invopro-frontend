@@ -42,9 +42,12 @@ export const Dashboard = () => {
   }
 
   return (
+    <>
+    asd
     <DashboardView
       title={currentDashboard.name}
       onTitleChange={handleTitleChange}
     />
+    </>
   );
 }; 
