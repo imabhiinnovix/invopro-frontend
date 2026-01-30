@@ -169,7 +169,6 @@ export default function ValidationErrors() {
       if (response.data?.success) {
         setRowDetailData(response.data.data);
         setActionModalOpen(true);
-        setResetSelections(true);
       } else {
         toast.error("Failed to fetch row details");
       }
