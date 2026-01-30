@@ -114,12 +114,15 @@ const CommonTable = forwardRef<CommonTableRef, CommonTableProps>(
             const key = sRow._id || sRow.code;
             const matchingNewRow = rowsMap.get(key);
 
-            if (matchingNewRow) {
-              if (!rowSelectionCondition(matchingNewRow)) {
-                shouldUpdate = true;
-                return false;
-              }
+            if (!matchingNewRow) {
+              shouldUpdate = true;
+              return false;
             }
+            if (!rowSelectionCondition(matchingNewRow)) {
+              shouldUpdate = true;
+              return false;
+            }
+
             return true;
           });
 
