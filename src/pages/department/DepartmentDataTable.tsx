@@ -1,24 +1,13 @@
 import * as React from "react";
 import { useState, useEffect } from "react";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
-import {
-  Box,
-  Card,
-  CardContent,
-  TextField,
-  Button,
-  InputAdornment,
-  Tooltip,
-  Chip,
-} from "@mui/material";
-import SearchIcon from "@mui/icons-material/Search";
-import AddIcon from "@mui/icons-material/Add";
-import EditIcon from "@mui/icons-material/Edit";
+import { Box, Tooltip, Chip } from "@mui/material";
+import EditOutlined from "@mui/icons-material/EditOutlined";
 import VisibilityIcon from "@mui/icons-material/Visibility";
-import DeleteOutlined from "@mui/icons-material/DeleteOutlined";
-import { useUnifiedTheme } from "../../hooks/useUnifiedTheme";
 import useGet from "../../hooks/useGet";
 import { CustomPagination } from "../../components/common/pagination/customPagination";
+import { ActionIconButton } from "../../components/common";
+import SearchField from "../../components/common/SearchField";
 import { GET } from "../../services/apiRoutes";
 import { toast } from "react-toastify";
 
@@ -40,7 +29,8 @@ const columns: GridColDef[] = [
   {
     field: "name",
     headerName: "Name",
-    width: 250,
+    flex: 1,
+    minWidth: 200,
     disableColumnMenu: true,
     resizable: true,
     sortable: true,
@@ -48,7 +38,8 @@ const columns: GridColDef[] = [
   {
     field: "status",
     headerName: "Status",
-    width: 250,
+    minWidth: 120,
+    width: 150,
     disableColumnMenu: true,
     resizable: true,
     sortable: true,
@@ -64,30 +55,26 @@ const columns: GridColDef[] = [
   {
     field: "actions",
     headerName: "Actions",
-    minWidth: 100,
+    minWidth: 140,
+    align: "center",
+    headerAlign: "center",
     disableColumnMenu: true,
     sortable: false,
     resizable: false,
     renderCell: (params) => (
-      <Box sx={{ display: "flex", gap: 1 }}>
+      <Box sx={{ display: "flex", gap: 1, justifyContent: "center", width: "100%" }}>
         <Tooltip title="Edit" arrow>
-          <Button
-            variant="text"
+          <ActionIconButton
             onClick={() => params.row.handleEdit(params.row)}
-            sx={{ minWidth: "auto" }}
             disabled={!params.row.shouldAllowEdit}
           >
-            <EditIcon />
-          </Button>
+            <EditOutlined />
+          </ActionIconButton>
         </Tooltip>
         <Tooltip title="View" arrow>
-          <Button
-            variant="text"
-            onClick={() => params.row.handleView(params.row)}
-            sx={{ minWidth: "auto" }}
-          >
+          <ActionIconButton onClick={() => params.row.handleView(params.row)}>
             <VisibilityIcon />
-          </Button>
+          </ActionIconButton>
         </Tooltip>
         {/* <Tooltip title="Delete" arrow>
           <Button
@@ -113,7 +100,7 @@ interface DepartmentDataTableProps {
   searchValue: string;
   onSearchChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   paginationModel: { page: number; pageSize: number };
-  setPaginationModel: (model: { page: number; pageSize: number }) => void;
+  setPaginationModel: React.Dispatch<React.SetStateAction<{ page: number; pageSize: number }>>;
   filterValues: {
     name: string;
     organizationId: string;
@@ -127,11 +114,11 @@ interface DepartmentDataTableProps {
 }
 
 export function DepartmentDataTable({
-  onAddDepartment,
+  onAddDepartment: _onAddDepartment,
   onEditDepartment,
   onViewDepartment,
   onDeleteDepartment,
-  onFilter,
+  onFilter: _onFilter,
   searchValue,
   onSearchChange,
   paginationModel,
@@ -139,11 +126,10 @@ export function DepartmentDataTable({
   filterValues,
   departmentReload,
   loading,
-  shouldAllowAdd,
+  shouldAllowAdd: _shouldAllowAdd,
   shouldAllowEdit,
   shouldAllowDelete,
 }: DepartmentDataTableProps) {
-  const theme = useUnifiedTheme();
   const perPageItem = paginationModel.pageSize;
 
   const [debouncedSearchValue, setDebouncedSearchValue] = useState(searchValue);
@@ -206,72 +192,44 @@ export function DepartmentDataTable({
       : [];
 
   return (
-    <Card sx={{ borderRadius: "8px", overflow: "visible" }}>
-      <CardContent sx={{ p: 3 }}>
-        <Box
-          sx={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            mb: 2,
-          }}
-        >
-          <TextField
-            placeholder="Search ..."
-            variant="outlined"
-            size="small"
-            value={searchValue}
-            onChange={onSearchChange}
-            sx={{
-              width: "300px",
-              "& .MuiOutlinedInput-root": { borderRadius: "8px" },
-            }}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <SearchIcon />
-                </InputAdornment>
-              ),
-            }}
-          />
-
-          <Box sx={{ display: "flex", gap: 1 }}>
-            <Button
-              variant="contained"
-              startIcon={<AddIcon />}
-              onClick={onAddDepartment}
-              sx={{ borderRadius: "8px" }}
-              disabled={!shouldAllowAdd}
-            >
-              Add
-            </Button>
-          </Box>
-        </Box>
-
-        <DataGrid
-          rows={departmentsWithIds}
-          columns={columns}
-          initialState={{ pagination: { paginationModel } }}
-          pageSizeOptions={[10, 20]}
-          disableColumnMenu
-          disableVirtualization
-          paginationMode="server"
-          sx={{ overflow: "visible" }}
-          loading={loading || departmentList.isLoading}
-          rowCount={departmentList?.data?.totalCount}
-          paginationModel={paginationModel}
-          onPaginationModelChange={setPaginationModel}
-          slots={{
-            pagination: () => (
-              <CustomPagination
-                paginationModel={paginationModel}
-                setPaginationModel={setPaginationModel}
-                rowCount={departmentList?.data?.totalCount || 0}
-              />
-            ),
-          }}
+    <>
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          mb: 2,
+        }}
+      >
+        <SearchField
+          searchValue={searchValue}
+          handleSearchChange={onSearchChange}
         />
-      </CardContent>
-    </Card>
+      </Box>
+
+      <DataGrid
+        rows={departmentsWithIds}
+        columns={columns}
+        initialState={{ pagination: { paginationModel } }}
+        pageSizeOptions={[10, 20, 50]}
+        disableColumnMenu
+        disableVirtualization
+        paginationMode="server"
+        rowCount={departmentList?.data?.totalCount ?? 0}
+        sx={{ overflow: "visible", width: "100%" }}
+        loading={loading || departmentList.isLoading}
+        paginationModel={paginationModel}
+        onPaginationModelChange={setPaginationModel}
+        slots={{
+          pagination: () => (
+            <CustomPagination
+              paginationModel={paginationModel}
+              setPaginationModel={setPaginationModel}
+              rowCount={departmentList?.data?.totalCount || 0}
+            />
+          ),
+        }}
+      />
+    </>
   );
 }

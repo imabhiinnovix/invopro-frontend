@@ -9,7 +9,7 @@ import useDelete from "../../hooks/useDelete";
 import { STYLE_GUIDE } from "../../styles";
 import { NotivixDataTable } from "./NotivixDataTable";
 import { Box, Button, Tooltip, Typography, Skeleton } from "@mui/material";
-import EditIcon from "@mui/icons-material/Edit";
+import EditOutlined from "@mui/icons-material/EditOutlined";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import DeleteOutlined from "@mui/icons-material/DeleteOutlined";
 import { AttributeOptionRequestPayload } from "../../components/atom/attributeOption/types";
@@ -17,14 +17,16 @@ import { NotivixDataModal } from "./NotivixDataModal";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "react-toastify";
 import NotivixFiltersModal from "../notivixDashboard/components/NotivixFiltersModal";
-import { useComponentTypography } from "../../hooks";
 import { checkPermission, formatDate } from "../../utils/utils";
+import { ActionIconButton, PageHeader, StyledButton } from "../../components/common";
+import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import { DataSourceListPayload } from "../../components/atom/sideNav/types";
 import { setDataSourceList } from "../dataSources/dataSourceActions";
 import { useAppDispatch } from "../../storeHooks";
 import { PermissionsMap } from "../../utils/constants";
 import DialogContainer from "../../components/molecule/dialog";
 import PrimaryButton from "../../components/common/PrimaryButton";
+import { VisibilityOutlined } from "@mui/icons-material";
 
 interface ApiResponse {
   data: any[];
@@ -262,8 +264,6 @@ export default function NotivixDataSource() {
   const deleteVersionRow = useDelete(["deleteVersionRow"]);
 
   const [isFiltersModalOpen, setIsFiltersModalOpen] = React.useState(false);
-  const { getHeadingSx } = useComponentTypography();
-
   const permissions = useSelector(
     (state: RootState) => state.userPermission.permissions
   );
@@ -493,6 +493,7 @@ export default function NotivixDataSource() {
                 overflow: "hidden",
                 textOverflow: "ellipsis",
                 whiteSpace: "nowrap",
+                fontSize: "14px"
               }}
             >
               {headerText}
@@ -511,6 +512,7 @@ export default function NotivixDataSource() {
                 overflow: "hidden",
                 textOverflow: "ellipsis",
                 whiteSpace: "nowrap",
+                fontSize: "14px"
               }}
             >
               {cellValue}
@@ -547,42 +549,25 @@ export default function NotivixDataSource() {
         return (
           <Box sx={{ display: "flex", gap: 1 }}>
             <Tooltip title="View" arrow>
-              <Button
-                variant="text"
-                size="small"
-                color="primary"
-                onClick={() => handleView(params.row._id)}
-                sx={{ minWidth: "auto" }}
-              >
-                <VisibilityIcon />
-              </Button>
+              <ActionIconButton onClick={() => handleView(params.row._id)}>
+                <VisibilityOutlined />
+              </ActionIconButton>
             </Tooltip>
             <Tooltip title="Edit" arrow>
-              <Button
-                variant="text"
-                size="small"
-                color="primary"
+              <ActionIconButton
                 onClick={() => handleEdit(params.row._id)}
                 disabled={!shouldAllowEdit}
-                sx={{
-                  minWidth: "auto",
-                  "&:not(.Mui-disabled)": { color: "primary.main" },
-                }}
               >
-                <EditIcon />
-              </Button>
+                <EditOutlined />
+              </ActionIconButton>
             </Tooltip>
             <Tooltip title="Delete" arrow>
-              <Button
-                variant="text"
-                size="small"
-                color="primary"
+              <ActionIconButton
                 onClick={() => handleDelete(params.row._id)}
                 disabled={!shouldAllowDelete}
-                sx={{ minWidth: "auto" }}
               >
                 <DeleteOutlined />
-              </Button>
+              </ActionIconButton>
             </Tooltip>
           </Box>
         );
@@ -722,64 +707,26 @@ export default function NotivixDataSource() {
   };
 
   return (
-    <Box
-      sx={{
-        p: STYLE_GUIDE?.SPACING?.s2,
-      }}
-    >
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          mb: STYLE_GUIDE?.SPACING?.s3,
-        }}
-      >
-        <Typography
-          variant="h4"
-          sx={{
-            ...getHeadingSx(),
-          }}
-        >
-          {listCurrentData && listCurrentData?.name}
-        </Typography>
-
-        <Box sx={{ textAlign: "right" }}>
-          {listCurrentData?.lastUploadedDate === null ? (
-            ""
-          ) : (
-            <Typography variant="body2" color="text.secondary">
-              Last updated : {formatDate(listCurrentData?.lastUploadedDate)}
-            </Typography>
-          )}
-
-          {!listCurrentData?.dataSourceVersion ? (
-            ""
-          ) : listCurrentData?.dataSourceVersion?.status === "failed" ? (
-            <Typography
-              variant="body2"
-              sx={{
-                fontWeight: 600,
-                color: STYLE_GUIDE?.COLORS?.primaryDark || "#3f51b5",
-                cursor: "pointer",
-              }}
+    <Box>
+      <PageHeader
+        title={listCurrentData?.name ?? "Data Source"}
+        subtext={
+          listCurrentData?.lastUploadedDate
+            ? `Last updated: ${formatDate(listCurrentData.lastUploadedDate)}`
+            : undefined
+        }
+        action={
+          listCurrentData?.dataSourceVersion?.status === "failed" ? (
+            <StyledButton
+              variant="secondary"
+              icon={<CloudUploadIcon sx={{ fontSize: "16px" }} />}
               onClick={handleCompleteImport}
             >
               Complete your import
-            </Typography>
-          ) : null}
-        </Box>
-      </Box>
-
-      {/* <Typography
-        variant="h4"
-        sx={{
-          ...getHeadingSx(),
-          mb: STYLE_GUIDE?.SPACING?.s3,
-        }}
-      >
-        {listCurrentData && listCurrentData?.name}
-      </Typography> */}
+            </StyledButton>
+          ) : undefined
+        }
+      />
 
       <NotivixDataTable
         rows={rows}

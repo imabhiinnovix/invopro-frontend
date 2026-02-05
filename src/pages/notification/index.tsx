@@ -28,7 +28,7 @@ import { useForm, Controller } from "react-hook-form";
 import SearchIcon from "@mui/icons-material/Search";
 import FilterListIcon from "@mui/icons-material/FilterList";
 import AddIcon from "@mui/icons-material/Add";
-import EditIcon from "@mui/icons-material/Edit";
+import EditOutlined from "@mui/icons-material/EditOutlined";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import DeleteOutlined from "@mui/icons-material/DeleteOutlined";
 import { useUnifiedTheme } from "../../hooks/useUnifiedTheme";
@@ -41,8 +41,7 @@ import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { STYLE_GUIDE } from "../../styles";
-import CommonPageHeader from "../../components/atom/commonPageHeader";
-import PrimaryButton from "../../components/common/PrimaryButton";
+import { ActionIconButton, PageHeader, StyledButton } from "../../components/common";
 import SearchField from "../../components/common/SearchField";
 import DialogContainer from "../../components/molecule/dialog";
 import { checkPermission, formatDate } from "../../utils/utils";
@@ -81,7 +80,7 @@ const columns: GridColDef[] = [
     headerName: "Name",
     width: 250,
     disableColumnMenu: true,
-    resizable: true,
+    resizable: false,
     sortable: true,
   },
   {
@@ -176,7 +175,7 @@ const columns: GridColDef[] = [
         <Switch
           checked={checked}
           onChange={handleToggle}
-          color="success"
+          color="primary"
           disabled={isDisabled}
           // add a stable key to help React reuse correctly if needed
           key={`${params.id}-status-switch`}
@@ -194,14 +193,12 @@ const columns: GridColDef[] = [
     renderCell: (params) => (
       <Box sx={{ display: "flex", gap: 1 }}>
         <Tooltip title="Edit" arrow>
-          <Button
-            variant="text"
+          <ActionIconButton
             onClick={() => params.row.handleEdit(params.row)}
-            sx={{ minWidth: "auto" }}
             disabled={!params.row.shouldAllowEdit}
           >
-            <EditIcon />
-          </Button>
+            <EditOutlined />
+          </ActionIconButton>
         </Tooltip>
         {/* <Tooltip title="View" arrow>
           <Button
@@ -454,19 +451,20 @@ export default function NotificationTypes() {
   };
 
   return (
-    <Box sx={{ p: STYLE_GUIDE.SPACING.s2 }}>
-      <CommonPageHeader
+    <Box>
+      <PageHeader
         title="Notifications"
-        actions={
-          shouldAllowAdd && (
-            <PrimaryButton
-              variant="contained"
-              startIcon={<AddIcon />}
+        subtext="Manage notification types and settings."
+        action={
+          shouldAllowAdd ? (
+            <StyledButton
+              variant="primary"
+              icon={<AddIcon />}
               onClick={handleAddNotificationType}
             >
               Add Notification
-            </PrimaryButton>
-          )
+            </StyledButton>
+          ) : undefined
         }
       />
       {/* <Typography
@@ -478,8 +476,15 @@ export default function NotificationTypes() {
       >
         Notification Types
       </Typography> */}
-      <Card sx={{ borderRadius: "8px", overflow: "visible" }}>
-        <CardContent sx={{ p: STYLE_GUIDE.SPACING.s3 }}>
+      <Card sx={{ 
+        overflow: "visible",
+        p: STYLE_GUIDE.SPACING.s6,
+        backgroundColor: "#ffffff",
+        borderRadius: STYLE_GUIDE.SPACING.s3,
+        border: 1,
+        borderColor: "divider"
+      }}>
+        <CardContent sx={{ p: 0 }}>
           <Box
             sx={{
               display: "flex",
@@ -493,14 +498,13 @@ export default function NotificationTypes() {
               handleSearchChange={handleSearchChange}
             />
             <Box sx={{ display: "flex", gap: 1 }}>
-              <Button
-                variant="outlined"
-                startIcon={<FilterListIcon />}
+              <StyledButton
+                variant="secondary"
+                icon={<FilterListIcon />}
                 onClick={handleFilter}
-                sx={{ borderRadius: "8px" }}
               >
                 Filter
-              </Button>
+              </StyledButton>
               {/* <Button
                 variant="contained"
                 startIcon={<AddIcon />}

@@ -2,19 +2,17 @@ import {
   Chip,
   IconButton,
   Paper,
-  Stack,
-  TablePagination,
-  Typography,
 } from "@mui/material";
 import { useEffect, useState } from "react";
-import CommonPageHeader from "../../components/atom/commonPageHeader";
+import { PageHeader, PageCardLayout } from "../../components/common";
 import CommonTable from "../../components/common/table";
-import CloudDownloadIcon from "@mui/icons-material/CloudDownload";
 import useGet from "../../hooks/useGet";
 import { GET } from "../../services/apiRoutes";
 import useFileDownload from "../../hooks/useFiledownload";
 import { formatDate } from "../../utils/utils";
 import { DOWNLOAD_REQUEST_POLLING_INTERVAL } from "../../utils/constants";
+import { CustomPagination } from "../../components/common/pagination/customPagination";
+import { CloudDownloadOutlined } from "@mui/icons-material";
 
 const columns = [
   {
@@ -42,6 +40,7 @@ const columns = [
       return (
         <Chip
           label={status || "-"}
+          sx={{ fontSize: "12px", height: "unset", py: 0.5}}
           color={
             status === "pending"
               ? "warning"
@@ -66,7 +65,7 @@ const columns = [
       if (status === "completed" && downloadRequestFile) {
         return (
           <IconButton color="primary" onClick={downloadRequestFile}>
-            <CloudDownloadIcon />
+            <CloudDownloadOutlined sx={{ fontSize: "16px" }} />
           </IconButton>
         );
       }
@@ -137,48 +136,40 @@ const Jobs = () => {
   }));
 
   return (
-    <div className="p-4">
-      <CommonPageHeader title="Data Export Jobs" actions={<></>} />
-      <CommonTable
-        columns={columns}
-        rows={rows || []}
-        height="calc(100vh - 300px)"
-        loading={downloadRequestList?.isPending}
-        isLazyTable={true}
+    <div id="jobs-list-view">
+      <PageHeader
+        title="Data Export Jobs"
+        subtext="View and manage data export jobs."
       />
-      <Paper>
-        <Stack
-          direction="row"
-          justifyContent="space-between"
-          alignItems="center"
-          sx={{
-            pl: 2,
-            pr: 2,
-          }}
-        >
-          <Stack direction="row" spacing={2} alignItems="center">
-            <Typography variant="body2">
-              Total Records: {totalRecords || 0}
-            </Typography>
-          </Stack>
-          <TablePagination
-            rowsPerPageOptions={[10, 25, 100]}
-            component="div"
-            count={totalRecords || 0}
-            rowsPerPage={rowsPerPage}
-            page={currentPage - 1}
-            onPageChange={(_event, value) => setCurrentPage(value + 1)}
-            onRowsPerPageChange={(event) => {
-              setRowsPerPage(+event.target.value);
-              setCurrentPage(1);
-            }}
-            labelDisplayedRows={({ page }) => {
-              const totalPages = Math.ceil((totalRecords || 0) / rowsPerPage);
-              return `Page ${page + 1} of ${totalPages}`;
-            }}
+      <PageCardLayout>
+        <CommonTable
+            columns={columns}
+            rows={rows || []}
+            height="calc(100vh - 300px)"
+            loading={downloadRequestList?.isPending}
+            isLazyTable={true}
           />
-        </Stack>
-      </Paper>
+          <Paper
+            variant="outlined"
+            sx={{
+              border: 0,
+              boxShadow: "none",
+              pt: 1.5,
+            }}
+          >
+            <CustomPagination
+              paginationModel={{
+                page: currentPage - 1,
+                pageSize: rowsPerPage,
+              }}
+              setPaginationModel={(model) => {
+                setCurrentPage(model.page + 1);
+                setRowsPerPage(model.pageSize);
+              }}
+              rowCount={totalRecords || 0}
+            />
+          </Paper>
+      </PageCardLayout>
     </div>
   );
 };

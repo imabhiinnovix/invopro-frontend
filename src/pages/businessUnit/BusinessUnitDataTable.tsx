@@ -1,27 +1,18 @@
 import * as React from "react";
 import { useState, useEffect } from "react";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
-import {
-  Box,
-  Card,
-  CardContent,
-  TextField,
-  Button,
-  InputAdornment,
-  Tooltip,
-  Chip,
-} from "@mui/material";
-import SearchIcon from "@mui/icons-material/Search";
-import AddIcon from "@mui/icons-material/Add";
-import EditIcon from "@mui/icons-material/Edit";
+import { Box, Tooltip, Chip } from "@mui/material";
+import EditOutlined from "@mui/icons-material/EditOutlined";
 import VisibilityIcon from "@mui/icons-material/Visibility";
+import DeleteOutlined from "@mui/icons-material/DeleteOutlined";
 import useGet from "../../hooks/useGet";
 import { CustomPagination } from "../../components/common/pagination/customPagination";
+import { ActionIconButton } from "../../components/common";
+import SearchField from "../../components/common/SearchField";
 import { GET } from "../../services/apiRoutes";
 import { toast } from "react-toastify";
 import { BUPaginationModelType } from ".";
 import { formatDateWithoutTime } from "../../utils/utils";
-import DeleteOutlined from "@mui/icons-material/DeleteOutlined";
 
 interface BusinessUnitData {
   _id: string;
@@ -41,7 +32,8 @@ const columns: GridColDef[] = [
   {
     field: "name",
     headerName: "Name",
-    width: 250,
+    flex: 1,
+    minWidth: 200,
     disableColumnMenu: true,
     resizable: true,
     sortable: true,
@@ -49,7 +41,8 @@ const columns: GridColDef[] = [
   {
     field: "status",
     headerName: "Status",
-    width: 250,
+    minWidth: 120,
+    width: 150,
     disableColumnMenu: true,
     resizable: true,
     sortable: true,
@@ -65,7 +58,7 @@ const columns: GridColDef[] = [
   {
     field: "createdAt",
     headerName: "Created At",
-    width: 250,
+    minWidth: 140,
     disableColumnMenu: true,
     resizable: true,
     sortable: true,
@@ -76,41 +69,34 @@ const columns: GridColDef[] = [
   {
     field: "actions",
     headerName: "Actions",
-    minWidth: 100,
+    minWidth: 140,
+    align: "center",
+    headerAlign: "center",
     disableColumnMenu: true,
     sortable: false,
     resizable: false,
     renderCell: (params) => (
-      <Box sx={{ display: "flex", gap: 1 }}>
+      <Box sx={{ display: "flex", gap: 1, justifyContent: "center", width: "100%" }}>
         <Tooltip title="Edit" arrow>
-          <Button
-            variant="text"
+          <ActionIconButton
             onClick={() => params.row.handleEdit(params.row)}
-            sx={{ minWidth: "auto" }}
             disabled={!params.row.shouldAllowEdit}
           >
-            <EditIcon />
-          </Button>
+            <EditOutlined />
+          </ActionIconButton>
         </Tooltip>
         <Tooltip title="View" arrow>
-          <Button
-            variant="text"
-            onClick={() => params.row.handleView(params.row)}
-            sx={{ minWidth: "auto" }}
-          >
+          <ActionIconButton onClick={() => params.row.handleView(params.row)}>
             <VisibilityIcon />
-          </Button>
+          </ActionIconButton>
         </Tooltip>
         <Tooltip title="Delete" arrow>
-          <Button
-            variant="text"
-            color="primary"
+          <ActionIconButton
             onClick={() => params.row.handleDelete(params.row._id)}
-            sx={{ minWidth: "auto" }}
             disabled={!params.row._id}
           >
             <DeleteOutlined />
-          </Button>
+          </ActionIconButton>
         </Tooltip>
       </Box>
     ),
@@ -126,7 +112,7 @@ interface BusinessUnitDataTableProps {
   searchValue: string;
   onSearchChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   paginationModel: BUPaginationModelType;
-  setPaginationModel: (model: BUPaginationModelType) => void;
+  setPaginationModel: React.Dispatch<React.SetStateAction<BUPaginationModelType>>;
   //   filterValues: {
   //     name: string;
   //     organizationId: string;
@@ -140,27 +126,22 @@ interface BusinessUnitDataTableProps {
 }
 
 export function BusinessUnitDataTable({
-  onAddBusinessUnit,
+  onAddBusinessUnit: _onAddBusinessUnit,
   onEditBusinessUnit,
   onViewBusinessUnit,
   onDeleteBusinessUnit,
-  // onFilter,
   searchValue,
   onSearchChange,
   paginationModel,
   setPaginationModel,
-  //   filterValues,
-  //   departmentReload,
   loading,
-  shouldAllowAdd,
+  shouldAllowAdd: _shouldAllowAdd,
   shouldAllowEdit,
   shouldAllowDelete,
 }: BusinessUnitDataTableProps) {
   const perPageItem = paginationModel.pageSize;
 
   const [searchBusinessUnit, setSearchBusinessUnit] = useState(searchValue);
-
-  const [rowCountBusinessUnit, setRowCountBusinessUnit] = useState(0);
 
   useEffect(() => {
     const handler = setTimeout(() => {
@@ -172,13 +153,13 @@ export function BusinessUnitDataTable({
       } else {
         setSearchBusinessUnit(searchValue);
       }
-      setPaginationModel({ ...paginationModel, page: 0 });
+      setPaginationModel((prev) => ({ ...prev, page: 0 }));
     }, 500);
 
     return () => {
       clearTimeout(handler);
     };
-  }, [searchValue]);
+  }, [searchValue, setPaginationModel]);
 
   const businessUnitList = useGet<BusinessUnitDataApiResponse>(
     [
@@ -192,12 +173,6 @@ export function BusinessUnitDataTable({
     }&limit=${perPageItem}&search=${encodeURIComponent(searchBusinessUnit)}`,
     true
   );
-
-  useEffect(() => {
-    if (businessUnitList?.data?.totalCount) {
-      setRowCountBusinessUnit(businessUnitList.data.totalCount);
-    }
-  }, [businessUnitList?.data?.totalCount]);
 
   const businessUnitsWithIds =
     Array.isArray(businessUnitList?.data?.data) &&
@@ -217,73 +192,46 @@ export function BusinessUnitDataTable({
       : [];
 
   return (
-    <Card sx={{ borderRadius: "8px", overflow: "visible" }}>
-      <CardContent sx={{ p: 3 }}>
-        <Box
-          sx={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            mb: 2,
-          }}
-        >
-          <TextField
-            placeholder="Search ..."
-            variant="outlined"
-            size="small"
-            value={searchValue}
-            onChange={onSearchChange}
-            sx={{
-              width: "300px",
-              "& .MuiOutlinedInput-root": { borderRadius: "8px" },
-            }}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <SearchIcon />
-                </InputAdornment>
-              ),
-            }}
-          />
-
-          <Box sx={{ display: "flex", gap: 1 }}>
-            <Button
-              variant="contained"
-              startIcon={<AddIcon />}
-              onClick={onAddBusinessUnit}
-              sx={{ borderRadius: "8px" }}
-              disabled={!shouldAllowAdd}
-            >
-              Add
-            </Button>
-          </Box>
-        </Box>
-
-        <DataGrid
-          loading={loading || businessUnitList.isPending}
-          rows={businessUnitsWithIds}
-          columns={columns}
-          getRowId={(row) => row._id}
-          paginationMode="server"
-          rowCount={rowCountBusinessUnit}
-          paginationModel={paginationModel}
-          onPaginationModelChange={setPaginationModel}
-          disableColumnMenu
-          disableVirtualization
-          initialState={{ pagination: { paginationModel } }}
-          pageSizeOptions={[10, 20]}
-          sx={{ overflow: "visible" }}
-          slots={{
-            pagination: () => (
-              <CustomPagination
-                paginationModel={paginationModel}
-                setPaginationModel={setPaginationModel}
-                rowCount={rowCountBusinessUnit}
-              />
-            ),
-          }}
+    <>
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          mb: 2,
+        }}
+      >
+        <SearchField
+          searchValue={searchValue}
+          handleSearchChange={onSearchChange}
         />
-      </CardContent>
-    </Card>
+      </Box>
+
+      <DataGrid
+        loading={loading || businessUnitList.isPending}
+        rows={businessUnitsWithIds}
+        columns={columns}
+        getRowId={(row) => row._id}
+        pagination
+        paginationMode="server"
+        rowCount={businessUnitList?.data?.totalCount ?? 0}
+        paginationModel={paginationModel}
+        onPaginationModelChange={setPaginationModel}
+        disableColumnMenu
+        disableVirtualization
+        initialState={{ pagination: { paginationModel } }}
+        pageSizeOptions={[10, 20, 50]}
+        sx={{ overflow: "visible", width: "100%" }}
+        slots={{
+          pagination: () => (
+            <CustomPagination
+              paginationModel={paginationModel}
+              setPaginationModel={setPaginationModel}
+              rowCount={businessUnitList?.data?.totalCount ?? 0}
+            />
+          ),
+        }}
+      />
+    </>
   );
 }

@@ -1,19 +1,16 @@
-// import Typography from '@mui/material/Typography';
-import { Box, Button, Card, CardContent } from "@mui/material";
+import { Box } from "@mui/material";
 import { useState } from "react";
 import CreateUpdateDataSource from "../../components/atom/dataSource/createUpdateDataSource";
 import DataSourceTable from "../../components/atom/dataSource/dataSourceTable";
 import { STYLE_GUIDE } from "../../styles";
-import { useUnifiedTheme } from "../../hooks/useUnifiedTheme";
-import PrimaryButton from "../../components/common/PrimaryButton";
-import CommonPageHeader from "../../components/atom/commonPageHeader";
+import { PageHeader, PageCardLayout, StyledButton } from "../../components/common";
+import AddIcon from "@mui/icons-material/Add";
 import { checkPermission } from "../../utils/utils";
 import { PermissionsMap } from "../../utils/constants";
 import { useSelector } from "react-redux";
-import { RootState } from "../../store/store";
+import { RootState } from "../../store";
 
 export default function DataSource() {
-  const theme = useUnifiedTheme();
   const [reload, setReload] = useState(false);
   const permissions = useSelector(
     (state: RootState) => state.userPermission.permissions
@@ -32,130 +29,33 @@ export default function DataSource() {
 
   return (
     <Box sx={{ p: STYLE_GUIDE.SPACING.s2 }}>
-      <CommonPageHeader
+      <PageHeader
         title="Data Source"
-        actions={
-          <CreateUpdateDataSource
-            setReload={setReload}
-            title="Create New Data Source"
-            CustomButton={
-              shouldAllowAdd && (
-                <PrimaryButton variant="contained">
+        subtext="Manage data sources and their configurations."
+        action={
+          shouldAllowAdd ? (
+            <CreateUpdateDataSource
+              setReload={setReload}
+              title="Create New Data Source"
+              CustomButton={
+                <StyledButton
+                  variant="primary"
+                  icon={<AddIcon sx={{ fontSize: "16px" }} />}
+                >
                   Create New Data Source
-                </PrimaryButton>
-              )
-            }
-          />
+                </StyledButton>
+              }
+            />
+          ) : undefined
         }
       />
-      <Box>
+      <PageCardLayout>
         <DataSourceTable
           reload={reload}
           setReload={setReload}
           shouldAllowEdit={shouldAllowEdit}
         />
-      </Box>
+      </PageCardLayout>
     </Box>
-  );
-  return (
-    <>
-      <Box
-        display="flex"
-        flexDirection="column"
-        p={STYLE_GUIDE.SPACING.s4}
-        gap={STYLE_GUIDE.SPACING.s8}
-        width="100%"
-        bgcolor={theme.palette.background.paper}
-        sx={{
-          height: "calc(100vh - 70px)",
-          "@media (max-width: 600px)": {
-            p: STYLE_GUIDE.SPACING.s2,
-            gap: STYLE_GUIDE.SPACING.s2,
-          },
-        }}
-      >
-        <Card
-          sx={{
-            height: "20%",
-            display: "flex",
-            flexDirection: "column",
-            borderRadius: STYLE_GUIDE.SPACING.s2,
-            boxShadow: theme.palette.card?.shadow || theme.shadows[1],
-            transition: "all 0.3s ease-in-out",
-            backgroundColor:
-              theme.palette.card?.background ||
-              STYLE_GUIDE.COLORS.backgroundSurface,
-            border: `1px solid ${
-              theme.palette.card?.border || theme.palette.divider
-            }`,
-            "&:hover": {
-              boxShadow: theme.shadows[3],
-              transform: "translateY(-2px)",
-            },
-          }}
-        >
-          <CardContent sx={{ padding: STYLE_GUIDE.SPACING.s4 }}>
-            <Box
-              display="flex"
-              justifyContent="flex-end"
-              alignItems="center"
-              sx={{
-                // flexWrap: 'wrap-reverse',
-                gap: STYLE_GUIDE.SPACING.s4,
-              }}
-            >
-              <Box>
-                <CreateUpdateDataSource
-                  setReload={setReload}
-                  title="Create New Data Source"
-                  CustomButton={
-                    <Button
-                      variant="contained"
-                      size="large"
-                      sx={{
-                        fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.bold,
-                        fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.xl,
-                        padding: `${STYLE_GUIDE.SPACING.s4} ${STYLE_GUIDE.SPACING.s6}`,
-                        bgcolor: STYLE_GUIDE.COLORS.bootstrapPrimary,
-                        color: STYLE_GUIDE.COLORS.white,
-                        "&:hover": { bgcolor: STYLE_GUIDE.COLORS.darkDarker },
-                        "@media (max-width: 600px)": {
-                          fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.large,
-                          padding: `${STYLE_GUIDE.SPACING.s3} ${STYLE_GUIDE.SPACING.s4}`,
-                        },
-                      }}
-                    >
-                      Create New Data Source
-                    </Button>
-                  }
-                />
-              </Box>
-            </Box>
-          </CardContent>
-        </Card>
-
-        <Card
-          sx={{
-            borderRadius: STYLE_GUIDE.SPACING.s2,
-            boxShadow: theme.palette.card?.shadow || theme.shadows[1],
-            backgroundColor:
-              theme.palette.card?.background ||
-              STYLE_GUIDE.COLORS.backgroundSurface,
-            border: `1px solid ${
-              theme.palette.card?.border || theme.palette.divider
-            }`,
-          }}
-        >
-          <CardContent sx={{ padding: 0 }}>
-            <Box
-              mt={STYLE_GUIDE.SPACING.s8}
-              sx={{ overflowX: "auto", flexGrow: 1 }}
-            >
-              <DataSourceTable reload={reload} setReload={setReload} />
-            </Box>
-          </CardContent>
-        </Card>
-      </Box>
-    </>
   );
 }

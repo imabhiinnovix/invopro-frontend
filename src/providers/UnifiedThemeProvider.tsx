@@ -650,6 +650,10 @@ const UnifiedThemeProviderInner: React.FC<UnifiedThemeProviderProps> = ({
         },
         // DataGrid specific styling (matches modern table design)
         MuiDataGrid: {
+          defaultProps: {
+            disableColumnResize: true,
+            columnHeaderHeight: 48,
+          },
           styleOverrides: {
             root: {
               fontFamily: `${
@@ -657,61 +661,37 @@ const UnifiedThemeProviderInner: React.FC<UnifiedThemeProviderProps> = ({
               } !important`,
               fontWeight: parseInt(getComponentTypography("tables").fontWeight),
               fontSize: getComponentTypography("tables").fontSize,
-              border: `1px solid ${STYLE_GUIDE.COLORS.tableBorder}`,
-              borderRadius: "10px",
+              borderRadius: "0",
               overflow: "hidden",
               backgroundColor:
                 dashboardTheme.colors.background.paper ||
                 STYLE_GUIDE.COLORS.white,
               // Sticky Actions column (right) – narrow, opaque so content doesn’t show through
-              '& .MuiDataGrid-cell[data-field="actions"]': {
-                position: 'sticky',
-                right: 0,
-                backgroundColor: `${
-                  dashboardTheme.colors.background.paper || '#ffffff'
-                } !important`,
-                zIndex: 1,
-                minWidth: 140,
-                width: 'unset',
-                maxWidth: 'unset',
-                borderLeft: `1px solid ${dashboardTheme.components?.table?.borderColor || STYLE_GUIDE.COLORS.tableBorder}`,
+              "& .MuiDataGrid-cell[data-field=\"actions\"]": {
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
               },
-              '& .MuiDataGrid-row:hover .MuiDataGrid-cell[data-field="actions"]': {
-                backgroundColor: `${
-                  dashboardTheme.components?.table?.rowHoverBackground ||
-                  STYLE_GUIDE.COLORS.backgroundHover
-                } !important`,
+              "& .MuiDataGrid-columnSeparator": {
+                display: "none",
               },
-              '& .MuiDataGrid-columnHeaders [data-field="actions"]': {
-                position: 'sticky',
-                right: 0,
-                backgroundColor: `${
-                  dashboardTheme.components?.table?.headerBackground || '#ffffff'
-                } !important`,
-                zIndex: 31,
-                minWidth: 140,
-                width: 'unset',
-                maxWidth: 'unset',
+              "& .MuiDataGrid-main": {
+                border: `1px solid ${STYLE_GUIDE.COLORS.tableBorder}`,
+                borderRadius: "10px"
               },
             } as React.CSSProperties & Record<string, unknown>,
             columnHeaders: {
-              backgroundColor: `${
-                dashboardTheme.components?.table?.headerBackground ||
-                STYLE_GUIDE.COLORS.white
-              } !important`,
+              height: "48px",
+              minHeight: "48px !important",
+              backgroundColor: `${STYLE_GUIDE.COLORS.inputFieldBackground} !important`,
               color: `${
                 dashboardTheme.components?.table?.headerText ||
                 STYLE_GUIDE.COLORS.tableHeaderText
               } !important`,
-              fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold,
-              fontFamily: `${
-                getComponentTypography("tables").fontFamily
-              } !important`,
-              fontSize: `${STYLE_GUIDE.TYPOGRAPHY.fontSize.small} !important`,
-              borderBottom: `1px solid ${dashboardTheme.components?.table?.borderColor || STYLE_GUIDE.COLORS.tableBorder}`,
+              borderBottom: `1px solid ${STYLE_GUIDE.COLORS.tableBorder}`,
             },
             columnHeaderTitle: {
-              fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold,
+              fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.medium,
               color: `${
                 dashboardTheme.components?.table?.headerText ||
                 STYLE_GUIDE.COLORS.tableHeaderText
@@ -723,14 +703,12 @@ const UnifiedThemeProviderInner: React.FC<UnifiedThemeProviderProps> = ({
             },
             columnHeader: {
               outline: "none",
+              background: 'transparent',
               "&:focus, &:focus-within": {
                 outline: "none",
               },
               "& .MuiDataGrid-columnSeparator": {
-                color: `${dashboardTheme.colors.primary.main} !important`,
-                "&:hover": {
-                  color: `${dashboardTheme.colors.primary.light} !important`,
-                },
+                display: "none",
               },
             },
             cell: {
@@ -738,7 +716,7 @@ const UnifiedThemeProviderInner: React.FC<UnifiedThemeProviderProps> = ({
                 dashboardTheme.components?.table?.rowText ||
                 STYLE_GUIDE.COLORS.tableBodyText
               } !important`,
-              borderBottom: `1px solid ${dashboardTheme.components?.table?.borderColor || STYLE_GUIDE.COLORS.tableBorder}`,
+              borderBottom: `1px solid ${STYLE_GUIDE.COLORS.tableBorder}`,
               borderRight: "none",
               outline: "none",
               fontFamily: `${
@@ -762,14 +740,13 @@ const UnifiedThemeProviderInner: React.FC<UnifiedThemeProviderProps> = ({
               },
               "&:hover": {
                 backgroundColor: `${
-                  dashboardTheme.components?.table?.rowHoverBackground ||
-                  STYLE_GUIDE.COLORS.backgroundHover
+                  STYLE_GUIDE.COLORS.inputFieldBackground
                 } !important`,
               },
               "&.Mui-selected": {
-                backgroundColor: `${dashboardTheme.colors.primary.light}20 !important`,
+                backgroundColor: `${STYLE_GUIDE.COLORS.inputFieldBackground} !important`,
                 "&:hover": {
-                  backgroundColor: `${dashboardTheme.colors.primary.light}30 !important`,
+                  backgroundColor: `${STYLE_GUIDE.COLORS.inputFieldBackground} !important`,
                 },
               },
             },

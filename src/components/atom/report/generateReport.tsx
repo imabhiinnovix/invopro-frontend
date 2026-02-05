@@ -15,7 +15,7 @@ import UploadMultipleFiles from "../dataSourceVerion/uploadMultipleVersionValue"
 import { STYLE_GUIDE } from "../../../styles";
 import { useUnifiedTheme } from "../../../hooks/useUnifiedTheme";
 import { useComponentTypography } from "../../../hooks/useComponentTypography";
-import PrimaryButton from "../../common/PrimaryButton";
+import { StyledButton } from "../../common";
 
 interface GenerateReportProps {
   setReload: React.Dispatch<React.SetStateAction<boolean>>;
@@ -63,8 +63,8 @@ export default function GenerateReport({ setReload }: GenerateReportProps) {
     <>
       <Card
         sx={{
-          borderRadius: 1,
-          boxShadow: theme.shadows[1],
+          boxShadow: "none",
+          background: "none"
         }}
       >
         <CardContent
@@ -72,7 +72,7 @@ export default function GenerateReport({ setReload }: GenerateReportProps) {
             display: "flex",
             flexDirection: "column",
             gap: STYLE_GUIDE.SPACING.s4,
-            p: STYLE_GUIDE.SPACING.s6,
+            p: "0 !important",
           }}
         >
           <Typography
@@ -80,7 +80,7 @@ export default function GenerateReport({ setReload }: GenerateReportProps) {
               ...getHeadingSx(),
               fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold,
               color: theme.palette.text.primary,
-              fontSize: 14,
+              fontSize: 24,
             }}
           >
             Generate New Report
@@ -131,34 +131,13 @@ export default function GenerateReport({ setReload }: GenerateReportProps) {
               {generateReport.isPending ? (
                 <ProgressBar />
               ) : (
-                <PrimaryButton
+                <StyledButton
+                  variant="primary"
                   onClick={handleSubmit(onSubmit)}
                   sx={{ width: "100%" }}
                 >
                   Generate Report
-                </PrimaryButton>
-                // <Button
-                //   variant="contained"
-                //   size="small"
-                //   type="submit"
-                //   onClick={handleSubmit(onSubmit)}
-                //   sx={{
-                //     width: "100%",
-                //     height: "40px",
-                //     textTransform: "none",
-                //     fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.medium,
-                //     borderRadius: 1,
-                //     boxShadow: "none",
-                //     bgcolor: theme.palette.primary.main,
-                //     color: theme.palette.primary.contrastText,
-                //     "&:hover": {
-                //       bgcolor: theme.palette.primary.dark,
-                //       boxShadow: STYLE_GUIDE.SHADOWS.none,
-                //     },
-                //   }}
-                // >
-                //   Generate Report
-                // </Button>
+                </StyledButton>
               )}
             </Box>
           </Box>

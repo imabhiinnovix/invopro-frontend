@@ -72,6 +72,8 @@ import FormatListBulletedIcon from "@mui/icons-material/FormatListBulleted";
 import { UseQueryResult } from "@tanstack/react-query";
 import { checkPermission, PermissionMap } from "../../../utils/utils";
 import { PermissionsMap } from "../../../utils/constants";
+import { AssessmentOutlined, AssignmentTurnedInOutlined, DashboardOutlined, NotificationsOutlined, SettingsOutlined } from "@mui/icons-material";
+import innovixLogo from "../../../assets/innovix-logo.png";
 
 interface ErrorResponse {
   success: boolean;
@@ -986,45 +988,40 @@ export default function SideNav() {
               })}
             </List>
           </Box>
-          {/* Help Section */}
+          {/* Powered By Innovix Labs */}
           {openNav && (
             <Box
               sx={{
-                px: 2,
-                py: 2,
+                px: 1,
                 mt: "auto",
                 flexShrink: 0,
-                backgroundColor: themeColor.themeColorLight,
-                borderRadius: "8px",
-                mx: 1.5,
                 mb: 2,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 1,
               }}
             >
               <Typography
                 sx={{
                   fontSize: "12px",
                   fontWeight: 500,
-                  color: STYLE_GUIDE.COLORS.black,
-                }}
-              >
-                Need help?
-              </Typography>
-              <Typography
-                sx={{
-                  fontSize: "12px",
                   color: STYLE_GUIDE.COLORS.textSecondary,
-                  cursor: "pointer",
-                  "&:hover": {
-                    color: themeColor.themeColor,
-                  },
-                }}
-                onClick={() => {
-                  // TODO: Add link to documentation when available
-                  window.open("https://docs.reportivix.com", "_blank");
                 }}
               >
-                Check our documentation
+                Powered By
               </Typography>
+              <Box
+                component="img"
+                src={innovixLogo}
+                alt="Innovix Labs"
+                sx={{
+                  height: "auto",
+                  width: "100%",
+                  maxWidth: 74,
+                  objectFit: "contain",
+                }}
+              />
             </Box>
           )}
         </Box>
@@ -1392,7 +1389,7 @@ function getNavItems(
   return [
     {
       name: "Dashboards",
-      icon: <HomeIcon />,
+      icon: createIcon(DashboardOutlined, "/dashboard", theme, location, themeColor),
       route: "/dashboard",
       shouldShow: checkPermission(
         permissions,
@@ -1417,7 +1414,7 @@ function getNavItems(
     },
     {
       name: "Reports",
-      icon: createIcon(AssessmentIcon, "/reports", theme, location, themeColor),
+      icon: createIcon(AssessmentOutlined, "/reports", theme, location, themeColor),
       route: "/reports",
       shouldShow: checkPermission(
         permissions,
@@ -1427,7 +1424,7 @@ function getNavItems(
     },
     {
       name: "Notifications",
-      icon: createIcon(NotificationsIcon, "/data-source", theme, location, themeColor),
+      icon: createIcon(NotificationsOutlined, "/data-source", theme, location, themeColor),
       route: "/data-source",
       subItems: dataSourceItems,
       shouldShow: shouldShowNotifications,
@@ -1439,7 +1436,7 @@ function getNavItems(
     },
     {
       name: "Data Export Jobs",
-      icon: createIcon(TaskIcon, "/jobs", theme, location, themeColor),
+      icon: createIcon(AssignmentTurnedInOutlined, "/jobs", theme, location, themeColor),
       route: "/jobs",
     },
     getSystemSettingsItems(
@@ -1515,12 +1512,12 @@ function getSystemSettingsItems(
 
   return {
     name: "Settings",
-    icon: createIcon(SettingsIcon, "/settings", theme, location, themeColor),
+    icon: createIcon(SettingsOutlined, "/settings", theme, location, themeColor),
     route: "/settings",
     subItems: [
       {
         name: "Attribute Option",
-        icon: createIcon(ArrowDropDownCircleIcon, "/attribute-option", theme, location, themeColor),
+        icon: createIcon(SettingsOutlined, "/attribute-option", theme, location, themeColor),
         route: "/attribute-option",
         isBold: true,
         // shouldShow: checkPermission(

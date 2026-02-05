@@ -1,6 +1,6 @@
 import React from "react";
 import { Box, Typography, TextField, Button } from "@mui/material";
-import EditIcon from "@mui/icons-material/Edit";
+import EditOutlined from "@mui/icons-material/EditOutlined";
 import CheckIcon from "@mui/icons-material/Check";
 import CloseIcon from "@mui/icons-material/Close";
 import { STYLE_GUIDE } from '../../../styles';
@@ -103,7 +103,7 @@ const ReportNameEditor: React.FC<Props> = ({
                     <Button
                         variant="outlined"
                         onClick={onEdit}
-                        startIcon={<EditIcon />}
+                        startIcon={<EditOutlined sx={{ fontSize: "16px" }} />}
                         size="small"
                         sx={getButtonSx()}
                     >

@@ -356,6 +356,7 @@ export default function ValidationErrors() {
 
   return (
     <Box
+      id="validation-errors-view"
       sx={{
         flexGrow: 1,
         p: 3,

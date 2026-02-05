@@ -14,8 +14,14 @@ interface NavProviderProps {
   children: ReactNode;
 }
 
+// MUI md breakpoint: 900px — below = mobile/tablet (sidebar collapsed by default)
+const MOBILE_BREAKPOINT = 900;
+
 export const NavProvider: React.FC<NavProviderProps> = ({ children }) => {
-  const [openNav, setOpenNav] = useState<boolean>(true);
+  const [openNav, setOpenNav] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return true;
+    return window.innerWidth >= MOBILE_BREAKPOINT;
+  });
 
   return <NavContext.Provider value={{ openNav, setOpenNav }}>{children}</NavContext.Provider>;
 };

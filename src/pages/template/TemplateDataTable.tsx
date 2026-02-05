@@ -4,8 +4,6 @@ import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import Switch from "@mui/material/Switch";
 import {
   Box,
-  Card,
-  CardContent,
   TextField,
   Button,
   InputAdornment,
@@ -14,7 +12,7 @@ import {
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import AddIcon from "@mui/icons-material/Add";
-import EditIcon from "@mui/icons-material/Edit";
+import EditOutlined from "@mui/icons-material/EditOutlined";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import DeleteOutlined from "@mui/icons-material/DeleteOutlined";
 import { useUnifiedTheme } from "../../hooks/useUnifiedTheme";
@@ -23,6 +21,9 @@ import { CustomPagination } from "../../components/common/pagination/customPagin
 import { DELETE, GET } from "../../services/apiRoutes";
 import { toast } from "react-toastify";
 import { formatDate } from "../../utils/utils";
+import { STYLE_GUIDE } from "../../styles";
+import { ActionIconButton, PageCardLayout, StyledButton } from "../../components/common";
+import { VisibilityOutlined } from "@mui/icons-material";
 
 interface Template {
   _id: string;
@@ -139,7 +140,7 @@ const columns: GridColDef[] = [
         <Switch
           checked={checked}
           onChange={handleToggle}
-          color="success"
+          color="primary"
           disabled={isDisabled}
           // add a stable key to help React reuse correctly if needed
           key={`${params.id}-status-switch`}
@@ -155,25 +156,19 @@ const columns: GridColDef[] = [
     sortable: false,
     resizable: false,
     renderCell: (params) => (
-      <Box sx={{ display: "flex", gap: 1 }}>
+      <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
         <Tooltip title="Edit" arrow>
-          <Button
-            variant="text"
+          <ActionIconButton
             onClick={() => params.row.handleEdit(params.row)}
-            sx={{ minWidth: "auto" }}
             disabled={!params.row.shouldAllowEdit}
           >
-            <EditIcon />
-          </Button>
+            <EditOutlined />
+          </ActionIconButton>
         </Tooltip>
         <Tooltip title="View" arrow>
-          <Button
-            variant="text"
-            onClick={() => params.row.handleView(params.row)}
-            sx={{ minWidth: "auto" }}
-          >
-            <VisibilityIcon />
-          </Button>
+          <ActionIconButton onClick={() => params.row.handleView(params.row)}>
+            <VisibilityOutlined />
+          </ActionIconButton>
         </Tooltip>
         {/* <Tooltip title="Delete" arrow>
           <Button
@@ -291,14 +286,13 @@ export function TemplateDataTable({
       : [];
 
   return (
-    <Card sx={{ borderRadius: "8px", overflow: "visible" }}>
-      <CardContent sx={{ p: 3 }}>
-        <Box
+    <PageCardLayout>
+      <Box
           sx={{
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
-            mb: 2,
+            mb: 1.5,
           }}
         >
           <TextField
@@ -321,15 +315,14 @@ export function TemplateDataTable({
           />
 
           <Box sx={{ display: "flex", gap: 1 }}>
-            <Button
-              variant="contained"
-              startIcon={<AddIcon />}
+            <StyledButton
+              variant="primary"
+              icon={<AddIcon />}
               onClick={onAddTemplate}
-              sx={{ borderRadius: "8px" }}
               disabled={!shouldAllowAdd}
             >
               Add
-            </Button>
+            </StyledButton>
           </Box>
         </Box>
 
@@ -356,7 +349,6 @@ export function TemplateDataTable({
             ),
           }}
         />
-      </CardContent>
-    </Card>
+    </PageCardLayout>
   );
 }

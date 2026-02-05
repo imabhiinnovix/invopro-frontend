@@ -97,6 +97,7 @@ import { DateView } from "@mui/x-date-pickers/models";
 import { DateTime } from "luxon";
 import { Theme } from "@mui/material";
 import { SxProps } from "@mui/material";
+import { STYLE_GUIDE } from "../../../styles";
 
 interface CommonDatePickerProps<T extends FieldValues> {
   control: Control<T>;
@@ -166,7 +167,7 @@ function CommonDatePickerInner<T extends FieldValues>(
                   margin: margin,
                   sx: {
                     "& .MuiOutlinedInput-root": {
-                      backgroundColor: "white",
+                      backgroundColor: STYLE_GUIDE.COLORS.inputFieldBackground,
                     },
                     "& .MuiInputBase-input": {
                       fontFamily:

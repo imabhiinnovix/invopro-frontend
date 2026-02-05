@@ -13,7 +13,7 @@ import {
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import AddIcon from "@mui/icons-material/Add";
-import EditIcon from "@mui/icons-material/Edit";
+import EditOutlined from "@mui/icons-material/EditOutlined";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import DeleteOutlined from "@mui/icons-material/DeleteOutlined";
 import { useUnifiedTheme } from "../../hooks/useUnifiedTheme";
@@ -21,6 +21,7 @@ import useGet from "../../hooks/useGet";
 import { CustomPagination } from "../../components/common/pagination/customPagination";
 import { GET } from "../../services/apiRoutes";
 import { toast } from "react-toastify";
+import { ActionIconButton } from "../../components/common";
 import SearchField from "../../components/common/SearchField";
 import { useSelector } from "react-redux";
 import { RootState } from "../../store";
@@ -45,7 +46,8 @@ const columns: GridColDef[] = [
   {
     field: "name",
     headerName: "Name",
-    width: 250,
+    flex: 1,
+    minWidth: 200,
     disableColumnMenu: true,
     resizable: true,
     sortable: true,
@@ -53,7 +55,8 @@ const columns: GridColDef[] = [
   {
     field: "status",
     headerName: "Status",
-    width: 250,
+    minWidth: 120,
+    width: 150,
     disableColumnMenu: true,
     resizable: true,
     sortable: true,
@@ -69,39 +72,31 @@ const columns: GridColDef[] = [
   {
     field: "actions",
     headerName: "Actions",
-    minWidth: 100,
+    minWidth: 140,
+    flex: 0,
     disableColumnMenu: true,
     sortable: false,
     resizable: false,
     renderCell: (params) => (
       <Box sx={{ display: "flex", gap: 1 }}>
         <Tooltip title="Edit" arrow>
-          <Button
-            variant="text"
+          <ActionIconButton
             onClick={() =>
               params.row.shouldAllowEdit && params.row.handleEdit(params.row)
             }
-            sx={{ minWidth: "auto" }}
             disabled={!params.row.shouldAllowEdit}
           >
-            <EditIcon />
-          </Button>
+            <EditOutlined />
+          </ActionIconButton>
         </Tooltip>
         <Tooltip title="View" arrow>
-          <Button
-            variant="text"
-            onClick={() => params.row.handleView(params.row)}
-            sx={{ minWidth: "auto" }}
-          >
+          <ActionIconButton onClick={() => params.row.handleView(params.row)}>
             <VisibilityIcon />
-          </Button>
+          </ActionIconButton>
         </Tooltip>
         <Tooltip title="Delete" arrow>
-          <Button
-            variant="text"
-            color="primary"
+          <ActionIconButton
             onClick={() => params.row.handleDelete(params.row._id)}
-            sx={{ minWidth: "auto" }}
             disabled={
               !params.row._id ||
               !params.row.shouldAllowDelete ||
@@ -111,7 +106,7 @@ const columns: GridColDef[] = [
             }
           >
             <DeleteOutlined />
-          </Button>
+          </ActionIconButton>
         </Tooltip>
       </Box>
     ),
@@ -217,57 +212,55 @@ export function RoleDataTable({
       : [];
 
   return (
-    <Card sx={{ borderRadius: "8px", overflow: "visible" }}>
-      <CardContent sx={{ p: 3 }}>
-        <Box
-          sx={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            mb: 2,
-          }}
-        >
-          <SearchField
-            searchValue={searchValue}
-            handleSearchChange={onSearchChange}
-          />
-
-          {/* <Box sx={{ display: "flex", gap: 1 }}>
-            <Button
-              variant="contained"
-              startIcon={<AddIcon />}
-              onClick={onAddRole}
-              sx={{ borderRadius: "8px" }}
-            >
-              Add
-            </Button>
-          </Box> */}
-        </Box>
-
-        <DataGrid
-          rows={rolesWithIds}
-          columns={columns}
-          initialState={{ pagination: { paginationModel } }}
-          pageSizeOptions={[10, 20]}
-          disableColumnMenu
-          disableVirtualization
-          paginationMode="server"
-          sx={{ overflow: "visible" }}
-          loading={loading || roleList.isLoading}
-          rowCount={roleList?.data?.totalCount}
-          paginationModel={paginationModel}
-          onPaginationModelChange={setPaginationModel}
-          slots={{
-            pagination: () => (
-              <CustomPagination
-                paginationModel={paginationModel}
-                setPaginationModel={setPaginationModel}
-                rowCount={roleList?.data?.totalCount || 0}
-              />
-            ),
-          }}
+    <>
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          mb: 2,
+        }}
+      >
+        <SearchField
+          searchValue={searchValue}
+          handleSearchChange={onSearchChange}
         />
-      </CardContent>
-    </Card>
+
+        {/* <Box sx={{ display: "flex", gap: 1 }}>
+          <Button
+            variant="contained"
+            startIcon={<AddIcon />}
+            onClick={onAddRole}
+            sx={{ borderRadius: "8px" }}
+          >
+            Add
+          </Button>
+        </Box> */}
+      </Box>
+
+      <DataGrid
+        rows={rolesWithIds}
+        columns={columns}
+        initialState={{ pagination: { paginationModel } }}
+        pageSizeOptions={[10, 20]}
+        disableColumnMenu
+        disableVirtualization
+        paginationMode="server"
+        sx={{ overflow: "visible", width: "100%" }}
+        loading={loading || roleList.isLoading}
+        rowCount={roleList?.data?.totalCount}
+        paginationModel={paginationModel}
+        onPaginationModelChange={setPaginationModel}
+        slots={{
+          pagination: () => (
+            <CustomPagination
+              paginationModel={paginationModel}
+              setPaginationModel={setPaginationModel}
+              rowCount={roleList?.data?.totalCount || 0}
+            />
+          ),
+        }}
+      />
+    </>
   );
 }

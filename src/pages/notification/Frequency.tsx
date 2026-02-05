@@ -35,7 +35,7 @@ import {
   ChevronRight,
   CalendarMonthOutlined,
   DeleteOutlined,
-  Edit as EditIcon,
+  EditOutlined,
   Visibility as VisibilityIcon,
 } from "@mui/icons-material";
 import { TimePicker } from "@mui/x-date-pickers/TimePicker";
@@ -51,6 +51,7 @@ import CustomRecurrence from "./Frequency/CustomRecurrence";
 import { STYLE_GUIDE } from "../../styles";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import { toast } from "react-toastify";
+import { ActionIconButton } from "../../components/common";
 import { ConfirmationDialog } from "../../components/common/deleteConfirmationDialog/ConfirmationDialog";
 import ViewSchedulerDialog from "./ViewSchedulerDialog";
 import {
@@ -258,34 +259,31 @@ export default function Frequency({
       renderCell: (params) => (
         <Box sx={{ display: "flex", gap: 1 }}>
           <Tooltip title="Edit" placement="top">
-            <IconButton
-              color="primary"
+            <ActionIconButton
               aria-label="edit"
               onClick={() => handleEditReminder(params.row)}
               disabled={!shouldAllowSchedulerUpdate}
             >
-              <EditIcon />
-            </IconButton>
+              <EditOutlined />
+            </ActionIconButton>
           </Tooltip>
           <Tooltip title="View" placement="top">
-            <IconButton
-              color="primary"
+            <ActionIconButton
               aria-label="view"
               onClick={() => handleViewReminder(params.row)}
               disabled={!shouldAllowSchedulerGet}
             >
               <VisibilityIcon />
-            </IconButton>
+            </ActionIconButton>
           </Tooltip>
           <Tooltip title="Delete" placement="top">
-            <IconButton
-              color="primary"
+            <ActionIconButton
               aria-label="delete"
               onClick={() => handleDeleteClick(params.row)}
               disabled={!shouldAllowSchedulerDelete}
             >
               <DeleteOutlined />
-            </IconButton>
+            </ActionIconButton>
           </Tooltip>
         </Box>
       ),
@@ -3784,7 +3782,7 @@ export default function Frequency({
 //               aria-label="edit reminder"
 //               onClick={() => handleEditReminder(params.row)}
 //             >
-//               <EditIcon />
+//               <EditOutlined sx={{ fontSize: "16px" }} />
 //             </IconButton>
 //           </Tooltip>
 //           <Tooltip title="View Reminder" placement="top">

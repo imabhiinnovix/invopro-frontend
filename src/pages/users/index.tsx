@@ -18,11 +18,12 @@ import {
   InputAdornment,
   IconButton,
 } from "@mui/material";
-import EditIcon from "@mui/icons-material/Edit";
+import EditOutlined from "@mui/icons-material/EditOutlined";
 import DeleteOutlined from "@mui/icons-material/DeleteOutlined";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import { STYLE_GUIDE } from "../../styles";
+import { ActionIconButton } from "../../components/common";
 import { GET, POST, PUT, DELETE } from "../../services/apiRoutes";
 import useGet from "../../hooks/useGet";
 import usePost from "../../hooks/usePost";
@@ -220,36 +221,31 @@ export default function Users({
         renderCell: (params: GridRenderCellParams) => (
           <Box sx={{ display: "flex", gap: STYLE_GUIDE.SPACING.s2 }}>
             <Tooltip title="Edit" arrow>
-              <Button
-                variant="text"
+              <ActionIconButton
                 onClick={() =>
                   (params.row as UserRowData).handleEdit(
                     params.row as UserRowData
                   )
                 }
-                sx={{ minWidth: "auto" }}
                 disabled={!(params.row as UserRowData).shouldAllowUserEdit}
               >
-                <EditIcon />
-              </Button>
+                <EditOutlined />
+              </ActionIconButton>
             </Tooltip>
             <Tooltip title="Delete" arrow>
-              <Button
-                variant="text"
-                color="primary"
+              <ActionIconButton
                 onClick={() =>
                   (params.row as UserRowData).handleDelete(
                     (params.row as UserRowData).id
                   )
                 }
-                sx={{ minWidth: "auto" }}
                 disabled={
                   !(params.row as UserRowData).shouldAllowUserDelete ||
                   (params.row as UserRowData).id === userDetails?.data?._id
                 }
               >
                 <DeleteOutlined />
-              </Button>
+              </ActionIconButton>
             </Tooltip>
           </Box>
         ),

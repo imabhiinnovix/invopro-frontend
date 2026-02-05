@@ -76,7 +76,7 @@ import {
 import { styled } from "@mui/material/styles";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import DeleteOutlined from "@mui/icons-material/DeleteOutlined";
-import EditIcon from "@mui/icons-material/Edit";
+import EditOutlined from "@mui/icons-material/EditOutlined";
 import AddIcon from "@mui/icons-material/Add";
 import FullscreenIcon from "@mui/icons-material/Fullscreen";
 import CloseIcon from "@mui/icons-material/Close";
@@ -245,15 +245,13 @@ const StyledCard = styled(Card)(({ theme }) => ({
   minHeight: 500,
   display: "flex",
   flexDirection: "column",
-  borderTopLeftRadius: theme.shape.borderRadius,
-  borderTopRightRadius: theme.shape.borderRadius,
-  boxShadow: theme.shadows[1],
+  borderRadius: "12px",
+  boxShadow: "nonw",
   transition: "all 0.3s ease-in-out",
   backgroundColor: theme.palette.background.paper,
   border: `1px solid ${theme.palette.divider}`,
   "&:hover": {
-    boxShadow: theme.shadows[3],
-    transform: "translateY(-2px)",
+    boxShadow: theme.shadows[1]
   },
 }));
 
@@ -263,15 +261,14 @@ const NumberCard = styled(Card, {
   height: 110,
   display: "flex",
   flexDirection: "column",
-  borderRadius: theme.shape.borderRadius,
-  boxShadow: theme.shadows[1],
+  boxShadow: "none",
+  borderRadius: "12px",
   transition: "all 0.3s ease-in-out",
   backgroundColor: backgroundColor, // Use dynamic background color
-  // border: `1px solid ${theme.palette.divider}`,
+  border: `1px solid ${theme.palette.divider}`,
   overflow: "hidden",
   "&:hover": {
-    boxShadow: theme.shadows[3],
-    transform: "translateY(-2px)",
+    boxShadow: theme.shadows[1]
   },
 }));
 const ChartTitle = styled(Typography)(({ theme }) => ({
@@ -1745,8 +1742,6 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
 
     return matchedField ? matchedField.label : groupFieldKey;
   }
-
-  const SABIC_COLORS_NUMBER = ["#939598", "#FFCD00", "#009FDF"];
 
   // Helper: pick color by index
   const getColor = (index: number) => SABIC_COLORS[index % SABIC_COLORS.length];
@@ -3863,11 +3858,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
                     >
                       <NumberCard
                         sx={{ ...getCardSx() }}
-                        backgroundColor={
-                          SABIC_COLORS_NUMBER[
-                            index % SABIC_COLORS_NUMBER.length
-                          ]
-                        } // Cycle through colors
+                        backgroundColor="#ffffff"
                         data-widget-type="number"
                       >
                         <CardContent>
@@ -3884,12 +3875,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
                             {/* optional chart title — keep it empty if you don't want text */}
                             <ChartTitle
                               sx={{
-                                color:
-                                  SABIC_COLORS_NUMBER[
-                                    index % SABIC_COLORS_NUMBER.length
-                                  ] === "#939598"
-                                    ? "#FFFFFF"
-                                    : "#939598",
+                                color:"#939598",
                                 p: 0,
                                 mr: 1,
                               }}
@@ -3970,10 +3956,9 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
                               width: "100%",
                               cursor: "pointer",
                               transition:
-                                "transform 0.2s ease, opacity 0.2s ease",
+                                "boxShadow 0.2s ease, opacity 0.2s ease",
                               "&:hover": {
-                                transform: "scale(1.02)",
-                                opacity: 0.9,
+                                boxShadow: "rgba(0, 0, 0, 0) 0px 0px 0px"
                               },
                             }}
                           >
@@ -4393,7 +4378,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
       >
         {shouldAllowWidgetUpdate && (
           <MenuItem onClick={handleEditClick}>
-            <EditIcon sx={{ mr: 1, fontSize: 20 }} />
+            <EditOutlined sx={{ mr: 1, fontSize: "16px" }} />
             Edit
           </MenuItem>
         )}

@@ -318,6 +318,7 @@ import ErrorDialog from "./showError";
 import { STYLE_GUIDE } from "../../../styles";
 import { useComponentTypography } from "../../../hooks/useComponentTypography";
 import CommonTable from "../../common/table";
+import { PageCardLayout } from "../../common";
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
   [`&.${tableCellClasses.head}`]: {
@@ -683,56 +684,58 @@ const DataSourceVersionTable: React.FC<AttributeOptionTableProps> = ({
   }));
 
   return (
-    <CommonTable
-      columns={columns}
-      loading={false}
-      isLazyLoading={dataSourceVersionList.isFetching}
-      rows={transformedRows}
-      height="calc(100vh - 200px)"
-      isLazyTable={true}
-      collpasible={(row, index) => {
-        return (
-          <>
-            {row.mappings && (
-              <StyledTableRow>
-                <TableCell
-                  style={{ paddingBottom: 0, paddingTop: 0 }}
-                  colSpan={9}
-                >
-                  <Collapse
-                    in={expandedMappingRows[index]}
-                    timeout="auto"
-                    unmountOnExit
-                  >
-                    {renderMappings(row.mappings)}
-                  </Collapse>
-                </TableCell>
-              </StyledTableRow>
-            )}
-
-            {row.separator &&
-              row.separator &&
-              Object.keys(row.separator).length > 0 && (
-                <StyledTableRow>
-                  <TableCell
-                    style={{ paddingBottom: 0, paddingTop: 0 }}
-                    colSpan={10}
-                  >
-                    <Collapse
-                      in={expandedSepratorRows[index]}
-                      timeout="auto"
-                      unmountOnExit
+    <PageCardLayout>
+      <CommonTable
+          columns={columns}
+          loading={false}
+          isLazyLoading={dataSourceVersionList.isFetching}
+          rows={transformedRows}
+          height="calc(100vh - 200px)"
+          isLazyTable={true}
+          collpasible={(row, index) => {
+            return (
+              <>
+                {row.mappings && (
+                  <StyledTableRow>
+                    <TableCell
+                      style={{ paddingBottom: 0, paddingTop: 0 }}
+                      colSpan={9}
                     >
-                      {renderSeparators(row.separator)}
-                    </Collapse>
-                  </TableCell>
-                </StyledTableRow>
-              )}
-          </>
-        );
-      }}
-      lastElementRef={lastElementRef}
-    />
+                      <Collapse
+                        in={expandedMappingRows[index]}
+                        timeout="auto"
+                        unmountOnExit
+                      >
+                        {renderMappings(row.mappings)}
+                      </Collapse>
+                    </TableCell>
+                  </StyledTableRow>
+                )}
+
+                {row.separator &&
+                  row.separator &&
+                  Object.keys(row.separator).length > 0 && (
+                    <StyledTableRow>
+                      <TableCell
+                        style={{ paddingBottom: 0, paddingTop: 0 }}
+                        colSpan={10}
+                      >
+                        <Collapse
+                          in={expandedSepratorRows[index]}
+                          timeout="auto"
+                          unmountOnExit
+                        >
+                          {renderSeparators(row.separator)}
+                        </Collapse>
+                      </TableCell>
+                    </StyledTableRow>
+                  )}
+              </>
+            );
+          }}
+          lastElementRef={lastElementRef}
+        />
+    </PageCardLayout>
   );
 
   return (

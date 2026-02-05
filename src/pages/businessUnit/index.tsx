@@ -9,18 +9,18 @@ import {
   DialogActions,
   Button,
 } from "@mui/material";
+import AddIcon from "@mui/icons-material/Add";
 import useDelete from "../../hooks/useDelete";
 import { DELETE } from "../../services/apiRoutes";
 import { toast } from "react-toastify";
 import { STYLE_GUIDE } from "../../styles";
-import { useComponentTypography } from "../../hooks";
-
 import { useSelector } from "react-redux";
 import { RootState } from "../../store";
 import { checkPermission } from "../../utils/utils";
 import { PermissionsMap } from "../../utils/constants";
 import { BusinessUnitModal } from "./BusinessUnitModal";
 import { BusinessUnitDataTable } from "./BusinessUnitDataTable";
+import { PageHeader, PageCardLayout, StyledButton } from "../../components/common";
 import { useQueryClient } from "@tanstack/react-query";
 
 // Define types
@@ -73,7 +73,6 @@ export default function BusinessUnit() {
     organizationId: "",
     status: "",
   });
-  const { getHeadingSx } = useComponentTypography();
   const permissions = useSelector(
     (state: RootState) => state.userPermission.permissions
   );
@@ -208,22 +207,24 @@ export default function BusinessUnit() {
     <Box
       sx={{
         flexGrow: 1,
-        p: 3,
         ml: { xs: 0 },
         minHeight: "100vh",
       }}
     >
-      <Typography
-        variant="h4"
-        sx={{
-          ...getHeadingSx(),
-          mb: STYLE_GUIDE?.SPACING?.s3,
-        }}
-      >
-        Business Unit
-      </Typography>
+      <PageHeader
+        title="Business Unit"
+        subtext="View and manage business units."
+        action={
+          shouldAllowAdd ? (
+            <StyledButton variant="primary" startIcon={<AddIcon />} onClick={handleAddBusinessUnit}>
+              Add Business Unit
+            </StyledButton>
+          ) : undefined
+        }
+      />
 
-      <BusinessUnitDataTable
+      <PageCardLayout>
+        <BusinessUnitDataTable
         onAddBusinessUnit={handleAddBusinessUnit}
         onEditBusinessUnit={handleEdit}
         onViewBusinessUnit={handleView}
@@ -240,6 +241,7 @@ export default function BusinessUnit() {
         shouldAllowEdit={shouldAllowEdit}
         shouldAllowDelete={shouldAllowDelete}
       />
+      </PageCardLayout>
 
       <BusinessUnitModal
         rowData={rowData}

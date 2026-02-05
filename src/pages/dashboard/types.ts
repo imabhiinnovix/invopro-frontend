@@ -25,6 +25,8 @@ export interface Dashboard {
   updatedAt: string;
   __v: number;
   widgetThemeId?: string;
+  /** When true, this dashboard is the default for the user's role (delete may be restricted). */
+  isRoleDefault?: boolean;
 }
 
 export interface DashboardListResponse {

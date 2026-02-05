@@ -1,15 +1,15 @@
 import * as React from "react";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Box, Button, Typography } from "@mui/material";
-
+import { Box, Typography } from "@mui/material";
+import AddIcon from "@mui/icons-material/Add";
 import useDelete from "../../hooks/useDelete";
 import { DELETE } from "../../services/apiRoutes";
 import { RoleDataTable } from "./RoleDataTable";
 import { RoleModal } from "./RoleModal";
 import { toast } from "react-toastify";
 import { STYLE_GUIDE } from "../../styles";
-import CommonPageHeader from "../../components/atom/commonPageHeader";
+import { PageHeader, PageCardLayout, StyledButton } from "../../components/common";
 import DialogContainer from "../../components/molecule/dialog";
 import PrimaryButton from "../../components/common/PrimaryButton";
 import { PermissionsMap } from "../../utils/constants";
@@ -175,19 +175,24 @@ export default function Roles() {
         p: STYLE_GUIDE?.SPACING?.s2,
       }}
     >
-      <CommonPageHeader
+      <PageHeader
         title="Roles"
-        onBack={() => navigate(-1)}
-        actions={
-          shouldAllowAdd && (
-            <Button variant="contained" color="primary" onClick={handleAddRole}>
+        subtext="Manage roles and permissions."
+        action={
+          shouldAllowAdd ? (
+            <StyledButton
+              variant="primary"
+              icon={<AddIcon sx={{ fontSize: "16px" }} />}
+              onClick={handleAddRole}
+            >
               Add Role
-            </Button>
-          )
+            </StyledButton>
+          ) : undefined
         }
       />
 
-      <RoleDataTable
+      <PageCardLayout>
+        <RoleDataTable
         onAddRole={handleAddRole}
         onEditRole={handleEdit}
         onViewRole={handleView}
@@ -203,6 +208,7 @@ export default function Roles() {
         shouldAllowEdit={shouldAllowEdit}
         shouldAllowDelete={shouldAllowDelete}
       />
+      </PageCardLayout>
 
       <DialogContainer
         open={openDialog}

@@ -2,8 +2,6 @@ import * as React from "react";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import {
   Box,
-  Card,
-  CardContent,
   Typography,
   Tooltip,
   Skeleton,
@@ -16,7 +14,7 @@ import { CustomPagination } from "../../components/common/pagination/customPagin
 import ImportFile from "../../components/common/importFile/ImportFile";
 import dayjs from "dayjs";
 import SearchField from "../../components/common/SearchField";
-import PrimaryButton from "../../components/common/PrimaryButton";
+import { PageCardLayout, StyledButton } from "../../components/common";
 import IosShareIcon from "@mui/icons-material/IosShare";
 
 interface TableSectionProps {
@@ -210,16 +208,8 @@ export const NotivixDataTable: React.FC<TableSectionProps> = ({
 
   return (
     <>
-      <Card
-        sx={{
-          backgroundColor: STYLE_GUIDE?.COLORS?.white || "#ffffff",
-          boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.1)",
-          borderRadius: "8px",
-          overflow: "visible",
-        }}
-      >
-        <CardContent sx={{ p: 3 }}>
-          <Box
+      <PageCardLayout>
+        <Box
             sx={{
               display: "flex",
               justifyContent: "space-between",
@@ -233,40 +223,43 @@ export const NotivixDataTable: React.FC<TableSectionProps> = ({
             />
 
             <Box sx={{ display: "flex", gap: 1 }}>
-              <PrimaryButton
-                variant="outlined"
-                startIcon={<FilterListIcon />}
+              <StyledButton
+                variant="secondary"
+                icon={<FilterListIcon sx={{ fontSize: "16px" }} />}
                 onClick={handleOpenFiltersModal}
               >
                 Filter
-              </PrimaryButton>
+              </StyledButton>
               {shouldAllowAdd && (
-                <PrimaryButton
-                  variant="contained"
-                  startIcon={<AddIcon />}
+                <StyledButton
+                  variant="primary"
+                  icon={<AddIcon sx={{ fontSize: "16px" }} />}
                   onClick={handleAddNotification}
                 >
                   Add
-                </PrimaryButton>
+                </StyledButton>
               )}
               {shouldAllowImport && (
                 <ImportFile
                   title="Import"
                   dataSourceId={dataSourceId}
                   CustomButton={
-                    <PrimaryButton startIcon={<AddIcon />} variant="contained">
+                    <StyledButton
+                      variant="primary"
+                      icon={<AddIcon sx={{ fontSize: "16px" }} />}
+                    >
                       Import
-                    </PrimaryButton>
+                    </StyledButton>
                   }
                 />
               )}
-              <PrimaryButton
-                variant="contained"
-                startIcon={<IosShareIcon />}
+              <StyledButton
+                variant="primary"
+                icon={<IosShareIcon sx={{ fontSize: "16px" }} />}
                 onClick={handleExport}
               >
                 Export
-              </PrimaryButton>
+              </StyledButton>
             </Box>
           </Box>
           {formattedColumns.length > 0 ? (
@@ -299,11 +292,6 @@ export const NotivixDataTable: React.FC<TableSectionProps> = ({
                     backgroundColor:
                       STYLE_GUIDE?.COLORS?.backgroundLight || "#f5f5f5",
                   },
-                },
-                "& .MuiDataGrid-footerContainer": {
-                  borderTop: `1px solid ${
-                    STYLE_GUIDE?.COLORS?.divider || "#e0e0e0"
-                  }`,
                 },
                 height: "calc(100vh - 280px)",
               }}
@@ -361,8 +349,7 @@ export const NotivixDataTable: React.FC<TableSectionProps> = ({
               </Typography>
             </Box>
           )}
-        </CardContent>
-      </Card>
+      </PageCardLayout>
     </>
   );
 };

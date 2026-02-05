@@ -1029,8 +1029,10 @@ import DownloadForOfflineIcon from "@mui/icons-material/DownloadForOffline";
 import { useUnifiedTheme } from "../../../hooks/useUnifiedTheme";
 import { useComponentTypography } from "../../../hooks/useComponentTypography";
 import CommonTable from "../../common/table";
+import { ActionIconButton } from "../../common";
 import CSVDownloadIcon from "../../../assets/csv-download.png";
 import { useNavigate } from "react-router-dom";
+import { FileDownloadOutlined, SimCardDownloadOutlined, VisibilityOutlined } from "@mui/icons-material";
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
   [`&.${tableCellClasses.head}`]: {
@@ -1337,17 +1339,29 @@ const ReportRequestTable: React.FC<AttributeOptionTableProps> = ({
       sortable: true,
       renderCell: (row: Record<string, unknown>) => {
         const reportRow = row as unknown as ReportRequestResponse;
-        const color =
+        const backgroundColor =
           reportRow.status === "completed"
-            ? "success.main"
+            ? theme.palette.success.main
             : reportRow.status === "processing"
-              ? "warning.main"
-              : reportRow.status === "failed"
-                ? "error.main"
-                : reportRow.status === "error"
-                  ? "error.main"
-                  : "text.primary";
-        return <Typography color={color}>{reportRow.status || "-"}</Typography>;
+              ? theme.palette.warning.main
+              : reportRow.status === "failed" || reportRow.status === "error"
+                ? theme.palette.error.main
+                : theme.palette.text.primary;
+        return (
+          <Typography
+            sx={{
+              fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.xs,
+              backgroundColor,
+              color: "#ffffff",
+              borderRadius: "9999px",
+              textAlign: "center",
+              p: "1px 6px",
+              display: "inline-block",
+            }}
+          >
+            {reportRow.status || "-"}
+          </Typography>
+        );
       },
     },
     {
@@ -1411,10 +1425,7 @@ const ReportRequestTable: React.FC<AttributeOptionTableProps> = ({
                   />
                 ) : (
                   <Tooltip title="Download Excel" arrow>
-                    <Button
-                      variant="text"
-                      // onClick={() => params.row.handleEdit(params.row)}
-                      sx={{ minWidth: "auto" }}
+                    <ActionIconButton
                       disabled={!shouldAllowDownload}
                       onClick={() => {
                         downloadFile(
@@ -1423,34 +1434,22 @@ const ReportRequestTable: React.FC<AttributeOptionTableProps> = ({
                         );
                       }}
                     >
-                      <img
-                        style={{ width: "25px", height: "25px" }}
-                        src={CSVDownloadIcon}
-                        alt="CSV Download"
-                      />
-                      {/* <SimCardDownloadIcon
-                       
-                        // sx={{ mr: 2 }}
-                        // sx={{ color: theme.getIconColor() }}
-                      />{" "} */}
-                    </Button>
+                      <SimCardDownloadOutlined />
+                    </ActionIconButton>
                   </Tooltip>
                 )}
                 <Tooltip title="View Report" arrow>
-                  <Button variant="text" sx={{ minWidth: "auto" }}>
-                    <VisibilityIcon
-                      onClick={() => {
-                        setAllDetailData(reportRow);
-                        setViewReportRequestId(reportRow._id);
-                        setViewReportNameWithVersionValue(
-                          `${reportRow.customReportId?.reportName}-${reportRow.versionValue}`,
-                        );
-                      }}
-                      //  sx={{ color: theme.getIconColor() }}
-                    />
-                  </Button>
-
-                  {/* </StyledButton> */}
+                  <ActionIconButton
+                    onClick={() => {
+                      setAllDetailData(reportRow);
+                      setViewReportRequestId(reportRow._id);
+                      setViewReportNameWithVersionValue(
+                        `${reportRow.customReportId?.reportName}-${reportRow.versionValue}`,
+                      );
+                    }}
+                  >
+                    <VisibilityOutlined />
+                  </ActionIconButton>
                 </Tooltip>
               </Box>
             ) : reportRow.status === "error" ? (
@@ -1491,20 +1490,17 @@ const ReportRequestTable: React.FC<AttributeOptionTableProps> = ({
             {reportRow.status === "completed" &&
               reportRow.customReportId?.reportName === "Supplemental IP" && (
                 <Tooltip title="Intermediate Download" arrow>
-                  <Button
-                    variant="text"
-                    sx={{ minWidth: "auto" }}
+                  <ActionIconButton
                     disabled={!shouldAllowIntermediateDownload}
+                    onClick={() => {
+                      intermediateSupplementalDownloadFile(
+                        `${reportRow.customReportId?.reportName}-intermediate-${reportRow.versionValue}.xlsx`,
+                        reportRow,
+                      );
+                    }}
                   >
-                    <SimCardDownloadIcon
-                      onClick={() => {
-                        intermediateSupplementalDownloadFile(
-                          `${reportRow.customReportId?.reportName}-intermediate-${reportRow.versionValue}.xlsx`,
-                          reportRow,
-                        );
-                      }}
-                    />
-                  </Button>
+                    <FileDownloadOutlined />
+                  </ActionIconButton>
                 </Tooltip>
               )}
 
@@ -1537,22 +1533,19 @@ const ReportRequestTable: React.FC<AttributeOptionTableProps> = ({
                     />
                   ) : (
                     <Tooltip title="Intermediate Download" arrow>
-                      <Button
-                        variant="text"
-                        sx={{ minWidth: "auto" }}
+                      <ActionIconButton
                         disabled={!shouldAllowIntermediateDownload}
+                        onClick={() => {
+                          setDownloadRequestId("");
+                          setDownLoadFileName("");
+                          intermediateDownloadFile(
+                            `${reportRow.customReportId?.reportName}-intermediate-${reportRow.versionValue}.xlsx`,
+                            reportRow._id,
+                          );
+                        }}
                       >
-                        <SimCardDownloadIcon
-                          onClick={() => {
-                            setDownloadRequestId("");
-                            setDownLoadFileName("");
-                            intermediateDownloadFile(
-                              `${reportRow.customReportId?.reportName}-intermediate-${reportRow.versionValue}.xlsx`,
-                              reportRow._id,
-                            );
-                          }}
-                        />
-                      </Button>
+                        <FileDownloadOutlined />
+                      </ActionIconButton>
                     </Tooltip>
                   )}
                 </Box>

@@ -11,7 +11,7 @@ import {
   Avatar,
 } from '@mui/material';
 import {
-  Edit as EditIcon,
+  EditOutlined,
   DeleteOutlined,
   ContentCopy as DuplicateIcon,
   CheckCircle as ApplyIcon,
@@ -207,7 +207,7 @@ const DashboardThemePreview: React.FC<DashboardThemePreviewProps> = ({
           <Stack direction="row" spacing={0.5}>
             <Tooltip title="Edit Theme">
               <IconButton size="small" onClick={handleUpdate}>
-                <EditIcon fontSize="small" />
+                <EditOutlined sx={{ fontSize: "16px" }} />
               </IconButton>
             </Tooltip>
             <Tooltip title="Duplicate Theme">

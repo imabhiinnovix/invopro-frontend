@@ -4,7 +4,7 @@ import CreateDataSourceVersion from "../../components/atom/dataSourceVerion/crea
 import DataSourceVersionTable from "../../components/atom/dataSourceVerion/dataSourceVersionTable";
 import { STYLE_GUIDE } from "../../styles";
 import { useUnifiedTheme } from "../../hooks/useUnifiedTheme";
-import CommonPageHeader from "../../components/atom/commonPageHeader";
+import { PageHeader } from "../../components/common";
 import PrimaryButton from "../../components/common/PrimaryButton";
 import { PermissionsMap } from "../../utils/constants";
 import { checkPermission } from "../../utils/utils";
@@ -25,14 +25,16 @@ export default function DataSourceVersion() {
 
   return (
     <Box
+      id="data-source-version-list-view"
       sx={{
         p: STYLE_GUIDE.SPACING.s2,
       }}
     >
-      <CommonPageHeader
+      <PageHeader
         title="Data Upload"
-        actions={
-          shouldAllowAdd && (
+        subtext="Upload and manage data source versions."
+        action={
+          shouldAllowAdd ? (
             <CreateDataSourceVersion
               setReload={setReload}
               title="File Upload"
@@ -40,7 +42,7 @@ export default function DataSourceVersion() {
                 <PrimaryButton variant="contained">File Upload</PrimaryButton>
               }
             />
-          )
+          ) : undefined
         }
       />
 

@@ -221,37 +221,117 @@ export const createDynamicTheme = (typographyOptions: DynamicThemeOptions = {}):
           },
         },
       },
+      MuiOutlinedInput: {
+        styleOverrides: {
+          root: (opts) => ({
+            backgroundColor: STYLE_GUIDE.COLORS.inputFieldBackground,
+            borderRadius: '10px',
+            fontSize: '16px',
+            '&:not(.MuiInputBase-multiline)': {
+              height: '40px',
+              minHeight: '40px',
+              display: 'flex',
+              alignItems: 'center',
+            },
+            [opts.theme.breakpoints.up('md')]: {
+              fontSize: '14px',
+            },
+            '& fieldset': {
+              borderColor: STYLE_GUIDE.COLORS.inputFieldBorder,
+            },
+            '&:hover fieldset': {
+              borderColor: opts.theme.palette.primary.main,
+            },
+            '&.Mui-focused fieldset': {
+              borderColor: opts.theme.palette.primary.main,
+            },
+            '& .MuiOutlinedInput-input': {
+              padding: '10px 14px',
+              height: '100% !important',
+              boxSizing: 'border-box',
+              fontSize: 'inherit',
+              lineHeight: 1.25,
+            },
+          }),
+          input: (opts) => ({
+            fontSize: '16px',
+            [opts.theme.breakpoints.up('md')]: {
+              fontSize: '14px',
+            },
+          }),
+        },
+      },
+      MuiInputLabel: {
+        styleOverrides: {
+          root: (opts) => ({
+            fontSize: '16px',
+            transform: 'translate(14px, 9px)',
+            [opts.theme.breakpoints.up('md')]: {
+              fontSize: '14px',
+            },
+          }),
+          outlined: {
+            top: '50%',
+            transform: 'translateY(-50%)',
+            '&.MuiInputLabel-shrink': {
+              top: 0,
+              transform: 'translate(14px, -9px) scale(0.75)',
+            },
+          },
+        },
+      },
       MuiSelect: {
         styleOverrides: {
-          root: {
+          root: (opts) => ({
             fontFamily,
             fontWeight: parseInt(fontWeight),
             '& .MuiOutlinedInput-root': {
-              backgroundColor: STYLE_GUIDE.COLORS.white,
+              backgroundColor: STYLE_GUIDE.COLORS.inputFieldBackground,
+              borderRadius: '10px',
+              height: '40px',
+              minHeight: '40px',
+              fontSize: '16px',
+              [opts.theme.breakpoints.up('md')]: {
+                fontSize: '14px',
+              },
               '& fieldset': {
-                borderColor: STYLE_GUIDE.COLORS.borderGray,
+                borderColor: STYLE_GUIDE.COLORS.inputFieldBorder,
               },
               '&:hover fieldset': {
-                borderColor: STYLE_GUIDE.COLORS.primary,
+                borderColor: opts.theme.palette.primary.main,
               },
               '&.Mui-focused fieldset': {
-                borderColor: STYLE_GUIDE.COLORS.primary,
+                borderColor: opts.theme.palette.primary.main,
               },
             },
             '& .MuiInputLabel-root': {
               color: STYLE_GUIDE.COLORS.textDarkGray,
               fontFamily,
               fontWeight: parseInt(fontWeight),
+              fontSize: '16px',
+              [opts.theme.breakpoints.up('md')]: {
+                fontSize: '14px',
+              },
             },
             '& .MuiInputLabel-root.Mui-focused': {
-              color: STYLE_GUIDE.COLORS.primary,
+              color: opts.theme.palette.primary.main,
             },
             '& .MuiSelect-select': {
               color: STYLE_GUIDE.COLORS.textDarkGray,
               fontFamily,
               fontWeight: parseInt(fontWeight),
+              fontSize: '16px',
+              [opts.theme.breakpoints.up('md')]: {
+                fontSize: '14px',
+              },
+              padding: '10px 14px',
+              height: '40px',
+              lineHeight: 1.25,
+              display: 'flex',
+              alignItems: 'center',
+              boxSizing: 'border-box',
             },
-          },
+          }),
         },
       },
       MuiMenuItem: {

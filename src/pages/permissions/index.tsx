@@ -25,7 +25,7 @@ import {
 import SearchIcon from "@mui/icons-material/Search";
 import FilterListIcon from "@mui/icons-material/FilterList";
 import AddIcon from "@mui/icons-material/Add";
-import EditIcon from "@mui/icons-material/Edit";
+import EditOutlined from "@mui/icons-material/EditOutlined";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import DeleteOutlined from "@mui/icons-material/DeleteOutlined";
 import { useUnifiedTheme } from "../../hooks/useUnifiedTheme";
@@ -37,6 +37,7 @@ import useDelete from "../../hooks/useDelete";
 import { GET, POST, PUT, DELETE } from "../../services/apiRoutes";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../reducers";
+import { ActionIconButton } from "../../components/common";
 import { CustomPagination } from "../../components/common/pagination/customPagination";
 import {
   ApiResponse,
@@ -118,36 +119,27 @@ const columns: GridColDef[] = [
       return (
         <Box sx={{ display: "flex", gap: 1 }}>
           <Tooltip title="Edit" arrow>
-            <Button
-              variant="text"
+            <ActionIconButton
               onClick={() =>
                 hasDataSourceName && params.row.handleEdit(params.row)
               }
-              sx={{ minWidth: "auto" }}
               disabled={!hasDataSourceName || !params.row.shouldAllowEdit}
             >
-              <EditIcon />
-            </Button>
+              <EditOutlined />
+            </ActionIconButton>
           </Tooltip>
           <Tooltip title="View" arrow>
-            <Button
-              variant="text"
-              onClick={() => params.row.handleView(params.row)}
-              sx={{ minWidth: "auto" }}
-            >
+            <ActionIconButton onClick={() => params.row.handleView(params.row)}>
               <VisibilityIcon />
-            </Button>
+            </ActionIconButton>
           </Tooltip>
           <Tooltip title="Delete" arrow>
-            <Button
-              variant="text"
-              color="primary"
+            <ActionIconButton
               onClick={() => params.row.handleDelete(params.row._id)}
-              sx={{ minWidth: "auto" }}
               disabled={!params.row._id || !params.row.shouldAllowDelete}
             >
               <DeleteOutlined />
-            </Button>
+            </ActionIconButton>
           </Tooltip>
         </Box>
       );

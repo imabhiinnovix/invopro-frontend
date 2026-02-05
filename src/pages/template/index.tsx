@@ -14,13 +14,13 @@ import { DELETE } from "../../services/apiRoutes";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "react-toastify";
 import { STYLE_GUIDE } from "../../styles";
-import { useComponentTypography } from "../../hooks";
 import { TemplateDataTable } from "./TemplateDataTable";
 import { TemplateModal } from "./TemplateModal";
 import { useSelector } from "react-redux";
 import { RootState } from "../../store";
 import { checkPermission } from "../../utils/utils";
 import { PermissionsMap } from "../../utils/constants";
+import { PageHeader } from "../../components/common";
 
 // Define types
 interface Template {
@@ -64,7 +64,6 @@ export default function Template() {
     organizationId: "",
     status: "",
   });
-  const { getHeadingSx } = useComponentTypography();
   const permissions = useSelector(
     (state: RootState) => state.userPermission.permissions
   );
@@ -198,21 +197,14 @@ export default function Template() {
     <Box
       sx={{
         flexGrow: 1,
-        p: 3,
         ml: { xs: 0 },
         minHeight: "100vh",
       }}
     >
-      <Typography
-        variant="h4"
-        sx={{
-          ...getHeadingSx(),
-          mb: STYLE_GUIDE?.SPACING?.s3,
-        }}
-      >
-        Templates
-      </Typography>
-
+      <PageHeader
+        title="Templates"
+        subtext="Manage notification templates."
+      />
       <TemplateDataTable
         onAddTemplate={handleAddTemplate}
         onEditTemplate={handleEdit}

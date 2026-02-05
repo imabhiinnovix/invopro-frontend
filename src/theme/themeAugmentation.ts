@@ -109,6 +109,10 @@ declare module '@mui/material/styles' {
 
   interface Components {
     MuiDataGrid?: {
+      defaultProps?: {
+        disableColumnResize?: boolean;
+        columnHeaderHeight?: number;
+      };
       styleOverrides?: {
         root?: React.CSSProperties;
         columnHeaders?: React.CSSProperties;

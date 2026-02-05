@@ -14,14 +14,13 @@ import Box from "@mui/material/Box";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 import Checkbox from "@mui/material/Checkbox";
-import { useTheme } from "@mui/material/styles";
-import { STYLE_GUIDE } from "../../../styles";
+import { CustomPagination } from "../pagination/customPagination";
 
 interface Column {
   id: string;
   label: string;
   minWidth?: number;
-  align?: "right";
+  align?: "left" | "center" | "right";
   format?: (value: number) => string;
   renderCell?: (row: Record<string, unknown>, index?: number) => any; // eslint-disable-line @typescript-eslint/no-explicit-any
   sortable?: boolean;
@@ -54,6 +53,8 @@ interface CommonTableProps {
   rowsPerPage?: number;
   onPageChange?: (page: number) => void;
   onRowsPerPageChange?: (rowsPerPage: number) => void;
+  /** When true, use CustomPagination (rows per page left, Page X of Y + nav right) instead of TablePagination */
+  useCustomPagination?: boolean;
 }
 
 const CommonTable = forwardRef<CommonTableRef, CommonTableProps>(
@@ -77,10 +78,10 @@ const CommonTable = forwardRef<CommonTableRef, CommonTableProps>(
       rowsPerPage: controlledRowsPerPage,
       onPageChange,
       onRowsPerPageChange,
+      useCustomPagination = false,
     },
     ref
   ) => {
-    const theme = useTheme();
     const isServerSidePagination = totalCount !== undefined;
     const [pageState, setPageState] = React.useState(0);
     const [rowsPerPageState, setRowsPerPageState] = React.useState(10);
@@ -215,7 +216,7 @@ const CommonTable = forwardRef<CommonTableRef, CommonTableProps>(
 
     if (loading) {
       return (
-        <Paper sx={{ width: "100%", overflow: "hidden" }}>
+        <Paper sx={{ width: "100%", overflow: "hidden", boxShadow: "none" }}>
           <TableContainer sx={{ maxHeight: height, overflow: "auto" }}>
             <Table stickyHeader aria-label="sticky table">
               <TableHead>
@@ -269,7 +270,7 @@ const CommonTable = forwardRef<CommonTableRef, CommonTableProps>(
     }
 
     return (
-      <Paper sx={{ width: "100%", overflow: "hidden" }}>
+      <Paper sx={{ width: "100%", overflow: "hidden", boxShadow: "none", borderRadius: "0" }}>
         {rowSelection && bulkAction && selectedRows.length > 0 && (
           <Box sx={{ p: 2, backgroundColor: "action.selected" }}>
             {bulkAction(selectedRows)}
@@ -293,29 +294,12 @@ const CommonTable = forwardRef<CommonTableRef, CommonTableProps>(
                     />
                   </TableCell>
                 )}
-                {columns.map((column) => {
-                  const isActionsColumn = column.id === "actions";
-                  return (
+                {columns.map((column) => (
                     <TableCell
                       key={column.id}
                       align={column.align}
                       style={{ minWidth: column.minWidth }}
                       sortDirection={sortBy === column.id ? sortDirection : false}
-                      sx={
-                        isActionsColumn
-                          ? {
-                              position: "sticky",
-                              right: 0,
-                              backgroundColor:
-                                theme.palette.table?.headerBackground ||
-                                STYLE_GUIDE.COLORS.white,
-                              zIndex: 2,
-                              minWidth: 100,
-                              width: "unset",
-                              maxWidth: "unset",
-                            }
-                          : undefined
-                      }
                     >
                       {column.sortable ? (
                         <TableSortLabel
@@ -336,8 +320,7 @@ const CommonTable = forwardRef<CommonTableRef, CommonTableProps>(
                         column.label
                       )}
                     </TableCell>
-                  );
-                })}
+                ))}
               </TableRow>
             </TableHead>
             <TableBody>
@@ -398,31 +381,10 @@ const CommonTable = forwardRef<CommonTableRef, CommonTableProps>(
                       )}
                       {columns.map((column) => {
                         const value = row[column.id] || "-";
-                        const isActionsColumn = column.id === "actions";
                         return (
                           <TableCell
                             key={column.id}
                             align={column.align}
-                            sx={
-                              isActionsColumn
-                                ? {
-                                    position: "sticky",
-                                    right: 0,
-                                    backgroundColor:
-                                      theme.palette.background?.paper ||
-                                      STYLE_GUIDE.COLORS.white,
-                                    zIndex: 1,
-                                    minWidth: 100,
-                                    width: "unset",
-                                    maxWidth: "unset",
-                                    "&:hover": {
-                                      backgroundColor:
-                                        theme.palette.table?.rowHoverBackground ||
-                                        STYLE_GUIDE.COLORS.backgroundHover,
-                                    },
-                                  }
-                                : undefined
-                            }
                           >
                             {column.renderCell
                               ? column.renderCell(row, index)
@@ -447,44 +409,66 @@ const CommonTable = forwardRef<CommonTableRef, CommonTableProps>(
         </TableContainer>
 
         {(!isLazyTable || isServerSidePagination) && !loading && (
-          <Stack
-            direction="row"
-            justifyContent="space-between"
-            alignItems="center"
-            px={1}
-          >
-            {customFooterLeftComponent ? (
-              customFooterLeftComponent
-            ) : (
-              <Stack direction="row" spacing={2} alignItems="center">
-                <Typography variant="body2">
-                  Total Records:{" "}
-                  {isServerSidePagination ? totalCount : sortedRows.length}
-                </Typography>
-                {rowSelection && selectedRows.length > 0 && (
-                  <Typography variant="body2" color="primary">
-                    {selectedRows.length} selected
+          useCustomPagination ? (
+            <Box sx={{ px: 2, py: 1.5 }}>
+              <CustomPagination
+                paginationModel={{ page, pageSize: rowsPerPage }}
+                setPaginationModel={(model) => {
+                  if (isServerSidePagination) {
+                    onPageChange?.(model.page);
+                    onRowsPerPageChange?.(model.pageSize);
+                  } else {
+                    setPageState(model.page);
+                    setRowsPerPageState(model.pageSize);
+                  }
+                }}
+                rowCount={
+                  isServerSidePagination
+                    ? totalCount ?? 0
+                    : sortedRows.length
+                }
+              />
+            </Box>
+          ) : (
+            <Stack
+              direction="row"
+              justifyContent="space-between"
+              alignItems="center"
+              px={1}
+            >
+              {customFooterLeftComponent ? (
+                customFooterLeftComponent
+              ) : (
+                <Stack direction="row" spacing={2} alignItems="center">
+                  <Typography variant="body2">
+                    Total Records:{" "}
+                    {isServerSidePagination ? totalCount : sortedRows.length}
                   </Typography>
-                )}
-              </Stack>
-            )}
-            <TablePagination
-              rowsPerPageOptions={[10, 25, 100]}
-              component="div"
-              count={isServerSidePagination ? totalCount : sortedRows.length}
-              rowsPerPage={rowsPerPage}
-              page={page}
-              onPageChange={handleChangePage}
-              onRowsPerPageChange={handleChangeRowsPerPage}
-              labelDisplayedRows={({ page }) => {
-                const totalItems = isServerSidePagination
-                  ? totalCount
-                  : sortedRows.length;
-                const totalPages = Math.ceil(totalItems / rowsPerPage);
-                return `Page ${page + 1} of ${totalPages}`;
-              }}
-            />
-          </Stack>
+                  {rowSelection && selectedRows.length > 0 && (
+                    <Typography variant="body2" color="primary">
+                      {selectedRows.length} selected
+                    </Typography>
+                  )}
+                </Stack>
+              )}
+              <TablePagination
+                rowsPerPageOptions={[10, 25, 100]}
+                component="div"
+                count={isServerSidePagination ? totalCount : sortedRows.length}
+                rowsPerPage={rowsPerPage}
+                page={page}
+                onPageChange={handleChangePage}
+                onRowsPerPageChange={handleChangeRowsPerPage}
+                labelDisplayedRows={({ page }) => {
+                  const totalItems = isServerSidePagination
+                    ? totalCount
+                    : sortedRows.length;
+                  const totalPages = Math.ceil(totalItems / rowsPerPage);
+                  return `Page ${page + 1} of ${totalPages}`;
+                }}
+              />
+            </Stack>
+          )
         )}
       </Paper>
     );

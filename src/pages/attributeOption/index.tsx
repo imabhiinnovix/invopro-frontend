@@ -29,6 +29,7 @@ export default function AttributeOption() {
   );
   return (
     <Box
+      id="attribute-option-list-view"
       sx={{
         p: STYLE_GUIDE.SPACING.s2,
       }}

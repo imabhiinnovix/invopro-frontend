@@ -32,6 +32,7 @@ export const StyledButton = ({
     borderRadius: "8px",
     height: "40px",
     transition: "all 0.2s ease-in-out",
+    whiteSpace: "nowrap"
   };
 
   const primaryStyles: SxProps<Theme> = {

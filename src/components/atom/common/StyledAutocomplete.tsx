@@ -6,6 +6,7 @@ import {
   TextFieldProps,
 } from "@mui/material";
 import { useUnifiedTheme } from "../../../hooks/useUnifiedTheme";
+import { STYLE_GUIDE } from "../../../styles";
 
 interface StyledAutocompleteProps<
   T,
@@ -43,36 +44,40 @@ function StyledAutocompleteInner<
   const autocompleteSx = {
     "& .MuiOutlinedInput-root": {
       backgroundColor:
-        theme.palette.dropdown?.background || theme.palette.background.paper,
+        STYLE_GUIDE.COLORS.inputFieldBackground ??
+        theme.palette.dropdown?.background ??
+        theme.palette.background.paper,
+      borderRadius: "10px",
       "& fieldset": {
-        borderColor: theme.palette.input?.border || theme.palette.divider,
+        borderColor:
+          STYLE_GUIDE.COLORS.inputFieldBorder ??
+          theme.palette.input?.border ??
+          theme.palette.divider,
       },
       "&:hover fieldset": {
-        borderColor:
-          theme.palette.dropdown?.focusedBorder || theme.palette.primary.main,
+        borderColor: theme.palette.primary.main,
       },
       "&.Mui-focused fieldset": {
-        borderColor:
-          theme.palette.dropdown?.focusedBorder || theme.palette.primary.main,
+        borderColor: theme.palette.primary.main,
       },
     },
     "& .MuiInputLabel-root": {
       color: theme.palette.dropdown?.labelColor || theme.palette.text.secondary,
     },
     "& .MuiInputLabel-root.Mui-focused": {
-      color: theme.palette.dropdown?.focusedLabel || theme.palette.primary.main,
+      color: theme.palette.primary.main,
     },
     // Label color when it's above the input (shrink state)
     "& .MuiInputLabel-root.MuiInputLabel-shrink": {
-      color: theme.palette.dropdown?.focusedLabel || theme.palette.primary.main,
+      color: theme.palette.primary.main,
     },
     // Label color when input has value
     "& .MuiInputLabel-root.MuiInputLabel-shrink.Mui-focused": {
-      color: theme.palette.dropdown?.focusedLabel || theme.palette.primary.main,
+      color: theme.palette.primary.main,
     },
     // Label color when input has value but not focused
     "& .MuiInputLabel-root.MuiInputLabel-shrink:not(.Mui-focused)": {
-      color: theme.palette.dropdown?.focusedLabel || theme.palette.primary.main,
+      color: theme.palette.primary.main,
     },
     "& .MuiInputBase-input": {
       color: `${

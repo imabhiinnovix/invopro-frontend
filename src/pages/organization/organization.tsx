@@ -28,7 +28,7 @@ import useDelete from "../../hooks/useDelete";
 import { PUT, DELETE } from "../../services/apiRoutes";
 import DialogContent from "@mui/material/DialogContent";
 import IconButton from "@mui/material/IconButton";
-import EditIcon from "@mui/icons-material/Edit";
+import EditOutlined from "@mui/icons-material/EditOutlined";
 import DeleteOutlined from "@mui/icons-material/DeleteOutlined";
 import SaveIcon from "@mui/icons-material/Save";
 import CancelIcon from "@mui/icons-material/Cancel";
@@ -43,7 +43,8 @@ import { useEffect, useRef } from "react";
 import Users from "../users";
 import { AuthContext } from "../../context/AuthContext";
 import Autocomplete from "@mui/material/Autocomplete";
-import CommonPageHeader from "../../components/atom/commonPageHeader";
+import { PageHeader, PageCardLayout, StyledButton } from "../../components/common";
+import { CustomPagination } from "../../components/common/pagination/customPagination";
 import DialogContainer from "../../components/molecule/dialog";
 import PrimaryButton from "../../components/common/PrimaryButton";
 import { useSelector } from "react-redux";
@@ -750,26 +751,17 @@ export default function Organization() {
   const [deletedIds, setDeletedIds] = useState<string[]>([]);
 
   return (
-    <Box
-      sx={{
-        p: STYLE_GUIDE?.SPACING?.s2,
-      }}
-    >
-      <CommonPageHeader
-        title={showUsers ? "User Details" : "Organizations Details"}
+    <Box>
+      <PageHeader
+        title={showUsers ? "User Details" : "Organizations"}
+        subtext={!showUsers ? "View and manage organizations." : undefined}
         onBack={showUsers ? handleBackToOrganizations : undefined}
-        actions={
-          showUsers
-            ? undefined
-            : shouldAllowCreate && (
-                <Button
-                  variant="contained"
-                  color="primary"
-                  onClick={() => handleOrgModalOpen()}
-                >
-                  Create
-                </Button>
-              )
+        action={
+          !showUsers && shouldAllowCreate ? (
+            <StyledButton variant="primary" startIcon={<AddIcon />} onClick={() => handleOrgModalOpen()}>
+              Create
+            </StyledButton>
+          ) : undefined
         }
       />
       {showUsers ? (
@@ -784,7 +776,7 @@ export default function Organization() {
         />
       ) : (
         <>
-          <Box>
+          <PageCardLayout>
             {isLoading ? (
               <Box
                 sx={{
@@ -938,7 +930,7 @@ export default function Organization() {
                               "&:not(.Mui-disabled)": { color: "primary.main" },
                             }}
                           >
-                            <EditIcon fontSize="small" />
+                            <EditOutlined sx={{ fontSize: "16px" }} />
                           </IconButton>
                           <IconButton
                             color="primary"
@@ -990,9 +982,18 @@ export default function Organization() {
                   setPaginationModel(model);
                 }}
                 pageSizeOptions={[10, 20, 50]}
+                slots={{
+                  pagination: () => (
+                    <CustomPagination
+                      paginationModel={paginationModel}
+                      setPaginationModel={setPaginationModel}
+                      rowCount={data?.totalCount ?? 0}
+                    />
+                  ),
+                }}
               />
             )}
-          </Box>
+          </PageCardLayout>
 
           <DialogContainer
             open={orgModalOpen}
@@ -1057,7 +1058,7 @@ export default function Organization() {
                         }}
                         size="small"
                       >
-                        <EditIcon sx={{ fontSize: 18 }} />
+                        <EditOutlined sx={{ fontSize: "16px" }} />
                       </IconButton>
                     }
                   >
@@ -2026,7 +2027,7 @@ export default function Organization() {
                                             {isEditing ? (
                                               <SaveIcon />
                                             ) : (
-                                              <EditIcon />
+                                              <EditOutlined sx={{ fontSize: "16px" }} />
                                             )}
                                           </IconButton>
 

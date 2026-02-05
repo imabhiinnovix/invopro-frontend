@@ -14,7 +14,7 @@ import { StyledButton } from './StyledButton';
 import AddIcon from '@mui/icons-material/Add';
 import SaveIcon from '@mui/icons-material/Save';
 import DeleteOutlined from '@mui/icons-material/DeleteOutlined';
-import EditIcon from '@mui/icons-material/Edit';
+import EditOutlined from '@mui/icons-material/EditOutlined';
 import CloseIcon from '@mui/icons-material/Close';
 import CheckIcon from '@mui/icons-material/Check';
 
@@ -62,7 +62,7 @@ export const ButtonExamples = () => {
           <StyledButton variant="primary" icon={<CheckIcon />}>
             Confirm
           </StyledButton>
-          <StyledButton variant="secondary" icon={<EditIcon />}>
+          <StyledButton variant="secondary" icon={<EditOutlined sx={{ fontSize: "16px" }} />}>
             Edit
           </StyledButton>
           <StyledButton variant="primary" icon={<DeleteOutlined />}>

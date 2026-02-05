@@ -22,8 +22,9 @@ import CreateUpdateDataSource from "./createUpdateDataSource";
 import { STYLE_GUIDE } from "../../../styles";
 import { useComponentTypography } from "../../../hooks/useComponentTypography";
 import CommonTable from "../../common/table";
+import { ActionIconButton } from "../../common";
 import { formatDate } from "../../../utils/utils";
-import EditIcon from "@mui/icons-material/Edit";
+import EditOutlined from "@mui/icons-material/EditOutlined";
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
   [`&.${tableCellClasses.head}`]: {
@@ -299,13 +300,9 @@ const DataSourceTable: React.FC<AttributeOptionTableProps> = ({
             setReload={setReload}
             title="Update Data Source"
             CustomButton={
-            <Button
-              variant="text"
-              disabled={!shouldAllowEdit}
-              sx={{ minWidth: "auto" }}
-            >
-              <EditIcon />
-            </Button>
+            <ActionIconButton disabled={!shouldAllowEdit}>
+              <EditOutlined />
+            </ActionIconButton>
           }
             data={row as any}
           />
@@ -343,7 +340,8 @@ const DataSourceTable: React.FC<AttributeOptionTableProps> = ({
       columns={columns}
       rows={transformedRows}
       loading={dataSourceList.isFetching}
-      height="calc(100vh - 250px)"
+      height="calc(100vh - 280px)"
+      useCustomPagination
     />
   );
 
@@ -432,7 +430,7 @@ const DataSourceTable: React.FC<AttributeOptionTableProps> = ({
                   title="Update Data Source"
                   CustomButton={
                   <Button variant="text" sx={{ minWidth: "auto" }}>
-                    <EditIcon />
+                    <EditOutlined sx={{ fontSize: "16px" }} />
                   </Button>
                 }
                   data={data}

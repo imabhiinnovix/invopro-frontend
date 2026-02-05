@@ -2,8 +2,6 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Box,
-  Card,
-  CardContent,
   CircularProgress,
   FormControlLabel,
   Radio,
@@ -17,7 +15,7 @@ import usePost from "../../hooks/usePost";
 import usePut from "../../hooks/usePut";
 import { GET, POST, PUT } from "../../services/apiRoutes";
 import { useUnifiedTheme } from "../../hooks/useUnifiedTheme";
-import { useComponentTypography } from "../../hooks/useComponentTypography";
+import { PageHeader, PageCardLayout } from "../../components/common";
 import { SourcePreference } from "./types";
 import { DataSourceType } from "../../components/atom/dataSource/types";
 
@@ -32,7 +30,6 @@ const SourceList = () => {
   >({});
 
   const theme = useUnifiedTheme();
-  const { getHeadingSx } = useComponentTypography();
 
   const dataSourceList = useGet<{
     success: boolean;
@@ -129,31 +126,17 @@ const SourceList = () => {
   return (
     <Box
       sx={{
-        p: STYLE_GUIDE.SPACING.s2,
         display: "flex",
         flexDirection: "column",
-        gap: STYLE_GUIDE.SPACING.s4,
       }}
     >
-      <Typography
-        variant="h4"
-        sx={{
-          ...getHeadingSx(),
-          mb: STYLE_GUIDE?.SPACING?.s3,
-        }}
-      >
-        Source List
-      </Typography>
+      <PageHeader
+        title="Source List"
+        subtext="Manage chart data source visibility (Primary, Secondary, Hide)."
+      />
 
-      <Card
-        sx={{
-          boxShadow: theme.palette.card?.shadow || theme.shadows[1],
-          backgroundColor:
-            theme.palette.card?.background || theme.palette.background.default,
-        }}
-      >
-        <CardContent sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
-          {dataSourceList.isLoading ? (
+      <PageCardLayout>
+        {dataSourceList.isLoading ? (
             <Box
               sx={{
                 display: "flex",
@@ -242,8 +225,7 @@ const SourceList = () => {
               ))}
             </Stack>
           )}
-        </CardContent>
-      </Card>
+      </PageCardLayout>
     </Box>
   );
 };

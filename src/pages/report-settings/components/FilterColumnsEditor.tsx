@@ -12,7 +12,7 @@ import {
 } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import AddIcon from '@mui/icons-material/Add';
-import EditIcon from '@mui/icons-material/Edit';
+import EditOutlined from '@mui/icons-material/EditOutlined';
 import DeleteOutlined from '@mui/icons-material/DeleteOutlined';
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
@@ -176,7 +176,7 @@ const FilterColumnsEditor: React.FC<Props> = ({
                               variant="outlined"
                               size="small"
                               onClick={() => onEditColumn(column._id)}
-                              startIcon={<EditIcon />}
+                              startIcon={<EditOutlined sx={{ fontSize: "16px" }} />}
                               sx={getButtonSx()}
                             >
                               Edit

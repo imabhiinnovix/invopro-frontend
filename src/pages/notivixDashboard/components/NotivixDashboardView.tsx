@@ -10,7 +10,7 @@ import {
 } from "@mui/material";
 import StyledSelect from "../../../components/atom/common/StyledSelect";
 import AddIcon from "@mui/icons-material/Add";
-import EditIcon from "@mui/icons-material/Edit";
+import EditOutlined from "@mui/icons-material/EditOutlined";
 import DoneIcon from "@mui/icons-material/Done";
 import ViewColumnIcon from "@mui/icons-material/ViewColumn";
 import FilterListIcon from "@mui/icons-material/FilterList";
@@ -722,7 +722,7 @@ export const NotivixDashboardView: React.FC<DashboardViewProps> = ({
                 onClick={handleEditModeToggle}
                 color="primary"
                 variant="contained"
-                startIcon={<EditIcon />}
+                startIcon={<EditOutlined sx={{ fontSize: "16px" }} />}
                 sx={{ ...getButtonSx() }}
               >
                 Edit

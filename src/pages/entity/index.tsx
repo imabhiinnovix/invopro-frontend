@@ -1,12 +1,12 @@
-import { Box, Button } from "@mui/material";
+import { Box } from "@mui/material";
 import CreateUpdateEntity from "../../components/atom/entity/createUpdateEntity";
 import EntityTable from "../../components/atom/entity/entityTable";
 import { useState } from "react";
 import { STYLE_GUIDE } from "../../styles";
 import { useUnifiedTheme } from "../../hooks/useUnifiedTheme";
 import CreateUpdateAttributeOption from "../../components/atom/attributeOption/createUpdateAttributeOption";
-import CommonPageHeader from "../../components/atom/commonPageHeader";
-import PrimaryButton from "../../components/common/PrimaryButton";
+import { PageCardLayout, PageHeader, StyledButton } from "../../components/common";
+import AddIcon from "@mui/icons-material/Add";
 import { useSelector } from "react-redux";
 import { RootState } from "../../store";
 import { checkPermission } from "../../utils/utils";
@@ -35,35 +35,38 @@ export default function Entity() {
   );
   return (
     <Box
+      id="entity-list-view"
       sx={{
         p: STYLE_GUIDE.SPACING.s2,
       }}
     >
-      <CommonPageHeader
+      <PageHeader
         title="Entities"
-        actions={
-          <CreateUpdateEntity
-            setReloadEntity={setReloadEntity}
-            title="Create New Entity"
-            CustomButton={
-              shouldAllowAdd && (
-                <PrimaryButton variant="contained">
+        subtext="Manage entities and their attributes."
+        action={
+          shouldAllowAdd ? (
+            <CreateUpdateEntity
+              setReloadEntity={setReloadEntity}
+              title="Create New Entity"
+              CustomButton={
+                <StyledButton variant="primary" icon={<AddIcon sx={{ fontSize: "16px" }} />}>
                   Create New Entity
-                </PrimaryButton>
-              )
-            }
-          />
+                </StyledButton>
+              }
+            />
+          ) : undefined
         }
       />
-
-      <Box mt={STYLE_GUIDE.SPACING.s8} sx={{ overflowX: "auto", flexGrow: 1 }}>
-        <EntityTable
-          reloadEntity={reloadEntity}
-          setReloadEntity={setReloadEntity}
-          shouldAllowEdit={shouldAllowEdit}
-          shouldAllowDelete={shouldAllowDelete}
-        />
-      </Box>
+      <PageCardLayout sx={{ overflowX: "auto", flexGrow: 1 }}>
+        <Box id="entity-table-container" sx={{ overflowX: "auto", flexGrow: 1 }}>
+          <EntityTable
+            reloadEntity={reloadEntity}
+            setReloadEntity={setReloadEntity}
+            shouldAllowEdit={shouldAllowEdit}
+            shouldAllowDelete={shouldAllowDelete}
+          />
+        </Box>
+      </PageCardLayout>
     </Box>
   );
 }

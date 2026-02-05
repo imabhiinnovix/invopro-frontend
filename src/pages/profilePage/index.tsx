@@ -22,7 +22,7 @@ import {
   CircularProgress,
 } from "@mui/material";
 import {
-  Edit as EditIcon,
+  EditOutlined,
   Save as SaveIcon,
   Cancel as CancelIcon,
   DeleteOutlined,
@@ -42,6 +42,7 @@ import { RootState } from "../../reducers";
 import useDelete from "../../hooks/useDelete";
 import { setCurrentUser } from "../../reducers/userSlice";
 import PrimaryButton from "../../components/common/PrimaryButton";
+import { PageHeader } from "../../components/common";
 import DialogContainer from "../../components/molecule/dialog";
 import { checkPermission } from "../../utils/utils";
 import { PermissionsMap } from "../../utils/constants";
@@ -961,9 +962,10 @@ const ProfilePage = () => {
 
   return (
     <Box sx={{ p: 2 }}>
-      <Typography variant="h4" gutterBottom fontWeight={600}>
-        My Profile
-      </Typography>
+      <PageHeader
+        title="My Profile"
+        subtext="View and edit your profile information."
+      />
       <Grid container spacing={4}>
         <Grid item xs={12} md={4}>
           <Paper
@@ -1007,7 +1009,7 @@ const ProfilePage = () => {
                 {/* {shouldAllowUpload && ( */}
                 <PrimaryButton
                   variant="outlined"
-                  startIcon={<EditIcon />}
+                  startIcon={<EditOutlined sx={{ fontSize: "16px" }} />}
                   onClick={() => setIsEditingProfilePic(true)}
                 >
                   Edit
@@ -1077,7 +1079,7 @@ const ProfilePage = () => {
               >
                 <PrimaryButton
                   variant="outlined"
-                  startIcon={<EditIcon />}
+                  startIcon={<EditOutlined sx={{ fontSize: "16px" }} />}
                   onClick={() => setIsEditingProfilePic(true)}
                 >
                   Edit
@@ -1144,7 +1146,7 @@ const ProfilePage = () => {
               action={
                 <PrimaryButton
                   variant={editModes.personal ? "outlined" : "contained"}
-                  startIcon={editModes.personal ? <CancelIcon /> : <EditIcon />}
+                  startIcon={editModes.personal ? <CancelIcon /> : <EditOutlined sx={{ fontSize: "16px" }} />}
                   onClick={() =>
                     editModes.personal
                       ? handleCancel("personal")
@@ -1203,7 +1205,7 @@ const ProfilePage = () => {
               action={
                 <PrimaryButton
                   variant={editModes.address ? "outlined" : "contained"}
-                  startIcon={editModes.address ? <CancelIcon /> : <EditIcon />}
+                  startIcon={editModes.address ? <CancelIcon /> : <EditOutlined sx={{ fontSize: "16px" }} />}
                   onClick={() =>
                     editModes.address
                       ? handleCancel("address")
@@ -1457,7 +1459,7 @@ const ProfilePage = () => {
                 !editModes.password ? (
                   <PrimaryButton
                     variant="contained"
-                    startIcon={<EditIcon />}
+                    startIcon={<EditOutlined sx={{ fontSize: "16px" }} />}
                     onClick={() => toggleEditMode("password")}
                   >
                     Change

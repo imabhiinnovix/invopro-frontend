@@ -1080,8 +1080,7 @@ import { STYLE_GUIDE } from "../../styles";
 import { useUnifiedTheme } from "../../hooks/useUnifiedTheme";
 import { useComponentTypography } from "../../hooks/useComponentTypography";
 import { DataSourceListData } from "../../components/atom/sideNav/types";
-import CommonPageHeader from "../../components/atom/commonPageHeader";
-import PrimaryButton from "../../components/common/PrimaryButton";
+import { PageHeader, PageCardLayout, StyledButton } from "../../components/common";
 
 const DataSources = () => {
   const theme = useUnifiedTheme();
@@ -1304,10 +1303,11 @@ const DataSources = () => {
         <p>yesss</p>
       ) : (
         <Box sx={{ p: STYLE_GUIDE.SPACING.s2 }}>
-          <CommonPageHeader
+          <PageHeader
             title="Data Source Version"
-            actions={
-              <Box sx={{ display: "flex", gap: STYLE_GUIDE.SPACING.s2 }}>
+            subtext="View and edit version data for this data source."
+            action={
+              <Box sx={{ display: "flex", gap: STYLE_GUIDE.SPACING.s2, alignItems: "center" }}>
                 <CommonDatePicker
                   name="versionValue"
                   control={control}
@@ -1315,51 +1315,39 @@ const DataSources = () => {
                   label="Period*"
                   rules={{ required: "Period is required" }}
                 />
-                <PrimaryButton
-                  variant="contained"
+                <StyledButton
+                  variant="primary"
                   disabled={dataSourceCreate?.isPending || !(versionDate && id)}
                   onClick={handleSave}
+                  icon={
+                    dataSourceCreate?.isPending ? (
+                      <CircularProgress size={20} color="inherit" />
+                    ) : undefined
+                  }
                 >
-                  {dataSourceCreate?.isPending ? (
-                    <Box
-                      sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        width: "56px",
-                        height: "24px",
-                      }}
-                    >
-                      <CircularProgress
-                        size={20}
-                        sx={{ color: STYLE_GUIDE.COLORS.white }}
-                      />
-                    </Box>
-                  ) : (
-                    "Save Changes"
-                  )}
-                </PrimaryButton>
+                  {dataSourceCreate?.isPending ? "Saving..." : "Save Changes"}
+                </StyledButton>
               </Box>
             }
           />
-          <Box sx={{ display: "flex", justifyContent: "center" }}>
-            <TableContainer
-              component={Paper}
-              sx={{
-                ...getTableSx(),
-                maxHeight: "calc(100vh - 300px)",
-                borderRadius: STYLE_GUIDE.SPACING.s2,
-                boxShadow: STYLE_GUIDE.SHADOWS.xxxl,
-                // width: "fit-content",
-                backgroundColor:
-                  theme.palette.card?.background ||
-                  STYLE_GUIDE.COLORS.backgroundSurface,
-                "& .MuiTable-root": {
-                  minWidth: "600px",
-                },
-                width: "100%",
-              }}
-            >
+          <PageCardLayout>
+            <Box sx={{ display: "flex", justifyContent: "center" }}>
+              <TableContainer
+                component={Paper}
+                sx={{
+                  ...getTableSx(),
+                  maxHeight: "calc(100vh - 300px)",
+                  borderRadius: STYLE_GUIDE.SPACING.s2,
+                  boxShadow: STYLE_GUIDE.SHADOWS.xxxl,
+                  backgroundColor:
+                    theme.palette.card?.background ||
+                    STYLE_GUIDE.COLORS.backgroundSurface,
+                  "& .MuiTable-root": {
+                    minWidth: "600px",
+                  },
+                  width: "100%",
+                }}
+              >
               <Table stickyHeader>
                 <TableHead>
                   <TableRow>
@@ -1421,7 +1409,6 @@ const DataSources = () => {
                               handleEdit(rowIndex, field?.name, e.target.value)
                             }
                             variant="outlined"
-                            size="small"
                             type={
                               textAttributes?.find((attr) => {
                                 return attr?.name === field?.name;
@@ -1430,59 +1417,36 @@ const DataSources = () => {
                             fullWidth
                             sx={{
                               "& .MuiOutlinedInput-root": {
-                                borderRadius: STYLE_GUIDE.SPACING.s2,
-                                alignItems: "flex-start",
-                                paddingRight: STYLE_GUIDE.SPACING.s2,
-                                fontSize: "14px",
+                                height: "40px",
+                                minHeight: "40px",
+                                borderRadius: "10px",
                                 backgroundColor:
-                                  theme.palette.background.paper ||
-                                  STYLE_GUIDE.COLORS.white,
+                                  STYLE_GUIDE.COLORS.inputFieldBackground ||
+                                  "#f7fafc",
                                 "& fieldset": {
                                   borderColor:
-                                    theme.palette.input?.border ||
-                                    STYLE_GUIDE.COLORS.borderGray,
+                                    STYLE_GUIDE.COLORS.inputFieldBorder ||
+                                    "#e5e7eb",
+                                  borderWidth: "1px",
                                 },
                                 "&:hover fieldset": {
                                   borderColor:
-                                    theme.palette.border?.hover ||
-                                    STYLE_GUIDE.COLORS.borderGray,
+                                    theme.palette.primary.main ||
+                                    STYLE_GUIDE.COLORS.primary,
                                 },
                                 "&.Mui-focused fieldset": {
                                   borderColor:
-                                    theme.palette.input?.focusBorder ||
+                                    theme.palette.primary.main ||
                                     STYLE_GUIDE.COLORS.primary,
+                                  borderWidth: "1px",
                                 },
                               },
-                              "& .MuiInputLabel-root": {
+                              "& .MuiOutlinedInput-input": {
+                                fontSize: "14px",
                                 color:
-                                  theme.palette.text?.secondary ||
-                                  STYLE_GUIDE.COLORS.textMediumGray,
-                              },
-                              "& .MuiInputLabel-root.Mui-focused": {
-                                color:
-                                  theme.palette.input?.focusBorder ||
-                                  STYLE_GUIDE.COLORS.primary,
-                              },
-                              "& .MuiInputBase-input": {
-                                color:
-                                  theme.palette.table?.rowText ||
-                                  theme.palette.input?.text ||
-                                  STYLE_GUIDE.COLORS.textDarkGray,
-                              },
-                              "& .MuiInputBase-input::placeholder": {
-                                color:
-                                  theme.palette.text?.secondary ||
-                                  STYLE_GUIDE.COLORS.textMediumGray,
-                              },
-                              "& .MuiInputBase-input:-webkit-autofill": {
-                                WebkitTextFillColor:
-                                  theme.palette.table?.rowText ||
-                                  theme.palette.input?.text ||
-                                  STYLE_GUIDE.COLORS.textDarkGray,
-                                WebkitBoxShadow: `0 0 0 1000px ${
-                                  theme.palette.background.paper ||
-                                  STYLE_GUIDE.COLORS.white
-                                } inset`,
+                                  STYLE_GUIDE.COLORS.textDarkGray ||
+                                  "#374151",
+                                padding: "10px 14px",
                               },
                             }}
                             slotProps={{
@@ -1503,11 +1467,6 @@ const DataSources = () => {
                                   ) {
                                     e.preventDefault();
                                   }
-                                },
-                                sx: {
-                                  fontSize:
-                                    STYLE_GUIDE.TYPOGRAPHY.fontSize.base,
-                                  padding: "8px 12px",
                                 },
                               },
                             }}
@@ -1535,7 +1494,8 @@ const DataSources = () => {
                 </TableBody>
               </Table>
             </TableContainer>
-          </Box>
+            </Box>
+          </PageCardLayout>
         </Box>
       )}
     </>

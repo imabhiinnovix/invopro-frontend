@@ -58,10 +58,14 @@ export const COLORS = {
   divider: "#e0e0e0",
   divider2: "#e9ecef",
 
+  // Form fields (text inputs, selects, autocomplete) appearance
+  inputFieldBackground: "#f7fafc",
+  inputFieldBorder: "#e5e7eb",
+
   // Table design (modern clean table)
   tableHeaderText: "#6F767E",
   tableBodyText: "#2B2B2B",
-  tableBorder: "#E0E0E0",
+  tableBorder: "#e5e7eb",
   statusActiveBg: "#6F42C1",
   statusPendingBg: "#DC3545",
   loadingBorder: "#f3f3f3",

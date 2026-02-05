@@ -27,7 +27,7 @@ import AddIcon from "@mui/icons-material/Add";
 import ViewColumnIcon from "@mui/icons-material/ViewColumn";
 import SaveIcon from "@mui/icons-material/Save";
 import DeleteOutlined from "@mui/icons-material/DeleteOutlined";
-import { StyledButton } from "../../components/common";
+import { PageHeader, PageCardLayout, StyledButton, ActionIconButton } from "../../components/common";
 import { DeleteConfirmationModal } from "../../components/atom/sideNav/components/DeleteConfirmationModal";
 import { CreateDashboardModal } from "../../components/atom/sideNav/components/CreateDashboardModal";
 import { Dashboard as DashboardType, DashboardListResponse } from "./types";
@@ -36,7 +36,6 @@ import { STYLE_GUIDE } from "../../styles";
 import { useUnifiedTheme } from "../../hooks/useUnifiedTheme";
 import { useComponentTypography } from "../../hooks/useComponentTypography";
 import CommonTable from "../../components/common/table";
-import PrimaryButton from "../../components/common/PrimaryButton";
 import { checkPermission } from "../../utils/utils";
 import { PermissionsMap } from "../../utils/constants";
 import { useSelector } from "react-redux";
@@ -44,7 +43,7 @@ import { RootState } from "../../reducers";
 
 const Dashboard = () => {
   const theme = useUnifiedTheme();
-  const { getHeadingSx, getButtonSx, getTableSx } = useComponentTypography();
+  const { getTableSx } = useComponentTypography();
   const { id } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
@@ -277,24 +276,27 @@ const Dashboard = () => {
       id: "actions",
       label: "Actions",
       minWidth: 170,
+      align: "center" as const,
       sortable: false,
       renderCell: (row: Record<string, unknown>) => {
+        const original = row.originalData as DashboardType;
         if (
           !shouldAllowDashboardDelete ||
-          (row.originalData?.isRoleDefault &&
+          ("isRoleDefault" in original &&
+            original.isRoleDefault &&
             !shouldAllowDefaultDashboardDelete)
         )
           return null;
         return (
-          <Box>
-            <Tooltip title="Delete Dashboard">
-              <IconButton
+          <Box sx={{ display: "flex", justifyContent: "center", width: "100%" }}>
+            <Tooltip title="Delete Dashboard" arrow>
+              <ActionIconButton
                 onClick={(e) =>
                   handleDeleteClick(e, row.originalData as DashboardType)
                 }
               >
-                <DeleteOutlined color="error" />
-              </IconButton>
+                <DeleteOutlined sx={{ fontSize: "16px" }} />
+              </ActionIconButton>
             </Tooltip>
           </Box>
         );
@@ -476,74 +478,42 @@ const Dashboard = () => {
   if (!id) {
     return (
       <Box
+        id="dashboard-list-view"
         sx={{
           display: "flex",
           flexDirection: "column",
-          width: "100%",
-          backgroundColor: theme.palette.background.paper,
-          p: { md: STYLE_GUIDE.SPACING.s2 },
-          gap: STYLE_GUIDE.SPACING.s4,
+          width: "100%"
         }}
       >
-        <Box
-          sx={{
-            display: "flex",
-            flexDirection: { xs: "column", md: "row" },
-            justifyContent: "space-between",
-            alignItems: { xs: "flex-start", md: "center" },
-            gap: STYLE_GUIDE.SPACING.s4,
-            backgroundColor: theme.palette.background.paper,
-            // borderBottom: "1px solid",
-            borderColor: STYLE_GUIDE.COLORS.divider,
-          }}
-        >
-          <Typography
-            variant="h4"
-            sx={{
-              ...getHeadingSx(),
-            }}
-          >
-            Dashboards
-          </Typography>
-          {shouldAllowDashboardCreate && (
-            <PrimaryButton
-              icon={<AddIcon />}
-              onClick={() => navigate("/dashboard/create")}
-            >
-              Create New Dashboard
-            </PrimaryButton>
-          )}
-          {/* <Button
-            variant="contained"
-            startIcon={<AddIcon />}
-            onClick={() => setOpenCreateModal(true)}
-            sx={{
-              ...getButtonSx(),
-              backgroundColor: STYLE_GUIDE.COLORS.primary,
-              color: STYLE_GUIDE.COLORS.white,
-              "&:hover": {
-                backgroundColor: STYLE_GUIDE.COLORS.primaryDark,
-              },
-              // px: STYLE_GUIDE.SPACING.s6,
-              // py: STYLE_GUIDE.SPACING.s2,
-              borderRadius: STYLE_GUIDE.SPACING.s2,
-              textTransform: "none",
-              height: 40,
-            }}
-          >
-            Create New Dashboard
-          </Button> */}
-        </Box>
-
-        <CommonTable
-          columns={columns}
-          rows={rows}
-          loading={isLoading}
-          height="calc(100vh - 240px)"
-          onRowClick={(row) =>
-            shouldAllowDashboardGet && handleEdit(row.originalData._id)
+        <PageHeader
+          title="Dashboards"
+          subtext="Interactive data table with filtering, sorting, pagination, and export"
+          action={
+            shouldAllowDashboardCreate ? (
+              <StyledButton
+                variant="primary"
+                icon={<AddIcon />}
+                onClick={() => navigate("/dashboard/create")}
+              >
+                Create New Dashboard
+              </StyledButton>
+            ) : undefined
           }
         />
+
+        <PageCardLayout>
+          <CommonTable
+            columns={columns}
+            rows={rows}
+            loading={isLoading}
+            height="calc(100vh - 240px)"
+            onRowClick={(row) =>
+              shouldAllowDashboardGet &&
+              handleEdit((row.originalData as DashboardType)._id)
+            }
+            useCustomPagination
+          />
+        </PageCardLayout>
 
         {/* <Box
           sx={{ p: { xs: STYLE_GUIDE.SPACING.s4, md: STYLE_GUIDE.SPACING.s6 } }}
@@ -769,17 +739,10 @@ const Dashboard = () => {
 
   // Show specific dashboard view
   return (
-    <Box
-      sx={{
-        p: STYLE_GUIDE.SPACING.s2,
-        backgroundColor: theme.palette.background.paper,
-      }}
-    >
-      <DashboardView
-        title={currentDashboard.name}
-        onTitleChange={handleTitleChange}
-      />
-    </Box>
+    <DashboardView
+      title={currentDashboard.name}
+      onTitleChange={handleTitleChange}
+    />
   );
 };
 

@@ -9,14 +9,15 @@ import {
   DialogActions,
   Button,
 } from "@mui/material";
+import AddIcon from "@mui/icons-material/Add";
 import useDelete from "../../hooks/useDelete";
 import { DELETE } from "../../services/apiRoutes";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "react-toastify";
 import { STYLE_GUIDE } from "../../styles";
-import { useComponentTypography } from "../../hooks";
 import { DesignationModal } from "./DesignationModal";
 import { DesignationDataTable } from "./DesignationDataTable";
+import { PageHeader, PageCardLayout, StyledButton } from "../../components/common";
 import { useSelector } from "react-redux";
 import { RootState } from "../../store";
 import { checkPermission } from "../../utils/utils";
@@ -66,7 +67,6 @@ export default function Designation() {
     organizationId: "",
     status: "",
   });
-  const { getHeadingSx } = useComponentTypography();
   const permissions = useSelector(
     (state: RootState) => state.userPermission.permissions
   );
@@ -199,22 +199,24 @@ export default function Designation() {
     <Box
       sx={{
         flexGrow: 1,
-        p: 3,
         ml: { xs: 0 },
         minHeight: "100vh",
       }}
     >
-      <Typography
-        variant="h4"
-        sx={{
-          ...getHeadingSx(),
-          mb: STYLE_GUIDE?.SPACING?.s3,
-        }}
-      >
-        Designations{" "}
-      </Typography>
+      <PageHeader
+        title="Designations"
+        subtext="View and manage designations."
+        action={
+          shouldAllowAdd ? (
+            <StyledButton variant="primary" startIcon={<AddIcon />} onClick={handleAddDesignation}>
+              Add Designation
+            </StyledButton>
+          ) : undefined
+        }
+      />
 
-      <DesignationDataTable
+      <PageCardLayout>
+        <DesignationDataTable
         onAddDesignation={handleAddDesignation}
         onEditDesignation={handleEdit}
         onViewDesignation={handleView}
@@ -231,6 +233,7 @@ export default function Designation() {
         shouldAllowEdit={shouldAllowEdit}
         shouldAllowDelete={shouldAllowDelete}
       />
+      </PageCardLayout>
 
       <DesignationModal
         rowData={rowData}

@@ -1850,7 +1850,7 @@ import {
 } from "@mui/material";
 import StyledSelect from "../../../components/atom/common/StyledSelect";
 import AddIcon from "@mui/icons-material/Add";
-import EditIcon from "@mui/icons-material/Edit";
+import EditOutlined from "@mui/icons-material/EditOutlined";
 import SaveIcon from "@mui/icons-material/Save";
 import ViewColumnIcon from "@mui/icons-material/ViewColumn";
 import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
@@ -1894,6 +1894,7 @@ import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 import logo from "../../../assets/logo.png";
 import { StyledButton } from "../../../components/common";
+import { FileDownloadOutlined } from "@mui/icons-material";
 
 interface DashboardViewProps {
   title: string;
@@ -3014,29 +3015,31 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         overflow: "hidden",
       }}
     >
-      <Typography
-        variant="h4"
-        component="h1"
-        sx={{
-          fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.pageTitle,
-          mr: STYLE_GUIDE.SPACING.s4,
-          fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.bold,
-          color: STYLE_GUIDE.COLORS.black
-        }}
-      >
-        {title}
-      </Typography>
-      <Typography
-        variant="body1"
-        component="div"
-        sx={{
-          fontSize: '1rem',
-          marginTop: '0.25rem',
-          color: STYLE_GUIDE.COLORS.textSecondary
-        }}
-      >
-        Your analytics overview for the current period.
-      </Typography>
+      <Box>
+        <Typography
+          variant="h4"
+          component="h1"
+          sx={{
+            fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.pageTitle,
+            mr: STYLE_GUIDE.SPACING.s4,
+            fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.bold,
+            color: STYLE_GUIDE.COLORS.black
+          }}
+        >
+          {title}
+        </Typography>
+        <Typography
+          variant="body1"
+          component="div"
+          sx={{
+            fontSize: '1rem',
+            marginTop: '0.25rem',
+            color: STYLE_GUIDE.COLORS.textSecondary
+          }}
+        >
+          Your analytics overview for the current period.
+        </Typography>
+      </Box>
       <Box
         sx={{
           // p: { md: STYLE_GUIDE.SPACING.s2 },
@@ -3111,38 +3114,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 alignItems: "center",
               }}
             >
-              {/* {title.length > 10 ? (
-                <Tooltip title={title}>
-                  <Typography
-                    variant="h4"
-                    component="h1"
-                    sx={{
-                      ...getHeadingSx(),
-                      mr: STYLE_GUIDE.SPACING.s4,
-                      fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.medium,
-                      whiteSpace: "nowrap",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      // maxWidth: "100px",
-                    }}
-                  >
-                    {title}
-                  </Typography>
-                </Tooltip>
-              ) : (
-                <Typography
-                  variant="h4"
-                  component="h1"
-                  sx={{
-                    ...getHeadingSx(),
-                    mr: STYLE_GUIDE.SPACING.s4,
-                    fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.medium,
-                  }}
-                >
-                  {title}
-                </Typography>
-              )} */}
-
               {currentDashboard?.isDefaultNotivix && (
                 <>
                   <ToggleButtonGroup
@@ -3203,124 +3174,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                       Completed
                     </ToggleButton>
                   </ToggleButtonGroup>
-
-                  {/* Date Range Selector with Dropdown */}
-
-                  {/* <Box
-                    sx={{
-                      display: "flex",
-                      alignItems: "center",
-                      border: `1px solid ${
-                        isDateRangeFocused
-                          ? theme.input?.focusBorder || "blue"
-                          : theme.getInputBorderColor()
-                      }`,
-                      borderRadius: "8px",
-                      background: theme.getDropdownBackground(),
-                      width: "280px",
-                      overflow: "hidden",
-                    }}
-                  >
-                    {/* Date Picker with Calendar + Cross 
-                    <Box sx={{ position: "relative", flex: 1 }}>
-                      <CalendarMonthIcon
-                        style={{
-                          position: "absolute",
-                          left: "10px",
-                          top: "50%",
-                          transform: "translateY(-50%)",
-                          color: theme.palette.text.secondary,
-                          pointerEvents: "none",
-                        }}
-                      />
-
-                      <DatePicker
-                        onOpen={() => handleDateRangeFocus(true)}
-                        onClose={() => handleDateRangeFocus(false)}
-                        calendarPosition="top"
-                        value={dateRange}
-                        onChange={handleDateRangeChange}
-                        range
-                        format="DD/MM/YYYY"
-                        placeholder="Select Date Range"
-                        numberOfMonths={2}
-                        showOtherDays
-                        inputClass="w-full"
-                        style={{
-                          width: "100%",
-                          padding: "8px 28px 8px 38px",
-                          fontSize: "14px",
-                          border: "none",
-                          background: "transparent",
-                          color: theme.getInputTextColor(),
-                          outline: "none",
-                        }}
-                      />
-
-                      {dateRange && dateRange.length > 0 && (
-                        <Button
-                          onClick={handleClearDateRange}
-                          size="small"
-                          sx={{
-                            position: "absolute",
-                            left: "200px",
-                            top: "50%",
-                            transform: "translateY(-50%)",
-                            minWidth: "auto",
-                            padding: "2px",
-                            color: theme.palette.text.secondary,
-                            "&:hover": { backgroundColor: "transparent" },
-                          }}
-                        >
-                          ✕
-                        </Button>
-                      )}
-                    </Box>
-
-                    {/* Divider line 
-                    <Box
-                      sx={{
-                        width: "1px",
-                        height: "60%",
-                        backgroundColor: theme.getInputBorderColor(),
-                      }}
-                    />
-
-                    {/* Dropdown for Predefined Ranges 
-                    <StyledSelect
-                      value=""
-                      onChange={(e) =>
-                        handlePredefinedRangeSelection(e.target.value)
-                      }
-                      displayEmpty
-                      sx={{
-                        minWidth: 10,
-                        border: "none",
-                        borderRadius: 0,
-                        backgroundColor: "transparent",
-                        color: theme.getInputTextColor(),
-                        "&:hover": { border: "none" },
-                        "& .MuiOutlinedInput-notchedOutline": {
-                          border: "none",
-                        },
-                        "& .MuiSelect-select": {
-                          p: "8px 28px 8px 12px", // compact padding
-                        },
-                        "& .MuiSelect-icon": {
-                          right: "2px",
-                        },
-                      }}
-                    >
-                      {(statusToggle === "Pending"
-                        ? rangeOptions.Pending
-                        : rangeOptions.Completed
-                      ).map((option) => (
-                        <MenuItem key={option.value} value={option.value}>
-                          {option.label}
-                        </MenuItem>
-                      ))}
-                    </StyledSelect>
-                  </Box> */}
 
                   <Box
                     sx={{
@@ -3616,39 +3469,30 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               {shouldAllowDashboardUpdate &&
                 (!currentDashboard?.isRoleDefault ||
                   shouldAllowDefaultDashboardUpdate) && (
-                  <Button
+                  <StyledButton
+                    variant="primary"
                     onClick={handleEditModeToggle}
-                    // color="primary"
-                    variant="contained"
-                    startIcon={<EditIcon />}
-                    // sx={{ ...getButtonSx() }}
-                    sx={{
-                      borderRadius: "8px",
-                      width: "120px",
-                    }}
+                    icon={<EditOutlined sx={{ fontSize: "16px" }} />}
+                    sx={{ width: "120px" }}
                   >
                     Edit
-                  </Button>
+                  </StyledButton>
                 )}
-              <Button
+              <StyledButton
+                variant="primary"
                 onClick={handleExportPDF}
-                color="primary"
-                variant="contained"
                 disabled={isExportingPdf}
-                startIcon={
+                icon={
                   isExportingPdf ? (
                     <CircularProgress size={20} color="inherit" />
                   ) : (
-                    <PictureAsPdfIcon />
+                    <FileDownloadOutlined />
                   )
                 }
-                sx={{
-                  borderRadius: "8px",
-                  minWidth: "140px",
-                }}
+                sx={{ minWidth: "140px" }}
               >
                 {isExportingPdf ? "Exporting..." : "Export"}
-              </Button>
+              </StyledButton>
             </>
           )}
         </Box>
@@ -3676,7 +3520,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               lg: "repeat(auto-fit, minmax(500px, 1fr))",
             },
             gap: STYLE_GUIDE.SPACING.s4,
-            p: STYLE_GUIDE.SPACING.s4,
+            pt: STYLE_GUIDE.SPACING.s4,
 
             transition: "all 0.3s ease",
             ...((isAddChartModalOpen || isEditChartModalOpen) && {

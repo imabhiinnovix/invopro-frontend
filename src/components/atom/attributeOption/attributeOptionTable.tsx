@@ -19,7 +19,7 @@ import {
 } from "@mui/material";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
-import EditIcon from "@mui/icons-material/Edit";
+import EditOutlined from "@mui/icons-material/EditOutlined";
 import useGet from "../../../hooks/useGet";
 import { GET } from "../../../services/apiRoutes";
 import { AttributeOptionRequestPayload } from "./types";
@@ -27,6 +27,7 @@ import CreateUpdateAttributeOption from "./createUpdateAttributeOption";
 import { STYLE_GUIDE } from "../../../styles";
 import { useComponentTypography } from "../../../hooks/useComponentTypography";
 import CommonTable from "../../common/table";
+import { ActionIconButton } from "../../common";
 import { formatDate } from "../../../utils/utils";
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
@@ -311,13 +312,9 @@ const AttributeOptionTable: React.FC<AttributeOptionTableProps> = ({
             setAttributeOptionReload={setAttributeOptionReload}
             title="Update Attribute Option"
             CustomButton={
-            <Button
-              variant="text"
-              disabled={!shouldAllowEdit}
-              sx={{ minWidth: "auto" }}
-            >
-              <EditIcon />
-            </Button>
+            <ActionIconButton disabled={!shouldAllowEdit}>
+              <EditOutlined />
+            </ActionIconButton>
           }
             data={row}
           />
@@ -467,7 +464,7 @@ const AttributeOptionTable: React.FC<AttributeOptionTableProps> = ({
                     title="Update Attribute Option"
                     CustomButton={
                     <Button variant="text" sx={{ minWidth: "auto" }}>
-                      <EditIcon />
+                      <EditOutlined sx={{ fontSize: "16px" }} />
                     </Button>
                   }
                     data={data}

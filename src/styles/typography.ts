@@ -1,6 +1,6 @@
 export const TYPOGRAPHY = {
     fontFamily: {
-      primary: '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+      primary: '"Roboto", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
       secondary: '"Roboto", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
       mono: '"JetBrains Mono", "Fira Code", "Consolas", monospace',
       serif: '"Playfair Display", "Georgia", "Times New Roman", serif'

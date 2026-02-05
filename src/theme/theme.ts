@@ -83,6 +83,11 @@ export const theme = createTheme({
         },
       },
     },
+    MuiSwitch: {
+      defaultProps: {
+        color: 'primary',
+      },
+    },
     MuiTableContainer: {
       styleOverrides: {
         root: {
@@ -97,7 +102,7 @@ export const theme = createTheme({
         root: {
           backgroundColor: STYLE_GUIDE.COLORS.white,
           '& .MuiTableCell-root': {
-            backgroundColor: STYLE_GUIDE.COLORS.white,
+            backgroundColor: STYLE_GUIDE.COLORS.inputFieldBackground,
             color: STYLE_GUIDE.COLORS.textSecondary,
             fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.regular,
             borderBottom: `1px solid ${STYLE_GUIDE.COLORS.tableBorder}`,
@@ -152,31 +157,111 @@ export const theme = createTheme({
         },
       },
     },
+    MuiOutlinedInput: {
+      styleOverrides: {
+        root: (opts) => ({
+          backgroundColor: STYLE_GUIDE.COLORS.inputFieldBackground,
+          borderRadius: '10px',
+          fontSize: '16px',
+          '&:not(.MuiInputBase-multiline)': {
+            height: '40px',
+            minHeight: '40px',
+            display: 'flex',
+            alignItems: 'center',
+          },
+          [opts.theme.breakpoints.up('md')]: {
+            fontSize: '14px',
+          },
+          '& fieldset': {
+            borderColor: STYLE_GUIDE.COLORS.inputFieldBorder,
+          },
+          '&:hover fieldset': {
+            borderColor: opts.theme.palette.primary.main,
+          },
+          '&.Mui-focused fieldset': {
+            borderColor: opts.theme.palette.primary.main,
+          },
+          '& .MuiOutlinedInput-input': {
+            padding: '10px 14px',
+            height: '100% !important',
+            boxSizing: 'border-box',
+            fontSize: 'inherit',
+            lineHeight: 1.25,
+          },
+        }),
+        input: (opts) => ({
+          fontSize: '16px',
+          [opts.theme.breakpoints.up('md')]: {
+            fontSize: '14px',
+          },
+        }),
+      },
+    },
+    MuiInputLabel: {
+      styleOverrides: {
+        root: (opts) => ({
+          fontSize: '16px',
+          transform: 'translate(14px, 9px)',
+          [opts.theme.breakpoints.up('md')]: {
+            fontSize: '14px',
+          },
+        }),
+        outlined: {
+          top: '50%',
+          transform: 'translateY(-50%)',
+          '&.MuiInputLabel-shrink': {
+            top: 0,
+            transform: 'translate(14px, -9px) scale(0.75)',
+          },
+        },
+      },
+    },
     MuiSelect: {
       styleOverrides: {
-        root: {
+        root: (opts) => ({
           '& .MuiOutlinedInput-root': {
-            backgroundColor: STYLE_GUIDE.COLORS.white,
+            backgroundColor: STYLE_GUIDE.COLORS.inputFieldBackground,
+            borderRadius: '10px',
+            height: '40px',
+            minHeight: '40px',
+            fontSize: '16px',
+            [opts.theme.breakpoints.up('md')]: {
+              fontSize: '14px',
+            },
             '& fieldset': {
-              borderColor: STYLE_GUIDE.COLORS.borderGray,
+              borderColor: STYLE_GUIDE.COLORS.inputFieldBorder,
             },
             '&:hover fieldset': {
-              borderColor: STYLE_GUIDE.COLORS.primary,
+              borderColor: opts.theme.palette.primary.main,
             },
             '&.Mui-focused fieldset': {
-              borderColor: STYLE_GUIDE.COLORS.primary,
+              borderColor: opts.theme.palette.primary.main,
             },
           },
           '& .MuiInputLabel-root': {
             color: STYLE_GUIDE.COLORS.textDarkGray,
+            fontSize: '16px',
+            [opts.theme.breakpoints.up('md')]: {
+              fontSize: '14px',
+            },
           },
           '& .MuiInputLabel-root.Mui-focused': {
-            color: STYLE_GUIDE.COLORS.primary,
+            color: opts.theme.palette.primary.main,
           },
           '& .MuiSelect-select': {
             color: STYLE_GUIDE.COLORS.textDarkGray,
+            fontSize: '16px',
+            [opts.theme.breakpoints.up('md')]: {
+              fontSize: '14px',
+            },
+            padding: '10px 14px',
+            height: '40px',
+            lineHeight: 1.25,
+            display: 'flex',
+            alignItems: 'center',
+            boxSizing: 'border-box',
           },
-        },
+        }),
       },
     },
     MuiMenuItem: {
@@ -196,6 +281,10 @@ export const theme = createTheme({
     },
     // DataGrid: apply table design so DataGrid tables (e.g. Notifications) are styled even when dashboardTheme is null
     MuiDataGrid: {
+      defaultProps: {
+        disableColumnResize: true,
+        columnHeaderHeight: 48,
+      },
       styleOverrides: {
         root: {
           fontFamily: STYLE_GUIDE.TYPOGRAPHY.fontFamily.primary,
@@ -204,38 +293,15 @@ export const theme = createTheme({
           borderRadius: '10px',
           overflow: 'hidden',
           backgroundColor: STYLE_GUIDE.COLORS.white,
-          // Sticky Actions column (right) – narrow, opaque so content doesn’t show through
+          // Hide all column resize separator lines
+          '& .MuiDataGrid-columnSeparator': {
+            display: 'none',
+          },
+          // Actions column: center icons horizontally and vertically
           '& .MuiDataGrid-cell[data-field="actions"]': {
-            position: 'sticky',
-            right: 0,
-            backgroundColor: '#ffffff !important',
-            zIndex: 3,
-            minWidth: 100,
-            width: 'unset',
-            maxWidth: 'unset',
-            borderLeft: 'none',
-            borderRight: 'none',
-          },
-          '& .MuiDataGrid-row:hover .MuiDataGrid-cell[data-field="actions"]': {
-            backgroundColor: `${STYLE_GUIDE.COLORS.backgroundHover} !important`,
-          },
-          '& .MuiDataGrid-columnHeaders [data-field="actions"]': {
-            position: 'sticky',
-            right: 0,
-            backgroundColor: '#ffffff !important',
-            zIndex: 4,
-            minWidth: 100,
-            width: 'unset',
-            maxWidth: 'unset',
-            borderLeft: 'none',
-            borderRight: 'none',
-          },
-          // Hide column separator lines over the Actions column (left and right)
-          '& .MuiDataGrid-columnHeaders [data-field="actions"] .MuiDataGrid-columnSeparator': {
-            display: 'none',
-          },
-          '& .MuiDataGrid-columnHeader:has(+ .MuiDataGrid-columnHeader[data-field="actions"]) .MuiDataGrid-columnSeparator': {
-            display: 'none',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
           },
           // Action column icons/buttons use theme primary (dynamic when theme changes)
           '& .MuiDataGrid-cell[data-field="actions"] .MuiButton-root:not(.MuiButton-colorError)': {
@@ -252,7 +318,9 @@ export const theme = createTheme({
           },
         } as React.CSSProperties & Record<string, unknown>,
         columnHeaders: {
-          backgroundColor: `${STYLE_GUIDE.COLORS.white} !important`,
+          height: '48px',
+          minHeight: '48px !important',
+          backgroundColor: `${STYLE_GUIDE.COLORS.inputFieldBackground} !important`,
           color: `${STYLE_GUIDE.COLORS.tableHeaderText} !important`,
           fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold,
           fontSize: `${STYLE_GUIDE.TYPOGRAPHY.fontSize.small} !important`,
@@ -275,7 +343,7 @@ export const theme = createTheme({
         } as React.CSSProperties & Record<string, unknown>,
         footerContainer: {
           backgroundColor: STYLE_GUIDE.COLORS.white,
-          borderTop: `1px solid ${STYLE_GUIDE.COLORS.tableBorder}`,
+          border: 0,
           color: STYLE_GUIDE.COLORS.tableBodyText,
           fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.small,
         },
@@ -283,7 +351,7 @@ export const theme = createTheme({
           backgroundColor: STYLE_GUIDE.COLORS.white,
         },
       },
-    },
+    } as Record<string, unknown>,
   },
 });
 

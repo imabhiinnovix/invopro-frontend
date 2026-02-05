@@ -9,14 +9,15 @@ import {
   DialogActions,
   Button,
 } from "@mui/material";
+import AddIcon from "@mui/icons-material/Add";
 import useDelete from "../../hooks/useDelete";
 import { DELETE } from "../../services/apiRoutes";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "react-toastify";
 import { STYLE_GUIDE } from "../../styles";
-import { useComponentTypography } from "../../hooks";
 import { DepartmentModal } from "./DepartmentModal";
 import { DepartmentDataTable } from "./DepartmentDataTable";
+import { PageHeader, PageCardLayout, StyledButton } from "../../components/common";
 import { useSelector } from "react-redux";
 import { RootState } from "../../store";
 import { checkPermission } from "../../utils/utils";
@@ -64,7 +65,6 @@ export default function Department() {
     organizationId: "",
     status: "",
   });
-  const { getHeadingSx } = useComponentTypography();
   const permissions = useSelector(
     (state: RootState) => state.userPermission.permissions
   );
@@ -197,22 +197,24 @@ export default function Department() {
     <Box
       sx={{
         flexGrow: 1,
-        p: 3,
         ml: { xs: 0 },
         minHeight: "100vh",
       }}
     >
-      <Typography
-        variant="h4"
-        sx={{
-          ...getHeadingSx(),
-          mb: STYLE_GUIDE?.SPACING?.s3,
-        }}
-      >
-        Departments{" "}
-      </Typography>
+      <PageHeader
+        title="Departments"
+        subtext="View and manage departments."
+        action={
+          shouldAllowAdd ? (
+            <StyledButton variant="primary" startIcon={<AddIcon />} onClick={handleAddDepartment}>
+              Add Department
+            </StyledButton>
+          ) : undefined
+        }
+      />
 
-      <DepartmentDataTable
+      <PageCardLayout>
+        <DepartmentDataTable
         onAddDepartment={handleAddDepartment}
         onEditDepartment={handleEdit}
         onViewDepartment={handleView}
@@ -229,6 +231,7 @@ export default function Department() {
         shouldAllowEdit={shouldAllowEdit}
         shouldAllowDelete={shouldAllowDelete}
       />
+      </PageCardLayout>
 
       <DepartmentModal
         rowData={rowData}

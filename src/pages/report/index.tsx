@@ -23,8 +23,8 @@ import SimCardDownloadIcon from "@mui/icons-material/SimCardDownload";
 import DownloadForOfflineIcon from "@mui/icons-material/DownloadForOffline";
 import { GET } from "../../services/apiRoutes";
 import { useUnifiedTheme } from "../../hooks/useUnifiedTheme";
-import { useComponentTypography } from "../../hooks/useComponentTypography";
 import useFileDownload from "../../hooks/useFiledownload";
+import { PageHeader } from "../../components/common";
 import PrimaryButton from "../../components/common/PrimaryButton";
 import { STYLE_GUIDE } from "../../styles";
 import { useSelector } from "react-redux";
@@ -53,7 +53,6 @@ export default function Report() {
   const [viewReportNameWithVersionValue, setViewReportNameWithVersionValue] =
     useState("");
 
-  const { getHeadingSx, getButtonSx } = useComponentTypography();
   const permissions = useSelector(
     (state: RootState) => state.userPermission.permissions,
   );
@@ -173,11 +172,7 @@ export default function Report() {
   return (
     <Box
       sx={{
-        // width: "100%",
-        // backgroundColor: theme.palette.background.paper,
-        // minHeight: "calc(100vh - 64px)",
-        // p: 1,
-        p: STYLE_GUIDE.SPACING.s2,
+        p: 0,
       }}
     >
       <Box ref={headerRef}>
@@ -419,17 +414,6 @@ export default function Report() {
                           allDetailData?._id || "",
                         );
                       }}
-                      // sx={{
-                      //   ...getButtonSx(),
-                      //   mr: 1,
-                      //   bgcolor: theme.palette.success.main,
-                      //   color: theme.palette.success.contrastText,
-                      //   '&:hover': {
-                      //     bgcolor: theme.palette.success.dark,
-                      //     transform: 'translateY(-1px)',
-                      //     boxShadow: theme.shadows[3],
-                      //   },
-                      // }}
                     >
                       <SimCardDownloadIcon
                       // sx={{ color: theme.getIconColor() }}
@@ -441,18 +425,10 @@ export default function Report() {
             </Box>
           </>
         ) : (
-          <Typography
-            variant="h5"
-            sx={{
-              ...getHeadingSx(),
-              fontSize: getHeadingSx().fontSize,
-              fontWeight: getHeadingSx().fontWeight,
-              color: theme.palette.text.primary,
-              mb: 1,
-            }}
-          >
-            Reports
-          </Typography>
+          <PageHeader
+            title="Reports"
+            subtext="Create and manage custom reports to analyze your data."
+          />
         )}
       </Box>
 
@@ -592,10 +568,16 @@ export default function Report() {
         </Box>
       ) : (
         <Box
+          id="reports-list-view"
           sx={{
             display: "flex",
             flexDirection: "column",
             gap: 2,
+            p: STYLE_GUIDE.SPACING.s6,
+            backgroundColor: "#ffffff",
+            borderRadius: STYLE_GUIDE.SPACING.s3,
+            border: 1,
+            borderColor: "divider"
           }}
         >
           {shouldAllowGenerateReport && (
@@ -603,10 +585,9 @@ export default function Report() {
           )}
 
           <Box
+            id="report-request-table-container"
             sx={{
               backgroundColor: theme.palette.background.paper,
-              borderRadius: 1,
-              boxShadow: theme.shadows[1],
               overflow: "hidden",
             }}
           >

@@ -169,9 +169,16 @@ const CommonLayout = () => {
           sx={{
             flex: 1,
             height: "100%",
-            p: STYLE_GUIDE.SPACING.s5,
+            // Responsive: use array [xs, sm, md, lg, xl] or object { xs: ..., sm: ..., md: ... }
+            p: {
+              xs: STYLE_GUIDE.SPACING.s4,
+              sm: STYLE_GUIDE.SPACING.s6,
+              md: STYLE_GUIDE.SPACING.s8,
+              lg: STYLE_GUIDE.SPACING.s14,
+            },
             overflowY: "auto",
             overflowX: "hidden",
+            backgroundColor: STYLE_GUIDE.COLORS.inputFieldBackground,
           }}
           id="main-screen-content"
         >
