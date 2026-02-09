@@ -1120,7 +1120,7 @@ const DataSources = () => {
   }, [dataSourceListAPI?.data]);
 
   // Log the correct dataSourceList for debugging
-  console.log("dataSourceList", dataSourceList);
+  // console.log("dataSourceList", dataSourceList);
 
   const dataSourceAttributes = useMemo(
     () =>
@@ -1128,6 +1128,13 @@ const DataSources = () => {
         ?.attributes,
     [id, dataSourceList]
   );
+
+  const dataSourceName = useMemo(
+    () =>
+      dataSourceList?.find((source) => source?._id === id)?.name,
+    [id, dataSourceList]
+  );
+
 
   const optionsAttributes = useMemo(
     () => dataSourceAttributes?.find((attr) => attr?.type === "option"),
@@ -1231,7 +1238,6 @@ const DataSources = () => {
     textAttributes,
     sourceMap,
   ]);
-
   const header = useMemo(
     () => [
       ...(optionsAttributes
@@ -1305,7 +1311,7 @@ const DataSources = () => {
       ) : (
         <Box sx={{ p: STYLE_GUIDE.SPACING.s2 }}>
           <CommonPageHeader
-            title="Data Source Version"
+            title={`IP Report Constants - ${dataSourceName}`}
             actions={
               <Box sx={{ display: "flex", gap: STYLE_GUIDE.SPACING.s2 }}>
                 <CommonDatePicker
