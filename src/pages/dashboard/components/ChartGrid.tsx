@@ -65,6 +65,8 @@ import {
   Radar,
   PolarArea,
   Chart,
+  Bubble,
+  Scatter
 } from "react-chartjs-2";
 import {
   ChartDataItem,
