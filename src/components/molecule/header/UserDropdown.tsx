@@ -130,7 +130,7 @@ const UserDropdown = () => {
       }
     });
 
-    const filteredOtherUsers = otherUsersList.filter(hasUserRole);
+    const filteredOtherUsers = userDetails?.data.roleIds[0].name === "Super Admin" ? otherUsersList : otherUsersList.filter(hasUserRole);
 
     return [...currentUserList, ...filteredOtherUsers].map((user) => ({
       _id: user._id,
