@@ -98,7 +98,7 @@ import { SaveWidgetModel } from "../../naturalLanguage/saveWidgetModel";
 import { STYLE_GUIDE } from "../../../styles";
 import { useUnifiedTheme } from "../../../hooks/useUnifiedTheme";
 import { useComponentTypography } from "../../../hooks/useComponentTypography";
-import { checkPermission, formatDateWithoutTime } from "../../../utils/utils";
+import { checkPermission, formatDate, formatDateWithoutTime } from "../../../utils/utils";
 import { PermissionsMap } from "../../../utils/constants";
 import { useSelector } from "react-redux";
 import { RootState } from "../../../reducers";
@@ -111,6 +111,8 @@ import NotivixFiltersModal from "../../notivixDashboard/components/NotivixFilter
 import { DateObject } from "react-multi-date-picker";
 import logo from "../../../assets/logo.png";
 import html2canvas from "html2canvas";
+import { DataSourceListPayload } from "../../../components/atom/sideNav/types";
+import useGet from "../../../hooks/useGet";
 
 export const htmlLegendPlugin = {
   id: "htmlLegend",
@@ -562,6 +564,23 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
     }
   }, [selectedChart, dashboardFilters]);
 
+
+  const dataSourceAllListAPI = useGet<DataSourceListPayload>(
+    ["dataSourceAllList"],
+    GET?.DATA_SOURCE_LIST + `?paginate=false`
+  );
+
+    const dataSourceAllList = useMemo(() => {
+    return dataSourceAllListAPI?.data?.data || [];
+  }, [dataSourceAllListAPI?.data]);
+
+  const dataSourceLastUpdated = useMemo(() => {
+  return dataSourceAllList.reduce((acc, ds) => {
+    acc[ds._id] = ds.lastUploadedDate ?? null;
+    return acc;
+  }, {} as Record<string, string | null>);
+}, [dataSourceAllList]);
+
   const getUpdatedWidgetData = usePost(
     ["getUpdatedWidgetData"],
     (data) => {
@@ -657,6 +676,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
     () => [...charts, ...temporaryCharts],
     [charts, temporaryCharts],
   );
+
   const numberCharts = useMemo(
     () =>
       allCharts.filter((chart) => chart.widgetTypeId?.chartType === "number"),
@@ -4222,45 +4242,62 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
                       }}
                     >
                       <ChartTitle>
-                        <ChartTitleText>{chart.name}</ChartTitleText>
+                      <ChartTitleText>{chart.name}</ChartTitleText>
 
+                      {/* Right Side Container */}
+                      <Box
+                        sx={{
+                          display: "flex",
+                          flexDirection: "column",
+                          alignItems: "flex-end",
+                          ml: "auto", // pushes this block to right
+                        }}
+                      >
+                        {/* Last Updated ABOVE icons */}
+                        <Box
+                          sx={{
+                            fontSize: "11px",
+                            color: "text.secondary",
+                            mb: 0.2,
+                            whiteSpace: "nowrap",
+                          }}
+                        >
+                          Last Updated on:{" "}
+                          {formatDate(dataSourceLastUpdated[chart.dataSourceId?._id]) || "-"}
+                        </Box>
+
+                        {/* Icons row */}
                         <Box sx={{ display: "flex", gap: 1 }}>
                           <IconButton
                             size="small"
                             onClick={() => handleFullViewClick(chart)}
-                            sx={{
-                              opacity: 0.7,
-                              "&:hover": { opacity: 1 },
-                            }}
+                            sx={{ opacity: 0.7, "&:hover": { opacity: 1 } }}
                           >
                             <FullscreenIcon />
                           </IconButton>
+
                           <IconButton
                             size="small"
                             onClick={(e) => handleExportMenuClick(e, chart)}
-                            sx={{
-                              opacity: 0.7,
-                              "&:hover": { opacity: 1 },
-                            }}
+                            sx={{ opacity: 0.7, "&:hover": { opacity: 1 } }}
                           >
                             <DownloadIcon />
                           </IconButton>
+
                           {isEditMode &&
-                            (shouldAllowWidgetUpdate ||
-                              shouldAllowWidgetDelete) && (
+                            (shouldAllowWidgetUpdate || shouldAllowWidgetDelete) && (
                               <IconButton
                                 size="small"
                                 onClick={(e) => handleMenuClick(e, chart)}
-                                sx={{
-                                  opacity: 0.7,
-                                  "&:hover": { opacity: 1 },
-                                }}
+                                sx={{ opacity: 0.7, "&:hover": { opacity: 1 } }}
                               >
                                 <MoreVertIcon />
                               </IconButton>
                             )}
                         </Box>
-                      </ChartTitle>
+                      </Box>
+                    </ChartTitle>
+
                       <Divider
                         sx={{
                           width: "100%",
