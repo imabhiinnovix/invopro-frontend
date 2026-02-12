@@ -1,4 +1,4 @@
-﻿// import React, { useState, useRef, useEffect, useMemo } from 'react';
+// import React, { useState, useRef, useEffect, useMemo } from 'react';
 // import { Box, Typography, TextField, Button, ButtonGroup, Stack, MenuItem, SelectChangeEvent } from '@mui/material';
 // import StyledSelect from '../../../components/atom/common/StyledSelect';
 // import AddIcon from '@mui/icons-material/Add';
@@ -1862,6 +1862,7 @@ import "react-multi-date-picker/styles/colors/purple.css";
 import { useParams, useLocation } from "react-router-dom";
 import { ChartGrid } from "./ChartGrid";
 import { AddChartModal, ChartFormData } from "./AddChartModal";
+import { EditChartModal } from "./EditChartModal";
 import { useAppDispatch, useAppSelector } from "../../../storeHooks";
 import {
   updateWidget,
@@ -1917,6 +1918,12 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   const [selectedChart, setSelectedChart] = useState<ChartResponse | null>(
     null,
   );
+  const [selectedNumberChartColor, setSelectedNumberChartColor] = useState<
+    string | undefined
+  >(undefined);
+  const [chartPreviewRenderer, setChartPreviewRenderer] = useState<
+    ((chart: ChartResponse) => React.ReactNode) | null
+  >(null);
   const [gridColumns, setGridColumns] = useState(2);
   const [selectedTheme, setSelectedTheme] = useState<string>("");
   const [isExportingPdf, setIsExportingPdf] = useState(false);
@@ -2922,15 +2929,22 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     setIsAddChartModalOpen(false);
   };
 
-  const handleEditChart = (chart: ChartResponse) => {
+  const handleEditChart = (
+    chart: ChartResponse | null,
+    options?: { numberChartColor?: string },
+  ) => {
     setSelectedChart(chart);
-    setIsEditChartModalOpen(true);
-    setIsAddChartModalOpen(false);
+    setSelectedNumberChartColor(options?.numberChartColor);
+    if (chart) {
+      setIsEditChartModalOpen(true);
+      setIsAddChartModalOpen(false);
+    }
   };
 
   const handleCloseEditModal = () => {
     setIsEditChartModalOpen(false);
     setSelectedChart(null);
+    setSelectedNumberChartColor(undefined);
   };
 
   const handleChartUpdate = async (formData: ChartFormData) => {
@@ -3665,7 +3679,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             p: STYLE_GUIDE.SPACING.s4,
 
             transition: "all 0.3s ease",
-            ...((isAddChartModalOpen || isEditChartModalOpen) && {
+            ...(isAddChartModalOpen && {
               flex: "1 1 70%",
             }),
             "&::-webkit-scrollbar": {
@@ -3704,11 +3718,12 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               isTrend={currentDashboard?.settings?.dashboardType === "trend"}
               dashboardFilters={dashboardFilters}
               isDefaultNotivix={currentDashboard?.isDefaultNotivix || false}
+              onRegisterChartPreview={setChartPreviewRenderer}
             />
           )}
         </Box>
 
-        {(isAddChartModalOpen || isEditChartModalOpen) && (
+        {isAddChartModalOpen && (
           <Box
             sx={{
               width: {
@@ -3726,37 +3741,36 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               height: "100%",
             }}
           >
-            {isAddChartModalOpen && (
-              <AddChartModal
-                open={isAddChartModalOpen}
-                onClose={handleCloseModal}
-                isSubmitting={false}
-                dashboardId={dashboardId || ""}
-                isTrend={currentDashboard?.settings?.dashboardType === "trend"}
-                currentDashboard={currentDashboard}
-                startVersionValue={startVersionValue}
-                endVersionValue={endVersionValue}
-                versionValue={formattedVersionValue}
-              />
-            )}
-            {isEditChartModalOpen && selectedChart && (
-              <AddChartModal
-                open={isEditChartModalOpen}
-                onClose={handleCloseEditModal}
-                isSubmitting={false}
-                dashboardId={dashboardId || ""}
-                initialData={selectedChart}
-                onSave={handleChartUpdate}
-                isTrend={currentDashboard?.settings?.dashboardType === "trend"}
-                currentDashboard={currentDashboard}
-                startVersionValue={startVersionValue}
-                endVersionValue={endVersionValue}
-                versionValue={formattedVersionValue}
-              />
-            )}
+            <AddChartModal
+              open={isAddChartModalOpen}
+              onClose={handleCloseModal}
+              isSubmitting={false}
+              dashboardId={dashboardId || ""}
+              isTrend={currentDashboard?.settings?.dashboardType === "trend"}
+              currentDashboard={currentDashboard}
+              startVersionValue={startVersionValue}
+              endVersionValue={endVersionValue}
+              versionValue={formattedVersionValue}
+            />
           </Box>
         )}
       </Box>
+
+      <EditChartModal
+        open={isEditChartModalOpen && !!selectedChart}
+        chart={selectedChart}
+        chartPreviewRenderer={chartPreviewRenderer}
+        numberChartColor={selectedNumberChartColor}
+        onClose={handleCloseEditModal}
+        onSave={handleChartUpdate}
+        dashboardId={dashboardId || ""}
+        isTrend={currentDashboard?.settings?.dashboardType === "trend"}
+        currentDashboard={currentDashboard}
+        startVersionValue={startVersionValue}
+        endVersionValue={endVersionValue}
+        versionValue={formattedVersionValue}
+        dashboardFilters={dashboardFilters}
+      />
       {currentDashboard?.isDefaultNotivix === true && isFiltersModalOpen ? (
         <NotivixFiltersModal
           open={isFiltersModalOpen}

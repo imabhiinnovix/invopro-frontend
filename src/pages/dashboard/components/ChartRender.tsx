@@ -25,7 +25,15 @@ import {
   PolarArea,
   Chart,
 } from "react-chartjs-2";
-import { Box, Table, TableCell, TableHead, TableRow, Typography } from "@mui/material";
+import {
+  Box,
+  Table,
+  TableCell,
+  TableHead,
+  TableRow,
+  Typography,
+  useTheme,
+} from "@mui/material";
 import { useAppSelector } from "../../../storeHooks";
 import { ChartDataItem, ChartResponse } from "../types";
 import { STYLE_GUIDE } from "../../../styles";
@@ -45,26 +53,60 @@ ChartJS.register(
   RadialLinearScale
 );
 
+// Same palette as ChartGrid so Edit Chart modal matches dashboard colors
+const SABIC_COLORS = [
+  "#009FDF",
+  "#FFCD00",
+  "#333333",
+  "#004B87",
+];
+const getSabicColor = (index: number) =>
+  SABIC_COLORS[index % SABIC_COLORS.length];
+
 interface ChartRenderProps {
   chart: ChartResponse;
   handleChartClick: (chart: ChartResponse, elements: ActiveElement[]) => void;
   chartRefs: React.MutableRefObject<{ [key: string]: ChartJS | null }>;
+  /** When set, use external HTML legend (rendered below chart) like dashboard view mode */
+  useHtmlLegend?: boolean;
+  htmlLegendContainerId?: string;
+  /** When true, always use dashboard (SABIC) palette so colors match fullscreen/dashboard view */
+  useDashboardPalette?: boolean;
 }
 
 export const ChartRender: React.FC<ChartRenderProps> = ({
   chart,
   handleChartClick,
   chartRefs,
+  useHtmlLegend,
+  htmlLegendContainerId,
+  useDashboardPalette = false,
 }) => {
   const widgetTheme = useAppSelector((state) => state.dashboard.widgetTheme);
-  const theme = useAppSelector((state) => state.theme);
+  const theme = useTheme();
+  const rawWidgetData =
+    useAppSelector((state) => state.dashboard.widgetData[chart._id]?.data?.widgetData) ||
+    chart.data ||
+    [];
+
+  const getDatasetColor = (index: number) =>
+    useDashboardPalette
+      ? getSabicColor(index)
+      : (widgetTheme?.backgroundColor?.[index % (widgetTheme?.backgroundColor?.length || 1)] ??
+         getSabicColor(index));
+  const getDatasetColors = (count: number) =>
+    useDashboardPalette
+      ? Array.from({ length: count }, (_, i) => getSabicColor(i))
+      : (widgetTheme?.backgroundColor?.length
+          ? widgetTheme.backgroundColor
+          : Array.from({ length: count }, (_, i) => getSabicColor(i)));
 
   const getChartData = (chart: ChartResponse) => {
     const createDefaultDataset = (data: number[] = []): ChartDataset => ({
       label: chart.name,
       data,
-      borderColor: theme.palette.primary.main,
-      backgroundColor: theme.palette.primary.light,
+      borderColor: getSabicColor(0),
+      backgroundColor: getSabicColor(0) + "33",
       tension: 0.1,
       fill: chart.widgetTypeId?.chartType === "area" ? "start" : false,
       pointRadius: 5,
@@ -72,10 +114,7 @@ export const ChartRender: React.FC<ChartRenderProps> = ({
       pointHitRadius: 20,
     });
 
-    const chartData =
-      useAppSelector((state) => state.dashboard.widgetData[chart._id]?.data?.widgetData) ||
-      chart.data ||
-      [];
+    const chartData = rawWidgetData;
 
     if (
       !chartData.length ||
@@ -126,7 +165,7 @@ export const ChartRender: React.FC<ChartRenderProps> = ({
               data: groupData,
               type: "line" as const,
               borderColor:
-                widgetTheme?.colors?.[0] || theme.palette.primary.main,
+                getDatasetColor(0),
               backgroundColor: "transparent",
               tension: 0.1,
               fill: false,
@@ -140,10 +179,7 @@ export const ChartRender: React.FC<ChartRenderProps> = ({
               label: group,
               data: groupData,
               type: "bar" as const,
-              backgroundColor:
-                widgetTheme?.backgroundColor[
-                  (index - 1) % widgetTheme?.backgroundColor.length
-                ],
+              backgroundColor: getDatasetColor(index - 1),
               borderColor: widgetTheme?.borderColor,
               borderWidth: 1,
               stack: "stack1",
@@ -172,7 +208,7 @@ export const ChartRender: React.FC<ChartRenderProps> = ({
             label: chart.name,
             data: values,
             type: "bar" as const,
-            backgroundColor: widgetTheme?.backgroundColor,
+            backgroundColor: getDatasetColor(0),
             borderColor: widgetTheme?.borderColor,
             borderWidth: 1,
           },
@@ -215,7 +251,7 @@ export const ChartRender: React.FC<ChartRenderProps> = ({
               data: groupData,
               type: "line" as const,
               borderColor:
-                widgetTheme?.colors?.[0] || theme.palette.primary.main,
+                getDatasetColor(0),
               backgroundColor: "transparent",
               tension: 0.1,
               fill: false,
@@ -229,10 +265,7 @@ export const ChartRender: React.FC<ChartRenderProps> = ({
               label: group,
               data: groupData,
               type: "bar" as const,
-              backgroundColor:
-                widgetTheme?.backgroundColor[
-                  (index - 1) % widgetTheme?.backgroundColor.length
-                ],
+              backgroundColor: getDatasetColor(index - 1),
               borderColor: widgetTheme?.borderColor,
               borderWidth: 1,
               yAxisID: "y",
@@ -260,7 +293,7 @@ export const ChartRender: React.FC<ChartRenderProps> = ({
             label: chart.name,
             data: values,
             type: "bar" as const,
-            backgroundColor: widgetTheme?.backgroundColor,
+            backgroundColor: getDatasetColor(0),
             borderColor: widgetTheme?.borderColor,
             borderWidth: 1,
           },
@@ -301,10 +334,7 @@ export const ChartRender: React.FC<ChartRenderProps> = ({
           label: group,
           data: groupData,
           color: widgetTheme?.colors,
-          backgroundColor:
-            widgetTheme?.backgroundColor[
-              index % widgetTheme?.backgroundColor.length
-            ],
+          backgroundColor: getDatasetColor(index),
           borderColor: widgetTheme?.borderColor,
           borderWidth: 2,
           pointRadius: 5,
@@ -333,8 +363,8 @@ export const ChartRender: React.FC<ChartRenderProps> = ({
         datasets: [
           {
             data: values,
-            color: widgetTheme?.colors,
-            backgroundColor: widgetTheme?.backgroundColor,
+            color: getDatasetColors(polarLabels.length),
+            backgroundColor: getDatasetColors(polarLabels.length),
             borderColor: widgetTheme?.borderColor,
             borderWidth: 2,
             pointRadius: 5,
@@ -358,8 +388,8 @@ export const ChartRender: React.FC<ChartRenderProps> = ({
             {
               label: chart.aggregation?.attributeName || chart.name || "Count",
               data: values,
-              backgroundColor: widgetTheme?.backgroundColor || theme.palette.primary.main,
-              borderColor: widgetTheme?.borderColor || theme.palette.primary.dark,
+              backgroundColor: getDatasetColor(0),
+              borderColor: widgetTheme?.borderColor,
               borderWidth: 1,
               borderRadius: 4,
             },
@@ -387,10 +417,8 @@ export const ChartRender: React.FC<ChartRenderProps> = ({
         return {
           label: group,
           data: groupData,
-          backgroundColor:
-            widgetTheme?.backgroundColor?.[index % (widgetTheme?.backgroundColor?.length || 1)] ||
-            theme.palette.primary.main,
-          borderColor: widgetTheme?.borderColor || theme.palette.primary.dark,
+          backgroundColor: getDatasetColor(index),
+          borderColor: widgetTheme?.borderColor,
           borderWidth: 1,
           borderRadius: 4,
         };
@@ -438,10 +466,7 @@ export const ChartRender: React.FC<ChartRenderProps> = ({
           return {
             label: group,
             data: groupData,
-            backgroundColor:
-              widgetTheme?.backgroundColor[
-                index % widgetTheme?.backgroundColor.length
-              ],
+            backgroundColor: getDatasetColor(index),
             borderColor: widgetTheme?.borderColor,
             borderWidth: 1,
             borderRadius: 4,
@@ -467,7 +492,7 @@ export const ChartRender: React.FC<ChartRenderProps> = ({
           {
             label: barLabels,
             data: values,
-            backgroundColor: widgetTheme?.backgroundColor,
+            backgroundColor: getDatasetColor(0),
             borderColor: widgetTheme?.borderColor,
             borderWidth: 1,
             borderRadius: 4,
@@ -516,10 +541,7 @@ export const ChartRender: React.FC<ChartRenderProps> = ({
           return {
             label: group,
             data: groupData,
-            backgroundColor:
-              widgetTheme?.backgroundColor[
-                index % widgetTheme?.backgroundColor.length
-              ],
+            backgroundColor: getDatasetColor(index),
             borderColor: widgetTheme?.borderColor,
             borderWidth: 2,
             pointRadius: 5,
@@ -539,7 +561,7 @@ export const ChartRender: React.FC<ChartRenderProps> = ({
         datasets: [
           {
             data: values,
-            backgroundColor: widgetTheme?.backgroundColor,
+            backgroundColor: getDatasetColors(values.length),
             borderColor: widgetTheme?.borderColor,
             borderWidth: 2,
             pointRadius: 5,
@@ -590,14 +612,11 @@ export const ChartRender: React.FC<ChartRenderProps> = ({
           return {
             label: group,
             data: groupData,
-            color: widgetTheme?.colors,
-            backgroundColor:
-              widgetTheme?.backgroundColor[
-                index % widgetTheme?.backgroundColor.length
-              ],
-            pointBackgroundColor: widgetTheme?.colors,
+            color: getDatasetColor(index),
+            backgroundColor: getDatasetColor(index),
+            pointBackgroundColor: getDatasetColor(index),
             pointBorderColor: widgetTheme?.borderColor,
-            pointHoverBackgroundColor: widgetTheme?.backgroundColor,
+            pointHoverBackgroundColor: getDatasetColor(index),
             pointHoverBorderColor: widgetTheme?.borderColor,
             tension: 0.1,
             pointRadius: 5,
@@ -615,17 +634,18 @@ export const ChartRender: React.FC<ChartRenderProps> = ({
       }
 
       const values = chartData.map((item: ChartDataItem) => item.data);
+      const radarColors = getDatasetColors(values.length);
       return {
         labels: radarLabels,
         datasets: [
           {
             label: chart.name,
             data: values,
-            color: widgetTheme?.colors,
-            backgroundColor: widgetTheme?.backgroundColor,
-            pointBackgroundColor: widgetTheme?.backgroundColor,
+            color: radarColors,
+            backgroundColor: radarColors,
+            pointBackgroundColor: radarColors,
             pointBorderColor: widgetTheme?.borderColor,
-            pointHoverBackgroundColor: widgetTheme?.backgroundColor,
+            pointHoverBackgroundColor: radarColors,
             pointHoverBorderColor: widgetTheme?.borderColor,
             tension: 0.1,
             pointRadius: 5,
@@ -670,11 +690,7 @@ export const ChartRender: React.FC<ChartRenderProps> = ({
             borderColor:
               widgetTheme?.borderColor[index % widgetTheme?.borderColor.length],
             backgroundColor:
-              chartType === "area"
-                ? widgetTheme?.backgroundColor[
-                    index % widgetTheme?.backgroundColor.length
-                  ]
-                : "transparent",
+              chartType === "area" ? getDatasetColor(index) : "transparent",
             tension: 0.1,
             fill: chartType === "area" ? "start" : false,
             pointRadius: 5,
@@ -703,11 +719,9 @@ export const ChartRender: React.FC<ChartRenderProps> = ({
             {
               label: chart.name,
               data: values,
-              borderColor: widgetTheme?.borderColor[0],
+              borderColor: widgetTheme?.borderColor?.[0] ?? getSabicColor(0),
               backgroundColor:
-                chartType === "area"
-                  ? widgetTheme?.backgroundColor[0]
-                  : "transparent",
+                chartType === "area" ? getDatasetColor(0) : "transparent",
               tension: 0.1,
               fill: chartType === "area" ? "start" : false,
               pointRadius: 5,
@@ -1148,7 +1162,20 @@ export const ChartRender: React.FC<ChartRenderProps> = ({
   const aggregationField = chart.aggregation?.attributeName || "data";
 
   const chartType = chart.widgetTypeId?.chartType || "line";
-  const options = getChartOptions(chartType, chart);
+  let options = getChartOptions(chartType, chart);
+  if (useHtmlLegend && htmlLegendContainerId) {
+    options = {
+      ...options,
+      plugins: {
+        ...options.plugins,
+        legend:
+          options.plugins?.legend && typeof options.plugins.legend === "object"
+            ? { ...options.plugins.legend, display: false }
+            : { display: false },
+        htmlLegend: { containerID: htmlLegendContainerId },
+      },
+    };
+  }
   const chartData = getChartData(chart);
   const chartId = `chart-${chart._id}`;
   const numberValue = chartData.datasets[0]?.data[0] || 0;
@@ -1175,10 +1202,10 @@ export const ChartRender: React.FC<ChartRenderProps> = ({
     case "number":
       return (
         <NumberDisplay>
-          <NumberValue widgetTheme={widgetTheme}>
+          <NumberValue widgetTheme={null} sx={{ color: "#4D4D4D" }}>
             {numberValue.toLocaleString()}
           </NumberValue>
-          <NumberLabel>{chart.name}</NumberLabel>
+          <NumberLabel sx={{ color: "#4D4D4D" }}>{chart.name}</NumberLabel>
         </NumberDisplay>
       );
 
@@ -1320,10 +1347,7 @@ export const ChartRender: React.FC<ChartRenderProps> = ({
       );
 
     case "tabular":
-      const chartDataArray =
-        useAppSelector((state) => state.dashboard.widgetData[chart._id]?.data?.widgetData) ||
-        chart.data ||
-        [];
+      const chartDataArray = rawWidgetData;
 
       const columns =
         chartDataArray.length > 0

@@ -297,6 +297,7 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
   const [operators, setOperators] = useState<OperatorType[]>([]);
   const [fieldTypes, setFieldTypes] = useState<{ [key: string]: string }>({});
   const [fieldErrors, setFieldErrors] = useState<{ [key: string]: string }>({});
+  const [showAdvanced, setShowAdvanced] = useState(false);
   const [showMoreOptions, setShowMoreOptions] = useState<
     Record<string, boolean>
   >({
@@ -983,34 +984,31 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
                   </StyledSelect>
                 </FormControl>
                 <FormControl fullWidth size="small">
-                  <InputLabel>{groupByField.label}</InputLabel>
+                  <InputLabel>Y-Axis</InputLabel>
                   <StyledSelect
-                    value={formData.groupBy}
-                    label={groupByField.label}
-                    onChange={handleGroupByChange}
+                    value={formData.aggregation.type}
+                    label="Y-Axis"
+                    onChange={handleAggregationTypeChange}
                     disabled={isSubmitting}
-                    error={!!fieldErrors["GroupBy"]}
-                    endAdornment={
-                      formData.groupBy && (
-                        <InputAdornment position="end">
-                          <IconButton
-                            size="small"
-                            onClick={handleClearGroupBy}
-                            edge="end"
-                            sx={{ mr: 1 }}
-                          >
-                            <ClearIcon fontSize="small" />
-                          </IconButton>
-                        </InputAdornment>
-                      )
-                    }
+                  >
+                    <MenuItem value="distinctCount">Distinct Count</MenuItem>
+                    <MenuItem value="Count">Total Count</MenuItem>
+                    <MenuItem value="Sum">Sum</MenuItem>
+                    <MenuItem value="Average">Average</MenuItem>
+                  </StyledSelect>
+                </FormControl>
+              </FormRow>
+              <FormRow sx={{ marginTop: 5 }}>
+                <FormControl fullWidth size="small">
+                  <InputLabel>Attribute Name</InputLabel>
+                  <StyledSelect
+                    value={formData.aggregation.attributeName}
+                    label="Attribute Name"
+                    onChange={handleAggregationAttributeChange}
+                    disabled={isSubmitting}
                   >
                     {groupedAttributeOptions.primary.map((attr) => (
-                      <MenuItem
-                        key={`primary-${attr.name}`}
-                        value={attr.name}
-                        disabled={attr.name === formData.dimensions}
-                      >
+                      <MenuItem key={`primary-${attr.name}`} value={attr.name}>
                         {attr.label}
                       </MenuItem>
                     ))}
@@ -1020,7 +1018,7 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
                         role="option"
                         onMouseDown={(e) => {
                           e.stopPropagation();
-                          toggleMoreOptions("groupBy2", e);
+                          toggleMoreOptions("aggregationAttribute1", e);
                         }}
                         sx={{
                           padding: "6px 16px",
@@ -1042,7 +1040,7 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
                           }}
                         >
                           <span>More...</span>
-                          {showMoreOptions.groupBy2 ? (
+                          {showMoreOptions.aggregationAttribute1 ? (
                             <ExpandLessIcon />
                           ) : (
                             <ExpandMoreIcon />
@@ -1050,12 +1048,11 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
                         </Box>
                       </Box>
                     )}
-                    {showMoreOptions.groupBy2 &&
+                    {showMoreOptions.aggregationAttribute1 &&
                       groupedAttributeOptions.secondary.map((attr) => (
                         <MenuItem
                           key={`secondary-${attr.name}`}
                           value={attr.name}
-                          disabled={attr.name === formData.dimensions}
                           sx={{ pl: 4 }}
                         >
                           {attr.label}
@@ -1102,14 +1099,11 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
                   </FormControl>
                 </FormRow>
               )}
-              {fieldErrors["GroupBy"] && (
-                <FormHelperText error>{fieldErrors["GroupBy"]}</FormHelperText>
-              )}
             </FormSection>
           );
         } else {
           return (
-            <FormSection key={fieldName}>
+            <FormSection key="dimensions-only">
               <FormRow>
                 <FormControl fullWidth size="small">
                   <InputLabel>X-Axis</InputLabel>
@@ -1199,6 +1193,83 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
                       ))}
                   </StyledSelect>
                 </FormControl>
+                <FormControl fullWidth size="small">
+                  <InputLabel>Y-Axis</InputLabel>
+                  <StyledSelect
+                    value={formData.aggregation.type}
+                    label="Y-Axis"
+                    onChange={handleAggregationTypeChange}
+                    disabled={isSubmitting}
+                  >
+                    <MenuItem value="distinctCount">Distinct Count</MenuItem>
+                    <MenuItem value="Count">Total Count</MenuItem>
+                    <MenuItem value="Sum">Sum</MenuItem>
+                    <MenuItem value="Average">Average</MenuItem>
+                  </StyledSelect>
+                </FormControl>
+              </FormRow>
+              <FormRow sx={{ marginTop: 5 }}>
+                <FormControl fullWidth size="small">
+                  <InputLabel>Attribute Name</InputLabel>
+                  <StyledSelect
+                    value={formData.aggregation.attributeName}
+                    label="Attribute Name"
+                    onChange={handleAggregationAttributeChange}
+                    disabled={isSubmitting}
+                  >
+                    {groupedAttributeOptions.primary.map((attr) => (
+                      <MenuItem key={`primary-${attr.name}`} value={attr.name}>
+                        {attr.label}
+                      </MenuItem>
+                    ))}
+                    {groupedAttributeOptions.secondary.length > 0 && (
+                      <Box
+                        component="li"
+                        role="option"
+                        onMouseDown={(e) => {
+                          e.stopPropagation();
+                          toggleMoreOptions("aggregationAttribute1", e);
+                        }}
+                        sx={{
+                          padding: "6px 16px",
+                          minHeight: "auto",
+                          fontWeight: 600,
+                          color: "primary.main",
+                          cursor: "pointer",
+                          "&:hover": {
+                            backgroundColor: "action.hover",
+                          },
+                        }}
+                      >
+                        <Box
+                          sx={{
+                            display: "flex",
+                            alignItems: "center",
+                            width: "100%",
+                            justifyContent: "space-between",
+                          }}
+                        >
+                          <span>More...</span>
+                          {showMoreOptions.aggregationAttribute1 ? (
+                            <ExpandLessIcon />
+                          ) : (
+                            <ExpandMoreIcon />
+                          )}
+                        </Box>
+                      </Box>
+                    )}
+                    {showMoreOptions.aggregationAttribute1 &&
+                      groupedAttributeOptions.secondary.map((attr) => (
+                        <MenuItem
+                          key={`secondary-${attr.name}`}
+                          value={attr.name}
+                          sx={{ pl: 4 }}
+                        >
+                          {attr.label}
+                        </MenuItem>
+                      ))}
+                  </StyledSelect>
+                </FormControl>
               </FormRow>
               {fieldErrors["Dimension"] && (
                 <FormHelperText error>
@@ -1210,12 +1281,102 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
         }
 
       case "groupBy":
+        if (!showAdvanced) return null;
         const visibleFieldsList = getVisibleFields();
         const dimensionsField = visibleFieldsList.find(
           (f) => f.fieldName === "dimensions",
         );
         if (dimensionsField) {
-          return null;
+          return (
+            <FormSection key="groupBy-advanced">
+              <FormRow>
+                <FormControl fullWidth size="small">
+                  <InputLabel>{label}</InputLabel>
+                  <StyledSelect
+                    value={formData.groupBy}
+                    label="Segmentation"
+                    onChange={handleGroupByChange}
+                    disabled={isSubmitting}
+                    error={!!fieldErrors["GroupBy"]}
+                    endAdornment={
+                      formData.groupBy && (
+                        <InputAdornment position="end">
+                          <IconButton
+                            size="small"
+                            onClick={handleClearGroupBy}
+                            edge="end"
+                            sx={{ mr: 1 }}
+                          >
+                            <ClearIcon fontSize="small" />
+                          </IconButton>
+                        </InputAdornment>
+                      )
+                    }
+                  >
+                    {groupedAttributeOptions.primary.map((attr) => (
+                      <MenuItem
+                        key={`primary-${attr.name}`}
+                        value={attr.name}
+                        disabled={attr.name === formData.dimensions}
+                      >
+                        {attr.label}
+                      </MenuItem>
+                    ))}
+                    {groupedAttributeOptions.secondary.length > 0 && (
+                      <Box
+                        component="li"
+                        role="option"
+                        onMouseDown={(e) => {
+                          e.stopPropagation();
+                          toggleMoreOptions("groupBy2", e);
+                        }}
+                        sx={{
+                          padding: "6px 16px",
+                          minHeight: "auto",
+                          fontWeight: 600,
+                          color: "primary.main",
+                          cursor: "pointer",
+                          "&:hover": {
+                            backgroundColor: "action.hover",
+                          },
+                        }}
+                      >
+                        <Box
+                          sx={{
+                            display: "flex",
+                            alignItems: "center",
+                            width: "100%",
+                            justifyContent: "space-between",
+                          }}
+                        >
+                          <span>More...</span>
+                          {showMoreOptions.groupBy2 ? (
+                            <ExpandLessIcon />
+                          ) : (
+                            <ExpandMoreIcon />
+                          )}
+                        </Box>
+                      </Box>
+                    )}
+                    {showMoreOptions.groupBy2 &&
+                      groupedAttributeOptions.secondary.map((attr) => (
+                        <MenuItem
+                          key={`secondary-${attr.name}`}
+                          value={attr.name}
+                          disabled={attr.name === formData.dimensions}
+                          sx={{ pl: 4 }}
+                        >
+                          {attr.label}
+                        </MenuItem>
+                      ))}
+                  </StyledSelect>
+                </FormControl>
+              </FormRow>
+              {fieldErrors["GroupBy"] && (
+                <FormHelperText error>{fieldErrors["GroupBy"]}</FormHelperText>
+              )}
+            </FormSection>
+          );
         }
 
         return (
@@ -1225,7 +1386,7 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
                 <InputLabel>{label}</InputLabel>
                 <StyledSelect
                   value={formData.groupBy}
-                  label={label}
+                  label="Segmentation"
                   onChange={handleGroupByChange}
                   disabled={isSubmitting}
                   error={!!fieldErrors["GroupBy"]}
@@ -1310,91 +1471,10 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
         );
 
       case "aggregation":
-        return (
-          <FormSection key={fieldName}>
-            <SectionTitle>Y-Axis</SectionTitle>
-            <FormRow>
-              <FormControl fullWidth size="small">
-                <InputLabel>Type</InputLabel>
-                <StyledSelect
-                  value={formData.aggregation.type}
-                  label="Type"
-                  onChange={handleAggregationTypeChange}
-                  disabled={isSubmitting}
-                >
-                  <MenuItem value="distinctCount">Distinct Count</MenuItem>
-                  <MenuItem value="Count">Total Count</MenuItem>
-                  <MenuItem value="Sum">Sum</MenuItem>
-                  <MenuItem value="Average">Average</MenuItem>
-                </StyledSelect>
-              </FormControl>
-
-              <FormControl fullWidth size="small">
-                <InputLabel>Attribute Name</InputLabel>
-                <StyledSelect
-                  value={formData.aggregation.attributeName}
-                  label="Attribute Name"
-                  onChange={handleAggregationAttributeChange}
-                  disabled={isSubmitting}
-                >
-                  {groupedAttributeOptions.primary.map((attr) => (
-                    <MenuItem key={`primary-${attr.name}`} value={attr.name}>
-                      {attr.label}
-                    </MenuItem>
-                  ))}
-                  {groupedAttributeOptions.secondary.length > 0 && (
-                    <Box
-                      component="li"
-                      role="option"
-                      onMouseDown={(e) => {
-                        e.stopPropagation();
-                        toggleMoreOptions("aggregationAttribute1", e);
-                      }}
-                      sx={{
-                        padding: "6px 16px",
-                        minHeight: "auto",
-                        fontWeight: 600,
-                        color: "primary.main",
-                        cursor: "pointer",
-                        "&:hover": {
-                          backgroundColor: "action.hover",
-                        },
-                      }}
-                    >
-                      <Box
-                        sx={{
-                          display: "flex",
-                          alignItems: "center",
-                          width: "100%",
-                          justifyContent: "space-between",
-                        }}
-                      >
-                        <span>More...</span>
-                        {showMoreOptions.aggregationAttribute1 ? (
-                          <ExpandLessIcon />
-                        ) : (
-                          <ExpandMoreIcon />
-                        )}
-                      </Box>
-                    </Box>
-                  )}
-                  {showMoreOptions.aggregationAttribute1 &&
-                    groupedAttributeOptions.secondary.map((attr) => (
-                      <MenuItem
-                        key={`secondary-${attr.name}`}
-                        value={attr.name}
-                        sx={{ pl: 4 }}
-                      >
-                        {attr.label}
-                      </MenuItem>
-                    ))}
-                </StyledSelect>
-              </FormControl>
-            </FormRow>
-          </FormSection>
-        );
+        return null;
 
       case "conditions":
+        if (!showAdvanced) return null;
         return (
           <ConditionsSection key={fieldName}>
             <Box
@@ -1405,7 +1485,7 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
                 mb: 2,
               }}
             >
-              <SectionTitle>{label}</SectionTitle>
+              <SectionTitle className={initialData ? "form-section-title" : undefined}>{label}</SectionTitle>
               <StyledButton
                 startIcon={<AddIcon />}
                 onClick={addCondition}
@@ -1703,7 +1783,17 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
         </ConfigurationHeader>
       )}
 
-      <ConfigurationContent>
+      <ConfigurationContent
+        sx={
+          initialData
+            ? {
+                "& .MuiInputLabel-root": { fontWeight: 600 },
+                "& .MuiFormLabel-root": { fontWeight: 600 },
+                "& .form-section-title": { fontWeight: 600 },
+              }
+            : undefined
+        }
+      >
         <FirstFormSection>
           <TextField
             fullWidth
@@ -1936,9 +2026,45 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
         {selectedDataSource && (
           <>
             {getVisibleFields().length > 0 ? (
-              getVisibleFields().map((fieldConfig) =>
-                renderDynamicField(fieldConfig),
-              )
+              <>
+                {getVisibleFields().map((fieldConfig) => {
+                  if (
+                    fieldConfig.fieldName === "groupBy" ||
+                    fieldConfig.fieldName === "conditions"
+                  )
+                    return null;
+                  return renderDynamicField(fieldConfig);
+                })}
+                {getVisibleFields().some(
+                  (f) =>
+                    f.fieldName === "groupBy" || f.fieldName === "conditions",
+                ) && (
+                  <>
+                    <Box
+                      onClick={() => setShowAdvanced(!showAdvanced)}
+                      sx={{
+                        cursor: "pointer",
+                        color: "primary.main",
+                        fontWeight: 600,
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 0.5,
+                      }}
+                    >
+                      Advanced {showAdvanced ? "−" : "+"}
+                    </Box>
+                    {showAdvanced &&
+                      getVisibleFields().map((fieldConfig) => {
+                        if (
+                          fieldConfig.fieldName !== "groupBy" &&
+                          fieldConfig.fieldName !== "conditions"
+                        )
+                          return null;
+                        return renderDynamicField(fieldConfig);
+                      })}
+                  </>
+                )}
+              </>
             ) : (
               <>
                 <FormSection>
@@ -2039,10 +2165,10 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
                     </FormControl>
 
                     <FormControl fullWidth size="small">
-                      <InputLabel>Group By</InputLabel>
+                      <InputLabel>Segmentation</InputLabel>
                       <StyledSelect
                         value={formData.groupBy}
-                        label="Group By"
+                        label="Segmentation"
                         onChange={handleGroupByChange}
                         disabled={isSubmitting}
                         error={!!fieldErrors["GroupBy"]}
@@ -2128,13 +2254,13 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
                 </FormSection>
 
                 <FormSection>
-                  <SectionTitle>Aggregation</SectionTitle>
+                  <SectionTitle className={initialData ? "form-section-title" : undefined}>Aggregation</SectionTitle>
                   <FormRow>
                     <FormControl fullWidth size="small">
-                      <InputLabel>Type</InputLabel>
+                      <InputLabel>Y-Axis</InputLabel>
                       <StyledSelect
                         value={formData.aggregation.type}
-                        label="Type"
+                        label="Y-Axis"
                         onChange={handleAggregationTypeChange}
                         disabled={isSubmitting}
                       >
@@ -2146,7 +2272,8 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
                         <MenuItem value="Average">Average</MenuItem>
                       </StyledSelect>
                     </FormControl>
-
+                  </FormRow>
+                  <FormRow>
                     <FormControl fullWidth size="small">
                       <InputLabel>Attribute Name</InputLabel>
                       <StyledSelect
@@ -2223,7 +2350,7 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
                       mb: 2,
                     }}
                   >
-                    <SectionTitle>Filters</SectionTitle>
+                    <SectionTitle className={initialData ? "form-section-title" : undefined}>Filters</SectionTitle>
                     <StyledButton
                       startIcon={<AddIcon />}
                       onClick={addCondition}
@@ -2497,7 +2624,7 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
 
             {isTrend && (
               <FormSection>
-                <SectionTitle>Incremental Settings</SectionTitle>
+                <SectionTitle className={initialData ? "form-section-title" : undefined}>Incremental Settings</SectionTitle>
                 <FormRow>
                   <FormControl fullWidth size="small">
                     <Box sx={{ display: "flex", alignItems: "center" }}>

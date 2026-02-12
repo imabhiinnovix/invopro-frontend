@@ -283,7 +283,8 @@ const ChartTitle = styled(Typography)(({ theme }) => ({
   alignItems: "center",
   justifyContent: "space-between",
   gap: theme.spacing(1),
-}));
+})) as typeof Typography;
+ChartTitle.defaultProps = { ...ChartTitle.defaultProps, component: "div" as const };
 
 const ChartContainer = styled(Box)(({ theme }) => ({
   flex: 1,
@@ -457,7 +458,8 @@ const StyledTableContainer = styled(Paper)(({ theme }) => ({
 
 const ChartTitleText = styled(Typography)({
   flexGrow: 1,
-});
+}) as typeof Typography;
+ChartTitleText.defaultProps = { ...ChartTitleText.defaultProps, component: "div" as const };
 
 export const ChartGrid: React.FC<ChartGridProps> = ({
   dashboardId,
@@ -474,6 +476,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
   isTrend,
   isNaturalLangauage,
   dashboardFilters,
+  onRegisterChartPreview,
 }) => {
   const dispatch = useAppDispatch();
   const theme = useTheme();
@@ -659,7 +662,11 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
   );
   const numberCharts = useMemo(
     () =>
-      allCharts.filter((chart) => chart.widgetTypeId?.chartType === "number"),
+      allCharts.filter(
+        (chart) =>
+          (chart.widgetTypeId?.chartType || "").toString().toLowerCase() ===
+          "number",
+      ),
     [allCharts],
   );
   const otherCharts = useMemo(
@@ -795,9 +802,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
     setBatchLoadingState(batches);
   }, [numberCharts, otherCharts, gridColumns, widgetData]);
 
-  const bottomRef: any = isNaturalLangauage
-    ? useRef<HTMLDivElement | null>(null)
-    : "";
+  const bottomRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     if (isNaturalLangauage) {
@@ -912,9 +917,23 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
     // Reset previous editor state
     onEditChart(null);
 
+    // For number charts, pass the dashboard color so the edit preview shows the same colored box
+    const isNumber =
+      (selectedChart.widgetTypeId?.chartType || "").toString().toLowerCase() ===
+      "number";
+    const numberChartIndex = numberCharts.findIndex(
+      (c) => c._id === selectedChart._id,
+    );
+    const numberChartColor =
+      isNumber && numberChartIndex >= 0
+        ? SABIC_COLORS_NUMBER[
+            numberChartIndex % SABIC_COLORS_NUMBER.length
+          ]
+        : undefined;
+
     // Load new chart editor
     setTimeout(() => {
-      onEditChart(selectedChart);
+      onEditChart(selectedChart, { numberChartColor });
     }, 10);
   };
 
@@ -1612,42 +1631,6 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
       toast.error("Failed to fetch detailed data");
     }
   };
-
-  if (chartsLoading && !isNaturalLangauage) {
-    return (
-      <LoadingContainer>
-        <CircularProgress />
-      </LoadingContainer>
-    );
-  }
-
-  if (chartsError) {
-    if (!isNaturalLangauage) {
-      return (
-        <ErrorContainer>
-          <Typography color="error" variant="h6">
-            {chartsError}
-          </Typography>
-        </ErrorContainer>
-      );
-    }
-  }
-
-  if (
-    (!allCharts || allCharts.length === 0) &&
-    !isNaturalLangauage &&
-    !chartsLoading &&
-    !chartsError &&
-    chartsLoadedOnce
-  ) {
-    return (
-      <EmptyContainer>
-        <Typography color="text.secondary" variant="h6">
-          No charts available
-        </Typography>
-      </EmptyContainer>
-    );
-  }
 
   const handleChartUpdate = async (formData: ChartFormData) => {
     const newFormData = {
@@ -3695,6 +3678,161 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
     }
   };
 
+  // Register chart preview renderer for EditChartModal (same as fullscreen/card)
+  useEffect(() => {
+    if (!onRegisterChartPreview) return;
+    onRegisterChartPreview((chart: ChartResponse | null) => {
+      if (!chart) return null;
+      const chartType = (chart.widgetTypeId?.chartType || "line").toString();
+      const chartTypeLower = chartType.toLowerCase();
+      const className =
+        chartTypeLower === "pie"
+          ? "pie-chart"
+          : chartTypeLower === "horizontalbar"
+            ? "horizontal-bar-chart"
+            : chartTypeLower === "tabular"
+              ? "table-chart"
+              : chartTypeLower === "multiseriespie"
+                ? "pie-chart"
+                : chartTypeLower === "stackedbarline" || chartTypeLower === "combobarline"
+                  ? "combo-chart"
+                  : chartTypeLower === "number"
+                    ? "number-chart"
+                    : "line-chart";
+
+      // Number charts: show colored box (NumberCard) like on the dashboard
+      if (chartTypeLower === "number") {
+        const numberChartIndex = numberCharts.findIndex(
+          (c) => c._id === chart._id,
+        );
+        const numberColor =
+          SABIC_COLORS_NUMBER[
+            numberChartIndex >= 0
+              ? numberChartIndex % SABIC_COLORS_NUMBER.length
+              : 0
+          ];
+        return (
+          <>
+            <NumberCard
+              backgroundColor={numberColor}
+              sx={{
+                width: "100%",
+                minHeight: 140,
+                flexShrink: 0,
+              }}
+              data-widget-type="number"
+            >
+              <CardContent>
+                <ChartContainer
+                  className="number-chart"
+                  sx={{
+                    backgroundColor: "transparent",
+                    display: "flex",
+                    flexDirection: "column",
+                    justifyContent: "flex-start",
+                    alignItems: "flex-start",
+                    width: "100%",
+                    minHeight: 0,
+                    height: "auto",
+                  }}
+                >
+                  <Box
+                    sx={{
+                      display: "flex",
+                      flexDirection: "column",
+                      width: "100%",
+                      height: "100%",
+                    }}
+                  >
+                    <Box sx={{ flex: 1, minHeight: 0, width: "100%" }}>
+                      {renderChart(chart, widgetData[chart._id])}
+                    </Box>
+                    <Box sx={{ flexShrink: 0, width: "100%" }}>
+                      <div
+                        id={`legend-container-${chart._id}`}
+                        style={{ marginTop: "8px" }}
+                      />
+                    </Box>
+                  </Box>
+                </ChartContainer>
+              </CardContent>
+            </NumberCard>
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "flex-end",
+                alignItems: "center",
+                mt: 1,
+              }}
+            >
+              <Typography
+                variant="body2"
+                sx={{ fontWeight: "bold", color: "#4D4D4D" }}
+              >
+                Total: {widgetData[chart._id]?.data?.totalCount ?? "—"}
+              </Typography>
+            </Box>
+          </>
+        );
+      }
+
+      return (
+        <>
+          <ChartContainer
+            className={className}
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              width: "100%",
+              height: "100%",
+            }}
+          >
+            <Box
+              sx={{
+                display: "flex",
+                flexDirection: "column",
+                width: "100%",
+                height: "100%",
+              }}
+            >
+              <Box sx={{ flex: 1, minHeight: 0, width: "100%" }}>
+                <Box sx={{ height: "400px", width: "100%" }}>
+                  {renderChart(chart, widgetData[chart._id])}
+                </Box>
+              </Box>
+              <Box sx={{ flexShrink: 0, width: "100%" }}>
+                <div
+                  id={`legend-container-${chart._id}`}
+                  style={{ marginTop: "8px" }}
+                />
+              </Box>
+            </Box>
+          </ChartContainer>
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "flex-end",
+              alignItems: "center",
+              mt: 1,
+            }}
+          >
+            <Typography
+              variant="body2"
+              sx={{ fontWeight: "bold", color: "#4D4D4D" }}
+            >
+              Total: {widgetData[chart._id]?.data?.totalCount ?? "—"}
+            </Typography>
+          </Box>
+        </>
+      );
+    });
+  }, [
+    onRegisterChartPreview,
+    renderChart,
+    widgetData,
+    numberCharts,
+  ]);
+
   const renderDescription = (chart: ChartResponse) => {
     const description = chart.description || "";
     const isExpanded = expandedDescriptions.has(chart._id);
@@ -3757,8 +3895,37 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
     );
   };
 
+  const showLoading =
+    chartsLoading && !isNaturalLangauage;
+  const showError =
+    chartsError && !isNaturalLangauage;
+  const showEmpty =
+    (!allCharts || allCharts.length === 0) &&
+    !isNaturalLangauage &&
+    !chartsLoading &&
+    !chartsError &&
+    chartsLoadedOnce;
+
   return (
     <>
+      {showLoading ? (
+        <LoadingContainer>
+          <CircularProgress />
+        </LoadingContainer>
+      ) : showError ? (
+        <ErrorContainer>
+          <Typography color="error" variant="h6">
+            {chartsError}
+          </Typography>
+        </ErrorContainer>
+      ) : showEmpty ? (
+        <EmptyContainer>
+          <Typography color="text.secondary" variant="h6">
+            No charts available
+          </Typography>
+        </EmptyContainer>
+      ) : (
+      <>
       <Grid
         container
         spacing={STYLE_GUIDE.SPACING.s4}
@@ -4163,7 +4330,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
                 item
                 xs={12}
                 md={
-                  isAddChartModalOpen || isEditChartModalOpen
+                  isAddChartModalOpen
                     ? 12
                     : gridColumns === 1
                       ? 12
@@ -4171,9 +4338,14 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
                         ? 6
                         : 4
                 }
-                gap={isNaturalLangauage ? 4 : 0}
-                p={isNaturalLangauage ? 2 : 0}
-                direction="column"
+                sx={{
+                  display: "flex",
+                  flexDirection: "column",
+                  ...(isNaturalLangauage && {
+                    gap: 4,
+                    p: 2,
+                  }),
+                }}
               >
                 {isNaturalLangauage && (
                   <AddChartModal
@@ -4887,6 +5059,8 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
         >
           <Typography>{showExportSuccessDialog}</Typography>
         </DialogContainer>
+      )}
+    </>
       )}
     </>
   );
