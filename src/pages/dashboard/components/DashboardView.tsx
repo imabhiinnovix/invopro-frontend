@@ -1869,6 +1869,7 @@ import {
   saveWidgets,
   fetchWidgetTheme,
   fetchChartData,
+  fetchWidgetDataLazy,
   selectDashboardTheme,
 } from "../dashboardActions";
 import { clearAllCaches } from "../dashboardReducer";
@@ -1931,6 +1932,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   const inputRef = useRef<HTMLInputElement>(null);
   const dashboardContainerRef = useRef<HTMLDivElement>(null);
   const fetchChartDataAbortRef = useRef<(() => void) | null>(null);
+  const lastEditedChartIdRef = useRef<string | null>(null);
   const { id: dashboardId } = useParams();
   const location = useLocation();
   const dispatch = useAppDispatch();
@@ -2818,6 +2820,23 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     }
   }, [isEditChartModalOpen, selectedChart]);
 
+  // Keep selectedChart in sync with the latest chart data from Redux
+  // This ensures the edit modal preview updates after a chart is updated
+  useEffect(() => {
+    if (!isEditChartModalOpen || !selectedChart) return;
+    const updatedChart = charts.find(
+      (c: ChartResponse) => c._id === selectedChart._id,
+    );
+    if (updatedChart && updatedChart !== selectedChart) {
+      // Only update if the chart object has actually changed
+      const hasChanged =
+        JSON.stringify(updatedChart) !== JSON.stringify(selectedChart);
+      if (hasChanged) {
+        setSelectedChart(updatedChart);
+      }
+    }
+  }, [charts, isEditChartModalOpen, selectedChart]);
+
   useEffect(() => {
     if (currentDashboard?.settings) {
       setValue("versionValue", null);
@@ -2942,9 +2961,43 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   };
 
   const handleCloseEditModal = () => {
+    const editedChartId = lastEditedChartIdRef.current;
     setIsEditChartModalOpen(false);
     setSelectedChart(null);
     setSelectedNumberChartColor(undefined);
+
+    // If a chart was edited, refresh dashboard data and scroll to it
+    if (editedChartId) {
+      lastEditedChartIdRef.current = null;
+
+      // Re-fetch all chart data to ensure the grid is up-to-date
+      if (dashboardId) {
+        dispatch(
+          fetchChartData({
+            dashboardId,
+            dashboardType:
+              currentDashboard?.settings?.dashboardType || "normal",
+            startVersionValue,
+            endVersionValue,
+            versionValue: formattedVersionValue || "",
+            dashboardFilters,
+          }),
+        );
+      }
+
+      // Scroll to the edited chart after a short delay to allow re-render
+      setTimeout(() => {
+        const chartElement = document.querySelector(
+          `[data-chart-id="${editedChartId}"]`,
+        );
+        if (chartElement) {
+          chartElement.scrollIntoView({
+            behavior: "smooth",
+            block: "center",
+          });
+        }
+      }, 500);
+    }
   };
 
   const handleChartUpdate = async (formData: ChartFormData) => {
@@ -2961,11 +3014,12 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
       if (result.success) {
         toast.success("Chart updated successfully!");
-        handleCloseEditModal();
+        // Store the edited chart id for scrolling on modal close
+        lastEditedChartIdRef.current = selectedChart._id;
 
-        // Fetch updated chart data
+        // Re-fetch chart list so Redux store has the updated chart object
         if (dashboardId) {
-          dispatch(
+          await dispatch(
             fetchChartData({
               dashboardId,
               dashboardType:
@@ -2977,6 +3031,21 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             }),
           );
         }
+
+        // Re-fetch widget data for the updated chart so the preview refreshes
+        const dashboardType =
+          currentDashboard?.settings?.dashboardType || "normal";
+        dispatch(
+          fetchWidgetDataLazy({
+            chart: selectedChart,
+            dashboardType,
+            startVersionValue,
+            endVersionValue,
+            versionValue: formattedVersionValue || "",
+            dashboardFilters,
+            isDefaultNotivix: currentDashboard?.isDefaultNotivix || false,
+          }),
+        );
       } else {
         toast.error(result.message || "Failed to update chart");
       }

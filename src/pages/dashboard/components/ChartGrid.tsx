@@ -286,7 +286,7 @@ const ChartTitle = styled(Typography)(({ theme }) => ({
 })) as typeof Typography;
 ChartTitle.defaultProps = { ...ChartTitle.defaultProps, component: "div" as const };
 
-const ChartContainer = styled(Box)(({ theme }) => ({
+export const ChartContainer = styled(Box)(({ theme }) => ({
   flex: 1,
   height: "100%",
   backgroundColor: "#ffffff",

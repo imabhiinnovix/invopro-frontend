@@ -37,7 +37,32 @@ import {
 import { useAppSelector } from "../../../storeHooks";
 import { ChartDataItem, ChartResponse } from "../types";
 import { STYLE_GUIDE } from "../../../styles";
-import { ChartContainer, NumberDisplay, NumberValue, NumberLabel } from "./ChartStyles";
+import { styled } from "@mui/material/styles";
+import { ChartContainer } from "./ChartGrid";
+import { Theme } from "../../createTheme/types";
+
+const NumberDisplay = styled(Box)(({ theme }) => ({
+  display: "flex",
+  flexDirection: "column",
+  alignItems: "center",
+  justifyContent: "center",
+  gap: theme.spacing(1),
+}));
+
+const NumberValue = styled(Typography, {
+  shouldForwardProp: (prop) => prop !== "widgetTheme",
+})<{ widgetTheme?: Theme | null }>(({ theme, widgetTheme }) => ({
+  fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.xxxl,
+  fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold,
+  color: widgetTheme?.colors?.[0] || "#4D4D4D",
+  lineHeight: STYLE_GUIDE.TYPOGRAPHY.lineHeight.tight,
+}));
+
+const NumberLabel = styled(Typography)(({ theme }) => ({
+  fontSize: "1rem",
+  color: theme.palette.text.secondary,
+  textAlign: "center",
+}));
 
 // Register ChartJS components
 ChartJS.register(
@@ -130,609 +155,495 @@ export const ChartRender: React.FC<ChartRenderProps> = ({
     const chartType = chart.widgetTypeId?.chartType || "line";
     const groupBy = chart.groupBy || [];
 
-    // Handle stacked bar-line chart
-    if (chartType === "line") {
-      const barLabels = Array.from(
+    // Helper to resolve the groupBy field name (matches ChartGrid's resolveGroupField)
+    const resolveGroupField = (gb: string[]) => {
+      const groupFieldKey = gb[0];
+      const matchedField = (chart.dataSourceId as any)?.fieldSettings?.find(
+        (f: any) => f.mappedAttributeName === groupFieldKey,
+      );
+      return matchedField ? matchedField.label : groupFieldKey;
+    };
+
+    // ===== Line / Area =====
+    if (chartType === "line" || chartType === "area") {
+      const labels = Array.from(
         new Set(chartData.map((item: ChartDataItem) => item.name))
       );
+      const isArea = chartType === "area";
 
       if (groupBy.length > 0) {
-        const groupByField = groupBy[0];
+        const groupField = resolveGroupField(groupBy);
         const uniqueGroups = Array.from(
-          new Set(chartData.map((item) => item[groupByField] as string))
+          new Set(chartData.map((item) => item[groupField] || "Unknown")),
         );
-        let uniqueNameDataMap: any = {};
 
         const datasets = uniqueGroups.map((group, index) => {
-          let totalDataBasedOnGroup = 0;
-          const groupData = barLabels.map((name) => {
+          const groupData = labels.map((label) => {
             const dataPoint = chartData.find(
-              (item) => item.name === name && item[groupByField] === group
+              (item: ChartDataItem) =>
+                item.name === label && (item[groupField] || "Unknown") === group,
             );
-            const data = dataPoint ? dataPoint.data : 0;
-            totalDataBasedOnGroup = totalDataBasedOnGroup + data;
-            if (uniqueNameDataMap[name]) {
-              uniqueNameDataMap[name] = uniqueNameDataMap[name] + data;
-            } else {
-              uniqueNameDataMap[name] = data;
-            }
             return dataPoint ? dataPoint.data : 0;
           });
 
-          if (index === 0) {
-            return {
-              label: group,
-              data: groupData,
-              type: "line" as const,
-              borderColor:
-                getDatasetColor(0),
-              backgroundColor: "transparent",
-              tension: 0.1,
-              fill: false,
-              pointRadius: 5,
-              pointHoverRadius: 9,
-              pointHitRadius: 20,
-              yAxisID: "y1",
-            };
-          } else {
-            return {
-              label: group,
-              data: groupData,
-              type: "bar" as const,
-              backgroundColor: getDatasetColor(index - 1),
-              borderColor: widgetTheme?.borderColor,
-              borderWidth: 1,
-              stack: "stack1",
-              yAxisID: "y",
-            };
-          }
-        });
-
-        return { labels: barLabels, datasets };
-      }
-
-      const values = Array.from(
-        new Set(chartData.map((item: ChartDataItem) => item.data))
-      );
-      const barLabelsName = Array.from(
-        new Set(
-          chartData.map(
-            (item: ChartDataItem) => `${item.name}(Total:${item.data})`
-          )
-        )
-      );
-      return {
-        labels: barLabelsName,
-        datasets: [
-          {
-            label: chart.name,
-            data: values,
-            type: "bar" as const,
-            backgroundColor: getDatasetColor(0),
-            borderColor: widgetTheme?.borderColor,
-            borderWidth: 1,
-          },
-        ],
-      };
-    }
-
-    // Handle combo bar-line chart
-    if (chartType === "comboBarLine") {
-      const barLabels = Array.from(
-        new Set(chartData.map((item: ChartDataItem) => item.name))
-      );
-
-      if (groupBy.length > 0) {
-        const groupByField = groupBy[0];
-        const uniqueGroups = Array.from(
-          new Set(chartData.map((item) => item[groupByField] as string))
-        );
-        let uniqueNameDataMap: any = {};
-
-        const datasets = uniqueGroups.map((group, index) => {
-          let totalDataBasedOnGroup = 0;
-          const groupData = barLabels.map((name) => {
-            const dataPoint = chartData.find(
-              (item) => item.name === name && item[groupByField] === group
-            );
-            const data = dataPoint ? dataPoint.data : 0;
-            totalDataBasedOnGroup = totalDataBasedOnGroup + data;
-            if (uniqueNameDataMap[name]) {
-              uniqueNameDataMap[name] = uniqueNameDataMap[name] + data;
-            } else {
-              uniqueNameDataMap[name] = data;
-            }
-            return dataPoint ? dataPoint.data : 0;
-          });
-
-          if (index === 0) {
-            return {
-              label: group,
-              data: groupData,
-              type: "line" as const,
-              borderColor:
-                getDatasetColor(0),
-              backgroundColor: "transparent",
-              tension: 0.1,
-              fill: false,
-              pointRadius: 5,
-              pointHoverRadius: 9,
-              pointHitRadius: 20,
-              yAxisID: "y1",
-            };
-          } else {
-            return {
-              label: group,
-              data: groupData,
-              type: "bar" as const,
-              backgroundColor: getDatasetColor(index - 1),
-              borderColor: widgetTheme?.borderColor,
-              borderWidth: 1,
-              yAxisID: "y",
-            };
-          }
-        });
-
-        return { labels: barLabels, datasets };
-      }
-
-      const values = Array.from(
-        new Set(chartData.map((item: ChartDataItem) => item.data))
-      );
-      const barLabelsName = Array.from(
-        new Set(
-          chartData.map(
-            (item: ChartDataItem) => `${item.name}(Total:${item.data})`
-          )
-        )
-      );
-      return {
-        labels: barLabelsName,
-        datasets: [
-          {
-            label: chart.name,
-            data: values,
-            type: "bar" as const,
-            backgroundColor: getDatasetColor(0),
-            borderColor: widgetTheme?.borderColor,
-            borderWidth: 1,
-          },
-        ],
-      };
-    }
-
-    // Handle polar area chart with grouping
-    if (chartType === "polarArea" && groupBy.length > 0) {
-      const groupByField = groupBy[0];
-      const uniqueGroups = Array.from(
-        new Set(
-          chartData.map((item: ChartDataItem) => item[groupByField] as string)
-        )
-      );
-      const uniqueNames = Array.from(
-        new Set(chartData.map((item: ChartDataItem) => item.name))
-      );
-      let uniqueNameDataMap: any = {};
-
-      const datasets = uniqueGroups.map((group, index) => {
-        let totalDataBasedOnGroup = 0;
-        const groupData = uniqueNames.map((name) => {
-          const dataPoint = chartData.find(
-            (item) => item.name === name && item[groupByField] === group
-          );
-          const data = dataPoint ? dataPoint.data : 0;
-          totalDataBasedOnGroup = totalDataBasedOnGroup + data;
-          if (uniqueNameDataMap[name]) {
-            uniqueNameDataMap[name] = uniqueNameDataMap[name] + data;
-          } else {
-            uniqueNameDataMap[name] = data;
-          }
-          return dataPoint ? dataPoint.data : 0;
-        });
-
-        return {
-          label: group,
-          data: groupData,
-          color: widgetTheme?.colors,
-          backgroundColor: getDatasetColor(index),
-          borderColor: widgetTheme?.borderColor,
-          borderWidth: 2,
-          pointRadius: 5,
-          pointHoverRadius: 9,
-          pointHitRadius: 20,
-        };
-      });
-
-      return {
-        labels: uniqueNames,
-        datasets,
-      };
-    }
-
-    // Handle non-grouped polar area chart
-    if (chartType === "polarArea") {
-      const polarLabels = Array.from(
-        new Set(
-          chartData.map((item: ChartDataItem) => `${item.name}-${item.data}`)
-        )
-      );
-      const values = chartData.map((item: ChartDataItem) => item.data);
-
-      return {
-        labels: polarLabels,
-        datasets: [
-          {
-            data: values,
-            color: getDatasetColors(polarLabels.length),
-            backgroundColor: getDatasetColors(polarLabels.length),
-            borderColor: widgetTheme?.borderColor,
-            borderWidth: 2,
+          return {
+            label: group,
+            data: groupData,
+            borderColor: getDatasetColor(index),
+            backgroundColor: isArea ? getDatasetColor(index) + "33" : "transparent",
+            fill: isArea ? "start" : false,
+            tension: 0.4,
             pointRadius: 5,
-            pointHoverRadius: 9,
-            pointHitRadius: 20,
-          },
-        ],
-      };
-    }
-
-    // Handle horizontal bar chart
-    if (chartType === "horizontalBar") {
-      // For non-grouped horizontal bar charts
-      if (!groupBy || groupBy.length === 0) {
-        const labels = chartData.map((item: ChartDataItem) => item.name);
-        const values = chartData.map((item: ChartDataItem) => item.data);
-
-        return {
-          labels,
-          datasets: [
-            {
-              label: chart.aggregation?.attributeName || chart.name || "Count",
-              data: values,
-              backgroundColor: getDatasetColor(0),
-              borderColor: widgetTheme?.borderColor,
-              borderWidth: 1,
-              borderRadius: 4,
-            },
-          ],
-        };
-      }
-
-      // For grouped horizontal bar charts
-      const groupByField = groupBy[0];
-      const uniqueGroups = Array.from(
-        new Set(chartData.map((item) => item[groupByField] as string))
-      );
-      const uniqueNames = Array.from(
-        new Set(chartData.map((item) => item.name))
-      );
-
-      const datasets = uniqueGroups.map((group, index) => {
-        const groupData = uniqueNames.map((name) => {
-          const dataPoint = chartData.find(
-            (item) => item.name === name && item[groupByField] === group
-          );
-          return dataPoint ? dataPoint.data : 0;
+            pointHoverRadius: 8,
+          };
         });
 
-        return {
-          label: group,
-          data: groupData,
-          backgroundColor: getDatasetColor(index),
-          borderColor: widgetTheme?.borderColor,
-          borderWidth: 1,
-          borderRadius: 4,
-        };
-      });
+        return { labels, datasets };
+      }
 
-      return {
-        labels: uniqueNames,
-        datasets,
+      const dataset = {
+        label: "Data",
+        data: labels.map((label) => {
+          const item = chartData.find((d: ChartDataItem) => d.name === label);
+          return item ? item.data : 0;
+        }),
+        borderColor: getDatasetColor(0),
+        backgroundColor: isArea ? getDatasetColor(0) + "33" : "transparent",
+        fill: isArea ? "start" : false,
+        tension: 0.4,
+        pointRadius: 5,
+        pointHoverRadius: 8,
       };
+
+      return { labels, datasets: [dataset] };
     }
 
-    // Handle vertical bar chart (both grouped and non-grouped)
+    // ===== Vertical Bar / Horizontal Bar / Stacked Bar / multiSeriesBar =====
     if (
       chartType === "verticalBar" ||
+      chartType === "horizontalBar" ||
       chartType === "stackedBar" ||
+      chartType === "multiSeriesBar" ||
       chartType === "multiSeriesPie"
     ) {
-      const barLabels = Array.from(
+      const labels = Array.from(
         new Set(chartData.map((item: ChartDataItem) => item.name))
       );
 
       if (groupBy.length > 0) {
-        const groupByField = groupBy[0];
+        const groupField = resolveGroupField(groupBy);
         const uniqueGroups = Array.from(
-          new Set(chartData.map((item) => item[groupByField] as string))
+          new Set(
+            chartData.map((item) => item[groupField]).filter(Boolean),
+          ),
         );
-        let uniqueNameDataMap: any = {};
 
-        const datasets = uniqueGroups.map((group, index) => {
-          let totalDataBasedOnGroup = 0;
-          const groupData = barLabels.map((name) => {
-            const dataPoint = chartData.find(
-              (item) => item.name === name && item[groupByField] === group
+        const datasets = uniqueGroups.map((group, i) => {
+          const values = labels.map((label) => {
+            const found = chartData.find(
+              (item: ChartDataItem) =>
+                item.name === label && item[groupField] === group,
             );
-            const data = dataPoint ? dataPoint.data : 0;
-            totalDataBasedOnGroup = totalDataBasedOnGroup + data;
-            if (uniqueNameDataMap[name]) {
-              uniqueNameDataMap[name] = uniqueNameDataMap[name] + data;
-            } else {
-              uniqueNameDataMap[name] = data;
-            }
-            return dataPoint ? dataPoint.data : 0;
+            return found ? found.data : 0;
           });
 
           return {
             label: group,
-            data: groupData,
-            backgroundColor: getDatasetColor(index),
-            borderColor: widgetTheme?.borderColor,
+            data: values,
+            backgroundColor: getDatasetColor(i),
+            borderColor: "#009FDF",
             borderWidth: 1,
             borderRadius: 4,
           };
         });
 
-        return { labels: barLabels, datasets };
+        return { labels, datasets };
       }
 
-      const values = Array.from(
-        new Set(chartData.map((item: ChartDataItem) => item.data))
-      );
-      const barLabelsName = Array.from(
-        new Set(
-          chartData.map(
-            (item: ChartDataItem) => `${item.name}(Total:${item.data})`
-          )
-        )
-      );
-      return {
-        labels: barLabelsName,
-        datasets: [
-          {
-            label: barLabels,
-            data: values,
-            backgroundColor: getDatasetColor(0),
-            borderColor: widgetTheme?.borderColor,
-            borderWidth: 1,
-            borderRadius: 4,
-          },
-        ],
-      };
+      // No groupBy: one dataset per data item so each bar gets its own color
+      const datasets = chartData.map((item: ChartDataItem, i: number) => ({
+        label: item.name,
+        data: labels.map((lbl) => (lbl === item.name ? item.data : 0)),
+        backgroundColor: getDatasetColor(i),
+        borderColor: "#009FDF",
+        borderWidth: 1,
+        borderRadius: 4,
+      }));
+
+      return { labels, datasets };
     }
 
-    // Handle pie chart or doughnut chart
+    // ===== Pie / Doughnut =====
     if (chartType === "pie" || chartType === "doughnut") {
-      const pieLabels = Array.from(
-        new Set(
-          chartData.map(
-            (item: ChartDataItem) => `${item.name}(Total:${item.data})`
-          )
-        )
+      const labels = Array.from(
+        new Set(chartData.map((item: ChartDataItem) => item.name))
       );
-      const values = chartData.map((item: ChartDataItem) => item.data);
 
       if (groupBy.length > 0) {
-        const groupByField = groupBy[0];
+        const groupField = resolveGroupField(groupBy);
         const uniqueGroups = Array.from(
-          new Set(chartData.map((item) => item[groupByField] as string))
+          new Set(
+            chartData.map(
+              (item) => (item[groupField] as string) ?? "Unknown"
+            )
+          )
         );
-        const uniqueNames = Array.from(
-          new Set(chartData.map((item) => item.name))
-        );
-        let uniqueNameDataMap: any = {};
 
-        const datasets = uniqueGroups.map((group, index) => {
-          let totalDataBasedOnGroup = 0;
-          const groupData = uniqueNames.map((name) => {
-            const dataPoint = chartData.find(
-              (item) => item.name === name && item[groupByField] === group
+        const datasets = uniqueGroups.map((group, groupIndex) => {
+          const values = labels.map((label) => {
+            const found = chartData.find(
+              (item: ChartDataItem) =>
+                item.name === label &&
+                ((item[groupField] as string) ?? "Unknown") === group
             );
-            const data = dataPoint ? dataPoint.data : 0;
-            totalDataBasedOnGroup = totalDataBasedOnGroup + data;
-            if (uniqueNameDataMap[name]) {
-              uniqueNameDataMap[name] = uniqueNameDataMap[name] + data;
-            } else {
-              uniqueNameDataMap[name] = data;
-            }
-            return dataPoint ? dataPoint.data : 0;
+            return found ? found.data : 0;
           });
 
           return {
             label: group,
-            data: groupData,
-            backgroundColor: getDatasetColor(index),
-            borderColor: widgetTheme?.borderColor,
+            data: values,
+            backgroundColor: labels.map((_, i) =>
+              getDatasetColor(i + groupIndex * 5)
+            ),
+            borderColor: "#FFFFFF",
             borderWidth: 2,
-            pointRadius: 5,
-            pointHoverRadius: 9,
-            pointHitRadius: 20,
           };
         });
 
-        return {
-          labels: uniqueNames,
-          datasets,
-        };
+        return { labels, datasets };
       }
 
+      const values = labels.map((label) => {
+        const found = chartData.find(
+          (item: ChartDataItem) => item.name === label
+        );
+        return found ? found.data : 0;
+      });
+
       return {
-        labels: pieLabels,
+        labels,
         datasets: [
           {
             data: values,
             backgroundColor: getDatasetColors(values.length),
-            borderColor: widgetTheme?.borderColor,
+            borderColor: "#FFFFFF",
             borderWidth: 2,
-            pointRadius: 5,
-            pointHoverRadius: 9,
-            pointHitRadius: 20,
           },
         ],
       };
     }
 
-    // Handle radar chart
-    if (chartType === "radar") {
-      const radarLabels = Array.from(
-        new Set(
-          chartData.map(
-            (item: ChartDataItem) => `${item.name}(Total:${item.data})`
-          )
-        )
+    // ===== Polar Area =====
+    if (chartType === "polarArea") {
+      const labels = Array.from(
+        new Set(chartData.map((item: ChartDataItem) => item.name))
       );
 
       if (groupBy.length > 0) {
-        const groupByField = groupBy[0];
+        const groupField = resolveGroupField(groupBy);
         const uniqueGroups = Array.from(
-          new Set(chartData.map((item) => item[groupByField] as string))
+          new Set(
+            chartData.map(
+              (item) => (item[groupField] as string) ?? "Unknown"
+            )
+          )
         );
-        const uniqueNames = Array.from(
-          new Set(chartData.map((item) => item.name))
-        );
-        let uniqueNameDataMap: any = {};
 
-        const datasets = uniqueGroups.map((group, index) => {
-          let totalDataBasedOnGroup = 0;
-          const groupData = uniqueNames.map((name) => {
-            const dataPoint = chartData.find(
-              (item) => item.name === name && item[groupByField] === group
+        const datasets = uniqueGroups.map((group, groupIndex) => {
+          const values = labels.map((label) => {
+            const found = chartData.find(
+              (item: ChartDataItem) =>
+                item.name === label &&
+                ((item[groupField] as string) ?? "Unknown") === group
             );
-
-            const data = dataPoint ? dataPoint.data : 0;
-            totalDataBasedOnGroup = totalDataBasedOnGroup + data;
-            if (uniqueNameDataMap[name]) {
-              uniqueNameDataMap[name] = uniqueNameDataMap[name] + data;
-            } else {
-              uniqueNameDataMap[name] = data;
-            }
-            return dataPoint ? dataPoint.data : 0;
+            return found ? found.data : 0;
           });
 
           return {
             label: group,
-            data: groupData,
-            color: getDatasetColor(index),
-            backgroundColor: getDatasetColor(index),
-            pointBackgroundColor: getDatasetColor(index),
-            pointBorderColor: widgetTheme?.borderColor,
-            pointHoverBackgroundColor: getDatasetColor(index),
-            pointHoverBorderColor: widgetTheme?.borderColor,
-            tension: 0.1,
-            pointRadius: 5,
-            pointHoverRadius: 9,
-            pointHitRadius: 20,
+            data: values,
+            backgroundColor: labels.map((_, i) =>
+              getDatasetColor(i + groupIndex * 5)
+            ),
+            borderColor: "#FFFFFF",
+            borderWidth: 2,
           };
         });
 
-        return {
-          labels: uniqueNames.map(
-            (name) => `${name}(Total:${uniqueNameDataMap[name]})`
-          ),
-          datasets,
-        };
+        return { labels, datasets };
       }
 
-      const values = chartData.map((item: ChartDataItem) => item.data);
-      const radarColors = getDatasetColors(values.length);
+      const values = labels.map((label) => {
+        const found = chartData.find(
+          (item: ChartDataItem) => item.name === label
+        );
+        return found ? found.data : 0;
+      });
+
       return {
-        labels: radarLabels,
+        labels,
         datasets: [
           {
-            label: chart.name,
             data: values,
-            color: radarColors,
-            backgroundColor: radarColors,
-            pointBackgroundColor: radarColors,
-            pointBorderColor: widgetTheme?.borderColor,
-            pointHoverBackgroundColor: radarColors,
-            pointHoverBorderColor: widgetTheme?.borderColor,
-            tension: 0.1,
-            pointRadius: 5,
-            pointHoverRadius: 9,
-            pointHitRadius: 20,
+            backgroundColor: getDatasetColors(values.length),
+            borderColor: "#FFFFFF",
+            borderWidth: 2,
           },
         ],
       };
     }
 
-    // Handle grouped line/area chart
-    if (chartType === "area" || chartType === "line") {
+    // ===== Radar =====
+    if (chartType === "radar") {
+      const labels = Array.from(
+        new Set(chartData.map((item: ChartDataItem) => item.name))
+      );
+
       if (groupBy.length > 0) {
-        const groupByField = groupBy[0];
+        const groupField = resolveGroupField(groupBy);
         const uniqueGroups = Array.from(
-          new Set(chartData.map((item) => item[groupByField]))
+          new Set(
+            chartData.map((item) => item[groupField]).filter(Boolean),
+          ),
         );
-        const uniqueNames = Array.from(
-          new Set(chartData.map((item) => item.name))
-        );
-        let uniqueNameDataMap: any = {};
 
-        const datasets = uniqueGroups.map((group, index) => {
-          let totalDataBasedOnGroup = 0;
-          const groupData = uniqueNames.map((name) => {
-            const dataPoint = chartData.find(
-              (item) => item.name === name && item[groupByField] === group
+        const datasets = uniqueGroups.map((group, i) => {
+          const values = labels.map((label) => {
+            const found = chartData.find(
+              (item: ChartDataItem) =>
+                item.name === label && item[groupField] === group,
             );
-            const data = dataPoint ? dataPoint.data : 0;
-            totalDataBasedOnGroup = totalDataBasedOnGroup + data;
-            if (uniqueNameDataMap[name]) {
-              uniqueNameDataMap[name] = uniqueNameDataMap[name] + data;
-            } else {
-              uniqueNameDataMap[name] = data;
-            }
-
-            return data;
+            return found ? found.data : 0;
           });
+
           return {
-            label: `${group || chart.name}(Total:${totalDataBasedOnGroup})`,
-            data: groupData,
-            borderColor:
-              widgetTheme?.borderColor[index % widgetTheme?.borderColor.length],
-            backgroundColor:
-              chartType === "area" ? getDatasetColor(index) : "transparent",
-            tension: 0.1,
-            fill: chartType === "area" ? "start" : false,
-            pointRadius: 5,
-            pointHoverRadius: 9,
-            pointHitRadius: 20,
+            label: group,
+            data: values,
+            backgroundColor: getDatasetColor(i) + "33",
+            borderColor: getDatasetColor(i),
+            pointBackgroundColor: getDatasetColor(i),
+            pointBorderColor: "#fff",
           };
         });
-        return {
-          labels: uniqueNames.map(
-            (name) => `${name}(Total:${uniqueNameDataMap[name]})`
-          ),
-          datasets,
-        };
-      } else {
-        const lineLabels = Array.from(
-          new Set(
-            chartData.map(
-              (item: ChartDataItem) => `${item.name}(Total:${item.data})`
-            )
-          )
-        );
-        const values = chartData.map((item: ChartDataItem) => item.data);
-        return {
-          labels: lineLabels,
-          datasets: [
-            {
-              label: chart.name,
-              data: values,
-              borderColor: widgetTheme?.borderColor?.[0] ?? getSabicColor(0),
-              backgroundColor:
-                chartType === "area" ? getDatasetColor(0) : "transparent",
-              tension: 0.1,
-              fill: chartType === "area" ? "start" : false,
-              pointRadius: 5,
-              pointHoverRadius: 9,
-              pointHitRadius: 20,
-            },
-          ],
-        };
+
+        return { labels, datasets };
       }
+
+      const values = labels.map((label) => {
+        const found = chartData.find(
+          (item: ChartDataItem) => item.name === label
+        );
+        return found ? found.data : 0;
+      });
+
+      return {
+        labels,
+        datasets: [
+          {
+            label: chart.name || "Count",
+            data: values,
+            backgroundColor: getDatasetColor(0) + "33",
+            borderColor: getDatasetColor(0),
+            pointBackgroundColor: getDatasetColor(0),
+            pointBorderColor: "#fff",
+          },
+        ],
+      };
     }
 
+    // ===== Combo Bar-Line =====
+    if (chartType === "comboBarLine" || chartType === "stackedBarLine") {
+      const labels = Array.from(
+        new Set(chartData.map((item: ChartDataItem) => item.name))
+      );
+
+      if (groupBy.length > 0) {
+        const groupField = resolveGroupField(groupBy);
+        const uniqueGroups = Array.from(
+          new Set(chartData.map((item) => item[groupField]).filter(Boolean)),
+        );
+
+        const barDatasets = uniqueGroups.map((group, i) => {
+          const values = labels.map((label) => {
+            const found = chartData.find(
+              (item: ChartDataItem) =>
+                item.name === label && item[groupField] === group,
+            );
+            return found ? found.data : 0;
+          });
+
+          return {
+            type: "bar" as const,
+            label: group,
+            data: values,
+            backgroundColor: getDatasetColor(i),
+            borderColor: "#FFFFFF",
+            borderWidth: 1,
+            borderRadius: 4,
+            yAxisID: "y",
+          };
+        });
+
+        const totals = labels.map((label) =>
+          uniqueGroups.reduce<number>((sum, group) => {
+            const found = chartData.find(
+              (item: ChartDataItem) =>
+                item.name === label && item[groupField] === group,
+            );
+            return sum + (found ? Number(found.data) || 0 : 0);
+          }, 0),
+        );
+
+        const lineDataset = {
+          type: "line" as const,
+          label: chart.name || "Total",
+          data: totals,
+          borderColor: getDatasetColor(uniqueGroups.length),
+          backgroundColor: "transparent",
+          yAxisID: "y1",
+          tension: 0.4,
+          fill: false,
+          pointRadius: 5,
+          pointHoverRadius: 8,
+        };
+
+        return { labels, datasets: [...barDatasets, lineDataset] };
+      }
+
+      const barDatasets = chartData.map((item: ChartDataItem, i: number) => ({
+        type: "bar" as const,
+        label: item.name,
+        data: labels.map((lbl) => (lbl === item.name ? item.data : 0)),
+        backgroundColor: getDatasetColor(i),
+        borderColor: "#FFFFFF",
+        borderWidth: 1,
+        borderRadius: 4,
+        yAxisID: "y",
+      }));
+
+      const totals = labels.map((label) => {
+        const found = chartData.find(
+          (item: ChartDataItem) => item.name === label
+        );
+        return found ? found.data : 0;
+      });
+
+      const lineDataset = {
+        type: "line" as const,
+        label: chart.name || "Total",
+        data: totals,
+        borderColor: getDatasetColor(chartData.length),
+        backgroundColor: "transparent",
+        yAxisID: "y1",
+        tension: 0.4,
+        fill: false,
+        pointRadius: 5,
+        pointHoverRadius: 8,
+      };
+
+      return { labels, datasets: [...barDatasets, lineDataset] };
+    }
+
+    // ===== Scatter =====
+    if (chartType === "scatter") {
+      if (groupBy.length > 0) {
+        const groupField = resolveGroupField(groupBy);
+        const uniqueGroups = Array.from(
+          new Set(chartData.map((item) => item[groupField]).filter(Boolean)),
+        );
+
+        const datasets = uniqueGroups.map((group, i) => {
+          const groupData = chartData
+            .filter((item: ChartDataItem) => item[groupField] === group)
+            .map((item: ChartDataItem, index: number) => ({
+              x: item.x ?? index,
+              y: item.y ?? item.data,
+            }));
+
+          return {
+            label: group,
+            data: groupData,
+            backgroundColor: getDatasetColor(i),
+            borderColor: getDatasetColor(i),
+          };
+        });
+
+        return { datasets };
+      }
+
+      const scatterData = chartData.map(
+        (item: ChartDataItem, index: number) => ({
+          x: item.x ?? index,
+          y: item.y ?? item.data,
+        }),
+      );
+
+      return {
+        datasets: [
+          {
+            label: chart.name || "Count",
+            data: scatterData,
+            backgroundColor: getDatasetColor(0),
+            borderColor: getDatasetColor(0),
+          },
+        ],
+      };
+    }
+
+    // ===== Bubble =====
+    if (chartType === "bubble") {
+      if (groupBy.length > 0) {
+        const groupField = resolveGroupField(groupBy);
+        const uniqueGroups = Array.from(
+          new Set(
+            chartData.map((item) => item[groupField] ?? "Unknown"),
+          ),
+        );
+
+        const datasets = uniqueGroups.map((group, index) => {
+          const groupData = chartData
+            .filter(
+              (item: ChartDataItem) =>
+                (item[groupField] ?? "Unknown") === group,
+            )
+            .map((item: ChartDataItem, i: number) => ({
+              x: item.x ?? i,
+              y: item.y ?? item.data ?? 0,
+              r: item.r ?? Math.max(5, (item.data ?? 0) / 10),
+            }));
+
+          return {
+            label: group,
+            data: groupData,
+            backgroundColor: getDatasetColor(index + 2) + "99",
+            borderColor: getDatasetColor(index),
+          };
+        });
+
+        return { datasets };
+      }
+
+      const bubbleData = chartData.map(
+        (item: ChartDataItem, index: number) => ({
+          x: item.x ?? index,
+          y: item.y ?? item.data ?? 0,
+          r: item.r ?? Math.max(5, (item.data ?? 0) / 10),
+        }),
+      );
+
+      return {
+        datasets: [
+          {
+            label: chart.name,
+            data: bubbleData,
+            backgroundColor: getDatasetColor(2) + "99",
+            borderColor: getDatasetColor(0),
+          },
+        ],
+      };
+    }
+
+    // ===== Default fallback =====
     const defaultLabels = Array.from(
       new Set(chartData.map((item: ChartDataItem) => item.name))
     );

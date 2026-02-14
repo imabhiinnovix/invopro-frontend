@@ -6,7 +6,7 @@ import { Chart as ChartJS } from "chart.js";
 import { ChartResponse, Dashboard } from "../types";
 import { ChartFormData } from "./AddChartModal";
 import { ChartRender } from "./ChartRender";
-import { ChartContainer } from "./ChartStyles";
+import { ChartContainer } from "./ChartGrid";
 import { AddChartModal } from "./AddChartModal";
 import { STYLE_GUIDE } from "../../../styles";
 
@@ -105,15 +105,36 @@ export const EditChartModal: React.FC<EditChartModalProps> = ({
   dashboardFilters = {},
 }) => {
   const chartPreviewRef = useRef<{ [key: string]: ChartJS | null }>({});
+  const initialFetchDoneRef = useRef(false);
   const dispatch = useAppDispatch();
   const widgetData = useAppSelector((state) => state.dashboard.widgetData);
   const hasChartData = chart ? !!widgetData[chart._id]?.data?.widgetData : false;
   const [isLoadingChart, setIsLoadingChart] = React.useState(false);
 
-  // Fetch widget data when modal opens if not already in store
+  // Reset initial fetch flag when modal closes
+  useEffect(() => {
+    if (!open) {
+      initialFetchDoneRef.current = false;
+    }
+  }, [open]);
+
+  // Sync loading state with whether chart data is available
+  // After an update, widgetData gets cleared then re-fetched by the parent
   useEffect(() => {
     if (!open || !chart) return;
-    if (hasChartData) return;
+    if (hasChartData) {
+      setIsLoadingChart(false);
+    } else if (initialFetchDoneRef.current) {
+      // Data was cleared after an update — parent handles re-fetch, just show loading
+      setIsLoadingChart(true);
+    }
+  }, [open, chart, hasChartData]);
+
+  // Fetch widget data only on initial modal open if not already in store
+  useEffect(() => {
+    if (!open || !chart) return;
+    if (hasChartData || initialFetchDoneRef.current) return;
+    initialFetchDoneRef.current = true;
     const dashboardType = currentDashboard?.settings?.dashboardType || "normal";
     let cancelled = false;
     setIsLoadingChart(true);
