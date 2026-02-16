@@ -960,6 +960,21 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
     if (!selectedChart) return;
 
     try {
+      if (selectedChart.widgetKind === "image" && selectedChart.image) {
+        const response = await fetch(selectedChart.image);
+        const blob = await response.blob();
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.download = `${selectedChart.name}.${format}`;
+        link.href = url;
+        link.click();
+        URL.revokeObjectURL(url);
+
+        toast.success(
+          `Image exported as ${format.toUpperCase()} successfully!`,
+        );
+        return;
+      }
       const chartId = `chart-${selectedChart._id}`;
       const chartInstance = chartRefs.current[chartId];
 
@@ -1035,6 +1050,45 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
       };
 
       addHeader();
+
+      if (selectedChart.widgetKind === "image" && selectedChart.image) {
+        try {
+          const response = await fetch(selectedChart.image);
+          const blob = await response.blob();
+          const reader = new FileReader();
+          const base64Promise = new Promise<string>((resolve, reject) => {
+            reader.onloadend = () => resolve(reader.result as string);
+            reader.onerror = reject;
+            reader.readAsDataURL(blob);
+          });
+          const base64Image = await base64Promise;
+
+          const contentHeight = pageHeight - headerHeight - 2 * margin;
+          const contentWidth = pageWidth - 2 * margin;
+          const contentY = margin + headerHeight;
+
+          pdf.addImage(
+            base64Image,
+            "PNG",
+            margin,
+            contentY,
+            contentWidth,
+            contentHeight,
+            undefined,
+            "FAST",
+          );
+
+          pdf.save(`${selectedChart.name}.pdf`);
+          toast.success("Image exported as PDF successfully!");
+          setIsExportingPdf(false);
+          return;
+        } catch (error) {
+          console.error("Error exporting image to PDF:", error);
+          toast.error("Failed to export image to PDF");
+          setIsExportingPdf(false);
+          return;
+        }
+      }
 
       let currentY = margin + headerHeight;
 
@@ -2725,6 +2779,37 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
     chart: ChartResponse,
     fullscreenWidgetData: any = null,
   ) => {
+    if (chart.widgetKind === "image" && chart.image) {
+      return (
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            height: "100%",
+            width: "100%",
+            p: 2,
+          }}
+        >
+          <img
+            src={chart.image}
+            alt={chart.name || "Widget Image"}
+            style={{
+              maxWidth: "100%",
+              maxHeight: "100%",
+              objectFit: "contain",
+              borderRadius: "4px",
+            }}
+            onError={(e) => {
+              const target = e.target as HTMLImageElement;
+              target.style.display = "none";
+              target.parentElement!.innerHTML = `<Typography color="error">Failed to load image</Typography>`;
+            }}
+          />
+        </Box>
+      );
+    }
+
     const chartData = getChartData(chart, fullscreenWidgetData);
     const chartType = chart.widgetTypeId?.chartType || "line";
     const options = getChartOptions(chartType, chart);
@@ -4228,7 +4313,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
                   isDefaultNotivix={isDefaultNotivix}
                 >
                   <StyledCard
-                    sx={{ ...getCardSx() }}
+                    sx={{ ...getCardSx(), minHeight: "unset" }}
                     data-widget-type={chart.widgetTypeId?.chartType || "chart"}
                     data-chart-id={chart._id}
                   >
@@ -4263,18 +4348,22 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
                           }}
                         >
                           Last Updated on:{" "}
-                          {formatDate(dataSourceLastUpdated[chart.dataSourceId?._id]) || "-"}
+                          {chart?.widgetKind === "image"
+                            ? formatDate(chart?.imageLastUpdatedAt) || "-"
+                            : formatDate(dataSourceLastUpdated[chart.dataSourceId?._id]) || "-"}
                         </Box>
 
                         {/* Icons row */}
                         <Box sx={{ display: "flex", gap: 1 }}>
-                          <IconButton
-                            size="small"
-                            onClick={() => handleFullViewClick(chart)}
-                            sx={{ opacity: 0.7, "&:hover": { opacity: 1 } }}
-                          >
-                            <FullscreenIcon />
-                          </IconButton>
+                          {chart.widgetKind !== "image" && (
+                            <IconButton
+                              size="small"
+                              onClick={() => handleFullViewClick(chart)}
+                              sx={{ opacity: 0.7, "&:hover": { opacity: 1 } }}
+                            >
+                              <FullscreenIcon />
+                            </IconButton>
+                          )}
 
                           <IconButton
                             size="small"
@@ -4307,23 +4396,26 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
                       />
                       <ChartContainer
                         className={
-                          (chart.widgetTypeId?.chartType || "line") === "pie"
-                            ? "pie-chart"
+                          chart.widgetKind === "image"
+                            ? "image-chart h-auto"
                             : (chart.widgetTypeId?.chartType || "line") ===
-                                "horizontalBar"
-                              ? "horizontal-bar-chart"
+                                "pie"
+                              ? "pie-chart"
                               : (chart.widgetTypeId?.chartType || "line") ===
-                                  "tabular"
-                                ? "table-chart"
+                                  "horizontalBar"
+                                ? "horizontal-bar-chart"
                                 : (chart.widgetTypeId?.chartType || "line") ===
-                                    "multiSeriesPie"
-                                  ? "pie-chart"
+                                    "tabular"
+                                  ? "table-chart"
                                   : (chart.widgetTypeId?.chartType ||
-                                        "line") === "stackedBarLine" ||
-                                      (chart.widgetTypeId?.chartType ||
-                                        "line") === "comboBarLine"
-                                    ? "combo-chart"
-                                    : "line-chart"
+                                        "line") === "multiSeriesPie"
+                                    ? "pie-chart"
+                                    : (chart.widgetTypeId?.chartType ||
+                                          "line") === "stackedBarLine" ||
+                                        (chart.widgetTypeId?.chartType ||
+                                          "line") === "comboBarLine"
+                                      ? "combo-chart"
+                                      : "line-chart"
                         }
                         onWheel={handleWheel}
                       >
@@ -4336,7 +4428,15 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
                           }}
                         >
                           <Box sx={{ flex: 1, minHeight: 0, width: "100%" }}>
-                            <Box sx={{ height: "400px", width: "100%" }}>
+                            <Box
+                              sx={{
+                                height:
+                                  chart.widgetKind === "image"
+                                    ? "auto"
+                                    : "400px",
+                                width: "100%",
+                              }}
+                            >
                               {renderChart(chart)}
                             </Box>
                           </Box>
@@ -4348,24 +4448,26 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
                           </Box>
                         </Box>
                       </ChartContainer>
-                      <Box
-                        sx={{
-                          display: "flex",
-                          justifyContent: "flex-end",
-                          alignItems: "center",
-                          mt: 1,
-                        }}
-                      >
-                        <Typography
-                          variant="body2"
+                      {chart.widgetKind !== "image" && (
+                        <Box
                           sx={{
-                            fontWeight: "bold",
-                            color: "primary.main",
+                            display: "flex",
+                            justifyContent: "flex-end",
+                            alignItems: "center",
+                            mt: 1,
                           }}
                         >
-                          Total: {widgetData[chart._id]?.data?.totalCount}
-                        </Typography>
-                      </Box>
+                          <Typography
+                            variant="body2"
+                            sx={{
+                              fontWeight: "bold",
+                              color: "primary.main",
+                            }}
+                          >
+                            Total: {widgetData[chart._id]?.data?.totalCount}
+                          </Typography>
+                        </Box>
+                      )}
                     </CardContent>
                   </StyledCard>
                 </LazyWidget>
@@ -4422,7 +4524,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
         onClose={handleMenuClose}
         onClick={(e) => e.stopPropagation()}
       >
-        {shouldAllowWidgetUpdate && (
+        {shouldAllowWidgetUpdate && selectedChart?.widgetKind !== "image" && (
           <MenuItem onClick={handleEditClick}>
             <EditIcon sx={{ mr: 1, fontSize: 20 }} />
             Edit
@@ -4454,10 +4556,12 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
           <PictureAsPdfIcon sx={{ mr: 1, fontSize: 20 }} />
           Export as PDF
         </MenuItem>
-        <MenuItem onClick={handleExportData}>
-          <TableChartIcon sx={{ mr: 1, fontSize: 20 }} />
-          Export Data (CSV)
-        </MenuItem>
+        {selectedChart?.widgetKind !== "image" && (
+          <MenuItem onClick={handleExportData}>
+            <TableChartIcon sx={{ mr: 1, fontSize: 20 }} />
+            Export Data (CSV)
+          </MenuItem>
+        )}
       </Menu>
       {deleteDialogOpen && (
         <Dialog
@@ -4507,30 +4611,34 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
           <Typography variant="h6">{selectedChart?.name}</Typography>
 
           <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-            <PrimaryButton
-              variant="outlined"
-              startIcon={<FilterListIcon />}
-              onClick={(e) => {
-                e.stopPropagation();
-                setIsFiltersModalOpen(true);
-              }}
-              sx={
-                {
-                  // display: isDefaultNotivix ? "flex" : "none",
-                }
-              }
-            >
-              Filters
-            </PrimaryButton>
-            <PrimaryButton
-              variant="outlined"
-              onClick={(e) => {
-                e.stopPropagation();
-                handleApplyFilters({ __reset: Date.now() });
-              }}
-            >
-              All Data
-            </PrimaryButton>
+            {selectedChart?.widgetKind !== "image" && (
+              <>
+                <PrimaryButton
+                  variant="outlined"
+                  startIcon={<FilterListIcon />}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setIsFiltersModalOpen(true);
+                  }}
+                  sx={
+                    {
+                      // display: isDefaultNotivix ? "flex" : "none",
+                    }
+                  }
+                >
+                  Filters
+                </PrimaryButton>
+                <PrimaryButton
+                  variant="outlined"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleApplyFilters({ __reset: Date.now() });
+                  }}
+                >
+                  All Data
+                </PrimaryButton>
+              </>
+            )}
             <IconButton
               onClick={handleFullViewClose}
               size="small"

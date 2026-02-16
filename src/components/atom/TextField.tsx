@@ -1,5 +1,11 @@
 import TextFieldPrimary from "@mui/material/TextField";
-import { IconButton, InputAdornment } from "@mui/material";
+import {
+  IconButton,
+  InputAdornment,
+  SxProps,
+  Theme,
+  InputProps,
+} from "@mui/material";
 import { useState, forwardRef } from "react";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 import VisibilityIcon from "@mui/icons-material/Visibility";
@@ -24,10 +30,16 @@ interface TextFieldProps {
   size?: "small" | "medium";
   value?: string;
   disabled?: boolean;
+  autoComplete?: string;
+  sx?: SxProps<Theme>;
+  InputProps?: InputProps;
 }
 
 const TextField = forwardRef<HTMLInputElement, TextFieldProps>(
-  ({ label, placeholder, required, isPasswordField, ...rest }, ref) => {
+  (
+    { label, placeholder, required, isPasswordField, autoComplete, ...rest },
+    ref,
+  ) => {
     const [showPassword, setShowPassword] = useState(false);
     //   const theme = useUnifiedTheme();
     const type = isPasswordField && !showPassword ? "password" : "text";
@@ -64,10 +76,11 @@ const TextField = forwardRef<HTMLInputElement, TextFieldProps>(
               }
             : {}
         }
+        autoComplete={autoComplete || "off"}
         {...rest}
       />
     );
-  }
+  },
 );
 
 TextField.displayName = "TextField";

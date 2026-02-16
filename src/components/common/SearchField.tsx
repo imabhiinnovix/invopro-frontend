@@ -14,6 +14,7 @@ export default function SearchField({
       variant="outlined"
       size="small"
       value={searchValue}
+      autoComplete="off"
       onChange={handleSearchChange}
       sx={{
         width: "300px",

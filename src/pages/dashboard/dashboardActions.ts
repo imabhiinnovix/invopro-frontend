@@ -446,6 +446,51 @@ export const fetchWidgetDataLazy = createAsyncThunk(
         throw new Error("Request aborted");
       }
 
+      if (chart.widgetKind === "image") {
+        const imageResponse = await axiosInstance.get(
+          `${GET.DASHBOARD_WIDGET_IMAGE}/${chart._id}`,
+          {
+            headers: {
+              Authorization:
+                axiosInstance.defaults.headers.common.Authorization,
+            },
+            signal,
+          },
+        );
+
+        if (imageResponse.data.success) {
+          const essentialData = {
+            _id: chart._id,
+            createdBy: chart.createdBy,
+            dashboardId: chart.dashboardId,
+            organizationId: chart.organizationId,
+            name: chart.name,
+            position: chart.position,
+            widgetKind: chart.widgetKind,
+            dimensions: chart.dimensions || [],
+            groupBy: chart.groupBy || [],
+            plotType: chart.plotType || [],
+            aggregation: chart.aggregation,
+            conditions: chart.conditions || [],
+            isActive: chart.isActive,
+            createdAt: chart.createdAt,
+            updatedAt: chart.updatedAt,
+            widgetTypeId: chart.widgetTypeId,
+            dataSourceId: chart.dataSourceId,
+            data: imageResponse.data.data,
+          };
+
+          dispatch(
+            storeWidgetData({
+              widgetId: chart._id,
+              data: essentialData,
+              shouldCache: !isDefaultNotivix,
+            }),
+          );
+          return imageResponse.data;
+        }
+      }
+
       const widgetResponse = await axiosInstance.post<WidgetDataResponse>(
         GET.DASHBOARD_WIDGET_DATA,
         {
@@ -668,7 +713,7 @@ interface SaveWidgetsPayload {
 
 export const saveWidgets = createAsyncThunk(
   "dashboard/saveWidgets",
-  async (payload: SaveWidgetsPayload, { rejectWithValue }) => {
+  async (payload: SaveWidgetsPayload) => {
     try {
       const { data } = await axiosInstance.post<CreateWidgetResponse>(
         POST.SAVE_WIDGETS,
@@ -677,11 +722,9 @@ export const saveWidgets = createAsyncThunk(
       return data;
     } catch (error) {
       if (axios.isAxiosError(error) && error.response?.data) {
-        return rejectWithValue(error.response.data);
+        return error.response.data;
       }
-      return rejectWithValue({
-        message: "Failed to share dashboard. Please try again.",
-      });
+      return "Failed to share dashboard. Please try again.";
     }
   },
 );

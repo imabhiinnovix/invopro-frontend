@@ -1,11 +1,12 @@
 // Third-Party Library
-import axios, { AxiosInstance } from 'axios';
-import { clearLocalStorage, getAuthToken } from '../utils/handleLocalStorage';
+import axios, { AxiosInstance } from "axios";
+import { clearLocalStorage, getAuthToken } from "../utils/handleLocalStorage";
+import { sanitizeInputBatch } from "../utils/inputSanitizer";
 
 const axiosInstance: AxiosInstance = axios.create({
   baseURL: import.meta.env.VITE_API_URL,
   headers: {
-    'Content-Type': 'application/json',
+    "Content-Type": "application/json",
   },
   timeout: 60000,
 });
@@ -14,17 +15,29 @@ axiosInstance.interceptors.request.use(
   (config) => {
     const token = getAuthToken();
 
-    if (config.url !== '/login' && token) {
+    if (config.url !== "/login" && token) {
       config.headers.Authorization = `Bearer ${token}`;
     } else {
       delete config.headers.Authorization;
+    }
+
+    if (
+      config.data &&
+      typeof config.data === "object" &&
+      !(config.data instanceof FormData)
+    ) {
+      config.data = sanitizeInputBatch(config.data);
+
+      if (import.meta.env.DEV) {
+        console.log("[Security] Request data sanitized:", config.url);
+      }
     }
 
     return config;
   },
   (error) => {
     return Promise.reject(error);
-  }
+  },
 );
 
 axiosInstance.interceptors.response.use(
@@ -34,10 +47,10 @@ axiosInstance.interceptors.response.use(
   (error) => {
     if (error.response.status === 401 || error.response.status === 403) {
       clearLocalStorage();
-      window.location.href = '/login';
+      window.location.href = "/login";
     }
     return Promise.reject(error);
-  }
+  },
 );
 
 export default axiosInstance;

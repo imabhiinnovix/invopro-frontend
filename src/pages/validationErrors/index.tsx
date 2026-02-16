@@ -166,8 +166,6 @@ export default function ValidationErrors() {
 
       const response = await axiosInstance.get(url);
 
-      console.log("Row Detail Data:", response.data);
-
       if (response.data?.success) {
         setRowDetailData(response.data.data);
         setActionModalOpen(true);

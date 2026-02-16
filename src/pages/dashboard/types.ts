@@ -210,6 +210,8 @@ export interface ChartResponse {
   organizationId: string;
   name: string;
   description?: string;
+  widgetKind?: string;
+  image?: string;
   position?: {
     x: number;
     y: number;
@@ -237,6 +239,7 @@ export interface ChartResponse {
   data?: ChartData[];
   userQuery?: string;
   isIncremental?: boolean;
+  imageLastUpdatedAt?: string;
 }
 
 export interface ChartDataResponse {

@@ -2,6 +2,7 @@ import { StrictMode } from "react";
 import { createRoot, Root } from "react-dom/client";
 
 import App from "./App.tsx";
+import "./styles/fonts";
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import MainProvider from "./context/main.tsx";
@@ -30,5 +31,5 @@ root.render(
         </MainProvider>
       </QueryClientProvider>
     </Provider>
-  </StrictMode>
+  </StrictMode>,
 );
