@@ -239,6 +239,7 @@ export interface ChartResponse {
   data?: ChartData[];
   userQuery?: string;
   isIncremental?: boolean;
+  imageLastUpdatedAt?: string;
 }
 
 export interface ChartDataResponse {

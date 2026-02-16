@@ -4348,7 +4348,9 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
                           }}
                         >
                           Last Updated on:{" "}
-                          {formatDate(dataSourceLastUpdated[chart.dataSourceId?._id]) || "-"}
+                          {chart?.widgetKind === "image"
+                            ? formatDate(chart?.imageLastUpdatedAt) || "-"
+                            : formatDate(dataSourceLastUpdated[chart.dataSourceId?._id]) || "-"}
                         </Box>
 
                         {/* Icons row */}
