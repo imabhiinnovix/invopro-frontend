@@ -1,4 +1,5 @@
 import React from "react";
+import noDataImage from "../../../assets/no-data-available.jpeg";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -1093,9 +1094,9 @@ export const ChartRender: React.FC<ChartRenderProps> = ({
 
   if (chartData.isEmpty) {
     return (
-      <Typography color="text.secondary" variant="h6">
-        No data present for this set of data :|
-      </Typography>
+      <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", width: "100%", height: "100%" }}>
+        <img src={noDataImage} alt="No Data Available" style={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain" }} />
+      </Box>
     );
   }
 
