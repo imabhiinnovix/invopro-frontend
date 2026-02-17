@@ -98,7 +98,7 @@ import { SaveWidgetModel } from "../../naturalLanguage/saveWidgetModel";
 import { STYLE_GUIDE } from "../../../styles";
 import { useUnifiedTheme } from "../../../hooks/useUnifiedTheme";
 import { useComponentTypography } from "../../../hooks/useComponentTypography";
-import { checkPermission, formatDate, formatDateWithoutTime } from "../../../utils/utils";
+import { checkPermission, formatDate, formatDateWithoutTime, mapGroupLabel, sortGroupValues } from "../../../utils/utils";
 import { PermissionsMap } from "../../../utils/constants";
 import { useSelector } from "react-redux";
 import { RootState } from "../../../reducers";
@@ -1939,9 +1939,9 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
       const groupField = matchedField ? matchedField.label : groupFieldKey;
 
       // Get all unique group values (e.g., Attorney names)
-      const uniqueGroups = Array.from(
+      const uniqueGroups = sortGroupValues(groupFieldKey, Array.from(
         new Set(data.map((item) => item[groupField] || "Unknown")),
-      );
+      ));
 
       // Create a dataset for each group
       const datasets = uniqueGroups.map((group, index) => {
@@ -1953,9 +1953,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
           );
           return dataPoint ? dataPoint.data : 0;
         });
-        if (groupFieldKey == "ActionDue.ReportCriticalEvent") {
-          group = group == "Y" ? "Critical" : "Other";
-        }
+        group = mapGroupLabel(groupFieldKey, group as string);
 
         return {
           label: group,
@@ -2003,9 +2001,9 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
 
       const groupField = matchedField ? matchedField.label : groupFieldKey;
 
-      const uniqueGroups = Array.from(
+      const uniqueGroups = sortGroupValues(groupFieldKey, Array.from(
         new Set(data.map((item) => item[groupField]).filter(Boolean)),
-      );
+      ));
 
       const datasets = uniqueGroups.map((group, i) => {
         const values = labels.map((label) => {
@@ -2014,9 +2012,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
           );
           return found ? found.data : 0;
         });
-        if (groupFieldKey == "ActionDue.ReportCriticalEvent") {
-          group = group == "Y" ? "Critical" : "Other";
-        }
+        group = mapGroupLabel(groupFieldKey, group as string);
         return {
           label: group,
           data: values,

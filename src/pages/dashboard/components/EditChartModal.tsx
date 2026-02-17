@@ -83,6 +83,7 @@ export interface EditChartModalProps {
   endVersionValue?: string;
   versionValue?: string;
   dashboardFilters?: Record<string, unknown>;
+  isUpdating?: boolean;
 }
 
 const MODAL_MIN_HEIGHT = 560;
@@ -103,6 +104,7 @@ export const EditChartModal: React.FC<EditChartModalProps> = ({
   endVersionValue,
   versionValue,
   dashboardFilters = {},
+  isUpdating = false,
 }) => {
   const chartPreviewRef = useRef<{ [key: string]: ChartJS | null }>({});
   const initialFetchDoneRef = useRef(false);
@@ -318,7 +320,7 @@ export const EditChartModal: React.FC<EditChartModalProps> = ({
               <ChartPreviewErrorBoundary chartName={chart.name}>
                 {chartPreviewRenderer(chart)}
               </ChartPreviewErrorBoundary>
-            ) : isLoadingChart ? (
+            ) : isLoadingChart || isUpdating ? (
               <Box
                 sx={{
                   display: "flex",

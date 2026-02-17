@@ -1205,11 +1205,14 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
                       ))}
                   </StyledSelect>
                 </FormControl>
+              </FormRow>
+              <SectionTitle sx={{ marginTop: 5 }} className={initialData ? "form-section-title" : undefined}>Y-Axis</SectionTitle>
+              <FormRow>
                 <FormControl fullWidth size="small">
-                  <InputLabel>Y-Axis</InputLabel>
+                  <InputLabel>Type</InputLabel>
                   <StyledSelect
                     value={formData.aggregation.type}
-                    label="Y-Axis"
+                    label="Type"
                     onChange={handleAggregationTypeChange}
                     disabled={isSubmitting}
                   >
@@ -1219,8 +1222,6 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
                     <MenuItem value="Average">Average</MenuItem>
                   </StyledSelect>
                 </FormControl>
-              </FormRow>
-              <FormRow sx={{ marginTop: 5 }}>
                 <FormControl fullWidth size="small">
                   <InputLabel>Attribute Name</InputLabel>
                   <StyledSelect

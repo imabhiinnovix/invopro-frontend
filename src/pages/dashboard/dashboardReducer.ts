@@ -421,13 +421,6 @@ const dashboardSlice = createSlice({
                 }
               : chart,
           );
-          // FORCE WIDGET DATA RELOAD BY CLEARING CACHE
-          delete state.widgetData[updatedWidget._id];
-
-          // ALSO CLEAR storeWidgetData cache
-          state.storeWidgetData = state.storeWidgetData.filter(
-            (item) => item.widgetId !== updatedWidget._id
-          );
         }
       })
       .addCase(updateWidget.rejected, (state, action) => {

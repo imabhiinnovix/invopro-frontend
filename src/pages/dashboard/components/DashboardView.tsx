@@ -1922,6 +1922,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   const [selectedNumberChartColor, setSelectedNumberChartColor] = useState<
     string | undefined
   >(undefined);
+  const [isChartUpdating, setIsChartUpdating] = useState(false);
   const [chartPreviewRenderer, setChartPreviewRenderer] = useState<
     ((chart: ChartResponse) => React.ReactNode) | null
   >(null);
@@ -3018,35 +3019,50 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         // Store the edited chart id for scrolling on modal close
         lastEditedChartIdRef.current = selectedChart._id;
 
-        // Re-fetch chart list so Redux store has the updated chart object
-        if (dashboardId) {
+        // Show loader on the chart preview while re-fetching
+        setIsChartUpdating(true);
+
+        const dashboardType =
+          currentDashboard?.settings?.dashboardType || "normal";
+
+        try {
+          // Re-fetch chart list so Redux store has the fully populated chart object
+          let updatedChart: ChartResponse | undefined;
+          if (dashboardId) {
+            const chartDataResult = await dispatch(
+              fetchChartData({
+                dashboardId,
+                dashboardType,
+                startVersionValue,
+                endVersionValue,
+                versionValue: formattedVersionValue || "",
+                dashboardFilters,
+              }),
+            ).unwrap();
+
+            const chartsArray = Array.isArray(chartDataResult)
+              ? chartDataResult
+              : chartDataResult?.data || [];
+            updatedChart = chartsArray.find(
+              (c: ChartResponse) => c._id === selectedChart._id,
+            );
+          }
+
+          // Re-fetch widget data using the fresh chart (not stale selectedChart)
           await dispatch(
-            fetchChartData({
-              dashboardId,
-              dashboardType:
-                currentDashboard?.settings?.dashboardType || "normal",
+            fetchWidgetDataLazy({
+              chart: updatedChart || selectedChart,
+              dashboardType,
               startVersionValue,
               endVersionValue,
               versionValue: formattedVersionValue || "",
               dashboardFilters,
+              isDefaultNotivix: currentDashboard?.isDefaultNotivix || false,
             }),
           );
+        } finally {
+          setIsChartUpdating(false);
         }
-
-        // Re-fetch widget data for the updated chart so the preview refreshes
-        const dashboardType =
-          currentDashboard?.settings?.dashboardType || "normal";
-        dispatch(
-          fetchWidgetDataLazy({
-            chart: selectedChart,
-            dashboardType,
-            startVersionValue,
-            endVersionValue,
-            versionValue: formattedVersionValue || "",
-            dashboardFilters,
-            isDefaultNotivix: currentDashboard?.isDefaultNotivix || false,
-          }),
-        );
       } else {
         toast.error(result.message || "Failed to update chart");
       }
@@ -3840,6 +3856,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         endVersionValue={endVersionValue}
         versionValue={formattedVersionValue}
         dashboardFilters={dashboardFilters}
+        isUpdating={isChartUpdating}
       />
       {currentDashboard?.isDefaultNotivix === true && isFiltersModalOpen ? (
         <NotivixFiltersModal

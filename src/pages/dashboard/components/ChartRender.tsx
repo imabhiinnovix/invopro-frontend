@@ -1,4 +1,5 @@
 import React from "react";
+import { mapGroupLabel, sortGroupValues } from "../../../utils/utils";
 import noDataImage from "../../../assets/no-data-available.jpeg";
 import {
   Chart as ChartJS,
@@ -174,9 +175,9 @@ export const ChartRender: React.FC<ChartRenderProps> = ({
 
       if (groupBy.length > 0) {
         const groupField = resolveGroupField(groupBy);
-        const uniqueGroups = Array.from(
+        const uniqueGroups = sortGroupValues(groupBy[0], Array.from(
           new Set(chartData.map((item) => item[groupField] || "Unknown")),
-        );
+        ));
 
         const datasets = uniqueGroups.map((group, index) => {
           const groupData = labels.map((label) => {
@@ -186,9 +187,10 @@ export const ChartRender: React.FC<ChartRenderProps> = ({
             );
             return dataPoint ? dataPoint.data : 0;
           });
+          const displayLabel = mapGroupLabel(groupBy[0], group as string);
 
           return {
-            label: group,
+            label: displayLabel,
             data: groupData,
             borderColor: getDatasetColor(index),
             backgroundColor: isArea ? getDatasetColor(index) + "33" : "transparent",
@@ -233,11 +235,11 @@ export const ChartRender: React.FC<ChartRenderProps> = ({
 
       if (groupBy.length > 0) {
         const groupField = resolveGroupField(groupBy);
-        const uniqueGroups = Array.from(
+        const uniqueGroups = sortGroupValues(groupBy[0], Array.from(
           new Set(
             chartData.map((item) => item[groupField]).filter(Boolean),
           ),
-        );
+        ));
 
         const datasets = uniqueGroups.map((group, i) => {
           const values = labels.map((label) => {
@@ -247,9 +249,10 @@ export const ChartRender: React.FC<ChartRenderProps> = ({
             );
             return found ? found.data : 0;
           });
+          const displayLabel = mapGroupLabel(groupBy[0], group as string);
 
           return {
-            label: group,
+            label: displayLabel,
             data: values,
             backgroundColor: getDatasetColor(i),
             borderColor: "#009FDF",
@@ -282,13 +285,13 @@ export const ChartRender: React.FC<ChartRenderProps> = ({
 
       if (groupBy.length > 0) {
         const groupField = resolveGroupField(groupBy);
-        const uniqueGroups = Array.from(
+        const uniqueGroups = sortGroupValues(groupBy[0], Array.from(
           new Set(
             chartData.map(
               (item) => (item[groupField] as string) ?? "Unknown"
             )
           )
-        );
+        ));
 
         const datasets = uniqueGroups.map((group, groupIndex) => {
           const values = labels.map((label) => {
@@ -299,9 +302,10 @@ export const ChartRender: React.FC<ChartRenderProps> = ({
             );
             return found ? found.data : 0;
           });
+          const displayLabel = mapGroupLabel(groupBy[0], group as string);
 
           return {
-            label: group,
+            label: displayLabel,
             data: values,
             backgroundColor: labels.map((_, i) =>
               getDatasetColor(i + groupIndex * 5)
@@ -342,13 +346,13 @@ export const ChartRender: React.FC<ChartRenderProps> = ({
 
       if (groupBy.length > 0) {
         const groupField = resolveGroupField(groupBy);
-        const uniqueGroups = Array.from(
+        const uniqueGroups = sortGroupValues(groupBy[0], Array.from(
           new Set(
             chartData.map(
               (item) => (item[groupField] as string) ?? "Unknown"
             )
           )
-        );
+        ));
 
         const datasets = uniqueGroups.map((group, groupIndex) => {
           const values = labels.map((label) => {
@@ -359,9 +363,10 @@ export const ChartRender: React.FC<ChartRenderProps> = ({
             );
             return found ? found.data : 0;
           });
+          const displayLabel = mapGroupLabel(groupBy[0], group as string);
 
           return {
-            label: group,
+            label: displayLabel,
             data: values,
             backgroundColor: labels.map((_, i) =>
               getDatasetColor(i + groupIndex * 5)
@@ -402,11 +407,11 @@ export const ChartRender: React.FC<ChartRenderProps> = ({
 
       if (groupBy.length > 0) {
         const groupField = resolveGroupField(groupBy);
-        const uniqueGroups = Array.from(
+        const uniqueGroups = sortGroupValues(groupBy[0], Array.from(
           new Set(
             chartData.map((item) => item[groupField]).filter(Boolean),
           ),
-        );
+        ));
 
         const datasets = uniqueGroups.map((group, i) => {
           const values = labels.map((label) => {
@@ -416,9 +421,10 @@ export const ChartRender: React.FC<ChartRenderProps> = ({
             );
             return found ? found.data : 0;
           });
+          const displayLabel = mapGroupLabel(groupBy[0], group as string);
 
           return {
-            label: group,
+            label: displayLabel,
             data: values,
             backgroundColor: getDatasetColor(i) + "33",
             borderColor: getDatasetColor(i),
@@ -460,9 +466,9 @@ export const ChartRender: React.FC<ChartRenderProps> = ({
 
       if (groupBy.length > 0) {
         const groupField = resolveGroupField(groupBy);
-        const uniqueGroups = Array.from(
+        const uniqueGroups = sortGroupValues(groupBy[0], Array.from(
           new Set(chartData.map((item) => item[groupField]).filter(Boolean)),
-        );
+        ));
 
         const barDatasets = uniqueGroups.map((group, i) => {
           const values = labels.map((label) => {
@@ -472,10 +478,11 @@ export const ChartRender: React.FC<ChartRenderProps> = ({
             );
             return found ? found.data : 0;
           });
+          const displayLabel = mapGroupLabel(groupBy[0], group as string);
 
           return {
             type: "bar" as const,
-            label: group,
+            label: displayLabel,
             data: values,
             backgroundColor: getDatasetColor(i),
             borderColor: "#FFFFFF",
@@ -549,9 +556,9 @@ export const ChartRender: React.FC<ChartRenderProps> = ({
     if (chartType === "scatter") {
       if (groupBy.length > 0) {
         const groupField = resolveGroupField(groupBy);
-        const uniqueGroups = Array.from(
+        const uniqueGroups = sortGroupValues(groupBy[0], Array.from(
           new Set(chartData.map((item) => item[groupField]).filter(Boolean)),
-        );
+        ));
 
         const datasets = uniqueGroups.map((group, i) => {
           const groupData = chartData
@@ -560,9 +567,10 @@ export const ChartRender: React.FC<ChartRenderProps> = ({
               x: item.x ?? index,
               y: item.y ?? item.data,
             }));
+          const displayLabel = mapGroupLabel(groupBy[0], group as string);
 
           return {
-            label: group,
+            label: displayLabel,
             data: groupData,
             backgroundColor: getDatasetColor(i),
             borderColor: getDatasetColor(i),
@@ -595,11 +603,11 @@ export const ChartRender: React.FC<ChartRenderProps> = ({
     if (chartType === "bubble") {
       if (groupBy.length > 0) {
         const groupField = resolveGroupField(groupBy);
-        const uniqueGroups = Array.from(
+        const uniqueGroups = sortGroupValues(groupBy[0], Array.from(
           new Set(
             chartData.map((item) => item[groupField] ?? "Unknown"),
           ),
-        );
+        ));
 
         const datasets = uniqueGroups.map((group, index) => {
           const groupData = chartData
@@ -612,9 +620,10 @@ export const ChartRender: React.FC<ChartRenderProps> = ({
               y: item.y ?? item.data ?? 0,
               r: item.r ?? Math.max(5, (item.data ?? 0) / 10),
             }));
+          const displayLabel = mapGroupLabel(groupBy[0], group as string);
 
           return {
-            label: group,
+            label: displayLabel,
             data: groupData,
             backgroundColor: getDatasetColor(index + 2) + "99",
             borderColor: getDatasetColor(index),
