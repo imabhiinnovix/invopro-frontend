@@ -7,7 +7,7 @@ import { POST } from "../../services/apiRoutes";
 const transformNotificationData = (
   notification,
   fieldOptions,
-  organizationId
+  organizationId,
 ) => {
   const transformGroup = (group) => {
     if (!group || !group.rules || group.rules.length === 0) return null;
@@ -68,7 +68,7 @@ const ConditionPreview = ({
   notification,
 }) => {
   const [summaryData, setSummaryData] = useState(null);
-  const getSummary = usePost(["getNotificationSummary"]);
+  const getSummary = usePost(["getNotificationSummary"], () => {}, false);
 
   // VIBGYOR colors for nested brackets
   const bracketColors = [
@@ -91,7 +91,7 @@ const ConditionPreview = ({
     return transformNotificationData(
       notification,
       fieldOptions,
-      organizationId
+      organizationId,
     );
   }, [notification, fieldOptions]);
 

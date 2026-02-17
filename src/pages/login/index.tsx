@@ -58,7 +58,7 @@ interface userCredType {
 function Login() {
   const { getButtonSx } = useComponentTypography();
   const { setIsAuthUser, userDetails } = useContext(
-    AuthContext
+    AuthContext,
   ) as AuthContextType;
 
   const navigate = useNavigate();
@@ -77,7 +77,7 @@ function Login() {
           ) {
             // 1️ find first role default dashboard
             const roleDefaultDashboard = data.data.find(
-              (dashboard: any) => dashboard.isRoleDefault === true
+              (dashboard: any) => dashboard.isRoleDefault === true,
             );
 
             // 2️ decide which dashboard to open
@@ -111,7 +111,7 @@ function Login() {
         }
       }
     },
-    true
+    true,
   );
 
   const verifyOTP = usePost<verifyOtpPayload, getLoginResponse>(
@@ -122,7 +122,7 @@ function Login() {
         setIsAuthUser(true);
       }
     },
-    true
+    true,
   );
 
   const { countdown, isButtonDisabled, resetCountdown } = useCountdown(60);
@@ -137,7 +137,7 @@ function Login() {
       .required("Email is Required")
       .matches(
         /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/,
-        "Invalid email address"
+        "Invalid email address",
       )
       .max(50, "Email is too long"),
     // password: yup.string().required("Password is required"),
@@ -147,7 +147,7 @@ function Login() {
       .min(8, "Password must be at least 8 characters")
       .matches(
         /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_])\S+$/,
-        "Password must contain at least one uppercase, one lowercase, one number and one special character"
+        "Password must contain at least one uppercase, one lowercase, one number and one special character",
       ),
     otp: yup.string().when("$showOtp", {
       is: true,
@@ -212,6 +212,7 @@ function Login() {
             {...register("email")}
             fullWidth
             name="email"
+            autoComplete="off"
             label="Email address"
             placeholder="example@gmail.com"
             required
@@ -223,6 +224,7 @@ function Login() {
           <TextField
             {...register("password")}
             fullWidth
+            autoComplete="new-password"
             label="Password"
             placeholder="@Demo1234"
             required

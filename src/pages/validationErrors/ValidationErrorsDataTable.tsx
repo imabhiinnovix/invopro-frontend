@@ -239,7 +239,10 @@ export const ValidationErrorsDataTable: React.FC<
                 <Tooltip title="Resolve" arrow>
                   <Button
                     variant="text"
-                    onClick={() => handleResolve?.(row)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleResolve?.(row);
+                    }}
                     sx={{ minWidth: "auto" }}
                     disabled={isLatest === false}
                   >
@@ -250,7 +253,10 @@ export const ValidationErrorsDataTable: React.FC<
                 <Tooltip title="Take Action" arrow>
                   <Button
                     variant="text"
-                    onClick={() => handleEdit?.(row)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleEdit?.(row);
+                    }}
                     sx={{ minWidth: "auto" }}
                     disabled={isResolved || isLatest === false}
                   >

@@ -2886,7 +2886,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
       // Save title first if it has changed
       if (editedTitle !== title) {
         onTitleChange(editedTitle);
-        setTitle(editedTitle);
+        setTitle(initialTitle);
+        setEditedTitle(initialTitle);
       }
 
       // Save temporary charts only if there are any

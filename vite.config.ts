@@ -17,4 +17,8 @@ export default defineConfig({
       usePolling: true,
     },
   },
+  build: {
+    sourcemap: false,
+    minify: "esbuild",
+  },
 });

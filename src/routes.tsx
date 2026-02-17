@@ -42,6 +42,7 @@ import Jobs from "./pages/jobs";
 import SourceList from "./pages/sourceList";
 import SourceAttributes from "./pages/sourceList/attributes";
 import BusinessUnit from "./pages/businessUnit";
+import NotFound from "./pages/notFound";
 
 const AppRoutes = () => {
   const token = getAuthToken();
@@ -144,6 +145,9 @@ const AppRoutes = () => {
           <Route path="/themes" element={<DashboardThemePage />} />
         </Route>
       </Route>
+
+      {/* 404 - Page Not Found */}
+      <Route path="*" element={<NotFound />} />
     </Routes>
   );
 };

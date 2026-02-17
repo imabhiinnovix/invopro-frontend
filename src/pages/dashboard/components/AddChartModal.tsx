@@ -14,7 +14,7 @@ import {
   CardContent,
   Card,
   FormHelperText,
-  ListSubheader,
+  CircularProgress,
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import AddIcon from "@mui/icons-material/Add";
@@ -298,6 +298,7 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
   const [fieldTypes, setFieldTypes] = useState<{ [key: string]: string }>({});
   const [fieldErrors, setFieldErrors] = useState<{ [key: string]: string }>({});
   const [showAdvanced, setShowAdvanced] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [showMoreOptions, setShowMoreOptions] = useState<
     Record<string, boolean>
   >({
@@ -656,6 +657,7 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
     }
 
     try {
+      setIsLoading(true);
       const dashboardType =
         currentDashboard?.settings?.dashboardType || "normal";
 
@@ -757,7 +759,6 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
               fetchChartData({
                 dashboardId,
                 dashboardType,
-
                 startVersionValue:
                   dashboardType === "trend" ? startVersionValue : "",
                 endVersionValue:
@@ -785,6 +786,8 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
       }
     } catch (error) {
       handleAxiosError(error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -2670,7 +2673,7 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
       </ConfigurationContent>
       {!isNaturalLangauage ? (
         <ConfigurationFooter>
-          <StyledButton onClick={onClose} disabled={isSubmitting}>
+          <StyledButton onClick={onClose} disabled={isLoading}>
             Cancel
           </StyledButton>
           <StyledButton
@@ -2678,7 +2681,7 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
             variant="contained"
             color="primary"
             disabled={
-              isSubmitting ||
+              isLoading ||
               !formData.widgetTypeId ||
               !formData.dataSourceId ||
               (!formData.dimensions && !isNumberChart) ||
@@ -2690,13 +2693,16 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
               fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base,
             }}
           >
-            {isSubmitting
-              ? initialData
-                ? "Updating..."
-                : "Creating..."
-              : initialData
-                ? "Update"
-                : "Create"}
+            {isLoading ? (
+              <>
+                <CircularProgress size={16} sx={{ mr: 1, color: "inherit" }} />
+                {initialData ? "Updating..." : "Creating..."}
+              </>
+            ) : initialData ? (
+              "Update"
+            ) : (
+              "Create"
+            )}
           </StyledButton>
         </ConfigurationFooter>
       ) : (
