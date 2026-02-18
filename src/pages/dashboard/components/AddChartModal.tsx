@@ -1304,10 +1304,10 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
             <FormSection key="groupBy-advanced">
               <FormRow>
                 <FormControl fullWidth size="small">
-                  <InputLabel>Segmentation</InputLabel>
+                  <InputLabel>Select Segmentation (2nd Level)</InputLabel>
                   <StyledSelect
                     value={formData.groupBy}
-                    label="Segmentation"
+                    label="Select Segmentation (2nd Level)"
                     onChange={handleGroupByChange}
                     disabled={isSubmitting}
                     error={!!fieldErrors["GroupBy"]}
@@ -1396,10 +1396,10 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
           <FormSection key={fieldName}>
             <FormRow>
               <FormControl fullWidth size="small">
-                <InputLabel>Segmentation</InputLabel>
+                <InputLabel>Select Segmentation (2nd Level)</InputLabel>
                 <StyledSelect
                   value={formData.groupBy}
-                  label="Segmentation"
+                  label="Select Segmentation (2nd Level)"
                   onChange={handleGroupByChange}
                   disabled={isSubmitting}
                   error={!!fieldErrors["GroupBy"]}
@@ -2277,10 +2277,10 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
                     <FormSection key="fallback-segmentation">
                       <FormRow>
                         <FormControl fullWidth size="small">
-                          <InputLabel>Segmentation</InputLabel>
+                          <InputLabel>Select Segmentation (2nd Level)</InputLabel>
                           <StyledSelect
                             value={formData.groupBy}
-                            label="Segmentation"
+                            label="Select Segmentation (2nd Level)"
                             onChange={handleGroupByChange}
                             disabled={isSubmitting}
                             error={!!fieldErrors["GroupBy"]}

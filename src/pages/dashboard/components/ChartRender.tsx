@@ -1,5 +1,5 @@
 import React from "react";
-import { mapGroupLabel, sortGroupValues } from "../../../utils/utils";
+import { mapGroupLabel, sortGroupValues, sliceLabelsPlugin, barLabelsPlugin, pointLabelsPlugin, polarAreaLabelsPlugin } from "../../../utils/utils";
 import noDataImage from "../../../assets/no-data-available.jpeg";
 import {
   Chart as ChartJS,
@@ -32,6 +32,7 @@ import {
   Table,
   TableCell,
   TableHead,
+  TableBody,
   TableRow,
   Typography,
   useTheme,
@@ -464,6 +465,14 @@ export const ChartRender: React.FC<ChartRenderProps> = ({
         new Set(chartData.map((item: ChartDataItem) => item.name))
       );
 
+      const attributeFieldKey = chart?.aggregation?.attributeName;
+      const matchedAttributeField = (chart.dataSourceId as any)?.fieldSettings?.find(
+        (f: any) => f.mappedAttributeName === attributeFieldKey,
+      );
+      const resolvedAttributeLabel = matchedAttributeField
+        ? matchedAttributeField.label
+        : attributeFieldKey;
+
       if (groupBy.length > 0) {
         const groupField = resolveGroupField(groupBy);
         const uniqueGroups = sortGroupValues(groupBy[0], Array.from(
@@ -504,7 +513,7 @@ export const ChartRender: React.FC<ChartRenderProps> = ({
 
         const lineDataset = {
           type: "line" as const,
-          label: chart.name || "Total",
+          label: `${resolvedAttributeLabel || chart?.aggregation?.attributeName || chart.name || "Total"}`,
           data: totals,
           borderColor: getDatasetColor(uniqueGroups.length),
           backgroundColor: "transparent",
@@ -538,7 +547,7 @@ export const ChartRender: React.FC<ChartRenderProps> = ({
 
       const lineDataset = {
         type: "line" as const,
-        label: chart.name || "Total",
+        label: `${resolvedAttributeLabel || chart?.aggregation?.attributeName || chart.name || "Total"}`,
         data: totals,
         borderColor: getDatasetColor(chartData.length),
         backgroundColor: "transparent",
@@ -666,7 +675,25 @@ export const ChartRender: React.FC<ChartRenderProps> = ({
     };
   };
 
+  const getLabelForField = (
+    field: string | undefined,
+    fieldSettings: any[] = [],
+  ): string | undefined => {
+    if (!field) return field;
+    const matched = fieldSettings?.find(
+      (fs: any) => fs.mappedAttributeName === field,
+    );
+    return matched?.label || field;
+  };
+
   const getChartOptions = (chartType: string, chart: ChartResponse) => {
+    const fieldSettings = (chart.dataSourceId as any)?.fieldSettings || [];
+    const xLabel =
+      getLabelForField(chart?.dimensions?.[0], fieldSettings) || "X-axis";
+    const yLabel =
+      getLabelForField(chart?.aggregation?.attributeName, fieldSettings) ||
+      "Y-axis";
+
     const baseOptions = {
       responsive: true,
       maintainAspectRatio: false,
@@ -695,19 +722,106 @@ export const ChartRender: React.FC<ChartRenderProps> = ({
           maxHeight: 100,
         },
         tooltip: {
-          display: widgetTheme?.tooltip?.display ?? true,
-          backgroundColor:
-            widgetTheme?.tooltip?.backgroundColor ??
-            theme.palette.background.paper,
-          titleColor:
-            widgetTheme?.tooltip?.titleColor ?? theme.palette.text.primary,
-          bodyColor: theme.palette.text.secondary,
-          borderColor:
-            widgetTheme?.tooltip?.borderColor ?? theme.palette.divider,
-          borderWidth: widgetTheme?.tooltip?.borderWidth ?? 1,
-          padding: widgetTheme?.tooltip?.padding ?? 12,
-          usePointStyle: true,
-          displayColors: true,
+          enabled: false,
+          external: function (context: any) {
+            let tooltipEl = document.getElementById("chartjs-tooltip");
+
+            if (!tooltipEl) {
+              tooltipEl = document.createElement("div");
+              tooltipEl.id = "chartjs-tooltip";
+              tooltipEl.style.background =
+                widgetTheme?.tooltip?.backgroundColor ??
+                theme.palette.background.paper;
+              tooltipEl.style.borderRadius = "6px";
+              tooltipEl.style.border = `${
+                widgetTheme?.tooltip?.borderWidth ?? 1
+              }px solid ${
+                widgetTheme?.tooltip?.borderColor ?? theme.palette.divider
+              }`;
+              tooltipEl.style.color = theme.palette.text.secondary;
+              tooltipEl.style.opacity = "1";
+              tooltipEl.style.pointerEvents = "auto";
+              tooltipEl.style.position = "absolute";
+              tooltipEl.style.transform = "translate(-50%, 0)";
+              tooltipEl.style.transition = "opacity .15s ease";
+              tooltipEl.style.fontSize = "12px";
+              tooltipEl.style.padding = `${
+                widgetTheme?.tooltip?.padding ?? 12
+              }px`;
+              tooltipEl.style.boxShadow = "0 2px 8px rgba(0,0,0,0.15)";
+              tooltipEl.style.zIndex = "10000";
+
+              (tooltipEl as any).isHovered = false;
+
+              tooltipEl.addEventListener("mouseenter", function () {
+                (this as any).isHovered = true;
+              });
+
+              tooltipEl.addEventListener("mouseleave", function () {
+                (this as any).isHovered = false;
+                this.style.opacity = "0";
+              });
+
+              document.body.appendChild(tooltipEl);
+            }
+
+            const tooltipModel = context.tooltip;
+            if (tooltipModel.opacity === 0) {
+              if (!(tooltipEl as any).isHovered) {
+                tooltipEl.style.opacity = "0";
+              }
+              return;
+            }
+
+            tooltipEl.classList.remove("above", "below", "no-transform");
+            if (tooltipModel.yAlign) {
+              tooltipEl.classList.add(tooltipModel.yAlign);
+            } else {
+              tooltipEl.classList.add("no-transform");
+            }
+
+            function getBody(bodyItem: any) {
+              return bodyItem.lines;
+            }
+
+            if (tooltipModel.body) {
+              const titleLines = tooltipModel.title || [];
+              const bodyLines = tooltipModel.body.map(getBody);
+
+              let innerHtml =
+                '<div style="max-height: 300px; overflow-y: auto; overflow-x: hidden; padding-right: 4px;">';
+
+              titleLines.forEach(function (title: string) {
+                innerHtml += `<div style="font-weight: bold; margin-bottom: 4px; color: ${
+                  widgetTheme?.tooltip?.titleColor ??
+                  theme.palette.text.primary
+                };">${title}</div>`;
+              });
+
+              bodyLines.forEach(function (body: string[], i: number) {
+                const colors = tooltipModel.labelColors[i];
+                const style = `background:${colors.backgroundColor}; border-color:${colors.borderColor}; border-width: 2px; border-style: solid; width: 10px; height: 10px; display: inline-block; margin-right: 6px; border-radius: 50%;`;
+                innerHtml += `<div style="display: flex; align-items: center; margin-bottom: 2px;"><span style="${style}"></span>${body}</div>`;
+              });
+
+              innerHtml += "</div>";
+              tooltipEl.innerHTML = innerHtml;
+            }
+
+            const position = context.chart.canvas.getBoundingClientRect();
+            tooltipEl.style.opacity = "1";
+            tooltipEl.style.left =
+              position.left +
+              window.pageXOffset +
+              tooltipModel.caretX +
+              "px";
+            tooltipEl.style.top =
+              position.top +
+              window.pageYOffset +
+              tooltipModel.caretY +
+              "px";
+            tooltipEl.style.font = tooltipModel.options.bodyFont.string;
+          },
         },
       },
       layout: {
@@ -747,9 +861,10 @@ export const ChartRender: React.FC<ChartRenderProps> = ({
           scales: {
             y: {
               title: {
-                color: widgetTheme?.scales?.x?.ticks?.color ?? "grey",
+                color: "black",
                 display: true,
-                text: chart?.aggregation?.attributeName || "Y-axis",
+                text: yLabel,
+                font: { size: 14, weight: "bold" as const },
               },
               display: widgetTheme?.scales?.y?.display ?? true,
               beginAtZero: widgetTheme?.scales?.y?.beginAtZero ?? true,
@@ -763,16 +878,15 @@ export const ChartRender: React.FC<ChartRenderProps> = ({
                 padding: widgetTheme?.scales?.y?.ticks?.padding ?? 15,
                 maxRotation: 0,
                 minRotation: 0,
-                font: {
-                  size: 11,
-                },
+                font: { size: 11 },
               },
             },
             x: {
               title: {
-                color: widgetTheme?.scales?.x?.ticks?.color ?? "grey",
+                color: "black",
                 display: true,
-                text: chart?.dimensions?.[0] || "X-axis",
+                text: xLabel,
+                font: { size: 14, weight: "bold" as const },
               },
               display: widgetTheme?.scales?.x?.display ?? true,
               grid: {
@@ -804,12 +918,9 @@ export const ChartRender: React.FC<ChartRenderProps> = ({
             x: {
               title: {
                 display: true,
-                text: chart.aggregation?.attributeName || "Count",
-                color: widgetTheme?.scales?.x?.ticks?.color || theme.palette.text.primary,
-                font: {
-                  size: 14,
-                  weight: "bold",
-                },
+                text: xLabel,
+                color: "black",
+                font: { size: 14, weight: "bold" as const },
               },
               display: widgetTheme?.scales?.x?.display ?? true,
               beginAtZero: widgetTheme?.scales?.y?.beginAtZero ?? true,
@@ -821,20 +932,15 @@ export const ChartRender: React.FC<ChartRenderProps> = ({
               ticks: {
                 color: widgetTheme?.scales?.x?.ticks?.color || theme.palette.text.secondary,
                 padding: widgetTheme?.scales?.x?.ticks?.padding ?? 8,
-                font: {
-                  size: 12,
-                },
+                font: { size: 12 },
               },
             },
             y: {
               title: {
                 display: true,
-                text: chart.dimensions?.[0] || "Category",
+                text: yLabel,
                 color: widgetTheme?.scales?.y?.ticks?.color || theme.palette.text.primary,
-                font: {
-                  size: 14,
-                  weight: "bold",
-                },
+                font: { size: 14, weight: "bold" as const },
               },
               display: widgetTheme?.scales?.y?.display ?? true,
               grid: {
@@ -845,26 +951,14 @@ export const ChartRender: React.FC<ChartRenderProps> = ({
               ticks: {
                 color: widgetTheme?.scales?.y?.ticks?.color || theme.palette.text.secondary,
                 padding: widgetTheme?.scales?.y?.ticks?.padding ?? 8,
-                font: {
-                  size: 12,
-                },
+                font: { size: 12 },
               },
             },
           },
           plugins: {
             ...baseOptions.plugins,
             legend: {
-              position: "top" as const,
-              labels: {
-                usePointStyle: true,
-                color: widgetTheme?.legend?.labels?.color || theme.palette.text.primary,
-                padding: widgetTheme?.legend?.labels?.padding ?? 15,
-                font: {
-                  size: widgetTheme?.legend?.labels?.font?.size ?? 12,
-                },
-                boxWidth: widgetTheme?.legend?.labels?.boxWidth ?? 10,
-                boxHeight: widgetTheme?.legend?.labels?.boxHeight ?? 10,
-              },
+              display: false,
             },
           },
         };
@@ -878,9 +972,10 @@ export const ChartRender: React.FC<ChartRenderProps> = ({
           scales: {
             x: {
               title: {
-                color: widgetTheme?.scales?.x?.ticks?.color ?? "grey",
+                color: "black",
                 display: true,
-                text: chart?.dimensions?.[0] || "Category",
+                text: xLabel,
+                font: { size: 14, weight: "bold" as const },
               },
               display: widgetTheme?.scales?.x?.display ?? true,
               grid: {
@@ -899,9 +994,10 @@ export const ChartRender: React.FC<ChartRenderProps> = ({
             },
             y: {
               title: {
-                color: widgetTheme?.scales?.x?.ticks?.color ?? "grey",
+                color: "black",
                 display: true,
-                text: chart?.aggregation?.attributeName || "Value",
+                text: yLabel,
+                font: { size: 14, weight: "bold" as const },
               },
               display: widgetTheme?.scales?.y?.display ?? true,
               beginAtZero: widgetTheme?.scales?.y?.beginAtZero ?? true,
@@ -935,9 +1031,10 @@ export const ChartRender: React.FC<ChartRenderProps> = ({
               },
               stacked: true,
               title: {
-                color: widgetTheme?.scales?.x?.ticks?.color ?? "grey",
+                color: "black",
                 display: true,
-                text: chart?.aggregation?.attributeName || "Bar Values",
+                text: yLabel,
+                font: { size: 14, weight: "bold" as const },
               },
               ticks: {
                 padding: widgetTheme?.scales?.y?.ticks?.padding ?? 8,
@@ -952,9 +1049,10 @@ export const ChartRender: React.FC<ChartRenderProps> = ({
                 drawOnChartArea: false,
               },
               title: {
-                color: widgetTheme?.scales?.x?.ticks?.color ?? "grey",
+                color: "black",
                 display: true,
-                text: chart?.aggregation?.attributeName || "Line Values",
+                text: `Total ${yLabel}`,
+                font: { size: 14, weight: "bold" as const },
               },
               ticks: {
                 padding: widgetTheme?.scales?.y?.ticks?.padding ?? 8,
@@ -964,13 +1062,15 @@ export const ChartRender: React.FC<ChartRenderProps> = ({
               title: {
                 color: widgetTheme?.scales?.x?.ticks?.color ?? "grey",
                 display: true,
-                text: chart?.dimensions?.[0] || "X-axis",
+                text: xLabel,
+                font: { size: 14, weight: "bold" as const },
               },
               display: widgetTheme?.scales?.x?.display ?? true,
               grid: {
                 display: widgetTheme?.scales?.x?.grid?.display ?? false,
                 tickColor: widgetTheme?.scales?.x?.ticks?.color ?? "red",
               },
+              stacked: true,
               ticks: {
                 color:
                   widgetTheme?.scales?.x?.ticks?.color ??
@@ -984,59 +1084,93 @@ export const ChartRender: React.FC<ChartRenderProps> = ({
       case "comboBarLine":
         return {
           ...baseOptions,
+          interaction: {
+            intersect: false,
+            mode: "index" as const,
+          },
           scales: {
-            y: {
-              type: "linear" as const,
-              display: widgetTheme?.scales?.y?.display ?? true,
-              position: "left" as const,
-              beginAtZero: widgetTheme?.scales?.y?.beginAtZero ?? true,
-              grid: {
-                color:
-                  widgetTheme?.scales?.y?.grid?.color ?? theme.palette.divider,
-                drawBorder: widgetTheme?.scales?.y?.grid?.drawBorder ?? false,
-              },
+            x: {
               title: {
-                color: widgetTheme?.scales?.x?.ticks?.color ?? "grey",
                 display: true,
-                text: chart?.aggregation?.attributeName || "Bar Values",
+                text: xLabel,
+                color: "black",
+                font: { size: 14, weight: "bold" as const },
+              },
+              display: widgetTheme?.scales?.x?.display ?? true,
+              grid: {
+                display: widgetTheme?.scales?.x?.grid?.display ?? true,
+                color:
+                  widgetTheme?.scales?.x?.grid?.color || theme.palette.divider,
               },
               ticks: {
-                padding: widgetTheme?.scales?.y?.ticks?.padding ?? 8,
+                color:
+                  widgetTheme?.scales?.x?.ticks?.color ||
+                  theme.palette.text.secondary,
+                padding: widgetTheme?.scales?.x?.ticks?.padding ?? 8,
+              },
+            },
+            y: {
+              type: "linear" as const,
+              display: true,
+              position: "left" as const,
+              beginAtZero: true,
+              title: {
+                display: true,
+                text: yLabel,
+                color: "black",
+                font: { size: 14, weight: "bold" as const },
+              },
+              grid: {
+                display: true,
+                color:
+                  widgetTheme?.scales?.y?.grid?.color || theme.palette.divider,
+                drawBorder: false,
+              },
+              ticks: {
+                color:
+                  widgetTheme?.scales?.y?.ticks?.color ||
+                  theme.palette.text.secondary,
+                padding: 8,
               },
             },
             y1: {
               type: "linear" as const,
               display: true,
               position: "right" as const,
-              beginAtZero: widgetTheme?.scales?.y?.beginAtZero ?? true,
+              beginAtZero: true,
+              title: {
+                display: true,
+                text: yLabel,
+                color:
+                  widgetTheme?.scales?.y?.ticks?.color ||
+                  theme.palette.text.primary,
+                font: { size: 14, weight: "bold" as const },
+              },
               grid: {
                 drawOnChartArea: false,
               },
-              title: {
-                color: widgetTheme?.scales?.x?.ticks?.color ?? "grey",
-                display: true,
-                text: chart?.aggregation?.attributeName || "Line Values",
-              },
-              ticks: {
-                padding: widgetTheme?.scales?.y?.ticks?.padding ?? 8,
-              },
-            },
-            x: {
-              title: {
-                color: widgetTheme?.scales?.x?.ticks?.color ?? "grey",
-                display: true,
-                text: chart?.dimensions?.[0] || "X-axis",
-              },
-              display: widgetTheme?.scales?.x?.display ?? true,
-              grid: {
-                display: widgetTheme?.scales?.x?.grid?.display ?? false,
-                tickColor: widgetTheme?.scales?.x?.ticks?.color ?? "red",
-              },
               ticks: {
                 color:
-                  widgetTheme?.scales?.x?.ticks?.color ??
+                  widgetTheme?.scales?.y?.ticks?.color ||
                   theme.palette.text.secondary,
-                padding: widgetTheme?.scales?.x?.ticks?.padding ?? 8,
+                padding: 8,
+              },
+            },
+          },
+          plugins: {
+            ...baseOptions.plugins,
+            legend: {
+              display: true,
+              position: "bottom" as const,
+              labels: {
+                usePointStyle: true,
+                color:
+                  widgetTheme?.legend?.labels?.color ||
+                  theme.palette.text.primary,
+                padding: 15,
+                font: { size: 12 },
+                boxWidth: 10,
+                boxHeight: 10,
               },
             },
           },
