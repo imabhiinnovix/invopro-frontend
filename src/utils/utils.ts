@@ -723,6 +723,44 @@ export const toArray = (value?: string | string[]): string[] => {
   return [];
 };
 
+/**
+ * Maps raw group-by field values to display labels.
+ * E.g. for ReportCriticalEvent: "Y" → "Critical", "N" → "Other".
+ */
+export const mapGroupLabel = (
+  groupFieldKey: string,
+  rawValue: string,
+): string => {
+  if (
+    groupFieldKey === "ActionDue.ReportCriticalEvent" ||
+    groupFieldKey === "ReportCriticalEvent"
+  ) {
+    return rawValue === "Y" ? "Critical" : "Other";
+  }
+  return rawValue;
+};
+
+/**
+ * Sorts group values so that for ReportCriticalEvent, "Y" (Critical)
+ * comes before "N" (Other). For other fields, preserves original order.
+ */
+export const sortGroupValues = (
+  groupFieldKey: string,
+  groups: unknown[],
+): unknown[] => {
+  if (
+    groupFieldKey === "ActionDue.ReportCriticalEvent" ||
+    groupFieldKey === "ReportCriticalEvent"
+  ) {
+    return [...groups].sort((a, b) => {
+      if (a === "Y") return -1;
+      if (b === "Y") return 1;
+      return 0;
+    });
+  }
+  return groups;
+};
+
 export const checkPermission = (
   permissions: PermissionMap | null,
   permissionFor: PermissionResourceType,

@@ -382,7 +382,7 @@ export interface FetchChartDataPayload {
 export interface ChartGridProps {
   dashboardId: string;
   isEditMode: boolean;
-  onEditChart: (chart: ChartResponse) => void;
+  onEditChart: (chart: ChartResponse | null, options?: { numberChartColor?: string }) => void;
   isAddChartModalOpen: boolean;
   isEditChartModalOpen: boolean;
   gridColumns: number;
@@ -394,6 +394,7 @@ export interface ChartGridProps {
   isNaturalLangauage?: boolean;
   dashboardFilters: any;
   isDefaultNotivix?: boolean;
+  onRegisterChartPreview?: (render: (chart: ChartResponse | null) => React.ReactNode) => void;
 }
 
 export interface ChartDataItem {

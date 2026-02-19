@@ -1,4 +1,4 @@
-﻿// import React, { useState, useRef, useEffect, useMemo } from 'react';
+// import React, { useState, useRef, useEffect, useMemo } from 'react';
 // import { Box, Typography, TextField, Button, ButtonGroup, Stack, MenuItem, SelectChangeEvent } from '@mui/material';
 // import StyledSelect from '../../../components/atom/common/StyledSelect';
 // import AddIcon from '@mui/icons-material/Add';
@@ -1862,12 +1862,14 @@ import "react-multi-date-picker/styles/colors/purple.css";
 import { useParams, useLocation } from "react-router-dom";
 import { ChartGrid } from "./ChartGrid";
 import { AddChartModal, ChartFormData } from "./AddChartModal";
+import { EditChartModal } from "./EditChartModal";
 import { useAppDispatch, useAppSelector } from "../../../storeHooks";
 import {
   updateWidget,
   saveWidgets,
   fetchWidgetTheme,
   fetchChartData,
+  fetchWidgetDataLazy,
   selectDashboardTheme,
 } from "../dashboardActions";
 import { clearAllCaches } from "../dashboardReducer";
@@ -1917,6 +1919,13 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   const [selectedChart, setSelectedChart] = useState<ChartResponse | null>(
     null,
   );
+  const [selectedNumberChartColor, setSelectedNumberChartColor] = useState<
+    string | undefined
+  >(undefined);
+  const [isChartUpdating, setIsChartUpdating] = useState(false);
+  const [chartPreviewRenderer, setChartPreviewRenderer] = useState<
+    ((chart: ChartResponse) => React.ReactNode) | null
+  >(null);
   const [gridColumns, setGridColumns] = useState(2);
   const [selectedTheme, setSelectedTheme] = useState<string>("");
   const [isExportingPdf, setIsExportingPdf] = useState(false);
@@ -1924,6 +1933,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   const inputRef = useRef<HTMLInputElement>(null);
   const dashboardContainerRef = useRef<HTMLDivElement>(null);
   const fetchChartDataAbortRef = useRef<(() => void) | null>(null);
+  const lastEditedChartIdRef = useRef<string | null>(null);
   const { id: dashboardId } = useParams();
   const location = useLocation();
   const dispatch = useAppDispatch();
@@ -2811,6 +2821,23 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     }
   }, [isEditChartModalOpen, selectedChart]);
 
+  // Keep selectedChart in sync with the latest chart data from Redux
+  // This ensures the edit modal preview updates after a chart is updated
+  useEffect(() => {
+    if (!isEditChartModalOpen || !selectedChart) return;
+    const updatedChart = charts.find(
+      (c: ChartResponse) => c._id === selectedChart._id,
+    );
+    if (updatedChart && updatedChart !== selectedChart) {
+      // Only update if the chart object has actually changed
+      const hasChanged =
+        JSON.stringify(updatedChart) !== JSON.stringify(selectedChart);
+      if (hasChanged) {
+        setSelectedChart(updatedChart);
+      }
+    }
+  }, [charts, isEditChartModalOpen, selectedChart]);
+
   useEffect(() => {
     if (currentDashboard?.settings) {
       setValue("versionValue", null);
@@ -2923,15 +2950,56 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     setIsAddChartModalOpen(false);
   };
 
-  const handleEditChart = (chart: ChartResponse) => {
+  const handleEditChart = (
+    chart: ChartResponse | null,
+    options?: { numberChartColor?: string },
+  ) => {
     setSelectedChart(chart);
-    setIsEditChartModalOpen(true);
-    setIsAddChartModalOpen(false);
+    setSelectedNumberChartColor(options?.numberChartColor);
+    if (chart) {
+      setIsEditChartModalOpen(true);
+      setIsAddChartModalOpen(false);
+    }
   };
 
   const handleCloseEditModal = () => {
+    const editedChartId = lastEditedChartIdRef.current;
     setIsEditChartModalOpen(false);
     setSelectedChart(null);
+    setSelectedNumberChartColor(undefined);
+
+    // If a chart was edited, refresh dashboard data and scroll to it
+    if (editedChartId) {
+      lastEditedChartIdRef.current = null;
+
+      // Re-fetch all chart data to ensure the grid is up-to-date
+      if (dashboardId) {
+        dispatch(
+          fetchChartData({
+            dashboardId,
+            dashboardType:
+              currentDashboard?.settings?.dashboardType || "normal",
+            startVersionValue,
+            endVersionValue,
+            versionValue: formattedVersionValue || "",
+            dashboardFilters,
+          }),
+        );
+      }
+
+      // Scroll to the edited chart after a short delay to allow re-render
+      setTimeout(() => {
+        const chartElement = document.querySelector(
+          `[data-chart-id="${editedChartId}"]`,
+        );
+        if (chartElement) {
+          chartElement.scrollIntoView({
+            behavior: "smooth",
+            block: "center",
+          });
+        }
+      }, 500);
+    }
   };
 
   const handleChartUpdate = async (formData: ChartFormData) => {
@@ -2948,21 +3016,52 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
       if (result.success) {
         toast.success("Chart updated successfully!");
-        handleCloseEditModal();
+        // Store the edited chart id for scrolling on modal close
+        lastEditedChartIdRef.current = selectedChart._id;
 
-        // Fetch updated chart data
-        if (dashboardId) {
-          dispatch(
-            fetchChartData({
-              dashboardId,
-              dashboardType:
-                currentDashboard?.settings?.dashboardType || "normal",
+        // Show loader on the chart preview while re-fetching
+        setIsChartUpdating(true);
+
+        const dashboardType =
+          currentDashboard?.settings?.dashboardType || "normal";
+
+        try {
+          // Re-fetch chart list so Redux store has the fully populated chart object
+          let updatedChart: ChartResponse | undefined;
+          if (dashboardId) {
+            const chartDataResult = await dispatch(
+              fetchChartData({
+                dashboardId,
+                dashboardType,
+                startVersionValue,
+                endVersionValue,
+                versionValue: formattedVersionValue || "",
+                dashboardFilters,
+              }),
+            ).unwrap();
+
+            const chartsArray = Array.isArray(chartDataResult)
+              ? chartDataResult
+              : chartDataResult?.data || [];
+            updatedChart = chartsArray.find(
+              (c: ChartResponse) => c._id === selectedChart._id,
+            );
+          }
+
+          // Re-fetch widget data using the fresh chart (not stale selectedChart)
+          await dispatch(
+            fetchWidgetDataLazy({
+              chart: updatedChart || selectedChart,
+              dashboardType,
               startVersionValue,
               endVersionValue,
               versionValue: formattedVersionValue || "",
               dashboardFilters,
+              isDefaultNotivix: currentDashboard?.isDefaultNotivix || false,
             }),
           );
+        } finally {
+          setIsChartUpdating(false);
         }
       } else {
         toast.error(result.message || "Failed to update chart");
@@ -3666,7 +3765,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             p: STYLE_GUIDE.SPACING.s4,
 
             transition: "all 0.3s ease",
-            ...((isAddChartModalOpen || isEditChartModalOpen) && {
+            ...(isAddChartModalOpen && {
               flex: "1 1 70%",
             }),
             "&::-webkit-scrollbar": {
@@ -3705,11 +3804,12 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               isTrend={currentDashboard?.settings?.dashboardType === "trend"}
               dashboardFilters={dashboardFilters}
               isDefaultNotivix={currentDashboard?.isDefaultNotivix || false}
+              onRegisterChartPreview={setChartPreviewRenderer}
             />
           )}
         </Box>
 
-        {(isAddChartModalOpen || isEditChartModalOpen) && (
+        {isAddChartModalOpen && (
           <Box
             sx={{
               width: {
@@ -3727,37 +3827,37 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               height: "100%",
             }}
           >
-            {isAddChartModalOpen && (
-              <AddChartModal
-                open={isAddChartModalOpen}
-                onClose={handleCloseModal}
-                isSubmitting={false}
-                dashboardId={dashboardId || ""}
-                isTrend={currentDashboard?.settings?.dashboardType === "trend"}
-                currentDashboard={currentDashboard}
-                startVersionValue={startVersionValue}
-                endVersionValue={endVersionValue}
-                versionValue={formattedVersionValue}
-              />
-            )}
-            {isEditChartModalOpen && selectedChart && (
-              <AddChartModal
-                open={isEditChartModalOpen}
-                onClose={handleCloseEditModal}
-                isSubmitting={false}
-                dashboardId={dashboardId || ""}
-                initialData={selectedChart}
-                onSave={handleChartUpdate}
-                isTrend={currentDashboard?.settings?.dashboardType === "trend"}
-                currentDashboard={currentDashboard}
-                startVersionValue={startVersionValue}
-                endVersionValue={endVersionValue}
-                versionValue={formattedVersionValue}
-              />
-            )}
+            <AddChartModal
+              open={isAddChartModalOpen}
+              onClose={handleCloseModal}
+              isSubmitting={false}
+              dashboardId={dashboardId || ""}
+              isTrend={currentDashboard?.settings?.dashboardType === "trend"}
+              currentDashboard={currentDashboard}
+              startVersionValue={startVersionValue}
+              endVersionValue={endVersionValue}
+              versionValue={formattedVersionValue}
+            />
           </Box>
         )}
       </Box>
+
+      <EditChartModal
+        open={isEditChartModalOpen && !!selectedChart}
+        chart={selectedChart}
+        chartPreviewRenderer={chartPreviewRenderer}
+        numberChartColor={selectedNumberChartColor}
+        onClose={handleCloseEditModal}
+        onSave={handleChartUpdate}
+        dashboardId={dashboardId || ""}
+        isTrend={currentDashboard?.settings?.dashboardType === "trend"}
+        currentDashboard={currentDashboard}
+        startVersionValue={startVersionValue}
+        endVersionValue={endVersionValue}
+        versionValue={formattedVersionValue}
+        dashboardFilters={dashboardFilters}
+        isUpdating={isChartUpdating}
+      />
       {currentDashboard?.isDefaultNotivix === true && isFiltersModalOpen ? (
         <NotivixFiltersModal
           open={isFiltersModalOpen}

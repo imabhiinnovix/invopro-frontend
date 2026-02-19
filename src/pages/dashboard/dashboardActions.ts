@@ -520,6 +520,7 @@ export const fetchWidgetDataLazy = createAsyncThunk(
       );
 
       if (widgetResponse.data.success) {
+        const responseData = widgetResponse.data?.data;
         const essentialData = {
           _id: chart._id,
           createdBy: chart.createdBy,
@@ -539,12 +540,12 @@ export const fetchWidgetDataLazy = createAsyncThunk(
           widgetTypeId: chart.widgetTypeId,
           dataSourceId: chart.dataSourceId,
           data: {
-            label: widgetResponse.data.data.label,
+            label: responseData?.label ?? "",
             dataSourceFieldSettings: chart.dataSourceId?.fieldSettings,
-            widgetData: widgetResponse.data.data.widgetData.map((item) => ({
-              ...item,
-            })),
-            totalCount: widgetResponse.data.data.totalCount,
+            widgetData: Array.isArray(responseData?.widgetData)
+              ? responseData.widgetData.map((item: any) => ({ ...item }))
+              : [],
+            totalCount: responseData?.totalCount ?? 0,
           },
         };
         dispatch(

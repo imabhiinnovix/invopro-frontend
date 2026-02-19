@@ -159,7 +159,12 @@ const LazyWidget = ({
           {isLoading ? (
             <Stack alignItems="center" justifyContent="center">
               <CircularProgress size={24} />
-              <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
+              <Typography
+                component="span"
+                variant="body2"
+                color="text.secondary"
+                sx={{ mt: 2 }}
+              >
                 Loading...
               </Typography>
             </Stack>
