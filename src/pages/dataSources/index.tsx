@@ -1119,7 +1119,7 @@ const DataSources = () => {
   }, [dataSourceListAPI?.data]);
 
   // Log the correct dataSourceList for debugging
-  console.log("dataSourceList", dataSourceList);
+  // console.log("dataSourceList", dataSourceList);
 
   const currentDataSource = useMemo(
     () => dataSourceList?.find((source) => source?._id === id),
@@ -1130,6 +1130,7 @@ const DataSources = () => {
     () => currentDataSource?.entityId?.attributes,
     [currentDataSource]
   );
+
 
   const optionsAttributes = useMemo(
     () => dataSourceAttributes?.find((attr) => attr?.type === "option"),
@@ -1233,7 +1234,6 @@ const DataSources = () => {
     textAttributes,
     sourceMap,
   ]);
-
   const header = useMemo(
     () => [
       ...(optionsAttributes

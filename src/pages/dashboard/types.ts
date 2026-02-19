@@ -212,6 +212,8 @@ export interface ChartResponse {
   organizationId: string;
   name: string;
   description?: string;
+  widgetKind?: string;
+  image?: string;
   position?: {
     x: number;
     y: number;
@@ -239,6 +241,7 @@ export interface ChartResponse {
   data?: ChartData[];
   userQuery?: string;
   isIncremental?: boolean;
+  imageLastUpdatedAt?: string;
 }
 
 export interface ChartDataResponse {
@@ -381,7 +384,7 @@ export interface FetchChartDataPayload {
 export interface ChartGridProps {
   dashboardId: string;
   isEditMode: boolean;
-  onEditChart: (chart: ChartResponse) => void;
+  onEditChart: (chart: ChartResponse | null, options?: { numberChartColor?: string }) => void;
   onEditModeToggle?: () => void;
   isAddChartModalOpen: boolean;
   isEditChartModalOpen: boolean;
@@ -394,6 +397,7 @@ export interface ChartGridProps {
   isNaturalLangauage?: boolean;
   dashboardFilters: any;
   isDefaultNotivix?: boolean;
+  onRegisterChartPreview?: (render: (chart: ChartResponse | null) => React.ReactNode) => void;
 }
 
 export interface ChartDataItem {

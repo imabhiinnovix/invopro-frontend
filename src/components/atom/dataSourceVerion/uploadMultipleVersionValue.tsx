@@ -103,6 +103,9 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
     {}
   );
 
+  const [isTableOpen, setIsTableOpen] = useState(false); // default collapsed
+  const [hasInteracted, setHasInteracted] = useState(false);
+
   const requiredVersionValues = useGet<{
     success: boolean;
     versionValueDetails: {
@@ -166,7 +169,6 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
 
             return isRequired && !files?.[index];
           });
-
           if (missingFiles.length > 0) {
             return context.createError({
               path: "files",
@@ -279,6 +281,9 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
     fileName?: string,
     index: number = -1
   ) => {
+
+    setHasInteracted(true);
+
     if (!event.target.files?.length) return;
 
     const selectedFiles = Array?.from(event.target.files);
@@ -733,6 +738,22 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
     trigger();
   }, [trigger]);
 
+  useEffect(() => {
+    if (!hasInteracted) return;  
+      
+    const hasErrors =
+      !!errors.files ||
+      !!errors.mappings ||
+      Object.keys(errors || {}).length > 0;
+
+    const submitDisabled = isLoadingReportUpload || !!errors.files;
+
+    if (hasErrors || submitDisabled) {
+      setIsTableOpen(true); // auto open
+    }
+}, [errors, isLoadingReportUpload]);
+
+
   return (
     <DialogContainer
       maxWidth="lg"
@@ -779,6 +800,14 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
             )}
           </Stack>
         </Stack>
+        <Button
+          variant="outlined"
+          onClick={() => setIsTableOpen((prev) => !prev)}
+          sx={{ width: "fit-content" }}
+        >
+          {isTableOpen ? "Hide File Mapping Table ▲" : "Show File Mapping Table ▼"}
+        </Button>
+        {isTableOpen && (    
         <TableContainer component={Paper} sx={{ ...getTableSx() }}>
           <Table sx={{ width: "100%" }} aria-label="customized table">
             <TableHead>
@@ -950,6 +979,7 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
             </TableBody>
           </Table>
         </TableContainer>
+        )}
       </Stack>
       {(isLoadingReportUpload || processingCount > 0) && (
           <Backdrop

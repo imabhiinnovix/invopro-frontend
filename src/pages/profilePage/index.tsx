@@ -52,28 +52,28 @@ import { State, City } from "country-state-city";
 
 const ProfilePage = () => {
   const userProfile = useSelector(
-    (state: RootState) => state.userPermission?.currentUser
+    (state: RootState) => state.userPermission?.currentUser,
   );
   const dispatch = useDispatch();
   const { refreshUserDetails } = useContext(AuthContext);
 
   const userDetailsAPI = useGet<UserResponse>(
     ["userDetails"],
-    GET.USER_DETAILS
+    GET.USER_DETAILS,
   );
 
   const permissions = useSelector(
-    (state: RootState) => state.userPermission.permissions
+    (state: RootState) => state.userPermission.permissions,
   );
   const shouldAllowDelete = checkPermission(
     permissions,
     PermissionsMap.USER_PROFILE_IMAGE,
-    "delete"
+    "delete",
   );
   const shouldAllowView = checkPermission(
     permissions,
     PermissionsMap.USER_PROFILE_IMAGE,
-    "get"
+    "get",
   );
   // const shouldAllowUpload = checkPermission(
   //   permissions,
@@ -171,7 +171,7 @@ const ProfilePage = () => {
         try {
           const states = State.getStatesOfCountry(selectedCountry);
           const stateExists = states.some(
-            (s) => s.isoCode === selectedState || s.name === selectedState
+            (s) => s.isoCode === selectedState || s.name === selectedState,
           );
           if (!stateExists) {
             resetAddress((prevValues) => ({
@@ -290,12 +290,12 @@ const ProfilePage = () => {
     (data) => {
       toast.success(data.message);
     },
-    false
+    false,
   );
 
   const filteredDesignations = selectedDepartmentId
     ? designationList.data?.data?.filter(
-        (designation) => designation.departmentId._id === selectedDepartmentId
+        (designation) => designation.departmentId._id === selectedDepartmentId,
       ) || []
     : [];
 
@@ -304,7 +304,7 @@ const ProfilePage = () => {
       const { country, state, city } = validateLocationValues(
         userProfile?.country,
         userProfile?.state,
-        userProfile?.city
+        userProfile?.city,
       );
 
       const newProfile = {
@@ -347,7 +347,12 @@ const ProfilePage = () => {
         postalCode: newProfile.address.postalCode,
       });
       if (shouldAllowView) {
-        setProfileImage(userProfile?.imagePath || "/default-avatar.png");
+        const imagePath = userProfile?.imagePath || "/default-avatar.png";
+        const imageWithNoCache =
+          imagePath !== "/default-avatar.png"
+            ? `${imagePath}?t=${Date.now()}`
+            : imagePath;
+        setProfileImage(imageWithNoCache);
       }
       setSelectedDepartmentId(userProfile?.departmentId?._id || "");
     }
@@ -454,7 +459,7 @@ const ProfilePage = () => {
     const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_])\S+$/;
     if (!regex.test(newPassword)) {
       setPasswordError(
-        "Password must contain at least one uppercase, one lowercase, one number and one special character"
+        "Password must contain at least one uppercase, one lowercase, one number and one special character",
       );
       return false;
     }
@@ -539,7 +544,7 @@ const ProfilePage = () => {
         const { country, state, city } = validateLocationValues(
           countryValue,
           stateValue,
-          cityValue
+          cityValue,
         );
 
         addressData = {
@@ -603,7 +608,7 @@ const ProfilePage = () => {
     } catch (error) {
       console.error("Profile update error:", error);
       toast.error(
-        error.message || "Failed to update profile. Please try again."
+        error.message || "Failed to update profile. Please try again.",
       );
     }
   };
@@ -658,7 +663,7 @@ const ProfilePage = () => {
       }
     } catch (error) {
       toast.error(
-        error.message || "Failed to upload profile picture. Please try again."
+        error.message || "Failed to upload profile picture. Please try again.",
       );
     } finally {
       setIsUploading(false);
@@ -705,7 +710,7 @@ const ProfilePage = () => {
     } catch (error) {
       console.error("Image deletion error:", error);
       toast.error(
-        error.message || "Failed to delete profile picture. Please try again."
+        error.message || "Failed to delete profile picture. Please try again.",
       );
     } finally {
       setIsDeleting(false);
@@ -798,6 +803,7 @@ const ProfilePage = () => {
                 }
               }}
               disabled={isDisabled}
+              autoComplete="new-password"
               variant={editModes[section] ? "outlined" : "filled"}
               size="small"
               sx={{
@@ -869,6 +875,7 @@ const ProfilePage = () => {
                 handleInputChange(section, field.id, e.target.value)
               }
               disabled={isDisabled}
+              autoComplete="off"
               variant={
                 editModes[section] && !isDisabled ? "outlined" : "filled"
               }
@@ -1226,6 +1233,7 @@ const ProfilePage = () => {
                       handleInputChange("address", "address", e.target.value);
                     }}
                     disabled={!editModes.address}
+                    autoComplete="off"
                     variant={editModes.address ? "outlined" : "filled"}
                     size="small"
                     sx={{
@@ -1382,6 +1390,7 @@ const ProfilePage = () => {
                       handleInputChange("address", "postalCode", value);
                     }}
                     disabled={!editModes.address}
+                    autoComplete="off"
                     variant={editModes.address ? "outlined" : "filled"}
                     type="tel"
                     size="small"
@@ -1514,6 +1523,7 @@ const ProfilePage = () => {
                       type="password"
                       value="•••••••••"
                       disabled
+                      autoComplete="off"
                       variant="filled"
                       size="small"
                       InputProps={{

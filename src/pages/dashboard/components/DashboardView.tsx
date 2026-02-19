@@ -1859,14 +1859,17 @@ import "react-multi-date-picker/styles/colors/purple.css";
 import { useParams, useLocation } from "react-router-dom";
 import { ChartGrid } from "./ChartGrid";
 import { AddChartModal, ChartFormData } from "./AddChartModal";
+import { EditChartModal } from "./EditChartModal";
 import { useAppDispatch, useAppSelector } from "../../../storeHooks";
 import {
   updateWidget,
   saveWidgets,
   fetchWidgetTheme,
   fetchChartData,
+  fetchWidgetDataLazy,
   selectDashboardTheme,
 } from "../dashboardActions";
+import { clearAllCaches } from "../dashboardReducer";
 import { toast } from "react-toastify";
 import { ChartResponse, TemporaryChart, Dashboard } from "../types";
 import usePost from "../../../hooks/usePost";
@@ -1913,8 +1916,15 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   const [isAddChartModalOpen, setIsAddChartModalOpen] = useState(false);
   const [isEditChartModalOpen, setIsEditChartModalOpen] = useState(false);
   const [selectedChart, setSelectedChart] = useState<ChartResponse | null>(
-    null
+    null,
   );
+  const [selectedNumberChartColor, setSelectedNumberChartColor] = useState<
+    string | undefined
+  >(undefined);
+  const [isChartUpdating, setIsChartUpdating] = useState(false);
+  const [chartPreviewRenderer, setChartPreviewRenderer] = useState<
+    ((chart: ChartResponse) => React.ReactNode) | null
+  >(null);
   const [gridColumns, setGridColumns] = useState(2);
   const [selectedTheme, setSelectedTheme] = useState<string>("");
   const [isExportingPdf, setIsExportingPdf] = useState(false);
@@ -1922,21 +1932,22 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   const inputRef = useRef<HTMLInputElement>(null);
   const dashboardContainerRef = useRef<HTMLDivElement>(null);
   const fetchChartDataAbortRef = useRef<(() => void) | null>(null);
+  const lastEditedChartIdRef = useRef<string | null>(null);
   const { id: dashboardId } = useParams();
   const location = useLocation();
   const dispatch = useAppDispatch();
   const temporaryCharts = useAppSelector(
-    (state) => state.dashboard.temporaryCharts
+    (state) => state.dashboard.temporaryCharts,
   );
   const dashboards = useAppSelector((state) => state.dashboard.dashboards);
   const currentDashboard = dashboards.find((d) => d._id === dashboardId);
   const [isFiltersModalOpen, setIsFiltersModalOpen] = useState(false);
   const [dashboardFilters, setDashboardFilters] = useState<any>({});
   const { dataSourceDetails, dataSourceDetailsLoading } = useAppSelector(
-    (state) => state.notivixDashboard
+    (state) => state.notivixDashboard,
   );
   const [statusToggle, setStatusToggle] = useState<"Pending" | "Completed">(
-    "Pending"
+    "Pending",
   );
   const [dateRange, setDateRange] = useState<DateObject[] | null>(null);
   const [isDateRangeFocused, setIsDateRangeFocused] = useState(false);
@@ -1946,24 +1957,24 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   const postGridColumns = usePost([""]);
 
   const permissions = useSelector(
-    (state: RootState) => state.userPermission?.permissions
+    (state: RootState) => state.userPermission?.permissions,
   );
   const shouldAllowDashboardUpdate = checkPermission(
     permissions,
     PermissionsMap.DASHBOARD,
-    "update"
+    "update",
   );
 
   const shouldAllowDefaultDashboardUpdate = checkPermission(
     permissions,
     PermissionsMap.DEFAULT_DASHBOARD,
-    "update"
+    "update",
   );
 
   const shouldAllowWidgetCreate = checkPermission(
     permissions,
     PermissionsMap.DASHBOARD,
-    "create_widget"
+    "create_widget",
   );
   // Predefined range options
   const rangeOptions = {
@@ -2134,7 +2145,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
   const handleStatusToggle = (
     event: React.MouseEvent<HTMLElement>,
-    newStatus: "Pending" | "Completed" | null
+    newStatus: "Pending" | "Completed" | null,
   ) => {
     if (newStatus !== null) {
       setStatusToggle(newStatus);
@@ -2181,13 +2192,13 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   };
 
   const handleDateRangeChange = (
-    dateRange: DateObject[] | DateObject | null
+    dateRange: DateObject[] | DateObject | null,
   ) => {
     const range = Array.isArray(dateRange)
       ? dateRange
       : dateRange
-      ? [dateRange]
-      : null;
+        ? [dateRange]
+        : null;
     setDateRange(range);
 
     if (range && range.length === 2) {
@@ -2267,13 +2278,13 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
       const dashboardName = currentDashboard.name || "Dashboard";
 
       const allCards = dashboardContainerRef.current.querySelectorAll(
-        "[data-widget-type]"
+        "[data-widget-type]",
       ) as NodeListOf<HTMLElement>;
 
       let cardsToProcess = allCards;
       if (allCards.length === 0) {
         cardsToProcess = dashboardContainerRef.current.querySelectorAll(
-          ".MuiCard-root"
+          ".MuiCard-root",
         ) as NodeListOf<HTMLElement>;
       }
 
@@ -2331,7 +2342,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             margin,
             margin + headerHeight - 5,
             pageWidth - margin,
-            margin + headerHeight - 5
+            margin + headerHeight - 5,
           );
         } catch (error) {
           console.error("Error adding header:", error);
@@ -2345,7 +2356,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             margin,
             margin + headerHeight - 5,
             pageWidth - margin,
-            margin + headerHeight - 5
+            margin + headerHeight - 5,
           );
         }
       };
@@ -2417,7 +2428,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               offsetX,
               offsetY,
               finalWidth,
-              finalHeight
+              finalHeight,
             );
           } catch (error) {
             console.error(`Error processing number widget ${i + 1}:`, error);
@@ -2425,7 +2436,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         }
 
         const numberWidgetRows = Math.ceil(
-          numberWidgets.length / numberWidgetColumns
+          numberWidgets.length / numberWidgetColumns,
         );
         currentY += numberWidgetRows * (numberWidgetHeight + margin) + margin;
       }
@@ -2466,7 +2477,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           let matchedChart: ChartResponse | undefined;
 
           const chartNameElement = widgetElement.querySelector(
-            "h6, .MuiTypography-root, [class*='chart-name'], [class*='ChartTitle']"
+            "h6, .MuiTypography-root, [class*='chart-name'], [class*='ChartTitle']",
           );
           if (chartNameElement && charts.length > 0) {
             const chartName = chartNameElement.textContent?.trim();
@@ -2507,7 +2518,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
               const wrappedText = pdf.splitTextToSize(
                 descriptionText,
-                chartWidth - 2
+                chartWidth - 2,
               );
 
               const descriptionHeight = wrappedText.length * 5;
@@ -2534,7 +2545,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               offsetX,
               offsetY,
               finalWidth,
-              finalHeight
+              finalHeight,
             );
 
             if (matchedChart?.description) {
@@ -2551,7 +2562,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
               const wrappedText = pdf.splitTextToSize(
                 matchedChart.description,
-                chartWidth - 2
+                chartWidth - 2,
               );
 
               pdf.text(wrappedText, xPos, summaryY);
@@ -2622,11 +2633,11 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                   } catch {
                     return false;
                   }
-                }
+                },
               );
           }
           return yup.string().nullable().optional();
-        }
+        },
       ),
   });
 
@@ -2671,7 +2682,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     if (dashboards.length > 0) {
       setGridColumns(
         dashboards.find((dashboard) => dashboard?._id === dashboardId)?.settings
-          ?.gridColumns || 2
+          ?.gridColumns || 2,
       );
     }
   }, [dashboards, dashboardId]);
@@ -2683,8 +2694,13 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   useEffect(() => {
     if (dashboardId) {
       const hasFilters = Object.keys(dashboardFilters).length > 0;
+
       if (!hasFilters && currentDashboard?.isDefaultNotivix) {
         return;
+      }
+
+      if (currentDashboard?.isDefaultNotivix && hasFilters) {
+        dispatch(clearAllCaches());
       }
 
       let thunkPromise: any = null;
@@ -2704,7 +2720,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             dashboardFilters: currentDashboard?.isDefaultNotivix
               ? dashboardFilters
               : {},
-          })
+          }),
         );
       } else if (
         currentDashboard?.settings?.dashboardType === "trend" &&
@@ -2723,17 +2739,16 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             endVersionValue,
             dashboardType: currentDashboard?.settings?.dashboardType,
             dashboardFilters,
-          })
+          }),
         );
       } else if (!currentDashboard?.isDefaultNotivix) {
         thunkPromise = dispatch(
           fetchChartData({
             dashboardId,
             dashboardFilters,
-          })
+          }),
         );
       }
-
       if (thunkPromise && typeof thunkPromise.abort === "function") {
         fetchChartDataAbortRef.current = () => {
           thunkPromise.abort();
@@ -2805,6 +2820,23 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     }
   }, [isEditChartModalOpen, selectedChart]);
 
+  // Keep selectedChart in sync with the latest chart data from Redux
+  // This ensures the edit modal preview updates after a chart is updated
+  useEffect(() => {
+    if (!isEditChartModalOpen || !selectedChart) return;
+    const updatedChart = charts.find(
+      (c: ChartResponse) => c._id === selectedChart._id,
+    );
+    if (updatedChart && updatedChart !== selectedChart) {
+      // Only update if the chart object has actually changed
+      const hasChanged =
+        JSON.stringify(updatedChart) !== JSON.stringify(selectedChart);
+      if (hasChanged) {
+        setSelectedChart(updatedChart);
+      }
+    }
+  }, [charts, isEditChartModalOpen, selectedChart]);
+
   useEffect(() => {
     if (currentDashboard?.settings) {
       setValue("versionValue", null);
@@ -2854,7 +2886,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
       // Save title first if it has changed
       if (editedTitle !== title) {
         onTitleChange(editedTitle);
-        setTitle(editedTitle);
+        setTitle(initialTitle);
+        setEditedTitle(initialTitle);
       }
 
       // Save temporary charts only if there are any
@@ -2875,7 +2908,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 entityId: chart.dataSourceId?.entityId || "",
                 isIncremental: chart.isIncremental || false,
               })),
-            })
+            }),
           ).unwrap();
 
           if (result.success) {
@@ -2916,15 +2949,56 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     setIsAddChartModalOpen(false);
   };
 
-  const handleEditChart = (chart: ChartResponse) => {
+  const handleEditChart = (
+    chart: ChartResponse | null,
+    options?: { numberChartColor?: string },
+  ) => {
     setSelectedChart(chart);
-    setIsEditChartModalOpen(true);
-    setIsAddChartModalOpen(false);
+    setSelectedNumberChartColor(options?.numberChartColor);
+    if (chart) {
+      setIsEditChartModalOpen(true);
+      setIsAddChartModalOpen(false);
+    }
   };
 
   const handleCloseEditModal = () => {
+    const editedChartId = lastEditedChartIdRef.current;
     setIsEditChartModalOpen(false);
     setSelectedChart(null);
+    setSelectedNumberChartColor(undefined);
+
+    // If a chart was edited, refresh dashboard data and scroll to it
+    if (editedChartId) {
+      lastEditedChartIdRef.current = null;
+
+      // Re-fetch all chart data to ensure the grid is up-to-date
+      if (dashboardId) {
+        dispatch(
+          fetchChartData({
+            dashboardId,
+            dashboardType:
+              currentDashboard?.settings?.dashboardType || "normal",
+            startVersionValue,
+            endVersionValue,
+            versionValue: formattedVersionValue || "",
+            dashboardFilters,
+          }),
+        );
+      }
+
+      // Scroll to the edited chart after a short delay to allow re-render
+      setTimeout(() => {
+        const chartElement = document.querySelector(
+          `[data-chart-id="${editedChartId}"]`,
+        );
+        if (chartElement) {
+          chartElement.scrollIntoView({
+            behavior: "smooth",
+            block: "center",
+          });
+        }
+      }, 500);
+    }
   };
 
   const handleChartUpdate = async (formData: ChartFormData) => {
@@ -2936,26 +3010,57 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           ...formData,
           _id: selectedChart._id,
           dashboardId: dashboardId || "",
-        })
+        }),
       ).unwrap();
 
       if (result.success) {
         toast.success("Chart updated successfully!");
-        handleCloseEditModal();
+        // Store the edited chart id for scrolling on modal close
+        lastEditedChartIdRef.current = selectedChart._id;
 
-        // Fetch updated chart data
-        if (dashboardId) {
-          dispatch(
-            fetchChartData({
-              dashboardId,
-              dashboardType:
-                currentDashboard?.settings?.dashboardType || "normal",
+        // Show loader on the chart preview while re-fetching
+        setIsChartUpdating(true);
+
+        const dashboardType =
+          currentDashboard?.settings?.dashboardType || "normal";
+
+        try {
+          // Re-fetch chart list so Redux store has the fully populated chart object
+          let updatedChart: ChartResponse | undefined;
+          if (dashboardId) {
+            const chartDataResult = await dispatch(
+              fetchChartData({
+                dashboardId,
+                dashboardType,
+                startVersionValue,
+                endVersionValue,
+                versionValue: formattedVersionValue || "",
+                dashboardFilters,
+              }),
+            ).unwrap();
+
+            const chartsArray = Array.isArray(chartDataResult)
+              ? chartDataResult
+              : chartDataResult?.data || [];
+            updatedChart = chartsArray.find(
+              (c: ChartResponse) => c._id === selectedChart._id,
+            );
+          }
+
+          // Re-fetch widget data using the fresh chart (not stale selectedChart)
+          await dispatch(
+            fetchWidgetDataLazy({
+              chart: updatedChart || selectedChart,
+              dashboardType,
               startVersionValue,
               endVersionValue,
               versionValue: formattedVersionValue || "",
               dashboardFilters,
-            })
+              isDefaultNotivix: currentDashboard?.isDefaultNotivix || false,
+            }),
           );
+        } finally {
+          setIsChartUpdating(false);
         }
       } else {
         toast.error(result.message || "Failed to update chart");
@@ -2987,7 +3092,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     if (dashboardId) {
       try {
         const result = await dispatch(
-          selectDashboardTheme({ dashboardId, widgetThemeId: themeId })
+          selectDashboardTheme({ dashboardId, widgetThemeId: themeId }),
         ).unwrap();
 
         if (result.success) {
@@ -3523,7 +3628,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             pt: STYLE_GUIDE.SPACING.s4,
 
             transition: "all 0.3s ease",
-            ...((isAddChartModalOpen || isEditChartModalOpen) && {
+            ...(isAddChartModalOpen && {
               flex: "1 1 70%",
             }),
             "&::-webkit-scrollbar": {
@@ -3563,11 +3668,12 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               isTrend={currentDashboard?.settings?.dashboardType === "trend"}
               dashboardFilters={dashboardFilters}
               isDefaultNotivix={currentDashboard?.isDefaultNotivix || false}
+              onRegisterChartPreview={setChartPreviewRenderer}
             />
           )}
         </Box>
 
-        {(isAddChartModalOpen || isEditChartModalOpen) && (
+        {isAddChartModalOpen && (
           <Box
             sx={{
               width: {
@@ -3585,37 +3691,37 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               height: "100%",
             }}
           >
-            {isAddChartModalOpen && (
-              <AddChartModal
-                open={isAddChartModalOpen}
-                onClose={handleCloseModal}
-                isSubmitting={false}
-                dashboardId={dashboardId || ""}
-                isTrend={currentDashboard?.settings?.dashboardType === "trend"}
-                currentDashboard={currentDashboard}
-                startVersionValue={startVersionValue}
-                endVersionValue={endVersionValue}
-                versionValue={formattedVersionValue}
-              />
-            )}
-            {isEditChartModalOpen && selectedChart && (
-              <AddChartModal
-                open={isEditChartModalOpen}
-                onClose={handleCloseEditModal}
-                isSubmitting={false}
-                dashboardId={dashboardId || ""}
-                initialData={selectedChart}
-                onSave={handleChartUpdate}
-                isTrend={currentDashboard?.settings?.dashboardType === "trend"}
-                currentDashboard={currentDashboard}
-                startVersionValue={startVersionValue}
-                endVersionValue={endVersionValue}
-                versionValue={formattedVersionValue}
-              />
-            )}
+            <AddChartModal
+              open={isAddChartModalOpen}
+              onClose={handleCloseModal}
+              isSubmitting={false}
+              dashboardId={dashboardId || ""}
+              isTrend={currentDashboard?.settings?.dashboardType === "trend"}
+              currentDashboard={currentDashboard}
+              startVersionValue={startVersionValue}
+              endVersionValue={endVersionValue}
+              versionValue={formattedVersionValue}
+            />
           </Box>
         )}
       </Box>
+
+      <EditChartModal
+        open={isEditChartModalOpen && !!selectedChart}
+        chart={selectedChart}
+        chartPreviewRenderer={chartPreviewRenderer}
+        numberChartColor={selectedNumberChartColor}
+        onClose={handleCloseEditModal}
+        onSave={handleChartUpdate}
+        dashboardId={dashboardId || ""}
+        isTrend={currentDashboard?.settings?.dashboardType === "trend"}
+        currentDashboard={currentDashboard}
+        startVersionValue={startVersionValue}
+        endVersionValue={endVersionValue}
+        versionValue={formattedVersionValue}
+        dashboardFilters={dashboardFilters}
+        isUpdating={isChartUpdating}
+      />
       {currentDashboard?.isDefaultNotivix === true && isFiltersModalOpen ? (
         <NotivixFiltersModal
           open={isFiltersModalOpen}

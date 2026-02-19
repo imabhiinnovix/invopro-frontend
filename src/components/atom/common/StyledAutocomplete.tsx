@@ -12,11 +12,11 @@ interface StyledAutocompleteProps<
   T,
   Multiple extends boolean | undefined = undefined,
   DisableClearable extends boolean | undefined = undefined,
-  FreeSolo extends boolean | undefined = undefined
+  FreeSolo extends boolean | undefined = undefined,
 > extends Omit<
-    AutocompleteProps<T, Multiple, DisableClearable, FreeSolo>,
-    "renderInput"
-  > {
+  AutocompleteProps<T, Multiple, DisableClearable, FreeSolo>,
+  "renderInput"
+> {
   label?: string;
   error?: boolean;
   helperText?: string;
@@ -27,7 +27,7 @@ function StyledAutocompleteInner<
   T,
   Multiple extends boolean | undefined = undefined,
   DisableClearable extends boolean | undefined = undefined,
-  FreeSolo extends boolean | undefined = undefined
+  FreeSolo extends boolean | undefined = undefined,
 >(
   {
     label,
@@ -37,7 +37,7 @@ function StyledAutocompleteInner<
     sx = {},
     ...props
   }: StyledAutocompleteProps<T, Multiple, DisableClearable, FreeSolo>,
-  ref: React.ForwardedRef<HTMLDivElement>
+  ref: React.ForwardedRef<HTMLDivElement>,
 ) {
   const theme = useUnifiedTheme();
 
@@ -156,6 +156,7 @@ function StyledAutocompleteInner<
           label={label}
           error={error}
           helperText={helperText}
+          autoComplete="off"
           {...textFieldProps}
         />
       )}
@@ -167,11 +168,11 @@ const StyledAutocomplete = forwardRef(StyledAutocompleteInner) as <
   T,
   Multiple extends boolean | undefined = undefined,
   DisableClearable extends boolean | undefined = undefined,
-  FreeSolo extends boolean | undefined = undefined
+  FreeSolo extends boolean | undefined = undefined,
 >(
   props: StyledAutocompleteProps<T, Multiple, DisableClearable, FreeSolo> & {
     ref?: React.ForwardedRef<HTMLDivElement>;
-  }
+  },
 ) => React.ReactElement;
 
 export default StyledAutocomplete;

@@ -17,6 +17,7 @@ interface LazyWidgetProps {
   onLoadStart?: () => void;
   onLoadComplete?: () => void;
   loaderHeight?: number;
+  isDefaultNotivix?: boolean;
 }
 
 const LazyWidget = ({
@@ -32,6 +33,7 @@ const LazyWidget = ({
   onLoadStart,
   onLoadComplete,
   loaderHeight = 450,
+  isDefaultNotivix,
 }: LazyWidgetProps) => {
   const dispatch = useAppDispatch();
   const containerRef = useRef<HTMLDivElement>(null);
@@ -39,7 +41,7 @@ const LazyWidget = ({
   const [isInViewport, setIsInViewport] = useState(false);
 
   const cachedWidgetData = useAppSelector((state) =>
-    state.dashboard.storeWidgetData.find((item) => item.widgetId === chart._id)
+    state.dashboard.storeWidgetData.find((item) => item.widgetId === chart._id),
   );
 
   const loadData = useCallback(async () => {
@@ -54,7 +56,8 @@ const LazyWidget = ({
           endVersionValue,
           versionValue,
           dashboardFilters,
-        })
+          isDefaultNotivix,
+        }),
       ).unwrap();
     } catch (err) {
       console.error("Failed to load widget data:", err);
@@ -72,6 +75,7 @@ const LazyWidget = ({
     dashboardFilters,
     onLoadStart,
     onLoadComplete,
+    isDefaultNotivix,
   ]);
 
   useEffect(() => {
@@ -87,7 +91,7 @@ const LazyWidget = ({
         storeWidgetData({
           widgetId: chart._id,
           data: cachedWidgetData.data as unknown as CombinedWidgetData,
-        })
+        }),
       );
       return;
     }
@@ -106,7 +110,7 @@ const LazyWidget = ({
         root: null,
         rootMargin: "100px",
         threshold: 0.1,
-      }
+      },
     );
 
     if (currentContainer) {
@@ -155,7 +159,12 @@ const LazyWidget = ({
           {isLoading ? (
             <Stack alignItems="center" justifyContent="center">
               <CircularProgress size={24} />
-              <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
+              <Typography
+                component="span"
+                variant="body2"
+                color="text.secondary"
+                sx={{ mt: 2 }}
+              >
                 Loading...
               </Typography>
             </Stack>

@@ -44,7 +44,7 @@ const CreateUpdateAttributeOption: React.FC<
       defaultValues: {
         attributeName: data?.attributeName ?? "",
         attributeValue: data?.attributeValue ?? [],
-        isPopulateFixed: data?.isPopulateFixed === 1 ? "Yes" : "No",
+        isPopulateFixed: data?.isPopulateFixed === 2 ? "Yes" : "No",
       },
     });
 
@@ -56,7 +56,7 @@ const CreateUpdateAttributeOption: React.FC<
     reset({
       attributeName: data?.attributeName ?? "",
       attributeValue: data?.attributeValue ?? [],
-      isPopulateFixed: data?.isPopulateFixed === 1 ? "Yes" : "No",
+      isPopulateFixed: data?.isPopulateFixed === 2 ? "Yes" : "No",
     });
   }, [data, reset]);
 
@@ -109,7 +109,7 @@ const CreateUpdateAttributeOption: React.FC<
   const onSubmitHandler = (formData: AttributeOptionRequestPayload) => {
     const tempPayload: AttributeOptionRequestPayload = {
       ...formData,
-      isPopulateFixed: formData?.isPopulateFixed === "Yes" ? 1 : 0,
+      isPopulateFixed: formData?.isPopulateFixed === "Yes" ? 2 : 0,
     };
 
     if (data && data._id) {

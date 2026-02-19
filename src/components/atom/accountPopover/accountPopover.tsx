@@ -5,12 +5,11 @@ import Button from "@mui/material/Button";
 import Avatar from "@mui/material/Avatar";
 import Popover from "@mui/material/Popover";
 import Divider from "@mui/material/Divider";
-import MenuList from "@mui/material/MenuList";
+
 import Typography from "@mui/material/Typography";
 import IconButton from "@mui/material/IconButton";
-import MenuItem, { menuItemClasses } from "@mui/material/MenuItem";
+
 import { AuthContext } from "../../../context/AuthContext";
-import { useNavigate } from "react-router-dom";
 
 import { STYLE_GUIDE } from "../../../styles";
 import { RootState } from "../../../store";
@@ -19,10 +18,6 @@ import { PermissionsMap } from "../../../utils/constants";
 import { useSelector } from "react-redux";
 import { jwtDecode } from "jwt-decode";
 import { getAuthToken } from "../../../utils/handleLocalStorage";
-
-interface MenuItem {
-  label: string;
-}
 
 interface DecodedToken {
   impersonatorUserId?: string;
@@ -41,20 +36,18 @@ const decodeAuthToken = (token: string): DecodedToken | null => {
 };
 
 export function AccountPopover() {
-  const menuData: MenuItem[] = [];
-  const navigate = useNavigate();
   const [openPopover, setOpenPopover] = useState<HTMLButtonElement | null>(
-    null
+    null,
   );
   const { userDetails, initialization, logout, isAuthUser } =
     useContext(AuthContext);
   const permissions = useSelector(
-    (state: RootState) => state.userPermission.permissions
+    (state: RootState) => state.userPermission.permissions,
   );
   const shouldAllowProfilePictureView = checkPermission(
     permissions,
     PermissionsMap.USER_PROFILE_IMAGE,
-    "get"
+    "get",
   );
   const token = getAuthToken();
 
@@ -71,7 +64,7 @@ export function AccountPopover() {
       event.preventDefault();
       setOpenPopover(event.currentTarget);
     },
-    []
+    [],
   );
 
   const handleClosePopover = useCallback(() => {
@@ -91,9 +84,11 @@ export function AccountPopover() {
 
   function getInitials() {
     try {
+      const firstName = userDetails?.data?.firstName || "";
+      const lastName = userDetails?.data?.lastName || "";
       return (
-        userDetails?.data?.firstName?.charAt(0).toUpperCase() +
-        userDetails?.data?.lastName?.charAt(0).toUpperCase()
+        (firstName.charAt(0)?.toUpperCase() || "") +
+        (lastName.charAt(0)?.toUpperCase() || "")
       );
     } catch (error) {
       console.error("Error getting initials:", error);
@@ -125,7 +120,15 @@ export function AccountPopover() {
             border: "1px solid #f0f0f0",
             color: STYLE_GUIDE.COLORS.textMediumGray,
           }}
-          src={shouldAllowProfilePictureView ? imagePath : null}
+          src={
+            shouldAllowProfilePictureView && imagePath
+              ? `${imagePath}?t=${
+                  userDetails?.data?.updatedAt
+                    ? new Date(userDetails.data.updatedAt).getTime()
+                    : Date.now()
+                }`
+              : undefined
+          }
         >
           {getInitials()}
         </Avatar>

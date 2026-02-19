@@ -37,7 +37,7 @@ interface CommonTableProps {
   height?: string | number;
   collpasible?: (
     row: Record<string, unknown>,
-    index?: number
+    index?: number,
   ) => React.ReactNode;
   isLazyTable?: boolean;
   isLazyLoading?: boolean;
@@ -80,15 +80,15 @@ const CommonTable = forwardRef<CommonTableRef, CommonTableProps>(
       onRowsPerPageChange,
       useCustomPagination = false,
     },
-    ref
+    ref,
   ) => {
     const isServerSidePagination = totalCount !== undefined;
     const [pageState, setPageState] = React.useState(0);
     const [rowsPerPageState, setRowsPerPageState] = React.useState(10);
 
-    const page = isServerSidePagination ? controlledPage ?? 0 : pageState;
+    const page = isServerSidePagination ? (controlledPage ?? 0) : pageState;
     const rowsPerPage = isServerSidePagination
-      ? controlledRowsPerPage ?? 10
+      ? (controlledRowsPerPage ?? 10)
       : rowsPerPageState;
 
     const [selectedRows, setSelectedRows] = React.useState<
@@ -96,7 +96,7 @@ const CommonTable = forwardRef<CommonTableRef, CommonTableProps>(
     >([]);
     const [sortBy, setSortBy] = React.useState<string | null>(null);
     const [sortDirection, setSortDirection] = React.useState<"asc" | "desc">(
-      "asc"
+      "asc",
     );
 
     // Expose resetSelection method to parent component
@@ -108,6 +108,33 @@ const CommonTable = forwardRef<CommonTableRef, CommonTableProps>(
       };
     });
 
+    React.useEffect(() => {
+      if (rowSelectionCondition && rows.length > 0) {
+        setSelectedRows((prevSelected) => {
+          const rowsMap = new Map(rows.map((r) => [r._id || r.code, r]));
+
+          let shouldUpdate = false;
+          const nextSelected = prevSelected.filter((sRow) => {
+            const key = sRow._id || sRow.code;
+            const matchingNewRow = rowsMap.get(key);
+
+            if (!matchingNewRow) {
+              shouldUpdate = true;
+              return false;
+            }
+            if (!rowSelectionCondition(matchingNewRow)) {
+              shouldUpdate = true;
+              return false;
+            }
+
+            return true;
+          });
+
+          return shouldUpdate ? nextSelected : prevSelected;
+        });
+      }
+    }, [rows, rowSelectionCondition]);
+
     const handleChangePage = (_event: unknown, newPage: number) => {
       if (isServerSidePagination) {
         onPageChange?.(newPage);
@@ -117,7 +144,7 @@ const CommonTable = forwardRef<CommonTableRef, CommonTableProps>(
     };
 
     const handleChangeRowsPerPage = (
-      event: React.ChangeEvent<HTMLInputElement>
+      event: React.ChangeEvent<HTMLInputElement>,
     ) => {
       const newRowsPerPage = +event.target.value;
       if (isServerSidePagination) {
@@ -129,7 +156,7 @@ const CommonTable = forwardRef<CommonTableRef, CommonTableProps>(
     };
 
     const handleSelectAllClick = (
-      event: React.ChangeEvent<HTMLInputElement>
+      event: React.ChangeEvent<HTMLInputElement>,
     ) => {
       if (event.target.checked) {
         let filteredRows = rows;
@@ -147,7 +174,7 @@ const CommonTable = forwardRef<CommonTableRef, CommonTableProps>(
         (selectedRow) =>
           (selectedRow._id && selectedRow._id === row._id) ||
           (selectedRow.code && selectedRow.code === row.code) ||
-          selectedRow === row
+          selectedRow === row,
       );
       let newSelected: Record<string, unknown>[] = [];
 
@@ -155,7 +182,7 @@ const CommonTable = forwardRef<CommonTableRef, CommonTableProps>(
         newSelected = [...selectedRows, row];
       } else {
         newSelected = selectedRows.filter(
-          (_, index) => index !== selectedIndex
+          (_, index) => index !== selectedIndex,
         );
       }
 
@@ -167,7 +194,7 @@ const CommonTable = forwardRef<CommonTableRef, CommonTableProps>(
         (selectedRow) =>
           (selectedRow._id && selectedRow._id === row._id) ||
           (selectedRow.code && selectedRow.code === row.code) ||
-          selectedRow === row
+          selectedRow === row,
       );
     };
 
@@ -265,7 +292,7 @@ const CommonTable = forwardRef<CommonTableRef, CommonTableProps>(
     if (!isLazyTable && !isServerSidePagination) {
       tableRows = sortedRows.slice(
         page * rowsPerPage,
-        page * rowsPerPage + rowsPerPage
+        page * rowsPerPage + rowsPerPage,
       );
     }
 
@@ -283,13 +310,25 @@ const CommonTable = forwardRef<CommonTableRef, CommonTableProps>(
                 {rowSelection && (
                   <TableCell padding="checkbox">
                     <Checkbox
-                      indeterminate={
-                        selectedRows.length > 0 &&
-                        selectedRows.length < rows.length
-                      }
-                      // checked={
-                      //   rows.length > 0 && selectedRows.length === rows.length
-                      // }
+                      indeterminate={(() => {
+                        const selectableRows = rowSelectionCondition
+                          ? rows.filter(rowSelectionCondition)
+                          : rows;
+                        const numSelected =
+                          selectableRows.filter(isRowSelected).length;
+                        return (
+                          numSelected > 0 && numSelected < selectableRows.length
+                        );
+                      })()}
+                      checked={(() => {
+                        const selectableRows = rowSelectionCondition
+                          ? rows.filter(rowSelectionCondition)
+                          : rows;
+                        return (
+                          selectableRows.length > 0 &&
+                          selectableRows.every(isRowSelected)
+                        );
+                      })()}
                       onChange={handleSelectAllClick}
                     />
                   </TableCell>
@@ -472,7 +511,7 @@ const CommonTable = forwardRef<CommonTableRef, CommonTableProps>(
         )}
       </Paper>
     );
-  }
+  },
 );
 
 export default CommonTable;

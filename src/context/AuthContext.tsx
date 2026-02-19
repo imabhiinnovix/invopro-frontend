@@ -61,6 +61,7 @@ export type UserResponse = {
     password: string;
     role: string;
     roleId: number;
+    imagePath?: string;
     roleIds: Array<{
       _id: string;
       name: string;
@@ -125,17 +126,17 @@ export const AuthContext = createContext<AuthContextType>(defaultAuthContext);
 const AuthProvider = ({ children }: AuthProviderProps) => {
   const [isAuthUser, setIsAuthUser] = useState(false);
   const [userDetails, setUserDetails] = useState<UserResponse | undefined>(
-    undefined
+    undefined,
   );
   const dispatch = useDispatch<AppDispatch>();
   const { currentUser } = useSelector(
-    (state: RootState) => state.userPermission
+    (state: RootState) => state.userPermission,
   );
 
   const userDetailsAPI = useGet<UserResponse>(
     ["userDetails"],
     GET.USER_DETAILS,
-    !!isAuthUser
+    !!isAuthUser,
   );
 
   useEffect(() => {
@@ -149,8 +150,8 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
         dispatch(
           setPermissions(
             userDetailsAPI.data.data
-              .permissionIds as unknown as NewBackendPermission[]
-          )
+              .permissionIds as unknown as NewBackendPermission[],
+          ),
         );
       }
     }

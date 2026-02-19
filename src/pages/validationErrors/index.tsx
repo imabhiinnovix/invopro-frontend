@@ -30,6 +30,7 @@ import axiosInstance from "../../services/axiosInstance";
 import { StyledButton } from "../../components/common";
 import DialogContainer from "../../components/molecule/dialog";
 import IosShareIcon from "@mui/icons-material/IosShare";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 
 export default function ValidationErrors() {
   const { id } = useParams<{ id: string }>();
@@ -91,11 +92,11 @@ export default function ValidationErrors() {
   }>([`attributeList`], GET?.Attribute_Option_List + `?paginate=false`);
 
   const commonDataSourceList = useSelector(
-    (state: RootState) => state.dataSource?.list
+    (state: RootState) => state.dataSource?.list,
   );
 
   let dataSourceIdForPayload = commonDataSourceList?.find(
-    (item: any) => item?.dataSourceVersion?._id === id
+    (item: any) => item?.dataSourceVersion?._id === id,
   );
   let isLatest = false;
   if (dataSourceIdForPayload && dataSourceIdForPayload?._id) {
@@ -104,7 +105,7 @@ export default function ValidationErrors() {
     dataSourceIdForPayload = commonDataSourceList?.find(
       (item: any) =>
         Array.isArray(item?.allDataSourceVersions) &&
-        item.allDataSourceVersions.some((v: any) => v._id === id)
+        item.allDataSourceVersions.some((v: any) => v._id === id),
     );
   }
 
@@ -138,7 +139,7 @@ export default function ValidationErrors() {
             id || ""
           }&search=${encodeURIComponent(debouncedSearchValue || "")}`
       : "",
-    !!id
+    !!id,
   );
 
   const handleDiscardRow = (rowData: any) => {
@@ -164,8 +165,6 @@ export default function ValidationErrors() {
       const url = `${GET.ERROR_ROW_DATA}?dataSourceVersionId=${rowData.dataSourceVersionId}&dataSourceId=${rowData.dataSourceId}&rowNumber=${rowData.rowNumber}&errorId=${rowData._id}`;
 
       const response = await axiosInstance.get(url);
-
-      console.log("Row Detail Data:", response.data);
 
       if (response.data?.success) {
         setRowDetailData(response.data.data);
@@ -200,7 +199,7 @@ export default function ValidationErrors() {
   const dataSourceId = firstItem?.dataSourceId || null;
 
   const currentDataSource = commonDataSourceList?.find(
-    (ds) => ds?._id === dataSourceId
+    (ds) => ds?._id === dataSourceId,
   );
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -278,15 +277,13 @@ export default function ValidationErrors() {
           ? {
               action: "discard",
               reportRequestId: id,
-              rowNumber:
-                dialog.selectedRows?.map((row: any) => row._id) || [],
+              rowNumber: dialog.selectedRows?.map((row: any) => row._id) || [],
             }
           : {
               action: "discard",
               dataSourceVersionId: id,
               dataSourceId: dialog.selectedRows?.[0]?.dataSourceId,
-              rowNumber:
-                dialog.selectedRows?.map((row: any) => row._id) || [],
+              rowNumber: dialog.selectedRows?.map((row: any) => row._id) || [],
             };
 
         response = await discardRow.mutateAsync({
@@ -331,17 +328,17 @@ export default function ValidationErrors() {
           }&dataSourceVersionId=${id}&dataSourceId=${
             dataSourceIdForPayload?._id || ""
           }&search=${encodeURIComponent(
-            debouncedSearchValue || ""
+            debouncedSearchValue || "",
           )}&type=export`
         : `${GET?.VALIDATION_ERROR_LIST}?page=${
             paginationModel.page + 1
           }&limit=${paginationModel.pageSize}&reportRequestId=${
             id || ""
           }&search=${encodeURIComponent(
-            debouncedSearchValue || ""
+            debouncedSearchValue || "",
           )}&type=export`
       : "",
-    false
+    false,
   );
 
   useEffect(() => {
@@ -374,7 +371,15 @@ export default function ValidationErrors() {
           lineHeight: STYLE_GUIDE.TYPOGRAPHY.lineHeight.normal,
         }}
       >
-        Validation Errors{" "}
+        <Button
+          variant="text"
+          onClick={() => navigate(-1)}
+          sx={{ padding: 0, minWidth: "auto", marginRight: "10px" }}
+          disabled={isLatest === false}
+        >
+          <ArrowBackIcon />
+        </Button>
+        Validation Errors
       </Typography>
       <Card
         sx={{
@@ -500,17 +505,17 @@ export default function ValidationErrors() {
           dialog.type === "discardAll"
             ? "Are you sure want to Discard all data?"
             : dialog.type === "resolveRow"
-            ? "Are you sure you want to resolve this?"
-            : dialog.type === "discardSelectedRow"
-            ? `Are you sure you want to discard ${dialog.selectedRows.length} selected row(s)?`
-            : `Are you sure you want to discard "${dialog.rowData?.fileName}" at row ${dialog.rowData?.fileRowNumber}?`
+              ? "Are you sure you want to resolve this?"
+              : dialog.type === "discardSelectedRow"
+                ? `Are you sure you want to discard ${dialog.selectedRows.length} selected row(s)?`
+                : `Are you sure you want to discard "${dialog.rowData?.fileName}" at row ${dialog.rowData?.fileRowNumber}?`
         }
         confirmText={
           dialog.type === "discardAll"
             ? "Confirm"
             : dialog.type === "resolveRow"
-            ? "Yes"
-            : "Discard"
+              ? "Yes"
+              : "Discard"
         }
         confirmButtonColor="error"
         isSubmitting={isSubmitting}

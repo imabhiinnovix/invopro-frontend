@@ -1304,7 +1304,7 @@ export const NotivixAddChartModal: React.FC<AddChartModalProps> = ({
                         renderInput={(params) => (
                           <TextField
                             {...params}
-                            label="Group By"
+                            label="Select Segmentation (2nd Level)"
                             error={!!fieldErrors['GroupBy']}
                             helperText={fieldErrors['GroupBy']}
                             size="small"
@@ -1317,10 +1317,10 @@ export const NotivixAddChartModal: React.FC<AddChartModalProps> = ({
                       />
                     ) : (
                       <FormControl fullWidth size="small">
-                        <InputLabel>Group By</InputLabel>
+                        <InputLabel>Select Segmentation (2nd Level)</InputLabel>
                         <StyledSelect
                           value={formData.groupBy}
-                          label="Group By"
+                          label="Select Segmentation (2nd Level)"
                           onChange={handleGroupByChange}
                           disabled={isSubmitting}
                           error={!!fieldErrors['GroupBy']}

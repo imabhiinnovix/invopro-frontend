@@ -43,7 +43,7 @@ function getPermsForDataSource(
     shouldAllowDelete: false,
     shouldAllowImport: false,
   };
-  if (dataSourceName == "CaseList") {
+  if (dataSourceName == "CaseList" || dataSourceCode == "caselists") {
     const keys = ["case_list_create", "case_list_update", "case_list_delete"];
     permissionData.shouldAllowAdd = checkPermission(
       permissions,
@@ -65,7 +65,7 @@ function getPermsForDataSource(
       PermissionsMap.DATA_SOURCE,
       keys[0]
     );
-  } else if (dataSourceName == "Formality Officer") {
+  } else if (dataSourceName == "Formality Officer" || dataSourceCode == "formalityofficers") {
     const keys = [
       "formality_officers_create",
       "formality_officers_update",
@@ -91,7 +91,7 @@ function getPermsForDataSource(
       PermissionsMap.DATA_SOURCE,
       keys[0]
     );
-  } else if (dataSourceName == "IP Counsels") {
+  } else if (dataSourceName == "IP Counsels" || dataSourceCode == "ipcounsels") {
     const keys = [
       "ip_counsel_create",
       "ip_counsel_update",
@@ -117,7 +117,7 @@ function getPermsForDataSource(
       PermissionsMap.DATA_SOURCE,
       keys[0]
     );
-  } else if (dataSourceName == "Action Due") {
+  } else if (dataSourceName == "Action Due" || dataSourceCode == "actiondues") {
     const keys = [
       "action_due_create",
       "action_due_update",
@@ -143,33 +143,7 @@ function getPermsForDataSource(
       PermissionsMap.DATA_SOURCE,
       keys[0]
     );
-  } else if (dataSourceName == "Test User details") {
-    const keys = [
-      "testuserdetails_list",
-      "testuserdetails_update",
-      "testuserdetails_delete",
-    ];
-    permissionData.shouldAllowAdd = checkPermission(
-      permissions,
-      PermissionsMap.DATA_SOURCE,
-      keys[0]
-    );
-    permissionData.shouldAllowEdit = checkPermission(
-      permissions,
-      PermissionsMap.DATA_SOURCE,
-      keys[1]
-    );
-    permissionData.shouldAllowDelete = checkPermission(
-      permissions,
-      PermissionsMap.DATA_SOURCE,
-      keys[2]
-    );
-    permissionData.shouldAllowImport = checkPermission(
-      permissions,
-      PermissionsMap.DATA_SOURCE,
-      keys[0]
-    );
-  } else if (dataSourceName && permissions) {
+  }else if (dataSourceName && permissions) {
     const cleanedDataSourceName = dataSourceName
       .toLowerCase()
       .replace(" ", "_");

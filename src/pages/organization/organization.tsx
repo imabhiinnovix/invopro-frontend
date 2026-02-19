@@ -105,6 +105,7 @@ interface OrganizationFormValues {
   firstName?: string;
   lastName?: string;
   logo?: File | string | null;
+  businessEmail?: string;
 }
 
 export default function Organization() {
@@ -224,6 +225,7 @@ export default function Organization() {
       firstName: "",
       lastName: "",
       logo: null,
+      businessEmail: ""
     },
     mode: "onChange",
   });
@@ -465,7 +467,7 @@ export default function Organization() {
         setLogoPreview(org.logo);
         setValue("logo", null);
       }
-
+      setValue("businessEmail", org.businessEmail || "");
       const isUserSuperUser = isSuperUser();
       const organizationIdForUsers = isUserSuperUser ? org._id : null;
       setOrganizationIdForMedium(organizationIdForUsers);
@@ -503,6 +505,7 @@ export default function Organization() {
         password: "",
         firstName: "",
         lastName: "",
+        businessEmail: ""
       });
       setOrgModalOpen(true);
       setOrganizationIdForMedium(null);
@@ -553,6 +556,7 @@ export default function Organization() {
         code: formData.code,
 
         businessUnitCode: formData.businessUnitCode || "",
+        businessEmail: formData.businessEmail || "",
         phone: formData.phone,
         domain: formData.domain,
         allowedDomains: (formData.allowedDomains || []).map(
@@ -1260,7 +1264,7 @@ export default function Organization() {
                       </Box>
                     </Grid>
                   ) : null}
-                  <Grid size={6}>
+                  {/* <Grid size={6}>
                     <Box sx={{ display: "flex", alignItems: "center" }}>
                       <Controller
                         name="businessUnitCode"
@@ -1272,6 +1276,30 @@ export default function Organization() {
                             fullWidth
                             error={!!errors.businessUnitCode}
                             helperText={errors.businessUnitCode?.message}
+                          />
+                        )}
+                      />
+                    </Box>
+                  </Grid> */}
+
+                   <Grid size={6}>
+                    <Box sx={{ display: "flex", alignItems: "center" }}>
+                      <Controller
+                        name="businessEmail"
+                        control={control}
+                          rules={{
+                          pattern: {
+                            value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                            message: "Please enter a valid email address",
+                          },
+                        }}
+                        render={({ field }) => (
+                          <TextField
+                            {...field}
+                            label="Business Email Id"
+                            fullWidth
+                            error={!!errors.businessEmail}
+                            helperText={errors.businessEmail?.message}
                           />
                         )}
                       />

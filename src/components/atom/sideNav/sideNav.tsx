@@ -1307,7 +1307,7 @@ function getNavItems(
   const monthlyDataSources = matchedDataSources
     .filter((item) => item.versionType === "monthly")
     .filter((item) => {
-      const nameKey = (item.name == "CaseList" ? "Case List" : item?.name || "")
+      const nameKey = (item.name == "CaseList" || item.code == "caselists" ? "Case List" : item?.name || "")
         .toLowerCase()
         .replace(/\s+/g, "_");
       const codeKey = (item?.code || "")

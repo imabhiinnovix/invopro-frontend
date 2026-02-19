@@ -19,10 +19,10 @@ export const fetchDashboardList = createAsyncThunk(
   "dashboard/fetchList",
   async () => {
     const { data } = await axiosInstance.get<DashboardListResponse>(
-      GET.DASHBOARD_LIST
+      GET.DASHBOARD_LIST,
     );
     return data;
-  }
+  },
 );
 
 export const createDashboard = createAsyncThunk(
@@ -34,7 +34,7 @@ export const createDashboard = createAsyncThunk(
       dynamicVersionValue: string;
       dataSourceId?: string;
     },
-    { rejectWithValue }
+    { rejectWithValue },
   ) => {
     try {
       const requestPayload = {
@@ -49,7 +49,7 @@ export const createDashboard = createAsyncThunk(
       };
       const { data } = await axiosInstance.post<DashboardListResponse>(
         POST.CREATE_DASHBOARD,
-        requestPayload
+        requestPayload,
       );
       if (!data.success) {
         return rejectWithValue({
@@ -65,7 +65,7 @@ export const createDashboard = createAsyncThunk(
         message: "Failed to create dashboard. Please try again.",
       });
     }
-  }
+  },
 );
 
 export const deleteDashboard = createAsyncThunk(
@@ -74,7 +74,7 @@ export const deleteDashboard = createAsyncThunk(
     try {
       const { data } = await axiosInstance.post(
         `${POST.DELETE_DASHBOARD}/${dashboardId}`,
-        {}
+        {},
       );
       return data;
     } catch (error) {
@@ -85,11 +85,11 @@ export const deleteDashboard = createAsyncThunk(
         message: "Failed to delete dashboard. Please try again.",
       });
     }
-  }
+  },
 );
 
 export const setDashboardList = (
-  dashboards: DashboardListResponse["data"]
+  dashboards: DashboardListResponse["data"],
 ) => ({
   type: "dashboard/setList",
   payload: dashboards,
@@ -124,7 +124,7 @@ export const createWidget = createAsyncThunk(
     try {
       const { data } = await axiosInstance.post<CreateWidgetResponse>(
         POST.CREATE_WIDGET,
-        payload
+        payload,
       );
       if (data.success) {
         return data;
@@ -138,17 +138,17 @@ export const createWidget = createAsyncThunk(
         message: "Failed to create widget. Please try again.",
       });
     }
-  }
+  },
 );
 
 export const fetchWidgetTypes = createAsyncThunk(
   "dashboard/fetchWidgetTypes",
   async () => {
     const { data } = await axiosInstance.get<WidgetTypeResponse>(
-      GET.WIDGET_TYPE_LIST
+      GET.WIDGET_TYPE_LIST,
     );
     return data;
-  }
+  },
 );
 
 export const fetchDataSources = createAsyncThunk(
@@ -156,7 +156,7 @@ export const fetchDataSources = createAsyncThunk(
   async (page: number = 1, { rejectWithValue }) => {
     try {
       const { data } = await axiosInstance.get<DataSourceResponse>(
-        `${GET.DATA_SOURCE_LIST}?paginate=true&page=${page}&limit=10`
+        `${GET.DATA_SOURCE_LIST}?paginate=true&page=${page}&limit=10`,
       );
       return data;
     } catch (error) {
@@ -165,7 +165,7 @@ export const fetchDataSources = createAsyncThunk(
       }
       return rejectWithValue({ message: "Failed to fetch data sources" });
     }
-  }
+  },
 );
 
 export const fetchAllDataSources = createAsyncThunk(
@@ -174,7 +174,7 @@ export const fetchAllDataSources = createAsyncThunk(
     try {
       // First fetch the first page to get total count
       const firstPageResponse = await axiosInstance.get<DataSourceResponse>(
-        `${GET.DATA_SOURCE_LIST}?paginate=true&page=1&limit=10`
+        `${GET.DATA_SOURCE_LIST}?paginate=true&page=1&limit=10`,
       );
 
       const { data: firstPageData, totalCount } = firstPageResponse.data;
@@ -190,8 +190,8 @@ export const fetchAllDataSources = createAsyncThunk(
         for (let page = 2; page <= totalPages; page++) {
           additionalPagePromises.push(
             axiosInstance.get<DataSourceResponse>(
-              `${GET.DATA_SOURCE_LIST}?paginate=true&page=${page}&limit=10`
-            )
+              `${GET.DATA_SOURCE_LIST}?paginate=true&page=${page}&limit=10`,
+            ),
           );
         }
 
@@ -215,7 +215,7 @@ export const fetchAllDataSources = createAsyncThunk(
       }
       return rejectWithValue({ message: "Failed to fetch all data sources" });
     }
-  }
+  },
 );
 
 export const loadMoreDataSources = createAsyncThunk(
@@ -223,7 +223,7 @@ export const loadMoreDataSources = createAsyncThunk(
   async (page: number, { rejectWithValue }) => {
     try {
       const { data } = await axiosInstance.get<DataSourceResponse>(
-        `${GET.DATA_SOURCE_LIST}?paginate=true&page=${page}&limit=10`
+        `${GET.DATA_SOURCE_LIST}?paginate=true&page=${page}&limit=10`,
       );
       return data;
     } catch (error) {
@@ -232,7 +232,7 @@ export const loadMoreDataSources = createAsyncThunk(
       }
       return rejectWithValue({ message: "Failed to load more data sources" });
     }
-  }
+  },
 );
 
 //TODO
@@ -246,6 +246,7 @@ export const loadMoreDataSources = createAsyncThunk(
 export const storeWidgetData = (payload: {
   widgetId: string;
   data: CombinedWidgetData;
+  shouldCache?: boolean;
 }) => {
   return {
     type: "dashboard/storeWidgetData",
@@ -275,7 +276,7 @@ export const fetchChartData = createAsyncThunk(
       dashboardFilters: any;
       isDefaultNotivix?: boolean;
     },
-    { dispatch, signal }
+    { dispatch, signal },
   ) => {
     if (!dashboardType && isDefaultNotivix) return [];
 
@@ -288,10 +289,14 @@ export const fetchChartData = createAsyncThunk(
     try {
       response = await axiosInstance.get<ChartDataResponse>(
         `${GET.DASHBOARD_WIDGET_GET_CHART_DATA}/${dashboardId}`,
-        { signal }
+        { signal },
       );
     } catch (error: any) {
-      if (axios.isCancel(error) || error?.code === 'ERR_CANCELED' || (error instanceof Error && error.message === "canceled")) {
+      if (
+        axios.isCancel(error) ||
+        error?.code === "ERR_CANCELED" ||
+        (error instanceof Error && error.message === "canceled")
+      ) {
         throw error;
       }
       throw error;
@@ -398,7 +403,7 @@ export const fetchChartData = createAsyncThunk(
     //           }
     //         } catch (error: any) {
     //           if (axios.isCancel(error) || error?.code === 'ERR_CANCELED' || (error instanceof Error && (error.message === "Request aborted" || error.message === "canceled"))) {
-    //             return; 
+    //             return;
     //           }
     //           console.error(
     //             `Failed to fetch widget data for chart ${chart._id}:`,
@@ -411,7 +416,7 @@ export const fetchChartData = createAsyncThunk(
     // }
 
     return response.data;
-  }
+  },
 );
 
 export const fetchWidgetDataLazy = createAsyncThunk(
@@ -424,6 +429,7 @@ export const fetchWidgetDataLazy = createAsyncThunk(
       endVersionValue,
       versionValue,
       dashboardFilters,
+      isDefaultNotivix,
     }: {
       chart: any;
       dashboardType?: string;
@@ -431,12 +437,58 @@ export const fetchWidgetDataLazy = createAsyncThunk(
       endVersionValue?: string;
       versionValue?: string;
       dashboardFilters?: any;
+      isDefaultNotivix?: boolean;
     },
-    { dispatch, signal }
+    { dispatch, signal },
   ) => {
     try {
       if (signal?.aborted) {
         throw new Error("Request aborted");
+      }
+
+      if (chart.widgetKind === "image") {
+        const imageResponse = await axiosInstance.get(
+          `${GET.DASHBOARD_WIDGET_IMAGE}/${chart._id}`,
+          {
+            headers: {
+              Authorization:
+                axiosInstance.defaults.headers.common.Authorization,
+            },
+            signal,
+          },
+        );
+
+        if (imageResponse.data.success) {
+          const essentialData = {
+            _id: chart._id,
+            createdBy: chart.createdBy,
+            dashboardId: chart.dashboardId,
+            organizationId: chart.organizationId,
+            name: chart.name,
+            position: chart.position,
+            widgetKind: chart.widgetKind,
+            dimensions: chart.dimensions || [],
+            groupBy: chart.groupBy || [],
+            plotType: chart.plotType || [],
+            aggregation: chart.aggregation,
+            conditions: chart.conditions || [],
+            isActive: chart.isActive,
+            createdAt: chart.createdAt,
+            updatedAt: chart.updatedAt,
+            widgetTypeId: chart.widgetTypeId,
+            dataSourceId: chart.dataSourceId,
+            data: imageResponse.data.data,
+          };
+
+          dispatch(
+            storeWidgetData({
+              widgetId: chart._id,
+              data: essentialData,
+              shouldCache: !isDefaultNotivix,
+            }),
+          );
+          return imageResponse.data;
+        }
       }
 
       const widgetResponse = await axiosInstance.post<WidgetDataResponse>(
@@ -456,23 +508,19 @@ export const fetchWidgetDataLazy = createAsyncThunk(
               dashboardType === "trend" ? startVersionValue || "" : "",
             endVersionValue:
               dashboardType === "trend" ? endVersionValue || "" : "",
-            versionValue:
-              dashboardType === "trend" ? "" : versionValue || "",
+            versionValue: dashboardType === "trend" ? "" : versionValue || "",
             dynamicVersionValue:
-              dashboardType === "trend"
-                ? ""
-                : versionValue
-                ? ""
-                : "1m",
+              dashboardType === "trend" ? "" : versionValue ? "" : "1m",
             filters: { ...dashboardFilters },
           },
           dashBoardType: dashboardType || "normal",
           isIncremental: chart.isIncremental,
         },
-        { signal }
+        { signal },
       );
 
       if (widgetResponse.data.success) {
+        const responseData = widgetResponse.data?.data;
         const essentialData = {
           _id: chart._id,
           createdBy: chart.createdBy,
@@ -492,15 +540,21 @@ export const fetchWidgetDataLazy = createAsyncThunk(
           widgetTypeId: chart.widgetTypeId,
           dataSourceId: chart.dataSourceId,
           data: {
-            label: widgetResponse.data.data.label,
+            label: responseData?.label ?? "",
             dataSourceFieldSettings: chart.dataSourceId?.fieldSettings,
-            widgetData: widgetResponse.data.data.widgetData.map((item) => ({
-              ...item,
-            })),
-            totalCount: widgetResponse.data.data.totalCount,
+            widgetData: Array.isArray(responseData?.widgetData)
+              ? responseData.widgetData.map((item: any) => ({ ...item }))
+              : [],
+            totalCount: responseData?.totalCount ?? 0,
           },
         };
-        dispatch(storeWidgetData({ widgetId: chart._id, data: essentialData }));
+        dispatch(
+          storeWidgetData({
+            widgetId: chart._id,
+            data: essentialData,
+            shouldCache: !isDefaultNotivix,
+          }),
+        );
       }
       return widgetResponse.data;
     } catch (error: any) {
@@ -514,11 +568,12 @@ export const fetchWidgetDataLazy = createAsyncThunk(
       }
       console.error(
         `Failed to fetch widget data for chart ${chart._id}:`,
-        error
+        error,
       );
       throw error;
     }
-  })
+  },
+);
 export const fetchIndividualWidgetData = createAsyncThunk(
   "nlQuery/getIndividualData",
   async (chart: any, { rejectWithValue, dispatch }) => {
@@ -533,7 +588,7 @@ export const fetchIndividualWidgetData = createAsyncThunk(
           conditions: chart.conditions,
           aggregation: chart.aggregation,
           widgetType: chart.chartType,
-        }
+        },
       );
       if (widgetResponse.data.success) {
         // Combine the chart metadata with the new data
@@ -552,7 +607,7 @@ export const fetchIndividualWidgetData = createAsyncThunk(
       }
       return rejectWithValue({ message: "Failed to fetch query result" });
     }
-  }
+  },
 );
 
 export const fetchWidgetSettingBasedOnNaturalLanguage = createAsyncThunk(
@@ -560,7 +615,7 @@ export const fetchWidgetSettingBasedOnNaturalLanguage = createAsyncThunk(
   async (userQuery: string, { rejectWithValue, dispatch }) => {
     try {
       const { data } = await axiosInstance.get<ChartResponse>(
-        `${GET.NL_Query}/getData?userQuery=${encodeURIComponent(userQuery)}`
+        `${GET.NL_Query}/getData?userQuery=${encodeURIComponent(userQuery)}`,
       );
 
       const finalData: any = data?.data || {};
@@ -573,7 +628,7 @@ export const fetchWidgetSettingBasedOnNaturalLanguage = createAsyncThunk(
       }
       return rejectWithValue({ message: "Failed to fetch query result" });
     }
-  }
+  },
 );
 
 export const deleteWidget = createAsyncThunk(
@@ -582,7 +637,7 @@ export const deleteWidget = createAsyncThunk(
     try {
       const { data } = await axiosInstance.post(
         `${POST.DELETE_WIDGET}/${widgetId}`,
-        {}
+        {},
       );
       return data;
     } catch (error) {
@@ -593,7 +648,7 @@ export const deleteWidget = createAsyncThunk(
         message: "Failed to delete widget. Please try again.",
       });
     }
-  }
+  },
 );
 
 interface UpdateWidgetPayload extends CreateWidgetPayload {
@@ -612,7 +667,7 @@ export const updateWidget = createAsyncThunk(
     try {
       const { data } = await axiosInstance.post<UpdateWidgetResponse>(
         `${POST.UPDATE_WIDGET}/${payload._id}`,
-        payload
+        payload,
       );
       if (data.success) {
         return data;
@@ -626,7 +681,7 @@ export const updateWidget = createAsyncThunk(
         message: "Failed to update widget. Please try again.",
       });
     }
-  }
+  },
 );
 
 interface SaveWidgetsPayload {
@@ -659,22 +714,20 @@ interface SaveWidgetsPayload {
 
 export const saveWidgets = createAsyncThunk(
   "dashboard/saveWidgets",
-  async (payload: SaveWidgetsPayload, { rejectWithValue }) => {
+  async (payload: SaveWidgetsPayload) => {
     try {
       const { data } = await axiosInstance.post<CreateWidgetResponse>(
         POST.SAVE_WIDGETS,
-        payload
+        payload,
       );
       return data;
     } catch (error) {
       if (axios.isAxiosError(error) && error.response?.data) {
-        return rejectWithValue(error.response.data);
+        return error.response.data;
       }
-      return rejectWithValue({
-        message: "Failed to share dashboard. Please try again.",
-      });
+      return "Failed to share dashboard. Please try again.";
     }
-  }
+  },
 );
 
 export const fetchDashboardShareUsers = createAsyncThunk(
@@ -686,7 +739,7 @@ export const fetchDashboardShareUsers = createAsyncThunk(
       data: string[];
     }>(`/dashboardShare/list/${dashboardId}`);
     return data;
-  }
+  },
 );
 
 interface ShareDashboardPayload {
@@ -717,7 +770,7 @@ export const shareDashboard = createAsyncThunk(
         message: "Failed to share dashboard. Please try again.",
       });
     }
-  }
+  },
 );
 
 export const fetchWidgetTheme = createAsyncThunk(
@@ -729,7 +782,7 @@ export const fetchWidgetTheme = createAsyncThunk(
       data: Theme;
     }>(`${GET.WIDGET_THEME}/${dashboardWidgetThemeId}`);
     return data;
-  }
+  },
 );
 
 export const selectDashboardTheme = createAsyncThunk(
@@ -743,8 +796,8 @@ export const selectDashboardTheme = createAsyncThunk(
   }) => {
     const { data } = await axiosInstance.post(
       `/common/dashboard/selectTheme/${dashboardId}`,
-      { widgetThemeId }
+      { widgetThemeId },
     );
     return data;
-  }
+  },
 );
