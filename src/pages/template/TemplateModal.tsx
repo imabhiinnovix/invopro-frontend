@@ -39,7 +39,7 @@ import {
   AttachmentFieldItem,
 } from "../../types/template";
 import DialogContainer from "../../components/molecule/dialog";
-import PrimaryButton from "../../components/common/PrimaryButton";
+import { StyledButton } from "../../components/common";
 import { STYLE_GUIDE } from "../../styles";
 
 export function TemplateModal({
@@ -777,26 +777,26 @@ export function TemplateModal({
         }
         actions={
           <>
-            <PrimaryButton onClick={onClose} variant="outlined">
+            <StyledButton variant="secondary" onClick={onClose}>
               {mode === "view" ? "Close" : "Cancel"}
-            </PrimaryButton>
+            </StyledButton>
 
             {mode !== "view" && (
               <>
-                <PrimaryButton
-                  variant="outlined"
+                <StyledButton
+                  variant="secondary"
                   onClick={handlePreview}
                   disabled={!isFormDirty || isSaving}
                 >
                   Preview
-                </PrimaryButton>
-                <PrimaryButton
+                </StyledButton>
+                <StyledButton
+                  variant="primary"
                   onClick={handleSubmit(onSubmit)}
-                  variant="contained"
                   disabled={isSaving}
                 >
                   {mode === "add" ? "Save Template" : "Update Template"}
-                </PrimaryButton>
+                </StyledButton>
               </>
             )}
           </>
@@ -823,7 +823,10 @@ export function TemplateModal({
                     </Typography>
                     <Box
                       sx={{
-                        padding: 1.5,
+                        padding: "0 12px",
+                        height: "40px",
+                        display: "flex",
+                        alignItems: "center",
                         borderRadius: 2,
                         backgroundColor: "#f5f5f5",
                         border: "1px solid #e0e0e0",
@@ -879,7 +882,10 @@ export function TemplateModal({
                     </Typography>
                     <Box
                       sx={{
-                        padding: 1.5,
+                        padding: "0 12px",
+                        height: "40px",
+                        display: "flex",
+                        alignItems: "center",
                         borderRadius: 2,
                         backgroundColor: "#f5f5f5",
                         border: "1px solid #e0e0e0",
@@ -933,7 +939,10 @@ export function TemplateModal({
                     </Typography>
                     <Box
                       sx={{
-                        padding: 1.5,
+                        padding: "0 12px",
+                        height: "40px",
+                        display: "flex",
+                        alignItems: "center",
                         borderRadius: 2,
                         backgroundColor: "#f5f5f5",
                         border: "1px solid #e0e0e0",
@@ -989,7 +998,10 @@ export function TemplateModal({
                     </Typography>
                     <Box
                       sx={{
-                        padding: 1.5,
+                        padding: "0 12px",
+                        height: "40px",
+                        display: "flex",
+                        alignItems: "center",
                         borderRadius: 2,
                         backgroundColor: "#f5f5f5",
                         border: "1px solid #e0e0e0",
@@ -1056,7 +1068,10 @@ export function TemplateModal({
                     </Typography>
                     <Box
                       sx={{
-                        padding: 1.5,
+                        padding: "0 12px",
+                        height: "40px",
+                        display: "flex",
+                        alignItems: "center",
                         borderRadius: 2,
                         backgroundColor: "#f5f5f5",
                         border: "1px solid #e0e0e0",
@@ -1200,7 +1215,10 @@ export function TemplateModal({
                     </Typography>
                     <Box
                       sx={{
-                        padding: 1.5,
+                        padding: "0 12px",
+                        height: "40px",
+                        display: "flex",
+                        alignItems: "center",
                         borderRadius: 2,
                         backgroundColor: "#f5f5f5",
                         border: "1px solid #e0e0e0",
@@ -1253,7 +1271,10 @@ export function TemplateModal({
                     </Typography>
                     <Box
                       sx={{
-                        padding: 1.5,
+                        padding: "0 12px",
+                        height: "40px",
+                        display: "flex",
+                        alignItems: "center",
                         borderRadius: 2,
                         backgroundColor: "#f5f5f5",
                         border: "1px solid #e0e0e0",
@@ -1305,11 +1326,11 @@ export function TemplateModal({
                     </Typography>
                     <Box
                       sx={{
-                        padding: 1.5,
+                        padding: "0 12px",
+                        minHeight: "40px",
                         borderRadius: 2,
                         backgroundColor: "#f5f5f5",
                         border: "1px solid #e0e0e0",
-                        minHeight: "56px",
                         display: "flex",
                         flexWrap: "wrap",
                         gap: 0.5,
@@ -1391,11 +1412,11 @@ export function TemplateModal({
                     </Typography>
                     <Box
                       sx={{
-                        padding: 1.5,
+                        padding: "0 12px",
+                        minHeight: "40px",
                         borderRadius: 2,
                         backgroundColor: "#f5f5f5",
                         border: "1px solid #e0e0e0",
-                        minHeight: "56px",
                         display: "flex",
                         flexWrap: "wrap",
                         gap: 0.5,
@@ -1493,12 +1514,12 @@ export function TemplateModal({
         title="Email Template Preview"
         maxWidth="md"
         actions={
-          <PrimaryButton
+          <StyledButton
+            variant="secondary"
             onClick={() => setShowPreview(false)}
-            variant="outlined"
           >
             Close Preview
-          </PrimaryButton>
+          </StyledButton>
         }
       >
         <Box>

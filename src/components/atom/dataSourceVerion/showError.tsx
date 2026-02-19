@@ -18,6 +18,7 @@ import { GET } from '../../../services/apiRoutes';
 import { useComponentTypography } from '../../../hooks';
 import { useNav } from '../../../context/NavContext';
 import { useNavigate } from 'react-router-dom';
+import { StyledButton } from '../../common';
 
 interface ErrorDialogProps {
   dataSourceVersionId: string;
@@ -79,14 +80,14 @@ console.log("Rendering ErrorDialog with dataSourceVersionId:", dataSourceVersion
       {/* <Button variant="outlined" onClick={() => setDialogOpen(true)}>
         Show Errors
       </Button> */}
-       <Button
-      variant="outlined"
+       <StyledButton
+      variant="secondary"
       onClick={() =>
         navigate(`/validation-errors/${dataSourceVersionId}`)
       }
     >
       Show Errors
-    </Button>
+    </StyledButton>
       <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} maxWidth="md" fullWidth>
         <DialogTitle sx={{
           ...getDialogTitleSx(),
@@ -132,9 +133,9 @@ console.log("Rendering ErrorDialog with dataSourceVersionId:", dataSourceVersion
           </List>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setDialogOpen(false)} variant="contained" color="primary">
+          <StyledButton variant="secondary" onClick={() => setDialogOpen(false)}>
             Close
-          </Button>
+          </StyledButton>
         </DialogActions>
       </Dialog>
     </div>

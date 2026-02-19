@@ -5,8 +5,8 @@ import {
   Box,
   Typography,
   Modal,
-  Button,
 } from "@mui/material";
+import { StyledButton } from "../../components/common";
 
 const ViewReminderDialog = ({ 
   open, 
@@ -153,14 +153,9 @@ const ViewReminderDialog = ({
           <div>Loading reminder details...</div>
         )}
         <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 3 }}>
-          <Button
-            variant="outlined"
-            color="primary"
-            onClick={onClose}
-            aria-label="Close reminder details"
-          >
+          <StyledButton variant="secondary" onClick={onClose}>
             Close
-          </Button>
+          </StyledButton>
         </Box>
       </Box>
     </Modal>

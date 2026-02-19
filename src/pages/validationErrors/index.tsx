@@ -27,7 +27,7 @@ import { AttributeOptionRequestPayload } from "../../components/atom/attributeOp
 import { STYLE_GUIDE } from "../../styles";
 import axios from "axios";
 import axiosInstance from "../../services/axiosInstance";
-import PrimaryButton from "../../components/common/PrimaryButton";
+import { StyledButton } from "../../components/common";
 import DialogContainer from "../../components/molecule/dialog";
 import IosShareIcon from "@mui/icons-material/IosShare";
 
@@ -433,16 +433,16 @@ export default function ValidationErrors() {
                 Discard All & Submit
               </Button>
 
-              <PrimaryButton
-                variant="contained"
+              <StyledButton
+                variant="primary"
                 onClick={handleDashboardWidgetDataExport}
-                startIcon={<IosShareIcon />}
+                icon={<IosShareIcon />}
                 disabled={validationErrorListExport.isFetching}
               >
                 {validationErrorListExport.isFetching
                   ? "Exporting..."
                   : "Export"}
-              </PrimaryButton>
+              </StyledButton>
             </Box>
           </Box>
           <Box sx={{ color: STYLE_GUIDE.COLORS.primary }}>
@@ -470,15 +470,15 @@ export default function ValidationErrors() {
         title="Export Data"
         actions={
           <>
-            <PrimaryButton
-              variant="contained"
+            <StyledButton
+              variant="primary"
               onClick={() => {
                 setShowExportSuccessDialog(false);
                 navigate("/jobs");
               }}
             >
               Go to Jobs
-            </PrimaryButton>
+            </StyledButton>
           </>
         }
         maxWidth="xs"

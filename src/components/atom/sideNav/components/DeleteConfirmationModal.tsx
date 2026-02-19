@@ -13,6 +13,7 @@ import { STYLE_GUIDE } from "../../../../styles";
 import { useUnifiedTheme } from "../../../../hooks/useUnifiedTheme";
 import { useComponentTypography } from "../../../../hooks/useComponentTypography";
 import DialogContainer from "../../../molecule/dialog";
+import { StyledButton } from "../../../common";
 
 interface DeleteConfirmationModalProps {
   open: boolean;
@@ -36,7 +37,7 @@ export const DeleteConfirmationModal: React.FC<
       maxWidth="sm"
       actions={
         <>
-          <Button onClick={onCancel}>Cancel</Button>
+          <StyledButton variant="secondary" onClick={onCancel}>Cancel</StyledButton>
           <LoadingButton
             onClick={onConfirm}
             loading={isDeleting}

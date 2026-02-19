@@ -104,7 +104,6 @@ import { useSelector } from "react-redux";
 import { RootState } from "../../../reducers";
 import { GET, POST } from "../../../services/apiRoutes";
 import usePost from "../../../hooks/usePost";
-import PrimaryButton from "../../../components/common/PrimaryButton";
 import DialogContainer from "../../../components/molecule/dialog";
 import { useNavigate } from "react-router-dom";
 import NotivixFiltersModal from "../../notivixDashboard/components/NotivixFiltersModal";
@@ -4461,9 +4460,9 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
           <Typography variant="h6">{selectedChart?.name}</Typography>
 
           <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-            <PrimaryButton
-              variant="outlined"
-              startIcon={<FilterListIcon />}
+            <StyledButton
+              variant="secondary"
+              icon={<FilterListIcon />}
               onClick={(e) => {
                 e.stopPropagation();
                 setIsFiltersModalOpen(true);
@@ -4475,16 +4474,16 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
               }
             >
               Filters
-            </PrimaryButton>
-            <PrimaryButton
-              variant="outlined"
+            </StyledButton>
+            <StyledButton
+              variant="secondary"
               onClick={(e) => {
                 e.stopPropagation();
                 handleApplyFilters({ __reset: Date.now() });
               }}
             >
               All Data
-            </PrimaryButton>
+            </StyledButton>
             <IconButton
               onClick={handleFullViewClose}
               size="small"
@@ -4628,16 +4627,16 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
               >
                 <Typography variant="h6">{drillDownTitle}</Typography>
                 <Stack direction="row" gap={1}>
-                  <PrimaryButton
-                    variant="contained"
+                  <StyledButton
+                    variant="primary"
                     onClick={handleDashboardWidgetDataExport}
-                    startIcon={<IosShareIcon />}
+                    icon={<IosShareIcon />}
                     disabled={dashboardWidgetDataExportPost.isPending}
                   >
                     {dashboardWidgetDataExportPost.isPending
                       ? "Exporting..."
                       : "Export"}
-                  </PrimaryButton>
+                  </StyledButton>
                   {selectedChart?.widgetTypeId?.chartType !== "number" && (
                     <IconButton
                       onClick={handleDrillDownClose}
@@ -4863,15 +4862,15 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
           title="Export Data"
           actions={
             <>
-              <PrimaryButton
-                variant="contained"
+              <StyledButton
+                variant="primary"
                 onClick={() => {
                   setShowExportSuccessDialog(null);
                   navigate("/jobs");
                 }}
               >
                 Go to Jobs
-              </PrimaryButton>
+              </StyledButton>
             </>
           }
           maxWidth="xs"

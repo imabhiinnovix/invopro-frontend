@@ -17,6 +17,7 @@ import CommonSelect from "../../common/dropdown/commonSelect";
 import { CustomReportData } from "../dataSourceVerion/uploadMultipleVersionValue";
 import { useUnifiedTheme } from '../../../hooks/useUnifiedTheme';
 import { STYLE_GUIDE } from '../../../styles';
+import { StyledButton } from '../../common';
 import { useComponentTypography } from '../../../hooks';
 
 
@@ -183,17 +184,12 @@ const ViewMapping: React.FC<CreateDataSourceVersionProps> = ({
             </Box>
           </DialogContent>
           <DialogActions>
-            <Button onClick={handleCancel} color="error">
+            <StyledButton variant="secondary" onClick={handleCancel}>
               Cancel
-            </Button>
-            <Button
-              type="button"
-              onClick={handleSave}
-              variant="contained"
-              color="primary"
-            >
+            </StyledButton>
+            <StyledButton variant="primary" onClick={handleSave}>
               Save Data Mapping
-            </Button>
+            </StyledButton>
           </DialogActions>
         </Dialog>
       )}

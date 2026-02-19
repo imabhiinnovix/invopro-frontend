@@ -11,7 +11,6 @@ import { toast } from "react-toastify";
 import { STYLE_GUIDE } from "../../styles";
 import { PageHeader, PageCardLayout, StyledButton } from "../../components/common";
 import DialogContainer from "../../components/molecule/dialog";
-import PrimaryButton from "../../components/common/PrimaryButton";
 import { PermissionsMap } from "../../utils/constants";
 import { checkPermission } from "../../utils/utils";
 import { RootState } from "../../store";
@@ -170,11 +169,7 @@ export default function Roles() {
   };
 
   return (
-    <Box
-      sx={{
-        p: STYLE_GUIDE?.SPACING?.s2,
-      }}
-    >
+    <Box>
       <PageHeader
         title="Roles"
         subtext="Manage roles and permissions."
@@ -217,21 +212,22 @@ export default function Roles() {
         maxWidth="xs"
         actions={
           <>
-            <PrimaryButton
+            <StyledButton
+              variant="secondary"
               onClick={handleCloseDialog}
-              variant="outlined"
               sx={{ borderRadius: "8px" }}
             >
               No
-            </PrimaryButton>
-            <PrimaryButton
+            </StyledButton>
+            <StyledButton
+              variant="primary"
               onClick={handleConfirmDelete}
               color="error"
               disabled={deleteRole.isPending}
               sx={{ borderRadius: "8px" }}
             >
               Yes
-            </PrimaryButton>
+            </StyledButton>
           </>
         }
       >

@@ -35,7 +35,7 @@ import { fetchThemeList } from "../themeActions";
 import { STYLE_GUIDE } from "../../../styles";
 import { useUnifiedTheme } from "../../../hooks/useUnifiedTheme";
 import { useComponentTypography } from "../../../hooks/useComponentTypography";
-import PrimaryButton from "../../../components/common/PrimaryButton";
+import { StyledButton } from "../../../components/common";
 import DialogContainer from "../../../components/molecule/dialog";
 
 const alignOptions = ["start", "center", "end"];
@@ -64,7 +64,7 @@ const fontWeightOptions = [
   "900",
 ];
 
-const StyledButton = styled(Button)(({ theme }) => ({
+const LocalStyledButton = styled(Button)(({ theme }) => ({
   borderRadius: "8px",
   textTransform: "none",
   padding: theme.spacing(1, 2),
@@ -459,7 +459,8 @@ const CreateThemeDialog = ({
       title={theme ? "Update Theme" : "Create New Theme"}
       actions={
         <>
-          <PrimaryButton
+          <StyledButton
+            variant="primary"
             onClick={handleSubmit}
             disabled={
               !themeState.name.trim() ||
@@ -474,7 +475,7 @@ const CreateThemeDialog = ({
               : theme
               ? "Update"
               : "Create"}
-          </PrimaryButton>
+          </StyledButton>
         </>
       }
     >
@@ -5716,7 +5717,7 @@ const CreateThemeDialog = ({
       </DialogContent>
       <DialogActions sx={{ px: 2, py: 1 }}>
         <Button onClick={onClose}>Cancel</Button>
-        <StyledButton
+        <LocalStyledButton
           onClick={handleSubmit}
           variant="contained"
           color="primary"
@@ -5733,7 +5734,7 @@ const CreateThemeDialog = ({
             : theme
             ? "Update"
             : "Create"}
-        </StyledButton>
+        </LocalStyledButton>
       </DialogActions>
     </Dialog>
   );

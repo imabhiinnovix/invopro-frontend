@@ -3,7 +3,6 @@ import {
   Box,
   Typography,
   TextField,
-  Button,
   Checkbox,
   FormControlLabel,
   Select,
@@ -12,6 +11,7 @@ import {
   InputLabel,
 } from "@mui/material";
 import { STYLE_GUIDE } from "../../styles";
+import { StyledButton } from "../../components/common";
 
 interface FilterModalProps {
   open: boolean;
@@ -55,7 +55,7 @@ export const FilterNotivixDataModal: React.FC<FilterModalProps> = ({
                     [fieldName]: e.target.checked,
                   }))
                 }
-                sx={{ color: STYLE_GUIDE?.COLORS?.primaryDark || "#3f51b5" }}
+                sx={{ color: STYLE_GUIDE?.COLORS?.textPrimary || "#333" }}
               />
             }
             label={fieldLabel}
@@ -79,6 +79,7 @@ export const FilterNotivixDataModal: React.FC<FilterModalProps> = ({
             key={fieldName}
             variant="outlined"
             fullWidth
+            size="small"
             sx={{ "& .MuiOutlinedInput-root": { borderRadius: "8px" } }}
           >
             <InputLabel>{fieldLabel}</InputLabel>
@@ -117,6 +118,7 @@ export const FilterNotivixDataModal: React.FC<FilterModalProps> = ({
             }
             variant="outlined"
             fullWidth
+            size="small"
             sx={{ "& .MuiOutlinedInput-root": { borderRadius: "8px" } }}
           />
         );
@@ -179,32 +181,12 @@ export const FilterNotivixDataModal: React.FC<FilterModalProps> = ({
             <Box
               sx={{ display: "flex", justifyContent: "flex-end", gap: 1, mt: 3 }}
             >
-              <Button
-                variant="outlined"
-                onClick={onClose}
-                sx={{
-                  borderRadius: "8px",
-                  borderColor: STYLE_GUIDE?.COLORS?.divider || "#e0e0e0",
-                  color: STYLE_GUIDE?.COLORS?.primaryDark || "#3f51b5",
-                }}
-              >
+              <StyledButton variant="secondary" onClick={onClose}>
                 Cancel
-              </Button>
-              <Button
-                variant="contained"
-                onClick={onApply}
-                sx={{
-                  borderRadius: "8px",
-                  backgroundColor:
-                    STYLE_GUIDE?.COLORS?.primaryDark || "#3f51b5",
-                  color: STYLE_GUIDE?.COLORS?.white || "#ffffff",
-                  "&:hover": {
-                    backgroundColor: STYLE_GUIDE?.COLORS?.primary || "#5c6bc0",
-                  },
-                }}
-              >
+              </StyledButton>
+              <StyledButton variant="primary" onClick={onApply}>
                 Apply
-              </Button>
+              </StyledButton>
             </Box>
           </Box>
         </Box>

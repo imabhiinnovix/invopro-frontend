@@ -2,7 +2,7 @@ import React from "react";
 import { Button, Box } from "@mui/material";
 import UploadFileIcon from "@mui/icons-material/UploadFile";
 import { STYLE_GUIDE } from "../../../styles";
-import PrimaryButton from "../../common/PrimaryButton";
+import { StyledButton } from "../../common";
 
 interface FileUploadButtonProps {
   fileName: string | null; // Controlled file name state
@@ -17,7 +17,7 @@ const FileUploadButton: React.FC<FileUploadButtonProps> = ({
 }) => {
   return (
     <Box display="flex" alignItems="center" gap={STYLE_GUIDE.SPACING.s2}>
-      <PrimaryButton variant="outlined" component="label">
+      <StyledButton variant="secondary" component="label">
         <Box
           gap={STYLE_GUIDE.SPACING.s1}
           display="flex"
@@ -28,7 +28,7 @@ const FileUploadButton: React.FC<FileUploadButtonProps> = ({
         </Box>
 
         <input type="file" hidden onChange={onFileChange} />
-      </PrimaryButton>
+      </StyledButton>
       {fileName && (
         <Box
           component="span"

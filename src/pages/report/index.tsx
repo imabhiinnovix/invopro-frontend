@@ -1,31 +1,29 @@
 import {
   Box,
-  Button,
   Table,
   TableBody,
   TableCell,
   TableRow,
   Tooltip,
-  Typography,
 } from "@mui/material";
 import GenerateReport from "../../components/atom/report/generateReport";
 import { useEffect, useRef, useState } from "react";
 import ReportRequestTable from "../../components/atom/report/reportRequestTable";
 import ViewReport from "../../components/atom/report/viewReport";
-import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import type { ReportRequestResponse } from "../../components/atom/report/types";
 import { DateTime } from "luxon";
 import html2pdf from "html2pdf.js";
 import ReportSelection from "../../components/atom/report/changeReportFromViewReport";
-import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
+import {
+  PictureAsPdfOutlined,
+  SimCardDownloadOutlined,
+  FileDownloadOutlined,
+} from "@mui/icons-material";
 import ScrollableTabNavigation from "../../components/atom/report/scrollableTab";
-import SimCardDownloadIcon from "@mui/icons-material/SimCardDownload";
-import DownloadForOfflineIcon from "@mui/icons-material/DownloadForOffline";
 import { GET } from "../../services/apiRoutes";
 import { useUnifiedTheme } from "../../hooks/useUnifiedTheme";
 import useFileDownload from "../../hooks/useFiledownload";
-import { PageHeader } from "../../components/common";
-import PrimaryButton from "../../components/common/PrimaryButton";
+import { ActionIconButton, PageCardLayout, PageHeader } from "../../components/common";
 import { STYLE_GUIDE } from "../../styles";
 import { useSelector } from "react-redux";
 import { PermissionsMap } from "../../utils/constants";
@@ -116,27 +114,6 @@ export default function Report() {
     });
   };
 
-  const tabStyle = (index: number) => ({
-    padding: "10px 20px",
-    cursor: "pointer",
-    borderBottom:
-      activeTab === index
-        ? `2px solid ${theme.palette.primary.main}`
-        : "2px solid transparent",
-    fontWeight: activeTab === index ? "bold" : "normal",
-    // backgroundColor: activeTab === index ? theme.palette.primary.light : theme.palette.background.paper,
-    color:
-      activeTab === index
-        ? theme.palette.primary.main
-        : theme.palette.text.primary,
-    "&:hover": {
-      backgroundColor:
-        activeTab === index
-          ? theme.palette.primary.light
-          : theme.palette.action.hover,
-    },
-  });
-
   useEffect(() => {
     if (headerRef.current && tabRef.current && window.innerHeight) {
       const headerHeight = headerRef.current?.clientHeight || 0;
@@ -178,251 +155,148 @@ export default function Report() {
       <Box ref={headerRef}>
         {viewReportRequestId && viewReportRequestId.length > 0 ? (
           <>
-            <PrimaryButton
-              icon={<ArrowBackIcon fontSize="medium" />}
-              onClick={() => {
-                setViewReportRequestId("");
-              }}
-              variant="outlined"
-              sx={{ mb: 3 }}
-            >
-              Back
-            </PrimaryButton>
-            {/* <Box
-                sx={{
-                  cursor: "pointer",
-                  color: theme.palette.text.primary,
-                  "&:hover": {
-                    backgroundColor: theme.palette.action.hover,
-                    color: theme.palette.primary.main,
-                  },
-                }}
-                onClick={() => {
-                  setViewReportRequestId("");
-                }}
-              >
-                <ArrowBackIcon fontSize="medium" />
-              </Box> */}
-            <ReportSelection
-              defaultReport={{
-                _id: allDetailData?.customReportId?._id || "",
-                reportName: allDetailData?.customReportId?.reportName || "",
-              }}
-              defaultVersion={{
-                _id: allDetailData?._id || "",
-                versionValue: allDetailData?.versionValue || "",
-              }}
-              setViewReportRequestId={setViewReportRequestId}
-              setAllDetailData={setAllDetailData}
-              setViewReportNameWithVersionValue={
-                setViewReportNameWithVersionValue
-              }
-            />
-            <Box
-              sx={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                // p: 2,
-                py: 2,
-              }}
-            >
-              <Box
-                sx={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 1,
-                }}
-              >
-                <Typography
-                  variant="h6"
-                  sx={{
-                    fontWeight: 500,
-                    color: "text.primary",
-                    fontSize: "16px",
-                  }}
-                >
-                  <Box component="span" fontWeight="bold">
-                    {allDetailData?.customReportId?.reportName || ""}
-                  </Box>{" "}
-                  Report for the period of{" "}
-                  <Box component="span" fontWeight="bold">
-                    {allDetailData?.versionValue
-                      ? DateTime.fromFormat(
-                          allDetailData.versionValue,
-                          "yyyy-MM",
-                        ).toFormat("LLLL yyyy")
-                      : ""}
-                  </Box>{" "}
-                  ,created by{" "}
-                  {`${allDetailData?.createdBy?.firstName || ""}${
-                    allDetailData?.createdBy?.lastName
-                      ? " " + allDetailData.createdBy.lastName
-                      : ""
-                  }`}{" "}
-                  on{" "}
-                  {allDetailData?.createdAt
-                    ? DateTime.fromISO(allDetailData.createdAt).toFormat(
-                        "dd LLL yyyy hh:mm a",
-                      )
-                    : ""}
-                </Typography>
-              </Box>
-
-              <Box sx={{ display: "flex", gap: 1 }}>
-                {isPdfLoading ? (
-                  <Box
-                    sx={{
-                      width: 27,
-                      height: 27,
-                      borderRadius: "50%",
-                      border: "3px solid #f3f3f3",
-                      borderTop: "3px solid #3498db",
-                      animation: "spin 1s linear infinite",
-                      "@keyframes spin": {
-                        "0%": { transform: "rotate(0deg)" },
-                        "100%": { transform: "rotate(360deg)" },
-                      },
-                    }}
-                  />
-                ) : (
-                  <Tooltip title="Download Pdf" arrow>
-                    <Button
-                      variant="text"
-                      disabled={
-                        !(
-                          viewReportNameWithVersionValue &&
-                          viewReportNameWithVersionValue.length > 0
-                        )
-                      }
-                      onClick={handleDownloadPdf}
-                      sx={{ minWidth: "auto" }}
-
-                      // sx={{
-                      //   ...getButtonSx(),
-                      //   bgcolor: theme.palette.primary.main,
-                      //   color: theme.palette.primary.contrastText,
-                      //   '&:hover': {
-                      //     bgcolor: theme.palette.primary.dark,
-                      //     boxShadow: theme.shadows[3],
-                      //   },
-                      //   '&:disabled': {
-                      //     bgcolor: theme.palette.action.disabledBackground,
-                      //     color: theme.palette.action.disabled,
-                      //   },
-                      // }}
-                    >
-                      <PictureAsPdfIcon
-
-                      // sx={{ color: theme.getIconColor() }}
-                      />
-                    </Button>
-                  </Tooltip>
-                )}
-                {/* {console.log('allDetailData', allDetailData)} */}
-                {allDetailData &&
-                  allDetailData.status === "completed" &&
-                  allDetailData.customReportId?.reportName ===
-                    "Supplemental IP" && (
-                    <Tooltip title="Intermediate Download" arrow>
-                      <Button variant="text" sx={{ minWidth: "auto" }}>
-                        <DownloadForOfflineIcon
+            <PageHeader
+              title={allDetailData?.customReportId?.reportName || "Report View"}
+              subtext={`Period: ${
+                allDetailData?.versionValue
+                  ? DateTime.fromFormat(
+                      allDetailData.versionValue,
+                      "yyyy-MM",
+                    ).toFormat("LLLL yyyy")
+                  : "-"
+              } | Created by ${
+                `${allDetailData?.createdBy?.firstName || ""}${
+                  allDetailData?.createdBy?.lastName
+                    ? " " + allDetailData.createdBy.lastName
+                    : ""
+                }`.trim() || "-"
+              } on ${
+                allDetailData?.createdAt
+                  ? DateTime.fromISO(allDetailData.createdAt).toFormat(
+                      "dd LLL yyyy hh:mm a",
+                    )
+                  : "-"
+              }`}
+              onBack={() => setViewReportRequestId("")}
+              action={
+                <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
+                  {isPdfLoading ? (
+                    <Box
+                      sx={{
+                        width: 27,
+                        height: 27,
+                        borderRadius: "50%",
+                        border: "3px solid #f3f3f3",
+                        borderTop: "3px solid #3498db",
+                        animation: "spin 1s linear infinite",
+                        "@keyframes spin": {
+                          "0%": { transform: "rotate(0deg)" },
+                          "100%": { transform: "rotate(360deg)" },
+                        },
+                      }}
+                    />
+                  ) : (
+                    <Tooltip title="Download PDF" arrow>
+                      <ActionIconButton
+                        disabled={
+                          !(
+                            viewReportNameWithVersionValue &&
+                            viewReportNameWithVersionValue.length > 0
+                          )
+                        }
+                        onClick={handleDownloadPdf}
+                      >
+                        <PictureAsPdfOutlined />
+                      </ActionIconButton>
+                    </Tooltip>
+                  )}
+                  {allDetailData &&
+                    allDetailData.status === "completed" &&
+                    allDetailData.customReportId?.reportName ===
+                      "Supplemental IP" && (
+                      <Tooltip title="Intermediate Download" arrow>
+                        <ActionIconButton
                           onClick={() => {
                             intermediateSupplementalDownloadFile(
                               `${allDetailData.customReportId?.reportName}-intermediate-${allDetailData.versionValue}.xlsx`,
                               allDetailData,
                             );
                           }}
-                        />
-                      </Button>
-                    </Tooltip>
-                  )}
-                {allDetailData?.status === "completed" &&
-                  allDetailData?.intermediateReportId && (
+                        >
+                          <FileDownloadOutlined />
+                        </ActionIconButton>
+                      </Tooltip>
+                    )}
+                  {allDetailData?.status === "completed" &&
+                    allDetailData?.intermediateReportId && (
+                      <>
+                        {exportFile.isPending &&
+                        !!intermediateDownloadRequestId &&
+                        intermediateDownloadRequestId === allDetailData._id ? (
+                          <Box
+                            sx={{
+                              width: 27,
+                              height: 27,
+                              borderRadius: "50%",
+                              border: "3px solid #f3f3f3",
+                              borderTop: "3px solid #3498db",
+                              animation: "spin 1s linear infinite",
+                              "@keyframes spin": {
+                                "0%": { transform: "rotate(0deg)" },
+                                "100%": { transform: "rotate(360deg)" },
+                              },
+                            }}
+                          />
+                        ) : (
+                          <Tooltip title="Intermediate Download" arrow>
+                            <ActionIconButton
+                              onClick={() => {
+                                intermediateDownloadFile(
+                                  `${allDetailData.customReportId?.reportName}-intermediate-${allDetailData.versionValue}.xlsx`,
+                                  allDetailData._id,
+                                );
+                              }}
+                            >
+                              <FileDownloadOutlined />
+                            </ActionIconButton>
+                          </Tooltip>
+                        )}
+                      </>
+                    )}
+                  {exportFile.isPending &&
+                  !!regularDownloadRequestId &&
+                  regularDownloadRequestId === allDetailData?._id ? (
                     <Box
                       sx={{
-                        display: "flex",
-                        justifyContent: "flex-end",
-                        alignItems: "center",
+                        width: 27,
+                        height: 27,
+                        borderRadius: "50%",
+                        border: "3px solid #f3f3f3",
+                        borderTop: "3px solid #3498db",
+                        animation: "spin 1s linear infinite",
+                        "@keyframes spin": {
+                          "0%": { transform: "rotate(0deg)" },
+                          "100%": { transform: "rotate(360deg)" },
+                        },
                       }}
-                    >
-                      {exportFile.isPending &&
-                      !!intermediateDownloadRequestId &&
-                      intermediateDownloadRequestId === allDetailData._id ? (
-                        <Box
-                          sx={{
-                            width: 27,
-                            height: 27,
-                            borderRadius: "50%",
-                            border: "3px solid #f3f3f3",
-                            borderTop: "3px solid #3498db",
-                            animation: "spin 1s linear infinite",
-                            "@keyframes spin": {
-                              "0%": { transform: "rotate(0deg)" },
-                              "100%": { transform: "rotate(360deg)" },
-                            },
-                            mr: 1,
-                          }}
-                        />
-                      ) : (
-                        <Tooltip title="Intermediate Download" arrow>
-                          <Button
-                            variant="text"
-                            sx={{ minWidth: "auto" }}
-                            onClick={() => {
-                              intermediateDownloadFile(
-                                `${allDetailData.customReportId?.reportName}-intermediate-${allDetailData.versionValue}.xlsx`,
-                                allDetailData._id,
-                              );
-                            }}
-                            // sx={{ ...getButtonSx(), mr: 1 }}
-                          >
-                            <DownloadForOfflineIcon
-                            // sx={{ color: theme.getIconColor() }}
-                            />
-                          </Button>
-                        </Tooltip>
-                      )}
-                    </Box>
+                    />
+                  ) : (
+                    <Tooltip title="Download Excel" arrow>
+                      <ActionIconButton
+                        onClick={() => {
+                          downloadFile(
+                            `${allDetailData?.customReportId?.reportName}-${allDetailData?.versionValue}.xlsx`,
+                            allDetailData?._id || "",
+                          );
+                        }}
+                      >
+                        <SimCardDownloadOutlined />
+                      </ActionIconButton>
+                    </Tooltip>
                   )}
-
-                {exportFile.isPending &&
-                !!regularDownloadRequestId &&
-                regularDownloadRequestId === allDetailData?._id ? (
-                  <Box
-                    sx={{
-                      width: 27,
-                      height: 27,
-                      borderRadius: "50%",
-                      border: "3px solid #f3f3f3",
-                      borderTop: "3px solid #3498db",
-                      animation: "spin 1s linear infinite",
-                      "@keyframes spin": {
-                        "0%": { transform: "rotate(0deg)" },
-                        "100%": { transform: "rotate(360deg)" },
-                      },
-                    }}
-                  />
-                ) : (
-                  <Tooltip title="Download Excel" arrow>
-                    <Button
-                      variant="text"
-                      sx={{ minWidth: "auto" }}
-                      onClick={() => {
-                        downloadFile(
-                          `${allDetailData?.customReportId?.reportName}-${allDetailData?.versionValue}.xlsx`,
-                          allDetailData?._id || "",
-                        );
-                      }}
-                    >
-                      <SimCardDownloadIcon
-                      // sx={{ color: theme.getIconColor() }}
-                      />
-                    </Button>
-                  </Tooltip>
-                )}
-              </Box>
-            </Box>
+                </Box>
+              }
+            />
           </>
         ) : (
           <PageHeader
@@ -433,139 +307,155 @@ export default function Report() {
       </Box>
 
       {viewReportRequestId && viewReportRequestId.length > 0 ? (
-        <Box ref={tabRef}>
-          <ScrollableTabNavigation
-            tabs={(allDetailData?.dataSourceVersion ?? []).filter(
-              (tab) => !tab.isIntermediate,
-            )}
-            activeTab={activeTab}
-            setActiveTab={setActiveTab}
-            tabStyle={tabStyle}
-          />
-          {allDetailData?.dataSourceVersion?.map(
-            (item, index) =>
-              activeTab === index && (
-                <ViewReport
-                  key={index}
-                  dataSourceVersionId={item.dataSourceVersionId}
-                  versionCode={item.versionCode}
-                  mappingFuctionName={item.mappingFuctionName}
-                  versionValue={allDetailData.versionValue.split("-")[0]}
-                  sheetCode={item.sheetCode}
-                  designCode={item.designCode}
-                  customReportId={allDetailData.customReportId._id}
-                  maxHeight={maxHeight}
-                  isView={true}
-                />
-              ),
-          )}
-
-          {/* To download pdf */}
-          <Box
-            sx={{
-              display: "none",
-              marginBottom: 5,
+        <PageCardLayout>
+          <ReportSelection
+            defaultReport={{
+              _id: allDetailData?.customReportId?._id || "",
+              reportName: allDetailData?.customReportId?.reportName || "",
             }}
-            ref={targetRef}
-          >
-            {allDetailData?.dataSourceVersion
-              ?.filter((item) => !!item.allowPdfDownload) // Only include sheets that allow PDF download
-              .map((item, index, filteredArray) => (
-                <Box key={index}>
-                  {index === 0 && (
-                    <Table
-                      size="small"
-                      sx={{
-                        width: "auto",
-                        mb: 2,
-                        ml: 0,
-                        pl: 0,
-                      }}
-                    >
-                      <TableBody>
-                        <TableRow>
-                          <TableCell
-                            sx={{
-                              fontWeight: 600,
-                              borderBottom: "none",
-                              pr: 1,
-                              whiteSpace: "nowrap",
-                            }}
-                          >
-                            Report Name:
-                          </TableCell>
-                          <TableCell
-                            sx={{ fontWeight: 500, borderBottom: "none" }}
-                          >
-                            {allDetailData?.customReportId?.reportName}
-                          </TableCell>
-                        </TableRow>
-                        <TableRow>
-                          <TableCell
-                            sx={{
-                              fontWeight: 600,
-                              borderBottom: "none",
-                              pr: 1,
-                              whiteSpace: "nowrap",
-                            }}
-                          >
-                            Period:
-                          </TableCell>
-                          <TableCell
-                            sx={{ fontWeight: 500, borderBottom: "none" }}
-                          >
-                            {allDetailData?.versionValue}
-                          </TableCell>
-                        </TableRow>
-                        <TableRow>
-                          <TableCell
-                            sx={{
-                              fontWeight: 600,
-                              borderBottom: "none",
-                              pr: 1,
-                              whiteSpace: "nowrap",
-                            }}
-                          >
-                            Created By:
-                          </TableCell>
-                          <TableCell
-                            sx={{ fontWeight: 500, borderBottom: "none" }}
-                          >
-                            {`${allDetailData?.createdBy?.firstName || ""}${
-                              allDetailData?.createdBy?.lastName
-                                ? " " + allDetailData.createdBy.lastName
-                                : ""
-                            }`}
-                          </TableCell>
-                        </TableRow>
-                      </TableBody>
-                    </Table>
-                  )}
+            defaultVersion={{
+              _id: allDetailData?._id || "",
+              versionValue: allDetailData?.versionValue || "",
+            }}
+            setViewReportRequestId={setViewReportRequestId}
+            setAllDetailData={setAllDetailData}
+            setViewReportNameWithVersionValue={
+              setViewReportNameWithVersionValue
+            }
+          />
+          <Box ref={tabRef}>
+            <ScrollableTabNavigation
+              tabs={(allDetailData?.dataSourceVersion ?? []).filter(
+                (tab) => !tab.isIntermediate,
+              )}
+              activeTab={activeTab}
+              setActiveTab={setActiveTab}
+            />
+            {allDetailData?.dataSourceVersion?.map(
+              (item, index) =>
+                activeTab === index && (
+                  <ViewReport
+                    key={index}
+                    dataSourceVersionId={item.dataSourceVersionId}
+                    versionCode={item.versionCode}
+                    mappingFuctionName={item.mappingFuctionName}
+                    versionValue={allDetailData.versionValue.split("-")[0]}
+                    sheetCode={item.sheetCode}
+                    designCode={item.designCode}
+                    customReportId={allDetailData.customReportId._id}
+                    maxHeight={maxHeight}
+                    isView={true}
+                  />
+                ),
+            )}
 
-                  <Box>
-                    <Box sx={{ display: "flex", mt: 1, mb: 1 }}>
-                      <Box sx={{ fontWeight: 600 }}>Sheet Name: </Box>
-                      <Box>{item.sheetName}</Box>
+            {/* Hidden element for PDF generation */}
+            <Box
+              sx={{
+                display: "none",
+                marginBottom: 5,
+              }}
+              ref={targetRef}
+            >
+              {allDetailData?.dataSourceVersion
+                ?.filter((item) => !!item.allowPdfDownload)
+                .map((item, index, filteredArray) => (
+                  <Box key={index}>
+                    {index === 0 && (
+                      <Table
+                        size="small"
+                        sx={{
+                          width: "auto",
+                          mb: 2,
+                          ml: 0,
+                          pl: 0,
+                        }}
+                      >
+                        <TableBody>
+                          <TableRow>
+                            <TableCell
+                              sx={{
+                                fontWeight: 600,
+                                borderBottom: "none",
+                                pr: 1,
+                                whiteSpace: "nowrap",
+                              }}
+                            >
+                              Report Name:
+                            </TableCell>
+                            <TableCell
+                              sx={{ fontWeight: 500, borderBottom: "none" }}
+                            >
+                              {allDetailData?.customReportId?.reportName}
+                            </TableCell>
+                          </TableRow>
+                          <TableRow>
+                            <TableCell
+                              sx={{
+                                fontWeight: 600,
+                                borderBottom: "none",
+                                pr: 1,
+                                whiteSpace: "nowrap",
+                              }}
+                            >
+                              Period:
+                            </TableCell>
+                            <TableCell
+                              sx={{ fontWeight: 500, borderBottom: "none" }}
+                            >
+                              {allDetailData?.versionValue}
+                            </TableCell>
+                          </TableRow>
+                          <TableRow>
+                            <TableCell
+                              sx={{
+                                fontWeight: 600,
+                                borderBottom: "none",
+                                pr: 1,
+                                whiteSpace: "nowrap",
+                              }}
+                            >
+                              Created By:
+                            </TableCell>
+                            <TableCell
+                              sx={{ fontWeight: 500, borderBottom: "none" }}
+                            >
+                              {`${allDetailData?.createdBy?.firstName || ""}${
+                                allDetailData?.createdBy?.lastName
+                                  ? " " + allDetailData.createdBy.lastName
+                                  : ""
+                              }`}
+                            </TableCell>
+                          </TableRow>
+                        </TableBody>
+                      </Table>
+                    )}
+
+                    <Box>
+                      <Box sx={{ display: "flex", mt: 1, mb: 1 }}>
+                        <Box sx={{ fontWeight: 600 }}>Sheet Name: </Box>
+                        <Box>{item.sheetName}</Box>
+                      </Box>
+                      <ViewReport
+                        key={index}
+                        dataSourceVersionId={item.dataSourceVersionId}
+                        versionCode={item.versionCode}
+                        mappingFuctionName={item.mappingFuctionName}
+                        versionValue={allDetailData.versionValue.split("-")[0]}
+                        sheetCode={item.sheetCode}
+                        designCode={item.designCode}
+                        customReportId={allDetailData.customReportId._id}
+                      />
                     </Box>
-                    <ViewReport
-                      key={index}
-                      dataSourceVersionId={item.dataSourceVersionId}
-                      versionCode={item.versionCode}
-                      mappingFuctionName={item.mappingFuctionName}
-                      versionValue={allDetailData.versionValue.split("-")[0]}
-                      sheetCode={item.sheetCode}
-                      designCode={item.designCode}
-                      customReportId={allDetailData.customReportId._id}
-                    />
-                  </Box>
 
-                  {index < filteredArray.length - 1 && (
-                    <Box className="html2pdf__page-break" />
-                  )}
-                </Box>
-              ))}
+                    {index < filteredArray.length - 1 && (
+                      <Box className="html2pdf__page-break" />
+                    )}
+                  </Box>
+                ))}
+            </Box>
           </Box>
-        </Box>
+        </PageCardLayout>
       ) : (
         <Box
           id="reports-list-view"

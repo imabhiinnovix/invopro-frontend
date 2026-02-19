@@ -23,7 +23,7 @@ import { POST } from "../../services/apiRoutes";
 import { useUnifiedTheme } from "../../hooks/useUnifiedTheme";
 import { useComponentTypography } from "../../hooks/useComponentTypography";
 import { STYLE_GUIDE } from "../../styles";
-import PrimaryButton from "../../components/common/PrimaryButton";
+import { StyledButton } from "../../components/common";
 import DialogContainer from "../../components/molecule/dialog";
 
 const CreateTheme = () => {
@@ -130,12 +130,12 @@ const CreateTheme = () => {
         >
           Theme Library
         </Typography>
-        <PrimaryButton
-          variant="contained"
+        <StyledButton
+          variant="primary"
           onClick={() => setIsDialogOpen(true)}
         >
           + Create
-        </PrimaryButton>
+        </StyledButton>
       </Stack>
       <Typography variant="body1" sx={{ mb: 4 }}>
         Browse and preview available chart themes
@@ -165,17 +165,17 @@ const CreateTheme = () => {
         title="Delete Theme"
         actions={
           <>
-            <PrimaryButton onClick={cancelDelete} variant="outlined">
+            <StyledButton variant="secondary" onClick={cancelDelete}>
               Cancel
-            </PrimaryButton>
-            <PrimaryButton
+            </StyledButton>
+            <StyledButton
+              variant="primary"
               disabled={deleteThemeMutation.isPending}
               onClick={confirmDelete}
-              variant="contained"
               color="error"
             >
               {deleteThemeMutation.isPending ? "Deleting..." : "Delete"}
-            </PrimaryButton>
+            </StyledButton>
           </>
         }
       >

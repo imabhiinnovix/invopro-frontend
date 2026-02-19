@@ -1,7 +1,6 @@
 import { useState, useRef, useEffect, useContext } from "react";
 import {
   Avatar,
-  Button,
   TextField,
   Grid,
   Paper,
@@ -41,8 +40,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "../../reducers";
 import useDelete from "../../hooks/useDelete";
 import { setCurrentUser } from "../../reducers/userSlice";
-import PrimaryButton from "../../components/common/PrimaryButton";
-import { PageHeader } from "../../components/common";
+import { PageHeader, PageCardLayout, StyledButton } from "../../components/common";
 import DialogContainer from "../../components/molecule/dialog";
 import { checkPermission } from "../../utils/utils";
 import { PermissionsMap } from "../../utils/constants";
@@ -966,6 +964,7 @@ const ProfilePage = () => {
         title="My Profile"
         subtext="View and edit your profile information."
       />
+      <PageCardLayout>
       <Grid container spacing={4}>
         <Grid item xs={12} md={4}>
           <Paper
@@ -1007,13 +1006,13 @@ const ProfilePage = () => {
                 }}
               >
                 {/* {shouldAllowUpload && ( */}
-                <PrimaryButton
-                  variant="outlined"
-                  startIcon={<EditOutlined sx={{ fontSize: "16px" }} />}
+                <StyledButton
+                  variant="secondary"
+                  icon={<EditOutlined sx={{ fontSize: "16px" }} />}
                   onClick={() => setIsEditingProfilePic(true)}
                 >
                   Edit
-                </PrimaryButton>
+                </StyledButton>
                 {/* )} */}
               </Box>
             )}
@@ -1028,25 +1027,25 @@ const ProfilePage = () => {
                   }}
                 >
                   {/* {shouldAllowUpload && ( */}
-                  <PrimaryButton
-                    variant="outlined"
-                    startIcon={<UploadIcon />}
+                  <StyledButton
+                    variant="secondary"
+                    icon={<UploadIcon />}
                     onClick={triggerFileInput}
                   >
                     Upload
-                  </PrimaryButton>
+                  </StyledButton>
                   {/* )} */}
                   {profileImage !== "/default-avatar.png" &&
                     shouldAllowDelete && (
-                      <PrimaryButton
-                        variant="outlined"
+                      <StyledButton
+                        variant="secondary"
                         color="error"
-                        startIcon={<DeleteOutlined />}
+                        icon={<DeleteOutlined />}
                         onClick={handleDeleteClick}
                         size="small"
                       >
                         Delete
-                      </PrimaryButton>
+                      </StyledButton>
                     )}
                 </Box>
                 <Box
@@ -1057,14 +1056,14 @@ const ProfilePage = () => {
                     mb: 2,
                   }}
                 >
-                  <PrimaryButton
-                    variant="outlined"
-                    startIcon={<CancelIcon />}
+                  <StyledButton
+                    variant="secondary"
+                    icon={<CancelIcon />}
                     onClick={() => setIsEditingProfilePic(false)}
                     size="small"
                   >
                     Cancel
-                  </PrimaryButton>
+                  </StyledButton>
                 </Box>
               </>
             )}
@@ -1077,13 +1076,13 @@ const ProfilePage = () => {
                   mb: 2,
                 }}
               >
-                <PrimaryButton
-                  variant="outlined"
-                  startIcon={<EditOutlined sx={{ fontSize: "16px" }} />}
+                <StyledButton
+                  variant="secondary"
+                  icon={<EditOutlined sx={{ fontSize: "16px" }} />}
                   onClick={() => setIsEditingProfilePic(true)}
                 >
                   Edit
-                </PrimaryButton>
+                </StyledButton>
               </Box>
             )}
             {imagePreview && isEditingProfilePic && (
@@ -1095,10 +1094,9 @@ const ProfilePage = () => {
                   mb: 2,
                 }}
               >
-                <PrimaryButton
-                  variant="contained"
-                  color="primary"
-                  startIcon={
+                <StyledButton
+                  variant="primary"
+                  icon={
                     isUploading ? (
                       <CircularProgress size={20} color="inherit" />
                     ) : (
@@ -1111,15 +1109,15 @@ const ProfilePage = () => {
                   sx={{ borderRadius: 2 }}
                 >
                   {isUploading ? "Uploading..." : "Save"}
-                </PrimaryButton>
-                <PrimaryButton
-                  variant="outlined"
+                </StyledButton>
+                <StyledButton
+                  variant="secondary"
                   color="error"
-                  startIcon={<DeleteOutlined />}
+                  icon={<DeleteOutlined />}
                   onClick={handleImagePreviewDelete}
                 >
                   Cancel
-                </PrimaryButton>
+                </StyledButton>
               </Box>
             )}
             <Typography
@@ -1144,9 +1142,9 @@ const ProfilePage = () => {
               title="Personal Information"
               titleTypographyProps={{ fontWeight: 600 }}
               action={
-                <PrimaryButton
-                  variant={editModes.personal ? "outlined" : "contained"}
-                  startIcon={editModes.personal ? <CancelIcon /> : <EditOutlined sx={{ fontSize: "16px" }} />}
+                <StyledButton
+                  variant={editModes.personal ? "secondary" : "primary"}
+                  icon={editModes.personal ? <CancelIcon /> : <EditOutlined sx={{ fontSize: "16px" }} />}
                   onClick={() =>
                     editModes.personal
                       ? handleCancel("personal")
@@ -1154,7 +1152,7 @@ const ProfilePage = () => {
                   }
                 >
                   {editModes.personal ? "Cancel" : "Edit"}
-                </PrimaryButton>
+                </StyledButton>
               }
               sx={{ pb: 1 }}
             />
@@ -1174,19 +1172,16 @@ const ProfilePage = () => {
                     xs={12}
                     sx={{ display: "flex", justifyContent: "flex-end", mt: 1 }}
                   >
-                    <Button
-                      variant="contained"
-                      color="primary"
-                      startIcon={<SaveIcon />}
+                    <StyledButton
+                      variant="primary"
+                      icon={<SaveIcon />}
                       onClick={() => handleSaveChanges("personal")}
                       disabled={updateUserProfile.isLoading}
-                      size="small"
-                      sx={{ borderRadius: 2 }}
                     >
                       {updateUserProfile.isLoading
                         ? "Saving..."
                         : "Save Changes"}
-                    </Button>
+                    </StyledButton>
                   </Grid>
                 )}
               </Grid>
@@ -1203,9 +1198,9 @@ const ProfilePage = () => {
               title="Address Information"
               titleTypographyProps={{ fontWeight: 600 }}
               action={
-                <PrimaryButton
-                  variant={editModes.address ? "outlined" : "contained"}
-                  startIcon={editModes.address ? <CancelIcon /> : <EditOutlined sx={{ fontSize: "16px" }} />}
+                <StyledButton
+                  variant={editModes.address ? "secondary" : "primary"}
+                  icon={editModes.address ? <CancelIcon /> : <EditOutlined sx={{ fontSize: "16px" }} />}
                   onClick={() =>
                     editModes.address
                       ? handleCancel("address")
@@ -1213,7 +1208,7 @@ const ProfilePage = () => {
                   }
                 >
                   {editModes.address ? "Cancel" : "Edit"}
-                </PrimaryButton>
+                </StyledButton>
               }
               sx={{ pb: 1 }}
             />
@@ -1430,17 +1425,16 @@ const ProfilePage = () => {
                     xs={12}
                     sx={{ display: "flex", justifyContent: "flex-end", mt: 1 }}
                   >
-                    <PrimaryButton
-                      variant="contained"
-                      color="primary"
-                      startIcon={<SaveIcon />}
+                    <StyledButton
+                      variant="primary"
+                      icon={<SaveIcon />}
                       onClick={() => handleSaveChanges("address")}
                       disabled={updateUserProfile.isLoading || isAddressEmpty()}
                     >
                       {updateUserProfile.isLoading
                         ? "Saving..."
                         : "Save Changes"}
-                    </PrimaryButton>
+                    </StyledButton>
                   </Grid>
                 )}
               </Grid>
@@ -1457,13 +1451,13 @@ const ProfilePage = () => {
               titleTypographyProps={{ fontWeight: 600 }}
               action={
                 !editModes.password ? (
-                  <PrimaryButton
-                    variant="contained"
-                    startIcon={<EditOutlined sx={{ fontSize: "16px" }} />}
+                  <StyledButton
+                    variant="primary"
+                    icon={<EditOutlined sx={{ fontSize: "16px" }} />}
                     onClick={() => toggleEditMode("password")}
                   >
                     Change
-                  </PrimaryButton>
+                  </StyledButton>
                 ) : (
                   <></>
                 )
@@ -1490,10 +1484,9 @@ const ProfilePage = () => {
                       mt: 1,
                     }}
                   >
-                    <PrimaryButton
-                      variant="contained"
-                      color="primary"
-                      startIcon={<SaveIcon />}
+                    <StyledButton
+                      variant="primary"
+                      icon={<SaveIcon />}
                       onClick={handlePasswordChange}
                       disabled={
                         !isPasswordFormValid || changePassword.isLoading
@@ -1502,14 +1495,14 @@ const ProfilePage = () => {
                       {changePassword.isLoading
                         ? "Updating..."
                         : "Update Password"}
-                    </PrimaryButton>
-                    <PrimaryButton
-                      variant="outlined"
-                      startIcon={<CancelIcon />}
+                    </StyledButton>
+                    <StyledButton
+                      variant="secondary"
+                      icon={<CancelIcon />}
                       onClick={() => handleCancel("password")}
                     >
                       Cancel
-                    </PrimaryButton>
+                    </StyledButton>
                   </Grid>
                 </Grid>
               ) : (
@@ -1549,6 +1542,7 @@ const ProfilePage = () => {
           </Card>
         </Grid>
       </Grid>
+      </PageCardLayout>
       <DialogContainer
         open={deleteModalOpen}
         onClose={handleDeleteCancel}
@@ -1559,15 +1553,15 @@ const ProfilePage = () => {
             {/* <PrimaryButton variant="outlined" onClick={handleDeleteCancel}>
               Cancel
             </PrimaryButton> */}
-            <PrimaryButton
-              variant="outlined"
+            <StyledButton
+              variant="secondary"
               onClick={handleDeleteConfirm}
               color="error"
               disabled={isDeleting}
-              startIcon={<DeleteOutlined />}
+              icon={<DeleteOutlined />}
             >
               {isDeleting ? "Deleting..." : "Delete"}
-            </PrimaryButton>
+            </StyledButton>
           </>
         }
       >

@@ -39,7 +39,7 @@ import {
 } from "./types";
 import { Department } from "../designation/DesignationModal";
 import DialogContainer from "../../components/molecule/dialog";
-import PrimaryButton from "../../components/common/PrimaryButton";
+import { StyledButton } from "../../components/common";
 import { BusinessUnitDataApiResponse } from "../businessUnit/BusinessUnitDataTable";
 import { CustomPagination } from "../../components/common/pagination/customPagination";
 import { useDispatch } from "react-redux";
@@ -892,8 +892,8 @@ export default function Users({
         actions={
           <>
             {modalMode !== "view" && (
-              <PrimaryButton
-                variant="contained"
+              <StyledButton
+                variant="primary"
                 onClick={handleSave}
                 disabled={
                   createUserMutation.isPending ||
@@ -907,7 +907,7 @@ export default function Users({
                 ) : (
                   "Save"
                 )}
-              </PrimaryButton>
+              </StyledButton>
             )}
           </>
         }
@@ -1349,7 +1349,8 @@ export default function Users({
         maxWidth="sm"
         actions={
           <>
-            <PrimaryButton
+            <StyledButton
+              variant="primary"
               onClick={handleConfirmDelete}
               color="error"
               disabled={deleteUserMutation.isPending}
@@ -1359,7 +1360,7 @@ export default function Users({
               ) : (
                 "Yes"
               )}
-            </PrimaryButton>
+            </StyledButton>
           </>
         }
       >

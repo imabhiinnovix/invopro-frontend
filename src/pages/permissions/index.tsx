@@ -52,7 +52,7 @@ import { setPermissions } from "../../reducers/userSlice";
 import { toast } from "react-toastify";
 import { useComponentTypography } from "../../hooks";
 import DialogContainer from "../../components/molecule/dialog";
-import PrimaryButton from "../../components/common/PrimaryButton";
+import { StyledButton } from "../../components/common";
 import { checkPermission } from "../../utils/utils";
 import { PermissionsMap } from "../../utils/constants";
 
@@ -655,11 +655,11 @@ export default function Permissions() {
           <>
             {modalMode === "filter" ? (
               <>
-                <PrimaryButton variant="outlined" onClick={handleResetFilter}>
+                <StyledButton variant="secondary" onClick={handleResetFilter}>
                   Reset
-                </PrimaryButton>
-                <PrimaryButton
-                  variant="contained"
+                </StyledButton>
+                <StyledButton
+                  variant="primary"
                   onClick={handleSave}
                   disabled={
                     !formData.name &&
@@ -671,13 +671,13 @@ export default function Permissions() {
                   }
                 >
                   Apply
-                </PrimaryButton>
+                </StyledButton>
               </>
             ) : (
               <>
                 {modalMode !== "view" && (
-                  <PrimaryButton
-                    variant="contained"
+                  <StyledButton
+                    variant="primary"
                     onClick={handleSave}
                     disabled={
                       !formData.name ||
@@ -688,7 +688,7 @@ export default function Permissions() {
                     }
                   >
                     Save
-                  </PrimaryButton>
+                  </StyledButton>
                 )}
               </>
             )}
@@ -756,16 +756,17 @@ export default function Permissions() {
         title="Confirm Delete"
         actions={
           <>
-            <PrimaryButton variant="outlined" onClick={handleCloseDialog}>
+            <StyledButton variant="secondary" onClick={handleCloseDialog}>
               No
-            </PrimaryButton>
-            <PrimaryButton
+            </StyledButton>
+            <StyledButton
+              variant="primary"
               onClick={handleConfirmDelete}
               color="error"
               disabled={deletePermission.isPending}
             >
               Yes
-            </PrimaryButton>
+            </StyledButton>
           </>
         }
       >

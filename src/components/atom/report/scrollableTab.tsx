@@ -1,22 +1,19 @@
-import type React from "react";
-
 import { Box, IconButton } from "@mui/material";
 import { KeyboardArrowLeft, KeyboardArrowRight } from "@mui/icons-material";
 import { useRef, useState, useEffect } from "react";
 import { useUnifiedTheme } from "../../../hooks/useUnifiedTheme";
+import { STYLE_GUIDE } from "../../../styles";
 
 interface ScrollableTabNavigationProps {
   tabs: { tabName: string }[];
   activeTab: number;
   setActiveTab: (index: number) => void;
-  tabStyle: (index: number) => React.CSSProperties;
 }
 
 export default function ScrollableTabNavigation({
   tabs,
   activeTab,
   setActiveTab,
-  tabStyle,
 }: ScrollableTabNavigationProps) {
   const theme = useUnifiedTheme();
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -28,7 +25,7 @@ export default function ScrollableTabNavigation({
 
     const { scrollLeft, scrollWidth, clientWidth } = scrollContainerRef.current;
     setShowLeftArrow(scrollLeft > 0);
-    setShowRightArrow(scrollLeft < scrollWidth - clientWidth - 1); // -1 for rounding errors
+    setShowRightArrow(scrollLeft < scrollWidth - clientWidth - 1);
   };
 
   useEffect(() => {
@@ -38,7 +35,6 @@ export default function ScrollableTabNavigation({
   }, [tabs]);
 
   useEffect(() => {
-    // Scroll active tab into view when it changes
     if (scrollContainerRef.current) {
       const tabElements =
         scrollContainerRef.current.querySelectorAll(".tab-item");
@@ -83,14 +79,20 @@ export default function ScrollableTabNavigation({
     checkForArrows();
   };
 
+  const isActive = (index: number) => activeTab === index;
+
   return (
     <Box
       sx={{
         display: "flex",
         alignItems: "center",
         width: "100%",
+        maxWidth: "100%",
+        overflow: "hidden",
         position: "relative",
-        borderBottom: `1px solid ${theme.palette.divider}`,
+        backgroundColor: STYLE_GUIDE.COLORS.inputFieldBackground,
+        borderRadius: "8px",
+        p: "4px",
         mb: 2,
       }}
     >
@@ -99,13 +101,13 @@ export default function ScrollableTabNavigation({
           onClick={() => scroll("left")}
           sx={{
             position: "absolute",
-            left: 0,
+            left: 4,
             zIndex: 2,
-            backgroundColor: theme.palette.background.paper,
+            backgroundColor: STYLE_GUIDE.COLORS.inputFieldBackground,
             color: theme.palette.text.primary,
             boxShadow: theme.shadows[2],
             "&:hover": {
-              backgroundColor: theme.palette.background.default,
+              backgroundColor: STYLE_GUIDE.COLORS.backgroundHover,
             },
           }}
           size="small"
@@ -119,33 +121,52 @@ export default function ScrollableTabNavigation({
         onScroll={handleScroll}
         sx={{
           display: "flex",
+          gap: "2px",
           overflowX: "auto",
-          scrollbarWidth: "none", // Firefox
-          "&::-webkit-scrollbar": {
-            // Chrome, Safari, Edge
-            display: "none",
-          },
-          msOverflowStyle: "none", // IE
+          scrollbarWidth: "none",
+          "&::-webkit-scrollbar": { display: "none" },
+          msOverflowStyle: "none",
           width: "100%",
-          px: showLeftArrow || showRightArrow ? 4 : 0,
           transition: "padding 0.3s ease",
         }}
       >
         {tabs?.map((item, index) => (
-          <div
+          <Box
             key={index}
             className="tab-item"
-            style={{
-              ...tabStyle(index),
+            sx={{
               whiteSpace: "nowrap",
               flexShrink: 0,
+              padding: "8px 16px",
+              cursor: "pointer",
+              borderRadius: "6px",
+              fontWeight: isActive(index) ? 600 : 400,
+              fontSize: "14px",
+              color: isActive(index)
+                ? theme.palette.text.primary
+                : STYLE_GUIDE.COLORS.textSecondary,
+              backgroundColor: isActive(index)
+                ? STYLE_GUIDE.COLORS.white
+                : "transparent",
+              border: isActive(index)
+                ? `1px solid ${STYLE_GUIDE.COLORS.inputFieldBorder}`
+                : "1px solid transparent",
+              boxShadow: isActive(index)
+                ? "0 1px 3px rgba(0,0,0,0.08)"
+                : "none",
+              transition: "all 0.2s ease",
+              "&:hover": {
+                backgroundColor: isActive(index)
+                  ? STYLE_GUIDE.COLORS.white
+                  : STYLE_GUIDE.COLORS.backgroundHover,
+              },
             }}
             onClick={() => {
               setActiveTab(index);
             }}
           >
             {item.tabName}
-          </div>
+          </Box>
         ))}
       </Box>
 
@@ -154,13 +175,13 @@ export default function ScrollableTabNavigation({
           onClick={() => scroll("right")}
           sx={{
             position: "absolute",
-            right: 0,
+            right: 4,
             zIndex: 2,
-            backgroundColor: theme.palette.background.paper,
+            backgroundColor: STYLE_GUIDE.COLORS.inputFieldBackground,
             color: theme.palette.text.primary,
             boxShadow: theme.shadows[2],
             "&:hover": {
-              backgroundColor: theme.palette.background.default,
+              backgroundColor: STYLE_GUIDE.COLORS.backgroundHover,
             },
           }}
           size="small"

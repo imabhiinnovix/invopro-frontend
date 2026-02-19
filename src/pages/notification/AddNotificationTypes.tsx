@@ -2,17 +2,12 @@ import * as React from "react";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-
 import {
   Box,
-  Card,
-  CardContent,
   Typography,
   TextField,
   Select,
   MenuItem,
-  Button,
   IconButton,
   FormControl,
   InputLabel,
@@ -28,14 +23,15 @@ import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import useGet from "../../hooks/useGet";
 import usePost from "../../hooks/usePost";
 import { GET, POST } from "../../services/apiRoutes";
-import { STYLE_GUIDE } from "../../styles";
+
 import { useSelector } from "react-redux";
 import Frequency from "./Frequency";
-import { useComponentTypography } from "../../hooks";
+
 import ConditionPreview from "./ConditionPreview";
 import { RootState } from "../../store";
 import { PermissionsMap } from "../../utils/constants";
 import { checkPermission } from "../../utils/utils";
+import { PageHeader, PageCardLayout, StyledButton } from "../../components/common";
 
 // Error Boundary Component
 class ErrorBoundary extends React.Component {
@@ -629,46 +625,28 @@ const ConditionRuleBuilder = ({
               </FormControl>
             </Box>
             <Box sx={{ display: "flex", gap: 1 }}>
-              <Button
-                variant="contained"
-                color="primary"
+              <StyledButton
+                variant="primary"
                 size="small"
                 onClick={() => addRule(groupPath)}
-                startIcon={<AddIcon />}
+                icon={<AddIcon />}
                 disabled={!isDataSourceSelected}
-                sx={{
-                  fontSize: "0.85rem",
-                  borderRadius: 1,
-                  px: 2,
-                  py: 0.5,
-                  transition: "all 0.2s ease",
-                  "&:hover": {
-                    transform: isDataSourceSelected ? "scale(1.05)" : "none",
-                  },
-                }}
               >
                 Condition
-              </Button>
-              <Button
-                variant="contained"
-                color="success"
+              </StyledButton>
+              <StyledButton
+                variant="primary"
                 size="small"
                 onClick={() => addGroup(groupPath)}
-                startIcon={<AddIcon />}
+                icon={<AddIcon />}
                 disabled={!isDataSourceSelected}
                 sx={{
-                  fontSize: "0.85rem",
-                  borderRadius: 1,
-                  px: 2,
-                  py: 0.5,
-                  transition: "all 0.2s ease",
-                  "&:hover": {
-                    transform: isDataSourceSelected ? "scale(1.05)" : "none",
-                  },
+                  backgroundColor: "#2e7d32",
+                  "&:hover": { backgroundColor: "#1b5e20" },
                 }}
               >
                 Group Condition
-              </Button>
+              </StyledButton>
               {!isRoot && (
                 <IconButton
                   onClick={() => {
@@ -904,7 +882,7 @@ export default function AddNotificationTypes() {
     condition: true,
     reminder: true,
   });
-  const { getHeadingSx } = useComponentTypography();
+  
   const permissions = useSelector(
     (state: RootState) => state.userPermission.permissions
   );
@@ -991,129 +969,94 @@ export default function AddNotificationTypes() {
 
   return (
     <ErrorBoundary>
-      <Box
-        sx={{
-          flexGrow: 1,
-          p: 3,
-          ml: { xs: 0 },
-          backgroundColor: STYLE_GUIDE?.COLORS?.backgroundLight || "#f5f5f5",
-          minHeight: "100vh",
-        }}
-      >
-        <Typography
-          variant="h4"
-          sx={{
-            ...getHeadingSx(),
-            mb: STYLE_GUIDE?.SPACING?.s3,
-          }}
-        >
-          <ArrowBackIcon
-            onClick={() => navigate("/notification")}
-            sx={{
-              cursor: "pointer",
-              color: STYLE_GUIDE?.COLORS?.primaryDark || "inherit",
-              fontSize: STYLE_GUIDE?.TYPOGRAPHY?.fontSize?.xxl,
-              marginRight: STYLE_GUIDE.SPACING.s2,
-              fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.medium,
-            }}
-          />
-          Add Notification Type
-        </Typography>
+      <PageHeader
+        title="Add Notification Type"
+        onBack={() => navigate("/notification")}
+      />
 
-        <Card
-          sx={{
-            backgroundColor: STYLE_GUIDE?.COLORS?.white || "#ffffff",
-            borderRadius: 2,
-          }}
-        >
-          <CardContent sx={{ p: 3 }}>
-            <Box component="form" onSubmit={handleSubmit}>
-              <Accordion
-                expanded={expanded.condition}
-                onChange={handleAccordionChange("condition")}
-                sx={{ mb: 2, borderRadius: 2, boxShadow: 1 }}
+      <PageCardLayout>
+        <Box component="form" onSubmit={handleSubmit}>
+          <Accordion
+            expanded={expanded.condition}
+            onChange={handleAccordionChange("condition")}
+            sx={{ mb: 2, borderRadius: 2, boxShadow: 1 }}
+          >
+            <AccordionSummary
+              expandIcon={<ExpandMoreIcon />}
+              aria-controls="condition-content"
+              id="condition-header"
+              sx={{ bgcolor: "grey.50", borderRadius: 2 }}
+            >
+              <Typography
+                variant="h6"
+                sx={{ fontWeight: "bold", color: "text.primary" }}
               >
-                <AccordionSummary
-                  expandIcon={<ExpandMoreIcon />}
-                  aria-controls="condition-content"
-                  id="condition-header"
-                  sx={{ bgcolor: "grey.50", borderRadius: 2 }}
-                >
-                  <Typography
-                    variant="h6"
-                    sx={{ fontWeight: "bold", color: "text.primary" }}
-                  >
-                    Condition Rule Builder
-                  </Typography>
-                </AccordionSummary>
-                <AccordionDetails>
-                  <ErrorBoundary>
-                    <ConditionRuleBuilder
-                      onChange={setNotificationData}
-                      notificationTypeList={updatedList}
-                      fieldOptions={fieldOptions}
-                      setFieldOptions={setFieldOptions}
-                      notificationResponse={notificationResponse.data?.data}
-                    />
-                  </ErrorBoundary>
-                  <Box
-                    sx={{ mt: 4, display: "flex", justifyContent: "flex-end" }}
-                  >
-                    <Button
-                      type="submit"
-                      variant="contained"
-                      color="primary"
-                      size="large"
-                      sx={{ px: 4 }}
-                      disabled={
-                        createNotification.isLoading || !isDataSourceSelected
-                      }
-                    >
-                      {createNotification.isLoading ? "Saving..." : "Save"}
-                    </Button>
-                  </Box>
-                </AccordionDetails>
-              </Accordion>
-              <Accordion
-                expanded={expanded.reminder && notificationTypeId !== null}
-                onChange={handleAccordionChange("reminder")}
-                sx={{ mb: 2, borderRadius: 2, boxShadow: 1 }}
-                disabled={notificationTypeId === null || !shouldAllowScheduler}
+                Condition Rule Builder
+              </Typography>
+            </AccordionSummary>
+            <AccordionDetails>
+              <ErrorBoundary>
+                <ConditionRuleBuilder
+                  onChange={setNotificationData}
+                  notificationTypeList={updatedList}
+                  fieldOptions={fieldOptions}
+                  setFieldOptions={setFieldOptions}
+                  notificationResponse={notificationResponse.data?.data}
+                />
+              </ErrorBoundary>
+              <Box
+                sx={{ mt: 4, display: "flex", justifyContent: "flex-end" }}
               >
-                <AccordionSummary
-                  expandIcon={<ExpandMoreIcon />}
-                  aria-controls="reminder-content"
-                  id="reminder-header"
-                  sx={{
-                    bgcolor: notificationTypeId ? "grey.50" : "grey.200",
-                    borderRadius: 2,
-                    opacity: notificationTypeId ? 1 : 0.6,
-                  }}
+                <StyledButton
+                  variant="primary"
+                  type="submit"
+                  disabled={
+                    createNotification.isLoading || !isDataSourceSelected
+                  }
                 >
-                  <Typography
-                    variant="h6"
-                    sx={{ fontWeight: "bold", color: "text.primary" }}
-                  >
-                    Scheduler {!notificationTypeId}
-                  </Typography>
-                </AccordionSummary>
-                <AccordionDetails>
-                  <ErrorBoundary>
-                    <Frequency
-                      fieldOptions={fieldOptions}
-                      notificationTypeId={notificationTypeId}
-                      shouldAllowSchedulerGet={shouldAllowSchedulerGet}
-                      shouldAllowSchedulerCreate={shouldAllowSchedulerCreate}
-                      shouldAllowSchedulerUpdate={shouldAllowSchedulerUpdate}
-                      shouldAllowSchedulerDelete={shouldAllowSchedulerDelete}
-                    />
-                  </ErrorBoundary>
-                </AccordionDetails>
-              </Accordion>
-            </Box>
-          </CardContent>
-        </Card>
-      </Box>
+                  {createNotification.isLoading ? "Saving..." : "Save"}
+                </StyledButton>
+              </Box>
+            </AccordionDetails>
+          </Accordion>
+          <Accordion
+            expanded={expanded.reminder && notificationTypeId !== null}
+            onChange={handleAccordionChange("reminder")}
+            sx={{ mb: 2, borderRadius: 2, boxShadow: 1 }}
+            disabled={notificationTypeId === null || !shouldAllowScheduler}
+          >
+            <AccordionSummary
+              expandIcon={<ExpandMoreIcon />}
+              aria-controls="reminder-content"
+              id="reminder-header"
+              sx={{
+                bgcolor: notificationTypeId ? "grey.50" : "grey.200",
+                borderRadius: 2,
+                opacity: notificationTypeId ? 1 : 0.6,
+              }}
+            >
+              <Typography
+                variant="h6"
+                sx={{ fontWeight: "bold", color: "text.primary" }}
+              >
+                Scheduler {!notificationTypeId}
+              </Typography>
+            </AccordionSummary>
+            <AccordionDetails>
+              <ErrorBoundary>
+                <Frequency
+                  fieldOptions={fieldOptions}
+                  notificationTypeId={notificationTypeId}
+                  shouldAllowSchedulerGet={shouldAllowSchedulerGet}
+                  shouldAllowSchedulerCreate={shouldAllowSchedulerCreate}
+                  shouldAllowSchedulerUpdate={shouldAllowSchedulerUpdate}
+                  shouldAllowSchedulerDelete={shouldAllowSchedulerDelete}
+                />
+              </ErrorBoundary>
+            </AccordionDetails>
+          </Accordion>
+        </Box>
+      </PageCardLayout>
     </ErrorBoundary>
   );
 }

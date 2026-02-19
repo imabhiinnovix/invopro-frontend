@@ -53,7 +53,7 @@ const StyledSelect: React.FC<StyledSelectProps> = ({
       color: theme.palette.dropdown?.focusedLabel || theme.palette.primary.main,
     },
     '& .MuiSelect-select': {
-      color: theme.palette.dropdown?.selectedText || theme.palette.text.primary,
+      color: theme.palette.text.primary,
     },
     ...sx,
   };
@@ -69,10 +69,10 @@ const StyledSelect: React.FC<StyledSelectProps> = ({
           },
           '&.Mui-selected': {
             backgroundColor: theme.palette.dropdown?.optionBackground || theme.palette.action.selected,
-            color: theme.palette.dropdown?.selectedText || theme.palette.primary.main,
+            color: theme.palette.text.primary,
             '&:hover': {
               backgroundColor: theme.palette.dropdown?.optionHoverBackground || theme.palette.action.hover,
-              color: theme.palette.dropdown?.selectedText || theme.palette.primary.main,
+              color: theme.palette.text.primary,
             },
           },
         },

@@ -1652,6 +1652,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import DatePicker, { DateObject } from "react-multi-date-picker";
 import "react-multi-date-picker/styles/colors/purple.css";
 import DialogContainer from "../../../components/molecule/dialog";
+import { StyledButton } from "../../../components/common";
 
 // Add global styles for datepicker portal to ensure it appears above modal
 const style = document.createElement("style");
@@ -2551,40 +2552,16 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
       id="filters-modal-portal-target"
       actions={
         <>
-          <Button
+          <StyledButton
+            variant="secondary"
             onClick={handleClearFilters}
-            variant="outlined"
             disabled={!hasActiveFilters}
-            sx={{
-              ...getButtonSx(),
-              borderColor: theme.palette.error.main,
-              color: theme.palette.error.main,
-              "&:hover": {
-                borderColor: theme.palette.error.dark,
-                backgroundColor: theme.palette.error.light,
-              },
-              "&:disabled": {
-                borderColor: theme.palette.action.disabled,
-                color: theme.palette.action.disabled,
-              },
-            }}
           >
             Reset
-          </Button>
-          <Button
-            onClick={handleApplyFilters}
-            variant="contained"
-            sx={{
-              ...getButtonSx(),
-              backgroundColor: STYLE_GUIDE.COLORS.primary,
-              color: STYLE_GUIDE.COLORS.white,
-              "&:hover": {
-                backgroundColor: STYLE_GUIDE.COLORS.primaryDark,
-              },
-            }}
-          >
+          </StyledButton>
+          <StyledButton variant="primary" onClick={handleApplyFilters}>
             Apply
-          </Button>
+          </StyledButton>
         </>
       }
     >

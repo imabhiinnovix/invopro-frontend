@@ -51,7 +51,7 @@ import CustomRecurrence from "./Frequency/CustomRecurrence";
 import { STYLE_GUIDE } from "../../styles";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import { toast } from "react-toastify";
-import { ActionIconButton } from "../../components/common";
+import { ActionIconButton, StyledButton } from "../../components/common";
 import { ConfirmationDialog } from "../../components/common/deleteConfirmationDialog/ConfirmationDialog";
 import ViewSchedulerDialog from "./ViewSchedulerDialog";
 import {
@@ -1076,17 +1076,12 @@ export default function Frequency({
             : "Scheduler"}
         </Typography>
         {shouldAllowSchedulerCreate && (
-          <Button
-            variant="contained"
+          <StyledButton
+            variant="primary"
             onClick={handleOpenDialog}
-            sx={{
-              textTransform: "none",
-              borderRadius: 2,
-              fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.medium,
-            }}
           >
             Add New
-          </Button>
+          </StyledButton>
         )}
       </Box>
       {frequencyListData?.data?.length > 0 ? (
@@ -1770,20 +1765,18 @@ export default function Frequency({
           </Box>
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 2, pt: 1 }}>
-          <Button
-            variant="outlined"
+          <StyledButton
+            variant="secondary"
             onClick={handleClose}
-            sx={{ textTransform: "none", borderRadius: 2 }}
           >
             Cancel
-          </Button>
-          <Button
-            variant="contained"
+          </StyledButton>
+          <StyledButton
+            variant="primary"
             onClick={() => handleSave()}
-            sx={{ textTransform: "none", borderRadius: 2 }}
           >
             {modelType === "edit" ? "Update" : "Save"}
-          </Button>
+          </StyledButton>
         </DialogActions>
       </Dialog>
       <Dialog

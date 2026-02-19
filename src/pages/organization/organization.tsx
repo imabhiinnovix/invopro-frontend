@@ -46,7 +46,6 @@ import Autocomplete from "@mui/material/Autocomplete";
 import { PageHeader, PageCardLayout, StyledButton } from "../../components/common";
 import { CustomPagination } from "../../components/common/pagination/customPagination";
 import DialogContainer from "../../components/molecule/dialog";
-import PrimaryButton from "../../components/common/PrimaryButton";
 import { useSelector } from "react-redux";
 import { RootState } from "../../store";
 import {
@@ -1003,9 +1002,9 @@ export default function Organization() {
             fullWidth
             actions={
               <>
-                <PrimaryButton
+                <StyledButton
+                  variant="primary"
                   type="submit"
-                  variant="contained"
                   onClick={handleSubmit(handleOrgModalSubmit)}
                   disabled={
                     !isValid ||
@@ -1025,7 +1024,7 @@ export default function Organization() {
                     : selectedOrg
                     ? "Save"
                     : "Create"}
-                </PrimaryButton>
+                </StyledButton>
               </>
             }
           >
@@ -2463,14 +2462,14 @@ export default function Organization() {
             maxWidth="sm"
             actions={
               <>
-                <PrimaryButton
+                <StyledButton
+                  variant="primary"
                   onClick={handleDeleteConfirm}
                   color="error"
-                  variant="contained"
                   disabled={deleteOrg.isPending}
                 >
                   {deleteOrg.isPending ? "Deleting..." : "Delete"}
-                </PrimaryButton>
+                </StyledButton>
               </>
             }
           >

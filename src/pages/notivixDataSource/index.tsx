@@ -25,7 +25,6 @@ import { setDataSourceList } from "../dataSources/dataSourceActions";
 import { useAppDispatch } from "../../storeHooks";
 import { PermissionsMap } from "../../utils/constants";
 import DialogContainer from "../../components/molecule/dialog";
-import PrimaryButton from "../../components/common/PrimaryButton";
 import { VisibilityOutlined } from "@mui/icons-material";
 
 interface ApiResponse {
@@ -786,15 +785,15 @@ export default function NotivixDataSource() {
           title="Export Data"
           actions={
             <>
-              <PrimaryButton
-                variant="contained"
+              <StyledButton
+                variant="primary"
                 onClick={() => {
                   setShowExportSuccessDialog(null);
                   navigate("/jobs");
                 }}
               >
                 Go to Jobs
-              </PrimaryButton>
+              </StyledButton>
             </>
           }
           maxWidth="xs"

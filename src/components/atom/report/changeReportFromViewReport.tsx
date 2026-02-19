@@ -10,7 +10,8 @@ import StyledSelect from "../common/StyledSelect";
 import useGet from "../../../hooks/useGet";
 import { GET } from "../../../services/apiRoutes";
 import { ReportRequestResponse } from "./types";
-import PrimaryButton from "../../common/PrimaryButton";
+import { StyledButton } from "../../common";
+import { STYLE_GUIDE } from "../../../styles";
 
 // Define types for our data
 interface ReportData {
@@ -219,8 +220,8 @@ export default function ReportSelection({
         display: "flex",
         flexDirection: { xs: "column", md: "row" },
         alignItems: { xs: "stretch", md: "flex-end" },
-        gap: 2,
-        // p: 2,
+        gap: STYLE_GUIDE.SPACING.s4,
+        mb: 2,
         backgroundColor: "white",
         borderRadius: 1,
         boxShadow: "0px 1px 2px rgba(0, 0, 0, 0.05)",
@@ -300,13 +301,14 @@ export default function ReportSelection({
           </>
         )}
       </StyledSelect>
-      <PrimaryButton
+      <StyledButton
+        variant="primary"
         disabled={!selectedReport || !selectedVersion}
         onClick={handleSubmit}
         sx={{ minWidth: 120 }}
       >
         View
-      </PrimaryButton>
+      </StyledButton>
 
       {/* <Button
         variant="contained"

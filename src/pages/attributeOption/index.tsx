@@ -5,7 +5,7 @@ import { Box, Button } from "@mui/material";
 import { STYLE_GUIDE } from "../../styles";
 import { useUnifiedTheme } from "../../hooks/useUnifiedTheme";
 import CommonPageHeader from "../../components/atom/commonPageHeader";
-import PrimaryButton from "../../components/common/PrimaryButton";
+import { StyledButton } from "../../components/common";
 import { useSelector } from "react-redux";
 import { RootState } from "../../store";
 import { checkPermission } from "../../utils/utils";
@@ -42,9 +42,9 @@ export default function AttributeOption() {
             title="Create New Attribute Option"
             CustomButton={
               shouldShowCreateButton && (
-                <PrimaryButton variant="contained">
+                <StyledButton variant="primary">
                   Create New Attribute Option
-                </PrimaryButton>
+                </StyledButton>
               )
             }
           />

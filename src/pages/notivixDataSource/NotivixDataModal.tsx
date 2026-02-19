@@ -3,7 +3,6 @@ import {
   Box,
   Typography,
   TextField,
-  Button,
   Tooltip,
   Checkbox,
   FormControlLabel,
@@ -12,6 +11,7 @@ import {
   Chip,
 } from "@mui/material";
 import { STYLE_GUIDE } from "../../styles";
+import { StyledButton } from "../../components/common";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
@@ -309,7 +309,7 @@ export const NotivixDataModal: React.FC<ModelSectionProps> = ({
       <>
         {label}
         {isRequired && (
-          <span style={{ color: STYLE_GUIDE?.COLORS?.primaryDark }}> *</span>
+          <span style={{ color: "red" }}> *</span>
         )}
       </>
     );
@@ -336,18 +336,20 @@ export const NotivixDataModal: React.FC<ModelSectionProps> = ({
             sx={{
               mb: 0.5,
               fontWeight: 500,
-              color: STYLE_GUIDE?.COLORS?.primaryDark,
+              color: STYLE_GUIDE?.COLORS?.textPrimary || "#333",
             }}
           >
             {renderLabel(fieldLabel)}
           </Typography>
           <Box
             sx={{
-              p: 1.5,
+              padding: "8px 12px",
               borderRadius: "8px",
               backgroundColor:
                 STYLE_GUIDE?.COLORS?.backgroundLight || "#f5f5f5",
               minHeight: "40px",
+              display: "flex",
+              alignItems: "center",
             }}
           >
             {displayValue.map((item: string, idx: number) => (
@@ -408,13 +410,13 @@ export const NotivixDataModal: React.FC<ModelSectionProps> = ({
               }
             }}
             disabled={!isFieldEditable}
-            sx={{ height: "56px" }}
             renderInput={(params) => (
               <TextField
                 {...params}
                 label={renderLabel(fieldLabel)}
                 variant="outlined"
                 fullWidth
+                size="small"
                 error={!!fieldErrors[fieldName]}
                 helperText={fieldErrors[fieldName] || ""}
                 sx={{ "& .MuiOutlinedInput-root": { borderRadius: "8px" } }}
@@ -470,7 +472,6 @@ export const NotivixDataModal: React.FC<ModelSectionProps> = ({
             }
             sx={{
               "& .MuiOutlinedInput-root": { borderRadius: "8px" },
-              height: "56px",
             }}
             renderInput={(params) => (
               <TextField
@@ -478,6 +479,7 @@ export const NotivixDataModal: React.FC<ModelSectionProps> = ({
                 label={renderLabel(fieldLabel)}
                 variant="outlined"
                 fullWidth
+                size="small"
                 error={!!fieldErrors[fieldName]}
                 helperText={fieldErrors[fieldName] || ""}
                 placeholder={
@@ -509,6 +511,7 @@ export const NotivixDataModal: React.FC<ModelSectionProps> = ({
                 textField: {
                   variant: "outlined",
                   fullWidth: true,
+                  size: "small",
                   error: !!fieldErrors[fieldName],
                   helperText: fieldErrors[fieldName] || "",
                   sx: { "& .MuiOutlinedInput-root": { borderRadius: "8px" } },
@@ -533,6 +536,7 @@ export const NotivixDataModal: React.FC<ModelSectionProps> = ({
             }
             variant="outlined"
             fullWidth
+            size="small"
             disabled={!isFieldEditable}
             error={!!fieldErrors[fieldName]}
             helperText={fieldErrors[fieldName] || ""}
@@ -549,6 +553,7 @@ export const NotivixDataModal: React.FC<ModelSectionProps> = ({
             onChange={(e) => handleFieldChange(e.target.value)}
             variant="outlined"
             fullWidth
+            size="small"
             disabled={!isFieldEditable}
             error={!!fieldErrors[fieldName]}
             helperText={fieldErrors[fieldName] || ""}
@@ -564,6 +569,7 @@ export const NotivixDataModal: React.FC<ModelSectionProps> = ({
             onChange={(e) => handleFieldChange(e.target.value)}
             variant="outlined"
             fullWidth
+            size="small"
             disabled={!isFieldEditable}
             error={!!fieldErrors[fieldName]}
             helperText={fieldErrors[fieldName] || ""}
@@ -609,22 +615,9 @@ export const NotivixDataModal: React.FC<ModelSectionProps> = ({
           actions={
             <>
               {modalMode !== "view" && (
-                <Button
-                  variant="contained"
-                  onClick={handleSaveClick}
-                  sx={{
-                    borderRadius: "8px",
-                    backgroundColor:
-                      STYLE_GUIDE?.COLORS?.primaryDark || "#3f51b5",
-                    color: STYLE_GUIDE?.COLORS?.white || "#ffffff",
-                    "&:hover": {
-                      backgroundColor:
-                        STYLE_GUIDE?.COLORS?.primary || "#5c6bc0",
-                    },
-                  }}
-                >
+                <StyledButton variant="primary" onClick={handleSaveClick}>
                   Save
-                </Button>
+                </StyledButton>
               )}
             </>
           }

@@ -28,7 +28,6 @@ import { formatDate, formatDateUTC } from "../../utils/utils";
 import parse from "html-react-parser";
 import usePost from "../../hooks/usePost";
 import { ActionIconButton, PageHeader, PageCardLayout, StyledButton } from "../../components/common";
-import PrimaryButton from "../../components/common/PrimaryButton";
 import SearchField from "../../components/common/SearchField";
 import DialogContainer from "../../components/molecule/dialog";
 import ConfirmDialog from "../report-settings/components/ConfirmDialog";
@@ -436,12 +435,13 @@ export default function NotificationLogger() {
         title="Notification logs Details"
         maxWidth="lg"
         actions={
-          <PrimaryButton
+          <StyledButton
+            variant="primary"
             onClick={() => handleResendNow(selectedNotification?._id)}
           >
             <ForwardToInboxOutlined sx={{ mr: STYLE_GUIDE.SPACING.s2 }} />
             Resend Now
-          </PrimaryButton>
+          </StyledButton>
         }
       >
         {selectedNotification && (

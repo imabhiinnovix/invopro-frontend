@@ -18,6 +18,7 @@ import { useAppDispatch, useAppSelector } from '../../../../storeHooks';
 import { fetchDashboardShareUsers, shareDashboard } from '../../../../pages/dashboard/dashboardActions';
 import { toast } from 'react-toastify';
 import { STYLE_GUIDE } from '../../../../styles';
+import { StyledButton } from '../../../common';
 import { useUnifiedTheme } from '../../../../hooks/useUnifiedTheme';
 import { useComponentTypography } from '../../../../hooks/useComponentTypography';
 
@@ -161,15 +162,14 @@ export const ShareDashboardModal: React.FC<ShareDashboardModalProps> = ({
         </Box>
       </DialogContent>
       <DialogActions>
-        <Button onClick={onClose} disabled={isSubmitting}>Cancel</Button>
-        <Button
+        <StyledButton variant="secondary" onClick={onClose} disabled={isSubmitting}>Cancel</StyledButton>
+        <StyledButton
+          variant="primary"
           onClick={handleSubmit}
-          variant="contained"
-          color="primary"
           disabled={(!sharedToAll && selectedUsers.length === 0) || isSubmitting}
         >
           {isSubmitting ? 'Sharing...' : 'Share'}
-        </Button>
+        </StyledButton>
       </DialogActions>
     </Dialog>
   );

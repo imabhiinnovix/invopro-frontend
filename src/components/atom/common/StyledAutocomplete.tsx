@@ -80,55 +80,34 @@ function StyledAutocompleteInner<
       color: theme.palette.primary.main,
     },
     "& .MuiInputBase-input": {
-      color: `${
-        theme.palette.dropdown?.selectedText || theme.palette.text.primary
-      } !important`,
+      color: `${theme.palette.text.primary} !important`,
     },
     "& .MuiAutocomplete-input": {
-      color: `${
-        theme.palette.dropdown?.selectedText || theme.palette.text.primary
-      } !important`,
+      color: `${theme.palette.text.primary} !important`,
     },
     "& .MuiAutocomplete-tag": {
-      color: `${
-        theme.palette.dropdown?.selectedText || theme.palette.text.primary
-      } !important`,
+      color: `${theme.palette.text.primary} !important`,
     },
     "& .MuiAutocomplete-endAdornment": {
-      color: `${
-        theme.palette.dropdown?.selectedText || theme.palette.text.primary
-      } !important`,
+      color: `${theme.palette.text.primary} !important`,
     },
     "& .MuiAutocomplete-inputRoot": {
-      color: `${
-        theme.palette.dropdown?.selectedText || theme.palette.text.primary
-      } !important`,
+      color: `${theme.palette.text.primary} !important`,
     },
-    // Additional specific selectors to force the color
     "& .MuiAutocomplete-inputRoot input": {
-      color: `${
-        theme.palette.dropdown?.selectedText || theme.palette.text.primary
-      } !important`,
+      color: `${theme.palette.text.primary} !important`,
     },
     "& .MuiAutocomplete-inputRoot .MuiAutocomplete-input": {
-      color: `${
-        theme.palette.dropdown?.selectedText || theme.palette.text.primary
-      } !important`,
+      color: `${theme.palette.text.primary} !important`,
     },
     "& input": {
-      color: `${
-        theme.palette.dropdown?.selectedText || theme.palette.text.primary
-      } !important`,
+      color: `${theme.palette.text.primary} !important`,
     },
     "& .MuiInputBase-root input": {
-      color: `${
-        theme.palette.dropdown?.selectedText || theme.palette.text.primary
-      } !important`,
+      color: `${theme.palette.text.primary} !important`,
     },
     "& .MuiOutlinedInput-root input": {
-      color: `${
-        theme.palette.dropdown?.selectedText || theme.palette.text.primary
-      } !important`,
+      color: `${theme.palette.text.primary} !important`,
     },
     ...sx,
   };
@@ -153,15 +132,12 @@ function StyledAutocompleteInner<
           backgroundColor:
             theme.palette.dropdown?.optionBackground ||
             theme.palette.action.selected,
-          color:
-            theme.palette.dropdown?.selectedText || theme.palette.primary.main,
+          color: theme.palette.text.primary,
           "&:hover": {
             backgroundColor:
               theme.palette.dropdown?.optionHoverBackground ||
               theme.palette.action.hover,
-            color:
-              theme.palette.dropdown?.selectedText ||
-              theme.palette.primary.main,
+            color: theme.palette.text.primary,
           },
         },
       },

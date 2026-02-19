@@ -1121,11 +1121,14 @@ const DataSources = () => {
   // Log the correct dataSourceList for debugging
   console.log("dataSourceList", dataSourceList);
 
-  const dataSourceAttributes = useMemo(
-    () =>
-      dataSourceList?.find((source) => source?._id === id)?.entityId
-        ?.attributes,
+  const currentDataSource = useMemo(
+    () => dataSourceList?.find((source) => source?._id === id),
     [id, dataSourceList]
+  );
+
+  const dataSourceAttributes = useMemo(
+    () => currentDataSource?.entityId?.attributes,
+    [currentDataSource]
   );
 
   const optionsAttributes = useMemo(
@@ -1304,33 +1307,30 @@ const DataSources = () => {
       ) : (
         <Box sx={{ p: STYLE_GUIDE.SPACING.s2 }}>
           <PageHeader
-            title="Data Source Version"
-            subtext="View and edit version data for this data source."
-            action={
-              <Box sx={{ display: "flex", gap: STYLE_GUIDE.SPACING.s2, alignItems: "center" }}>
-                <CommonDatePicker
-                  name="versionValue"
-                  control={control}
-                  views={["year", "month"]}
-                  label="Period*"
-                  rules={{ required: "Period is required" }}
-                />
-                <StyledButton
-                  variant="primary"
-                  disabled={dataSourceCreate?.isPending || !(versionDate && id)}
-                  onClick={handleSave}
-                  icon={
-                    dataSourceCreate?.isPending ? (
-                      <CircularProgress size={20} color="inherit" />
-                    ) : undefined
-                  }
-                >
-                  {dataSourceCreate?.isPending ? "Saving..." : "Save Changes"}
-                </StyledButton>
-              </Box>
-            }
+            title={`IP Report Constants - ${currentDataSource?.name || "Data Source Version"}`}
           />
           <PageCardLayout>
+            <Box sx={{ display: "flex", alignItems: "center", gap: STYLE_GUIDE.SPACING.s4, mb: STYLE_GUIDE.SPACING.s4 }}>
+              <CommonDatePicker
+                name="versionValue"
+                control={control}
+                views={["year", "month"]}
+                label="Period*"
+                rules={{ required: "Period is required" }}
+              />
+              <StyledButton
+                variant="primary"
+                disabled={dataSourceCreate?.isPending || !(versionDate && id)}
+                onClick={handleSave}
+                icon={
+                  dataSourceCreate?.isPending ? (
+                    <CircularProgress size={20} color="inherit" />
+                  ) : undefined
+                }
+              >
+                {dataSourceCreate?.isPending ? "Saving..." : "Save Changes"}
+              </StyledButton>
+            </Box>
             <Box sx={{ display: "flex", justifyContent: "center" }}>
               <TableContainer
                 component={Paper}

@@ -5,7 +5,7 @@ import DataSourceVersionTable from "../../components/atom/dataSourceVerion/dataS
 import { STYLE_GUIDE } from "../../styles";
 import { useUnifiedTheme } from "../../hooks/useUnifiedTheme";
 import { PageHeader } from "../../components/common";
-import PrimaryButton from "../../components/common/PrimaryButton";
+import { StyledButton } from "../../components/common";
 import { PermissionsMap } from "../../utils/constants";
 import { checkPermission } from "../../utils/utils";
 import { useSelector } from "react-redux";
@@ -39,7 +39,7 @@ export default function DataSourceVersion() {
               setReload={setReload}
               title="File Upload"
               CustomButton={
-                <PrimaryButton variant="contained">File Upload</PrimaryButton>
+                <StyledButton variant="primary">File Upload</StyledButton>
               }
             />
           ) : undefined

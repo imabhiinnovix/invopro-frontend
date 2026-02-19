@@ -42,6 +42,7 @@ import { GET } from '../../../services/apiRoutes';
 import { v4 as uuidv4 } from 'uuid';
 import { DateTime } from 'luxon';
 import { STYLE_GUIDE } from '../../../styles';
+import { StyledButton } from '../../../components/common';
 import axios from 'axios';
 import { useUnifiedTheme } from '../../../hooks/useUnifiedTheme';
 
@@ -127,7 +128,7 @@ const StyledSelect = styled(Select)({
   borderRadius: STYLE_GUIDE.SPACING.s2,
 });
 
-const StyledButton = styled(Button)(({ theme }) => ({
+const LocalStyledButton = styled(Button)(({ theme }) => ({
   borderRadius: STYLE_GUIDE.SPACING.s2,
   textTransform: 'none',
   padding: theme.spacing(1, 2),
@@ -921,9 +922,9 @@ export const NotivixAddChartModal: React.FC<AddChartModalProps> = ({
               }}
             >
               <SectionTitle>{label}</SectionTitle>
-              <StyledButton startIcon={<AddIcon />} onClick={addCondition} disabled={isSubmitting} size="small">
+              <LocalStyledButton startIcon={<AddIcon />} onClick={addCondition} disabled={isSubmitting} size="small">
                 Add Filters
-              </StyledButton>
+              </LocalStyledButton>
             </Box>
 
             {formData.conditions.map((condition, index) => (
@@ -1422,9 +1423,9 @@ export const NotivixAddChartModal: React.FC<AddChartModalProps> = ({
                     }}
                   >
                     <SectionTitle>Filters</SectionTitle>
-                    <StyledButton startIcon={<AddIcon />} onClick={addCondition} disabled={isSubmitting} size="small">
+                    <LocalStyledButton startIcon={<AddIcon />} onClick={addCondition} disabled={isSubmitting} size="small">
                       Add Filters
-                    </StyledButton>
+                    </LocalStyledButton>
                   </Box>
 
                   {formData.conditions.map((condition, index) => (
@@ -1595,53 +1596,28 @@ export const NotivixAddChartModal: React.FC<AddChartModalProps> = ({
       </ConfigurationContent>
       {!isNaturalLangauage ? (
         <ConfigurationFooter>
-          <StyledButton onClick={onClose} disabled={isSubmitting}>
+          <StyledButton variant="secondary" onClick={onClose} disabled={isSubmitting}>
             Cancel
           </StyledButton>
           <StyledButton
+            variant="primary"
             onClick={handleSubmit}
-            variant="contained"
-            color="primary"
             disabled={isSubmitting || !formData.widgetTypeId || !formData.dataSourceId}
-            sx={{
-              fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.medium,
-              fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base
-            }}
           >
             {isSubmitting ? (initialData ? 'Updating...' : 'Creating...') : initialData ? 'Update' : 'Create'}
           </StyledButton>
         </ConfigurationFooter>
       ) : (
         <Box display="flex" gap={STYLE_GUIDE.SPACING.s4} pb={STYLE_GUIDE.SPACING.s4}>
-          <Button
-            variant="contained"
-            fullWidth
-            sx={{
-              flex: 1,
-              height: 56,
-              fontSize: 16,
-              backgroundColor: STYLE_GUIDE.COLORS.white,
-              fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold,
-              color: STYLE_GUIDE.COLORS.black,
-              '&:hover': {
-                backgroundColor: STYLE_GUIDE.COLORS.backgroundDefault,
-              },
-            }}
+          <StyledButton
+            variant="secondary"
             onClick={handleSubmit}
+            sx={{ flex: 1 }}
           >
             Preview Changes
-          </Button>
-          <Button
-            variant="contained"
-            color="primary"
-            fullWidth
-            sx={{
-              flex: 1,
-              color: STYLE_GUIDE.COLORS.white,
-              height: 56,
-              fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold,
-              fontSize: STYLE_GUIDE.SPACING.s4,
-            }}
+          </StyledButton>
+          <StyledButton
+            variant="primary"
             onClick={() => {
               if (initialData && setOpenSaveChart && setChartSaveSettingData && setNewSaveChartName) {
                 setOpenSaveChart(true);
@@ -1649,9 +1625,10 @@ export const NotivixAddChartModal: React.FC<AddChartModalProps> = ({
                 setNewSaveChartName(initialData.name);
               }
             }}
+            sx={{ flex: 1 }}
           >
             Add to Dashboard
-          </Button>
+          </StyledButton>
         </Box>
       )}
     </IfElseWrapper>

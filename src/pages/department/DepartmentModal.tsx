@@ -15,6 +15,7 @@ import {
   CircularProgress,
 } from "@mui/material";
 import { useForm, Controller, FormState } from "react-hook-form";
+import { StyledButton } from "../../components/common";
 import { useUnifiedTheme } from "../../hooks/useUnifiedTheme";
 import useGet from "../../hooks/useGet";
 import usePut from "../../hooks/usePut";
@@ -237,6 +238,7 @@ export function DepartmentModal({
                       placeholder="Enter department name"
                       variant="outlined"
                       fullWidth
+                      size="small"
                       error={!!fieldState.error}
                       helperText={fieldState.error?.message || " "}
                       disabled={isSaving}
@@ -269,7 +271,7 @@ export function DepartmentModal({
                   name="departmentId"
                   control={control}
                   render={({ field }) => (
-                    <FormControl fullWidth>
+                    <FormControl fullWidth size="small">
                       <InputLabel>Department</InputLabel>
                       <Select
                         {...field}
@@ -306,47 +308,33 @@ export function DepartmentModal({
           >
             {mode === "filter" ? (
               <>
-                <Button
-                  variant="outlined"
-                  onClick={handleResetFilter}
-                  size="small"
-                >
+                <StyledButton variant="secondary" onClick={handleResetFilter}>
                   Reset
-                </Button>
-                <Button
-                  variant="outlined"
-                  onClick={onClose}
-                  sx={{ borderRadius: "8px" }}
-                  size="small"
-                >
+                </StyledButton>
+                <StyledButton variant="secondary" onClick={onClose}>
                   Cancel
-                </Button>
-                <Button
+                </StyledButton>
+                <StyledButton
                   type="submit"
-                  variant="contained"
-                  size="small"
-                  disabled={!filterValues?.name
-                    //  &&     !filterValues?.departmentId
-                }
+                  variant="primary"
+                  disabled={!filterValues?.name}
                 >
                   Apply
-                </Button>
+                </StyledButton>
               </>
             ) : (
               <>
-                <Button variant="outlined" onClick={onClose} size="small">
+                <StyledButton variant="secondary" onClick={onClose}>
                   Cancel
-                </Button>
+                </StyledButton>
                 {mode !== "view" && (
-                  <Button
+                  <StyledButton
                     type="submit"
-                    variant="contained"
-                    sx={{ borderRadius: "8px" }}
-                    size="small"
+                    variant="primary"
                     disabled={!isFormValid || !isFormDirty || isSaving}
                   >
                     Save
-                  </Button>
+                  </StyledButton>
                 )}
               </>
             )}

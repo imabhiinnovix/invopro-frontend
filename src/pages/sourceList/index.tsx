@@ -182,7 +182,7 @@ const SourceList = () => {
                     sx={{
                       display: "flex",
                       justifyContent: "space-between",
-                      alignItems: "flex-start",
+                      alignItems: "center",
                       flexWrap: "wrap",
                       gap: 1,
                     }}

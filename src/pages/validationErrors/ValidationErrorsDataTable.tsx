@@ -13,7 +13,7 @@ import SwipeUpIcon from "@mui/icons-material/SwipeUp";
 import RemoveCircleIcon from "@mui/icons-material/RemoveCircle";
 import FileDownloadDoneIcon from "@mui/icons-material/FileDownloadDone";
 import CommonTable, { CommonTableRef } from "../../components/common/table";
-import PrimaryButton from "../../components/common/PrimaryButton";
+import { StyledButton } from "../../components/common";
 import { useEffect, useRef, useMemo } from "react";
 
 interface ValidationErrorsDataTableProps {
@@ -308,12 +308,13 @@ export const ValidationErrorsDataTable: React.FC<
       rowSelectionCondition={(row) => (row.status === "open" ? true : false)}
       bulkAction={(selectedRows) => (
         <Stack direction="row" spacing={2} justifyContent="flex-end">
-          <PrimaryButton
+          <StyledButton
+            variant="primary"
             onClick={() => handleDiscardSelectedRows?.(selectedRows)}
             disabled={isLatest === false}
           >
             Discard {selectedRows.length} items
-          </PrimaryButton>
+          </StyledButton>
         </Stack>
       )}
     />

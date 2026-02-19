@@ -28,9 +28,9 @@ import { toast } from "react-toastify";
 import CommonSelect from "../../common/dropdown/commonSelect";
 import usePostMultipart from "../../../hooks/usePostMultipart";
 import { STYLE_GUIDE } from "../../../styles";
+import { StyledButton } from "../../common";
 import { useUnifiedTheme } from "../../../hooks/useUnifiedTheme";
 import { useComponentTypography } from "../../../hooks";
-import PrimaryButton from "../../common/PrimaryButton";
 import DialogContainer from "../../molecule/dialog";
 
 interface CreateDataSourceVersionProps {
@@ -387,13 +387,14 @@ const CreateDataSourceVersion: React.FC<CreateDataSourceVersionProps> = ({
               <ProgressBar />
             ) : (
               <>
-                <PrimaryButton
+                <StyledButton
+                  variant="primary"
                   type="submit"
                   onClick={handleSubmit(onSubmit)}
                   disabled={!!file && !fileUploadLoader ? false : true}
                 >
                   Save Data Source
-                </PrimaryButton>
+                </StyledButton>
               </>
             )}
           </>
@@ -677,16 +678,17 @@ const CreateDataSourceVersion: React.FC<CreateDataSourceVersionProps> = ({
               <ProgressBar />
             ) : (
               <Box>
-                <PrimaryButton onClick={handleCancel} variant="outlined">
+                <StyledButton variant="secondary" onClick={handleCancel}>
                   Cancel
-                </PrimaryButton>
-                <PrimaryButton
+                </StyledButton>
+                <StyledButton
+                  variant="primary"
                   type="submit"
                   onClick={handleSubmit(onSubmit)}
                   disabled={!!file && !fileUploadLoader ? false : true}
                 >
                   Save Data Source
-                </PrimaryButton>
+                </StyledButton>
               </Box>
             )}
           </>
@@ -1237,23 +1239,17 @@ const CreateDataSourceVersion: React.FC<CreateDataSourceVersionProps> = ({
             <ProgressBar />
           ) : (
             <Box>
-              <Button
-                onClick={handleCancel}
-                color="error"
-                sx={{ fontSize: 18, fontWeight: "bold", p: 1, pl: 2, pr: 2 }}
-              >
+              <StyledButton variant="secondary" onClick={handleCancel}>
                 Cancel
-              </Button>
-              <Button
+              </StyledButton>
+              <StyledButton
+                variant="primary"
                 type="submit"
                 onClick={handleSubmit(onSubmit)}
-                variant="contained"
-                color="primary"
                 disabled={!!file && !fileUploadLoader ? false : true}
-                sx={{ fontSize: 18, fontWeight: "bold", p: 1, pl: 2, pr: 2 }}
               >
                 Save Data Source
-              </Button>
+              </StyledButton>
             </Box>
           )}
         </DialogActions>

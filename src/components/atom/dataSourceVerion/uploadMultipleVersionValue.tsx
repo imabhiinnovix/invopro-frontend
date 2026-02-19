@@ -33,6 +33,7 @@ import UploadFileIcon from "@mui/icons-material/UploadFile";
 import useGet from "../../../hooks/useGet";
 import { GET } from "../../../services/apiRoutes";
 import { toast } from "react-toastify";
+import { StyledButton } from "../../common";
 import ViewMapping from "../report/viewMapping";
 import * as Yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
@@ -43,7 +44,6 @@ import { objectToFormData } from "../../../utils/utils";
 import * as XLSX from "xlsx";
 import { useComponentTypography } from "../../../hooks/useComponentTypography";
 import DialogContainer from "../../molecule/dialog";
-import PrimaryButton from "../../common/PrimaryButton";
 
 interface UploadMultipleFilesProps {
   reportId: string;
@@ -741,14 +741,13 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
       onClose={() => setOpen(false)}
       title={`Generate Report for Period: ${versionValue}`}
       actions={
-        <PrimaryButton
+        <StyledButton
+          variant="primary"
           onClick={handleSubmit(onSubmit, onError)}
-          variant="contained"
-          color="primary"
           disabled={isLoadingReportUpload || !!errors.files}
         >
           Submit
-        </PrimaryButton>
+        </StyledButton>
       }
     >
       <Stack direction="column" gap={2}>
@@ -758,10 +757,9 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
           alignItems="flex-start"
         >
           <Stack alignItems={"flex-end"}>
-            <PrimaryButton
-              variant="contained"
+            <StyledButton
+              variant="primary"
               component="label"
-              color="primary"
             >
               <Box gap={1} display="flex" justifyContent="center">
                 <UploadFileIcon />
@@ -773,7 +771,7 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
                 multiple
                 onChange={(e) => handleFileChange(e)}
               />
-            </PrimaryButton>
+            </StyledButton>
             {errors.files && (
               <Typography variant="caption" color="error">
                 {String(errors.files.message)}
@@ -799,7 +797,7 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
                   </StyledTableCell>
                   <StyledTableCell>
                     <Box>
-                      <PrimaryButton variant="contained" component="label">
+                      <StyledButton variant="primary" component="label">
                         <Stack
                           gap={1}
                           direction="row"
@@ -835,7 +833,7 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
                             *
                           </Typography>
                         )}
-                      </PrimaryButton>
+                      </StyledButton>
                       {fileName?.isVersionAvailable ? (
                         <Typography
                           component="div"
@@ -916,7 +914,7 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
                       >
                         <ViewMapping
                           fileName={fileName}
-                          CustomButton={<Button>View Mappings</Button>}
+                          CustomButton={<StyledButton variant="secondary">View Mappings</StyledButton>}
                           title={`Mapping for ${fileName.name}`}
                           settingAttributeOption={fileName.attributes}
                           fileHeaders={fileHeader[fileName.extededName]!}
@@ -1195,7 +1193,7 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
                         >
                           <ViewMapping
                             fileName={fileName}
-                            CustomButton={<Button>View Mappings</Button>}
+                            CustomButton={<StyledButton variant="secondary">View Mappings</StyledButton>}
                             title={`Mapping for ${fileName.name}`}
                             settingAttributeOption={fileName.attributes}
                             fileHeaders={fileHeader[fileName.extededName]!}
@@ -1233,14 +1231,13 @@ const UploadMultipleFiles: React.FC<UploadMultipleFilesProps> = ({
           </TableContainer>
         </DialogContent>
         <DialogActions>
-          <Button
+          <StyledButton
+            variant="primary"
             onClick={handleSubmit(onSubmit, onError)}
-            variant="contained"
-            color="primary"
             disabled={isLoadingReportUpload || !!errors.files}
           >
             Submit
-          </Button>
+          </StyledButton>
         </DialogActions>
       </Dialog>
     </>

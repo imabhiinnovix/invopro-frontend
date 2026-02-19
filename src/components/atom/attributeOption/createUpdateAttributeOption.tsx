@@ -25,7 +25,7 @@ import { STYLE_GUIDE } from "../../../styles";
 import { useUnifiedTheme } from "../../../hooks/useUnifiedTheme";
 import { useComponentTypography } from "../../../hooks/useComponentTypography";
 import DialogContainer from "../../molecule/dialog";
-import PrimaryButton from "../../common/PrimaryButton";
+import { StyledButton } from "../../common";
 import CommonSelect from "../../common/dropdown/commonSelect";
 
 interface CreateUpdateAttributeOptionProps {
@@ -140,9 +140,9 @@ const CreateUpdateAttributeOption: React.FC<
               <ProgressBar />
             ) : (
               <>
-                <PrimaryButton onClick={handleSubmit(onSubmitHandler)}>
+                <StyledButton variant="primary" onClick={handleSubmit(onSubmitHandler)}>
                   Submit
-                </PrimaryButton>
+                </StyledButton>
               </>
             )}
           </>

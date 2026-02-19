@@ -32,7 +32,7 @@ import { toast } from "react-toastify";
 import { useUnifiedTheme } from "../../hooks/useUnifiedTheme";
 import { useComponentTypography } from "../../hooks/useComponentTypography";
 import { STYLE_GUIDE } from "../../styles";
-import PrimaryButton from "../../components/common/PrimaryButton";
+import { StyledButton } from "../../components/common";
 import DialogContainer from "../../components/molecule/dialog";
 
 const DashboardThemePage = () => {
@@ -147,13 +147,14 @@ const DashboardThemePage = () => {
             colors, typography, and component styles.
           </Typography>
         </Box>
-        <PrimaryButton
-          startIcon={<AddIcon />}
+        <StyledButton
+          variant="primary"
+          icon={<AddIcon />}
           onClick={() => setIsDialogOpen(true)}
           sx={{ width: 200 }}
         >
           Create Theme
-        </PrimaryButton>
+        </StyledButton>
       </Stack>
 
       {dashboardTheme && (
@@ -223,14 +224,14 @@ const DashboardThemePage = () => {
         title="Delete Theme"
         actions={
           <>
-            <PrimaryButton
+            <StyledButton
+              variant="primary"
               onClick={confirmDelete}
-              variant="contained"
               color="error"
               disabled={loading}
             >
               {loading ? "Deleting..." : "Delete"}
-            </PrimaryButton>
+            </StyledButton>
           </>
         }
       >

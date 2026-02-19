@@ -5,7 +5,6 @@ import {
   Box,
   Typography,
   TextField,
-  Button,
   Grid,
   FormControlLabel,
   Checkbox,
@@ -14,7 +13,6 @@ import {
   Select,
   MenuItem,
   CircularProgress,
-  Paper,
   Chip,
   OutlinedInput,
 } from "@mui/material";
@@ -42,7 +40,7 @@ import {
   RolePostResponse,
   RoleListResponse,
 } from "../../types/permissions";
-import CommonPageHeader from "../../components/atom/commonPageHeader";
+import { PageHeader, PageCardLayout, StyledButton } from "../../components/common";
 
 interface RolePageProps {
   mode?: "add" | "edit" | "view";
@@ -530,8 +528,8 @@ export default function RolePage({ mode: propMode }: RolePageProps) {
   };
 
   return (
-    <Box sx={{ p: 3 }}>
-      <CommonPageHeader
+    <Box>
+      <PageHeader
         title={
           mode === "add"
             ? "Add Role"
@@ -540,10 +538,9 @@ export default function RolePage({ mode: propMode }: RolePageProps) {
             : "View Role"
         }
         onBack={handleBack}
-        actions={null}
       />
 
-      <Paper sx={{ p: 3, mt: 3, borderRadius: "12px" }}>
+      <PageCardLayout>
         {(roleDetail.isLoading || isLoadingWithDelay) &&
         (mode === "edit" || mode === "view") ? (
           <Box sx={{ display: "flex", justifyContent: "center", py: 4 }}>
@@ -583,6 +580,7 @@ export default function RolePage({ mode: propMode }: RolePageProps) {
                         placeholder="Enter role name"
                         variant="outlined"
                         fullWidth
+                        size="small"
                         error={!!fieldState.error}
                         helperText={fieldState.error?.message || " "}
                         sx={{
@@ -607,6 +605,7 @@ export default function RolePage({ mode: propMode }: RolePageProps) {
                     render={({ field }) => (
                       <FormControl
                         fullWidth
+                        size="small"
                         sx={{
                           "& .MuiOutlinedInput-root": {
                             borderRadius: "8px",
@@ -643,6 +642,7 @@ export default function RolePage({ mode: propMode }: RolePageProps) {
                       render={({ field, fieldState }) => (
                         <FormControl
                           fullWidth
+                          size="small"
                           error={!!fieldState.error}
                           sx={{
                             "& .MuiOutlinedInput-root": {
@@ -684,6 +684,7 @@ export default function RolePage({ mode: propMode }: RolePageProps) {
                   render={({ field }) => (
                     <FormControl
                       fullWidth
+                      size="small"
                       sx={{
                         "& .MuiOutlinedInput-root": {
                           borderRadius: "8px",
@@ -856,33 +857,28 @@ export default function RolePage({ mode: propMode }: RolePageProps) {
                     mt: 2,
                   }}
                 >
-                  <Button
-                    variant="outlined"
-                    onClick={handleBack}
-                    sx={{ borderRadius: "8px", px: 4 }}
-                  >
+                  <StyledButton variant="secondary" onClick={handleBack}>
                     {mode === "view" ? "Back" : "Cancel"}
-                  </Button>
+                  </StyledButton>
                   {mode !== "view" && (
-                    <Button
+                    <StyledButton
+                      variant="primary"
                       type="submit"
-                      variant="contained"
                       disabled={
                         !formState.isValid ||
                         createRole.isPending ||
                         updateRole.isPending
                       }
-                      sx={{ borderRadius: "8px", px: 4 }}
                     >
                       {mode === "add" ? "Create Role" : "Update Role"}
-                    </Button>
+                    </StyledButton>
                   )}
                 </Box>
               </Grid>
             </Grid>
           </form>
         )}
-      </Paper>
+      </PageCardLayout>
     </Box>
   );
 }

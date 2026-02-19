@@ -15,6 +15,7 @@ import { useComponentTypography } from "../../../../hooks/useComponentTypography
 import { useAppSelector, useAppDispatch } from "../../../../storeHooks";
 import { fetchAllDataSources } from "../../../../pages/dashboard/dashboardActions";
 import DialogContainer from "../../../molecule/dialog";
+import { StyledButton } from "../../../common";
 import TextField from "../../TextField";
 
 interface CreateDashboardModalProps {
@@ -70,19 +71,17 @@ export const CreateDashboardModal: React.FC<CreateDashboardModalProps> = ({
       title="Create New Dashboard"
       maxWidth="sm"
       actions={
-        <>
-          <Button
-            onClick={onCreate}
-            variant="contained"
-            disabled={
-              !newDashboardName.trim() ||
-              isCreating ||
-              (dashboardType === "fixed" && !dataSourceId?.trim())
-            }
-          >
-            {isCreating ? "Creating..." : "Create"}
-          </Button>
-        </>
+        <StyledButton
+          variant="primary"
+          onClick={onCreate}
+          disabled={
+            !newDashboardName.trim() ||
+            isCreating ||
+            (dashboardType === "fixed" && !dataSourceId?.trim())
+          }
+        >
+          {isCreating ? "Creating..." : "Create"}
+        </StyledButton>
       }
     >
       <TextField
@@ -299,38 +298,20 @@ export const CreateDashboardModal: React.FC<CreateDashboardModalProps> = ({
       <DialogActions
         sx={{ p: STYLE_GUIDE.SPACING.s4, gap: STYLE_GUIDE.SPACING.s2 }}
       >
-        <Button
-          onClick={onClose}
-          sx={{
-            color: STYLE_GUIDE.COLORS.darkText,
-            "&:hover": {
-              backgroundColor: alpha(theme.palette.grey[500], 0.1),
-            },
-          }}
-        >
+        <StyledButton variant="secondary" onClick={onClose}>
           Cancel
-        </Button>
-        <Button
+        </StyledButton>
+        <StyledButton
+          variant="primary"
           onClick={onCreate}
-          variant="contained"
           disabled={
             !newDashboardName?.trim() ||
             isCreating ||
             (dashboardType === "fixed" && !dataSourceId?.trim())
           }
-          sx={{
-            backgroundColor: STYLE_GUIDE.COLORS.bootstrapPrimary,
-            "&:hover": {
-              backgroundColor: STYLE_GUIDE.COLORS.bootstrapPrimaryHover,
-            },
-            "&.Mui-disabled": {
-              backgroundColor: alpha(theme.palette.primary.main, 0.5),
-              color: STYLE_GUIDE.COLORS.white,
-            },
-          }}
         >
           {isCreating ? "Creating..." : "Create"}
-        </Button>
+        </StyledButton>
       </DialogActions>
     </Dialog>
   );

@@ -11,6 +11,7 @@ import {
   IconButton,
 } from "@mui/material";
 import { Close as CloseIcon } from "@mui/icons-material";
+import { StyledButton } from "../../components/common";
 
 // Helper function to determine the exact UI frequency from API data
 const getExactUIFrequencyFromAPI = (row, selectedDate) => {
@@ -476,14 +477,9 @@ const ViewSchedulerDialog: React.FC<ViewSchedulerDialogProps> = ({
         )}
       </DialogContent>
       <DialogActions>
-        <Button
-          variant="outlined"
-          color="primary"
-          onClick={onClose}
-          aria-label="Close reminder details"
-        >
+        <StyledButton variant="secondary" onClick={onClose}>
           Close
-        </Button>
+        </StyledButton>
       </DialogActions>
     </Dialog>
   );

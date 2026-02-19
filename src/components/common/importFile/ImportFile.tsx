@@ -37,6 +37,7 @@ import { GridCloseIcon } from "@mui/x-data-grid";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import { useUploadCustomReportFile } from "../../../hooks/useFileUpalod";
 import DialogContainer from "../../molecule/dialog";
+import { StyledButton } from "../index";
 
 // Global polling state that persists across components
 const globalPollingState = {
@@ -324,26 +325,9 @@ const FileDropzone: React.FC<FileDropzoneProps> = ({
           display: "inline-block",
         }}
       >
-        <Button
-          variant="contained"
-          color="primary"
-          startIcon={<CloudUploadIcon />}
-          sx={{
-            borderRadius: STYLE_GUIDE.SPACING.s1,
-            fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.medium,
-            padding: STYLE_GUIDE.SPACING.s3,
-            backgroundColor: isDragActive
-              ? STYLE_GUIDE.COLORS.primaryDark
-              : STYLE_GUIDE.COLORS.primaryDark,
-            "&:hover": {
-              backgroundColor: STYLE_GUIDE.COLORS.primary,
-            },
-            transition: "background-color 0.2s ease",
-            height: "40px",
-          }}
-        >
+        <StyledButton variant="primary" icon={<CloudUploadIcon />}>
           {buttonName}
-        </Button>
+        </StyledButton>
         <input {...getInputProps()} style={{ display: "none" }} />
         {isDragActive && (
           <Box
@@ -886,32 +870,15 @@ const ImportFile: React.FC<ImportFileProps> = ({
             {isLoadingReportUpload ? (
               <ProgressBar />
             ) : (
-              <Box>
-                <Button
-                  variant="contained"
-                  onClick={handleSubmit(onSubmit)}
-                  disabled={
-                    !isFormValid || fileUploadLoader || isLoadingReportUpload
-                  }
-                  sx={{
-                    borderRadius: "8px",
-                    backgroundColor:
-                      STYLE_GUIDE?.COLORS?.primaryDark || "#3f51b5",
-                    color: STYLE_GUIDE?.COLORS?.white || "#ffffff",
-                    "&:hover": {
-                      backgroundColor:
-                        STYLE_GUIDE?.COLORS?.primary || "#5c6bc0",
-                    },
-                    "&.Mui-disabled": {
-                      backgroundColor:
-                        STYLE_GUIDE?.COLORS?.disabled || "#cccccc",
-                      color: STYLE_GUIDE?.COLORS?.disabledText || "#666666",
-                    },
-                  }}
-                >
-                  Save
-                </Button>
-              </Box>
+              <StyledButton
+                variant="primary"
+                onClick={handleSubmit(onSubmit)}
+                disabled={
+                  !isFormValid || fileUploadLoader || isLoadingReportUpload
+                }
+              >
+                Save
+              </StyledButton>
             )}
           </>
         }
@@ -1041,16 +1008,9 @@ const ImportFile: React.FC<ImportFileProps> = ({
         onClose={() => setShowProcessingDialog(false)}
         title="Processing Your Files"
         actions={
-          <Button
-            variant="contained"
-            onClick={() => setShowProcessingDialog(false)}
-            sx={{
-              borderRadius: STYLE_GUIDE.SPACING.s1,
-              fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.medium,
-            }}
-          >
+          <StyledButton variant="secondary" onClick={() => setShowProcessingDialog(false)}>
             Close
-          </Button>
+          </StyledButton>
         }
       >
         <Box

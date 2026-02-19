@@ -10,7 +10,7 @@ import {
 } from "@mui/material";
 import { STYLE_GUIDE } from "../../../styles";
 import DialogContainer from "../../molecule/dialog";
-import PrimaryButton from "../PrimaryButton";
+import { StyledButton } from "..";
 
 interface ConfirmationDialogProps {
   open: boolean;
@@ -108,17 +108,18 @@ export const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
       title={title}
       actions={
         <>
-          <PrimaryButton
+          <StyledButton
+            variant="secondary"
             onClick={onClose}
-            variant="outlined"
             sx={{
               borderRadius: "8px",
               color: getButtonColor(cancelButtonColor),
             }}
           >
             {cancelText}
-          </PrimaryButton>
-          <PrimaryButton
+          </StyledButton>
+          <StyledButton
+            variant="primary"
             onClick={onConfirm}
             disabled={isSubmitting || disableConfirmButton}
             sx={{
@@ -139,7 +140,7 @@ export const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
             ) : (
               confirmText
             )}
-          </PrimaryButton>
+          </StyledButton>
         </>
       }
     >

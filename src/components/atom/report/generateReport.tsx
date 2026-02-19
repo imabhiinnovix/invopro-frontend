@@ -89,7 +89,7 @@ export default function GenerateReport({ setReload }: GenerateReportProps) {
           <Box
             display="flex"
             flexDirection={{ xs: "column", md: "row" }}
-            alignItems="center"
+            alignItems="flex-start"
             gap={STYLE_GUIDE.SPACING.s4}
             sx={{
               "& .MuiFormControl-root": {

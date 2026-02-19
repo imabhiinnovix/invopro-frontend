@@ -3,7 +3,6 @@ import { useForm, useFieldArray, FieldError, useWatch } from "react-hook-form";
 import ExcelJS from "exceljs";
 import {
   Box,
-  Button,
   TextField,
   Typography,
   Dialog,
@@ -27,9 +26,9 @@ import CommonDropdownSearch from "../../common/dropdown/searchableDropdown";
 import { toast } from "react-toastify";
 import axiosInstance from "../../../services/axiosInstance";
 import { STYLE_GUIDE } from "../../../styles";
+import { StyledButton } from "../../common";
 import { useUnifiedTheme } from "../../../hooks/useUnifiedTheme";
 import { useComponentTypography } from "../../../hooks/useComponentTypography";
-import PrimaryButton from "../../common/PrimaryButton";
 import DialogContainer from "../../molecule/dialog";
 
 interface CreateUpdateEntityProps {
@@ -132,8 +131,8 @@ const AttributeField: React.FC<AttributeFieldProps> = ({
         mb={2}
       >
         <Typography variant="h6">Attribute {index + 1}</Typography>
-        <PrimaryButton
-          variant="outlined"
+        <StyledButton
+          variant="secondary"
           color="error"
           onClick={() => remove(index)}
         >
@@ -145,7 +144,7 @@ const AttributeField: React.FC<AttributeFieldProps> = ({
           >
             <RemoveCircleOutlineIcon /> Remove Attribute
           </Box>
-        </PrimaryButton>
+        </StyledButton>
       </Stack>
       <Stack spacing={2}>
         <TextField
@@ -719,7 +718,8 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
               <ProgressBar />
             ) : (
               <>
-                <PrimaryButton
+                <StyledButton
+                  variant="primary"
                   type="submit"
                   onClick={handleSubmit(onSubmit)}
                   disabled={attributes?.some(
@@ -727,7 +727,7 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
                   )}
                 >
                   Save Entity
-                </PrimaryButton>
+                </StyledButton>
               </>
             )}
           </>
@@ -783,9 +783,9 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
                 fileUploadLoader={fileUploadLoader}
               />
             ))}
-            <PrimaryButton
-              variant="outlined"
-              startIcon={<AddCircleOutlineIcon />}
+            <StyledButton
+              variant="secondary"
+              icon={<AddCircleOutlineIcon />}
               onClick={() => {
                 const newIndex = fields.length;
                 append({
@@ -818,7 +818,7 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
               }}
             >
               Add Attribute
-            </PrimaryButton>
+            </StyledButton>
           </Stack>
         </Box>
       </DialogContainer>
@@ -985,9 +985,9 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
                   fileUploadLoader={fileUploadLoader}
                 />
               ))}
-              <Button
-                variant="contained"
-                startIcon={<AddCircleOutlineIcon />}
+              <StyledButton
+                variant="primary"
+                icon={<AddCircleOutlineIcon />}
                 onClick={() => {
                   const newIndex = fields.length;
                   append({
@@ -1020,7 +1020,7 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
                 }}
               >
                 Add Attribute
-              </Button>
+              </StyledButton>
             </Stack>
           </Box>
         </DialogContent>
@@ -1029,25 +1029,19 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
             <ProgressBar />
           ) : (
             <>
-              <Button
-                onClick={handleCancel}
-                color="error"
-                sx={{ fontSize: 18, fontWeight: "bold", p: 1, pl: 2, pr: 2 }}
-              >
+              <StyledButton variant="secondary" onClick={handleCancel}>
                 Cancel
-              </Button>
-              <Button
+              </StyledButton>
+              <StyledButton
+                variant="primary"
                 type="submit"
                 onClick={handleSubmit(onSubmit)}
-                variant="contained"
-                color="primary"
-                sx={{ fontSize: 18, fontWeight: "bold", p: 1, pl: 2, pr: 2 }}
                 disabled={attributes?.some(
                   (_, index) => isLoadingReferences[index],
                 )}
               >
                 Save Entity
-              </Button>
+              </StyledButton>
             </>
           )}
         </DialogActions>

@@ -31,12 +31,12 @@ import usePost from "../../../hooks/usePost";
 import usePut from "../../../hooks/usePut";
 import useGet from "../../../hooks/useGet";
 import { STYLE_GUIDE } from "../../../styles";
+import { StyledButton } from "../../common";
 import { useUnifiedTheme } from "../../../hooks/useUnifiedTheme";
 import axiosInstance from "../../../services/axiosInstance";
 import { debounce } from "lodash";
 import { useComponentTypography } from "../../../hooks/useComponentTypography";
 import DialogContainer from "../../molecule/dialog";
-import PrimaryButton from "../../common/PrimaryButton";
 
 interface Attribute {
   _id: string;
@@ -706,13 +706,13 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({
               <CircularProgress />
             ) : (
               <>
-                <PrimaryButton
+                <StyledButton
+                  variant="primary"
                   type="submit"
-                  variant="contained"
                   onClick={handleSubmit(onSubmit)}
                 >
                   Save Data Source
-                </PrimaryButton>
+                </StyledButton>
               </>
             )}
           </>
@@ -954,15 +954,15 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({
               </Box>
             ))}
 
-            <Button
-              variant="contained"
-              startIcon={<AddCircleOutlineIcon />}
+            <StyledButton
+              variant="primary"
+              icon={<AddCircleOutlineIcon />}
               onClick={handleAddMoreAttribute}
               sx={{ whiteSpace: "nowrap", mt: 2 }}
               disabled={!entityId || isLoadingEntity}
             >
               Add More Attributes
-            </Button>
+            </StyledButton>
 
             <Typography variant="h5" sx={{ mt: 4, mb: 2 }}>
               Field Settings
@@ -1122,15 +1122,15 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({
               );
             })}
 
-            <Button
-              variant="contained"
-              startIcon={<AddCircleOutlineIcon />}
+            <StyledButton
+              variant="primary"
+              icon={<AddCircleOutlineIcon />}
               onClick={handleAddMoreSetting}
               sx={{ whiteSpace: "nowrap", mt: 2 }}
               disabled={!entityId || isLoadingEntity}
             >
               Add Entity Setting
-            </Button>
+            </StyledButton>
 
             <TextField
               label="Data Source Code(Unique Code)*"
@@ -1556,15 +1556,15 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({
                 </Box>
               ))}
 
-              <Button
-                variant="contained"
-                startIcon={<AddCircleOutlineIcon />}
+              <StyledButton
+                variant="primary"
+                icon={<AddCircleOutlineIcon />}
                 onClick={handleAddMoreAttribute}
                 sx={{ whiteSpace: "nowrap", mt: 2 }}
                 disabled={!entityId || isLoadingEntity}
               >
                 Add More Attributes
-              </Button>
+              </StyledButton>
 
               <Typography variant="h5" sx={{ mt: 4, mb: 2 }}>
                 Field Settings
@@ -1724,15 +1724,15 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({
                 );
               })}
 
-              <Button
-                variant="contained"
-                startIcon={<AddCircleOutlineIcon />}
+              <StyledButton
+                variant="primary"
+                icon={<AddCircleOutlineIcon />}
                 onClick={handleAddMoreSetting}
                 sx={{ whiteSpace: "nowrap", mt: 2 }}
                 disabled={!entityId || isLoadingEntity}
               >
                 Add Entity Setting
-              </Button>
+              </StyledButton>
 
               <TextField
                 label="Data Source Code(Unique Code)*"

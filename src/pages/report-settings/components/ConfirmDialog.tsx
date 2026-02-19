@@ -11,6 +11,7 @@ import WarningAmberIcon from "@mui/icons-material/WarningAmber";
 import { STYLE_GUIDE } from "../../../styles";
 import { useUnifiedTheme } from "../../../hooks/useUnifiedTheme";
 import { useComponentTypography } from "../../../hooks/useComponentTypography";
+import { StyledButton } from "../../../components/common";
 
 export interface ConfirmDialogProps {
   open: boolean;
@@ -57,33 +58,20 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
         <DialogContentText>{description}</DialogContentText>
       </DialogContent>
       <DialogActions>
-        <Button
-          onClick={onCancel}
-          variant="outlined"
-          sx={{ fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.medium }}
-        >
+        <StyledButton variant="secondary" onClick={onCancel}>
           Cancel
-        </Button>
+        </StyledButton>
 
-        {buttonText ? (
-          <Button
-            onClick={onConfirm}
-            color="error"
-            variant="contained"
-            sx={{ fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.bold }}
-          >
-            {buttonText}
-          </Button>
-        ) : (
-          <Button
-            onClick={onConfirm}
-            color="error"
-            variant="contained"
-            sx={{ fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.bold }}
-          >
-            Delete
-          </Button>
-        )}
+        <StyledButton
+          variant="primary"
+          onClick={onConfirm}
+          sx={{
+            backgroundColor: "#d32f2f",
+            "&:hover": { backgroundColor: "#b71c1c" },
+          }}
+        >
+          {buttonText || "Delete"}
+        </StyledButton>
       </DialogActions>
     </Dialog>
   );

@@ -18,6 +18,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import { STYLE_GUIDE } from '../../../styles';
 import { useUnifiedTheme } from '../../../hooks/useUnifiedTheme';
 import { useComponentTypography } from '../../../hooks/useComponentTypography';
+import { StyledButton } from '../../../components/common';
 
 interface AddColumnModalProps {
     open: boolean;
@@ -179,19 +180,14 @@ const AddColumnModal: React.FC<AddColumnModalProps> = ({
                                 fullWidth
                                 sx={{ '& .MuiOutlinedInput-root': { borderRadius: STYLE_GUIDE.SPACING.s2, alignItems: 'center', fontSize: '14px', backgroundColor: theme.dashboardTheme?.colors?.background?.paper || '#ffffff', '& fieldset': { borderColor: theme.getInputBorderColor() || STYLE_GUIDE.COLORS.darkBackground, }, '&:hover fieldset': { borderColor: theme.border?.hover || STYLE_GUIDE.COLORS.darkBorderHover, }, '&.Mui-focused fieldset': { borderColor: theme.input?.focusBorder || STYLE_GUIDE.COLORS.inputFocusFallback, }, }, '& .MuiInputLabel-root': { color: theme.palette.text.secondary || STYLE_GUIDE.COLORS.darkBorderFocus, }, '& .MuiInputLabel-root.Mui-focused': { color: theme.input?.focusBorder || STYLE_GUIDE.COLORS.inputFocusFallback, }, '& .MuiInputBase-input': { color: `${theme.getInputTextColor() || theme.palette.text.primary || '#000000'} !important`, }, '& .MuiInputBase-input::placeholder': { color: `${theme.palette.text.secondary || '#666'} !important`, }, '& .MuiInputBase-input:-webkit-autofill': { WebkitTextFillColor: `${theme.getInputTextColor() || theme.palette.text.primary || '#000000'} !important`, WebkitBoxShadow: `0 0 0 1000px ${theme.dashboardTheme?.colors?.background?.paper || '#ffffff'} inset !important`, }, }}
                             />
-                            <Button
-                                variant="outlined"
+                            <StyledButton
+                                variant="primary"
                                 onClick={handleAddAttributeValue}
                                 disabled={!attributeValueInput.trim()}
-                                startIcon={<AddIcon />}
-                                sx={{
-                                    fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.medium,
-                                    color: STYLE_GUIDE.COLORS.primary,
-                                    borderColor: STYLE_GUIDE.COLORS.primary,
-                                }}
+                                icon={<AddIcon />}
                             >
                                 Add
-                            </Button>
+                            </StyledButton>
                         </Box>
                         {attributeValues.length > 0 ? (
                             <Box>
@@ -234,21 +230,16 @@ const AddColumnModal: React.FC<AddColumnModalProps> = ({
             </DialogContent>
 
             <DialogActions sx={{ p: STYLE_GUIDE.SPACING.s3 }}>
-                <Button onClick={onClose} variant="outlined" sx={{ fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.medium }}>
+                <StyledButton variant="secondary" onClick={onClose}>
                     Cancel
-                </Button>
-                <Button
+                </StyledButton>
+                <StyledButton
+                    variant="primary"
                     onClick={handleSubmit}
-                    variant="contained"
-                    color="primary"
                     disabled={!reportHeader.trim() || attributeValues.length === 0}
-                    sx={{
-                        fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.bold,
-                        boxShadow: STYLE_GUIDE.SHADOWS.sm,
-                    }}
                 >
                     Add Column
-                </Button>
+                </StyledButton>
             </DialogActions>
         </Dialog>
     );

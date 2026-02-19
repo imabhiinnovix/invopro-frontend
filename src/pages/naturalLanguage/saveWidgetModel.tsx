@@ -13,6 +13,7 @@ import { STYLE_GUIDE } from '../../styles';
 import StyledSelect from '../../components/atom/common/StyledSelect';
 import { useUnifiedTheme } from '../../hooks/useUnifiedTheme';
 import { useComponentTypography } from '../../hooks';
+import { StyledButton } from '../../components/common';
 
 interface SaveWidgetModelProps {
   open: boolean;
@@ -129,34 +130,12 @@ export const SaveWidgetModel: React.FC<SaveWidgetModelProps> = ({
         )} */}
       </DialogContent>
       <DialogActions sx={{ p: STYLE_GUIDE.SPACING.s4, gap: STYLE_GUIDE.SPACING.s2 }}>
-        <Button
-          onClick={onClose}
-          sx={{
-            color: 'text.secondary',
-            '&:hover': {
-              backgroundColor: alpha(theme.palette.grey[500], 0.1),
-            },
-          }}
-        >
+        <StyledButton variant="secondary" onClick={onClose}>
           Cancel
-        </Button>
-        <Button
-          onClick={onCreate}
-          variant="contained"
-          // disabled={!newWidgetName.trim() || isCreating}
-          sx={{
-            backgroundColor: 'primary.main',
-            '&:hover': {
-              backgroundColor: 'primary.dark',
-            },
-            '&.Mui-disabled': {
-              backgroundColor: alpha(theme.palette.primary.main, 0.5),
-              color: STYLE_GUIDE.COLORS.white,
-            },
-          }}
-        >
+        </StyledButton>
+        <StyledButton variant="primary" onClick={onCreate}>
           {isCreating ? 'Saving...' : 'Save'}
-        </Button>
+        </StyledButton>
       </DialogActions>
     </Dialog>
   );

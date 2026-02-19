@@ -201,17 +201,21 @@ export const theme = createTheme({
       styleOverrides: {
         root: (opts) => ({
           fontSize: '16px',
-          transform: 'translate(14px, 9px)',
           [opts.theme.breakpoints.up('md')]: {
             fontSize: '14px',
           },
         }),
         outlined: {
-          top: '50%',
-          transform: 'translateY(-50%)',
+          top: 0,
+          transform: 'translate(14px, 16px) scale(1)',
           '&.MuiInputLabel-shrink': {
-            top: 0,
             transform: 'translate(14px, -9px) scale(0.75)',
+          },
+          '&.MuiInputLabel-sizeSmall': {
+            transform: 'translate(14px, 9px) scale(1)',
+            '&.MuiInputLabel-shrink': {
+              transform: 'translate(14px, -6px) scale(0.75)',
+            },
           },
         },
       },

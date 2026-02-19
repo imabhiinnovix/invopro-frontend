@@ -37,7 +37,7 @@ import { useUnifiedTheme } from "../../../hooks/useUnifiedTheme";
 import { useComponentTypography } from "../../../hooks/useComponentTypography";
 import { toast } from "react-toastify";
 import DialogContainer from "../../../components/molecule/dialog";
-import PrimaryButton from "../../../components/common/PrimaryButton";
+import { StyledButton } from "../../../components/common";
 
 const getDefaultTheme = (): DashboardTheme => ({
   ...getDefaultDashboardTheme(),
@@ -200,14 +200,15 @@ const CreateDashboardThemeDialog: React.FC<CreateDashboardThemeDialogProps> = ({
       title={theme ? "Edit Dashboard Theme" : "Create Dashboard Theme"}
       actions={
         <>
-          <PrimaryButton
+          <StyledButton
+            variant="primary"
             onClick={handleSubmit}
             disabled={loading || !formData.name.trim()}
-            startIcon={loading ? <CircularProgress size={16} /> : null}
+            icon={loading ? <CircularProgress size={16} /> : undefined}
             sx={{ ...getButtonSx() }}
           >
             {loading ? "Saving..." : theme ? "Update Theme" : "Create Theme"}
-          </PrimaryButton>
+          </StyledButton>
         </>
       }
     >

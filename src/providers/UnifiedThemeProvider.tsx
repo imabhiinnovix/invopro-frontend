@@ -531,6 +531,19 @@ const UnifiedThemeProviderInner: React.FC<UnifiedThemeProviderProps> = ({
               fontWeight: parseInt(getComponentTypography("inputs").fontWeight),
               fontSize: getComponentTypography("inputs").fontSize,
             },
+            outlined: {
+              top: 0,
+              transform: 'translate(14px, 16px) scale(1)',
+              '&.MuiInputLabel-shrink': {
+                transform: 'translate(14px, -9px) scale(0.75)',
+              },
+              '&.MuiInputLabel-sizeSmall': {
+                transform: 'translate(14px, 9px) scale(1)',
+                '&.MuiInputLabel-shrink': {
+                  transform: 'translate(14px, -6px) scale(0.75)',
+                },
+              },
+            },
           },
         },
         MuiTextField: {

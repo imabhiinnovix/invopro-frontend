@@ -1123,7 +1123,6 @@ import {
   Box,
   Typography,
   TextField,
-  Button,
   IconButton,
   Chip,
   FormControlLabel,
@@ -1143,6 +1142,7 @@ import usePost from "../../hooks/usePost";
 import { useSelector } from "react-redux";
 import { RootState } from "../../reducers";
 import DialogContainer from "../../components/molecule/dialog";
+import { StyledButton } from "../../components/common";
 
 interface ValidationErrorModalProps {
   openModal: boolean;
@@ -1712,7 +1712,7 @@ export const ValidationErrorModal: React.FC<ValidationErrorModalProps> = ({
         {isRequired && (
           <Typography
             component="span"
-            sx={{ color: STYLE_GUIDE?.COLORS?.primaryDark }}
+            sx={{ color: "red" }}
           >
             {" *"}
           </Typography>
@@ -1757,9 +1757,6 @@ export const ValidationErrorModal: React.FC<ValidationErrorModalProps> = ({
                   handleFieldChange(fieldName, e.target.checked, attribute)
                 }
                 disabled={isDisabled}
-                sx={{
-                  color: STYLE_GUIDE?.COLORS?.primaryDark || "#3f51b5",
-                }}
               />
             }
             label={renderLabel(fieldLabel)}
@@ -1807,13 +1804,13 @@ export const ValidationErrorModal: React.FC<ValidationErrorModalProps> = ({
               }
             }}
             disabled={isDisabled}
-            sx={{ height: "56px" }}
             renderInput={(params) => (
               <TextField
                 {...params}
                 label={renderLabel(fieldLabel)}
                 variant="outlined"
                 fullWidth
+                size="small"
                 error={!!hasError}
                 helperText={fieldErrors[fieldName] || ""}
                 sx={{
@@ -1903,13 +1900,13 @@ export const ValidationErrorModal: React.FC<ValidationErrorModalProps> = ({
               }
             }}
             disabled={isDisabled}
-            sx={{ height: "56px" }}
             renderInput={(params) => (
               <TextField
                 {...params}
                 label={renderLabel(fieldLabel)}
                 variant="outlined"
                 fullWidth
+                size="small"
                 error={!!hasError}
                 helperText={fieldErrors[fieldName] || ""}
                 sx={{
@@ -1973,6 +1970,7 @@ export const ValidationErrorModal: React.FC<ValidationErrorModalProps> = ({
                 textField: {
                   variant: "outlined",
                   fullWidth: true,
+                  size: "small",
                   error: !!hasError,
                   helperText: fieldErrors[fieldName] || "",
                   sx: {
@@ -2008,6 +2006,7 @@ export const ValidationErrorModal: React.FC<ValidationErrorModalProps> = ({
             disabled={isDisabled}
             variant="outlined"
             fullWidth
+            size="small"
             error={!!hasError}
             helperText={fieldErrors[fieldName] || ""}
             sx={{
@@ -2037,6 +2036,7 @@ export const ValidationErrorModal: React.FC<ValidationErrorModalProps> = ({
             disabled={isDisabled}
             variant="outlined"
             fullWidth
+            size="small"
             error={!!hasError}
             helperText={fieldErrors[fieldName] || ""}
             sx={{
@@ -2065,6 +2065,7 @@ export const ValidationErrorModal: React.FC<ValidationErrorModalProps> = ({
             disabled={isDisabled}
             variant="outlined"
             fullWidth
+            size="small"
             error={!!hasError}
             helperText={fieldErrors[fieldName] || ""}
             sx={{
@@ -2113,20 +2114,9 @@ export const ValidationErrorModal: React.FC<ValidationErrorModalProps> = ({
       maxWidth={"md"}
       title={rowDetailData?.errorAction}
       actions={
-        <Button
-          variant="contained"
-          onClick={handleSaveClick}
-          sx={{
-            borderRadius: "8px",
-            backgroundColor: STYLE_GUIDE?.COLORS?.primaryDark || "#3f51b5",
-            color: STYLE_GUIDE?.COLORS?.white || "#ffffff",
-            "&:hover": {
-              backgroundColor: STYLE_GUIDE?.COLORS?.primary || "#5c6bc0",
-            },
-          }}
-        >
+        <StyledButton variant="primary" onClick={handleSaveClick}>
           Save
-        </Button>
+        </StyledButton>
       }
     >
       <Box
@@ -2214,32 +2204,12 @@ export const ValidationErrorModal: React.FC<ValidationErrorModalProps> = ({
                 mt: 3,
               }}
             >
-              <Button
-                variant="outlined"
-                onClick={handleCancel}
-                sx={{
-                  borderRadius: "8px",
-                  borderColor: STYLE_GUIDE?.COLORS?.divider || "#e0e0e0",
-                  color: STYLE_GUIDE?.COLORS?.primaryDark || "#3f51b5",
-                }}
-              >
+              <StyledButton variant="secondary" onClick={handleCancel}>
                 Cancel
-              </Button>
-              <Button
-                variant="contained"
-                onClick={handleSaveClick}
-                sx={{
-                  borderRadius: "8px",
-                  backgroundColor:
-                    STYLE_GUIDE?.COLORS?.primaryDark || "#3f51b5",
-                  color: STYLE_GUIDE?.COLORS?.white || "#ffffff",
-                  "&:hover": {
-                    backgroundColor: STYLE_GUIDE?.COLORS?.primary || "#5c6bc0",
-                  },
-                }}
-              >
+              </StyledButton>
+              <StyledButton variant="primary" onClick={handleSaveClick}>
                 Save
-              </Button>
+              </StyledButton>
             </Box>
           </Box>
         </Box>
