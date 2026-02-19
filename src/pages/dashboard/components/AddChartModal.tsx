@@ -1484,7 +1484,92 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
         );
 
       case "aggregation":
-        return null;
+        const hasDimensionsField = getVisibleFields().some(
+          (f) => f.fieldName === "dimensions",
+        );
+        if (hasDimensionsField) return null;
+        return (
+          <FormSection key="aggregation">
+            <SectionTitle className={initialData ? "form-section-title" : undefined}>Y-Axis</SectionTitle>
+            <FormRow>
+              <FormControl fullWidth size="small">
+                <InputLabel>Type</InputLabel>
+                <StyledSelect
+                  value={formData.aggregation.type}
+                  label="Type"
+                  onChange={handleAggregationTypeChange}
+                  disabled={isSubmitting}
+                >
+                  <MenuItem value="distinctCount">Distinct Count</MenuItem>
+                  <MenuItem value="Count">Total Count</MenuItem>
+                  <MenuItem value="Sum">Sum</MenuItem>
+                  <MenuItem value="Average">Average</MenuItem>
+                </StyledSelect>
+              </FormControl>
+              <FormControl fullWidth size="small">
+                <InputLabel>Attribute Name</InputLabel>
+                <StyledSelect
+                  value={formData.aggregation.attributeName}
+                  label="Attribute Name"
+                  onChange={handleAggregationAttributeChange}
+                  disabled={isSubmitting}
+                >
+                  {groupedAttributeOptions.primary.map((attr) => (
+                    <MenuItem key={`primary-${attr.name}`} value={attr.name}>
+                      {attr.label}
+                    </MenuItem>
+                  ))}
+                  {groupedAttributeOptions.secondary.length > 0 && (
+                    <Box
+                      component="li"
+                      role="option"
+                      onMouseDown={(e) => {
+                        e.stopPropagation();
+                        toggleMoreOptions("aggregationAttribute1", e);
+                      }}
+                      sx={{
+                        padding: "6px 16px",
+                        minHeight: "auto",
+                        fontWeight: 600,
+                        color: "primary.main",
+                        cursor: "pointer",
+                        "&:hover": {
+                          backgroundColor: "action.hover",
+                        },
+                      }}
+                    >
+                      <Box
+                        sx={{
+                          display: "flex",
+                          alignItems: "center",
+                          width: "100%",
+                          justifyContent: "space-between",
+                        }}
+                      >
+                        <span>More...</span>
+                        {showMoreOptions.aggregationAttribute1 ? (
+                          <ExpandLessIcon />
+                        ) : (
+                          <ExpandMoreIcon />
+                        )}
+                      </Box>
+                    </Box>
+                  )}
+                  {showMoreOptions.aggregationAttribute1 &&
+                    groupedAttributeOptions.secondary.map((attr) => (
+                      <MenuItem
+                        key={`secondary-${attr.name}`}
+                        value={attr.name}
+                        sx={{ pl: 4 }}
+                      >
+                        {attr.label}
+                      </MenuItem>
+                    ))}
+                </StyledSelect>
+              </FormControl>
+            </FormRow>
+          </FormSection>
+        );
 
       case "conditions":
         if (!showAdvanced) return null;
