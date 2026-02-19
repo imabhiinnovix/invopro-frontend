@@ -8,6 +8,8 @@ export interface PageCardLayoutProps {
   contentPadding?: string | number;
   /** Optional extra sx for the Card root */
   sx?: SxProps<Theme>;
+  /** Optional extra sx for the CardContent */
+  contentSx?: SxProps<Theme>;
 }
 
 /**
@@ -18,6 +20,7 @@ export const PageCardLayout: React.FC<PageCardLayoutProps> = ({
   children,
   contentPadding = STYLE_GUIDE.SPACING.s6,
   sx = {},
+  contentSx = {},
 }) => {
   return (
     <Card
@@ -29,7 +32,7 @@ export const PageCardLayout: React.FC<PageCardLayoutProps> = ({
         ...sx,
       }}
     >
-      <CardContent sx={{ p: contentPadding || STYLE_GUIDE.SPACING.s6 }}>{children}</CardContent>
+      <CardContent sx={{ p: contentPadding || STYLE_GUIDE.SPACING.s6, ...contentSx }}>{children}</CardContent>
     </Card>
   );
 };

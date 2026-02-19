@@ -1896,7 +1896,7 @@ import { PermissionsMap } from "../../../utils/constants";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 import logo from "../../../assets/logo.png";
-import { StyledButton } from "../../../components/common";
+import { StyledButton, PageHeader, PageCardLayout } from "../../../components/common";
 import { FileDownloadOutlined } from "@mui/icons-material";
 
 interface DashboardViewProps {
@@ -3120,105 +3120,12 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         overflow: "hidden",
       }}
     >
-      <Box>
-        <Typography
-          variant="h4"
-          component="h1"
-          sx={{
-            fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.pageTitle,
-            mr: STYLE_GUIDE.SPACING.s4,
-            fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.bold,
-            color: STYLE_GUIDE.COLORS.black
-          }}
-        >
-          {title}
-        </Typography>
-        <Typography
-          variant="body1"
-          component="div"
-          sx={{
-            fontSize: '1rem',
-            marginTop: '0.25rem',
-            color: STYLE_GUIDE.COLORS.textSecondary
-          }}
-        >
-          Your analytics overview for the current period.
-        </Typography>
-      </Box>
-      <Box
-        sx={{
-          // p: { md: STYLE_GUIDE.SPACING.s2 },
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          flexShrink: 0,
-          gap: STYLE_GUIDE.SPACING.s4,
-          borderBottom: 1,
-          borderColor: "divider",
-          pb: STYLE_GUIDE.SPACING.s2,
-          pt: STYLE_GUIDE.SPACING.s2,
-        }}
-      >
-        <Box
-          sx={{
-            flex: 1,
-            mr: STYLE_GUIDE.SPACING.s4,
-          }}
-        >
-          {isEditMode ? (
-            <TextField
-              inputRef={inputRef}
-              value={editedTitle}
-              onChange={(e) => setEditedTitle(e.target.value)}
-              onKeyDown={handleKeyPress}
-              size="small"
-              fullWidth
-              sx={{
-                "& .MuiOutlinedInput-root": {
-                  borderRadius: STYLE_GUIDE.SPACING.s2,
-                  alignItems: "flex-start",
-                  paddingRight: STYLE_GUIDE.SPACING.s2,
-                  fontSize: "14px",
-                  backgroundColor: theme.getDropdownBackground(),
-                  "& fieldset": { borderColor: theme.getInputBorderColor() },
-                  "&:hover fieldset": {
-                    borderColor:
-                      theme.border?.hover || STYLE_GUIDE.COLORS.darkBorderHover,
-                  },
-                  "&.Mui-focused fieldset": {
-                    borderColor:
-                      theme.input?.focusBorder ||
-                      STYLE_GUIDE.COLORS.inputFocusFallback,
-                  },
-                },
-                "& .MuiInputLabel-root": {
-                  color: theme.palette.text.secondary,
-                },
-                "& .MuiInputLabel-root.Mui-focused": {
-                  color:
-                    theme.input?.focusBorder ||
-                    STYLE_GUIDE.COLORS.inputFocusFallback,
-                },
-                "& .MuiInputBase-input": {
-                  color: `${theme.getInputTextColor()} !important`,
-                },
-                "& .MuiInputBase-input::placeholder": {
-                  color: `${theme.palette.text.secondary} !important`,
-                },
-                "& .MuiInputBase-input:-webkit-autofill": {
-                  WebkitTextFillColor: `${theme.getInputTextColor()} !important`,
-                  WebkitBoxShadow: `0 0 0 1000px ${theme.getDropdownBackground()} inset !important`,
-                },
-              }}
-            />
-          ) : (
-            <Box
-              sx={{
-                display: "flex",
-                gap: STYLE_GUIDE.SPACING.s4,
-                alignItems: "center",
-              }}
-            >
+      <PageHeader
+        title={title}
+        subtext="Your analytics overview for the current period."
+        action={
+          !isEditMode ? (
+            <Box sx={{ display: "flex", gap: STYLE_GUIDE.SPACING.s4, alignItems: "center" }}>
               {currentDashboard?.isDefaultNotivix && (
                 <>
                   <ToggleButtonGroup
@@ -3254,7 +3161,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                     >
                       Pending
                     </ToggleButton>
-
                     <ToggleButton
                       value="Completed"
                       aria-label="completed"
@@ -3263,7 +3169,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                         borderRadius: "8px",
                         textTransform: "none",
                         fontWeight: 500,
-                        px: "18px", // STYLE_GUIDE.SPACING.s6
+                        px: "18px",
                         backgroundColor: STYLE_GUIDE.COLORS.backgroundDefault,
                         color: STYLE_GUIDE.COLORS.textPrimary,
                         "&.Mui-selected": {
@@ -3292,10 +3198,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                       borderRadius: "8px",
                       background: theme.getDropdownBackground(),
                       width: "280px",
-                      // overflow: "hidden",
                     }}
                   >
-                    {/* Date Picker with Calendar + Cross */}
                     <Box
                       sx={{
                         position: "relative",
@@ -3317,13 +3221,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                         numberOfMonths={2}
                         showOtherDays
                         className="purple"
-                        style={{
-                          fontSize: "14px",
-                        }}
-                        maxDate={
-                          statusToggle === "Completed" ? new Date() : undefined
-                        }
-                        // Remove inputClass, use inputProps with full width
+                        style={{ fontSize: "14px" }}
+                        maxDate={statusToggle === "Completed" ? new Date() : undefined}
                         inputProps={{
                           style: {
                             width: "100%",
@@ -3333,13 +3232,11 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                             background: "transparent",
                             color: theme.getInputTextColor(),
                             outline: "none",
-                            cursor: "pointer", // ensure clickable
-                            fontFamily:
-                              '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+                            cursor: "pointer",
+                            fontFamily: '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
                           },
                         }}
                       />
-
                       {dateRange && dateRange.length > 0 && (
                         <Button
                           onClick={handleClearDateRange}
@@ -3359,22 +3256,10 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                         </Button>
                       )}
                     </Box>
-
-                    {/* Divider line */}
-                    <Box
-                      sx={{
-                        width: "1px",
-                        height: "60%",
-                        backgroundColor: theme.getInputBorderColor(),
-                      }}
-                    />
-
-                    {/* Dropdown for Predefined Ranges */}
+                    <Box sx={{ width: "1px", height: "60%", backgroundColor: theme.getInputBorderColor() }} />
                     <StyledSelect
                       value=""
-                      onChange={(e) =>
-                        handlePredefinedRangeSelection(e.target.value)
-                      }
+                      onChange={(e) => handlePredefinedRangeSelection(e.target.value)}
                       displayEmpty
                       sx={{
                         minWidth: 10,
@@ -3383,202 +3268,54 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                         backgroundColor: "transparent",
                         color: theme.getInputTextColor(),
                         "&:hover": { border: "none" },
-                        "& .MuiOutlinedInput-notchedOutline": {
-                          border: "none",
-                        },
-                        "& .MuiSelect-select": {
-                          p: "8px 28px 8px 12px", // compact padding
-                        },
-                        "& .MuiSelect-icon": {
-                          right: "2px",
-                        },
+                        "& .MuiOutlinedInput-notchedOutline": { border: "none" },
+                        "& .MuiSelect-select": { p: "8px 28px 8px 12px" },
+                        "& .MuiSelect-icon": { right: "2px" },
                       }}
                     >
-                      {(statusToggle === "Pending"
-                        ? rangeOptions.Pending
-                        : rangeOptions.Completed
-                      ).map((option) => (
+                      {(statusToggle === "Pending" ? rangeOptions.Pending : rangeOptions.Completed).map((option) => (
                         <MenuItem key={option.value} value={option.value}>
                           {option.label}
                         </MenuItem>
                       ))}
                     </StyledSelect>
                   </Box>
+
+                  <StyledButton
+                    variant="secondary"
+                    onClick={handleOpenFiltersModal}
+                    icon={<FilterListIcon />}
+                  >
+                    Filters
+                  </StyledButton>
                 </>
               )}
-            </Box>
-          )}
-        </Box>
-
-        {/* <Box sx={{ mr: STYLE_GUIDE.SPACING.s4 }}>
-          {isEditMode ? (
-            <StyledSelect
-              label="Theme"
-              value={selectedTheme}
-              onChange={handleThemeChange}
-              size="small"
-              sx={{ minWidth: 180 }}
-            >
-              {themes?.map((theme) => (
-                <MenuItem key={theme._id} value={theme._id}>
-                  {theme.name}
-                </MenuItem>
-              ))}
-            </StyledSelect>
-          ) : null}
-        </Box> */}
-
-        <Box sx={{ display: "flex", gap: STYLE_GUIDE.SPACING.s4 }}>
-          {isEditMode ? (
-            <>
-              <Box
-                sx={{
-                  display: "flex",
-                  alignItems: "center",
-                  borderRadius: 1,
-                  py: 0.25,
-                  px: 0.5,
-                }}
-                aria-label="grid columns"
-              >
-                <ViewColumnIcon sx={{ fontSize: 20, mr: 0.5 }} />
-                <Button
-                  size="small"
-                  onClick={() => handleGridColumns(1)}
-                  variant={gridColumns === 1 ? "contained" : "text"}
-                  sx={{ minWidth: 32, px: 0.75 }}
-                >
-                  1
-                </Button>
-                <Typography component="span" sx={{ color: "text.secondary", px: 0.25 }}>
-                  |
-                </Typography>
-                <Button
-                  size="small"
-                  onClick={() => handleGridColumns(2)}
-                  variant={gridColumns === 2 ? "contained" : "text"}
-                  sx={{ minWidth: 32, px: 0.75 }}
-                >
-                  2
-                </Button>
-                <Typography component="span" sx={{ color: "text.secondary", px: 0.25 }}>
-                  |
-                </Typography>
-                <Button
-                  size="small"
-                  onClick={() => handleGridColumns(3)}
-                  variant={gridColumns === 3 ? "contained" : "text"}
-                  sx={{ minWidth: 32, px: 0.75 }}
-                >
-                  3
-                </Button>
-              </Box>
-              {shouldAllowWidgetCreate && (
-                <StyledButton 
-                  variant="secondary"
-                  icon={<AddIcon />}
-                  onClick={() => {
-                    setIsAddChartModalOpen(true);
-                    setIsEditChartModalOpen(false);
-                  }}
-                >
-                  Add Widget
-                </StyledButton>
+              {!currentDashboard?.isDefaultNotivix && currentDashboard?.settings?.dashboardType === "trend" && (
+                <Stack direction="row" spacing={STYLE_GUIDE.SPACING.s6}>
+                  <CommonDatePicker
+                    name="startDate"
+                    control={control}
+                    views={["year", "month"]}
+                    label="Start Date"
+                    rules={{ required: "Start date is required" }}
+                    sx={{ "& .MuiInputBase-input": { py: 1.1 } }}
+                  />
+                  <CommonDatePicker
+                    name="endDate"
+                    control={control}
+                    views={["year", "month"]}
+                    label="End Date"
+                    rules={{ required: "End date is required" }}
+                    sx={{ "& .MuiInputBase-input": { py: 1.1 } }}
+                  />
+                </Stack>
               )}
-              <StyledButton 
-                variant="primary"
-                icon={<SaveIcon />}
-                onClick={handleEditModeToggle}
-                disabled={isAddChartModalOpen || isEditChartModalOpen}
-              >
-                Save Dashboard
-              </StyledButton>
-              <StyledButton 
-                variant="primary"
-                onClick={handleExportPDF}
-                disabled={isExportingPdf}
-                startIcon={
-                  isExportingPdf ? (
-                    <CircularProgress size={20} color="inherit" />
-                  ) : (
-                    <PictureAsPdfIcon />
-                  )
-                }
-              >
-                {isExportingPdf ? "Exporting..." : "Export"}
-              </StyledButton>
-            </>
-          ) : (
-            <>
-              {currentDashboard?.isDefaultNotivix && (
-                <Button
-                  onClick={handleOpenFiltersModal}
-                  variant="outlined"
-                  startIcon={<FilterListIcon />}
-                  sx={{ borderRadius: "8px", width: "140px" }}
-                >
-                  Filters
-                </Button>
-              )}
-              <Box>
-                {currentDashboard?.settings?.dashboardType === "normal" &&
-                !currentDashboard?.isDefaultNotivix ? (
-                  <Box>
-                    {/* <CommonDatePicker
-                      name="versionValue"
-                      control={control}
-                      views={["year", "month"]}
-                      label="Period"
-                      rules={{ required: "Period is required" }}
-                      sx={{
-                        "& .MuiInputBase-input": {
-                          py: 1.1,
-                        },
-                        "& .MuiFormLabel-root": {
-                          top: "-6px",
-                        },
-                        borderRadius: "8px",
-                      }}
-                    /> */}
-                  </Box>
-                ) : currentDashboard?.settings?.dashboardType === "trend" ? (
-                  <Stack direction="row" spacing={STYLE_GUIDE.SPACING.s6}>
-                    <CommonDatePicker
-                      name="startDate"
-                      control={control}
-                      views={["year", "month"]}
-                      label="Start Date"
-                      rules={{ required: "Start date is required" }}
-                      sx={{
-                        "& .MuiInputBase-input": {
-                          py: 1.1,
-                        },
-                      }}
-                    />
-
-                    <CommonDatePicker
-                      name="endDate"
-                      control={control}
-                      views={["year", "month"]}
-                      label="End Date"
-                      rules={{ required: "End date is required" }}
-                      sx={{
-                        "& .MuiInputBase-input": {
-                          py: 1.1,
-                        },
-                      }}
-                    />
-                  </Stack>
-                ) : null}
-              </Box>
               {shouldAllowDashboardUpdate &&
-                (!currentDashboard?.isRoleDefault ||
-                  shouldAllowDefaultDashboardUpdate) && (
+                (!currentDashboard?.isRoleDefault || shouldAllowDefaultDashboardUpdate) && (
                   <StyledButton
                     variant="primary"
                     onClick={handleEditModeToggle}
                     icon={<EditOutlined sx={{ fontSize: "16px" }} />}
-                    sx={{ width: "120px" }}
                   >
                     Edit
                   </StyledButton>
@@ -3594,14 +3331,99 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                     <FileDownloadOutlined />
                   )
                 }
-                sx={{ minWidth: "140px" }}
               >
                 {isExportingPdf ? "Exporting..." : "Export"}
               </StyledButton>
-            </>
-          )}
-        </Box>
-      </Box>
+            </Box>
+          ) : undefined
+        }
+      />
+
+      <PageCardLayout sx={{ flex: 1, overflow: "hidden", display: "flex", flexDirection: "column" }} contentSx={{ flex: 1, overflow: "hidden", display: "flex", flexDirection: "column" }}>
+        {isEditMode && (
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              gap: STYLE_GUIDE.SPACING.s4,
+              mb: STYLE_GUIDE.SPACING.s4,
+              flexWrap: "wrap",
+            }}
+          >
+            <Box sx={{ flex: 1, minWidth: 200 }}>
+              <TextField
+                inputRef={inputRef}
+                value={editedTitle}
+                onChange={(e) => setEditedTitle(e.target.value)}
+                onKeyDown={handleKeyPress}
+                size="small"
+                fullWidth
+                sx={{
+                  "& .MuiOutlinedInput-root": {
+                    borderRadius: STYLE_GUIDE.SPACING.s2,
+                    fontSize: "14px",
+                    backgroundColor: theme.getDropdownBackground(),
+                    "& fieldset": { borderColor: theme.getInputBorderColor() },
+                    "&:hover fieldset": {
+                      borderColor: theme.border?.hover || STYLE_GUIDE.COLORS.darkBorderHover,
+                    },
+                    "&.Mui-focused fieldset": {
+                      borderColor: theme.input?.focusBorder || STYLE_GUIDE.COLORS.inputFocusFallback,
+                    },
+                  },
+                  "& .MuiInputBase-input": {
+                    color: `${theme.getInputTextColor()} !important`,
+                  },
+                }}
+              />
+            </Box>
+            <Box
+              sx={{ display: "flex", alignItems: "center", borderRadius: 1, py: 0.25, px: 0.5 }}
+              aria-label="grid columns"
+            >
+              <ViewColumnIcon sx={{ fontSize: 20, mr: 0.5 }} />
+              <Button size="small" onClick={() => handleGridColumns(1)} variant={gridColumns === 1 ? "contained" : "text"} sx={{ minWidth: 32, px: 0.75 }}>1</Button>
+              <Typography component="span" sx={{ color: "text.secondary", px: 0.25 }}>|</Typography>
+              <Button size="small" onClick={() => handleGridColumns(2)} variant={gridColumns === 2 ? "contained" : "text"} sx={{ minWidth: 32, px: 0.75 }}>2</Button>
+              <Typography component="span" sx={{ color: "text.secondary", px: 0.25 }}>|</Typography>
+              <Button size="small" onClick={() => handleGridColumns(3)} variant={gridColumns === 3 ? "contained" : "text"} sx={{ minWidth: 32, px: 0.75 }}>3</Button>
+            </Box>
+            {shouldAllowWidgetCreate && (
+              <StyledButton
+                variant="secondary"
+                icon={<AddIcon />}
+                onClick={() => {
+                  setIsAddChartModalOpen(true);
+                  setIsEditChartModalOpen(false);
+                }}
+              >
+                Add Widget
+              </StyledButton>
+            )}
+            <StyledButton
+              variant="primary"
+              icon={<SaveIcon />}
+              onClick={handleEditModeToggle}
+              disabled={isAddChartModalOpen || isEditChartModalOpen}
+            >
+              Save Dashboard
+            </StyledButton>
+            <StyledButton
+              variant="primary"
+              onClick={handleExportPDF}
+              disabled={isExportingPdf}
+              icon={
+                isExportingPdf ? (
+                  <CircularProgress size={20} color="inherit" />
+                ) : (
+                  <PictureAsPdfIcon />
+                )
+              }
+            >
+              {isExportingPdf ? "Exporting..." : "Export"}
+            </StyledButton>
+          </Box>
+        )}
 
       <Box
         sx={{
@@ -3705,6 +3527,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           </Box>
         )}
       </Box>
+      </PageCardLayout>
 
       <EditChartModal
         open={isEditChartModalOpen && !!selectedChart}
