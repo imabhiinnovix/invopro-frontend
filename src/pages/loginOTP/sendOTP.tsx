@@ -85,6 +85,7 @@ function SendOTP() {
           <TextField
             {...register("email")}
             fullWidth
+            size="small"
             name="email"
             label="Email address"
             placeholder="example@gmail.com"

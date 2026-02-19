@@ -168,6 +168,7 @@ const ForgotPassword = () => {
               <TextField
                 {...register("email")}
                 fullWidth
+                size="small"
                 name="email"
                 autoComplete="off"
                 label="Email address"
@@ -246,6 +247,7 @@ const ForgotPassword = () => {
               <TextField
                 {...register("newPassword")}
                 fullWidth
+                size="small"
                 name="newPassword"
                 autoComplete="new-password"
                 label="New Password"
@@ -258,6 +260,7 @@ const ForgotPassword = () => {
               <TextField
                 {...register("confirmPassword")}
                 fullWidth
+                size="small"
                 name="confirmPassword"
                 autoComplete="new-password"
                 label="Confirm Password"

@@ -211,6 +211,7 @@ function Login() {
           <TextField
             {...register("email")}
             fullWidth
+            size="small"
             name="email"
             autoComplete="off"
             label="Email address"
@@ -224,6 +225,7 @@ function Login() {
           <TextField
             {...register("password")}
             fullWidth
+            size="small"
             autoComplete="new-password"
             label="Password"
             placeholder="@Demo1234"
