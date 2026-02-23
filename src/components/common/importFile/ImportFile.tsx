@@ -497,14 +497,17 @@ const ImportFile: React.FC<ImportFileProps> = ({
   /**
    * Validate form to enable/disable submit button
    */
-  useEffect(() => {
-    const isValid =
-      watch("versionValue") &&
-      files.length > 0 &&
-      Object.keys(errors).length === 0 &&
-      !fileUploadLoader;
-    setIsFormValid(isValid);
-  }, [watch, errors, files, fileUploadLoader]);
+const versionValue = watch("versionValue");
+
+useEffect(() => {
+  const isValid =
+    versionValue &&
+    files.length > 0 &&
+    Object.keys(errors).length === 0 &&
+    !fileUploadLoader;
+
+  setIsFormValid(!!isValid);
+}, [versionValue, files, errors, fileUploadLoader]);
 
   /**
    * Set data source ID when dialog opens
@@ -514,6 +517,13 @@ const ImportFile: React.FC<ImportFileProps> = ({
       setValue("dataSourceId", dataSourceId);
     }
   }, [open, dataSourceId, setValue]);
+
+  // Force refetch attributes when modal reopens
+  useEffect(() => {
+    if (open && dataSourceId) {
+      setRefetchTrigger((prev) => prev + 1);
+    }
+  }, [open]);
 
   /**
    * Reset form state when dialog closes
