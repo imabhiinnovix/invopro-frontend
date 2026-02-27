@@ -82,6 +82,7 @@ import EditOutlined from "@mui/icons-material/EditOutlined";
 import AddIcon from "@mui/icons-material/Add";
 import FullscreenIcon from "@mui/icons-material/Fullscreen";
 import CloseIcon from "@mui/icons-material/Close";
+import BarChartIcon from "@mui/icons-material/BarChart";
 import ImageIcon from "@mui/icons-material/Image";
 import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
 import DownloadIcon from "@mui/icons-material/Download";
@@ -479,6 +480,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
   isNaturalLangauage,
   dashboardFilters,
   onRegisterChartPreview,
+  onAddWidget,
 }) => {
   const dispatch = useAppDispatch();
   const theme = useTheme();
@@ -1780,6 +1782,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
     "#333333", // Neutral Dark Gray
     "#004B87", // SABIC Blue
   ];
+  const SABIC_COLORS_NUMBER = ["#939598", "#FFCD00", "#009FDF"];
   function resolveGroupField(groupBy: string[], chart: any): string {
     if (!groupBy || groupBy.length === 0) return "";
     const groupFieldKey = groupBy[0];
@@ -3191,10 +3194,10 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
           scales: {
             y: {
               title: {
-                color: "black",
+                color: "#34495e",
                 display: true,
                 text: yLabel,
-                font: { size: 14, weight: "bold" },
+                font: { size: 14, weight: "500" },
               },
               display: widgetTheme?.scales?.y?.display ?? true,
               beginAtZero: widgetTheme?.scales?.y?.beginAtZero ?? true,
@@ -3213,10 +3216,10 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
             },
             x: {
               title: {
-                color: "black",
+                color: "#34495e",
                 display: true,
                 text: xLabel,
-                font: { size: 14, weight: "bold" },
+                font: { size: 14, weight: "500" },
               },
               display: widgetTheme?.scales?.x?.display ?? true,
               grid: {
@@ -3249,9 +3252,9 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
               title: {
                 display: true,
                 text: xLabel,
-                color: "black",
+                color: "#34495e",
 
-                font: { size: 14, weight: "bold" as const },
+                font: { size: 14, weight: "500" as const },
               },
               display: widgetTheme?.scales?.x?.display ?? true,
               beginAtZero: widgetTheme?.scales?.y?.beginAtZero ?? true,
@@ -3273,10 +3276,8 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
               title: {
                 display: true,
                 text: yLabel,
-                color:
-                  widgetTheme?.scales?.y?.ticks?.color ||
-                  theme.palette.text.primary,
-                font: { size: 14, weight: "bold" },
+                color: "#34495e",
+                font: { size: 14, weight: "500" },
               },
               display: widgetTheme?.scales?.y?.display ?? true,
               grid: {
@@ -3311,10 +3312,10 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
           scales: {
             x: {
               title: {
-                color: "black",
+                color: "#34495e",
                 display: true,
                 text: xLabel,
-                font: { size: 14, weight: "bold" },
+                font: { size: 14, weight: "500" },
               },
               display: widgetTheme?.scales?.x?.display ?? true,
               grid: {
@@ -3333,10 +3334,10 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
             },
             y: {
               title: {
-                color: "black",
+                color: "#34495e",
                 display: true,
                 text: yLabel,
-                font: { size: 14, weight: "bold" },
+                font: { size: 14, weight: "500" },
               },
               display: widgetTheme?.scales?.y?.display ?? true,
               beginAtZero: widgetTheme?.scales?.y?.beginAtZero ?? true,
@@ -3370,10 +3371,10 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
               },
               stacked: true,
               title: {
-                color: "black",
+                color: "#34495e",
                 display: true,
                 text: yLabel,
-                font: { size: 14, weight: "bold" },
+                font: { size: 14, weight: "500" },
               },
               ticks: {
                 padding: widgetTheme?.scales?.y?.ticks?.padding ?? 8,
@@ -3388,10 +3389,10 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
                 drawOnChartArea: false,
               },
               title: {
-                color: "black",
+                color: "#34495e",
                 display: true,
-                text: `Total ${yLabel}`, // Line axis label - differentiate from bar
-                font: { size: 14, weight: "bold" },
+                text: `Total ${yLabel}`,
+                font: { size: 14, weight: "500" },
               },
               ticks: {
                 padding: widgetTheme?.scales?.y?.ticks?.padding ?? 8,
@@ -3399,10 +3400,10 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
             },
             x: {
               title: {
-                color: widgetTheme?.scales?.x?.ticks?.color ?? "grey",
+                color: "#34495e",
                 display: true,
                 text: xLabel,
-                font: { size: 14, weight: "bold" },
+                font: { size: 14, weight: "500" },
               },
               display: widgetTheme?.scales?.x?.display ?? true,
               grid: {
@@ -3432,8 +3433,8 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
               title: {
                 display: true,
                 text: xLabel,
-                color: "black",
-                font: { size: 14, weight: "bold" },
+                color: "#34495e",
+                font: { size: 14, weight: "500" },
               },
               display: widgetTheme?.scales?.x?.display ?? true,
               grid: {
@@ -3456,8 +3457,8 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
               title: {
                 display: true,
                 text: yLabel,
-                color: "black",
-                font: { size: 14, weight: "bold" },
+                color: "#34495e",
+                font: { size: 14, weight: "500" },
               },
               grid: {
                 display: true,
@@ -3480,10 +3481,8 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
               title: {
                 display: true,
                 text: yLabel,
-                color:
-                  widgetTheme?.scales?.y?.ticks?.color ||
-                  theme.palette.text.primary,
-                font: { size: 14, weight: "bold" },
+                color: "#34495e",
+                font: { size: 14, weight: "500" },
               },
               grid: {
                 drawOnChartArea: false,
@@ -4018,11 +4017,98 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
           </Typography>
         </ErrorContainer>
       ) : showEmpty ? (
-        <EmptyContainer>
-          <Typography color="text.secondary" variant="h6">
-            No charts available
-          </Typography>
-        </EmptyContainer>
+        isAddChartModalOpen ? (
+          <Box sx={{ p: 2 }}>
+            <Box
+              sx={{
+                border: `2px dashed ${theme.palette.primary.main}`,
+                borderRadius: "12px",
+                overflow: "hidden",
+              }}
+            >
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  px: 2,
+                  py: 1.5,
+                  borderBottom: `1px solid ${theme.palette.divider}`,
+                }}
+              >
+                <Typography
+                  variant="subtitle1"
+                  sx={{
+                    fontWeight: 500,
+                    fontSize: "0.95rem",
+                    color: STYLE_GUIDE.COLORS.black,
+                  }}
+                >
+                  New Widget
+                </Typography> 
+              </Box>
+              <Box
+                sx={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  py: 8,
+                  backgroundColor: "#fafafa",
+                }}
+              >
+                <BarChartIcon
+                  sx={{
+                    fontSize: 48,
+                    color: theme.palette.primary.main,
+                    opacity: 0.7,
+                    mb: 1.5,
+                  }}
+                />
+                <Typography
+                  variant="body1"
+                  sx={{
+                    color: STYLE_GUIDE.COLORS.textSecondary,
+                    fontSize: "0.9rem",
+                  }}
+                >
+                  Configure Your Bar Chart
+                </Typography>
+              </Box>
+            </Box>
+          </Box>
+        ) : (
+          <EmptyContainer>
+            <Typography
+              variant="h6"
+              sx={{
+                color: STYLE_GUIDE.COLORS.black,
+                fontSize: "1.125rem",
+                marginBottom: 1,
+              }}
+            >
+              Your dashboard is empty
+            </Typography>
+            <Typography
+              variant="body1"
+              sx={{
+                color: STYLE_GUIDE.COLORS.textSecondary,
+                marginBottom: 3,
+              }}
+            >
+              Start by adding widgets to visualize your data.
+            </Typography>
+            {onAddWidget && (
+              <StyledButton
+                variant="primary"
+                icon={<AddIcon />}
+                onClick={onAddWidget}
+              >
+                Add Your First Widget
+              </StyledButton>
+            )}
+          </EmptyContainer>
+        )
       ) : (
       <>
       <Grid
@@ -4122,7 +4208,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
                     >
                       <NumberCard
                         sx={{ ...getCardSx() }}
-                        backgroundColor="#ffffff"
+                        backgroundColor={SABIC_COLORS_NUMBER[index % SABIC_COLORS_NUMBER.length]}
                         data-widget-type="number"
                       >
                         <CardContent>
@@ -4483,7 +4569,22 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
                       }}
                     >
                       <ChartTitle>
-                      <ChartTitleText>{chart.name}</ChartTitleText>
+                        <Box>
+                          <ChartTitleText>{chart.name}</ChartTitleText>
+                          <Box
+                            sx={{
+                              fontSize: "9px",
+                              fontWeight: "normal",
+                              color: "text.secondary",
+                              whiteSpace: "nowrap",
+                            }}
+                          >
+                            Last Updated on:{" "}
+                            {chart?.widgetKind === "image"
+                              ? formatDate(chart?.imageLastUpdatedAt) || "-"
+                              : formatDate(dataSourceLastUpdated[chart.dataSourceId?._id]) || "-"}
+                          </Box>
+                        </Box>
 
                       {/* Right Side Container */}
                       <Box
@@ -4494,21 +4595,6 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
                           ml: "auto", // pushes this block to right
                         }}
                       >
-                        {/* Last Updated ABOVE icons */}
-                        <Box
-                          sx={{
-                            fontSize: "11px",
-                            color: "text.secondary",
-                            mb: 0.2,
-                            whiteSpace: "nowrap",
-                          }}
-                        >
-                          Last Updated on:{" "}
-                          {chart?.widgetKind === "image"
-                            ? formatDate(chart?.imageLastUpdatedAt) || "-"
-                            : formatDate(dataSourceLastUpdated[chart.dataSourceId?._id]) || "-"}
-                        </Box>
-
                         {/* Icons row */}
                         <Box sx={{ display: "flex", gap: 1 }}>
                           {chart.widgetKind !== "image" && (

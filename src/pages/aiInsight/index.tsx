@@ -1,6 +1,5 @@
 import React, { useRef, useEffect } from "react";
-import { Box, TextField, IconButton, Typography, Stack } from "@mui/material";
-import PersonIcon from "@mui/icons-material/Person";
+import { Stack } from "@mui/material";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
@@ -11,6 +10,7 @@ import { useUnifiedTheme } from "../../hooks/useUnifiedTheme";
 import { useComponentTypography } from "../../hooks/useComponentTypography";
 import { AI_INSIGHT_SESSION_ID, AI_INSIGHT_URL } from "../../utils/constants";
 import { getAuthToken } from "../../utils/handleLocalStorage";
+import { PageHeader } from "../../components/common";
 
 const validationSchema = yup.object().shape({
   query: yup.string().required("Please enter your question"),
@@ -33,9 +33,7 @@ function extractHtmlFromApiData(data: any): string {
 
 const AIInsightPage: React.FC = () => {
   const theme = useUnifiedTheme();
-  const { getHeadingSx } = useComponentTypography();
 
-  const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const [qaPairs, setQAPairs] = React.useState<QAPair[]>([]);
 
@@ -111,21 +109,10 @@ const AIInsightPage: React.FC = () => {
 
   return (
     <Stack height="100%" width="100%">
-      <Stack
-        direction="column"
-        sx={{
-          // borderBottom: 1,
-          borderColor: "divider",
-          p: 2,
-          backgroundColor: "#f9f9f9",
-          borderRadius: 1,
-        }}
-      >
-        <Typography variant="h6">AI Insights</Typography>
-        <Typography variant="body2">
-          Ask questions about your data and get AI-powered insights
-        </Typography>
-      </Stack>
+      <PageHeader
+        title="AI Insights"
+        subtext="Ask questions about your data and get AI-powered insights"
+      />
       {
       // window.location.hostname === "app.reportivix.com" ? (
       //   <Box

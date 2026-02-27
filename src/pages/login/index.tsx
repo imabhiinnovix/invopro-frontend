@@ -213,7 +213,7 @@ function Login() {
             fullWidth
             size="small"
             name="email"
-            autoComplete="off"
+            autoComplete="username"
             label="Email address"
             placeholder="example@gmail.com"
             required
@@ -226,7 +226,7 @@ function Login() {
             {...register("password")}
             fullWidth
             size="small"
-            autoComplete="new-password"
+            autoComplete="current-password"
             label="Password"
             placeholder="@Demo1234"
             required

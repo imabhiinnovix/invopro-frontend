@@ -1029,7 +1029,7 @@ import DownloadForOfflineIcon from "@mui/icons-material/DownloadForOffline";
 import { useUnifiedTheme } from "../../../hooks/useUnifiedTheme";
 import { useComponentTypography } from "../../../hooks/useComponentTypography";
 import CommonTable from "../../common/table";
-import { ActionIconButton } from "../../common";
+import { ActionIconButton, StatusChip } from "../../common";
 import CSVDownloadIcon from "../../../assets/csv-download.png";
 import { useNavigate } from "react-router-dom";
 import { FileDownloadOutlined, SimCardDownloadOutlined, VisibilityOutlined } from "@mui/icons-material";
@@ -1339,29 +1339,7 @@ const ReportRequestTable: React.FC<AttributeOptionTableProps> = ({
       sortable: true,
       renderCell: (row: Record<string, unknown>) => {
         const reportRow = row as unknown as ReportRequestResponse;
-        const backgroundColor =
-          reportRow.status === "completed"
-            ? theme.palette.success.main
-            : reportRow.status === "processing"
-              ? theme.palette.warning.main
-              : reportRow.status === "failed" || reportRow.status === "error"
-                ? theme.palette.error.main
-                : theme.palette.text.primary;
-        return (
-          <Typography
-            sx={{
-              fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.xs,
-              backgroundColor,
-              color: "#ffffff",
-              borderRadius: "9999px",
-              textAlign: "center",
-              p: "1px 6px",
-              display: "inline-block",
-            }}
-          >
-            {reportRow.status || "-"}
-          </Typography>
-        );
+        return <StatusChip status={reportRow.status || "unknown"} label={reportRow.status || "-"} />;
       },
     },
     {

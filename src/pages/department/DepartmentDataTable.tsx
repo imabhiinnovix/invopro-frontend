@@ -1,12 +1,12 @@
 import * as React from "react";
 import { useState, useEffect } from "react";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
-import { Box, Tooltip, Chip } from "@mui/material";
+import { Box, Tooltip } from "@mui/material";
 import EditOutlined from "@mui/icons-material/EditOutlined";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import useGet from "../../hooks/useGet";
 import { CustomPagination } from "../../components/common/pagination/customPagination";
-import { ActionIconButton } from "../../components/common";
+import { ActionIconButton, StatusChip } from "../../components/common";
 import SearchField from "../../components/common/SearchField";
 import { GET } from "../../services/apiRoutes";
 import { toast } from "react-toastify";
@@ -44,12 +44,7 @@ const columns: GridColDef[] = [
     resizable: true,
     sortable: true,
     renderCell: (params) => (
-      <Chip
-        label={params.value || "Unknown"}
-        size="small"
-        color={params.value === "active" ? "success" : "error"}
-        variant="outlined"
-      />
+      <StatusChip status={params.value === "active" ? "active" : "inactive"} label={params.value || "Unknown"} />
     ),
   },
   {

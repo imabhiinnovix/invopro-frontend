@@ -42,6 +42,7 @@ import Jobs from "./pages/jobs";
 import SourceList from "./pages/sourceList";
 import SourceAttributes from "./pages/sourceList/attributes";
 import BusinessUnit from "./pages/businessUnit";
+import CentralDataSources from "./pages/centralDataSources";
 import NotFound from "./pages/notFound";
 
 const AppRoutes = () => {
@@ -114,6 +115,7 @@ const AppRoutes = () => {
           <Route path="/designation" element={<Designation />} />
           <Route path="/department" element={<Department />} />
           <Route path="/business-unit" element={<BusinessUnit />} />
+          <Route path="/data-sources" element={<CentralDataSources />} />
           <Route path="/template" element={<Template />} />
           <Route path="/jobs" element={<Jobs />} />
           <Route

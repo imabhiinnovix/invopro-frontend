@@ -43,7 +43,7 @@ import { useEffect, useRef } from "react";
 import Users from "../users";
 import { AuthContext } from "../../context/AuthContext";
 import Autocomplete from "@mui/material/Autocomplete";
-import { PageHeader, PageCardLayout, StyledButton } from "../../components/common";
+import { PageHeader, PageCardLayout, StyledButton, StatusChip } from "../../components/common";
 import { CustomPagination } from "../../components/common/pagination/customPagination";
 import DialogContainer from "../../components/molecule/dialog";
 import { useSelector } from "react-redux";
@@ -839,6 +839,9 @@ export default function Organization() {
                     headerName: "Status",
                     width: 170,
                     sortable: true,
+                    renderCell: (params) => (
+                      <StatusChip status={params.value === "active" ? "active" : "inactive"} label={params.value || "Unknown"} />
+                    ),
                   },
                   {
                     field: "owner",

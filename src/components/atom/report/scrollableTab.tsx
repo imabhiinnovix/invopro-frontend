@@ -8,12 +8,18 @@ interface ScrollableTabNavigationProps {
   tabs: { tabName: string }[];
   activeTab: number;
   setActiveTab: (index: number) => void;
+  /** When true, tabs stretch equally to fill the container width */
+  fullWidth?: boolean;
+  /** When true, active tab uses theme primary color background instead of white */
+  themed?: boolean;
 }
 
 export default function ScrollableTabNavigation({
   tabs,
   activeTab,
   setActiveTab,
+  fullWidth = false,
+  themed = false,
 }: ScrollableTabNavigationProps) {
   const theme = useUnifiedTheme();
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -136,28 +142,38 @@ export default function ScrollableTabNavigation({
             className="tab-item"
             sx={{
               whiteSpace: "nowrap",
-              flexShrink: 0,
+              flexShrink: fullWidth ? 1 : 0,
+              flexGrow: fullWidth ? 1 : 0,
+              textAlign: fullWidth ? "center" : "left",
               padding: "8px 16px",
               cursor: "pointer",
               borderRadius: "6px",
               fontWeight: isActive(index) ? 600 : 400,
               fontSize: "14px",
               color: isActive(index)
-                ? theme.palette.text.primary
+                ? themed
+                  ? STYLE_GUIDE.COLORS.white
+                  : theme.palette.text.primary
                 : STYLE_GUIDE.COLORS.textSecondary,
               backgroundColor: isActive(index)
-                ? STYLE_GUIDE.COLORS.white
+                ? themed
+                  ? theme.palette.primary.main
+                  : STYLE_GUIDE.COLORS.white
                 : "transparent",
-              border: isActive(index)
+              border: isActive(index) && !themed
                 ? `1px solid ${STYLE_GUIDE.COLORS.inputFieldBorder}`
                 : "1px solid transparent",
               boxShadow: isActive(index)
-                ? "0 1px 3px rgba(0,0,0,0.08)"
+                ? themed
+                  ? `0 2px 6px ${theme.palette.primary.main}40`
+                  : "0 1px 3px rgba(0,0,0,0.08)"
                 : "none",
               transition: "all 0.2s ease",
               "&:hover": {
                 backgroundColor: isActive(index)
-                  ? STYLE_GUIDE.COLORS.white
+                  ? themed
+                    ? theme.palette.primary.main
+                    : STYLE_GUIDE.COLORS.white
                   : STYLE_GUIDE.COLORS.backgroundHover,
               },
             }}

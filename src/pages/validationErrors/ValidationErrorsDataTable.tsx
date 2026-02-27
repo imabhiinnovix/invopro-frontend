@@ -3,7 +3,6 @@ import {
   Box,
   Tooltip,
   Button,
-  Chip,
   Typography,
   Stack,
   Skeleton,
@@ -13,7 +12,7 @@ import SwipeUpIcon from "@mui/icons-material/SwipeUp";
 import RemoveCircleIcon from "@mui/icons-material/RemoveCircle";
 import FileDownloadDoneIcon from "@mui/icons-material/FileDownloadDone";
 import CommonTable, { CommonTableRef } from "../../components/common/table";
-import { StyledButton } from "../../components/common";
+import { StyledButton, StatusChip } from "../../components/common";
 import { useEffect, useRef, useMemo } from "react";
 import { formatDate } from "../../utils/utils";
 
@@ -177,25 +176,10 @@ export const ValidationErrorsDataTable: React.FC<
             );
           }
 
-          let chipColor: "default" | "success" | "primary" | "error" =
-            "default";
-          let chipVariant: "outlined" | "filled" = "outlined";
-
-          if (row.status === "resolved") {
-            chipColor = "success";
-          } else if (row.status === "open") {
-            chipColor = "primary";
-            chipVariant = "outlined"; // This will give us the blue border
-          } else {
-            chipColor = "error";
-          }
-
           return (
-            <Chip
+            <StatusChip
+              status={(row.status as string) || "unknown"}
               label={(row.status as string) || "Unknown"}
-              size="small"
-              color={chipColor}
-              variant={chipVariant}
             />
           );
         },

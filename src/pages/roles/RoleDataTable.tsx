@@ -9,7 +9,6 @@ import {
   Button,
   InputAdornment,
   Tooltip,
-  Chip,
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import AddIcon from "@mui/icons-material/Add";
@@ -21,7 +20,7 @@ import useGet from "../../hooks/useGet";
 import { CustomPagination } from "../../components/common/pagination/customPagination";
 import { GET } from "../../services/apiRoutes";
 import { toast } from "react-toastify";
-import { ActionIconButton } from "../../components/common";
+import { ActionIconButton, StatusChip } from "../../components/common";
 import SearchField from "../../components/common/SearchField";
 import { useSelector } from "react-redux";
 import { RootState } from "../../store";
@@ -61,12 +60,7 @@ const columns: GridColDef[] = [
     resizable: true,
     sortable: true,
     renderCell: (params) => (
-      <Chip
-        label={params.value || "Unknown"}
-        size="small"
-        color={params.value === "active" ? "success" : "error"}
-        variant="outlined"
-      />
+      <StatusChip status={params.value === "active" ? "active" : "inactive"} label={params.value || "Unknown"} />
     ),
   },
   {

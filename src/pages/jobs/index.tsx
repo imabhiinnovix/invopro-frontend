@@ -1,10 +1,9 @@
 import {
-  Chip,
   IconButton,
   Paper,
 } from "@mui/material";
 import { useEffect, useState } from "react";
-import { PageHeader, PageCardLayout } from "../../components/common";
+import { PageHeader, PageCardLayout, StatusChip } from "../../components/common";
 import CommonTable from "../../components/common/table";
 import useGet from "../../hooks/useGet";
 import { GET } from "../../services/apiRoutes";
@@ -37,19 +36,7 @@ const columns = [
     sortable: true,
     renderCell: (row: Record<string, unknown>) => {
       const status = row.status as string | undefined;
-      return (
-        <Chip
-          label={status || "-"}
-          sx={{ fontSize: "12px", height: "unset", py: 0.5}}
-          color={
-            status === "pending"
-              ? "warning"
-              : status === "completed"
-              ? "success"
-              : "error"
-          }
-        />
-      );
+      return <StatusChip status={status || "unknown"} label={status || "-"} />;
     },
   },
   {

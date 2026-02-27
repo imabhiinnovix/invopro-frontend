@@ -72,7 +72,7 @@ import FormatListBulletedIcon from "@mui/icons-material/FormatListBulleted";
 import { UseQueryResult } from "@tanstack/react-query";
 import { checkPermission, PermissionMap } from "../../../utils/utils";
 import { PermissionsMap } from "../../../utils/constants";
-import { AssessmentOutlined, AssignmentTurnedInOutlined, DashboardOutlined, NotificationsOutlined, SettingsOutlined } from "@mui/icons-material";
+import { AssessmentOutlined, AssignmentTurnedInOutlined, DashboardOutlined, NotificationsOutlined, SettingsOutlined, StorageOutlined } from "@mui/icons-material";
 import innovixLogo from "../../../assets/innovix-logo.png";
 
 interface ErrorResponse {
@@ -441,7 +441,7 @@ export default function SideNav() {
   };
 
   const isRouteActive = (route: string) => {
-    return location.pathname.startsWith(route);
+    return location.pathname === route || location.pathname.startsWith(route + "/");
   };
 
   const truncateText = (text: string, maxLength: number) => {
@@ -1081,7 +1081,7 @@ function MainListItem({
   const themeColor = useThemeColor();
   const location = useLocation();
   const isRouteActive = (route: string) => {
-    return location.pathname.startsWith(route);
+    return location.pathname === route || location.pathname.startsWith(route + "/");
   };
 
   let spacing = isMainItem ? STYLE_GUIDE.SPACING.s3 : STYLE_GUIDE.SPACING.s7;
@@ -1281,7 +1281,7 @@ const createIcon = (
     <IconComponent
       sx={{
         fontSize: "20px",
-        color: location.pathname.startsWith(route)
+        color: (location.pathname === route || location.pathname.startsWith(route + "/"))
           ? themeColor
           : STYLE_GUIDE.COLORS.textSecondary,
       }}
@@ -1420,6 +1420,16 @@ function getNavItems(
         permissions,
         PermissionsMap.CUSTOM_REPORT,
         "list_requests"
+      ),
+    },
+    {
+      name: "Data Sources",
+      icon: createIcon(StorageOutlined, "/data-sources", theme, location, themeColor),
+      route: "/data-sources",
+      shouldShow: checkPermission(
+        permissions,
+        PermissionsMap.DATA_SOURCE,
+        "list"
       ),
     },
     {

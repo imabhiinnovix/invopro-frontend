@@ -36,9 +36,6 @@ export default function Entity() {
   return (
     <Box
       id="entity-list-view"
-      sx={{
-        p: STYLE_GUIDE.SPACING.s2,
-      }}
     >
       <PageHeader
         title="Entities"

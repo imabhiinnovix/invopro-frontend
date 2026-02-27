@@ -264,22 +264,16 @@ export const createDynamicTheme = (typographyOptions: DynamicThemeOptions = {}):
       MuiInputLabel: {
         styleOverrides: {
           root: (opts) => ({
-            fontSize: '16px',
+            fontSize: '14px',
             [opts.theme.breakpoints.up('md')]: {
               fontSize: '14px',
             },
           }),
           outlined: {
             top: 0,
-            transform: 'translate(14px, 16px) scale(1)',
+            transform: 'translate(14px, 9px) scale(1)',
             '&.MuiInputLabel-shrink': {
-              transform: 'translate(14px, -9px) scale(0.75)',
-            },
-            '&.MuiInputLabel-sizeSmall': {
-              transform: 'translate(14px, 9px) scale(1)',
-              '&.MuiInputLabel-shrink': {
-                transform: 'translate(14px, -6px) scale(0.75)',
-              },
+              transform: 'translate(14px, -6px) scale(0.75)',
             },
           },
         },

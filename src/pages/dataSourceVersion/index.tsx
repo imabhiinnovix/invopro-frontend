@@ -26,9 +26,6 @@ export default function DataSourceVersion() {
   return (
     <Box
       id="data-source-version-list-view"
-      sx={{
-        p: STYLE_GUIDE.SPACING.s2,
-      }}
     >
       <PageHeader
         title="Data Upload"

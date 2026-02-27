@@ -23,7 +23,7 @@ import DeleteOutlined from "@mui/icons-material/DeleteOutlined";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import { STYLE_GUIDE } from "../../styles";
-import { ActionIconButton } from "../../components/common";
+import { ActionIconButton, StatusChip } from "../../components/common";
 import { GET, POST, PUT, DELETE } from "../../services/apiRoutes";
 import useGet from "../../hooks/useGet";
 import usePost from "../../hooks/usePost";
@@ -187,12 +187,7 @@ export default function Users({
         resizable: true,
         sortable: true,
         renderCell: (params: GridRenderCellParams) => (
-          <Chip
-            label={params.value as string}
-            size="small"
-            color={(params.value as string) === "active" ? "success" : "error"}
-            variant="outlined"
-          />
+          <StatusChip status={(params.value as string) === "active" ? "active" : "inactive"} label={params.value as string} />
         ),
       },
       {
@@ -203,12 +198,7 @@ export default function Users({
         resizable: true,
         sortable: true,
         renderCell: (params: GridRenderCellParams) => (
-          <Chip
-            label={(params.value as boolean) ? "Yes" : "No"}
-            size="small"
-            color={(params.value as boolean) ? "success" : "warning"}
-            variant="outlined"
-          />
+          <StatusChip status={(params.value as boolean) ? "success" : "warning"} label={(params.value as boolean) ? "Yes" : "No"} />
         ),
       },
       {

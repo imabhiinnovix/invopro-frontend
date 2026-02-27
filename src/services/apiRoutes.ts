@@ -60,6 +60,7 @@ export const POST = {
   CREATE_ROLE_DEFAULT_DASHBOARD: "/common/role-default-dashboard/create",
 
   CREATE_BUSINESS_UNIT: "/common/business-unit/create",
+  CENTRAL_FILES_UPLOAD: "/common/central-files/upload",
 };
 
 export const PUT = {
@@ -99,6 +100,7 @@ export const DELETE = {
   DELETE_TEMPLATE: "/notivix/notification-setting/template/delete",
 
   DELETE_BUSINESS_UNIT: "/common/business-unit/delete",
+  DELETE_CENTRAL_FILE: "/common/central-files/delete",
 };
 
 export const GET = {
@@ -166,4 +168,8 @@ export const GET = {
   ROLE_DEFAULT_DASHBOARD_LIST: "/common/role-default-dashboard/list",
 
   BUSINESS_UNIT_LIST: "/common/business-unit/list",
+  CENTRAL_FILES_LIST: "/common/central-files/list",
+  CENTRAL_FILES_FOLDER_SUMMARY: "/common/central-files/folder-summary",
+  CENTRAL_FILES_DOWNLOAD: "/common/central-files/download",
+  CENTRAL_FILES_VALIDATED_ROWS: "/common/central-files/validated-rows",
 };

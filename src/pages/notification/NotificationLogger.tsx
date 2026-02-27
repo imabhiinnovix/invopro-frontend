@@ -11,7 +11,6 @@ import {
   InputAdornment,
   Modal,
   Tooltip,
-  Chip,
   Grid,
   Paper,
   Divider,
@@ -27,7 +26,7 @@ import { useComponentTypography } from "../../hooks";
 import { formatDate, formatDateUTC } from "../../utils/utils";
 import parse from "html-react-parser";
 import usePost from "../../hooks/usePost";
-import { ActionIconButton, PageHeader, PageCardLayout, StyledButton } from "../../components/common";
+import { ActionIconButton, PageHeader, PageCardLayout, StyledButton, StatusChip } from "../../components/common";
 import SearchField from "../../components/common/SearchField";
 import DialogContainer from "../../components/molecule/dialog";
 import ConfirmDialog from "../report-settings/components/ConfirmDialog";
@@ -122,24 +121,7 @@ const columns: GridColDef[] = [
     renderCell: (params) => {
       const value = (params.value || "Unknown").toLowerCase();
       const label = value.charAt(0).toUpperCase() + value.slice(1);
-
-      let color: "success" | "warning" | "error" = "error";
-
-      if (value === "sent") {
-        color = "success";
-      } else if (
-        value === "pending" ||
-        value === "processing" ||
-        value === "acknowledged"
-      ) {
-        color = "warning";
-      } else if (value === "cancelled" || value === "failed") {
-        color = "error";
-      }
-
-      return (
-        <Chip label={label} size="small" color={color} variant="outlined" />
-      );
+      return <StatusChip status={value} label={label} />;
     },
   },
   {
@@ -565,17 +547,11 @@ export default function NotificationLogger() {
                     </Typography>
                   </Grid>
                   <Grid item xs={8}>
-                    <Chip
-                      label={selectedNotification.status || "Unknown"}
-                      size="small"
-                      color={
-                        selectedNotification.status === "sent"
-                          ? "success"
-                          : selectedNotification.status === "pending"
-                          ? "warning"
-                          : "error"
-                      }
-                      variant="outlined"
+                    <StatusChip
+                      status={selectedNotification.status || "unknown"}
+                      label={selectedNotification.status
+                        ? selectedNotification.status.charAt(0).toUpperCase() + selectedNotification.status.slice(1)
+                        : "Unknown"}
                     />
                   </Grid>
 

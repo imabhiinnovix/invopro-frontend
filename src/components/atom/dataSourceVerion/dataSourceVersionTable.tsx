@@ -318,7 +318,7 @@ import ErrorDialog from "./showError";
 import { STYLE_GUIDE } from "../../../styles";
 import { useComponentTypography } from "../../../hooks/useComponentTypography";
 import CommonTable from "../../common/table";
-import { PageCardLayout } from "../../common";
+import { PageCardLayout, StatusChip } from "../../common";
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
   [`&.${tableCellClasses.head}`]: {
@@ -644,9 +644,7 @@ const DataSourceVersionTable: React.FC<AttributeOptionTableProps> = ({
       sortable: true,
       renderCell: (row: Record<string, unknown>) => {
         return row.status ? (
-          <Typography variant="body2" color="text.secondary">
-            {row.status}
-          </Typography>
+          <StatusChip status={row.status as string} />
         ) : (
           "-"
         );

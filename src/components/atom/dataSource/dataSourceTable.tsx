@@ -13,7 +13,6 @@ import {
   Skeleton,
   Typography,
   tableCellClasses,
-  Chip,
 } from "@mui/material";
 import useGet from "../../../hooks/useGet";
 import { GET } from "../../../services/apiRoutes";
@@ -22,7 +21,7 @@ import CreateUpdateDataSource from "./createUpdateDataSource";
 import { STYLE_GUIDE } from "../../../styles";
 import { useComponentTypography } from "../../../hooks/useComponentTypography";
 import CommonTable from "../../common/table";
-import { ActionIconButton } from "../../common";
+import { ActionIconButton, StatusChip } from "../../common";
 import { formatDate } from "../../../utils/utils";
 import EditOutlined from "@mui/icons-material/EditOutlined";
 
@@ -283,9 +282,9 @@ const DataSourceTable: React.FC<AttributeOptionTableProps> = ({
       sortable: true,
       renderCell: (row: Record<string, unknown>) => {
         return row.isActive ? (
-          <Chip label="Active" color="success" />
+          <StatusChip status="active" />
         ) : (
-          <Chip label="Inactive" color="error" />
+          <StatusChip status="inactive" />
         );
       },
     },

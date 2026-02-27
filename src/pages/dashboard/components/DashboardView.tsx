@@ -3491,6 +3491,10 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               dashboardFilters={dashboardFilters}
               isDefaultNotivix={currentDashboard?.isDefaultNotivix || false}
               onRegisterChartPreview={setChartPreviewRenderer}
+              onAddWidget={() => {
+                setIsAddChartModalOpen(true);
+                setIsEditChartModalOpen(false);
+              }}
             />
           )}
         </Box>
@@ -3500,9 +3504,9 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             sx={{
               width: {
                 xs: "100%",
-                sm: "400px",
-                md: "450px",
-                lg: "500px",
+                sm: "300px",
+                md: "350px",
+                lg: "400px",
               },
               flexShrink: 0,
               display: "flex",

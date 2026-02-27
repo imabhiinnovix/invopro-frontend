@@ -13,5 +13,9 @@ export type { PageCardLayoutProps } from './PageCardLayout';
 // Action icon (View/Edit/Delete) - text color default, theme bg + white icon on hover
 export { ActionIconButton, default as ActionIconButtonDefault } from './ActionIconButton';
 
+// Status Chip
+export { default as StatusChip } from './StatusChip';
+export type { StatusChipProps } from './StatusChip';
+
 // Other Common Components
 export { default as SearchField } from './SearchField';

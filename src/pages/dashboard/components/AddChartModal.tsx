@@ -165,7 +165,7 @@ const ConfigurationPanel = styled(Box)(({ theme }) => ({
 }));
 
 const ConfigurationHeader = styled(Box)(({ theme }) => ({
-  padding: theme.spacing(2, 3),
+  padding: theme.spacing(1, 2),
   borderBottom: `1px solid ${theme.palette.divider}`,
   display: "flex",
   alignItems: "center",
@@ -175,7 +175,7 @@ const ConfigurationHeader = styled(Box)(({ theme }) => ({
 }));
 
 const ConfigurationContent = styled(Box)(({ theme }) => ({
-  padding: theme.spacing(3),
+  padding: theme.spacing(2),
   overflowY: "auto",
   flex: 1,
   display: "flex",
@@ -1872,7 +1872,9 @@ export const AddChartModal: React.FC<AddChartModalProps> = ({
         <ConfigurationHeader>
           <Typography
             variant="h6"
-            fontWeight={STYLE_GUIDE.TYPOGRAPHY.fontWeight.semiBold}
+            fontSize={STYLE_GUIDE.TYPOGRAPHY.fontSize.large}
+            fontWeight={STYLE_GUIDE.TYPOGRAPHY.fontWeight.medium}
+            color={STYLE_GUIDE.COLORS.black}
           >
             {initialData ? "Edit Chart" : "Add New Chart"}
           </Typography>

@@ -398,6 +398,7 @@ export interface ChartGridProps {
   dashboardFilters: any;
   isDefaultNotivix?: boolean;
   onRegisterChartPreview?: (render: (chart: ChartResponse | null) => React.ReactNode) => void;
+  onAddWidget?: () => void;
 }
 
 export interface ChartDataItem {

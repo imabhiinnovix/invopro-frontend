@@ -861,10 +861,10 @@ export const ChartRender: React.FC<ChartRenderProps> = ({
           scales: {
             y: {
               title: {
-                color: "black",
+                color: "#34495e",
                 display: true,
                 text: yLabel,
-                font: { size: 14, weight: "bold" as const },
+                font: { size: 14, weight: "500" as const },
               },
               display: widgetTheme?.scales?.y?.display ?? true,
               beginAtZero: widgetTheme?.scales?.y?.beginAtZero ?? true,
@@ -883,10 +883,10 @@ export const ChartRender: React.FC<ChartRenderProps> = ({
             },
             x: {
               title: {
-                color: "black",
+                color: "#34495e",
                 display: true,
                 text: xLabel,
-                font: { size: 14, weight: "bold" as const },
+                font: { size: 14, weight: "500" as const },
               },
               display: widgetTheme?.scales?.x?.display ?? true,
               grid: {
@@ -919,8 +919,8 @@ export const ChartRender: React.FC<ChartRenderProps> = ({
               title: {
                 display: true,
                 text: xLabel,
-                color: "black",
-                font: { size: 14, weight: "bold" as const },
+                color: "#34495e",
+                font: { size: 14, weight: "500" as const },
               },
               display: widgetTheme?.scales?.x?.display ?? true,
               beginAtZero: widgetTheme?.scales?.y?.beginAtZero ?? true,
@@ -940,7 +940,7 @@ export const ChartRender: React.FC<ChartRenderProps> = ({
                 display: true,
                 text: yLabel,
                 color: widgetTheme?.scales?.y?.ticks?.color || theme.palette.text.primary,
-                font: { size: 14, weight: "bold" as const },
+                font: { size: 14, weight: "500" as const },
               },
               display: widgetTheme?.scales?.y?.display ?? true,
               grid: {
@@ -972,10 +972,10 @@ export const ChartRender: React.FC<ChartRenderProps> = ({
           scales: {
             x: {
               title: {
-                color: "black",
+                color: "#34495e",
                 display: true,
                 text: xLabel,
-                font: { size: 14, weight: "bold" as const },
+                font: { size: 14, weight: "500" as const },
               },
               display: widgetTheme?.scales?.x?.display ?? true,
               grid: {
@@ -994,10 +994,10 @@ export const ChartRender: React.FC<ChartRenderProps> = ({
             },
             y: {
               title: {
-                color: "black",
+                color: "#34495e",
                 display: true,
                 text: yLabel,
-                font: { size: 14, weight: "bold" as const },
+                font: { size: 14, weight: "500" as const },
               },
               display: widgetTheme?.scales?.y?.display ?? true,
               beginAtZero: widgetTheme?.scales?.y?.beginAtZero ?? true,
@@ -1031,10 +1031,10 @@ export const ChartRender: React.FC<ChartRenderProps> = ({
               },
               stacked: true,
               title: {
-                color: "black",
+                color: "#34495e",
                 display: true,
                 text: yLabel,
-                font: { size: 14, weight: "bold" as const },
+                font: { size: 14, weight: "500" as const },
               },
               ticks: {
                 padding: widgetTheme?.scales?.y?.ticks?.padding ?? 8,
@@ -1049,10 +1049,10 @@ export const ChartRender: React.FC<ChartRenderProps> = ({
                 drawOnChartArea: false,
               },
               title: {
-                color: "black",
+                color: "#34495e",
                 display: true,
                 text: `Total ${yLabel}`,
-                font: { size: 14, weight: "bold" as const },
+                font: { size: 14, weight: "500" as const },
               },
               ticks: {
                 padding: widgetTheme?.scales?.y?.ticks?.padding ?? 8,
@@ -1063,7 +1063,7 @@ export const ChartRender: React.FC<ChartRenderProps> = ({
                 color: widgetTheme?.scales?.x?.ticks?.color ?? "grey",
                 display: true,
                 text: xLabel,
-                font: { size: 14, weight: "bold" as const },
+                font: { size: 14, weight: "500" as const },
               },
               display: widgetTheme?.scales?.x?.display ?? true,
               grid: {
@@ -1093,8 +1093,8 @@ export const ChartRender: React.FC<ChartRenderProps> = ({
               title: {
                 display: true,
                 text: xLabel,
-                color: "black",
-                font: { size: 14, weight: "bold" as const },
+                color: "#34495e",
+                font: { size: 14, weight: "500" as const },
               },
               display: widgetTheme?.scales?.x?.display ?? true,
               grid: {
@@ -1117,8 +1117,8 @@ export const ChartRender: React.FC<ChartRenderProps> = ({
               title: {
                 display: true,
                 text: yLabel,
-                color: "black",
-                font: { size: 14, weight: "bold" as const },
+                color: "#34495e",
+                font: { size: 14, weight: "500" as const },
               },
               grid: {
                 display: true,
@@ -1144,7 +1144,7 @@ export const ChartRender: React.FC<ChartRenderProps> = ({
                 color:
                   widgetTheme?.scales?.y?.ticks?.color ||
                   theme.palette.text.primary,
-                font: { size: 14, weight: "bold" as const },
+                font: { size: 14, weight: "500" as const },
               },
               grid: {
                 drawOnChartArea: false,

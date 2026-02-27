@@ -27,7 +27,7 @@ import { Attribute, EntityRequestPayload } from "./types";
 import { STYLE_GUIDE } from "../../../styles";
 import { useComponentTypography } from "../../../hooks/useComponentTypography";
 import CommonTable from "../../common/table";
-import { ActionIconButton } from "../../common";
+import { ActionIconButton, StatusChip } from "../../common";
 import { formatDate } from "../../../utils/utils";
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
@@ -280,7 +280,7 @@ const EntityTable: React.FC<EntityTableProps> = ({
       minWidth: 170,
       sortable: true,
       renderCell: (row: Record<string, unknown>) => {
-        return row.isActive ? "Active" : "Inactive";
+        return <StatusChip status={row.isActive ? "active" : "inactive"} />;
       },
     },
     {
