@@ -2,11 +2,8 @@ import { useContext, useState, useMemo } from "react";
 import { DataGrid, GridColDef, GridRenderCellParams } from "@mui/x-data-grid";
 import {
   Box,
-  Card,
-  CardContent,
   Typography,
   TextField,
-  Button,
   Tooltip,
   Chip,
   FormControl,
@@ -20,10 +17,11 @@ import {
 } from "@mui/material";
 import EditOutlined from "@mui/icons-material/EditOutlined";
 import DeleteOutlined from "@mui/icons-material/DeleteOutlined";
+import AddIcon from "@mui/icons-material/Add";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import { STYLE_GUIDE } from "../../styles";
-import { ActionIconButton, StatusChip } from "../../components/common";
+import { ActionIconButton, StatusChip, PageCardLayout } from "../../components/common";
 import { GET, POST, PUT, DELETE } from "../../services/apiRoutes";
 import useGet from "../../hooks/useGet";
 import usePost from "../../hooks/usePost";
@@ -778,95 +776,77 @@ export default function Users({
     !passwordError;
 
   return (
-    <Box
-      sx={{
-        p: STYLE_GUIDE.SPACING.s6,
-      }}
-    >
-      <Card
-        sx={{
-          borderRadius: STYLE_GUIDE.SPACING.s2,
-          overflow: "visible",
-        }}
-      >
-        <CardContent sx={{ p: STYLE_GUIDE.SPACING.s6 }}>
+    <Box>
+      <PageCardLayout>
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "flex-end",
+            alignItems: "center",
+            mb: STYLE_GUIDE.SPACING.s3,
+          }}
+        >
+          <StyledButton variant="primary" startIcon={<AddIcon />} onClick={handleAddUser} disabled={!shouldAllowUserCreate}>
+            Add User
+          </StyledButton>
+        </Box>
+
+        {usersQuery.isLoading ? (
           <Box
             sx={{
               display: "flex",
-              justifyContent: "flex-end",
+              justifyContent: "center",
               alignItems: "center",
-              mb: STYLE_GUIDE.SPACING.s3,
+              py: STYLE_GUIDE.SPACING.s8,
             }}
           >
-            <Button
-              variant="contained"
-              onClick={handleAddUser}
-              disabled={!shouldAllowUserCreate}
-              sx={{
-                borderRadius: STYLE_GUIDE.SPACING.s2,
-              }}
-            >
-              Add User
-            </Button>
+            <CircularProgress />
+            <Typography sx={{ ml: STYLE_GUIDE.SPACING.s3 }}>
+              Loading users...
+            </Typography>
           </Box>
-
-          {usersQuery.isLoading ? (
-            <Box
-              sx={{
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-                py: STYLE_GUIDE.SPACING.s8,
-              }}
-            >
-              <CircularProgress />
-              <Typography sx={{ ml: STYLE_GUIDE.SPACING.s3 }}>
-                Loading users...
-              </Typography>
-            </Box>
-          ) : usersQuery.error ? (
-            <Box sx={{ textAlign: "center", py: STYLE_GUIDE.SPACING.s6 }}>
-              <Typography color="error" sx={{ mb: STYLE_GUIDE.SPACING.s3 }}>
-                {usersQuery.error instanceof Error
-                  ? usersQuery.error.message
-                  : "Failed to fetch users"}
-              </Typography>
-            </Box>
-          ) : !transformedUsers || transformedUsers.length === 0 ? (
-            <Box sx={{ textAlign: "center", py: STYLE_GUIDE.SPACING.s8 }}>
-              <Typography variant="body1" color="text.secondary">
-                No users found.
-              </Typography>
-            </Box>
-          ) : (
-            <DataGrid
-              rows={transformedUsers}
-              columns={columns}
-              disableColumnMenu
-              disableVirtualization
-              sx={{
-                overflow: "visible",
-              }}
-              loading={usersQuery.isLoading}
-              paginationModel={paginationModel}
-              initialState={{ pagination: { paginationModel } }}
-              onPaginationModelChange={setPaginationModel}
-              pageSizeOptions={[10, 20, 50]}
-              paginationMode="server"
-              rowCount={usersQuery?.data?.totalCount}
-              slots={{
-                pagination: () => (
-                  <CustomPagination
-                    paginationModel={paginationModel}
-                    setPaginationModel={setPaginationModel}
-                    rowCount={usersQuery?.data?.totalCount || 0}
-                  />
-                ),
-              }}
-            />
-          )}
-        </CardContent>
-      </Card>
+        ) : usersQuery.error ? (
+          <Box sx={{ textAlign: "center", py: STYLE_GUIDE.SPACING.s6 }}>
+            <Typography color="error" sx={{ mb: STYLE_GUIDE.SPACING.s3 }}>
+              {usersQuery.error instanceof Error
+                ? usersQuery.error.message
+                : "Failed to fetch users"}
+            </Typography>
+          </Box>
+        ) : !transformedUsers || transformedUsers.length === 0 ? (
+          <Box sx={{ textAlign: "center", py: STYLE_GUIDE.SPACING.s8 }}>
+            <Typography variant="body1" color="text.secondary">
+              No users found.
+            </Typography>
+          </Box>
+        ) : (
+          <DataGrid
+            rows={transformedUsers}
+            columns={columns}
+            disableColumnMenu
+            disableVirtualization
+            sx={{
+              overflow: "visible",
+            }}
+            loading={usersQuery.isLoading}
+            paginationModel={paginationModel}
+            initialState={{ pagination: { paginationModel } }}
+            onPaginationModelChange={setPaginationModel}
+            pageSizeOptions={[10, 20, 50]}
+            paginationMode="server"
+            rowCount={usersQuery?.data?.totalCount}
+            slots={{
+              pagination: () => (
+                <CustomPagination
+                  paginationModel={paginationModel}
+                  setPaginationModel={setPaginationModel}
+                  rowCount={usersQuery?.data?.totalCount || 0}
+                />
+              ),
+            }}
+          />
+        )}
+      </PageCardLayout>
 
       <DialogContainer
         open={openModal}
