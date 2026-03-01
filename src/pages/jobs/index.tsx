@@ -1,9 +1,9 @@
 import {
-  IconButton,
   Paper,
+  Tooltip,
 } from "@mui/material";
 import { useEffect, useState } from "react";
-import { PageHeader, PageCardLayout, StatusChip } from "../../components/common";
+import { PageHeader, PageCardLayout, StatusChip, ActionIconButton } from "../../components/common";
 import CommonTable from "../../components/common/table";
 import useGet from "../../hooks/useGet";
 import { GET } from "../../services/apiRoutes";
@@ -11,7 +11,7 @@ import useFileDownload from "../../hooks/useFiledownload";
 import { formatDate } from "../../utils/utils";
 import { DOWNLOAD_REQUEST_POLLING_INTERVAL } from "../../utils/constants";
 import { CustomPagination } from "../../components/common/pagination/customPagination";
-import { CloudDownloadOutlined } from "@mui/icons-material";
+import FileDownloadOutlinedIcon from "@mui/icons-material/FileDownloadOutlined";
 
 const columns = [
   {
@@ -51,9 +51,11 @@ const columns = [
         | undefined;
       if (status === "completed" && downloadRequestFile) {
         return (
-          <IconButton color="primary" onClick={downloadRequestFile}>
-            <CloudDownloadOutlined sx={{ fontSize: "16px" }} />
-          </IconButton>
+          <Tooltip title="Download File" arrow>
+            <ActionIconButton onClick={downloadRequestFile}>
+              <FileDownloadOutlinedIcon />
+            </ActionIconButton>
+          </Tooltip>
         );
       }
       return null;

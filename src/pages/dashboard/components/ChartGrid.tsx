@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef, useMemo } from "react";
+import React, { useEffect, useState, useRef, useMemo, useContext } from "react";
 import { useAppDispatch, useAppSelector } from "../../../storeHooks";
 import IosShareIcon from "@mui/icons-material/IosShare";
 import FilterListIcon from "@mui/icons-material/FilterList";
@@ -112,6 +112,7 @@ import { useNavigate } from "react-router-dom";
 import NotivixFiltersModal from "../../notivixDashboard/components/NotivixFiltersModal";
 import { DateObject } from "react-multi-date-picker";
 import logo from "../../../assets/logo.png";
+import { AuthContext } from "../../../context/AuthContext";
 import html2canvas from "html2canvas";
 import { DataSourceListPayload } from "../../../components/atom/sideNav/types";
 import useGet from "../../../hooks/useGet";
@@ -486,6 +487,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
   const theme = useTheme();
   const themeUnified = useUnifiedTheme();
   const { getTableSx, getCardSx } = useComponentTypography();
+  const { orgLogo } = useContext(AuthContext);
   const chartRefs = useRef<{ [key: string]: ChartJS | null }>({});
   const {
     charts,
@@ -678,7 +680,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
   };
 
   const allCharts = useMemo(
-    () => [...charts, ...temporaryCharts],
+    () => [...temporaryCharts, ...[...charts].reverse()],
     [charts, temporaryCharts],
   );
 
@@ -1037,12 +1039,28 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
       const margin = 10;
       const headerHeight = 25;
 
-      const addHeader = () => {
+      const addHeader = async () => {
         try {
           const logoWidth = 30;
           const logoHeight = 12;
 
-          pdf.addImage(logo, "PNG", margin, margin, logoWidth, logoHeight);
+          let headerLogo: string = logo;
+          if (orgLogo) {
+            try {
+              const response = await fetch(orgLogo);
+              const blob = await response.blob();
+              headerLogo = await new Promise<string>((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onloadend = () => resolve(reader.result as string);
+                reader.onerror = reject;
+                reader.readAsDataURL(blob);
+              });
+            } catch {
+              headerLogo = logo;
+            }
+          }
+
+          pdf.addImage(headerLogo, "PNG", margin, margin, logoWidth, logoHeight);
 
           pdf.setFontSize(16);
           pdf.setFont("helvetica", "bold");
@@ -1070,7 +1088,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
         }
       };
 
-      addHeader();
+      await addHeader();
 
       if (selectedChart.widgetKind === "image" && selectedChart.image) {
         try {
@@ -4582,7 +4600,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
                             Last Updated on:{" "}
                             {chart?.widgetKind === "image"
                               ? formatDate(chart?.imageLastUpdatedAt) || "-"
-                              : formatDate(dataSourceLastUpdated[chart.dataSourceId?._id]) || "-"}
+                              : formatDate(chart?.updatedAt) || "-"}
                           </Box>
                         </Box>
 
