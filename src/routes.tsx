@@ -25,6 +25,7 @@ import Users from "./pages/users";
 import Roles from "./pages/roles";
 import RolePage from "./pages/roles/RolePage";
 import Organization from "./pages/organization/organization";
+import Vendor from "./pages/vendor/vendor";
 import Permissions from "./pages/permissions";
 import NotivixDashboard from "./pages/notivixDashboard";
 import AddNotificationTypes from "./pages/notification/AddNotificationTypes";
@@ -44,6 +45,7 @@ import SourceAttributes from "./pages/sourceList/attributes";
 import BusinessUnit from "./pages/businessUnit";
 import CentralDataSources from "./pages/centralDataSources";
 import NotFound from "./pages/notFound";
+import EngagementLetter from "./pages/engagementLetter";
 
 const AppRoutes = () => {
   const token = getAuthToken();
@@ -107,6 +109,11 @@ const AppRoutes = () => {
           <Route path="/roles/view/:id" element={<RolePage mode="view" />} />
 
           <Route path="/organization" element={<Organization />} />
+
+          <Route path="/vendor" element={<Vendor />} />
+
+           <Route path="/engagement-letter" element={<EngagementLetter />} />
+
           <Route path="/data-source-new/:id" element={<NotivixDataSource />} />
           <Route path="/validation-errors/:id" element={<ValidationErrors />} />
           <Route path="/profile" element={<ProfilePage />} />

@@ -1607,6 +1607,16 @@ function getSystemSettingsItems(
             ),
           },
           {
+            name: "Vendor",
+            icon: createIcon(BusinessIcon, "/vendor", theme, location, themeColor),
+            route: "/vendor",
+            shouldShow: checkPermission(
+              permissions,
+              PermissionsMap.VENDOR,
+              "list"
+            ),
+          },
+          {
             name: "Permission",
             icon: createIcon(KeyIcon, "/permissions", theme, location, themeColor),
             route: "/permissions",
@@ -1653,6 +1663,22 @@ function getSystemSettingsItems(
               checkPermission(
                 permissions,
                 PermissionsMap.DESIGNATION,
+                "update"
+              ),
+          },
+          {
+            name: "Engagement Letter",
+            icon: createIcon(BusinessCenterIcon, "/engagement-letter", theme, location, themeColor),
+            route: "/engagement-letter",
+            shouldShow:
+              checkPermission(
+                permissions,
+                PermissionsMap.ENGAGEMENTLETTER,
+                "list"
+              ) &&
+              checkPermission(
+                permissions,
+                PermissionsMap.ENGAGEMENTLETTER,
                 "update"
               ),
           },

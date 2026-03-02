@@ -61,6 +61,8 @@ export const POST = {
 
   CREATE_BUSINESS_UNIT: "/common/business-unit/create",
   CENTRAL_FILES_UPLOAD: "/common/central-files/upload",
+  Create_Vendor: "/invoicivix-vendor/vendor/create",
+  Create_Engagement_Letter: "/invoicivix-vendor/engagement-letter/create",
 };
 
 export const PUT = {
@@ -85,6 +87,9 @@ export const PUT = {
   UPDATE_ROLE_DEFAULT_DASHBOARD: "/common/role-default-dashboard/update",
 
   UPDATE_BUSINESS_UNIT: "/common/business-unit/update",
+
+  UPDATE_VENDOR: "/invoicivix-vendor/vendor/update/",
+  UPDATE_ENGAGEMENT_LETTER: "/invoicivix-vendor/engagement-letter/update/",
 };
 
 export const DELETE = {
@@ -101,6 +106,9 @@ export const DELETE = {
 
   DELETE_BUSINESS_UNIT: "/common/business-unit/delete",
   DELETE_CENTRAL_FILE: "/common/central-files/delete",
+
+  Delete_Vendor: "/invoicivix-vendor/vendor/delete",
+  Delete_Engagement_Letter: "/invoicivix-vendor/engagement-letter/delete",
 };
 
 export const GET = {
@@ -172,4 +180,6 @@ export const GET = {
   CENTRAL_FILES_FOLDER_SUMMARY: "/common/central-files/folder-summary",
   CENTRAL_FILES_DOWNLOAD: "/common/central-files/download",
   CENTRAL_FILES_VALIDATED_ROWS: "/common/central-files/validated-rows",
+  Vendor_List: "/invoicivix-vendor/vendor/list",
+  Engagement_Letter_List: "/invoicivix-vendor/engagement-letter/list",
 };
