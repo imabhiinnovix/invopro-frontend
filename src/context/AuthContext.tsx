@@ -107,6 +107,7 @@ export interface AuthContextType {
   refreshUserDetails: () => void;
   isSuperUser: () => boolean;
   getOrganizationIdForUsers: () => string | null;
+  orgLogo: string | null;
 }
 
 const defaultAuthContext: AuthContextType = {
@@ -119,6 +120,7 @@ const defaultAuthContext: AuthContextType = {
   refreshUserDetails: () => {},
   isSuperUser: () => false,
   getOrganizationIdForUsers: () => null,
+  orgLogo: null,
 };
 
 export const AuthContext = createContext<AuthContextType>(defaultAuthContext);
@@ -128,6 +130,7 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
   const [userDetails, setUserDetails] = useState<UserResponse | undefined>(
     undefined,
   );
+  const [orgLogo, setOrgLogo] = useState<string | null>(null);
   const dispatch = useDispatch<AppDispatch>();
   const { currentUser } = useSelector(
     (state: RootState) => state.userPermission,
@@ -138,6 +141,20 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
     GET.USER_DETAILS,
     !!isAuthUser,
   );
+
+  const orgId = userDetailsAPI.data?.data?.organizationId?._id;
+
+  const orgDetailsAPI = useGet<{ success: boolean; data: { logo?: string } }>(
+    ["orgDetails", orgId || ""],
+    `/common/organization/${orgId}`,
+    !!orgId && isAuthUser,
+  );
+
+  useEffect(() => {
+    if (orgDetailsAPI.isSuccess && orgDetailsAPI.data?.data?.logo) {
+      setOrgLogo(orgDetailsAPI.data.data.logo);
+    }
+  }, [orgDetailsAPI.isSuccess, orgDetailsAPI.data]);
 
   useEffect(() => {
     if (userDetailsAPI.isLoading) {
@@ -174,6 +191,7 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
 
   const clearAuthContext = () => {
     setUserDetails(undefined);
+    setOrgLogo(null);
     setIsAuthUser(false);
     dispatch(clearCurrentUser());
     queryClient.clear();
@@ -274,6 +292,7 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
         refreshUserDetails,
         isSuperUser,
         getOrganizationIdForUsers,
+        orgLogo,
       }}
     >
       {children}

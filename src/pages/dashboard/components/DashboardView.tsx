@@ -1836,7 +1836,7 @@
 //   );
 // };
 
-import React, { useState, useRef, useEffect, useMemo } from "react";
+import React, { useState, useRef, useEffect, useMemo, useContext } from "react";
 import {
   Box,
   Typography,
@@ -1896,6 +1896,7 @@ import { PermissionsMap } from "../../../utils/constants";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 import logo from "../../../assets/logo.png";
+import { AuthContext } from "../../../context/AuthContext";
 import { StyledButton, PageHeader, PageCardLayout } from "../../../components/common";
 import { FileDownloadOutlined } from "@mui/icons-material";
 
@@ -1910,6 +1911,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 }): JSX.Element => {
   const theme = useUnifiedTheme();
   const { getHeadingSx, getButtonSx } = useComponentTypography();
+  const { orgLogo } = useContext(AuthContext);
   const [isEditMode, setIsEditMode] = useState(false);
   const [editedTitle, setEditedTitle] = useState(initialTitle);
   const [title, setTitle] = useState(initialTitle);
@@ -2321,7 +2323,24 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         try {
           const logoWidth = 30;
           const logoHeight = 12;
-          pdf.addImage(logo, "PNG", margin, margin, logoWidth, logoHeight);
+
+          let headerLogo: string = logo;
+          if (orgLogo) {
+            try {
+              const response = await fetch(orgLogo);
+              const blob = await response.blob();
+              headerLogo = await new Promise<string>((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onloadend = () => resolve(reader.result as string);
+                reader.onerror = reject;
+                reader.readAsDataURL(blob);
+              });
+            } catch {
+              headerLogo = logo;
+            }
+          }
+
+          pdf.addImage(headerLogo, "PNG", margin, margin, logoWidth, logoHeight);
 
           pdf.setFontSize(16);
           pdf.setFont("helvetica", "bold");

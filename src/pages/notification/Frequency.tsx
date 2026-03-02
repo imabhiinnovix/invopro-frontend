@@ -362,6 +362,29 @@ export default function Frequency({
     return entity;
   };
 
+  const getOptionUsedInField = (
+    option: FieldOption,
+    currentField: "acknowledgeTo" | "toRecipients" | "ccRecipients"
+  ): string | null => {
+    const fields = [
+      { key: "acknowledgeTo", label: "Acknowledge To", values: acknowledgeTo },
+      { key: "toRecipients", label: "TO Recipients", values: toRecipients },
+      { key: "ccRecipients", label: "CC Recipients", values: ccRecipients },
+    ];
+    for (const field of fields) {
+      if (field.key === currentField) continue;
+      const isUsed = field.values.some((val) => {
+        if (typeof val === "string") return false;
+        return (
+          val.attributeId === option.attributeId &&
+          arraysEqual(val.refAttributeId || [], option.refAttributeId || [])
+        );
+      });
+      if (isUsed) return field.label;
+    }
+    return null;
+  };
+
   const handleEditReminder = (row) => {
     setModalType("edit");
     setSelectedReminder(row);
@@ -1067,8 +1090,7 @@ export default function Frequency({
         <Typography
           variant="h5"
           sx={{
-            fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.bold,
-            color: STYLE_GUIDE.COLORS.primaryDark,
+            fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.medium,
           }}
         >
           {frequencyListData?.data?.length > 0
@@ -1147,7 +1169,7 @@ export default function Frequency({
             borderBottom: "1px solid #e0e0e0",
           }}
         >
-          <Typography variant="h6" sx={{ fontWeight: 500 }}>
+          <Typography variant="h6" component="span" sx={{ fontWeight: 500 }}>
             {modelType === "edit" ? "Edit Scheduler" : "Add Scheduler"}
           </Typography>
           <IconButton onClick={handleClose} size="small">
@@ -1328,441 +1350,429 @@ export default function Frequency({
             </Box>
           </Box>
 
-          <Box sx={{ display: "flex", alignItems: "center", gap: 2, pl: 4 }}>
-            <FormControl fullWidth size="small">
-              <InputLabel>Repeat</InputLabel>
-              <Select
-                value={repeatOption}
-                onChange={(e) => handleRepeatSelect(e.target.value)}
-                label="Repeat"
-                sx={{
-                  backgroundColor: "#f8f9fa",
-                  borderRadius: 2,
-                  "& .MuiSelect-select": {
-                    color: "#3c4043",
-                  },
-                }}
-              >
-                {getRepeatOptions().map((option) => (
-                  <MenuItem
-                    key={option}
-                    value={option}
-                    onClick={() => {
-                      if (
-                        option === "Custom..." &&
-                        repeatOption === "Custom..."
-                      ) {
-                        setCustomRecurrenceOpen(true);
-                      }
-                    }}
-                  >
-                    {option}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-          </Box>
-          <Box sx={{ mt: 1 }}>
-            <Box sx={{ display: "flex", gap: 2, mt: 2 }}>
-              <Box sx={{ flex: 0.5, minWidth: "120px" }}>
-                <FormControl size="small" fullWidth error={!!errors.template}>
-                  <InputLabel>Template</InputLabel>
-                  <Select
-                    value={template}
-                    onChange={(e) => {
-                      setTemplate(e.target.value);
-                      if (e.target.value) {
-                        setErrors({ ...errors, template: "" });
-                      }
-                    }}
-                    label="Template"
-                    aria-label="Select template"
-                    MenuProps={{
-                      PaperProps: {
-                        style: {
-                          maxHeight: 250, // controls visible height of dropdown
-                          overflowY: "auto",
-                        },
+          <FormControl fullWidth size="small">
+            <InputLabel>Repeat</InputLabel>
+            <Select
+              value={repeatOption}
+              onChange={(e) => handleRepeatSelect(e.target.value)}
+              label="Repeat"
+              sx={{
+                backgroundColor: "#f8f9fa",
+                borderRadius: 2,
+                "& .MuiSelect-select": {
+                  color: "#3c4043",
+                },
+              }}
+            >
+              {getRepeatOptions().map((option) => (
+                <MenuItem
+                  key={option}
+                  value={option}
+                  onClick={() => {
+                    if (
+                      option === "Custom..." &&
+                      repeatOption === "Custom..."
+                    ) {
+                      setCustomRecurrenceOpen(true);
+                    }
+                  }}
+                >
+                  {option}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+          <Box sx={{ display: "flex", gap: 2 }}>
+            <Box sx={{ flex: 0.5, minWidth: "120px" }}>
+              <FormControl size="small" fullWidth error={!!errors.template}>
+                <InputLabel>Template</InputLabel>
+                <Select
+                  value={template}
+                  onChange={(e) => {
+                    setTemplate(e.target.value);
+                    if (e.target.value) {
+                      setErrors({ ...errors, template: "" });
+                    }
+                  }}
+                  label="Template"
+                  aria-label="Select template"
+                  MenuProps={{
+                    PaperProps: {
+                      style: {
+                        maxHeight: 250,
+                        overflowY: "auto",
                       },
-                    }}
-                  >
-                    {templateList.data?.data?.map((option) => (
+                    },
+                  }}
+                >
+                  {templateList.data?.data
+                    ?.filter((option) => option.status === "active")
+                    .map((option) => (
                       <MenuItem key={option._id} value={option._id}>
                         {option.name}
                       </MenuItem>
                     ))}
-                  </Select>
-                  {errors.template && (
-                    <FormHelperText error>{errors.template}</FormHelperText>
-                  )}
-                </FormControl>
-              </Box>
-
-              <Box sx={{ flex: 0.5, minWidth: "120px" }}>
-                <FormControl size="small" fullWidth error={!!errors.method}>
-                  <InputLabel>Method</InputLabel>
-                  <Select
-                    value={method}
-                    onChange={(e) => {
-                      setMethod(e.target.value);
-                      if (e.target.value) {
-                        setErrors({ ...errors, method: "" });
-                      }
-                    }}
-                    label="Method"
-                    renderValue={(selected) =>
-                      mediumList.data?.data?.find(
-                        (medium) => medium._id === selected
-                      )?.medium || selected
-                    }
-                    aria-label="Select notification method"
-                  >
-                    {/* <MenuItem value="">Select Method...</MenuItem> */}
-                    {mediumList.data?.data?.map((option) => (
-                      <MenuItem key={option._id} value={option._id}>
-                        {option.medium}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                  {errors.method && (
-                    <FormHelperText error>{errors.method}</FormHelperText>
-                  )}
-                </FormControl>
-              </Box>
-            </Box>
-            {/* <Box sx={{ display: "flex", gap: 2, mt: 2, alignItems: "center" }}>
-              <FormControl fullWidth size="small" sx={{ flexGrow: 1 }}>
-                <Autocomplete
-                  freeSolo
-                  size="small"
-                  id="target-entity-autocomplete"
-                  options={
-                    fieldOptions
-                    //   .filter(
-                    //   (option) => option.type === "email"
-                    // )
-                  }
-                  getOptionLabel={(option) => {
-                    if (typeof option === "string") return option;
-                    return option.label || option.attributeId || "";
-                  }}
-                  isOptionEqualToValue={(option, value) => {
-                    if (
-                      typeof option === "string" &&
-                      typeof value === "string"
-                    ) {
-                      return option === value;
-                    }
-                    if (
-                      typeof option !== "string" &&
-                      typeof value !== "string"
-                    ) {
-                      return (
-                        option.attributeId === value.attributeId &&
-                        arraysEqual(
-                          option.refAttributeId || [],
-                          value.refAttributeId || []
-                        )
-                      );
-                    }
-                    return false;
-                  }}
-                  value={targetEntity}
-                  onChange={(event, newValue) => setTargetEntity(newValue)}
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      variant="outlined"
-                      label="Sent To (Group)"
-                      placeholder="Type or select"
-                      size="small"
-                    />
-                  )}
-                />
-              </FormControl>
-              <Box sx={{ display: "flex", alignItems: "center" ,flexGrow: 1 }}>
-                <FormControlLabel
-                  control={
-                    <Checkbox
-                      checked={attachmentRequired}
-                      onChange={(e) => setAttachmentRequired(e.target.checked)}
-                      size="small"
-                    />
-                  }
-                  label="Attach Notification Summary"
-                  sx={{ mb: "35px !important" }}
-                />
-              </Box>
-            </Box> */}
-            <Box sx={{ display: "flex", gap: 2, mt: 2, alignItems: "center" }}>
-              <Box sx={{ flexGrow: 1.5 }}>
-                <Autocomplete
-                  freeSolo
-                  size="small"
-                  id="target-entity-autocomplete"
-                  options={fieldOptions}
-                  getOptionLabel={(option) => {
-                    if (typeof option === "string") return option;
-                    return option.label || option.attributeId || "";
-                  }}
-                  isOptionEqualToValue={(option, value) => {
-                    if (
-                      typeof option === "string" &&
-                      typeof value === "string"
-                    ) {
-                      return option === value;
-                    }
-                    if (
-                      typeof option !== "string" &&
-                      typeof value !== "string"
-                    ) {
-                      return (
-                        option.attributeId === value.attributeId &&
-                        arraysEqual(
-                          option.refAttributeId || [],
-                          value.refAttributeId || []
-                        )
-                      );
-                    }
-                    return false;
-                  }}
-                  value={targetEntity}
-                  onChange={(event, newValue) => setTargetEntity(newValue)}
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      variant="outlined"
-                      label="Sent To (Group)"
-                      placeholder="Type or select"
-                      size="small"
-                    />
-                  )}
-                />
-              </Box>
-              <Box
-                sx={{ display: "flex", alignItems: "center", flexGrow: 0.1 }}
-              >
-                <FormControlLabel
-                  control={
-                    <Checkbox
-                      checked={attachmentRequired}
-                      onChange={(e) => setAttachmentRequired(e.target.checked)}
-                      size="small"
-                    />
-                  }
-                  label="Attach Notification Summary"
-                  sx={{ mb: "50px !important" }}
-                />
-              </Box>
-            </Box>
-            <Box sx={{ mt: 1 }}>
-              <FormControl fullWidth size="small">
-                <Autocomplete
-                  multiple
-                  freeSolo
-                  size="small"
-                  id="acknowledge-to"
-                  options={fieldOptions.filter(
-                    (option) => option.type === "email"
-                  )}
-                  getOptionLabel={(option) => {
-                    if (typeof option === "string") return option;
-                    return option?.label || option?.attributeId || "";
-                  }}
-                  isOptionEqualToValue={(option, value) => {
-                    if (
-                      typeof option === "string" &&
-                      typeof value === "string"
-                    ) {
-                      return option === value;
-                    }
-                    if (
-                      typeof option !== "string" &&
-                      typeof value !== "string"
-                    ) {
-                      return (
-                        option.attributeId === value.attributeId &&
-                        arraysEqual(
-                          option.refAttributeId || [],
-                          value.refAttributeId || []
-                        )
-                      );
-                    }
-                    return false;
-                  }}
-                  value={acknowledgeTo}
-                  onChange={(event, newValue) => {
-                    setAcknowledgeTo(newValue);
-                  }}
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      variant="outlined"
-                      label="Acknowledge To"
-                      placeholder="Type or select"
-                      size="small"
-                    />
-                  )}
-                  renderTags={(value, getTagProps) =>
-                    value.map((option, index) => (
-                      <Chip
-                        key={
-                          typeof option === "string"
-                            ? option
-                            : `${option.attributeId}-${JSON.stringify(
-                                option.refAttributeId || []
-                              )}`
-                        }
-                        label={
-                          typeof option === "string" ? option : option.label
-                        }
-                        {...getTagProps({ index })}
-                        size="small"
-                      />
-                    ))
-                  }
-                />
+                </Select>
+                {errors.template && (
+                  <FormHelperText error>{errors.template}</FormHelperText>
+                )}
               </FormControl>
             </Box>
-            <Box sx={{ mt: 1 }}>
-              <FormControl fullWidth size="small">
-                <Autocomplete
-                  multiple
-                  freeSolo
-                  size="small"
-                  id="to-recipients-autocomplete"
-                  options={fieldOptions.filter(
-                    (option) => option.type === "email"
-                  )}
-                  getOptionLabel={(option) => {
-                    if (typeof option === "string") return option;
-                    return option.label || option.attributeId || "";
-                  }}
-                  isOptionEqualToValue={(option, value) => {
-                    if (
-                      typeof option === "string" &&
-                      typeof value === "string"
-                    ) {
-                      return option === value;
+            <Box sx={{ flex: 0.5, minWidth: "120px" }}>
+              <FormControl size="small" fullWidth error={!!errors.method}>
+                <InputLabel>Method</InputLabel>
+                <Select
+                  value={method}
+                  onChange={(e) => {
+                    setMethod(e.target.value);
+                    if (e.target.value) {
+                      setErrors({ ...errors, method: "" });
                     }
-                    if (
-                      typeof option !== "string" &&
-                      typeof value !== "string"
-                    ) {
-                      return (
-                        option.attributeId === value.attributeId &&
-                        arraysEqual(
-                          option.refAttributeId || [],
-                          value.refAttributeId || []
-                        )
-                      );
-                    }
-                    return false;
                   }}
-                  value={toRecipients}
-                  onChange={(event, newValue) => {
-                    setToRecipients(newValue);
-                  }}
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      variant="outlined"
-                      label="TO Recipients"
-                      placeholder="Type or select"
-                      size="small"
-                    />
-                  )}
-                  renderTags={(value, getTagProps) =>
-                    value.map((option, index) => (
-                      <Chip
-                        key={
-                          typeof option === "string"
-                            ? option
-                            : `${option.attributeId}-${JSON.stringify(
-                                option.refAttributeId || []
-                              )}`
-                        }
-                        label={
-                          typeof option === "string" ? option : option.label
-                        }
-                        {...getTagProps({ index })}
-                        size="small"
-                      />
-                    ))
+                  label="Method"
+                  renderValue={(selected) =>
+                    mediumList.data?.data?.find(
+                      (medium) => medium._id === selected
+                    )?.medium || selected
                   }
-                />
-              </FormControl>
-            </Box>
-            <Box sx={{ mt: 1 }}>
-              <FormControl fullWidth size="small">
-                <Autocomplete
-                  multiple
-                  freeSolo
-                  size="small"
-                  id="cc-recipients-autocomplete"
-                  options={fieldOptions.filter(
-                    (option) => option.type === "email"
-                  )}
-                  getOptionLabel={(option) => {
-                    if (typeof option === "string") return option;
-                    return option.label || option.attributeId || "";
-                  }}
-                  isOptionEqualToValue={(option, value) => {
-                    if (
-                      typeof option === "string" &&
-                      typeof value === "string"
-                    ) {
-                      return option === value;
-                    }
-                    if (
-                      typeof option !== "string" &&
-                      typeof value !== "string"
-                    ) {
-                      return (
-                        option.attributeId === value.attributeId &&
-                        arraysEqual(
-                          option.refAttributeId || [],
-                          value.refAttributeId || []
-                        )
-                      );
-                    }
-                    return false;
-                  }}
-                  value={ccRecipients}
-                  onChange={(event, newValue) => {
-                    setCcRecipients(newValue);
-                  }}
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      variant="outlined"
-                      label="CC Recipients"
-                      placeholder="Type or select"
-                      size="small"
-                    />
-                  )}
-                  renderTags={(value, getTagProps) =>
-                    value.map((option, index) => (
-                      <Chip
-                        key={
-                          typeof option === "string"
-                            ? option
-                            : `${option.attributeId}-${JSON.stringify(
-                                option.refAttributeId || []
-                              )}`
-                        }
-                        label={
-                          typeof option === "string" ? option : option.label
-                        }
-                        {...getTagProps({ index })}
-                        size="small"
-                      />
-                    ))
-                  }
-                />
+                  aria-label="Select notification method"
+                >
+                  {mediumList.data?.data?.map((option) => (
+                    <MenuItem key={option._id} value={option._id}>
+                      {option.medium}
+                    </MenuItem>
+                  ))}
+                </Select>
+                {errors.method && (
+                  <FormHelperText error>{errors.method}</FormHelperText>
+                )}
               </FormControl>
             </Box>
           </Box>
+          <Box sx={{ display: "flex", gap: 2, alignItems: "flex-start" }}>
+            <Box sx={{ flex: 1 }}>
+              <Autocomplete
+                freeSolo
+                size="small"
+                id="target-entity-autocomplete"
+                options={fieldOptions}
+                getOptionLabel={(option) => {
+                  if (typeof option === "string") return option;
+                  return option.label || option.attributeId || "";
+                }}
+                isOptionEqualToValue={(option, value) => {
+                  if (
+                    typeof option === "string" &&
+                    typeof value === "string"
+                  ) {
+                    return option === value;
+                  }
+                  if (
+                    typeof option !== "string" &&
+                    typeof value !== "string"
+                  ) {
+                    return (
+                      option.attributeId === value.attributeId &&
+                      arraysEqual(
+                        option.refAttributeId || [],
+                        value.refAttributeId || []
+                      )
+                    );
+                  }
+                  return false;
+                }}
+                value={targetEntity}
+                onChange={(event, newValue) => setTargetEntity(newValue)}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    variant="outlined"
+                    label="Sent To (Group)"
+                    placeholder="Type or select"
+                    size="small"
+                  />
+                )}
+              />
+            </Box>
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={attachmentRequired}
+                  onChange={(e) => setAttachmentRequired(e.target.checked)}
+                  size="small"
+                />
+              }
+              label="Attach Notification Summary"
+              sx={{ mt: "4px", whiteSpace: "nowrap" }}
+            />
+          </Box>
+          <FormControl fullWidth size="small">
+            <Autocomplete
+              multiple
+              freeSolo
+              size="small"
+              id="acknowledge-to"
+              options={fieldOptions.filter(
+                (option) => option.type === "email"
+              )}
+              getOptionLabel={(option) => {
+                if (typeof option === "string") return option;
+                return option?.label || option?.attributeId || "";
+              }}
+              isOptionEqualToValue={(option, value) => {
+                if (
+                  typeof option === "string" &&
+                  typeof value === "string"
+                ) {
+                  return option === value;
+                }
+                if (
+                  typeof option !== "string" &&
+                  typeof value !== "string"
+                ) {
+                  return (
+                    option.attributeId === value.attributeId &&
+                    arraysEqual(
+                      option.refAttributeId || [],
+                      value.refAttributeId || []
+                    )
+                  );
+                }
+                return false;
+              }}
+              value={acknowledgeTo}
+              onChange={(event, newValue) => {
+                setAcknowledgeTo(newValue);
+              }}
+              getOptionDisabled={(option) =>
+                typeof option !== "string" &&
+                getOptionUsedInField(option, "acknowledgeTo") !== null
+              }
+              renderOption={({ key, ...restProps }, option) => {
+                const usedIn =
+                  typeof option !== "string"
+                    ? getOptionUsedInField(option, "acknowledgeTo")
+                    : null;
+                return (
+                  <li key={key} {...restProps}>
+                    <span>
+                      {typeof option === "string" ? option : option.label}
+                    </span>
+                    {usedIn && (
+                      <Typography
+                        variant="caption"
+                        sx={{ ml: 1, color: "text.disabled" }}
+                      >
+                        ({usedIn})
+                      </Typography>
+                    )}
+                  </li>
+                );
+              }}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  variant="outlined"
+                  label="Acknowledge To"
+                  placeholder="Type or select"
+                  size="small"
+                />
+              )}
+              renderTags={(value, getTagProps) =>
+                value.map((option, index) => {
+                  const { key, ...tagProps } = getTagProps({ index });
+                  return (
+                    <Chip
+                      key={key}
+                      label={
+                        typeof option === "string" ? option : option.label
+                      }
+                      {...tagProps}
+                      size="small"
+                    />
+                  );
+                })
+              }
+            />
+          </FormControl>
+          <FormControl fullWidth size="small">
+            <Autocomplete
+              multiple
+              freeSolo
+              size="small"
+              id="to-recipients-autocomplete"
+              options={fieldOptions.filter(
+                (option) => option.type === "email"
+              )}
+              getOptionLabel={(option) => {
+                if (typeof option === "string") return option;
+                return option.label || option.attributeId || "";
+              }}
+              isOptionEqualToValue={(option, value) => {
+                if (
+                  typeof option === "string" &&
+                  typeof value === "string"
+                ) {
+                  return option === value;
+                }
+                if (
+                  typeof option !== "string" &&
+                  typeof value !== "string"
+                ) {
+                  return (
+                    option.attributeId === value.attributeId &&
+                    arraysEqual(
+                      option.refAttributeId || [],
+                      value.refAttributeId || []
+                    )
+                  );
+                }
+                return false;
+              }}
+              value={toRecipients}
+              onChange={(event, newValue) => {
+                setToRecipients(newValue);
+              }}
+              getOptionDisabled={(option) =>
+                typeof option !== "string" &&
+                getOptionUsedInField(option, "toRecipients") !== null
+              }
+              renderOption={({ key, ...restProps }, option) => {
+                const usedIn =
+                  typeof option !== "string"
+                    ? getOptionUsedInField(option, "toRecipients")
+                    : null;
+                return (
+                  <li key={key} {...restProps}>
+                    <span>
+                      {typeof option === "string" ? option : option.label}
+                    </span>
+                    {usedIn && (
+                      <Typography
+                        variant="caption"
+                        sx={{ ml: 1, color: "text.disabled" }}
+                      >
+                        ({usedIn})
+                      </Typography>
+                    )}
+                  </li>
+                );
+              }}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  variant="outlined"
+                  label="TO Recipients"
+                  placeholder="Type or select"
+                  size="small"
+                />
+              )}
+              renderTags={(value, getTagProps) =>
+                value.map((option, index) => {
+                  const { key, ...tagProps } = getTagProps({ index });
+                  return (
+                    <Chip
+                      key={key}
+                      label={
+                        typeof option === "string" ? option : option.label
+                      }
+                      {...tagProps}
+                      size="small"
+                    />
+                  );
+                })
+              }
+            />
+          </FormControl>
+          <FormControl fullWidth size="small">
+            <Autocomplete
+              multiple
+              freeSolo
+              size="small"
+              id="cc-recipients-autocomplete"
+              options={fieldOptions.filter(
+                (option) => option.type === "email"
+              )}
+              getOptionLabel={(option) => {
+                if (typeof option === "string") return option;
+                return option.label || option.attributeId || "";
+              }}
+              isOptionEqualToValue={(option, value) => {
+                if (
+                  typeof option === "string" &&
+                  typeof value === "string"
+                ) {
+                  return option === value;
+                }
+                if (
+                  typeof option !== "string" &&
+                  typeof value !== "string"
+                ) {
+                  return (
+                    option.attributeId === value.attributeId &&
+                    arraysEqual(
+                      option.refAttributeId || [],
+                      value.refAttributeId || []
+                    )
+                  );
+                }
+                return false;
+              }}
+              value={ccRecipients}
+              onChange={(event, newValue) => {
+                setCcRecipients(newValue);
+              }}
+              getOptionDisabled={(option) =>
+                typeof option !== "string" &&
+                getOptionUsedInField(option, "ccRecipients") !== null
+              }
+              renderOption={({ key, ...restProps }, option) => {
+                const usedIn =
+                  typeof option !== "string"
+                    ? getOptionUsedInField(option, "ccRecipients")
+                    : null;
+                return (
+                  <li key={key} {...restProps}>
+                    <span>
+                      {typeof option === "string" ? option : option.label}
+                    </span>
+                    {usedIn && (
+                      <Typography
+                        variant="caption"
+                        sx={{ ml: 1, color: "text.disabled" }}
+                      >
+                        ({usedIn})
+                      </Typography>
+                    )}
+                  </li>
+                );
+              }}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  variant="outlined"
+                  label="CC Recipients"
+                  placeholder="Type or select"
+                  size="small"
+                />
+              )}
+              renderTags={(value, getTagProps) =>
+                value.map((option, index) => {
+                  const { key, ...tagProps } = getTagProps({ index });
+                  return (
+                    <Chip
+                      key={key}
+                      label={
+                        typeof option === "string" ? option : option.label
+                      }
+                      {...tagProps}
+                      size="small"
+                    />
+                  );
+                })
+              }
+            />
+          </FormControl>
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 2, pt: 1 }}>
           <StyledButton

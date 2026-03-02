@@ -209,7 +209,7 @@ export const theme = createTheme({
           top: 0,
           transform: 'translate(14px, 9px) scale(1)',
           '&.MuiInputLabel-shrink': {
-            transform: 'translate(14px, -6px) scale(0.75)',
+            transform: 'translate(14px, -9px) scale(0.75)',
           },
         },
       },
