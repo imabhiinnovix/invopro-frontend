@@ -25,48 +25,50 @@ interface Vendor {
   name: string;
 }
 
-interface EngagementLetterPayload {
+interface LegalDocumentPayload {
   vendorId: string;
-  referenceNumber: string;
-  description: string;
-  startDate: string;
-  endDate: string;
-  engagementLetterStatus: "in-force" | "expired";
+  documentName: string;
+  documentDescription: string;
+  referenceNumber?: string;
+  startDate?: string;
+  endDate?: string;
+  status: "active" | "expired";
   files?: File;
 }
 
-interface EngagementLetterResponse {
+interface LegalDocumentResponse {
   success: boolean;
   data?: any;
   message?: string;
 }
 
-interface EngagementLetter {
+interface LegalDocument {
   _id: string;
   vendorId?: {
     _id: string;
     name: string;
   };
-  referenceNumber: string;
-  description: string;
-  startDate: string;
-  endDate: string;
-  engagementLetterStatus: "in-force" | "expired";
-  engagementLetterFileName?: string;
-  engagementLetterFilePath?: string;
+  documentName: string;
+  documentDescription: string;
+  referenceNumber?: string;
+  startDate?: string;
+  endDate?: string;
+  status: "active" | "expired";
+  legalDocumentFileName?: string;
+  legalDocumentFilePath?: string;
 }
 
-interface EngagementLetterModalProps {
+interface LegalDocumentModalProps {
   open: boolean;
   onClose: () => void;
   mode: "add" | "edit" | "view";
   editId?: string | null;
-  rowData?: EngagementLetter | null;
+  rowData?: LegalDocument | null;
   onCreated?: () => void;
   onUpdated?: () => void;
 }
 
-export function EngagementLetterModal({
+export function LegalDocumentModal({
   open,
   onClose,
   mode,
@@ -74,20 +76,21 @@ export function EngagementLetterModal({
   rowData,
   onCreated,
   onUpdated,
-}: EngagementLetterModalProps) {
+}: LegalDocumentModalProps) {
   const theme = useUnifiedTheme();
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [fileError, setFileError] = useState<string | null>(null);
 
   const { control, handleSubmit, reset, formState } =
-    useForm<EngagementLetterPayload>({
+    useForm<LegalDocumentPayload>({
       defaultValues: {
         vendorId: "",
+        documentName: "",
+        documentDescription: "",
         referenceNumber: "",
-        description: "",
         startDate: "",
         endDate: "",
-        engagementLetterStatus: "in-force",
+        status: "active",
       },
       mode: "onChange",
     });
@@ -98,11 +101,11 @@ export function EngagementLetterModal({
     true
   );
 
-  const createEngagementLetter = usePostMultipart<
-    EngagementLetterPayload,
-    EngagementLetterResponse
+  const createLegalDocument = usePostMultipart<
+    LegalDocumentPayload,
+    LegalDocumentResponse
   >(
-    ["createEngagementLetter"],
+    ["createLegalDocument"],
     (data) => {
       if (data?.success) {
         onCreated?.();
@@ -112,11 +115,11 @@ export function EngagementLetterModal({
     true
   );
 
-  const updateEngagementLetter = usePut<
-    EngagementLetterPayload,
-    EngagementLetterResponse
+  const updateLegalDocument = usePut<
+    LegalDocumentPayload,
+    LegalDocumentResponse
   >(
-    ["updateEngagementLetter"],
+    ["updateLegalDocument"],
     (data) => {
       if (data?.success) {
         onUpdated?.();
@@ -131,21 +134,22 @@ export function EngagementLetterModal({
       if (mode === "edit" || mode === "view") {
         reset({
           vendorId: rowData?.vendorId?._id || "",
+          documentName: rowData?.documentName || "",
+          documentDescription: rowData?.documentDescription || "",
           referenceNumber: rowData?.referenceNumber || "",
-          description: rowData?.description || "",
           startDate: rowData?.startDate?.split("T")[0] || "",
           endDate: rowData?.endDate?.split("T")[0] || "",
-          engagementLetterStatus:
-            rowData?.engagementLetterStatus || "in-force",
+          status: rowData?.status || "active",
         });
       } else {
         reset({
           vendorId: "",
+          documentName: "",
+          documentDescription: "",
           referenceNumber: "",
-          description: "",
           startDate: "",
           endDate: "",
-          engagementLetterStatus: "in-force",
+          status: "active",
         });
       }
       setSelectedFile(null);
@@ -153,36 +157,35 @@ export function EngagementLetterModal({
     }
   }, [open, mode, rowData, reset]);
 
-  const onSubmit = (data: EngagementLetterPayload) => {
+  const onSubmit = (data: LegalDocumentPayload) => {
     // ✅ File required only in ADD mode
     if (mode === "add" && !selectedFile) {
-      setFileError("Engagement letter file is required");
+      setFileError("Document file is required");
       return;
     }
 
     setFileError(null);
 
-    const payload: EngagementLetterPayload = {
+    const payload: LegalDocumentPayload = {
       ...data,
       files: selectedFile || undefined,
     };
 
     if (mode === "add") {
-      createEngagementLetter.mutate({
-        url: POST.Create_Engagement_Letter,
+      createLegalDocument.mutate({
+        url: POST.Create_Legal_Document,
         payload,
       });
     } else if (mode === "edit" && editId) {
-      updateEngagementLetter.mutate({
-        url: `${PUT.UPDATE_ENGAGEMENT_LETTER}${editId}`,
+      updateLegalDocument.mutate({
+        url: `${PUT.UPDATE_LEGAL_DOCUMENT}${editId}`,
         payload,
       });
     }
   };
 
   const isSaving =
-    createEngagementLetter.isPending ||
-    updateEngagementLetter.isLoading;
+    createLegalDocument.isPending || updateLegalDocument.isLoading;
 
   const isFormValid = formState.isValid;
   const isFormDirty = formState.isDirty;
@@ -199,15 +202,15 @@ export function EngagementLetterModal({
           borderRadius: "8px",
           boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.2)",
           p: 3,
-          width: "500px",
+          width: "520px",
         }}
       >
         <Typography variant="h6" sx={{ mb: 2 }}>
           {mode === "add"
-            ? "Add Engagement Letter"
+            ? "Add Legal Document"
             : mode === "edit"
-            ? "Edit Engagement Letter"
-            : "View Engagement Letter"}
+            ? "Edit Legal Document"
+            : "View Legal Document"}
         </Typography>
 
         <form onSubmit={handleSubmit(onSubmit)}>
@@ -215,13 +218,7 @@ export function EngagementLetterModal({
             {/* Vendor */}
             <Grid item xs={12}>
               {mode === "view" ? (
-                <Box
-                  sx={{
-                    p: 1.5,
-                    backgroundColor: "#f5f5f5",
-                    borderRadius: 1,
-                  }}
-                >
+                <Box sx={{ p: 1.5, backgroundColor: "#f5f5f5", borderRadius: 1 }}>
                   {rowData?.vendorId?.name || "-"}
                 </Box>
               ) : (
@@ -229,23 +226,12 @@ export function EngagementLetterModal({
                   name="vendorId"
                   control={control}
                   rules={{ required: "Vendor is required" }}
-                  render={({ field, fieldState }) => (
-                    <FormControl
-                      fullWidth
-                      size="small"
-                      error={!!fieldState.error}
-                    >
+                  render={({ field }) => (
+                    <FormControl fullWidth size="small">
                       <InputLabel>Vendor *</InputLabel>
-                      <Select
-                        {...field}
-                        label="Vendor *"
-                        disabled={isSaving}
-                      >
+                      <Select {...field} label="Vendor *">
                         {vendorList.data?.data?.map((vendor) => (
-                          <MenuItem
-                            key={vendor._id}
-                            value={vendor._id}
-                          >
+                          <MenuItem key={vendor._id} value={vendor._id}>
                             {vendor.name}
                           </MenuItem>
                         ))}
@@ -256,22 +242,19 @@ export function EngagementLetterModal({
               )}
             </Grid>
 
-            {/* Reference Number */}
+            {/* Document Name */}
             <Grid item xs={12}>
               <Controller
-                name="referenceNumber"
+                name="documentName"
                 control={control}
-                rules={{ required: "Reference number is required" }}
-                render={({ field, fieldState }) => (
+                rules={{ required: "Document name is required" }}
+                render={({ field }) => (
                   <TextField
                     {...field}
-                    label="Reference Number *"
+                    label="Document Name *"
                     fullWidth
                     size="small"
-                    error={!!fieldState.error}
-                    helperText={fieldState.error?.message || " "}
                     disabled={mode === "view" || isSaving}
-                    required
                   />
                 )}
               />
@@ -280,7 +263,7 @@ export function EngagementLetterModal({
             {/* Description */}
             <Grid item xs={12}>
               <Controller
-                name="description"
+                name="documentDescription"
                 control={control}
                 render={({ field }) => (
                   <TextField
@@ -291,6 +274,25 @@ export function EngagementLetterModal({
                     multiline
                     rows={3}
                     disabled={mode === "view" || isSaving}
+                  />
+                )}
+              />
+            </Grid>
+
+            {/* Reference Number */}
+            <Grid item xs={12}>
+              <Controller
+                name="referenceNumber"
+                control={control}
+                rules={{ required: "Reference number is required" }}
+                render={({ field }) => (
+                  <TextField
+                    {...field}
+                    label="Reference Number *"
+                    fullWidth
+                    size="small"
+                    disabled={mode === "view" || isSaving}
+                    required
                   />
                 )}
               />
@@ -335,25 +337,21 @@ export function EngagementLetterModal({
               />
             </Grid>
 
-            {/* Engagement Status */}
+            {/* Status */}
             <Grid item xs={12}>
               <Controller
-                name="engagementLetterStatus"
+                name="status"
                 control={control}
                 render={({ field }) => (
                   <FormControl fullWidth size="small">
-                    <InputLabel>Engagement Status</InputLabel>
+                    <InputLabel>Status</InputLabel>
                     <Select
                       {...field}
-                      label="Engagement Status"
+                      label="Status"
                       disabled={mode === "view" || isSaving}
                     >
-                      <MenuItem value="in-force">
-                        In Force
-                      </MenuItem>
-                      <MenuItem value="expired">
-                        Expired
-                      </MenuItem>
+                      <MenuItem value="active">Active</MenuItem>
+                      <MenuItem value="expired">Expired</MenuItem>
                     </Select>
                   </FormControl>
                 )}
@@ -363,13 +361,13 @@ export function EngagementLetterModal({
             {/* File Upload */}
             <Grid item xs={12}>
               {mode === "view" ? (
-                rowData?.engagementLetterFilePath ? (
+                rowData?.legalDocumentFilePath ? (
                   <a
-                    href={`${import.meta.env.VITE_INVOICIVIX_BACKEND_URL}${rowData.engagementLetterFilePath}`}
+                    href={`${import.meta.env.VITE_INVOICIVIX_BACKEND_URL}${rowData.legalDocumentFilePath}`}
                     target="_blank"
                     rel="noopener noreferrer"
                   >
-                    View Engagement Letter File
+                    View Document
                   </a>
                 ) : (
                   "-"
@@ -379,9 +377,7 @@ export function EngagementLetterModal({
                   <input
                     type="file"
                     onChange={(e) => {
-                      setSelectedFile(
-                        e.target.files?.[0] || null
-                      );
+                      setSelectedFile(e.target.files?.[0] || null);
                       setFileError(null);
                     }}
                     disabled={isSaving}
@@ -397,14 +393,13 @@ export function EngagementLetterModal({
                     </Typography>
                   )}
 
-                  {rowData?.engagementLetterFileName &&
+                  {rowData?.legalDocumentFileName &&
                     mode === "edit" && (
                       <Typography
                         variant="caption"
                         display="block"
                       >
-                        Current File:{" "}
-                        {rowData.engagementLetterFileName}
+                        Current File: {rowData.legalDocumentFileName}
                       </Typography>
                     )}
                 </>
@@ -413,29 +408,13 @@ export function EngagementLetterModal({
           </Grid>
 
           {isSaving && (
-            <Box
-              sx={{
-                display: "flex",
-                justifyContent: "center",
-                my: 2,
-              }}
-            >
+            <Box sx={{ display: "flex", justifyContent: "center", my: 2 }}>
               <CircularProgress size={24} />
             </Box>
           )}
 
-          <Box
-            sx={{
-              display: "flex",
-              justifyContent: "flex-end",
-              gap: 1,
-              mt: 3,
-            }}
-          >
-            <StyledButton
-              variant="secondary"
-              onClick={onClose}
-            >
+          <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 1, mt: 3 }}>
+            <StyledButton variant="secondary" onClick={onClose}>
               Cancel
             </StyledButton>
 
@@ -445,8 +424,7 @@ export function EngagementLetterModal({
                 variant="primary"
                 disabled={
                   (!isFormValid ||
-                    (!isFormDirty &&
-                      mode === "edit")) ||
+                    (!isFormDirty && mode === "edit")) ||
                   isSaving
                 }
               >

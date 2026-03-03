@@ -258,7 +258,8 @@ export const PermissionsMap = {
   BUSINESS_UNIT: "BusinessUnit",
   DEFAULT_DASHBOARD: "Default Dashboard",
   VENDOR: "Vendor",
-  ENGAGEMENTLETTER: "EngagementLetter"
+  ENGAGEMENTLETTER: "EngagementLetter",
+  LEGALDOCUMENT: "LegalDocument"
 } as const;
 
 export type PermissionResourceType =

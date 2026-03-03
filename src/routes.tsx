@@ -46,6 +46,7 @@ import BusinessUnit from "./pages/businessUnit";
 import CentralDataSources from "./pages/centralDataSources";
 import NotFound from "./pages/notFound";
 import EngagementLetter from "./pages/engagementLetter";
+import LegalDocument from "./pages/legalDocument";
 
 const AppRoutes = () => {
   const token = getAuthToken();
@@ -112,7 +113,9 @@ const AppRoutes = () => {
 
           <Route path="/vendor" element={<Vendor />} />
 
-           <Route path="/engagement-letter" element={<EngagementLetter />} />
+          <Route path="/engagement-letter" element={<EngagementLetter />} />
+
+          <Route path="/legal-document" element={<LegalDocument />} />
 
           <Route path="/data-source-new/:id" element={<NotivixDataSource />} />
           <Route path="/validation-errors/:id" element={<ValidationErrors />} />

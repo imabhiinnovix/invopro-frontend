@@ -1683,6 +1683,22 @@ function getSystemSettingsItems(
               ),
           },
           {
+            name: "Legal Document",
+            icon: createIcon(BusinessCenterIcon, "/legal-document", theme, location, themeColor),
+            route: "/legal-document",
+            shouldShow:
+              checkPermission(
+                permissions,
+                PermissionsMap.LEGALDOCUMENT,
+                "list"
+              ) &&
+              checkPermission(
+                permissions,
+                PermissionsMap.LEGALDOCUMENT,
+                "update"
+              ),
+          },
+          {
             name: "Charts",
             icon: createIcon(
               InsertChartOutlinedIcon,
