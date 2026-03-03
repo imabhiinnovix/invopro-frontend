@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
 import {
-  Grid,
   CircularProgress,
   FormControlLabel,
   Switch,
   TextField,
   Autocomplete,
 } from "@mui/material";
+import Grid from "@mui/material/Grid2";
 import { Controller } from "react-hook-form";
 import axiosInstance from "../../../services/axiosInstance";
 
@@ -18,6 +18,7 @@ interface EngagementLetter {
     code: string;
   };
   referenceNumber: string;
+  engagementLetterFileName?: string;
   engagementLetterStatus?: "in-force" | "expired";
 }
 
@@ -39,11 +40,11 @@ const EngagementLetterSection = ({
     []
   );
   const [loadingLetters, setLoadingLetters] = useState(false);
-  
-  const selectedVendorId = watch("code");
+
+  const selectedVendorCode = watch("code");
   const isEngagementEnabled = watch("isEngagementLetter");
 
-  // Fetch all engagement letters
+  // ✅ Fetch all engagement letters
   useEffect(() => {
     const fetchEngagementLetters = async () => {
       try {
@@ -67,27 +68,31 @@ const EngagementLetterSection = ({
     fetchEngagementLetters();
   }, []);
 
-  // Filter letters for selected vendor and in-force status
+  // ✅ Filter letters for selected vendor
   useEffect(() => {
-    if (selectedVendorId) {
+    if (selectedVendorCode) {
       const filtered = allLetters.filter(
         (letter) =>
-          letter.vendorId?.code === selectedVendorId &&
+          letter.vendorId?.code === selectedVendorCode &&
           letter.engagementLetterStatus === "in-force"
       );
       setFilteredLetters(filtered);
     } else {
       setFilteredLetters([]);
     }
+  }, [selectedVendorCode, allLetters]);
 
-    // Clear engagementLetterId when vendor changes or switch is off
-    setValue("engagementLetterId", null);
-  }, [selectedVendorId, allLetters, setValue]);
+  // ✅ Clear value if switch is OFF
+  useEffect(() => {
+    if (!isEngagementEnabled) {
+      setValue("engagementLetterId", null, { shouldValidate: true });
+    }
+  }, [isEngagementEnabled, setValue]);
 
   return (
     <>
       {/* Engagement Letter Switch */}
-      <Grid item xs={6}>
+      <Grid size={6}>
         <Controller
           name="isEngagementLetter"
           control={control}
@@ -107,45 +112,71 @@ const EngagementLetterSection = ({
 
       {/* Engagement Letter Autocomplete */}
       {isEngagementEnabled && (
-        <Grid item xs={6}>
+        <Grid size={6}>
           <Controller
-            name="engagementLetterId"
-            control={control}
-            rules={{
-              required: "Engagement Letter is required",
+  name="engagementLetterId"
+  control={control}
+  rules={{
+    validate: (value) => {
+      if (isEngagementEnabled && !value) {
+        return "Engagement Letter is required";
+      }
+      return true;
+    },
+  }}
+  render={({ field }) => {
+    // Normalize value → always string
+    const normalizedValue =
+      typeof field.value === "object" && field.value !== null
+        ? field.value._id
+        : field.value;
+
+    return (
+      <Autocomplete
+        options={filteredLetters}
+        loading={loadingLetters}
+        fullWidth
+        getOptionLabel={(option) =>
+          option.engagementLetterFileName ||
+          option.referenceNumber ||
+          ""
+        }
+        value={
+          filteredLetters.find(
+            (letter) => letter._id === normalizedValue
+          ) || null
+        }
+        onChange={(_, newValue) => {
+          // ALWAYS store only _id string
+          field.onChange(newValue?._id || null);
+        }}
+        isOptionEqualToValue={(option, value) =>
+          option._id === (value?._id || value)
+        }
+        renderInput={(params) => (
+          <TextField
+            {...params}
+            label="Select Engagement Letter"
+            error={!!errors.engagementLetterId}
+            helperText={errors.engagementLetterId?.message}
+            required
+            InputProps={{
+              ...params.InputProps,
+              endAdornment: (
+                <>
+                  {loadingLetters && (
+                    <CircularProgress size={18} />
+                  )}
+                  {params.InputProps.endAdornment}
+                </>
+              ),
             }}
-            render={({ field }) => (
-              <Autocomplete
-                options={filteredLetters}
-                loading={loadingLetters}
-                getOptionLabel={(option) => option.referenceNumber || ""}
-                value={
-                  filteredLetters.find((letter) => letter._id === field.value) ||
-                  null
-                }
-                onChange={(_, newValue) =>
-                  field.onChange(newValue ? newValue._id : null)
-                }
-                renderInput={(params) => (
-                  <TextField
-                    {...params}
-                    label="Select Engagement Letter"
-                    error={!!errors.engagementLetterId}
-                    helperText={errors.engagementLetterId?.message}
-                    InputProps={{
-                      ...params.InputProps,
-                      endAdornment: (
-                        <>
-                          {loadingLetters && <CircularProgress size={18} />}
-                          {params.InputProps.endAdornment}
-                        </>
-                      ),
-                    }}
-                  />
-                )}
-              />
-            )}
           />
+        )}
+      />
+    );
+  }}
+/>
         </Grid>
       )}
     </>

@@ -92,6 +92,12 @@ interface VendorFormValues {
   mobile?: number;
   countryISOCode?: string;
   countryDialCode?: string;
+  primaryContactName?: string;
+
+  secondaryContactMobile?: number;
+  secondaryContactCountryISOCode?: string;
+  secondaryContactCountryDialCode?: string;
+  secondaryContactName?: string;
 
   address1?: string;
   address2?: string;
@@ -239,6 +245,12 @@ export default function Vendor() {
     mobile: undefined,
     countryISOCode: "",
     countryDialCode: "",
+    primaryContactName: "",
+
+    secondaryContactMobile: undefined,
+    secondaryContactCountryISOCode: "",
+    secondaryContactCountryDialCode: "",
+    secondaryContactName: "",
 
     address1: "",
     address2: "",
@@ -616,6 +628,12 @@ useEffect(() => {
       setValue("mobile", org.mobile || "");
       setValue("countryISOCode", org.countryISOCode || "");
       setValue("countryDialCode", org.countryDialCode || "");
+      setValue("primaryContactName", org.primaryContactName || "");
+
+      setValue("secondaryContactName", org.secondaryContactName || "");
+      setValue("secondaryContactMobile", org.secondaryContactMobile || "");
+      setValue("secondaryContactCountryISOCode", org.secondaryContactCountryISOCode || "");
+      setValue("secondaryContactCountryDialCode", org.secondaryContactCountryDialCode || "");
 
       setValue("address1", org.address1 || "");
       setValue("address2", org.address2 || "");
@@ -630,7 +648,7 @@ useEffect(() => {
       setValue("defaultCurrency", org.defaultCurrency || "");
 
       setValue("isEngagementLetter", org.isEngagementLetter || false);
-      setValue("engagementLetterId", org.engagementLetterId || null);
+      setValue("engagementLetterId", org.engagementLetterId?._id || null);
 
       // Primary Bank
       setValue("bankName", org.bankName || "");
@@ -667,7 +685,7 @@ useEffect(() => {
         setValue("logo", null);
       }
 
-      refetchProductAccess();
+      // refetchProductAccess();
     } else {
       setSelectedOrg(null);
       reset({
@@ -681,6 +699,12 @@ useEffect(() => {
         mobile: undefined,
         countryISOCode: "",
         countryDialCode: "",
+        primaryContactName: "",
+
+        secondaryContactMobile: undefined,
+        secondaryContactCountryISOCode: "",
+        secondaryContactCountryDialCode: "",
+        secondaryContactName: "",
 
         address1: "",
         address2: "",
@@ -782,6 +806,12 @@ useEffect(() => {
             mobile: formData.mobile,
             countryISOCode: formData.countryISOCode,
             countryDialCode: formData.countryDialCode,
+            primaryContactName: formData.primaryContactName,
+
+            secondaryContactName: formData.secondaryContactName,
+            secondaryContactMobile: formData.secondaryContactMobile,
+            secondaryContactCountryISOCode: formData.secondaryContactCountryISOCode,
+            secondaryContactCountryDialCode: formData.secondaryContactCountryDialCode,
 
             // Address
             address1: formData.address1,
@@ -947,7 +977,7 @@ useEffect(() => {
   const handleProductAccessView = (orgId: string) => {
     setProductAccessOrgId(orgId);
     setProductAccessOpen(true);
-    refetchProductAccess();
+    // refetchProductAccess();
   };
 
   const handleProductAccessClose = () => {
@@ -994,7 +1024,6 @@ useEffect(() => {
   };
 
   const [deletedIds, setDeletedIds] = useState<string[]>([]);
-
   return (
     <Box>
       <PageHeader
@@ -1256,14 +1285,15 @@ useEffect(() => {
                   type="submit"
                   onClick={handleSubmit(handleOrgModalSubmit)}
                   disabled={
-                    !isValid ||
-                    (selectedOrg ? fields.length === 0 : false) ||
-                    fields.some((f, idx) => {
-                      const err =
-                        errors.productSubscriptions &&
-                        (errors.productSubscriptions as any)[idx];
-                      return err && (err.totalLicenses || err.licenseExpiresAt);
-                    })
+                    !isValid 
+                    // ||
+                    // (selectedOrg ? fields.length === 0 : false) ||
+                    // fields.some((f, idx) => {
+                    //   const err =
+                    //     errors.productSubscriptions &&
+                    //     (errors.productSubscriptions as any)[idx];
+                    //   return err && (err.totalLicenses || err.licenseExpiresAt);
+                    // })
                   }
                 >
                   {orgModalLoading
@@ -1563,6 +1593,18 @@ useEffect(() => {
                     </Box>
                   </Grid>
 
+                  <Grid size={6}>
+                    <Box sx={{ display: "flex", alignItems: "center" }}>
+                      <Controller
+                        name="primaryContactName"
+                        control={control}
+                        render={({ field }) => (
+                          <TextField {...field} label="Primary Contact Name" fullWidth />
+                        )}
+                      />
+                    </Box>
+                  </Grid>
+
                   {/* Country Code */}
                   <Grid size={3}>
                     <Box sx={{ display: "flex", alignItems: "center" }}>
@@ -1638,6 +1680,101 @@ useEffect(() => {
                       />
                     </Box>
                   </Grid>
+                  {/* Secondary Contact Info */}
+                   <Grid size={12} sx={{ mt: 2 }}>
+                    <Typography variant="body2" fontWeight={600} sx={{ mt: 1 }}>
+                      Secondary Contact Details
+                    </Typography>
+                    <Divider sx={{ mt: 0.5 }} />
+                  </Grid>
+                  <Grid size={6}>
+                    <Box sx={{ display: "flex", alignItems: "center" }}>
+                      <Controller
+                        name="secondaryContactName"
+                        control={control}
+                        render={({ field }) => (
+                          <TextField {...field} label="Secondary Contact Name" fullWidth />
+                        )}
+                      />
+                    </Box>
+                  </Grid>
+
+                  {/* Country Code */}
+                  <Grid size={3}>
+                    <Box sx={{ display: "flex", alignItems: "center" }}>
+                      <Controller
+                        name="secondaryContactCountryISOCode"
+                        control={control}
+                        // rules={{ required: "Country is required" }}
+                        render={({ field }) => (
+                          <Autocomplete
+                            options={countryCodes}
+                            size="small"
+                            fullWidth
+                            getOptionLabel={(option) => option.label}
+                            value={
+                              countryCodes.find(
+                                (c) => c.iso === field.value
+                              ) || null
+                            }
+                            isOptionEqualToValue={(option, value) =>
+                              option.iso === value.iso
+                            }
+                            onChange={(_, newValue) => {
+                              field.onChange(newValue?.iso || "");
+                              setValue("countryDialCode", newValue?.dialCode || "");
+                            }}
+                            renderInput={(params) => (
+                              <TextField
+                                {...params}
+                                label="Country Code"
+                                fullWidth
+                                error={!!errors.countryISOCode}
+                                helperText={errors.countryISOCode?.message}
+                              />
+                            )}
+                          />
+                        )}
+                      />
+                    </Box>
+                  </Grid>
+
+                  {/* Mobile */}
+                  <Grid size={3}>
+                    <Box sx={{ display: "flex", alignItems: "center" }}>
+                      <Controller
+                        name="secondaryContactMobile"
+                        control={control}
+                        rules={{
+                          // required: "Mobile number is required",
+                          pattern: {
+                            value: /^[0-9]+$/,
+                            message: "Only numbers allowed",
+                          },
+                        }}
+                        render={({ field }) => (
+                          <TextField
+                            {...field}
+                            label="Mobile"
+                            fullWidth
+                            type="tel"
+                            error={!!errors.mobile}
+                            helperText={errors.mobile?.message}
+                            inputProps={{
+                              inputMode: "numeric",
+                              pattern: "[0-9]*",
+                              maxLength: 15,
+                            }}
+                            onChange={(e) => {
+                              const numericValue = e.target.value.replace(/\D/g, "");
+                              field.onChange(numericValue);
+                            }}
+                          />
+                        )}
+                      />
+                    </Box>
+                  </Grid>
+
 
                   {/* Address Section */}
                   <Grid size={12} sx={{ mt: 2 }}>
