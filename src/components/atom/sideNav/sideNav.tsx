@@ -292,7 +292,7 @@ export default function SideNav() {
           navigate(route);
         }
         navigate(route);
-      } else if (itemName === "Notifications") {
+      } else if (itemName === "Invoice Information") {
         setOpenNotificationSettings((prev) => !prev);
         // navigate(route);
       } else if (itemName === "Settings") {
@@ -515,7 +515,7 @@ export default function SideNav() {
                           openNav &&
                           item.name === "Dashboards" &&
                           openDashboard) ||
-                        (item.name === "Notifications" &&
+                        (item.name === "Invoice Information" &&
                           openNotificationSettings) ||
                         (item.name === "Settings" && openReportSettings) ||
                         (item.name === "Theme Settings" && openThemeSettings) ||
@@ -530,7 +530,7 @@ export default function SideNav() {
                             in={
                               item.name === "Dashboards"
                                 ? openDashboard
-                                : item.name === "Notifications"
+                                : item.name === "Invoice Information"
                                 ? openNotificationSettings
                                 : item.name === "Settings"
                                 ? openReportSettings
@@ -647,7 +647,7 @@ export default function SideNav() {
                                   </>
                                 )}
 
-                                {item.name === "Notifications" && (
+                                {item.name === "Invoice Information" && (
                                   <>
                                     {item.subItems?.map((subItem, subIndex) => {
                                       if (
@@ -933,7 +933,7 @@ export default function SideNav() {
                                   </>
                                 ) : (
                                   item.name !== "Dashboards" &&
-                                  item.name !== "Notifications" && (
+                                  item.name !== "Invoice Information" && (
                                     <MainListItem
                                       route={item.route}
                                       onClick={() => {
@@ -1307,7 +1307,7 @@ function getNavItems(
   const monthlyDataSources = matchedDataSources
     .filter((item) => item.versionType === "monthly")
     .filter((item) => {
-      const nameKey = (item.name == "CaseList" || item.code == "caselists" ? "Case List" : item?.name || "")
+      const nameKey = (item.name == "Invoice List" || item.code == "invoicelist" ? "Invoice List" : item?.name || "")
         .toLowerCase()
         .replace(/\s+/g, "_");
       const codeKey = (item?.code || "")
@@ -1433,7 +1433,7 @@ function getNavItems(
       ),
     },
     {
-      name: "Notifications",
+      name: "Invoice Information",
       icon: createIcon(NotificationsOutlined, "/data-source", theme, location, themeColor),
       route: "/data-source",
       subItems: dataSourceItems,
