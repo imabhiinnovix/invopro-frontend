@@ -22,8 +22,10 @@ export interface Attribute {
     refEntityId?: string;
     refEntityField?: string;
     relationType?: string;
+    matchStrategy?: string;
   };
   isOptionFixed?: boolean;
+  normalize?: boolean;
 }
 
 interface CreatedBy {

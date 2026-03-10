@@ -1422,16 +1422,16 @@ function getNavItems(
         "list_requests"
       ),
     },
-    {
-      name: "Data Sources",
-      icon: createIcon(StorageOutlined, "/data-sources", theme, location, themeColor),
-      route: "/data-sources",
-      shouldShow: checkPermission(
-        permissions,
-        PermissionsMap.DATA_SOURCE,
-        "list"
-      ),
-    },
+    // {
+    //   name: "Data Sources",
+    //   icon: createIcon(StorageOutlined, "/data-sources", theme, location, themeColor),
+    //   route: "/data-sources",
+    //   shouldShow: checkPermission(
+    //     permissions,
+    //     PermissionsMap.DATA_SOURCE,
+    //     "list"
+    //   ),
+    // },
     {
       name: "Invoice Information",
       icon: createIcon(NotificationsOutlined, "/data-source", theme, location, themeColor),
@@ -1439,11 +1439,11 @@ function getNavItems(
       subItems: dataSourceItems,
       shouldShow: shouldShowNotifications,
     },
-    {
-      name: "VixAI Insights",
-      icon: createIcon(AutoAwesomeIcon, "/VixAi-Insights", theme, location, themeColor),
-      route: "/VixAi-Insights",
-    },
+    // {
+    //   name: "VixAI Insights",
+    //   icon: createIcon(AutoAwesomeIcon, "/VixAi-Insights", theme, location, themeColor),
+    //   route: "/VixAi-Insights",
+    // },
     {
       name: "Data Export Jobs",
       icon: createIcon(AssignmentTurnedInOutlined, "/jobs", theme, location, themeColor),

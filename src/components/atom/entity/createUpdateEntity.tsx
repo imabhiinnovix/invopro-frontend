@@ -59,11 +59,13 @@ interface FormAttribute {
   refEntityId: string;
   refEntityField: string;
   relationType: string;
+  matchStrategy: string;
   validation: string[];
   transformations: string[];
   cleaner: string[];
   isReferenceEditable: boolean | "HIDE" | "VIEW" | "EDIT";
   isOptionFixed: "Yes" | "No";
+  normalize: "Yes" | "No";
 }
 
 interface FormEntityRequestPayload {
@@ -184,6 +186,14 @@ const AttributeField: React.FC<AttributeFieldProps> = ({
           ]}
           defaultValue={attribute.type || ""}
         />
+         <CommonSelect
+              control={control}
+              name={`attributes.${index}.normalize`}
+              label="Normalization"
+              options={["Yes", "No"]}
+              defaultValue={attribute.normalize || "No"}
+              clearable={false}
+            />
         {["option", "multioption", "text-with-option"].includes(
           watchedType,
         ) && (
@@ -289,6 +299,14 @@ const AttributeField: React.FC<AttributeFieldProps> = ({
             (errors.attributes?.[index]?.relationType as FieldError)?.message
           }
         />
+         <CommonSelect
+          control={control}
+          name={`attributes.${index}.matchStrategy`}
+          label="Reference Match Strategy"
+          options={["exact", "normalized"]}
+          defaultValue={attribute.matchStrategy || "exact"}
+          rules={{ required: false }}
+        />
       </Stack>
     </Box>
   );
@@ -329,11 +347,13 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
           refEntityId: "",
           refEntityField: "",
           relationType: "",
+          matchStrategy: "",
           validation: [],
           transformations: [],
           cleaner: [],
           isReferenceEditable: "HIDE",
           isOptionFixed: "No",
+          normalize: "No"
         },
       ],
     },
@@ -351,6 +371,7 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
           required: attr.required ? "Mandatory" : "Not Mandatory",
           optionAttributeId: attr.optionAttributeId ?? "",
           isOptionFixed: attr.isOptionFixed === true ? "Yes" : "No",
+          normalize: attr.normalize === true ? "Yes" : "No",
           _id: attr._id ?? "",
           refEntityId:
             typeof attr.referenceEntitySetting?.refEntityId === "object"
@@ -362,6 +383,7 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
                 "")
               : (attr.referenceEntitySetting?.refEntityField ?? ""),
           relationType: attr.referenceEntitySetting?.relationType ?? "",
+          matchStrategy: attr.referenceEntitySetting?.matchStrategy ?? "",
           validation: attr.validation ?? [],
           transformations: attr.transformations ?? [],
           cleaner: attr.cleaner ?? [],
@@ -374,9 +396,11 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
             required: "Not Mandatory",
             optionAttributeId: "",
             isOptionFixed: "No",
+            normalize: "No",
             refEntityId: "",
             refEntityField: "",
             relationType: "",
+            matchStrategy: "",
             validation: [],
             transformations: [],
             cleaner: [],
@@ -407,9 +431,11 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
             required: "Not Mandatory",
             optionAttributeId: "",
             isOptionFixed: "No",
+            normalize: "No",
             refEntityId: "",
             refEntityField: "",
             relationType: "",
+            matchStrategy: "",
             validation: [],
             transformations: [],
             cleaner: [],
@@ -564,9 +590,11 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
                   type: "text",
                   optionAttributeId: "",
                   isOptionFixed: "No",
+                  normalize: "No",
                   refEntityId: "",
                   refEntityField: "",
                   relationType: "",
+                  matchStrategy: "",
                   validation: [],
                   transformations: [],
                   cleaner: [],
@@ -652,7 +680,9 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
         refEntityId,
         refEntityField,
         relationType,
+        matchStrategy,
         isOptionFixed,
+        normalize,
         ...rest
       } = data;
       const updated: any = {
@@ -679,8 +709,10 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
           refEntityId,
           refEntityField: selectedType,
           relationType,
+          matchStrategy: matchStrategy || 'exact'
         };
       }
+      updated.normalize = normalize === "Yes" ? true : false;
       return updated;
     });
 
@@ -797,11 +829,13 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
                   refEntityId: "",
                   refEntityField: "",
                   relationType: "",
+                  matchStrategy: "",
                   validation: [],
                   transformations: [],
                   cleaner: [],
                   isReferenceEditable: "HIDE",
                   isOptionFixed: "No",
+                  normalize: "No"
                 });
                 setReferenceEntityNames((prev) => ({
                   ...prev,
@@ -997,9 +1031,11 @@ const CreateUpdateEntity: React.FC<CreateUpdateEntityProps> = ({
                     required: "Not Mandatory",
                     optionAttributeId: "",
                     isOptionFixed: "No",
+                    normalize: "No",
                     refEntityId: "",
                     refEntityField: "",
                     relationType: "",
+                    matchStrategy: "",
                     validation: [],
                     transformations: [],
                     cleaner: [],
