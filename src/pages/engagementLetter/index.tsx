@@ -1,25 +1,23 @@
+"use client";
+
 import * as React from "react";
 import { useState, useEffect } from "react";
-import {
-  Box,
-  Typography,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Button,
-} from "@mui/material";
+import { Box, Typography, Dialog, DialogTitle, DialogContent, DialogActions, Button } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
+import { useNavigate } from "react-router-dom";
+
 import useDelete from "../../hooks/useDelete";
 import { DELETE } from "../../services/apiRoutes";
 import { toast } from "react-toastify";
-import { EngagementLetterModal } from "./EngagementLetterModal";
+
 import { EngagementLetterDataTable } from "./EngagementLetterDataTable";
+
 import {
   PageHeader,
   PageCardLayout,
   StyledButton,
 } from "../../components/common";
+
 import { useSelector } from "react-redux";
 import { RootState } from "../../store";
 import { checkPermission } from "../../utils/utils";
@@ -51,18 +49,17 @@ interface EngagementLetterPostResponse {
 }
 
 export default function EngagementLetter() {
-  const [openModal, setOpenModal] = useState(false);
-  const [modalMode, setModalMode] = useState<"add" | "edit" | "view">("add");
+  const navigate = useNavigate();
+
   const [openDialog, setOpenDialog] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
-  const [editId, setEditId] = useState<string | null>(null);
-  const [rowData, setRowData] = useState<EngagementLetter | null>(null);
 
   const [searchValue, setSearchValue] = useState("");
   const [paginationModel, setPaginationModel] = useState({
     page: 0,
     pageSize: 10,
   });
+
   const [reload, setReload] = useState(false);
 
   const permissions = useSelector(
@@ -88,10 +85,8 @@ export default function EngagementLetter() {
   );
 
   // ================= DELETE =================
-  const deleteEngagementLetter = useDelete<
-    null,
-    EngagementLetterPostResponse
-  >(
+
+  const deleteEngagementLetter = useDelete<null, EngagementLetterPostResponse>(
     ["deleteEngagementLetter"],
     (data) => {
       if (data?.success) {
@@ -114,35 +109,20 @@ export default function EngagementLetter() {
   // ================= HANDLERS =================
 
   const handleAdd = () => {
-    setRowData(null);
-    setEditId(null);
-    setModalMode("add");
-    setOpenModal(true);
+    navigate("/engagement-letter/create");
   };
 
   const handleEdit = (row: EngagementLetter) => {
-    setRowData(row);
-    setEditId(row._id);
-    setModalMode("edit");
-    setOpenModal(true);
+    navigate(`/engagement-letter/edit/${row._id}`);
   };
 
   const handleView = (row: EngagementLetter) => {
-    setRowData(row);
-    setEditId(row._id);
-    setModalMode("view");
-    setOpenModal(true);
+    navigate(`/engagement-letter/view/${row._id}`);
   };
 
   const handleDelete = (id: string) => {
     setDeleteId(id);
     setOpenDialog(true);
-  };
-
-  const handleCloseModal = () => {
-    setOpenModal(false);
-    setEditId(null);
-    setRowData(null);
   };
 
   const handleCloseDialog = () => {
@@ -157,9 +137,6 @@ export default function EngagementLetter() {
       });
     }
   };
-
-  const handleCreated = () => setReload(true);
-  const handleUpdated = () => setReload(true);
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchValue(e.target.value);
@@ -202,26 +179,20 @@ export default function EngagementLetter() {
         />
       </PageCardLayout>
 
-      <EngagementLetterModal
-        rowData={rowData}
-        open={openModal}
-        onClose={handleCloseModal}
-        mode={modalMode}
-        editId={editId}
-        onCreated={handleCreated}
-        onUpdated={handleUpdated}
-      />
+      {/* Delete Confirmation Dialog */}
 
-      {/* Delete Confirmation */}
       <Dialog open={openDialog} onClose={handleCloseDialog}>
         <DialogTitle>Confirm Delete</DialogTitle>
+
         <DialogContent>
           <Typography>
             Are you sure you want to delete this engagement letter?
           </Typography>
         </DialogContent>
+
         <DialogActions>
           <Button onClick={handleCloseDialog}>No</Button>
+
           <Button
             onClick={handleConfirmDelete}
             color="error"

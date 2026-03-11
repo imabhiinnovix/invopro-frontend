@@ -9,6 +9,7 @@ import AppRoutes from "./routes";
 import UnifiedThemeProvider from "./providers/UnifiedThemeProvider";
 import { GlobalPollingManager } from "./components/common/importFile/ImportFile";
 import "./App.css";
+import '@react-pdf-viewer/core/lib/styles/index.css';
 
 function App() {
   return (

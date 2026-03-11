@@ -64,6 +64,8 @@ export const POST = {
   Create_Vendor: "/invoicivix-vendor/vendor/create",
   Create_Engagement_Letter: "/invoicivix-vendor/engagement-letter/create",
   Create_Legal_Document: "/invoicivix-vendor/legal-document/create",
+  Create_Activity_Rate_Card: "/invoicivix-vendor/activity-rate-card/create",
+  DATASOURCE_MASTER_LIST: "/common/dataSourceVersion/master-data"
 };
 
 export const PUT = {
@@ -92,6 +94,7 @@ export const PUT = {
   UPDATE_VENDOR: "/invoicivix-vendor/vendor/update/",
   UPDATE_ENGAGEMENT_LETTER: "/invoicivix-vendor/engagement-letter/update/",
   UPDATE_LEGAL_DOCUMENT: "/invoicivix-vendor/legal-document/update/",
+  UPDATE_ACTIVITY_RATE_CARD: "/invoicivix-vendor/activity-rate-card/update/",
 };
 
 export const DELETE = {
@@ -112,6 +115,7 @@ export const DELETE = {
   Delete_Vendor: "/invoicivix-vendor/vendor/delete",
   Delete_Engagement_Letter: "/invoicivix-vendor/engagement-letter/delete",
   Delete_Legal_Document: "/invoicivix-vendor/legal-document/delete",
+  Delete_Activity_Rate_Card: "/invoicivix-vendor/activity-rate-card/delete",
 };
 
 export const GET = {
@@ -185,5 +189,7 @@ export const GET = {
   CENTRAL_FILES_VALIDATED_ROWS: "/common/central-files/validated-rows",
   Vendor_List: "/invoicivix-vendor/vendor/list",
   Engagement_Letter_List: "/invoicivix-vendor/engagement-letter/list",
+  Get_Engagement_Letter: "/invoicivix-vendor/engagement-letter",
   Legal_Document_List: "/invoicivix-vendor/legal-document/list",
+  Activity_Rate_Card_List: "/invoicivix-vendor/activity-rate-card/list",
 };

@@ -46,6 +46,9 @@ import BusinessUnit from "./pages/businessUnit";
 import CentralDataSources from "./pages/centralDataSources";
 import NotFound from "./pages/notFound";
 import EngagementLetter from "./pages/engagementLetter";
+import EngagementLetterCreate from "./pages/engagementLetter/create";
+import EngagementLetterEdit from "./pages/engagementLetter/edit";
+import EngagementLetterView from "./pages/engagementLetter/view";
 import LegalDocument from "./pages/legalDocument";
 
 const AppRoutes = () => {
@@ -114,6 +117,21 @@ const AppRoutes = () => {
           <Route path="/vendor" element={<Vendor />} />
 
           <Route path="/engagement-letter" element={<EngagementLetter />} />
+
+          <Route
+            path="/engagement-letter/create"
+            element={<EngagementLetterCreate />}
+          />
+
+          <Route
+            path="/engagement-letter/edit/:id"
+            element={<EngagementLetterEdit />}
+          />
+
+          <Route
+            path="/engagement-letter/view/:id"
+            element={<EngagementLetterView />}
+          />
 
           <Route path="/legal-document" element={<LegalDocument />} />
 
