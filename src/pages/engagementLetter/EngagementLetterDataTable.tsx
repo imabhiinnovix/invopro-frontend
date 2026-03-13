@@ -168,7 +168,7 @@ export function EngagementLetterDataTable({
             </ActionIconButton>
           </Tooltip>
 
-          <Tooltip title="Delete" arrow>
+          {/* <Tooltip title="Delete" arrow>
             <span>
               <ActionIconButton
                 onClick={() => params.row.handleDelete(params.row._id)}
@@ -177,7 +177,7 @@ export function EngagementLetterDataTable({
                 <DeleteOutlineIcon />
               </ActionIconButton>
             </span>
-          </Tooltip>
+          </Tooltip> */}
         </Box>
       ),
     },

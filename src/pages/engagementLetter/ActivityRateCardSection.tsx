@@ -39,6 +39,8 @@ import useDelete from "../../hooks/useDelete";
 import { GET, POST, PUT, DELETE } from "../../services/apiRoutes";
 import { CURRENCIES } from "../../constants/currencies";
 import { LANGUAGES } from "../../constants/languages";
+import { useSelector } from "react-redux";
+import { RootState } from "../../reducers";
 
 interface Props {
   vendorId: string;
@@ -130,21 +132,27 @@ export default function ActivityRateCardSection({
   const costCodeMaster = usePost(["costCodeMaster"], undefined, false);
   const costTypeMaster = usePost(["costTypeMaster"], undefined, false);
 
+  const commonDataSourceList = useSelector(
+    (state: RootState) => state.dataSource?.list,
+  );
+
+  // Extract IDs based on code
+const costCodeDataSourceId = commonDataSourceList.find(ds => ds.code === 'costcode')?._id;
+const costTypeDataSourceId = commonDataSourceList.find(ds => ds.code === 'costtype')?._id;
+
   // Fetch master data
   useEffect(() => {
     const fetchMasterData = async () => {
       try {
         const costCodeRes: any = await costCodeMaster.mutateAsync({
           url: POST.DATASOURCE_MASTER_LIST,
-          payload: { dataSourceId: "699ef72d7df5e0efe12d4b8a" },
+          payload: { dataSourceId: costCodeDataSourceId },
         });
 
         const costTypeRes: any = await costTypeMaster.mutateAsync({
           url: POST.DATASOURCE_MASTER_LIST,
-          payload: { dataSourceId: "699ef7cf7df5e0efe12d4bdc" },
+          payload: { dataSourceId: costTypeDataSourceId },
         });
-
-        console.log('costCodeRes',costCodeRes);
 
         setCostCodeOptions(costCodeRes?.data || []);
         setCostTypeOptions(costTypeRes?.data || []);
@@ -236,13 +244,17 @@ export default function ActivityRateCardSection({
   return (
     <Card sx={{ mt: 3 }}>
       <CardContent>
-        <Typography variant="h6" mb={2}>
-          Activity Rate Card
-        </Typography>
+       <Grid container alignItems="center" justifyContent="space-between" sx={{mb:2}}>
+  <Grid item>
+    <Typography variant="h6">Activity Rate Card</Typography>
+  </Grid>
 
-        <StyledButton variant="primary" sx={{ mb: 2 }} onClick={handleAdd}>
-          Add Activity Rate
-        </StyledButton>
+  <Grid item>
+    <Button variant="outlined" onClick={handleAdd}>
+      Add Rate
+    </Button>
+  </Grid>
+</Grid>
 
         <Collapse in={showForm} timeout="auto" unmountOnExit>
           <form onSubmit={handleSubmit(onSubmit)}>

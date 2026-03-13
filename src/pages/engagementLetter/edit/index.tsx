@@ -2,7 +2,6 @@ import * as React from "react";
 import { useEffect, useState } from "react";
 import {
   Box,
-  Typography,
   TextField,
   Grid,
   FormControl,
@@ -10,10 +9,9 @@ import {
   Select,
   MenuItem,
   CircularProgress,
-  Collapse,
-  IconButton,
+  Tabs,
+  Tab,
 } from "@mui/material";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 
 import { useForm, Controller } from "react-hook-form";
 import { useNavigate, useParams } from "react-router-dom";
@@ -27,12 +25,22 @@ import usePut from "../../../hooks/usePut";
 import { GET, PUT } from "../../../services/apiRoutes";
 
 import ActivityRateCardSection from "../ActivityRateCardSection";
-
-/* -------- Vendor Interface -------- */
+import AttorneyRateCardSection from "../AttorneyRateCardSection";
+import FARateCardSection from "../FARateCardSection";
 
 interface Vendor {
   _id: string;
   name: string;
+}
+
+function TabPanel(props: any) {
+  const { children, value, index } = props;
+
+  return (
+    <div hidden={value !== index}>
+      {value === index && <Box pt={2}>{children}</Box>}
+    </div>
+  );
 }
 
 export default function EngagementLetterEdit() {
@@ -42,11 +50,13 @@ export default function EngagementLetterEdit() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
-  const [showBasicDetails, setShowBasicDetails] = useState(true);
+  const [tabValue, setTabValue] = useState(0);
 
   const { control, handleSubmit, reset, setValue } = useForm();
 
-  /* ---------------- GET LETTER ---------------- */
+  const handleTabChange = (_: any, newValue: number) => {
+    setTabValue(newValue);
+  };
 
   const engagementLetter = useGet(
     ["engagementLetter", id],
@@ -54,23 +64,17 @@ export default function EngagementLetterEdit() {
     true
   );
 
-  /* ---------------- GET VENDOR LIST ---------------- */
-
   const vendorList = useGet<{ success: boolean; data: Vendor[] }>(
     ["vendorList"],
     GET.Vendor_List,
     true
   );
 
-  /* ---------------- UPDATE API ---------------- */
-
   const updateEngagementLetter = usePut(
     ["updateEngagementLetter"],
     () => navigate("/engagement-letter"),
     true
   );
-
-  /* ---------------- SET FORM VALUES ---------------- */
 
   useEffect(() => {
     const data = engagementLetter.data?.data;
@@ -81,6 +85,8 @@ export default function EngagementLetterEdit() {
         description: data.description,
         startDate: data.startDate?.split("T")[0],
         endDate: data.endDate?.split("T")[0] || "",
+        generalTerms: data.generalTerms || "",
+        paymentTerms: data.paymentTerms || "",
       });
 
       setValue("vendorId", data.vendorId?._id);
@@ -94,8 +100,6 @@ export default function EngagementLetterEdit() {
     }
   }, [engagementLetter.data, reset, setValue]);
 
-  /* ---------------- FILE CHANGE ---------------- */
-
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
 
@@ -104,8 +108,6 @@ export default function EngagementLetterEdit() {
     setSelectedFile(file);
     setPreviewUrl(URL.createObjectURL(file));
   };
-
-  /* ---------------- SUBMIT ---------------- */
 
   const onSubmit = (data: any) => {
     updateEngagementLetter.mutate({
@@ -118,35 +120,22 @@ export default function EngagementLetterEdit() {
 
   return (
     <Box p={3}>
-      {/* Toggle Header */}
-
-      <Box display="flex" alignItems="center" gap={1} mb={2}>
-        <IconButton
-          size="small"
-          onClick={() => setShowBasicDetails((prev) => !prev)}
-        >
-          <ExpandMoreIcon
-            sx={{
-              transform: showBasicDetails ? "rotate(180deg)" : "rotate(90deg)",
-              transition: "0.3s",
-            }}
-          />
-        </IconButton>
-
-        <Typography variant="h6">
-          Basic Details
-        </Typography>
-      </Box>
-
       <Grid container spacing={3}>
-        {/* ---------------- LEFT FORM ---------------- */}
-
         <Grid item xs={7}>
-          <Collapse in={showBasicDetails}>
+          <Tabs
+            value={tabValue}
+            onChange={handleTabChange}
+            sx={{ borderBottom: 1, borderColor: "divider", mb: 2 }}
+          >
+            <Tab label="Basic Info" />
+            <Tab label="Activity Rate" />
+            <Tab label="Attorney Rate" />
+            <Tab label="FA Rate" />
+          </Tabs>
+
+          <TabPanel value={tabValue} index={0}>
             <form onSubmit={handleSubmit(onSubmit)}>
               <Grid container spacing={2}>
-                {/* Vendor */}
-
                 <Grid item xs={12}>
                   <Controller
                     name="vendorId"
@@ -155,7 +144,6 @@ export default function EngagementLetterEdit() {
                     render={({ field }) => (
                       <FormControl fullWidth size="small">
                         <InputLabel>Vendor</InputLabel>
-
                         <Select {...field} label="Vendor">
                           {vendorList.data?.data?.map((vendor) => (
                             <MenuItem key={vendor._id} value={vendor._id}>
@@ -167,8 +155,6 @@ export default function EngagementLetterEdit() {
                     )}
                   />
                 </Grid>
-
-                {/* Reference Number */}
 
                 <Grid item xs={12}>
                   <Controller
@@ -184,8 +170,6 @@ export default function EngagementLetterEdit() {
                     )}
                   />
                 </Grid>
-
-                {/* Description */}
 
                 <Grid item xs={12}>
                   <Controller
@@ -204,8 +188,6 @@ export default function EngagementLetterEdit() {
                   />
                 </Grid>
 
-                {/* Start Date */}
-
                 <Grid item xs={6}>
                   <Controller
                     name="startDate"
@@ -222,8 +204,6 @@ export default function EngagementLetterEdit() {
                     )}
                   />
                 </Grid>
-
-                {/* End Date */}
 
                 <Grid item xs={6}>
                   <Controller
@@ -242,8 +222,6 @@ export default function EngagementLetterEdit() {
                   />
                 </Grid>
 
-                {/* Status */}
-
                 <Grid item xs={12}>
                   <Controller
                     name="engagementLetterStatus"
@@ -252,7 +230,6 @@ export default function EngagementLetterEdit() {
                     render={({ field }) => (
                       <FormControl fullWidth size="small">
                         <InputLabel>Status</InputLabel>
-
                         <Select {...field} label="Status">
                           <MenuItem value="in-force">In Force</MenuItem>
                           <MenuItem value="expired">Expired</MenuItem>
@@ -262,7 +239,43 @@ export default function EngagementLetterEdit() {
                   />
                 </Grid>
 
-                {/* Buttons */}
+                {/* NEW FIELD */}
+
+                <Grid item xs={12}>
+                  <Controller
+                    name="generalTerms"
+                    control={control}
+                    render={({ field }) => (
+                      <TextField
+                        {...field}
+                        label="General Terms & Conditions"
+                        multiline
+                        rows={4}
+                        fullWidth
+                        size="small"
+                      />
+                    )}
+                  />
+                </Grid>
+
+                {/* NEW FIELD */}
+
+                <Grid item xs={12}>
+                  <Controller
+                    name="paymentTerms"
+                    control={control}
+                    render={({ field }) => (
+                      <TextField
+                        {...field}
+                        label="Payment Terms & Conditions"
+                        multiline
+                        rows={4}
+                        fullWidth
+                        size="small"
+                      />
+                    )}
+                  />
+                </Grid>
 
                 <Grid item xs={12}>
                   <Box mt={2} display="flex" gap={1}>
@@ -280,20 +293,38 @@ export default function EngagementLetterEdit() {
                 </Grid>
               </Grid>
             </form>
-          </Collapse>
+          </TabPanel>
 
-          {/* Activity Rate Card */}
+          <TabPanel value={tabValue} index={1}>
+            {engagementLetter.data?.data && (
+              <ActivityRateCardSection
+                vendorId={engagementLetter.data.data.vendorId?._id}
+                engagementLetterId={engagementLetter.data.data._id}
+                currency={engagementLetter.data.data.vendorId?.defaultCurrency}
+              />
+            )}
+          </TabPanel>
 
-          {engagementLetter.data?.data && (
-            <ActivityRateCardSection
-              vendorId={engagementLetter.data.data.vendorId?._id}
-              engagementLetterId={engagementLetter.data.data._id}
-              currency={engagementLetter.data.data.vendorId?.defaultCurrency}
-            />
-          )}
+          <TabPanel value={tabValue} index={2}>
+            {engagementLetter.data?.data && (
+              <AttorneyRateCardSection
+                vendorId={engagementLetter.data.data.vendorId?._id}
+                engagementLetterId={engagementLetter.data.data._id}
+                currency={engagementLetter.data.data.vendorId?.defaultCurrency}
+              />
+            )}
+          </TabPanel>
+
+          <TabPanel value={tabValue} index={3}>
+            {engagementLetter.data?.data && (
+              <FARateCardSection
+                vendorId={engagementLetter.data.data.vendorId?._id}
+                engagementLetterId={engagementLetter.data.data._id}
+                currency={engagementLetter.data.data.vendorId?.defaultCurrency}
+              />
+            )}
+          </TabPanel>
         </Grid>
-
-        {/* ---------------- RIGHT PREVIEW ---------------- */}
 
         <Grid item xs={5}>
           <Box mb={2}>

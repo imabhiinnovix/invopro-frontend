@@ -1,0 +1,405 @@
+import {
+  Box,
+  Grid,
+  TextField,
+  MenuItem,
+  Typography,
+  Button,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  IconButton,
+  Table,
+  TableHead,
+  TableRow,
+  TableCell,
+  TableBody,
+  Autocomplete
+} from "@mui/material";
+
+import DeleteIcon from "@mui/icons-material/Delete";
+import EditIcon from "@mui/icons-material/Edit";
+
+import { Controller, useForm } from "react-hook-form";
+import { useState } from "react";
+
+import useGet from "../../hooks/useGet";
+import usePost from "../../hooks/usePost";
+import useDelete from "../../hooks/useDelete";
+import usePut from "../../hooks/usePut";
+
+import { CURRENCIES } from "../../constants/currencies";
+
+
+import { GET, POST, DELETE, PUT } from "../../services/apiRoutes";
+
+const ATTORNEY_USER_TYPES = [
+  { label: "Attorney", value: "attorney" },
+  { label: "Paralegal", value: "paralegal" }
+];
+
+export default function AttorneyRateCardSection({
+  vendorId,
+  engagementLetterId,
+  currency
+}: any) {
+
+  const { control, handleSubmit, reset } = useForm();
+
+  const [showForm, setShowForm] = useState(false);
+
+  const [open, setOpen] = useState(false);
+  const [editRow, setEditRow] = useState<any>(null);
+
+  const attorneys = useGet(
+    ["attorneys", vendorId],
+    `${GET.Vendor_Attorney_List}?vendorId=${vendorId}`,
+    true
+  );
+
+  const rateCards = useGet(
+    ["attorneyRateCards", engagementLetterId],
+    `${GET.Activity_Rate_Card_List}?activityEntity=attorney&engagementLetterId=${engagementLetterId}`,
+    true
+  );
+
+  const createAttorney = usePost(
+    ["createAttorney"],
+    () => attorneys.refetch(),
+    true
+  );
+
+  const createRateCard = usePost(
+    ["createRateCard"],
+    () => rateCards.refetch(),
+    true
+  );
+
+  const updateRateCard = usePut(
+    ["updateRateCard"],
+    () => rateCards.refetch(),
+    true
+  );
+
+  const deleteRateCard = useDelete(
+    ["deleteRateCard"],
+    () => rateCards.refetch(),
+    true
+  );
+
+  const addAttorney = (data: any) => {
+    createAttorney.mutate({
+      url: POST.Create_Vendor_Attorney,
+      payload: {
+        vendorId,
+        name: data.name,
+        userType: data.userType
+      }
+    });
+
+    setOpen(false);
+  };
+
+  const submitRateCard = (data: any) => {
+
+    const payload = {
+      vendorId,
+      engagementLetterId,
+      activityEntity: "attorney",
+      attorneyId: data.attorneyId,
+      rateType: data.rateType,
+      rate: data.rate,
+      upperCap: data.upperCap,
+      currency: data.currency,
+      status: data.status
+    };
+
+    if(editRow){
+      updateRateCard.mutate({
+        url: `${PUT.UPDATE_ACTIVITY_RATE_CARD}${editRow._id}`,
+        payload
+      });
+      setEditRow(null);
+    }else{
+      createRateCard.mutate({
+        url: POST.Create_Activity_Rate_Card,
+        payload
+      });
+    }
+
+    reset({
+  attorneyId: "",
+  rateType: "",
+  rate: "",
+  upperCap: "",
+  currency: currency,
+  status: "active"
+});
+
+setEditRow(null);
+  };
+
+  const resetToAdd = () => {
+    reset({
+      attorneyId: "",
+      rateType: "",
+      rate: "",
+      upperCap: "",
+      currency: currency,
+      status: "active"
+    });
+    setEditRow(null);
+  };
+
+const cancelForm = () => {
+  reset({
+    attorneyId: "",
+    rateType: "",
+    rate: "",
+    upperCap: "",
+    currency: currency,
+    status: "active"
+  });
+
+  setEditRow(null);
+};
+
+  return (
+    <Box mt={4}>
+
+      <Box display="flex" justifyContent="space-between" alignItems="center">
+        <Typography variant="h6">Attorney Rate Card</Typography>
+
+        <Button
+  variant="outlined"
+  onClick={()=>{
+    resetToAdd();
+    setShowForm(true);
+  }}
+>
+  Add Rate
+</Button>
+      </Box>
+
+      {showForm && (
+<Grid container spacing={2} mt={1}>
+
+        <Grid item xs={3}>
+          <Controller
+            name="attorneyId"
+            control={control}
+            render={({ field }) => (
+              <TextField select {...field} label="Attorney" fullWidth size="small">
+                {attorneys.data?.data?.map((a: any) => (
+                  <MenuItem key={a._id} value={a._id}>
+                    {a.name}
+                  </MenuItem>
+                ))}
+              </TextField>
+            )}
+          />
+        </Grid>
+
+        {!editRow && (
+          <Grid item xs={3}>
+            <Button variant="outlined" onClick={() => setOpen(true)}>
+              Add Attorney
+            </Button>
+          </Grid>
+        )}
+
+        <Grid item xs={3}>
+          <Controller
+            name="rateType"
+            control={control}
+            render={({ field }) => (
+              <TextField select {...field} label="Rate Type" fullWidth size="small">
+                <MenuItem value="fixed">Fixed</MenuItem>
+                <MenuItem value="hourly">Hourly</MenuItem>
+              </TextField>
+            )}
+          />
+        </Grid>
+
+        <Grid item xs={3}>
+          <Controller
+            name="rate"
+            control={control}
+            render={({ field }) => (
+              <TextField {...field} label="Rate" fullWidth size="small"/>
+            )}
+          />
+        </Grid>
+
+        <Grid item xs={2}>
+          <Controller
+            name="upperCap"
+            control={control}
+            render={({ field }) => (
+              <TextField {...field} label="Upper Cap" fullWidth size="small"/>
+            )}
+          />
+        </Grid>
+
+        <Grid item xs={3}>
+          <Controller
+                  name="currency"
+                  control={control}
+                  render={({ field }) => (
+                    <Autocomplete
+                      options={CURRENCIES}
+                      getOptionLabel={(option) => option.label}
+                      value={CURRENCIES.find((c) => c.code === field.value) || null}
+                      onChange={(_, newValue) =>
+                        field.onChange(newValue ? newValue.code : "")
+                      }
+                      renderInput={(params) => (
+                        <TextField {...params} label="Currency" size="small" />
+                      )}
+                    />
+                  )}
+                />
+        </Grid>
+
+        <Grid item xs={2}>
+          <Controller
+            name="status"
+            defaultValue="active"
+            control={control}
+            render={({ field }) => (
+              <TextField select {...field} label="Status" fullWidth size="small">
+                <MenuItem value="active">Active</MenuItem>
+                <MenuItem value="inactive">Inactive</MenuItem>
+              </TextField>
+            )}
+          />
+        </Grid>
+
+        <Grid item xs={3} display="flex" alignItems="center">
+
+  <Button
+    variant="contained"
+    onClick={handleSubmit(submitRateCard)}
+  >
+    {editRow ? "Update" : "Save"}
+  </Button>
+
+  <Button
+  sx={{ ml: 2 }}
+  variant="outlined"
+  onClick={()=>{
+    cancelForm();
+    setShowForm(false);
+  }}
+>
+  Cancel
+</Button>
+
+</Grid>
+
+      </Grid>
+      )}
+
+      <Table sx={{ mt:3 }}>
+        <TableHead>
+          <TableRow>
+            <TableCell>Attorney</TableCell>
+            <TableCell>Rate</TableCell>
+            <TableCell>Upper Cap</TableCell>
+            <TableCell>Status</TableCell>
+            <TableCell/>
+          </TableRow>
+        </TableHead>
+
+        <TableBody>
+
+          {rateCards.data?.data?.map((r:any)=>(
+            <TableRow key={r._id}>
+              <TableCell>{r.attorneyId?.name}</TableCell>
+              <TableCell>{r.rate}</TableCell>
+              <TableCell>{r.upperCap}</TableCell>
+              <TableCell>{r.status}</TableCell>
+
+              <TableCell>
+
+                <IconButton
+                  onClick={()=>{
+                    reset({
+                      attorneyId:r.attorneyId?._id,
+                      rateType:r.rateType,
+                      rate:r.rate,
+                      upperCap:r.upperCap,
+                      currency:r.currency,
+                      status:r.status
+                    });
+                    setEditRow(r);
+setShowForm(true);
+                  }}
+                >
+                  <EditIcon/>
+                </IconButton>
+
+                <IconButton
+                  onClick={()=>deleteRateCard.mutate({
+                    url:`${DELETE.Delete_Activity_Rate_Card}/${r._id}`
+                  })}
+                >
+                  <DeleteIcon/>
+                </IconButton>
+
+              </TableCell>
+            </TableRow>
+          ))}
+
+        </TableBody>
+      </Table>
+
+      <Dialog open={open} onClose={()=>setOpen(false)}>
+
+        <DialogTitle>Add Attorney</DialogTitle>
+
+        <DialogContent>
+
+          <Controller
+            name="name"
+            control={control}
+            render={({ field }) => (
+              <TextField {...field} label="Name" fullWidth sx={{mt:2}}/>
+            )}
+          />
+
+         <Controller
+            name="userType"
+            control={control}
+            defaultValue=""
+            render={({ field }) => (
+                <TextField
+                {...field}
+                select
+                label="User Type"
+                fullWidth
+                size="small"
+                sx={{ mt: 2 }}
+                >
+                <MenuItem value="attorney">Attorney</MenuItem>
+                <MenuItem value="paralegal">Paralegal</MenuItem>
+                </TextField>
+            )}
+            />
+
+        </DialogContent>
+
+        <DialogActions>
+
+          <Button onClick={()=>setOpen(false)}>Cancel</Button>
+
+          <Button onClick={handleSubmit(addAttorney)}>Save</Button>
+
+        </DialogActions>
+
+      </Dialog>
+
+    </Box>
+  );
+}
