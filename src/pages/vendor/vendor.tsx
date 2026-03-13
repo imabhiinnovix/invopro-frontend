@@ -788,8 +788,41 @@ useEffect(() => {
     }
   };
 
+  // State to hold uploaded engagement letter file
+const [uploadedEngagementFile, setUploadedEngagementFile] = useState<File | null>(null);
+
+// Hook to create Engagement Letter
+const createEngagementLetter = usePostMultipart<any, any>(
+  ["createEngagementLetter"],
+  (data) => {
+    if (data?.success) {
+      toast.success("Engagement letter uploaded successfully");
+      // Save the returned engagement letter ID in the form
+      setValue("engagementLetterId", data.data._id);
+      setUploadedEngagementFile(null);
+    }
+  },
+  true
+);
+
+// Function to trigger saving engagement letter after vendor is created
+const handleSaveEngagementLetter = async (vendorId: string) => {
+  if (!uploadedEngagementFile) return;
+  const payload = {
+      vendorId,
+      files: uploadedEngagementFile || undefined,
+    };
+  const updateResponse = await createEngagementLetter.mutateAsync({
+    url: POST.Create_Engagement_Letter,
+    payload,
+  });
+  return updateResponse;
+};
+
   const handleOrgModalSubmit = async (formData: any) => {
     setOrgModalLoading(true);
+      let vendorId: string | undefined;
+
 
     try {
       const { productIds, logo, ...rest } = formData;
@@ -865,10 +898,11 @@ useEffect(() => {
           };
 
       if (selectedOrg) {
-        await updateOrg.mutateAsync({
+        const updateRes = await updateOrg.mutateAsync({
           url: `${PUT.UPDATE_VENDOR}${selectedOrg._id}`,
           payload,
         });
+        vendorId = updateRes.data._id;
 
         if (formData.mediumSettings && formData.mediumSettings.length > 0) {
           const notivixProduct = formData.productSubscriptions.find(
@@ -903,6 +937,8 @@ useEffect(() => {
           payload,
         });
 
+        vendorId = createResponse.data._id;
+
         if (
           formData.mediumSettings &&
           formData.mediumSettings.length > 0 &&
@@ -935,6 +971,32 @@ useEffect(() => {
           }
         }
       }
+
+// Save engagement letter if file uploaded
+if (uploadedEngagementFile && vendorId) {
+  try {
+    const engagementLetterResponse = await handleSaveEngagementLetter(vendorId);
+    console.log('engagementLetterResponse',engagementLetterResponse);
+    const engagementLetterId = engagementLetterResponse?.data?._id;
+
+    if (engagementLetterId) {
+      // Patch vendor with engagement letter info
+      await updateOrg.mutateAsync({
+        url: `${PUT.UPDATE_VENDOR}${vendorId}`,
+        payload: {
+          isEngagementLetter: true,
+          engagementLetterId,
+        },
+      });
+
+      // Update form state
+      refetch();
+      setUploadedEngagementFile(null);
+    }
+  } catch (err) {
+    console.error("Failed to upload engagement letter", err);
+  }
+}
       replaceMedium([]);
     } catch (error) {
       console.error(error);
@@ -3245,11 +3307,13 @@ useEffect(() => {
                     <Divider sx={{ mt: 0.5 }} />
                   </Grid>
                   <EngagementLetterSection
-                  control={control}
-                  watch={watch}
-                  errors={errors}
-                  setValue={setValue}
-                />
+  control={control}
+  watch={watch}
+  errors={errors}
+  setValue={setValue}
+  setUploadedFile={setUploadedEngagementFile}
+  vendorId={selectedOrg?._id}
+/>
                   {selectedOrg && isSuperUser() && (
                     <Grid size={6}>
                       <Controller
