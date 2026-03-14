@@ -11,6 +11,7 @@ import { ActionIconButton, StatusChip } from "../../components/common";
 import SearchField from "../../components/common/SearchField";
 import { GET } from "../../services/apiRoutes";
 import { toast } from "react-toastify";
+import { formatDate } from "../../utils/utils";
 
 interface EngagementLetter {
   _id: string;
@@ -115,20 +116,22 @@ export function EngagementLetterDataTable({
       field: "referenceNumber",
       headerName: "Reference No.",
       flex: 1,
-      minWidth: 180,
+      minWidth: 80,
       disableColumnMenu: true,
     },
     {
       field: "startDate",
       headerName: "Start Date",
-      minWidth: 130,
+      minWidth: 200,
       disableColumnMenu: true,
+      renderCell: (params) => params.row.startDate ? formatDate(params.row.startDate) : "-",
     },
     {
       field: "endDate",
       headerName: "End Date",
-      minWidth: 130,
+      minWidth: 200,
       disableColumnMenu: true,
+      renderCell: (params) => params.row.endDate ? formatDate(params.row.endDate) : "-",
     },
     {
       field: "status",
