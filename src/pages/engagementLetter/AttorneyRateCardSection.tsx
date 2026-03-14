@@ -15,7 +15,8 @@ import {
   TableRow,
   TableCell,
   TableBody,
-  Autocomplete
+  Autocomplete,
+  TableContainer
 } from "@mui/material";
 
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -138,6 +139,7 @@ export default function AttorneyRateCardSection({
 });
 
 setEditRow(null);
+setShowForm(false);
   };
 
   const resetToAdd = () => {
@@ -166,10 +168,12 @@ const cancelForm = () => {
 };
 
   return (
-    <Box mt={4}>
+    <Box mt={1}>
 
       <Box display="flex" justifyContent="space-between" alignItems="center">
-        <Typography variant="h6">Attorney Rate Card</Typography>
+        <Grid item>
+            {/* <Typography variant="h6">Attorney Rate Card</Typography> */}
+        </Grid>
 
         <Button
   variant="outlined"
@@ -227,11 +231,11 @@ const cancelForm = () => {
             name="rate"
             control={control}
             render={({ field }) => (
-              <TextField {...field} label="Rate" fullWidth size="small"/>
+              <TextField {...field} label="Rate" type="number" inputProps={{ step: "0.0001" }} fullWidth size="small"/>
             )}
           />
         </Grid>
-
+{/* 
         <Grid item xs={2}>
           <Controller
             name="upperCap"
@@ -240,7 +244,7 @@ const cancelForm = () => {
               <TextField {...field} label="Upper Cap" fullWidth size="small"/>
             )}
           />
-        </Grid>
+        </Grid> */}
 
         <Grid item xs={3}>
           <Controller
@@ -301,24 +305,28 @@ const cancelForm = () => {
       </Grid>
       )}
 
+      <TableContainer>
+
       <Table sx={{ mt:3 }}>
         <TableHead>
           <TableRow>
             <TableCell>Attorney</TableCell>
+            <TableCell>Rate Type</TableCell>
             <TableCell>Rate</TableCell>
-            <TableCell>Upper Cap</TableCell>
+            <TableCell>Currency</TableCell>
             <TableCell>Status</TableCell>
             <TableCell/>
           </TableRow>
         </TableHead>
 
         <TableBody>
-
-          {rateCards.data?.data?.map((r:any)=>(
+{rateCards.data?.data && rateCards.data.data.length > 0 ? (
+          rateCards.data?.data?.map((r:any)=>(
             <TableRow key={r._id}>
               <TableCell>{r.attorneyId?.name}</TableCell>
+              <TableCell>{r.rateType}</TableCell>
               <TableCell>{r.rate}</TableCell>
-              <TableCell>{r.upperCap}</TableCell>
+              <TableCell>{r.currency}</TableCell>
               <TableCell>{r.status}</TableCell>
 
               <TableCell>
@@ -350,10 +358,18 @@ setShowForm(true);
 
               </TableCell>
             </TableRow>
-          ))}
+          ))
+          ) : (
+    <TableRow>
+      <TableCell colSpan={6} align="center">
+        No Data Available
+      </TableCell>
+    </TableRow>
+  )}
 
         </TableBody>
       </Table>
+      </TableContainer>
 
       <Dialog open={open} onClose={()=>setOpen(false)}>
 

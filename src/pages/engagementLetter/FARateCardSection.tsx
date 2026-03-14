@@ -232,12 +232,12 @@ export default function FARateCardSection({
 
  return(
 
-<Card sx={{mt:3}}>
+<Card sx={{mt:0}}>
 <CardContent>
 
 <Grid container alignItems="center" justifyContent="space-between" sx={{mb:2}}>
   <Grid item>
-    <Typography variant="h6">FA Rate Card</Typography>
+    {/* <Typography variant="h6">FA Rate Card</Typography> */}
   </Grid>
 
   <Grid item>
@@ -353,19 +353,19 @@ Add FA
 
 <Grid item xs={3}>
 <Controller name="rate" control={control} render={({field})=>(
-<TextField {...field} label="Rate" type="number" fullWidth size="small"/>
+<TextField {...field} label="Rate" type="number" inputProps={{ step: "0.0001" }} fullWidth size="small"/>
 )}/>
 </Grid>
 
 <Grid item xs={3}>
 <Controller name="minRate" control={control} render={({field})=>(
-<TextField {...field} label="Min Rate" type="number" fullWidth size="small"/>
+<TextField {...field} label="Min Rate" type="number" inputProps={{ step: "0.0001" }} fullWidth size="small"/>
 )}/>
 </Grid>
 
 <Grid item xs={3}>
 <Controller name="maxRate" control={control} render={({field})=>(
-<TextField {...field} label="Max Rate" type="number" fullWidth size="small"/>
+<TextField {...field} label="Max Rate" type="number" inputProps={{ step: "0.0001" }} fullWidth size="small"/>
 )}/>
 </Grid>
 
@@ -445,7 +445,7 @@ Add FA
 <Grid item xs={3} display="flex" alignItems="center">
 
 <Button variant="contained" type="submit">
-{editRow?"Update":"Add"}
+{editRow?"Update":"Save"}
 </Button>
 
 <Button sx={{ml:2}} onClick={()=>setShowForm(false)}>
@@ -479,8 +479,8 @@ Cancel
 </TableHead>
 
 <TableBody>
-
-{rateCards.data?.data?.map((row:any)=>(
+{rateCards.data?.data && rateCards.data.data.length > 0 ? (
+rateCards.data?.data?.map((row:any)=>(
 <TableRow key={row._id}>
 
 <TableCell>{row.subVendorId?.name}</TableCell>
@@ -507,7 +507,14 @@ Cancel
 </TableCell>
 
 </TableRow>
-))}
+))
+) : (
+    <TableRow>
+      <TableCell colSpan={12} align="center">
+        No Data Available
+      </TableCell>
+    </TableRow>
+  )}
 
 </TableBody>
 </Table>

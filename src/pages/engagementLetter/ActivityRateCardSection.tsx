@@ -242,11 +242,11 @@ const costTypeDataSourceId = commonDataSourceList.find(ds => ds.code === 'costty
   };
 
   return (
-    <Card sx={{ mt: 3 }}>
+    <Card sx={{ mt: 0 }}>
       <CardContent>
        <Grid container alignItems="center" justifyContent="space-between" sx={{mb:2}}>
   <Grid item>
-    <Typography variant="h6">Activity Rate Card</Typography>
+    {/* <Typography variant="h6">Activity Rate Card</Typography> */}
   </Grid>
 
   <Grid item>
@@ -351,6 +351,7 @@ const costTypeDataSourceId = commonDataSourceList.find(ds => ds.code === 'costty
                 <TextField
                   label="Rate"
                   type="number"
+                  inputProps={{ step: "0.0001" }}
                   size="small"
                   fullWidth
                   {...register("rate")}
@@ -361,6 +362,7 @@ const costTypeDataSourceId = commonDataSourceList.find(ds => ds.code === 'costty
                 <TextField
                   label="Min Rate"
                   type="number"
+                  inputProps={{ step: "0.0001" }}
                   size="small"
                   fullWidth
                   {...register("minRate")}
@@ -371,6 +373,7 @@ const costTypeDataSourceId = commonDataSourceList.find(ds => ds.code === 'costty
                 <TextField
                   label="Max Rate"
                   type="number"
+                  inputProps={{ step: "0.0001" }}
                   size="small"
                   fullWidth
                   {...register("maxRate")}
@@ -424,6 +427,7 @@ const costTypeDataSourceId = commonDataSourceList.find(ds => ds.code === 'costty
                 <TextField
                   label="Upper Cap"
                   type="number"
+                  inputProps={{ step: "0.0001" }}
                   size="small"
                   fullWidth
                   {...register("upperCap")}
@@ -498,7 +502,8 @@ const costTypeDataSourceId = commonDataSourceList.find(ds => ds.code === 'costty
               </TableRow>
             </TableHead>
             <TableBody>
-              {activityList.data?.data?.map((row: any) => (
+              {activityList.data?.data && activityList.data.data.length > 0 ? (
+              activityList.data?.data?.map((row: any) => (
                 <TableRow key={row._id}>
                   <TableCell>{row.costCode}</TableCell>
                   <TableCell>{row.costType}</TableCell>
@@ -525,7 +530,14 @@ const costTypeDataSourceId = commonDataSourceList.find(ds => ds.code === 'costty
                     </IconButton>
                   </TableCell>
                 </TableRow>
-              ))}
+              ))
+             ) : (
+    <TableRow>
+      <TableCell colSpan={12} align="center">
+        No Data Available
+      </TableCell>
+    </TableRow>
+  )} 
             </TableBody>
           </Table>
         </TableContainer>
