@@ -152,7 +152,7 @@ const EngagementLetterSection = ({
               variant="outlined"
               component="label"
               fullWidth
-              disabled={!selectedVendorCode}
+              // disabled={!selectedVendorCode}
             >
               Upload Engagement Letter
               <input

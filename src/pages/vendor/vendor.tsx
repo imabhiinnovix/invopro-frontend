@@ -1580,7 +1580,7 @@ if (uploadedEngagementFile && vendorId) {
                     </Box>
                   </Grid>
 
-                  {!selectedOrg ? (
+                  {/* {!selectedOrg ? (
                     <Grid size={6}>
                       <Box sx={{ display: "flex", alignItems: "center" }}>
                         <Controller
@@ -1600,7 +1600,7 @@ if (uploadedEngagementFile && vendorId) {
                         />
                       </Box>
                     </Grid>
-                  ) : null}
+                  ) : null} */}
                   {/* <Grid size={6}>
                     <Box sx={{ display: "flex", alignItems: "center" }}>
                       <Controller
