@@ -331,20 +331,28 @@ const costTypeDataSourceId = commonDataSourceList.find(ds => ds.code === 'costty
 
               {/* RATE TYPE */}
               <Grid item xs={4}>
-                <TextField
-                  select
-                  label="Rate Type"
-                  fullWidth
-                  size="small"
-                  {...register("rateType", { required: true })}
-                >
-                  <MenuItem value="fixed">Fixed</MenuItem>
-                  <MenuItem value="hourly">Hourly</MenuItem>
-                  <MenuItem value="per_word">Per Word</MenuItem>
-                  <MenuItem value="per_page">Per Page</MenuItem>
-                  <MenuItem value="upper_cap">Upper Cap</MenuItem>
-                </TextField>
-              </Grid>
+  <Controller
+    name="rateType"
+    control={control}
+    rules={{ required: true }}
+    render={({ field }) => (
+      <TextField
+        select
+        label="Rate Type"
+        fullWidth
+        size="small"
+        value={field.value || ""}
+        onChange={field.onChange}
+      >
+        <MenuItem value="fixed">Fixed</MenuItem>
+        <MenuItem value="hourly">Hourly</MenuItem>
+        <MenuItem value="per_word">Per Word</MenuItem>
+        <MenuItem value="per_page">Per Page</MenuItem>
+        <MenuItem value="upper_cap">Upper Cap</MenuItem>
+      </TextField>
+    )}
+  />
+</Grid>
 
               {/* RATE */}
               <Grid item xs={4}>
