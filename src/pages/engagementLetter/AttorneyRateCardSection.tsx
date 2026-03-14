@@ -193,6 +193,7 @@ const cancelForm = () => {
           <Controller
             name="attorneyId"
             control={control}
+            rules={{ required: true }}
             render={({ field }) => (
               <TextField select {...field} label="Attorney" fullWidth size="small">
                 {attorneys.data?.data?.map((a: any) => (
@@ -217,6 +218,7 @@ const cancelForm = () => {
           <Controller
             name="rateType"
             control={control}
+            rules={{ required: true }}
             render={({ field }) => (
               <TextField select {...field} label="Rate Type" fullWidth size="small">
                 <MenuItem value="fixed">Fixed</MenuItem>
@@ -230,6 +232,7 @@ const cancelForm = () => {
           <Controller
             name="rate"
             control={control}
+            rules={{ required: true }}
             render={({ field }) => (
               <TextField {...field} label="Rate" type="number" inputProps={{ step: "0.0001" }} fullWidth size="small"/>
             )}
@@ -250,6 +253,7 @@ const cancelForm = () => {
           <Controller
                   name="currency"
                   control={control}
+                  rules={{ required: true }}
                   render={({ field }) => (
                     <Autocomplete
                       options={CURRENCIES}

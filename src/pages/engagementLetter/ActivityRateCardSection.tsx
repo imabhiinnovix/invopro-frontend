@@ -264,7 +264,7 @@ const costTypeDataSourceId = commonDataSourceList.find(ds => ds.code === 'costty
                 <Controller
                   name="costCode"
                   control={control}
-                  rules={{ required: true }}
+                  // rules={{ required: true }}
                   render={({ field }) => (
                     <Autocomplete
                       options={costCodeOptions}

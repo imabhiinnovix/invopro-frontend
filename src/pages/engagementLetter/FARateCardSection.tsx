@@ -63,8 +63,21 @@ export default function FARateCardSection({
 
  const [costCodeOptions,setCostCodeOptions]=useState<any[]>([]);
  const [costTypeOptions,setCostTypeOptions]=useState<any[]>([]);
-
- const {control,handleSubmit,reset}=useForm<any>();
+const defaultValues = {
+  subVendorId: "",
+  costCode: null,
+  costType: null,
+  rateType: "",
+  rate: "",
+  minRate: "",
+  maxRate: "",
+  upperCap: "",
+  languageFrom: "",
+  languageTo: "",
+  currency: currency,
+  status: "active"
+};
+ const {control,handleSubmit,reset, setValue}=useForm<any>({defaultValues});
  const {control:faControl,handleSubmit:handleFASubmit,reset:faReset}=useForm<any>();
 
  const subvendors = useGet(
@@ -173,10 +186,7 @@ export default function FARateCardSection({
  }
 
  const handleAdd=()=>{
-  reset({
-   currency,
-   status:"active"
-  })
+  reset(defaultValues);
   setEditRow(null);
   setShowForm(true);
  }
@@ -194,6 +204,8 @@ export default function FARateCardSection({
    languageFrom:row.languageFrom,
    languageTo:row.languageTo
   })
+
+  setValue("subVendorId", row.subVendorId?._id);
 
   setEditRow(row)
   setShowForm(true)
@@ -254,17 +266,22 @@ export default function FARateCardSection({
 
 <Grid item xs={4}>
 <Controller
- name="subVendorId"
- control={control}
- render={({field})=>(
-  <TextField select {...field} label="FA" size="small" fullWidth>
-
-   {subvendors.data?.data?.map((s:any)=>(
-    <MenuItem key={s._id} value={s._id}>{s.name}</MenuItem>
-   ))}
-
-  </TextField>
- )}
+  name="subVendorId"
+  control={control}
+  rules={{ required: true }}
+  render={({ field }) => (
+    <Autocomplete
+      options={subvendors.data?.data || []}
+      getOptionLabel={(o:any) => o.name}
+      value={
+        subvendors.data?.data?.find((s:any) => s._id === field.value) || null
+      }
+      onChange={(_, v:any) => field.onChange(v?._id)}
+      renderInput={(params) => (
+        <TextField {...params} label="FA" size="small" fullWidth />
+      )}
+    />
+  )}
 />
 </Grid>
 
@@ -310,6 +327,7 @@ Add FA
 <Controller
  name="costType"
  control={control}
+ rules={{ required: true }}
  render={({field})=>(
 <Autocomplete
  options={costTypeOptions}
@@ -340,6 +358,7 @@ Add FA
 <Controller
  name="rateType"
  control={control}
+ rules={{ required: true }}
  render={({field})=>(
 <TextField select {...field} label="Rate Type" fullWidth size="small">
 <MenuItem value="fixed">Fixed</MenuItem>
@@ -407,7 +426,7 @@ Add FA
 
 <Grid item xs={3}>
 <Controller name="upperCap" control={control} render={({field})=>(
-<TextField {...field} label="Upper Cap" type="number" fullWidth size="small"/>
+<TextField {...field} label="Upper Cap" type="number" inputProps={{ step: "0.0001" }} fullWidth size="small"/>
 )}/>
 </Grid>
 
@@ -415,6 +434,7 @@ Add FA
 <Controller
  name="currency"
  control={control}
+ rules={{ required: true }}
  render={({field})=>(
 <Autocomplete
  options={CURRENCIES}
@@ -432,6 +452,7 @@ Add FA
 <Grid item xs={3}>
 <Controller
  name="status"
+ rules={{ required: true }}
  control={control}
  render={({field})=>(
 <TextField select {...field} label="Status" size="small" fullWidth>
