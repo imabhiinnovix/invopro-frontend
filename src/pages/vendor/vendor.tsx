@@ -65,6 +65,7 @@ import { State, City } from "country-state-city";
 import { CURRENCIES } from "../../constants/currencies";
 import EngagementLetterSection from "../../components/common/EngagementLetterSection/EngagementLetterSection";
 import { countryCodes } from "../../constants/countryCodes";
+import React, { Fragment } from "react";
 
 interface ProductSubscription {
   productId: string;
@@ -79,6 +80,22 @@ interface MediumSetting {
   serviceName?: string;
   apiKey?: string;
   enabled: boolean;
+}
+
+interface PrimaryBankDetail {
+  bankName?: string;
+  bankAddress1?: string;
+  bankAddress2?: string;
+  bankCity?: string;
+  bankState?: string;
+  bankCountry?: string;
+  bankZip?: string;
+  bankSwiftCode?: string;
+  bankRoutingNumber?: string;
+  bankAccountNumber?: string;
+  beneficiaryContactName?: string;
+  beneficiaryContactEmail?: string;
+  isDefault?: boolean;
 }
 
 interface VendorFormValues {
@@ -115,19 +132,8 @@ interface VendorFormValues {
   engagementLetterId?: string | null;
 
   // Primary Bank
-  bankName?: string;
-  bankAddress1?: string;
-  bankAddress2?: string;
-  bankCity?: string;
-  bankState?: string;
-  bankCountry?: string;
-  bankZip?: string;
-  bankSwiftCode?: string;
-  bankRoutingNumber?: string;
-  bankAccountNumber?: string;
-  beneficiaryContactName?: string;
-  beneficiaryContactEmail?: string;
-
+  primaryBankDetails: PrimaryBankDetail[];
+  
   // Intermediary Bank
   intermediaryBankName?: string;
   intermediaryBankAddress1?: string;
@@ -267,16 +273,23 @@ export default function Vendor() {
     isEngagementLetter: false,
     engagementLetterId: null,
 
-    bankName: "",
-    bankAddress1: "",
-    bankAddress2: "",
-    bankState: "",
-    bankCountry: "",
-    bankSwiftCode: "",
-    bankRoutingNumber: "",
-    bankAccountNumber: "",
-    beneficiaryContactName: "",
-    beneficiaryContactEmail: "",
+    primaryBankDetails: [
+      {
+        bankName: "",
+        bankAddress1: "",
+        bankAddress2: "",
+        bankCity: "",
+        bankState: "",
+        bankCountry: "",
+        bankZip: "",
+        bankSwiftCode: "",
+        bankRoutingNumber: "",
+        bankAccountNumber: "",
+        beneficiaryContactName: "",
+        beneficiaryContactEmail: "",
+        isDefault: true,
+      },
+    ],
 
     intermediaryBankName: "",
     intermediaryBankAddress1: "",
@@ -290,6 +303,15 @@ export default function Vendor() {
     },
     mode: "onChange",
   });
+
+  const {
+  fields: bankFields,
+  append: appendBank,
+  remove: removeBank
+} = useFieldArray({
+  control,
+  name: "primaryBankDetails"
+});
 
   const { fields, replace, remove, append } =
     useFieldArray<VendorFormValues>({
@@ -396,58 +418,105 @@ export default function Vendor() {
     }
   }, [selectedState, selectedCountry, currentCityValue, setValue]);
 
-  const selectedBankCountry = watch("bankCountry");
-const selectedBankState = watch("bankState");
-const currentBankStateValue = watch("bankState");
-const currentBankCityValue = watch("bankCity");
+//   const selectedBankCountry = watch("bankCountry");
+// const selectedBankState = watch("bankState");
+// const currentBankStateValue = watch("bankState");
+// const currentBankCityValue = watch("bankCity");
+
+// useEffect(() => {
+//   if (selectedBankCountry) {
+//     if (currentBankStateValue) {
+//       try {
+//         const states = State.getStatesOfCountry(selectedBankCountry);
+//         const stateExists = states.some(
+//           (s) =>
+//             s.isoCode === currentBankStateValue ||
+//             s.name === currentBankStateValue
+//         );
+//         if (!stateExists) {
+//           setValue("bankState", "");
+//           setValue("bankCity", "");
+//         }
+//       } catch {
+//         setValue("bankState", "");
+//         setValue("bankCity", "");
+//       }
+//     }
+//   } else {
+//     setValue("bankState", "");
+//     setValue("bankCity", "");
+//   }
+// }, [selectedBankCountry, currentBankStateValue, setValue]);
+
+// useEffect(() => {
+//   if (selectedBankState && selectedBankCountry) {
+//     if (currentBankCityValue) {
+//       try {
+//         const cities = City.getCitiesOfState(
+//           selectedBankCountry,
+//           selectedBankState
+//         );
+//         const cityExists = cities.some(
+//           (c) => c.name === currentBankCityValue
+//         );
+//         if (!cityExists) {
+//           setValue("bankCity", "");
+//         }
+//       } catch {
+//         setValue("bankCity", "");
+//       }
+//     }
+//   } else if (!selectedBankState) {
+//     setValue("bankCity", "");
+//   }
+// }, [selectedBankState, selectedBankCountry, currentBankCityValue, setValue]);
+
+const primaryBankDetails = watch("primaryBankDetails");
 
 useEffect(() => {
-  if (selectedBankCountry) {
-    if (currentBankStateValue) {
-      try {
-        const states = State.getStatesOfCountry(selectedBankCountry);
-        const stateExists = states.some(
-          (s) =>
-            s.isoCode === currentBankStateValue ||
-            s.name === currentBankStateValue
-        );
-        if (!stateExists) {
-          setValue("bankState", "");
-          setValue("bankCity", "");
+  primaryBankDetails.forEach((bank, index) => {
+    if (bank.bankCountry) {
+      if (bank.bankState) {
+        try {
+          const states = State.getStatesOfCountry(bank.bankCountry);
+          const stateExists = states.some(
+            (s) => s.isoCode === bank.bankState || s.name === bank.bankState
+          );
+          if (!stateExists) {
+            setValue(`primaryBankDetails.${index}.bankState`, "");
+            setValue(`primaryBankDetails.${index}.bankCity`, "");
+          }
+        } catch {
+          setValue(`primaryBankDetails.${index}.bankState`, "");
+          setValue(`primaryBankDetails.${index}.bankCity`, "");
         }
-      } catch {
-        setValue("bankState", "");
-        setValue("bankCity", "");
       }
+    } else {
+      setValue(`primaryBankDetails.${index}.bankState`, "");
+      setValue(`primaryBankDetails.${index}.bankCity`, "");
     }
-  } else {
-    setValue("bankState", "");
-    setValue("bankCity", "");
-  }
-}, [selectedBankCountry, currentBankStateValue, setValue]);
+  });
+}, [primaryBankDetails, setValue]);
 
 useEffect(() => {
-  if (selectedBankState && selectedBankCountry) {
-    if (currentBankCityValue) {
-      try {
-        const cities = City.getCitiesOfState(
-          selectedBankCountry,
-          selectedBankState
-        );
-        const cityExists = cities.some(
-          (c) => c.name === currentBankCityValue
-        );
-        if (!cityExists) {
-          setValue("bankCity", "");
+  primaryBankDetails.forEach((bank, index) => {
+    if (bank.bankState && bank.bankCountry) {
+      if (bank.bankCity) {
+        try {
+          const cities = City.getCitiesOfState(bank.bankCountry, bank.bankState);
+          const cityExists = cities.some((c) => c.name === bank.bankCity);
+          if (!cityExists) {
+            setValue(`primaryBankDetails.${index}.bankCity`, "");
+          }
+        } catch {
+          setValue(`primaryBankDetails.${index}.bankCity`, "");
         }
-      } catch {
-        setValue("bankCity", "");
       }
+    } else if (!bank.bankState) {
+      setValue(`primaryBankDetails.${index}.bankCity`, "");
     }
-  } else if (!selectedBankState) {
-    setValue("bankCity", "");
-  }
-}, [selectedBankState, selectedBankCountry, currentBankCityValue, setValue]);
+  });
+}, [primaryBankDetails, setValue]);
 
 const selectedIntermediaryBankCountry = watch("intermediaryBankCountry");
 const selectedIntermediaryBankState = watch("intermediaryBankState");
@@ -651,17 +720,28 @@ useEffect(() => {
       setValue("engagementLetterId", org.engagementLetterId?._id || null);
 
       // Primary Bank
-      setValue("bankName", org.bankName || "");
-      setValue("bankAddress1", org.bankAddress1 || "");
-      setValue("bankAddress2", org.bankAddress2 || "");
-      setValue("bankState", org.bankState || "");
-      setValue("bankCountry", org.bankCountry || "");
-      setValue("bankSwiftCode", org.bankSwiftCode || "");
-      setValue("bankRoutingNumber", org.bankRoutingNumber || "");
-      setValue("bankAccountNumber", org.bankAccountNumber || "");
-      setValue("beneficiaryContactName", org.beneficiaryContactName || "");
-      setValue("beneficiaryContactEmail", org.beneficiaryContactEmail || "");
-
+      setValue(
+        "primaryBankDetails",
+        org.primaryBankDetails?.length
+          ? org.primaryBankDetails
+          : [
+              {
+                bankName: "",
+                bankAddress1: "",
+                bankAddress2: "",
+                bankCity: "",
+                bankState: "",
+                bankCountry: "",
+                bankZip: "",
+                bankSwiftCode: "",
+                bankRoutingNumber: "",
+                bankAccountNumber: "",
+                beneficiaryContactName: "",
+                beneficiaryContactEmail: "",
+                isDefault: true,
+              },
+            ]
+      );
       // Intermediary Bank
       setValue("intermediaryBankName", org.intermediaryBankName || "");
       setValue("intermediaryBankAddress1", org.intermediaryBankAddress1 || "");
@@ -722,18 +802,23 @@ useEffect(() => {
         engagementLetterId: null,
 
         // Primary Bank
-        bankName: "",
-        bankAddress1: "",
-        bankAddress2: "",
-        bankCity: "",
-        bankState: "",
-        bankCountry: "",
-        bankZip: "",
-        bankSwiftCode: "",
-        bankRoutingNumber: "",
-        bankAccountNumber: "",
-        beneficiaryContactName: "",
-        beneficiaryContactEmail: "",
+        primaryBankDetails: [
+          {
+            bankName: "",
+            bankAddress1: "",
+            bankAddress2: "",
+            bankCity: "",
+            bankState: "",
+            bankCountry: "",
+            bankZip: "",
+            bankSwiftCode: "",
+            bankRoutingNumber: "",
+            bankAccountNumber: "",
+            beneficiaryContactName: "",
+            beneficiaryContactEmail: "",
+            isDefault: true,
+          },
+        ],
 
         // Intermediary Bank
         intermediaryBankName: "",
@@ -866,18 +951,7 @@ const handleSaveEngagementLetter = async (vendorId: string) => {
             engagementLetterId: formData.engagementLetterId,
 
             // Primary Bank
-            bankName: formData.bankName,
-            bankAddress1: formData.bankAddress1,
-            bankAddress2: formData.bankAddress2,
-            bankCity: formData.bankCity,
-            bankState: formData.bankState,
-            bankCountry: formData.bankCountry,
-            bankZip: formData.bankZip,
-            bankSwiftCode: formData.bankSwiftCode,
-            bankRoutingNumber: formData.bankRoutingNumber,
-            bankAccountNumber: formData.bankAccountNumber,
-            beneficiaryContactName: formData.beneficiaryContactName,
-            beneficiaryContactEmail: formData.beneficiaryContactEmail,
+            primaryBankDetails: formData.primaryBankDetails,
 
             // Intermediary Bank
             intermediaryBankName: formData.intermediaryBankName,
@@ -1989,146 +2063,345 @@ if (uploadedEngagementFile && vendorId) {
                 </Grid>
 
                   {/* ================= Primary Bank Details ================= */}
-                <Grid size={12} sx={{ mt: 3 }}>
-                  <Typography variant="body2" fontWeight={600}>
-                    Primary Bank Details
-                  </Typography>
-                  <Divider sx={{ mt: 0.5 }} />
-                </Grid>
-
-                <Grid size={6}>
-                  <Controller
-                    name="bankName"
-                    control={control}
-                    render={({ field }) => (
-                      <TextField {...field} label="Bank Name" fullWidth />
-                    )}
-                  />
-                </Grid>
-
-                <Grid size={6}>
-                  <Controller
-                    name="bankSwiftCode"
-                    control={control}
-                    render={({ field }) => (
-                      <TextField {...field} label="SWIFT Code" fullWidth />
-                    )}
-                  />
-                </Grid>
-
-                <Grid size={6}>
-                  <Controller
-                    name="bankRoutingNumber"
-                    control={control}
-                    render={({ field }) => (
-                      <TextField {...field} label="Routing Number" fullWidth />
-                    )}
-                  />
-                </Grid>
-
-                <Grid size={6}>
-                  <Controller
-                    name="bankAccountNumber"
-                    control={control}
-                    render={({ field }) => (
-                      <TextField {...field} label="Account Number" fullWidth />
-                    )}
-                  />
-                </Grid>
-
-                <Grid size={6}>
-                  <Controller
-                    name="beneficiaryContactName"
-                    control={control}
-                    render={({ field }) => (
-                      <TextField {...field} label="Beneficiary Contact Name" fullWidth />
-                    )}
-                  />
-                </Grid>
-
-                <Grid size={6}>
-                  <Controller
-                    name="beneficiaryContactEmail"
-                    control={control}
-                    render={({ field }) => (
-                      <TextField {...field} label="Beneficiary Contact Email" fullWidth />
-                    )}
-                  />
-                </Grid>
-
-                <Grid size={6}>
-                    <Box sx={{ display: "flex", alignItems: "center" }}>
-                      <Controller
-                        name="bankAddress1"
-                        control={control}
-                        render={({ field }) => (
-                          <TextField
-                            {...field}
-                            label="Bank Address Line 1"
-                            fullWidth
-                          />
-                        )}
-                      />
-                    </Box>
+                  {/* <Grid size={12} sx={{ mt: 3 }}>
+                    <Typography variant="body2" fontWeight={600}>
+                      Primary Bank Details
+                    </Typography>
+                    <Divider sx={{ mt: 0.5 }} />
                   </Grid>
+
                   <Grid size={6}>
-                    <Box sx={{ display: "flex", alignItems: "center" }}>
-                      <Controller
-                        name="bankAddress2"
+                    <Controller
+                      name="bankName"
+                      control={control}
+                      render={({ field }) => (
+                        <TextField {...field} label="Bank Name" fullWidth />
+                      )}
+                    />
+                  </Grid>
+
+                  <Grid size={6}>
+                    <Controller
+                      name="bankSwiftCode"
+                      control={control}
+                      render={({ field }) => (
+                        <TextField {...field} label="SWIFT Code" fullWidth />
+                      )}
+                    />
+                  </Grid>
+
+                  <Grid size={6}>
+                    <Controller
+                      name="bankRoutingNumber"
+                      control={control}
+                      render={({ field }) => (
+                        <TextField {...field} label="Routing Number" fullWidth />
+                      )}
+                    />
+                  </Grid>
+
+                  <Grid size={6}>
+                    <Controller
+                      name="bankAccountNumber"
+                      control={control}
+                      render={({ field }) => (
+                        <TextField {...field} label="Account Number" fullWidth />
+                      )}
+                    />
+                  </Grid>
+
+                  <Grid size={6}>
+                    <Controller
+                      name="beneficiaryContactName"
+                      control={control}
+                      render={({ field }) => (
+                        <TextField {...field} label="Beneficiary Contact Name" fullWidth />
+                      )}
+                    />
+                  </Grid>
+
+                  <Grid size={6}>
+                    <Controller
+                      name="beneficiaryContactEmail"
+                      control={control}
+                      render={({ field }) => (
+                        <TextField {...field} label="Beneficiary Contact Email" fullWidth />
+                      )}
+                    />
+                  </Grid>
+
+                  <Grid size={6}>
+                      <Box sx={{ display: "flex", alignItems: "center" }}>
+                        <Controller
+                          name="bankAddress1"
+                          control={control}
+                          render={({ field }) => (
+                            <TextField
+                              {...field}
+                              label="Bank Address Line 1"
+                              fullWidth
+                            />
+                          )}
+                        />
+                      </Box>
+                    </Grid>
+                    <Grid size={6}>
+                      <Box sx={{ display: "flex", alignItems: "center" }}>
+                        <Controller
+                          name="bankAddress2"
+                          control={control}
+                          render={({ field }) => (
+                            <TextField
+                              {...field}
+                              label="Bank Address Line 2"
+                              fullWidth
+                            />
+                          )}
+                        />
+                      </Box>
+                    </Grid>
+                    <Grid size={3}>
+                      <LocationAutocomplete
                         control={control}
-                        render={({ field }) => (
-                          <TextField
-                            {...field}
-                            label="Bank Address Line 2"
-                            fullWidth
-                          />
-                        )}
+                        name="bankCountry"
+                        label="Bank Country"
+                        locationType="country"
+                        errors={errors}
+                        rules={{ required: "Bank Country is required" }}
+                        required
                       />
-                    </Box>
-                  </Grid>
-                  <Grid size={3}>
-                    <LocationAutocomplete
-                      control={control}
-                      name="bankCountry"
-                      label="Bank Country"
-                      locationType="country"
-                      errors={errors}
-                      rules={{ required: "Bank Country is required" }}
-                      required
-                    />
-                  </Grid>
-                  <Grid size={3}>
-                    <LocationAutocomplete
-                      control={control}
-                      name="bankState"
-                      label="Bank State"
-                      locationType="state"
-                      selectedCountry={selectedBankCountry}
-                      errors={errors}
-                    />
-                  </Grid>
-                  <Grid size={3}>
-                    <LocationAutocomplete
-                      control={control}
-                      name="bankCity"
-                      label="Bank City"
-                      locationType="city"
-                      selectedCountry={selectedBankCountry}
-                      selectedState={selectedBankState}
-                      errors={errors}
-                    />
-                  </Grid>
-                  <Grid size={3}>
-                    <Box sx={{ display: "flex", alignItems: "center" }}>
-                      <Controller
-                        name="bankZip"
+                    </Grid>
+                    <Grid size={3}>
+                      <LocationAutocomplete
                         control={control}
-                        render={({ field }) => (
-                          <TextField {...field} label="Bank Zip" fullWidth />
-                        )}
+                        name="bankState"
+                        label="Bank State"
+                        locationType="state"
+                        selectedCountry={selectedBankCountry}
+                        errors={errors}
                       />
-                    </Box>
-                  </Grid>
+                    </Grid>
+                    <Grid size={3}>
+                      <LocationAutocomplete
+                        control={control}
+                        name="bankCity"
+                        label="Bank City"
+                        locationType="city"
+                        selectedCountry={selectedBankCountry}
+                        selectedState={selectedBankState}
+                        errors={errors}
+                      />
+                    </Grid>
+                    <Grid size={3}>
+                      <Box sx={{ display: "flex", alignItems: "center" }}>
+                        <Controller
+                          name="bankZip"
+                          control={control}
+                          render={({ field }) => (
+                            <TextField {...field} label="Bank Zip" fullWidth />
+                          )}
+                        />
+                      </Box>
+                    </Grid> */}
+                    <Grid size={12} sx={{ mt: 3 }}>
+  <Typography variant="body2" fontWeight={600}>
+    Primary Bank Details
+  </Typography>
+  <Divider sx={{ mt: 0.5 }} />
+</Grid>
+
+{bankFields.map((item, index) => {
+  const bankCountry = watch(`primaryBankDetails.${index}.bankCountry`);
+  const bankState = watch(`primaryBankDetails.${index}.bankState`);
+  return (
+  <Fragment key={item.id}>
+
+    {/* Dynamic Section Title */}
+    <Grid size={12} sx={{ mt: 2 }}>
+      <Typography variant="subtitle2" fontWeight={600}>
+        Primary Bank Details {index + 1}
+      </Typography>
+      <Divider sx={{ mt: 0.5, mb: 2 }} />
+    </Grid>
+
+    <Grid size={6}>
+      <Controller
+        name={`primaryBankDetails.${index}.beneficiaryName`}
+        control={control}
+        render={({ field }) => (
+          <TextField {...field} label="Beneficiary Name" fullWidth />
+        )}
+      />
+    </Grid>
+
+    <Grid size={6}>
+      <Controller
+        name={`primaryBankDetails.${index}.beneficiaryAddress`}
+        control={control}
+        render={({ field }) => (
+          <TextField {...field} label="Beneficiary Address" fullWidth />
+        )}
+      />
+    </Grid>
+
+    <Grid size={6}>
+      <Controller
+        name={`primaryBankDetails.${index}.bankName`}
+        control={control}
+        render={({ field }) => (
+          <TextField {...field} label="Bank Name" fullWidth />
+        )}
+      />
+    </Grid>
+
+    <Grid size={6}>
+      <Controller
+        name={`primaryBankDetails.${index}.bankSwiftCode`}
+        control={control}
+        render={({ field }) => (
+          <TextField {...field} label="SWIFT Code" fullWidth />
+        )}
+      />
+    </Grid>
+
+    <Grid size={6}>
+      <Controller
+        name={`primaryBankDetails.${index}.bankRoutingNumber`}
+        control={control}
+        render={({ field }) => (
+          <TextField {...field} label="Routing Number" fullWidth />
+        )}
+      />
+    </Grid>
+
+    <Grid size={6}>
+      <Controller
+        name={`primaryBankDetails.${index}.bankAccountNumber`}
+        control={control}
+        render={({ field }) => (
+          <TextField {...field} label="Account Number" fullWidth />
+        )}
+      />
+    </Grid>
+
+    <Grid size={6}>
+      <Controller
+        name={`primaryBankDetails.${index}.beneficiaryContactName`}
+        control={control}
+        render={({ field }) => (
+          <TextField {...field} label="Beneficiary Contact Name" fullWidth />
+        )}
+      />
+    </Grid>
+
+    <Grid size={6}>
+      <Controller
+        name={`primaryBankDetails.${index}.beneficiaryContactEmail`}
+        control={control}
+        render={({ field }) => (
+          <TextField {...field} label="Beneficiary Contact Email" fullWidth />
+        )}
+      />
+    </Grid>
+
+    <Grid size={6}>
+      <Controller
+        name={`primaryBankDetails.${index}.bankAddress1`}
+        control={control}
+        render={({ field }) => (
+          <TextField {...field} label="Bank Address Line 1" fullWidth />
+        )}
+      />
+    </Grid>
+
+    <Grid size={6}>
+      <Controller
+        name={`primaryBankDetails.${index}.bankAddress2`}
+        control={control}
+        render={({ field }) => (
+          <TextField {...field} label="Bank Address Line 2" fullWidth />
+        )}
+      />
+    </Grid>
+
+    <Grid size={3}>
+        <LocationAutocomplete
+          control={control}
+          name={`primaryBankDetails.${index}.bankCountry`}
+          label="Bank Country"
+          locationType="country"
+          errors={errors}
+        />
+      </Grid>
+
+      <Grid size={3}>
+        <LocationAutocomplete
+          control={control}
+          name={`primaryBankDetails.${index}.bankState`}
+          label="Bank State"
+          locationType="state"
+          selectedCountry={bankCountry} // <- pass the bank’s own country
+          errors={errors}
+        />
+      </Grid>
+
+      <Grid size={3}>
+        <LocationAutocomplete
+          control={control}
+          name={`primaryBankDetails.${index}.bankCity`}
+          label="Bank City"
+          locationType="city"
+          selectedCountry={bankCountry} // <- bank’s own country
+          selectedState={bankState} // <- bank’s own state
+          errors={errors}
+        />
+      </Grid>
+
+    <Grid size={3}>
+      <Controller
+        name={`primaryBankDetails.${index}.bankZip`}
+        control={control}
+        render={({ field }) => (
+          <TextField {...field} label="Bank Zip" fullWidth />
+        )}
+      />
+    </Grid>
+    {/* Remove button */}
+    {index !== 0 && (
+        <Grid size={12}>
+  <Button color="error" onClick={() => removeBank(index)}>
+    Remove Bank
+  </Button>
+</Grid>
+  )}
+  </Fragment>
+  );
+})} 
+
+<Grid size={12}>
+  <Button
+  startIcon={<AddIcon />}
+  onClick={() =>
+    appendBank({
+      bankName: "",
+      bankAddress1: "",
+      bankAddress2: "",
+      bankCity: "",
+      bankState: "",
+      bankCountry: "",
+      bankZip: "",
+      bankSwiftCode: "",
+      bankRoutingNumber: "",
+      bankAccountNumber: "",
+      beneficiaryContactName: "",
+      beneficiaryContactEmail: "",
+      isDefault: false,
+    })
+  }
+>
+  Add Bank
+</Button>
+</Grid>
 
                 {/* ================= Intermediary Bank Details ================= */}
               <Grid size={12} sx={{ mt: 3 }}>
