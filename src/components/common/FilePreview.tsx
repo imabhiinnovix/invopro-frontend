@@ -30,9 +30,9 @@ export default function FilePreview({ fileUrl }: Props) {
         background: "#fafafa",
       }}
     >
-      <Typography variant="subtitle1" mb={1}>
+      {/* <Typography variant="subtitle1" mb={1}>
         File Preview
-      </Typography>
+      </Typography> */}
 
       {!fileUrl && (
         <Typography color="text.secondary">

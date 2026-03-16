@@ -27,6 +27,7 @@ import { GET, PUT } from "../../../services/apiRoutes";
 import ActivityRateCardSection from "../ActivityRateCardSection";
 import AttorneyRateCardSection from "../AttorneyRateCardSection";
 import FARateCardSection from "../FARateCardSection";
+import usePutMultipart from "../../../hooks/usePutMultipart";
 
 interface Vendor {
   _id: string;
@@ -70,7 +71,7 @@ export default function EngagementLetterEdit() {
     true
   );
 
-  const updateEngagementLetter = usePut(
+  const updateEngagementLetter = usePutMultipart(
     ["updateEngagementLetter"],
     () => navigate("/engagement-letter"),
     true
@@ -121,7 +122,7 @@ export default function EngagementLetterEdit() {
   return (
     <Box p={3}>
       <Grid container spacing={3}>
-        <Grid item xs={7}>
+        <Grid item xs={6}>
           <Tabs
             value={tabValue}
             onChange={handleTabChange}
@@ -326,10 +327,24 @@ export default function EngagementLetterEdit() {
           </TabPanel>
         </Grid>
 
-        <Grid item xs={5}>
-          <Box mb={2}>
-            <input type="file" onChange={handleFileChange} />
-          </Box>
+        <Grid item xs={6}>
+           {/* Upload Button only in Basic Info */}
+          {tabValue === 0 && (
+            <Box mb={2}>
+              <input
+                type="file"
+                id="upload-file"
+                hidden
+                onChange={handleFileChange}
+              />
+
+              <label htmlFor="upload-file">
+                <StyledButton variant="primary" component="span">
+                  Upload File
+                </StyledButton>
+              </label>
+            </Box>
+          )}
 
           <FilePreview fileUrl={previewUrl} />
         </Grid>
