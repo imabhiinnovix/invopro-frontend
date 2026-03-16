@@ -66,6 +66,10 @@ import { CURRENCIES } from "../../constants/currencies";
 import EngagementLetterSection from "../../components/common/EngagementLetterSection/EngagementLetterSection";
 import { countryCodes } from "../../constants/countryCodes";
 import React, { Fragment } from "react";
+import { useNavigate } from "react-router-dom"; // make sure this is imported
+
+
+
 
 interface ProductSubscription {
   productId: string;
@@ -152,6 +156,7 @@ interface VendorFormValues {
 
 export default function Vendor() {
   const { isSuperUser } = useContext(AuthContext);
+  const navigate = useNavigate();
   const permissions = useSelector(
     (state: RootState) => state.userPermission.permissions
   );
@@ -1013,6 +1018,14 @@ const handleSaveEngagementLetter = async (vendorId: string) => {
 
         vendorId = createResponse.data._id;
 
+         // Update form state
+  setValue("engagementLetterId", createResponse.data.engagementLetterId || null);
+
+  setSelectedOrg({
+    ...createResponse.data,
+    engagementLetterId: createResponse.data.engagementLetterId || null,
+  });
+
         if (
           formData.mediumSettings &&
           formData.mediumSettings.length > 0 &&
@@ -1160,6 +1173,11 @@ if (uploadedEngagementFile && vendorId) {
   };
 
   const [deletedIds, setDeletedIds] = useState<string[]>([]);
+  const showEngagementButton =
+  isValid &&
+  (selectedOrg
+    ? selectedOrg.engagementLetterId || uploadedEngagementFile // Edit mode: show if org has engagementId OR file uploaded
+    : getValues("engagementLetterId") || uploadedEngagementFile); // Create mode: show if dropdown or file)
   return (
     <Box>
       <PageHeader
@@ -1408,7 +1426,7 @@ if (uploadedEngagementFile && vendorId) {
             )}
           </PageCardLayout>
 
-          <DialogContainer
+          {/* <DialogContainer
             open={orgModalOpen}
             onClose={handleOrgModalClose}
             title={selectedOrg ? "Edit Vendor" : "Create Vendor"}
@@ -1442,7 +1460,62 @@ if (uploadedEngagementFile && vendorId) {
                 </StyledButton>
               </>
             }
-          >
+          > */}
+<DialogContainer
+  open={orgModalOpen}
+  onClose={handleOrgModalClose}
+  title={selectedOrg ? "Edit Vendor" : "Create Vendor"}
+  maxWidth="md"
+  fullWidth
+  actions={
+    <>
+      {/* Primary button: Save / Create */}
+      <StyledButton
+        variant="primary"
+        type="submit"
+        onClick={handleSubmit(handleOrgModalSubmit)}
+        disabled={!isValid || orgModalLoading}
+      >
+        {orgModalLoading
+          ? selectedOrg
+            ? "Saving..."
+            : "Creating..."
+          : selectedOrg
+          ? "Save"
+          : "Create"}
+      </StyledButton>
+
+      {/* Secondary button: Save & Edit Engagement / Create & Edit Engagement */}
+      {showEngagementButton && (
+  <StyledButton
+    variant="primary"
+    onClick={async () => {
+      try {
+        if (!selectedOrg) {
+          const formData = getValues();
+          await handleOrgModalSubmit(formData);
+        }
+
+        const engagementId = selectedOrg?.engagementLetterId?._id || getValues("engagementLetterId");
+        if (!engagementId) {
+          toast.error("Engagement Letter not found");
+          return;
+        }
+
+        navigate(`/engagement-letter/edit/${engagementId}`);
+      } catch (error) {
+        console.error(error);
+        toast.error("Failed to proceed to Engagement Letter");
+      }
+    }}
+    disabled={orgModalLoading}
+  >
+    {selectedOrg ? "Save & Edit Engagement" : "Create & Edit Engagement"}
+  </StyledButton>
+)}
+    </>
+  }
+>
             <DialogContent>
               <form
                 onSubmit={handleSubmit(handleOrgModalSubmit)}
