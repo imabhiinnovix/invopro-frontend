@@ -552,7 +552,7 @@ rateCards.data?.data?.map((row:any)=>(
 
   <DialogContent>
     <Typography>
-      Are you sure you want to delete this Attorney rate card?
+      Are you sure you want to delete this FA rate card?
     </Typography>
   </DialogContent>
 <DialogActions>

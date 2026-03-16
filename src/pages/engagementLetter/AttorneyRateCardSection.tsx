@@ -17,7 +17,8 @@ import {
   TableBody,
   Autocomplete,
   TableContainer,
-  Stack
+  Stack,
+  Collapse
 } from "@mui/material";
 
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -206,7 +207,7 @@ const confirmDelete = () => {
   return (
     <Box mt={1}>
 
-      <Box display="flex" justifyContent="space-between" alignItems="center">
+      <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
         <Grid item>
             {/* <Typography variant="h6">Attorney Rate Card</Typography> */}
         </Grid>
@@ -222,8 +223,8 @@ const confirmDelete = () => {
 </Button>
       </Box>
 
-      {showForm && (
-<Grid container spacing={2} mt={1}>
+      <Collapse in={showForm} timeout="auto" unmountOnExit>
+<Grid container spacing={2} mb={3}>
 
         <Grid item xs={3}>
           <Controller
@@ -351,12 +352,12 @@ const confirmDelete = () => {
 
 </Grid>
 
-      </Grid>
-      )}
+     </Grid>
+</Collapse>
 
       <TableContainer>
 
-      <Table sx={{ mt:3 }}>
+      <Table size="small">
         <TableHead>
           <TableRow>
             <TableCell>Attorney</TableCell>
