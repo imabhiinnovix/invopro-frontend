@@ -975,13 +975,18 @@ const handleSaveEngagementLetter = async (vendorId: string) => {
             intermediaryBankZip: formData.intermediaryBankZip,  
               status: rest.status === "active" ? "active" : "inactive",
           };
-
+      let latestEngagementLetterId: string | null = null;
       if (selectedOrg) {
         const updateRes = await updateOrg.mutateAsync({
           url: `${PUT.UPDATE_VENDOR}${selectedOrg._id}`,
           payload,
         });
         vendorId = updateRes.data._id;
+
+        // After update
+        if (selectedOrg && updateRes?.data) {
+          latestEngagementLetterId = updateRes.data.engagementLetterId || null;
+        }
 
         if (formData.mediumSettings && formData.mediumSettings.length > 0) {
           const notivixProduct = formData.productSubscriptions.find(
@@ -1018,13 +1023,16 @@ const handleSaveEngagementLetter = async (vendorId: string) => {
 
         vendorId = createResponse.data._id;
 
-         // Update form state
-  setValue("engagementLetterId", createResponse.data.engagementLetterId || null);
-
-  setSelectedOrg({
-    ...createResponse.data,
-    engagementLetterId: createResponse.data.engagementLetterId || null,
-  });
+         // After create
+        if (!selectedOrg && createResponse?.data) {
+          latestEngagementLetterId =
+            createResponse.data.engagementLetterId || null;
+          setValue("engagementLetterId", latestEngagementLetterId);
+          setSelectedOrg({
+            ...createResponse.data,
+            engagementLetterId: latestEngagementLetterId,
+          });
+        }
 
         if (
           formData.mediumSettings &&
@@ -1078,6 +1086,7 @@ if (uploadedEngagementFile && vendorId) {
 
       // Update form state
       refetch();
+      latestEngagementLetterId = engagementLetterId; // override with latest
       setUploadedEngagementFile(null);
     }
   } catch (err) {
@@ -1085,6 +1094,7 @@ if (uploadedEngagementFile && vendorId) {
   }
 }
       replaceMedium([]);
+      return latestEngagementLetterId;
     } catch (error) {
       console.error(error);
     } finally {
@@ -1491,12 +1501,8 @@ if (uploadedEngagementFile && vendorId) {
     variant="primary"
     onClick={async () => {
       try {
-        if (!selectedOrg) {
-          const formData = getValues();
-          await handleOrgModalSubmit(formData);
-        }
-
-        const engagementId = selectedOrg?.engagementLetterId?._id || getValues("engagementLetterId");
+        const formData = getValues();
+        const engagementId = await handleOrgModalSubmit(formData);
         if (!engagementId) {
           toast.error("Engagement Letter not found");
           return;
