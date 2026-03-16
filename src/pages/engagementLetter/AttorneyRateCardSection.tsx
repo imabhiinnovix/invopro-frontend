@@ -49,7 +49,7 @@ export default function AttorneyRateCardSection({
   currency
 }: any) {
 
-  const { control, handleSubmit, reset } = useForm();
+  const { control, handleSubmit, reset, getValues } = useForm();
 
  const {
   control: attorneyControl,
@@ -117,12 +117,23 @@ export default function AttorneyRateCardSection({
       }
     },
     {
-      onSuccess: () => {
+      onSuccess: (res: any) => {
         setOpen(false);
         resetAttorney({
           name: "",
           userType: ""
         });
+         // Auto-select the newly created attorney
+        const newAttorney = res?.data; // adjust based on your API response
+        if (newAttorney?._id) {
+          reset({
+            ...getValues(), // keep existing rate card form values
+            attorneyId: newAttorney._id
+          });
+          setShowForm(true);
+        }
+
+        attorneys.refetch();
       }
     }
   );

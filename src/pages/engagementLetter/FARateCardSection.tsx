@@ -79,7 +79,7 @@ const defaultValues = {
   currency: currency,
   status: "active"
 };
- const {control,handleSubmit,reset, setValue}=useForm<any>({defaultValues});
+ const {control,handleSubmit,reset, setValue, getValues}=useForm<any>({defaultValues});
  const {control:faControl,handleSubmit:handleFASubmit,reset:faReset}=useForm<any>();
 
  const subvendors = useGet(
@@ -242,7 +242,27 @@ const defaultValues = {
     email:data.email,
     phone:data.phone
    }
-  })
+  },
+   {
+      onSuccess: (res: any) => {
+        setOpenFAModal(false);
+        faReset();
+
+        // Auto-select the newly created FA
+        const newFA = res?.data; // adjust based on API response
+        if (newFA?._id) {
+          reset({
+            ...getValues(), // keep existing form values
+            subVendorId: newFA._id
+          });
+          setShowForm(true); // open form if closed
+        }
+
+        // Refetch FA list
+        subvendors.refetch();
+      }
+    }
+)
 
   setOpenFAModal(false)
   faReset()
