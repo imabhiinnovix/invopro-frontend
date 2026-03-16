@@ -16,7 +16,8 @@ import {
   TableCell,
   TableBody,
   Autocomplete,
-  TableContainer
+  TableContainer,
+  Stack
 } from "@mui/material";
 
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -34,6 +35,7 @@ import { CURRENCIES } from "../../constants/currencies";
 
 
 import { GET, POST, DELETE, PUT } from "../../services/apiRoutes";
+import { formatCurrency } from "../../utils/utils";
 
 const ATTORNEY_USER_TYPES = [
   { label: "Attorney", value: "attorney" },
@@ -48,7 +50,21 @@ export default function AttorneyRateCardSection({
 
   const { control, handleSubmit, reset } = useForm();
 
+ const {
+  control: attorneyControl,
+  handleSubmit: handleAttorneySubmit,
+  reset: resetAttorney
+} = useForm({
+  defaultValues: {
+    name: "",
+    userType: ""
+  }
+});
+
   const [showForm, setShowForm] = useState(false);
+
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
 
   const [open, setOpen] = useState(false);
   const [editRow, setEditRow] = useState<any>(null);
@@ -90,17 +106,26 @@ export default function AttorneyRateCardSection({
   );
 
   const addAttorney = (data: any) => {
-    createAttorney.mutate({
+  createAttorney.mutate(
+    {
       url: POST.Create_Vendor_Attorney,
       payload: {
         vendorId,
         name: data.name,
         userType: data.userType
       }
-    });
-
-    setOpen(false);
-  };
+    },
+    {
+      onSuccess: () => {
+        setOpen(false);
+        resetAttorney({
+          name: "",
+          userType: ""
+        });
+      }
+    }
+  );
+};
 
   const submitRateCard = (data: any) => {
 
@@ -167,6 +192,17 @@ const cancelForm = () => {
   setEditRow(null);
 };
 
+const confirmDelete = () => {
+  if (!deleteId) return;
+
+  deleteRateCard.mutate({
+    url: `${DELETE.Delete_Activity_Rate_Card}/${deleteId}`
+  });
+
+  setDeleteOpen(false);
+  setDeleteId(null);
+};
+
   return (
     <Box mt={1}>
 
@@ -208,9 +244,18 @@ const cancelForm = () => {
 
         {!editRow && (
           <Grid item xs={3}>
-            <Button variant="outlined" onClick={() => setOpen(true)}>
-              Add Attorney
-            </Button>
+           <Button
+            variant="outlined"
+            onClick={() => {
+              resetAttorney({
+                name: "",
+                userType: ""
+              });
+              setOpen(true);
+            }}
+          >
+            Add Attorney
+          </Button>
           </Grid>
         )}
 
@@ -329,13 +374,14 @@ const cancelForm = () => {
             <TableRow key={r._id}>
               <TableCell>{r.attorneyId?.name}</TableCell>
               <TableCell>{r.rateType}</TableCell>
-              <TableCell>{r.rate}</TableCell>
+              <TableCell>{formatCurrency(r.rate, r.currency)}</TableCell>
               <TableCell>{r.currency}</TableCell>
               <TableCell>{r.status}</TableCell>
 
               <TableCell>
-
+              <Stack direction="row" spacing={0.5}>
                 <IconButton
+                  sx={{ p: 0.5 }}
                   onClick={()=>{
                     reset({
                       attorneyId:r.attorneyId?._id,
@@ -349,17 +395,19 @@ const cancelForm = () => {
 setShowForm(true);
                   }}
                 >
-                  <EditIcon/>
+                  <EditIcon sx={{ fontSize: 18 }}/>
                 </IconButton>
 
                 <IconButton
-                  onClick={()=>deleteRateCard.mutate({
-                    url:`${DELETE.Delete_Activity_Rate_Card}/${r._id}`
-                  })}
+                  sx={{ p: 0.5 }}
+                  onClick={()=>{
+                    setDeleteId(r._id);
+                    setDeleteOpen(true);
+                  }}
                 >
-                  <DeleteIcon/>
+                  <DeleteIcon sx={{ fontSize: 18 }}/>
                 </IconButton>
-
+                </Stack>
               </TableCell>
             </TableRow>
           ))
@@ -383,15 +431,15 @@ setShowForm(true);
 
           <Controller
             name="name"
-            control={control}
+            control={attorneyControl}
             render={({ field }) => (
-              <TextField {...field} label="Name" fullWidth sx={{mt:2}}/>
+              <TextField {...field} label="Name" fullWidth sx={{ mt: 2 }} />
             )}
           />
 
          <Controller
             name="userType"
-            control={control}
+            control={attorneyControl}
             defaultValue=""
             render={({ field }) => (
                 <TextField
@@ -414,11 +462,35 @@ setShowForm(true);
 
           <Button onClick={()=>setOpen(false)}>Cancel</Button>
 
-          <Button onClick={handleSubmit(addAttorney)}>Save</Button>
+         <Button onClick={handleAttorneySubmit(addAttorney)}>Save</Button>
 
         </DialogActions>
 
       </Dialog>
+
+      <Dialog open={deleteOpen} onClose={() => setDeleteOpen(false)}>
+  <DialogTitle>Confirm Delete</DialogTitle>
+
+  <DialogContent>
+    <Typography>
+      Are you sure you want to delete this Attorney rate card?
+    </Typography>
+  </DialogContent>
+
+  <DialogActions>
+    <Button onClick={() => setDeleteOpen(false)}>
+      Cancel
+    </Button>
+
+    <Button
+      color="error"
+      variant="contained"
+      onClick={confirmDelete}
+    >
+      Delete
+    </Button>
+  </DialogActions>
+</Dialog>
 
     </Box>
   );

@@ -22,6 +22,7 @@ import {
   Button,
   Collapse,
   Autocomplete,
+  Stack,
 } from "@mui/material";
 
 import EditIcon from "@mui/icons-material/Edit";
@@ -41,6 +42,7 @@ import { CURRENCIES } from "../../constants/currencies";
 import { LANGUAGES } from "../../constants/languages";
 import { useSelector } from "react-redux";
 import { RootState } from "../../reducers";
+import { formatCurrency } from "../../utils/utils";
 
 interface Props {
   vendorId: string;
@@ -49,6 +51,7 @@ interface Props {
 }
 
 interface FormValues {
+  subVendorId: any;
   costCode: any; // store object from autocomplete
   costType: any; // store object from autocomplete
   rateType: string;
@@ -63,6 +66,7 @@ interface FormValues {
 }
 
 const defaultValues: FormValues = {
+  subVendorId: "",
   costCode: null,
   costType: null,
   rateType: "",
@@ -96,7 +100,7 @@ export default function ActivityRateCardSection({
 
   const activityList = useGet<any>(
     ["activityRateCardList", vendorId, engagementLetterId],
-    `${GET.Activity_Rate_Card_List}?vendorId=${vendorId}&engagementLetterId=${engagementLetterId}`,
+    `${GET.Activity_Rate_Card_List}?activityEntity=vendor&vendorId=${vendorId}&engagementLetterId=${engagementLetterId}`,
     !!vendorId && !!engagementLetterId
   );
 
@@ -179,8 +183,10 @@ const costTypeDataSourceId = commonDataSourceList.find(ds => ds.code === 'costty
       ...data,
       costCode: data.costCode?.["Cost Code"] || "",
       costType: data.costType?.["Cost Type"] || "",
+      subVendorId: data?.subVendorId?._id || "",
       vendorId,
       engagementLetterId,
+      activityEntity: "vendor",
     };
 
     if (editRow) {
@@ -516,26 +522,29 @@ const costTypeDataSourceId = commonDataSourceList.find(ds => ds.code === 'costty
                   <TableCell>{row.costCode}</TableCell>
                   <TableCell>{row.costType}</TableCell>
                   <TableCell>{row.rateType}</TableCell>
-                  <TableCell>{row.rate}</TableCell>
-                  <TableCell>{row.minRate}</TableCell>
-                  <TableCell>{row.maxRate}</TableCell>
+                  <TableCell>{formatCurrency(row.rate, row.currency)}</TableCell>
+                  <TableCell>{formatCurrency(row.minRate, row.currency)}</TableCell>
+                  <TableCell>{formatCurrency(row.maxRate, row.currency)}</TableCell>
                   <TableCell>
                     {LANGUAGES.find((l) => l.code === row.languageFrom)?.label} →{" "}
                     {LANGUAGES.find((l) => l.code === row.languageTo)?.label}
                   </TableCell>
-                  <TableCell>{row.upperCap}</TableCell>
+                  <TableCell>{formatCurrency(row.upperCap, row.currency)}</TableCell>
                   <TableCell>{row.currency}</TableCell>
                   <TableCell>{row.status}</TableCell>
                   <TableCell>
-                    <IconButton onClick={() => handleEdit(row)}>
-                      <EditIcon />
+                    <Stack direction="row" spacing={0.5}>
+                    <IconButton onClick={() => handleEdit(row)} sx={{ p: 0.5 }}>
+                      <EditIcon sx={{ fontSize: 18 }} />
                     </IconButton>
                     <IconButton
                       onClick={() => handleDelete(row._id)}
                       disabled={deleteActivity.isLoading}
+                      sx={{ p: 0.5 }}
                     >
-                      <DeleteIcon />
+                      <DeleteIcon sx={{ fontSize: 18 }} />
                     </IconButton>
+                    </Stack>
                   </TableCell>
                 </TableRow>
               ))

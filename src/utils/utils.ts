@@ -772,3 +772,20 @@ export const checkPermission = (
   }
   return permissionsData?.[permissionFor]?.[permissionType]?.allowed ?? false;
 };
+
+export const formatCurrency = (
+  amount: number | string,
+  currency: string = "USD",
+  locale: string = "en-US"
+) => {
+  if (amount === null || amount === undefined || amount === "") return "";
+
+  const value = typeof amount === "string" ? parseFloat(amount) : amount;
+
+  return new Intl.NumberFormat(locale, {
+    style: "currency",
+    currency,
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 4
+  }).format(value);
+};

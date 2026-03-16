@@ -21,7 +21,8 @@ import {
  DialogActions,
  Button,
  Collapse,
- Autocomplete
+ Autocomplete,
+ Stack
 } from "@mui/material";
 
 import EditIcon from "@mui/icons-material/Edit";
@@ -42,6 +43,7 @@ import { useSelector } from "react-redux";
 import { RootState } from "../../reducers";
 
 import LocationAutocomplete from "../../components/common/location/LocationAutocomplete";
+import { formatCurrency } from "../../utils/utils";
 
 interface Props {
  vendorId: string;
@@ -143,7 +145,11 @@ const defaultValues = {
    });
 
    setCostCodeOptions(codeRes?.data||[]);
-   setCostTypeOptions(typeRes?.data||[]);
+   const filteredCostTypes = (typeRes?.data || []).filter(
+                    (item: any) => item["Cost Type"] !== "FAFE"
+                    );
+
+   setCostTypeOptions(filteredCostTypes);
   }
 
   fetchMaster();
@@ -508,23 +514,23 @@ rateCards.data?.data?.map((row:any)=>(
 <TableCell>{row.costCode}</TableCell>
 <TableCell>{row.costType}</TableCell>
 <TableCell>{row.rateType}</TableCell>
-<TableCell>{row.rate}</TableCell>
-<TableCell>{row.minRate}</TableCell>
-<TableCell>{row.maxRate}</TableCell>
-<TableCell>{row.upperCap}</TableCell>
+<TableCell>{formatCurrency(row.rate, row.currency)}</TableCell>
+<TableCell>{formatCurrency(row.minRate, row.currency)}</TableCell>
+<TableCell>{formatCurrency(row.maxRate, row.currency)}</TableCell>
+<TableCell>{formatCurrency(row.upperCap, row.currency)}</TableCell>
 <TableCell>{row.currency}</TableCell>
 <TableCell>{row.status}</TableCell>
 
 <TableCell>
+  <Stack direction="row" spacing={0.5}>
+    <IconButton sx={{ p: 0.5 }} onClick={() => handleEdit(row)}>
+      <EditIcon sx={{ fontSize: 18 }} />
+    </IconButton>
 
-<IconButton onClick={()=>handleEdit(row)}>
-<EditIcon/>
-</IconButton>
-
-<IconButton onClick={()=>handleDelete(row._id)}>
-<DeleteIcon/>
-</IconButton>
-
+    <IconButton sx={{ p: 0.5 }} onClick={() => handleDelete(row._id)}>
+      <DeleteIcon sx={{ fontSize: 18 }} />
+    </IconButton>
+  </Stack>
 </TableCell>
 
 </TableRow>
@@ -542,7 +548,13 @@ rateCards.data?.data?.map((row:any)=>(
 </TableContainer>
 
 <Dialog open={openDialog} onClose={()=>setOpenDialog(false)}>
-<DialogTitle>Delete?</DialogTitle>
+<DialogTitle>Confirm Delete</DialogTitle>
+
+  <DialogContent>
+    <Typography>
+      Are you sure you want to delete this Attorney rate card?
+    </Typography>
+  </DialogContent>
 <DialogActions>
 <Button onClick={()=>setOpenDialog(false)}>Cancel</Button>
 <Button color="error" onClick={confirmDelete}>Delete</Button>
