@@ -1143,6 +1143,7 @@ import { useSelector } from "react-redux";
 import { RootState } from "../../reducers";
 import DialogContainer from "../../components/molecule/dialog";
 import { StyledButton } from "../../components/common";
+import usePut from "../../hooks/usePut";
 
 interface ValidationErrorModalProps {
   openModal: boolean;
@@ -1181,6 +1182,7 @@ export const ValidationErrorModal: React.FC<ValidationErrorModalProps> = ({
   const refAttributeId = rowData?.refAttributeId || "";
   const dataSourceId = rowData?.dataSourceId || "";
   const updateVersionRow = usePost(["updateVersionRow"]);
+  const updateDuplicateVersionRow = usePut(["updateDuplicateVersionRow"]);
 
   // Helper function to normalize multioption values
   const normalizeMultiOptionValue = (
@@ -1217,7 +1219,7 @@ export const ValidationErrorModal: React.FC<ValidationErrorModalProps> = ({
       setMatchedDataSource(null);
       setTargetAttribute(null);
       // Handle error code 1003
-      if (errorCode === "1003" && refDataSourceId) {
+      if ((errorCode === "1003" || errorCode === "1006" || errorCode === "1004") && refDataSourceId) {
         const matched = commonDataSourceList?.find(
           (ds) => ds._id === refDataSourceId
         );
@@ -1339,7 +1341,7 @@ export const ValidationErrorModal: React.FC<ValidationErrorModalProps> = ({
 
       // For error code 1002, get rowData from rowDetailData if available
       let sourceData = rowData;
-      if ((errorCode === "1002" || errorCode === "1001" || errorCode === "1004") && rowDetailData) {
+      if ((errorCode === "1002" || errorCode === "1001" || errorCode === "1004" || errorCode === "1006") && rowDetailData) {
         sourceData = rowDetailData?.rowData || rowData;
       }
 
@@ -1349,7 +1351,7 @@ export const ValidationErrorModal: React.FC<ValidationErrorModalProps> = ({
 
         // Special handling for error code "1003" with refAttributeId
         if (
-          errorCode === "1003" &&
+          (errorCode === "1003" || errorCode === "1006") &&
           refAttributeId &&
           attribute._id === refAttributeId
         ) {
@@ -1513,7 +1515,7 @@ export const ValidationErrorModal: React.FC<ValidationErrorModalProps> = ({
   // Convert form data to payload based on error code
   const convertToPayload = () => {
     const rowDataPayload = buildRowDataPayload();
-    if (errorCode === "1003") {
+    if (errorCode === "1003" || errorCode === "1006") {
       return {
         errorDataSourceVersionId: rowData.dataSourceVersionId,
         dataSourceId: rowData.refDataSourceId,
@@ -1638,7 +1640,13 @@ export const ValidationErrorModal: React.FC<ValidationErrorModalProps> = ({
           url: `${POST.CREATE_VERSION_ROW}`,
           payload,
         });
-      } else {
+      }else if (errorCode === "1006") {
+        await updateDuplicateVersionRow.mutateAsync({
+          url: `${PUT.UPDATE_VERSION_ROW}/${rowData?.errorRowId}`,
+          payload,
+        });
+      }
+      else {
         await updateVersionRow.mutateAsync({
           url: `${POST.RESOLVE_DATA_IMPORT_ERROR}`,
           payload,
@@ -1683,7 +1691,7 @@ export const ValidationErrorModal: React.FC<ValidationErrorModalProps> = ({
 
     // Check if this is the target attribute for error codes 1003 or 1002
     const isTargetAttributeFor1003 =
-      errorCode === "1003" &&
+      (errorCode === "1003" || errorCode === "1006") &&
       refAttributeId &&
       attribute._id === refAttributeId;
 
