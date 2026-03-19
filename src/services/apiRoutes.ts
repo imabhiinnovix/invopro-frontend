@@ -68,6 +68,7 @@ export const POST = {
   DATASOURCE_MASTER_LIST: "/common/dataSourceVersion/master-data",
   Create_Vendor_Attorney: "/invoicivix-vendor/vendor-attorney/create",
   Create_Sub_Vendor: "/invoicivix-vendor/sub-vendor/create",
+  Create_Vendor_Invoice: "/invoicivix-vendor/vendor-invoice/create",
 };
 
 export const PUT = {
@@ -99,6 +100,7 @@ export const PUT = {
   UPDATE_ACTIVITY_RATE_CARD: "/invoicivix-vendor/activity-rate-card/update/",
   UPDATE_VENDOR_ATTORNEY: "/invoicivix-vendor/vendor-attorney/update/",
   UPDATE_SUB_VENDOR: "/invoicivix-vendor/sub-vendor/update",
+  UPDATE_VENDOR_INVOICE: "/invoicivix-vendor/vendor-invoice/update",
 };
 
 export const DELETE = {
@@ -121,7 +123,8 @@ export const DELETE = {
   Delete_Legal_Document: "/invoicivix-vendor/legal-document/delete",
   Delete_Activity_Rate_Card: "/invoicivix-vendor/activity-rate-card/delete",
   Delete_Vendor_Attorney: "/invoicivix-vendor/vendor-attorney/delete",
-  Delete_Sub_Vendor: "/invoicivix-vendor/sub-vendor/delete"
+  Delete_Sub_Vendor: "/invoicivix-vendor/sub-vendor/delete",
+  Delete_Vendor_Invoice: "/invoicivix-vendor/vendor-invoice/delete"
 };
 
 export const GET = {
@@ -199,5 +202,6 @@ export const GET = {
   Legal_Document_List: "/invoicivix-vendor/legal-document/list",
   Activity_Rate_Card_List: "/invoicivix-vendor/activity-rate-card/list",
   Vendor_Attorney_List: "/invoicivix-vendor/vendor-attorney/list",
-  Sub_Vendor_List: "/invoicivix-vendor/sub-vendor/list"
+  Sub_Vendor_List: "/invoicivix-vendor/sub-vendor/list",
+  Vendor_Invoice_List: "/invoicivix-vendor/vendor-invoice/list"
 };

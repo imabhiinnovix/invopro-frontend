@@ -1326,6 +1326,17 @@ function getNavItems(
       route: `/data-source-new/${item?._id}`,
     }));
 
+  const vendorInvoiceMenuItem = {
+    name: "Invoice PDF Files",
+    icon: createIcon(NotificationsActiveIcon, "/vendor-invoice", theme, location, themeColor),
+    route: "/vendor-invoice",
+    shouldShow: checkPermission(
+      permissions,
+      PermissionsMap.VENDORINVOICE,
+      "list"
+    ),
+  };  
+
   const alertsMenuItem = {
     name: "Alerts Settings",
     icon: createIcon(NotificationsActiveIcon, "/notification", theme, location, themeColor),
@@ -1373,9 +1384,10 @@ function getNavItems(
         ]
       : [];
   const dataSourceItems = [
-    alertsMenuItem,
-    Template,
+    // alertsMenuItem,
+    // Template,
     // notivixDefaultDashboard,
+    vendorInvoiceMenuItem,
     ...monthlyDataSources,
     ...loadingIndicator,
     NotificationLogsMenuItem,

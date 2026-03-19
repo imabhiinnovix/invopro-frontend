@@ -259,7 +259,8 @@ export const PermissionsMap = {
   DEFAULT_DASHBOARD: "Default Dashboard",
   VENDOR: "Vendor",
   ENGAGEMENTLETTER: "EngagementLetter",
-  LEGALDOCUMENT: "LegalDocument"
+  LEGALDOCUMENT: "LegalDocument",
+  VENDORINVOICE: "VendorInvoice"
 } as const;
 
 export type PermissionResourceType =

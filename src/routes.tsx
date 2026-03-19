@@ -50,6 +50,7 @@ import EngagementLetterCreate from "./pages/engagementLetter/create";
 import EngagementLetterEdit from "./pages/engagementLetter/edit";
 import EngagementLetterView from "./pages/engagementLetter/view";
 import LegalDocument from "./pages/legalDocument";
+import VendorInvoicePage from "./pages/vendorInvoice";
 
 const AppRoutes = () => {
   const token = getAuthToken();
@@ -134,6 +135,8 @@ const AppRoutes = () => {
           />
 
           <Route path="/legal-document" element={<LegalDocument />} />
+
+          <Route path="/vendor-invoice" element={<VendorInvoicePage />} />
 
           <Route path="/data-source-new/:id" element={<NotivixDataSource />} />
           <Route path="/validation-errors/:id" element={<ValidationErrors />} />
