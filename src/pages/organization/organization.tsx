@@ -48,6 +48,7 @@ import { CustomPagination } from "../../components/common/pagination/customPagin
 import DialogContainer from "../../components/molecule/dialog";
 import { useSelector } from "react-redux";
 import { RootState } from "../../store";
+import { CURRENCIES } from "../../constants/currencies";
 import {
   checkPermission,
   formatDate,
@@ -106,6 +107,7 @@ interface OrganizationFormValues {
   lastName?: string;
   logo?: File | string | null;
   businessEmail?: string;
+  defaultCurrency?: string;
 }
 
 export default function Organization() {
@@ -225,7 +227,8 @@ export default function Organization() {
       firstName: "",
       lastName: "",
       logo: null,
-      businessEmail: ""
+      businessEmail: "",
+      defaultCurrency: ""
     },
     mode: "onChange",
   });
@@ -468,6 +471,7 @@ export default function Organization() {
         setValue("logo", null);
       }
       setValue("businessEmail", org.businessEmail || "");
+      setValue("defaultCurrency", org.defaultCurrency || "");
       const isUserSuperUser = isSuperUser();
       const organizationIdForUsers = isUserSuperUser ? org._id : null;
       setOrganizationIdForMedium(organizationIdForUsers);
@@ -505,7 +509,8 @@ export default function Organization() {
         password: "",
         firstName: "",
         lastName: "",
-        businessEmail: ""
+        businessEmail: "",
+        defaultCurrency: ""
       });
       setOrgModalOpen(true);
       setOrganizationIdForMedium(null);
@@ -557,6 +562,7 @@ export default function Organization() {
 
         businessUnitCode: formData.businessUnitCode || "",
         businessEmail: formData.businessEmail || "",
+        defaultCurrency: formData.defaultCurrency || "",
         phone: formData.phone,
         domain: formData.domain,
         allowedDomains: (formData.allowedDomains || []).map(
@@ -1402,6 +1408,42 @@ export default function Organization() {
                       />
                     </Box>
                   </Grid>
+
+                   <Grid size={12} sx={{ mt: 3 }}>
+                  <Typography variant="body2" fontWeight={600}>
+                    Billing Details
+                  </Typography>
+                  <Divider sx={{ mt: 0.5 }} />
+                </Grid>
+
+                <Grid size={6}>
+                  <Controller
+                    name="defaultCurrency"
+                    control={control}
+                    rules={{ required: "Default Currency is required" }}
+                    render={({ field }) => (
+                      <Autocomplete
+                        options={CURRENCIES}
+                        getOptionLabel={(option) => option.label}
+                        value={
+                          CURRENCIES.find((c) => c.code === field.value) || null
+                        }
+                        onChange={(_, newValue) =>
+                          field.onChange(newValue ? newValue.code : "")
+                        }
+                        renderInput={(params) => (
+                          <TextField
+                            {...params}
+                            label="Default Currency"
+                            required
+                            error={!!errors.defaultCurrency}
+                            helperText={errors.defaultCurrency?.message}
+                          />
+                        )}
+                      />
+                    )}
+                  />
+                </Grid>
 
                   {/* Legal & Tax Section */}
                   <Grid size={12} sx={{ mt: 2 }}>

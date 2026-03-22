@@ -1515,7 +1515,7 @@ export const ValidationErrorModal: React.FC<ValidationErrorModalProps> = ({
   // Convert form data to payload based on error code
   const convertToPayload = () => {
     const rowDataPayload = buildRowDataPayload();
-    if (errorCode === "1003" || errorCode === "1006") {
+    if (errorCode === "1003") {
       return {
         errorDataSourceVersionId: rowData.dataSourceVersionId,
         dataSourceId: rowData.refDataSourceId,
@@ -1525,7 +1525,18 @@ export const ValidationErrorModal: React.FC<ValidationErrorModalProps> = ({
         fileAttributeValue: rowData.fileAttributeValue,
         attributeName: rowData.attributeName,
       };
-    } else if (errorCode === "1002" || errorCode === "1004") {
+    }else if (errorCode === "1006") {
+      return {
+        errorDataSourceVersionId: rowData.dataSourceVersionId,
+        dataSourceId: rowData.refDataSourceId,
+        rowData: rowDataPayload,
+        isErrorResolved: true,
+        errorDataSourceId: rowData.dataSourceId,
+        fileAttributeValue: rowData.fileAttributeValue,
+        attributeName: rowData.attributeName,
+        errorCode: rowData.errorCode
+      };
+    }else if (errorCode === "1002" || errorCode === "1004") {
       return {
         action: "update",
         rowData: rowDataPayload,
