@@ -1672,12 +1672,18 @@ if (!document.getElementById("rmdp-portal-styles")) {
 interface NotivixFiltersModalProps {
   open: boolean;
   onClose: () => void;
-  onApplyFilters: (filters: Record<string, any>) => void;
+  onApplyFilters: (filters: Record<string, any>,  year?: string,
+  month?: string) => void;
   currentFilters?: Record<string, any>;
   dataSourceId: string;
   filterFlag?: "isFilterEnable" | "isDashboardFilter";
   isLoading?: boolean;
   defaultFilters?: Record<string, any>;
+  yearOptions?: Record<string, any>;
+  monthOptions?:Record<string, any>;
+  selectedYear?:string;
+  selectedMonth?:string;
+  isShowYearMonth?:boolean;
 }
 
 interface FieldSetting {
@@ -1785,6 +1791,11 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
   filterFlag = "isFilterEnable",
   isLoading = false,
   defaultFilters = {},
+  yearOptions = [],
+  monthOptions = [],
+  selectedYear,
+  selectedMonth,
+  isShowYearMonth
 }) => {
   const theme = useUnifiedTheme();
   const { getButtonSx } = useComponentTypography();
@@ -1803,6 +1814,16 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
   const [focusedFields, setFocusedFields] = useState<Record<string, boolean>>(
     {}
   );
+
+  const [year, setYear] = useState<string>(selectedYear || "all");
+const [month, setMonth] = useState<string>(selectedMonth || "all");
+
+useEffect(() => {
+  if (open) {
+    setYear(selectedYear || "all");
+    setMonth(selectedMonth || "all");
+  }
+}, [open, selectedYear, selectedMonth]);
 
   const caseStatusValue = useMemo(() => {
     const caseStatusEntry = Object.entries(filters).find(([key]) =>
@@ -2002,7 +2023,11 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
       }
     });
 
-    onApplyFilters(transformedFilters);
+    // ✅ pass separately (NOT inside filters, NOT as object)
+    const finalYear = year === "all" ? "" : year;
+    const finalMonth = month === "all" ? "" : month;
+
+    onApplyFilters(transformedFilters, finalYear, finalMonth);
     onClose();
   };
 
@@ -2010,7 +2035,12 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
     setFilters({ ...defaultFilters, __reset: Date.now() });
     setDateRangeValues({}); // Changed: Clear all date range values
     setFocusedFields({}); // Changed: Clear all focused fields
-    onApplyFilters({ ...defaultFilters });
+
+     // ✅ reset year/month
+  setYear("all");
+  setMonth("all");
+
+    onApplyFilters({ ...defaultFilters }, undefined, undefined);
     onClose();
   };
 
@@ -2622,6 +2652,57 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
             },
           }}
         >
+          {isShowYearMonth && (<Box
+  sx={{
+    gridColumn: "1 / -1",
+    display: "flex",
+    gap: 2,
+    mb: 1,
+  }}
+>
+  {/* Year */}
+  <FormControl fullWidth size="small">
+    <InputLabel>Year</InputLabel>
+    <Select
+      value={year}
+      label="Year"
+      onChange={(e) => {
+        const value = e.target.value;
+        setYear(value);
+
+        if (value === "all") {
+          setMonth("all"); // reset month
+        }
+      }}
+    >
+      <MenuItem value="all">All Years</MenuItem>
+      {yearOptions.map((y) => (
+        <MenuItem key={y} value={y}>
+          {y}
+        </MenuItem>
+      ))}
+    </Select>
+  </FormControl>
+
+  {/* Month */}
+  <FormControl fullWidth size="small">
+    <InputLabel>Month</InputLabel>
+    <Select
+      value={month}
+      label="Month"
+      onChange={(e) => setMonth(e.target.value)}
+      disabled={year === "all"} // UX: disable if no year
+    >
+      <MenuItem value="all">All Months</MenuItem>
+      {monthOptions.map((m) => (
+        <MenuItem key={m} value={m}>
+          {m}
+        </MenuItem>
+      ))}
+    </Select>
+  </FormControl>
+</Box>
+          )}
           {filteredFieldSettings.map((field) => renderFilterField(field))}
         </Box>
       )}

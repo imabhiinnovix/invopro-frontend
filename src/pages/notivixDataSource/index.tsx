@@ -203,6 +203,13 @@ export default function NotivixDataSource() {
     pageSize: 10,
   });
   const [refreshKey, setRefreshKey] = useState(0);
+
+  // ✅ NEW STATES (ADD THIS)
+const [yearOptions, setYearOptions] = useState<string[]>([]);
+const [monthOptions, setMonthOptions] = useState<string[]>([]);
+const [selectedYear, setSelectedYear] = useState<string>("");
+const [selectedMonth, setSelectedMonth] = useState<string>("");
+
   const processingStatus = localStorage.getItem("dataSourceProcessingStatus");
 
   // Your existing API call with refreshKey dependency
@@ -234,6 +241,72 @@ export default function NotivixDataSource() {
   const { list } = useSelector((state: RootState) => state.dataSource);
   const listCurrentData = list?.find((item) => item._id === valueId);
 
+  // ✅ BUILD YEAR/MONTH OPTIONS FROM API
+useEffect(() => {
+  if (!listCurrentData?.allDataSourceVersions) return;
+
+  const versions = listCurrentData.allDataSourceVersions.filter(
+    (v: any) => v.isCurrent == true
+  );
+
+  if (!versions.length) return;
+
+  const parsed = versions.map((v: any) => v.versionValue);
+
+  const yearsSet = new Set<string>();
+  const monthsMap: Record<string, Set<string>> = {};
+
+  parsed.forEach((val: string) => {
+    const [year, month] = val.split("-");
+    yearsSet.add(year);
+
+    if (!monthsMap[year]) {
+      monthsMap[year] = new Set();
+    }
+    monthsMap[year].add(month);
+  });
+
+  const years = Array.from(yearsSet).sort((a, b) => Number(b) - Number(a));
+  setYearOptions(years);
+
+  // ✅ DEFAULT ONLY ON FIRST LOAD
+  const latest = [...parsed].sort().reverse()[0];
+  console.log('selectedYear',selectedYear, selectedMonth);
+  if (latest && !selectedYear && !selectedMonth) {
+    const [defaultYear, defaultMonth] = latest.split("-");
+    setSelectedYear(defaultYear);
+    setSelectedMonth(defaultMonth);
+
+    setMonthOptions(
+      Array.from(monthsMap[defaultYear] || []).sort()
+    );
+  }
+}, [listCurrentData]);
+
+
+// ✅ UPDATE MONTHS WHEN YEAR CHANGES
+useEffect(() => {
+  if (!listCurrentData?.allDataSourceVersions || !selectedYear) return;
+
+  const versions = listCurrentData.allDataSourceVersions.filter(
+    (v: any) => v.isCurrent == true
+  );
+  console.log('versions',versions, selectedYear);
+  const months = versions
+    .map((v: any) => v.versionValue)
+    .filter((val: string) => val.startsWith(selectedYear))
+    .map((val: string) => val.split("-")[1]);
+
+  const uniqueMonths: any[] = Array.from(new Set(months)).sort();
+console.log('uniqueMonths',uniqueMonths);
+  setMonthOptions(uniqueMonths);
+
+  // ✅ Reset month only if it doesn't belong to new year
+  if (!uniqueMonths.includes(selectedMonth)) {
+    setSelectedMonth(uniqueMonths[0] || "");
+  }
+}, [selectedYear]);
+
   const deleteVersionRow = useDelete(["deleteVersionRow"]);
 
   const [isFiltersModalOpen, setIsFiltersModalOpen] = React.useState(false);
@@ -259,7 +332,15 @@ export default function NotivixDataSource() {
   const handleCloseFiltersModal = () => {
     setIsFiltersModalOpen(false);
   };
-  const handleFilter = async (filters: any) => {
+  const handleFilter = async (filters: any, year: any, month: any) => {
+    
+  if (year !== undefined) {
+    setSelectedYear(year);
+  }
+
+  if (month !== undefined) {
+    setSelectedMonth(month);
+  }
     const cleanedFilters = Object.fromEntries(
       Object.entries(filters).filter(([_, value]) => value !== "all")
     );
@@ -307,10 +388,12 @@ export default function NotivixDataSource() {
       debouncedSearchValue,
       valueId || "",
       JSON.stringify(filter),
+      selectedYear,
+      selectedMonth,
     ],
     `${GET.SOURCE_VERSION_DATA}?dataSourceId=${encodeURIComponent(
       valueId || ""
-    )}&filters=${encodeURIComponent(JSON.stringify(filter))}&page=${
+    )}&filters=${encodeURIComponent(JSON.stringify(filter))}&year=${selectedYear || ""}&month=${selectedMonth || ""}&page=${
       paginationModelMemo.page + 1
     }&limit=${paginationModelMemo.pageSize}&search=${encodeURIComponent(
       debouncedSearchValue || ""
@@ -678,7 +761,6 @@ export default function NotivixDataSource() {
   const handleExport = () => {
     sourceDataVersionExport.refetch();
   };
-
   return (
     <Box>
       <PageHeader
@@ -748,6 +830,11 @@ export default function NotivixDataSource() {
           dataSourceId={valueId}
           filterFlag="isFilterEnable"
           currentFilters={filter}
+          yearOptions={yearOptions}
+          monthOptions={monthOptions}
+          selectedYear={selectedYear}
+          selectedMonth={selectedMonth}
+          isShowYearMonth={listCurrentData?.versionType != "constant"} // ✅ add this
         />
       )}
       {!!showExportSuccessDialog && (
