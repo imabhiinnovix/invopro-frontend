@@ -778,7 +778,11 @@ console.log('uniqueMonths',uniqueMonths);
   return (
     <Box>
       <PageHeader
-        title={listCurrentData?.name + " Summary" ?? "Data Source Summary"}
+        title={
+  listCurrentData?.name
+    ? `${listCurrentData.name} Summary`
+    : "Data Source Summary"
+}
         subtext={
           listCurrentData?.lastUploadedDate
             ? `Last updated: ${formatDate(listCurrentData.lastUploadedDate)}`
