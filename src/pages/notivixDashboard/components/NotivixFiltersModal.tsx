@@ -1673,7 +1673,7 @@ interface NotivixFiltersModalProps {
   open: boolean;
   onClose: () => void;
   onApplyFilters: (filters: Record<string, any>,  year?: string,
-  month?: string) => void;
+  month?: string, segregationField?: any) => void;
   currentFilters?: Record<string, any>;
   dataSourceId: string;
   filterFlag?: "isFilterEnable" | "isDashboardFilter";
@@ -1684,6 +1684,9 @@ interface NotivixFiltersModalProps {
   selectedYear?:string;
   selectedMonth?:string;
   isShowYearMonth?:boolean;
+  isSummary?:boolean;
+  segregationFields?:Record<string, any>;
+  selectedSegregationField?:string;
 }
 
 interface FieldSetting {
@@ -1795,7 +1798,10 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
   monthOptions = [],
   selectedYear,
   selectedMonth,
-  isShowYearMonth
+  isShowYearMonth,
+  isSummary=false,
+  segregationFields = [],
+  selectedSegregationField
 }) => {
   const theme = useUnifiedTheme();
   const { getButtonSx } = useComponentTypography();
@@ -1817,6 +1823,8 @@ const NotivixFiltersModal: React.FC<NotivixFiltersModalProps> = ({
 
   const [year, setYear] = useState<string>(selectedYear || "all");
 const [month, setMonth] = useState<string>(selectedMonth || "all");
+
+const [segregationField, setSegregationField] = useState<string | null>(selectedSegregationField || null);
 
 useEffect(() => {
   if (open) {
@@ -2027,7 +2035,7 @@ useEffect(() => {
     const finalYear = year === "all" ? "" : year;
     const finalMonth = month === "all" ? "" : month;
 
-    onApplyFilters(transformedFilters, finalYear, finalMonth);
+    onApplyFilters(transformedFilters, finalYear, finalMonth, segregationField);
     onClose();
   };
 
@@ -2040,7 +2048,9 @@ useEffect(() => {
   setYear("all");
   setMonth("all");
 
-    onApplyFilters({ ...defaultFilters }, undefined, undefined);
+  setSegregationField(null);
+
+    onApplyFilters({ ...defaultFilters }, undefined, undefined, undefined);
     onClose();
   };
 
@@ -2703,6 +2713,34 @@ useEffect(() => {
   </FormControl>
 </Box>
           )}
+          {isSummary && (
+  <FormControl
+    fullWidth
+    size="small"
+    sx={{ gridColumn: "1 / -1" }}
+  >
+    <InputLabel>Summary Breakup</InputLabel>
+    <Select
+      value={segregationField || "none"}
+      label="Summary Breakup"
+      onChange={(e) => {
+        const val = e.target.value;
+        setSegregationField(val === "none" ? null : val);
+      }}
+    >
+      <MenuItem value="none">Select</MenuItem>
+
+      {segregationFields.map((field) => (
+        <MenuItem
+          key={field.mappedAttributeName}
+          value={field.mappedAttributeName}
+        >
+          {field.label}
+        </MenuItem>
+      ))}
+    </Select>
+  </FormControl>
+)}
           {filteredFieldSettings.map((field) => renderFilterField(field))}
         </Box>
       )}

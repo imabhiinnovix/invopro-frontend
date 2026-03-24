@@ -257,6 +257,7 @@ interface FormValues {
   files: FileList | null;
   mappings: { [key: string]: string[] };
   separator: { [key: string]: string };
+  vendorId: string | null; // ✅ NEW
 }
 
 interface Attribute {
@@ -538,18 +539,36 @@ useEffect(() => {
     setShowProcessingDialog(false);
   };
 
+   const { data: vendorApiData, isLoading: vendorLoading } = useGet<{
+  success: boolean;
+  data: any[];
+}>(
+  ["vendorList"],
+  `${GET.Vendor_List}?page=1&limit=1000`,
+  true
+);
+const vendorOptions = [
+  { label: "All", value: null },
+  ...(vendorApiData?.data || []).map((v: any) => ({
+    label: v.name,
+    value: v._id,
+  })),
+];
+
   /**
    * Fetch data source details including attributes
    */
   const dataSourceDetails = useGet<{
     success: boolean;
     available: boolean;
-    data: { entityId: { attributes: Attribute[] } };
+    data: {  versionType: string, entityId: { attributes: Attribute[] } };
   }>(
     [`dataSourceDetails`, watch("dataSourceId"), refetchTrigger],
     GET?.Data_Source + `/${watch("dataSourceId")}`,
     !!watch("dataSourceId")
   );
+
+  const versionType = dataSourceDetails?.data?.data?.versionType;
 
   /**
    * Update setting attributes when data source details are loaded
@@ -566,6 +585,9 @@ useEffect(() => {
           (data: Attribute) => data.name
         ),
       ]);
+      if (dataSourceDetails.data.data.versionType !== "monthly") {
+      setValue("vendorId", null); // reset vendor if not monthly
+    }
     }
   }, [
     dataSourceDetails.isFetching,
@@ -709,6 +731,10 @@ useEffect(() => {
       operation: "dataSourceVersion",
       mappings: JSON.stringify(formData.mappings),
       files: files,
+      vendorId:
+        versionType === "monthly"
+          ? formData.vendorId ?? null
+          : null,
     };
 
     const formDataToSend = objectToFormData(payload);
@@ -903,6 +929,30 @@ useEffect(() => {
               disableFuture={true}
               rules={{ required: "Period is required" }}
             />
+
+            {versionType === "monthly" && (
+  <Controller
+    name="vendorId"
+    control={control}
+    defaultValue={null}
+    render={({ field }) => (
+      <Autocomplete
+        options={vendorOptions}
+        loading={vendorLoading}
+        getOptionLabel={(option) => option.label}
+        value={
+          vendorOptions.find((opt) => opt.value === field.value) || null
+        }
+        onChange={(_, selected) => {
+          field.onChange(selected?.value ?? null);
+        }}
+        renderInput={(params) => (
+          <TextField {...params} label="Vendor" />
+        )}
+      />
+    )}
+  />
+)}
 
             {/* Removed version name field */}
 

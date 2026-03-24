@@ -69,6 +69,8 @@ interface FieldSetting {
   visible: boolean;
   isDerived: boolean;
   type: string | boolean;
+  summaryVisible: boolean;
+  segregation:boolean;
 }
 
 interface DataSourceRequestPayload {
@@ -124,6 +126,8 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({
         filter: yup.boolean(),
         sorting: yup.boolean(),
         visible: yup.boolean(),
+        summaryVisible: yup.boolean(),
+        segregation: yup.boolean()
       })
     ),
   });
@@ -179,6 +183,8 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({
             filter: setting.isFilterEnable || setting.filter || false,
             sorting: setting.isSortingEnable || setting.sorting || false,
             visible: setting.isDisplayEnable || setting.visible || false,
+            summaryVisible: setting.isSummaryDisplayEnable || setting.summaryVisible || false,
+            segregation: setting.isSummarySegregation || setting.segregation || false,
             isDerived: setting.isDerived,
           }))
         : [
@@ -189,6 +195,8 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({
               sorting: false,
               visible: false,
               isDerived: false,
+              summaryVisible: false,
+              segregation: false
             },
           ],
     },
@@ -314,6 +322,8 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({
             filter: false,
             sorting: false,
             visible: false,
+            summaryVisible: false,
+            segregation: false
           },
         ]);
       }
@@ -371,6 +381,8 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({
                 filter: setting.isFilterEnable || setting.filter || false,
                 sorting: setting.isSortingEnable || setting.sorting || false,
                 visible: setting.isDisplayEnable || setting.visible || false,
+                summaryVisible: setting.isSummaryDisplayEnable || setting.summaryVisible || false,
+                segregation: setting.isSummarySegregation || setting.segregation || false,
               };
             })
           : [
@@ -380,6 +392,8 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({
                 filter: false,
                 sorting: false,
                 visible: false,
+                summaryVisible: false,
+                segregation: false
               },
             ],
       });
@@ -620,6 +634,8 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({
           isFilterEnable: !!setting.filter,
           isSortingEnable: !!setting.sorting,
           isDisplayEnable: !!setting.visible,
+          isSummaryDisplayEnable: !!setting.summaryVisible,
+          isSummarySegregation: !!setting.segregation,
           isDerived: option?.value?.isDerived,
           mappedAttributeName: option?.label,
         };
@@ -673,6 +689,8 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({
           filter: false,
           sorting: false,
           visible: false,
+          summaryVisible: false,
+          segregation: false
         },
       ],
     });
@@ -689,6 +707,8 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({
       filter: false,
       sorting: false,
       visible: false,
+      summaryVisible: false,
+      segregation: false
     });
   };
 
@@ -1105,6 +1125,24 @@ const CreateUpdateDataSource: React.FC<CreateUpdateDataSourceProps> = ({
                             />
                           }
                           label="Visible"
+                        />
+                         <FormControlLabel
+                          control={
+                            <Checkbox
+                              {...register(`fieldSettings.${index}.summaryVisible`)}
+                              defaultChecked={field.summaryVisible}
+                            />
+                          }
+                          label="Summary Visible"
+                        />
+                        <FormControlLabel
+                          control={
+                            <Checkbox
+                              {...register(`fieldSettings.${index}.segregation`)}
+                              defaultChecked={field.segregation}
+                            />
+                          }
+                          label="Summary Segregation"
                         />
                       </Stack>
                     </Box>

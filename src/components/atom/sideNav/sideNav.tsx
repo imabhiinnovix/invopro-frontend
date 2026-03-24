@@ -1304,27 +1304,89 @@ function getNavItems(
 ) {
   const dsPerms = permissions?.[PermissionsMap.DATA_SOURCE] || {};
 
+  // const monthlyDataSources = matchedDataSources
+  //   .filter((item) => item.versionType === "monthly")
+  //   .filter((item) => {
+  //     const nameKey = (item.name == "Invoice List" || item.code == "invoicelist" ? "Invoice List" : item?.name || "")
+  //       .toLowerCase()
+  //       .replace(/\s+/g, "_");
+  //     const codeKey = (item?.code || "")
+  //       .replace(/[^a-zA-Z0-9]/g, "")
+  //       .toLowerCase();
+  //     return Object.keys(dsPerms).some(
+  //       (key) =>
+  //         key.endsWith("list") &&
+  //         (key.includes(nameKey) || key.includes(codeKey)) &&
+  //         checkPermission(permissions, PermissionsMap.DATA_SOURCE, key)
+  //     );
+  //   })
+  //   .map((item) => ({
+  //     name: item?.name ?? "",
+  //     icon: createIcon(SourceIcon, `/data-source-new/${item?._id}`, theme, location, themeColor),
+  //     route: `/data-source-new/${item?._id}`,
+  //   }));
   const monthlyDataSources = matchedDataSources
-    .filter((item) => item.versionType === "monthly")
-    .filter((item) => {
-      const nameKey = (item.name == "Invoice List" || item.code == "invoicelist" ? "Invoice List" : item?.name || "")
-        .toLowerCase()
-        .replace(/\s+/g, "_");
-      const codeKey = (item?.code || "")
-        .replace(/[^a-zA-Z0-9]/g, "")
-        .toLowerCase();
-      return Object.keys(dsPerms).some(
-        (key) =>
-          key.endsWith("list") &&
-          (key.includes(nameKey) || key.includes(codeKey)) &&
-          checkPermission(permissions, PermissionsMap.DATA_SOURCE, key)
-      );
-    })
-    .map((item) => ({
+  .filter((item) => item.versionType === "monthly")
+  .filter((item) => {
+    const nameKey = (
+      item.name == "Invoice List" || item.code == "invoicelist"
+        ? "Invoice List"
+        : item?.name || ""
+    )
+      .toLowerCase()
+      .replace(/\s+/g, "_");
+
+    const codeKey = (item?.code || "")
+      .replace(/[^a-zA-Z0-9]/g, "")
+      .toLowerCase();
+
+    return Object.keys(dsPerms).some(
+      (key) =>
+        key.endsWith("list") &&
+        (key.includes(nameKey) || key.includes(codeKey)) &&
+        checkPermission(
+          permissions,
+          PermissionsMap.DATA_SOURCE,
+          key
+        )
+    );
+  })
+  .flatMap((item) => {
+    const baseItem = {
       name: item?.name ?? "",
-      icon: createIcon(SourceIcon, `/data-source-new/${item?._id}`, theme, location, themeColor),
+      icon: createIcon(
+        SourceIcon,
+        `/data-source-new/${item?._id}`,
+        theme,
+        location,
+        themeColor
+      ),
       route: `/data-source-new/${item?._id}`,
-    }));
+    };
+
+    const isInvoiceList =
+      item.name === "Invoice List" || item.code === "invoicelist";
+
+    // 👇 Return extra item only for Invoice List
+    if (isInvoiceList) {
+      return [
+        baseItem,
+        {
+          name: `${item?.name} Summary`,
+          icon: createIcon(
+            SourceIcon,
+            `/data-source-new-summary/${item?._id}`,
+            theme,
+            location,
+            themeColor
+          ),
+          route: `/data-source-new-summary/${item?._id}`,
+        },
+      ];
+    }
+
+    return [baseItem];
+  });
 
   const vendorInvoiceMenuItem = {
     name: "Invoice PDF Files",
