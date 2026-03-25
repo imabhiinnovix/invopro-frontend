@@ -163,7 +163,7 @@ export const NotivixDataTable: React.FC<TableSectionProps> = ({
           }
 
           // NUMBER → toFixed(2)
-          if (value != null && !isNaN(value)) {
+          if (value != null && typeof value == "number" && !isNaN(value)) {
             return Number(value).toFixed(2);
           }
 
