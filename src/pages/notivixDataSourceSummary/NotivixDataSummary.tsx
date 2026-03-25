@@ -1,16 +1,19 @@
 import * as React from "react";
 import { Box, Typography } from "@mui/material";
+import { formatCurrency } from "../../utils/utils";
 
 interface Props {
   totalSummary: Record<string, number>;
   columnMap: Record<string, string>;
   defaultCurrency?: string;
+  currencies:string[];
 }
 
 export const NotivixDataSummary: React.FC<Props> = ({
   totalSummary,
   columnMap,
   defaultCurrency,
+  currencies
 }) => {
   const summaryCards = React.useMemo(() => {
     if (!totalSummary) return [];
@@ -85,10 +88,13 @@ export const NotivixDataSummary: React.FC<Props> = ({
                 color: item.isConverted ? "#2563eb" : "#111827",
               }}
             >
-              {item.value.toLocaleString(undefined, {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2,
-              })}
+                {
+                !item.isConverted
+                    ? currencies.length === 1
+                    ? formatCurrency(item.value, currencies[0])
+                    : "Multiple"
+                    : formatCurrency(item.value, defaultCurrency)
+                }
             </Typography>
           </Box>
         ))}

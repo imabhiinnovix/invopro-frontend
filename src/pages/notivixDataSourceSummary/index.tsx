@@ -800,7 +800,7 @@ console.log('uniqueMonths',uniqueMonths);
     listCurrentData?.fieldSettings,
   ]);
 
-   const totalSummary = sourceVersionData?.data?.total || {};
+   const { currencies = [], ...totalSummary } = sourceVersionData?.data?.total || {};
 
      const columnMap = useMemo(() => {
       const map: Record<string, string> = {};
@@ -860,6 +860,7 @@ console.log('uniqueMonths',uniqueMonths);
         totalSummary={totalSummary}
         columnMap={columnMap}
         defaultCurrency={defaultCurrency}
+        currencies={currencies}
       />
 
       <NotivixDataTable
