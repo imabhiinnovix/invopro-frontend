@@ -17,6 +17,7 @@ import SearchField from "../../components/common/SearchField";
 import { PageCardLayout, StyledButton } from "../../components/common";
 import IosShareIcon from "@mui/icons-material/IosShare";
 
+
 interface TableSectionProps {
   rows: any[];
   columns: GridColDef[];
@@ -88,6 +89,7 @@ export const NotivixDataTable: React.FC<TableSectionProps> = ({
   shouldAllowAdd,
   shouldAllowImport,
   handleExport,
+  defaultCurrency
 }) => {
   // Use ref to track previous dataSourceId
   const prevDataSourceIdRef = React.useRef<string>(dataSourceId);
@@ -132,9 +134,15 @@ export const NotivixDataTable: React.FC<TableSectionProps> = ({
       if (column.field === "actions") {
         return column;
       }
+    // Append currency in header if "Converted" present
+    const updatedHeaderName =
+      column.headerName && column.field && column.field.includes("Converted")
+        ? `${column.headerName} ( ${defaultCurrency} )`
+        : column.headerName;
 
       return {
         ...column,
+        headerName: updatedHeaderName,
         renderCell: (params: any) => {
           const value = params.value;
 
@@ -150,6 +158,11 @@ export const NotivixDataTable: React.FC<TableSectionProps> = ({
                 <Skeleton variant="text" width="80%" height={20} />
               </Box>
             );
+          }
+          
+          // NUMBER → toFixed(2)
+          if (value != null && !isNaN(value)) {
+            return Number(value).toFixed(2);
           }
 
           if (

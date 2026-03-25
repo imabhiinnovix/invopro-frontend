@@ -16,6 +16,8 @@ import dayjs from "dayjs";
 import SearchField from "../../components/common/SearchField";
 import { PageCardLayout, StyledButton } from "../../components/common";
 import IosShareIcon from "@mui/icons-material/IosShare";
+import { useContext } from "react";
+import { AuthContext } from "../../context/AuthContext";
 
 interface TableSectionProps {
   rows: any[];
@@ -127,14 +129,22 @@ export const NotivixDataTable: React.FC<TableSectionProps> = ({
     return [];
   }, [rows, columns.length, loading, paginationModel.pageSize]);
 
+  const { userDetails } = useContext(AuthContext);
+
   const formattedColumns = React.useMemo(() => {
     return columns.map((column) => {
       if (column.field === "actions") {
         return column;
       }
+      // Append currency in header if "Converted" present
+    const updatedHeaderName =
+      column.headerName && column.field && column.field.includes("Converted")
+        ? `${column.headerName} ( ${userDetails?.data.organizationId?.defaultCurrency} )`
+        : column.headerName;
 
       return {
         ...column,
+        headerName: updatedHeaderName,
         renderCell: (params: any) => {
           const value = params.value;
 
@@ -150,6 +160,11 @@ export const NotivixDataTable: React.FC<TableSectionProps> = ({
                 <Skeleton variant="text" width="80%" height={20} />
               </Box>
             );
+          }
+
+          // NUMBER → toFixed(2)
+          if (value != null && !isNaN(value)) {
+            return Number(value).toFixed(2);
           }
 
           if (

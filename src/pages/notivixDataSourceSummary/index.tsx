@@ -26,10 +26,15 @@ import { useAppDispatch } from "../../storeHooks";
 import { PermissionsMap } from "../../utils/constants";
 import DialogContainer from "../../components/molecule/dialog";
 import { VisibilityOutlined } from "@mui/icons-material";
+import { NotivixDataSummary } from "./NotivixDataSummary";
+import { useContext } from "react";
+import { AuthContext } from "../../context/AuthContext";
+
 
 interface ApiResponse {
   data: any[];
   totalCount: number;
+  total?: Record<string, number>;
 }
 
 function getPermsForDataSource(
@@ -464,6 +469,33 @@ console.log('uniqueMonths',uniqueMonths);
     setModalMode("edit");
   }, []);
 
+ const handleOpenInNewTab = (rowData?: Record<string, any>) => {
+  if (!valueId) return;
+
+  // ✅ Start with current filters
+  const appliedFilters = { ...(filter || {}) };
+
+  // ✅ Add default Law Firm Name from rowData (if exists)
+  if (rowData && rowData["Law Firm Name"]) {
+    appliedFilters["Law Firm Name"] = rowData["Law Firm Name"];
+  }
+
+  // ✅ Add selectedSegregationField from rowData (if exists)
+  if (selectedSegregationField && rowData?.[selectedSegregationField]) {
+    appliedFilters[selectedSegregationField] = rowData[selectedSegregationField];
+  }
+
+  const params = new URLSearchParams({
+    year: selectedYear || "",
+    month: selectedMonth || "",
+    search: debouncedSearchValue || "",
+    filters: JSON.stringify(appliedFilters),
+  });
+
+  // ✅ Open the same page in a new tab with merged query params
+  window.open(`/data-source-new/${valueId}?${params.toString()}`, "_blank");
+};
+
   const handleView = useCallback(
     (id: string) => {
       const rawData = sourceVersionData?.data?.data || [];
@@ -586,6 +618,10 @@ console.log('uniqueMonths',uniqueMonths);
       },
     }));
 
+   
+
+   
+
     const actionsColumn = {
       field: "actions",
       headerName: "Actions",
@@ -610,12 +646,12 @@ console.log('uniqueMonths',uniqueMonths);
         }
         return (
           <Box sx={{ display: "flex", gap: 1 }}>
-            <Tooltip title="View" arrow>
-              <ActionIconButton onClick={() => handleView(params.row._id)}>
+            <Tooltip title="View Details" arrow>
+              <ActionIconButton onClick={() => handleOpenInNewTab(params.row)}>
                 <VisibilityOutlined />
               </ActionIconButton>
             </Tooltip>
-            <Tooltip title="Edit" arrow>
+            {/* <Tooltip title="Edit" arrow>
               <ActionIconButton
                 onClick={() => handleEdit(params.row._id)}
                 disabled={!shouldAllowEdit}
@@ -630,13 +666,13 @@ console.log('uniqueMonths',uniqueMonths);
               >
                 <DeleteOutlined />
               </ActionIconButton>
-            </Tooltip>
+            </Tooltip> */}
           </Box>
         );
       },
     };
 
-    return [...baseColumns];
+    return [...baseColumns, actionsColumn];
   }, [
     listCurrentData?.fieldSettings,
     handleView,
@@ -731,6 +767,7 @@ console.log('uniqueMonths',uniqueMonths);
     }
     const rawData = sourceVersionData?.data?.data || [];
     const totalCount = sourceVersionData?.data?.totalCount || 0;
+   
     if (!Array.isArray(rawData)) {
       setRows([]);
       setRowCount(0);
@@ -762,6 +799,24 @@ console.log('uniqueMonths',uniqueMonths);
     sourceVersionData.error,
     listCurrentData?.fieldSettings,
   ]);
+
+   const totalSummary = sourceVersionData?.data?.total || {};
+
+     const columnMap = useMemo(() => {
+      const map: Record<string, string> = {};
+
+      columns.forEach((col: any) => {
+        map[col.field] = col.headerName;
+      });
+
+      return map;
+    }, [columns]);
+
+      const { userDetails } = useContext(AuthContext);
+
+      const defaultCurrency = userDetails?.data.organizationId?.defaultCurrency;
+
+
 
   const handleCompleteImport = () => {
     const id = listCurrentData?.dataSourceVersion?._id;
@@ -801,6 +856,12 @@ console.log('uniqueMonths',uniqueMonths);
         }
       />
 
+      <NotivixDataSummary
+        totalSummary={totalSummary}
+        columnMap={columnMap}
+        defaultCurrency={defaultCurrency}
+      />
+
       <NotivixDataTable
         rows={rows}
         columns={columns}
@@ -820,6 +881,7 @@ console.log('uniqueMonths',uniqueMonths);
         shouldAllowAdd={shouldAllowAdd}
         shouldAllowImport={shouldAllowImport}
         handleExport={handleExport}
+        defaultCurrency={defaultCurrency}
       />
       <NotivixDataModal
         openModal={openModal}

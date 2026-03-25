@@ -26,6 +26,7 @@ import { useAppDispatch } from "../../storeHooks";
 import { PermissionsMap } from "../../utils/constants";
 import DialogContainer from "../../components/molecule/dialog";
 import { VisibilityOutlined } from "@mui/icons-material";
+import { useLocation } from "react-router-dom";
 
 interface ApiResponse {
   data: any[];
@@ -195,9 +196,22 @@ export default function NotivixDataSource() {
   const [openDialog, setOpenDialog] = useState(false);
   const [formData, setFormData] = useState<Record<string, any>>({ id: "" });
   const [deleteId, setDeleteId] = useState<string | null>(null);
+
+  const query = new URLSearchParams(useLocation().search);
+
+const initialFilter = query.get("filters") ? JSON.parse(query.get("filters")!) : {};
+const initialYear = query.get("year") || "";
+const initialMonth = query.get("month") || "";
+const initialSearch = query.get("search") || "";
+
+const [filter, setFilter] = useState<Record<string, any>>(initialFilter);
+const [selectedYear, setSelectedYear] = useState(initialYear);
+const [selectedMonth, setSelectedMonth] = useState(initialMonth);
+const [debouncedSearchValue, setDebouncedSearchValue] = useState(initialSearch);
+
   const [searchValue, setSearchValue] = useState("");
-  const [filter, setFilter] = useState({});
-  const [debouncedSearchValue, setDebouncedSearchValue] = useState(searchValue);
+  // const [filter, setFilter] = useState({});
+  // const [debouncedSearchValue, setDebouncedSearchValue] = useState(searchValue);
   const [paginationModel, setPaginationModel] = useState({
     page: 0,
     pageSize: 10,
@@ -207,10 +221,16 @@ export default function NotivixDataSource() {
   // ✅ NEW STATES (ADD THIS)
 const [yearOptions, setYearOptions] = useState<string[]>([]);
 const [monthOptions, setMonthOptions] = useState<string[]>([]);
-const [selectedYear, setSelectedYear] = useState<string>("");
-const [selectedMonth, setSelectedMonth] = useState<string>("");
+// const [selectedYear, setSelectedYear] = useState<string>("");
+// const [selectedMonth, setSelectedMonth] = useState<string>("");
 
   const processingStatus = localStorage.getItem("dataSourceProcessingStatus");
+
+
+useEffect(() => {
+  const f = query.get("filters");
+  if (f) setFilter(JSON.parse(f));
+}, [query]);
 
   // Your existing API call with refreshKey dependency
   const dataSourceNotivixListAPI = useGet<DataSourceListPayload>(
