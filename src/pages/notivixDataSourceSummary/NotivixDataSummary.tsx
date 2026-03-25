@@ -13,7 +13,7 @@ export const NotivixDataSummary: React.FC<Props> = ({
   totalSummary,
   columnMap,
   defaultCurrency,
-  currencies
+  currencies = []
 }) => {
   const summaryCards = React.useMemo(() => {
     if (!totalSummary) return [];
@@ -25,7 +25,9 @@ export const NotivixDataSummary: React.FC<Props> = ({
 
       if (isConverted) {
         label = `${columnMap[key] || key} (${defaultCurrency || "Converted"})`;
-      } else {
+      } else if(currencies.length == 1){
+        label = `${columnMap[key] || key} (${currencies[0]})`;
+      }else{
         label = columnMap[key] || key;
       }
 
