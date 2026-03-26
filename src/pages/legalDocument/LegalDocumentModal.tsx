@@ -19,6 +19,7 @@ import useGet from "../../hooks/useGet";
 import usePut from "../../hooks/usePut";
 import usePostMultipart from "../../hooks/usePostMultipart";
 import { GET, POST, PUT } from "../../services/apiRoutes";
+import usePutMultipart from "../../hooks/usePutMultipart";
 
 interface Vendor {
   _id: string;
@@ -115,7 +116,7 @@ export function LegalDocumentModal({
     true
   );
 
-  const updateLegalDocument = usePut<
+  const updateLegalDocument = usePutMultipart<
     LegalDocumentPayload,
     LegalDocumentResponse
   >(
