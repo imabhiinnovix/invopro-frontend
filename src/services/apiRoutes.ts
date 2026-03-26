@@ -69,6 +69,8 @@ export const POST = {
   Create_Vendor_Attorney: "/invoicivix-vendor/vendor-attorney/create",
   Create_Sub_Vendor: "/invoicivix-vendor/sub-vendor/create",
   Create_Vendor_Invoice: "/invoicivix-vendor/vendor-invoice/create",
+  Create_Payment: "/invoicivix-vendor/payment-info/create",
+  Create_Purchase_Order: "/invoicivix-vendor/purchase-order/create",
 };
 
 export const PUT = {
@@ -101,6 +103,8 @@ export const PUT = {
   UPDATE_VENDOR_ATTORNEY: "/invoicivix-vendor/vendor-attorney/update/",
   UPDATE_SUB_VENDOR: "/invoicivix-vendor/sub-vendor/update",
   UPDATE_VENDOR_INVOICE: "/invoicivix-vendor/vendor-invoice/update",
+  UPDATE_PAYMENT: "/invoicivix-vendor/payment-info/update",
+  UPDATE_PURCHASE_ORDER: "/invoicivix-vendor/purchase-order/update",
 };
 
 export const DELETE = {
@@ -124,7 +128,9 @@ export const DELETE = {
   Delete_Activity_Rate_Card: "/invoicivix-vendor/activity-rate-card/delete",
   Delete_Vendor_Attorney: "/invoicivix-vendor/vendor-attorney/delete",
   Delete_Sub_Vendor: "/invoicivix-vendor/sub-vendor/delete",
-  Delete_Vendor_Invoice: "/invoicivix-vendor/vendor-invoice/delete"
+  Delete_Vendor_Invoice: "/invoicivix-vendor/vendor-invoice/delete",
+  Delete_Payment: "/invoicivix-vendor/payment-info/delete",
+  Delete_Purchase_Order: "/invoicivix-vendor/purchase-order/delete"
 };
 
 export const GET = {
@@ -203,5 +209,7 @@ export const GET = {
   Activity_Rate_Card_List: "/invoicivix-vendor/activity-rate-card/list",
   Vendor_Attorney_List: "/invoicivix-vendor/vendor-attorney/list",
   Sub_Vendor_List: "/invoicivix-vendor/sub-vendor/list",
-  Vendor_Invoice_List: "/invoicivix-vendor/vendor-invoice/list"
+  Vendor_Invoice_List: "/invoicivix-vendor/vendor-invoice/list",
+  Payment_List: "/invoicivix-vendor/payment-info/list",
+  Purchase_Order_List: "/invoicivix-vendor/purchase-order/list"
 };

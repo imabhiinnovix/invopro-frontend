@@ -1397,6 +1397,28 @@ function getNavItems(
       PermissionsMap.VENDORINVOICE,
       "list"
     ),
+  }; 
+
+  const vendorInvoicePaymentMenuItem = {
+    name: "Invoice Payment",
+    icon: createIcon(NotificationsActiveIcon, "/payment-info", theme, location, themeColor),
+    route: "/payment-info",
+    shouldShow: checkPermission(
+      permissions,
+      PermissionsMap.PAYMENT,
+      "list"
+    ),
+  }; 
+
+  const vendorPurchaseOrderMenuItem = {
+    name: "Purchase Order",
+    icon: createIcon(NotificationsActiveIcon, "/purchase-order", theme, location, themeColor),
+    route: "/purchase-order",
+    shouldShow: checkPermission(
+      permissions,
+      PermissionsMap.PURCHASE_ORDER,
+      "list"
+    ),
   };  
 
   const alertsMenuItem = {
@@ -1450,6 +1472,8 @@ function getNavItems(
     // Template,
     // notivixDefaultDashboard,
     vendorInvoiceMenuItem,
+    vendorInvoicePaymentMenuItem,
+    vendorPurchaseOrderMenuItem,
     ...monthlyDataSources,
     ...loadingIndicator,
     NotificationLogsMenuItem,
