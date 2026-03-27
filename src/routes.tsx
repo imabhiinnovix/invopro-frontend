@@ -54,6 +54,7 @@ import LegalDocument from "./pages/legalDocument";
 import VendorInvoicePage from "./pages/vendorInvoice";
 import PaymentInfoPage from "./pages/paymentInfo";
 import PurchaseOrderPage from "./pages/purchaseOrder";
+import ActivityInfoPage from "./pages/activityInfo";
 
 const AppRoutes = () => {
   const token = getAuthToken();
@@ -144,6 +145,8 @@ const AppRoutes = () => {
           <Route path="/payment-info" element={<PaymentInfoPage />} />
 
            <Route path="/purchase-order" element={<PurchaseOrderPage />} />
+
+           <Route path="/activity-info" element={<ActivityInfoPage />} />
 
           <Route path="/data-source-new/:id" element={<NotivixDataSource />} />
           <Route path="/data-source-new-summary/:id" element={<NotivixDataSourceSummary />} />

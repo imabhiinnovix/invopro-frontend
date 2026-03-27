@@ -262,7 +262,8 @@ export const PermissionsMap = {
   LEGALDOCUMENT: "LegalDocument",
   VENDORINVOICE: "VendorInvoice",
   PAYMENT: "PaymentInfo",
-  PURCHASE_ORDER: "PurchaseOrder"
+  PURCHASE_ORDER: "PurchaseOrder",
+  ACTIVITY: "Activity",
 } as const;
 
 export type PermissionResourceType =

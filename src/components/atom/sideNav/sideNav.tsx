@@ -1419,6 +1419,17 @@ function getNavItems(
       PermissionsMap.PURCHASE_ORDER,
       "list"
     ),
+  }; 
+
+  const activityInfoMenuItem = {
+    name: "Activity Files",
+    icon: createIcon(NotificationsActiveIcon, "/activity-info", theme, location, themeColor),
+    route: "/activity-info",
+    shouldShow: checkPermission(
+      permissions,
+      PermissionsMap.ACTIVITY,
+      "list"
+    ),
   };  
 
   const alertsMenuItem = {
@@ -1471,6 +1482,7 @@ function getNavItems(
     // alertsMenuItem,
     // Template,
     // notivixDefaultDashboard,
+    activityInfoMenuItem,
     vendorInvoiceMenuItem,
     vendorInvoicePaymentMenuItem,
     vendorPurchaseOrderMenuItem,

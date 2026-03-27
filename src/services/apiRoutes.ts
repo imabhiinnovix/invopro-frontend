@@ -71,6 +71,7 @@ export const POST = {
   Create_Vendor_Invoice: "/invoicivix-vendor/vendor-invoice/create",
   Create_Payment: "/invoicivix-vendor/payment-info/create",
   Create_Purchase_Order: "/invoicivix-vendor/purchase-order/create",
+  Create_Activity: "/invoicivix-vendor/activity-info/create",
 };
 
 export const PUT = {
@@ -105,6 +106,7 @@ export const PUT = {
   UPDATE_VENDOR_INVOICE: "/invoicivix-vendor/vendor-invoice/update",
   UPDATE_PAYMENT: "/invoicivix-vendor/payment-info/update",
   UPDATE_PURCHASE_ORDER: "/invoicivix-vendor/purchase-order/update",
+  UPDATE_ACTIVITY: "/invoicivix-vendor/activity-info/update",
 };
 
 export const DELETE = {
@@ -130,7 +132,8 @@ export const DELETE = {
   Delete_Sub_Vendor: "/invoicivix-vendor/sub-vendor/delete",
   Delete_Vendor_Invoice: "/invoicivix-vendor/vendor-invoice/delete",
   Delete_Payment: "/invoicivix-vendor/payment-info/delete",
-  Delete_Purchase_Order: "/invoicivix-vendor/purchase-order/delete"
+  Delete_Purchase_Order: "/invoicivix-vendor/purchase-order/delete",
+  Delete_Activity: "/invoicivix-vendor/activity-info/delete"
 };
 
 export const GET = {
@@ -211,5 +214,6 @@ export const GET = {
   Sub_Vendor_List: "/invoicivix-vendor/sub-vendor/list",
   Vendor_Invoice_List: "/invoicivix-vendor/vendor-invoice/list",
   Payment_List: "/invoicivix-vendor/payment-info/list",
-  Purchase_Order_List: "/invoicivix-vendor/purchase-order/list"
+  Purchase_Order_List: "/invoicivix-vendor/purchase-order/list",
+  Activity_List: "/invoicivix-vendor/activity-info/list"
 };
