@@ -166,7 +166,7 @@ export const NotivixDataTable: React.FC<TableSectionProps> = ({
           }
 
           if (
-            column.field.toLowerCase().includes("date") &&
+            /\bdate\b/i.test(column.field) &&
             value &&
             !Array.isArray(value)
           ) {

@@ -3689,7 +3689,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
                         const cellValue = row[column];
 
                         const isDateField =
-                          column.toLowerCase().includes("date") ||
+                          /\bdate\b/i.test(column) ||
                           column.toLowerCase().includes("datetaken") ||
                           column.toLowerCase().includes("duedate");
 
@@ -5149,7 +5149,7 @@ export const ChartGrid: React.FC<ChartGridProps> = ({
                             {drillDownColumns.map((column) => {
                               const cellValue = row[column];
                               const isDateField =
-                                column.toLowerCase().includes("date") ||
+                                /\bdate\b/i.test(column) ||
                                 column.toLowerCase().includes("datetaken") ||
                                 column.toLowerCase().includes("duedate");
 
