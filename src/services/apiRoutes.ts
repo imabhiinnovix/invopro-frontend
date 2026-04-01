@@ -72,6 +72,7 @@ export const POST = {
   Create_Payment: "/invoicivix-vendor/payment-info/create",
   Create_Purchase_Order: "/invoicivix-vendor/purchase-order/create",
   Create_Activity: "/invoicivix-vendor/activity-info/create",
+  Send_Revalidated_Rows: "/common/dataSourceVersion/revalidateRows"
 };
 
 export const PUT = {

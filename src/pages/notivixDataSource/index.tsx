@@ -822,6 +822,10 @@ console.log('uniqueMonths',uniqueMonths);
         shouldAllowAdd={shouldAllowAdd}
         shouldAllowImport={shouldAllowImport}
         handleExport={handleExport}
+        filters={filter}
+        search={debouncedSearchValue}
+        year={selectedYear}
+        month={selectedMonth}
       />
       <NotivixDataModal
         openModal={openModal}

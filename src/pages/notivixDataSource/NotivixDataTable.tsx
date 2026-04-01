@@ -6,6 +6,7 @@ import {
   Tooltip,
   Skeleton,
   CircularProgress,
+  Checkbox, // ✅ added
 } from "@mui/material";
 import { STYLE_GUIDE } from "../../styles";
 import FilterListIcon from "@mui/icons-material/FilterList";
@@ -18,6 +19,8 @@ import { PageCardLayout, StyledButton } from "../../components/common";
 import IosShareIcon from "@mui/icons-material/IosShare";
 import { useContext } from "react";
 import { AuthContext } from "../../context/AuthContext";
+import axios from "axios"; // ✅ added
+import usePost from "../../hooks/usePost";
 
 interface TableSectionProps {
   rows: any[];
@@ -40,7 +43,16 @@ interface TableSectionProps {
   shouldAllowAdd: boolean;
   shouldAllowImport: boolean;
   handleExport: () => void;
+
+  // ✅ NEW optional props (safe)
+  filters?: any;
+  search?: any;
+  year?: any;
+  month?: any;
+  versionValue?: string;
 }
+
+const TARGET_DS = "699f04727df5e0efe12d5027"; // ✅
 
 const renderCellValue = (value: any) => {
   if (value == null) return "";
@@ -90,22 +102,28 @@ export const NotivixDataTable: React.FC<TableSectionProps> = ({
   shouldAllowAdd,
   shouldAllowImport,
   handleExport,
+  filters, // ✅
+  search, // ✅
+  year, // ✅
+  month, // ✅
 }) => {
-  // Use ref to track previous dataSourceId
   const prevDataSourceIdRef = React.useRef<string>(dataSourceId);
 
-  // Reset search value when dataSourceId changes
+  // ✅ selection state
+  const [selectedRowIds, setSelectedRowIds] = React.useState<string[]>([]);
+
+  const isTarget = dataSourceId === TARGET_DS;
+
   React.useEffect(() => {
-    // Only reset if dataSourceId has actually changed
     if (prevDataSourceIdRef.current !== dataSourceId) {
-      // Create a synthetic event to trigger handleSearchChange
       const event = {
         target: { value: "" },
       } as React.ChangeEvent<HTMLInputElement>;
       handleSearchChange(event);
-
-      // Update the ref to current dataSourceId
       prevDataSourceIdRef.current = dataSourceId;
+
+      // reset selection
+      setSelectedRowIds([]);
     }
   }, [dataSourceId, handleSearchChange]);
 
@@ -130,17 +148,54 @@ export const NotivixDataTable: React.FC<TableSectionProps> = ({
   }, [rows, columns.length, loading, paginationModel.pageSize]);
 
   const { userDetails } = useContext(AuthContext);
+  const sendRevalidateRows = usePost<any, any>(
+  ["sendRevalidateRows"],
+  (res) => {
+    if (res?.success) {
+      setSelectedRowIds([]);
+    }
+  },
+  true
+);
+  // ✅ Revalidate API
+  const handleRevalidate = () => {
+  try {
+    const isSelectAll =
+      selectedRowIds.length === rows.length && rows.length > 0;
 
+    const payload = {
+      dataSourceId,
+      rowIds: isSelectAll ? [] : selectedRowIds,
+      ...(isSelectAll
+      ? {
+          filters: filters || {},
+          search: search || "",
+          year: year || "",
+          month: month || "",
+        }
+      : {}),
+    };
+
+    sendRevalidateRows.mutate({
+      url: "/common/dataSourceVersion/revalidateRows",
+      payload,
+    });
+  } catch (err) {
+    console.error(err);
+  }
+};
   const formattedColumns = React.useMemo(() => {
-    return columns.map((column) => {
+    const baseCols = columns.map((column) => {
       if (column.field === "actions") {
         return column;
       }
-      // Append currency in header if "Converted" present
-    const updatedHeaderName =
-      column.headerName && column.field && column.field.includes("Converted")
-        ? `${column.headerName} ( ${userDetails?.data.organizationId?.defaultCurrency} )`
-        : column.headerName;
+
+      const updatedHeaderName =
+        column.headerName &&
+        column.field &&
+        column.field.includes("Converted")
+          ? `${column.headerName} ( ${userDetails?.data.organizationId?.defaultCurrency} )`
+          : column.headerName;
 
       return {
         ...column,
@@ -150,32 +205,21 @@ export const NotivixDataTable: React.FC<TableSectionProps> = ({
 
           if (loading && (value == null || value === "")) {
             return (
-              <Box
-                sx={{
-                  width: "100%",
-                  py: 1,
-                }}
-              >
+              <Box sx={{ width: "100%", py: 1 }}>
                 <Skeleton variant="text" width="80%" height={20} />
                 <Skeleton variant="text" width="80%" height={20} />
               </Box>
             );
           }
 
-          // NUMBER → toFixed(2)
           if (value != null && typeof value == "number" && !isNaN(value)) {
             return Number(value).toFixed(2);
           }
 
-          if (
-            /\bdate\b/i.test(column.field) &&
-            value &&
-            !Array.isArray(value)
-          ) {
+          if (/\bdate\b/i.test(column.field) && value && !Array.isArray(value)) {
             try {
               return dayjs(value).format("DD-MMM-YYYY");
             } catch (error) {
-              console.error("Error formatting date:", error);
               return renderCellValue(value);
             }
           }
@@ -188,25 +232,8 @@ export const NotivixDataTable: React.FC<TableSectionProps> = ({
             (typeof value === "string" && value.length > 30);
 
           return shouldShowTooltip ? (
-            <Tooltip
-              title={tooltipText}
-              arrow
-              placement="top-start"
-              sx={{
-                maxWidth: "none",
-                "& .MuiTooltip-tooltip": {
-                  whiteSpace: "pre-line",
-                  maxWidth: "400px",
-                },
-              }}
-            >
-              <Box
-                sx={{
-                  width: "100%",
-                  overflow: "hidden",
-                  cursor: "help",
-                }}
-              >
+            <Tooltip title={tooltipText} arrow placement="top-start">
+              <Box sx={{ width: "100%", overflow: "hidden" }}>
                 {cellContent}
               </Box>
             </Tooltip>
@@ -219,151 +246,210 @@ export const NotivixDataTable: React.FC<TableSectionProps> = ({
         }),
       };
     });
-  }, [columns, loading]);
+
+    // ✅ inject checkbox column only for target DS
+    if (!isTarget) return baseCols;
+
+    return [
+      {
+        field: "__select__",
+        headerName: "",
+        width: 60,
+        sortable: false,
+        renderHeader: () => {
+          const isAllSelected =
+            rows.length > 0 && selectedRowIds.length === rows.length;
+
+          return (
+            <Checkbox
+              checked={isAllSelected}
+              onChange={(e) => {
+                if (e.target.checked) {
+                  setSelectedRowIds(rows.map((r) => r._id));
+                } else {
+                  setSelectedRowIds([]);
+                }
+              }}
+            />
+          );
+        },
+        renderCell: (params: any) => {
+          const id = params.row._id;
+          return (
+            <Checkbox
+              checked={selectedRowIds.includes(id)}
+              onChange={(e) => {
+                if (e.target.checked) {
+                  setSelectedRowIds((prev) => [...prev, id]);
+                } else {
+                  setSelectedRowIds((prev) =>
+                    prev.filter((i) => i !== id)
+                  );
+                }
+              }}
+            />
+          );
+        },
+      },
+      ...baseCols,
+    ];
+  }, [columns, loading, selectedRowIds, rows, isTarget]);
 
   return (
     <>
       <PageCardLayout>
         <Box
-            sx={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              mb: 2,
-            }}
-          >
-            <SearchField
-              searchValue={searchValue}
-              handleSearchChange={handleSearchChange}
-            />
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            mb: 2,
+          }}
+        >
+          <SearchField
+            searchValue={searchValue}
+            handleSearchChange={handleSearchChange}
+          />
 
-            <Box sx={{ display: "flex", gap: 1 }}>
-              <StyledButton
-                variant="secondary"
-                icon={<FilterListIcon sx={{ fontSize: "16px" }} />}
-                onClick={handleOpenFiltersModal}
-              >
-                Filter
-              </StyledButton>
-              {shouldAllowAdd && (
-                <StyledButton
-                  variant="primary"
-                  icon={<AddIcon sx={{ fontSize: "16px" }} />}
-                  onClick={handleAddNotification}
-                >
-                  Add
-                </StyledButton>
-              )}
-              {shouldAllowImport && (
-                <ImportFile
-                  title="Import"
-                  dataSourceId={dataSourceId}
-                  CustomButton={
-                    <StyledButton
-                      variant="primary"
-                      icon={<AddIcon sx={{ fontSize: "16px" }} />}
-                    >
-                      Import
-                    </StyledButton>
-                  }
-                />
-              )}
+          <Box sx={{ display: "flex", gap: 1 }}>
+            <StyledButton
+              variant="secondary"
+              icon={<FilterListIcon sx={{ fontSize: "16px" }} />}
+              onClick={handleOpenFiltersModal}
+            >
+              Filter
+            </StyledButton>
+
+            {/* ✅ ReValidate Button */}
+            {isTarget && (
               <StyledButton
                 variant="primary"
-                icon={<IosShareIcon sx={{ fontSize: "16px" }} />}
-                onClick={handleExport}
+                disabled={selectedRowIds.length === 0}
+                onClick={handleRevalidate}
               >
-                Export
+                ReValidate
               </StyledButton>
-            </Box>
+            )}
+
+            {shouldAllowAdd && (
+              <StyledButton
+                variant="primary"
+                icon={<AddIcon sx={{ fontSize: "16px" }} />}
+                onClick={handleAddNotification}
+              >
+                Add
+              </StyledButton>
+            )}
+
+            {shouldAllowImport && (
+              <ImportFile
+                title="Import"
+                dataSourceId={dataSourceId}
+                CustomButton={
+                  <StyledButton
+                    variant="primary"
+                    icon={<AddIcon sx={{ fontSize: "16px" }} />}
+                  >
+                    Import
+                  </StyledButton>
+                }
+              />
+            )}
+
+            <StyledButton
+              variant="primary"
+              icon={<IosShareIcon sx={{ fontSize: "16px" }} />}
+              onClick={handleExport}
+            >
+              Export
+            </StyledButton>
           </Box>
-          {formattedColumns.length > 0 ? (
-            <DataGrid
-              loading={false}
-              rows={displayRows}
-              columns={formattedColumns}
-              getRowId={(row) => row._id}
-              disableVirtualization
-              paginationMode="server"
-              rowCount={
-                rowCount ||
-                (loading && displayRows.length > 0
-                  ? paginationModel.pageSize
-                  : 0)
-              }
-              paginationModel={paginationModelMemo}
-              onPaginationModelChange={setPaginationModel}
-              disableColumnMenu
-              getRowHeight={() => "auto"}
-              sx={{
-                "& .MuiDataGrid-cell": {
-                  display: "flex",
-                  alignItems: "flex-start",
-                  paddingY: 1,
-                  lineHeight: 1.4,
-                },
-                "& .MuiDataGrid-row": {
-                  "&:hover": {
-                    backgroundColor:
-                      STYLE_GUIDE?.COLORS?.backgroundLight || "#f5f5f5",
-                  },
-                },
-                height: "calc(100vh - 280px)",
-              }}
-              slots={{
-                pagination: () => (
-                  <CustomPagination
-                    paginationModel={paginationModelMemo}
-                    setPaginationModel={setPaginationModel}
-                    rowCount={rowCount}
-                  />
-                ),
-              }}
-            />
-          ) : loading && formattedColumns.length === 0 ? (
-            <Box
-              sx={{
+        </Box>
+
+        {formattedColumns.length > 0 ? (
+          <DataGrid
+            loading={false}
+            rows={displayRows}
+            columns={formattedColumns}
+            getRowId={(row) => row._id}
+            disableVirtualization
+            paginationMode="server"
+            rowCount={
+              rowCount ||
+              (loading && displayRows.length > 0 ? paginationModel.pageSize : 0)
+            }
+            paginationModel={paginationModelMemo}
+            onPaginationModelChange={setPaginationModel}
+            disableColumnMenu
+            getRowHeight={() => "auto"}
+            sx={{
+              "& .MuiDataGrid-cell": {
                 display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-                height: "calc(100vh - 280px)",
-                width: "100%",
+                alignItems: "flex-start",
+                lineHeight: 1.4,
+              },
+              "& .MuiDataGrid-row": {
+                "&:hover": {
+                  backgroundColor:
+                    STYLE_GUIDE?.COLORS?.backgroundLight || "#f5f5f5",
+                },
+              },
+              height: "calc(100vh - 280px)",
+            }}
+            slots={{
+              pagination: () => (
+                <CustomPagination
+                  paginationModel={paginationModelMemo}
+                  setPaginationModel={setPaginationModel}
+                  rowCount={rowCount}
+                />
+              ),
+            }}
+          />
+        ) : loading && formattedColumns.length === 0 ? (
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              height: "calc(100vh - 280px)",
+              width: "100%",
+            }}
+          >
+            <CircularProgress />
+          </Box>
+        ) : (
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+              py: 4,
+              textAlign: "center",
+            }}
+          >
+            <Typography
+              variant="h6"
+              sx={{
+                color: STYLE_GUIDE?.COLORS?.black || "#000000",
+                mb: 1,
+                opacity: 0.6,
               }}
             >
-              <CircularProgress />
-            </Box>
-          ) : (
-            <Box
+              No Data Available
+            </Typography>
+            <Typography
+              variant="body2"
               sx={{
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                justifyContent: "center",
-                py: 4,
-                textAlign: "center",
+                color: STYLE_GUIDE?.COLORS?.black || "#000000",
+                opacity: 0.6,
               }}
             >
-              <Typography
-                variant="h6"
-                sx={{
-                  color: STYLE_GUIDE?.COLORS?.black || "#000000",
-                  mb: 1,
-                  opacity: 0.6,
-                }}
-              >
-                No Data Available
-              </Typography>
-              <Typography
-                variant="body2"
-                sx={{
-                  color: STYLE_GUIDE?.COLORS?.black || "#000000",
-                  opacity: 0.6,
-                }}
-              >
-                No records found.
-              </Typography>
-            </Box>
-          )}
+              No records found.
+            </Typography>
+          </Box>
+        )}
       </PageCardLayout>
     </>
   );
