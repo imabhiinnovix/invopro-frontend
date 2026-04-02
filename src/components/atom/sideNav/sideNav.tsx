@@ -73,6 +73,7 @@ import { UseQueryResult } from "@tanstack/react-query";
 import { checkPermission, PermissionMap } from "../../../utils/utils";
 import { PermissionsMap } from "../../../utils/constants";
 import { AssessmentOutlined, AssignmentTurnedInOutlined, DashboardOutlined, NotificationsOutlined, SettingsOutlined, StorageOutlined } from "@mui/icons-material";
+import PaymentIcon from "@mui/icons-material/Payment";
 import innovixLogo from "../../../assets/innovix-logo.png";
 
 interface ErrorResponse {
@@ -182,6 +183,8 @@ export default function SideNav() {
   const [openDashboard, setOpenDashboard] = React.useState(false);
   const [openNotificationSettings, setOpenNotificationSettings] =
     React.useState(false);
+  const [openPaymentSettings, setOpenPaymentSettings] =
+    React.useState(false);  
   const [openGlobalSettings, setOpenGlobalSettings] = React.useState(false);
   const [openReportSettings, setOpenReportSettings] = React.useState(false);
   const [openThemeSettings, setOpenThemeSettings] = React.useState(false);
@@ -294,6 +297,9 @@ export default function SideNav() {
         navigate(route);
       } else if (itemName === "Invoice Information") {
         setOpenNotificationSettings((prev) => !prev);
+        // navigate(route);
+      }else if (itemName === "Invoice Payments") {
+        setOpenPaymentSettings((prev) => !prev);
         // navigate(route);
       } else if (itemName === "Settings") {
         setOpenReportSettings((prev) => !prev);
@@ -517,6 +523,7 @@ export default function SideNav() {
                           openDashboard) ||
                         (item.name === "Invoice Information" &&
                           openNotificationSettings) ||
+                        (item.name === "Invoice Payments" && openPaymentSettings) ||  
                         (item.name === "Settings" && openReportSettings) ||
                         (item.name === "Theme Settings" && openThemeSettings) ||
                         (item.name === "IP Report Constants" &&
@@ -532,6 +539,8 @@ export default function SideNav() {
                                 ? openDashboard
                                 : item.name === "Invoice Information"
                                 ? openNotificationSettings
+                                : item.name === "Invoice Payments"
+                                ? openPaymentSettings
                                 : item.name === "Settings"
                                 ? openReportSettings
                                 : item.name === "Theme Settings"
@@ -648,6 +657,30 @@ export default function SideNav() {
                                 )}
 
                                 {item.name === "Invoice Information" && (
+                                  <>
+                                    {item.subItems?.map((subItem, subIndex) => {
+                                      if (
+                                        subItem.shouldShow !== undefined &&
+                                        !subItem.shouldShow
+                                      ) {
+                                        return null;
+                                      }
+                                      return (
+                                        <MainListItem
+                                          key={subIndex}
+                                          label={subItem.name}
+                                          icon={subItem.icon}
+                                          onClick={() =>
+                                            navigate(subItem.route)
+                                          }
+                                          route={subItem.route}
+                                        />
+                                      );
+                                    })}
+                                  </>
+                                )}
+
+                                {item.name === "Invoice Payments" && (
                                   <>
                                     {item.subItems?.map((subItem, subIndex) => {
                                       if (
@@ -933,7 +966,8 @@ export default function SideNav() {
                                   </>
                                 ) : (
                                   item.name !== "Dashboards" &&
-                                  item.name !== "Invoice Information" && (
+                                  item.name !== "Invoice Information" &&
+                                  item.name !== "Invoice Payments" && (
                                     <MainListItem
                                       route={item.route}
                                       onClick={() => {
@@ -1484,12 +1518,23 @@ function getNavItems(
     // notivixDefaultDashboard,
     activityInfoMenuItem,
     vendorInvoiceMenuItem,
-    vendorInvoicePaymentMenuItem,
-    vendorPurchaseOrderMenuItem,
     ...monthlyDataSources,
     ...loadingIndicator,
     NotificationLogsMenuItem,
   ];
+
+  const PaymentItems = [
+    vendorInvoicePaymentMenuItem,
+    vendorPurchaseOrderMenuItem
+  ];
+
+  const visiblePaymentItems = Array.isArray(PaymentItems)
+    ? PaymentItems.filter((item) => item.shouldShow !== false)
+    : [];
+
+  const shouldShowPayments = visiblePaymentItems.length > 0;
+
+
   const visibleDataSourceItems = Array.isArray(dataSourceItems)
     ? dataSourceItems.filter((item) => item.shouldShow !== false)
     : [];
@@ -1548,6 +1593,13 @@ function getNavItems(
       route: "/data-source",
       subItems: dataSourceItems,
       shouldShow: shouldShowNotifications,
+    },
+    {
+      name: "Invoice Payments",
+      icon: createIcon(PaymentIcon, "/payment", theme, location, themeColor),
+      route: "/payment",
+      subItems: PaymentItems,
+      shouldShow: shouldShowPayments,
     },
     // {
     //   name: "VixAI Insights",
