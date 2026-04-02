@@ -205,7 +205,7 @@ export const ValidationErrorsDataTable: React.FC<
             );
           }
 
-          const isDiscarded = row.status === "discarded";
+          // const isDiscarded = row.status === "discarded";
           const isResolved = row.status === "resolved";
           const handleResolve = row.handleResolve as
             | ((row: Record<string, unknown>) => void)
@@ -213,9 +213,9 @@ export const ValidationErrorsDataTable: React.FC<
           const handleEdit = row.handleEdit as
             | ((row: Record<string, unknown>) => void)
             | undefined;
-          const handleDiscard = row.handleDiscard as
-            | ((row: Record<string, unknown>) => void)
-            | undefined;
+          // const handleDiscard = row.handleDiscard as
+          //   | ((row: Record<string, unknown>) => void)
+          //   | undefined;
 
           return (
             <Box sx={{ display: "flex", gap: 1 }}>
@@ -246,9 +246,10 @@ export const ValidationErrorsDataTable: React.FC<
                   >
                     <SwipeUpIcon />
                   </Button>
-                </Tooltip>
+                </Tooltip>    
+                
               )}
-              <Tooltip title="Discard" arrow>
+              {/* <Tooltip title="Discard" arrow>
                 <Button
                   variant="text"
                   onClick={(e) => {
@@ -260,7 +261,7 @@ export const ValidationErrorsDataTable: React.FC<
                 >
                   <RemoveCircleIcon />
                 </Button>
-              </Tooltip>
+              </Tooltip> */}
             </Box>
           );
         },

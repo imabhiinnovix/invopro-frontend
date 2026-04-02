@@ -45,7 +45,7 @@ export default function ValidationErrors() {
   const navigate = useNavigate();
   const [dialog, setDialog] = useState<{
     open: boolean;
-    type: "discardAll" | "discardRow" | "resolveRow" | "discardSelectedRow";
+    type: "discardAll" | "discardRow" | "resolveRow" | "discardSelectedRow" | "submitAll";
     rowData?: any;
     selectedRows?: any[];
   }>({ open: false, type: "discardAll" });
@@ -230,22 +230,40 @@ export default function ValidationErrors() {
     try {
       let response;
 
-      if (dialog.type === "discardAll") {
+      // if (dialog.type === "discardAll") {
+      //   const payload = isReportRequest
+      //     ? {
+      //         action: "discardAllSubmit",
+      //         reportRequestId: id,
+      //       }
+      //     : {
+      //         action: "discardAllSubmit",
+      //         dataSourceVersionId: id,
+      //         dataSourceId: dataSourceId,
+      //       };
+      //   response = await discardAllSubmit.mutateAsync({
+      //     url: `${POST.RESOLVE_DATA_IMPORT_ERROR}`,
+      //     payload,
+      //   });
+      // } 
+      if (dialog.type === "submitAll") {
         const payload = isReportRequest
           ? {
-              action: "discardAllSubmit",
+              action: "submit",
               reportRequestId: id,
             }
           : {
-              action: "discardAllSubmit",
+              action: "submit",
               dataSourceVersionId: id,
               dataSourceId: dataSourceId,
             };
+
         response = await discardAllSubmit.mutateAsync({
           url: `${POST.RESOLVE_DATA_IMPORT_ERROR}`,
           payload,
         });
-      } else if (dialog?.type === "discardRow") {
+      }
+      else if (dialog?.type === "discardRow") {
         const payload = isReportRequest
           ? {
               action: "discard",
@@ -294,7 +312,7 @@ export default function ValidationErrors() {
       }
 
       if (response?.success) {
-        if (dialog.type === "discardAll") {
+        if (dialog.type === "discardAll" || dialog.type === "submitAll") {
           if (response?.data?.dataSourceId) {
             navigate(`/data-source-new/${response?.data?.dataSourceId}`);
           } else {
@@ -350,6 +368,10 @@ export default function ValidationErrors() {
   const handleDashboardWidgetDataExport = () => {
     validationErrorListExport.refetch();
   };
+
+  const isSubmitEnabled =
+  validationErrorList?.data?.totalActionCount ===
+  validationErrorList?.data?.totalCount;
 
   return (
     <Box
@@ -426,7 +448,7 @@ export default function ValidationErrors() {
             </Box>
 
             <Box sx={{ display: "flex", gap: 1 }}>
-              <Button
+              {/* <Button
                 variant="contained"
                 startIcon={<DeleteSweepIcon />}
                 onClick={handleOpenDiscardAllDialog}
@@ -436,6 +458,17 @@ export default function ValidationErrors() {
                 disabled={isLatest === false}
               >
                 Discard All & Submit
+              </Button> */}
+
+              <Button
+                variant="contained"
+                onClick={() => setDialog({ open: true, type: "submitAll" })}
+                sx={{
+                  borderRadius: "8px",
+                }}
+                disabled={isLatest === false || !isSubmitEnabled}
+              >
+                Submit
               </Button>
 
               <StyledButton
@@ -499,10 +532,14 @@ export default function ValidationErrors() {
         onClose={handleCloseDialog}
         onConfirm={handleConfirmAction}
         title={
-          dialog.type === "discardAll" ? "Confirm Action" : "Confirm Discard"
+          dialog.type === "submitAll"
+            ? "Confirm Submit"
+            :dialog.type === "discardAll" ? "Confirm Action" : "Confirm Discard"
         }
         content={
-          dialog.type === "discardAll"
+          dialog.type === "submitAll"
+            ? "Are you sure you want to submit all data?"
+            : dialog.type === "discardAll"
             ? "Are you sure want to Discard all data?"
             : dialog.type === "resolveRow"
               ? "Are you sure you want to resolve this?"
@@ -511,7 +548,9 @@ export default function ValidationErrors() {
                 : `Are you sure you want to discard "${dialog.rowData?.fileName}" at row ${dialog.rowData?.fileRowNumber}?`
         }
         confirmText={
-          dialog.type === "discardAll"
+          dialog.type === "submitAll"
+          ? "Submit"
+          : dialog.type === "discardAll"
             ? "Confirm"
             : dialog.type === "resolveRow"
               ? "Yes"
@@ -520,7 +559,7 @@ export default function ValidationErrors() {
         confirmButtonColor="error"
         isSubmitting={isSubmitting}
       />
-
+     ()
       <ValidationErrorModal
         openModal={actionModalOpen}
         rowData={selectedRow}
