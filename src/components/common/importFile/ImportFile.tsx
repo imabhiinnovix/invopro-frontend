@@ -39,6 +39,8 @@ import { useUploadCustomReportFile } from "../../../hooks/useFileUpalod";
 import DialogContainer from "../../molecule/dialog";
 import { StyledButton } from "../index";
 
+import usePostMultipart from "../../../hooks/usePostMultipleMultipart";
+
 // Global polling state that persists across components
 const globalPollingState = {
   activePolls: new Map<string, NodeJS.Timeout>(),
@@ -271,6 +273,7 @@ interface FileDropzoneProps {
   onFileChange: (files: File[]) => void;
   onFileRemove?: (index: number) => void;
   buttonName: string;
+  acceptType?: "excel" | "invoice";
 }
 
 /**
@@ -286,6 +289,7 @@ const FileDropzone: React.FC<FileDropzoneProps> = ({
   onFileChange,
   onFileRemove,
   buttonName,
+  acceptType
 }) => {
   const [isDragActive, setIsDragActive] = useState(false);
   const onDrop = (acceptedFiles: File[]) => {
@@ -298,7 +302,11 @@ const FileDropzone: React.FC<FileDropzoneProps> = ({
     onDrop,
     onDragEnter: () => setIsDragActive(true),
     onDragLeave: () => setIsDragActive(false),
-    accept: {
+    accept: acceptType === "invoice"
+      ? {
+          "application/pdf": [".pdf"],
+          "image/*": [".png", ".jpg", ".jpeg"],
+        } : {
       "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": [
         ".xlsx",
       ],
@@ -309,7 +317,8 @@ const FileDropzone: React.FC<FileDropzoneProps> = ({
       fileRejections.forEach((rejection) => {
         rejection.errors.forEach((error) => {
           if (error.code === "file-invalid-type") {
-            toast.error("Please upload valid Excel files (.xlsx or .xls)");
+            toast.error(acceptType === "invoice"
+              ? "Only PDF or image files are allowed" : "Please upload valid Excel files (.xlsx or .xls)");
           } else {
             toast.error(error.message);
           }
@@ -451,6 +460,7 @@ const ImportFile: React.FC<ImportFileProps> = ({
   const [showProcessingDialog, setShowProcessingDialog] = useState(false);
   const { getDialogTitleSx } = useComponentTypography();
   const [refetchTrigger, setRefetchTrigger] = useState(0);
+  const [invoiceFiles, setInvoiceFiles] = useState<File[]>([]);
 
   const {
     control,
@@ -471,6 +481,27 @@ const ImportFile: React.FC<ImportFileProps> = ({
   });
   const { mutate: mutateReportUpload, isPending: isLoadingReportUpload } =
     useUploadCustomReportFile();
+
+
+  const handleInvoiceFileChange = (acceptedFiles: File[]) => {
+  const validFiles = acceptedFiles.filter((file) => {
+    const isValid =
+      file.type === "application/pdf" ||
+      file.type.startsWith("image/");
+
+    if (!isValid) {
+      toast.error(
+        `${file.name} is invalid. Only PDF or image files are allowed`
+      );
+    }
+
+    return isValid;
+  });
+
+  if (validFiles.length === 0) return;
+
+  setInvoiceFiles(validFiles);
+};  
 
   /**
    * Reset mappings whenever files change to ensure clean mapping state
@@ -573,27 +604,37 @@ const vendorOptions = [
   /**
    * Update setting attributes when data source details are loaded
    */
-  useEffect(() => {
-    if (
-      !dataSourceDetails.isFetching &&
-      dataSourceDetails.isSuccess &&
-      dataSourceDetails.data
-    ) {
-      setSettingAttribute(dataSourceDetails.data.data.entityId.attributes);
-      setSettingAttributeOption([
-        ...dataSourceDetails.data.data.entityId.attributes.map(
-          (data: Attribute) => data.name
-        ),
-      ]);
-      if (dataSourceDetails.data.data.versionType !== "monthly") {
-      setValue("vendorId", null); // reset vendor if not monthly
+ useEffect(() => {
+  if (
+    !dataSourceDetails.isFetching &&
+    dataSourceDetails.isSuccess &&
+    dataSourceDetails.data
+  ) {
+    const allAttributes =
+      dataSourceDetails.data.data.entityId.attributes;
+
+    // ✅ FILTER HERE
+    const filteredAttributes = allAttributes.filter(
+      (attr: Attribute) =>
+        !attr.name.startsWith("Converted|") &&
+        !attr.name.startsWith("Validated|")
+    );
+
+    setSettingAttribute(filteredAttributes);
+
+    setSettingAttributeOption(
+      filteredAttributes.map((data: Attribute) => data.name)
+    );
+
+    if (dataSourceDetails.data.data.versionType !== "monthly") {
+      setValue("vendorId", null);
     }
-    }
-  }, [
-    dataSourceDetails.isFetching,
-    dataSourceDetails.isSuccess,
-    dataSourceDetails.data,
-  ]);
+  }
+}, [
+  dataSourceDetails.isFetching,
+  dataSourceDetails.isSuccess,
+  dataSourceDetails.data,
+]);
 
   // Handle custom events for data source status changes
   useEffect(() => {
@@ -673,6 +714,17 @@ const vendorOptions = [
     return fd;
   };
 
+  const createVendorInvoice = usePostMultipart<any, any>(
+  ["createVendorInvoice"],
+  (data) => {
+    if (data?.success) {
+      toast.success("Invoice uploaded successfully!");
+      setInvoiceFiles([]);
+    }
+  },
+  true
+);
+
   /**
    * Handle form submission
    * Validates mandatory attributes, generates unique version name,
@@ -724,6 +776,18 @@ const vendorOptions = [
     // const uniqueVersionName = `version_${Date.now()}`;
     const uniqueVersionName = `version_${Date.now()}_${randomSuffix}`;
 
+    // ✅ Add ignored mappings for hidden attributes
+    const hiddenAttributes =
+      dataSourceDetails.data?.data?.entityId.attributes.filter(
+        (attr: Attribute) =>
+          attr.name.startsWith("Converted|") ||
+          attr.name.startsWith("Validated|")
+      ) || [];
+
+    hiddenAttributes.forEach((attr: Attribute) => {
+      formData.mappings[attr.name] = ["Extra-Attribute-Ignore"];
+    });
+
     const payload = {
       dataSourceId: formData.dataSourceId,
       versionValue: formattedVersion,
@@ -740,47 +804,80 @@ const vendorOptions = [
     const formDataToSend = objectToFormData(payload);
 
     try {
-      await mutateReportUpload(formDataToSend, {
-        onSuccess: (data: any) => {
-          if (data?.status === "pending" && data?.dataSourceVersionId) {
-            const id = data.dataSourceVersionId;
+  const promises: Promise<any>[] = [];
 
-            setOpen(false);
-            setShowProcessingDialog(true);
-            toast.info("File uploaded successfully. Processing in progress...");
+  // ✅ Wrap Import API in Promise
+  const importPromise = new Promise((resolve, reject) => {
+    mutateReportUpload(formDataToSend, {
+      onSuccess: (data: any) => {
+        if (data?.status === "pending" && data?.dataSourceVersionId) {
+          const id = data.dataSourceVersionId;
 
-            // Start global polling with 5-second interval
-            startGlobalPolling(id, () => {});
-          } else if (data?.status === "completed") {
-            window?.dispatchEvent(
-              new CustomEvent("dataSourceStatusChanged", {
-                detail: {
-                  status: "completed",
-                  id: formData.dataSourceId,
-                  refresh: true,
-                },
-              })
-            );
-            toast.success("File uploaded successfully!");
-            handleCancel();
-            // navigate(`/data-source-new/69086541e57ad7055f976d60`);
-          } else if (data?.status === "failed") {
-            navigate(`/validation-errors/${data?.dataSourceVersionId}`);
-            handleCancel();
-          } else {
-            toast.success("File uploaded successfully!");
-            handleCancel();
-          }
-        },
-        onError: (error: any) => {
-          toast.error(
-            `Upload failed: ${error.response?.data?.message || error.message}`
+          setOpen(false);
+          setShowProcessingDialog(true);
+          toast.info("File uploaded successfully. Processing in progress...");
+
+          startGlobalPolling(id, () => {});
+        } else if (data?.status === "completed") {
+          window?.dispatchEvent(
+            new CustomEvent("dataSourceStatusChanged", {
+              detail: {
+                status: "completed",
+                id: formData.dataSourceId,
+                refresh: true,
+              },
+            })
           );
-        },
-      });
-    } catch (error) {
-      toast.error("Upload failed!");
-    }
+          toast.success("File uploaded successfully!");
+          handleCancel();
+        } else if (data?.status === "failed") {
+          navigate(`/validation-errors/${data?.dataSourceVersionId}`);
+          handleCancel();
+        } else {
+          toast.success("File uploaded successfully!");
+          handleCancel();
+        }
+
+        resolve(data); // ✅ important
+      },
+      onError: (error: any) => {
+        toast.error(
+          `Upload failed: ${error.response?.data?.message || error.message}`
+        );
+        reject(error); // ✅ important
+      },
+    });
+  });
+
+  promises.push(importPromise);
+
+  // ✅ Invoice API (already returns Promise)
+  if (
+    dataSourceId === "699f04727df5e0efe12d5027" &&
+    invoiceFiles.length > 0
+  ) {
+    const formattedVersion = DateTime.fromISO(versionValue).toFormat("yyyy-LL");
+
+    const invoicePayload: any = {
+      vendorId: formData.vendorId,
+      versionValue: formattedVersion,
+      status: "active",
+      files: invoiceFiles,
+    };
+
+    promises.push(
+      createVendorInvoice.mutateAsync({
+        url: POST.Create_Vendor_Invoice,
+        payload: invoicePayload,
+      })
+    );
+  }
+
+  await Promise.all(promises); // ✅ now works perfectly
+
+} catch (error) {
+  toast.error("Upload failed!");
+}
   };
 
   /**
@@ -952,6 +1049,21 @@ const vendorOptions = [
       />
     )}
   />
+)}
+{dataSourceId === "699f04727df5e0efe12d5027" && (
+  <>
+    <FileDropzone
+      fileNames={invoiceFiles.map((f) => f.name)}
+      onFileChange={(files) => handleInvoiceFileChange(files)}
+      acceptType="invoice"
+      onFileRemove={(index) => {
+        const updated = [...invoiceFiles];
+        updated.splice(index, 1);
+        setInvoiceFiles(updated);
+      }}
+      buttonName="Upload Invoice Files"
+    />
+  </>
 )}
 
             {/* Removed version name field */}
