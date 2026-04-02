@@ -1061,7 +1061,7 @@ const vendorOptions = [
         updated.splice(index, 1);
         setInvoiceFiles(updated);
       }}
-      buttonName="Upload Invoice Files"
+      buttonName="Upload Invoice PDF Files"
     />
   </>
 )}
