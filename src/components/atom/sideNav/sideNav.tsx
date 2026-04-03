@@ -1466,6 +1466,17 @@ function getNavItems(
     ),
   };  
 
+  const InvoiceUploadListMenuItem = {
+        name: "Invoice Upload List",
+        icon: createIcon(CloudUploadIcon, "/data-src-version", theme, location, themeColor),
+        route: "/data-src-version/699f04727df5e0efe12d5027",
+        shouldShow: checkPermission(
+          permissions,
+          PermissionsMap.DATA_SOURCE_VERSION,
+          "list"
+        ),
+      };
+
   const alertsMenuItem = {
     name: "Alerts Settings",
     icon: createIcon(NotificationsActiveIcon, "/notification", theme, location, themeColor),
@@ -1521,6 +1532,7 @@ function getNavItems(
     ...monthlyDataSources,
     ...loadingIndicator,
     NotificationLogsMenuItem,
+    InvoiceUploadListMenuItem
   ];
 
   const PaymentItems = [

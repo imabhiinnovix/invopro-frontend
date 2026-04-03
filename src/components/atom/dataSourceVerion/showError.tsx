@@ -86,7 +86,7 @@ console.log("Rendering ErrorDialog with dataSourceVersionId:", dataSourceVersion
         navigate(`/validation-errors/${dataSourceVersionId}`)
       }
     >
-      Show Errors
+      Validate Errors
     </StyledButton>
       <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} maxWidth="md" fullWidth>
         <DialogTitle sx={{

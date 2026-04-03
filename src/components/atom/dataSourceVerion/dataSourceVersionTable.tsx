@@ -1,315 +1,19 @@
-// import React, { useState, useEffect, useRef, useCallback } from 'react';
-// import { styled } from '@mui/material/styles';
-// import {
-//   Table,
-//   TableBody,
-//   TableCell,
-//   TableContainer,
-//   TableHead,
-//   TableRow,
-//   Paper,
-//   Box,
-//   Skeleton,
-//   Typography,
-//   tableCellClasses,
-//   Collapse,
-//   IconButton,
-// } from '@mui/material';
-
-// import useGet from '../../../hooks/useGet';
-// import { GET } from '../../../services/apiRoutes';
-// import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
-// import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
-// import ErrorDialog from './showError';
-// import { STYLE_GUIDE } from '../../../styles';
-// import { useComponentTypography } from '../../../hooks/useComponentTypography';
-
-// const StyledTableCell = styled(TableCell)(({ theme }) => ({
-//   [`&.${tableCellClasses.head}`]: {
-//     backgroundColor: theme.palette.table?.headerBackground || STYLE_GUIDE.COLORS.backgroundLightGray,
-//     color: theme.palette.table?.headerText || STYLE_GUIDE.COLORS.textGray,
-//     fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.medium,
-//   },
-//   [`&.${tableCellClasses.body}`]: {
-//    fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.base,
-//    color: theme.palette.table?.rowText || STYLE_GUIDE.COLORS.textDarkGray,
-//   },
-// }));
-
-// const StyledTableRow = styled(TableRow)(({ theme }) => ({
-//   "&:nth-of-type(odd)": {
-//     backgroundColor: theme.palette.table?.rowOddBackground || STYLE_GUIDE.COLORS.backgroundDefault,
-//   },
-//   "&:nth-of-type(even)": {
-//     backgroundColor: theme.palette.table?.rowEvenBackground || STYLE_GUIDE.COLORS.white,
-//   },
-//   "&:hover": {
-//     backgroundColor: theme.palette.table?.rowHoverBackground || STYLE_GUIDE.COLORS.backgroundHover,
-//   },
-// }));
-
-// interface AttributeOptionTableProps {
-//   reload: boolean; // reload is now a boolean
-//   setReload: React.Dispatch<React.SetStateAction<boolean>>;
-// }
-
-// const DataSourceVersionTable: React.FC<AttributeOptionTableProps> = ({ reload, setReload }) => {
-//   const { getHeadingSx, getTableSx } = useComponentTypography();
-//   const [dataSourceVersion, setDataSourceVersion] = useState<any[]>([]);
-//   const [currentPage, setCurrentPage] = useState<number>(1);
-
-//   const perPageItem = 10;
-
-//   const dataSourceVersionList = useGet<{ success: boolean; data: any[]; totalCount: number }>(
-//     [`dataSourceVersionList`, String(currentPage)],
-//     GET?.Data_Source_Version + `/list?page=${currentPage}&limit=${perPageItem}`,
-//     !!currentPage
-//   );
-
-//   const [expandedMappingRows, setExpandedMappingRows] = useState<{ [key: number]: boolean }>({});
-//   const [expandedSepratorRows, setExpandedSepratorRows] = useState<{ [key: number]: boolean }>({});
-
-//   const toggleMappingRow = (index: number): void => {
-//     setExpandedMappingRows((prev) => ({ ...prev, [index]: !prev[index] }));
-//     setExpandedSepratorRows((prev) => ({ ...prev, [index]: false }));
-//   };
-
-//   const toggleSepratorRow = (index: number): void => {
-//     setExpandedMappingRows((prev) => ({ ...prev, [index]: false }));
-//     setExpandedSepratorRows((prev) => ({ ...prev, [index]: !prev[index] }));
-//   };
-
-//   useEffect(() => {
-//     setCurrentPage(1);
-//   }, [reload]);
-
-//   useEffect(() => {
-//     if (currentPage === 1 && reload) {
-//       dataSourceVersionList.refetch();
-//       setReload(false);
-//     }
-//   }, [currentPage, reload]);
-
-//   useEffect(() => {
-//     if (dataSourceVersionList?.data?.data) {
-//       if (currentPage === 1) {
-//         setDataSourceVersion([...dataSourceVersionList?.data?.data]);
-//       } else {
-//         setDataSourceVersion((prev) => [...prev, ...dataSourceVersionList?.data?.data]);
-//       }
-//     }
-//   }, [dataSourceVersionList?.data?.data]);
-
-//   useEffect(() => {
-//     setCurrentPage(currentPage);
-//   }, [currentPage]);
-
-//   const lastRowRef = useRef<IntersectionObserver | null>(null);
-
-//   const lastElementRef = useCallback(
-//     (node: HTMLTableRowElement | null) => {
-//       if (dataSourceVersionList.isFetching || dataSourceVersion.length >= dataSourceVersionList?.data?.totalCount!)
-//         return;
-
-//       // Disconnect the previous observer if it exists
-//       if (lastRowRef.current) {
-//         lastRowRef.current.disconnect();
-//       }
-
-//       // Create a new IntersectionObserver
-//       lastRowRef.current = new IntersectionObserver((entries) => {
-//         if (entries[0].isIntersecting) {
-//           setCurrentPage((prevPage) => prevPage + 1);
-//         }
-//       });
-
-//       // Observe the new node if it exists
-//       if (node) {
-//         lastRowRef.current.observe(node);
-//       }
-//     },
-//     [dataSourceVersionList.isFetching] // Add the correct dependency
-//   );
-
-//   const renderMappings = (mappings: Record<string, string>): JSX.Element => (
-//     <Box sx={{ margin: 1 }}>
-//       <Table size="small" aria-label="attributes">
-//         <TableHead>
-//           <TableRow>
-//             <StyledTableCell>SETTING ATTRIBUTES</StyledTableCell>
-//             <StyledTableCell>MAPPED FILE ATTRIBUTES</StyledTableCell>
-//           </TableRow>
-//         </TableHead>
-//         <TableBody>
-//           {Object.entries(mappings).map(([key, value], index) => (
-//             <StyledTableRow key={index}>
-//               <StyledTableCell>{key || '-'}</StyledTableCell>
-//               <StyledTableCell>{value || '-'}</StyledTableCell>
-//             </StyledTableRow>
-//           ))}
-//         </TableBody>
-//       </Table>
-//     </Box>
-//   );
-
-//   const renderSeparators = (separators: Record<string, string>): JSX.Element => (
-//     <Box sx={{ margin: 1 }}>
-//       <Table size="small" aria-label="attributes">
-//         <TableHead>
-//           <TableRow>
-//             <StyledTableCell>SETTING ATTRIBUTES</StyledTableCell>
-//             <StyledTableCell>SEPARATOR</StyledTableCell>
-//           </TableRow>
-//         </TableHead>
-//         <TableBody>
-//           {Object.entries(separators).map(([key, value], index) => (
-//             <StyledTableRow key={index}>
-//               <StyledTableCell>{key || '-'}</StyledTableCell>
-//               <StyledTableCell>{value || '-'}</StyledTableCell>
-//             </StyledTableRow>
-//           ))}
-//         </TableBody>
-//       </Table>
-//     </Box>
-//   );
-
-//   if (!dataSourceVersionList.isFetching && !dataSourceVersion.length) {
-//     return (
-//       <Box
-//         display="flex"
-//         flexDirection="column"
-//         sx={{ textAlign: 'center', marginTop: 10 }}
-//         alignContent="center"
-//         alignItems="center"
-//       >
-//         <Typography
-//           variant="h4"
-//           sx={{
-//             ...getHeadingSx(),
-//             fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.bold,
-//             color: STYLE_GUIDE.COLORS.textDarkGray,
-//             fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.xxl,
-//           }}
-//         >
-//           No data source version have been created yet. Please create a data source version to display it here.
-//         </Typography>
-//       </Box>
-//     );
-//   }
-
-//   return (
-//     <TableContainer component={Paper} sx={{ ...getTableSx() }}>
-//       <Table sx={{ width: '100%' }} aria-label="attribute-option-table">
-//         <TableHead>
-//           <TableRow>
-//             <StyledTableCell>VERSION NAME</StyledTableCell>
-//             <StyledTableCell>PERIOD</StyledTableCell>
-//             <StyledTableCell>DATA SOURCE NAME</StyledTableCell>
-//             <StyledTableCell>FILE NAME</StyledTableCell>
-//             <StyledTableCell>MAPPINGS</StyledTableCell>
-//             <StyledTableCell>SEPARATOR</StyledTableCell>
-//             <StyledTableCell>CREATED BY</StyledTableCell>
-//             <StyledTableCell>CREATED AT</StyledTableCell>
-//             <StyledTableCell>STATUS</StyledTableCell>
-//             <StyledTableCell>ERROR</StyledTableCell>
-//           </TableRow>
-//         </TableHead>
-//         <TableBody>
-//           {dataSourceVersion.map((data, dataIndex) => (
-//             <React.Fragment key={data._id}>
-//               <StyledTableRow ref={dataSourceVersion.length === dataIndex + 1 ? lastElementRef : null}>
-//                 <StyledTableCell>{data.versionName || '-'}</StyledTableCell>
-//                 <StyledTableCell>{data.versionValue || '-'}</StyledTableCell>
-//                 <StyledTableCell>{data?.dataSourceId?.name || '-'}</StyledTableCell>
-//                 <StyledTableCell>{data.fileName || '-'}</StyledTableCell>
-//                 <StyledTableCell>
-//                   {data.mappings ? (
-//                     <IconButton aria-label="expand row" size="small" onClick={() => toggleMappingRow(dataIndex)}>
-//                       {expandedMappingRows[dataIndex] ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
-//                     </IconButton>
-//                   ) : (
-//                     '-'
-//                   )}
-//                 </StyledTableCell>
-
-//                 <StyledTableCell>
-//                   {data.separator && Object.keys(data.separator).length > 0 ? (
-//                     <IconButton aria-label="expand row" size="small" onClick={() => toggleSepratorRow(dataIndex)}>
-//                       {expandedSepratorRows[dataIndex] ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
-//                     </IconButton>
-//                   ) : (
-//                     '-'
-//                   )}
-//                 </StyledTableCell>
-
-//                 <StyledTableCell>
-//                   {data.createdBy ? `${data.createdBy.firstName} ${data.createdBy.lastName}` : '-'}
-//                 </StyledTableCell>
-
-//                 <StyledTableCell>{data.createdAt ? new Date(data.createdAt).toLocaleString() : '-'}</StyledTableCell>
-
-//                 <StyledTableCell>{data.status || '-'}</StyledTableCell>
-
-//                 <StyledTableCell>
-//                   {data.status === 'failed' ? <ErrorDialog dataSourceVersionId={data._id} /> : '-'}
-//                 </StyledTableCell>
-//               </StyledTableRow>
-//               {data && data.mappings && (
-//                 <StyledTableRow>
-//                   <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={9}>
-//                     <Collapse in={expandedMappingRows[dataIndex]} timeout="auto" unmountOnExit>
-//                       {renderMappings(data.mappings)}
-//                     </Collapse>
-//                   </TableCell>
-//                 </StyledTableRow>
-//               )}
-
-//               {data && data.separator && Object.keys(data.separator).length > 0 && (
-//                 <StyledTableRow>
-//                   <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={10}>
-//                     <Collapse in={expandedSepratorRows[dataIndex]} timeout="auto" unmountOnExit>
-//                       {renderSeparators(data.separator)}
-//                     </Collapse>
-//                   </TableCell>
-//                 </StyledTableRow>
-//               )}
-//             </React.Fragment>
-//           ))}
-
-//           {dataSourceVersionList.isFetching &&
-//             Array.from({ length: 1 }, (_, index) => (
-//               <StyledTableRow key={index}>
-//                 <StyledTableCell colSpan={10}>
-//                   <Skeleton height={40} />
-//                 </StyledTableCell>
-//             </StyledTableRow>
-//             ))}
-//         </TableBody>
-//       </Table>
-//     </TableContainer>
-//   );
-// };
-
-// export default DataSourceVersionTable;
-
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 import { styled } from "@mui/material/styles";
 import {
   Table,
   TableBody,
   TableCell,
-  TableContainer,
   TableHead,
   TableRow,
-  Paper,
   Box,
-  Skeleton,
   Typography,
   tableCellClasses,
   Collapse,
   IconButton,
 } from "@mui/material";
 
+import { useParams } from "react-router-dom";
 import useGet from "../../../hooks/useGet";
 import { GET } from "../../../services/apiRoutes";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
@@ -344,141 +48,120 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
     backgroundColor:
       theme.palette.table?.rowEvenBackground || STYLE_GUIDE.COLORS.white,
   },
-  "&:hover": {
-    backgroundColor:
-      theme.palette.table?.rowHoverBackground ||
-      STYLE_GUIDE.COLORS.backgroundHover,
-  },
 }));
 
-interface AttributeOptionTableProps {
+interface Props {
   reload: boolean;
   setReload: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-const DataSourceVersionTable: React.FC<AttributeOptionTableProps> = ({
+const DataSourceVersionTable: React.FC<Props> = ({
   reload,
   setReload,
 }) => {
-  const { getHeadingSx, getTableSx } = useComponentTypography();
-  const [dataSourceVersion, setDataSourceVersion] = useState<any[]>([]);
-  const [currentPage, setCurrentPage] = useState<number>(1);
-  const [hasProcessingItems, setHasProcessingItems] = useState<boolean>(false);
+  const { getHeadingSx } = useComponentTypography();
+  const { dataSourceId } = useParams();
 
-  const perPageItem = 10;
+  const [dataSourceVersion, setDataSourceVersion] = useState<any[]>([]);
+  const [hasProcessingItems, setHasProcessingItems] = useState(false);
+
+  const [paginationModel, setPaginationModel] = useState({
+    page: 0,
+    pageSize: 10,
+  });
 
   const dataSourceVersionList = useGet<{
     success: boolean;
     data: any[];
     totalCount: number;
   }>(
-    [`dataSourceVersionList`, String(currentPage)],
-    GET?.Data_Source_Version + `/list?page=${currentPage}&limit=${perPageItem}`,
-    !!currentPage
+    [
+      "dataSourceVersionList",
+      paginationModel.page,
+      paginationModel.pageSize,
+      dataSourceId,
+    ],
+    GET?.Data_Source_Version +
+      `/list?page=${paginationModel.page + 1}&limit=${paginationModel.pageSize}` +
+      (dataSourceId ? `&dataSourceId=${dataSourceId}` : ""),
+    true
   );
 
-  const [expandedMappingRows, setExpandedMappingRows] = useState<{
-    [key: number]: boolean;
-  }>({});
-  const [expandedSepratorRows, setExpandedSepratorRows] = useState<{
-    [key: number]: boolean;
-  }>({});
+  const [expandedMappingRows, setExpandedMappingRows] = useState<any>({});
+  const [expandedSepratorRows, setExpandedSepratorRows] = useState<any>({});
 
-  const toggleMappingRow = (index: number): void => {
-    setExpandedMappingRows((prev) => ({ ...prev, [index]: !prev[index] }));
-    setExpandedSepratorRows((prev) => ({ ...prev, [index]: false }));
+  const toggleMappingRow = (index: number) => {
+    setExpandedMappingRows((prev: any) => ({
+      ...prev,
+      [index]: !prev[index],
+    }));
+    setExpandedSepratorRows((prev: any) => ({ ...prev, [index]: false }));
   };
 
-  const toggleSepratorRow = (index: number): void => {
-    setExpandedMappingRows((prev) => ({ ...prev, [index]: false }));
-    setExpandedSepratorRows((prev) => ({ ...prev, [index]: !prev[index] }));
+  const toggleSepratorRow = (index: number) => {
+    setExpandedMappingRows((prev: any) => ({ ...prev, [index]: false }));
+    setExpandedSepratorRows((prev: any) => ({
+      ...prev,
+      [index]: !prev[index],
+    }));
   };
 
+  // ✅ FIX: Reset page when pageSize changes
   useEffect(() => {
-    setCurrentPage(1);
-  }, [reload]);
+    setPaginationModel((prev) => ({
+      ...prev,
+      page: 0,
+    }));
+  }, [paginationModel.pageSize]);
 
-  useEffect(() => {
-    if (currentPage === 1 && reload) {
-      dataSourceVersionList.refetch();
-      setReload(false);
-    }
-  }, [currentPage, reload]);
-
+  // ✅ FIX: Handle API response + prevent empty page issue
   useEffect(() => {
     if (dataSourceVersionList?.data?.data) {
-      if (currentPage === 1) {
-        setDataSourceVersion([...dataSourceVersionList?.data?.data]);
-      } else {
-        setDataSourceVersion((prev) => [
-          ...prev,
-          ...dataSourceVersionList?.data?.data,
-        ]);
-      }
+      const apiData = dataSourceVersionList.data.data;
 
-      // Check if there are any items with 'process' status
-      const hasProcessing = dataSourceVersionList?.data?.data.some(
+      setDataSourceVersion(apiData);
+
+      const hasProcessing = apiData.some(
         (item: any) => item.status === "processing"
       );
       setHasProcessingItems(hasProcessing);
+
+      // ✅ Prevent blank page when deleting / last page overflow
+      if (
+        apiData.length === 0 &&
+        paginationModel.page > 0 &&
+        dataSourceVersionList?.data?.totalCount > 0
+      ) {
+        setPaginationModel((prev) => ({
+          ...prev,
+          page: prev.page - 1,
+        }));
+      }
     }
-  }, [dataSourceVersionList?.data?.data]);
+  }, [dataSourceVersionList?.data]);
 
   useEffect(() => {
-    setCurrentPage(currentPage);
-  }, [currentPage]);
+    if (reload) {
+      dataSourceVersionList.refetch();
+      setReload(false);
+    }
+  }, [reload]);
 
-  // Auto-refresh when there are processing items
   useEffect(() => {
-    let intervalId: NodeJS.Timeout | null = null;
+    let interval: any;
 
     if (hasProcessingItems) {
-      // Poll every 8 seconds when there are items being processed
-      intervalId = setInterval(() => {
+      interval = setInterval(() => {
         dataSourceVersionList.refetch();
       }, 8000);
     }
 
-    return () => {
-      if (intervalId) {
-        clearInterval(intervalId);
-      }
-    };
-  }, [hasProcessingItems, dataSourceVersionList]);
+    return () => clearInterval(interval);
+  }, [hasProcessingItems]);
 
-  const lastRowRef = useRef<IntersectionObserver | null>(null);
-
-  const lastElementRef = useCallback(
-    (node: HTMLTableRowElement | null) => {
-      if (
-        dataSourceVersionList.isFetching ||
-        dataSourceVersion.length >= dataSourceVersionList?.data?.totalCount!
-      )
-        return;
-
-      // Disconnect the previous observer if it exists
-      if (lastRowRef.current) {
-        lastRowRef.current.disconnect();
-      }
-
-      // Create a new IntersectionObserver
-      lastRowRef.current = new IntersectionObserver((entries) => {
-        if (entries[0].isIntersecting) {
-          setCurrentPage((prevPage) => prevPage + 1);
-        }
-      });
-
-      // Observe the new node if it exists
-      if (node) {
-        lastRowRef.current.observe(node);
-      }
-    },
-    [dataSourceVersionList.isFetching]
-  );
-
-  const renderMappings = (mappings: Record<string, string>): JSX.Element => (
-    <Box sx={{ margin: 1 }}>
-      <Table size="small" aria-label="attributes">
+  const renderMappings = (mappings: any) => (
+    <Box sx={{ m: 1 }}>
+      <Table size="small">
         <TableHead>
           <TableRow>
             <StyledTableCell>SETTING ATTRIBUTES</StyledTableCell>
@@ -486,10 +169,12 @@ const DataSourceVersionTable: React.FC<AttributeOptionTableProps> = ({
           </TableRow>
         </TableHead>
         <TableBody>
-          {Object.entries(mappings).map(([key, value], index) => (
-            <StyledTableRow key={index}>
-              <StyledTableCell>{key || "-"}</StyledTableCell>
-              <StyledTableCell>{value || "-"}</StyledTableCell>
+          {Object.entries(mappings).map(([k, v]: any, i) => (
+            <StyledTableRow key={i}>
+              <StyledTableCell>{k || "-"}</StyledTableCell>
+              <StyledTableCell>
+                {Array.isArray(v) ? v.join(", ") : v || "-"}
+              </StyledTableCell>
             </StyledTableRow>
           ))}
         </TableBody>
@@ -497,11 +182,9 @@ const DataSourceVersionTable: React.FC<AttributeOptionTableProps> = ({
     </Box>
   );
 
-  const renderSeparators = (
-    separators: Record<string, string>
-  ): JSX.Element => (
-    <Box sx={{ margin: 1 }}>
-      <Table size="small" aria-label="attributes">
+  const renderSeparators = (separators: any) => (
+    <Box sx={{ m: 1 }}>
+      <Table size="small">
         <TableHead>
           <TableRow>
             <StyledTableCell>SETTING ATTRIBUTES</StyledTableCell>
@@ -509,10 +192,10 @@ const DataSourceVersionTable: React.FC<AttributeOptionTableProps> = ({
           </TableRow>
         </TableHead>
         <TableBody>
-          {Object.entries(separators).map(([key, value], index) => (
-            <StyledTableRow key={index}>
-              <StyledTableCell>{key || "-"}</StyledTableCell>
-              <StyledTableCell>{value || "-"}</StyledTableCell>
+          {Object.entries(separators).map(([k, v]: any, i) => (
+            <StyledTableRow key={i}>
+              <StyledTableCell>{k || "-"}</StyledTableCell>
+              <StyledTableCell>{v || "-"}</StyledTableCell>
             </StyledTableRow>
           ))}
         </TableBody>
@@ -522,24 +205,9 @@ const DataSourceVersionTable: React.FC<AttributeOptionTableProps> = ({
 
   if (!dataSourceVersionList.isFetching && !dataSourceVersion.length) {
     return (
-      <Box
-        display="flex"
-        flexDirection="column"
-        sx={{ textAlign: "center", marginTop: 10 }}
-        alignContent="center"
-        alignItems="center"
-      >
-        <Typography
-          variant="h4"
-          sx={{
-            ...getHeadingSx(),
-            fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.bold,
-            color: STYLE_GUIDE.COLORS.textDarkGray,
-            fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.xxl,
-          }}
-        >
-          No data source version have been created yet. Please create a data
-          source version to display it here.
+      <Box textAlign="center" mt={10}>
+        <Typography sx={getHeadingSx()}>
+          No data source version found.
         </Typography>
       </Box>
     );
@@ -549,59 +217,22 @@ const DataSourceVersionTable: React.FC<AttributeOptionTableProps> = ({
     {
       id: "dataSourceName",
       label: "Data Source Name",
-      minWidth: 250,
-      sortable: true,
-      renderCell: (row: Record<string, unknown>) => {
-        const dataSourceId = row.dataSourceId;
-        return dataSourceId?.name || "-";
-      },
+      renderCell: (row: any) => row?.dataSourceId?.name || "-",
     },
-
-    { id: "versionValue", label: "Period", minWidth: 170, sortable: true },
-
-    // {
-    //   id: "dataSourceName",
-    //   label: "Data Source Name",
-    //   minWidth: 250,
-    //   renderCell: (row: Record<string, unknown>) => {
-    //     return row.fileName || "-";
-    //   },
-    // },
-    { id: "fileName", label: "File Name", sortable: true },
     {
-      id: "mappings",
-      label: "Mappings",
-      sortable: false,
-      renderCell: (row: Record<string, unknown>, index?: number) => {
-        if (index === undefined) return "-";
-        return row.mappings ? (
-          <IconButton
-            aria-label="expand row"
-            size="small"
-            onClick={() => toggleMappingRow(index)}
-          >
-            {expandedMappingRows[index] ? (
-              <KeyboardArrowUpIcon />
-            ) : (
-              <KeyboardArrowDownIcon />
-            )}
-          </IconButton>
-        ) : (
-          "-"
-        );
-      },
+      id: "vendorName",
+      label: "Vendor",
+      renderCell: (row: any) => row?.vendorId?.name || "-",
     },
+    { id: "versionValue", label: "Period" },
+    { id: "fileName", label: "File Name" },
     // {
-    //   id: "separator",
-    //   label: "Separator",
-    //   renderCell: (row: Record<string, unknown>, index: number) => {
-    //     return row.separator && Object.keys(row.separator).length > 0 ? (
-    //       <IconButton
-    //         aria-label="expand row"
-    //         size="small"
-    //         onClick={() => toggleSepratorRow(index)}
-    //       >
-    //         {expandedSepratorRows[index] ? (
+    //   id: "mappings",
+    //   label: "Mappings",
+    //   renderCell: (row: any, index: number) =>
+    //     row.mappings ? (
+    //       <IconButton onClick={() => toggleMappingRow(index)}>
+    //         {expandedMappingRows[index] ? (
     //           <KeyboardArrowUpIcon />
     //         ) : (
     //           <KeyboardArrowDownIcon />
@@ -609,273 +240,96 @@ const DataSourceVersionTable: React.FC<AttributeOptionTableProps> = ({
     //       </IconButton>
     //     ) : (
     //       "-"
-    //     );
-    //   },
+    //     ),
     // },
     {
       id: "createdBy",
       label: "Created By",
-      minWidth: 200,
-      sortable: true,
-      renderCell: (row: Record<string, unknown>) => {
-        return row.createdBy ? (
-          <Typography variant="body2" color="text.secondary">
-            {row?.createdBy ?? "-"}
-          </Typography>
-        ) : (
-          "-"
-        );
-      },
+      renderCell: (row: any) =>
+        row.createdBy
+          ? `${row.createdBy.firstName} ${row.createdBy.lastName}`
+          : "-",
     },
     {
       id: "createdAt",
       label: "Created At",
-      minWidth: 200,
-      sortable: true,
-      renderCell: (row: Record<string, unknown>) => {
-        return row.createdAt ? new Date(row.createdAt).toLocaleString() : "-";
-      },
+      renderCell: (row: any) =>
+        row.createdAt
+          ? new Date(row.createdAt).toLocaleString()
+          : "-",
     },
-    { id: "versionName", label: "Version ID", minWidth: 170, sortable: true },
+    // { id: "versionName", label: "Version ID" },
     {
       id: "status",
       label: "Status",
-      minWidth: 170,
-      sortable: true,
-      renderCell: (row: Record<string, unknown>) => {
-        return row.status ? (
-          <StatusChip status={row.status as string} />
-        ) : (
-          "-"
-        );
-      },
+      renderCell: (row: any) =>
+        row.status ? <StatusChip status={row.status} /> : "-",
     },
     {
       id: "error",
       label: "Error",
-      minWidth: 170,
-      sortable: false,
-      renderCell: (row: Record<string, unknown>) => {
-        return row.status === "failed" ? (
+      renderCell: (row: any) =>
+        row.status === "failed" ? (
           <ErrorDialog dataSourceVersionId={row._id} />
         ) : (
           "-"
-        );
-      },
+        ),
     },
   ];
-
-  // Transform rows to match column IDs for sorting
-  const transformedRows = (dataSourceVersion || []).map((row) => ({
-    ...row,
-    dataSourceName: row.dataSourceId?.name || "",
-    versionValue: row.versionValue || "",
-    fileName: row.fileName || "",
-    createdBy: row.createdBy
-      ? `${row.createdBy.firstName || ""}${
-          row.createdBy.lastName ? " " + row.createdBy.lastName : ""
-        }`.trim()
-      : "",
-    createdAt: row.createdAt ? new Date(row.createdAt).getTime() : 0,
-    versionName: row.versionName || "",
-    status: row.status || "",
-  }));
 
   return (
     <PageCardLayout>
       <CommonTable
-          columns={columns}
-          loading={false}
-          isLazyLoading={dataSourceVersionList.isFetching}
-          rows={transformedRows}
-          height="calc(100vh - 200px)"
-          isLazyTable={true}
-          collpasible={(row, index) => {
-            return (
-              <>
-                {row.mappings && (
-                  <StyledTableRow>
-                    <TableCell
-                      style={{ paddingBottom: 0, paddingTop: 0 }}
-                      colSpan={9}
-                    >
-                      <Collapse
-                        in={expandedMappingRows[index]}
-                        timeout="auto"
-                        unmountOnExit
-                      >
-                        {renderMappings(row.mappings)}
-                      </Collapse>
-                    </TableCell>
-                  </StyledTableRow>
-                )}
+        columns={columns}
+        rows={dataSourceVersion}
+        loading={false}
+        isLazyLoading={dataSourceVersionList.isFetching}
+        height="calc(100vh - 200px)"
 
-                {row.separator &&
-                  row.separator &&
-                  Object.keys(row.separator).length > 0 && (
-                    <StyledTableRow>
-                      <TableCell
-                        style={{ paddingBottom: 0, paddingTop: 0 }}
-                        colSpan={10}
-                      >
-                        <Collapse
-                          in={expandedSepratorRows[index]}
-                          timeout="auto"
-                          unmountOnExit
-                        >
-                          {renderSeparators(row.separator)}
-                        </Collapse>
-                      </TableCell>
-                    </StyledTableRow>
-                  )}
-              </>
-            );
-          }}
-          lastElementRef={lastElementRef}
-        />
-    </PageCardLayout>
-  );
+       page={paginationModel.page}
+rowsPerPage={paginationModel.pageSize}
+totalCount={dataSourceVersionList?.data?.totalCount ?? 0}
 
-  return (
-    <TableContainer component={Paper} sx={{ ...getTableSx() }}>
-      <Table sx={{ width: "100%" }} aria-label="attribute-option-table">
-        <TableHead>
-          <TableRow>
-            <StyledTableCell>VERSION NAME</StyledTableCell>
-            <StyledTableCell>PERIOD</StyledTableCell>
-            <StyledTableCell>DATA SOURCE NAME</StyledTableCell>
-            <StyledTableCell>FILE NAME</StyledTableCell>
-            <StyledTableCell>MAPPINGS</StyledTableCell>
-            <StyledTableCell>SEPARATOR</StyledTableCell>
-            <StyledTableCell>CREATED BY</StyledTableCell>
-            <StyledTableCell>CREATED AT</StyledTableCell>
-            <StyledTableCell>STATUS</StyledTableCell>
-            <StyledTableCell>ERROR</StyledTableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {dataSourceVersion.map((data, dataIndex) => (
-            <React.Fragment key={data._id}>
-              <StyledTableRow
-                ref={
-                  dataSourceVersion.length === dataIndex + 1
-                    ? lastElementRef
-                    : null
-                }
-              >
-                <StyledTableCell>{data.versionName || "-"}</StyledTableCell>
-                <StyledTableCell>{data.versionValue || "-"}</StyledTableCell>
-                <StyledTableCell>
-                  {data?.dataSourceId?.name || "-"}
-                </StyledTableCell>
-                <StyledTableCell>{data.fileName || "-"}</StyledTableCell>
-                <StyledTableCell>
-                  {data.mappings ? (
-                    <IconButton
-                      aria-label="expand row"
-                      size="small"
-                      onClick={() => toggleMappingRow(dataIndex)}
-                    >
-                      {expandedMappingRows[dataIndex] ? (
-                        <KeyboardArrowUpIcon />
-                      ) : (
-                        <KeyboardArrowDownIcon />
-                      )}
-                    </IconButton>
-                  ) : (
-                    "-"
-                  )}
-                </StyledTableCell>
+onPageChange={(newPage: number) => {
+  setPaginationModel((prev) => ({
+    ...prev,
+    page: newPage,
+  }));
+}}
 
-                <StyledTableCell>
-                  {data.separator && Object.keys(data.separator).length > 0 ? (
-                    <IconButton
-                      aria-label="expand row"
-                      size="small"
-                      onClick={() => toggleSepratorRow(dataIndex)}
-                    >
-                      {expandedSepratorRows[dataIndex] ? (
-                        <KeyboardArrowUpIcon />
-                      ) : (
-                        <KeyboardArrowDownIcon />
-                      )}
-                    </IconButton>
-                  ) : (
-                    "-"
-                  )}
-                </StyledTableCell>
+onRowsPerPageChange={(newPageSize: number) => {
+  setPaginationModel({
+    page: 0, // IMPORTANT RESET
+    pageSize: newPageSize,
+  });
+}}
 
-                <StyledTableCell>
-                  {data.createdBy
-                    ? `${data.createdBy.firstName} ${data.createdBy.lastName}`
-                    : "-"}
-                </StyledTableCell>
-
-                <StyledTableCell>
-                  {data.createdAt
-                    ? new Date(data.createdAt).toLocaleString()
-                    : "-"}
-                </StyledTableCell>
-
-                <StyledTableCell>{data.status || "-"}</StyledTableCell>
-
-                <StyledTableCell>
-                  {data.status === "failed" ? (
-                    <ErrorDialog dataSourceVersionId={data._id} />
-                  ) : (
-                    "-"
-                  )}
-                </StyledTableCell>
+        collpasible={(row: any, index: number) => (
+          <>
+            {row.mappings && (
+              <StyledTableRow>
+                <TableCell colSpan={10}>
+                  <Collapse in={expandedMappingRows[index]}>
+                    {renderMappings(row.mappings)}
+                  </Collapse>
+                </TableCell>
               </StyledTableRow>
-              {data && data.mappings && (
+            )}
+
+            {row.separator &&
+              Object.keys(row.separator).length > 0 && (
                 <StyledTableRow>
-                  <TableCell
-                    style={{ paddingBottom: 0, paddingTop: 0 }}
-                    colSpan={9}
-                  >
-                    <Collapse
-                      in={expandedMappingRows[dataIndex]}
-                      timeout="auto"
-                      unmountOnExit
-                    >
-                      {renderMappings(data.mappings)}
+                  <TableCell colSpan={10}>
+                    <Collapse in={expandedSepratorRows[index]}>
+                      {renderSeparators(row.separator)}
                     </Collapse>
                   </TableCell>
                 </StyledTableRow>
               )}
-
-              {data &&
-                data.separator &&
-                Object.keys(data.separator).length > 0 && (
-                  <StyledTableRow>
-                    <TableCell
-                      style={{ paddingBottom: 0, paddingTop: 0 }}
-                      colSpan={10}
-                    >
-                      <Collapse
-                        in={expandedSepratorRows[dataIndex]}
-                        timeout="auto"
-                        unmountOnExit
-                      >
-                        {renderSeparators(data.separator)}
-                      </Collapse>
-                    </TableCell>
-                  </StyledTableRow>
-                )}
-            </React.Fragment>
-          ))}
-
-          {dataSourceVersionList.isFetching &&
-            Array.from({ length: 1 }, (_, index) => (
-              <StyledTableRow key={index}>
-                <StyledTableCell colSpan={10}>
-                  <Skeleton height={40} />
-                </StyledTableCell>
-              </StyledTableRow>
-            ))}
-        </TableBody>
-      </Table>
-    </TableContainer>
+          </>
+        )}
+      />
+    </PageCardLayout>
   );
 };
 

@@ -45,7 +45,7 @@ export default function ValidationErrors() {
   const navigate = useNavigate();
   const [dialog, setDialog] = useState<{
     open: boolean;
-    type: "discardAll" | "discardRow" | "resolveRow" | "discardSelectedRow" | "submitAll";
+    type: "discardAll" | "discardRow" | "resolveRow" | "discardSelectedRow" | "submitAll" | "discardUpload";
     rowData?: any;
     selectedRows?: any[];
   }>({ open: false, type: "discardAll" });
@@ -262,8 +262,23 @@ export default function ValidationErrors() {
           url: `${POST.RESOLVE_DATA_IMPORT_ERROR}`,
           payload,
         });
-      }
-      else if (dialog?.type === "discardRow") {
+      }else if (dialog.type === "discardUpload") {
+        const payload = isReportRequest
+          ? {
+              action: "discardedUpload", // ✅ new action
+              reportRequestId: id,
+            }
+          : {
+              action: "discardedUpload",
+              dataSourceVersionId: id,
+              dataSourceId: dataSourceId,
+            };
+
+        response = await discardAllSubmit.mutateAsync({
+          url: `${POST.RESOLVE_DATA_IMPORT_ERROR}`,
+          payload,
+        });
+      } else if (dialog?.type === "discardRow") {
         const payload = isReportRequest
           ? {
               action: "discard",
@@ -312,7 +327,7 @@ export default function ValidationErrors() {
       }
 
       if (response?.success) {
-        if (dialog.type === "discardAll" || dialog.type === "submitAll") {
+        if (dialog.type === "discardAll" || dialog.type === "submitAll" || dialog.type === "discardUpload") {
           if (response?.data?.dataSourceId) {
             navigate(`/data-source-new/${response?.data?.dataSourceId}`);
           } else {
@@ -461,6 +476,16 @@ export default function ValidationErrors() {
               </Button> */}
 
               <Button
+              variant="contained"
+              color="error"
+              onClick={() => setDialog({ open: true, type: "discardUpload" })}
+              sx={{ borderRadius: "8px" }}
+              disabled={isLatest === false}
+            >
+              Discard Upload
+            </Button>
+
+              <Button
                 variant="contained"
                 onClick={() => setDialog({ open: true, type: "submitAll" })}
                 sx={{
@@ -534,11 +559,15 @@ export default function ValidationErrors() {
         title={
           dialog.type === "submitAll"
             ? "Confirm Submit"
+             : dialog.type === "discardUpload"
+              ? "Confirm Discard Upload"
             :dialog.type === "discardAll" ? "Confirm Action" : "Confirm Discard"
         }
         content={
           dialog.type === "submitAll"
             ? "Are you sure you want to submit all data?"
+            : dialog.type === "discardUpload"
+            ? "Are you sure you want to discard the entire upload?"
             : dialog.type === "discardAll"
             ? "Are you sure want to Discard all data?"
             : dialog.type === "resolveRow"
@@ -550,6 +579,8 @@ export default function ValidationErrors() {
         confirmText={
           dialog.type === "submitAll"
           ? "Submit"
+          : dialog.type === "discardUpload"
+          ? "Discard Upload"
           : dialog.type === "discardAll"
             ? "Confirm"
             : dialog.type === "resolveRow"

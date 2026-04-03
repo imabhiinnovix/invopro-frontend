@@ -91,6 +91,7 @@ const AppRoutes = () => {
           <Route path="/entity" element={<Entity />} />
           <Route path="/data-src" element={<DataSource />} />
           <Route path="/data-src-version" element={<DataSourceVersion />} />
+          <Route path="/data-src-version/:dataSourceId" element={<DataSourceVersion />} />
           <Route path="/VixAi-Insights" element={<AIInsightPage />} />
           <Route path="/VixAi-Chart" element={<NaturalLanguage />} />
           <Route path="/report-settings" element={<ReportSettings />} />
