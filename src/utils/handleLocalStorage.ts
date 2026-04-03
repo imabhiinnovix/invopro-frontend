@@ -3,10 +3,17 @@ export const getAuthToken = () => {
 };
 
 export const setAuthToken = (token: string, persistent = false) => {
-  if (persistent) {
-    localStorage.setItem("token", token);
-  } else {
-    sessionStorage.setItem("token", token);
+  // if (persistent) {
+  //   localStorage.setItem("token", token);
+  // } else {
+  //   sessionStorage.setItem("token", token);
+  // }
+   // ✅ Always store in localStorage (fix for new tab issue)
+  localStorage.setItem('token', token);
+
+  // ✅ Optional: also keep sessionStorage (for legacy support)
+  if (!persistent) {
+    sessionStorage.setItem('token', token);
   }
 };
 

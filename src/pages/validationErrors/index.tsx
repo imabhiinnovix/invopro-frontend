@@ -108,6 +108,7 @@ export default function ValidationErrors() {
         item.allDataSourceVersions.some((v: any) => v._id === id),
     );
   }
+  const vendorId = dataSourceIdForPayload?.dataSourceVersion?.vendorId || "";
 
   const { state } = useLocation();
   const isReportRequest = state?.isReportRequest;
@@ -398,26 +399,50 @@ export default function ValidationErrors() {
         // minHeight: "100vh",
       }}
     >
-      <Typography
-        variant="h4"
-        sx={{
-          mb: STYLE_GUIDE.SPACING.s3,
-          fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.regular,
-          fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.xxl,
-          color: STYLE_GUIDE.COLORS.primaryDark || "#3f51b5",
-          lineHeight: STYLE_GUIDE.TYPOGRAPHY.lineHeight.normal,
-        }}
-      >
-        <Button
-          variant="text"
-          onClick={() => navigate(-1)}
-          sx={{ padding: 0, minWidth: "auto", marginRight: "10px" }}
-          disabled={isLatest === false}
-        >
-          <ArrowBackIcon />
-        </Button>
-        Validation Errors
-      </Typography>
+      <Box
+  sx={{
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    mb: STYLE_GUIDE.SPACING.s3,
+  }}
+>
+  {/* Left side: Back + Heading */}
+  <Box sx={{ display: "flex", alignItems: "center" }}>
+    <Button
+      variant="text"
+      onClick={() => navigate(-1)}
+      sx={{ padding: 0, minWidth: "auto", marginRight: "10px" }}
+      disabled={isLatest === false}
+    >
+      <ArrowBackIcon />
+    </Button>
+
+    <Typography
+      variant="h4"
+      sx={{
+        fontWeight: STYLE_GUIDE.TYPOGRAPHY.fontWeight.regular,
+        fontSize: STYLE_GUIDE.TYPOGRAPHY.fontSize.xxl,
+        color: STYLE_GUIDE.COLORS.primaryDark || "#3f51b5",
+        lineHeight: STYLE_GUIDE.TYPOGRAPHY.lineHeight.normal,
+      }}
+    >
+      Validation Errors
+    </Typography>
+  </Box>
+
+  {/* Right side: Reference Invoice Button */}
+  <Button
+  variant="outlined"
+  component="a"
+  href={`/reference-invoice${vendorId ? `?vendorId=${vendorId}` : ""}`}
+  target="_blank"
+  rel="noopener noreferrer"
+  sx={{ borderRadius: "8px" }}
+>
+  Reference Invoice Files
+</Button>
+</Box>
       <Card
         sx={{
           borderRadius: "8px",

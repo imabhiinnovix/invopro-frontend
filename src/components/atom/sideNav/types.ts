@@ -22,6 +22,7 @@ export interface DataSourceListFieldSettings {
 export interface DataSourceListData {
   _id: string;
   organizationId: string;
+  vendorId: string;
   entityId: {
     _id: string;
     name: string;

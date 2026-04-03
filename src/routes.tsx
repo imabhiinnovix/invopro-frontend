@@ -55,6 +55,7 @@ import VendorInvoicePage from "./pages/vendorInvoice";
 import PaymentInfoPage from "./pages/paymentInfo";
 import PurchaseOrderPage from "./pages/purchaseOrder";
 import ActivityInfoPage from "./pages/activityInfo";
+import ReferenceInvoice from "./pages/referenceInvoice";
 
 const AppRoutes = () => {
   const token = getAuthToken();
@@ -92,6 +93,7 @@ const AppRoutes = () => {
           <Route path="/data-src" element={<DataSource />} />
           <Route path="/data-src-version" element={<DataSourceVersion />} />
           <Route path="/data-src-version/:dataSourceId" element={<DataSourceVersion />} />
+          <Route path="/reference-invoice" element={<ReferenceInvoice />} />
           <Route path="/VixAi-Insights" element={<AIInsightPage />} />
           <Route path="/VixAi-Chart" element={<NaturalLanguage />} />
           <Route path="/report-settings" element={<ReportSettings />} />
