@@ -590,7 +590,6 @@ export default function ValidationErrors() {
         confirmButtonColor="error"
         isSubmitting={isSubmitting}
       />
-     ()
       <ValidationErrorModal
         openModal={actionModalOpen}
         rowData={selectedRow}

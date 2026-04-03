@@ -315,7 +315,7 @@ export const ValidationErrorsDataTable: React.FC<
           </Typography>
         </>
       }
-      rowSelection={isLatest === false ? false : true}
+      rowSelection = {false} //{isLatest === false ? false : true}
       rowSelectionCondition={(row) => (row.status === "open" ? true : false)}
       bulkAction={(selectedRows) => (
         <Stack direction="row" spacing={2} justifyContent="flex-end">
