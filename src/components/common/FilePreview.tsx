@@ -25,7 +25,7 @@ export default function FilePreview({ fileUrl }: Props) {
       sx={{
         border: "1px solid #ddd",
         borderRadius: 1,
-        height: "600px",
+        height: "800px",
         p: 2,
         background: "#fafafa",
       }}
@@ -46,7 +46,7 @@ export default function FilePreview({ fileUrl }: Props) {
           src={fileUrl}
           sx={{
             maxWidth: "100%",
-            maxHeight: "550px",
+            maxHeight: "750px",
             objectFit: "contain",
           }}
         />
@@ -59,7 +59,7 @@ export default function FilePreview({ fileUrl }: Props) {
             <ZoomInButton />
           </Box>
 
-          <Box height="520px">
+          <Box height="720px">
             <Worker workerUrl={workerUrl}>
               <Viewer
                 fileUrl={fileUrl}

@@ -13,8 +13,6 @@ interface Props {
   fileUrl?: string | null;
 }
 
-const MAX_ROWS = 100;
-
 export default function ExcelFilePreview({ fileUrl }: Props) {
   const [sheets, setSheets] = useState<string[]>([]);
   const [activeSheet, setActiveSheet] = useState(0);
@@ -24,6 +22,12 @@ export default function ExcelFilePreview({ fileUrl }: Props) {
 
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState("");
+
+  const [visibleCount, setVisibleCount] = useState(100);
+
+  useEffect(() => {
+  setVisibleCount(100);
+}, [search, activeSheet, fullData]);
 
   const isExcel =
     fileUrl?.endsWith(".xlsx") || fileUrl?.endsWith(".xls");
@@ -75,7 +79,18 @@ export default function ExcelFilePreview({ fileUrl }: Props) {
   }, [search, fullData]);
 
   // 🔹 Limit visible rows (performance)
-  const displayData = filteredData.slice(0, MAX_ROWS);
+ const displayData = filteredData.slice(0, visibleCount);
+
+ const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+  const { scrollTop, scrollHeight, clientHeight } = e.currentTarget;
+
+  // near bottom
+  if (scrollTop + clientHeight >= scrollHeight - 50) {
+    setVisibleCount((prev) =>
+      prev < filteredData.length ? prev + 100 : prev
+    );
+  }
+};
 
   // 🔹 Extract headers
   const headers =
@@ -99,7 +114,7 @@ export default function ExcelFilePreview({ fileUrl }: Props) {
     <Box
       border="1px solid #ddd"
       borderRadius={1}
-      height="600px"
+      height="800px"
       display="flex"
       flexDirection="column"
     >
@@ -129,7 +144,7 @@ export default function ExcelFilePreview({ fileUrl }: Props) {
       </Box>
 
       {/* 📋 Table */}
-      <Box flex={1} overflow="auto" p={1}>
+      <Box flex={1} overflow="auto" p={1} onScroll={handleScroll}>
         {displayData.length === 0 ? (
           <Typography align="center">No data found</Typography>
         ) : (
@@ -162,7 +177,7 @@ export default function ExcelFilePreview({ fileUrl }: Props) {
                     <td
                       key={j}
                       style={{
-                        border: "1px solid #ccc",
+                      border: "1px solid #ccc",
                         padding: "6px",
                         fontSize: 12,
                       }}

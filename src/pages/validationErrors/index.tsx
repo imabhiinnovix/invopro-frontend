@@ -156,6 +156,16 @@ export default function ValidationErrors() {
   };
 
   const handleEditRow = async (rowData: any) => {
+    // ✅ special condition
+    if (rowData.dataSourceId === "699f04727df5e0efe12d5027") {
+      const newTabUrl = `/reference-invoice?errorId=${rowData._id}&rowNumber=${rowData.rowNumber}&dataSourceVersionId=${rowData.dataSourceVersionId}&dataSourceId=${rowData.dataSourceId}${
+        vendorId ? `&vendorId=${vendorId}` : ""
+      }`;
+
+      window.open(newTabUrl, "_blank");
+      return;
+    }
+
     setIsLoadingRowDetail(true);
     setSelectedRow(rowData);
 
@@ -432,7 +442,7 @@ export default function ValidationErrors() {
   </Box>
 
   {/* Right side: Reference Invoice Button */}
-  <Button
+  {/* <Button
   variant="outlined"
   component="a"
   href={`/reference-invoice${vendorId ? `?vendorId=${vendorId}` : ""}`}
@@ -441,7 +451,7 @@ export default function ValidationErrors() {
   sx={{ borderRadius: "8px" }}
 >
   Reference Invoice Files
-</Button>
+</Button> */}
 </Box>
       <Card
         sx={{

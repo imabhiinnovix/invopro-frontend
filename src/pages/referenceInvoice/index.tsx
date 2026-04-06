@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   Box,
   Typography,
@@ -8,13 +8,18 @@ import {
   InputLabel,
   CircularProgress,
 } from "@mui/material";
-import { useSearchParams } from "react-router-dom"; // ✅ ADDED
+import { useSearchParams } from "react-router-dom";
 
 import useGet from "../../hooks/useGet";
 import { GET } from "../../services/apiRoutes";
 
 import FilePreview from "../../components/common/FilePreview";
 import ExcelFilePreview from "../../components/common/ExcelFilePreview";
+import axiosInstance from "../../services/axiosInstance";
+import { useSelector } from "react-redux";
+import { RootState } from "../../reducers";
+import { AttributeOptionRequestPayload } from "../../components/atom/attributeOption/types";
+import { ValidationInlineErrorModal } from "../validationErrors/ValidationInlineErrorModal";
 
 interface FileItem {
   label: string;
@@ -25,9 +30,91 @@ interface FileItem {
 export default function ReferenceInvoice() {
   const [selectedFile, setSelectedFile] = useState<FileItem | null>(null);
 
-  // ✅ GET vendorId from URL
   const [searchParams] = useSearchParams();
   const vendorId = searchParams.get("vendorId");
+  const errorId = searchParams.get("errorId");
+  const dataSourceId = searchParams.get("dataSourceId");
+  const dataSourceVersionId = searchParams.get("dataSourceVersionId");
+  const rowNumber = searchParams.get("rowNumber");
+
+  const [selectedRow, setSelectedRow] = useState<any>(null);
+  const [editData, setEditData] = useState<any>(null);
+  const [loadingEdit, setLoadingEdit] = useState(false);
+  const [derivedVendorId, setDerivedVendorId] = useState<string | null>(null);
+
+  const commonDataSourceList = useSelector(
+    (state: RootState) => state.dataSource?.list
+  );
+
+  const currentDataSource = commonDataSourceList?.find(
+    (ds: any) => ds?._id === dataSourceId
+  );
+
+  useEffect(() => {
+    const fetchEditData = async () => {
+      if (!errorId || !dataSourceId || !dataSourceVersionId) return;
+
+      setLoadingEdit(true);
+
+      try {
+        const url = `${GET.ERROR_ROW_DATA}?dataSourceVersionId=${dataSourceVersionId}&dataSourceId=${dataSourceId}&errorId=${errorId}&rowNumber=${rowNumber}`;
+        const response = await axiosInstance.get(url);
+
+        if (response.data?.success) {
+          setEditData(response.data.data);
+          setSelectedRow(response.data.data?.errorRecord);
+        }
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoadingEdit(false);
+      }
+    };
+
+    fetchEditData();
+  }, [errorId, dataSourceId, dataSourceVersionId]);
+
+
+  const vendorList = useGet<{
+  success: boolean;
+  data: any[];
+}>(
+  ["vendorListAll"],
+  `${GET.Vendor_List}?paginate=false`,
+  true
+);
+
+useEffect(() => {
+  // Only run when vendorId is NOT in URL
+  if (vendorId || !vendorList?.data?.data || !selectedRow) return;
+
+  const vendorMap = new Map<string, string>();
+
+  vendorList.data.data.forEach((vendor: any) => {
+    if (vendor?.name) {
+      vendorMap.set(vendor.name.trim().toLowerCase(), vendor._id);
+    }
+  });
+
+  console.log('data', editData);
+
+  const rawLawFirm = editData?.rowData?.["Law Firm Name"];
+
+  const lawFirmName = Array.isArray(rawLawFirm)
+    ? rawLawFirm[0]?.trim().toLowerCase()  // first element if array
+    : rawLawFirm?.trim().toLowerCase();   // just trim if string
+
+  if (lawFirmName && vendorMap.has(lawFirmName)) {
+    setDerivedVendorId(vendorMap.get(lawFirmName) || null);
+  }
+}, [vendorId, vendorList.data, selectedRow]);
+
+const finalVendorId: any = vendorId || derivedVendorId;
+
+  const attributeList = useGet<{
+    success: boolean;
+    data: AttributeOptionRequestPayload[];
+  }>([`attributeList`], GET?.Attribute_Option_List + `?paginate=false`);
 
   const activityList = useGet<any>(
     ["activityListAll"],
@@ -35,11 +122,10 @@ export default function ReferenceInvoice() {
     true
   );
 
-  // ✅ UPDATED: vendorId conditionally added
   const vendorInvoiceList = useGet<any>(
-    ["vendorInvoiceListAll", vendorId],
+    ["vendorInvoiceListAll", finalVendorId],
     `${GET.Vendor_Invoice_List}?page=1&limit=1000${
-      vendorId ? `&vendorId=${vendorId}` : ""
+      finalVendorId ? `&vendorId=${finalVendorId}` : ""
     }`,
     true
   );
@@ -49,7 +135,6 @@ export default function ReferenceInvoice() {
   const mergedFiles: FileItem[] = useMemo(() => {
     const files: FileItem[] = [];
 
-    // ✅ Activity Files
     activityList?.data?.data?.forEach((item: any) => {
       if (!["disclosure", "portfolio"].includes(item.activityType)) return;
 
@@ -75,7 +160,6 @@ export default function ReferenceInvoice() {
       });
     });
 
-    // ✅ Vendor Invoice Files
     vendorInvoiceList?.data?.data?.forEach((item: any) => {
       const names = Array.isArray(item.fileName)
         ? item.fileName
@@ -104,51 +188,111 @@ export default function ReferenceInvoice() {
   }, [activityList.data, vendorInvoiceList.data]);
 
   return (
-    <Box p={3}>
-      <Typography variant="h5" mb={2}>
-        Invoice List Reference Files
-      </Typography>
+    <Box display="flex" gap={2}>
+      {/* LEFT - 40% */}
+      <Box
+        sx={{
+          width: "45%",
+          minWidth: 0,
+          overflow: "auto",
+          position: "relative",
+        }}
+      >
 
-      {/* Loader */}
-      {loading && (
-        <Box display="flex" justifyContent="center" mb={2}>
+        {loadingEdit ? (
           <CircularProgress />
+        ) : editData ? (
+          <ValidationInlineErrorModal
+            openModal={true}
+            rowData={selectedRow}
+            rowDetailData={editData}
+            attributeListData={attributeList?.data?.data || []}
+            handleCloseModal={() => window.close()}
+            refreshData={() => {}}
+            currentDataSource={currentDataSource}
+          />
+        ) : (
+          <Typography>No data found</Typography>
+        )}
+      </Box>
+
+      {/* RIGHT - 60% */}
+      <Box
+        sx={{
+          width: "55%",
+          minWidth: 0,
+          overflow: "hidden",
+        }}
+      >
+        <Box p={3}>
+          <Typography variant="h5" mb={2}>
+            Invoice List Reference Files
+          </Typography>
+
+          {loading && (
+            <Box display="flex" justifyContent="center" mb={2}>
+              <CircularProgress />
+            </Box>
+          )}
+
+          <FormControl fullWidth sx={{ mb: 2 }}>
+            <InputLabel>Select File</InputLabel>
+            <Select
+              value={selectedFile?.url || ""}
+              label="Select File"
+              onChange={(e) => {
+                const file = mergedFiles.find(
+                  (f) => f.url === e.target.value
+                );
+                setSelectedFile(file || null);
+              }}
+            >
+              {mergedFiles.map((file, index) => (
+                <MenuItem key={index} value={file.url}>
+                  {file.label}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+
+          {/* PDF */}
+          {selectedFile?.type === "pdf" && (
+            <Box
+              sx={{
+                width: "100%",
+                height: "800px",
+                border: "1px solid #ddd",
+                borderRadius: 2,
+                overflow: "hidden",
+              }}
+            >
+              <FilePreview fileUrl={selectedFile.url} />
+            </Box>
+          )}
+
+          {/* EXCEL */}
+          {selectedFile?.type === "excel" && (
+            <Box
+              sx={{
+                width: "100%",
+                height: "800px",
+                border: "1px solid #ddd",
+                borderRadius: 2,
+                overflowX: "auto",
+                overflowY: "auto",
+              }}
+            >
+              <ExcelFilePreview fileUrl={selectedFile.url} />
+            </Box>
+          )}
+
+          {!selectedFile && !loading && (
+            <Typography color="text.secondary">
+              Please select a file to preview
+            </Typography>
+          )}
         </Box>
-      )}
-
-      {/* Dropdown */}
-      <FormControl fullWidth sx={{ mb: 2 }}>
-        <InputLabel>Select File</InputLabel>
-        <Select
-          value={selectedFile?.url || ""}
-          label="Select File"
-          onChange={(e) => {
-            const file = mergedFiles.find((f) => f.url === e.target.value);
-            setSelectedFile(file || null);
-          }}
-        >
-          {mergedFiles.map((file, index) => (
-            <MenuItem key={index} value={file.url}>
-              {file.label}
-            </MenuItem>
-          ))}
-        </Select>
-      </FormControl>
-
-      {/* Preview */}
-      {selectedFile?.type === "pdf" && (
-        <FilePreview fileUrl={selectedFile.url} />
-      )}
-
-      {selectedFile?.type === "excel" && (
-        <ExcelFilePreview fileUrl={selectedFile.url} />
-      )}
-
-      {!selectedFile && !loading && (
-        <Typography color="text.secondary">
-          Please select a file to preview
-        </Typography>
-      )}
+      </Box>
     </Box>
   );
 }
