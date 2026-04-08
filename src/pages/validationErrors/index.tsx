@@ -31,6 +31,8 @@ import { StyledButton } from "../../components/common";
 import DialogContainer from "../../components/molecule/dialog";
 import IosShareIcon from "@mui/icons-material/IosShare";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import { Tabs, Tab } from "@mui/material";
+import NoErrorLogs from "./NoErrorLogs";
 
 export default function ValidationErrors() {
   const { id } = useParams<{ id: string }>();
@@ -49,6 +51,7 @@ export default function ValidationErrors() {
     rowData?: any;
     selectedRows?: any[];
   }>({ open: false, type: "discardAll" });
+  const [activeTab, setActiveTab] = useState<"error" | "noError">("error");
 
   useEffect(() => {
     const handler = setTimeout(() => {
@@ -453,6 +456,22 @@ export default function ValidationErrors() {
   Reference Invoice Files
 </Button> */}
 </Box>
+<Box sx={{ mb: 2 }}>
+  <Tabs
+    value={activeTab}
+    onChange={(_, newValue) => {
+      setActiveTab(newValue);
+      setPaginationModel({ page: 0, pageSize: 10 });
+      setSearchValue("");
+    }}
+  >
+    <Tab label="Error Logs" value="error" />
+    <Tab label="No Error Logs" value="noError" />
+  </Tabs>
+</Box>
+{activeTab === "error" ? (
+  <Card>
+    <CardContent>
       <Card
         sx={{
           borderRadius: "8px",
@@ -561,6 +580,20 @@ export default function ValidationErrors() {
           />
         </CardContent>
       </Card>
+       </CardContent>
+  </Card>
+) : (
+    <NoErrorLogs
+      id={id}
+      dataSourceId = {dataSourceIdForPayload?._id}
+      paginationModel={paginationModel}
+      setPaginationModel={setPaginationModel}
+      searchValue={searchValue}
+      setSearchValue={setSearchValue}
+      debouncedSearchValue={debouncedSearchValue}
+      handleEditRow={handleEditRow} // reuse same logic
+    />
+  )}
 
       <DialogContainer
         open={showExportSuccessDialog}

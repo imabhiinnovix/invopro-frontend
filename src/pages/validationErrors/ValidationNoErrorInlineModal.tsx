@@ -25,7 +25,7 @@ import DialogContainer from "../../components/molecule/dialog";
 import { StyledButton } from "../../components/common";
 import usePut from "../../hooks/usePut";
 
-interface ValidationInlineErrorModalProps {
+interface ValidationNoErrorInlineErrorModalProps {
   openModal: boolean;
   rowData: any;
   currentDataSource: any;
@@ -35,7 +35,7 @@ interface ValidationInlineErrorModalProps {
   rowDetailData?: any;
 }
 
-export const ValidationInlineErrorModal: React.FC<ValidationInlineErrorModalProps> = ({
+export const ValidationNoErrorInlineErrorModal: React.FC<ValidationNoErrorInlineErrorModalProps> = ({
   openModal,
   rowData,
   currentDataSource,
@@ -61,7 +61,7 @@ export const ValidationInlineErrorModal: React.FC<ValidationInlineErrorModalProp
   const refDataSourceId = rowData?.refDataSourceId || "";
   const refAttributeId = rowData?.refAttributeId || "";
   const dataSourceId = rowData?.dataSourceId || "";
-  const updateVersionRow = usePost(["updateVersionRow"]);
+  const updateVersionRow = usePut(["updateVersionRow"]);
   const updateDuplicateVersionRow = usePut(["updateDuplicateVersionRow"]);
 
   const [isResolved, setIsResolved] = React.useState(false);
@@ -96,55 +96,55 @@ export const ValidationInlineErrorModal: React.FC<ValidationInlineErrorModalProp
   };
 
   // Handle exceptional cases for error codes "1003" and "1002"
-  React.useEffect(() => {
-    if (openModal) {
-      setMatchedDataSource(null);
-      setTargetAttribute(null);
-      // Handle error code 1003
-      if ((errorCode === "1003" || errorCode === "1006" || errorCode === "1004") && refDataSourceId) {
-        const matched = commonDataSourceList?.find(
-          (ds) => ds._id === refDataSourceId
-        );
-        if (matched) {
-          setMatchedDataSource(matched);
-          // Find the target attribute in the matched data source
-          if (refAttributeId && matched.entityId?.attributes) {
-            const attribute = matched.entityId.attributes.find(
-              (attr: any) => attr._id === refAttributeId
-            );
-            if (attribute) {
-              setTargetAttribute(attribute);
-            }
-          }
-        }
-      }
-      // Handle error code 1002
-      if ((errorCode === "1002" || errorCode === "1001" || errorCode === '1004') && dataSourceId) {
-        const matched = commonDataSourceList?.find(
-          (ds) => ds._id === dataSourceId
-        );
-        if (matched) {
-          setMatchedDataSource(matched);
-          // Find the target attribute in the matched data source
-          if (refAttributeId && matched.entityId?.attributes) {
-            const attribute = matched.entityId.attributes.find(
-              (attr: any) => attr._id === refAttributeId
-            );
-            if (attribute) {
-              setTargetAttribute(attribute);
-            }
-          }
-        }
-      }
-    }
-  }, [
-    openModal,
-    errorCode,
-    refDataSourceId,
-    refAttributeId,
-    dataSourceId,
-    commonDataSourceList,
-  ]);
+//   React.useEffect(() => {
+//     if (openModal) {
+//       setMatchedDataSource(null);
+//       setTargetAttribute(null);
+//       // Handle error code 1003
+//       if ((errorCode === "1003" || errorCode === "1006" || errorCode === "1004") && refDataSourceId) {
+//         const matched = commonDataSourceList?.find(
+//           (ds) => ds._id === refDataSourceId
+//         );
+//         if (matched) {
+//           setMatchedDataSource(matched);
+//           // Find the target attribute in the matched data source
+//           if (refAttributeId && matched.entityId?.attributes) {
+//             const attribute = matched.entityId.attributes.find(
+//               (attr: any) => attr._id === refAttributeId
+//             );
+//             if (attribute) {
+//               setTargetAttribute(attribute);
+//             }
+//           }
+//         }
+//       }
+//       // Handle error code 1002
+//       if ((errorCode === "1002" || errorCode === "1001" || errorCode === '1004') && dataSourceId) {
+//         const matched = commonDataSourceList?.find(
+//           (ds) => ds._id === dataSourceId
+//         );
+//         if (matched) {
+//           setMatchedDataSource(matched);
+//           // Find the target attribute in the matched data source
+//           if (refAttributeId && matched.entityId?.attributes) {
+//             const attribute = matched.entityId.attributes.find(
+//               (attr: any) => attr._id === refAttributeId
+//             );
+//             if (attribute) {
+//               setTargetAttribute(attribute);
+//             }
+//           }
+//         }
+//       }
+//     }
+//   }, [
+//     openModal,
+//     errorCode,
+//     refDataSourceId,
+//     refAttributeId,
+//     dataSourceId,
+//     commonDataSourceList,
+//   ]);
 
   // Use effectiveDataSource that prioritizes matchedDataSource for error codes "1003" and "1002"
   const effectiveDataSource = matchedDataSource || currentDataSource;
@@ -217,68 +217,47 @@ export const ValidationInlineErrorModal: React.FC<ValidationInlineErrorModalProp
   };
 
   // Initialize form data when modal opens or row data changes
-  React.useEffect(() => {
-    if (rowData && openModal && effectiveDataSource?.entityId?.attributes) {
-      const initialFormData: Record<string, any> = {};
+React.useEffect(() => {
+  if (rowData && openModal && effectiveDataSource?.entityId?.attributes) {
+    const initialFormData: Record<string, any> = {};
 
-      // For error code 1002, get rowData from rowDetailData if available
-      let sourceData = rowData;
-      if ((errorCode === "1002" || errorCode === "1001" || errorCode === "1004" || errorCode === "1006") && rowDetailData) {
-        sourceData = rowDetailData?.rowData || rowData;
+    let sourceData;
+    console.log('rowData?.rowData ',rowData?.rowData );
+    // ✅ NEW: handle no-error rows
+      sourceData = rowData?.rowData || {};
+
+    effectiveDataSource.entityId.attributes.forEach((attribute: any) => {
+      const fieldName = attribute.name;
+      let fieldValue = sourceData[fieldName];
+
+      if (
+        (attribute.type === "date" || attribute.type === "date-range") &&
+        fieldValue
+      ) {
+        const isoDate = safeDateToISOString(fieldValue);
+        initialFormData[fieldName] = isoDate || "";
+      } else if (attribute.type === "boolean") {
+        initialFormData[fieldName] =
+          fieldValue === "true" || fieldValue === true;
+      } else if (attribute.type === "multioption" && fieldValue) {
+        const options = getOptionsForAttribute(attribute.optionAttributeId);
+        const normalized = normalizeMultiOptionValue(fieldValue, options);
+        initialFormData[fieldName] = normalized.map((item) => item.id);
+      } else {
+        initialFormData[fieldName] = fieldValue || "";
       }
+    });
 
-      effectiveDataSource.entityId.attributes.forEach((attribute: any) => {
-        const fieldName = attribute.name;
-        let fieldValue = sourceData[fieldName];
-
-        // Special handling for error code "1003" with refAttributeId
-        if (
-          (errorCode === "1003" || errorCode === "1006") &&
-          refAttributeId &&
-          attribute._id === refAttributeId
-        ) {
-          fieldValue = rowData.fileAttributeValue;
-        }
-
-        if (
-          (attribute.type === "date" || attribute.type === "date-range") &&
-          fieldValue
-        ) {
-          const isoDate = safeDateToISOString(fieldValue);
-          console.log(
-            `Converted date for field ${fieldName}:`,
-            isoDate,
-            fieldValue
-          );
-          initialFormData[fieldName] = isoDate || "";
-        } else if (attribute.type === "boolean") {
-          initialFormData[fieldName] =
-            fieldValue === "true" || fieldValue === true;
-        } else if (attribute.type === "multioption" && fieldValue) {
-          // Use the normalizeMultiOptionValue function
-          const options = getOptionsForAttribute(attribute.optionAttributeId);
-          const normalized = normalizeMultiOptionValue(fieldValue, options);
-          initialFormData[fieldName] = normalized.map((item) => item.id);
-        } else {
-          initialFormData[fieldName] = fieldValue || "";
-        }
-      });
-
-      if (effectiveDataSource) {
-        initialFormData.dataSourceName = effectiveDataSource.name;
-        initialFormData.dataSourceId = effectiveDataSource._id;
-      }
-
-      setFormData(initialFormData);
-    }
-  }, [
-    rowData,
-    rowDetailData,
-    effectiveDataSource,
-    openModal,
-    errorCode,
-    refAttributeId,
-  ]);
+    setFormData(initialFormData);
+  }
+}, [
+  rowData,
+  rowDetailData,
+  effectiveDataSource,
+  openModal,
+  errorCode,
+  refAttributeId,
+]);
 
   const isValidEmail = (email: string) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -339,50 +318,12 @@ export const ValidationInlineErrorModal: React.FC<ValidationInlineErrorModalProp
   // Convert form data to payload based on error code
   const convertToPayload = () => {
     const rowDataPayload = buildRowDataPayload();
-    if (errorCode === "1003") {
-      return {
-        errorDataSourceVersionId: rowData.dataSourceVersionId,
-        dataSourceId: rowData.refDataSourceId,
-        rowData: rowDataPayload,
-        isErrorResolved: true,
-        errorDataSourceId: rowData.dataSourceId,
-        fileAttributeValue: rowData.fileAttributeValue,
-        attributeName: rowData.attributeName,
-      };
-    }else if (errorCode === "1006") {
-      return {
-        errorDataSourceVersionId: rowData.dataSourceVersionId,
-        dataSourceId: rowData.refDataSourceId,
-        rowData: rowDataPayload,
-        isErrorResolved: true,
-        errorDataSourceId: rowData.dataSourceId,
-        fileAttributeValue: rowData.fileAttributeValue,
-        attributeName: rowData.attributeName,
-        errorCode: rowData.errorCode
-      };
-    }else if (errorCode === "1002" || errorCode === "1004") {
-      return {
-        action: "update",
-        rowData: rowDataPayload,
-        rowNumber: rowData._id,
-        dataSourceVersionId: rowData.dataSourceVersionId,
-        dataSourceId: rowData.dataSourceId,
-        attributeType: rowData.attributeType,
-        fileAttributeValue: rowData.fileAttributeValue,
-        attributeName: rowData.attributeName,
-      };
-    } else if (errorCode === "1001") {
-      return {
-        action: "update",
-        rowData: rowDataPayload,
-        rowNumber: rowData._id,
-        dataSourceVersionId: rowData.dataSourceVersionId,
-        dataSourceId: rowData.dataSourceId,
-        attributeType: rowData.attributeType,
-        fileAttributeValue: rowData.fileAttributeValue,
-        attributeName: rowData.attributeName,
-      };
-    }
+    return {
+      rowData: rowDataPayload,
+      rowNumber: rowData._id,
+      dataSourceVersionId: rowData.dataSourceVersionId,
+      dataSourceId: rowData.dataSourceId,
+    };
   };
 
   // Validate all required fields
@@ -470,27 +411,14 @@ export const ValidationInlineErrorModal: React.FC<ValidationInlineErrorModalProp
         return;
       }
       const payload = convertToPayload();
-      if (errorCode === "1003") {
-        await updateVersionRow.mutateAsync({
-          url: `${POST.CREATE_VERSION_ROW}`,
-          payload,
-        });
-      }else if (errorCode === "1006") {
-        await updateDuplicateVersionRow.mutateAsync({
-          url: `${PUT.UPDATE_VERSION_ROW}/${rowData?.errorRowId}`,
-          payload,
-        });
-      }
-      else {
-        await updateVersionRow.mutateAsync({
-          url: `${POST.RESOLVE_DATA_IMPORT_ERROR}`,
-          payload,
-        });
-      }
+      await updateVersionRow.mutateAsync({
+        url: `${PUT.UPDATE_NO_ERROR_DATA}`, // ✅ use your correct API
+        payload,
+      });
       toast.success("Record updated successfully!");
       setIsResolved(true);
       refreshData();
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error updating record:", error);
       toast.error(
         `Error: ${error.message || "Something went wrong. Please try again."}`
@@ -926,7 +854,7 @@ export const ValidationInlineErrorModal: React.FC<ValidationInlineErrorModalProp
     }
   };
 
-  const renderModalFields = () => {
+    const renderModalFields = () => {
     if (!effectiveDataSource?.entityId?.attributes) {
       return <Typography>No attributes available to display.</Typography>;
     }
@@ -986,7 +914,7 @@ return (
       </Typography>
 
       {/* Save button top-right */}
-      <StyledButton variant="primary" onClick={handleSaveClick} disabled={isResolved}>
+      <StyledButton variant="primary" onClick={handleSaveClick}>
         Save
       </StyledButton>
     </Box>

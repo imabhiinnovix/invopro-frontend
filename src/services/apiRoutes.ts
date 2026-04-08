@@ -108,6 +108,7 @@ export const PUT = {
   UPDATE_PAYMENT: "/invoicivix-vendor/payment-info/update",
   UPDATE_PURCHASE_ORDER: "/invoicivix-vendor/purchase-order/update",
   UPDATE_ACTIVITY: "/invoicivix-vendor/activity-info/update",
+  UPDATE_NO_ERROR_DATA: "/common/dataImportError/update-import-data"
 };
 
 export const DELETE = {
@@ -194,6 +195,7 @@ export const GET = {
   DEPARTMENT_LIST: "/common/department/list",
   DESIGNATION_LIST: "/common/designation/list",
   ERROR_ROW_DATA: "/common/dataImportError/data",
+  NO_ERROR_ROW_DATA: "/common/dataImportError/import-data",
   DOWNLOAD_REQUEST_LIST: "/common/download-request/list",
   DOWNLOAD_REQUEST_FILE: "common/download-request/download",
   GET_DASHBOARD_WIDGET_PLOT_TYPES: "/common/dashboard/widget/getPlotTypes",

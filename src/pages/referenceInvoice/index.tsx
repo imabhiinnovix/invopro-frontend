@@ -20,6 +20,7 @@ import { useSelector } from "react-redux";
 import { RootState } from "../../reducers";
 import { AttributeOptionRequestPayload } from "../../components/atom/attributeOption/types";
 import { ValidationInlineErrorModal } from "../validationErrors/ValidationInlineErrorModal";
+import { ValidationNoErrorInlineErrorModal } from "../validationErrors/ValidationNoErrorInlineModal";
 
 interface FileItem {
   label: string;
@@ -188,20 +189,14 @@ const finalVendorId: any = vendorId || derivedVendorId;
   }, [activityList.data, vendorInvoiceList.data]);
 
   return (
-    <Box display="flex" gap={2}>
+    <Box display="flex" flexDirection="column" gap={4}>
       {/* LEFT - 40% */}
-      <Box
-        sx={{
-          width: "45%",
-          minWidth: 0,
-          overflow: "auto",
-          position: "relative",
-        }}
-      >
+      <Box sx={{ width: "100%", overflow: "auto", position: "relative" }}>
 
         {loadingEdit ? (
           <CircularProgress />
         ) : editData ? (
+           selectedRow ? (
           <ValidationInlineErrorModal
             openModal={true}
             rowData={selectedRow}
@@ -211,19 +206,21 @@ const finalVendorId: any = vendorId || derivedVendorId;
             refreshData={() => {}}
             currentDataSource={currentDataSource}
           />
-        ) : (
+        ):  <ValidationNoErrorInlineErrorModal
+            openModal={true}
+            rowData={editData}
+            rowDetailData={editData}
+            attributeListData={attributeList?.data?.data || []}
+            handleCloseModal={() => window.close()}
+            refreshData={() => {}}
+            currentDataSource={currentDataSource}
+          /> ) : (
           <Typography>No data found</Typography>
         )}
       </Box>
 
       {/* RIGHT - 60% */}
-      <Box
-        sx={{
-          width: "55%",
-          minWidth: 0,
-          overflow: "hidden",
-        }}
-      >
+      <Box sx={{ width: "100%", overflow: "hidden" }}>
         <Box p={3}>
           <Typography variant="h5" mb={2}>
             Invoice List Reference Files
