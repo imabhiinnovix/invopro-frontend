@@ -1027,7 +1027,7 @@ const vendorOptions = [
               rules={{ required: "Period is required" }}
             />
 
-            {versionType === "monthly" && (
+            {versionType === "monthly" && (dataSourceId === "699f04727df5e0efe12d5027" || dataSourceId === "69ae7eea978287b931c8fe5e") && (
   <Controller
     name="vendorId"
     control={control}
