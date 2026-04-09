@@ -104,6 +104,7 @@ interface PrimaryBankDetail {
 
 interface VendorFormValues {
   name: string;
+  aliasName: string;
   description?: string;
   code: string;
   status: string;
@@ -247,6 +248,7 @@ export default function Vendor() {
   } = useForm<VendorFormValues>({
     defaultValues: {
       name: "",
+      aliasName: "",
     description: "",
     code: "",
     status: "active",
@@ -693,6 +695,7 @@ useEffect(() => {
 
       // Existing Fields
       setValue("name", org.name || "");
+      setValue("aliasName", org.aliasName || "");
       setValue("description", org.description || "");
       setValue("code", org.code || "");
       setValue("status", org.status || "inactive");
@@ -775,6 +778,7 @@ useEffect(() => {
       setSelectedOrg(null);
       reset({
         name: "",
+        aliasName: "",
         description: "",
         code: "",
         status: "active",
@@ -920,6 +924,7 @@ const handleSaveEngagementLetter = async (vendorId: string) => {
             files: formData.logo,
 
             name: formData.name,
+            aliasName: formData.aliasName,
             description: formData.description,
             code: formData.code,
 
@@ -1237,6 +1242,7 @@ if (uploadedEngagementFile && vendorId) {
                     id: org._id,
                     _id: org._id,
                     name: org.name || "",
+                    aliasName: org.aliasName || "",
                     code: org.code || "",
                     status: org.status || "",
                     owner: org.owner
@@ -1711,6 +1717,24 @@ if (uploadedEngagementFile && vendorId) {
                             {...field}
                             required
                             label="Name"
+                            fullWidth
+                            error={!!errors.name}
+                            helperText={errors.name?.message}
+                          />
+                        )}
+                      />
+                    </Box>
+                  </Grid>
+                   <Grid size={6}>
+                    <Box sx={{ display: "flex", alignItems: "center" }}>
+                      <Controller
+                        name="aliasName"
+                        control={control}
+                        defaultValue={selectedOrg?.name}
+                        render={({ field }) => (
+                          <TextField
+                            {...field}
+                            label="Alias Name"
                             fullWidth
                             error={!!errors.name}
                             helperText={errors.name?.message}

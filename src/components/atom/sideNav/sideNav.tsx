@@ -1711,16 +1711,16 @@ function getSystemSettingsItems(
         // ),
         shouldShow: false, // IMP Hardcoded to hide for now
       },
-      {
-        name: "Data Upload",
-        icon: createIcon(CloudUploadIcon, "/data-src-version", theme, location, themeColor),
-        route: "/data-src-version",
-        shouldShow: checkPermission(
-          permissions,
-          PermissionsMap.DATA_SOURCE_VERSION,
-          "list"
-        ),
-      },
+      // {
+      //   name: "Data Upload",
+      //   icon: createIcon(CloudUploadIcon, "/data-src-version", theme, location, themeColor),
+      //   route: "/data-src-version",
+      //   shouldShow: checkPermission(
+      //     permissions,
+      //     PermissionsMap.DATA_SOURCE_VERSION,
+      //     "list"
+      //   ),
+      // },
       {
         name: "Entity",
         icon: createIcon(CheckBoxOutlineBlankIcon, "/entity", theme, location, themeColor),

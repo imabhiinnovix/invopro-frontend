@@ -65,7 +65,7 @@ export const NoErrorsDataTable: React.FC<Props> = ({
 
     const sample = rows[0]?.rowData || {};
 
-    const cols: GridColDef[] = Object.keys(sample).map((key) => ({
+    const cols: GridColDef[] = Object.keys(sample).filter((key) => !key.includes(".")).map((key) => ({
       field: key,
       headerName: key,
       minWidth: 180,
