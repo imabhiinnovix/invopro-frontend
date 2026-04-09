@@ -102,16 +102,23 @@ export default function ValidationErrors() {
     (item: any) => item?.dataSourceVersion?._id === id,
   );
   let isLatest = false;
+  let vendorId = "";
   if (dataSourceIdForPayload && dataSourceIdForPayload?._id) {
     isLatest = true;
+    vendorId = dataSourceIdForPayload.dataSourceVersion.vendorId;
   } else {
     dataSourceIdForPayload = commonDataSourceList?.find(
       (item: any) =>
         Array.isArray(item?.allDataSourceVersions) &&
         item.allDataSourceVersions.some((v: any) => v._id === id),
     );
+    if (dataSourceIdForPayload) {
+    const version = dataSourceIdForPayload.allDataSourceVersions.find(
+      (v: any) => v._id === id
+    );
+    vendorId = version?.vendorId || "";
   }
-  const vendorId = dataSourceIdForPayload?.dataSourceVersion?.vendorId || "";
+  }
 
   const { state } = useLocation();
   const isReportRequest = state?.isReportRequest;

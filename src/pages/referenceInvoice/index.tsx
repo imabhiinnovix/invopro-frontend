@@ -51,6 +51,24 @@ export default function ReferenceInvoice() {
     (ds: any) => ds?._id === dataSourceId
   );
 
+  const versionId = dataSourceVersionId;
+
+let fileUploadPath = "";
+
+if (currentDataSource?.dataSourceVersion?._id === versionId) {
+  // ✅ Current version
+  fileUploadPath = currentDataSource.dataSourceVersion.filePath || "";
+} else {
+  // ✅ Previous versions
+  const version = currentDataSource?.allDataSourceVersions?.find(
+    (v: any) => v._id === versionId
+  );
+
+  fileUploadPath = version?.filePath || "";
+}
+
+  
+
   useEffect(() => {
     const fetchEditData = async () => {
       if (!errorId || !dataSourceId || !dataSourceVersionId) return;
@@ -136,6 +154,21 @@ const finalVendorId: any = vendorId || derivedVendorId;
   const mergedFiles: FileItem[] = useMemo(() => {
     const files: FileItem[] = [];
 
+     // ✅ Add fileUploadPath FIRST
+  if (fileUploadPath) {
+    const url = `${import.meta.env.VITE_INVOICIVIX_BACKEND_URL}${fileUploadPath}`;
+    const name = fileUploadPath.split("/").pop() || "Invoice Sheet";
+
+    files.push({
+      label: `[Invoice Sheet] ${name}`,
+      url,
+      type:
+        name.endsWith(".xlsx") || name.endsWith(".xls")
+          ? "excel"
+          : "pdf",
+    });
+  }
+
     activityList?.data?.data?.forEach((item: any) => {
       if (!["disclosure", "portfolio"].includes(item.activityType)) return;
 
@@ -178,7 +211,7 @@ const finalVendorId: any = vendorId || derivedVendorId;
         const url = `${import.meta.env.VITE_INVOICIVIX_BACKEND_URL}${paths[i]}`;
 
         files.push({
-          label: `[Invoice] ${name}`,
+          label: `[Invoice PDF] ${name}`,
           url,
           type: "pdf",
         });

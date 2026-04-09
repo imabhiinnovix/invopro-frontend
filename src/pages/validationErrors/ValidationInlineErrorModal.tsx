@@ -286,9 +286,9 @@ export const ValidationInlineErrorModal: React.FC<ValidationInlineErrorModalProp
   };
 
   const isValidNumber = (value: string) => {
-    const numberRegex = /^[0-9]*$/;
-    return numberRegex.test(value);
-  };
+  const numberRegex = /^\d*\.?\d*$/;
+  return numberRegex.test(value);
+};
 
   // Build the rowData payload for both error codes
   const buildRowDataPayload = () => {
@@ -930,16 +930,21 @@ export const ValidationInlineErrorModal: React.FC<ValidationInlineErrorModalProp
     if (!effectiveDataSource?.entityId?.attributes) {
       return <Typography>No attributes available to display.</Typography>;
     }
+    const filteredAttributes = effectiveDataSource.entityId.attributes.filter(
+    (attr: any) =>
+      !attr.name?.startsWith("Converted|") &&
+      !attr.name?.startsWith("Validated|")
+  );
     const firstColumnAttributes =
-      effectiveDataSource.entityId.attributes.filter(
+     filteredAttributes.filter(
         (_, index) => index % 3 === 0
       );
     const secondColumnAttributes =
-      effectiveDataSource.entityId.attributes.filter(
+      filteredAttributes.filter(
         (_, index) => index % 3 === 1
       );
     const thirdColumnAttributes =
-      effectiveDataSource.entityId.attributes.filter(
+      filteredAttributes.filter(
         (_, index) => index % 3 === 2
       );
     return (
