@@ -219,7 +219,7 @@ const finalVendorId: any = vendorId || derivedVendorId;
     });
 
     return files;
-  }, [activityList.data, vendorInvoiceList.data]);
+  }, [activityList.data, vendorInvoiceList.data, fileUploadPath]);
 
   return (
     <Box display="flex" flexDirection="column" gap={4}>
