@@ -141,31 +141,58 @@ export const ErrorsDataTable: React.FC<Props> = ({
               validation: "V",
             };
 
-            // ✅ Build suffix (single only)
-            let suffix = "";
-            if (error && value !== undefined && value !== null && value !== "") {
-              const mapped = sourceMap[error.errorSource];
-              if (mapped) suffix = ` (${mapped})`;
-            }
+             const getErrorColor = (type: string) => {
+  switch (type) {
+    case "M":
+      return "#d32f2f"; // strong red
+    case "P":
+      return "#ff9800"; // orange
+    case "V":
+      return "#ffcdd2"; // light red (variant)
+    default:
+      return "#9e9e9e";
+  }
+};
 
-            // ✅ Normal value
-            const content = (
-              <Box>
-                <Typography component="span">
-                  {renderCellValue(value)}
-                </Typography>
+const getTextColor = (type: string) => {
+  return type === "V" ? "#b71c1c" : "#fff"; // darker text for light bg
+}; 
+const type = sourceMap[error?.errorSource];
+const bgColor = type ? getErrorColor(type) : undefined;
+const textColor = type ? getTextColor(type) : undefined;
 
-                {/* ✅ Only bracket highlighted */}
-                {suffix && (
-                  <Typography
-                    component="span"
-                    sx={{ color: "red", fontWeight: 500, ml: 0.5 }}
-                  >
-                    {suffix}
-                  </Typography>
-                )}
-              </Box>
-            );
+// ✅ Build suffix
+let suffix = "";
+if (error && value !== undefined && value !== null && value !== "") {
+  const mapped = sourceMap[error.errorSource];
+  if (mapped) suffix = mapped;
+}
+
+// ✅ Content
+const content = (
+  <Box>
+    <Typography component="span">
+      {renderCellValue(value)}
+    </Typography>
+
+    {suffix && (
+      <Typography
+        component="span"
+        sx={{
+          ml: 0.5,
+          px: 0.6,
+          borderRadius: "6px",
+          fontSize: "11px",
+          fontWeight: 600,
+          backgroundColor: bgColor,
+          color: textColor,
+        }}
+      >
+        {suffix}
+      </Typography>
+    )}
+  </Box>
+);
 
             // ✅ Tooltip (error message if exists)
             const tooltip = error?.errorMessage || getTooltipText(value);
