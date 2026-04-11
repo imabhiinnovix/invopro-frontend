@@ -33,6 +33,8 @@ interface ValidationNoErrorInlineErrorModalProps {
   handleCloseModal: () => void;
   refreshData: () => void;
   rowDetailData?: any;
+  triggerSave?: any;
+  onSaved?: () => void;
 }
 
 export const ValidationNoErrorInlineErrorModal: React.FC<ValidationNoErrorInlineErrorModalProps> = ({
@@ -43,6 +45,8 @@ export const ValidationNoErrorInlineErrorModal: React.FC<ValidationNoErrorInline
   handleCloseModal,
   refreshData,
   rowDetailData,
+  triggerSave,
+  onSaved
 }) => {
   const [formData, setFormData] = React.useState<Record<string, any>>({});
   const [fieldErrors, setFieldErrors] = React.useState<Record<string, string>>(
@@ -65,6 +69,17 @@ export const ValidationNoErrorInlineErrorModal: React.FC<ValidationNoErrorInline
   const updateDuplicateVersionRow = usePut(["updateDuplicateVersionRow"]);
 
   const [isResolved, setIsResolved] = React.useState(false);
+
+  React.useEffect(() => {
+  if (!triggerSave) return;
+
+  const run = async () => {
+    await handleSaveClick();
+    // onSaved?.();
+  };
+
+  run();
+}, [triggerSave]);
 
   // Helper function to normalize multioption values
   const normalizeMultiOptionValue = (
@@ -418,6 +433,7 @@ React.useEffect(() => {
       toast.success("Record updated successfully!");
       setIsResolved(true);
       refreshData();
+      onSaved?.();
     } catch (error: any) {
       console.error("Error updating record:", error);
       toast.error(

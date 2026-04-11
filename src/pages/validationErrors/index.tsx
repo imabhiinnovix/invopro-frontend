@@ -18,7 +18,7 @@ import { GET, POST } from "../../services/apiRoutes";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { toast } from "react-toastify";
 import { useQueryClient } from "@tanstack/react-query";
-import { ValidationErrorsDataTable } from "./ValidationErrorsDataTable";
+import { ErrorsDataTable } from "./ErrorsDataTable";
 import { ConfirmationDialog } from "../../components/common/deleteConfirmationDialog/ConfirmationDialog";
 import { useSelector } from "react-redux";
 import { RootState } from "../../reducers";
@@ -33,6 +33,7 @@ import IosShareIcon from "@mui/icons-material/IosShare";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { Tabs, Tab } from "@mui/material";
 import NoErrorLogs from "./NoErrorLogs";
+import ErrorLogs from "./ErrorLogs";
 
 export default function ValidationErrors() {
   const { id } = useParams<{ id: string }>();
@@ -169,7 +170,7 @@ export default function ValidationErrors() {
     // ✅ special condition
     if (rowData.dataSourceId === "699f04727df5e0efe12d5027") {
       const newTabUrl = `/reference-invoice?errorId=${rowData._id}&rowNumber=${rowData.rowNumber}&dataSourceVersionId=${rowData.dataSourceVersionId}&dataSourceId=${rowData.dataSourceId}${
-        vendorId ? `&vendorId=${vendorId}` : ""
+        vendorId ? `&vendorId=${vendorId}&isErrorLog=${rowData.isErrorLog > 0 ? 1 : 0}` : ""
       }`;
 
       window.open(newTabUrl, "_blank");
@@ -472,8 +473,8 @@ export default function ValidationErrors() {
       setSearchValue("");
     }}
   >
-    <Tab label="Error Logs" value="error" />
-    <Tab label="No Error Logs" value="noError" />
+    <Tab label="Errors" value="error" />
+    <Tab label="Resolved" value="noError" />
   </Tabs>
 </Box>
 {activeTab === "error" ? (
@@ -573,7 +574,7 @@ export default function ValidationErrors() {
             Total Records:{validationErrorList?.data?.totalUploadedRecords}
           </Box>
 
-          <ValidationErrorsDataTable
+          {/* <ValidationErrorsDataTable
             rows={validationErrorWithIds}
             paginationModel={paginationModel}
             setPaginationModel={setPaginationModel}
@@ -584,6 +585,16 @@ export default function ValidationErrors() {
             resetSelections={resetSelections}
             setResetSelections={setResetSelections}
             isLatest={isLatest}
+          /> */}
+          <ErrorLogs
+            id={id}
+            dataSourceId = {dataSourceIdForPayload?._id}
+            paginationModel={paginationModel}
+            setPaginationModel={setPaginationModel}
+            searchValue={searchValue}
+            setSearchValue={setSearchValue}
+            debouncedSearchValue={debouncedSearchValue}
+            handleEditRow={handleEditRow} // reuse same logic
           />
         </CardContent>
       </Card>

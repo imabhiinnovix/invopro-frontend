@@ -17,6 +17,7 @@ interface Props {
   rowCount: number;
   paginationModel: any;
   setPaginationModel: any;
+  validationErrorList: any;
   handleEditRow: (row: any) => void;
 }
 
@@ -43,21 +44,43 @@ const getTooltipText = (value: any) => {
   return String(value);
 };
 
-export const NoErrorsDataTable: React.FC<Props> = ({
+export const ErrorsDataTable: React.FC<Props> = ({
   rows,
   loading,
   rowCount,
   paginationModel,
   setPaginationModel,
+  validationErrorList,
   handleEditRow,
 }) => {
+
+  const errorMap = React.useMemo(() => {
+  const map: Record<string, Record<string, any>> = {};
+
+  const errors = validationErrorList?.data?.data || [];
+
+  errors.forEach((err: any) => {
+    const rowNum = err.rowNumber;
+    const attrName = err.attributeName?.trim();
+
+    if (!map[rowNum]) {
+      map[rowNum] = {};
+    }
+
+    map[rowNum][attrName] = err;
+  });
+
+  return map;
+}, [validationErrorList?.data]);
+
   // ✅ Flatten rowData
   const formattedRows = React.useMemo(() => {
-    return rows.map((row) => ({
-      ...row,
-      ...row.rowData,
-    }));
-  }, [rows]);
+  return rows.map((row) => ({
+    ...row,
+    ...row.rowData,
+    __errors: errorMap[row.rowNumber] || {}, // ✅ attach errors
+  }));
+}, [rows, errorMap]);
 
   // ✅ Dynamic Columns
   const dynamicColumns: GridColDef[] = React.useMemo(() => {
@@ -91,6 +114,9 @@ export const NoErrorsDataTable: React.FC<Props> = ({
           minWidth: 180,
           renderCell: (params: any) => {
             const value = params.value;
+            const field = params.field;
+            const rowErrors = params.row.__errors || {};
+            const error = rowErrors[field];
 
             if (loading && (value == null || value === "")) {
               return <Skeleton width="80%" />;
@@ -108,19 +134,53 @@ export const NoErrorsDataTable: React.FC<Props> = ({
               }
             }
 
-            const content = renderCellValue(value);
-            const tooltip = getTooltipText(value);
+            // ✅ Map source → short code
+            const sourceMap: Record<string, string> = {
+              master: "M",
+              portfolio: "P",
+              validation: "V",
+            };
+
+            // ✅ Build suffix (single only)
+            let suffix = "";
+            if (error && value !== undefined && value !== null && value !== "") {
+              const mapped = sourceMap[error.errorSource];
+              if (mapped) suffix = ` (${mapped})`;
+            }
+
+            // ✅ Normal value
+            const content = (
+              <Box>
+                <Typography component="span">
+                  {renderCellValue(value)}
+                </Typography>
+
+                {/* ✅ Only bracket highlighted */}
+                {suffix && (
+                  <Typography
+                    component="span"
+                    sx={{ color: "red", fontWeight: 500, ml: 0.5 }}
+                  >
+                    {suffix}
+                  </Typography>
+                )}
+              </Box>
+            );
+
+            // ✅ Tooltip (error message if exists)
+            const tooltip = error?.errorMessage || getTooltipText(value);
 
             const showTooltip =
               Array.isArray(value) ||
-              (typeof value === "string" && value.length > 30);
+              (typeof value === "string" && value.length > 30) ||
+              !!error;
 
             return showTooltip ? (
               <Tooltip title={tooltip}>
-                <Box>{content}</Box>
+                {content}
               </Tooltip>
             ) : (
-              <Box>{content}</Box>
+              content
             );
           },
         })),

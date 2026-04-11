@@ -33,6 +33,8 @@ interface ValidationInlineErrorModalProps {
   handleCloseModal: () => void;
   refreshData: () => void;
   rowDetailData?: any;
+  triggerSave?: any;
+  onSaved?: () => void;
 }
 
 export const ValidationInlineErrorModal: React.FC<ValidationInlineErrorModalProps> = ({
@@ -43,6 +45,8 @@ export const ValidationInlineErrorModal: React.FC<ValidationInlineErrorModalProp
   handleCloseModal,
   refreshData,
   rowDetailData,
+  triggerSave,
+  onSaved
 }) => {
   const [formData, setFormData] = React.useState<Record<string, any>>({});
   const [fieldErrors, setFieldErrors] = React.useState<Record<string, string>>(
@@ -65,6 +69,17 @@ export const ValidationInlineErrorModal: React.FC<ValidationInlineErrorModalProp
   const updateDuplicateVersionRow = usePut(["updateDuplicateVersionRow"]);
 
   const [isResolved, setIsResolved] = React.useState(false);
+
+React.useEffect(() => {
+  if (!triggerSave) return;
+
+  const run = async () => {
+    await handleSaveClick();
+    // onSaved?.();
+  };
+
+  run();
+}, [triggerSave]);
 
   // Helper function to normalize multioption values
   const normalizeMultiOptionValue = (
@@ -95,19 +110,51 @@ export const ValidationInlineErrorModal: React.FC<ValidationInlineErrorModalProp
     });
   };
 
+ const getErrorColor = (type: string) => {
+  switch (type) {
+    case "M":
+      return "#d32f2f"; // strong red
+    case "P":
+      return "#ff9800"; // orange
+    case "V":
+      return "#ffcdd2"; // light red (variant)
+    default:
+      return "#9e9e9e";
+  }
+};
+
+const getTextColor = (type: string) => {
+  return type === "V" ? "#b71c1c" : "#fff"; // darker text for light bg
+}; 
+
   // Handle exceptional cases for error codes "1003" and "1002"
-  React.useEffect(() => {
-    if (openModal) {
+React.useEffect(() => {
+  if (openModal && rowData?.length) {
+    rowData.forEach((row: any) => {
       setMatchedDataSource(null);
       setTargetAttribute(null);
+
+      const {
+        errorCode,
+        refDataSourceId,
+        dataSourceId,
+        refAttributeId,
+        errorSource
+      } = row;
+
       // Handle error code 1003
-      if ((errorCode === "1003" || errorCode === "1006" || errorCode === "1004") && refDataSourceId) {
+      if (
+        (errorCode === "1003" ||
+          errorCode === "1006" ||
+          errorCode === "1004") &&
+        refDataSourceId
+      ) {
         const matched = commonDataSourceList?.find(
           (ds) => ds._id === refDataSourceId
         );
         if (matched) {
           setMatchedDataSource(matched);
-          // Find the target attribute in the matched data source
+
           if (refAttributeId && matched.entityId?.attributes) {
             const attribute = matched.entityId.attributes.find(
               (attr: any) => attr._id === refAttributeId
@@ -118,14 +165,20 @@ export const ValidationInlineErrorModal: React.FC<ValidationInlineErrorModalProp
           }
         }
       }
+
       // Handle error code 1002
-      if ((errorCode === "1002" || errorCode === "1001" || errorCode === '1004') && dataSourceId) {
+      if (
+        (errorCode === "1002" ||
+          errorCode === "1001" ||
+          errorCode === "1004") &&
+        dataSourceId
+      ) {
         const matched = commonDataSourceList?.find(
           (ds) => ds._id === dataSourceId
         );
         if (matched) {
           setMatchedDataSource(matched);
-          // Find the target attribute in the matched data source
+
           if (refAttributeId && matched.entityId?.attributes) {
             const attribute = matched.entityId.attributes.find(
               (attr: any) => attr._id === refAttributeId
@@ -136,15 +189,9 @@ export const ValidationInlineErrorModal: React.FC<ValidationInlineErrorModalProp
           }
         }
       }
-    }
-  }, [
-    openModal,
-    errorCode,
-    refDataSourceId,
-    refAttributeId,
-    dataSourceId,
-    commonDataSourceList,
-  ]);
+    });
+  }
+}, [openModal, rowData, commonDataSourceList]);
 
   // Use effectiveDataSource that prioritizes matchedDataSource for error codes "1003" and "1002"
   const effectiveDataSource = matchedDataSource || currentDataSource;
@@ -217,14 +264,28 @@ export const ValidationInlineErrorModal: React.FC<ValidationInlineErrorModalProp
   };
 
   // Initialize form data when modal opens or row data changes
-  React.useEffect(() => {
-    if (rowData && openModal && effectiveDataSource?.entityId?.attributes) {
+ React.useEffect(() => {
+  if (rowData?.length && openModal && effectiveDataSource?.entityId?.attributes) {
+
+    rowData.forEach((row: any) => {
       const initialFormData: Record<string, any> = {};
 
+      const {
+        errorCode,
+        refAttributeId
+      } = row;
+
       // For error code 1002, get rowData from rowDetailData if available
-      let sourceData = rowData;
-      if ((errorCode === "1002" || errorCode === "1001" || errorCode === "1004" || errorCode === "1006") && rowDetailData) {
-        sourceData = rowDetailData?.rowData || rowData;
+      let sourceData = row;
+
+      if (
+        (errorCode === "1002" ||
+          errorCode === "1001" ||
+          errorCode === "1004" ||
+          errorCode === "1006") &&
+        rowDetailData
+      ) {
+        sourceData = rowDetailData?.rowData || row;
       }
 
       effectiveDataSource.entityId.attributes.forEach((attribute: any) => {
@@ -237,7 +298,7 @@ export const ValidationInlineErrorModal: React.FC<ValidationInlineErrorModalProp
           refAttributeId &&
           attribute._id === refAttributeId
         ) {
-          fieldValue = rowData.fileAttributeValue;
+          fieldValue = row.fileAttributeValue;
         }
 
         if (
@@ -245,17 +306,11 @@ export const ValidationInlineErrorModal: React.FC<ValidationInlineErrorModalProp
           fieldValue
         ) {
           const isoDate = safeDateToISOString(fieldValue);
-          console.log(
-            `Converted date for field ${fieldName}:`,
-            isoDate,
-            fieldValue
-          );
           initialFormData[fieldName] = isoDate || "";
         } else if (attribute.type === "boolean") {
           initialFormData[fieldName] =
             fieldValue === "true" || fieldValue === true;
         } else if (attribute.type === "multioption" && fieldValue) {
-          // Use the normalizeMultiOptionValue function
           const options = getOptionsForAttribute(attribute.optionAttributeId);
           const normalized = normalizeMultiOptionValue(fieldValue, options);
           initialFormData[fieldName] = normalized.map((item) => item.id);
@@ -269,16 +324,16 @@ export const ValidationInlineErrorModal: React.FC<ValidationInlineErrorModalProp
         initialFormData.dataSourceId = effectiveDataSource._id;
       }
 
+      // ⚠️ Same behavior: will overwrite each iteration (last row wins)
       setFormData(initialFormData);
-    }
-  }, [
-    rowData,
-    rowDetailData,
-    effectiveDataSource,
-    openModal,
-    errorCode,
-    refAttributeId,
-  ]);
+    });
+  }
+}, [
+  rowData,
+  rowDetailData,
+  effectiveDataSource,
+  openModal,
+]);
 
   const isValidEmail = (email: string) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -310,10 +365,10 @@ export const ValidationInlineErrorModal: React.FC<ValidationInlineErrorModalProp
           rowDataPayload[fieldName] = value ? "true" : "false";
         } else if (attribute.type === "multioption") {
           // Get the original value from the source data
-          let sourceData = rowData;
-          if ((errorCode === "1002" || errorCode === "1004") && rowDetailData) {
-            sourceData = rowDetailData?.rowData || rowData;
-          }
+          // let sourceData = rowData;
+          // if ((errorCode === "1002" || errorCode === "1004") && rowDetailData) {
+            let sourceData = rowDetailData?.rowData;
+          // }
 
           const originalValue = sourceData[fieldName];
 
@@ -339,50 +394,50 @@ export const ValidationInlineErrorModal: React.FC<ValidationInlineErrorModalProp
   // Convert form data to payload based on error code
   const convertToPayload = () => {
     const rowDataPayload = buildRowDataPayload();
-    if (errorCode === "1003") {
+    // if (errorCode === "1003") {
+    //   return {
+    //     errorDataSourceVersionId: rowData.dataSourceVersionId,
+    //     dataSourceId: rowData.refDataSourceId,
+    //     rowData: rowDataPayload,
+    //     isErrorResolved: true,
+    //     errorDataSourceId: rowData.dataSourceId,
+    //     fileAttributeValue: rowData.fileAttributeValue,
+    //     attributeName: rowData.attributeName,
+    //   };
+    // }else if (errorCode === "1006") {
+    //   return {
+    //     errorDataSourceVersionId: rowData.dataSourceVersionId,
+    //     dataSourceId: rowData.refDataSourceId,
+    //     rowData: rowDataPayload,
+    //     isErrorResolved: true,
+    //     errorDataSourceId: rowData.dataSourceId,
+    //     fileAttributeValue: rowData.fileAttributeValue,
+    //     attributeName: rowData.attributeName,
+    //     errorCode: rowData.errorCode
+    //   };
+    // }else if (errorCode === "1002" || errorCode === "1004") {
+    //   return {
+    //     action: "update",
+    //     rowData: rowDataPayload,
+    //     rowNumber: rowData._id,
+    //     dataSourceVersionId: rowData.dataSourceVersionId,
+    //     dataSourceId: rowData.dataSourceId,
+    //     attributeType: rowData.attributeType,
+    //     fileAttributeValue: rowData.fileAttributeValue,
+    //     attributeName: rowData.attributeName,
+    //   };
+    // } else if (errorCode === "1001") {
       return {
-        errorDataSourceVersionId: rowData.dataSourceVersionId,
-        dataSourceId: rowData.refDataSourceId,
+        action: "updateAll",
         rowData: rowDataPayload,
-        isErrorResolved: true,
-        errorDataSourceId: rowData.dataSourceId,
-        fileAttributeValue: rowData.fileAttributeValue,
-        attributeName: rowData.attributeName,
+        rowNumber: rowData[0]._id,
+        dataSourceVersionId: rowData[0].dataSourceVersionId,
+        dataSourceId: rowData[0].dataSourceId,
+        // attributeType: rowData.attributeType,
+        // fileAttributeValue: rowData.fileAttributeValue,
+        // attributeName: rowData.attributeName,
       };
-    }else if (errorCode === "1006") {
-      return {
-        errorDataSourceVersionId: rowData.dataSourceVersionId,
-        dataSourceId: rowData.refDataSourceId,
-        rowData: rowDataPayload,
-        isErrorResolved: true,
-        errorDataSourceId: rowData.dataSourceId,
-        fileAttributeValue: rowData.fileAttributeValue,
-        attributeName: rowData.attributeName,
-        errorCode: rowData.errorCode
-      };
-    }else if (errorCode === "1002" || errorCode === "1004") {
-      return {
-        action: "update",
-        rowData: rowDataPayload,
-        rowNumber: rowData._id,
-        dataSourceVersionId: rowData.dataSourceVersionId,
-        dataSourceId: rowData.dataSourceId,
-        attributeType: rowData.attributeType,
-        fileAttributeValue: rowData.fileAttributeValue,
-        attributeName: rowData.attributeName,
-      };
-    } else if (errorCode === "1001") {
-      return {
-        action: "update",
-        rowData: rowDataPayload,
-        rowNumber: rowData._id,
-        dataSourceVersionId: rowData.dataSourceVersionId,
-        dataSourceId: rowData.dataSourceId,
-        attributeType: rowData.attributeType,
-        fileAttributeValue: rowData.fileAttributeValue,
-        attributeName: rowData.attributeName,
-      };
-    }
+    // }
   };
 
   // Validate all required fields
@@ -449,6 +504,7 @@ export const ValidationInlineErrorModal: React.FC<ValidationInlineErrorModalProp
 
   const handleSaveClick = async () => {
     try {
+      console.log('dddddd');
       setSubmitAttempted(true);
       // First validate required fields
       if (!validateRequiredFields()) {
@@ -470,26 +526,78 @@ export const ValidationInlineErrorModal: React.FC<ValidationInlineErrorModalProp
         return;
       }
       const payload = convertToPayload();
-      if (errorCode === "1003") {
-        await updateVersionRow.mutateAsync({
-          url: `${POST.CREATE_VERSION_ROW}`,
-          payload,
-        });
-      }else if (errorCode === "1006") {
-        await updateDuplicateVersionRow.mutateAsync({
-          url: `${PUT.UPDATE_VERSION_ROW}/${rowData?.errorRowId}`,
-          payload,
-        });
-      }
-      else {
+      // if (errorCode === "1003") {
+      //   await updateVersionRow.mutateAsync({
+      //     url: `${POST.CREATE_VERSION_ROW}`,
+      //     payload,
+      //   });
+      // }else if (errorCode === "1006") {
+      //   await updateDuplicateVersionRow.mutateAsync({
+      //     url: `${PUT.UPDATE_VERSION_ROW}/${rowData?.errorRowId}`,
+      //     payload,
+      //   });
+      // }
+      // else {
         await updateVersionRow.mutateAsync({
           url: `${POST.RESOLVE_DATA_IMPORT_ERROR}`,
           payload,
         });
-      }
+      // }
       toast.success("Record updated successfully!");
       setIsResolved(true);
       refreshData();
+      onSaved?.();
+    } catch (error) {
+      console.error("Error updating record:", error);
+      toast.error(
+        `Error: ${error.message || "Something went wrong. Please try again."}`
+      );
+    }
+  };
+   const handleForceSaveClick = async () => {
+    try {
+      setSubmitAttempted(true);
+      // First validate required fields
+      if (!validateRequiredFields()) {
+        toast.error("Please fill required fields");
+        return;
+      }
+      // Then validate field types
+      let isValid = true;
+      effectiveDataSource?.entityId?.attributes.forEach((attribute: any) => {
+        const fieldName = attribute.name;
+        const value = formData[fieldName];
+        validateField(fieldName, value, attribute);
+        if (fieldErrors[fieldName]) {
+          isValid = false;
+        }
+      });
+      if (!isValid) {
+        toast.error("Please fix the errors in the form");
+        return;
+      }
+      const payload = convertToPayload();
+      // if (errorCode === "1003") {
+      //   await updateVersionRow.mutateAsync({
+      //     url: `${POST.CREATE_VERSION_ROW}`,
+      //     payload,
+      //   });
+      // }else if (errorCode === "1006") {
+      //   await updateDuplicateVersionRow.mutateAsync({
+      //     url: `${PUT.UPDATE_VERSION_ROW}/${rowData?.errorRowId}`,
+      //     payload,
+      //   });
+      // }
+      // else {
+        await updateVersionRow.mutateAsync({
+          url: `${POST.RESOLVE_DATA_IMPORT_ERROR}`,
+          payload: {...payload, isPortfolioErrorOverwrite: true},
+        });
+      // }
+      toast.success("Record updated successfully!");
+      setIsResolved(true);
+      refreshData();
+      onSaved?.();
     } catch (error) {
       console.error("Error updating record:", error);
       toast.error(
@@ -515,6 +623,449 @@ export const ValidationInlineErrorModal: React.FC<ValidationInlineErrorModalProp
     }
   };
 
+const errorMap = React.useMemo(() => {
+  const map: Record<string, string[]> = {};
+console.log('rowData',rowData);
+  (rowData || []).forEach((row: any) => {
+    if (
+      ["1001", "1002", "1004"].includes(row.errorCode) &&
+      row.refAttributeId
+    ) {
+      const short =
+        row.errorSource === "master"
+          ? "M"
+          : row.errorSource === "portfolio"
+          ? "P"
+          : row.errorSource === "validation"
+          ? "V"
+          : "";
+
+      if (!map[row.refAttributeId]) {
+        map[row.refAttributeId] = [];
+      }
+
+      if (short && !map[row.refAttributeId].includes(short)) {
+        map[row.refAttributeId].push(short);
+      }
+    }
+  });
+
+  return map;
+}, [rowData]);
+
+const isForceSubmit = Object.values(errorMap).some((arr) =>
+  arr.includes("P")
+);
+  // const renderAttributeField = (attribute: any) => {
+  //   const fieldName = attribute.name;
+  //   const fieldLabel = attribute.label;
+  //   const fieldType = attribute.type;
+  //   const fieldValue = formData[fieldName];
+  //   const hasError = fieldErrors[fieldName];
+  //   const isRequired = attribute.required;
+  //   const options = attributeOptions[attribute.optionAttributeId] || [];
+
+  //   // Check if this is the target attribute for error codes 1003 or 1002
+  //   const isTargetAttributeFor1003 =
+  //     (errorCode === "1003" || errorCode === "1006") &&
+  //     refAttributeId &&
+  //     attribute._id === refAttributeId;
+
+  //   const isTargetAttributeFor1002 =
+  //     (errorCode === "1002" || errorCode === "1004") &&
+  //     refAttributeId &&
+  //     attribute._id === refAttributeId;
+
+  //   const isTargetAttributeFor1001 =
+  //     errorCode === "1001" &&
+  //     refAttributeId &&
+  //     attribute._id === refAttributeId;
+
+  //   // Disable the field only for error code 1003 target attribute
+  //   const isDisabled = isTargetAttributeFor1003;
+
+  //   // Highlight for both 1003 and 1002
+  //   const isTargetAttribute =
+  //     isTargetAttributeFor1003 ||
+  //     isTargetAttributeFor1002 ||
+  //     isTargetAttributeFor1001;
+
+  //   const renderLabel = (label: string) => (
+  //     <React.Fragment>
+  //       {label}
+  //       {isRequired && (
+  //         <Typography
+  //           component="span"
+  //           sx={{ color: "red" }}
+  //         >
+  //           {" *"}
+  //         </Typography>
+  //       )}
+  //       {isTargetAttributeFor1003 && (
+  //         <Typography
+  //           component="span"
+  //           sx={{
+  //             color: STYLE_GUIDE?.COLORS?.primaryDark,
+  //             fontWeight: "bold",
+  //             ml: 1,
+  //           }}
+  //         >
+  //           (Error Field - Disabled)
+  //         </Typography>
+  //       )}
+  //       {(isTargetAttributeFor1002 || isTargetAttributeFor1001) && (
+  //         <Typography
+  //           component="span"
+  //           sx={{
+  //             color: STYLE_GUIDE?.COLORS?.primaryDark,
+  //             fontWeight: "bold",
+  //             ml: 1,
+  //           }}
+  //         >
+  //           (Error Field)
+  //         </Typography>
+  //       )}
+  //     </React.Fragment>
+  //   );
+
+  //   switch (fieldType) {
+  //     case "boolean":
+  //       return (
+  //         <FormControlLabel
+  //           key={fieldName}
+  //           control={
+  //             <Checkbox
+  //               checked={!!fieldValue}
+  //               onChange={(e) =>
+  //                 !isDisabled &&
+  //                 handleFieldChange(fieldName, e.target.checked, attribute)
+  //               }
+  //               disabled={isDisabled}
+  //             />
+  //           }
+  //           label={renderLabel(fieldLabel)}
+  //           sx={{
+  //             mb: 1,
+  //             ...(isTargetAttribute && {
+  //               backgroundColor: isTargetAttributeFor1003
+  //                 ? "rgba(200, 200, 200, 0.3)"
+  //                 : "rgba(255, 235, 238, 0.5)",
+  //               p: 1,
+  //               borderRadius: "4px",
+  //             }),
+  //           }}
+  //         />
+  //       );
+  //     case "option":
+  //       const optionOptions = getOptionsForAttribute(
+  //         attribute.optionAttributeId
+  //       );
+  //       const selectedOption = optionOptions.find(
+  //         (option) => option.id === fieldValue
+  //       );
+  //       const isReference = !!attribute.referenceEntitySetting;
+  //       return (
+  //         <Autocomplete
+  //           freeSolo={!isReference}
+  //           key={fieldName}
+  //           options={optionOptions}
+  //           getOptionLabel={(option) => {
+  //             if (typeof option === "string") {
+  //               return option;
+  //             }
+  //             return option.label || "";
+  //           }}
+  //           value={selectedOption || ""}
+  //           onChange={(e, value) => {
+  //             if (!isDisabled) {
+  //               if (typeof value === "string") {
+  //                 handleFieldChange(fieldName, value, attribute);
+  //               } else if (value && value.id) {
+  //                 handleFieldChange(fieldName, value.id, attribute);
+  //               } else {
+  //                 handleFieldChange(fieldName, "", attribute);
+  //               }
+  //             }
+  //           }}
+  //           disabled={isDisabled}
+  //           renderInput={(params) => (
+  //             <TextField
+  //               {...params}
+  //               label={renderLabel(fieldLabel)}
+  //               variant="outlined"
+  //               fullWidth
+  //               size="small"
+  //               error={!!hasError}
+  //               helperText={fieldErrors[fieldName] || ""}
+  //               sx={{
+  //                 "& .MuiOutlinedInput-root": {
+  //                   borderRadius: "8px",
+  //                   ...(isTargetAttribute && {
+  //                     backgroundColor: isTargetAttributeFor1003
+  //                       ? "rgba(200, 200, 200, 0.3)"
+  //                       : "rgba(255, 235, 238, 0.5)",
+  //                   }),
+  //                 },
+  //               }}
+  //               placeholder={isReference ? "Select option" : "Type or select"}
+  //             />
+  //           )}
+  //           renderOption={(props, option) => {
+  //             const { key, ...otherProps } = props;
+  //             return (
+  //               <li
+  //                 key={typeof option === "string" ? option : option.id}
+  //                 {...otherProps}
+  //               >
+  //                 {typeof option === "string" ? option : option.label}
+  //               </li>
+  //             );
+  //           }}
+  //           renderTags={(value, getTagProps) => {
+  //             if (!value) return null;
+  //             return (
+  //               <Chip
+  //                 label={typeof value === "string" ? value : value.label}
+  //                 {...getTagProps({})}
+  //                 size="small"
+  //                 disabled={isDisabled}
+  //                 onDelete={() => {
+  //                   if (!isDisabled) {
+  //                     handleFieldChange(fieldName, "", attribute);
+  //                   }
+  //                 }}
+  //               />
+  //             );
+  //           }}
+  //         />
+  //       );
+  //     case "multioption":
+  //       const multioptionOptions = getOptionsForAttribute(
+  //         attribute.optionAttributeId
+  //       );
+
+  //       // Get the array of IDs from form data
+  //       const selectedIds = formData[fieldName] || [];
+  //       // Convert IDs to full option objects
+  //       // const selectedOptions = selectedIds.map((id: string) => {
+  //       //   const option = multioptionOptions.find((opt) => opt.id === id);
+  //       //   return option || { id, label: id };
+  //       // });
+  //       const selectedOptions = selectedIds
+  //                       .map((id: string) =>
+  //                         multioptionOptions.find((opt) => opt.id === id)
+  //                       )
+  //                       .filter(Boolean); // removes invalid values
+
+
+  //       const isReferenceMulti = !!attribute.referenceEntitySetting;
+  //       return (
+  //         <Autocomplete
+  //           multiple
+  //           freeSolo={!isReferenceMulti}
+  //           key={fieldName}
+  //           options={multioptionOptions}
+  //           getOptionLabel={(option) => {
+  //             if (typeof option === "string") {
+  //               return option;
+  //             }
+  //             return option.label || "";
+  //           }}
+  //           value={selectedOptions || ""}
+  //           onChange={(e, value) => {
+  //             if (!isDisabled) {
+  //               const values = value.map((item) => {
+  //                 if (typeof item === "string") {
+  //                   return item;
+  //                 }
+  //                 return item.id;
+  //               });
+  //               handleFieldChange(fieldName, values, attribute);
+  //             }
+  //           }}
+  //           disabled={isDisabled}
+  //           renderInput={(params) => (
+  //             <TextField
+  //               {...params}
+  //               label={renderLabel(fieldLabel)}
+  //               variant="outlined"
+  //               fullWidth
+  //               size="small"
+  //               error={!!hasError}
+  //               helperText={fieldErrors[fieldName] || ""}
+  //               sx={{
+  //                 "& .MuiOutlinedInput-root": {
+  //                   borderRadius: "8px",
+  //                   ...(isTargetAttribute && {
+  //                     backgroundColor: isTargetAttributeFor1003
+  //                       ? "rgba(200, 200, 200, 0.3)"
+  //                       : "rgba(255, 235, 238, 0.5)",
+  //                   }),
+  //                 },
+  //               }}
+  //               placeholder={
+  //                 isReferenceMulti ? "Select option" : "Type or select"
+  //               }
+  //             />
+  //           )}
+  //           renderTags={(value, getTagProps) =>
+  //             value.map((option, index) => (
+  //               <Chip
+  //                 key={`${option.id}-${index}`} // Add unique key to prevent duplicates
+  //                 label={typeof option === "string" ? option : option.label}
+  //                 {...getTagProps({ index })}
+  //                 size="small"
+  //                 disabled={isDisabled}
+  //                 onDelete={() => {
+  //                   if (!isDisabled) {
+  //                     // Remove the specific option when chip is deleted
+  //                     const currentValues = formData[fieldName] || [];
+  //                     const newValues = currentValues.filter(
+  //                       (id: string) => id !== option.id
+  //                     );
+  //                     handleFieldChange(fieldName, newValues, attribute);
+  //                   }
+  //                 }}
+  //               />
+  //             ))
+  //           }
+  //         />
+  //       );
+  //     case "date":
+  //     case "date-range":
+  //       const dateValue = fieldValue ? dayjs(fieldValue) : null;
+  //       return (
+  //         <LocalizationProvider key={fieldName} dateAdapter={AdapterDayjs}>
+  //           <DatePicker
+  //             label={renderLabel(fieldLabel)}
+  //             value={dateValue && dateValue.isValid() ? dateValue : null}
+  //             onChange={(date) => {
+  //               if (!isDisabled) {
+  //                 handleFieldChange(
+  //                   fieldName,
+  //                   date ? date.toISOString() : "",
+  //                   attribute
+  //                 );
+  //               }
+  //             }}
+  //             format="DD/MM/YYYY"
+  //             disabled={isDisabled}
+  //             slotProps={{
+  //               textField: {
+  //                 variant: "outlined",
+  //                 fullWidth: true,
+  //                 size: "small",
+  //                 error: !!hasError,
+  //                 helperText: fieldErrors[fieldName] || "",
+  //                 sx: {
+  //                   "& .MuiOutlinedInput-root": {
+  //                     borderRadius: "8px",
+  //                     ...(isTargetAttribute && {
+  //                       backgroundColor: isTargetAttributeFor1003
+  //                         ? "rgba(200, 200, 200, 0.3)"
+  //                         : "rgba(255, 235, 238, 0.5)",
+  //                     }),
+  //                   },
+  //                 },
+  //               },
+  //             }}
+  //           />
+  //         </LocalizationProvider>
+  //       );
+  //     case "number":
+  //       return (
+  //         <TextField
+  //           key={fieldName}
+  //           label={renderLabel(fieldLabel)}
+  //           type="number"
+  //           value={fieldValue || ""}
+  //           onChange={(e) => {
+  //             if (!isDisabled) {
+  //               const value = e.target.value;
+  //               if (value === "" || isValidNumber(value)) {
+  //                 handleFieldChange(fieldName, value, attribute);
+  //               }
+  //             }
+  //           }}
+  //           disabled={isDisabled}
+  //           variant="outlined"
+  //           fullWidth
+  //           size="small"
+  //           error={!!hasError}
+  //           helperText={fieldErrors[fieldName] || ""}
+  //           sx={{
+  //             "& .MuiOutlinedInput-root": {
+  //               borderRadius: "8px",
+  //               ...(isTargetAttribute && {
+  //                 backgroundColor: isTargetAttributeFor1003
+  //                   ? "rgba(200, 200, 200, 0.3)"
+  //                   : "rgba(255, 235, 238, 0.5)",
+  //               }),
+  //             },
+  //           }}
+  //         />
+  //       );
+  //     case "email":
+  //       return (
+  //         <TextField
+  //           key={fieldName}
+  //           label={renderLabel(fieldLabel)}
+  //           type="email"
+  //           value={fieldValue || ""}
+  //           onChange={(e) => {
+  //             if (!isDisabled) {
+  //               handleFieldChange(fieldName, e.target.value, attribute);
+  //             }
+  //           }}
+  //           disabled={isDisabled}
+  //           variant="outlined"
+  //           fullWidth
+  //           size="small"
+  //           error={!!hasError}
+  //           helperText={fieldErrors[fieldName] || ""}
+  //           sx={{
+  //             "& .MuiOutlinedInput-root": {
+  //               borderRadius: "8px",
+  //               ...(isTargetAttribute && {
+  //                 backgroundColor: isTargetAttributeFor1003
+  //                   ? "rgba(200, 200, 200, 0.3)"
+  //                   : "rgba(255, 235, 238, 0.5)",
+  //               }),
+  //             },
+  //           }}
+  //         />
+  //       );
+  //     default:
+  //       return (
+  //         <TextField
+  //           key={fieldName}
+  //           label={renderLabel(fieldLabel)}
+  //           value={fieldValue || ""}
+  //           onChange={(e) => {
+  //             if (!isDisabled) {
+  //               handleFieldChange(fieldName, e.target.value, attribute);
+  //             }
+  //           }}
+  //           disabled={isDisabled}
+  //           variant="outlined"
+  //           fullWidth
+  //           size="small"
+  //           error={!!hasError}
+  //           helperText={fieldErrors[fieldName] || ""}
+  //           sx={{
+  //             "& .MuiOutlinedInput-root": {
+  //               borderRadius: "8px",
+  //               ...(isTargetAttribute && {
+  //                 backgroundColor: isTargetAttributeFor1003
+  //                   ? "rgba(200, 200, 200, 0.3)"
+  //                   : "rgba(255, 235, 238, 0.5)",
+  //               }),
+  //             },
+  //           }}
+  //         />
+  //       );
+  //   }
+  // };
   const renderAttributeField = (attribute: any) => {
     const fieldName = attribute.name;
     const fieldLabel = attribute.label;
@@ -524,69 +1075,38 @@ export const ValidationInlineErrorModal: React.FC<ValidationInlineErrorModalProp
     const isRequired = attribute.required;
     const options = attributeOptions[attribute.optionAttributeId] || [];
 
-    // Check if this is the target attribute for error codes 1003 or 1002
-    const isTargetAttributeFor1003 =
-      (errorCode === "1003" || errorCode === "1006") &&
-      refAttributeId &&
-      attribute._id === refAttributeId;
+   const errorShortForms = errorMap[attribute._id] || [];
+const isTargetAttribute = errorShortForms.length > 0;
+const isDisabled = false; // no disable now
 
-    const isTargetAttributeFor1002 =
-      (errorCode === "1002" || errorCode === "1004") &&
-      refAttributeId &&
-      attribute._id === refAttributeId;
+   const renderLabel = (label: string) => (
+  <>
+    {label}
+    {isRequired && (
+      <Typography component="span" sx={{ color: "red" }}>
+        {" *"}
+      </Typography>
+    )}
 
-    const isTargetAttributeFor1001 =
-      errorCode === "1001" &&
-      refAttributeId &&
-      attribute._id === refAttributeId;
-
-    // Disable the field only for error code 1003 target attribute
-    const isDisabled = isTargetAttributeFor1003;
-
-    // Highlight for both 1003 and 1002
-    const isTargetAttribute =
-      isTargetAttributeFor1003 ||
-      isTargetAttributeFor1002 ||
-      isTargetAttributeFor1001;
-
-    const renderLabel = (label: string) => (
-      <React.Fragment>
-        {label}
-        {isRequired && (
-          <Typography
-            component="span"
-            sx={{ color: "red" }}
-          >
-            {" *"}
-          </Typography>
-        )}
-        {isTargetAttributeFor1003 && (
-          <Typography
-            component="span"
+    {isTargetAttribute && (
+      <Box component="span" sx={{ ml: 1, display: "inline-flex", gap: 0.5 }}>
+        {errorShortForms.map((type: string) => (
+          <Chip
+            key={type}
+            label={type}
+            size="small"
             sx={{
-              color: STYLE_GUIDE?.COLORS?.primaryDark,
-              fontWeight: "bold",
-              ml: 1,
+              height: 20,
+              fontSize: "12px",
+              backgroundColor: getErrorColor(type),
+              color: getTextColor(type),
             }}
-          >
-            (Error Field - Disabled)
-          </Typography>
-        )}
-        {(isTargetAttributeFor1002 || isTargetAttributeFor1001) && (
-          <Typography
-            component="span"
-            sx={{
-              color: STYLE_GUIDE?.COLORS?.primaryDark,
-              fontWeight: "bold",
-              ml: 1,
-            }}
-          >
-            (Error Field)
-          </Typography>
-        )}
-      </React.Fragment>
-    );
-
+          />
+        ))}
+      </Box>
+    )}
+  </>
+);
     switch (fieldType) {
       case "boolean":
         return (
@@ -606,9 +1126,9 @@ export const ValidationInlineErrorModal: React.FC<ValidationInlineErrorModalProp
             sx={{
               mb: 1,
               ...(isTargetAttribute && {
-                backgroundColor: isTargetAttributeFor1003
-                  ? "rgba(200, 200, 200, 0.3)"
-                  : "rgba(255, 235, 238, 0.5)",
+                              backgroundColor: isTargetAttribute
+                ? "rgba(255, 235, 238, 0.5)"
+                : undefined,
                 p: 1,
                 borderRadius: "4px",
               }),
@@ -660,9 +1180,9 @@ export const ValidationInlineErrorModal: React.FC<ValidationInlineErrorModalProp
                   "& .MuiOutlinedInput-root": {
                     borderRadius: "8px",
                     ...(isTargetAttribute && {
-                      backgroundColor: isTargetAttributeFor1003
-                        ? "rgba(200, 200, 200, 0.3)"
-                        : "rgba(255, 235, 238, 0.5)",
+                      backgroundColor: isTargetAttribute
+  ? "rgba(255, 235, 238, 0.5)"
+  : undefined,
                     }),
                   },
                 }}
@@ -756,9 +1276,9 @@ export const ValidationInlineErrorModal: React.FC<ValidationInlineErrorModalProp
                   "& .MuiOutlinedInput-root": {
                     borderRadius: "8px",
                     ...(isTargetAttribute && {
-                      backgroundColor: isTargetAttributeFor1003
-                        ? "rgba(200, 200, 200, 0.3)"
-                        : "rgba(255, 235, 238, 0.5)",
+                     backgroundColor: isTargetAttribute
+  ? "rgba(255, 235, 238, 0.5)"
+  : undefined,
                     }),
                   },
                 }}
@@ -820,9 +1340,9 @@ export const ValidationInlineErrorModal: React.FC<ValidationInlineErrorModalProp
                     "& .MuiOutlinedInput-root": {
                       borderRadius: "8px",
                       ...(isTargetAttribute && {
-                        backgroundColor: isTargetAttributeFor1003
-                          ? "rgba(200, 200, 200, 0.3)"
-                          : "rgba(255, 235, 238, 0.5)",
+                        backgroundColor: isTargetAttribute
+  ? "rgba(255, 235, 238, 0.5)"
+  : undefined,
                       }),
                     },
                   },
@@ -856,9 +1376,9 @@ export const ValidationInlineErrorModal: React.FC<ValidationInlineErrorModalProp
               "& .MuiOutlinedInput-root": {
                 borderRadius: "8px",
                 ...(isTargetAttribute && {
-                  backgroundColor: isTargetAttributeFor1003
-                    ? "rgba(200, 200, 200, 0.3)"
-                    : "rgba(255, 235, 238, 0.5)",
+                 backgroundColor: isTargetAttribute
+  ? "rgba(255, 235, 238, 0.5)"
+  : undefined,
                 }),
               },
             }}
@@ -886,9 +1406,9 @@ export const ValidationInlineErrorModal: React.FC<ValidationInlineErrorModalProp
               "& .MuiOutlinedInput-root": {
                 borderRadius: "8px",
                 ...(isTargetAttribute && {
-                  backgroundColor: isTargetAttributeFor1003
-                    ? "rgba(200, 200, 200, 0.3)"
-                    : "rgba(255, 235, 238, 0.5)",
+                  backgroundColor: isTargetAttribute
+  ? "rgba(255, 235, 238, 0.5)"
+  : undefined,
                 }),
               },
             }}
@@ -915,9 +1435,9 @@ export const ValidationInlineErrorModal: React.FC<ValidationInlineErrorModalProp
               "& .MuiOutlinedInput-root": {
                 borderRadius: "8px",
                 ...(isTargetAttribute && {
-                  backgroundColor: isTargetAttributeFor1003
-                    ? "rgba(200, 200, 200, 0.3)"
-                    : "rgba(255, 235, 238, 0.5)",
+                 backgroundColor: isTargetAttribute
+  ? "rgba(255, 235, 238, 0.5)"
+  : undefined,
                 }),
               },
             }}
@@ -991,9 +1511,18 @@ return (
       </Typography>
 
       {/* Save button top-right */}
-      <StyledButton variant="primary" onClick={handleSaveClick} disabled={isResolved}>
+      {isForceSubmit && (
+        <StyledButton
+          variant="primary"
+          onClick={handleForceSaveClick}
+          disabled={isResolved}
+        >
+          Force Save
+        </StyledButton>
+      )}
+      {/* <StyledButton variant="primary" onClick={handleSaveClick} disabled={isResolved}>
         Save
-      </StyledButton>
+      </StyledButton> */}
     </Box>
 
     {/* Content */}
