@@ -234,6 +234,12 @@ export const ErrorsDataTable: React.FC<Props> = ({
       ) : (
         <Typography align="center">No Data Available</Typography>
       )}
+       <>
+          <Typography variant="body2">
+            {validationErrorList.data?.totalResolvedRecords} of{" "}
+            {validationErrorList.data?.totalErrorRecords} Resolved
+          </Typography>
+        </>
     </PageCardLayout>
   );
 };
