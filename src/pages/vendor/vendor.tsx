@@ -15,6 +15,7 @@ import {
   Badge,
   Divider,
   InputAdornment,
+  Chip,
 } from "@mui/material";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
@@ -1726,23 +1727,102 @@ if (uploadedEngagementFile && vendorId) {
                     </Box>
                   </Grid>
                    <Grid size={6}>
-                    <Box sx={{ display: "flex", alignItems: "center" }}>
-                      <Controller
-                        name="aliasName"
-                        control={control}
-                        defaultValue={selectedOrg?.name}
-                        render={({ field }) => (
-                          <TextField
-                            {...field}
-                            label="Alias Name"
-                            fullWidth
-                            error={!!errors.name}
-                            helperText={errors.name?.message}
-                          />
-                        )}
-                      />
-                    </Box>
-                  </Grid>
+  <Box sx={{ display: "flex", alignItems: "center" }}>
+    <Controller
+      name="aliasName"
+      control={control}
+      defaultValue={selectedOrg?.aliasName || []}
+      render={({ field }) => (
+        <Autocomplete
+          multiple
+          freeSolo
+          options={[]} // no predefined options
+          value={field.value || []}
+          onChange={(e, val) => field.onChange(val)}
+
+          sx={{
+            width: "100%",
+
+            // ✅ MAIN container (chips + input)
+            "& .MuiAutocomplete-inputRoot": {
+              alignItems: "flex-start",
+              flexWrap: "wrap",
+
+              height: "auto",
+              minHeight: "40px",
+
+              maxHeight: "120px",   // 🔥 limit height
+              overflowY: "auto",    // 🔥 scroll after limit
+            },
+
+            // ✅ Input root
+            "& .MuiOutlinedInput-root": {
+              borderRadius: "8px",
+              alignItems: "flex-start",
+              flexWrap: "wrap",
+              height: "auto",
+            },
+
+            // 🔥 FIX: stretch border
+            "& .MuiOutlinedInput-notchedOutline": {
+              height: "100%",
+            },
+
+            "& .MuiAutocomplete-input": {
+              minWidth: "120px",
+            },
+
+            "& .MuiAutocomplete-tag": {
+              margin: "2px",
+              maxWidth: "100%",
+            },
+          }}
+
+          renderTags={(value, getTagProps) =>
+            value.map((option: string, index: number) => (
+              <Chip
+                {...getTagProps({ index })}
+                key={index}
+                label={option}
+                sx={{
+                  maxWidth: "150px",
+
+                  "& .MuiChip-label": {
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
+                  },
+                }}
+              />
+            ))
+          }
+
+          renderInput={(params) => (
+            <TextField
+              {...params}
+              label="Alias Name"
+              placeholder="Type and press Enter"
+              error={!!errors.aliasName}
+              helperText={errors.aliasName?.message}
+              sx={{
+                "& .MuiOutlinedInput-root": {
+                  alignItems: "flex-start",
+                  flexWrap: "wrap",
+                  height: "auto",
+                },
+
+                // 🔥 IMPORTANT: border stretch here also
+                "& .MuiOutlinedInput-notchedOutline": {
+                  height: "100%",
+                },
+              }}
+            />
+          )}
+        />
+      )}
+    />
+  </Box>
+</Grid>
 
                   <Grid size={6}>
                     <Box sx={{ display: "flex", alignItems: "center" }}>

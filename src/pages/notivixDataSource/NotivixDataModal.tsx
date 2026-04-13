@@ -428,72 +428,192 @@ export const NotivixDataModal: React.FC<ModelSectionProps> = ({
       }
 
       case "multioption": {
-        const options = getOptionsForAttribute(attribute.optionAttributeId);
-        const selectedOptions = normalizeMultiOptionValue(value, options);
-        const isReferenceMulti = !!attribute.referenceEntitySetting;
+  const options = getOptionsForAttribute(attribute.optionAttributeId);
 
-        return (
-          <Autocomplete
-            multiple
-            freeSolo={!isReferenceMulti}
-            key={fieldName}
-            options={options}
-            value={selectedOptions}
-            onChange={(e, val) =>
-              handleFieldChange(
-                val.map((item) => (typeof item === "string" ? item : item.id))
-              )
-            }
-            onInputChange={(e, newInputValue, reason) => {
-              if (!isReferenceMulti && reason === "input") {
-                handleFieldChange(newInputValue);
-              }
-            }}
-            disabled={!isFieldEditable}
-            renderTags={(value, getTagProps) =>
-              value.map((option, index) => (
-                <Chip
-                  key={index}
-                  label={typeof option === "string" ? option : option.label}
-                  {...getTagProps({ index })}
-                  sx={{
-                    color: "#000000ff",
-                    fontWeight: 500,
-                    opacity: 1,
-                    pointerEvents: !isFieldEditable ? "none" : "auto",
-                    "& .MuiChip-deleteIcon": {
-                      display: !isFieldEditable ? "none" : "block",
-                    },
-                    backgroundColor: !isFieldEditable ? "#cfcfcf" : "#fdeeee",
-                    border: !isFieldEditable ? "1px solid #b3b3b3" : "none",
-                  }}
-                />
-              ))
-            }
-            sx={{
-              "& .MuiOutlinedInput-root": { borderRadius: "8px" },
-            }}
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                label={renderLabel(fieldLabel)}
-                variant="outlined"
-                fullWidth
-                size="small"
-                error={!!fieldErrors[fieldName]}
-                helperText={fieldErrors[fieldName] || ""}
-                placeholder={
-                  !isFieldEditable
-                    ? ""
-                    : isReferenceMulti
-                    ? "Select option"
-                    : "Type or select"
-                }
-              />
-            )}
-          />
-        );
+  const selectedOptions = normalizeMultiOptionValue(value || [], options);
+  const isReferenceMulti = !!attribute.referenceEntitySetting;
+
+  return (
+    <Autocomplete
+      multiple
+      freeSolo={!isReferenceMulti}
+      key={fieldName}
+      options={options}
+      value={selectedOptions}
+      onChange={(e, val) =>
+        handleFieldChange(
+          val.map((item) => (typeof item === "string" ? item : item.id))
+        )
       }
+      disabled={!isFieldEditable}
+
+      sx={{
+        // ✅ MAIN container (chips + input)
+        "& .MuiAutocomplete-inputRoot": {
+          alignItems: "flex-start",
+          flexWrap: "wrap",
+
+          height: "auto",
+          minHeight: "40px",
+
+          maxHeight: "120px",
+          overflowY: "auto",
+        },
+
+        // ✅ Outlined root
+        "& .MuiOutlinedInput-root": {
+          borderRadius: "8px",
+          alignItems: "flex-start",
+          flexWrap: "wrap",
+          height: "auto",
+        },
+
+        // 🔥 THIS FIXES BORDER STRETCH
+        "& .MuiOutlinedInput-notchedOutline": {
+          height: "100%",   // ✅ stretch border with content
+        },
+
+        "& .MuiAutocomplete-input": {
+          minWidth: "120px",
+        },
+
+        "& .MuiAutocomplete-tag": {
+          margin: "2px",
+          maxWidth: "100%",
+        },
+      }}
+
+      renderTags={(value, getTagProps) =>
+        value.map((option, index) => (
+          <Chip
+            key={index}
+            label={typeof option === "string" ? option : option.label}
+            {...getTagProps({ index })}
+            sx={{
+              color: "#000",
+              fontWeight: 500,
+              pointerEvents: !isFieldEditable ? "none" : "auto",
+
+              backgroundColor: !isFieldEditable ? "#cfcfcf" : "#fdeeee",
+              border: !isFieldEditable ? "1px solid #b3b3b3" : "none",
+
+              maxWidth: "150px",
+
+              "& .MuiChip-label": {
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap",
+              },
+
+              "& .MuiChip-deleteIcon": {
+                display: !isFieldEditable ? "none" : "block",
+              },
+            }}
+          />
+        ))
+      }
+
+      renderInput={(params) => (
+        <TextField
+          {...params}
+          label={renderLabel(fieldLabel)}
+          variant="outlined"
+          fullWidth
+          size="small"
+          error={!!fieldErrors[fieldName]}
+          helperText={fieldErrors[fieldName] || ""}
+          placeholder={
+            !isFieldEditable
+              ? ""
+              : isReferenceMulti
+              ? "Select option"
+              : "Type or select"
+          }
+          sx={{
+            "& .MuiOutlinedInput-root": {
+              alignItems: "flex-start",
+              flexWrap: "wrap",
+              height: "auto",
+            },
+
+            // 🔥 ALSO ensure outline stretches here
+            "& .MuiOutlinedInput-notchedOutline": {
+              height: "100%",
+            },
+          }}
+        />
+      )}
+    />
+  );
+}
+
+      // case "multioption": {
+      //   const options = getOptionsForAttribute(attribute.optionAttributeId);
+      //   const selectedOptions = normalizeMultiOptionValue(value, options);
+      //   const isReferenceMulti = !!attribute.referenceEntitySetting;
+
+      //   return (
+      //     <Autocomplete
+      //       multiple
+      //       freeSolo={!isReferenceMulti}
+      //       key={fieldName}
+      //       options={options}
+      //       value={selectedOptions}
+      //       onChange={(e, val) =>
+      //         handleFieldChange(
+      //           val.map((item) => (typeof item === "string" ? item : item.id))
+      //         )
+      //       }
+      //       onInputChange={(e, newInputValue, reason) => {
+      //         if (!isReferenceMulti && reason === "input") {
+      //           handleFieldChange(newInputValue);
+      //         }
+      //       }}
+      //       disabled={!isFieldEditable}
+      //       renderTags={(value, getTagProps) =>
+      //         value.map((option, index) => (
+      //           <Chip
+      //             key={index}
+      //             label={typeof option === "string" ? option : option.label}
+      //             {...getTagProps({ index })}
+      //             sx={{
+      //               color: "#000000ff",
+      //               fontWeight: 500,
+      //               opacity: 1,
+      //               pointerEvents: !isFieldEditable ? "none" : "auto",
+      //               "& .MuiChip-deleteIcon": {
+      //                 display: !isFieldEditable ? "none" : "block",
+      //               },
+      //               backgroundColor: !isFieldEditable ? "#cfcfcf" : "#fdeeee",
+      //               border: !isFieldEditable ? "1px solid #b3b3b3" : "none",
+      //             }}
+      //           />
+      //         ))
+      //       }
+      //       sx={{
+      //         "& .MuiOutlinedInput-root": { borderRadius: "8px" },
+      //       }}
+      //       renderInput={(params) => (
+      //         <TextField
+      //           {...params}
+      //           label={renderLabel(fieldLabel)}
+      //           variant="outlined"
+      //           fullWidth
+      //           size="small"
+      //           error={!!fieldErrors[fieldName]}
+      //           helperText={fieldErrors[fieldName] || ""}
+      //           placeholder={
+      //             !isFieldEditable
+      //               ? ""
+      //               : isReferenceMulti
+      //               ? "Select option"
+      //               : "Type or select"
+      //           }
+      //         />
+      //       )}
+      //     />
+      //   );
+      // }
 
       case "date":
       case "date-range":
