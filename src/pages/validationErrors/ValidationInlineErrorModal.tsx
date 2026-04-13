@@ -653,6 +653,17 @@ console.log('rowData',rowData);
   return map;
 }, [rowData]);
 
+const getErrorMessages = (attributeId: string) => {
+  return (rowData || [])
+    .filter(
+      (row: any) =>
+        ["1001", "1002", "1004"].includes(row.errorCode) &&
+        row.refAttributeId === attributeId
+    )
+    .map((row: any) => row.errorMessage)
+    .filter(Boolean); // remove empty
+};
+
 const isForceSubmit = Object.values(errorMap).some((arr) =>
   arr.includes("P")
 );
@@ -1076,6 +1087,7 @@ const isForceSubmit = Object.values(errorMap).some((arr) =>
     const options = attributeOptions[attribute.optionAttributeId] || [];
 
    const errorShortForms = errorMap[attribute._id] || [];
+   const errorMessages = getErrorMessages(attribute._id);
 const isTargetAttribute = errorShortForms.length > 0;
 const isDisabled = false; // no disable now
 
@@ -1090,7 +1102,13 @@ const isDisabled = false; // no disable now
 
     {isTargetAttribute && (
       <Box component="span" sx={{ ml: 1, display: "inline-flex", gap: 0.5 }}>
-        {errorShortForms.map((type: string) => (
+        {errorShortForms.map((type: string, idx: number) => (
+          <Tooltip
+        key={idx}
+        arrow
+        placement="top"
+        title={errorMessages[idx] || ""} // ✅ message only
+      >
           <Chip
             key={type}
             label={type}
@@ -1102,6 +1120,7 @@ const isDisabled = false; // no disable now
               color: getTextColor(type),
             }}
           />
+          </Tooltip>
         ))}
       </Box>
     )}

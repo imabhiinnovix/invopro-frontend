@@ -57,6 +57,9 @@ const initialRowNumber = useMemo(() => {
 const [currentIndex, setCurrentIndex] = useState(0);
 const [triggerSave, setTriggerSave] = useState(0);
 const [navLoading, setNavLoading] = useState(false);
+const [page, setPage] = useState(1);
+const limit = 10;
+const [totalPage, setTotalPage] = useState(1);
 
   
 
@@ -81,14 +84,11 @@ const [navLoading, setNavLoading] = useState(false);
     fileUploadPath = version?.filePath || "";
   }
 
-  const ErrorList = useGet<any>(
-  [
-    "ErrorList",
-    dataSourceVersionId,
-  ],
+ const ErrorList = useGet<any>(
+  ["ErrorList", dataSourceVersionId, page],
   dataSourceVersionId
-    ? `${GET.NO_ERROR_ROW_DATA}?page=1
-        &limit=10
+    ? `${GET.NO_ERROR_ROW_DATA}?page=${page}
+        &limit=${limit}
         &dataSourceVersionId=${dataSourceVersionId}
         &dataSourceId=${dataSourceId}
         &isErrorLog=${isErrorLog}`
@@ -96,13 +96,28 @@ const [navLoading, setNavLoading] = useState(false);
   !!dataSourceVersionId
 );
 
+
 useEffect(() => {
   const list = ErrorList?.data?.data;
-  if (!Array.isArray(list) || list.length === 0) return;
+  const pagination = ErrorList?.data?.pagination;
+
+  // ✅ SET TOTAL PAGE (always)
+  if (pagination?.totalPages) {
+    setTotalPage(pagination.totalPages);
+  }
+
+  if (!Array.isArray(list)) return;
 
   setRowList(list);
 
-  if (initialRowNumber != null) {
+  // ❗ IMPORTANT: handle empty list (last page edge case)
+  if (list.length === 0) {
+    setNavLoading(false);
+    return;
+  }
+
+  // ✅ ONLY apply initialRowNumber on first page
+  if (initialRowNumber != null && page === 1) {
     const idx = list.findIndex(
       (r) => Number(r.rowNumber) === initialRowNumber
     );
@@ -110,7 +125,9 @@ useEffect(() => {
   } else {
     setCurrentIndex(0);
   }
-}, [ErrorList?.data?.data, initialRowNumber]);
+
+  setNavLoading(false); // ✅ stop loader after API
+}, [ErrorList?.data]);
 
 // useEffect(() => {
 //   const list = ErrorList?.data?.data || [];
@@ -156,7 +173,13 @@ const goNext = () => {
 
   // 🔥 LAST ROW → save only
   if (isLastRow) {
+     // ❌ NO MORE PAGES → ONLY SAVE
+  if (page >= totalPage) {
     setPendingDirection(null);
+    setTriggerSave((prev) => prev + 1);
+    return;
+  }
+    setPendingDirection("next-page");
     setTriggerSave((prev) => prev + 1);
     return;
   }
@@ -173,19 +196,71 @@ const goPrev = () => {
 
   setNavLoading(true);
 
-  if (isSingleRow || isFirst) return;
+  if (isSingleRow) return;
+   // 🔥 FIRST ROW → PREVIOUS PAGE
+  if (isFirst) {
+  if (page === 1) {
+    // ✅ ONLY SAVE (no API call)
+    setPendingDirection(null);
+    setTriggerSave((prev) => prev + 1);
+    return;
+  }
+
+    setPendingDirection("prev-page"); // 👈 NEW
+    setTriggerSave((prev) => prev + 1);
+    return;
+  }
+
 
   setPendingDirection("prev");
   setTriggerSave((prev) => prev + 1);
 };
 
+// const handleAfterSave = () => {
+//   console.log('sssss');
+//   const hasMultipleRows = rowList.length > 1;
+//  setTriggerSave(0);
+//   setCurrentIndex((prev) => {
+//     console.log('set current index..')
+//     if (!hasMultipleRows) return prev; // 🔥 SINGLE ROW: NO CHANGE
+
+//     if (pendingDirection === "next") {
+//       return Math.min(prev + 1, rowList.length - 1);
+//     }
+
+//     if (pendingDirection === "prev") {
+//       return Math.max(prev - 1, 0);
+//     }
+
+//     return prev;
+//   });
+
+//   setPendingDirection(null);
+// };
 const handleAfterSave = () => {
-  console.log('sssss');
   const hasMultipleRows = rowList.length > 1;
- setTriggerSave(0);
+
+  setTriggerSave(0);
+
+  // ✅ NEXT PAGE
+  if (pendingDirection === "next-page") {
+    setPage((prev) => prev + 1);
+    setCurrentIndex(0);
+    setPendingDirection(null);
+    return;
+  }
+
+  // ✅ PREVIOUS PAGE
+  if (pendingDirection === "prev-page") {
+    setPage((prev) => prev - 1);
+    setCurrentIndex(limit - 1);
+    setPendingDirection(null);
+    return;
+  }
+
+  // ✅ NORMAL NAVIGATION
   setCurrentIndex((prev) => {
-    console.log('set current index..')
-    if (!hasMultipleRows) return prev; // 🔥 SINGLE ROW: NO CHANGE
+    if (!hasMultipleRows) return prev;
 
     if (pendingDirection === "next") {
       return Math.min(prev + 1, rowList.length - 1);
@@ -275,14 +350,47 @@ console.log("activeRowNumber", activeRowNumber);
 );
 
   // ✅ SET ALL ERRORS FROM VALIDATION API
-  useEffect(() => {
-    const list = validationErrorList?.data?.data;
+useEffect(() => {
+  const list = validationErrorList?.data?.data;
 
-    if (!list || !list.length) {
-      setSelectedRow(null);
+  if (validationErrorList?.isLoading) return;
+
+  // ❌ NO validation errors → SKIP
+  if (!list || list.length === 0) {
+    setSelectedRow(null);
+
+    // 🔥 LAST ROW → go next page
+    if (currentIndex >= rowList.length - 1) {
+      if (page < totalPage) {
+        setPage((p) => p + 1);
+        setCurrentIndex(0);
+      }
       return;
     }
-    setSelectedRow(list); // ✅ ARRAY
+
+    // 🔥 FIRST ROW + PREV → go previous page
+    if (currentIndex === 0 && pendingDirection === "prev") {
+      if (page > 1) {
+        setPage((p) => p - 1);
+        setCurrentIndex(limit - 1);
+      }
+      return;
+    }
+
+    // 🔥 NORMAL SKIP
+    setCurrentIndex((prev) => {
+      if (pendingDirection === "prev") {
+        return Math.max(prev - 1, 0);
+      }
+      return Math.min(prev + 1, rowList.length - 1);
+    });
+
+    return;
+  }
+
+  // ✅ HAS validation errors → show modal
+  setSelectedRow(list);
+
 }, [validationErrorList?.data?.data]);
 
   const vendorList = useGet<{
@@ -428,7 +536,7 @@ console.log("activeRowNumber", activeRowNumber);
     <span>
       <IconButton
         onClick={goPrev}
-        disabled={isSingleRow || isFirst || navLoading || loadingEdit}
+        disabled={isSingleRow || navLoading || loadingEdit}
         sx={{
           background: "#fff",
           border: "1px solid #ddd",
@@ -517,9 +625,9 @@ console.log("activeRowNumber", activeRowNumber);
 >
   ⬅ Prev
 </button> */}
-<Typography>
+{/* <Typography>
     {currentIndex + 1} of {rowList.length}
-  </Typography>
+  </Typography> */}
 {/* <button
   onClick={goNext}
   disabled={navLoading || loadingEdit}
