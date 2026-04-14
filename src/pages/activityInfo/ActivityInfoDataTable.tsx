@@ -87,12 +87,12 @@ const columns: GridColDef[] = [
       },
     },
 
-    {
-      field: "analyze_processing_status",
-      headerName: "Processing",
-      flex: 1,
-      renderCell: (params) => capitalize(params.row.analyze_processing_status),
-    },
+    // {
+    //   field: "analyze_processing_status",
+    //   headerName: "Processing",
+    //   flex: 1,
+    //   renderCell: (params) => capitalize(params.row.analyze_processing_status),
+    // },
 
     {
       field: "status",

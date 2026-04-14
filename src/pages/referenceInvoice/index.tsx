@@ -451,14 +451,14 @@ useEffect(() => {
 
   const activityList = useGet<any>(
     ["activityListAll"],
-    `${GET.Activity_List}?page=1&limit=1000`,
+    `${GET.Activity_File_List}?versionValue=${editData?.versionValue}`,
     true
   );
 
   const vendorInvoiceList = useGet<any>(
     ["vendorInvoiceListAll", finalVendorId],
-    `${GET.Vendor_Invoice_List}?page=1&limit=1000${
-      finalVendorId ? `&vendorId=${finalVendorId}` : ""
+    `${GET.Vendor_Invoice_List}?paginate=false${
+      finalVendorId ? `&vendorId=${finalVendorId}&versionValue=${editData?.versionValue}` : ""
     }`,
     true
   );
@@ -483,7 +483,7 @@ useEffect(() => {
     }
 
     activityList?.data?.data?.forEach((item: any) => {
-      if (!["disclosure", "portfolio"].includes(item.activityType)) return;
+      // if (!["disclosure", "portfolio"].includes(item.activityType)) return;
 
       const names = Array.isArray(item.activityFileName)
         ? item.activityFileName
@@ -497,7 +497,7 @@ useEffect(() => {
         const url = `${import.meta.env.VITE_INVOICIVIX_BACKEND_URL}${paths[i]}`;
 
         files.push({
-          label: `[Activity - ${item.activityType}] ${name}`,
+          label: `[Activity - ${item.activityType} - ${item.versionValue}] ${name}`,
           url,
           type:
             name.endsWith(".xlsx") || name.endsWith(".xls")

@@ -1530,15 +1530,15 @@ return (
       </Typography>
 
       {/* Save button top-right */}
-      {isForceSubmit && (
+      {/* {isForceSubmit && ( */}
         <StyledButton
           variant="primary"
           onClick={handleForceSaveClick}
-          disabled={isResolved}
+          disabled={isResolved || !isForceSubmit}
         >
           Force Save
         </StyledButton>
-      )}
+      {/* )} */}
       {/* <StyledButton variant="primary" onClick={handleSaveClick} disabled={isResolved}>
         Save
       </StyledButton> */}

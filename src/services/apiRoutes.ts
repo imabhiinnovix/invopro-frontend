@@ -218,5 +218,6 @@ export const GET = {
   Vendor_Invoice_List: "/invoicivix-vendor/vendor-invoice/list",
   Payment_List: "/invoicivix-vendor/payment-info/list",
   Purchase_Order_List: "/invoicivix-vendor/purchase-order/list",
-  Activity_List: "/invoicivix-vendor/activity-info/list"
+  Activity_List: "/invoicivix-vendor/activity-info/list",
+  Activity_File_List: "/invoicivix-vendor/activity-info/list-files"
 };
