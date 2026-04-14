@@ -457,8 +457,8 @@ useEffect(() => {
 
   const vendorInvoiceList = useGet<any>(
     ["vendorInvoiceListAll", finalVendorId],
-    `${GET.Vendor_Invoice_List}?paginate=false${
-      finalVendorId ? `&vendorId=${finalVendorId}&versionValue=${editData?.versionValue}` : ""
+    `${GET.Vendor_Invoice_List}?paginate=false&versionValue=${editData?.versionValue}${
+      finalVendorId ? `&vendorId=${finalVendorId}` : ""
     }`,
     true
   );
