@@ -45,7 +45,8 @@ export default function NoErrorLogs({
         &limit=${paginationModel.pageSize}
         &dataSourceVersionId=${id}
         &dataSourceId=${dataSourceId}
-        &search=${encodeURIComponent(debouncedSearchValue || "")}`
+        &search=${encodeURIComponent(debouncedSearchValue || "")}
+        &sort=${encodeURIComponent(JSON.stringify({ rowNumber: 1 }))}`
       : "",
     !!id
   );

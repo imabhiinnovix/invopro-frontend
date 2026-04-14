@@ -72,19 +72,22 @@ export const NoErrorsDataTable: React.FC<Props> = ({
         headerName: "Row Number",
         minWidth: 120,
         sortable: false,
-        renderCell: (params: any) => {
-          const index =
-            paginationModel.page * paginationModel.pageSize +
-            params.api.getRowIndexRelativeToVisibleRows(params.id) +
-            1;
+        // renderCell: (params: any) => {
+        //   const index =
+        //     paginationModel.page * paginationModel.pageSize +
+        //     params.api.getRowIndexRelativeToVisibleRows(params.id) +
+        //     1;
 
-          return <Box>{index}</Box>;
+        //   return <Box>{index}</Box>;
+        // },
+          renderCell: (params: any) => {
+          return <Box>{params.row.rowNumber}</Box>; // ✅ use backend value
         },
       },
 
       // ✅ Existing dynamic columns
       ...Object.keys(sample)
-        .filter((key) => !key.includes(".") && !key.startsWith("Converted|") && !key.startsWith("Validated|"))
+        .filter((key) => key !== "rowNumber" && !key.includes(".") && !key.startsWith("Converted|") && !key.startsWith("Validated|"))
         .map((key) => ({
           field: key,
           headerName: key,

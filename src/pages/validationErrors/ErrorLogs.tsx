@@ -47,7 +47,8 @@ export default function ErrorLogs({
         &dataSourceVersionId=${id}
         &dataSourceId=${dataSourceId}
         &search=${encodeURIComponent(debouncedSearchValue || "")}
-        &isErrorLog=1`
+        &isErrorLog=1
+        &sort=${encodeURIComponent(JSON.stringify({ rowNumber: 1 }))}`
       : "",
     !!id
   );
