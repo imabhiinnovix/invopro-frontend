@@ -170,7 +170,7 @@ export default function ValidationErrors() {
     // ✅ special condition
     if (rowData.dataSourceId === "699f04727df5e0efe12d5027") {
       const newTabUrl = `/reference-invoice?errorId=${rowData._id}&rowNumber=${rowData.rowNumber}&dataSourceVersionId=${rowData.dataSourceVersionId}&dataSourceId=${rowData.dataSourceId}${
-        vendorId ? `&vendorId=${vendorId}&isErrorLog=${rowData.isErrorLog > 0 ? 1 : 0}` : ""
+        vendorId ? `&vendorId=${vendorId}&isErrorLog=${rowData.isErrorLog > 0 ? 1 : 0}&page=${paginationModel.page + 1}` : ""
       }`;
 
       window.open(newTabUrl, "_blank");

@@ -41,11 +41,7 @@ export default function ReferenceInvoice() {
   const dataSourceId = searchParams.get("dataSourceId");
   const dataSourceVersionId = searchParams.get("dataSourceVersionId");
   const isErrorLog = searchParams.get("isErrorLog") ? Number(searchParams.get("isErrorLog")) : 1;
-const initialRowNumber = useMemo(() => {
-  return searchParams.get("rowNumber")
-    ? Number(searchParams.get("rowNumber"))
-    : null;
-}, []);
+
 
   const [selectedRow, setSelectedRow] = useState<any>(null);
   const [editData, setEditData] = useState<any>(null);
@@ -57,9 +53,21 @@ const initialRowNumber = useMemo(() => {
 const [currentIndex, setCurrentIndex] = useState(0);
 const [triggerSave, setTriggerSave] = useState(0);
 const [navLoading, setNavLoading] = useState(false);
-const [page, setPage] = useState(1);
 const limit = 10;
 const [totalPage, setTotalPage] = useState(1);
+const initialPage = useMemo(() => {
+  return searchParams.get("page")
+    ? Number(searchParams.get("page"))
+    : 1;
+}, []);
+
+const initialRowNumber = useMemo(() => {
+  return searchParams.get("rowNumber")
+    ? Number(searchParams.get("rowNumber"))
+    : null;
+}, []);
+const [page, setPage] = useState(initialPage);
+const [isInitialLoadDone, setIsInitialLoadDone] = useState(false);
 
   
 
@@ -91,7 +99,8 @@ const [totalPage, setTotalPage] = useState(1);
         &limit=${limit}
         &dataSourceVersionId=${dataSourceVersionId}
         &dataSourceId=${dataSourceId}
-        &isErrorLog=${isErrorLog}`
+        &isErrorLog=${isErrorLog}
+        &sort=${encodeURIComponent(JSON.stringify({ rowNumber: 1 }))}`
     : "",
   !!dataSourceVersionId
 );
@@ -117,13 +126,20 @@ useEffect(() => {
   }
 
   // ✅ ONLY apply initialRowNumber on first page
-  if (initialRowNumber != null && page === 1) {
+  // ✅ ONLY FIRST LOAD → apply rowNumber
+  if (!isInitialLoadDone && initialRowNumber != null) {
     const idx = list.findIndex(
       (r) => Number(r.rowNumber) === initialRowNumber
     );
+
     setCurrentIndex(idx >= 0 ? idx : 0);
-  } else {
+    setIsInitialLoadDone(true);
+  }
+
+  // ✅ NO rowNumber → default first row
+  if (!isInitialLoadDone && initialRowNumber == null) {
     setCurrentIndex(0);
+    setIsInitialLoadDone(true);
   }
 
   setNavLoading(false); // ✅ stop loader after API
