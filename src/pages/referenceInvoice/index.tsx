@@ -450,18 +450,22 @@ useEffect(() => {
   }>([`attributeList`], GET?.Attribute_Option_List + `?paginate=false`);
 
   const activityList = useGet<any>(
-    ["activityListAll"],
-    `${GET.Activity_File_List}?versionValue=${editData?.versionValue}`,
-    true
-  );
+  ["activityListAll", editData?.versionValue],
+  editData?.versionValue
+    ? `${GET.Activity_File_List}?versionValue=${editData.versionValue}`
+    : "",
+  !!editData?.versionValue // ✅ prevent early call
+);
 
   const vendorInvoiceList = useGet<any>(
-    ["vendorInvoiceListAll", finalVendorId],
-    `${GET.Vendor_Invoice_List}?paginate=false&versionValue=${editData?.versionValue}${
-      finalVendorId ? `&vendorId=${finalVendorId}` : ""
-    }`,
-    true
-  );
+  ["vendorInvoiceListAll", finalVendorId, editData?.versionValue],
+  editData?.versionValue
+    ? `${GET.Vendor_Invoice_List}?paginate=false&versionValue=${editData.versionValue}${
+        finalVendorId ? `&vendorId=${finalVendorId}` : ""
+      }`
+    : "",
+  !!editData?.versionValue // ✅ prevent early call
+);
 
   const loading = activityList.isLoading || vendorInvoiceList.isLoading;
 
