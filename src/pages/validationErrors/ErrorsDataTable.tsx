@@ -266,8 +266,7 @@ const content = (
       )}
        <>
           <Typography variant="body2">
-            {validationErrorList.data?.totalResolvedRecords} of{" "}
-            {validationErrorList.data?.totalErrorRecords} Resolved
+            Total Records : {rowCount}
           </Typography>
         </>
     </PageCardLayout>

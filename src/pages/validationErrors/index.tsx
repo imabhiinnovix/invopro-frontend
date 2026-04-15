@@ -571,9 +571,9 @@ export default function ValidationErrors() {
               </StyledButton>
             </Box>
           </Box>
-          <Box sx={{ color: STYLE_GUIDE.COLORS.primary }}>
+          {/* <Box sx={{ color: STYLE_GUIDE.COLORS.primary }}>
             Total Uploaded Records:{validationErrorList?.data?.totalUploadedRecords}
-          </Box>
+          </Box> */}
 
           {/* <ValidationErrorsDataTable
             rows={validationErrorWithIds}
