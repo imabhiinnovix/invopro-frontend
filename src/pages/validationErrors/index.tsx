@@ -464,6 +464,43 @@ export default function ValidationErrors() {
   Reference Invoice Files
 </Button> */}
 </Box>
+<Box
+  sx={{
+    display: "inline-flex",
+    alignItems: "center",
+    gap: 1.2,
+    px: 1.2,
+    py: 0.4,
+    borderRadius: "10px",
+    fontSize: "11.5px",
+    backgroundColor: "#fafafa",
+  }}
+>
+  <span>
+    Uploaded:{" "}
+    <Box component="span" sx={{ color: "#1976d2", fontWeight: 500 }}>
+      {validationErrorList?.data?.totalUploadedRecords}
+    </Box>
+  </span>
+
+  <span>•</span>
+
+  <span>
+    Errors:{" "}
+    <Box component="span" sx={{ color: "#d32f2f", fontWeight: 500 }}>
+      {validationErrorList?.data?.totalErrorRecords}
+    </Box>
+  </span>
+
+  <span>•</span>
+
+  <span>
+    Resolved:{" "}
+    <Box component="span" sx={{ color: "#2e7d32", fontWeight: 500 }}>
+      {validationErrorList?.data?.totalResolvedRecords}
+    </Box>
+  </span>
+</Box>
 <Box sx={{ mb: 2 }}>
   <Tabs
     value={activeTab}
@@ -571,9 +608,7 @@ export default function ValidationErrors() {
               </StyledButton>
             </Box>
           </Box>
-          {/* <Box sx={{ color: STYLE_GUIDE.COLORS.primary }}>
-            Total Uploaded Records:{validationErrorList?.data?.totalUploadedRecords}
-          </Box> */}
+          
 
           {/* <ValidationErrorsDataTable
             rows={validationErrorWithIds}
