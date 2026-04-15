@@ -170,7 +170,7 @@ export default function ValidationErrors() {
     // ✅ special condition
     if (rowData.dataSourceId === "699f04727df5e0efe12d5027") {
       const newTabUrl = `/reference-invoice?errorId=${rowData._id}&rowNumber=${rowData.rowNumber}&dataSourceVersionId=${rowData.dataSourceVersionId}&dataSourceId=${rowData.dataSourceId}${
-        vendorId ? `&vendorId=${vendorId}&isErrorLog=${rowData.isErrorLog > 0 ? 1 : 0}&page=${paginationModel.page + 1}` : ""
+        vendorId ? `&vendorId=${vendorId}&isErrorLog=${rowData.isErrorLog > 0 ? 1 : 0}&page=${paginationModel.page + 1}&limit=${paginationModel.pageSize}` : ""
       }`;
 
       window.open(newTabUrl, "_blank");
@@ -434,7 +434,7 @@ export default function ValidationErrors() {
       variant="text"
       onClick={() => navigate(-1)}
       sx={{ padding: 0, minWidth: "auto", marginRight: "10px" }}
-      disabled={isLatest === false}
+      // disabled={isLatest === false}
     >
       <ArrowBackIcon />
     </Button>
@@ -542,7 +542,7 @@ export default function ValidationErrors() {
               color="error"
               onClick={() => setDialog({ open: true, type: "discardUpload" })}
               sx={{ borderRadius: "8px" }}
-              disabled={isLatest === false}
+              // disabled={isLatest === false}
             >
               Discard Upload
             </Button>
@@ -553,7 +553,8 @@ export default function ValidationErrors() {
                 sx={{
                   borderRadius: "8px",
                 }}
-                disabled={isLatest === false || !isSubmitEnabled}
+                // disabled={isLatest === false || !isSubmitEnabled}
+                disabled={!isSubmitEnabled}
               >
                 Submit
               </Button>

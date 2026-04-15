@@ -53,12 +53,18 @@ export default function ReferenceInvoice() {
 const [currentIndex, setCurrentIndex] = useState(0);
 const [triggerSave, setTriggerSave] = useState(0);
 const [navLoading, setNavLoading] = useState(false);
-const limit = 10;
+// const limit = 10;
 const [totalPage, setTotalPage] = useState(1);
 const initialPage = useMemo(() => {
   return searchParams.get("page")
     ? Number(searchParams.get("page"))
     : 1;
+}, []);
+
+const initialLimit = useMemo(() => {
+  return searchParams.get("limit")
+    ? Number(searchParams.get("limit"))
+    : 10;
 }, []);
 
 const initialRowNumber = useMemo(() => {
@@ -67,6 +73,7 @@ const initialRowNumber = useMemo(() => {
     : null;
 }, []);
 const [page, setPage] = useState(initialPage);
+const [limit, setLimit] = useState(initialLimit);
 const [isInitialLoadDone, setIsInitialLoadDone] = useState(false);
 
   
@@ -93,7 +100,7 @@ const [isInitialLoadDone, setIsInitialLoadDone] = useState(false);
   }
 
  const ErrorList = useGet<any>(
-  ["ErrorList", dataSourceVersionId, page],
+  ["ErrorList", dataSourceVersionId, page, limit],
   dataSourceVersionId
     ? `${GET.NO_ERROR_ROW_DATA}?page=${page}
         &limit=${limit}
@@ -269,7 +276,8 @@ const handleAfterSave = () => {
   // ✅ PREVIOUS PAGE
   if (pendingDirection === "prev-page") {
     setPage((prev) => prev - 1);
-    setCurrentIndex(limit - 1);
+    // setCurrentIndex(limit - 1);
+    setCurrentIndex(rowList.length - 1);
     setPendingDirection(null);
     return;
   }
@@ -388,7 +396,8 @@ useEffect(() => {
     if (currentIndex === 0 && pendingDirection === "prev") {
       if (page > 1) {
         setPage((p) => p - 1);
-        setCurrentIndex(limit - 1);
+        // setCurrentIndex(limit - 1);
+        setCurrentIndex(rowList.length - 1);
       }
       return;
     }
