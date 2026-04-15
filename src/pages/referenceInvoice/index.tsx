@@ -169,9 +169,9 @@ useEffect(() => {
 //   }
 // }, [ErrorList.data]);
 
-useEffect(() => {
-  console.log("FULL API RESPONSE:", ErrorList?.data);
-}, [ErrorList?.data]);
+// useEffect(() => {
+//   console.log("FULL API RESPONSE:", ErrorList?.data);
+// }, [ErrorList?.data]);
 
 const activeRowNumber = useMemo(() => {
   return rowList?.[currentIndex]?.rowNumber ?? null;
@@ -365,16 +365,17 @@ console.log("activeRowNumber", activeRowNumber);
     dataSourceVersionId,
     dataSourceId,
   ],
-  dataSourceVersionId && activeRowNumber
+  dataSourceVersionId && activeRowNumber && isErrorLog == 1
     ? `${GET.VALIDATION_ERROR_LIST}?dataSourceVersionId=${dataSourceVersionId}&dataSourceId=${dataSourceId}&filters=${encodeURIComponent(
         JSON.stringify({ rowNumber: [activeRowNumber], status: "open" })
       )}&paginate=false`
     : "",
-  !!dataSourceVersionId && !!activeRowNumber
+  !!dataSourceVersionId && !!activeRowNumber && isErrorLog == 1
 );
 
   // ✅ SET ALL ERRORS FROM VALIDATION API
 useEffect(() => {
+  if (isErrorLog !== 1) return;
   const list = validationErrorList?.data?.data;
 
   if (validationErrorList?.isLoading) return;
@@ -416,7 +417,7 @@ useEffect(() => {
   // ✅ HAS validation errors → show modal
   setSelectedRow(list);
 
-}, [validationErrorList?.data?.data]);
+}, [validationErrorList?.data?.data, isErrorLog]);
 
   const vendorList = useGet<{
     success: boolean;

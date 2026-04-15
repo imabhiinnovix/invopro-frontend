@@ -938,9 +938,9 @@ return (
       </Typography>
 
       {/* Save button top-right */}
-      <StyledButton variant="primary" onClick={handleSaveClick}>
+      {/* <StyledButton variant="primary" onClick={handleSaveClick}>
         Save
-      </StyledButton>
+      </StyledButton> */}
     </Box>
 
     {/* Content */}
