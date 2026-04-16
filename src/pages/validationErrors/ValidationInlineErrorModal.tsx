@@ -675,11 +675,10 @@ const getErrorMessages = (attributeId: string) => {
 // );
 const canForceSave = (row: any) => {
   if (!["1001", "1002", "1004"].includes(row.errorCode)) return false;
-
   return (
     row.errorSource === "portfolio" ||
     (row.errorSource === "validation" &&
-      row.attributeName === "SABIC Case Refrence Number")
+      row.attributeName === "SABIC Case Reference Number")
   );
 };
 
