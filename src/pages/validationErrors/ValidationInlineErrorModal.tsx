@@ -9,6 +9,11 @@ import {
   Checkbox,
   Autocomplete,
   Tooltip,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button,
 } from "@mui/material";
 import { STYLE_GUIDE } from "../../styles";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
@@ -69,6 +74,7 @@ export const ValidationInlineErrorModal: React.FC<ValidationInlineErrorModalProp
   const updateDuplicateVersionRow = usePut(["updateDuplicateVersionRow"]);
 
   const [isResolved, setIsResolved] = React.useState(false);
+  const [openConfirm, setOpenConfirm] = React.useState(false);
 
 React.useEffect(() => {
   if (!triggerSave) return;
@@ -664,9 +670,20 @@ const getErrorMessages = (attributeId: string) => {
     .filter(Boolean); // remove empty
 };
 
-const isForceSubmit = Object.values(errorMap).some((arr) =>
-  arr.includes("P")
-);
+// const isForceSubmit = Object.values(errorMap).some((arr) =>
+//   arr.includes("P") || arr.includes("V")
+// );
+const canForceSave = (row: any) => {
+  if (!["1001", "1002", "1004"].includes(row.errorCode)) return false;
+
+  return (
+    row.errorSource === "portfolio" ||
+    (row.errorSource === "validation" &&
+      row.attributeName === "SABIC Case Refrence Number")
+  );
+};
+
+const isForceSubmit = (rowData || []).some(canForceSave);
   // const renderAttributeField = (attribute: any) => {
   //   const fieldName = attribute.name;
   //   const fieldLabel = attribute.label;
@@ -1126,6 +1143,10 @@ const isDisabled = false; // no disable now
     )}
   </>
 );
+const isAmountField =
+  fieldName?.toLowerCase().includes("fees") ||
+  fieldName?.toLowerCase().includes("amount");
+
     switch (fieldType) {
       case "boolean":
         return (
@@ -1376,7 +1397,13 @@ const isDisabled = false; // no disable now
             key={fieldName}
             label={renderLabel(fieldLabel)}
             type="number"
-            value={fieldValue || ""}
+            value={
+              fieldValue !== undefined && fieldValue !== null && fieldValue !== ""
+                ? fieldValue
+                : isAmountField
+                ? "0.00"
+                : ""
+            }
             onChange={(e) => {
               if (!isDisabled) {
                 const value = e.target.value;
@@ -1533,7 +1560,8 @@ return (
       {/* {isForceSubmit && ( */}
         <StyledButton
           variant="primary"
-          onClick={handleForceSaveClick}
+          // onClick={handleForceSaveClick}
+          onClick={() => setOpenConfirm(true)}
           disabled={isResolved || !isForceSubmit}
         >
           Force Save
@@ -1543,6 +1571,30 @@ return (
         Save
       </StyledButton> */}
     </Box>
+
+    <Dialog open={openConfirm} onClose={() => setOpenConfirm(false)}>
+  <DialogTitle>Confirm Action</DialogTitle>
+
+  <DialogContent>
+    Are you sure you want to force overwrite?
+  </DialogContent>
+
+  <DialogActions>
+    <Button onClick={() => setOpenConfirm(false)}>
+      Cancel
+    </Button>
+
+    <Button
+      color="error"
+      onClick={() => {
+        setOpenConfirm(false);
+        handleForceSaveClick();
+      }}
+    >
+      Yes, Force Save
+    </Button>
+  </DialogActions>
+</Dialog>
 
     {/* Content */}
     <Box
