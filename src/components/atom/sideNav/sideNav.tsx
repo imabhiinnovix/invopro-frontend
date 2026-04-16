@@ -1402,7 +1402,7 @@ function getNavItems(
       item.name === "Invoice List" || item.code === "invoicelist";
 
     // 👇 Return extra item only for Invoice List
-    if (isInvoiceList && 0) {
+    if (isInvoiceList) {
       return [
         baseItem,
         {
