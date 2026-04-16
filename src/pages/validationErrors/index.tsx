@@ -34,6 +34,7 @@ import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { Tabs, Tab } from "@mui/material";
 import NoErrorLogs from "./NoErrorLogs";
 import ErrorLogs from "./ErrorLogs";
+import { AuthContext } from "../../context/AuthContext";
 
 export default function ValidationErrors() {
   const { id } = useParams<{ id: string }>();
@@ -53,6 +54,8 @@ export default function ValidationErrors() {
     selectedRows?: any[];
   }>({ open: false, type: "discardAll" });
   const [activeTab, setActiveTab] = useState<"error" | "noError">("error");
+
+  const [showBreakup, setShowBreakup] = useState(false);
 
   useEffect(() => {
     const handler = setTimeout(() => {
@@ -153,6 +156,43 @@ export default function ValidationErrors() {
       : "",
     !!id,
   );
+
+  const ErrorList = useGet<any>(
+  ["ErrorList",  dataSourceIdForPayload?._id || id || "", String(paginationModel.page + 1),
+      String(paginationModel.pageSize)],
+  id
+    ? `${GET.NO_ERROR_ROW_DATA}?page=${
+            paginationModel.page + 1
+          }&limit=${
+            paginationModel.pageSize
+          }&dataSourceVersionId=${id}&dataSourceId=${
+            dataSourceIdForPayload?._id || ""
+          }&isSummary=true&segregationField=Charge type (SABIC Cost code Type)`
+    : "",
+  !!id
+);
+
+console.log('ErrorList',ErrorList);
+
+ const { userDetails } = React.useContext(AuthContext);
+
+const defaultCurrency = userDetails?.data.organizationId?.defaultCurrency;
+
+const summaryTotal = ErrorList?.data?.total || {};
+
+const summaryCurrency = summaryTotal?.['currencies']?.[0] || 'USD';
+
+const conversionRate = summaryTotal?.['conversion']?.['rate'] || 1;
+
+const totalAmount =
+  (summaryTotal["Service Fees"] || 0) +
+  (summaryTotal["Official Fees"] || 0);
+
+const totalAmountConverted =
+  (summaryTotal["Converted|Service Fees"] || 0) +
+  (summaryTotal["Converted|Official Fees"] || 0);
+
+const groupedRows = ErrorList?.data?.data || [];
 
   const handleDiscardRow = (rowData: any) => {
     setDialog({ open: true, type: "discardRow", rowData });
@@ -466,7 +506,7 @@ export default function ValidationErrors() {
 </Box>
 <Box
   sx={{
-    display: "inline-flex",
+    display: "flex", // ✅ FIXED
     alignItems: "center",
     gap: 1.2,
     px: 1.2,
@@ -474,8 +514,10 @@ export default function ValidationErrors() {
     borderRadius: "10px",
     fontSize: "11.5px",
     backgroundColor: "#fafafa",
+    width: "100%", // ✅ IMPORTANT
   }}
 >
+  {/* LEFT SIDE */}
   <span>
     Uploaded:{" "}
     <Box component="span" sx={{ color: "#1976d2", fontWeight: 500 }}>
@@ -500,7 +542,116 @@ export default function ValidationErrors() {
       {validationErrorList?.data?.totalResolvedRecords}
     </Box>
   </span>
+
+  {/* RIGHT SIDE */}
+  <Box sx={{ ml: "auto", textAlign: "right" }}>
+    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+      <Typography sx={{ fontSize: "12px" }}>
+        <b>Total Amount:</b>{" "}
+        {summaryCurrency === defaultCurrency ? (
+          `${totalAmount.toLocaleString()} (${summaryCurrency})`
+        ) : (
+          `${totalAmount.toLocaleString()} (${summaryCurrency}) | ${totalAmountConverted.toLocaleString()} (${defaultCurrency}) | (Conversion Rate: ${conversionRate})`
+        )}
+      </Typography>
+
+      <Button
+        size="small"
+        onClick={() => setShowBreakup((prev) => !prev)}
+        sx={{
+          minWidth: "28px",
+          height: "28px",
+          borderRadius: "50%",
+          padding: 0,
+        }}
+      >
+        {showBreakup ? "−" : "+"}
+      </Button>
+    </Box>
+  </Box>
 </Box>
+
+{/* BREAKUP BELOW (unchanged) */}
+{showBreakup && (
+  <Box
+    sx={{
+      mt: 1,
+      border: "1px solid #e0e0e0",
+      borderRadius: "8px",
+      backgroundColor: "#fff",
+      overflow: "hidden",
+      minWidth: "320px",
+    }}
+  >
+    {/* Header */}
+    <Box
+      sx={{
+        display: "flex",
+        justifyContent: "space-between",
+        px: 1.2,
+        py: 0.6,
+        backgroundColor: "#f5f5f5",
+        fontSize: "11.5px",
+        fontWeight: 600,
+      }}
+    >
+      <span>Charge Type</span>
+      <span>Amount</span>
+    </Box>
+
+    {/* Rows */}
+    {groupedRows.map((item: any, idx: number) => {
+      const row = item?.rowData || {};
+
+      const chargeType =
+        row["Charge type (SABIC Cost code Type)"] || "Unknown";
+
+      const total =
+        (row["Service Fees"] || 0) +
+        (row["Official Fees"] || 0);
+
+      const totalConverted =
+        (row["Converted|Service Fees"] || 0) +
+        (row["Converted|Official Fees"] || 0);
+
+      const rowCurrency = row["Currency"] || summaryCurrency;
+      const isSameCurrency = rowCurrency === defaultCurrency;
+
+      return (
+        <Box
+          key={idx}
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            px: 1.2,
+            py: 0.6,
+            fontSize: "11.5px",
+            borderTop: idx === 0 ? "none" : "1px solid #eee",
+          }}
+        >
+          {/* Charge Type */}
+          <span style={{ fontWeight: 500 }}>
+            {chargeType}
+          </span>
+
+          {/* Amount */}
+          <span style={{ textAlign: "right" }}>
+            {isSameCurrency ? (
+              `${total.toLocaleString()} (${rowCurrency})`
+            ) : (
+              <>
+                {total.toLocaleString()} ({rowCurrency}) <br />
+                <span style={{ color: "#666", fontSize: "10.5px" }}>
+                  {totalConverted.toLocaleString()} ({defaultCurrency})
+                </span>
+              </>
+            )}
+          </span>
+        </Box>
+      );
+    })}
+  </Box>
+)}
 <Box sx={{ mb: 2 }}>
   <Tabs
     value={activeTab}
