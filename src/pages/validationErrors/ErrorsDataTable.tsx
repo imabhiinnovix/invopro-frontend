@@ -264,11 +264,11 @@ const content = (
       ) : (
         <Typography align="center">No Data Available</Typography>
       )}
-       <>
+       {/* <>
           <Typography variant="body2">
             Total Records : {rowCount}
           </Typography>
-        </>
+        </> */}
     </PageCardLayout>
   );
 };

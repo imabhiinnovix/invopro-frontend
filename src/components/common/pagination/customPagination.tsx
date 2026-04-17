@@ -75,6 +75,18 @@ export const CustomPagination: React.FC<CustomPaginationProps> = ({
         justifyContent={{ xs: "space-between", sm: "flex-start" }}
         gap={1.5}
       >
+        {/* ✅ Total Records */}
+        <Typography
+          variant="body2"
+          sx={{
+            color: PAGINATION.textColor,
+            fontSize: { xs: "13px", sm: "14px" },
+            fontWeight: 500,
+          }}
+        >
+          Total Records: {rowCount}
+        </Typography>
+
         <Typography
           variant="body2"
           sx={{

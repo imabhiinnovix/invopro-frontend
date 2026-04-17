@@ -751,7 +751,7 @@ console.log('uniqueMonths',uniqueMonths);
         (field) => field.isDisplayEnable && field.mappedAttributeName
       ) || [];
     const formattedRows = rawData.map((item) => {
-      const row: Record<string, any> = { _id: item._id || item.id };
+      const row: Record<string, any> = { _id: item._id || item.id, aiPreValidateStatus: item?.aiPreValidateStatus || 'pending', aiCostValidateStatus: item?.aiCostValidateStatus || 'pending'  };
       displayFields.forEach((field) => {
         row[field.mappedAttributeName] =
           item.rowData?.[field.mappedAttributeName] ||

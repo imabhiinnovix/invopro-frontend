@@ -273,8 +273,8 @@ const injectBeforeActions = (cols: any[], extraCol: any) =>
       color = "#2e7d32";
       bg = "#e8f5e9";
     } else if (value === "processing") {
-      color = "#1976d2";
-      bg = "#e3f2fd";
+      color = "#ed6c02";
+      bg = "#fff3e0";
     } else if (value === "pending") {
       color = "#1976d2";
       bg = "#e3f2fd";
@@ -301,7 +301,8 @@ const injectBeforeActions = (cols: any[], extraCol: any) =>
 };
 
     // ✅ inject checkbox column only for target DS
-    if (!isTarget) return injectBeforeActions(baseCols, statusColumn);
+    // if (!isTarget) return injectBeforeActions(baseCols, statusColumn);
+    if (!isTarget) return baseCols;
     return [
       {
         field: "__select__",
