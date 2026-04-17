@@ -177,7 +177,7 @@ export const NotivixDataTable: React.FC<TableSectionProps> = ({
     };
 
     sendRevalidateRows.mutate({
-      url: "/common/dataSourceVersion/revalidateRows",
+      url: "/common/dataSourceVersion/revalidateCostRows",
       payload,
     });
   } catch (err) {
@@ -255,13 +255,13 @@ const injectBeforeActions = (cols: any[], extraCol: any) =>
       };
     });
 
-    const statusColumn = {
-  field: "aiPreValidateStatus",
-  headerName: "Approve Status",
+        const statusColumn = {
+  field: "aiCostValidateStatus",
+  headerName: "Analyze Status",
   width: 140,
   sortable: false,
   renderCell: (params: any) => {
-    const value = params.row.aiPreValidateStatus;
+    const value = params.row.aiCostValidateStatus;
 
     let color = "#1976d2"; // default blue
     let bg = "#e3f2fd";
@@ -302,6 +302,7 @@ const injectBeforeActions = (cols: any[], extraCol: any) =>
 
     // ✅ inject checkbox column only for target DS
     if (!isTarget) return injectBeforeActions(baseCols, statusColumn);
+
     return [
       {
         field: "__select__",
@@ -379,7 +380,7 @@ const injectBeforeActions = (cols: any[], extraCol: any) =>
                 disabled={selectedRowIds.length === 0}
                 onClick={handleRevalidate}
               >
-                ReValidate
+                ReValidateCost
               </StyledButton>
             )}
 

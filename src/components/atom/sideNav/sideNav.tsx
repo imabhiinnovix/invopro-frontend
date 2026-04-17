@@ -72,7 +72,7 @@ import FormatListBulletedIcon from "@mui/icons-material/FormatListBulleted";
 import { UseQueryResult } from "@tanstack/react-query";
 import { checkPermission, PermissionMap } from "../../../utils/utils";
 import { PermissionsMap } from "../../../utils/constants";
-import { AssessmentOutlined, AssignmentTurnedInOutlined, DashboardOutlined, NotificationsOutlined, SettingsOutlined, StorageOutlined } from "@mui/icons-material";
+import { AssessmentOutlined, AssignmentTurnedInOutlined, DashboardOutlined, NotificationsOutlined, SettingsOutlined, StorageOutlined, Calculate } from "@mui/icons-material";
 import PaymentIcon from "@mui/icons-material/Payment";
 import innovixLogo from "../../../assets/innovix-logo.png";
 
@@ -185,6 +185,8 @@ export default function SideNav() {
     React.useState(false);
   const [openPaymentSettings, setOpenPaymentSettings] =
     React.useState(false);  
+  const [openCostAnalysisSettings, setCostAnalysisSettings] =
+    React.useState(false);    
   const [openGlobalSettings, setOpenGlobalSettings] = React.useState(false);
   const [openReportSettings, setOpenReportSettings] = React.useState(false);
   const [openThemeSettings, setOpenThemeSettings] = React.useState(false);
@@ -301,7 +303,11 @@ export default function SideNav() {
       }else if (itemName === "Invoice Payments") {
         setOpenPaymentSettings((prev) => !prev);
         // navigate(route);
-      } else if (itemName === "Settings") {
+      }else if (itemName === "Cost Analysis") {
+        setCostAnalysisSettings((prev) => !prev);
+        // navigate(route);
+      }
+       else if (itemName === "Settings") {
         setOpenReportSettings((prev) => !prev);
         // Don't navigate for Settings main item
       } else if (itemName === "Theme Settings") {
@@ -523,7 +529,8 @@ export default function SideNav() {
                           openDashboard) ||
                         (item.name === "Invoice Information" &&
                           openNotificationSettings) ||
-                        (item.name === "Invoice Payments" && openPaymentSettings) ||  
+                        (item.name === "Invoice Payments" && openPaymentSettings) || 
+                        (item.name === "Cost Analysis" && openCostAnalysisSettings) || 
                         (item.name === "Settings" && openReportSettings) ||
                         (item.name === "Theme Settings" && openThemeSettings) ||
                         (item.name === "IP Report Constants" &&
@@ -541,6 +548,8 @@ export default function SideNav() {
                                 ? openNotificationSettings
                                 : item.name === "Invoice Payments"
                                 ? openPaymentSettings
+                                : item.name === "Cost Analysis"
+                                ? openCostAnalysisSettings
                                 : item.name === "Settings"
                                 ? openReportSettings
                                 : item.name === "Theme Settings"
@@ -681,6 +690,30 @@ export default function SideNav() {
                                 )}
 
                                 {item.name === "Invoice Payments" && (
+                                  <>
+                                    {item.subItems?.map((subItem, subIndex) => {
+                                      if (
+                                        subItem.shouldShow !== undefined &&
+                                        !subItem.shouldShow
+                                      ) {
+                                        return null;
+                                      }
+                                      return (
+                                        <MainListItem
+                                          key={subIndex}
+                                          label={subItem.name}
+                                          icon={subItem.icon}
+                                          onClick={() =>
+                                            navigate(subItem.route)
+                                          }
+                                          route={subItem.route}
+                                        />
+                                      );
+                                    })}
+                                  </>
+                                )}
+
+                                {item.name === "Cost Analysis" && (
                                   <>
                                     {item.subItems?.map((subItem, subIndex) => {
                                       if (
@@ -967,7 +1000,8 @@ export default function SideNav() {
                                 ) : (
                                   item.name !== "Dashboards" &&
                                   item.name !== "Invoice Information" &&
-                                  item.name !== "Invoice Payments" && (
+                                  item.name !== "Invoice Payments" &&
+                                  item.name !== "Cost Analysis" && (
                                     <MainListItem
                                       route={item.route}
                                       onClick={() => {
@@ -1421,6 +1455,32 @@ function getNavItems(
 
     return [baseItem];
   });
+   
+   const isInvoiceListAccess = matchedDataSources
+  .filter((item) => item.versionType === "monthly" && item.name === "Invoice List" || item.code === "invoicelist");
+  
+  const costAnalysisMenuItem = {
+    name: "Invoice Cost Analysis",
+    icon: createIcon(NotificationsActiveIcon, "/cost-analysis-data", theme, location, themeColor),
+    route: `/cost-analysis/699f04727df5e0efe12d5027`,
+    shouldShow: isInvoiceListAccess.length > 0
+  }; 
+
+  const vendorEngagementLetterMenuItem = {
+    name: "Engagement Letter",
+    icon: createIcon(BusinessCenterIcon, "/engagement-letter", theme, location, themeColor),
+    route: "/engagement-letter",
+    shouldShow:  checkPermission(
+                permissions,
+                PermissionsMap.ENGAGEMENTLETTER,
+                "list"
+              ) &&
+              checkPermission(
+                permissions,
+                PermissionsMap.ENGAGEMENTLETTER,
+                "update"
+              ),
+  }; 
 
   const vendorInvoiceMenuItem = {
     name: "Invoice PDF Files",
@@ -1553,6 +1613,17 @@ function getNavItems(
 
   const shouldShowNotifications = visibleDataSourceItems.length > 0;
 
+  const CostAnalysisItems = [
+    costAnalysisMenuItem,
+    vendorEngagementLetterMenuItem
+  ];
+
+  const visibleCostAnalysisItems = Array.isArray(CostAnalysisItems)
+  ? CostAnalysisItems.filter((item) => item.shouldShow !== false)
+  : [];
+
+  const shouldShowCostAnalysis = visibleCostAnalysisItems.length > 0;
+
   return [
     {
       name: "Dashboards",
@@ -1605,6 +1676,13 @@ function getNavItems(
       route: "/data-source",
       subItems: dataSourceItems,
       shouldShow: shouldShowNotifications,
+    },
+    {
+      name: "Cost Analysis",
+      icon: createIcon(Calculate, "/cost-analysis-data", theme, location, themeColor),
+      route: "/cost-analysis-data",
+      subItems: CostAnalysisItems,
+      shouldShow: shouldShowCostAnalysis,
     },
     {
       name: "Invoice Payments",
@@ -1837,22 +1915,6 @@ function getSystemSettingsItems(
               checkPermission(
                 permissions,
                 PermissionsMap.DESIGNATION,
-                "update"
-              ),
-          },
-          {
-            name: "Engagement Letter",
-            icon: createIcon(BusinessCenterIcon, "/engagement-letter", theme, location, themeColor),
-            route: "/engagement-letter",
-            shouldShow:
-              checkPermission(
-                permissions,
-                PermissionsMap.ENGAGEMENTLETTER,
-                "list"
-              ) &&
-              checkPermission(
-                permissions,
-                PermissionsMap.ENGAGEMENTLETTER,
                 "update"
               ),
           },

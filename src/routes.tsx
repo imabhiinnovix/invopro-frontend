@@ -32,6 +32,7 @@ import AddNotificationTypes from "./pages/notification/AddNotificationTypes";
 import Notification from "./pages/notification";
 import NotivixDataSource from "./pages/notivixDataSource";
 import NotivixDataSourceSummary from "./pages/notivixDataSourceSummary";
+import NotivixDataSourceCostAnalysis from "./pages/notivixDataSourceCostAnalysis";
 import EditNotificationTypes from "./pages/notification/EditNotificationTypes";
 import ValidationErrors from "./pages/validationErrors";
 import AcknowledgeNotification from "./pages/acknowledgeNotification";
@@ -153,6 +154,8 @@ const AppRoutes = () => {
 
           <Route path="/data-source-new/:id" element={<NotivixDataSource />} />
           <Route path="/data-source-new-summary/:id" element={<NotivixDataSourceSummary />} />
+          <Route path="/cost-analysis/:id" element={<NotivixDataSourceCostAnalysis />} />
+
           <Route path="/validation-errors/:id" element={<ValidationErrors />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/create-theme" element={<CreateTheme />} />
