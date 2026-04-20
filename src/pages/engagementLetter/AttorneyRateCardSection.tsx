@@ -18,14 +18,15 @@ import {
   Autocomplete,
   TableContainer,
   Stack,
-  Collapse
+  Collapse,
+  Tooltip
 } from "@mui/material";
 
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 
 import { Controller, useForm } from "react-hook-form";
-import { useState } from "react";
+import { useContext, useState } from "react";
 
 import useGet from "../../hooks/useGet";
 import usePost from "../../hooks/usePost";
@@ -37,6 +38,7 @@ import { CURRENCIES } from "../../constants/currencies";
 
 import { GET, POST, DELETE, PUT } from "../../services/apiRoutes";
 import { formatCurrency } from "../../utils/utils";
+import { AuthContext } from "../../context/AuthContext";
 
 const ATTORNEY_USER_TYPES = [
   { label: "Attorney", value: "attorney" },
@@ -215,6 +217,53 @@ const confirmDelete = () => {
   setDeleteId(null);
 };
 
+  const { userDetails } = useContext(AuthContext);
+
+  const DEFAULT_CURRENCY = userDetails?.data.organizationId?.defaultCurrency || "USD";
+
+  const renderCurrencyCell = (field: string, row: any) => {
+  const original = row[field];
+  const converted = row[`Converted|${field}`];
+
+  const showConverted =
+    row.currency !== DEFAULT_CURRENCY && converted != null;
+
+  const rate = row?.conversion?.rate;
+
+  const tooltipTitle =
+    rate && row.currency !== DEFAULT_CURRENCY
+      ? `1 ${row.currency} ≈ ${(1 / rate).toFixed(2)} ${DEFAULT_CURRENCY}`
+      : "";
+
+  return (
+    <Box>
+      {/* Original */}
+      <Typography variant="body2">
+        {formatCurrency(original, row.currency)}
+      </Typography>
+
+      {/* Converted */}
+      {showConverted && (
+        <Tooltip title={tooltipTitle} arrow placement="top">
+          <Typography
+            variant="caption"
+            sx={{
+              color: "#2e7d32",
+              fontSize: "11px",        // ✅ smaller
+              fontWeight: 500,
+              opacity: 0.85,          // ✅ subtle
+              display: "block",
+              cursor: "pointer",
+            }}
+          >
+            {formatCurrency(converted, DEFAULT_CURRENCY)}
+          </Typography>
+        </Tooltip>
+      )}
+    </Box>
+  );
+};
+
   return (
     <Box mt={1}>
 
@@ -365,6 +414,33 @@ const confirmDelete = () => {
 
      </Grid>
 </Collapse>
+<Box display="flex" justifyContent="flex-end" mb={1}>
+  <Typography
+    variant="caption"
+    sx={{
+      display: "flex",
+      alignItems: "center",
+      gap: 0.5,
+      color: "#2e7d32",
+      fontSize: "11px",
+      background: "#f1f8f4",
+      px: 1,
+      py: 0.4,
+      borderRadius: 1,
+      border: "1px solid #c8e6c9",
+    }}
+  >
+    <Box
+      sx={{
+        width: 8,
+        height: 8,
+        borderRadius: "50%",
+        backgroundColor: "#2e7d32",
+      }}
+    />
+    Default Currency <b>{DEFAULT_CURRENCY}</b>
+  </Typography>
+</Box>
 
       <TableContainer>
 
@@ -386,7 +462,7 @@ const confirmDelete = () => {
             <TableRow key={r._id}>
               <TableCell>{r.attorneyId?.name}</TableCell>
               <TableCell>{r.rateType}</TableCell>
-              <TableCell>{formatCurrency(r.rate, r.currency)}</TableCell>
+              <TableCell>{renderCurrencyCell('rate', r)}</TableCell>
               <TableCell>{r.currency}</TableCell>
               <TableCell>{r.status}</TableCell>
 

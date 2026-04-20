@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import {
  Card,
  CardContent,
@@ -22,7 +22,9 @@ import {
  Button,
  Collapse,
  Autocomplete,
- Stack
+ Stack,
+ Tooltip,
+ Box
 } from "@mui/material";
 
 import EditIcon from "@mui/icons-material/Edit";
@@ -44,6 +46,7 @@ import { RootState } from "../../reducers";
 
 import LocationAutocomplete from "../../components/common/location/LocationAutocomplete";
 import { formatCurrency } from "../../utils/utils";
+import { AuthContext } from "../../context/AuthContext";
 
 interface Props {
  vendorId: string;
@@ -267,6 +270,53 @@ const defaultValues = {
   setOpenFAModal(false)
   faReset()
  }
+
+  const { userDetails } = useContext(AuthContext);
+
+  const DEFAULT_CURRENCY = userDetails?.data.organizationId?.defaultCurrency || "USD";
+
+    const renderCurrencyCell = (field: string, row: any) => {
+  const original = row[field];
+  const converted = row[`Converted|${field}`];
+
+  const showConverted =
+    row.currency !== DEFAULT_CURRENCY && converted != null;
+
+  const rate = row?.conversion?.rate;
+
+  const tooltipTitle =
+    rate && row.currency !== DEFAULT_CURRENCY
+      ? `1 ${row.currency} ≈ ${(1 / rate).toFixed(2)} ${DEFAULT_CURRENCY}`
+      : "";
+
+  return (
+    <Box>
+      {/* Original */}
+      <Typography variant="body2">
+        {formatCurrency(original, row.currency)}
+      </Typography>
+
+      {/* Converted */}
+      {showConverted && (
+        <Tooltip title={tooltipTitle} arrow placement="top">
+          <Typography
+            variant="caption"
+            sx={{
+              color: "#2e7d32",
+              fontSize: "11px",        // ✅ smaller
+              fontWeight: 500,
+              opacity: 0.85,          // ✅ subtle
+              display: "block",
+              cursor: "pointer",
+            }}
+          >
+            {formatCurrency(converted, DEFAULT_CURRENCY)}
+          </Typography>
+        </Tooltip>
+      )}
+    </Box>
+  );
+};
 
  return(
 
@@ -506,6 +556,34 @@ Cancel
 </form>
 </Collapse>
 
+<Box display="flex" justifyContent="flex-end" mb={1}>
+  <Typography
+    variant="caption"
+    sx={{
+      display: "flex",
+      alignItems: "center",
+      gap: 0.5,
+      color: "#2e7d32",
+      fontSize: "11px",
+      background: "#f1f8f4",
+      px: 1,
+      py: 0.4,
+      borderRadius: 1,
+      border: "1px solid #c8e6c9",
+    }}
+  >
+    <Box
+      sx={{
+        width: 8,
+        height: 8,
+        borderRadius: "50%",
+        backgroundColor: "#2e7d32",
+      }}
+    />
+    Default Currency <b>{DEFAULT_CURRENCY}</b>
+  </Typography>
+</Box>
+
 <TableContainer>
 <Table size="small">
 
@@ -534,10 +612,10 @@ rateCards.data?.data?.map((row:any)=>(
 <TableCell>{row.costCode}</TableCell>
 <TableCell>{row.costType}</TableCell>
 <TableCell>{row.rateType}</TableCell>
-<TableCell>{formatCurrency(row.rate, row.currency)}</TableCell>
-<TableCell>{formatCurrency(row.minRate, row.currency)}</TableCell>
-<TableCell>{formatCurrency(row.maxRate, row.currency)}</TableCell>
-<TableCell>{formatCurrency(row.upperCap, row.currency)}</TableCell>
+<TableCell>{renderCurrencyCell('rate', row)}</TableCell>
+<TableCell>{renderCurrencyCell('minRate', row)}</TableCell>
+<TableCell>{renderCurrencyCell('maxRate', row)}</TableCell>
+<TableCell>{renderCurrencyCell('upperCap', row)}</TableCell>
 <TableCell>{row.currency}</TableCell>
 <TableCell>{row.status}</TableCell>
 
