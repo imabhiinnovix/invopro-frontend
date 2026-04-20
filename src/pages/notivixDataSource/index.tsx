@@ -433,6 +433,7 @@ console.log('uniqueMonths',uniqueMonths);
       )}&sort=${encodeURIComponent(JSON.stringify({ Title: 1 }))}
       &selectedFields=${encodeURIComponent(JSON.stringify([]))}
       &filters=${encodeURIComponent(JSON.stringify(filter))}
+      &year=${selectedYear || ""}&month=${selectedMonth || ""}
       &search=${encodeURIComponent(debouncedSearchValue || "")}
       `,
     false

@@ -97,6 +97,9 @@ export default function ActivityRateCardSection({
   const [costCodeOptions, setCostCodeOptions] = useState<any[]>([]);
   const [costTypeOptions, setCostTypeOptions] = useState<any[]>([]);
 
+  const [exportTriggered, setExportTriggered] = useState(false);
+  const [showExportSuccessDialog, setShowExportSuccessDialog] = useState(false);
+
   const { register, handleSubmit, reset, control } = useForm<FormValues>({
     defaultValues,
   });
@@ -135,6 +138,24 @@ export default function ActivityRateCardSection({
     },
     true
   );
+
+const activityExport = useGet<any>(
+  ["activityRateCardExport", vendorId, engagementLetterId],
+  `${GET.Activity_Rate_Card_List}?activityEntity=vendor&vendorId=${vendorId}&engagementLetterId=${engagementLetterId}&type=export`,
+  false // ❗ important: disabled by default
+);
+
+const handleExport = async () => {
+  setExportTriggered(true);
+  await activityExport.refetch();
+};
+
+useEffect(() => {
+  if (exportTriggered && activityExport.isSuccess) {
+    setShowExportSuccessDialog(true);
+    setExportTriggered(false);
+  }
+}, [exportTriggered, activityExport.isSuccess]);
 
   const costCodeMaster = usePost(["costCodeMaster"], undefined, false);
   const costTypeMaster = usePost(["costTypeMaster"], undefined, false);
@@ -306,9 +327,19 @@ const renderCurrencyCell = (field: string, row: any) => {
   </Grid>
 
   <Grid item>
-    <Button variant="outlined" onClick={handleAdd}>
-      Add Rate
-    </Button>
+    <Stack direction="row" spacing={1}>
+  <Button
+    variant="outlined"
+    onClick={handleExport}
+    disabled={activityExport.isFetching}
+  >
+    {activityExport.isFetching ? "Exporting..." : "Export"}
+  </Button>
+
+  <Button variant="outlined" onClick={handleAdd}>
+    Add Rate
+  </Button>
+</Stack>
   </Grid>
 </Grid>
 
