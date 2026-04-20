@@ -12,6 +12,7 @@ import { GET } from "../../services/apiRoutes";
 
 import { ActionIconButton, StatusChip } from "../../components/common";
 import SearchField from "../../components/common/SearchField";
+import { CustomPagination } from "../../components/common/pagination/customPagination";
 
 export function ActivityInfoDataTable({
   onEdit,
@@ -150,6 +151,15 @@ const columns: GridColDef[] = [
         paginationModel={paginationModel}
         onPaginationModelChange={setPaginationModel}
         loading={loading || activityList.isLoading}
+        slots={{
+          pagination: () => (
+            <CustomPagination
+              paginationModel={paginationModel}
+              setPaginationModel={setPaginationModel}
+              rowCount={activityList?.data?.totalCount || 0}
+            />
+          ),
+        }}
       />
     </>
   );
