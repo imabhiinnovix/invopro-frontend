@@ -73,7 +73,7 @@ export const NotivixDataModal: React.FC<ModelSectionProps> = ({
   };
 
   const isValidNumber = (value: string) => {
-    const numberRegex = /^[0-9]*$/;
+    const numberRegex = /^\d*\.?\d*$/;
     return numberRegex.test(value);
   };
 
@@ -374,6 +374,10 @@ export const NotivixDataModal: React.FC<ModelSectionProps> = ({
       if (submitAttempted) validateField(fieldName, val);
     };
 
+        const isAmountField =
+  fieldName?.toLowerCase().includes("fees") ||
+  fieldName?.toLowerCase().includes("amount");
+
     switch (attribute.type) {
       case "boolean":
         return (
@@ -646,7 +650,13 @@ export const NotivixDataModal: React.FC<ModelSectionProps> = ({
             key={fieldName}
             label={renderLabel(fieldLabel)}
             type="number"
-            value={value || ""}
+             value={
+              value !== undefined && value !== null && value !== ""
+                ? value
+                : isAmountField
+                ? "0.00"
+                : ""
+            }
             onChange={(e) =>
               handleFieldChange(
                 e.target.value === "" || isValidNumber(e.target.value)
