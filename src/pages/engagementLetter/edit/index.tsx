@@ -11,6 +11,11 @@ import {
   CircularProgress,
   Tabs,
   Tab,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Typography,
 } from "@mui/material";
 
 import { useForm, Controller } from "react-hook-form";
@@ -54,6 +59,9 @@ export default function EngagementLetterEdit() {
   const [tabValue, setTabValue] = useState(0);
 
   const { control, handleSubmit, reset, setValue } = useForm();
+
+  const [exportTriggered, setExportTriggered] = useState(false);
+const [showExportSuccessDialog, setShowExportSuccessDialog] = useState<string | null>(null);
 
   const handleTabChange = (_: any, newValue: number) => {
     setTabValue(newValue);
@@ -101,6 +109,29 @@ export default function EngagementLetterEdit() {
     }
   }, [engagementLetter.data, reset, setValue]);
 
+
+  const activityExport = useGet<any>(
+  [
+    "activityRateCardExport",
+    engagementLetter.data?.data?.vendorId?._id,
+    engagementLetter.data?.data?._id,
+  ],
+  `${GET.Activity_Rate_Card_List}?vendorId=${engagementLetter.data?.data?.vendorId?._id}&engagementLetterId=${engagementLetter.data?.data?._id}&type=export`,
+  false
+);
+const handleExport = async () => {
+  setExportTriggered(true);
+  await activityExport.refetch();
+};
+useEffect(() => {
+  if (exportTriggered && activityExport.isSuccess) {
+    setShowExportSuccessDialog(
+      "Your data has started exporting. You can view its status in the Jobs page."
+    );
+    setExportTriggered(false);
+  }
+}, [exportTriggered, activityExport.isSuccess]);
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
 
@@ -121,6 +152,15 @@ export default function EngagementLetterEdit() {
 
   return (
     <Box p={3}>
+      <Box display="flex" justifyContent="flex-end" mb={2}>
+  <StyledButton
+    variant="secondary"
+    onClick={handleExport}
+    disabled={activityExport.isFetching}
+  >
+    {activityExport.isFetching ? "Exporting..." : "Export"}
+  </StyledButton>
+</Box>
       <Grid container spacing={3}>
         <Grid item xs={6}>
           <Tabs
@@ -349,6 +389,28 @@ export default function EngagementLetterEdit() {
           <FilePreview fileUrl={previewUrl} />
         </Grid>
       </Grid>
+      {!!showExportSuccessDialog && (
+  <Dialog open onClose={() => setShowExportSuccessDialog(null)}>
+    <DialogTitle>Export Data</DialogTitle>
+
+    <DialogContent>
+      <Typography>{showExportSuccessDialog}</Typography>
+    </DialogContent>
+
+    <DialogActions>
+      <StyledButton
+        variant="primary"
+        onClick={() => {
+          setShowExportSuccessDialog(null);
+          navigate("/jobs");
+        }}
+      >
+        Go to Jobs
+      </StyledButton>
+    </DialogActions>
+  </Dialog>
+)}
     </Box>
+    
   );
 }
