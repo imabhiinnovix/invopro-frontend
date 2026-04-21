@@ -46,6 +46,8 @@ import { useSelector } from "react-redux";
 import { RootState } from "../../reducers";
 import { formatCurrency } from "../../utils/utils";
 import { AuthContext } from "../../context/AuthContext";
+import DialogContainer from "../../components/molecule/dialog";
+import { useNavigate } from "react-router-dom";
 
 interface Props {
   vendorId: string;
@@ -98,11 +100,14 @@ export default function ActivityRateCardSection({
   const [costTypeOptions, setCostTypeOptions] = useState<any[]>([]);
 
   const [exportTriggered, setExportTriggered] = useState(false);
-  const [showExportSuccessDialog, setShowExportSuccessDialog] = useState(false);
-
+  const [showExportSuccessDialog, setShowExportSuccessDialog] = useState<
+      string | null
+    >(null);
   const { register, handleSubmit, reset, control } = useForm<FormValues>({
     defaultValues,
   });
+
+   const navigate = useNavigate();
 
   const activityList = useGet<any>(
     ["activityRateCardList", vendorId, engagementLetterId],
@@ -152,7 +157,7 @@ const handleExport = async () => {
 
 useEffect(() => {
   if (exportTriggered && activityExport.isSuccess) {
-    setShowExportSuccessDialog(true);
+    setShowExportSuccessDialog("Your data has started exporting. You can view its status in the Jobs page.");
     setExportTriggered(false);
   }
 }, [exportTriggered, activityExport.isSuccess]);
@@ -686,6 +691,32 @@ const renderCurrencyCell = (field: string, row: any) => {
             </Button>
           </DialogActions>
         </Dialog>
+
+         {!!showExportSuccessDialog && (
+        <DialogContainer
+          open={!!showExportSuccessDialog}
+          onClose={() => {
+            setShowExportSuccessDialog(null);
+          }}
+          title="Export Data"
+          actions={
+            <>
+              <StyledButton
+                variant="primary"
+                onClick={() => {
+                  setShowExportSuccessDialog(null);
+                  navigate("/jobs");
+                }}
+              >
+                Go to Jobs
+              </StyledButton>
+            </>
+          }
+          maxWidth="xs"
+        >
+          <Typography>{showExportSuccessDialog}</Typography>
+        </DialogContainer>
+      )}
       </CardContent>
     </Card>
   );
