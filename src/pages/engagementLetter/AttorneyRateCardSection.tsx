@@ -26,7 +26,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 
 import { Controller, useForm } from "react-hook-form";
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 
 import useGet from "../../hooks/useGet";
 import usePost from "../../hooks/usePost";
@@ -39,6 +39,9 @@ import { CURRENCIES } from "../../constants/currencies";
 import { GET, POST, DELETE, PUT } from "../../services/apiRoutes";
 import { formatCurrency } from "../../utils/utils";
 import { AuthContext } from "../../context/AuthContext";
+import DialogContainer from "../../components/molecule/dialog";
+import { StyledButton } from "../../components/common";
+import { useNavigate } from "react-router-dom";
 
 const ATTORNEY_USER_TYPES = [
   { label: "Attorney", value: "attorney" },
@@ -72,6 +75,13 @@ export default function AttorneyRateCardSection({
   const [open, setOpen] = useState(false);
   const [editRow, setEditRow] = useState<any>(null);
 
+    const [exportTriggered, setExportTriggered] = useState(false);
+  const [showExportSuccessDialog, setShowExportSuccessDialog] = useState<
+      string | null
+    >(null);
+
+    const navigate = useNavigate();
+
   const attorneys = useGet(
     ["attorneys", vendorId],
     `${GET.Vendor_Attorney_List}?vendorId=${vendorId}`,
@@ -83,6 +93,24 @@ export default function AttorneyRateCardSection({
     `${GET.Activity_Rate_Card_List}?activityEntity=attorney&engagementLetterId=${engagementLetterId}`,
     true
   );
+
+  const activityExport = useGet<any>(
+  ["attorneyRateCards", engagementLetterId],
+  `${GET.Activity_Rate_Card_List}?activityEntity=attorney&engagementLetterId=${engagementLetterId}&type=export`,
+  false // ❗ important: disabled by default
+);
+
+const handleExport = async () => {
+  setExportTriggered(true);
+  await activityExport.refetch();
+};
+
+useEffect(() => {
+  if (exportTriggered && activityExport.isSuccess) {
+    setShowExportSuccessDialog("Your data has started exporting. You can view its status in the Jobs page.");
+    setExportTriggered(false);
+  }
+}, [exportTriggered, activityExport.isSuccess]);
 
   const createAttorney = usePost(
     ["createAttorney"],
@@ -271,6 +299,15 @@ const confirmDelete = () => {
         <Grid item>
             {/* <Typography variant="h6">Attorney Rate Card</Typography> */}
         </Grid>
+        <Grid item>
+    <Stack direction="row" spacing={1}>
+         <Button
+    variant="outlined"
+    onClick={handleExport}
+    disabled={activityExport.isFetching}
+  >
+    {activityExport.isFetching ? "Exporting..." : "Export"}
+  </Button>
 
         <Button
   variant="outlined"
@@ -281,6 +318,8 @@ const confirmDelete = () => {
 >
   Add Rate
 </Button>
+</Stack>
+</Grid>
       </Box>
 
       <Collapse in={showForm} timeout="auto" unmountOnExit>
@@ -579,7 +618,31 @@ setShowForm(true);
     </Button>
   </DialogActions>
 </Dialog>
-
+            {!!showExportSuccessDialog && (
+        <DialogContainer
+          open={!!showExportSuccessDialog}
+          onClose={() => {
+            setShowExportSuccessDialog(null);
+          }}
+          title="Export Data"
+          actions={
+            <>
+              <StyledButton
+                variant="primary"
+                onClick={() => {
+                  setShowExportSuccessDialog(null);
+                  navigate("/jobs");
+                }}
+              >
+                Go to Jobs
+              </StyledButton>
+            </>
+          }
+          maxWidth="xs"
+        >
+          <Typography>{showExportSuccessDialog}</Typography>
+        </DialogContainer>
+      )}
     </Box>
   );
 }

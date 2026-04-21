@@ -47,6 +47,9 @@ import { RootState } from "../../reducers";
 import LocationAutocomplete from "../../components/common/location/LocationAutocomplete";
 import { formatCurrency } from "../../utils/utils";
 import { AuthContext } from "../../context/AuthContext";
+import { useNavigate } from "react-router-dom";
+import DialogContainer from "../../components/molecule/dialog";
+import { StyledButton } from "../../components/common";
 
 interface Props {
  vendorId: string;
@@ -85,6 +88,13 @@ const defaultValues = {
  const {control,handleSubmit,reset, setValue, getValues}=useForm<any>({defaultValues});
  const {control:faControl,handleSubmit:handleFASubmit,reset:faReset}=useForm<any>();
 
+   const [exportTriggered, setExportTriggered] = useState(false);
+  const [showExportSuccessDialog, setShowExportSuccessDialog] = useState<
+      string | null
+    >(null);
+
+   const navigate = useNavigate();
+
  const subvendors = useGet(
   ["subvendors",vendorId],
   `${GET.Sub_Vendor_List}?vendorId=${vendorId}`,
@@ -96,6 +106,24 @@ const defaultValues = {
   `${GET.Activity_Rate_Card_List}?activityEntity=subvendor&vendorId=${vendorId}&engagementLetterId=${engagementLetterId}`,
   true
  );
+
+ const activityExport = useGet<any>(
+  ["faRateCards", vendorId, engagementLetterId],
+  `${GET.Activity_Rate_Card_List}?activityEntity=subvendor&vendorId=${vendorId}&engagementLetterId=${engagementLetterId}&type=export`,
+  false // ❗ important: disabled by default
+);
+
+const handleExport = async () => {
+  setExportTriggered(true);
+  await activityExport.refetch();
+};
+
+useEffect(() => {
+  if (exportTriggered && activityExport.isSuccess) {
+    setShowExportSuccessDialog("Your data has started exporting. You can view its status in the Jobs page.");
+    setExportTriggered(false);
+  }
+}, [exportTriggered, activityExport.isSuccess]);
 
  const createRateCard = usePost(
   ["createFARateCard"],
@@ -328,10 +356,19 @@ const defaultValues = {
     {/* <Typography variant="h6">FA Rate Card</Typography> */}
   </Grid>
 
-  <Grid item>
+   <Grid item>
+    <Stack direction="row" spacing={1}>
+  <Button
+    variant="outlined"
+    onClick={handleExport}
+    disabled={activityExport.isFetching}
+  >
+    {activityExport.isFetching ? "Exporting..." : "Export"}
+  </Button>
     <Button variant="outlined" onClick={handleAdd}>
       Add Rate
     </Button>
+    </Stack>
   </Grid>
 </Grid>
 
@@ -700,7 +737,31 @@ rateCards.data?.data?.map((row:any)=>(
 </DialogActions>
 
 </Dialog>
-
+{!!showExportSuccessDialog && (
+        <DialogContainer
+          open={!!showExportSuccessDialog}
+          onClose={() => {
+            setShowExportSuccessDialog(null);
+          }}
+          title="Export Data"
+          actions={
+            <>
+              <StyledButton
+                variant="primary"
+                onClick={() => {
+                  setShowExportSuccessDialog(null);
+                  navigate("/jobs");
+                }}
+              >
+                Go to Jobs
+              </StyledButton>
+            </>
+          }
+          maxWidth="xs"
+        >
+          <Typography>{showExportSuccessDialog}</Typography>
+        </DialogContainer>
+      )}
 </CardContent>
 </Card>
 
