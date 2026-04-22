@@ -73,9 +73,9 @@ export const NotivixDataModal: React.FC<ModelSectionProps> = ({
   };
 
    const isValidNumber = (value: string) => {
-    const numberRegex = /^\d*\.?\d*$/;
-    return numberRegex.test(value);
-  };
+  const numberRegex = /^-?\d*\.?\d*$/;
+  return numberRegex.test(value);
+};
 
   const getOptionsForAttribute = (attributeId: string) => {
     const attribute = attributeListData.find(

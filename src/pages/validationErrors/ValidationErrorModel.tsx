@@ -1404,9 +1404,9 @@ export const ValidationErrorModal: React.FC<ValidationErrorModalProps> = ({
   };
 
   const isValidNumber = (value: string) => {
-    const numberRegex = /^[0-9]*$/;
-    return numberRegex.test(value);
-  };
+  const numberRegex = /^-?\d*\.?\d*$/;
+  return numberRegex.test(value);
+};
 
   // Build the rowData payload for both error codes
   // const buildRowDataPayload = () => {

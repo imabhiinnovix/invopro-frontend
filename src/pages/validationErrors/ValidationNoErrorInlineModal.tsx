@@ -280,7 +280,7 @@ React.useEffect(() => {
   };
 
    const isValidNumber = (value: string) => {
-  const numberRegex = /^\d*\.?\d*$/;
+  const numberRegex = /^-?\d*\.?\d*$/;
   return numberRegex.test(value);
 };
 
