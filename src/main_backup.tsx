@@ -9,8 +9,6 @@ import MainProvider from "./context/main.tsx";
 import { Provider } from "react-redux";
 import { store } from "./reducers/index.tsx";
 
-import { BrowserRouter } from "react-router-dom"; // ✅ ADD THIS
-
 export const queryClient = new QueryClient();
 
 declare global {
@@ -20,17 +18,17 @@ declare global {
 }
 
 const rootElement = document.getElementById("root")!;
+
+// Type-safe root creation
 const root = window.__root || (window.__root = createRoot(rootElement));
 
 root.render(
   <StrictMode>
     <Provider store={store}>
       <QueryClientProvider client={queryClient}>
-        <BrowserRouter> {/* ✅ FIX IS HERE */}
-          <MainProvider>
-            <App />
-          </MainProvider>
-        </BrowserRouter>
+        <MainProvider>
+          <App />
+        </MainProvider>
       </QueryClientProvider>
     </Provider>
   </StrictMode>,

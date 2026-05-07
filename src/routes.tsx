@@ -1,5 +1,5 @@
 import { Route, Routes, Navigate } from "react-router-dom";
-import Login from "./pages/login";
+// import Login from "./pages/login";
 import ForgotPassword from "./pages/forgotPassword";
 import SendOTP from "./pages/loginOTP/sendOTP";
 import VerifyOTP from "./pages/loginOTP/verifyOTP";
@@ -57,6 +57,21 @@ import PaymentInfoPage from "./pages/paymentInfo";
 import PurchaseOrderPage from "./pages/purchaseOrder";
 import ActivityInfoPage from "./pages/activityInfo";
 import ReferenceInvoice from "./pages/referenceInvoice";
+import { Home } from "./pages/Home";
+import { Upload } from "./pages/Upload";
+import { InvoiceList } from "./pages/InvoiceList";
+import { InvoiceReview } from "./pages/InvoiceReview";
+import { InvoiceDetail } from "./pages/InvoiceDetail";
+import { Vendors } from "./pages/Vendors";
+import { VendorCreate } from "./pages/VendorCreate";
+import { UsersRoles } from "./pages/UsersRoles";
+import { ExecDashboard } from "./pages/ExecDashboard";
+import { VendorBench } from "./pages/VendorBench";
+import { Onboarding } from "./pages/Onboarding";
+import { AddUser, AddRole } from "./pages/AddRoleAddUser";
+import { VendorRateCards } from "./pages/VendorRateCards";
+import { AuditTrailPage } from "./pages/AuditTrail";
+import { Login } from "./pages/Login";
 
 const AppRoutes = () => {
   const token = getAuthToken();
@@ -66,40 +81,57 @@ const AppRoutes = () => {
       {/* Root Route */}
       <Route
         path="/"
-        element={<Navigate to={token ? "/dashboard" : "/login"} replace />}
+        element={<Navigate to={token ? "/home" : "/login"} replace />}
       />
 
-      {/* Public Routes */}
       <Route path="/login" element={<Login />} />
+      <Route path="/home" element={<Home />} />
+      <Route path="/upload" element={<Upload />} />
+      <Route path="/invoice-list" element={<InvoiceList />} />
+      <Route path="/invoice-review" element={<InvoiceReview />} />
+      <Route path="/inv-detail" element={<InvoiceDetail />} />
+      <Route path="/vendors" element={<Vendors />} />
+      <Route path="/vendor-create" element={<VendorCreate />} />
+      <Route path="/roles" element={<UsersRoles />} />
+      <Route path="/exec" element={<ExecDashboard />} />
+      <Route path="/bench" element={<VendorBench />} />
+      <Route path="/onboard" element={<Onboarding />} />
+      <Route path="/add-user" element={<AddUser />} />
+      <Route path="/add-role" element={<AddRole />} />
+      <Route path="/vendor-rate-card" element={<VendorRateCards />} />
+      <Route path="/audit-trail" element={<AuditTrailPage />} />
+
+      {/* Public Routes */}
+      {/* <Route path="/login" element={<Login />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/otp-login" element={<SendOTP />} />
       <Route path="/otp-login/otp" element={<VerifyOTP />} />
       <Route
         path="/notification/send-acknowledge-notification/:id"
         element={<AcknowledgeNotification />}
-      />
+      /> */}
 
       {/* User Protected Routes */}
       <Route element={<AuthProtect />}>
         <Route element={<CommonLayout />}>
-          <Route path="/dashboard" element={<Dashboard />} />
+          {/* <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/dashboard/create" element={<Dashboard />} />
           <Route path="/dashboard/overview" element={<DashboardOverview />} />
           <Route path="/dashboard/analytics" element={<DashboardAnalytics />} />
           <Route path="/dashboard/:id" element={<Dashboard />} />
-          <Route path="/reports" element={<Report />} />
+          <Route path="/reports" element={<Report />} /> */}
           <Route path="/data-source" element={<DataSource />} />
           <Route path="/data-source/:id" element={<DataSources />} />
           <Route path="/entity" element={<Entity />} />
           <Route path="/data-src" element={<DataSource />} />
           <Route path="/data-src-version" element={<DataSourceVersion />} />
           <Route path="/data-src-version/:dataSourceId" element={<DataSourceVersion />} />
-          <Route path="/reference-invoice" element={<ReferenceInvoice />} />
+          {/* <Route path="/reference-invoice" element={<ReferenceInvoice />} />
           <Route path="/VixAi-Insights" element={<AIInsightPage />} />
           <Route path="/VixAi-Chart" element={<NaturalLanguage />} />
-          <Route path="/report-settings" element={<ReportSettings />} />
+          <Route path="/report-settings" element={<ReportSettings />} /> */}
           {/* // Notivix routes */}
-          <Route path="/dashboard" element={<NotivixDashboard />} />
+          {/* <Route path="/dashboard" element={<NotivixDashboard />} />
           <Route path="/dashboard/create" element={<NotivixDashboard />} />
           <Route path="/dashboard/:id" element={<NotivixDashboard />} />
           <Route path="/notification" element={<Notification />} />
@@ -108,15 +140,15 @@ const AppRoutes = () => {
           <Route
             path="/notification-types/add"
             element={<AddNotificationTypes />}
-          />
-          <Route
+          /> */}
+          {/* <Route
             path="/notification-types/edit/:id"
             element={<EditNotificationTypes />}
           />
           <Route path="/settings/users" element={<Users />} />
-          <Route path="/permissions" element={<Permissions />} />
+          <Route path="/permissions" element={<Permissions />} /> */}
           {/* <Route path="/notivix/settings/roles" element={<Roles />} /> */}
-          <Route path="/roles" element={<Roles />} />
+          {/* <Route path="/roles" element={<Roles />} />
           <Route path="/roles/add" element={<RolePage mode="add" />} />
           <Route path="/roles/edit/:id" element={<RolePage mode="edit" />} />
           <Route path="/roles/view/:id" element={<RolePage mode="view" />} />
@@ -140,9 +172,9 @@ const AppRoutes = () => {
           <Route
             path="/engagement-letter/view/:id"
             element={<EngagementLetterView />}
-          />
+          /> */}
 
-          <Route path="/legal-document" element={<LegalDocument />} />
+          {/* <Route path="/legal-document" element={<LegalDocument />} />
 
           <Route path="/vendor-invoice" element={<VendorInvoicePage />} />
 
@@ -173,17 +205,17 @@ const AppRoutes = () => {
           <Route
             path="/system-settings/charts/source-list/attributes/:id"
             element={<SourceAttributes />}
-          />
+          /> */}
         </Route>
       </Route>
 
       {/* Super Admin Protected Routes */}
-      <Route element={<SuperAdminProtect />}>
+      {/* <Route element={<SuperAdminProtect />}>
         <Route element={<CommonLayout />}>
           <Route path="/superadmin/dashboard" element={<Dashboard />} />
-          {/* <Route path="/attribute-option" element={<AttributeOption />} /> */}
+          <Route path="/attribute-option" element={<AttributeOption />} />
         </Route>
-      </Route>
+      </Route> */}
 
       {/* Admin and Super Admin Protected Routes */}
       {/* <Route element={<AdminSuperAdminProtect />}>
@@ -192,11 +224,11 @@ const AppRoutes = () => {
         </Route>
       </Route> */}
 
-      <Route element={<AuthProtect />}>
+      {/* <Route element={<AuthProtect />}>
         <Route element={<CommonLayout />}>
           <Route path="/themes" element={<DashboardThemePage />} />
         </Route>
-      </Route>
+      </Route> */}
 
       {/* 404 - Page Not Found */}
       <Route path="*" element={<NotFound />} />

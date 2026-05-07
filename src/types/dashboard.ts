@@ -1,4 +1,4 @@
-import { FieldSetting } from "./../pages/notivixDashboard/types";
+import { FieldSetting } from "../pages/notivixDashboard/types";
 export interface ErrorResponse {
   fieldName: string;
   message: string;
