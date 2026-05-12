@@ -13,20 +13,24 @@ export type PageId =
   | "bench" | "onboard" | "add-user" | "add-role" | "vendor-rate-card";
 
 export interface Invoice {
-  id:        string;
-  vendor:    string;
-  month:     string;
-  amount:    number;
-  currency:  Currency;
-  items:     number;
-  matched:   number;
-  flagged:   number;
-  status:    InvoiceStatus;
-  risk:      RiskLevel;
-  assignee:  string;
-  date:      string;
-  period:    string;
-  region:    string;
+  _id: string;
+  id: string;
+  vendor: string;
+  date: string;
+  amount: number;
+  items: number;
+  matched: number;
+  flagged: number;
+  risk: string;
+  status: string;
+
+  // 🔥 NEW SUMMARY FIELDS
+  totalLineItems?: number;
+  totalAmount?: number;
+  totalApprovedCount?: number;
+  totalFlaggedCount?: number;
+  firstInvoiceNumber?: string | null;
+  firstInvoiceDate?: string | null;
 }
 
 export interface InvoiceLineItem {

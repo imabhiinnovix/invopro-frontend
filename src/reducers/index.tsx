@@ -8,6 +8,7 @@ import { configureStore } from '@reduxjs/toolkit';
 import customReportsReducer from '../pages/report-settings/customReportsReducer';
 import userReducer from './userSlice';
 import notivixDashboardReducer from '../pages/notivixDashboard/notivixDashboardReducer'; 
+import invoiceSliceReducer from './invoiceSlice';
 // 👇 Explicitly define the shape of your Redux state
 const rootReducer = combineReducers({
   dataSource: dataSourceReducer,
@@ -17,6 +18,8 @@ const rootReducer = combineReducers({
   customReports: customReportsReducer,
   userPermission: userReducer,
   notivixDashboard: notivixDashboardReducer,
+  invoice: invoiceSliceReducer
+
   // naturalLanguageReducer: naturalLanguageReducer,
 });
 

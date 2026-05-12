@@ -1,5 +1,13 @@
 import React, { useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
+import { DateTime } from "luxon";
+import { useForm, Controller } from "react-hook-form";
+import CommonDatePicker from "../components/common/datePicker/datePicker";
+import usePostMultipart from "../hooks/usePostMultipleMultipart";
+import { POST } from "../services/apiRoutes";
+import useGet from "../hooks/useGet";
+import { GET } from "../services/apiRoutes";
+import { useUploadCustomReportFile } from "../hooks/useFileUpalod";
 
 type UploadTab   = "activity" | "invoice";
 type UploadState = "idle" | "ready" | "uploaded";
@@ -7,25 +15,25 @@ type UploadState = "idle" | "ready" | "uploaded";
 interface FileZoneProps {
   id:        string;
   state:     UploadState;
-  file?:     File;
   accept:    string;
   label:     string;
   subLabel:  string;
   isInvoice?: boolean;
-  onFile:    (f: File) => void;
+  files?: File[];
+  onFile: (files: File[]) => void;
   onUpload:  () => void;
 }
 const ACTIVITY_TYPE_OPTIONS = ["MailBox","Action","Disclosure","Portfolio"];
-const VENDOR_OPTIONS = ["WBD","AOMB","CCPIT","JAH","Allegro","Saba","Quicker","S Y-CHA","EP&C","Lavery","Conley Rose"];
+// const VENDOR_OPTIONS = ["WBD","AOMB","CCPIT","JAH","Allegro","Saba","Quicker","S Y-CHA","EP&C","Lavery","Conley Rose"];
 const REGION_OPTIONS = ["United States","Europe","China","Japan","South Korea","All Regions"];
 
-const FileZone: React.FC<FileZoneProps> = ({ id, state, file, accept, label, subLabel, onFile, onUpload }) => {
+const FileZone: React.FC<FileZoneProps> = ({ id, state, files, accept, label, subLabel, onFile, onUpload }) => {
   const [dragging, setDragging] = useState(false);
 
   const onDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault(); setDragging(false);
-    const f = e.dataTransfer.files[0];
-    if (f) onFile(f);
+    const files = Array.from(e.dataTransfer.files || []);
+    if (files.length) onFile(files);
   }, [onFile]);
 
   const isUploaded = state === "uploaded";
@@ -49,14 +57,19 @@ const FileZone: React.FC<FileZoneProps> = ({ id, state, file, accept, label, sub
         marginBottom: 16,
       }}
     >
-      <input id={id} type="file" accept={accept} style={{ display: "none" }} onChange={e => { const f = e.target.files?.[0]; if (f) onFile(f); }} />
+      <input id={id} type="file" multiple accept={accept} style={{ display: "none" }} onChange={e => {
+  const files = Array.from(e.target.files || []);
+  if (files.length) onFile(files);
+}} />
       <svg width="32" height="32" viewBox="0 0 24 24" fill={isUploaded ? "#16A34A" : "#3B2FD9"} style={{ display: "block", margin: "0 auto 8px" }}>
         {isUploaded
           ? <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
           : <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/>}
       </svg>
       <div style={{ fontSize: 14, fontWeight: 600, color: isUploaded ? "#16A34A" : "#3B2FD9" }}>
-        {isUploaded ? "File uploaded successfully" : file ? file.name : label}
+        {isUploaded ? "File uploaded successfully" : files?.length
+  ? `${files[0].name}${files.length > 1 ? ` +${files.length - 1} more` : ""}`
+  : label}
       </div>
       {!isUploaded && <div style={{ fontSize: 12, color: "#6B7280", marginTop: 4 }}>{subLabel}</div>}
     </div>
@@ -73,10 +86,47 @@ const Field: React.FC<FieldProps> = ({ label, required, children }) => (
   </div>
 );
 
-const Select: React.FC<{ value: string; onChange: (v: string) => void; options: string[] }> = ({ value, onChange, options }) => (
-  <select value={value} onChange={e => onChange(e.target.value)} style={{ width: "100%", border: "1.5px solid #E4E7F0", borderRadius: 8, padding: "8px 12px", fontSize: 13, fontFamily: "inherit", color: "#1A1D2E", background: "#fff", outline: "none", cursor: "pointer" }}>
+type SelectOption =
+  | string
+  | {
+      value: string;
+      label: string;
+    };
+
+const Select: React.FC<{
+  value: string;
+  onChange: (v: string) => void;
+  options: SelectOption[];
+}> = ({ value, onChange, options }) => (
+  <select
+    value={value}
+    onChange={(e) => onChange(e.target.value)}
+    style={{
+      width: "100%",
+      border: "1.5px solid #E4E7F0",
+      borderRadius: 8,
+      padding: "8px 12px",
+      fontSize: 13,
+      fontFamily: "inherit",
+      color: "#1A1D2E",
+      background: "#fff",
+      outline: "none",
+      cursor: "pointer"
+    }}
+  >
     <option value="">Select...</option>
-    {options.map(o => <option key={o}>{o}</option>)}
+
+    {options.map((o) =>
+      typeof o === "string" ? (
+        <option key={o} value={o}>
+          {o}
+        </option>
+      ) : (
+        <option key={o.value} value={o.value}>
+          {o.label}
+        </option>
+      )
+    )}
   </select>
 );
 
@@ -105,19 +155,124 @@ export const Upload: React.FC<UploadProps> = ({ onNavigate }) => {
   const [tab,     setTab]     = useState<UploadTab>("activity");
   const [vendor,  setVendor]  = useState("");
   const [activityType,  setActivityType]  = useState("");
-  const [month,   setMonth]   = useState("2026-03");
   const [region,  setRegion]  = useState("");
-  const [actFile, setActFile] = useState<File | undefined>();
-  const [invFile, setInvFile] = useState<File | undefined>();
+  const [actFiles, setActFiles] = useState<File[]>([]);
+  const [invFiles, setInvFiles] = useState<File[]>([]);
+  const [invoiceMonth, setInvoiceMonth] = useState(
+    DateTime.now().toFormat("yyyy-MM")
+  );
   const [actState, setActState] = useState<UploadState>("idle");
   const [invState, setInvState] = useState<UploadState>("idle");
 
-  const handleActFile = (f: File) => { setActFile(f); setActState("ready"); };
-  const handleInvFile = (f: File) => { setInvFile(f); setInvState("ready"); };
+  const handleActFile = (files: File[]) => {
+    setActFiles(prev => [...prev, ...files]);
+    setActState("ready");
+  };
+  const handleInvFile = (files: File[]) => {
+    setInvFiles(prev => [...prev, ...files]);
+    setInvState("ready");
+  };
 
   const done = [actState === "uploaded", invState === "uploaded", false, false];
 
   const navigate = useNavigate();
+
+  const { control, handleSubmit, reset } = useForm({
+  defaultValues: {
+    activityMonth: DateTime.now().toFormat("yyyy-MM"),
+    invoiceMonth: DateTime.now().toFormat("yyyy-MM"),
+  },
+});
+
+const { mutate: mutateReportUpload, isPending: isInvoiceUploading } =
+  useUploadCustomReportFile();
+
+
+const { data: vendorData, isLoading: vendorLoading } = useGet<{
+  success: boolean;
+  data: any[];
+}>(
+  ["vendorList"],
+  GET.Vendor_List,
+  true
+);
+
+const vendorOptions =
+  vendorData?.data?.map((vendor) => ({
+    value: vendor._id,
+    label: vendor.name,
+  })) || [];
+
+  const createActivity = usePostMultipart(
+    ["createActivity"],
+    (data) => {
+      if (data?.success) {
+        setActState("idle");
+        setActFiles([]);
+        setActivityType("");
+
+        reset({
+          activityMonth: DateTime.now().toFormat("yyyy-MM"),
+          invoiceMonth: DateTime.now().toFormat("yyyy-MM"),
+        });
+      }
+    },
+    true
+  );
+
+  const handleActivitySubmit = (data: any) => {
+    if (!actFiles.length || !activityType) return;
+
+    createActivity.mutate({
+      url: POST.Create_Activity,
+      payload: {
+        activityType: activityType.toLowerCase(),
+        versionValue: DateTime.fromISO(data.activityMonth).toFormat("yyyy-LL"),
+        files: actFiles,
+      },
+    });
+  };
+
+  const handleInvoiceSubmit = (data: any) => {
+  if (!invFiles.length || !vendor) return;
+
+  const formattedVersion = DateTime.fromISO(data.invoiceMonth).toFormat("yyyy-LL");
+
+  const randomSuffix = Math.floor(Math.random() * 1000)
+    .toString()
+    .padStart(3, "0");
+
+  const formData = new FormData();
+
+formData.append("dataSourceId", import.meta.env.VITE_INVOICE_DATASOURCE_ID);
+formData.append("versionValue", formattedVersion);
+formData.append("versionName", `version_${Date.now()}_${randomSuffix}`);
+formData.append("operation", "dataSourceVersionAI");
+formData.append("mappings", JSON.stringify({}));
+formData.append("vendorId", vendor);
+
+invFiles.forEach((file) => {
+  formData.append("files", file);
+});
+
+mutateReportUpload(formData, {
+  onSuccess: (res: any) => {
+    if (res?.status === "pending") {
+      setInvState("uploaded");
+      setInvFiles([]);
+      setVendor("");
+
+      reset({
+        activityMonth: DateTime.now().toFormat("yyyy-MM"),
+        invoiceMonth: DateTime.now().toFormat("yyyy-MM"),
+      });
+    }
+  },
+  onError: (err: any) => {
+    console.error(err);
+  },
+});
+};
 
   return (
     <div style={{ padding: 24 }}>
@@ -156,14 +311,25 @@ export const Upload: React.FC<UploadProps> = ({ onNavigate }) => {
             <Field label="Activity Type" required>
               <Select value={activityType} onChange={setActivityType} options={ACTIVITY_TYPE_OPTIONS} />
             </Field>
-            <Field label="Activity Month">
-              <input type="month" value={month} onChange={e => setMonth(e.target.value)} style={{ width: "100%", border: "1.5px solid #E4E7F0", borderRadius: 8, padding: "8px 12px", fontSize: 13, fontFamily: "inherit", color: "#1A1D2E", outline: "none" }} />
-            </Field>
+            <Field label="Activity Month" required>
+            <Controller
+              name="activityMonth"
+              control={control}
+              render={({ field }) => (
+                <CommonDatePicker
+                  name={field.name}
+                  control={control}
+                  views={["year", "month"]}
+                  label=""
+                />
+              )}
+            />
+          </Field>
           </div>
-          <FileZone id="act-file" state={actState} file={actFile} accept=".xlsx,.csv,.pdf" label="Drag & drop or click to browse" subLabel="Supports .xlsx, .csv, .pdf" onFile={handleActFile} onUpload={() => setActState("uploaded")} />
+          <FileZone id="act-file" state={actState} files={actFiles} accept=".xlsx,.csv,.pdf" label="Drag & drop or click to browse" subLabel="Supports .xlsx, .csv, .pdf" onFile={handleActFile} onUpload={() => setActState("uploaded")} />
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
             <Pill state={actState} />
-            <button disabled={actState === "idle"} onClick={() => setActState("uploaded")} style={{ padding: "8px 16px", background: actState === "uploaded" ? "transparent" : "linear-gradient(135deg,#3B2FD9,#7C4DFF)", color: actState === "uploaded" ? "#6B7280" : "#fff", border: actState === "uploaded" ? "1px solid #E4E7F0" : "none", borderRadius: 8, fontWeight: 600, fontSize: 13, cursor: actState === "idle" ? "not-allowed" : "pointer", opacity: actState === "idle" ? 0.4 : 1, display: "flex", alignItems: "center", gap: 6, fontFamily: "inherit" }}>
+            <button disabled={actState === "idle" || createActivity.isPending} onClick={handleSubmit(handleActivitySubmit)} style={{ padding: "8px 16px", background: actState === "uploaded" ? "transparent" : "linear-gradient(135deg,#3B2FD9,#7C4DFF)", color: actState === "uploaded" ? "#6B7280" : "#fff", border: actState === "uploaded" ? "1px solid #E4E7F0" : "none", borderRadius: 8, fontWeight: 600, fontSize: 13, cursor: actState === "idle" ? "not-allowed" : "pointer", opacity: actState === "idle" ? 0.4 : 1, display: "flex", alignItems: "center", gap: 6, fontFamily: "inherit" }}>
               {actState === "uploaded" ? "✓ Submitted" : "Submit Upload"}
             </button>
           </div>
@@ -185,13 +351,28 @@ export const Upload: React.FC<UploadProps> = ({ onNavigate }) => {
           <div style={{ height: 1, background: "#E4E7F0", marginBottom: 16 }} />
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 16 }}>
             <Field label="Vendor" required>
-              <Select value={vendor} onChange={setVendor} options={VENDOR_OPTIONS} />
+              <Select
+  value={vendor}
+  onChange={setVendor}
+  options={vendorOptions}
+/>
             </Field>
-            <Field label="Invoice Month">
-              <input type="month" value={month} onChange={e => setMonth(e.target.value)} style={{ width: "100%", border: "1.5px solid #E4E7F0", borderRadius: 8, padding: "8px 12px", fontSize: 13, fontFamily: "inherit", color: "#1A1D2E", outline: "none" }} />
-            </Field>
+            <Field label="Invoice Month" required>
+  <Controller
+    name="invoiceMonth"
+    control={control}
+    render={({ field }) => (
+      <CommonDatePicker
+        name={field.name}
+        control={control}
+        views={["year", "month"]}
+        label=""
+      />
+    )}
+  />
+</Field>
           </div>
-          <FileZone id="inv-file" state={invState} file={invFile} accept=".pdf" label="Drag & drop or click to browse" subLabel="PDF invoice files accepted" isInvoice onFile={handleInvFile} onUpload={() => setInvState("uploaded")} />
+          <FileZone id="inv-file" state={invState} files={invFiles} accept=".pdf" label="Drag & drop or click to browse" subLabel="PDF invoice files accepted" isInvoice onFile={handleInvFile} onUpload={() => setInvState("uploaded")} />
          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
   <Pill state={invState} />
 
@@ -226,8 +407,8 @@ export const Upload: React.FC<UploadProps> = ({ onNavigate }) => {
   </button>
 
     <button
-      disabled={invState === "idle"}
-      onClick={() => setInvState("uploaded")}
+      disabled={!invFiles.length || !vendor || isInvoiceUploading}
+      onClick={handleSubmit(handleInvoiceSubmit)}
       style={{
         padding: "8px 16px",
         background: invState === "uploaded"
@@ -243,7 +424,11 @@ export const Upload: React.FC<UploadProps> = ({ onNavigate }) => {
         fontFamily: "inherit"
       }}
     >
-      {invState === "uploaded" ? "✓ Submitted" : "Submit for Validation"}
+     {isInvoiceUploading
+  ? "Uploading..."
+  : invState === "uploaded"
+  ? "✓ Submitted"
+  : "Submit for Validation"}
     </button>
   </div>
 </div>

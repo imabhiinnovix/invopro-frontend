@@ -16,7 +16,7 @@ interface NavItem {
   isSep?: boolean;
 }
 
-const NAV_ITEMS: Array<NavItem | { isSep: true; group: string; id: string }> = [
+const NAV_ITEMS: Array<NavItem | { isSep?: true; group: string; id: string, label?: string, icon?: JSX.Element}> = [
   { id:"home",        label:"Home",                icon:<path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>,                                         group:"" },
   { isSep:true,       group:"Invoice Information",  id:"s1" },
   { id:"upload",      label:"Data Upload",          icon:<path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/>, group:"Invoice Information" },
@@ -30,7 +30,11 @@ const NAV_ITEMS: Array<NavItem | { isSep: true; group: string; id: string }> = [
   { id:"vendors",     label:"Vendors",              icon:<path d="M12 7V3H2v18h20V7H12zM6 19H4v-2h2v2zm0-4H4v-2h2v2zm0-4H4V9h2v2zm0-4H4V5h2v2zm4 12H8v-2h2v2zm0-4H8v-2h2v2zm0-4H8V9h2v2zm0-4H8V5h2v2zm10 12h-8v-2h2v-2h-2v-2h2v-2h-2V9h8v10z"/>, group:"Management" },
   { id:"roles",       label:"Users & Roles",        icon:<path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/>, group:"Management" },
   { id:"onboard",     label:"Onboarding",           icon:<path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 14l-5-5 1.41-1.41L12 14.17l7.59-7.59L21 8l-9 9z"/>, group:"Management" },
+  { isSep:true,       group:"Entity Setting",       id:"s4" },
+  { id:"entity",      label:"Entity",               icon:<path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/>, group:"Entity Setting" },
+  { id:"data-src",    label:"Data Source",          icon:<path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 14l-5-5 1.41-1.41L12 14.17l7.59-7.59L21 8l-9 9z"/>, group:"Entity Setting" },
 ];
+
 
 const SvgIcon: React.FC<{ path: JSX.Element; color?: string }> = ({ path, color = "currentColor" }) => (
   <svg width="15" height="15" viewBox="0 0 24 24" fill={color}>{path}</svg>
@@ -52,6 +56,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ active, collapsed, onToggle })
   "add-user": "/add-user",
   "add-role": "/add-role",
   "vendor-rate-card": "/vendor-rate-card",
+  "entity": "/entity",
+  "data-src": "/data-src"
 };
         const location = useLocation();
 

@@ -1,21 +1,50 @@
 import { useState } from "react";
 import type { PageId } from "../types";
-import { VENDORS } from "../data/mockData";
+// import { VENDORS } from "../data/mockData";
 import { SectionHeader, Card } from "../components/ui/Card";
 import { Button } from "../components/ui/Button";
 import { DataTable } from "../components/ui/DataTable";
 import { Pill } from "../components/ui/Pill";
 import { SearchBox } from "../components/ui/Tabs";
 import { useNavigate } from "react-router-dom";
+import useGet from "../hooks/useGet";
+import useDelete from "../hooks/useDelete";
+import { GET, DELETE } from "../services/apiRoutes";
+import { toast } from "react-toastify";
 
 export function Vendors({ onNavigate }: { onNavigate: (p: PageId) => void }) {
   const [search, setSearch] = useState("");
 
   const navigate = useNavigate();
 
-  const rows = VENDORS.filter(v =>
-    v.name.toLowerCase().includes(search.toLowerCase())
-  );
+ const { data, isLoading, refetch } = useGet<{
+  success: boolean;
+  data: any[];
+}>(
+  ["vendorList"],
+  GET.Vendor_List,
+  true
+);
+
+const deleteVendor = useDelete<any>(
+  ["vendorList"],
+  () => {
+    toast.success("Vendor deleted successfully");
+    refetch();
+  },
+  true
+);
+
+const rows =
+  data?.data?.filter((v) =>
+    v.name?.toLowerCase().includes(search.toLowerCase())
+  ) || [];
+
+  const handleDelete = (vendor: any) => {
+  deleteVendor.mutate({
+    url: `${DELETE.Delete_Vendor}/${vendor._id}`,
+  });
+};
 
   const cols = [
     {
@@ -51,12 +80,17 @@ export function Vendors({ onNavigate }: { onNavigate: (p: PageId) => void }) {
     {
       key: "_act",
       label: "Actions",
-      render: (_: unknown) => (
+      render: (_: unknown, row: any) => (
         <div style={{ display: "flex", gap: 8 }}>
           
           {/* EDIT ICON (same as original) */}
           <button
-            onClick={() => navigate("/vendor-create")}
+            onClick={(e) => {
+  e.stopPropagation();
+  navigate("/vendor-create", {
+    state: { vendor: row }
+  });
+}}
             style={{
               background: "none",
               border: "none",
@@ -73,7 +107,9 @@ export function Vendors({ onNavigate }: { onNavigate: (p: PageId) => void }) {
           <button
           onClick={(e) => {
     e.stopPropagation(); // ✅ IMPORTANT (prevents row click firing twice)
-    navigate("/vendor-rate-card", row);
+    navigate("/vendor-rate-card", {
+  state: { vendor: row }
+});
   }}
             style={{
               background: "none",
@@ -120,12 +156,22 @@ export function Vendors({ onNavigate }: { onNavigate: (p: PageId) => void }) {
           />
         </div>
 
-<DataTable
-  columns={cols as any}
-  rows={rows}
-  keyField="id"
-  onRowClick={(row: any) => navigate("/vendor-rate-card", row)}  // ✅
-/>      </Card>
+{isLoading ? (
+  <div style={{ padding: 24, textAlign: "center" }}>
+    Loading vendors...
+  </div>
+) : (
+  <DataTable
+    columns={cols as any}
+    rows={rows}
+    keyField="_id"
+    onRowClick={(row: any) =>
+      navigate("/vendor-rate-card", {
+        state: { vendor: row }
+      })
+    }
+  />
+)}     </Card>
     </div>
   );
 }

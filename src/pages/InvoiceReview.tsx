@@ -1,6 +1,7 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import type { PageProps, Invoice, InvoiceStatus } from "../types";
-import { INVOICES } from "../data/mockData";
+import useGet from "../hooks/useGet";
+import { GET } from "../services/apiRoutes";
 import { riskColor, statusColor } from "../utils/helpers";
 import { SectionHeader } from "../components/ui/Card";
 import { Button } from "../components/ui/Button";
@@ -9,6 +10,9 @@ import { Tabs, SearchBox } from "../components/ui/Tabs";
 import { DataTable, Column } from "../components/ui/DataTable";
 import { ConfirmModal } from "../components/ui/Modal";
 import { useNavigate } from "react-router-dom";
+import { formatCurrency } from "../utils/utils";
+import { useAppDispatch } from "../storeHooks";
+import { setMergedInvoices } from "../reducers/invoiceSlice";
 
 
 interface ForceState { open: boolean; ref: string; }
@@ -24,26 +28,73 @@ export const InvoiceReview: React.FC<PageProps> = ({ onNavigate }) => {
 
   const navigate = useNavigate();
 
-  const filtered = useMemo<Invoice[]>(() => {
-    let rows = INVOICES;
+  const [paginationModel, setPaginationModel] = useState({
+    page: 0,
+    pageSize: 10,
+  });
 
-    if (tab === "pending")
-      rows = rows.filter(i => !["Approved", "Paid"].includes(i.status));
 
-    if (tab === "violation")
-      rows = rows.filter(i => i.status === "Rate Violation");
 
-    if (tab === "approved")
-      rows = rows.filter(i => ["Approved", "Paid"].includes(i.status));
+const dispatch = useAppDispatch();
 
-    if (search)
-      rows = rows.filter(i =>
-        i.vendor.toLowerCase().includes(search.toLowerCase()) ||
-        i.id.toLowerCase().includes(search.toLowerCase())
-      );
+  const invoiceList = useGet<{
+  success: boolean;
+  data: Invoice[];
+  totalCount: number;
+  summary: any[];
+  }>(
+    ["invoiceList", paginationModel.page, paginationModel.pageSize],
+    `${GET.Data_Source_Version}/list?page=${paginationModel.page + 1}&limit=${paginationModel.pageSize}&dataSourceId=${import.meta.env.VITE_INVOICE_DATASOURCE_ID}`,
+    true
+  );
 
-    return rows;
-  }, [tab, search]);
+const mergedData = useMemo(() => {
+  const rows = invoiceList?.data?.data || [];
+  const summary = invoiceList?.data?.summary || [];
+
+  const summaryMap = new Map(summary.map(s => [s.dataSourceVersionId, s]));
+
+  return rows.map(row => {
+    const s = summaryMap.get(row._id);
+
+    return {
+      ...row,
+      totalLineItems: s?.totalLineItems,
+      totalAmount: s?.totalAmount,
+      totalApprovedCount: s?.totalApprovedCount,
+      totalFlaggedCount: s?.totalFlaggedCount,
+      firstInvoiceNumber: s?.firstInvoiceNumber,
+      firstInvoiceDate: s?.firstInvoiceDate,
+    };
+  });
+}, [invoiceList?.data]);
+
+useEffect(() => {
+  if (mergedData?.length) {
+    dispatch(setMergedInvoices(mergedData));
+  }
+}, [mergedData, dispatch]);
+
+ const filtered = useMemo<Invoice[]>(() => {
+  let rows = mergedData;
+
+  if (tab === "pending")
+    rows = rows.filter(i => !["Approved", "Paid"].includes(i.status));
+
+  if (tab === "violation")
+    rows = rows.filter(i => i.status === "Rate Violation");
+
+  if (tab === "approved")
+    rows = rows.filter(i => ["Approved", "Paid"].includes(i.status));
+
+  if (search)
+    rows = rows.filter(i =>
+      i.vendor?.toLowerCase().includes(search.toLowerCase()) ||
+      i.id?.toLowerCase().includes(search.toLowerCase())
+    );
+
+  return rows;
+}, [mergedData, tab, search]);
 
   const allSelected =
     filtered.length > 0 && filtered.every(r => selected[r.id]);
@@ -98,36 +149,51 @@ export const InvoiceReview: React.FC<PageProps> = ({ onNavigate }) => {
         </div>
       )
     },
-    { key:"vendor", label:"Vendor", render:v => <strong>{String(v)}</strong> },
-    { key:"id", label:"Invoice No.", render:v => <span style={{ fontFamily:"monospace", color:"#3B2FD9" }}>{String(v)}</span> },
-    { key:"date", label:"Invoice Date" },
-    { key:"period", label:"Billing Period" },
     {
-      key:"amount",
-      label:"Total Amount",
-      render:(v, r) => (
-        <>
-          <strong>${Number(v).toLocaleString()}</strong>
-          <span style={{ fontSize:10, color:"#6B7280" }}> {r.currency as string}</span>
-        </>
-      )
+    key: "vendorId",
+    label: "Vendor",
+    render: (_: any, r: any) => (
+      <strong>{r?.vendorId?.name || r?.vendor || "-"}</strong>
+    )
     },
-    { key:"items", label:"Line Items", sortable:true },
+    { key:"firstInvoiceNumber", label:"Invoice No." },
+    { key:"firstInvoiceDate", label:"Invoice Date" },
     {
-      key:"matched",
-      label:"Matched",
-      render:v => <span style={{ color:"#16A34A", fontWeight:600 }}>{String(v)}</span>
+      key: "versionValue",
+      label: "Billing Period",
+      render: (_: any, r: any) =>
+        r?.versionValue || "-"
     },
+   {
+  key: "totalAmount",
+  label: "Total Amount",
+  render: (v) => formatCurrency(v, v.firstCurrency) ?? 0,
+},
     {
-      key:"flagged",
-      label:"Flagged",
-      render:v =>
-        Number(v) > 0
-          ? <span style={{ color:"#DC2626", fontWeight:700 }}>⚑ {String(v)}</span>
-          : <span style={{ color:"#6B7280" }}>—</span>
-    },
-    { key:"risk", label:"Risk", render:v => <Pill label={String(v)} color={riskColor(v as any)} /> },
-    { key:"status", label:"Status", render:v => <Pill label={String(v)} color={statusColor(v as any)} /> },
+  key: "totalLineItems",
+  label: "Line Items",
+  render: (v) => v ?? 0,
+},
+   {
+  key: "totalApprovedCount",
+  label: "Matched",
+  render: (v) => (
+    <span style={{ color: "#16A34A", fontWeight: 600 }}>
+      {v ?? 0}
+    </span>
+  ),
+},
+   {
+  key: "totalFlaggedCount",
+  label: "Flagged",
+  render: (v) => (
+    <span style={{ color: "#DC2626", fontWeight: 600 }}>
+      {v ?? 0}
+    </span>
+  ),
+},
+    { key:"risk", label:"Risk" },
+    { key:"aiStatus", label:"Status", render:v => <Pill label={String(v)} color={statusColor(v as any)} /> },
     {
       key:"_actions",
       label:"Actions",
@@ -141,7 +207,7 @@ export const InvoiceReview: React.FC<PageProps> = ({ onNavigate }) => {
               variant="primary"
               onClick={e => {
                 e.stopPropagation();
-                navigate("/inv-detail");
+               navigate(`/inv-detail/${r._id}`);
               }}
             >
               Review
@@ -173,6 +239,10 @@ export const InvoiceReview: React.FC<PageProps> = ({ onNavigate }) => {
     }
   ];
 
+  if (invoiceList.isLoading) {
+  return <div>Loading invoices...</div>;
+}
+
   return (
     <div style={{ padding: 24 }}>
       <SectionHeader
@@ -185,10 +255,10 @@ export const InvoiceReview: React.FC<PageProps> = ({ onNavigate }) => {
   active={tab}
   onChange={(t) => setTab(t)}
   tabs={[
-    { id:"all", label:"All Invoices", count:INVOICES.length },
-    { id:"pending", label:"Not Approved", count:INVOICES.filter(i=>!["Approved","Paid"].includes(i.status)).length },
-    { id:"violation", label:"Rate Violations", count:INVOICES.filter(i=>i.status==="Rate Violation").length },
-    { id:"approved", label:"Approved / Paid", count:INVOICES.filter(i=>["Approved","Paid"].includes(i.status)).length },
+    { id:"all", label:"All Invoices", count: invoiceList?.data?.totalCount || 0},
+    { id:"pending", label:"Not Approved", count:invoiceList?.data?.data?.filter(i=>!["Approved","Paid"].includes(i.status)).length },
+    // { id:"violation", label:"Rate Violations", count:invoiceList?.data?.data?.filter(i=>i.status==="Rate Violation").length },
+    { id:"approved", label:"Approved / Paid", count:invoiceList?.data?.data?.filter(i=>["Approved","Paid"].includes(i.status)).length },
   ]}
 />
 
@@ -223,24 +293,45 @@ export const InvoiceReview: React.FC<PageProps> = ({ onNavigate }) => {
       <DataTable<Invoice>
         columns={columns}
         rows={filtered}
-        onRowClick={() => navigate("/inv-detail")}
-        keyField="id"
+        onRowClick={(row) => navigate(`/inv-detail/${row._id}`)}
+        keyField="_id"
       />
 
       {/* Pagination */}
       <div style={{ display:"flex", justifyContent:"space-between", marginTop:12, fontSize:12, color:"#6B7280" }}>
         <span>Total Records: {filtered.length}</span>
         <div style={{ display:"flex", gap:4 }}>
-          {[1,2,3].map(p => (
-            <button key={p} style={{
-              width:28,height:28,borderRadius:6,
-              border:`1px solid ${p===1?"#3B2FD9":"#E4E7F0"}`,
-              background:p===1?"#3B2FD9":"white",
-              color:p===1?"white":"#1A1D2E",
-              cursor:"pointer"
-            }}>{p}</button>
-          ))}
-        </div>
+  {Array.from({
+    length: Math.ceil(
+      (invoiceList?.data?.totalCount || 0) / paginationModel.pageSize
+    )
+  }).map((_, i) => (
+    <button
+      key={i}
+      onClick={() =>
+        setPaginationModel(prev => ({
+          ...prev,
+          page: i
+        }))
+      }
+      style={{
+        width:28,
+        height:28,
+        borderRadius:6,
+        border:`1px solid ${
+          i === paginationModel.page ? "#3B2FD9" : "#E4E7F0"
+        }`,
+        background:
+          i === paginationModel.page ? "#3B2FD9" : "white",
+        color:
+          i === paginationModel.page ? "white" : "#1A1D2E",
+        cursor:"pointer"
+      }}
+    >
+      {i + 1}
+    </button>
+  ))}
+</div>
       </div>
 
       <ConfirmModal

@@ -10,6 +10,7 @@ import { Provider } from "react-redux";
 import { store } from "./reducers/index.tsx";
 
 import { BrowserRouter } from "react-router-dom"; // ✅ ADD THIS
+import { TypographyProvider } from "./context/TypographyContext.tsx";
 
 export const queryClient = new QueryClient();
 
@@ -28,7 +29,9 @@ root.render(
       <QueryClientProvider client={queryClient}>
         <BrowserRouter> {/* ✅ FIX IS HERE */}
           <MainProvider>
+            <TypographyProvider>
             <App />
+            </TypographyProvider>
           </MainProvider>
         </BrowserRouter>
       </QueryClientProvider>

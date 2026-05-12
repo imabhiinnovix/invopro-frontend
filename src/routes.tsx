@@ -89,7 +89,7 @@ const AppRoutes = () => {
       <Route path="/upload" element={<Upload />} />
       <Route path="/invoice-list" element={<InvoiceList />} />
       <Route path="/invoice-review" element={<InvoiceReview />} />
-      <Route path="/inv-detail" element={<InvoiceDetail />} />
+      <Route path="/inv-detail/:id" element={<InvoiceDetail />} />
       <Route path="/vendors" element={<Vendors />} />
       <Route path="/vendor-create" element={<VendorCreate />} />
       <Route path="/roles" element={<UsersRoles />} />
@@ -100,6 +100,8 @@ const AppRoutes = () => {
       <Route path="/add-role" element={<AddRole />} />
       <Route path="/vendor-rate-card" element={<VendorRateCards />} />
       <Route path="/audit-trail" element={<AuditTrailPage />} />
+      <Route path="/entity" element={<Entity />} />
+      <Route path="/data-src" element={<DataSource />} />
 
       {/* Public Routes */}
       {/* <Route path="/login" element={<Login />} />
@@ -112,20 +114,20 @@ const AppRoutes = () => {
       /> */}
 
       {/* User Protected Routes */}
-      <Route element={<AuthProtect />}>
-        <Route element={<CommonLayout />}>
+      {/* <Route element={<AuthProtect />}>
+        <Route element={<CommonLayout />}> */}
           {/* <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/dashboard/create" element={<Dashboard />} />
           <Route path="/dashboard/overview" element={<DashboardOverview />} />
           <Route path="/dashboard/analytics" element={<DashboardAnalytics />} />
           <Route path="/dashboard/:id" element={<Dashboard />} />
           <Route path="/reports" element={<Report />} /> */}
-          <Route path="/data-source" element={<DataSource />} />
-          <Route path="/data-source/:id" element={<DataSources />} />
-          <Route path="/entity" element={<Entity />} />
-          <Route path="/data-src" element={<DataSource />} />
-          <Route path="/data-src-version" element={<DataSourceVersion />} />
-          <Route path="/data-src-version/:dataSourceId" element={<DataSourceVersion />} />
+          {/* <Route path="/data-source" element={<DataSource />} /> */}
+          {/* <Route path="/data-source/:id" element={<DataSources />} /> */}
+          {/* <Route path="/entity" element={<Entity />} />
+          <Route path="/data-src" element={<DataSource />} /> */}
+          {/* <Route path="/data-src-version" element={<DataSourceVersion />} /> */}
+          {/* <Route path="/data-src-version/:dataSourceId" element={<DataSourceVersion />} /> */}
           {/* <Route path="/reference-invoice" element={<ReferenceInvoice />} />
           <Route path="/VixAi-Insights" element={<AIInsightPage />} />
           <Route path="/VixAi-Chart" element={<NaturalLanguage />} />
@@ -206,8 +208,8 @@ const AppRoutes = () => {
             path="/system-settings/charts/source-list/attributes/:id"
             element={<SourceAttributes />}
           /> */}
-        </Route>
-      </Route>
+        {/* </Route>
+      </Route> */}
 
       {/* Super Admin Protected Routes */}
       {/* <Route element={<SuperAdminProtect />}>

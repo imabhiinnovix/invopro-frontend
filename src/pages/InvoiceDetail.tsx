@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import type { PageProps, InvoiceLineItem } from "../types";
 import { INVOICES, INVOICE_LINE_ITEMS, AUDIT_LOG } from "../data/mockData";
 import { fmtN } from "../utils/helpers";
@@ -11,30 +11,196 @@ import { Modal, ConfirmModal } from "../components/ui/Modal";
 import { Select, FormGrid, FormField, TextArea } from "../components/ui/FormField";
 import { InvoiceRowModal } from "../components/InvoiceRowModal";
 import { useNavigate } from "react-router-dom";
+import useGet from "../hooks/useGet";
+import useDelete from "../hooks/useDelete";
+import { GET, DELETE } from "../services/apiRoutes";
+import { useParams } from "react-router-dom";
+import { toast } from "react-toastify";
+import { useSelector } from "react-redux";
+import { Tooltip, Typography } from "@mui/material";
+import { RootState } from "../store";
+import { useAppDispatch } from "../storeHooks";
+import { setDataSourceList } from "./dataSources/dataSourceActions";
+import { formatCurrency } from "../utils/utils";
+import usePut from "../hooks/usePut";
+import { PUT } from "../services/apiRoutes";
+
+
 
 
 export const InvoiceDetail: React.FC<PageProps> = ({ onNavigate }) => {
-  const inv = INVOICES[0];
+
+  const dispatch = useAppDispatch();
+
 
   const [editMode, setEditMode] = useState(false);
   const [forceCase, setForceCase] = useState("");
   const [forceOpen, setForceOpen] = useState(false);
   const [commentOpen, setCommentOpen] = useState(false);
   const [auditOpen, setAuditOpen] = useState(false);
-const [selectedCase, setSelectedCase] = useState("");
-const [addOpen, setAddOpen] = useState(false);
+  const [selectedCase, setSelectedCase] = useState("");
+  const [selectedCaseNumber, setSelectedCaseNumber] = useState("");
+// const [addOpen, setAddOpen] = useState(false);
 const [editOpen, setEditOpen] = useState(false);
-const [editingRow, setEditingRow] = useState<InvoiceLineItem | null>(null);
-
-  const [status, setStatus] = useState(inv.status);
-
+const [formData, setFormData] = useState<Record<string, any>>({ id: "" });
   const [selected, setSelected] = useState<Record<string, boolean>>({});
+  const [pageLoading, setPageLoading] = useState(false);
 
   const navigate = useNavigate();
-  
+
+  const updateVersionRow = usePut(["updateVersionRow"]);
+
+ const { id: valueId } = useParams<{ id: string }>();
+
+const [rows, setRows] = useState<any[]>([]);
+const [rowCount, setRowCount] = useState(0);
+const [loading, setLoading] = useState(false);
+
+const [paginationModel, setPaginationModel] = useState({
+  page: 0,
+  pageSize: 10,
+});
+
+const [searchValue, setSearchValue] = useState("");
+const [debouncedSearchValue, setDebouncedSearchValue] = useState("");
+const [filter, setFilter] = useState({});
+const [selectedYear, setSelectedYear] = useState("");
+const [selectedMonth, setSelectedMonth] = useState("");
+  const [refreshKey, setRefreshKey] = useState(0);
+
+
+
+const invoiceList = useSelector((state: RootState) => {
+  console.log("Redux invoice state:", state.invoice);
+  return state.invoice.mergedData || [];
+});
+
+const invoice = invoiceList.find(i => i._id === valueId);
+
+
+  // Your existing API call with refreshKey dependency
+  const dataSourceNotivixListAPI = useGet<DataSourceListPayload>(
+    ["dataSourceNotivixList", refreshKey], // Add refreshKey to dependency array
+    GET?.DATA_SOURCE_LIST + `?isShowMenu=true`
+  );
+  // Effect to update Redux when API data changes
+  useEffect(() => {
+    if (dataSourceNotivixListAPI.data?.success) {
+      dispatch(setDataSourceList(dataSourceNotivixListAPI.data.data));
+    }
+  }, [dataSourceNotivixListAPI.data, dispatch]);
+
+  // Effect to listen for status changes
+  useEffect(() => {
+    const handleStatusChange = () => {
+      // Increment refreshKey to trigger API refetch
+      setRefreshKey((prev) => prev + 1);
+    };
+
+    window.addEventListener("dataSourceStatusChanged", handleStatusChange);
+
+    return () => {
+      window.removeEventListener("dataSourceStatusChanged", handleStatusChange);
+    };
+  }, []);
+const { list } = useSelector((state: RootState) => state.dataSource);
+const listCurrentData = list?.find((item) => item._id === import.meta.env.VITE_INVOICE_DATASOURCE_ID);
+
+
+  const [status, setStatus] = useState(invoice?.aiStatus);
+
+
+useEffect(() => {
+  const handler = setTimeout(() => {
+    setDebouncedSearchValue(searchValue);
+  }, 500);
+
+  return () => clearTimeout(handler);
+}, [searchValue]);
+
+const sourceVersionData = useGet<any>(
+  [
+    "sourceVersionData",
+    String(paginationModel.page + 1),
+    String(paginationModel.pageSize),
+    debouncedSearchValue,
+    valueId || "",
+    JSON.stringify(filter),
+    selectedYear,
+    selectedMonth,
+  ],
+  `${GET.SOURCE_VERSION_DATA}?dataSourceId=${encodeURIComponent(
+    import.meta.env.VITE_INVOICE_DATASOURCE_ID || ""
+  )}&versionId=${valueId}&filters=${encodeURIComponent(JSON.stringify(filter))}
+  &year=${selectedYear}
+  &month=${selectedMonth}
+  &page=${paginationModel.page + 1}
+  &limit=${paginationModel.pageSize}
+  &search=${encodeURIComponent(debouncedSearchValue)}`,
+  !! import.meta.env.VITE_INVOICE_DATASOURCE_ID
+);
+
+useEffect(() => {
+  setLoading(sourceVersionData.isLoading);
+
+  if (!sourceVersionData.isLoading) {
+    setPageLoading(false);
+  }
+
+  const rawData = sourceVersionData?.data?.data || [];
+  const totalCount = sourceVersionData?.data?.totalCount || 0;
+
+  const displayFields =
+    listCurrentData?.fieldSettings?.filter(
+      (field: any) => field.isDisplayEnable && field.mappedAttributeName
+    ) || [];
+
+  const formattedRows = rawData.map((item: any) => {
+    const row: Record<string, any> = {
+      _id: item._id,
+      aiPreValidateStatus: item?.aiPreValidateStatus || "pending",
+      aiCostValidateStatus: item?.aiCostValidateStatus || "pending",
+    };
+
+    displayFields.forEach((field: any) => {
+      row[field.mappedAttributeName] =
+        item.rowData?.[field.mappedAttributeName] ||
+        item[field.mappedAttributeName] ||
+        "";
+    });
+
+    return row;
+  });
+
+  setRows(formattedRows);
+  setRowCount(totalCount);
+}, [sourceVersionData.data, sourceVersionData.isLoading]);
+
+const rowAuditList = useGet(
+  [
+    "rowAuditList",
+    paginationModel.page,
+    paginationModel.pageSize,
+    valueId,
+    selectedCase,
+    auditOpen,
+  ],
+  `${GET.Data_Source_Version}/auditList?page=1&limit=1000&versionId=${valueId}&recordId=${selectedCase}`,
+  Boolean(valueId && selectedCase && auditOpen)
+);
+
+const invoiceAuditList = useGet(
+  [
+    "invoiceAuditList",
+    valueId
+  ],
+  `${GET.Data_Source_Version}/auditList?page=1&limit=1000&versionId=${valueId}`,
+  Boolean(valueId)
+);
+
   const allSelected =
-    INVOICE_LINE_ITEMS.length > 0 &&
-    INVOICE_LINE_ITEMS.every(r => selected[r.case]);
+  rows.length > 0 &&
+  rows.every((r) => selected[r._id]);
 
   const anySelected = Object.values(selected).some(Boolean);
 
@@ -43,7 +209,7 @@ const [editingRow, setEditingRow] = useState<InvoiceLineItem | null>(null);
       setSelected({});
     } else {
       const map: Record<string, boolean> = {};
-      INVOICE_LINE_ITEMS.forEach(r => (map[r.case] = true));
+      rows.forEach((r) => (map[r._id] = true));
       setSelected(map);
     }
   };
@@ -52,18 +218,152 @@ const [editingRow, setEditingRow] = useState<InvoiceLineItem | null>(null);
     setSelected(prev => ({ ...prev, [id]: !prev[id] }));
   };
 
-  const infoFields = [
-    { label:"Vendor", value:inv.vendor },
-    { label:"Invoice Number", value:inv.id },
-    { label:"Billing Period", value:inv.period },
-    { label:"Invoice Date", value:inv.date },
-    { label:"Total Amount", value:`${inv.amount.toLocaleString()} ${inv.currency}` },
-    { label:"Region", value:inv.region },
-    { label:"Line Items", value:`${inv.items} total (${inv.matched} matched, ${inv.flagged} flagged)` },
-    { label:"Validation Status", value:inv.flagged > 0 ? "Flagged" : "Clean" },
-  ];
+  const deleteVersionRow = useDelete(["deleteVersionRow"]);
 
-  const itemCols: Column<InvoiceLineItem>[] = [
+  const attributeList = useGet<{
+  success: boolean;
+  data: any[];
+}>(["attributeList"], GET.Attribute_Option_List + "?paginate=false");
+
+const handleDelete = async (id: string) => {
+  try {
+    await deleteVersionRow.mutateAsync({
+      url: DELETE.DELETE_VERSION_ROW,
+      payload: {
+        dataSourceId: valueId,
+        ids: [id],
+      },
+    });
+
+    toast.success("Deleted successfully");
+    sourceVersionData.refetch();
+  } catch (err) {
+    toast.error("Delete failed");
+  }
+};
+
+useEffect(() => {
+  setPageLoading(true);
+}, [paginationModel.page, paginationModel.pageSize]);
+
+const handleSave = async (data: any) => {
+  try {
+    await updateVersionRow.mutateAsync({
+      url: PUT.UPDATE_VERSION_ROW,
+      payload: {
+        dataSourceId: valueId,
+        rowId: editingRow?._id,
+        rowData: data,
+      },
+    });
+
+    toast.success("Row updated successfully");
+
+    sourceVersionData.refetch();
+  } catch (err) {
+  }
+};
+
+const handleSearchChange = (
+  e: React.ChangeEvent<HTMLInputElement>
+) => {
+  setSearchValue(e.target.value);
+};
+ 
+
+ const infoFields = [
+  { label: "Vendor", value: invoice?.vendorId?.name || "-" },
+  { label: "Invoice Number", value: invoice?.firstInvoiceNumber || "-" },
+  { label: "Billing Period", value: invoice?.versionValue || "-" },
+  { label: "Invoice Date", value: invoice?.firstInvoiceDate || "-" },
+  {
+    label: "Total Amount",
+    value: formatCurrency(invoice?.totalAmount, invoice?.firstCurrency)
+  },
+  {
+    label: "Line Items",
+    value: `${invoice?.totalLineItems || 0} total • ${invoice?.totalApprovedCount || 0} matched • ${invoice?.totalFlaggedCount || 0} flagged`
+  },
+  {
+    label: "Validation Status",
+    value: invoice?.totalFlaggedCount > 0
+      ? `${invoice.totalFlaggedCount} Issues Found`
+      : "All Validated"
+  }
+];
+
+const itemCols: Column<any>[] = useMemo(() => {
+  if (!listCurrentData?.fieldSettings) return [];
+
+  const displayFields =
+    listCurrentData.fieldSettings.filter(
+      (field: any) =>
+        field.isDisplayEnable && field.mappedAttributeName
+    ) || [];
+
+  const dynamicCols = displayFields.map((field: any) => ({
+    key: field.mappedAttributeName,
+    label: field.label,
+
+    render: (value: any) => {
+      if (value == null) return "—";
+
+      if (Array.isArray(value)) {
+        return (
+          <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+            {value.map((item, i) => (
+              <span key={i}>{String(item)}</span>
+            ))}
+          </div>
+        );
+      }
+
+      if (typeof value === "number") {
+        return fmtN(value);
+      }
+
+      if (
+        field.mappedAttributeName
+          .toLowerCase()
+          .includes("status")
+      ) {
+        return (
+          <Pill
+            label={String(value)}
+            color={
+              value === "completed"
+                ? "green"
+                : value === "error"
+                ? "red"
+                : "yellow"
+            }
+          />
+        );
+      }
+
+      const cellValue = String(value);
+
+      return cellValue.length > 25 ? (
+        <Tooltip title={cellValue} arrow>
+          <Typography
+            sx={{
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
+              maxWidth: 180,
+              fontSize: "14px",
+            }}
+          >
+            {cellValue}
+          </Typography>
+        </Tooltip>
+      ) : (
+        cellValue
+      );
+    },
+  }));
+
+  return [
     {
       key: "_cb",
       label: (
@@ -71,82 +371,162 @@ const [editingRow, setEditingRow] = useState<InvoiceLineItem | null>(null);
           type="checkbox"
           checked={allSelected}
           onChange={toggleAll}
-          onClick={e => e.stopPropagation()}
         />
       ),
-      render: (_, r) => (
-        <div onClick={e => e.stopPropagation()}>
-          <input
-            type="checkbox"
-            checked={!!selected[r.case]}
-            onChange={() => toggleOne(r.case as string)}
-          />
-        </div>
-      )
+
+      render: (_: any, r: any) => (
+        <input
+          type="checkbox"
+          checked={!!selected[r._id]}
+          onChange={() => toggleOne(r._id)}
+          onClick={(e) => e.stopPropagation()}
+        />
+      ),
     },
 
-    { key:"case", label:"SABIC Case Ref", render:v => <span style={{ fontFamily:"monospace", fontSize:11, color:"#3B2FD9" }}>{String(v)}</span> },
-    { key:"code", label:"Code", render:v => <span style={{ background:"#EEF0FF", color:"#3B2FD9", borderRadius:4, padding:"2px 8px", fontSize:11, fontWeight:700 }}>{String(v)}</span> },
-    { key:"activity", label:"Activity" },
-    { key:"attorney", label:"Attorney" },
-    { key:"amount", label:"Amount (USD)", render:v => <strong>${fmtN(Number(v))}</strong> },
+    ...dynamicCols,
 
     {
-      key:"matched",
-      label:"Match Status",
-      render:v => Boolean(v)
-        ? <Pill label="Matched" color="green"/>
-        : <Pill label="Unmatched" color="red"/>
-    },
+      key: "_actions",
+      label: "Actions",
 
-    { key:"reason", label:"Flag Reason", render:v => String(v) ? <span style={{ color:"#DC2626", fontSize:11 }}>{String(v)}</span> : <span style={{ color:"#6B7280" }}>—</span> },
-
-    {
-      key:"_actions",
-      label:"Actions",
-      render:(_, r) => (
-        <div style={{ display:"flex", gap:6 }}>
+      render: (_: any, r: any) => (
+        <div style={{ display: "flex", gap: 6 }}>
           <Button
-  size="sm"
-  variant="outline"
-  onClick={e => {
-    e.stopPropagation();
-    setEditingRow(r);
-    setEditOpen(true);
-  }}
->
-  Edit
-</Button>
+            size="sm"
+            variant="outline"
+            onClick={(e) => {
+  e.stopPropagation();
 
-          {/* {!r.matched ? (
-            <button
-              onClick={() => { setForceCase(r.case as string); setForceOpen(true); }}
-              style={{ background:"#7C4DFF", color:"#fff", border:"none", borderRadius:6, padding:"4px 10px", fontSize:11, fontWeight:700 }}
-            >
-              Force Pass
-            </button>
-          ) : <span style={{ color:"#6B7280" }}>—</span>} */}
+  const selectedRow = structuredClone(r); // important safety copy
+
+  setEditOpen(true);
+  setFormData({
+    id: selectedRow._id,
+    ...Object.fromEntries(
+      Object.entries(selectedRow).map(([key, value]) => [
+        key,
+        Array.isArray(value) ? value : value ?? "",
+      ])
+    ),
+  });
+}}
+          >
+            Edit
+          </Button>
+
+          {/* <Button
+            size="sm"
+            variant="ghost"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleDelete(r._id);
+            }}
+          >
+            Delete
+          </Button> */}
         </div>
-      )
-    }
+      ),
+    },
   ];
+}, [
+  listCurrentData?.fieldSettings,
+  selected,
+  allSelected,
+]);
 
   // ✅ FIXED SAFE NAVIGATION
-const handleAuditOpen = (caseNo: string) => {
-  setSelectedCase(caseNo);
+const handleAuditOpen = (row: any) => {
+  console.log('row',row);
+  setSelectedCase(row._id);
+  setSelectedCaseNumber(row?.['SABIC Case Reference Number'])
   setAuditOpen(true);
+
+};  
+
+const totalPages = Math.ceil((rowCount || 0) / paginationModel.pageSize);
+
+const getPageNumbers = () => {
+  const maxVisible = 5;
+  const current = paginationModel.page;
+
+  let start = Math.max(0, current - Math.floor(maxVisible / 2));
+  let end = start + maxVisible - 1;
+
+  if (end >= totalPages) {
+    end = totalPages - 1;
+    start = Math.max(0, end - maxVisible + 1);
+  }
+
+  return Array.from({ length: end - start + 1 }, (_, i) => start + i);
 };
+
+const mappedInvoiceAuditLogs = useMemo(() => {
+  const logs = invoiceAuditList?.data?.data || [];
+
+  return logs.map((log: any, index: number) => ({
+    id: log._id || index,
+    type: "upload",
+    actor: log?.changedBy?.firstName
+      ? `${log.changedBy.firstName} ${log.changedBy.lastName || ""}`
+      : log.source,
+    time: new Date(log.createdAt).toLocaleString(),
+    message: `${log.changeType} performed`,
+    meta: log.auditLevel,
+  }));
+}, [invoiceAuditList.data]);
+
+const mappedRowAuditLogs = useMemo(() => {
+  const logs = rowAuditList?.data?.data || [];
+
+  return logs.map((log: any, index: number) => ({
+    id: log._id || index,
+
+    type:
+      log.changeType === "UPLOAD"
+        ? "upload"
+        : log.changeType === "EDIT"
+        ? "edit"
+        : log.changeType === "APPROVAL"
+        ? "approval"
+        : log.changeType === "PAYMENT_STATUS"
+        ? "payment"
+        : "validation",
+
+    actor:
+      log?.changedBy?.firstName
+        ? `${log.changedBy.firstName} ${log.changedBy.lastName || ""}`
+        : log.source,
+
+    time: new Date(log.createdAt).toLocaleString(),
+
+    message:
+      log.changeType === "EDIT"
+        ? `Updated ${log.changes?.length || 0} field(s)`
+        : `${log.changeType} performed`,
+
+    meta:
+      log.changes?.length
+        ? log.changes
+            .map(
+              (c: any) =>
+                `${c.field}: ${c.oldValue || "-"} → ${c.newValue || "-"}`
+            )
+            .join(" | ")
+        : log.auditLevel,
+  }));
+}, [rowAuditList.data]);
 
   return (
     <div style={{ padding: 24 }}>
       <div style={{ marginBottom: 16 }}>
-        <Button variant="ghost" onClick={() => navigate("inv-review")}>
+        <Button variant="ghost" onClick={() => navigate("/invoice-review")}>
           Back to Invoice Review
         </Button>
       </div>
              <SectionHeader
-        title={`Invoice Detail — ${inv.id}`}
-        subtitle={`${inv.vendor} · ${inv.period}`}
+        title={`Invoice Detail ${invoice?.firstInvoiceNumber ? ' - '+invoice?.firstInvoiceNumber : ''}`}
+        subtitle={`${invoice?.vendorId?.name} · ${invoice?.versionValue}`}
         // actions={
         //   <>
         //     <Button variant="ghost">Filter</Button>
@@ -217,24 +597,42 @@ const handleAuditOpen = (caseNo: string) => {
 
   <div style={{ display: "flex", gap: 8 }}>
     <Button variant="ghost">Filter</Button>
-    <Button
+    {/* <Button
   variant="primary"
   onClick={() => setAddOpen(true)}
 >
   Add Line Item
-</Button>
+</Button> */}
     <Button variant="outline" disabled={!anySelected}>
       Revalidate
     </Button>
     <Button variant="ghost">Export</Button>
   </div>
 </div>
-      <DataTable<InvoiceLineItem>
-  columns={itemCols}
-  rows={INVOICE_LINE_ITEMS}
-  keyField="case"
-  onRowClick={(row) => handleAuditOpen(row.case)}
-/>
+     <div style={{ position: "relative" }}>
+  <DataTable
+    columns={itemCols}
+    rows={rows}
+    keyField="_id"
+    onRowClick={(row) => handleAuditOpen(row)}
+  />
+
+  {(loading || pageLoading) && (
+    <div
+      style={{
+        position: "absolute",
+        inset: 0,
+        background: "rgba(255,255,255,0.6)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        backdropFilter: "blur(2px)",
+      }}
+    >
+      <div className="spinner" />
+    </div>
+  )}
+</div>
 
       <div style={{
         display:"flex",
@@ -244,28 +642,80 @@ const handleAuditOpen = (caseNo: string) => {
         fontSize:12,
         color:"#6B7280"
       }}>
-        <span>Total Records: {INVOICE_LINE_ITEMS.length}</span>
+        <span>Total Records: {rowCount}</span>
 
-        <div style={{ display:"flex", gap:4 }}>
-          {[1,2,3].map(p => (
-            <button
-              key={p}
-              style={{
-                width:28,
-                height:28,
-                borderRadius:6,
-                border:`1px solid ${p===1 ? "#3B2FD9" : "#E4E7F0"}`,
-                background:p===1 ? "#3B2FD9" : "white",
-                color:p===1 ? "white" : "#1A1D2E",
-                cursor:"pointer",
-                fontSize:12,
-                fontWeight:600
-              }}
-            >
-              {p}
-            </button>
-          ))}
-        </div>
+         {/* Pagination */}
+      <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+  {/* Prev button */}
+  <button
+    disabled={paginationModel.page === 0}
+    onClick={() =>
+      setPaginationModel((prev) => ({
+        ...prev,
+        page: prev.page - 1,
+      }))
+    }
+    style={{
+      width: 28,
+      height: 28,
+      borderRadius: 6,
+      border: "1px solid #E4E7F0",
+      background: "white",
+      cursor: "pointer",
+      opacity: paginationModel.page === 0 ? 0.4 : 1,
+    }}
+  >
+    ‹
+  </button>
+
+  {/* Page numbers (max 5) */}
+  {getPageNumbers().map((i) => (
+    <button
+      key={i}
+      onClick={() =>
+        setPaginationModel((prev) => ({
+          ...prev,
+          page: i,
+        }))
+      }
+      style={{
+        width: 28,
+        height: 28,
+        borderRadius: 6,
+        border: `1px solid ${
+          i === paginationModel.page ? "#3B2FD9" : "#E4E7F0"
+        }`,
+        background: i === paginationModel.page ? "#3B2FD9" : "white",
+        color: i === paginationModel.page ? "white" : "#1A1D2E",
+        cursor: "pointer",
+      }}
+    >
+      {i + 1}
+    </button>
+  ))}
+
+  {/* Next button */}
+  <button
+    disabled={paginationModel.page >= totalPages - 1}
+    onClick={() =>
+      setPaginationModel((prev) => ({
+        ...prev,
+        page: prev.page + 1,
+      }))
+    }
+    style={{
+      width: 28,
+      height: 28,
+      borderRadius: 6,
+      border: "1px solid #E4E7F0",
+      background: "white",
+      cursor: "pointer",
+      opacity: paginationModel.page >= totalPages - 1 ? 0.4 : 1,
+    }}
+  >
+    ›
+  </button>
+</div>
       </div>
 
       <Modal
@@ -287,36 +737,42 @@ const handleAuditOpen = (caseNo: string) => {
     }}
   >
     <AuditTrail
-      caseNumber={selectedCase}
-      entries={AUDIT_LOG}
+      caseNumber={selectedCaseNumber}
+      entries={mappedRowAuditLogs}
       onAddComment={() => setCommentOpen(true)}
     />
   </div>
 </Modal>
-<InvoiceRowModal
+{/* <InvoiceRowModal
   open={addOpen}
   mode="add"
-  invoiceId={inv.id}
   onClose={() => setAddOpen(false)}
   onSave={(data) => {
     console.log(data);
     setAddOpen(false);
   }}
   width={900}  
-/>
+/> */}
 <InvoiceRowModal
-  open={editOpen}
-  mode="edit"
-  row={editingRow}
-  invoiceId={inv.id}
-  onClose={() => setEditOpen(false)}
-  onSave={(data) => {
-    console.log(data);
-    setEditOpen(false);
-  }}
-  width={900}  
+  openModal={editOpen}
+  modalMode="edit"
+  formData={formData}
+  openDialog={false}
+  deleteId={null}
+  listCurrentData={listCurrentData}
+  sourceVersionData={sourceVersionData}
+  columns={[]}
+  handleCloseModal={() => setEditOpen(false)}
+  handleCloseDialog={() => {}}
+  handleConfirmDelete={() => {}}
+  handleSave={handleSave}
+  setFormData={setFormData}
+  switchToEditMode={() => {}}
+  dataSourceId={import.meta.env.VITE_INVOICE_DATASOURCE_ID}
+  refreshData={() => sourceVersionData.refetch()}
+  attributeListData={attributeList?.data?.data || []}
 />
-      <AuditTrail entries={AUDIT_LOG} onAddComment={() => setCommentOpen(true)} />
+      <AuditTrail entries={mappedInvoiceAuditLogs} onAddComment={() => setCommentOpen(true)} />
 
       <ConfirmModal
         open={forceOpen}
