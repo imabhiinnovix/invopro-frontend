@@ -24,6 +24,7 @@ import { setDataSourceList } from "./dataSources/dataSourceActions";
 import { formatCurrency, formatDateWithoutTime } from "../utils/utils";
 import usePut from "../hooks/usePut";
 import { PUT } from "../services/apiRoutes";
+import usePost from "../hooks/usePost";
 
 
 
@@ -204,15 +205,27 @@ const invoiceAuditList = useGet(
 
   const anySelected = Object.values(selected).some(Boolean);
 
-  const toggleAll = () => {
-    if (allSelected) {
-      setSelected({});
+const toggleAll = () => {
+  const currentPageIds = rows.map((r) => r._id);
+
+  setSelected((prev) => {
+    const updated = { ...prev };
+
+    const allCurrentSelected = currentPageIds.every(
+      (id) => updated[id]
+    );
+
+    if (allCurrentSelected) {
+      currentPageIds.forEach((id) => delete updated[id]);
     } else {
-      const map: Record<string, boolean> = {};
-      rows.forEach((r) => (map[r._id] = true));
-      setSelected(map);
+      currentPageIds.forEach((id) => {
+        updated[id] = true;
+      });
     }
-  };
+
+    return updated;
+  });
+};
 
   const toggleOne = (id: string) => {
     setSelected(prev => ({ ...prev, [id]: !prev[id] }));
@@ -248,19 +261,59 @@ useEffect(() => {
 
 const handleSave = async (data: any) => {
   try {
-    await updateVersionRow.mutateAsync({
-      url: PUT.UPDATE_VERSION_ROW,
-      payload: {
-        dataSourceId: valueId,
-        rowId: editingRow?._id,
-        rowData: data,
-      },
-    });
+    // await updateVersionRow.mutateAsync({
+    //   url: PUT.UPDATE_VERSION_ROW,
+    //   payload: {
+    //     dataSourceId: valueId,
+    //     rowId: formData?._id,
+    //     rowData: data,
+    //   },
+    // });
 
-    toast.success("Row updated successfully");
+    // toast.success("Row updated successfully");
 
     sourceVersionData.refetch();
   } catch (err) {
+  }
+};
+
+const sendRevalidateRows = usePost<any, any>(
+  ["sendRevalidateRows"],
+  (res) => {
+    if (res?.success) {
+      toast.success("Revalidation triggered successfully");
+      setSelected({});
+      sourceVersionData.refetch();
+    }
+  },
+  true
+);
+
+const handleRevalidate = async () => {
+  try {
+    const currentPageRowIds = rows.map((r) => r._id);
+
+    const selectedIds = currentPageRowIds.filter(
+      (id) => selected[id]
+    );
+
+    if (!selectedIds.length) {
+      toast.error("Please select at least one row");
+      return;
+    }
+
+    const payload = {
+      dataSourceId: import.meta.env.VITE_INVOICE_DATASOURCE_ID,
+      rowIds: selectedIds,
+    };
+
+    await sendRevalidateRows.mutateAsync({
+      url: "/common/dataSourceVersion/revalidateRows",
+      payload,
+    });
+
+  } catch (err) {
+    toast.error("Revalidation failed");
   }
 };
 
@@ -622,7 +675,11 @@ const mappedRowAuditLogs = useMemo(() => {
 >
   Add Line Item
 </Button> */}
-    <Button variant="outline" disabled={!anySelected}>
+    <Button
+      variant="outline"
+      disabled={!anySelected}
+      onClick={handleRevalidate}
+    >
       Revalidate
     </Button>
     <Button variant="ghost">Export</Button>

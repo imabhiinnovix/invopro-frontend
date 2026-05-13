@@ -13,6 +13,8 @@ import { useNavigate } from "react-router-dom";
 import { formatCurrency, formatDate, formatDateWithoutTime } from "../utils/utils";
 import { useAppDispatch } from "../storeHooks";
 import { setMergedInvoices } from "../reducers/invoiceSlice";
+import usePost from "../hooks/usePost";
+import { toast } from "react-toastify";
 
 
 interface ForceState { open: boolean; ref: string; }
@@ -21,6 +23,7 @@ export const InvoiceReview: React.FC<PageProps> = ({ onNavigate }) => {
   const [tab, setTab] = useState<string>("all");
   const [search, setSearch] = useState<string>("");
   const [force, setForce] = useState<ForceState>({ open: false, ref: "" });
+  const [selectedId, setSelectedId] = useState<string | null>(null);
     
 
   const [selectedByTab, setSelectedByTab] = useState<Record<string, Record<string, boolean>>>({});
@@ -94,59 +97,83 @@ useEffect(() => {
   return rows;
 }, [mergedData, tab, search]);
 
-  const allSelected =
-    filtered.length > 0 && filtered.every(r => selected[r.id]);
+  // const allSelected =
+  //   filtered.length > 0 && filtered.every(r => selected[r.id]);
 
-  const anySelected =
-    Object.values(selected).some(Boolean);
+const anySelected = !!selectedId;
 
-  const toggleAll = () => {
-    const newState: Record<string, boolean> = {};
+  // const toggleAll = () => {
+  //   const newState: Record<string, boolean> = {};
 
-    if (!allSelected) {
-      filtered.forEach(r => {
-        newState[r.id] = true;
-      });
+  //   if (!allSelected) {
+  //     filtered.forEach(r => {
+  //       newState[r.id] = true;
+  //     });
+  //   }
+
+  //   setSelectedByTab(prev => ({
+  //     ...prev,
+  //     [tab]: newState
+  //   }));
+  // };
+
+const toggleOne = (id: string) => {
+  setSelectedId(prev => (prev === id ? null : id));
+};
+const sendRevalidateRows = usePost<any, any>(
+  ["sendRevalidateRows"],
+  (res) => {
+    if (res?.success) {
+      toast.success("Revalidation triggered successfully");
+      setSelectedId(null); // ✅ correct reset
+      invoiceList.refetch?.(); // or your correct query refetch
+    }
+  },
+  true
+);
+const handleRevalidate = async () => {
+  try {
+    if (!selectedId) {
+      toast.error("Please select a row");
+      return;
     }
 
-    setSelectedByTab(prev => ({
-      ...prev,
-      [tab]: newState
-    }));
-  };
+    const payload = {
+      dataSourceId: import.meta.env.VITE_INVOICE_DATASOURCE_ID,
+      versionId: selectedId,
+      isAllSelected: true,
+    };
 
-  const toggleOne = (id: string) => {
-    setSelectedByTab(prev => ({
+    await sendRevalidateRows.mutateAsync({
+      url: "/common/dataSourceVersion/revalidateRows",
+      payload,
+    });
+
+    // clear only current tab selection
+    setSelectedByTab((prev) => ({
       ...prev,
-      [tab]: {
-        ...(prev[tab] || {}),
-        [id]: !prev[tab]?.[id]
-      }
+      [tab]: {},
     }));
-  };
+
+  } catch (err) {
+    toast.error("Revalidation failed");
+  }
+};
 
   const columns: Column<Invoice>[] = [
-    {
-      key: "_cb",
-      label: (
-        <input
-          type="checkbox"
-          checked={allSelected}
-          onChange={toggleAll}
-          onClick={(e) => e.stopPropagation()}
-        />
-      ),
-      render: (_: any, r) => (
-        <div onClick={(e) => e.stopPropagation()}>
-          <input
-            type="checkbox"
-            checked={!!selected[r.id]}
-            onChange={() => toggleOne(r.id as string)}
-            onClick={(e) => e.stopPropagation()}
-          />
-        </div>
-      )
-    },
+   {
+  key: "_cb",
+  label: "", // ✅ no select-all checkbox
+  render: (_: any, r) => (
+    <div onClick={(e) => e.stopPropagation()}>
+      <input
+        type="checkbox"
+        checked={selectedId === r._id}
+        onChange={() => toggleOne(r._id as string)}
+      />
+    </div>
+  )
+},
     {
     key: "vendorId",
     label: "Vendor",
@@ -297,9 +324,13 @@ useEffect(() => {
     <Button variant="ghost">Filter</Button>
 
     {tab !== "approved" && (
-      <Button variant="outline" disabled={!anySelected}>
-        ReValidate
-      </Button>
+     <Button
+  variant="outline"
+  disabled={!anySelected}
+  onClick={handleRevalidate}
+>
+  Revalidate
+</Button>
     )}
   </div>
 </div>
