@@ -21,7 +21,7 @@ import { Tooltip, Typography } from "@mui/material";
 import { RootState } from "../store";
 import { useAppDispatch } from "../storeHooks";
 import { setDataSourceList } from "./dataSources/dataSourceActions";
-import { formatCurrency } from "../utils/utils";
+import { formatCurrency, formatDateWithoutTime } from "../utils/utils";
 import usePut from "../hooks/usePut";
 import { PUT } from "../services/apiRoutes";
 
@@ -272,13 +272,28 @@ const handleSearchChange = (
  
 
  const infoFields = [
-  { label: "Vendor", value: invoice?.vendorId?.name || "-" },
-  { label: "Invoice Number", value: invoice?.firstInvoiceNumber || "-" },
+   { label: "Vendor", value: invoice?.vendorId?.name || "-" },
+
+  {
+    label: "Invoice Number",
+    value: invoice?.aiExtraction?.invoiceNumber || "-"
+  },
+
   { label: "Billing Period", value: invoice?.versionValue || "-" },
-  { label: "Invoice Date", value: invoice?.firstInvoiceDate || "-" },
+
+  {
+    label: "Invoice Date",
+    value: invoice?.aiExtraction?.invoiceDate
+      ? formatDateWithoutTime(invoice.aiExtraction.invoiceDate)
+      : "-"
+  },
+
   {
     label: "Total Amount",
-    value: formatCurrency(invoice?.totalAmount, invoice?.firstCurrency)
+    value: formatCurrency(
+      invoice?.totalAmount || 0,
+      invoice?.aiExtraction?.conversion?.baseCurrency || "USD"
+    )
   },
   {
     label: "Line Items",
@@ -525,7 +540,11 @@ const mappedRowAuditLogs = useMemo(() => {
         </Button>
       </div>
              <SectionHeader
-        title={`Invoice Detail ${invoice?.firstInvoiceNumber ? ' - '+invoice?.firstInvoiceNumber : ''}`}
+        title={`Invoice Detail ${
+          invoice?.aiExtraction?.invoiceNumber
+            ? " - " + invoice.aiExtraction.invoiceNumber
+            : ""
+        }`}
         subtitle={`${invoice?.vendorId?.name} · ${invoice?.versionValue}`}
         // actions={
         //   <>

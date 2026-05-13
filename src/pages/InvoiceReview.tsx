@@ -10,7 +10,7 @@ import { Tabs, SearchBox } from "../components/ui/Tabs";
 import { DataTable, Column } from "../components/ui/DataTable";
 import { ConfirmModal } from "../components/ui/Modal";
 import { useNavigate } from "react-router-dom";
-import { formatCurrency } from "../utils/utils";
+import { formatCurrency, formatDate, formatDateWithoutTime } from "../utils/utils";
 import { useAppDispatch } from "../storeHooks";
 import { setMergedInvoices } from "../reducers/invoiceSlice";
 
@@ -62,9 +62,7 @@ const mergedData = useMemo(() => {
       totalLineItems: s?.totalLineItems,
       totalAmount: s?.totalAmount,
       totalApprovedCount: s?.totalApprovedCount,
-      totalFlaggedCount: s?.totalFlaggedCount,
-      firstInvoiceNumber: s?.firstInvoiceNumber,
-      firstInvoiceDate: s?.firstInvoiceDate,
+      totalFlaggedCount: s?.totalFlaggedCount
     };
   });
 }, [invoiceList?.data]);
@@ -156,8 +154,20 @@ useEffect(() => {
       <strong>{r?.vendorId?.name || r?.vendor || "-"}</strong>
     )
     },
-    { key:"firstInvoiceNumber", label:"Invoice No." },
-    { key:"firstInvoiceDate", label:"Invoice Date" },
+    {
+      key: "invoiceNumber",
+      label: "Invoice No.",
+      render: (_, r: any) =>
+        r?.aiExtraction?.invoiceNumber || "-"
+    },
+    {
+      key: "invoiceDate",
+      label: "Invoice Date",
+      render: (_, r: any) =>
+        r?.aiExtraction?.invoiceDate
+          ? formatDateWithoutTime(r.aiExtraction.invoiceDate)
+          : "-"
+    },
     {
       key: "versionValue",
       label: "Billing Period",
@@ -165,24 +175,28 @@ useEffect(() => {
         r?.versionValue || "-"
     },
    {
-  key: "totalAmount",
-  label: "Total Amount",
-  render: (v) => formatCurrency(v, v.firstCurrency) ?? 0,
-},
+      key: "totalAmount",
+      label: "Total Amount",
+      render: (v, r: any) =>
+        formatCurrency(
+          v || 0,
+          r?.aiExtraction?.conversion?.baseCurrency || "USD"
+        )
+    },
     {
-  key: "totalLineItems",
-  label: "Line Items",
-  render: (v) => v ?? 0,
-},
+      key: "totalLineItems",
+      label: "Line Items",
+      render: (v) => v ?? 0,
+    },
    {
-  key: "totalApprovedCount",
-  label: "Matched",
-  render: (v) => (
-    <span style={{ color: "#16A34A", fontWeight: 600 }}>
-      {v ?? 0}
-    </span>
-  ),
-},
+      key: "totalApprovedCount",
+      label: "Matched",
+      render: (v) => (
+        <span style={{ color: "#16A34A", fontWeight: 600 }}>
+          {v ?? 0}
+        </span>
+      ),
+    },
    {
   key: "totalFlaggedCount",
   label: "Flagged",
