@@ -102,6 +102,7 @@ const AppRoutes = () => {
       <Route path="/audit-trail" element={<AuditTrailPage />} />
       <Route path="/entity" element={<Entity />} />
       <Route path="/data-src" element={<DataSource />} />
+      <Route path="/jobs" element={<Jobs />} />
 
       {/* Public Routes */}
       {/* <Route path="/login" element={<Login />} />

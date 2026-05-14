@@ -25,6 +25,7 @@ import { formatCurrency, formatDateWithoutTime } from "../utils/utils";
 import usePut from "../hooks/usePut";
 import { PUT } from "../services/apiRoutes";
 import usePost from "../hooks/usePost";
+import InvoiceFiltersModal from "../components/InvoiceFiltersModal";
 
 
 
@@ -64,10 +65,20 @@ const [paginationModel, setPaginationModel] = useState({
 
 const [searchValue, setSearchValue] = useState("");
 const [debouncedSearchValue, setDebouncedSearchValue] = useState("");
-const [filter, setFilter] = useState({});
+const [refreshKey, setRefreshKey] = useState(0);
+
+const [isFiltersModalOpen, setIsFiltersModalOpen] = useState(false);
+
+const [filter, setFilter] = useState<Record<string, any>>({});
 const [selectedYear, setSelectedYear] = useState("");
 const [selectedMonth, setSelectedMonth] = useState("");
-  const [refreshKey, setRefreshKey] = useState(0);
+
+const [yearOptions, setYearOptions] = useState<string[]>([]);
+const [monthOptions, setMonthOptions] = useState<string[]>([]);
+
+const [showExportSuccessDialog, setShowExportSuccessDialog] = useState<string | null>(null);
+
+const [exportTriggered, setExportTriggered] = useState(false);
 
 
 
@@ -109,7 +120,76 @@ const listCurrentData = list?.find((item) => item._id === import.meta.env.VITE_I
 
 
   const [status, setStatus] = useState(invoice?.aiStatus);
+useEffect(() => {
+  if (!listCurrentData?.allDataSourceVersions) return;
 
+  const versions = listCurrentData.allDataSourceVersions.filter(
+    (v: any) => v.isCurrent === true
+  );
+
+  if (!versions.length) return;
+
+  const parsed = versions.map((v: any) => v.versionValue);
+
+  const yearsSet = new Set<string>();
+  const monthsMap: Record<string, Set<string>> = {};
+
+  parsed.forEach((val: string) => {
+    const [year, month] = val.split("-");
+    yearsSet.add(year);
+
+    if (!monthsMap[year]) monthsMap[year] = new Set();
+    monthsMap[year].add(month);
+  });
+
+  const years = Array.from(yearsSet).sort((a, b) => Number(b) - Number(a));
+  setYearOptions(years);
+
+  const latest = [...parsed].sort().reverse()[0];
+
+  if (latest && !selectedYear && !selectedMonth) {
+    const [y, m] = latest.split("-");
+    setSelectedYear(y);
+    setSelectedMonth(m);
+    setMonthOptions(Array.from(monthsMap[y] || []).sort());
+  }
+}, [listCurrentData]);
+
+useEffect(() => {
+  if (!listCurrentData?.allDataSourceVersions || !selectedYear) return;
+
+  const versions = listCurrentData.allDataSourceVersions.filter(
+    (v: any) => v.isCurrent === true
+  );
+
+  const months = versions
+    .map((v: any) => v.versionValue)
+    .filter((val: string) => val.startsWith(selectedYear))
+    .map((val: string) => val.split("-")[1]);
+
+  const uniqueMonths = Array.from(new Set(months)).sort();
+
+  setMonthOptions(uniqueMonths);
+
+  if (!uniqueMonths.includes(selectedMonth)) {
+    setSelectedMonth(uniqueMonths[0] || "");
+  }
+}, [selectedYear]);
+
+
+const handleFilter = (filters: any, year: any, month: any) => {
+  if (year !== undefined) setSelectedYear(year);
+  if (month !== undefined) setSelectedMonth(month);
+
+  const cleanedFilters = Object.fromEntries(
+    Object.entries(filters).filter(([_, v]) => v !== "all")
+  );
+
+  setFilter(cleanedFilters);
+};
+
+const handleOpenFiltersModal = () => setIsFiltersModalOpen(true);
+const handleCloseFiltersModal = () => setIsFiltersModalOpen(false);
 
 useEffect(() => {
   const handler = setTimeout(() => {
@@ -176,6 +256,33 @@ useEffect(() => {
   setRows(formattedRows);
   setRowCount(totalCount);
 }, [sourceVersionData.data, sourceVersionData.isLoading]);
+
+
+const sourceDataVersionExport = useGet<any>(
+  ["invoiceDataVersionExport", valueId || ""],
+  GET?.SOURCE_DATA_VERSION_EXPORT +
+    `?dataSourceId=${encodeURIComponent(
+      import.meta.env.VITE_INVOICE_DATASOURCE_ID
+    )}` +
+    `&versionId=${valueId}` +
+    `&filters=${encodeURIComponent(JSON.stringify(filter))}`,
+  false
+);
+
+const handleExport = () => {
+  setExportTriggered(true);
+  sourceDataVersionExport.refetch();
+};
+
+
+useEffect(() => {
+  if (exportTriggered && sourceDataVersionExport.data?.success) {
+    setShowExportSuccessDialog(
+      "Your invoice data export has started. You can view it in Jobs."
+    );
+    setExportTriggered(false);
+  }
+}, [sourceDataVersionExport.dataUpdatedAt, exportTriggered]);
 
 const rowAuditList = useGet(
   [
@@ -668,7 +775,7 @@ const mappedRowAuditLogs = useMemo(() => {
   </div>
 
   <div style={{ display: "flex", gap: 8 }}>
-    <Button variant="ghost">Filter</Button>
+    <Button variant="ghost" onClick={handleOpenFiltersModal}>Filter</Button>
     {/* <Button
   variant="primary"
   onClick={() => setAddOpen(true)}
@@ -682,7 +789,9 @@ const mappedRowAuditLogs = useMemo(() => {
     >
       Revalidate
     </Button>
-    <Button variant="ghost">Export</Button>
+    <Button variant="ghost" onClick={handleExport}>
+      Export
+    </Button>
   </div>
 </div>
      <div style={{ position: "relative" }}>
@@ -848,6 +957,58 @@ const mappedRowAuditLogs = useMemo(() => {
   refreshData={() => sourceVersionData.refetch()}
   attributeListData={attributeList?.data?.data || []}
 />
+{valueId && (
+  <InvoiceFiltersModal
+    open={isFiltersModalOpen}
+    onClose={handleCloseFiltersModal}
+    onApplyFilters={handleFilter}
+    dataSourceId={import.meta.env.VITE_INVOICE_DATASOURCE_ID}
+    filterFlag="isFilterEnable"
+    currentFilters={filter}
+    yearOptions={yearOptions}
+    monthOptions={monthOptions}
+    selectedYear={selectedYear}
+    selectedMonth={selectedMonth}
+    isShowYearMonth={false}
+  />
+)}
+
+<Modal
+  open={!!showExportSuccessDialog}
+  onClose={() => setShowExportSuccessDialog(null)}
+  title="Export Started"
+  footer={
+    <>
+      <Button
+        variant="ghost"
+        onClick={() => setShowExportSuccessDialog(null)}
+      >
+        OK
+      </Button>
+
+      <Button
+        variant="primary"
+        onClick={() => {
+          setShowExportSuccessDialog(null);
+          navigate("/jobs");
+        }}
+      >
+        Go to Jobs
+      </Button>
+    </>
+  }
+>
+  <div
+    style={{
+      padding: "12px 0",
+      fontSize: 14,
+      color: "#374151",
+      lineHeight: 1.5,
+    }}
+  >
+    {showExportSuccessDialog}
+  </div>
+</Modal>
       <AuditTrail entries={mappedInvoiceAuditLogs} onAddComment={() => setCommentOpen(true)} />
 
       <ConfirmModal
