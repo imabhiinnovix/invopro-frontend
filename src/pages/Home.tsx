@@ -6,7 +6,18 @@ import { RootState } from "../store";
 
 type ViewMode = "monthly" | "quarterly" | "annual";
 
-interface FirmRow { firm:string; region:string; session:string; total:number; proc:number; unproc:number; amount:number; approved:number; pending:number; flagged:number; }
+interface FirmRow {
+  firm: string;
+  region: string;
+  session: string;
+  total: number;
+  proc: number;
+  unproc: number;
+  totalAmount: number;
+  approved: number;
+  pending: number;
+  flagged: number;
+}
 interface MonthData { m:string; proc:number; unproc:number; }
 
 // const FIRMS: FirmRow[] = [
@@ -65,6 +76,9 @@ export const Home: React.FC = () => {
   const [yearOptions, setYearOptions] = useState<string[]>([]);
   const [monthOptions, setMonthOptions] = useState<string[]>([]);
 
+  const [page, setPage] = useState(1);
+const [limit] = useState(10);
+
 
 
   const { list } = useSelector((state: RootState) => state.dataSource);
@@ -97,23 +111,38 @@ useEffect(() => {
   const years = Array.from(yearsSet).sort((a, b) => Number(b) - Number(a));
   setYearOptions(years);
 
-  const latest = [...parsed].sort().reverse()[0];
+  // current year
+  const currentYear = new Date().getFullYear().toString();
 
-  if (latest) {
-    const [defaultYear, defaultMonth] = latest.split("-");
-    setYear(defaultYear);
-    setMonth(defaultMonth);
-    setMonthOptions(Array.from(monthsMap[defaultYear] || []).sort());
-  }
+  // if current year exists in data use it, else latest available
+  const defaultYear = years.includes(currentYear)
+    ? currentYear
+    : years[0];
+
+  setYear(defaultYear);
+
+  // month blank
+  setMonth("");
+
+  setMonthOptions(
+    Array.from(monthsMap[defaultYear] || []).sort()
+  );
 }, [listCurrentData]);
 
-const analyticsAPI = useGet(
-  ["dashboardAnalytics", year, month, vendor, status],
-  `${GET.Data_Source_Version}/dashboard/analytics?dataSourceId=${import.meta.env.VITE_INVOICE_DATASOURCE_ID}&year=${year}&month=${month}&vendorId=${vendor}&aiStatus=${status}`,
+const summaryAPI = useGet(
+  ["dashboardSummary", year, month, vendor, status],
+  `${GET.Data_Source_Version}/dashboard/analyticsSummary?dataSourceId=${import.meta.env.VITE_INVOICE_DATASOURCE_ID}&year=${year}${month ? `&month=${month}` : ""}&vendorId=${vendor}&aiStatus=${status}`,
   true
 );
 
-const analytics = analyticsAPI?.data?.data || {};
+const tableAPI = useGet(
+  ["dashboardTable", year, month, vendor, status, page],
+  `${GET.Data_Source_Version}/dashboard/analytics?dataSourceId=${import.meta.env.VITE_INVOICE_DATASOURCE_ID}&year=${year}${month ? `&month=${month}` : ""}&vendorId=${vendor}&aiStatus=${status}&page=${page}&limit=${limit}`,
+  true
+);
+
+const analytics = summaryAPI?.data?.data || {};
+const tableData = tableAPI?.data?.data || {};
 
 const totals = analytics.kpis || {
   totalBilled: 0,
@@ -146,22 +175,37 @@ const REGION_DIST = Object.entries(analytics.regionWise || {}).map(
     color: "#3B2FD9"
   })
 );
-  const TABLE_DATA = analytics.table || [];
+const TABLE_DATA = tableData.table || [];
+const totalPages = tableData.pagination?.totalPages || 1;
+const totalRows = tableData.pagination?.total || 0;
 
-  const filteredFirms = useMemo(() => {
-    let rows = TABLE_DATA;
-    if (firmFilter !== "All Law Firms") rows = rows.filter(r => r.firm === firmFilter);
-    if (region !== "All Regions")       rows = rows.filter(r => region.includes(r.region));
-    if (status === "Processed")         rows = rows.filter(r => r.unproc === 0);
-    if (status === "Unprocessed")       rows = rows.filter(r => r.unproc > 0);
-    if (status === "Flagged")           rows = rows.filter(r => r.flagged > 0);
-    return rows;
-  }, [firmFilter, region, status]);
+const getPageNumbers = () => {
+  const maxVisible = 5;
+  const current = page - 1;
+
+  let start = Math.max(0, current - Math.floor(maxVisible / 2));
+  let end = start + maxVisible - 1;
+
+  if (end >= totalPages) {
+    end = totalPages - 1;
+    start = Math.max(0, end - maxVisible + 1);
+  }
+
+  return Array.from(
+    { length: end - start + 1 },
+    (_, i) => start + i
+  );
+};
+
+  const filteredFirms = FIRMS;
 
   const maxMonth = Math.max(...MONTHLY.map(m => m.proc + m.unproc));
   const maxFirm = Math.max(...filteredFirms.map(f => f.totalAmount || 0), 1);
 
 
+useEffect(() => {
+  setPage(1);
+}, [year, month, vendor, status]);
 
   return (
     <div style={{ padding: 24, fontFamily: "'Segoe UI',system-ui,sans-serif", color: "#1A1D2E" }}>
@@ -366,7 +410,7 @@ const REGION_DIST = Object.entries(analytics.regionWise || {}).map(
               </tr>
             </thead>
             <tbody>
-              {filteredFirms.map((f, i) => {
+              {TABLE_DATA.map((f, i) => {
                 const p = pct(f.proc, f.total);
                 const sc = p === 100 ? "green" : f.unproc > 0 ? "red" : "blue";
                 const sl = p === 100 ? "Complete" : f.unproc > 0 ? "In Progress" : "Pending";
@@ -404,10 +448,62 @@ const REGION_DIST = Object.entries(analytics.regionWise || {}).map(
           </table>
         </div>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 12, fontSize: 12, color: "#6B7280" }}>
-          <span>Showing {filteredFirms.length} of {FIRMS.length} firms</span>
-          <div style={{ display: "flex", gap: 4 }}>
-            {[1, 2].map(p => <button key={p} style={{ width: 28, height: 28, borderRadius: 6, border: `1px solid ${p === 1 ? "#3B2FD9" : "#E4E7F0"}`, background: p === 1 ? "#3B2FD9" : "#fff", color: p === 1 ? "#fff" : "#1A1D2E", cursor: "pointer", fontSize: 12, fontWeight: 600 }}>{p}</button>)}
-          </div>
+          <span>
+  Total Records: {totalRows}
+</span>
+          <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+  <button
+    disabled={page === 1}
+    onClick={() => setPage(prev => prev - 1)}
+    style={{
+      width: 28,
+      height: 28,
+      borderRadius: 6,
+      border: "1px solid #E4E7F0",
+      background: "white",
+      cursor: "pointer",
+      opacity: page === 1 ? 0.4 : 1
+    }}
+  >
+    ‹
+  </button>
+
+  {getPageNumbers().map((pNum) => (
+    <button
+      key={pNum}
+      onClick={() => setPage(pNum + 1)}
+      style={{
+        width: 28,
+        height: 28,
+        borderRadius: 6,
+        border: `1px solid ${
+          page === pNum + 1 ? "#3B2FD9" : "#E4E7F0"
+        }`,
+        background: page === pNum + 1 ? "#3B2FD9" : "#fff",
+        color: page === pNum + 1 ? "#fff" : "#1A1D2E",
+        cursor: "pointer"
+      }}
+    >
+      {pNum + 1}
+    </button>
+  ))}
+
+  <button
+    disabled={page === totalPages}
+    onClick={() => setPage(prev => prev + 1)}
+    style={{
+      width: 28,
+      height: 28,
+      borderRadius: 6,
+      border: "1px solid #E4E7F0",
+      background: "white",
+      cursor: "pointer",
+      opacity: page === totalPages ? 0.4 : 1
+    }}
+  >
+    ›
+  </button>
+</div>
         </div>
       </Card>
     </div>
