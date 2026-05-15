@@ -3,6 +3,8 @@ import useGet from "../hooks/useGet";
 import { GET } from "../services/apiRoutes";
 import { useSelector } from "react-redux";
 import { RootState } from "../store";
+import { setDataSourceList } from "./dataSources/dataSourceActions";
+import { useAppDispatch } from "../storeHooks";
 
 type ViewMode = "monthly" | "quarterly" | "annual";
 
@@ -64,15 +66,25 @@ const Card: React.FC<{ children: React.ReactNode; style?: React.CSSProperties }>
 
 export const Home: React.FC = () => {
   const [period,    setPeriod]    = useState("Year to Date");
-  const [firmFilter,setFirmFilter]= useState("All Law Firms");
+  // const [firmFilter,setFirmFilter]= useState("All Law Firms");
   const [region,    setRegion]    = useState("All Regions");
   const [view,      setView]      = useState<ViewMode>("monthly");
   const [activeTags,setActiveTags]= useState<string[]>(["2026","YTD"]);
+  const [monthsByYear, setMonthsByYear] = useState<Record<string, Set<string>>>({});
 
-  const [year, setYear] = useState("");
-  const [month, setMonth] = useState("");
-  const [vendor, setVendor] = useState("");
-  const [status, setStatus] = useState("");
+  const [filters, setFilters] = useState({
+  year: "",
+  month: "",
+  vendor: "",
+  status: ""
+});
+
+const [appliedFilters, setAppliedFilters] = useState({
+  year: "",
+  month: "",
+  vendor: "",
+  status: ""
+});
   const [yearOptions, setYearOptions] = useState<string[]>([]);
   const [monthOptions, setMonthOptions] = useState<string[]>([]);
 
@@ -80,24 +92,41 @@ export const Home: React.FC = () => {
 const [limit] = useState(10);
 
 
+const dispatch = useAppDispatch();
+  // Your existing API call with refreshKey dependency
+  const dataSourceNotivixListAPI = useGet(
+    ["dataSourceNotivixList"], // Add refreshKey to dependency array
+    GET?.DATA_SOURCE_LIST + `?isShowMenu=true`
+  );
+  // Effect to update Redux when API data changes
+  useEffect(() => {
+    if (dataSourceNotivixListAPI.data?.success) {
+      dispatch(setDataSourceList(dataSourceNotivixListAPI.data.data));
+    }
+  }, [dataSourceNotivixListAPI.data, dispatch]);
 
-  const { list } = useSelector((state: RootState) => state.dataSource);
 
+const { list } = useSelector((state: RootState) => state.dataSource);
 const listCurrentData = list?.find(
   (item) => item._id === import.meta.env.VITE_INVOICE_DATASOURCE_ID
 );
 
 useEffect(() => {
-  if (!listCurrentData?.allDataSourceVersions) return;
+  if (!listCurrentData?.allDataSourceVersions?.length) return;
 
   const versions = listCurrentData.allDataSourceVersions;
-  const parsed = versions.map((v: any) => v.versionValue);
+  const parsed = versions
+  .map((v: any) => v?.versionValue)
+  .filter(Boolean);
 
   const yearsSet = new Set<string>();
-  const monthsMap: Record<string, Set<string>> = {};
+ const monthsMap: Record<string, Set<string>> = {};
+ 
 
   parsed.forEach((val: string) => {
     const [y, m] = val.split("-");
+
+    if (!y) return;
 
     yearsSet.add(y);
 
@@ -105,39 +134,61 @@ useEffect(() => {
       monthsMap[y] = new Set();
     }
 
-    monthsMap[y].add(m);
+    if (m) monthsMap[y].add(m);
   });
+  setMonthsByYear(monthsMap);
 
-  const years = Array.from(yearsSet).sort((a, b) => Number(b) - Number(a));
+  const years = Array.from(yearsSet).sort(
+    (a, b) => Number(b) - Number(a)
+  );
+
   setYearOptions(years);
 
-  // current year
   const currentYear = new Date().getFullYear().toString();
 
-  // if current year exists in data use it, else latest available
-  const defaultYear = years.includes(currentYear)
-    ? currentYear
-    : years[0];
+  const defaultYear =
+    years.includes(currentYear) ? currentYear : years[0] || "";
 
-  setYear(defaultYear);
+  const months = Array.from(
+    monthsMap[defaultYear] || []
+  ).sort();
 
-  // month blank
-  setMonth("");
+  setMonthOptions(months);
 
-  setMonthOptions(
-    Array.from(monthsMap[defaultYear] || []).sort()
-  );
-}, [listCurrentData]);
+  setFilters((prev) => ({
+    ...prev,
+    year: defaultYear,
+    month: ""
+  }));
+
+  setAppliedFilters((prev) => ({
+    ...prev,
+    year: defaultYear,
+    month: ""
+  }));
+}, [list]);
 
 const summaryAPI = useGet(
-  ["dashboardSummary", year, month, vendor, status],
-  `${GET.Data_Source_Version}/dashboard/analyticsSummary?dataSourceId=${import.meta.env.VITE_INVOICE_DATASOURCE_ID}&year=${year}${month ? `&month=${month}` : ""}&vendorId=${vendor}&aiStatus=${status}`,
+  [
+  "dashboardSummary",
+  appliedFilters.year,
+  appliedFilters.month,
+  appliedFilters.vendor,
+  appliedFilters.status
+],
+  `${GET.Data_Source_Version}/dashboard/analyticsSummary?dataSourceId=${import.meta.env.VITE_INVOICE_DATASOURCE_ID}&year=${appliedFilters.year}${appliedFilters.month ? `&month=${appliedFilters.month}` : ""}&vendorId=${appliedFilters.vendor}&aiStatus=${appliedFilters.status}`,
   true
 );
 
 const tableAPI = useGet(
-  ["dashboardTable", year, month, vendor, status, page],
-  `${GET.Data_Source_Version}/dashboard/analytics?dataSourceId=${import.meta.env.VITE_INVOICE_DATASOURCE_ID}&year=${year}${month ? `&month=${month}` : ""}&vendorId=${vendor}&aiStatus=${status}&page=${page}&limit=${limit}`,
+  ["dashboardTable", 
+    appliedFilters.year,
+    appliedFilters.month,
+    appliedFilters.vendor,
+    appliedFilters.status, 
+    page
+  ],
+  `${GET.Data_Source_Version}/dashboard/analytics?dataSourceId=${import.meta.env.VITE_INVOICE_DATASOURCE_ID}&year=${appliedFilters.year}${appliedFilters.month ? `&month=${appliedFilters.month}` : ""}&vendorId=${appliedFilters.vendor}&aiStatus=${appliedFilters.status}&page=${page}&limit=${limit}`,
   true
 );
 
@@ -205,7 +256,44 @@ const getPageNumbers = () => {
 
 useEffect(() => {
   setPage(1);
-}, [year, month, vendor, status]);
+}, [appliedFilters.year, appliedFilters.month, appliedFilters.vendor, appliedFilters.status]);
+
+const vendorList = useGet<{
+  success: boolean;
+  data: any[];
+}>(
+  ["vendorList"],
+  GET.Vendor_List,
+  true
+);
+
+const vendorOptions = useMemo(() => {
+  return [
+    { label: "All Law Firms", value: "" },
+    ...(vendorList?.data?.data || []).map((v: any) => ({
+      label: v.name,
+      value: v._id
+    }))
+  ];
+}, [vendorList?.data]);
+
+const billingSessionRange = useMemo(() => {
+  const months = Array.from(
+    monthsByYear[appliedFilters.year] || []
+  ).sort();
+
+  if (!months.length) return "";
+
+  const monthNames = [
+    "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+    "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+  ];
+
+  const start = monthNames[Number(months[0]) - 1];
+  const end = monthNames[Number(months[months.length - 1]) - 1];
+
+  return `${start} – ${end} ${appliedFilters.year}`;
+}, [monthsByYear, appliedFilters.year]);
 
   return (
     <div style={{ padding: 24, fontFamily: "'Segoe UI',system-ui,sans-serif", color: "#1A1D2E" }}>
@@ -226,15 +314,58 @@ useEffect(() => {
         <span style={{ fontSize: 11, fontWeight: 700, color: "#6B7280", textTransform: "uppercase", letterSpacing: ".07em" }}>Filters</span>
         <div style={{ width: 1, height: 24, background: "#E4E7F0" }} />
         {[
-          { val: year,      setter: setYear,       opts: ["2026","2025","2024","All Years"] },
-          { val: period,    setter: setPeriod,      opts: ["Year to Date","Q1 2026","Q2 2026","Last 6 Months","Last 12 Months"] },
-          { val: firmFilter,setter: setFirmFilter,  opts: ["All Law Firms",...FIRMS.map(f => f.firm)] },
+          {
+  val: filters.year,
+ setter: (v: string) => {
+  const months = Array.from(
+    monthsByYear[v] || []
+  ).sort();
+
+  setMonthOptions(months);
+
+  setFilters((prev) => ({
+    ...prev,
+    year: v,
+    month: ""
+  }));
+},
+  opts: yearOptions
+},
+{
+  val: filters.month,
+  setter: (v: string) =>
+    setFilters((prev) => ({ ...prev, month: v })),
+  opts: ["All Months", ...monthOptions]
+},
+          // { val: period,    setter: setPeriod,      opts: ["Year to Date","Q1 2026","Q2 2026","Last 6 Months","Last 12 Months"] },
+          {
+  val: filters.vendor,
+  setter: (v: string) =>
+    setFilters((prev) => ({
+      ...prev,
+      vendor: v
+    })),
+  opts: vendorOptions,
+  isVendor: true
+},
           { val: region,    setter: setRegion,      opts: ["All Regions","United States (US)","Europe (EU)","China (CN)","Japan (JP)","Korea (KR)"] },
-          { val: status,    setter: setStatus,      opts: ["All Statuses","Processed","Unprocessed","Approved","Flagged","Paid"] },
+          {
+  val: filters.status,
+  setter: (v: string) =>
+    setFilters((prev) => ({ ...prev, status: v })),
+  opts: ["All Statuses","Processed","Unprocessed","Approved","Flagged","Paid"]
+},
           { val: view,      setter: (v: string) => setView(v as ViewMode), opts: ["monthly","quarterly","annual"] },
         ].map((f, i) => (
           <select key={i} value={f.val} onChange={e => f.setter(e.target.value)} style={{ border: "1.5px solid #E4E7F0", borderRadius: 8, padding: "6px 10px", fontSize: 13, fontFamily: "inherit", color: "#1A1D2E", background: "#fff", cursor: "pointer", outline: "none" }}>
-            {f.opts.map(o => <option key={o}>{o}</option>)}
+          {f.opts.map((o: any) => (
+  <option
+    key={f.isVendor ? o.value : o}
+    value={f.isVendor ? o.value : o}
+  >
+    {f.isVendor ? o.label : o}
+  </option>
+))}
           </select>
         ))}
         <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginLeft: 4 }}>
@@ -245,8 +376,47 @@ useEffect(() => {
             </span>
           ))}
         </div>
-        <Btn size="sm" style={{ marginLeft: "auto" }} onClick={() => setActiveTags([year])}>Clear All</Btn>
-        <Btn variant="primary" size="sm">Apply</Btn>
+        <Btn
+  size="sm"
+  style={{ marginLeft: "auto" }}
+  onClick={() => {
+    const reset = {
+      year: yearOptions[0] || "",
+      month: "",
+      vendor: "",
+      status: ""
+    };
+
+    setFilters(reset);
+    setAppliedFilters(reset);
+    setActiveTags(reset.year ? [reset.year] : []);
+    setPage(1);
+  }}
+>
+  Reset
+  </Btn>
+        <Btn
+  variant="primary"
+  size="sm"
+ onClick={() => {
+  setAppliedFilters(filters);
+  setPage(1);
+
+  const vendorLabel =
+    vendorOptions.find(v => v.value === filters.vendor)?.label || "";
+
+  const tags = [
+    filters.year,
+    filters.month,
+    vendorLabel,
+    filters.status
+  ].filter(Boolean);
+
+  setActiveTags(tags);
+}}
+>
+  Apply
+</Btn>
       </Card>
 
       {/* KPI widgets */}
@@ -256,7 +426,7 @@ useEffect(() => {
           { label: "Processed",      value: fmt(totals.processed),  sub: `${filteredFirms.filter(f=>f.unproc===0).length} complete`, color: "#16A34A", accent: "#16A34A", badge: "78%",       bColor: "#DCFCE7", tColor: "#15803D" },
           { label: "Unprocessed",    value: fmt(totals.unprocessed),   sub: `${filteredFirms.filter(f=>f.unproc>0).length} pending`, color: "#DC2626", accent: "#DC2626", badge: "Pending",    bColor: "#FEE2E2", tColor: "#B91C1C" },
           { label: "Flagged Items",  value: String(totals.flagged),sub: "Across firms",       color: "#D97706", accent: "#D97706", badge: "Review",     bColor: "#FEF3C7", tColor: "#92400E" },
-          { label: "Billing Sessions", value: totals.billingSessions,                  sub: "Jan – Jun 2026",     color: "#0284C7", accent: "#0284C7", badge: year,         bColor: "#DBEAFE", tColor: "#1D4ED8" },
+          { label: "Billing Sessions", value: totals.billingSessions,                  sub: billingSessionRange,     color: "#0284C7", accent: "#0284C7", badge: appliedFilters.year,         bColor: "#DBEAFE", tColor: "#1D4ED8" },
         ].map(k => (
           <div key={k.label} style={{ background: "#fff", borderRadius: 12, border: "1px solid #E4E7F0", padding: 16, boxShadow: "0 1px 4px rgba(0,0,0,.05)", borderTop: `3px solid ${k.accent}` }}>
             <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
