@@ -45,7 +45,7 @@ interface SendOtpResponse {
 export const Login: React.FC<LoginProps> = ({ onLogin }) => {
   const [method,    setMethod]    = useState<AuthMethod>("password");
   const [otpStep,   setOtpStep]   = useState<OtpStep>(1);
-  const [email,     setEmail]     = useState("admin@sabic.com");
+  const [email,     setEmail]     = useState("");
   const [password,  setPassword]  = useState("");
   const [showPw,    setShowPw]    = useState(false);
   const [otp,       setOtp]       = useState<string[]>(["","","","","",""]);
@@ -223,6 +223,11 @@ const handleLogin = () => {
   }
 };
 
+const handleSubmit = (e: React.FormEvent) => {
+  e.preventDefault();
+  handleLogin();
+};
+
   const otpFilled = otp.every(d => d !== "");
   const S = styles;
 
@@ -270,7 +275,7 @@ const handleLogin = () => {
               </button>
             ))}
           </div>
-
+            <form onSubmit={handleSubmit}>
           {/* Password form */}
           {method === "password" && (
             <div>
@@ -286,7 +291,20 @@ const handleLogin = () => {
   setPassword(e.target.value);
   setErrors(prev => ({ ...prev, password: "" }));
 }} placeholder="Enter your password" style={{ paddingRight: 44 }} />
-                  <button onClick={() => setShowPw(!showPw)} style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: "#6B7280" }}>
+                  <button
+                    type="button"
+                    onClick={() => setShowPw(!showPw)}
+                    style={{
+                      position: "absolute",
+                      right: 12,
+                      top: "50%",
+                      transform: "translateY(-50%)",
+                      background: "none",
+                      border: "none",
+                      cursor: "pointer",
+                      color: "#6B7280",
+                    }}
+                  >
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d={showPw ? "M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.43-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46A11.804 11.804 0 001 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27z" : "M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"}/></svg>
                   </button>
                 </div>
@@ -364,6 +382,7 @@ const handleLogin = () => {
               )}
             </div>
           )}
+          </form>
 
           {/* <div style={{ textAlign: "center", color: "#6B7280", fontSize: 12, margin: "20px 0", position: "relative" }}>
             <div style={{ position: "absolute", left: 0, top: "50%", width: "100%", height: 1, background: "#E4E7F0" }} />
@@ -421,13 +440,37 @@ const Field: React.FC<{
   </div>
 );
 
-const Input: React.FC<React.InputHTMLAttributes<HTMLInputElement>> = ({ style, ...props }) => (
-  <input style={{ width: "100%", border: "1.5px solid #E4E7F0", borderRadius: 10, padding: "12px 14px", fontSize: 14, color: "#1A1D2E", background: "#fff", outline: "none", fontFamily: "inherit", transition: "border .15s", ...style }}
-    onFocus={e => (e.target.style.borderColor = "#3B2FD9")}
-    onBlur={e  => (e.target.style.borderColor = "#E4E7F0")}
-    {...props}
-  />
-);
+const Input: React.FC<React.InputHTMLAttributes<HTMLInputElement>> = ({ style, ...props }) => {
+  const handleFocus = (e: React.FocusEvent<HTMLInputElement>) => {
+    e.target.style.borderColor = "#3B2FD9";
+  };
+
+  const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+    e.target.style.borderColor = "#E4E7F0";
+  };
+
+  return (
+    <input
+      {...props}
+      onFocus={handleFocus}
+      onBlur={handleBlur}
+      style={{
+        width: "100%",
+        boxSizing: "border-box",   // 🔥 important fix
+        border: "1.5px solid #E4E7F0",
+        borderRadius: 10,
+        padding: "12px 14px",
+        fontSize: 14,
+        color: "#1A1D2E",
+        background: "#fff",
+        outline: "none",
+        fontFamily: "inherit",
+        transition: "border .15s",
+        ...style,
+      }}
+    />
+  );
+};
 
 type LoginBtnProps = {
   loading: boolean;

@@ -1,35 +1,39 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
+import useGet from "../hooks/useGet";
+import { GET } from "../services/apiRoutes";
+import { useSelector } from "react-redux";
+import { RootState } from "../store";
 
 type ViewMode = "monthly" | "quarterly" | "annual";
 
 interface FirmRow { firm:string; region:string; session:string; total:number; proc:number; unproc:number; amount:number; approved:number; pending:number; flagged:number; }
 interface MonthData { m:string; proc:number; unproc:number; }
 
-const FIRMS: FirmRow[] = [
-  { firm:"WBD",        region:"US", session:"Jan 2026", total:5,  proc:3, unproc:2, amount:139203, approved:89347, pending:49856, flagged:9 },
-  { firm:"AOMB",       region:"EU", session:"Jan 2026", total:4,  proc:4, unproc:0, amount:56109,  approved:56109, pending:0,     flagged:3 },
-  { firm:"JAH",        region:"US", session:"Jan 2026", total:3,  proc:2, unproc:1, amount:38236,  approved:28500, pending:9736,  flagged:3 },
-  { firm:"CCPIT",      region:"CN", session:"Jan 2026", total:4,  proc:4, unproc:0, amount:27197,  approved:27197, pending:0,     flagged:0 },
-  { firm:"Quicker",    region:"US", session:"Jan 2026", total:3,  proc:2, unproc:1, amount:7610,   approved:5200,  pending:2410,  flagged:2 },
-  { firm:"S Y-CHA",   region:"KR", session:"Jan 2026", total:2,  proc:1, unproc:1, amount:7150,   approved:4500,  pending:2650,  flagged:2 },
-  { firm:"Allegro",    region:"JP", session:"Feb 2026", total:2,  proc:2, unproc:0, amount:3545,   approved:3545,  pending:0,     flagged:0 },
-  { firm:"Saba",       region:"LB", session:"Jan 2026", total:2,  proc:2, unproc:0, amount:4014,   approved:4014,  pending:0,     flagged:0 },
-  { firm:"EP&C",       region:"EU", session:"Dec 2025", total:1,  proc:1, unproc:0, amount:389,    approved:389,   pending:0,     flagged:0 },
-  { firm:"Lavery",     region:"CA", session:"Dec 2025", total:2,  proc:1, unproc:1, amount:1704,   approved:900,   pending:804,   flagged:1 },
-  { firm:"Conley Rose",region:"US", session:"Dec 2025", total:2,  proc:2, unproc:0, amount:2097,   approved:2097,  pending:0,     flagged:0 },
-];
-const MONTHLY: MonthData[] = [
-  { m:"Jan", proc:87000, unproc:52000 },{ m:"Feb", proc:102000, unproc:40000 },
-  { m:"Mar", proc:139000,unproc:25000 },{ m:"Apr", proc:95000,  unproc:38000 },
-  { m:"May", proc:88000, unproc:42000 },{ m:"Jun", proc:120000, unproc:18000 },
-];
-const REGION_DIST = [
-  { region:"United States", pct:40, color:"#3B2FD9" },
-  { region:"Europe",        pct:25, color:"#7C4DFF" },
-  { region:"China",         pct:18, color:"#A855F7" },
-  { region:"Japan",         pct:10, color:"#0284C7" },
-  { region:"Other",         pct:7,  color:"#D97706" },
-];
+// const FIRMS: FirmRow[] = [
+//   { firm:"WBD",        region:"US", session:"Jan 2026", total:5,  proc:3, unproc:2, amount:139203, approved:89347, pending:49856, flagged:9 },
+//   { firm:"AOMB",       region:"EU", session:"Jan 2026", total:4,  proc:4, unproc:0, amount:56109,  approved:56109, pending:0,     flagged:3 },
+//   { firm:"JAH",        region:"US", session:"Jan 2026", total:3,  proc:2, unproc:1, amount:38236,  approved:28500, pending:9736,  flagged:3 },
+//   { firm:"CCPIT",      region:"CN", session:"Jan 2026", total:4,  proc:4, unproc:0, amount:27197,  approved:27197, pending:0,     flagged:0 },
+//   { firm:"Quicker",    region:"US", session:"Jan 2026", total:3,  proc:2, unproc:1, amount:7610,   approved:5200,  pending:2410,  flagged:2 },
+//   { firm:"S Y-CHA",   region:"KR", session:"Jan 2026", total:2,  proc:1, unproc:1, amount:7150,   approved:4500,  pending:2650,  flagged:2 },
+//   { firm:"Allegro",    region:"JP", session:"Feb 2026", total:2,  proc:2, unproc:0, amount:3545,   approved:3545,  pending:0,     flagged:0 },
+//   { firm:"Saba",       region:"LB", session:"Jan 2026", total:2,  proc:2, unproc:0, amount:4014,   approved:4014,  pending:0,     flagged:0 },
+//   { firm:"EP&C",       region:"EU", session:"Dec 2025", total:1,  proc:1, unproc:0, amount:389,    approved:389,   pending:0,     flagged:0 },
+//   { firm:"Lavery",     region:"CA", session:"Dec 2025", total:2,  proc:1, unproc:1, amount:1704,   approved:900,   pending:804,   flagged:1 },
+//   { firm:"Conley Rose",region:"US", session:"Dec 2025", total:2,  proc:2, unproc:0, amount:2097,   approved:2097,  pending:0,     flagged:0 },
+// ];
+// const MONTHLY: MonthData[] = [
+//   { m:"Jan", proc:87000, unproc:52000 },{ m:"Feb", proc:102000, unproc:40000 },
+//   { m:"Mar", proc:139000,unproc:25000 },{ m:"Apr", proc:95000,  unproc:38000 },
+//   { m:"May", proc:88000, unproc:42000 },{ m:"Jun", proc:120000, unproc:18000 },
+// ];
+// const REGION_DIST = [
+//   { region:"United States", pct:40, color:"#3B2FD9" },
+//   { region:"Europe",        pct:25, color:"#7C4DFF" },
+//   { region:"China",         pct:18, color:"#A855F7" },
+//   { region:"Japan",         pct:10, color:"#0284C7" },
+//   { region:"Other",         pct:7,  color:"#D97706" },
+// ];
 
 const fmt = (n: number) => "$" + n.toLocaleString();
 const pct  = (a: number, b: number) => b ? Math.round(a / b * 100) : 0;
@@ -48,16 +52,104 @@ const Card: React.FC<{ children: React.ReactNode; style?: React.CSSProperties }>
 );
 
 export const Home: React.FC = () => {
-  const [year,      setYear]      = useState("2026");
   const [period,    setPeriod]    = useState("Year to Date");
   const [firmFilter,setFirmFilter]= useState("All Law Firms");
   const [region,    setRegion]    = useState("All Regions");
-  const [status,    setStatus]    = useState("All Statuses");
   const [view,      setView]      = useState<ViewMode>("monthly");
   const [activeTags,setActiveTags]= useState<string[]>(["2026","YTD"]);
 
+  const [year, setYear] = useState("");
+  const [month, setMonth] = useState("");
+  const [vendor, setVendor] = useState("");
+  const [status, setStatus] = useState("");
+  const [yearOptions, setYearOptions] = useState<string[]>([]);
+  const [monthOptions, setMonthOptions] = useState<string[]>([]);
+
+
+
+  const { list } = useSelector((state: RootState) => state.dataSource);
+
+const listCurrentData = list?.find(
+  (item) => item._id === import.meta.env.VITE_INVOICE_DATASOURCE_ID
+);
+
+useEffect(() => {
+  if (!listCurrentData?.allDataSourceVersions) return;
+
+  const versions = listCurrentData.allDataSourceVersions;
+  const parsed = versions.map((v: any) => v.versionValue);
+
+  const yearsSet = new Set<string>();
+  const monthsMap: Record<string, Set<string>> = {};
+
+  parsed.forEach((val: string) => {
+    const [y, m] = val.split("-");
+
+    yearsSet.add(y);
+
+    if (!monthsMap[y]) {
+      monthsMap[y] = new Set();
+    }
+
+    monthsMap[y].add(m);
+  });
+
+  const years = Array.from(yearsSet).sort((a, b) => Number(b) - Number(a));
+  setYearOptions(years);
+
+  const latest = [...parsed].sort().reverse()[0];
+
+  if (latest) {
+    const [defaultYear, defaultMonth] = latest.split("-");
+    setYear(defaultYear);
+    setMonth(defaultMonth);
+    setMonthOptions(Array.from(monthsMap[defaultYear] || []).sort());
+  }
+}, [listCurrentData]);
+
+const analyticsAPI = useGet(
+  ["dashboardAnalytics", year, month, vendor, status],
+  `${GET.Data_Source_Version}/dashboard/analytics?dataSourceId=${import.meta.env.VITE_INVOICE_DATASOURCE_ID}&year=${year}&month=${month}&vendorId=${vendor}&aiStatus=${status}`,
+  true
+);
+
+const analytics = analyticsAPI?.data?.data || {};
+
+const totals = analytics.kpis || {
+  totalBilled: 0,
+  processed: 0,
+  unprocessed: 0,
+  flagged: 0,
+  billingSessions: 0
+};
+
+const FIRMS = analytics.firms || [];
+const MONTHLY = Object.entries(analytics.monthly || {}).map(
+  ([m, val]: any) => ({
+    m,
+    proc: val.processed,
+    unproc: val.unprocessed
+  })
+);
+
+const REGION_DIST = Object.entries(analytics.regionWise || {}).map(
+  ([region, value]: any) => ({
+    region,
+    pct: Math.round(
+      (value /
+        Object.values(analytics.regionWise || {}).reduce(
+          (a: any, b: any) => a + b,
+          0
+        )) *
+        100
+    ),
+    color: "#3B2FD9"
+  })
+);
+  const TABLE_DATA = analytics.table || [];
+
   const filteredFirms = useMemo(() => {
-    let rows = FIRMS;
+    let rows = TABLE_DATA;
     if (firmFilter !== "All Law Firms") rows = rows.filter(r => r.firm === firmFilter);
     if (region !== "All Regions")       rows = rows.filter(r => region.includes(r.region));
     if (status === "Processed")         rows = rows.filter(r => r.unproc === 0);
@@ -66,13 +158,10 @@ export const Home: React.FC = () => {
     return rows;
   }, [firmFilter, region, status]);
 
-  const totals = useMemo(() => filteredFirms.reduce(
-    (acc, r) => ({ billed: acc.billed + r.amount, approved: acc.approved + r.approved, pending: acc.pending + r.pending, flagged: acc.flagged + r.flagged }),
-    { billed: 0, approved: 0, pending: 0, flagged: 0 }
-  ), [filteredFirms]);
-
   const maxMonth = Math.max(...MONTHLY.map(m => m.proc + m.unproc));
-  const maxFirm  = Math.max(...filteredFirms.map(f => f.amount));
+  const maxFirm = Math.max(...filteredFirms.map(f => f.totalAmount || 0), 1);
+
+
 
   return (
     <div style={{ padding: 24, fontFamily: "'Segoe UI',system-ui,sans-serif", color: "#1A1D2E" }}>
@@ -119,11 +208,11 @@ export const Home: React.FC = () => {
       {/* KPI widgets */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(5,1fr)", gap: 14, marginBottom: 20 }}>
         {[
-          { label: "Total Billed",   value: fmt(totals.billed),   sub: `${filteredFirms.length} firms`,    color: "#3B2FD9", accent: "#3B2FD9", badge: "+12% YoY",   bColor: "#FEE2E2", tColor: "#B91C1C" },
-          { label: "Processed",      value: fmt(totals.approved),  sub: `${filteredFirms.filter(f=>f.unproc===0).length} complete`, color: "#16A34A", accent: "#16A34A", badge: "78%",       bColor: "#DCFCE7", tColor: "#15803D" },
-          { label: "Unprocessed",    value: fmt(totals.pending),   sub: `${filteredFirms.filter(f=>f.unproc>0).length} pending`, color: "#DC2626", accent: "#DC2626", badge: "Pending",    bColor: "#FEE2E2", tColor: "#B91C1C" },
+          { label: "Total Billed",   value: fmt(totals.totalBilled),   sub: `${filteredFirms.length} firms`,    color: "#3B2FD9", accent: "#3B2FD9", badge: "+12% YoY",   bColor: "#FEE2E2", tColor: "#B91C1C" },
+          { label: "Processed",      value: fmt(totals.processed),  sub: `${filteredFirms.filter(f=>f.unproc===0).length} complete`, color: "#16A34A", accent: "#16A34A", badge: "78%",       bColor: "#DCFCE7", tColor: "#15803D" },
+          { label: "Unprocessed",    value: fmt(totals.unprocessed),   sub: `${filteredFirms.filter(f=>f.unproc>0).length} pending`, color: "#DC2626", accent: "#DC2626", badge: "Pending",    bColor: "#FEE2E2", tColor: "#B91C1C" },
           { label: "Flagged Items",  value: String(totals.flagged),sub: "Across firms",       color: "#D97706", accent: "#D97706", badge: "Review",     bColor: "#FEF3C7", tColor: "#92400E" },
-          { label: "Billing Sessions",value: "6",                  sub: "Jan – Jun 2026",     color: "#0284C7", accent: "#0284C7", badge: year,         bColor: "#DBEAFE", tColor: "#1D4ED8" },
+          { label: "Billing Sessions", value: totals.billingSessions,                  sub: "Jan – Jun 2026",     color: "#0284C7", accent: "#0284C7", badge: year,         bColor: "#DBEAFE", tColor: "#1D4ED8" },
         ].map(k => (
           <div key={k.label} style={{ background: "#fff", borderRadius: 12, border: "1px solid #E4E7F0", padding: 16, boxShadow: "0 1px 4px rgba(0,0,0,.05)", borderTop: `3px solid ${k.accent}` }}>
             <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
@@ -210,10 +299,10 @@ export const Home: React.FC = () => {
             <div key={f.firm} style={{ marginBottom: 9 }}>
               <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, marginBottom: 3 }}>
                 <span style={{ fontWeight: 600 }}>{f.firm}</span>
-                <span style={{ color: "#6B7280" }}>{fmt(f.amount)}</span>
+                <span style={{ color: "#6B7280" }}>{fmt(f.totalAmount)}</span>
               </div>
               <div style={{ height: 6, background: "#E4E7F0", borderRadius: 3, overflow: "hidden" }}>
-                <div style={{ height: "100%", width: `${Math.round((f.amount / maxFirm) * 100)}%`, background: "linear-gradient(90deg,#3B2FD9,#A855F7)", borderRadius: 3 }} />
+                <div style={{ height: "100%", width: `${Math.round(((f.totalAmount || 0) / maxFirm) * 100)}%`, background: "linear-gradient(90deg,#3B2FD9,#A855F7)", borderRadius: 3 }} />
               </div>
             </div>
           ))}
@@ -289,7 +378,7 @@ export const Home: React.FC = () => {
                     <td style={{ padding: "9px 12px", textAlign: "center" }}>{f.total}</td>
                     <td style={{ padding: "9px 12px", textAlign: "center", color: "#16A34A", fontWeight: 600 }}>{f.proc}</td>
                     <td style={{ padding: "9px 12px", textAlign: "center", color: f.unproc > 0 ? "#DC2626" : "#6B7280", fontWeight: f.unproc > 0 ? 600 : 400 }}>{f.unproc}</td>
-                    <td style={{ padding: "9px 12px", fontWeight: 700 }}>{fmt(f.amount)}</td>
+                    <td style={{ padding: "9px 12px", fontWeight: 700 }}>{fmt(f.totalAmount)}</td>
                     <td style={{ padding: "9px 12px", color: "#16A34A", fontWeight: 600 }}>{fmt(f.approved)}</td>
                     <td style={{ padding: "9px 12px", color: f.pending > 0 ? "#DC2626" : "#6B7280" }}>{fmt(f.pending)}</td>
                     <td style={{ padding: "9px 12px", textAlign: "center", color: f.flagged > 0 ? "#DC2626" : "#6B7280", fontWeight: f.flagged > 0 ? 700 : 400 }}>{f.flagged > 0 ? `⚑ ${f.flagged}` : "—"}</td>
